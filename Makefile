@@ -2,9 +2,8 @@ CXX      := g++
 CXXFLAGS := -std=c++20 -g -O0 -Wall -Wextra -MMD -MP
 TARGET   := wpa3_tester
 
-# Root main + všechny zdrojáky v podsložkách wpa3_test/src a wpa3_test_suite/src
 SRC_DIRS := . wpa3_test/src wpa3_test_suite/src
-INC_DIRS := -Iinclude -Iwpa3_test/include -Ilib/external -Ilib/external/json-schema-validator/src -Ilib/external/json-schema-validator/include
+INC_DIRS := -Iinclude -Iwpa3_test/include -Ilib/external -Ilib/external/argparse/include -Ilib/external/json-schema-validator/src -Ilib/external/json-schema-validator/include
 
 BUILDDIR := build_make
 
@@ -38,8 +37,16 @@ install: deps
 
 deps:
 	@echo "Installing system packages (Debian-based)..."
-	sudo apt update
-	sudo apt install -y libyaml-cpp-dev wget git
+	sudo apt install -y libyaml-cpp-dev wget git nlohmann-json3-dev
+	@echo "Installing C++ argparse (header-only) into lib/external..."
+	mkdir -p lib/external
+	@if [ ! -d lib/external/argparse ]; then \
+		echo "Cloning p-ranav/argparse..."; \
+		cd lib/external && git clone -q https://github.com/p-ranav/argparse.git; \
+		echo "[OK] argparse cloned"; \
+	else \
+		echo "[OK] argparse already exists"; \
+	fi
 	@echo "Setting up header-only libraries..."
 	mkdir -p lib/external
 	@if [ ! -f lib/external/json.hpp ]; then \

@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
-#include <bits/basic_string.h>
-
-using namespace std;
+using namespace  std;
 class RunStatus {
 public:
     RunStatus() = default;
@@ -11,4 +9,5 @@ public:
     void config_requirement();
 private:
     static string findConfigByTestName(const string &name);
+    string finalPath;
 };

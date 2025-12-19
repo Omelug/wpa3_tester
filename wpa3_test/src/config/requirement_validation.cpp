@@ -1,5 +1,5 @@
 #include "../../include/config/RunStatus.h"
 
-void RunStatus::config_validation() {
+void RunStatus::config_requirement() {
 
 }

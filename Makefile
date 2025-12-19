@@ -3,7 +3,13 @@ CXXFLAGS := -std=c++20 -g -O0 -Wall -Wextra -MMD -MP
 TARGET   := wpa3_tester
 
 SRC_DIRS := . wpa3_test/src wpa3_test_suite/src
-INC_DIRS := -Iinclude -Iwpa3_test/include -Ilib/external -Ilib/external/argparse/include -Ilib/external/json-schema-validator/src -Ilib/external/json-schema-validator/include
+INC_DIRS := -Iinclude \
+			-Iwpa3_test/include  \
+			-Ilib/external \
+			-Ilib/external/argparse/include \
+			-Ilib/external/json-schema-validator/src \
+			-Ilib/external/json-schema-validator/include \
+			-Ilib/external/jsoncons/include
 
 BUILDDIR := build_make
 
@@ -30,7 +36,7 @@ $(BUILDDIR)/%.o: %.cpp
 
 run: all
 	mkdir -p data
-	./$(BUILDDIR)/$(TARGET)
+	./$(BUILDDIR)/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch.yaml
 
 install: deps
 	@echo "✓ All dependencies installed successfully"
@@ -62,6 +68,14 @@ deps:
 		echo "[OK] json-schema-validator cloned"; \
 	else \
 		echo "[OK] json-schema-validator already exists"; \
+	fi
+	@echo "Installing jsoncons (header-only JSON/YAML library)..."
+	@if [ ! -d lib/external/jsoncons ]; then \
+		echo "Cloning danielaparker/jsoncons..."; \
+		cd lib/external && git clone -q https://github.com/danielaparker/jsoncons.git; \
+		echo "[OK] jsoncons cloned"; \
+	else \
+		echo "[OK] jsoncons already exists"; \
 	fi
 
 # ------- clean ------------------

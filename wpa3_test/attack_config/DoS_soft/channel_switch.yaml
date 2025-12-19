@@ -15,9 +15,9 @@ actors:
       condition: [monitor]
 
 attack_config:
-  validator: ./channel_switch.json
+  validator: ./channel_switch.schema.yaml
   time_secs: 50
   interval: 10
   new_channel: 1
 
-attack: ../../src/channel_switch
+attack: ../../src/attacks/channel_switch

@@ -2,6 +2,7 @@
     type: object
     description: test/attack parameters
     required:
+      - validator
       - time_secs
       - interval
       - new_channel

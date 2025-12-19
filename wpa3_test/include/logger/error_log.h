@@ -1,10 +1,7 @@
 #pragma once
 
-#include <exception>
 #include <string>
-#include <cstdarg>
 #include <stdexcept>
-#include <vector>
 
 using namespace  std;
 class config_error : public runtime_error {

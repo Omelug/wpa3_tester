@@ -1,0 +1,79 @@
+# test_config_schema.yaml
+$schema: http://json-schema.org/draft-07/schema#
+title: Test Configuration Schema
+type: object
+required:
+  - name
+  - wizard_fallback
+  - actors
+  - attack_config
+  - attack
+properties:
+  name:
+    type: string
+    description: Test name
+
+  wizard_fallback:
+    type: boolean
+    description: If should be wizard asked after selection error
+
+  actors:
+    type: object
+    description: Test actors definitions
+    required:
+      - target
+      - attacker
+    properties:
+      target:
+        $ref: '#/definitions/Actor'
+      attacker:
+        $ref: '#/definitions/Actor'
+
+  attack_config:
+    type: object
+    description: test/attack parameters
+    required:
+      - validator
+    properties:
+      validator:
+        type: string
+        description: validator
+
+  attack:
+    type: string
+    description: Attack folder
+
+definitions:
+  Actor: # Actor
+    type: object
+    required:
+      - type
+      - source
+      - selection
+    properties:
+      type:
+        type: string
+        enum: ["AP", "STA", "process"]
+        description: Access point
+      source:
+        type: string
+        enum: ["simulation","internal", "external"]
+        description: mac_hwsim, internal, external
+      selection:
+        type: object
+        properties:
+          mac:
+            type: string
+            pattern: '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$'
+            description: MAC address in format AA:BB:CC:DD:EE:FF
+          essid:
+            type: string
+            description: Name of AP
+          condition:
+            type: array
+            items:
+              type: string
+              enum: ["AP", "monitor", "2.4Gz", "5Gz", "WPA-PSK", "WPA3"]
+            minItems: 1
+            description: Condition for selection
+

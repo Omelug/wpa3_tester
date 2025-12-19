@@ -1,6 +1,12 @@
 #include <iostream>
+#include "wpa3_test/include/config/RunStatus.h"
+using namespace std;
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
+
+static RunStatus r;
+int main(const int argc, char *argv[])  {
+    r = RunStatus(argc,argv);
+    r.config_validation();
+    r.config_requirement();
     return 0;
 }

@@ -2,3 +2,4 @@
 lib/external
 build_make
 cmake-build-debug
+run

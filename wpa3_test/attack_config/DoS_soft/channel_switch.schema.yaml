@@ -1,0 +1,19 @@
+  attack_config:
+    type: object
+    description: test/attack parameters
+    required:
+      - time_secs
+      - interval
+      - new_channel
+    properties:
+      time_secs:
+        type: integer
+        description: timeout
+        minimum: 1
+      interval:
+        type: integer
+        description: repeating interval
+        minimum: 1
+      new_channel:
+        type: integer
+        description: New channel to switch

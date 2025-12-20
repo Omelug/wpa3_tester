@@ -1,20 +1,23 @@
-  attack_config:
-    type: object
-    description: test/attack parameters
-    required:
-      - validator
-      - time_secs
-      - interval
-      - new_channel
-    properties:
-      time_secs:
-        type: integer
-        description: timeout
-        minimum: 1
-      interval:
-        type: integer
-        description: repeating interval
-        minimum: 1
-      new_channel:
-        type: integer
-        description: New channel to switch
+$schema: http://json-schema.org/draft-07/schema#
+title: Channel Switch Attack Config
+type: object
+required:
+  - time_secs
+  - interval
+  - new_channel
+properties:
+  validator:
+    type: string
+    description: path to this schema
+  time_secs:
+    type: integer
+    description: timeout
+    minimum: 1
+  interval:
+    type: integer
+    description: repeating interval
+    minimum: 1
+  new_channel:
+    type: integer
+    description: New channel to switch
+additionalProperties: false

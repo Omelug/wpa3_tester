@@ -37,6 +37,7 @@ json yaml_to_json(const YNode& node) {
 
 void RunStatus::config_validation() {
     try {
+        //TODO add posibility use templeate
         YNode config_node = YAML::LoadFile(this->finalPath);
         json config_json = yaml_to_json(config_node);
 

@@ -1,0 +1,16 @@
+# INFO: - Blue
+regexp=INFO:
+colours=blue
+count=more
+-
+regexp=.*WARN:.*
+colours=yellow
+count=more
+-
+regexp=.*ERROR:.*
+colours=bold red
+count=more
+-
+regexp=.*terminate called.*|.*CRITICAL:.*
+colours=bold white on_red
+count=more

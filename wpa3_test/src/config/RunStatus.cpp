@@ -2,7 +2,7 @@
 #include <filesystem>
 #include "../../include/logger/error_log.h"
 #include "../../include/logger/log.h"
-#include "argparse/include/argparse/argparse.hpp"
+#include <argparse/argparse.hpp>
 #include <string>
 
 using namespace std;

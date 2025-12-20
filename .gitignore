@@ -1,5 +1,5 @@
 .idea
 lib/external
-build_make
+build
 cmake-build-debug
 run

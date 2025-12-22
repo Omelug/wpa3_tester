@@ -7,18 +7,41 @@
 #include <vector>
 
 using namespace  std;
-class config_error : public runtime_error {
+
+#include <format>
+#include <string>
+#include <stdexcept>
+
+class tester_error : public std::runtime_error {
 public:
-    explicit config_error(const string& msg): runtime_error(msg){
-        log(LogLevel::CRITICAL, msg.c_str());
-    }
+    explicit tester_error(const std::string& msg) : std::runtime_error(msg) {}
 
     template<typename... Args>
-    static config_error format(std::string_view fmt, Args&&... args) {
+    static std::string v_format(std::string_view fmt, Args&&... args) {
         try {
-            return config_error(std::vformat(fmt, std::make_format_args(args...)));
+            return std::vformat(fmt, std::make_format_args(args...));
         } catch (const std::format_error& e) {
-            return config_error(std::string("Format error in template: ") + e.what());
+            return std::string("Format error: ") + e.what();
         }
+    }
+};
+
+class config_error : public tester_error {
+public:
+    template<typename... Args>
+    explicit config_error(std::string_view fmt, Args&&... args)
+        : tester_error(v_format(fmt, std::forward<Args>(args)...))
+    {
+        log(LogLevel::CRITICAL, what());
+    }
+};
+
+class req_error : public tester_error {
+public:
+    template<typename... Args>
+    explicit req_error(std::string_view fmt, Args&&... args)
+        : tester_error(v_format(fmt, std::forward<Args>(args)...))
+    {
+        log(LogLevel::ERROR, what());
     }
 };

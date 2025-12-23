@@ -11,13 +11,22 @@
 #include "logger/log.h"
 
 using namespace std;
-/*
+
+namespace {
+    std::string g_iw_cache; // cached output of `iw dev`
+}
+
 void hw_capabilities::ensure_iw_cached() {
-    if (iw_cache.has_value()) {
+    if (!g_iw_cache.empty()) {
         return; // already cached
     }
-    const string cmd = "iw phy";
-    iw_cache = run_command(cmd);
+    const string cmd = "iw dev";
+    g_iw_cache = run_command(cmd);
+}
+
+string hw_capabilities::get_iw_cache() {
+    ensure_iw_cached();
+    return g_iw_cache;
 }
 
 string hw_capabilities::run_command(const string &cmd) {
@@ -35,7 +44,7 @@ string hw_capabilities::run_command(const string &cmd) {
 }
 
 string hw_capabilities::get_phy_from_iface(const string &iface) {
-    string out = run_command("iw dev");
+    string out = get_iw_cache();
     if (out.empty()) {return {};}
 
     string current_phy;
@@ -52,6 +61,10 @@ string hw_capabilities::get_phy_from_iface(const string &iface) {
             current_phy = line.substr(phy_prefix.size());
         } else if (line.rfind(iface_prefix, 0) == 0) {
             string name = line.substr(iface_prefix.size());
+            // strip trailing spaces / CR
+            while (!name.empty() && isspace(static_cast<unsigned char>(name.back()))) {
+                name.pop_back();
+            }
             if (name == iface) {return current_phy;}
         }
         pos = end + 1;
@@ -60,11 +73,11 @@ string hw_capabilities::get_phy_from_iface(const string &iface) {
 }
 
 void hw_capabilities::reset() {
-    iw_cache = nullptr;
+    g_iw_cache = nullptr;
 }
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
-*/
+
 bool hw_capabilities::findSolution(
     const vector<string>& ruleKeys,
     const size_t ruleIdx,

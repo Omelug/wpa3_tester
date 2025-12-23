@@ -6,15 +6,14 @@
 
 #include "RunStatus.h"
 
-
+using AssignmentMap = map<string, string>;
 class hw_capabilities {
-    using AssignmentMap = map<string, string>;
-
-    /*std::string run_command(const std::string &cmd);
-    std::string get_phy_from_iface(const std::string &iface);
-    void reset();
-    void ensure_iw_cached();
-    */
+public:
+    static void ensure_iw_cached();
+    static std::string run_command(const std::string &cmd);
+    static std::string get_iw_cache();
+    static std::string get_phy_from_iface(const std::string &iface);
+    static void reset();
     static bool findSolution(
         const std::vector<std::string>& ruleKeys,
         size_t ruleIdx,

@@ -3,21 +3,16 @@
 #include <string>
 #include <stdexcept>
 #include <format>
-#include <string>
 #include <vector>
 
 using namespace  std;
-
-#include <format>
-#include <string>
-#include <stdexcept>
 
 class tester_error : public std::runtime_error {
 public:
     explicit tester_error(const std::string& msg) : std::runtime_error(msg) {}
 
     template<typename... Args>
-    static std::string v_format(std::string_view fmt, Args&&... args) {
+    static std::string v_format(const std::string_view fmt, Args&&... args) {
         try {
             return std::vformat(fmt, std::make_format_args(args...));
         } catch (const std::format_error& e) {
@@ -32,7 +27,7 @@ public:
     explicit config_error(std::string_view fmt, Args&&... args)
         : tester_error(v_format(fmt, std::forward<Args>(args)...))
     {
-        log(LogLevel::CRITICAL, what());
+        log(LogLevel::CRITICAL, runtime_error::what());
     }
 };
 
@@ -42,6 +37,6 @@ public:
     explicit req_error(std::string_view fmt, Args&&... args)
         : tester_error(v_format(fmt, std::forward<Args>(args)...))
     {
-        log(LogLevel::ERROR, what());
+        log(LogLevel::ERROR, runtime_error::what());
     }
 };

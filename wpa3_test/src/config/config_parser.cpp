@@ -5,9 +5,6 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/json-schema.hpp>
 
-#include <iostream>
-#include <fstream>
-
 using namespace std;
 using json = nlohmann::json;
 using YNode = YAML::Node;
@@ -38,10 +35,10 @@ json yaml_to_json(const YNode& node) {
 void RunStatus::config_validation() {
     try {
         //TODO add posibility use templeate
-        YNode config_node = YAML::LoadFile(this->finalPath);
+        YNode config_node = YAML::LoadFile(this->configPath);
         json config_json = yaml_to_json(config_node);
 
-        fs::path global_schema_path = fs::path(PROJECT_ROOT_DIR) \
+        fs::path global_schema_path = fs::path(PROJECT_ROOT_DIR)
             / "attack_config" / "validator" / "test_validator.yaml";
         YNode global_schema_node = YAML::LoadFile(global_schema_path.string());
 
@@ -58,7 +55,7 @@ void RunStatus::config_validation() {
             throw config_error("'attack_config.validator' must be a string path to YAML schema");
         }
 
-        fs::path config_path(this->finalPath);
+        fs::path config_path(this->configPath);
         fs::path config_dir = config_path.parent_path();
         fs::path attack_schema_path = config_dir \
             / attack_cfg["validator"].get<string>();
@@ -70,11 +67,13 @@ void RunStatus::config_validation() {
         attack_validator.set_root_schema(attack_schema_json);
         attack_validator.validate(attack_cfg);
 
+        this->config = config_json;
+
     } catch (const domain_error &e) {
-        throw config_error::format("Schema error: {}", e.what());
+        throw config_error("Schema error: {}", e.what());
     } catch (const invalid_argument &e) {
-        throw config_error::format( "Error in config: {}", e.what());
+        throw config_error( "Error in config: {}", e.what());
     } catch (const exception& e) {
-        throw config_error::format("Config validation error: {}", e.what());
+        throw config_error("Config validation error: {}", e.what());
     }
 }

@@ -10,7 +10,7 @@ using namespace filesystem;
 
 string RunStatus::findConfigByTestName(const string &name){
     //TODO
-    throw config_error::format("Unknown test name: %s", name.c_str());
+    throw config_error("Unknown test name: %s", name.c_str());
 }
 
 RunStatus::RunStatus(const int argc, char **argv){
@@ -30,8 +30,6 @@ RunStatus::RunStatus(const int argc, char **argv){
         throw config_error(err.what());
     }
 
-    string configPath;
-
     if(!program.present("--test") && !program.present("--config")){
         throw config_error("--test <test_name> or --config <path> is required");
     }
@@ -46,6 +44,5 @@ RunStatus::RunStatus(const int argc, char **argv){
         throw config_error("Config not found: " + configPath);
     }
 
-    this->finalPath = configPath;
-    log(LogLevel::INFO, "Running with %s", this->finalPath.c_str());
+    log(LogLevel::INFO, "Running with %s", this->configPath.c_str());
 }

@@ -59,6 +59,9 @@ definitions:
         type: string
         enum: ["simulation","internal", "external"]
         description: mac_hwsim, internal, external
+      scan_iface:
+        type: string
+        description: Interface to scan when source is external
       selection:
         type: object
         properties:
@@ -69,11 +72,21 @@ definitions:
           essid:
             type: string
             description: Name of AP
+          iface:
+            type: string
+            description: Name of interface
           condition:
             type: array
             items:
               type: string
-              enum: ["AP", "monitor", "2.4Gz", "5Gz", "WPA-PSK", "WPA3"]
+              enum: ["AP", "monitor", "2_4Gz", "5Gz", "WPA-PSK", "WPA3-SAE"]
             minItems: 1
             description: Condition for selection
-
+    allOf:
+      - if:
+          properties:
+            source:
+              const: "external"
+        then:
+          required:
+            - scan_iface

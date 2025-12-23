@@ -13,8 +13,8 @@ Actor_config::Actor_config(const json& j) {
 
         if (sel.contains("condition") && sel["condition"].is_array()) {
             for (const auto& cond_name : sel["condition"]) {
-                string key = cond_name.get<string>();
-                if (bool_conditions.contains(key)) {
+                if (auto key = cond_name.get<string>();
+                    bool_conditions.contains(key)) {
                     bool_conditions[key] = true;
                 }
             }
@@ -32,8 +32,8 @@ bool Actor_config::matches(const Actor_config& offer) {
         if (!required_val.has_value()) {
             continue;
         }
-        auto it = offer.bool_conditions.find(key);
-        if (it == offer.bool_conditions.end() || it->second != required_val) {
+        if (auto it = offer.bool_conditions.find(key);
+            it == offer.bool_conditions.end() || it->second != required_val) {
             return false;
         }
     }

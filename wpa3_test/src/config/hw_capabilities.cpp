@@ -63,8 +63,8 @@ void hw_capabilities::reset() {
     iw_cache = nullptr;
 }
 
-// ---------------------- BACKTRACKING ------------------------// RuleKey -> OptionKey
-
+// ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
+*/
 bool hw_capabilities::findSolution(
     const vector<string>& ruleKeys,
     const size_t ruleIdx,
@@ -79,42 +79,53 @@ bool hw_capabilities::findSolution(
     }
 
     const string& currentRuleKey = ruleKeys[ruleIdx];
-    const Config& currentRuleReq = rules.at(currentRuleKey);
-
-    for (auto const& [optKey, optConfig] : options) {
-        if (!usedOptions.contains(optKey) &&
-            currentRuleReq.matches(optConfig))
-        {
-
-            usedOptions.insert(optKey);
-            currentAssignment[currentRuleKey] = optKey;
-
-            if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) {
-                return true; // valid result found -> return true up
-            }
-
-            usedOptions.erase(optKey);
-            currentAssignment.erase(currentRuleKey);
-        }
+    const auto &ruleIt = rules.find(currentRuleKey);
+    if (ruleIt == rules.end() || !ruleIt->second) {
+        throw config_error("Missing rule actor config for key: %s", currentRuleKey.c_str());
     }
-    return false; // not valid options for this
-    //TODO
-    return false;
+    Actor_config& currentRuleReq = *ruleIt->second;
+
+    for (auto const& [optKey, optConfigPtr] : options) {
+        if (!optConfigPtr) {
+            continue; // skip empty
+        }
+        if (usedOptions.contains(optKey)) {
+            continue; // already used this option
+        }
+
+        Actor_config& optConfig = *optConfigPtr;
+        if (!currentRuleReq.matches(optConfig)) {
+            continue;
+        }
+
+        // choose this option for current rule
+        usedOptions.insert(optKey);
+        currentAssignment[currentRuleKey] = optKey;
+
+        if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) {
+            return true; // valid assignment found
+        }
+
+        // backtrack
+        usedOptions.erase(optKey);
+        currentAssignment.erase(currentRuleKey);
+    }
+
+    return false; // no valid option for this rule
 }
 
 void hw_capabilities::check_req_options(ActorCMap& rules, const ActorCMap& options) {
     vector<string> ruleKeys;
-    for (const auto &k: rules | views::keys) ruleKeys.push_back(k);
+    for (const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
-    set<string> usedOptions;
     AssignmentMap result;
-
-    if (findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
-        log(LogLevel::DEBUG,"Solved!");
+    if (set<string> usedOptions;
+        findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
+        log(LogLevel::DEBUG, "Solved!");
         for (auto const& [r, o] : result) {
-            log(LogLevel::DEBUG,"Rule {} -> option {}", r.c_str(), o.c_str());
+            log(LogLevel::DEBUG, "Rule %s -> option %s", r.c_str(), o.c_str());
         }
     } else {
         throw req_error("Not found valid requirements");
     }
-}*/
+}

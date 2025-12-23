@@ -49,13 +49,16 @@ void RunStatus::config_requirement() {
     }
 
    	 //todo get map from
-    auto maps        = parse_requirements();
-    auto &simulation = std::get<0>(maps);
-    auto &internal   = std::get<1>(maps);
-    auto &external   = std::get<2>(maps);
+    auto [external, internal, simulation] = parse_requirements();
+
+    log_actor_map("external", external);
+    log_actor_map("internal", internal);
+    log_actor_map("simulation", simulation);
 
     //ActorCMap options_external =  scan_external();
-	ActorCMap options_internal =  scan_internal();
+
+    ActorCMap options_internal =  scan_internal();
+
     //hw_capabilities::check_req_options(internal, options_internal);
 
     // TODO: simulation -> check hw compatibility

@@ -6,15 +6,16 @@
 
 #include "RunStatus.h"
 
-/*namespace hw_capabilities {
+
+class hw_capabilities {
     using AssignmentMap = map<string, string>;
 
-    std::string run_command(const std::string &cmd);
+    /*std::string run_command(const std::string &cmd);
     std::string get_phy_from_iface(const std::string &iface);
     void reset();
     void ensure_iw_cached();
-
-    bool findSolution(
+    */
+    static bool findSolution(
         const std::vector<std::string>& ruleKeys,
         size_t ruleIdx,
         const ActorCMap& rules,
@@ -23,5 +24,5 @@
         AssignmentMap& currentAssignment
     );
 
-    void check_req_options(ActorCMap& rules, const ActorCMap& options);
-}*/
+    static void check_req_options(ActorCMap& rules, const ActorCMap& options);
+};

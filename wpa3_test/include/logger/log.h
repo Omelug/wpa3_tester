@@ -1,4 +1,5 @@
 #pragma once
+#include "config/RunStatus.h"
 
 enum class LogLevel {
     DEBUG,
@@ -9,3 +10,4 @@ enum class LogLevel {
 };
 
 void log(LogLevel level, const char *fmt, ...);
+void log_actor_map(const char *name, const ActorCMap &m);

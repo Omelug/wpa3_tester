@@ -14,3 +14,8 @@ count=more
 regexp=.*terminate called.*|.*CRITICAL:.*
 colours=bold white on_red
 count=more
+-
+regexp=.*DEBUG:.*
+colours=green
+count=more
+-

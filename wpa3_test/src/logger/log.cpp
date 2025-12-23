@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+#include "config/RunStatus.h"
+
 const char *levelToString(LogLevel level) {
     switch (level) {
         case LogLevel::DEBUG:    return "DEBUG";
@@ -36,3 +38,18 @@ void log(const LogLevel level, const char *fmt, ...) {
     const string msg(buf.data());
     cerr << levelToString(level) << ": " << msg << endl;
 }
+
+void log_actor_map(const char* name, const ActorCMap& m) {
+    std::string keys;
+    bool first = true;
+    for (const auto &k: m | views::keys) {
+        if (!first) keys += ", ";
+        keys += k;
+        first = false;
+    }
+    if (keys.empty()) {
+        keys = "<empty>";
+    }
+    log(LogLevel::DEBUG, "%s: %s", name, keys.c_str());
+}
+

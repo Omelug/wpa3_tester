@@ -144,8 +144,6 @@ tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
         const string& actor_name = it.key();
         const json &actor = it.value();
 
-        log(LogLevel::DEBUG, "Parsing Actor: %s", actor_name.c_str());
-
         string source = actor["source"];
         auto config_ptr = make_unique<Actor_config>(actor);
 

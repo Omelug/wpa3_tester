@@ -14,13 +14,13 @@ void hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
     error_code ec;
     fs::create_directories(folder, ec);
     if (ec) {
-        log(LogLevel::ERROR, "hostapd_config: failed to ensure run folder: {}: {}",folder.string(),ec.message());
+        log(LogLevel::ERROR, ("hostapd_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
         throw runtime_error("hostapd_config: unable to create run folder");
     }
 
     ofstream out(cfg_path);
     if (!out) {
-        log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
+        log(LogLevel::ERROR, ("hostapd_config: failed to open config file: " + cfg_path.string()).c_str());
         throw runtime_error("hostapd_config: unable to open config file");
     }
     // Minimal hostapd.conf based on provided JSON; use defaults if keys are missing
@@ -45,7 +45,7 @@ void hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
 
     out.close();
 
-    log(LogLevel::INFO, "hostapd_config: written {}", cfg_path.string());
+    log(LogLevel::INFO, ("hostapd_config: written " + cfg_path.string()).c_str());
 }
 void wpa_supplicant_config(const string& run_folder, const nlohmann::json& client_setup) {
     namespace fs = filesystem;
@@ -56,13 +56,13 @@ void wpa_supplicant_config(const string& run_folder, const nlohmann::json& clien
     error_code ec;
     fs::create_directories(folder, ec);
     if (ec) {
-        log(LogLevel::ERROR, "wpa_supplicant_config: failed to ensure run folder: {}: {}", folder.string(), ec.message());
+        log(LogLevel::ERROR, ("wpa_supplicant_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
         throw runtime_error("wpa_supplicant_config: unable to create run folder");
     }
 
     ofstream out(cfg_path);
     if (!out) {
-        log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
+        log(LogLevel::ERROR, ("wpa_supplicant_config: failed to open config file: " + cfg_path.string()).c_str());
         throw runtime_error("wpa_supplicant_config: unable to open config file");
     }
 
@@ -80,6 +80,5 @@ void wpa_supplicant_config(const string& run_folder, const nlohmann::json& clien
 
     out.close();
 
-    log(LogLevel::INFO, "wpa_supplicant_config: written {}", cfg_path.string());
+    log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
 }
-

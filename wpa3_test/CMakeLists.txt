@@ -8,24 +8,33 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 
 include(FetchContent)
 
+set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         argparse
         GIT_REPOSITORY https://github.com/p-ranav/argparse.git
         GIT_TAG v3.2
 )
 
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
         GIT_TAG         v3.12.0
 )
 
+set(JSON_VALIDATOR_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(JSON_VALIDATOR_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         json_schema_validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
         GIT_TAG fb270d5a7dc570f60db50e2d5bced90ead7ba362
         GIT_SHALLOW FALSE
 )
+
+set(DOCTEST_WITH_TESTS OFF CACHE BOOL "" FORCE)
+set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
+
 FetchContent_Declare(
         doctest
         GIT_REPOSITORY https://github.com/doctest/doctest.git
@@ -34,6 +43,8 @@ FetchContent_Declare(
 
 set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
+set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
 FetchContent_Declare(
         libtins
         GIT_REPOSITORY https://github.com/Omelug/libtins.git
@@ -41,19 +52,24 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 
+set(REPROCXX ON CACHE BOOL "" FORCE)
+set(REPROC++ ON)
+FetchContent_Declare(
+        reproc
+        GIT_REPOSITORY https://github.com/DaanDeMeyer/reproc
+        GIT_TAG        v14.2.5
+)
+
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(JSON_VALIDATOR_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(JSON_VALIDATOR_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
-set(DOCTEST_WITH_TESTS OFF CACHE BOOL "" FORCE)
-set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
-set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-
-FetchContent_MakeAvailable(libtins doctest argparse json json_schema_validator)
+FetchContent_MakeAvailable(
+        reproc
+        libtins
+        doctest
+        argparse
+        json
+        json_schema_validator
+)
 
 if(doctest_SOURCE_DIR)
         include_directories(${doctest_SOURCE_DIR})
@@ -78,6 +94,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${argparse_SOURCE_DIR}/include
         ${json_SOURCE_DIR}/include
         ${json_schema_validator_SOURCE_DIR}/src
+        ${reproc_SOURCE_DIR}/reproc++/include
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -87,6 +104,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         argparse::argparse
         doctest
         tins
+        reproc++
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

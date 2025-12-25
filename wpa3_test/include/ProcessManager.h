@@ -1,0 +1,22 @@
+#pragma once
+#include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <reproc++/reproc.hpp>
+#include <reproc++/drain.hpp>
+
+class ProcessManager{
+private:
+    std::map<std::string, std::unique_ptr<reproc::process>> processes;
+public:
+    ProcessManager() = default;
+    ~ProcessManager();
+
+    ProcessManager(const ProcessManager&) = delete;
+    ProcessManager& operator=(const ProcessManager&) = delete;
+
+    void run(const std::string& name, std::vector<std::string> cmd);
+    bool wait_for(const std::string& name, std::string pattern, int timeout_ms);
+    void stop_all();
+};

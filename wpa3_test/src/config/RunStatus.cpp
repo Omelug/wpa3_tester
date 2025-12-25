@@ -13,8 +13,8 @@ string RunStatus::findConfigByTestName(const string &name){
     throw config_error("Unknown test name: %s", name.c_str());
 }
 
-RunStatus::RunStatus(const int argc, char **argv){
-    argparse::ArgumentParser program("WPA3_tester", "1.0");
+RunStatus::RunStatus(const int argc, char **argv): pm(){
+	argparse::ArgumentParser program("WPA3_tester", "1.0");
 
     program.add_argument("--test")
             .help("Find name by test") // TODO add ---test_list to show

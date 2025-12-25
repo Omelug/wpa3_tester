@@ -6,6 +6,7 @@
 #include <tuple>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
+#include "ProcessManager.h"
 
 class Actor_config;
 using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
@@ -14,12 +15,14 @@ using AssignmentMap = std::map<std::string,std::string>;
 class RunStatus {
 public:
     nlohmann::json config;
+    std::string run_folder;
+
 	std::string configPath;
 	AssignmentMap internal_mapping;
 	ActorCMap external_actors;
 	ActorCMap internal_actors;
 	ActorCMap simulation_actors;
-	std::string run_folder;
+    ProcessManager pm;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);

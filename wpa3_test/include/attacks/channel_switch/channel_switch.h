@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ostream>
 #include <tins/tins.h>
+#include "config/RunStatus.h"
 
 using Tins::HWAddress;
 using Tins::NetworkInterface;
@@ -27,4 +28,5 @@ void check_vulnerable(const HWAddress<6>& ap_mac,
                       const string& ssid,
                       int ap_channel);
 
-void setup_attack();
+void setup_chs_attack(const RunStatus& rs);
+void run_chs_attack(const RunStatus& rs);

@@ -40,3 +40,13 @@ public:
         log(LogLevel::ERROR, runtime_error::what());
     }
 };
+
+class not_implemted_error : public tester_error {
+public:
+    template<typename... Args>
+    explicit not_implemted_error(std::string_view fmt, Args&&... args)
+        : tester_error(v_format(fmt, std::forward<Args>(args)...))
+    {
+        log(LogLevel::CRITICAL, runtime_error::what());
+    }
+};

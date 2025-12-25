@@ -1,3 +1,5 @@
 //TODO
 t: Actor with internal and AP should accept essid with different essid, but change it
 +: attacks setup catch
+f: add network manager off option for actors
++: check in setup_chs_attack actors are avaible

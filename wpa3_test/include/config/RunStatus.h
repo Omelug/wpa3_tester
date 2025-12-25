@@ -19,6 +19,7 @@ public:
 	ActorCMap external_actors;
 	ActorCMap internal_actors;
 	ActorCMap simulation_actors;
+	std::string run_folder;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);

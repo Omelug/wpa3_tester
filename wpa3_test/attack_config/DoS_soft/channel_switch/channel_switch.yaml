@@ -3,24 +3,24 @@ wizard_fallback: true
 attacker_module: channel_switch
 
 actors:
-  ap_target:
+  access_point:
     type: AP
     source: internal
     selection:
       condition: [AP]
     setup:
       program: hostapd
-      replace:
+      program_config:
         ssid: test_channel_switch
         password: password
-  sta_victim:
+  client:
     type: STA
     source: internal
     selection:
       condition: [monitor]
     setup:
       program: wpa_supplicant
-      replace:
+      program_config:
         ssid: test_channel_switch
         password: password
   attacker: #TODO bude potřeba nějak označit, že je to vstup pro attack module

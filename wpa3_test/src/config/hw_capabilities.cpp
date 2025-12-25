@@ -135,7 +135,7 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCM
         findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
         log(LogLevel::DEBUG, "Solved!");
         for (auto const& [r, o] : result) {
-            log(LogLevel::DEBUG, "Rule %s -> option %s", r.c_str(), o.c_str());
+            log(LogLevel::DEBUG, "\tActor %s -> interface %s", r.c_str(), o.c_str());
         }
 		return result;
     }

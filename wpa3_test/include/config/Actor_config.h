@@ -11,6 +11,7 @@ public:
 	std::optional<std::string>	iface;
     std::optional<std::string>	mac;
     std::optional<std::string>	essid;
+    std::optional<std::string>	driver;
 
 	std::map<std::string, std::optional<bool>> bool_conditions = {
         {"monitor", std::nullopt},

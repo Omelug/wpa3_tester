@@ -1,5 +1,5 @@
-set(CMAKE_MINIMUM_REQUIRED_VERSION 3.10)
-project(wpa3_tester LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.31)
+project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,6 +32,15 @@ FetchContent_Declare(
         GIT_TAG        v2.4.11 # Use the latest version
 )
 
+set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
+FetchContent_Declare(
+        libtins
+        GIT_REPOSITORY https://github.com/Omelug/libtins.git
+        GIT_TAG        master
+        GIT_SUBMODULES ""
+)
+
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -40,8 +49,11 @@ set(JSON_VALIDATOR_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 set(DOCTEST_WITH_TESTS OFF CACHE BOOL "" FORCE)
 set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
+set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(doctest argparse json json_schema_validator)
+
+FetchContent_MakeAvailable(libtins doctest argparse json json_schema_validator)
 
 if(doctest_SOURCE_DIR)
         include_directories(${doctest_SOURCE_DIR})
@@ -74,6 +86,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         nlohmann_json::nlohmann_json
         argparse::argparse
         doctest
+        tins
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

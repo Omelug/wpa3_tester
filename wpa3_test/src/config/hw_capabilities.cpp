@@ -1,14 +1,13 @@
-#include "../../include/config/hw_capabilities.h"
+#include "config/hw_capabilities.h"
+#include "config/RunStatus.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
 
 #include <string>
 #include <cstdio>
 #include <map>
 #include <set>
 #include <vector>
-
-#include "config/RunStatus.h"
-#include "logger/error_log.h"
-#include "logger/log.h"
 
 using namespace std;
 
@@ -127,7 +126,7 @@ bool hw_capabilities::findSolution(
     return false; // no valid option for this rule
 }
 
-void hw_capabilities::check_req_options(ActorCMap& rules, const ActorCMap& options) {
+AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCMap& options) {
     vector<string> ruleKeys;
     for (const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
@@ -138,7 +137,7 @@ void hw_capabilities::check_req_options(ActorCMap& rules, const ActorCMap& optio
         for (auto const& [r, o] : result) {
             log(LogLevel::DEBUG, "Rule %s -> option %s", r.c_str(), o.c_str());
         }
-    } else {
-        throw req_error("Not found valid requirements");
+		return result;
     }
+	throw req_error("Not found valid requirements");
 }

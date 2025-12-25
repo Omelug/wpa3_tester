@@ -1,24 +1,32 @@
 #pragma once
 #include <string>
+#include <map>
+#include <unordered_map>
+#include <memory>
+#include <tuple>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
 
-using namespace std;
-
-using ActorCMap = unordered_map<string, unique_ptr<Actor_config>>;
+class Actor_config;
+using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
+using AssignmentMap = std::map<std::string,std::string>;
 
 class RunStatus {
 public:
     nlohmann::json config;
-	string configPath;
-
+	std::string configPath;
+	AssignmentMap internal_mapping;
+	ActorCMap external_actors;
+	ActorCMap internal_actors;
+	ActorCMap simulation_actors;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);
     void config_validation();
     void config_requirement();
-	tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
+	std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
+	void setup_test();
 
 private:
-    static string findConfigByTestName(const string &name);
+    static std::string findConfigByTestName(const std::string &name);
 };

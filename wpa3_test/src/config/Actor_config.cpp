@@ -10,6 +10,7 @@ Actor_config::Actor_config(const json& j) {
         if (sel.contains("mac"))   mac = sel["mac"].get<string>();
         if (sel.contains("essid")) essid = sel["essid"].get<string>();
         if (sel.contains("iface")) iface = sel["iface"].get<string>();
+		if (sel.contains("driver")) driver = sel["driver"].get<std::string>();
 
         if (sel.contains("condition") && sel["condition"].is_array()) {
             for (const auto& cond_name : sel["condition"]) {
@@ -27,6 +28,7 @@ bool Actor_config::matches(const Actor_config& offer) {
     if (mac.has_value() && mac != offer.mac) return false;
     if (iface.has_value() && iface != offer.iface) return false;
     if (essid.has_value() && essid != offer.essid) return false;
+	if (driver && driver != offer.driver) return false;
 
     for (auto const& [key, required_val] : bool_conditions) {
         if (!required_val.has_value()) {

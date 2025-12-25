@@ -6,7 +6,6 @@
 
 #include "RunStatus.h"
 
-using AssignmentMap = map<string, string>;
 class hw_capabilities {
 public:
     static void ensure_iw_cached();
@@ -19,9 +18,9 @@ public:
         size_t ruleIdx,
         const ActorCMap& rules,
         const ActorCMap& options,
-        set<string>& usedOptions,
+        std::set<std::string>& usedOptions,
         AssignmentMap& currentAssignment
     );
 
-    static void check_req_options(ActorCMap& rules, const ActorCMap& options);
+    static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
 };

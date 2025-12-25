@@ -5,9 +5,9 @@ type: object
 required:
   - name
   - wizard_fallback
+  - attacker_module
   - actors
   - attack_config
-  - attack
 properties:
   name:
     type: string
@@ -17,17 +17,16 @@ properties:
     type: boolean
     description: If should be wizard asked after selection error
 
+  attacker_module:
+    type: string
+    description: Name of attacker_module
+
   actors:
     type: object
     description: Test actors definitions
-    required:
-      - target
-      - attacker
-    properties:
-      target:
-        $ref: '#/definitions/Actor'
-      attacker:
-        $ref: '#/definitions/Actor'
+    minProperties: 1  # At least one actor must be defined
+    additionalProperties:
+      $ref: '#/definitions/Actor'
 
   attack_config:
     type: object
@@ -38,10 +37,6 @@ properties:
       validator:
         type: string
         description: validator
-
-  attack:
-    type: string
-    description: Attack folder
 
 definitions:
   Actor: # Actor
@@ -75,6 +70,9 @@ definitions:
           iface:
             type: string
             description: Name of interface
+          driver:
+            type: string
+            description: driver of wifi card
           condition:
             type: array
             items:
@@ -82,6 +80,7 @@ definitions:
               enum: ["AP", "monitor", "2_4Gz", "5Gz", "WPA-PSK", "WPA3-SAE"]
             minItems: 1
             description: Condition for selection
+
     allOf:
       - if:
           properties:

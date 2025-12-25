@@ -102,13 +102,13 @@ digraph {
         ];
         log[label="logger from all processes"];
     }
-    legger_rewriter->log;
+    logger_rewriter->log;
     example_process_2 -> log;
     log -> wait_process_error;
     log -> wait_for_setup;
 
 
-    wait_for_setup -> run_tests[label="run tests"];
+    wait_for_setup -> run_tests;
     run_tests -> example_process_1 [label ="run function"];
     run_tests ->wait_for_all_process_end[label="wait for all process end"];
     wait_for_all_process_end -> end_of_test[label="wait for all proceses end (from internal return or log)"];

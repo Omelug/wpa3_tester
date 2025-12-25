@@ -1,0 +1,3 @@
+//TODO
+t: Actor with internal and AP should accept essid with different essid, but change it
++: attacks setup catch

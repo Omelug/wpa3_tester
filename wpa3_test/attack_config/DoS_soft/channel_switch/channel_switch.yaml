@@ -1,0 +1,38 @@
+name: channel_switch_test
+wizard_fallback: true
+attacker_module: channel_switch
+
+actors:
+  ap_target:
+    type: AP
+    source: internal
+    selection:
+      condition: [AP]
+    setup:
+      program: hostapd
+      replace:
+        ssid: test_channel_switch
+        password: password
+  sta_victim:
+    type: STA
+    source: internal
+    selection:
+      condition: [monitor]
+    setup:
+      program: wpa_supplicant
+      replace:
+        ssid: test_channel_switch
+        password: password
+  attacker: #TODO bude potřeba nějak označit, že je to vstup pro attack module
+    type: STA
+    source: internal
+    selection:
+      condition: [monitor]
+
+
+attack_config:
+  validator: ./channel_switch.schema.yaml
+  time_secs: 50
+  interval: 10
+  new_channel: 1
+

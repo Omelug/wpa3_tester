@@ -3,10 +3,12 @@
 using namespace std;
 
 
-static RunStatus r;
+static RunStatus runStatus;
 int main(const int argc, char *argv[])  {
-    r = RunStatus(argc,argv);
-    r.config_validation();
-    r.config_requirement();
+    runStatus = RunStatus(argc,argv);
+    runStatus.config_validation();
+    runStatus.config_requirement(); //include validation
+    runStatus.setup_test();
+
     return 0;
 }

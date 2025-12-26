@@ -3,10 +3,12 @@
 #include <cassert>
 #include "ex_program/hostapd/hostpad.h"
 #include "logger/log.h"
+#include <thread>
+#include <chrono>
 
 using namespace std;
 using namespace Tins;
-void send_CSA_beacon(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, const NetworkInterface& iface, const string& ssid, int ap_channel){
+void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid, int ap_channel){
 
     Dot11Beacon beacon;
     beacon.addr1(Dot11::BROADCAST);
@@ -31,8 +33,8 @@ void send_CSA_beacon(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, co
 void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, const string iface_name, const string& ssid, int ap_channel) {
 
     NetworkInterface iface(iface_name);
-    while(true) {
-        send_CSA_beacon(ap_mac, sta_mac, iface, ssid, ap_channel);
+    for(int i = 0; i < 500; i++) { //TODO
+        send_CSA_beacon(ap_mac, iface, ssid, ap_channel);
     }
 
     cout << "check_vulnerable called with:\n"
@@ -66,7 +68,7 @@ void setup_chs_attack(RunStatus& rs){
         hostapd_config_path
     };
     rs.process_manager.run("access_point", hostapd_args);
-    rs.process_manager.wait_for("access_point", ".*AP-ENABLED");
+    rs.process_manager.wait_for("access_point", "AP-ENABLED");
 	log(LogLevel::INFO, "access_point is running");
 
 	vector<string> wpa_supplicant_args = {
@@ -82,7 +84,9 @@ void setup_chs_attack(RunStatus& rs){
 }
 
 
-void run_chs_attack(RunStatus& rs){
-   throw not_implemted_error("Run not implemented");
+void run_chs_attack(RunStatus& runStatus){
+    std::this_thread::sleep_for(std::chrono::seconds(30));
+    throw not_implemented_error("Run not implemented");
     //check_vulnerable();
+
 }

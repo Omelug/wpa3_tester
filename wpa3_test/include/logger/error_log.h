@@ -41,10 +41,20 @@ public:
     }
 };
 
-class not_implemted_error : public tester_error {
+class setup_error : public tester_error {
 public:
     template<typename... Args>
-    explicit not_implemted_error(std::string_view fmt, Args&&... args)
+    explicit setup_error(std::string_view fmt, Args&&... args)
+        : tester_error(v_format(fmt, std::forward<Args>(args)...))
+    {
+        log(LogLevel::CRITICAL, runtime_error::what());
+    }
+};
+
+class not_implemented_error : public tester_error {
+public:
+    template<typename... Args>
+    explicit not_implemented_error(std::string_view fmt, Args&&... args)
         : tester_error(v_format(fmt, std::forward<Args>(args)...))
     {
         log(LogLevel::CRITICAL, runtime_error::what());

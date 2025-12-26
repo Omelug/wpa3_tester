@@ -23,7 +23,7 @@ actors:
       program_config:
         ssid: test_channel_switch
         password: password
-  attacker: #TODO bude potřeba nějak označit, že je to vstup pro attack module
+  attacker:
     type: STA
     source: internal
     selection:

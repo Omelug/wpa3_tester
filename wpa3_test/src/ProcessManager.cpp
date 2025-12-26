@@ -3,31 +3,33 @@
 #include <system_error>
 #include <map>
 #include <iostream>
+#include <ranges>
 #include <regex>
+
+#include "logger/error_log.h"
 
 using namespace std;
 
-void ProcessManager::run(const string& name, vector<string> cmd) {
+void ProcessManager::run(const string& name, const vector<string> &cmd) {
     auto proc = make_unique<reproc::process>();
     reproc::options options;
     options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
     options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
 
-    error_code ec = proc->start(cmd, options);
-    if (ec) {
+    if (const error_code ec = proc->start(cmd, options)) {
         throw runtime_error("Failed to start " + name + ": " + ec.message());
     }
 
     processes[name] = move(proc);
 }
 
-bool ProcessManager::wait_for(const string& name, const string& pattern) {
+void ProcessManager::wait_for(const string &name, const string &pattern) const{
     auto& proc = processes.at(name);
     string accumulator;
-    regex re(pattern);
+    const regex re(pattern);
     bool found = false;
 
-    auto sink = [&](reproc::stream stream, const uint8_t *buffer, size_t size) {
+    auto sink = [&](reproc::stream, const uint8_t *buffer, size_t size) {
         accumulator.append(reinterpret_cast<const char*>(buffer), size);
 
         size_t pos;
@@ -46,7 +48,9 @@ bool ProcessManager::wait_for(const string& name, const string& pattern) {
 
     reproc::drain(*proc, sink, sink);
 
-    return found;
+    if(!found){
+        throw setup_error("output not found");
+    }
 }
 
 ProcessManager::~ProcessManager() {
@@ -54,7 +58,7 @@ ProcessManager::~ProcessManager() {
 }
 
 void ProcessManager::stop_all() {
-    for (auto& [name, proc] : processes) {
+    for (auto &proc: processes | views::values) {
         if (proc) {
             reproc::stop_actions operations;
             operations.first = { reproc::stop::terminate, reproc::milliseconds(1000) };

@@ -16,10 +16,9 @@ using std::endl;
 
 extern volatile bool g_stop;
 
-void send_CSA_beacon(const HWAddress<6>& ap_mac,
-                     const HWAddress<6>& sta_mac,
-                     const NetworkInterface& iface,
-                     const string& ssid,
+void send_CSA_beacon(const HWAddress<6> &ap_mac,
+                     const NetworkInterface &iface,
+                     const string &ssid,
                      int ap_channel);
 
 void check_vulnerable(const HWAddress<6>& ap_mac,

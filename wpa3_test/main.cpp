@@ -10,7 +10,7 @@ static RunStatus* globalRunStatus = nullptr;
 
 void signal_handler(int signum) {
     if (globalRunStatus) {
-        globalRunStatus->pm.stop_all();
+        globalRunStatus->process_manager.stop_all();
     }
     std::exit(signum);
 }

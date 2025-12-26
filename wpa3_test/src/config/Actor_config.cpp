@@ -31,9 +31,7 @@ bool Actor_config::matches(const Actor_config& offer) {
 	if (driver && driver != offer.driver) return false;
 
     for (auto const& [key, required_val] : bool_conditions) {
-        if (!required_val.has_value()) {
-            continue;
-        }
+        if (!required_val.has_value()) {continue;}
         if (auto it = offer.bool_conditions.find(key);
             it == offer.bool_conditions.end() || it->second != required_val) {
             return false;

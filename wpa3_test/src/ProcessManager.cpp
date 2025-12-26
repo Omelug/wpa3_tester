@@ -7,21 +7,21 @@
 
 using namespace std;
 
-void ProcessManager::run(const std::string& name, std::vector<std::string> cmd) {
-    auto proc = std::make_unique<reproc::process>();
+void ProcessManager::run(const string& name, vector<string> cmd) {
+    auto proc = make_unique<reproc::process>();
     reproc::options options;
     options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
     options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
 
-    std::error_code ec = proc->start(cmd, options);
+    error_code ec = proc->start(cmd, options);
     if (ec) {
-        throw std::runtime_error("Failed to start " + name + ": " + ec.message());
+        throw runtime_error("Failed to start " + name + ": " + ec.message());
     }
 
-    processes[name] = std::move(proc);
+    processes[name] = move(proc);
 }
 
-bool ProcessManager::wait_for(const string& name, string pattern, int timeout_ms) {
+bool ProcessManager::wait_for(const string& name, const string& pattern) {
     auto& proc = processes.at(name);
     string accumulator;
     regex re(pattern);
@@ -38,10 +38,10 @@ bool ProcessManager::wait_for(const string& name, string pattern, int timeout_ms
 
             if (regex_search(line, re)) {
                 found = true;
-              	return std::make_error_code(std::errc::interrupted);
+              	return make_error_code(errc::interrupted);
             }
         }
-       	return std::error_code();
+       	return error_code();
     };
 
     reproc::drain(*proc, sink, sink);
@@ -50,18 +50,15 @@ bool ProcessManager::wait_for(const string& name, string pattern, int timeout_ms
 }
 
 ProcessManager::~ProcessManager() {
-    stop_all(); // ensure processes are terminated when manager is destroyed
+    stop_all();
 }
 
 void ProcessManager::stop_all() {
     for (auto& [name, proc] : processes) {
         if (proc) {
-            // Nemusíme se ptát, jestli běží, stop() to vyřeší za nás
             reproc::stop_actions operations;
             operations.first = { reproc::stop::terminate, reproc::milliseconds(1000) };
             operations.second = { reproc::stop::kill, reproc::milliseconds(1000) };
-
-            // Ignorujeme případnou chybu, pokud proces už neexistoval
             proc->stop(operations);
         }
     }

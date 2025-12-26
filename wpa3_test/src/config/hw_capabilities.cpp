@@ -3,77 +3,131 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 
+#include <net/if.h>
+#include <netlink/netlink.h>
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+#include <linux/nl80211.h>
+
 #include <string>
 #include <cstdio>
 #include <map>
 #include <set>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
-namespace {
-    std::string g_iw_cache; // cached output of `iw dev`
-}
 
-void hw_capabilities::ensure_iw_cached() {
-    if (!g_iw_cache.empty()) {
-        return; // already cached
+
+int hw_capabilities::nl80211_cb(struct nl_msg *msg, void *arg) {
+    auto *caps = static_cast<NlCaps*>(arg);
+
+    nlattr *attrs[NL80211_ATTR_MAX + 1];
+    genlmsghdr *gnlh = (genlmsghdr*) nlmsg_data(nlmsg_hdr(msg));
+
+    nla_parse(attrs, NL80211_ATTR_MAX,
+              genlmsg_attrdata(gnlh, 0),
+              genlmsg_attrlen(gnlh, 0), nullptr);
+
+    // supported iftypes → monitor
+    if (attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {
+        nlattr *ift;
+        int rem;
+        nla_for_each_nested(ift, attrs[NL80211_ATTR_SUPPORTED_IFTYPES], rem) {
+            if (nla_type(ift) == NL80211_IFTYPE_MONITOR)
+                caps->monitor = true;
+        }
     }
-    const string cmd = "iw dev";
-    g_iw_cache = run_command(cmd);
-}
 
-string hw_capabilities::get_iw_cache() {
-    ensure_iw_cached();
-    return g_iw_cache;
-}
-
-string hw_capabilities::run_command(const string &cmd) {
-    array<char, 4096> buf{};
-    string result;
-
-    FILE *pipe = popen(cmd.c_str(), "r");
-    if (!pipe) {return {};}
-
-    while (fgets(buf.data(), buf.size(), pipe) != nullptr) {
-        result.append(buf.data());
+    // bands
+    if (attrs[NL80211_ATTR_WIPHY_BANDS]) {
+        nlattr *band;
+        int rem;
+        nla_for_each_nested(band, attrs[NL80211_ATTR_WIPHY_BANDS], rem) {
+            if (nla_type(band) == NL80211_BAND_2GHZ) caps->band24 = true;
+            if (nla_type(band) == NL80211_BAND_5GHZ) caps->band5 = true;
+        }
     }
-    pclose(pipe);
+
+    // AKM suites
+    if (attrs[NL80211_ATTR_AKM_SUITES]) {
+        nlattr *akm;
+        int rem;
+        nla_for_each_nested(akm, attrs[NL80211_ATTR_AKM_SUITES], rem) {
+            uint32_t v = nla_get_u32(akm);
+            if (v == WLAN_AKM_SUITE_PSK) caps->wpa2_psk = true;
+            if (v == WLAN_AKM_SUITE_SAE) caps->wpa3_sae = true;
+        }
+    }
+
+    return NL_OK;
+}
+
+NlCaps hw_capabilities::get_nl80211_caps(const std::string& iface) {
+    NlCaps caps;
+
+    int ifindex = if_nametoindex(iface.c_str());
+    if (!ifindex) return caps;
+
+    nl_sock *sock = nl_socket_alloc();
+    genl_connect(sock);
+
+    int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
+
+    nl_msg *msg = nlmsg_alloc();
+    genlmsg_put(msg, 0, 0, nl80211_id, 0, 0,
+                NL80211_CMD_GET_WIPHY, 0);
+
+    nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
+
+    nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM,
+                        nl80211_cb, &caps);
+
+    nl_send_auto(sock, msg);
+    nl_recvmsgs_default(sock);
+
+    nlmsg_free(msg);
+    nl_socket_free(sock);
+
+    return caps;
+}
+
+string hw_capabilities::read_sysfs(const string& iface, const string& file) {
+    // Cesta vypadá např. takto: /sys/class/net/wlan0/address
+    string path = "/sys/class/net/" + iface + "/" + file;
+
+    ifstream ifs(path);
+    if (!ifs.is_open()) {
+        return ""; //TODO error?
+    }
+
+    string content;
+    getline(ifs, content);
+    if (!content.empty() && content.back() == '\n') content.pop_back();
+
+    return content;
+}
+string hw_capabilities::get_driver_name(const string& iface) {
+    string path = "/sys/class/net/" + iface + "/device/driver";
+
+    try {
+        if (filesystem::exists(path) && filesystem::is_symlink(path)) {
+            return filesystem::read_symlink(path).filename().string();
+        }
+    } catch (const filesystem::filesystem_error& e) {
+        return "";
+    }
+    return "";
+}
+vector<string> hw_capabilities::list_interfaces() {
+    vector<string> result;
+    for (auto &p : filesystem::directory_iterator("/sys/class/net")) {
+        result.push_back(p.path().filename());
+    }
     return result;
 }
 
-string hw_capabilities::get_phy_from_iface(const string &iface) {
-    string out = get_iw_cache();
-    if (out.empty()) {return {};}
-
-    string current_phy;
-    const string phy_prefix = "phy#";
-    const string iface_prefix = "\tInterface ";
-
-    size_t pos = 0;
-    while (pos < out.size()) {
-        size_t end = out.find('\n', pos);
-        if (end == string::npos) end = out.size();
-
-        string line = out.substr(pos, end - pos);
-        if (line.rfind(phy_prefix, 0) == 0) {
-            current_phy = line.substr(phy_prefix.size());
-        } else if (line.rfind(iface_prefix, 0) == 0) {
-            string name = line.substr(iface_prefix.size());
-            // strip trailing spaces / CR
-            while (!name.empty() && isspace(static_cast<unsigned char>(name.back()))) {
-                name.pop_back();
-            }
-            if (name == iface) {return current_phy;}
-        }
-        pos = end + 1;
-    }
-    return {};
-}
-
-void hw_capabilities::reset() {
-    g_iw_cache = nullptr;
-}
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
@@ -86,9 +140,7 @@ bool hw_capabilities::findSolution(
     AssignmentMap& currentAssignment
 ){
     // all set? -> solution found
-    if (ruleIdx == ruleKeys.size()) {
-        return true;
-    }
+    if (ruleIdx == ruleKeys.size()) {return true;}
 
     const string& currentRuleKey = ruleKeys[ruleIdx];
     const auto &ruleIt = rules.find(currentRuleKey);
@@ -98,27 +150,20 @@ bool hw_capabilities::findSolution(
     Actor_config& currentRuleReq = *ruleIt->second;
 
     for (auto const& [optKey, optConfigPtr] : options) {
-        if (!optConfigPtr) {
-            continue; // skip empty
-        }
-        if (usedOptions.contains(optKey)) {
-            continue; // already used this option
-        }
+        if (!optConfigPtr) {continue;} // skip empty
+        if (usedOptions.contains(optKey)) {continue;} // already used this option
 
         Actor_config& optConfig = *optConfigPtr;
-        if (!currentRuleReq.matches(optConfig)) {
-            continue;
-        }
+        if (!currentRuleReq.matches(optConfig)) {continue;} // node found
 
-        // choose this option for current rule
         usedOptions.insert(optKey);
         currentAssignment[currentRuleKey] = optKey;
 
         if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) {
-            return true; // valid assignment found
+            return true; // found in sub-tree
         }
 
-        // backtrack
+        // back in tree
         usedOptions.erase(optKey);
         currentAssignment.erase(currentRuleKey);
     }
@@ -137,7 +182,22 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCM
         for (auto const& [r, o] : result) {
             log(LogLevel::DEBUG, "\tActor %s -> interface %s", r.c_str(), o.c_str());
         }
-		return result;
+
+		//set options properties to result
+        for (auto &ruleEntry : rules) {
+            const string &actorName = ruleEntry.first;
+            auto resIt = result.find(actorName);
+            if (resIt == result.end()) {continue;}
+
+            const string &optKey = resIt->second;
+            auto optIt = options.find(optKey);
+            if (optIt == options.end() || !optIt->second) {
+                throw config_error("Selected option %s for actor %s not found in options", optKey.c_str(), actorName.c_str());
+            }
+            ruleEntry.second = make_unique<Actor_config>(*optIt->second);
+        }
+
+        return result;
     }
-	throw req_error("Not found valid requirements");
+    throw req_error("Not found valid requirements");
 }

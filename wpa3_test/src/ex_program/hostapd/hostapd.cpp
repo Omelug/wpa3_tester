@@ -5,7 +5,7 @@
 #include "logger/log.h"
 
 using namespace std;
-void hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
+string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
     namespace fs = filesystem;
 
     fs::path folder(run_folder);
@@ -46,8 +46,9 @@ void hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
     out.close();
 
     log(LogLevel::INFO, ("hostapd_config: written " + cfg_path.string()).c_str());
+    return cfg_path.string();
 }
-void wpa_supplicant_config(const string& run_folder, const nlohmann::json& client_setup) {
+string wpa_supplicant_config(const string& run_folder, const nlohmann::json& client_setup) {
     namespace fs = filesystem;
 
     fs::path folder(run_folder);
@@ -81,4 +82,5 @@ void wpa_supplicant_config(const string& run_folder, const nlohmann::json& clien
     out.close();
 
     log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
+    return cfg_path.string();
 }

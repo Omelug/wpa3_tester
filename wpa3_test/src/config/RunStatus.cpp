@@ -13,7 +13,7 @@ string RunStatus::findConfigByTestName(const string &name){
     throw config_error("Unknown test name: %s", name.c_str());
 }
 
-RunStatus::RunStatus(const int argc, char **argv): pm(){
+RunStatus::RunStatus(const int argc, char **argv): process_manager(){
 	argparse::ArgumentParser program("WPA3_tester", "1.0");
 
     program.add_argument("--test")

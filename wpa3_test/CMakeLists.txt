@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.5)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#libtins a libwifi mají oba target uninstall
+set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 
 include(FetchContent)
@@ -45,6 +47,7 @@ set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
+set(LIBTINS_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         libtins
         GIT_REPOSITORY https://github.com/Omelug/libtins.git
@@ -86,6 +89,9 @@ file(GLOB_RECURSE SOURCES
 )
 list(APPEND SOURCES "../wpa3_test/main.cpp")
 
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -95,6 +101,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${json_SOURCE_DIR}/include
         ${json_schema_validator_SOURCE_DIR}/src
         ${reproc_SOURCE_DIR}/reproc++/include
+        ${LIBNL_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -105,6 +112,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         doctest
         tins
         reproc++
+        nl-3 nl-genl-3
+        ${LIBNL_LIBRARIES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

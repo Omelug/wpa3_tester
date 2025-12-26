@@ -3,136 +3,36 @@
 #include "../../include/config/hw_capabilities.h"
 #include "../../include/logger/error_log.h"
 #include "../../include/logger/log.h"
+
 #include <iostream>
 #include <sstream>
 
 using namespace std;
 using nlohmann::json;
 
-// Helper: parse iw phy <phy> info text into capability flags
-struct IfaceCapabilities {
-    bool monitor = false;
-    bool has_24 = false;
-    bool has_5 = false;
-    bool wpa_psk = false;
-    bool wpa3_sae = false;
-};
 
-static IfaceCapabilities parse_iw_phy_info(const std::string& text) {
-    IfaceCapabilities caps;
-    if (text.empty()) return caps;
-
-    istringstream iss(text);
-    string line;
-    bool in_if_modes = false;
-
-    while (getline(iss, line)) {
-        // interface modes
-        if (line.find("Supported interface modes:") != string::npos) {
-            in_if_modes = true;
-            continue;
-        }
-        if (in_if_modes) {
-            if (line.find("\t") == string::npos && line.find("  ") == string::npos) {
-                in_if_modes = false;
-            } else if (line.find("monitor") != string::npos) {
-                caps.monitor = true;
-            }
-        }
-
-        // crude freq detection
-        auto mhz_pos = line.find(" MHz");
-        if (mhz_pos != string::npos) {
-            size_t start = line.rfind(' ', mhz_pos);
-            if (start != string::npos && start + 1 < mhz_pos) {
-                try {
-                    int freq = stoi(line.substr(start + 1, mhz_pos - (start + 1)));
-                    if (freq >= 2000 && freq < 3000) caps.has_24 = true;
-                    if (freq >= 4900 && freq < 6000) caps.has_5 = true;
-                } catch (...) {
-                    // ignore parse errors
-                }
-            }
-        }
-
-        // very simple WPA capability hints (only if present)
-        if (line.find("WPA-PSK") != string::npos || line.find("WPA2-PSK") != string::npos) {
-            caps.wpa_psk = true;
-        }
-        if (line.find("SAE") != string::npos || line.find("WPA3") != string::npos) {
-            caps.wpa3_sae = true;
-        }
-    }
-
-    return caps;
-}
-
-// Parse cached `iw dev` output into ActorCMap of internal options, then
-// for each iface run `iw phy <phy> info` and fill capability flags.
-static ActorCMap parse_iw_to_actors_with_caps(const std::string& iw_dev_output) {
-    ActorCMap result;
-    if (iw_dev_output.empty()) {
-        return result;
-    }
-
-    istringstream iss(iw_dev_output);
-    string line;
-
-    string current_phy_name;
-    const string phy_prefix = "phy#";
-    const string iface_prefix = "\tInterface ";
-
-    while (getline(iss, line)) {
-        if (line.rfind(phy_prefix, 0) == 0) {
-            current_phy_name = line.substr(phy_prefix.size());
-            continue;
-        }
-        if (line.rfind(iface_prefix, 0) == 0 && !current_phy_name.empty()) {
-            string iface = line.substr(iface_prefix.size());
-            while (!iface.empty() && isspace(static_cast<unsigned char>(iface.back()))) {
-                iface.pop_back();
-            }
-
-            // resolve phy for this iface and query iw phy <phy> info
-            string phy_id = hw_capabilities::get_phy_from_iface(iface);
-            string iw_phy_info;
-            if (!phy_id.empty()) {
-                string cmd = "iw phy phy" + phy_id + " info";
-                iw_phy_info = hw_capabilities::run_command(cmd);
-            }
-
-            IfaceCapabilities caps = parse_iw_phy_info(iw_phy_info);
-
-            json actor;
-            actor["selection"]["iface"] = iface;
-            auto &cond = actor["selection"]["condition"];
-            cond = json::array();
-            if (caps.monitor)  cond.push_back("monitor");
-            if (caps.has_24)   cond.push_back("2_4Gz");
-            if (caps.has_5)    cond.push_back("5GHz");
-            if (caps.wpa_psk)  cond.push_back("WPA-PSK");
-            if (caps.wpa3_sae) cond.push_back("WPA3-SAE");
-
-            auto cfg = std::make_unique<Actor_config>(actor);
-            result.emplace(iface, std::move(cfg));
-        }
-    }
-
-    return result;
-}
-
-ActorCMap scan_internal(){
+ActorCMap scan_internal() {
     ActorCMap options_map;
-    hw_capabilities::ensure_iw_cached();
 
-    std::string iw_dev_output = hw_capabilities::get_iw_cache();
-    if (iw_dev_output.empty()) {
-        log(LogLevel::ERROR, "iw dev returned empty output; no internal interfaces detected");
-        return options_map;
+    for (const auto& iface_name : hw_capabilities::list_interfaces()) {
+
+        json actor_json;
+        actor_json["selection"]["iface"] = iface_name;
+        auto cfg = std::make_unique<Actor_config>(actor_json);
+
+        cfg->mac = hw_capabilities::read_sysfs(iface_name, "address");
+        cfg->driver = hw_capabilities::get_driver_name(iface_name);
+
+        NlCaps caps =  hw_capabilities::get_nl80211_caps(iface_name);
+
+        cfg->bool_conditions["monitor"]   = caps.monitor;
+        cfg->bool_conditions["2_4GHz"]    = caps.band24;
+        cfg->bool_conditions["5GHz"]      = caps.band5;
+        cfg->bool_conditions["WPA-PSK"]   = caps.wpa2_psk;
+        cfg->bool_conditions["WPA3-SAE"]  = caps.wpa3_sae;
+
+        options_map.emplace(iface_name, std::move(cfg));
     }
-
-    options_map = parse_iw_to_actors_with_caps(iw_dev_output);
-    log(LogLevel::DEBUG, "Parsed %zu internal interface option(s) from iw dev/iw phy", options_map.size());
     return options_map;
 }
 
@@ -180,6 +80,9 @@ void RunStatus::config_requirement() {
 
     ActorCMap options_internal =  scan_internal();
     internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
+	//TODO setup_requirements(internal_actors);
+
+	//log_actor_configs(internal_actors);
 
     // TODO: simulation -> check hw compatibility
     //ActorCMap options_external =  create_simulation();

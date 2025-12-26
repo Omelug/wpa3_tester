@@ -22,7 +22,7 @@ public:
 	ActorCMap external_actors;
 	ActorCMap internal_actors;
 	ActorCMap simulation_actors;
-    ProcessManager pm;
+    ProcessManager process_manager;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);

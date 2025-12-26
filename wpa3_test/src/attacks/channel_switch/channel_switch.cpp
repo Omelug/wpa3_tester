@@ -2,6 +2,7 @@
 #include "logger/error_log.h"
 #include <cassert>
 #include "ex_program/hostapd/hostpad.h"
+#include "logger/log.h"
 
 using namespace std;
 using namespace Tins;
@@ -44,28 +45,44 @@ void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, c
 
 
 // ----------------- MODULE functions ------------------
-void setup_chs_attack(const RunStatus& rs){
+void setup_chs_attack(RunStatus& rs){
+
+    //log_actor_configs(rs.internal_actors);
 
     if (rs.config["actors"]["access_point"]["source"] != "internal") {
-        throw std::runtime_error("only internal access_point is supported");
+        throw runtime_error("only internal access_point is supported");
     }
     if (rs.config["actors"]["client"]["source"] != "internal") {
-        throw std::runtime_error("only internal access_point is supported");
+        throw runtime_error("only internal access_point is supported");
     }
 
-    hostapd_config(rs.run_folder, rs.config["actors"]["access_point"]["setup"]["program_config"]);
-    wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
+    const string hostapd_config_path = hostapd_config(rs.run_folder, rs.config["actors"]["access_point"]["setup"]["program_config"]);
+    const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
 
-    // process_run(access_point);
+    vector<string> hostapd_args = {
+        "hostapd",
+        "-i",
+        rs.internal_actors.at("access_point")->iface.value(),
+        hostapd_config_path
+    };
+    rs.process_manager.run("access_point", hostapd_args);
+    rs.process_manager.wait_for("access_point", ".*AP-ENABLED");
+	log(LogLevel::INFO, "access_point is running");
 
-    // if internal
-    // wait_for(access_point, ".*AP-ENABLED", )
-    // process_run(client);
-    // wait_for(client, );
+	vector<string> wpa_supplicant_args = {
+        "wpa_supplicant",
+        "-i",
+        rs.internal_actors.at("client")->iface.value(),
+		"-c",
+    	wpa_supp_config_path
+	};
+	rs.process_manager.run("client", wpa_supplicant_args);
+    rs.process_manager.wait_for("client", "CONNECTED");
+	log(LogLevel::INFO, "client is connected");
 }
 
 
-void run_chs_attack(const RunStatus& rs){
+void run_chs_attack(RunStatus& rs){
    throw not_implemted_error("Run not implemented");
     //check_vulnerable();
 }

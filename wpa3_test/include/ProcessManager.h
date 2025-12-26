@@ -17,6 +17,6 @@ public:
     ProcessManager& operator=(const ProcessManager&) = delete;
 
     void run(const std::string& name, std::vector<std::string> cmd);
-    bool wait_for(const std::string& name, std::string pattern, int timeout_ms);
+    bool wait_for(const std::string& name, const  std::string& pattern) ;
     void stop_all();
 };

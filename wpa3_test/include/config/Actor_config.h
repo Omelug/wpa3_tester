@@ -6,7 +6,7 @@
 
 class Actor_config {
 public:
-	Actor_config(const nlohmann::json& j);
+    explicit Actor_config(const nlohmann::json& j);
 	bool matches(const Actor_config &offer);
 	std::optional<std::string>	iface;
     std::optional<std::string>	mac;

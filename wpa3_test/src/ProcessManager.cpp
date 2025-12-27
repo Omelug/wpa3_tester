@@ -7,12 +7,11 @@
 #include <regex>
 #include <chrono>
 #include <iomanip>
-
+#include <reproc++/drain.hpp>
 #include "logger/error_log.h"
 
 using namespace std;
 
-namespace {
 string current_timestamp() {
     using clock = chrono::system_clock;
     const auto now = clock::now();
@@ -23,6 +22,10 @@ string current_timestamp() {
     strftime(out, sizeof(out), "%Y-%m-%d %H:%M:%S", &buf);
     return out;
 }
+
+void ProcessManager::write_log_line(ofstream &os, const string &line) {
+    os << line << '\n';
+    os.flush();
 }
 
 void ProcessManager::init_logging(const std::string &run_folder){
@@ -52,7 +55,7 @@ void ProcessManager::init_logging(const std::string &run_folder){
     }
 
     // open combined log file <run_folder>/logger/all.log
-    fs::path combined_path = log_base_dir / "all.log";
+    const fs::path combined_path = log_base_dir / "all.log";
     combined_log.close();
     combined_log.open(combined_path, ios::out | ios::trunc);
     if (!combined_log.is_open()) {
@@ -61,9 +64,22 @@ void ProcessManager::init_logging(const std::string &run_folder){
             combined_path.string().c_str());
         throw runtime_error("Unable to open combined log file");
     }
+
+    // close and clear any per-process log files from a previous run
+    for (auto &val: process_logs | views::values) {
+        if (val.stdout_log.is_open()) {
+            val.stdout_log.close();
+        }
+        if (val.stderr_log.is_open()) {
+            val.stderr_log.close();
+        }
+    }
+    process_logs.clear();
 }
 
 void ProcessManager::run(const string& name, const vector<string> &cmd) {
+    namespace fs = std::filesystem;
+
     auto proc = make_unique<reproc::process>();
     reproc::options options;
     options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
@@ -73,28 +89,84 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
         throw runtime_error("Failed to start " + name + ": " + ec.message());
     }
 
+    // prepare per-process log files and remember them
+    fs::path stdout_path = log_base_dir / (name + ".stdout.log");
+    fs::path stderr_path = log_base_dir / (name + ".stderr.log");
+
+    auto &logs = process_logs[name];
+
+    logs.stdout_log.close();
+    logs.stderr_log.close();
+
+    logs.stdout_log.open(stdout_path, ios::out | ios::trunc);
+    if (!logs.stdout_log.is_open()) {
+        log(LogLevel::ERROR,
+            "Failed to open stdout log for %s: %s",
+            name.c_str(), stdout_path.string().c_str());
+    }
+
+    logs.stderr_log.open(stderr_path, ios::out | ios::trunc);
+    if (!logs.stderr_log.is_open()) {
+        log(LogLevel::ERROR,
+            "Failed to open stderr log for %s: %s",
+            name.c_str(), stderr_path.string().c_str());
+    }
+
+    // log the start command to both per-process logs and combined log
+    string cmd_line;
+    for (size_t i = 0; i < cmd.size(); ++i) {
+        if (i) cmd_line += ' ';
+        cmd_line += cmd[i];
+    }
+    const string prefix = current_timestamp() + " [" + name + "] [cmd] ";
+    const string line   = prefix + cmd_line;
+
+    if (combined_log.is_open()) {
+        write_log_line(combined_log, line);
+    }
+    if (logs.stdout_log.is_open()) {
+        write_log_line(logs.stdout_log, line);
+    }
+
     processes[name] = std::move(proc);
 }
 
-void ProcessManager::wait_for(const string &name, const string &pattern) const{
-    auto& proc = processes.at(name);
+void ProcessManager::wait_for(const string &name, const string &pattern){
+    const auto& proc = processes.at(name);
     string accumulator_out;
     string accumulator_err;
     const regex re(pattern);
     bool found = false;
 
     auto make_sink = [&](const string& process_name, const string& label, string& accumulator) {
-        return [process_name, label, &accumulator, re, &found](reproc::stream, const uint8_t* buffer, const size_t size) {
+        return [this, process_name, label, &accumulator, re, &found](reproc::stream, const uint8_t* buffer, const size_t size) {
             const string data(reinterpret_cast<const char*>(buffer), size);
             accumulator.append(data);
 
             const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
-        
+
             stringstream ss(data);
             string line;
             while (getline(ss, line)) {
                 if (!line.empty()) {
-                    cout << prefix << line << endl;
+                    const string full_line = prefix + line;
+
+                    if (combined_log.is_open()) {
+                        write_log_line(combined_log, full_line);
+                    }
+
+                    auto it = process_logs.find(process_name);
+                    if (it != process_logs.end()) {
+                        std::ofstream *target = nullptr;
+                        if (label == "stdout") {
+                            target = &it->second.stdout_log;
+                        } else if (label == "stderr") {
+                            target = &it->second.stderr_log;
+                        }
+                        if (target && target->is_open()) {
+                            write_log_line(*target, full_line);
+                        }
+                    }
                 }
                 if (regex_search(line, re)) {
                     found = true;
@@ -106,10 +178,14 @@ void ProcessManager::wait_for(const string &name, const string &pattern) const{
         };
     };
 
-    auto out_sink = make_sink("access_point", "stdout", accumulator_out);
-    auto err_sink = make_sink("access_point", "stderr", accumulator_err); 
+    auto out_sink = make_sink(name, "stdout", accumulator_out);
+    auto err_sink = make_sink(name, "stderr", accumulator_err);
 
-    reproc::drain(*proc, out_sink, err_sink);
+    if (const std::error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
+        if (ec != errc::interrupted) {
+            log(LogLevel::ERROR, "Drain failed: %s", ec.message().c_str());
+        }
+    }
 
     if(!found){
         throw setup_error("output not found (probably end of process)");
@@ -119,12 +195,16 @@ void ProcessManager::wait_for(const string &name, const string &pattern) const{
 ProcessManager::~ProcessManager() {
     stop_all();
     combined_log.close();
+    for (auto &val: process_logs | views::values) {
+        if (val.stdout_log.is_open()) val.stdout_log.close();
+        if (val.stderr_log.is_open()) val.stderr_log.close();
+    }
 }
 
 void ProcessManager::stop_all() {
     for (auto &proc: processes | views::values) {
         if (proc) {
-            reproc::stop_actions operations;
+            reproc::stop_actions operations{};
             operations.first = { reproc::stop::terminate, reproc::milliseconds(1000) };
             operations.second = { reproc::stop::kill, reproc::milliseconds(1000) };
             proc->stop(operations);

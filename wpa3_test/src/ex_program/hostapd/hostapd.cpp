@@ -67,7 +67,7 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
         throw runtime_error("wpa_supplicant_config: unable to open config file");
     }
 
-    // Minimal wpa_supplicant.conf based on provided JSON; use defaults if keys are missing
+    // wpa_supplicant.conf
     const auto iface      = client_setup.value("interface", string{"wlan1"});
     const auto ssid       = client_setup.value("ssid",      string{"wpa3_test"});
     const auto passphrase = client_setup.value("psk",       string{"password123"});

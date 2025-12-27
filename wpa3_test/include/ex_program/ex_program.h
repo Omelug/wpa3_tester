@@ -6,6 +6,6 @@
 
 void run_hostapd();
 
-std::map<std::string, std::function<void()>> run_process = {
+inline std::map<std::string, std::function<void()>> run_process = {
     {"hostapd", run_hostapd}
 };

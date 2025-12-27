@@ -4,18 +4,14 @@
 #include "../../include/logger/error_log.h"
 #include "../../include/logger/log.h"
 
-#include <iostream>
-#include <sstream>
-
 using namespace std;
 using nlohmann::json;
-
 
 ActorCMap scan_internal() {
     ActorCMap options_map;
 
-    for (const auto& iface_name : hw_capabilities::list_interfaces()) {
-
+    for (auto [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
+        if(iface_type != InterfaceType::Wifi) continue; //TODO
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;
         auto cfg = std::make_unique<Actor_config>(actor_json);
@@ -78,7 +74,7 @@ void RunStatus::config_requirement() {
     log_actor_map("internal", internal_actors);
     log_actor_map("simulation", simulation_actors);
 
-    ActorCMap options_internal =  scan_internal();
+    const ActorCMap options_internal =  scan_internal();
     internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
 	//TODO setup_requirements(internal_actors);
 

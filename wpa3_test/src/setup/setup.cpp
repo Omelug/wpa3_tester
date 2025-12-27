@@ -2,6 +2,8 @@
 #include "logger/log.h"
 #include "attacks/attacks.h"
 #include <filesystem>
+#include <iostream>
+using namespace std;
 
 void RunStatus::setup_test(){
 
@@ -14,7 +16,7 @@ void RunStatus::setup_test(){
     std::error_code ec;
     fs::create_directories(data_root, ec);
     if (ec) {
-        std::cerr << "CRITICAL ERROR: " << last_run.string() << " Error: " << ec.message() << std::endl;
+        cerr << "CRITICAL ERROR: " << last_run.string() << " Error: " << ec.message() << std::endl;
         log(LogLevel::ERROR, "Failed to create run base directory: %s: %s", data_root.string().c_str(), ec.message().c_str());
         throw std::runtime_error("Unable to create run base directory");
     }

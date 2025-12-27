@@ -1,10 +1,6 @@
 #pragma once
 
-#include <net/if.h>
 #include <netlink/netlink.h>
-#include <netlink/genl/genl.h>
-#include <netlink/genl/ctrl.h>
-#include <linux/nl80211.h>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,6 +10,32 @@
 #define WLAN_AKM_SUITE_PSK 0x000FAC02
 #define WLAN_AKM_SUITE_SAE 0x000FAC08
 
+enum class InterfaceType {
+    Unknown,
+    Loopback,
+    Wifi,
+    Ethernet,
+    DockerBridge,
+    VirtualVeth,
+    VPN
+};
+
+struct InterfaceInfo {
+    std::string name;
+    InterfaceType type;
+};
+
+inline std::string to_string(const InterfaceType type) {
+    switch (type) {
+        case InterfaceType::Loopback:     return "loopback";
+        case InterfaceType::Wifi:         return "wifi";
+        case InterfaceType::Ethernet:     return "ethernet";
+        case InterfaceType::DockerBridge: return "docker/bridge";
+        case InterfaceType::VirtualVeth:  return "veth";
+        case InterfaceType::VPN:          return "vpn";
+        default:                          return "unknown";
+    }
+}
 struct NlCaps {
     bool monitor = false;
     bool band24 = false;
@@ -24,11 +46,6 @@ struct NlCaps {
 
 class hw_capabilities {
 public:
-    static void ensure_iw_cached();
-    static std::string run_command(const std::string &cmd);
-    static std::string get_iw_cache();
-    static std::string get_phy_from_iface(const std::string &iface);
-    static void reset();
     static bool findSolution(
         const std::vector<std::string>& ruleKeys,
         size_t ruleIdx,
@@ -40,10 +57,10 @@ public:
 
     static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
 
-    static int nl80211_cb(struct nl_msg *msg, void *arg);
+    static int nl80211_cb(nl_msg *msg, void *arg);
     static NlCaps get_nl80211_caps(const std::string& iface);
 
     static std::string read_sysfs(const std::string& iface, const std::string& file);
     static std::string get_driver_name(const std::string& iface);
-    static std::vector<std::string> list_interfaces();
+    static std::vector<InterfaceInfo> list_interfaces();
 };

@@ -8,7 +8,6 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 #include <linux/nl80211.h>
-
 #include <string>
 #include <cstdio>
 #include <map>
@@ -17,8 +16,6 @@
 #include <fstream>
 
 using namespace std;
-
-
 
 int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg) {
     auto *caps = static_cast<NlCaps*>(arg);
@@ -114,19 +111,52 @@ string hw_capabilities::get_driver_name(const string& iface) {
         if (filesystem::exists(path) && filesystem::is_symlink(path)) {
             return filesystem::read_symlink(path).filename().string();
         }
-    } catch (const filesystem::filesystem_error& e) {
-        return "";
+    } catch (const filesystem::filesystem_error& ) {
+        return ""; //TODO
     }
     return "";
 }
-vector<string> hw_capabilities::list_interfaces() {
-    vector<string> result;
-    for (auto &p : filesystem::directory_iterator("/sys/class/net")) {
-        result.push_back(p.path().filename());
+
+
+vector<InterfaceInfo> hw_capabilities::list_interfaces() {
+    std::vector<InterfaceInfo> result;
+    const filesystem::path net_path = "/sys/class/net";
+
+    if (!exists(net_path)) return result;
+
+    for (const auto& entry : filesystem::directory_iterator(net_path)) {
+        std::string name = entry.path().filename().string();
+        auto type = InterfaceType::Unknown;
+
+        // 1. Loopback ('lo')
+        if (name == "lo") {
+            type = InterfaceType::Loopback;
+        }
+        // 2. wireless Wi-Fi
+        else if (filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")) {
+            type = InterfaceType::Wifi;
+        }
+        // 3. Docker Bridge ('bridge')
+        else if (filesystem::exists(entry.path() / "bridge")) {
+            type = InterfaceType::DockerBridge;
+        }
+        // 4. VPN / TUN (tun_flags)
+        else if (filesystem::exists(entry.path() / "tun_flags")) {
+            type = InterfaceType::VPN;
+        }
+        // 5.  virtual veth docker container etc)
+        else if (name.find("veth") == 0) {
+            type = InterfaceType::VirtualVeth;
+        }
+        // 6. wire ethernet
+        else if (filesystem::exists(entry.path() / "device")) {
+            type = InterfaceType::Ethernet;
+        }
+
+        result.push_back({name, type});
     }
     return result;
 }
-
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
@@ -183,8 +213,8 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCM
         }
 
 		//set options properties to result
-        for (auto &ruleEntry : rules) {
-            const string &actorName = ruleEntry.first;
+        for (auto &[actor_name, actor] : rules) {
+            const string &actorName = actor_name;
             auto resIt = result.find(actorName);
             if (resIt == result.end()) {continue;}
 
@@ -193,7 +223,7 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCM
             if (optIt == options.end() || !optIt->second) {
                 throw config_error("Selected option %s for actor %s not found in options", optKey.c_str(), actorName.c_str());
             }
-            ruleEntry.second = make_unique<Actor_config>(*optIt->second);
+            actor = make_unique<Actor_config>(*optIt->second);
         }
 
         return result;

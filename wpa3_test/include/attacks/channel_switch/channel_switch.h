@@ -23,7 +23,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 
 void check_vulnerable(const HWAddress<6>& ap_mac,
                       const HWAddress<6>& sta_mac,
-                      const string iface_name,
+                      const string &iface_name,
                       const string& ssid,
                       int ap_channel);
 

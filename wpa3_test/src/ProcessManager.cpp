@@ -5,10 +5,63 @@
 #include <iostream>
 #include <ranges>
 #include <regex>
+#include <chrono>
+#include <iomanip>
 
 #include "logger/error_log.h"
 
 using namespace std;
+
+namespace {
+string current_timestamp() {
+    using clock = chrono::system_clock;
+    const auto now = clock::now();
+    const time_t t = clock::to_time_t(now);
+    tm buf{};
+    localtime_r(&t, &buf);
+    char out[32];
+    strftime(out, sizeof(out), "%Y-%m-%d %H:%M:%S", &buf);
+    return out;
+}
+}
+
+void ProcessManager::init_logging(const std::string &run_folder){
+    namespace fs = std::filesystem;
+
+    log_base_dir = fs::path(run_folder) / "logger";
+
+    std::error_code ec;
+    if (fs::exists(log_base_dir, ec)) {
+        fs::remove_all(log_base_dir, ec);
+        if (ec) {
+            log(LogLevel::ERROR,
+                "Failed to clean logger directory: %s: %s",
+                log_base_dir.string().c_str(),
+                ec.message().c_str());
+            throw runtime_error("Unable to clean logger directory");
+        }
+    }
+
+    fs::create_directories(log_base_dir, ec);
+    if (ec) {
+        log(LogLevel::ERROR,
+            "Failed to create logger directory: %s: %s",
+            log_base_dir.string().c_str(),
+            ec.message().c_str());
+        throw runtime_error("Unable to create logger directory");
+    }
+
+    // open combined log file <run_folder>/logger/all.log
+    fs::path combined_path = log_base_dir / "all.log";
+    combined_log.close();
+    combined_log.open(combined_path, ios::out | ios::trunc);
+    if (!combined_log.is_open()) {
+        log(LogLevel::ERROR,
+            "Failed to open combined log file: %s",
+            combined_path.string().c_str());
+        throw runtime_error("Unable to open combined log file");
+    }
+}
 
 void ProcessManager::run(const string& name, const vector<string> &cmd) {
     auto proc = make_unique<reproc::process>();
@@ -20,41 +73,52 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
         throw runtime_error("Failed to start " + name + ": " + ec.message());
     }
 
-    processes[name] = move(proc);
+    processes[name] = std::move(proc);
 }
 
 void ProcessManager::wait_for(const string &name, const string &pattern) const{
     auto& proc = processes.at(name);
-    string accumulator;
+    string accumulator_out;
+    string accumulator_err;
     const regex re(pattern);
     bool found = false;
 
-    auto sink = [&](reproc::stream, const uint8_t *buffer, size_t size) {
-        accumulator.append(reinterpret_cast<const char*>(buffer), size);
+    auto make_sink = [&](const string& process_name, const string& label, string& accumulator) {
+        return [process_name, label, &accumulator, re, &found](reproc::stream, const uint8_t* buffer, const size_t size) {
+            const string data(reinterpret_cast<const char*>(buffer), size);
+            accumulator.append(data);
 
-        size_t pos;
-        // all full lines
-        while ((pos = accumulator.find('\n')) != string::npos) {
-            string line = accumulator.substr(0, pos);
-            accumulator.erase(0, pos + 1);
-
-            if (regex_search(line, re)) {
-                found = true;
-              	return make_error_code(errc::interrupted);
+            const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+        
+            stringstream ss(data);
+            string line;
+            while (getline(ss, line)) {
+                if (!line.empty()) {
+                    cout << prefix << line << endl;
+                }
+                if (regex_search(line, re)) {
+                    found = true;
+                    return make_error_code(errc::interrupted);
+                }
             }
-        }
-       	return error_code();
+
+            return error_code();
+        };
     };
 
-    reproc::drain(*proc, sink, sink);
+    auto out_sink = make_sink("access_point", "stdout", accumulator_out);
+    auto err_sink = make_sink("access_point", "stderr", accumulator_err); 
+
+    reproc::drain(*proc, out_sink, err_sink);
 
     if(!found){
-        throw setup_error("output not found");
+        throw setup_error("output not found (probably end of process)");
     }
 }
 
 ProcessManager::~ProcessManager() {
     stop_all();
+    combined_log.close();
 }
 
 void ProcessManager::stop_all() {

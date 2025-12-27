@@ -7,6 +7,9 @@ all: run
 .PHONY: all compile run clean_build
 
 
+clion_debug:
+	cmake --build /home/kali/ClionProjects/wpa3_tester/build --target wpa3_tester -j 6
+	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 install:
 	sudo apt install grc
@@ -20,7 +23,7 @@ compile:
 run: compile
 	mkdir -p data
 	mkdir -p data/wpa3_test/run
-	grc -e -c $(GRC_CONF) ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+	grc -e -c $(GRC_CONF) sudo ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 # ------- clean ------------------
 clean_build:

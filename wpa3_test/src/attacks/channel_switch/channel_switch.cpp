@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace Tins;
-void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid, int ap_channel){
+void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid, const int ap_channel){
 
     Dot11Beacon beacon;
     beacon.addr1(Dot11::BROADCAST);
@@ -30,9 +30,9 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, 
     PacketSender sender;
     sender.send(radiotap, iface);
 }
-void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, const string iface_name, const string& ssid, int ap_channel) {
+void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, const string &iface_name, const string& ssid, int ap_channel) {
 
-    NetworkInterface iface(iface_name);
+    const NetworkInterface iface(iface_name);
     for(int i = 0; i < 500; i++) { //TODO
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel);
     }
@@ -62,6 +62,7 @@ void setup_chs_attack(RunStatus& rs){
     const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
 
     vector<string> hostapd_args = {
+        "sudo",
         "hostapd",
         "-i",
         rs.internal_actors.at("access_point")->iface.value(),
@@ -72,6 +73,7 @@ void setup_chs_attack(RunStatus& rs){
 	log(LogLevel::INFO, "access_point is running");
 
 	vector<string> wpa_supplicant_args = {
+	    "sudo",
         "wpa_supplicant",
         "-i",
         rs.internal_actors.at("client")->iface.value(),

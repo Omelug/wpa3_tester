@@ -20,17 +20,17 @@ using namespace std;
 
 
 
-int hw_capabilities::nl80211_cb(struct nl_msg *msg, void *arg) {
+int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg) {
     auto *caps = static_cast<NlCaps*>(arg);
 
     nlattr *attrs[NL80211_ATTR_MAX + 1];
-    genlmsghdr *gnlh = (genlmsghdr*) nlmsg_data(nlmsg_hdr(msg));
+    const auto gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
 
     nla_parse(attrs, NL80211_ATTR_MAX,
               genlmsg_attrdata(gnlh, 0),
               genlmsg_attrlen(gnlh, 0), nullptr);
 
-    // supported iftypes → monitor
+    // supported interface types → monitor
     if (attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {
         nlattr *ift;
         int rem;
@@ -67,13 +67,13 @@ int hw_capabilities::nl80211_cb(struct nl_msg *msg, void *arg) {
 NlCaps hw_capabilities::get_nl80211_caps(const std::string& iface) {
     NlCaps caps;
 
-    int ifindex = if_nametoindex(iface.c_str());
+    const int ifindex = if_nametoindex(iface.c_str());
     if (!ifindex) return caps;
 
     nl_sock *sock = nl_socket_alloc();
     genl_connect(sock);
 
-    int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
+    const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
 
     nl_msg *msg = nlmsg_alloc();
     genlmsg_put(msg, 0, 0, nl80211_id, 0, 0,
@@ -94,8 +94,7 @@ NlCaps hw_capabilities::get_nl80211_caps(const std::string& iface) {
 }
 
 string hw_capabilities::read_sysfs(const string& iface, const string& file) {
-    // Cesta vypadá např. takto: /sys/class/net/wlan0/address
-    string path = "/sys/class/net/" + iface + "/" + file;
+    const string path = "/sys/class/net/" + iface + "/" + file;
 
     ifstream ifs(path);
     if (!ifs.is_open()) {
@@ -109,7 +108,7 @@ string hw_capabilities::read_sysfs(const string& iface, const string& file) {
     return content;
 }
 string hw_capabilities::get_driver_name(const string& iface) {
-    string path = "/sys/class/net/" + iface + "/device/driver";
+    const string path = "/sys/class/net/" + iface + "/device/driver";
 
     try {
         if (filesystem::exists(path) && filesystem::is_symlink(path)) {
@@ -160,7 +159,7 @@ bool hw_capabilities::findSolution(
         currentAssignment[currentRuleKey] = optKey;
 
         if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) {
-            return true; // found in sub-tree
+            return true; // found in subtree
         }
 
         // back in tree

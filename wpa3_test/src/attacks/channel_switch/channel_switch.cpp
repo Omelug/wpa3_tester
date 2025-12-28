@@ -42,7 +42,9 @@ void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, c
 
     const NetworkInterface iface(iface_name);
     for(int i = 0; i < 500; i++) { //TODO
+        log(LogLevel::DEBUG, "sending CSA");
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     cout << "check_vulnerable called with:\n"
@@ -56,8 +58,6 @@ void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus& rs){
-
-    //log_actor_configs(rs.internal_actors);
 
     if (rs.config["actors"]["access_point"]["source"] != "internal") {
         throw runtime_error("only internal access_point is supported");
@@ -76,6 +76,7 @@ void setup_chs_attack(RunStatus& rs){
         rs.internal_actors.at("access_point")->iface.value(),
         hostapd_config_path
     };
+    rs.process_manager.allow_history("access_point");
     rs.process_manager.run("access_point", hostapd_args);
     rs.process_manager.wait_for("access_point", "AP-ENABLED");
 	log(LogLevel::INFO, "access_point is running");
@@ -83,12 +84,12 @@ void setup_chs_attack(RunStatus& rs){
 	const vector<string> wpa_supplicant_args = {
 	    "sudo",
         "wpa_supplicant",
-	    //"-dd",
         "-i",
         rs.internal_actors.at("client")->iface.value(),
 		"-c",
     	wpa_supp_config_path
 	};
+    rs.process_manager.allow_history("client");
 	rs.process_manager.run("client", wpa_supplicant_args);
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
@@ -106,7 +107,7 @@ void run_chs_attack(RunStatus& rs){
     const int new_channel = rs.config["attack_config"]["new_channel"];
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel);
     //TODO add END of tst to log (to ch)
-
-    //std::this_thread::sleep_for(std::chrono::seconds(30));
+    log(LogLevel::INFO,"-----------------------END");
+    std::this_thread::sleep_for(std::chrono::seconds(30));
     //throw not_implemented_error("Run not implemented");
 }

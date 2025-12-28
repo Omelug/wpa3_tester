@@ -24,6 +24,7 @@ actors:
       program_config:
         ssid: test_channel_switch
         password: password
+      channel: 6
   attacker:
     type: STA
     source: internal

@@ -29,6 +29,46 @@ void ProcessManager::write_log_line(ofstream &os, const string &line) {
     os.flush();
 }
 
+static error_code handle_chunk(ProcessManager *pm,
+                               const string &process_name,
+                               const string &label,
+                               const string &data)
+{
+    const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+
+    stringstream ss(data);
+    string line;
+    while (getline(ss, line)) {
+        if (line.empty()) continue;
+        const string full_line = prefix + line;
+
+        if (pm->combined_log.is_open()) {
+            ProcessManager::write_log_line(pm->combined_log, full_line);
+        }
+
+        if (auto it = pm->process_logs.find(process_name); it != pm->process_logs.end()) {
+            auto &[log, history, history_enabled, wait] = it->second;
+            if (log.is_open()) {
+                ProcessManager::write_log_line(log, full_line);
+            }
+            if (history_enabled) {
+                history += line;
+                history.push_back('\n');
+            }
+
+            // notify active wait listener, if any
+            if (wait.active) {
+                if (std::regex_search(line, wait.pattern)) {
+                    wait.matched = true;
+                    std::unique_lock lock(pm->wait_mutex);
+                    pm->wait_cv.notify_all();
+                }
+            }
+        }
+    }
+    return {};
+}
+
 void ProcessManager::init_logging(const std::string &run_folder){
     namespace fs = std::filesystem;
 
@@ -94,7 +134,6 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
     logs.log.close();
     logs.log.open(log_path, ios::out | ios::trunc);
     logs.history.clear();
-    // history_enabled default is false until allow_history() is called
 
     if (!logs.log.is_open()) {
         log(LogLevel::ERROR,
@@ -107,151 +146,123 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
         if (i) cmd_line += ' ';
         cmd_line += cmd[i];
     }
-    const string prefix = current_timestamp() + " [" + name + "] [cmd] ";
-    const string line   = prefix + cmd_line;
+    const string line   =  current_timestamp() + " [" + name + "] [cmd] " + cmd_line;
 
-    if (combined_log.is_open()) {
-        write_log_line(combined_log, line);
-    }
-    if (logs.log.is_open()) {
-        write_log_line(logs.log, line);
-    }
+    if (combined_log.is_open()) {write_log_line(combined_log, line);}
+    if (logs.log.is_open()) {write_log_line(logs.log, line);}
 
     processes[name] = std::move(proc);
 
-    if (!draining_started) {
-        start_global_drain();
-        draining_started = true;
-    }
+    start_drain_for(name);
+}
+
+void ProcessManager::start_drain_for(const std::string &proc_name) {
+    auto it = processes.find(proc_name);
+    if (it == processes.end() || !it->second) return;
+
+    reproc::process *proc = it->second.get();
+
+    std::thread([this, proc_name, proc]() {
+        string accumulator_out;
+        string accumulator_err;
+
+        auto make_sink = [&](const string& label, string& accumulator) {
+            return [this, proc_name, label, &accumulator]
+                   (reproc::stream, const uint8_t* buffer, const size_t size) {
+                const string data(reinterpret_cast<const char*>(buffer), size);
+                accumulator.append(data);
+                return handle_chunk(this, proc_name, label, data);
+            };
+        };
+
+        auto out_sink = make_sink("stdout", accumulator_out);
+        auto err_sink = make_sink("stderr", accumulator_err);
+
+        if (const std::error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
+            log(LogLevel::ERROR,
+                "Background drain for %s failed: %s",
+                proc_name.c_str(), ec.message().c_str());
+        }
+    }).detach();
 }
 
 void ProcessManager::allow_history(const std::string &name) {
-    auto it = process_logs.find(name);
-    if (it != process_logs.end()) {
+    if (const auto it = process_logs.find(name); it != process_logs.end()) {
         it->second.history_enabled = true;
     }
 }
 
 void ProcessManager::ignore_history(const std::string &name) {
-    auto it = process_logs.find(name);
-    if (it != process_logs.end()) {
+    if (const auto it = process_logs.find(name); it != process_logs.end()) {
         it->second.history_enabled = false;
         it->second.history.clear();
     }
 }
 
 void ProcessManager::discard_history(const std::string &name) {
-    auto it = process_logs.find(name);
-    if (it != process_logs.end()) {
+    if (const auto it = process_logs.find(name); it != process_logs.end()) {
         it->second.history.clear();
     }
 }
 
 void ProcessManager::wait_for(const string &name, const string &pattern){
-    const regex re(pattern);
-
-    auto it = process_logs.find(name);
-    if (it == process_logs.end()) {
+    if (const auto pit = processes.find(name); pit == processes.end() || !pit->second) {
         throw runtime_error("Unknown process in wait_for: " + name);
     }
 
-    // First, scan existing history if enabled
-    if (it->second.history_enabled) {
-        string &hist = it->second.history;
-        stringstream ss(hist);
-        string line;
-        string new_history;
-        bool found = false;
+    const auto lit = process_logs.find(name);
+    if (lit == process_logs.end()) {
+        throw runtime_error("No logs for process in wait_for: " + name);
+    }
 
+    ProcessLogs &logs = lit->second;
+    logs.history_enabled = true;
+
+    logs.wait.pattern = std::regex(pattern);
+    logs.wait.active = true;
+    logs.wait.matched = false;
+
+    {  // first pass: check existing history
+       // - in block because ss/line will be freed and dont waste memory
+        stringstream ss(logs.history);
+        string line;
         while (getline(ss, line)) {
-            if (regex_search(line, re)) {
-                // Discard history up to and including this line
-                found = true;
+            if (std::regex_search(line, logs.wait.pattern)) {
+                logs.wait.matched = true;
                 break;
             }
-            // If not yet found, we drop lines; if you want to retain
-            // trailing lines after the match, adjust logic accordingly.
         }
-
-        if (found) {
-            hist.clear();
+        if (logs.wait.matched) {
+            logs.history.clear();
+            logs.wait.active = false;
             return;
         }
     }
 
-    const auto& proc = processes.at(name);
-    string accumulator_out;
-    string accumulator_err;
-    bool found_new = false;
 
-    auto make_sink = [&](const string& process_name, const string& label, string& accumulator) {
-        return [this, process_name, label, &accumulator, &re, &found_new](reproc::stream, const uint8_t* buffer, const size_t size) {
-            const string data(reinterpret_cast<const char*>(buffer), size);
-            accumulator.append(data);
-
-            const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
-
-            stringstream ss(data);
-            string line;
-            while (getline(ss, line)) {
-                if (!line.empty()) {
-                    const string full_line = prefix + line;
-
-                    if (combined_log.is_open()) {
-                        write_log_line(combined_log, full_line);
-                    }
-
-                    auto it2 = process_logs.find(process_name);
-                    if (it2 != process_logs.end()) {
-                        if (it2->second.log.is_open()) {
-                            write_log_line(it2->second.log, full_line);
-                        }
-                        if (it2->second.history_enabled) {
-                            it2->second.history.append(line);
-                            it2->second.history.push_back('\n');
-                        }
-                    }
-
-                    if (regex_search(line, re)) {
-                        found_new = true;
-                        return make_error_code(errc::interrupted);
-                    }
-                }
-            }
-
-            return error_code();
-        };
-    };
-
-    auto out_sink = make_sink(name, "stdout", accumulator_out);
-    auto err_sink = make_sink(name, "stderr", accumulator_err);
-
-    if (const std::error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
-        if (ec != errc::interrupted) {
-            log(LogLevel::ERROR, "Drain in wait_for failed: %s", ec.message().c_str());
-        }
+    { // wait for new output to match
+        std::unique_lock lock(wait_mutex);
+        wait_cv.wait(lock, [&logs]{ return logs.wait.matched; });
     }
 
-    if(!found_new){
-        throw setup_error("output not found (probably end of process)");
-    }
-    discard_history(name);
+    logs.history.clear();
+    logs.wait.active = false;
 }
 
-ProcessManager::~ProcessManager() {
+ProcessManager::~ProcessManager(){
     stop_all();
     combined_log.close();
-    for (auto &entry: process_logs | views::values) {
-        if (entry.log.is_open()) entry.log.close();
+    for(auto &entry: process_logs | views::values){
+        if(entry.log.is_open()){ entry.log.close(); }
     }
 }
 
-void ProcessManager::stop_all() {
-    for (auto &proc: processes | views::values) {
-        if (proc) {
+void ProcessManager::stop_all(){
+    for(auto &proc: processes | views::values){
+        if(proc){
             reproc::stop_actions operations{};
-            operations.first = { reproc::stop::terminate, reproc::milliseconds(1000) };
-            operations.second = { reproc::stop::kill, reproc::milliseconds(1000) };
+            operations.first = {reproc::stop::terminate, reproc::milliseconds(1000)};
+            operations.second = {reproc::stop::kill, reproc::milliseconds(1000)};
             proc->stop(operations);
         }
     }

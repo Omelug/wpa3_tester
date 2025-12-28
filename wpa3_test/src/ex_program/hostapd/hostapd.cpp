@@ -28,6 +28,8 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
     const auto channel      = ap_setup.value("channel",   6);
     const auto hw_mode      = ap_setup.value("hw_mode",   string{"g"});
     const auto auth_algs      = ap_setup.value("auth_algs",   1);
+    const auto ieee80211n      = ap_setup.value("ieee80211n",   1);
+    const auto ieee80211w      = ap_setup.value("ieee80211w",   1);
     const auto wpa          = ap_setup.value("wpa",       2); // WPA2/WPA3 mixed
     const auto wpa_key_mgmt = ap_setup.value("wpa_key_mgmt", string{"SAE"});
     const auto rsn_pairwise = ap_setup.value("rsn_pairwise", string{"CCMP"});
@@ -39,6 +41,8 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
         << "hw_mode=" << hw_mode << '\n'
         << "auth_algs=" << auth_algs <<'\n'
         << "wpa=" << wpa << '\n'
+        << "ieee80211n=" << ieee80211n << '\n'
+        << "ieee80211w=" << ieee80211w << '\n'
         << "wpa_key_mgmt=" << wpa_key_mgmt << '\n'
         << "rsn_pairwise=" << rsn_pairwise << '\n'
         << "wpa_passphrase=" << passphrase << '\n';

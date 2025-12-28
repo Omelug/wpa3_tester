@@ -66,4 +66,6 @@ public:
     static void cleanup_interface(const std::string& iface);
     static void set_monitor_mode(const std::string& iface);
     static void set_ap_mode(const std::string& iface);
+    static void set_channel(const std::string& iface, int channel);
+    static int channel_to_freq_mhz(int channel);
 };

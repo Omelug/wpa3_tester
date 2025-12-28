@@ -195,9 +195,9 @@ void ProcessManager::wait_for(const string &name, const string &pattern){
 ProcessManager::~ProcessManager() {
     stop_all();
     combined_log.close();
-    for (auto &val: process_logs | views::values) {
-        if (val.stdout_log.is_open()) val.stdout_log.close();
-        if (val.stderr_log.is_open()) val.stderr_log.close();
+    for (auto &[stdout_log, stderr_log]: process_logs | views::values) {
+        if (stdout_log.is_open()) stdout_log.close();
+        if (stderr_log.is_open()) stderr_log.close();
     }
 }
 

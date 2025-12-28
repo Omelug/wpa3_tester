@@ -29,7 +29,7 @@ actors:
     source: internal
     selection:
       condition: [monitor]
-
+    channel: 6
 
 attack_config:
   validator: ./channel_switch.schema.yaml

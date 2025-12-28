@@ -25,7 +25,8 @@ void check_vulnerable(const HWAddress<6>& ap_mac,
                       const HWAddress<6>& sta_mac,
                       const string &iface_name,
                       const string& ssid,
-                      int ap_channel);
+                      int ap_channel,
+                      int new_channel);
 
 void setup_chs_attack(RunStatus& rs);
 void run_chs_attack(RunStatus& rs);

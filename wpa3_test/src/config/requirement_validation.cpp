@@ -85,23 +85,26 @@ void RunStatus::config_requirement() {
         auto resIt = internal_mapping.find(actorName);
         if (resIt == internal_mapping.end()) {continue;}
 
-        const string &optKey = resIt->second;
-        auto optIt = options_internal.find(optKey);
+        const string &opt_iface = resIt->second;
+        auto optIt = options_internal.find(opt_iface);
         if (optIt == options_internal.end() || !optIt->second) {
             throw config_error("Selected option %s for actor %s not found in options",
-                optKey.c_str(), actorName.c_str());
+                opt_iface.c_str(), actorName.c_str());
         }
 
         // prepare interface for this internal actor
-        hw_capabilities::cleanup_interface(optKey);
+        hw_capabilities::cleanup_interface(opt_iface);
 
         //---------------  set mode based on actor requirements -------------------
-        if (actor && actor->bool_conditions.contains("monitor") && actor->bool_conditions["monitor"]) {
-            hw_capabilities::set_monitor_mode(optKey);
+        if (actor->bool_conditions.contains("monitor") && actor->bool_conditions["monitor"]) {
+            hw_capabilities::set_monitor_mode(opt_iface);
         }
 
         if (config["actors"][actorName]["type"] == "AP") {
-            hw_capabilities::set_ap_mode(optKey);
+            hw_capabilities::set_ap_mode(opt_iface);
+        }
+        if (config["actors"][actorName].contains("channel")) {
+            hw_capabilities::set_channel(opt_iface, config["actors"][actorName]["channel"]);
         }
 
         // save option properties to actor

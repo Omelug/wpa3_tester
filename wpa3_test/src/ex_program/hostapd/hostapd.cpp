@@ -27,6 +27,7 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
     const auto ssid         = ap_setup.value("ssid",      string{"wpa3_test"});
     const auto channel      = ap_setup.value("channel",   6);
     const auto hw_mode      = ap_setup.value("hw_mode",   string{"g"});
+    const auto auth_algs      = ap_setup.value("auth_algs",   1);
     const auto wpa          = ap_setup.value("wpa",       2); // WPA2/WPA3 mixed
     const auto wpa_key_mgmt = ap_setup.value("wpa_key_mgmt", string{"SAE"});
     const auto rsn_pairwise = ap_setup.value("rsn_pairwise", string{"CCMP"});
@@ -36,6 +37,7 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
         << "ssid=" << ssid << '\n'
         << "channel=" << channel << '\n'
         << "hw_mode=" << hw_mode << '\n'
+        << "auth_algs=" << auth_algs <<'\n'
         << "wpa=" << wpa << '\n'
         << "wpa_key_mgmt=" << wpa_key_mgmt << '\n'
         << "rsn_pairwise=" << rsn_pairwise << '\n'
@@ -71,8 +73,7 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
     const auto passphrase = client_setup.value("psk",       string{"password123"});
 
     //TODO default valuesi, but removable
-    out << "ctrl_interface=/var/run/wpa_supplicant" << '\n'
-        << "network={" << '\n'
+    out << "network={" << '\n'
         << "    proto=RSN" << '\n'
         << "    key_mgmt=SAE" << '\n'
         << "    pairwise=CCMP" << '\n'

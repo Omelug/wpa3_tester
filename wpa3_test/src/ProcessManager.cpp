@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <reproc++/drain.hpp>
 #include "logger/error_log.h"
+#include <thread>
 
 using namespace std;
 
@@ -54,7 +55,6 @@ void ProcessManager::init_logging(const std::string &run_folder){
         throw runtime_error("Unable to create logger directory");
     }
 
-    // open combined log file <run_folder>/logger/all.log
     const fs::path combined_path = log_base_dir / "all.log";
     combined_log.close();
     combined_log.open(combined_path, ios::out | ios::trunc);
@@ -65,16 +65,15 @@ void ProcessManager::init_logging(const std::string &run_folder){
         throw runtime_error("Unable to open combined log file");
     }
 
-    // close and clear any per-process log files from a previous run
-    for (auto &val: process_logs | views::values) {
-        if (val.stdout_log.is_open()) {
-            val.stdout_log.close();
+    for (auto &entry: process_logs | views::values) {
+        if (entry.log.is_open()) {
+            entry.log.close();
         }
-        if (val.stderr_log.is_open()) {
-            val.stderr_log.close();
-        }
+        entry.history.clear();
+        entry.history_enabled = false;
     }
     process_logs.clear();
+    draining_started = false;
 }
 
 void ProcessManager::run(const string& name, const vector<string> &cmd) {
@@ -89,30 +88,20 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
         throw runtime_error("Failed to start " + name + ": " + ec.message());
     }
 
-    // prepare per-process log files and remember them
-    fs::path stdout_path = log_base_dir / (name + ".stdout.log");
-    fs::path stderr_path = log_base_dir / (name + ".stderr.log");
+    const fs::path log_path = log_base_dir / (name + ".log");
 
     auto &logs = process_logs[name];
+    logs.log.close();
+    logs.log.open(log_path, ios::out | ios::trunc);
+    logs.history.clear();
+    // history_enabled default is false until allow_history() is called
 
-    logs.stdout_log.close();
-    logs.stderr_log.close();
-
-    logs.stdout_log.open(stdout_path, ios::out | ios::trunc);
-    if (!logs.stdout_log.is_open()) {
+    if (!logs.log.is_open()) {
         log(LogLevel::ERROR,
-            "Failed to open stdout log for %s: %s",
-            name.c_str(), stdout_path.string().c_str());
+            "Failed to open log for %s: %s",
+            name.c_str(), log_path.string().c_str());
     }
 
-    logs.stderr_log.open(stderr_path, ios::out | ios::trunc);
-    if (!logs.stderr_log.is_open()) {
-        log(LogLevel::ERROR,
-            "Failed to open stderr log for %s: %s",
-            name.c_str(), stderr_path.string().c_str());
-    }
-
-    // log the start command to both per-process logs and combined log
     string cmd_line;
     for (size_t i = 0; i < cmd.size(); ++i) {
         if (i) cmd_line += ' ';
@@ -124,22 +113,79 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
     if (combined_log.is_open()) {
         write_log_line(combined_log, line);
     }
-    if (logs.stdout_log.is_open()) {
-        write_log_line(logs.stdout_log, line);
+    if (logs.log.is_open()) {
+        write_log_line(logs.log, line);
     }
 
     processes[name] = std::move(proc);
+
+    if (!draining_started) {
+        start_global_drain();
+        draining_started = true;
+    }
+}
+
+void ProcessManager::allow_history(const std::string &name) {
+    auto it = process_logs.find(name);
+    if (it != process_logs.end()) {
+        it->second.history_enabled = true;
+    }
+}
+
+void ProcessManager::ignore_history(const std::string &name) {
+    auto it = process_logs.find(name);
+    if (it != process_logs.end()) {
+        it->second.history_enabled = false;
+        it->second.history.clear();
+    }
+}
+
+void ProcessManager::discard_history(const std::string &name) {
+    auto it = process_logs.find(name);
+    if (it != process_logs.end()) {
+        it->second.history.clear();
+    }
 }
 
 void ProcessManager::wait_for(const string &name, const string &pattern){
+    const regex re(pattern);
+
+    auto it = process_logs.find(name);
+    if (it == process_logs.end()) {
+        throw runtime_error("Unknown process in wait_for: " + name);
+    }
+
+    // First, scan existing history if enabled
+    if (it->second.history_enabled) {
+        string &hist = it->second.history;
+        stringstream ss(hist);
+        string line;
+        string new_history;
+        bool found = false;
+
+        while (getline(ss, line)) {
+            if (regex_search(line, re)) {
+                // Discard history up to and including this line
+                found = true;
+                break;
+            }
+            // If not yet found, we drop lines; if you want to retain
+            // trailing lines after the match, adjust logic accordingly.
+        }
+
+        if (found) {
+            hist.clear();
+            return;
+        }
+    }
+
     const auto& proc = processes.at(name);
     string accumulator_out;
     string accumulator_err;
-    const regex re(pattern);
-    bool found = false;
+    bool found_new = false;
 
     auto make_sink = [&](const string& process_name, const string& label, string& accumulator) {
-        return [this, process_name, label, &accumulator, re, &found](reproc::stream, const uint8_t* buffer, const size_t size) {
+        return [this, process_name, label, &accumulator, &re, &found_new](reproc::stream, const uint8_t* buffer, const size_t size) {
             const string data(reinterpret_cast<const char*>(buffer), size);
             accumulator.append(data);
 
@@ -155,22 +201,21 @@ void ProcessManager::wait_for(const string &name, const string &pattern){
                         write_log_line(combined_log, full_line);
                     }
 
-                    auto it = process_logs.find(process_name);
-                    if (it != process_logs.end()) {
-                        std::ofstream *target = nullptr;
-                        if (label == "stdout") {
-                            target = &it->second.stdout_log;
-                        } else if (label == "stderr") {
-                            target = &it->second.stderr_log;
+                    auto it2 = process_logs.find(process_name);
+                    if (it2 != process_logs.end()) {
+                        if (it2->second.log.is_open()) {
+                            write_log_line(it2->second.log, full_line);
                         }
-                        if (target && target->is_open()) {
-                            write_log_line(*target, full_line);
+                        if (it2->second.history_enabled) {
+                            it2->second.history.append(line);
+                            it2->second.history.push_back('\n');
                         }
                     }
-                }
-                if (regex_search(line, re)) {
-                    found = true;
-                    return make_error_code(errc::interrupted);
+
+                    if (regex_search(line, re)) {
+                        found_new = true;
+                        return make_error_code(errc::interrupted);
+                    }
                 }
             }
 
@@ -183,21 +228,21 @@ void ProcessManager::wait_for(const string &name, const string &pattern){
 
     if (const std::error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
         if (ec != errc::interrupted) {
-            log(LogLevel::ERROR, "Drain failed: %s", ec.message().c_str());
+            log(LogLevel::ERROR, "Drain in wait_for failed: %s", ec.message().c_str());
         }
     }
 
-    if(!found){
+    if(!found_new){
         throw setup_error("output not found (probably end of process)");
     }
+    discard_history(name);
 }
 
 ProcessManager::~ProcessManager() {
     stop_all();
     combined_log.close();
-    for (auto &[stdout_log, stderr_log]: process_logs | views::values) {
-        if (stdout_log.is_open()) stdout_log.close();
-        if (stderr_log.is_open()) stderr_log.close();
+    for (auto &entry: process_logs | views::values) {
+        if (entry.log.is_open()) entry.log.close();
     }
 }
 

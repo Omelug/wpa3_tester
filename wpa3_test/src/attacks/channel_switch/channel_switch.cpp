@@ -92,6 +92,8 @@ void setup_chs_attack(RunStatus& rs){
 	rs.process_manager.run("client", wpa_supplicant_args);
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
+
+    rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
 }
 
 
@@ -104,6 +106,7 @@ void run_chs_attack(RunStatus& rs){
     const int new_channel = rs.config["attack_config"]["new_channel"];
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel);
     //TODO add END of tst to log (to ch)
+
     //std::this_thread::sleep_for(std::chrono::seconds(30));
     //throw not_implemented_error("Run not implemented");
 }

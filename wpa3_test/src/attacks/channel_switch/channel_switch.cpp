@@ -61,7 +61,7 @@ void setup_chs_attack(RunStatus& rs){
     const string hostapd_config_path = hostapd_config(rs.run_folder, rs.config["actors"]["access_point"]["setup"]["program_config"]);
     const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
 
-    vector<string> hostapd_args = {
+    const vector<string> hostapd_args = {
         "sudo",
         "hostapd",
         "-i",
@@ -72,7 +72,7 @@ void setup_chs_attack(RunStatus& rs){
     rs.process_manager.wait_for("access_point", "AP-ENABLED");
 	log(LogLevel::INFO, "access_point is running");
 
-	vector<string> wpa_supplicant_args = {
+	const vector<string> wpa_supplicant_args = {
 	    "sudo",
         "wpa_supplicant",
         "-i",
@@ -86,9 +86,13 @@ void setup_chs_attack(RunStatus& rs){
 }
 
 
-void run_chs_attack(RunStatus& runStatus){
+void run_chs_attack(RunStatus& rs){
+    const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->mac.value()));
+    const HWAddress<6> sta_mac((rs.internal_actors["client"]->mac.value()));
+    const string iface_name = rs.internal_actors["access_point"]->iface.value();
+    const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
+    const int old_channel = rs.config["actors"]["access_point"]["setup"]["program_config"]["channel"];
+    //check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel);
     std::this_thread::sleep_for(std::chrono::seconds(30));
-    throw not_implemented_error("Run not implemented");
-    //check_vulnerable();
-
+    //throw not_implemented_error("Run not implemented");
 }

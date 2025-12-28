@@ -14,6 +14,10 @@
 #include <set>
 #include <vector>
 #include <fstream>
+#include <cstdlib>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -118,7 +122,7 @@ string hw_capabilities::get_driver_name(const string& iface) {
 }
 
 
-vector<InterfaceInfo> hw_capabilities::list_interfaces() {
+vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus& run_status) {
     std::vector<InterfaceInfo> result;
     const filesystem::path net_path = "/sys/class/net";
 
@@ -126,6 +130,14 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces() {
 
     for (const auto& entry : filesystem::directory_iterator(net_path)) {
         std::string name = entry.path().filename().string();
+
+        auto ignored_list = run_status.config.value("ignore_interfaces", std::vector<std::string>{});
+
+        if (set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(name)) {
+            log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", name.c_str());
+            continue;
+        }
+
         auto type = InterfaceType::Unknown;
 
         // 1. Loopback ('lo')
@@ -203,7 +215,6 @@ bool hw_capabilities::findSolution(
 AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCMap& options) {
     vector<string> ruleKeys;
     for (const auto &key: rules | views::keys) ruleKeys.push_back(key);
-
     AssignmentMap result;
     if (set<string> usedOptions;
         findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
@@ -211,22 +222,81 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap& rules, const ActorCM
         for (auto const& [r, o] : result) {
             log(LogLevel::DEBUG, "\tActor %s -> interface %s", r.c_str(), o.c_str());
         }
-
-		//set options properties to result
-        for (auto &[actor_name, actor] : rules) {
-            const string &actorName = actor_name;
-            auto resIt = result.find(actorName);
-            if (resIt == result.end()) {continue;}
-
-            const string &optKey = resIt->second;
-            auto optIt = options.find(optKey);
-            if (optIt == options.end() || !optIt->second) {
-                throw config_error("Selected option %s for actor %s not found in options", optKey.c_str(), actorName.c_str());
-            }
-            actor = make_unique<Actor_config>(*optIt->second);
-        }
-
         return result;
     }
     throw req_error("Not found valid requirements");
+}
+
+static int run_cmd(const std::vector<std::string>& argv)
+{
+    if (argv.empty()) return -1;
+
+    // build C-style argv
+    std::vector<char*> args;
+    args.reserve(argv.size() + 1);
+    for (auto &s : argv) {
+        args.push_back(const_cast<char*>(s.c_str()));
+    }
+    args.push_back(nullptr);
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        log(LogLevel::ERROR, "fork() failed for command %s", argv[0].c_str());
+        return -1;
+    }
+
+    if (pid == 0) {
+        // child
+        execvp(args[0], args.data());
+        // if exec fails
+        _exit(127);
+    }
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) {
+        log(LogLevel::ERROR, "waitpid() failed for command %s", argv[0].c_str());
+        return -1;
+    }
+
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        //log(LogLevel::WARNING, "Command %s exited with status %d", argv[0].c_str(), WEXITSTATUS(status));
+    }
+
+    return WEXITSTATUS(status);
+}
+
+void hw_capabilities::cleanup_interface(const std::string& iface)
+{
+    log(LogLevel::INFO, "Cleaning up interface %s", iface.c_str());
+
+    run_cmd({"pkill", "-f", "wpa_supplicant.*-i" + iface});
+    run_cmd({"pkill", "-f", "hostapd.*" + iface});
+
+    run_cmd({"ip", "link", "set", iface, "down"});
+
+    run_cmd({"rfkill", "unblock", "wifi"}); //TODO needed here ?
+    run_cmd({"ip", "addr", "flush", "dev", iface});
+    run_cmd({"ip", "link", "set", iface, "up"});
+}
+
+void hw_capabilities::set_monitor_mode(const std::string& iface)
+{
+    log(LogLevel::INFO, "Setting interface %s to monitor mode", iface.c_str());
+
+    //cleanup_interface(iface);
+
+    run_cmd({"ip", "link", "set", iface, "down"});
+    run_cmd({"iw", "dev", iface, "set", "type", "monitor"});
+    run_cmd({"ip", "link", "set", iface, "up"});
+}
+
+void hw_capabilities::set_ap_mode(const std::string& iface)
+{
+    log(LogLevel::INFO, "Preparing interface %s for AP mode", iface.c_str());
+
+    //cleanup_interface(iface);
+
+    run_cmd({"ip", "link", "set", iface, "down"});
+    run_cmd({"iw", "dev", iface, "set", "type", "managed"});
+    run_cmd({"ip", "link", "set", iface, "up"});
 }

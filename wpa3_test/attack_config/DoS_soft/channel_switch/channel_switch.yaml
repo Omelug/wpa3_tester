@@ -1,7 +1,7 @@
 name: channel_switch_test
 wizard_fallback: true
 attacker_module: channel_switch
-
+ignore_interfaces: [wlan0]
 actors:
   access_point:
     type: AP
@@ -13,6 +13,7 @@ actors:
       program_config:
         ssid: test_channel_switch
         password: password
+      channel: 6 # not set in hostapd, set once before test
   client:
     type: STA
     source: internal

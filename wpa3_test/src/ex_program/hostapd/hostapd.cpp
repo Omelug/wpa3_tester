@@ -24,7 +24,6 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
         throw runtime_error("hostapd_config: unable to open config file");
     }
     // Minimal hostapd.conf based on provided JSON; use defaults if keys are missing
-    const auto iface        = ap_setup.value("interface", string{"wlan0"});
     const auto ssid         = ap_setup.value("ssid",      string{"wpa3_test"});
     const auto channel      = ap_setup.value("channel",   6);
     const auto hw_mode      = ap_setup.value("hw_mode",   string{"g"});
@@ -33,8 +32,7 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
     const auto rsn_pairwise = ap_setup.value("rsn_pairwise", string{"CCMP"});
     const auto passphrase   = ap_setup.value("wpa_passphrase", string{"password123"});
 
-    out << "interface=" << iface << '\n'
-        << "driver=nl80211" << '\n'
+    out << "driver=nl80211" << '\n'
         << "ssid=" << ssid << '\n'
         << "channel=" << channel << '\n'
         << "hw_mode=" << hw_mode << '\n'
@@ -72,12 +70,18 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
     const auto ssid       = client_setup.value("ssid",      string{"wpa3_test"});
     const auto passphrase = client_setup.value("psk",       string{"password123"});
 
+    //TODO default valuesi, but removable
     out << "ctrl_interface=/var/run/wpa_supplicant" << '\n'
-        << "ap_scan=1" << '\n'
         << "network={" << '\n'
+        << "    proto=RSN" << '\n'
+        << "    key_mgmt=SAE" << '\n'
+        << "    pairwise=CCMP" << '\n'
+        << "    group=CCMP" << '\n'
+        << "    ieee80211w=1" << '\n'
         << "    ssid=\"" << ssid << "\"" << '\n'
         << "    psk=\"" << passphrase << "\"" << '\n'
         << "}" << '\n';
+
 
     out.close();
 

@@ -2,6 +2,8 @@
 #include "config/RunStatus.h"
 #include "attacks/attacks.h"
 #include <csignal>
+#include <thread>
+
 #include "ProcessManager.h"
 
 using namespace std;
@@ -23,6 +25,7 @@ int main(const int argc, char *argv[])  {
 
     runStatus.config_validation();
     runStatus.config_requirement(); //include validation
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     runStatus.setup_test();
     attack_run[runStatus.config["attacker_module"]](runStatus);
     return 0;

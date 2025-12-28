@@ -7,10 +7,10 @@
 using namespace std;
 using nlohmann::json;
 
-ActorCMap scan_internal() {
+ActorCMap RunStatus::scan_internal() {
     ActorCMap options_map;
 
-    for (auto [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
+    for (auto [iface_name, iface_type] : hw_capabilities::list_interfaces(*this)) {
         if(iface_type != InterfaceType::Wifi) continue; //TODO
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;
@@ -75,7 +75,39 @@ void RunStatus::config_requirement() {
     log_actor_map("simulation", simulation_actors);
 
     const ActorCMap options_internal =  scan_internal();
+
+    //find interface mapping
     internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
+
+    // setup by mapping
+    for (auto &[actor_name, actor] : internal_actors) {
+        const string &actorName = actor_name;
+        auto resIt = internal_mapping.find(actorName);
+        if (resIt == internal_mapping.end()) {continue;}
+
+        const string &optKey = resIt->second;
+        auto optIt = options_internal.find(optKey);
+        if (optIt == options_internal.end() || !optIt->second) {
+            throw config_error("Selected option %s for actor %s not found in options",
+                optKey.c_str(), actorName.c_str());
+        }
+
+        // prepare interface for this internal actor
+        hw_capabilities::cleanup_interface(optKey);
+
+        //---------------  set mode based on actor requirements -------------------
+        if (actor && actor->bool_conditions.contains("monitor") && actor->bool_conditions["monitor"]) {
+            hw_capabilities::set_monitor_mode(optKey);
+        }
+
+        if (config["actors"][actorName]["type"] == "AP") {
+            hw_capabilities::set_ap_mode(optKey);
+        }
+
+        // save option properties to actor
+        actor = make_unique<Actor_config>(*optIt->second);
+    }
+
 	//TODO setup_requirements(internal_actors);
 
 	//log_actor_configs(internal_actors);

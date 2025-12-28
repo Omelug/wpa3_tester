@@ -8,6 +8,12 @@ required:
   - attacker_module
   - actors
   - attack_config
+ignore_interfaces:
+  type: array
+  items:
+    type: string
+  minItems: 1
+  description: ignore interfaces (to ignore interface where is notebook connected to internet)
 properties:
   name:
     type: string

@@ -62,5 +62,8 @@ public:
 
     static std::string read_sysfs(const std::string& iface, const std::string& file);
     static std::string get_driver_name(const std::string& iface);
-    static std::vector<InterfaceInfo> list_interfaces();
+    static std::vector<InterfaceInfo> list_interfaces(const RunStatus& run_status);
+    static void cleanup_interface(const std::string& iface);
+    static void set_monitor_mode(const std::string& iface);
+    static void set_ap_mode(const std::string& iface);
 };

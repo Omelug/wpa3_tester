@@ -28,7 +28,7 @@ public:
     RunStatus(int argc, char ** argv);
     void config_validation();
     void config_requirement();
-    ActorCMap scan_internal();
+    ActorCMap scan_internal() const;
 	std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 	void setup_test();
 

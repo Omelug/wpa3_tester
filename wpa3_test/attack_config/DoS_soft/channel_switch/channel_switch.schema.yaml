@@ -2,20 +2,20 @@ $schema: http://json-schema.org/draft-07/schema#
 title: Channel Switch Attack Config
 type: object
 required:
-  - time_secs
-  - interval
+  - attack_time
+  - ms_interval
   - new_channel
 properties:
   validator:
     type: string
     description: path to this schema
-  time_secs:
+  attack_time:
     type: integer
-    description: timeout
+    description: time of sending channel switch packets
     minimum: 1
-  interval:
+  ms_interval:
     type: integer
-    description: repeating interval
+    description: repeating interval of sending CSA
     minimum: 1
   new_channel:
     type: integer

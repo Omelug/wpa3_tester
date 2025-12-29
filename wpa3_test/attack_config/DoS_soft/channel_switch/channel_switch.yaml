@@ -1,3 +1,4 @@
+$schema: http://json-schema.org/draft-07/schema#
 name: channel_switch_test
 wizard_fallback: true
 attacker_module: channel_switch
@@ -34,7 +35,7 @@ actors:
 
 attack_config:
   validator: ./channel_switch.schema.yaml
-  time_secs: 50
-  interval: 10
+  attack_time: 50
+  ms_interval: 10
   new_channel: 1
 

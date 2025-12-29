@@ -1,4 +1,3 @@
-# test_config_schema.yaml
 $schema: http://json-schema.org/draft-07/schema#
 title: Test Configuration Schema
 type: object
@@ -50,7 +49,6 @@ definitions:
     required:
       - type
       - source
-      - selection
     properties:
       type:
         type: string
@@ -86,6 +84,7 @@ definitions:
               enum: ["AP", "monitor", "2_4Gz", "5Gz", "WPA-PSK", "WPA3-SAE"]
             minItems: 1
             description: Condition for selection
+        minProperties: 1
 
     allOf:
       - if:

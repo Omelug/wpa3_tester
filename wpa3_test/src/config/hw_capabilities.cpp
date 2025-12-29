@@ -153,7 +153,6 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_stat
 
             if (arp_type == "803") {
                 type = InterfaceType::WifiVirtualMon;
-                continue;  //TODO
             } else {
                 type = InterfaceType::Wifi;
             }

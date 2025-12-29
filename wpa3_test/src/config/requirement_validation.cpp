@@ -7,10 +7,10 @@
 using namespace std;
 using nlohmann::json;
 
-ActorCMap RunStatus::scan_internal() {
+ActorCMap RunStatus::scan_internal() const{
     ActorCMap options_map;
 
-    for (auto [iface_name, iface_type] : hw_capabilities::list_interfaces(*this)) {
+    for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces(*this)) {
         if(iface_type != InterfaceType::Wifi) continue; //TODO
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;

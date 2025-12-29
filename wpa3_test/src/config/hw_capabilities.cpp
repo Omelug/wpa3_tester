@@ -147,7 +147,16 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_stat
         }
         // 2. wireless Wi-Fi
         else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
-            type = InterfaceType::Wifi;
+            ifstream type_file(entry.path() / "type");
+            string arp_type;
+            type_file >> arp_type;
+
+            if (arp_type == "803") {
+                type = InterfaceType::WifiVirtualMon;
+                continue;  //TODO
+            } else {
+                type = InterfaceType::Wifi;
+            }
         }
         // 3. Docker Bridge ('bridge')
         else if(filesystem::exists(entry.path() / "bridge")){

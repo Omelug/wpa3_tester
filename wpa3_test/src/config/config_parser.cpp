@@ -29,7 +29,7 @@ json yaml_to_json(const YNode& node) {
         }
         return j;
     }
-    return json();
+    return {};
 }
 
 void RunStatus::config_validation() {

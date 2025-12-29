@@ -92,17 +92,18 @@ void RunStatus::config_requirement() {
                 opt_iface.c_str(), actorName.c_str());
         }
 
-        // prepare interface for this internal actor
         hw_capabilities::cleanup_interface(opt_iface);
 
         //---------------  set mode based on actor requirements -------------------
-        if (actor->bool_conditions.contains("monitor") && actor->bool_conditions["monitor"]) {
-            hw_capabilities::set_monitor_mode(opt_iface);
+        if (actor->bool_conditions.at("monitor").value_or(false)) {
+                hw_capabilities::set_monitor_mode(opt_iface);
         }
 
         if (config["actors"][actorName]["type"] == "AP") {
             hw_capabilities::set_ap_mode(opt_iface);
         }
+        //TODO other types
+
         if (config["actors"][actorName].contains("channel")) {
             hw_capabilities::set_channel(opt_iface, config["actors"][actorName]["channel"]);
         }

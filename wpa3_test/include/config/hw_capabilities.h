@@ -17,7 +17,8 @@ enum class InterfaceType {
     Ethernet,
     DockerBridge,
     VirtualVeth,
-    VPN
+    VPN,
+    WifiVirtualMon
 };
 
 struct InterfaceInfo {
@@ -27,13 +28,14 @@ struct InterfaceInfo {
 
 inline std::string to_string(const InterfaceType type) {
     switch (type) {
-        case InterfaceType::Loopback:     return "loopback";
-        case InterfaceType::Wifi:         return "wifi";
-        case InterfaceType::Ethernet:     return "ethernet";
-        case InterfaceType::DockerBridge: return "docker/bridge";
-        case InterfaceType::VirtualVeth:  return "veth";
-        case InterfaceType::VPN:          return "vpn";
-        default:                          return "unknown";
+        case InterfaceType::Loopback:       return "loopback";
+        case InterfaceType::Wifi:           return "wifi";
+        case InterfaceType::Ethernet:       return "ethernet";
+        case InterfaceType::DockerBridge:   return "docker/bridge";
+        case InterfaceType::VirtualVeth:    return "veth";
+        case InterfaceType::VPN:            return "vpn";
+        case InterfaceType::WifiVirtualMon: return "wifi-virtual-mon";
+        default:                            return "unknown";
     }
 }
 struct NlCaps {

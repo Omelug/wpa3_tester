@@ -2,7 +2,6 @@
 #include "config/RunStatus.h"
 #include <csignal>
 #include <thread>
-
 #include "ProcessManager.h"
 
 using namespace std;
@@ -24,7 +23,6 @@ int main(const int argc, char *argv[])  {
 
     runStatus.config_validation();
     runStatus.config_requirement(); //include validation
-    this_thread::sleep_for(std::chrono::seconds(3));
     runStatus.setup_test();
     runStatus.run_test();
     return 0;

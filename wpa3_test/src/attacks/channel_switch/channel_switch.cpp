@@ -38,11 +38,11 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
     sender.send(radiotap, iface);
 }
 
-void check_vulnerable(
+auto check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
-    int ap_channel, int new_channel,
-    int ms_interval, int attack_time){
+    const int ap_channel,const  int new_channel,
+    const int ms_interval,const int attack_time)->void{
 
     const NetworkInterface iface(iface_name);
 
@@ -81,7 +81,7 @@ void setup_chs_attack(RunStatus& rs){
         "sudo",
         "hostapd",
         "-i",
-        rs.internal_actors.at("access_point")->str_con["iface"].value(),
+        rs.get_actor("access_point")["iface"],
         hostapd_config_path
     };
     rs.process_manager.allow_history("access_point");
@@ -93,7 +93,7 @@ void setup_chs_attack(RunStatus& rs){
 	    "sudo",
         "wpa_supplicant",
         "-i",
-        rs.internal_actors.at("client")->str_con["iface"].value(),
+        rs.get_actor("client")["iface"],
 		"-c",
     	wpa_supp_config_path
 	};
@@ -110,14 +110,15 @@ void run_chs_attack(RunStatus& rs){
 
     //TODO register
 
-    const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->str_con["mac"].value()));
-    const HWAddress<6> sta_mac((rs.internal_actors["client"]->str_con["mac"].value()));
-    const string iface_name = rs.internal_actors["attacker"]->str_con["iface"].value();
+    const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
+    const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
+    const string iface_name = rs.get_actor("attacker")["iface"];
     const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
     const int old_channel = rs.config["actors"]["access_point"]["setup"]["channel"];
     const int new_channel = rs.config["attack_config"]["new_channel"];
     const int ms_interval = rs.config["attack_config"]["ms_interval"];
     const int attack_time = rs.config["attack_config"]["attack_time"];
+
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 
     //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
@@ -128,4 +129,3 @@ void run_chs_attack(RunStatus& rs){
 
     //throw not_implemented_error("Run not implemented");
 }
-

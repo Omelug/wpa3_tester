@@ -4,12 +4,12 @@
 #include <cstdarg>
 #include <cstdio>
 #include <iostream>
-#include <vector>
-#include <fstream>
 
 #include "config/RunStatus.h"
 
-const char *levelToString(LogLevel level) {
+using namespace  std;
+
+const char *levelToString(const LogLevel level) {
     switch (level) {
         case LogLevel::DEBUG:    return "DEBUG";
         case LogLevel::INFO:     return "INFO";
@@ -54,7 +54,7 @@ void log_actor_map(const char* name, const ActorCMap& m) {
     log(LogLevel::DEBUG, "%s: %s", name, keys.c_str());
 }
 
-static const char* opt_or(const std::optional<std::string>& v, const char* fallback) {
+static auto opt_or(const std::optional<std::string> &v, const char *fallback)->const char *{
     return v.has_value() ? v->c_str() : fallback;
 }
 
@@ -63,24 +63,22 @@ void log_actor_configs(const ActorCMap& m) {
         log(LogLevel::DEBUG,
             "Actor '%s': iface=%s, mac=%s, essid=%s, driver=%s",
             name.c_str(),
-            opt_or(actor->iface, "<none>"),
+            opt_or(actor->str_con["iface"], "<none>"),
             opt_or(actor->str_con["mac"], "<none>"),
-            opt_or(actor->essid, "<none>"),
-            opt_or(actor->driver, "<none>"));
+            opt_or(actor->str_con["essid"], "<none>"),
+            opt_or(actor->str_con["driver"], "<none>"));
 
 		string cond_str;
         bool first = true;
-        for (const auto &entry : actor->bool_conditions) {
-            const string &key = entry.first;
-            const auto &val_opt = entry.second;
-            string val_repr = "_";
-            if (val_opt.has_value()) {val_repr = (*val_opt ? "true" : "false");}
+        for (const auto &[cond_name, bool_v] : actor->bool_conditions) {
+            string val_repr = "None";
+            if (bool_v.has_value()) {val_repr = (*bool_v ? "true" : "false");}
             if (!first) {cond_str += ", ";}
-            cond_str += key + "=" + val_repr;
+            cond_str += cond_name + "=" + val_repr;
             first = false;
         }
         if (cond_str.empty()) {cond_str = "<no conditions>";}
-        log(LogLevel::DEBUG,"Actor '%s' conditions: %s",name.c_str(), cond_str.c_str());
+        log(LogLevel::DEBUG,"Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
     }
     if (m.empty()) {log(LogLevel::DEBUG, "Actor map is empty");}
 }
@@ -102,7 +100,7 @@ void save_actor_interface_mapping(const std::string &run_folder,
 
     ofs << "# Actor to interface mapping" << std::endl;
     for (const auto &[name, actor] : internal_actors) {
-        const char *iface = opt_or(actor->iface, "<none>");
+        const char *iface = opt_or(actor->str_con["iface"], "<none>");
         ofs << name << " -> " << iface << std::endl;
     }
 

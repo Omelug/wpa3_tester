@@ -1,4 +1,5 @@
 #include "config/Actor_config.h"
+#include "logger/error_log.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -41,4 +42,26 @@ bool Actor_config::matches(const Actor_config& offer) {
         }
     }
     return true;
+}
+
+std::string Actor_config::operator[](const std::string& key) const {
+    const auto it = str_con.find(key);
+    if (it == str_con.end()) {
+        throw config_error("Actor_config: missing required string condition '%s'", key.c_str());
+    }
+    if (!it->second.has_value()) {
+        throw config_error("Actor_config: string condition '%s' has no value", key.c_str());
+    }
+    return *(it->second);
+}
+
+bool Actor_config::get_bool(const std::string& key) const {
+    const auto it = bool_conditions.find(key);
+    if (it == bool_conditions.end()) {
+        throw config_error("Actor_config: missing required bool condition '%s'", key.c_str());
+    }
+    if (!it->second.has_value()) {
+        throw config_error("Actor_config: bool condition '%s' has no value", key.c_str());
+    }
+    return *(it->second);
 }

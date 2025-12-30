@@ -13,26 +13,28 @@ using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>
 using AssignmentMap = std::map<std::string,std::string>;
 
 class RunStatus {
+
+//actors
+ActorCMap external_actors;
+ActorCMap internal_actors;
+ActorCMap simulation_actors;
+
 public:
     nlohmann::json config;
     std::string run_folder;
     std::string configPath;
-
-    //actors
-	ActorCMap external_actors;
-	ActorCMap internal_actors;
-	ActorCMap simulation_actors;
 
     //mapping actor->interface
     AssignmentMap internal_mapping;
     //AssignmentMap external_mapping;
     //AssignmentMap simulation_mapping;
 
-
     ProcessManager process_manager;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);
+
+    Actor_config& get_actor(const std::string& actor_name);
 
 private:
     static std::string findConfigByTestName(const std::string &name);

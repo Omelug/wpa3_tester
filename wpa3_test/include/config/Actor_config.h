@@ -23,4 +23,6 @@ public:
         {"WPA-PSK", std::nullopt},
         {"WPA3-SAE", std::nullopt}
 	};
+    std::string operator[](const std::string& key) const;
+    bool get_bool(const std::string &key) const;
 };

@@ -1,7 +1,7 @@
-#include "../../include/config/RunStatus.h"
+#include "config/RunStatus.h"
 #include <filesystem>
-#include "../../include/logger/error_log.h"
-#include "../../include/logger/log.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
 #include <argparse/argparse.hpp>
 #include <string>
 
@@ -51,6 +51,30 @@ RunStatus::RunStatus(const int argc, char **argv){
 
 
 void RunStatus::run_test(){
-    attack_run[config["attacker_module"]](runStatus);
+    attack_run[config["attacker_module"]](*this);
 };
 
+Actor_config& RunStatus::get_actor(const string& actor_name){
+    Actor_config* found = nullptr;
+
+    auto check_map = [&](ActorCMap& m, const char* map_name) {
+        auto it = m.find(actor_name);
+        if (it != m.end()) {
+            if (found != nullptr) {
+                throw config_error("Actor %s found in multiple maps (including %s)",
+                                   actor_name.c_str(), map_name);
+            }
+            found = it->second.get();
+        }
+    };
+
+    check_map(external_actors, "external_actors");
+    check_map(internal_actors, "internal_actors");
+    check_map(simulation_actors, "simulation_actors");
+
+    if (!found) {
+        throw config_error("Actor %s not found in any actor map", actor_name.c_str());
+    }
+
+    return *found;
+}

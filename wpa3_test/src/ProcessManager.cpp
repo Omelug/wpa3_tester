@@ -25,8 +25,7 @@ string current_timestamp() {
 }
 
 void ProcessManager::write_log_line(ofstream &os, const string &line) {
-    os << line << '\n';
-    os.flush();
+    os << line << endl;
 }
 
 static error_code handle_chunk(ProcessManager *pm,
@@ -48,9 +47,7 @@ static error_code handle_chunk(ProcessManager *pm,
 
         if (auto it = pm->process_logs.find(process_name); it != pm->process_logs.end()) {
             auto &[log, history, history_enabled, wait] = it->second;
-            if (log.is_open()) {
-                ProcessManager::write_log_line(log, full_line);
-            }
+            if (log.is_open()) {ProcessManager::write_log_line(log, full_line);}
             if (history_enabled) {
                 history += line;
                 history.push_back('\n');
@@ -58,9 +55,9 @@ static error_code handle_chunk(ProcessManager *pm,
 
             // notify active wait listener, if any
             if (wait.active) {
-                if (std::regex_search(line, wait.pattern)) {
+                if (regex_search(line, wait.pattern)) {
                     wait.matched = true;
-                    std::unique_lock lock(pm->wait_mutex);
+                    unique_lock lock(pm->wait_mutex);
                     pm->wait_cv.notify_all();
                 }
             }
@@ -69,12 +66,18 @@ static error_code handle_chunk(ProcessManager *pm,
     return {};
 }
 
-void ProcessManager::init_logging(const std::string &run_folder){
-    namespace fs = std::filesystem;
+void ProcessManager::recreate_log_folder(){
+
+}
+
+void ProcessManager::init_logging(const string &run_folder){
+    namespace fs = filesystem;
 
     log_base_dir = fs::path(run_folder) / "logger";
+    error_code ec;
 
-    std::error_code ec;
+    recreate_log_folder();
+    // if log folder exists -> clear
     if (fs::exists(log_base_dir, ec)) {
         fs::remove_all(log_base_dir, ec);
         if (ec) {
@@ -86,6 +89,7 @@ void ProcessManager::init_logging(const std::string &run_folder){
         }
     }
 
+    // create log folder
     fs::create_directories(log_base_dir, ec);
     if (ec) {
         log(LogLevel::ERROR,
@@ -95,6 +99,7 @@ void ProcessManager::init_logging(const std::string &run_folder){
         throw runtime_error("Unable to create logger directory");
     }
 
+    // create compibated
     const fs::path combined_path = log_base_dir / "all.log";
     combined_log.close();
     combined_log.open(combined_path, ios::out | ios::trunc);
@@ -113,11 +118,10 @@ void ProcessManager::init_logging(const std::string &run_folder){
         entry.history_enabled = false;
     }
     process_logs.clear();
-    draining_started = false;
 }
 
-void ProcessManager::run(const string& name, const vector<string> &cmd) {
-    namespace fs = std::filesystem;
+void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
+    namespace fs = filesystem;
 
     auto proc = make_unique<reproc::process>();
     reproc::options options;
@@ -125,12 +129,12 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
     options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
 
     if (const error_code ec = proc->start(cmd, options)) {
-        throw runtime_error("Failed to start " + name + ": " + ec.message());
+        throw runtime_error("Failed to start " + actor_name + ": " + ec.message());
     }
 
-    const fs::path log_path = log_base_dir / (name + ".log");
+    const fs::path log_path = log_base_dir / (actor_name + ".log");
 
-    auto &logs = process_logs[name];
+    auto &logs = process_logs[actor_name];
     logs.log.close();
     logs.log.open(log_path, ios::out | ios::trunc);
     logs.history.clear();
@@ -138,7 +142,7 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
     if (!logs.log.is_open()) {
         log(LogLevel::ERROR,
             "Failed to open log for %s: %s",
-            name.c_str(), log_path.string().c_str());
+            actor_name.c_str(), log_path.string().c_str());
     }
 
     string cmd_line;
@@ -146,39 +150,39 @@ void ProcessManager::run(const string& name, const vector<string> &cmd) {
         if (i) cmd_line += ' ';
         cmd_line += cmd[i];
     }
-    const string line   =  current_timestamp() + " [" + name + "] [cmd] " + cmd_line;
+    const string line   =  current_timestamp() + " [" + actor_name + "] [cmd] " + cmd_line;
 
     if (combined_log.is_open()) {write_log_line(combined_log, line);}
     if (logs.log.is_open()) {write_log_line(logs.log, line);}
 
-    processes[name] = std::move(proc);
+    processes[actor_name] = move(proc);
 
-    start_drain_for(name);
+    start_drain_for(actor_name);
 }
 
-void ProcessManager::start_drain_for(const std::string &proc_name) {
-    auto it = processes.find(proc_name);
+void ProcessManager::start_drain_for(const string &actor_name) {
+    auto it = processes.find(actor_name);
     if (it == processes.end() || !it->second) return;
 
     reproc::process *proc = it->second.get();
 
-    std::thread([this, proc_name, proc]() {
+    thread([this, actor_name, proc]() {
         string accumulator_out;
         string accumulator_err;
 
         auto make_sink = [&](const string& label, string& accumulator) {
-            return [this, proc_name, label, &accumulator]
+            return [this, actor_name, label, &accumulator]
                    (reproc::stream, const uint8_t* buffer, const size_t size) {
                 const string data(reinterpret_cast<const char*>(buffer), size);
                 accumulator.append(data);
-                return handle_chunk(this, proc_name, label, data);
+                return handle_chunk(this, actor_name, label, data);
             };
         };
 
         auto out_sink = make_sink("stdout", accumulator_out);
         auto err_sink = make_sink("stderr", accumulator_err);
 
-        if (const std::error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
+        if (const error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
             log(LogLevel::ERROR,
                 "Background drain for %s failed: %s",
                 proc_name.c_str(), ec.message().c_str());
@@ -186,39 +190,39 @@ void ProcessManager::start_drain_for(const std::string &proc_name) {
     }).detach();
 }
 
-void ProcessManager::allow_history(const std::string &name) {
-    if (const auto it = process_logs.find(name); it != process_logs.end()) {
+void ProcessManager::allow_history(const string &actor_name) {
+    if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history_enabled = true;
     }
 }
 
-void ProcessManager::ignore_history(const std::string &name) {
-    if (const auto it = process_logs.find(name); it != process_logs.end()) {
+void ProcessManager::ignore_history(const string &actor_name) {
+    if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history_enabled = false;
         it->second.history.clear();
     }
 }
 
-void ProcessManager::discard_history(const std::string &name) {
-    if (const auto it = process_logs.find(name); it != process_logs.end()) {
+void ProcessManager::discard_history(const string &actor_name) {
+    if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history.clear();
     }
 }
 
-void ProcessManager::wait_for(const string &name, const string &pattern){
-    if (const auto pit = processes.find(name); pit == processes.end() || !pit->second) {
-        throw runtime_error("Unknown process in wait_for: " + name);
+void ProcessManager::wait_for(const string &actor_name, const string &pattern){
+    if (const auto pit = processes.find(actor_name); pit == processes.end() || !pit->second) {
+        throw runtime_error("Unknown process in wait_for: " + actor_name);
     }
 
-    const auto lit = process_logs.find(name);
-    if (lit == process_logs.end()) {
+    const auto actor_log = process_logs.find(actor_name);
+    if (actor_log == process_logs.end()) {
         throw runtime_error("No logs for process in wait_for: " + name);
     }
 
-    ProcessLogs &logs = lit->second;
+    ProcessLogs &logs = actor_log->second;
     logs.history_enabled = true;
 
-    logs.wait.pattern = std::regex(pattern);
+    logs.wait.pattern = regex(pattern);
     logs.wait.active = true;
     logs.wait.matched = false;
 
@@ -227,7 +231,7 @@ void ProcessManager::wait_for(const string &name, const string &pattern){
         stringstream ss(logs.history);
         string line;
         while (getline(ss, line)) {
-            if (std::regex_search(line, logs.wait.pattern)) {
+            if (regex_search(line, logs.wait.pattern)) {
                 logs.wait.matched = true;
                 break;
             }
@@ -241,7 +245,7 @@ void ProcessManager::wait_for(const string &name, const string &pattern){
 
 
     { // wait for new output to match
-        std::unique_lock lock(wait_mutex);
+        unique_lock lock(wait_mutex);
         wait_cv.wait(lock, [&logs]{ return logs.wait.matched; });
     }
 

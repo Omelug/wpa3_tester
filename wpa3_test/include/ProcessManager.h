@@ -35,8 +35,7 @@ public:
     static void write_log_line(std::ofstream &os, const std::string &line);
 
 private:
-    bool draining_started = false;
-    void start_global_drain();
+    void recreate_log_folder();
 
 public:
     ProcessManager() = default;
@@ -47,13 +46,14 @@ public:
 
     void init_logging(const std::string& run_folder);
 
-    void run(const std::string& name, const std::vector<std::string> &cmd);
-    void start_drain_for(const std::string &proc_name);
-    void allow_history(const std::string &name);
-    void ignore_history(const std::string &name);
-    void discard_history(const std::string &name);
+    // what can actors
+    void run(const std::string& actor_name, const std::vector<std::string> &cmd);
+    void start_drain_for(const std::string &actor_name);
+    void allow_history(const std::string &actor_name);
+    void ignore_history(const std::string &actor_name);
+    void discard_history(const std::string &actor_name);
 
-    void wait_for(const std::string &name, const std::string &pattern);
+    void wait_for(const std::string &actor_name, const std::string &pattern);
 
     // After stop (Ctrl + C or critical error)
     void stop_all();

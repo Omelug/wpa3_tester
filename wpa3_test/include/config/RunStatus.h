@@ -16,23 +16,38 @@ class RunStatus {
 public:
     nlohmann::json config;
     std::string run_folder;
+    std::string configPath;
 
-	std::string configPath;
-	AssignmentMap internal_mapping;
+    //actors
 	ActorCMap external_actors;
 	ActorCMap internal_actors;
 	ActorCMap simulation_actors;
+
+    //mapping actor->interface
+    AssignmentMap internal_mapping;
+    //AssignmentMap external_mapping;
+    //AssignmentMap simulation_mapping;
+
+
     ProcessManager process_manager;
 
 	RunStatus() = default;
     RunStatus(int argc, char ** argv);
-    void config_validation();
-    void config_requirement();
-    ActorCMap scan_internal() const;
-	std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
-	void setup_test();
-    void run_test();
 
 private:
     static std::string findConfigByTestName(const std::string &name);
+
+    // to scan available interfaces
+    ActorCMap scan_internal() const;
+    //ActorCMap scan_external() const;
+    //ActorCMap scan_simulation() const;
+
+    std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
+
+public:
+    void config_validation();
+    void config_requirement();
+    void setup_test();
+    void run_test();
+
 };

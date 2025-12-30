@@ -84,6 +84,7 @@ definitions:
             minItems: 1
             description: Condition for selection
         minProperties: 1
+      additionalProperties: false
 
     allOf:
       - if:

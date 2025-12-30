@@ -7,7 +7,6 @@ using json = nlohmann::json;
 Actor_config::Actor_config(const json& j) {
     if (j.contains("selection") && j["selection"].is_object()) {
         const auto& sel = j["selection"];
-
         for (auto & [key, val] : str_con) {
             if (sel.contains(key) && sel[key].is_string()) {
                 val = sel[key].get<string>();

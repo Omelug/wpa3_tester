@@ -30,12 +30,13 @@ actors:
     type: STA
     source: internal
     selection:
+      iface: wlan2
       condition: [monitor]
     channel: 6
 
 attack_config:
   validator: ./channel_switch.schema.yaml
-  attack_time: 50
-  ms_interval: 10
+  attack_time: 10
+  ms_interval: 100
   new_channel: 1
 

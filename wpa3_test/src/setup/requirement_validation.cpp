@@ -11,12 +11,11 @@ ActorCMap RunStatus::scan_internal() const{
     ActorCMap options_map;
 
     for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces(*this)) {
-        if(iface_type != InterfaceType::Wifi) continue; //TODO
+        if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;
         auto cfg = std::make_unique<Actor_config>(actor_json);
         hw_capabilities::get_nl80211_caps(iface_name, *cfg);
-
         options_map.emplace(iface_name, std::move(cfg));
     }
     return options_map;
@@ -87,7 +86,7 @@ void RunStatus::config_requirement() {
 
         //---------------  set mode based on actor requirements -------------------
         if (actor->bool_conditions.at("monitor").value_or(false)) {
-                hw_capabilities::set_monitor_mode(opt_iface);
+            hw_capabilities::set_monitor_mode(opt_iface);
         }
 
         if (config["actors"][actorName]["type"] == "AP") {
@@ -104,7 +103,6 @@ void RunStatus::config_requirement() {
     }
 
     log_actor_configs(internal_actors);
-    save_actor_interface_mapping(run_folder, internal_actors);
 
 	// TODO: simulation -> check hw compatibility
     //ActorCMap options_external =  create_simulation();

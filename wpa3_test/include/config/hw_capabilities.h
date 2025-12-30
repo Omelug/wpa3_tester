@@ -39,6 +39,7 @@ inline std::string to_string(const InterfaceType type) {
     }
 }
 struct NlCaps {
+    bool ap = false;
     bool monitor = false;
     bool band24 = false;
     bool band5 = false;

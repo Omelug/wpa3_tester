@@ -17,10 +17,11 @@ public:
     };
 
 	std::map<std::string, std::optional<bool>> bool_conditions = {
-        {"monitor", std::nullopt},
-        {"2_4Gz", std::nullopt},
-        {"5GHz", std::nullopt},
-        {"WPA-PSK", std::nullopt},
+        {"AP",       std::nullopt},
+        {"monitor",  std::nullopt},
+        {"2_4Gz",    std::nullopt},
+        {"5GHz",     std::nullopt},
+        {"WPA-PSK",  std::nullopt},
         {"WPA3-SAE", std::nullopt}
 	};
     std::string operator[](const std::string& key) const;

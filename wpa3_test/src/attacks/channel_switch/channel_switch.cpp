@@ -41,7 +41,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 auto check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
-    const int ap_channel,const  int new_channel,
+    const int ap_channel,int new_channel,
     const int ms_interval,const int attack_time)->void{
 
     const NetworkInterface iface(iface_name);
@@ -108,8 +108,6 @@ void setup_chs_attack(RunStatus& rs){
 
 void run_chs_attack(RunStatus& rs){
 
-    //TODO register
-
     const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
     const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
     const string iface_name = rs.get_actor("attacker")["iface"];
@@ -119,12 +117,14 @@ void run_chs_attack(RunStatus& rs){
     const int ms_interval = rs.config["attack_config"]["ms_interval"];
     const int attack_time = rs.config["attack_config"]["attack_time"];
 
+    // TODO setup_speed_observer
+    // tshark -i wlan0 -n -q -z io,stat,1,"eth.addr == "
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-
     //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
     //TODO log client, CTRL-EVENT-DISCONNECTED
     //TODO add END of tst to log (to ch)
     log(LogLevel::INFO,"-----------------------END");
+    // stop_speed_observer
     std::this_thread::sleep_for(std::chrono::seconds(9000));
 
     //throw not_implemented_error("Run not implemented");

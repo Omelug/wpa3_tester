@@ -52,14 +52,46 @@ RunStatus::RunStatus(const int argc, char **argv){
 
 void RunStatus::run_test(){
     attack_run[config["attacker_module"]](*this);
+}
+
+void RunStatus::save_actor_interface_mapping(){
+
+    // mapping of actors -> iface to run_folder/mapping.txt
+    if (run_folder.empty()) {
+        log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
+        return;
+    }
+
+    const string path = run_folder + "/mapping.txt";
+    ofstream ofs(path, ios::out | ios::trunc);
+    if (!ofs) {
+        log(LogLevel::ERROR, "Failed to open %s for writing actor/interface mapping", path.c_str());
+        return;
+    }
+
+    ofs << "# Actor to interface mapping" << endl;
+    ofs << "Internal mapping" << endl;
+    for (const auto &[name, actor] : internal_actors) {
+        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+    }
+    ofs << "External mapping" << endl;
+    for (const auto &[name, actor] : external_actors) {
+        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+    }
+    ofs << "Simulation mapping" << endl;
+    for (const auto &[name, actor] : simulation_actors) {
+        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+    }
+
+    ofs.close();
+        log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
 };
 
 Actor_config& RunStatus::get_actor(const string& actor_name){
     Actor_config* found = nullptr;
 
     auto check_map = [&](ActorCMap& m, const char* map_name) {
-        auto it = m.find(actor_name);
-        if (it != m.end()) {
+        if (auto it = m.find(actor_name); it != m.end()) {
             if (found != nullptr) {
                 throw config_error("Actor %s found in multiple maps (including %s)",
                                    actor_name.c_str(), map_name);

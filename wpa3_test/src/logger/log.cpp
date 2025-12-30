@@ -82,28 +82,3 @@ void log_actor_configs(const ActorCMap& m) {
     }
     if (m.empty()) {log(LogLevel::DEBUG, "Actor map is empty");}
 }
-
-// mapping of actors -> iface to run_folder/mapping.txt
-void save_actor_interface_mapping(const std::string &run_folder,
-                                  const ActorCMap &internal_actors) {
-    if (run_folder.empty()) {
-        log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
-        return;
-    }
-
-    const string path = run_folder + "/mapping.txt";
-    ofstream ofs(path, ios::out | ios::trunc);
-    if (!ofs) {
-        log(LogLevel::ERROR, "Failed to open %s for writing actor/interface mapping", path.c_str());
-        return;
-    }
-
-    ofs << "# Actor to interface mapping" << std::endl;
-    for (const auto &[name, actor] : internal_actors) {
-        const char *iface = opt_or(actor->str_con["iface"], "<none>");
-        ofs << name << " -> " << iface << std::endl;
-    }
-
-    ofs.close();
-    log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
-}

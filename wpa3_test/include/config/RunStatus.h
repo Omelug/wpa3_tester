@@ -51,5 +51,5 @@ public:
     void config_requirement();
     void setup_test();
     void run_test();
-
+    void save_actor_interface_mapping();
 };

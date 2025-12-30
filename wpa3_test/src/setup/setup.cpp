@@ -36,6 +36,8 @@ void RunStatus::setup_test(){
     }
 
     run_folder = last_run.string();
+    save_actor_interface_mapping();
+
     process_manager.init_logging(run_folder);
 
 	attack_setup[config["attacker_module"]](*this);

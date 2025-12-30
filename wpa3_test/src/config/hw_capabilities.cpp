@@ -36,8 +36,12 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
         nlattr *ift;
         int rem;
         nla_for_each_nested(ift, attrs[NL80211_ATTR_SUPPORTED_IFTYPES], rem){
-            if(nla_type(ift) == NL80211_IFTYPE_MONITOR)
+            if(nla_type(ift) == NL80211_IFTYPE_MONITOR){
                 caps->monitor = true;
+            }
+            if(nla_type(ift) == NL80211_IFTYPE_AP){
+                caps->ap = true;
+            }
         }
     }
 
@@ -100,6 +104,8 @@ void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
     nl_socket_free(sock);
 
     // Copy capabilities to Actor_config
+    //TODO tohel nějak zkusit nacpat do capllbacku?
+    cfg.bool_conditions["AP"]       = caps.ap;
     cfg.bool_conditions["monitor"]  = caps.monitor;
     cfg.bool_conditions["2_4Gz"]    = caps.band24;
     cfg.bool_conditions["5GHz"]     = caps.band5;
@@ -305,7 +311,8 @@ void hw_capabilities::set_monitor_mode(const string &iface){
 void hw_capabilities::set_ap_mode(const string &iface){
     log(LogLevel::INFO, "Preparing interface %s for AP mode", iface.c_str());
     run_cmd({"ip", "link", "set", iface, "down"});
-    run_cmd({"iw", "dev", iface, "set", "type", "__ap"});
+    //TODO co? run_cmd({"iw", "dev", iface, "set", "type", "__ap"});
+    run_cmd({"iw", "dev", iface, "set", "type", "managed"});
     run_cmd({"ip", "link", "set", iface, "up"});
 }
 

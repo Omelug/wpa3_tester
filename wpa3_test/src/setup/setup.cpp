@@ -39,4 +39,4 @@ void RunStatus::setup_test(){
     process_manager.init_logging(run_folder);
 
 	attack_setup[config["attacker_module"]](*this);
-};
+}

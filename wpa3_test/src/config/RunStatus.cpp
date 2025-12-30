@@ -5,6 +5,8 @@
 #include <argparse/argparse.hpp>
 #include <string>
 
+#include "attacks/attacks.h"
+
 using namespace std;
 using namespace filesystem;
 
@@ -44,5 +46,11 @@ RunStatus::RunStatus(const int argc, char **argv){
         throw config_error("Config not found: " + configPath);
     }
 
-    log(LogLevel::INFO, "Running with %s", this->configPath.c_str());
+    log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
 }
+
+
+void RunStatus::run_test(){
+    attack_run[config["attacker_module"]](runStatus);
+};
+

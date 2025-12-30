@@ -52,8 +52,7 @@ void check_vulnerable(
     while (chrono::steady_clock::now() < end_time) {
         log(LogLevel::DEBUG, "sending CSA");
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
-
-        std::this_thread::sleep_for(chrono::milliseconds(ms_interval));
+        this_thread::sleep_for(chrono::milliseconds(ms_interval));
     }
 
     cout << "check_vulnerable called with:\n"
@@ -109,6 +108,9 @@ void setup_chs_attack(RunStatus& rs){
 
 
 void run_chs_attack(RunStatus& rs){
+
+    //TODO register
+
     const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->mac.value()));
     const HWAddress<6> sta_mac((rs.internal_actors["client"]->mac.value()));
     const string iface_name = rs.internal_actors["attacker"]->iface.value();

@@ -79,10 +79,10 @@ digraph {
             fillcolor="#3ae0cd",
             label="file",
         ];
-        example_process_1[label="processes"];
+        actors[label="actors"];
     }
-    start_processes -> example_process_1[label="setup function"];
-    example_process_1 -> log[label="log and register wait_for "];
+    start_processes -> actors[label="setup function"];
+    actors -> log[label="log and register wait_for "];
 
     { //log
         node [
@@ -107,6 +107,6 @@ digraph {
         fillcolor="#eeffee",
         label="end of test"
     ];
-    end_of_test -> statistics[label="generate complex stats "];
+    end_of_test -> statistics[label="generate complex stats"];
     log -> statistics;
 }

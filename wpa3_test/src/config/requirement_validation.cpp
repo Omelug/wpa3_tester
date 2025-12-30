@@ -48,6 +48,7 @@ tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
         if (source == "simulation") {sim_map[actor_name] = std::move(config_ptr); continue; }
 		throw config_error("Unknown source %s in actor: %s", source.c_str(), actor_name.c_str());
     }
+
     return std::make_tuple(
        std::move(ex_map),
        std::move(in_map),
@@ -74,8 +75,8 @@ void RunStatus::config_requirement() {
     log_actor_map("internal", internal_actors);
     log_actor_map("simulation", simulation_actors);
 
+    // ------------------ INTERNAL ---------------------------
     const ActorCMap options_internal =  scan_internal();
-
     //find interface mapping
     internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
 
@@ -112,11 +113,10 @@ void RunStatus::config_requirement() {
         actor = make_unique<Actor_config>(*optIt->second);
     }
 
-	//TODO setup_requirements(internal_actors);
+    log_actor_configs(internal_actors);
+    save_actor_interface_mapping(run_folder, internal_actors);
 
-	//log_actor_configs(internal_actors);
-
-    // TODO: simulation -> check hw compatibility
+	// TODO: simulation -> check hw compatibility
     //ActorCMap options_external =  create_simulation();
 
     //hw_capabilities::reset();

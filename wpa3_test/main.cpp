@@ -27,6 +27,6 @@ int main(const int argc, char *argv[])  {
     runStatus.config_requirement(); //include validation
     std::this_thread::sleep_for(std::chrono::seconds(3));
     runStatus.setup_test();
-    attack_run[runStatus.config["attacker_module"]](runStatus);
+    runStatus.run_test();
     return 0;
 }

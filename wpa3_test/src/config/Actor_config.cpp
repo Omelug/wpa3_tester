@@ -10,7 +10,7 @@ Actor_config::Actor_config(const json& j) {
         if (sel.contains("mac"))   mac = sel["mac"].get<string>();
         if (sel.contains("essid")) essid = sel["essid"].get<string>();
         if (sel.contains("iface")) iface = sel["iface"].get<string>();
-		if (sel.contains("driver")) driver = sel["driver"].get<std::string>();
+		if (sel.contains("driver")) driver = sel["driver"].get<string>();
 
         if (sel.contains("condition") && sel["condition"].is_array()) {
             for (const auto& cond_name : sel["condition"]) {

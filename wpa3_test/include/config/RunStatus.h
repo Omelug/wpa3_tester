@@ -31,6 +31,7 @@ public:
     ActorCMap scan_internal() const;
 	std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 	void setup_test();
+    void run_test();
 
 private:
     static std::string findConfigByTestName(const std::string &name);

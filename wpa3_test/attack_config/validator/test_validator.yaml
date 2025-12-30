@@ -3,7 +3,6 @@ title: Test Configuration Schema
 type: object
 required:
   - name
-  - wizard_fallback
   - attacker_module
   - actors
   - attack_config
@@ -18,9 +17,9 @@ properties:
     type: string
     description: Test name
 
-  wizard_fallback:
-    type: boolean
-    description: If should be wizard asked after selection error
+#  wizard_fallback:
+#    type: boolean
+#    description: If should be wizard asked after selection error
 
   attacker_module:
     type: string

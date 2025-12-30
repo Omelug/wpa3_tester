@@ -8,10 +8,13 @@ class Actor_config {
 public:
     explicit Actor_config(const nlohmann::json& j);
 	bool matches(const Actor_config &offer);
-	std::optional<std::string>	iface;
-    std::optional<std::string>	mac;
-    std::optional<std::string>	essid;
-    std::optional<std::string>	driver;
+
+    std::map<std::string, std::optional<std::string>> str_con = {
+        {"iface",  std::nullopt},
+        {"mac",    std::nullopt},
+        {"essid",  std::nullopt},
+        {"driver", std::nullopt}
+    };
 
 	std::map<std::string, std::optional<bool>> bool_conditions = {
         {"monitor", std::nullopt},
@@ -21,4 +24,3 @@ public:
         {"WPA3-SAE", std::nullopt}
 	};
 };
-

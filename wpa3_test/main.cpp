@@ -1,6 +1,5 @@
 #include <iostream>
 #include "config/RunStatus.h"
-#include "attacks/attacks.h"
 #include <csignal>
 #include <thread>
 
@@ -10,11 +9,11 @@ using namespace std;
 
 static RunStatus* globalRunStatus = nullptr;
 
-void signal_handler(int signum) {
+void signal_handler(const int signum) {
     if (globalRunStatus) {
         globalRunStatus->process_manager.stop_all();
     }
-    std::exit(signum);
+    exit(signum);
 }
 
 int main(const int argc, char *argv[])  {
@@ -25,7 +24,7 @@ int main(const int argc, char *argv[])  {
 
     runStatus.config_validation();
     runStatus.config_requirement(); //include validation
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    this_thread::sleep_for(std::chrono::seconds(3));
     runStatus.setup_test();
     runStatus.run_test();
     return 0;

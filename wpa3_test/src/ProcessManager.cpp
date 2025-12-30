@@ -66,17 +66,10 @@ static error_code handle_chunk(ProcessManager *pm,
     return {};
 }
 
-void ProcessManager::recreate_log_folder(){
-
-}
-
-void ProcessManager::init_logging(const string &run_folder){
+void ProcessManager::recreate_log_folder(const std::filesystem::path &log_base_dir){
     namespace fs = filesystem;
-
-    log_base_dir = fs::path(run_folder) / "logger";
     error_code ec;
 
-    recreate_log_folder();
     // if log folder exists -> clear
     if (fs::exists(log_base_dir, ec)) {
         fs::remove_all(log_base_dir, ec);
@@ -99,8 +92,16 @@ void ProcessManager::init_logging(const string &run_folder){
         throw runtime_error("Unable to create logger directory");
     }
 
-    // create compibated
-    const fs::path combined_path = log_base_dir / "all.log";
+}
+
+void ProcessManager::init_logging(const string &run_folder){
+    namespace fs = filesystem;
+
+    log_base_dir = fs::path(run_folder) / "logger";
+    recreate_log_folder(log_base_dir);
+
+    // create combated log
+    const fs::path combined_path = log_base_dir / "combined.log";
     combined_log.close();
     combined_log.open(combined_path, ios::out | ios::trunc);
     if (!combined_log.is_open()) {
@@ -155,13 +156,13 @@ void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
     if (combined_log.is_open()) {write_log_line(combined_log, line);}
     if (logs.log.is_open()) {write_log_line(logs.log, line);}
 
-    processes[actor_name] = move(proc);
+    processes[actor_name] = std::move(proc);
 
     start_drain_for(actor_name);
 }
 
 void ProcessManager::start_drain_for(const string &actor_name) {
-    auto it = processes.find(actor_name);
+    const auto it = processes.find(actor_name);
     if (it == processes.end() || !it->second) return;
 
     reproc::process *proc = it->second.get();
@@ -185,7 +186,7 @@ void ProcessManager::start_drain_for(const string &actor_name) {
         if (const error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
             log(LogLevel::ERROR,
                 "Background drain for %s failed: %s",
-                proc_name.c_str(), ec.message().c_str());
+                actor_name.c_str(), ec.message().c_str());
         }
     }).detach();
 }
@@ -216,7 +217,7 @@ void ProcessManager::wait_for(const string &actor_name, const string &pattern){
 
     const auto actor_log = process_logs.find(actor_name);
     if (actor_log == process_logs.end()) {
-        throw runtime_error("No logs for process in wait_for: " + name);
+        throw runtime_error("No logs for process in wait_for: " + actor_name);
     }
 
     ProcessLogs &logs = actor_log->second;

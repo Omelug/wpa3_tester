@@ -1,34 +1,22 @@
 #pragma once
 #include <iostream>
-#include <ostream>
 #include <tins/tins.h>
 #include "config/RunStatus.h"
 
-using Tins::HWAddress;
-using Tins::NetworkInterface;
-using Tins::Dot11Beacon;
-using Tins::RadioTap;
-using Tins::Dot11ManagementFrame;
-using Tins::PacketSender;
-using std::string;
-using std::cout;
-using std::endl;
-
-extern volatile bool g_stop;
-
-void send_CSA_beacon(const HWAddress<6> &ap_mac,
-                     const NetworkInterface &iface,
-                     const string &ssid,
+void send_CSA_beacon(const Tins::HWAddress<6> &ap_mac,
+                     const Tins::NetworkInterface &iface,
+                     const std::string &ssid,
                      int ap_channel);
 
-void check_vulnerable(const HWAddress<6>& ap_mac,
-                      const HWAddress<6>& sta_mac,
-                      const string &iface_name,
-                      const string& ssid,
+void check_vulnerable(const Tins::HWAddress<6>& ap_mac,
+                      const Tins::HWAddress<6>& sta_mac,
+                      const std::string &iface_name,
+                      const std::string& ssid,
                       int ap_channel,
                       int new_channel,
                       int ms_interval,
                       int attack_time);
 
+// registered functions in tester
 void setup_chs_attack(RunStatus& rs);
 void run_chs_attack(RunStatus& rs);

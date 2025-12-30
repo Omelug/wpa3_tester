@@ -64,7 +64,7 @@ void log_actor_configs(const ActorCMap& m) {
             "Actor '%s': iface=%s, mac=%s, essid=%s, driver=%s",
             name.c_str(),
             opt_or(actor->iface, "<none>"),
-            opt_or(actor->mac, "<none>"),
+            opt_or(actor->str_con["mac"], "<none>"),
             opt_or(actor->essid, "<none>"),
             opt_or(actor->driver, "<none>"));
 

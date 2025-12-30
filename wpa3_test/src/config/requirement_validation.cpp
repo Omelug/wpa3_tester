@@ -15,17 +15,7 @@ ActorCMap RunStatus::scan_internal() const{
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;
         auto cfg = std::make_unique<Actor_config>(actor_json);
-
-        cfg->mac = hw_capabilities::read_sysfs(iface_name, "address");
-        cfg->driver = hw_capabilities::get_driver_name(iface_name);
-
-        NlCaps caps =  hw_capabilities::get_nl80211_caps(iface_name);
-
-        cfg->bool_conditions["monitor"]   = caps.monitor;
-        cfg->bool_conditions["2_4GHz"]    = caps.band24;
-        cfg->bool_conditions["5GHz"]      = caps.band5;
-        cfg->bool_conditions["WPA-PSK"]   = caps.wpa2_psk;
-        cfg->bool_conditions["WPA3-SAE"]  = caps.wpa3_sae;
+        hw_capabilities::get_nl80211_caps(iface_name, *cfg);
 
         options_map.emplace(iface_name, std::move(cfg));
     }

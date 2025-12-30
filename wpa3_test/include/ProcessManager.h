@@ -12,7 +12,7 @@
 
 class ProcessManager{
 public:
-    std::map<std::string, std::unique_ptr<reproc::process>> processes;
+    // log for whole test
     std::filesystem::path log_base_dir;
     std::ofstream combined_log;
 
@@ -28,14 +28,17 @@ public:
         bool          history_enabled = false;
         WaitListener  wait;
     };
+
+    std::map<std::string, std::unique_ptr<reproc::process>> processes;
     std::map<std::string, ProcessLogs> process_logs;
+
     std::mutex wait_mutex;
     std::condition_variable wait_cv;
 
     static void write_log_line(std::ofstream &os, const std::string &line);
 
 private:
-    void recreate_log_folder();
+    static void recreate_log_folder(const std::filesystem::path &log_base_dir);
 
 public:
     ProcessManager() = default;

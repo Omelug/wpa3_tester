@@ -81,7 +81,7 @@ void setup_chs_attack(RunStatus& rs){
         "sudo",
         "hostapd",
         "-i",
-        rs.internal_actors.at("access_point")->iface.value(),
+        rs.internal_actors.at("access_point")->str_con["iface"].value(),
         hostapd_config_path
     };
     rs.process_manager.allow_history("access_point");
@@ -92,9 +92,8 @@ void setup_chs_attack(RunStatus& rs){
 	const vector<string> wpa_supplicant_args = {
 	    "sudo",
         "wpa_supplicant",
-	    //"-dd",
         "-i",
-        rs.internal_actors.at("client")->iface.value(),
+        rs.internal_actors.at("client")->str_con["iface"].value(),
 		"-c",
     	wpa_supp_config_path
 	};
@@ -111,9 +110,9 @@ void run_chs_attack(RunStatus& rs){
 
     //TODO register
 
-    const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->mac.value()));
-    const HWAddress<6> sta_mac((rs.internal_actors["client"]->mac.value()));
-    const string iface_name = rs.internal_actors["attacker"]->iface.value();
+    const HWAddress<6> ap_mac((rs.internal_actors["access_point"]->str_con["mac"].value()));
+    const HWAddress<6> sta_mac((rs.internal_actors["client"]->str_con["mac"].value()));
+    const string iface_name = rs.internal_actors["attacker"]->str_con["iface"].value();
     const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
     const int old_channel = rs.config["actors"]["access_point"]["setup"]["channel"];
     const int new_channel = rs.config["attack_config"]["new_channel"];

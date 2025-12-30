@@ -7,10 +7,11 @@ Actor_config::Actor_config(const json& j) {
     if (j.contains("selection") && j["selection"].is_object()) {
         const auto& sel = j["selection"];
 
-        if (sel.contains("mac"))   mac = sel["mac"].get<string>();
-        if (sel.contains("essid")) essid = sel["essid"].get<string>();
-        if (sel.contains("iface")) iface = sel["iface"].get<string>();
-		if (sel.contains("driver")) driver = sel["driver"].get<string>();
+        for (auto & [key, val] : str_con) {
+            if (sel.contains(key) && sel[key].is_string()) {
+                val = sel[key].get<string>();
+            }
+        }
 
         if (sel.contains("condition") && sel["condition"].is_array()) {
             for (const auto& cond_name : sel["condition"]) {
@@ -25,15 +26,17 @@ Actor_config::Actor_config(const json& j) {
 
 
 bool Actor_config::matches(const Actor_config& offer) {
-    if (mac.has_value() && mac != offer.mac) return false;
-    if (iface.has_value() && iface != offer.iface) return false;
-    if (essid.has_value() && essid != offer.essid) return false;
-	if (driver && driver != offer.driver) return false;
+    for (auto const & [key, required_val] : str_con) {
+        if (!required_val.has_value()) { continue; }
+        if (auto it = offer.str_con.find(key); it == offer.str_con.end() || it->second != required_val) {
+            return false;
+        }
+    }
 
-    for (auto const& [key, required_val] : bool_conditions) {
+    // Check boolean conditions
+    for(auto const& [key, required_val] : bool_conditions) {
         if (!required_val.has_value()) {continue;}
-        if (auto it = offer.bool_conditions.find(key);
-            it == offer.bool_conditions.end() || it->second != required_val) {
+        if (auto it = offer.bool_conditions.find(key); it == offer.bool_conditions.end() || it->second != required_val) {
             return false;
         }
     }

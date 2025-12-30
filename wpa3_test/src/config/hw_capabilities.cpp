@@ -65,18 +65,26 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
     return NL_OK;
 }
 
-NlCaps hw_capabilities::get_nl80211_caps(const std::string &iface){
+void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
+    // Fill string-based capabilities first
+    cfg.str_con["mac"]    = read_sysfs(iface, "address");
+    cfg.str_con["driver"] = get_driver_name(iface);
+
+    // Query nl80211 capabilities
     NlCaps caps;
 
     const int ifindex = if_nametoindex(iface.c_str());
-    if(!ifindex) return caps;
+    if(!ifindex) return;
 
     nl_sock *sock = nl_socket_alloc();
-    genl_connect(sock);
+    if (!sock) {return;}
+    if (genl_connect(sock) != 0) {nl_socket_free(sock);return;}
 
     const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
 
     nl_msg *msg = nlmsg_alloc();
+    if (!msg) {nl_socket_free(sock);return;}
+
     genlmsg_put(msg, 0, 0, nl80211_id, 0, 0,
                 NL80211_CMD_GET_WIPHY, 0);
 
@@ -91,7 +99,12 @@ NlCaps hw_capabilities::get_nl80211_caps(const std::string &iface){
     nlmsg_free(msg);
     nl_socket_free(sock);
 
-    return caps;
+    // Copy capabilities to Actor_config
+    cfg.bool_conditions["monitor"]  = caps.monitor;
+    cfg.bool_conditions["2_4Gz"]    = caps.band24;
+    cfg.bool_conditions["5GHz"]     = caps.band5;
+    cfg.bool_conditions["WPA-PSK"]  = caps.wpa2_psk;
+    cfg.bool_conditions["WPA3-SAE"] = caps.wpa3_sae;
 }
 
 string hw_capabilities::read_sysfs(const string &iface, const string &file){
@@ -199,8 +212,7 @@ bool hw_capabilities::findSolution(
         if(!optConfigPtr){ continue; } // skip empty
         if(usedOptions.contains(optKey)){ continue; } // already used this option
 
-        Actor_config &optConfig = *optConfigPtr;
-        if(!currentRuleReq.matches(optConfig)){ continue; } // node found
+        if(Actor_config &optConfig = *optConfigPtr; !currentRuleReq.matches(optConfig)){ continue; } // node found
 
         usedOptions.insert(optKey);
         currentAssignment[currentRuleKey] = optKey;
@@ -232,11 +244,11 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap &rules, const ActorCM
     throw req_error("Not found valid requirements");
 }
 
-static int run_cmd(const std::vector<std::string> &argv){
+static int run_cmd(const vector<string> &argv){
     if(argv.empty()) return -1;
 
     // build C-style argv
-    std::vector<char *> args;
+    vector<char *> args;
     args.reserve(argv.size() + 1);
     for(auto &s: argv){
         args.push_back(const_cast<char *>(s.c_str()));
@@ -270,7 +282,7 @@ static int run_cmd(const std::vector<std::string> &argv){
     return WEXITSTATUS(status);
 }
 
-void hw_capabilities::cleanup_interface(const std::string &iface){
+void hw_capabilities::cleanup_interface(const string &iface){
     log(LogLevel::INFO, "Cleaning up interface %s", iface.c_str());
 
     run_cmd({"pkill", "-f", "wpa_supplicant.*-i" + iface});
@@ -283,32 +295,26 @@ void hw_capabilities::cleanup_interface(const std::string &iface){
     run_cmd({"ip", "link", "set", iface, "up"});
 }
 
-void hw_capabilities::set_monitor_mode(const std::string &iface){
+void hw_capabilities::set_monitor_mode(const string &iface){
     log(LogLevel::INFO, "Setting interface %s to monitor mode", iface.c_str());
-
-    //cleanup_interface(iface);
-
     run_cmd({"ip", "link", "set", iface, "down"});
     run_cmd({"iw", "dev", iface, "set", "type", "monitor"});
     run_cmd({"ip", "link", "set", iface, "up"});
 }
 
-void hw_capabilities::set_ap_mode(const std::string &iface){
+void hw_capabilities::set_ap_mode(const string &iface){
     log(LogLevel::INFO, "Preparing interface %s for AP mode", iface.c_str());
-
-    //cleanup_interface(iface);
-
     run_cmd({"ip", "link", "set", iface, "down"});
-    run_cmd({"iw", "dev", iface, "set", "type", "managed"});
+    run_cmd({"iw", "dev", iface, "set", "type", "__ap"});
     run_cmd({"ip", "link", "set", iface, "up"});
 }
 
-void hw_capabilities::set_channel(const std::string &iface, int channel){
+void hw_capabilities::set_channel(const string &iface, const int channel){
     log(LogLevel::INFO, "Setting interface %s to channel %d", iface.c_str(), channel);
-    run_cmd({"iw", "dev", iface, "set", "channel", std::to_string(channel)});
+    run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
 }
 
-int hw_capabilities::channel_to_freq_mhz(int channel){
+int hw_capabilities::channel_to_freq_mhz(const int channel){
     // 2.4 GHz band: channels 1-13 -> 2412 + 5*(ch-1), channel 14 -> 2484
     if(channel >= 1 && channel <= 13){
         return 2412 + 5 * (channel - 1);

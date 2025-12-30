@@ -12,7 +12,7 @@ digraph {
         ];
         config_validation[label="⚙ config validation"];
         req_validation[label="⚙ requirement validation"];
-        start_processes[label="⚙ setup process"];
+        start_processes[label="⚙ setup process manager"];
         wait_for_setup[label="⚙ wait for setup (check process outputs)"];
         run_tests[label="⚙ run tests"];
         wait_for_all_process_end[label="⚙ wait for all process end"];
@@ -24,12 +24,11 @@ digraph {
             fillcolor="#c96666",
             label="error",
         ];
-        var_not_found_error[label="templeate error"];
         parser_error[label="config parser errors"];
         req_gather_error[label="req gathering errors"];
         req_val_error[label="req validation errors"];
         start_process_error[label="start process errors"];
-        wait_process_error[label="wait errors"];
+        wait_process_error[label="wait timeout errors"];
     }
     { // files
         node [
@@ -40,7 +39,6 @@ digraph {
         ];
         creds[label="creds file"];
         configfile[label="config file"];
-        templeates[label="templeate .yaml.in"];
 
     }
 
@@ -57,21 +55,16 @@ digraph {
     wpa_tester -> test_map[label="--test"];
     test_map -> configfile [label="load test config"];
 
-    configfile -> templeates [label="templeate set"];
-    templeates -> var_not_found_error;
-    templeates -> configfile [label="generate"];
-
-    configfile -> config_validation [label="validate"];
+    configfile -> config_validation [label="json schema"];
     config_validation -> parser_error;
 
 
     config_validation ->config_requirement;
     creds ->config_requirement;
 
-    SW_scan_or_build[label="SW scan or build"];
     external_scan ->config_requirement;
     interfaces_scan ->config_requirement;
-    SW_scan_or_build ->config_requirement;
+    internal_scan ->config_requirement;
     config_requirement -> req_gather_error;
 
     config_requirement -> req_validation;
@@ -86,13 +79,10 @@ digraph {
             fillcolor="#3ae0cd",
             label="file",
         ];
-        example_process_1[label="process 1, (internal)"];
-        example_process_2[label="process 2 (external)"];
+        example_process_1[label="processes"];
     }
     start_processes -> example_process_1[label="setup function"];
-    start_processes -> example_process_2 [label="run external program"];
-
-    example_process_1 -> log;
+    example_process_1 -> log[label="log and register wait_for "];
 
     { //log
         node [
@@ -100,17 +90,15 @@ digraph {
             fillcolor="#6ea4d3",
             label="log",
         ];
-        log[label="logger from all processes"];
+        log[label="logger"];
     }
-    logger_rewriter->log;
-    example_process_2 -> log;
     log -> wait_process_error;
     log -> wait_for_setup;
 
 
-    wait_for_setup -> run_tests;
-    run_tests -> example_process_1 [label ="run function"];
-    run_tests ->wait_for_all_process_end[label="wait for all process end"];
+    wait_for_setup -> run_attack;
+    run_attack ->wait_for_all_process_end[label="end of attack (timeout of no succeded)"];
+    run_attack -> log [label="write END f test /short results"];
     wait_for_all_process_end -> end_of_test[label="wait for all proceses end (from internal return or log)"];
     end_of_test[
         shape=rectangle,
@@ -119,6 +107,6 @@ digraph {
         fillcolor="#eeffee",
         label="end of test"
     ];
-    end_of_test -> statistics[label="generate"];
+    end_of_test -> statistics[label="generate complex stats "];
     log -> statistics;
 }

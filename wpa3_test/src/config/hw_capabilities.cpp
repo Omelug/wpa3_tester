@@ -147,11 +147,7 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_stat
         }
         // 2. wireless Wi-Fi
         else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
-            ifstream type_file(entry.path() / "type");
-            string arp_type;
-            type_file >> arp_type;
-
-            if (arp_type == "803") {
+            if (name.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
                 type = InterfaceType::WifiVirtualMon;
             } else {
                 type = InterfaceType::Wifi;

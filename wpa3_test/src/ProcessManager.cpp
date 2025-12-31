@@ -194,20 +194,26 @@ void ProcessManager::start_drain_for(const string &actor_name) {
 void ProcessManager::allow_history(const string &actor_name) {
     if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history_enabled = true;
+        return;
     }
+    throw setup_error("Process {} not found to allow history", actor_name.c_str());
 }
 
 void ProcessManager::ignore_history(const string &actor_name) {
     if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history_enabled = false;
         it->second.history.clear();
+        return;
     }
+    throw setup_error("Process {} not found to ignore history", actor_name.c_str());
 }
 
 void ProcessManager::discard_history(const string &actor_name) {
     if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
         it->second.history.clear();
+        return;
     }
+    throw setup_error("Process {} not found to discard history", actor_name.c_str());
 }
 
 void ProcessManager::wait_for(const string &actor_name, const string &pattern){

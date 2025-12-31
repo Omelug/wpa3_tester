@@ -6,5 +6,5 @@ f: add network manager off option for actors
 +: better req_error messages
 +: addd external mon interfaces option (to dump connection)
 ch: channel should be in selection?
-
++: macchanger for changes
 iperf3

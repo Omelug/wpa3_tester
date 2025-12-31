@@ -57,6 +57,7 @@ public:
     void discard_history(const std::string &actor_name);
 
     void wait_for(const std::string &actor_name, const std::string &pattern);
+    void stop(const std::string &actor_name);
 
     // After stop (Ctrl + C or critical error)
     void stop_all();

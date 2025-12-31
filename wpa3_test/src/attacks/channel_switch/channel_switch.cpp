@@ -63,6 +63,30 @@ auto check_vulnerable(
               << "SSID: " << ssid << endl;
 }
 
+void speed_observation_start(RunStatus& rs){
+    const vector<string> ethernate_hostapd_args = {
+        "sudo",
+        "ethernate",
+        "-i",
+        rs.get_actor("access_point")["iface"],
+        "-mode",
+        "0"
+    };
+    rs.process_manager.run("ethernate_observer_AP", ethernate_hostapd_args);
+
+    const vector<string> ethernate_wpa_supp_args = {
+        "sudo",
+        "ethernate",
+        "-i",
+        rs.get_actor("client")["iface"],
+        "-mode",
+        "1",
+        "-dest",
+        rs.get_actor("access_point")["mac"]
+    };
+    rs.process_manager.run("ethernate_observer_AP", ethernate_wpa_supp_args);
+
+};
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus& rs){
@@ -84,7 +108,6 @@ void setup_chs_attack(RunStatus& rs){
         rs.get_actor("access_point")["iface"],
         hostapd_config_path
     };
-    rs.process_manager.allow_history("access_point");
     rs.process_manager.run("access_point", hostapd_args);
     rs.process_manager.wait_for("access_point", "AP-ENABLED");
 	log(LogLevel::INFO, "access_point is running");
@@ -97,14 +120,20 @@ void setup_chs_attack(RunStatus& rs){
 		"-c",
     	wpa_supp_config_path
 	};
-    rs.process_manager.allow_history("client");
 	rs.process_manager.run("client", wpa_supplicant_args);
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
 
     rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
+
+    speed_observation_start(rs);
 }
 
+
+void speed_observation_stop(RunStatus& rs){
+    rs.process_manager.stop("ethernate_observer_AP");
+    rs.process_manager.stop("ethernate_observer_client");
+};
 
 void run_chs_attack(RunStatus& rs){
 
@@ -117,15 +146,16 @@ void run_chs_attack(RunStatus& rs){
     const int ms_interval = rs.config["attack_config"]["ms_interval"];
     const int attack_time = rs.config["attack_config"]["attack_time"];
 
-    // TODO setup_speed_observer
+    // TODO setup_speed_observer na mon módu
     // tshark -i wlan0 -n -q -z io,stat,1,"eth.addr == "
-    check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
     //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
     //TODO log client, CTRL-EVENT-DISCONNECTED
-    //TODO add END of tst to log (to ch)
+
+    check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
+    speed_observation_stop(rs);
     log(LogLevel::INFO,"-----------------------END");
-    // stop_speed_observer
-    std::this_thread::sleep_for(std::chrono::seconds(9000));
+
+    //std::this_thread::sleep_for(std::chrono::seconds(9000));
 
     //throw not_implemented_error("Run not implemented");
 }

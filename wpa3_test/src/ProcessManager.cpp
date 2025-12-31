@@ -260,6 +260,25 @@ void ProcessManager::wait_for(const string &actor_name, const string &pattern){
     logs.wait.active = false;
 }
 
+void ProcessManager::stop(const std::string &actor_name){
+    using namespace std::chrono_literals;
+
+    const auto it = processes.find(actor_name);
+    if (it == processes.end() || !it->second) {
+        log(LogLevel::WARNING,"Cant stop actor {}, no in Process manager", actor_name.c_str());
+        return;
+    }
+
+    reproc::process &proc = *it->second;
+
+    reproc::stop_actions operations{};
+    operations.first  = { reproc::stop::terminate, reproc::milliseconds(1000) };
+    operations.second = { reproc::stop::kill,      reproc::milliseconds(1000) };
+
+    proc.stop(operations);
+    processes.erase(it);
+}
+
 ProcessManager::~ProcessManager(){
     stop_all();
     combined_log.close();

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <fstream>
 #include "config/RunStatus.h"
 
 enum class LogLevel {
@@ -12,4 +13,4 @@ enum class LogLevel {
 
 void log(LogLevel level, const char *fmt, ...);
 void log_actor_map(const char* name, const ActorCMap& m);
-void log_actor_configs(const ActorCMap& m);
+void log_actor_configs(const ActorCMap& m, std::ofstream *ofs = nullptr);

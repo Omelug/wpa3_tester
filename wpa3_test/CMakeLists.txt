@@ -62,9 +62,14 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/DaanDeMeyer/reproc
         GIT_TAG        v14.2.5
 )
+FetchContent_Declare(
+        linux_headers_wifi
+        URL https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/nl80211.h
+        DOWNLOAD_NO_EXTRACT TRUE
+)
+# ------------------------------------------------
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-
 FetchContent_MakeAvailable(
         reproc
         libtins
@@ -72,6 +77,7 @@ FetchContent_MakeAvailable(
         argparse
         json
         json_schema_validator
+        linux_headers_wifi
 )
 
 if(doctest_SOURCE_DIR)
@@ -94,6 +100,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+set(WIFI_HEADERS_DIR "${linux_headers_wifi_SOURCE_DIR}/..")
+
 target_include_directories(${PROJECT_NAME} PRIVATE
         include
         ${doctest_SOURCE_DIR}
@@ -102,6 +110,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${json_schema_validator_SOURCE_DIR}/src
         ${reproc_SOURCE_DIR}/reproc++/include
         ${LIBNL_INCLUDE_DIRS}
+        ${WIFI_HEADERS_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

@@ -50,7 +50,9 @@ public:
     void init_logging(const std::string& run_folder);
 
     // what can actors
-    void run(const std::string& actor_name, const std::vector<std::string> &cmd);
+    void run(const std::string& actor_name,
+             const std::vector<std::string> &cmd,
+             const std::filesystem::path &working_dir = {});
     void start_drain_for(const std::string &actor_name);
     void allow_history(const std::string &actor_name);
     void ignore_history(const std::string &actor_name);

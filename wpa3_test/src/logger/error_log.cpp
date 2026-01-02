@@ -29,3 +29,7 @@ setup_error::setup_error(const string &msg): tester_error(msg){
 not_implemented_error::not_implemented_error(const string &msg): tester_error(msg){
     log(LogLevel::CRITICAL, runtime_error::what());
 }
+
+headers_error::headers_error(const string &msg): tester_error(msg){
+    log(LogLevel::CRITICAL, runtime_error::what());
+}

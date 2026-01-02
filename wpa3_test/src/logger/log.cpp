@@ -58,27 +58,42 @@ static auto opt_or(const std::optional<std::string> &v, const char *fallback)->c
     return v.has_value() ? v->c_str() : fallback;
 }
 
-void log_actor_configs(const ActorCMap& m) {
+void log_actor_configs(const ActorCMap& m, ofstream *ofs) {
     for (const auto& [name, actor] : m) {
-        log(LogLevel::DEBUG,
-            "Actor '%s': iface=%s, mac=%s, essid=%s, driver=%s",
-            name.c_str(),
-            opt_or(actor->str_con["iface"], "<none>"),
-            opt_or(actor->str_con["mac"], "<none>"),
-            opt_or(actor->str_con["essid"], "<none>"),
-            opt_or(actor->str_con["driver"], "<none>"));
+        // Build a human-readable line
+        const string line =
+            "Actor '" + name + "': iface=" + opt_or(actor->str_con.at("iface"), "<none>") +
+            ", mac="    + opt_or(actor->str_con.at("mac"),   "<none>") +
+            ", essid="  + opt_or(actor->str_con.at("essid"), "<none>") +
+            ", driver=" + opt_or(actor->str_con.at("driver"),"<none>");
 
-		string cond_str;
+        //log(LogLevel::DEBUG, "%s", line.c_str());
+
+        if (ofs && ofs->is_open()) {
+            (*ofs) << line << std::endl;
+        }
+
+        string cond_str;
         bool first = true;
         for (const auto &[cond_name, bool_v] : actor->bool_conditions) {
             string val_repr = "None";
-            if (bool_v.has_value()) {val_repr = (*bool_v ? "true" : "false");}
-            if (!first) {cond_str += ", ";}
+            if (bool_v.has_value()) { val_repr = (*bool_v ? "true" : "false"); }
+            if (!first) { cond_str += ", "; }
             cond_str += cond_name + "=" + val_repr;
             first = false;
         }
-        if (cond_str.empty()) {cond_str = "<no conditions>";}
-        log(LogLevel::DEBUG,"Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
+        if (cond_str.empty()) { cond_str = "<no conditions>"; }
+
+        log(LogLevel::DEBUG, "Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
+        if (ofs && ofs->is_open()) {
+            (*ofs) << "  conditions: " << cond_str << std::endl;
+        }
     }
-    if (m.empty()) {log(LogLevel::DEBUG, "Actor map is empty");}
+
+    if (m.empty()) {
+        log(LogLevel::DEBUG, "Actor map is empty");
+        if (ofs && ofs->is_open()) {
+            (*ofs) << "<empty actor map>" << std::endl;
+        }
+    }
 }

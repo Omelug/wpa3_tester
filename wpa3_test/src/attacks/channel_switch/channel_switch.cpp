@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include "config/hw_capabilities.h"
+#include <filesystem>
 
 using namespace std;
 using namespace Tins;
@@ -64,6 +65,17 @@ auto check_vulnerable(
 }
 
 void speed_observation_start(RunStatus& rs){
+    namespace fs = std::filesystem;
+
+    const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "ethernate";
+    std::error_code ec;
+    fs::create_directories(obs_dir, ec);
+    if (ec) {
+        log(LogLevel::ERROR,
+            "Failed to create ethernate observer dir %s: %s",
+            obs_dir.string().c_str(), ec.message().c_str());
+    }
+
     const vector<string> ethernate_hostapd_args = {
         "sudo",
         "ethernate",
@@ -72,7 +84,7 @@ void speed_observation_start(RunStatus& rs){
         "-mode",
         "0"
     };
-    rs.process_manager.run("ethernate_observer_AP", ethernate_hostapd_args);
+    rs.process_manager.run("ethernate_observer_AP", ethernate_hostapd_args, obs_dir);
 
     const vector<string> ethernate_wpa_supp_args = {
         "sudo",
@@ -82,9 +94,11 @@ void speed_observation_start(RunStatus& rs){
         "-mode",
         "1",
         "-dest",
-        rs.get_actor("access_point")["mac"]
+        rs.get_actor("access_point")["mac"],
+        ">",
+        "ethernate.txt"
     };
-    rs.process_manager.run("ethernate_observer_AP", ethernate_wpa_supp_args);
+    rs.process_manager.run("ethernate_observer_client", ethernate_wpa_supp_args, obs_dir);
 
 };
 
@@ -126,7 +140,7 @@ void setup_chs_attack(RunStatus& rs){
 
     rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
 
-    speed_observation_start(rs);
+    //speed_observation_start(rs);
 }
 
 
@@ -152,10 +166,10 @@ void run_chs_attack(RunStatus& rs){
     //TODO log client, CTRL-EVENT-DISCONNECTED
 
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-    speed_observation_stop(rs);
+    //speed_observation_stop(rs);
     log(LogLevel::INFO,"-----------------------END");
 
-    //std::this_thread::sleep_for(std::chrono::seconds(9000));
+    std::this_thread::sleep_for(std::chrono::seconds(9000));
 
     //throw not_implemented_error("Run not implemented");
 }

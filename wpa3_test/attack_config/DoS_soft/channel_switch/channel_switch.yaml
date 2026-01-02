@@ -30,7 +30,7 @@ actors:
     type: STA
     source: internal
     selection:
-      iface: wlan2
+      #iface: wlan2
       condition: [monitor]
     channel: 6
 

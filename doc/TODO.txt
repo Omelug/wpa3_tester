@@ -2,9 +2,18 @@
 t: Actor with internal and AP should accept essid with different essid, but change it
 +: attacks setup catch
 f: add network manager off option for actors
-+: check in setup_chs_attack actors are avaible
++: check in setup_chs_attack actors are available
 +: better req_error messages
-+: addd external mon interfaces option (to dump connection)
++: add external mon interfaces option (to dump connection)
 ch: channel should be in selection?
 +: macchanger for changes
-iperf3
+f: check WP2/SAe support correctly
++: interfaces set of WPA2/SAE
++: iperf3 observer
++: external interfaces
++: simulation interfaces
++: README.md -> rozzestník pro /doc
+
+
+
+

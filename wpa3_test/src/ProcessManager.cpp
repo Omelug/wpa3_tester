@@ -121,13 +121,26 @@ void ProcessManager::init_logging(const string &run_folder){
     process_logs.clear();
 }
 
-void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
+/*void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
+    // Forward to the overload with no explicit working dir (uses default cwd)
+    run(actor_name, cmd, std::filesystem::path{});
+}*/
+
+void ProcessManager::run(const string& actor_name,
+                         const vector<string> &cmd,
+                         const filesystem::path &working_dir) {
     namespace fs = filesystem;
 
     auto proc = make_unique<reproc::process>();
     reproc::options options;
     options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
     options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
+
+    std::string working_dir_str;
+    if (!working_dir.empty()) {
+        working_dir_str = working_dir.string();
+        options.working_directory = working_dir_str.c_str();
+    }
 
     if (const error_code ec = proc->start(cmd, options)) {
         throw runtime_error("Failed to start " + actor_name + ": " + ec.message());
@@ -154,7 +167,7 @@ void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
     const string line   =  current_timestamp() + " [" + actor_name + "] [cmd] " + cmd_line;
 
     if (combined_log.is_open()) {write_log_line(combined_log, line);}
-    if (logs.log.is_open()) {write_log_line(logs.log, line);}
+    if (logs.log.is_open())     {write_log_line(logs.log, line);}
 
     processes[actor_name] = std::move(proc);
 

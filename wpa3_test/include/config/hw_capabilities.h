@@ -7,8 +7,6 @@
 
 #include "RunStatus.h"
 
-#define WLAN_AKM_SUITE_PSK 0x000FAC02
-#define WLAN_AKM_SUITE_SAE 0x000FAC08
 
 enum class InterfaceType {
     Unknown,
@@ -40,12 +38,30 @@ inline std::string to_string(const InterfaceType type) {
 }
 struct NlCaps {
     bool ap = false;
+    bool sta = false;
     bool monitor = false;
+
     bool band24 = false;
     bool band5 = false;
-    bool wpa2_psk = false;
+    bool band6 = false;
+
+    bool wpa2_psk = false; // heuristic
     bool wpa3_sae = false;
 };
+
+struct CryptoCaps {
+    bool has_psk  = false;
+    bool has_sae  = false;
+    bool has_ccmp = false;
+    bool has_gcmp = false;
+};
+
+constexpr uint32_t AKM_PSK = 0x000FAC02;
+constexpr uint32_t AKM_SAE = 0x000FAC08;
+
+constexpr uint32_t CIPHER_CCMP = 0x000FAC04;
+constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
+
 
 class hw_capabilities {
     /* find solution of actors and available interfaces */

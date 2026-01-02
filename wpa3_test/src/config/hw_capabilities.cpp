@@ -3,128 +3,29 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 
-#include <net/if.h>
-#include <netlink/netlink.h>
-#include <netlink/genl/genl.h>
-#include <netlink/genl/ctrl.h>
-#include <linux/nl80211.h>
-#include <string>
 #include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <map>
 #include <set>
+#include <string>
+#include <unistd.h>
 #include <vector>
-#include <fstream>
-#include <cstdlib>
+#include <net/if.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 using namespace std;
-
-int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
-    auto *caps = static_cast<NlCaps *>(arg);
-
-    nlattr *attrs[NL80211_ATTR_MAX + 1];
-    const auto gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
-
-    nla_parse(attrs, NL80211_ATTR_MAX,
-              genlmsg_attrdata(gnlh, 0),
-              genlmsg_attrlen(gnlh, 0), nullptr);
-
-    // supported interface types → monitor
-    if(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]){
-        nlattr *ift;
-        int rem;
-        nla_for_each_nested(ift, attrs[NL80211_ATTR_SUPPORTED_IFTYPES], rem){
-            if(nla_type(ift) == NL80211_IFTYPE_MONITOR){
-                caps->monitor = true;
-            }
-            if(nla_type(ift) == NL80211_IFTYPE_AP){
-                caps->ap = true;
-            }
-        }
-    }
-
-    // bands
-    if(attrs[NL80211_ATTR_WIPHY_BANDS]){
-        nlattr *band;
-        int rem;
-        nla_for_each_nested(band, attrs[NL80211_ATTR_WIPHY_BANDS], rem){
-            if(nla_type(band) == NL80211_BAND_2GHZ) caps->band24 = true;
-            if(nla_type(band) == NL80211_BAND_5GHZ) caps->band5 = true;
-        }
-    }
-
-    // AKM suites
-    if(attrs[NL80211_ATTR_AKM_SUITES]){
-        nlattr *akm;
-        int rem;
-        nla_for_each_nested(akm, attrs[NL80211_ATTR_AKM_SUITES], rem){
-            const uint32_t v = nla_get_u32(akm);
-            if(v == WLAN_AKM_SUITE_PSK) caps->wpa2_psk = true;
-            if(v == WLAN_AKM_SUITE_SAE) caps->wpa3_sae = true;
-        }
-    }
-
-    return NL_OK;
-}
-
-void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
-    // Fill string-based capabilities first
-    cfg.str_con["mac"]    = read_sysfs(iface, "address");
-    cfg.str_con["driver"] = get_driver_name(iface);
-
-    // Query nl80211 capabilities
-    NlCaps caps;
-
-    const int ifindex = if_nametoindex(iface.c_str());
-    if(!ifindex) return;
-
-    nl_sock *sock = nl_socket_alloc();
-    if (!sock) {return;}
-    if (genl_connect(sock) != 0) {nl_socket_free(sock);return;}
-
-    const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
-
-    nl_msg *msg = nlmsg_alloc();
-    if (!msg) {nl_socket_free(sock);return;}
-
-    genlmsg_put(msg, 0, 0, nl80211_id, 0, 0,
-                NL80211_CMD_GET_WIPHY, 0);
-
-    nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
-
-    nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM,
-                        nl80211_cb, &caps);
-
-    nl_send_auto(sock, msg);
-    nl_recvmsgs_default(sock);
-
-    nlmsg_free(msg);
-    nl_socket_free(sock);
-
-    // Copy capabilities to Actor_config
-    //TODO tohel nějak zkusit nacpat do capllbacku?
-    cfg.bool_conditions["AP"]       = caps.ap;
-    cfg.bool_conditions["monitor"]  = caps.monitor;
-    cfg.bool_conditions["2_4Gz"]    = caps.band24;
-    cfg.bool_conditions["5GHz"]     = caps.band5;
-    cfg.bool_conditions["WPA-PSK"]  = caps.wpa2_psk;
-    cfg.bool_conditions["WPA3-SAE"] = caps.wpa3_sae;
-}
 
 string hw_capabilities::read_sysfs(const string &iface, const string &file){
     const string path = "/sys/class/net/" + iface + "/" + file;
 
     ifstream ifs(path);
-    if(!ifs.is_open()){
-        return ""; //TODO error?
-    }
+    if(!ifs.is_open()){return "";} //TODO error?
 
     string content;
     getline(ifs, content);
     if(!content.empty() && content.back() == '\n') content.pop_back();
-
     return content;
 }
 
@@ -147,7 +48,6 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_stat
     const filesystem::path net_path = "/sys/class/net";
 
     if(!exists(net_path)) return result;
-
     for(const auto &entry: filesystem::directory_iterator(net_path)){
         std::string name = entry.path().filename().string();
 
@@ -159,36 +59,23 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_stat
         }
 
         auto type = InterfaceType::Unknown;
-
-        // 1. Loopback ('lo')
         if(name == "lo"){
-            type = InterfaceType::Loopback;
-        }
-        // 2. wireless Wi-Fi
-        else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
-            if (name.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
-                type = InterfaceType::WifiVirtualMon;
-            } else {
-                type = InterfaceType::Wifi;
+            type = InterfaceType::Loopback;  // Loopback ('lo')
+        }else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
+            if(name.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
+                type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
+            }else{
+                type = InterfaceType::Wifi;   // wireless Wi-Fi
             }
+        }else if(filesystem::exists(entry.path() / "bridge")){
+            type = InterfaceType::DockerBridge;  // Docker Bridge ('bridge')
+        }else if(filesystem::exists(entry.path() / "tun_flags")){
+            type = InterfaceType::VPN; // VPN / TUN (tun_flags)
+        } else if(name.find("veth") == 0){
+            type = InterfaceType::VirtualVeth; // virtual veth docker container etc)
+        } else if(filesystem::exists(entry.path() / "device")){
+            type = InterfaceType::Ethernet; // Wire ethernet
         }
-        // 3. Docker Bridge ('bridge')
-        else if(filesystem::exists(entry.path() / "bridge")){
-            type = InterfaceType::DockerBridge;
-        }
-        // 4. VPN / TUN (tun_flags)
-        else if(filesystem::exists(entry.path() / "tun_flags")){
-            type = InterfaceType::VPN;
-        }
-        // 5.  virtual veth docker container etc)
-        else if(name.find("veth") == 0){
-            type = InterfaceType::VirtualVeth;
-        }
-        // 6. wire ethernet
-        else if(filesystem::exists(entry.path() / "device")){
-            type = InterfaceType::Ethernet;
-        }
-
         result.push_back({name, type});
     }
     return result;
@@ -231,7 +118,6 @@ bool hw_capabilities::findSolution(
         usedOptions.erase(optKey);
         currentAssignment.erase(currentRuleKey);
     }
-
     return false; // no valid option for this rule
 }
 

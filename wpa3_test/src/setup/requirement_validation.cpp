@@ -102,8 +102,6 @@ void RunStatus::config_requirement() {
         actor = make_unique<Actor_config>(*optIt->second);
     }
 
-    log_actor_configs(internal_actors);
-
 	// TODO: simulation -> check hw compatibility
     //ActorCMap options_external =  create_simulation();
 

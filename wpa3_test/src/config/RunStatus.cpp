@@ -74,17 +74,22 @@ void RunStatus::save_actor_interface_mapping(){
     for (const auto &[name, actor] : internal_actors) {
         ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
     }
+    log_actor_configs(internal_actors, &ofs);
+
     ofs << "External mapping" << endl;
     for (const auto &[name, actor] : external_actors) {
         ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
     }
+    log_actor_configs(external_actors, &ofs);
+
     ofs << "Simulation mapping" << endl;
     for (const auto &[name, actor] : simulation_actors) {
         ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
     }
+    log_actor_configs(simulation_actors, &ofs);
 
     ofs.close();
-        log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
+    log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
 };
 
 Actor_config& RunStatus::get_actor(const string& actor_name){

@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <format>
 
+//TODO simplify this file
+
 class tester_error : public std::runtime_error {
 public:
     explicit tester_error(const std::string& msg);
@@ -40,4 +42,12 @@ public:
     template<typename... Args>
     explicit not_implemented_error(const std::string_view fmt, Args&&... args)
         : not_implemented_error(v_format(fmt, std::make_format_args(args...))) {}
+};
+
+class headers_error : public tester_error {
+public:
+    explicit headers_error(const std::string& msg);
+    template<typename... Args>
+    explicit headers_error(const std::string_view fmt, Args&&... args)
+        : headers_error(v_format(fmt, std::make_format_args(args...))) {}
 };

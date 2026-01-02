@@ -12,8 +12,17 @@ actors:
     setup:
       program: hostapd
       program_config:
+        driver: nl80211
         ssid: test_channel_switch
-        password: password
+        hw_mode: g
+        auth_algs: 1
+        wpa: 2
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        wpa_passphrase: password123
+        channel: 6
       channel: 6 # not set in hostapd, set once before test
   client:
     type: STA
@@ -24,13 +33,18 @@ actors:
       program: wpa_supplicant
       program_config:
         ssid: test_channel_switch
-        password: password
+        sae_password: password123
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: SAE
+        pairwise: CCMP
+        group: CCMP
       channel: 6
   attacker:
     type: STA
     source: internal
     selection:
-      #iface: wlan2
+      driver: mt76x2u # rtl8xxxu didnt work, maybe other work
       condition: [monitor]
     channel: 6
 

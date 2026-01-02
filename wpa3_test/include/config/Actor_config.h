@@ -19,8 +19,9 @@ public:
 	std::map<std::string, std::optional<bool>> bool_conditions = {
         {"AP",       std::nullopt},
         {"monitor",  std::nullopt},
-        {"2_4Gz",    std::nullopt},
+        {"2_4GHz",    std::nullopt},
         {"5GHz",     std::nullopt},
+        {"6GHz",     std::nullopt},
         {"WPA-PSK",  std::nullopt},
         {"WPA3-SAE", std::nullopt}
 	};

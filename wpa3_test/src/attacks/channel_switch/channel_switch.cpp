@@ -42,7 +42,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 auto check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
-    const int ap_channel,int new_channel,
+    const int ap_channel, int new_channel,
     const int ms_interval,const int attack_time)->void{
 
     const NetworkInterface iface(iface_name);
@@ -67,38 +67,46 @@ auto check_vulnerable(
 void speed_observation_start(RunStatus& rs){
     namespace fs = std::filesystem;
 
-    const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "ethernate";
+    //system("sudo killall -9 iperf3 2>/dev/null");
+    //std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    /*const vector<string> ip_up = {"sudo", "ip", "link", "set", rs.get_actor("access_point")["iface"], "up"};
+    rs.process_manager.run("ip_up_AP", ip_up);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    const vector<string> ip_up2 = {"sudo", "ip", "link", "set", rs.get_actor("client")["iface"], "up"};
+    rs.process_manager.run("ip_up_STA", ip_up2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));*/
+
+    const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "iperf";
     std::error_code ec;
     fs::create_directories(obs_dir, ec);
     if (ec) {
         log(LogLevel::ERROR,
-            "Failed to create ethernate observer dir %s: %s",
+            "Failed to create iperf observer dir %s: %s",
             obs_dir.string().c_str(), ec.message().c_str());
     }
-
-    const vector<string> ethernate_hostapd_args = {
-        "sudo",
-        "ethernate",
-        "-i",
-        rs.get_actor("access_point")["iface"],
-        "-mode",
-        "0"
+    const vector<string> iperf_server_arg = {
+        "stdbuf", "-oL", "-eL",
+        "iperf3",
+        "-s",
+        "-1",
+        "-B", "10.0.0.1"   // explicitní bind
     };
-    rs.process_manager.run("ethernate_observer_AP", ethernate_hostapd_args, obs_dir);
 
-    const vector<string> ethernate_wpa_supp_args = {
-        "sudo",
-        "ethernate",
-        "-i",
-        rs.get_actor("client")["iface"],
-        "-mode",
-        "1",
-        "-dest",
-        rs.get_actor("access_point")["mac"],
-        ">",
-        "ethernate.txt"
+    rs.process_manager.run("iperf_server", iperf_server_arg, obs_dir);
+    rs.process_manager.wait_for("iperf_server", "Server listening");
+
+    const int attack_time = rs.config["attack_config"]["attack_time"];
+    const vector<string> iperf_client_arg = {
+        "stdbuf", "-oL", "-eL",
+        "iperf3",
+        "-c", "10.0.0.1",
+        "-u", // udo, because is is not buffered
+        "-b", "100M",
+        "-B", "10.0.0.2",
+        "-t", std::to_string(attack_time)
     };
-    rs.process_manager.run("ethernate_observer_client", ethernate_wpa_supp_args, obs_dir);
+    rs.process_manager.run("iperf_client", iperf_client_arg, obs_dir);
 
 };
 
@@ -124,6 +132,13 @@ void setup_chs_attack(RunStatus& rs){
     };
     rs.process_manager.run("access_point", hostapd_args);
     rs.process_manager.wait_for("access_point", "AP-ENABLED");
+
+    const vector<string> ip_addr_add_args_server = {  //TODO make more generic
+        "sudo","ip", "addr","add", "10.0.0.1/24", "dev",
+        rs.get_actor("access_point")["iface"]
+    };
+    rs.process_manager.run("ip_addr_add_AP", ip_addr_add_args_server);
+    //TODO sync
 	log(LogLevel::INFO, "access_point is running");
 
 	const vector<string> wpa_supplicant_args = {
@@ -135,18 +150,24 @@ void setup_chs_attack(RunStatus& rs){
     	wpa_supp_config_path
 	};
 	rs.process_manager.run("client", wpa_supplicant_args);
+    rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
+
+    const vector<string> ip_addr_add_args_STA = {  //TODO make more generic
+        "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
+        rs.get_actor("client")["iface"]
+    };
+    rs.process_manager.run("ip_addr_add_STA", ip_addr_add_args_STA);
+    //TODO sync?
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
 
     rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
-
-    //speed_observation_start(rs);
 }
 
 
 void speed_observation_stop(RunStatus& rs){
-    rs.process_manager.stop("ethernate_observer_AP");
-    rs.process_manager.stop("ethernate_observer_client");
+    rs.process_manager.stop("iperf_server");
+    rs.process_manager.stop("iperf_client");
 };
 
 void run_chs_attack(RunStatus& rs){
@@ -164,12 +185,17 @@ void run_chs_attack(RunStatus& rs){
     // tshark -i wlan0 -n -q -z io,stat,1,"eth.addr == "
     //TODO log  client, CTRL-EVENT-STARTED-CHANNEL-SWITCH
     //TODO log client, CTRL-EVENT-DISCONNECTED
-
+    //std::this_thread::sleep_for(std::chrono::seconds(3));
+    speed_observation_start(rs);
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-    //speed_observation_stop(rs);
+    speed_observation_stop(rs);
     log(LogLevel::INFO,"-----------------------END");
 
-    std::this_thread::sleep_for(std::chrono::seconds(9000));
+    //std::this_thread::sleep_for(std::chrono::seconds(9000));
 
     //throw not_implemented_error("Run not implemented");
+}
+
+void result_attack(RunStatus& rs){
+    //TODO
 }

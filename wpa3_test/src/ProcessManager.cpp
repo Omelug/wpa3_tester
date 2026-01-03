@@ -173,36 +173,64 @@ void ProcessManager::run(const string& actor_name,
 
     start_drain_for(actor_name);
 }
-
-void ProcessManager::start_drain_for(const string &actor_name) {
+void ProcessManager::start_drain_for(const std::string &actor_name) {
     const auto it = processes.find(actor_name);
     if (it == processes.end() || !it->second) return;
 
     reproc::process *proc = it->second.get();
 
-    thread([this, actor_name, proc]() {
-        string accumulator_out;
-        string accumulator_err;
+    std::thread([this, actor_name, proc]() {
+        uint8_t buffer[4096];
 
-        auto make_sink = [&](const string& label, string& accumulator) {
-            return [this, actor_name, label, &accumulator]
-                   (reproc::stream, const uint8_t* buffer, const size_t size) {
-                const string data(reinterpret_cast<const char*>(buffer), size);
-                accumulator.append(data);
-                return handle_chunk(this, actor_name, label, data);
-            };
-        };
+        bool out_open = true;
+        bool err_open = true;
 
-        auto out_sink = make_sink("stdout", accumulator_out);
-        auto err_sink = make_sink("stderr", accumulator_err);
+        while (out_open || err_open) {
+            // poll vrací, který stream je připravený
+            auto [events, ec] = proc->poll(
+                (out_open ? reproc::event::out : 0) |
+                (err_open ? reproc::event::err : 0),
+                reproc::infinite
+            );
 
-        if (const error_code ec = reproc::drain(*proc, out_sink, err_sink)) {
-            log(LogLevel::ERROR,
-                "Background drain for %s failed: %s",
-                actor_name.c_str(), ec.message().c_str());
+            if (ec) break;
+
+            if ((events & reproc::event::out) && out_open) {
+                auto [n, read_ec] =
+                    proc->read(reproc::stream::out, buffer, sizeof(buffer));
+
+                if (read_ec) {
+                    out_open = false;
+                } else if (n > 0) {
+                    handle_chunk(
+                        this,
+                        actor_name,
+                        "stdout",
+                        std::string(reinterpret_cast<char *>(buffer), n)
+                    );
+                }
+            }
+
+            if ((events & reproc::event::err) && err_open) {
+                auto [n, read_ec] =
+                    proc->read(reproc::stream::err, buffer, sizeof(buffer));
+
+                if (read_ec) {
+                    err_open = false;
+                } else if (n > 0) {
+                    handle_chunk(
+                        this,
+                        actor_name,
+                        "stderr",
+                        std::string(reinterpret_cast<char *>(buffer), n)
+                    );
+                }
+            }
         }
     }).detach();
 }
+
+
 
 void ProcessManager::allow_history(const string &actor_name) {
     if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
@@ -285,7 +313,8 @@ void ProcessManager::stop(const std::string &actor_name){
     reproc::process &proc = *it->second;
 
     reproc::stop_actions operations{};
-    operations.first  = { reproc::stop::terminate, reproc::milliseconds(1000) };
+    //TODO add function for hard kill
+    // operations.first  = { reproc::stop::terminate, reproc::milliseconds(3000) };
     operations.second = { reproc::stop::kill,      reproc::milliseconds(1000) };
 
     proc.stop(operations);

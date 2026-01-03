@@ -24,6 +24,7 @@ actors:
         wpa_passphrase: password123
         channel: 6
       channel: 6 # not set in hostapd, set once before test
+      netns: ap
   client:
     type: STA
     source: internal
@@ -40,6 +41,8 @@ actors:
         pairwise: CCMP
         group: CCMP
       channel: 6
+    #mon_iface: mon #TODO
+    netns: sta
   attacker:
     type: STA
     source: internal
@@ -53,4 +56,3 @@ attack_config:
   attack_time: 10
   ms_interval: 100
   new_channel: 1
-

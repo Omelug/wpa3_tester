@@ -60,6 +60,9 @@ definitions:
       scan_iface:
         type: string
         description: Interface to scan when source is external
+      netns:
+        type: string
+        description: Namespace to isolate AP/STA for iperf3 etc. observation
       selection:
         type: object
         properties:

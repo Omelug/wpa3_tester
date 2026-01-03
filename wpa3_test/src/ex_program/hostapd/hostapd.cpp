@@ -14,7 +14,8 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
     error_code ec;
     fs::create_directories(folder, ec);
     if (ec) {
-        log(LogLevel::ERROR, ("hostapd_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
+        log(LogLevel::ERROR,
+            ("hostapd_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
         throw runtime_error("hostapd_config: unable to create run folder");
     }
 
@@ -46,7 +47,8 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
     error_code ec;
     fs::create_directories(folder, ec);
     if (ec) {
-        log(LogLevel::ERROR, ("wpa_supplicant_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
+        log(LogLevel::ERROR,
+            ("wpa_supplicant_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
         throw runtime_error("wpa_supplicant_config: unable to create run folder");
     }
 

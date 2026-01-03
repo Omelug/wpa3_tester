@@ -5,7 +5,7 @@
 #include "logger/log.h"
 #include <thread>
 #include <chrono>
-#include "config/hw_capabilities.h"
+#include "../../../include/system/hw_capabilities.h"
 #include <filesystem>
 
 using namespace std;
@@ -67,8 +67,8 @@ auto check_vulnerable(
 void speed_observation_start(RunStatus& rs){
     namespace fs = std::filesystem;
 
-    //system("sudo killall -9 iperf3 2>/dev/null");
-    //std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    system("sudo killall -9 iperf3 2>/dev/null");
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     /*const vector<string> ip_up = {"sudo", "ip", "link", "set", rs.get_actor("access_point")["iface"], "up"};
     rs.process_manager.run("ip_up_AP", ip_up);
@@ -103,7 +103,8 @@ void speed_observation_start(RunStatus& rs){
         "-c", "10.0.0.1",
         "-u", // udo, because is is not buffered
         "-b", "100M",
-        "-B", "10.0.0.2",
+        //"-B", "10.0.0.2",
+        "--bind-dev", rs.get_actor("client")["iface"],
         "-t", std::to_string(attack_time)
     };
     rs.process_manager.run("iperf_client", iperf_client_arg, obs_dir);
@@ -157,6 +158,7 @@ void setup_chs_attack(RunStatus& rs){
         rs.get_actor("client")["iface"]
     };
     rs.process_manager.run("ip_addr_add_STA", ip_addr_add_args_STA);
+    hw_capabilities::
     //TODO sync?
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
@@ -188,10 +190,10 @@ void run_chs_attack(RunStatus& rs){
     //std::this_thread::sleep_for(std::chrono::seconds(3));
     speed_observation_start(rs);
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-    speed_observation_stop(rs);
+    //speed_observation_stop(rs);
     log(LogLevel::INFO,"-----------------------END");
 
-    //std::this_thread::sleep_for(std::chrono::seconds(9000));
+    std::this_thread::sleep_for(std::chrono::seconds(9000));
 
     //throw not_implemented_error("Run not implemented");
 }

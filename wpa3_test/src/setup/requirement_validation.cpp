@@ -1,6 +1,6 @@
 #include "../../include/config/RunStatus.h"
 #include "../../include/config/Actor_config.h"
-#include "../../include/config/hw_capabilities.h"
+#include "../../include/system/hw_capabilities.h"
 #include "../../include/logger/error_log.h"
 #include "../../include/logger/log.h"
 

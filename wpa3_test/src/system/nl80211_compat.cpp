@@ -6,12 +6,12 @@
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
-#include "config/nl80211_compat.h"
+#include "../../include/system/nl80211_compat.h"
 
 #include <iostream>
 #include <net/if.h>
 
-#include "config/hw_capabilities.h"
+#include "../../include/system/hw_capabilities.h"
 #include "logger/error_log.h"
 using namespace std;
 

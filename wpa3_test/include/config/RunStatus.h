@@ -6,7 +6,7 @@
 #include <tuple>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
-#include "ProcessManager.h"
+#include "../system/ProcessManager.h"
 
 class Actor_config;
 using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;

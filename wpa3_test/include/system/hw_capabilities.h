@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "RunStatus.h"
+#include "../config/RunStatus.h"
 
 
 enum class InterfaceType {

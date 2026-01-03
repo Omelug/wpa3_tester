@@ -1,4 +1,4 @@
-#include "config/hw_capabilities.h"
+#include "../../include/system/hw_capabilities.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"

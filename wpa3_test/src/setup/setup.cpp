@@ -3,7 +3,7 @@
 #include "attacks/attacks.h"
 #include <filesystem>
 #include <iostream>
-#include "config/nl80211_compat.h"
+#include "../../include/system/nl80211_compat.h"
 
 using namespace std;
 

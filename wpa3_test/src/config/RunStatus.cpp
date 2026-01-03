@@ -52,6 +52,7 @@ RunStatus::RunStatus(const int argc, char **argv){
 
 void RunStatus::run_test(){
     attack_run[config["attacker_module"]](*this);
+    //TODO teardown , reset interfaces
 }
 
 void RunStatus::save_actor_interface_mapping(){

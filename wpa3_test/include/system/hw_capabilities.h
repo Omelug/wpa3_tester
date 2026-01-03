@@ -4,7 +4,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
 #include "../config/RunStatus.h"
 
 
@@ -62,9 +61,7 @@ constexpr uint32_t AKM_SAE = 0x000FAC08;
 constexpr uint32_t CIPHER_CCMP = 0x000FAC04;
 constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
 
-
 class hw_capabilities {
-    /* find solution of actors and available interfaces */
     static bool findSolution(
         const std::vector<std::string>& ruleKeys,
         size_t ruleIdx,
@@ -78,22 +75,15 @@ class hw_capabilities {
 
 public:
     static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
+    static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns);
 
     // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
     static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
-
     static std::vector<InterfaceInfo> list_interfaces(const RunStatus& run_status);
 
     // check availability
     static std::string read_sysfs(const std::string& iface, const std::string& file);
     static std::string get_driver_name(const std::string& iface);
-
-    // setup requirements
-    static void cleanup_interface(const std::string& iface);
-    static void set_monitor_mode(const std::string& iface);
-    static void set_ap_mode(const std::string& iface);
-    static void set_channel(const std::string& iface, int channel);
-
     //format
     static int channel_to_freq_mhz(int channel);
 

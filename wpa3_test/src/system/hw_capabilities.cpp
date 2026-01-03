@@ -1,4 +1,5 @@
 #include "../../include/system/hw_capabilities.h"
+#include "../../include/system/iface.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -136,75 +137,52 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap &rules, const ActorCM
     throw req_error("Not found valid requirements");
 }
 
-static int run_cmd(const vector<string> &argv){
-    if(argv.empty()) return -1;
 
-    // build C-style argv
+int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<string> &netns = nullptr) {
+    if (argv.empty()) return -1;
+
+    // prepend ip netns exec if netns is set
+    vector<string> full_argv;
+    if (netns.has_value()) {
+        full_argv.reserve(argv.size() + 4);
+        full_argv.emplace_back("ip");
+        full_argv.emplace_back("netns");
+        full_argv.emplace_back("exec");
+        full_argv.push_back(*netns);
+        full_argv.insert(full_argv.end(), argv.begin(), argv.end());
+    } else {
+        full_argv = argv;
+    }
+
     vector<char *> args;
-    args.reserve(argv.size() + 1);
-    for(auto &s: argv){
+    args.reserve(full_argv.size() + 1);
+    for (auto &s : full_argv) {
         args.push_back(const_cast<char *>(s.c_str()));
     }
     args.push_back(nullptr);
 
-    const pid_t pid = fork();
-    if(pid < 0){
-        log(LogLevel::ERROR, "fork() failed for command %s", argv[0].c_str());
+    pid_t pid = fork();
+    if (pid < 0) {
+        log(LogLevel::ERROR, "fork() failed for command %s", full_argv[0].c_str());
         return -1;
     }
 
-    if(pid == 0){
-        // child
+    if (pid == 0) {
         execvp(args[0], args.data());
-        // if exec fails
         _exit(127);
     }
 
     int status = 0;
-    if(waitpid(pid, &status, 0) < 0){
-        log(LogLevel::ERROR, "waitpid() failed for command %s", argv[0].c_str());
+    if (waitpid(pid, &status, 0) < 0) {
+        log(LogLevel::ERROR, "waitpid() failed for command %s", full_argv[0].c_str());
         return -1;
     }
 
-    if(!WIFEXITED(status) || WEXITSTATUS(status) != 0){
-        //TODO ignore errors what say nothing changed
-        //log(LogLevel::WARNING, "Command %s exited with status %d", argv[0].c_str(), WEXITSTATUS(status));
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        //TODO: could log non-zero exit if needed
     }
 
     return WEXITSTATUS(status);
-}
-
-void hw_capabilities::cleanup_interface(const string &iface){
-    log(LogLevel::INFO, "Cleaning up interface %s", iface.c_str());
-
-    run_cmd({"pkill", "-f", "wpa_supplicant.*-i" + iface});
-    run_cmd({"pkill", "-f", "hostapd.*" + iface});
-
-    run_cmd({"ip", "link", "set", iface, "down"});
-
-    run_cmd({"rfkill", "unblock", "wifi"}); //TODO needed here ?
-    run_cmd({"ip", "addr", "flush", "dev", iface});
-    run_cmd({"ip", "link", "set", iface, "up"});
-}
-
-void hw_capabilities::set_monitor_mode(const string &iface){
-    log(LogLevel::INFO, "Setting interface %s to monitor mode", iface.c_str());
-    run_cmd({"ip", "link", "set", iface, "down"});
-    run_cmd({"iw", "dev", iface, "set", "type", "monitor"});
-    run_cmd({"ip", "link", "set", iface, "up"});
-}
-
-void hw_capabilities::set_ap_mode(const string &iface){
-    log(LogLevel::INFO, "Preparing interface %s for AP mode", iface.c_str());
-    run_cmd({"ip", "link", "set", iface, "down"});
-    //TODO co? run_cmd({"iw", "dev", iface, "set", "type", "__ap"});
-    run_cmd({"iw", "dev", iface, "set", "type", "managed"});
-    run_cmd({"ip", "link", "set", iface, "up"});
-}
-
-void hw_capabilities::set_channel(const string &iface, const int channel){
-    log(LogLevel::INFO, "Setting interface %s to channel %d", iface.c_str(), channel);
-    run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
 }
 
 int hw_capabilities::channel_to_freq_mhz(const int channel){

@@ -97,7 +97,10 @@ void speed_observation_start(RunStatus& rs){
     rs.process_manager.wait_for("iperf_server", "Server listening");
 
     const int attack_time = rs.config["attack_config"]["attack_time"];
+    const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
+
     const vector<string> iperf_client_arg = {
+        "ip", "netns", "exec", netns_client,
         "stdbuf", "-oL", "-eL",
         "iperf3",
         "-c", "10.0.0.1",
@@ -142,23 +145,21 @@ void setup_chs_attack(RunStatus& rs){
     //TODO sync
 	log(LogLevel::INFO, "access_point is running");
 
-	const vector<string> wpa_supplicant_args = {
-	    "sudo",
+    const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
+    const vector<string> wpa_supplicant_args = {
+        "sudo","ip", "netns", "exec", netns_client,
         "wpa_supplicant",
-        "-i",
-        rs.get_actor("client")["iface"],
-		"-c",
-    	wpa_supp_config_path
+        "-i",rs.get_actor("client")["iface"],
+		"-c",wpa_supp_config_path
 	};
-	rs.process_manager.run("client", wpa_supplicant_args);
+    rs.process_manager.run("client", wpa_supplicant_args);
     rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
 
     const vector<string> ip_addr_add_args_STA = {  //TODO make more generic
-        "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
+        "ip", "netns", "exec", netns_client, "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
         rs.get_actor("client")["iface"]
     };
     rs.process_manager.run("ip_addr_add_STA", ip_addr_add_args_STA);
-    hw_capabilities::
     //TODO sync?
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");

@@ -24,7 +24,6 @@ actors:
         wpa_passphrase: password123
         channel: 6
       channel: 6 # not set in hostapd, set once before test
-      netns: ap
   client:
     type: STA
     source: internal
@@ -53,6 +52,6 @@ actors:
 
 attack_config:
   validator: ./channel_switch.schema.yaml
-  attack_time: 10
+  attack_time: 50
   ms_interval: 100
   new_channel: 1

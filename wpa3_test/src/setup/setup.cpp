@@ -7,8 +7,8 @@
 
 using namespace std;
 
-void RunStatus::setup_test(){
 
+void RunStatus::setup_test(){
     namespace fs = filesystem;
     const fs::path base = fs::current_path();
     const fs::path data_root = base / "data" / "wpa3_test" / "run" / config["name"];

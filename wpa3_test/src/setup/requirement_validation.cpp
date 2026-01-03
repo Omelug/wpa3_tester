@@ -3,6 +3,7 @@
 #include "../../include/system/hw_capabilities.h"
 #include "../../include/logger/error_log.h"
 #include "../../include/logger/log.h"
+#include "../../include/system/iface.h"
 
 using namespace std;
 using nlohmann::json;
@@ -14,7 +15,7 @@ ActorCMap RunStatus::scan_internal() const{
         if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
         json actor_json;
         actor_json["selection"]["iface"] = iface_name;
-        auto cfg = std::make_unique<Actor_config>(actor_json);
+        auto cfg = make_unique<Actor_config>(actor_json);
         hw_capabilities::get_nl80211_caps(iface_name, *cfg);
         options_map.emplace(iface_name, std::move(cfg));
     }
@@ -45,7 +46,27 @@ tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
    );
 }
 
+void cleanup_all_namespaces() {
+    log(LogLevel::INFO, "Global cleanup: Removing all network namespaces...");
+
+    //TODO tohle je asi moc, (a je to u několikrát!!!)
+    system("sudo pkill -9 iperf3 2>/dev/null");
+    system("sudo pkill -9 wpa_supplicant 2>/dev/null");
+    system("sudo pkill -9 hostapd 2>/dev/null");
+
+    // 2. Najít všechna PHY rádia, která NEJSOU v hlavním namespace a vrátit je
+    // Prohledáme všechna phy a pošleme je do netns procesu 1 (hlavní systém)
+    system("for phy in $(iw phy | grep wiphy | awk '{print $2}'); do "
+           "  sudo iw phy phy$phy set netns 1 2>/dev/null; "
+           "done");
+
+    system("ls /var/run/netns/ | xargs -I {} sudo ip netns del {} 2>/dev/null");
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000)); //TODO dynamic? , wait for move of interface
+}
+
+
 void RunStatus::config_requirement() {
+    cleanup_all_namespaces();
 
     //check tor are not empty
     if (!config.contains("actors") || !config["actors"].is_object()) {
@@ -75,6 +96,17 @@ void RunStatus::config_requirement() {
         auto resIt = internal_mapping.find(actorName);
         if (resIt == internal_mapping.end()) {continue;}
 
+        //TODO move to
+        optional<string> netns_opt;
+        if (config["actors"][actorName].contains("netns")) {
+            netns_opt = config["actors"][actorName]["netns"].get<string>();
+            const string& ns_name = netns_opt.value();
+            string create_ns_cmd = "sudo ip netns add " + ns_name + " 2>/dev/null || true";
+            system(create_ns_cmd.c_str());
+            string lo_up_cmd = "sudo ip netns exec " + ns_name + " ip link set lo up";
+            system(lo_up_cmd.c_str());
+        }
+
         const string &opt_iface = resIt->second;
         auto optIt = options_internal.find(opt_iface);
         if (optIt == options_internal.end() || !optIt->second) {
@@ -82,20 +114,23 @@ void RunStatus::config_requirement() {
                 opt_iface.c_str(), actorName.c_str());
         }
 
-        hw_capabilities::cleanup_interface(opt_iface);
+        // create interface object (with optional netns from config)
+        iface ifc{opt_iface, netns_opt};
+
+        ifc.cleanup();
 
         //---------------  set mode based on actor requirements -------------------
         if (actor->bool_conditions.at("monitor").value_or(false)) {
-            hw_capabilities::set_monitor_mode(opt_iface);
+            ifc.set_monitor_mode();
         }
 
         if (config["actors"][actorName]["type"] == "AP") {
-            hw_capabilities::set_ap_mode(opt_iface);
-        }
-        //TODO other types
+            ifc.set_ap_mode();
+        }//TODO other types recreate?
+
 
         if (config["actors"][actorName].contains("channel")) {
-            hw_capabilities::set_channel(opt_iface, config["actors"][actorName]["channel"]);
+            ifc.set_channel(config["actors"][actorName]["channel"]);
         }
 
         // save option properties to actor

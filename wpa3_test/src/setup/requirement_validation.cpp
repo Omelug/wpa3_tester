@@ -50,9 +50,9 @@ void cleanup_all_namespaces() {
     log(LogLevel::INFO, "Global cleanup: Removing all network namespaces...");
 
     //TODO tohle je asi moc, (a je to u několikrát!!!)
-    system("sudo pkill -9 iperf3 2>/dev/null");
-    system("sudo pkill -9 wpa_supplicant 2>/dev/null");
-    system("sudo pkill -9 hostapd 2>/dev/null");
+    system("sudo pkill -9 iperf3 | true");
+    system("sudo pkill -9 wpa_supplicant | true");
+    system("sudo pkill -9 hostapd | true");
 
     // 2. Najít všechna PHY rádia, která NEJSOU v hlavním namespace a vrátit je
     // Prohledáme všechna phy a pošleme je do netns procesu 1 (hlavní systém)

@@ -50,6 +50,6 @@ actors:
 
 attack_config:
   validator: ./channel_switch.schema.yaml
-  attack_time: 50
+  attack_time: 30
   ms_interval: 100
   new_channel: 1

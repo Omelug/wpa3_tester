@@ -8,3 +8,8 @@ std::map<std::string, std::function<void(RunStatus&)>> attack_setup = {
 std::map<std::string, std::function<void(RunStatus&)>> attack_run = {
     {"channel_switch", run_chs_attack},
 };
+
+std::map<std::string, std::function<void(RunStatus&)>> attack_stats = {
+    {"channel_switch", stats_chs_attack},
+};
+

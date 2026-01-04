@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0167 NEW)
+
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 #libtins a libwifi mají oba target uninstall
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
+set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+set(CMAKE_ERROR_DEPRECATED OFF CACHE BOOL "" FORCE)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
@@ -67,6 +71,17 @@ FetchContent_Declare(
         URL https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/nl80211.h
         DOWNLOAD_NO_EXTRACT TRUE
 )
+
+set(SCIPLOT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SCIPLOT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(SCIPLOT_EXPORT_TARGETS OFF CACHE BOOL "" FORCE)
+set(SCIPLOT_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+        sciplot
+        GIT_REPOSITORY https://github.com/sciplot/sciplot.git
+        GIT_TAG        v0.3.1
+)
 # ------------------------------------------------
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -78,6 +93,7 @@ FetchContent_MakeAvailable(
         json
         json_schema_validator
         linux_headers_wifi
+        sciplot
 )
 
 if(doctest_SOURCE_DIR)
@@ -111,6 +127,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${reproc_SOURCE_DIR}/reproc++/include
         ${LIBNL_INCLUDE_DIRS}
         ${WIFI_HEADERS_DIR}
+        ${sciplot_SOURCE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

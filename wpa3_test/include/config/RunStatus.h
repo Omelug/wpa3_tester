@@ -36,6 +36,8 @@ public:
 
     Actor_config& get_actor(const std::string& actor_name);
 
+    bool only_stats = false;
+
 private:
     static std::string findConfigByTestName(const std::string &name);
 
@@ -51,5 +53,6 @@ public:
     void config_requirement();
     void setup_test();
     void run_test();
+    void stats_test();
     void save_actor_interface_mapping();
 };

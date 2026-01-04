@@ -4,7 +4,6 @@
 #include "logger/log.h"
 #include <argparse/argparse.hpp>
 #include <string>
-
 #include "attacks/attacks.h"
 
 using namespace std;
@@ -26,6 +25,11 @@ RunStatus::RunStatus(const int argc, char **argv){
             .help("Path to config file of test run")
             .metavar("PATH");
 
+    program.add_argument("--only_stats")
+            .help("Run only statistics for an already finished test (no setup/attack)")
+            .default_value(false)
+            .implicit_value(true);
+
     try{
         program.parse_args(argc, argv);
     } catch(const runtime_error &err){
@@ -36,6 +40,8 @@ RunStatus::RunStatus(const int argc, char **argv){
         throw config_error("--test <test_name> or --config <path> is required");
     }
 
+    only_stats = program.get<bool>("--only_stats");
+
     if(const auto testName = program.present<string>("--test")){
         configPath = findConfigByTestName(*testName);
     } else{
@@ -43,7 +49,7 @@ RunStatus::RunStatus(const int argc, char **argv){
     }
 
     if(!exists(configPath)){
-        throw config_error("Config not found: " + configPath);
+        throw config_error("Config not found: %s", configPath.c_str());
     }
 
     log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
@@ -52,6 +58,11 @@ RunStatus::RunStatus(const int argc, char **argv){
 
 void RunStatus::run_test(){
     attack_run[config["attacker_module"]](*this);
+    //TODO teardown , reset interfaces
+}
+
+void RunStatus::stats_test(){
+    attack_stats[config["attacker_module"]](*this);
     //TODO teardown , reset interfaces?
 }
 

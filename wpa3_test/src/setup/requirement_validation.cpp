@@ -125,9 +125,8 @@ void RunStatus::config_requirement() {
         }
 
         if (config["actors"][actorName]["type"] == "AP") {
-            ifc.set_ap_mode();
-        }//TODO other types recreate?
-
+            ifc.set_managed_mode();
+        }
 
         if (config["actors"][actorName].contains("channel")) {
             ifc.set_channel(config["actors"][actorName]["channel"]);
@@ -140,5 +139,4 @@ void RunStatus::config_requirement() {
 	// TODO: simulation -> check hw compatibility
     //ActorCMap options_external =  create_simulation();
 
-    //hw_capabilities::reset();
 }

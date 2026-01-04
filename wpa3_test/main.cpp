@@ -9,9 +9,7 @@ using namespace std;
 static RunStatus* globalRunStatus = nullptr;
 
 void signal_handler(const int signum) {
-    if (globalRunStatus) {
-        globalRunStatus->process_manager.stop_all();
-    }
+    if (globalRunStatus) {globalRunStatus->process_manager.stop_all();}
     exit(signum);
 }
 
@@ -22,8 +20,7 @@ int main(const int argc, char *argv[])  {
     signal(SIGTERM, signal_handler);
 
     runStatus.config_validation();
-    runStatus.config_requirement(); //include validation
-    //this_thread::sleep_for(std::chrono::seconds(3)); //TODO for interface to setup
+    runStatus.config_requirement(); //include req validation
     runStatus.setup_test();
     runStatus.run_test();
     return 0;

@@ -1,35 +1,24 @@
 #include "logger/error_log.h"
-#include <format>
+#include <vector>
+#include <cstdio>
 
 using namespace std;
 
-// Base error constructor
 tester_error::tester_error(const string &msg): runtime_error(msg){}
 
-// Format helper implementation
-string tester_error::v_format(const string_view fmt, const format_args args){
-    try{return vformat(fmt, args);
-    } catch(const format_error &e){return string("Format error: ") + e.what();
+string tester_error::vprintf_format(const char *fmt, ...){
+    va_list ap;
+    va_start(ap, fmt);
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+    const int len = vsnprintf(nullptr, 0, fmt, ap_copy);
+    va_end(ap_copy);
+    if(len < 0){
+        va_end(ap);
+        return "printf format error";
     }
-}
-
-// Concrete error types
-config_error::config_error(const string &msg): tester_error(msg){
-    log(LogLevel::CRITICAL, runtime_error::what());
-}
-
-req_error::req_error(const string &msg): tester_error(msg){
-    log(LogLevel::ERROR, runtime_error::what());
-}
-
-setup_error::setup_error(const string &msg): tester_error(msg){
-    log(LogLevel::CRITICAL, runtime_error::what());
-}
-
-not_implemented_error::not_implemented_error(const string &msg): tester_error(msg){
-    log(LogLevel::CRITICAL, runtime_error::what());
-}
-
-headers_error::headers_error(const string &msg): tester_error(msg){
-    log(LogLevel::CRITICAL, runtime_error::what());
+    vector<char> buf(static_cast<size_t>(len) + 1);
+    vsnprintf(buf.data(), buf.size(), fmt, ap);
+    va_end(ap);
+    return string(buf.data());
 }

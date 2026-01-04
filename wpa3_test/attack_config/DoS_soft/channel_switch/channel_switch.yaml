@@ -27,8 +27,6 @@ actors:
   client:
     type: STA
     source: internal
-    selection:
-      condition: [monitor] # TODO set this empty default
     setup:
       program: wpa_supplicant
       program_config:

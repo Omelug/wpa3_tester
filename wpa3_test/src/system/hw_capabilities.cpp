@@ -1,9 +1,3 @@
-#include "../../include/system/hw_capabilities.h"
-#include "../../include/system/iface.h"
-#include "config/RunStatus.h"
-#include "logger/error_log.h"
-#include "logger/log.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -12,9 +6,14 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
-#include <net/if.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
+#include "system/hw_capabilities.h"
+#include "system/iface.h"
+#include "config/RunStatus.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
 
 using namespace std;
 
@@ -22,7 +21,7 @@ string hw_capabilities::read_sysfs(const string &iface, const string &file){
     const string path = "/sys/class/net/" + iface + "/" + file;
 
     ifstream ifs(path);
-    if(!ifs.is_open()){return "";} //TODO error?
+    if(!ifs.is_open()){ throw config_error("Cant find %s", path.c_str());}
 
     string content;
     getline(ifs, content);
@@ -37,10 +36,10 @@ string hw_capabilities::get_driver_name(const string &iface){
         if(filesystem::exists(path) && filesystem::is_symlink(path)){
             return filesystem::read_symlink(path).filename().string();
         }
-    } catch(const filesystem::filesystem_error &){
-        return ""; //TODO
+    } catch(const filesystem::filesystem_error &e){
+        throw config_error("Driver check error: %s", e.what());
     }
-    return "";
+    throw config_error("Driver check error: not found valid symlink"); ;
 }
 
 
@@ -138,7 +137,7 @@ AssignmentMap hw_capabilities::check_req_options(ActorCMap &rules, const ActorCM
 }
 
 
-int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<string> &netns = nullptr) {
+int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<string> &netns) {
     if (argv.empty()) return -1;
 
     // prepend ip netns exec if netns is set
@@ -156,21 +155,16 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<str
 
     vector<char *> args;
     args.reserve(full_argv.size() + 1);
-    for (auto &s : full_argv) {
-        args.push_back(const_cast<char *>(s.c_str()));
-    }
+    for (auto &s : full_argv) {args.push_back(const_cast<char *>(s.c_str()));}
     args.push_back(nullptr);
 
-    pid_t pid = fork();
+    const pid_t pid = fork();
     if (pid < 0) {
         log(LogLevel::ERROR, "fork() failed for command %s", full_argv[0].c_str());
         return -1;
     }
 
-    if (pid == 0) {
-        execvp(args[0], args.data());
-        _exit(127);
-    }
+    if (pid == 0) {execvp(args[0], args.data());_exit(127);}
 
     int status = 0;
     if (waitpid(pid, &status, 0) < 0) {
@@ -178,8 +172,14 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<str
         return -1;
     }
 
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        //TODO: could log non-zero exit if needed
+    if (WIFSIGNALED(status)) {
+        log(LogLevel::WARNING,
+            "Command %s terminated by signal %d",
+            full_argv[0].c_str(), WTERMSIG(status));
+    } else if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+        log(LogLevel::ERROR,
+            "Command %s exited with status %d",
+            full_argv[0].c_str(), WEXITSTATUS(status));
     }
 
     return WEXITSTATUS(status);

@@ -70,10 +70,10 @@ void RunStatus::config_validation() {
         this->config = config_json;
 
     } catch (const domain_error &e) {
-        throw config_error("Schema error: {}", e.what());
+        throw config_error(string("Schema error: ") + e.what());
     } catch (const invalid_argument &e) {
-        throw config_error( "Error in config: {}", e.what());
+        throw config_error(string("Error in config: ") + e.what());
     } catch (const exception& e) {
-        throw config_error("Config validation error: {}", e.what());
+        throw config_error(string("Config validation error: ") + e.what());
     }
 }

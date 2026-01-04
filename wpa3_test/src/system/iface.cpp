@@ -16,14 +16,13 @@ void iface::set_channel(const int channel) const {
     run({"iw", "dev", name, "set", "channel", std::to_string(channel)});
 }
 
-void iface::set_ap_mode() const {
+void iface::set_managed_mode() const {
     if (netns.has_value()) {
-        log(LogLevel::INFO, "Preparing interface %s for AP mode in netns %s", name.c_str(), netns->c_str());
+        log(LogLevel::INFO, "Preparing interface %s for managed mode in netns %s", name.c_str(), netns->c_str());
     } else {
-        log(LogLevel::INFO, "Preparing interface %s for AP mode", name.c_str());
+        log(LogLevel::INFO, "Preparing interface %s for managed mode", name.c_str());
     }
     run({"ip", "link", "set", name, "down"});
-    //TODO: revisit type if needed (e.g. __ap)
     run({"iw", "dev", name, "set", "type", "managed"});
     run({"ip", "link", "set", name, "up"});
 }
@@ -59,7 +58,6 @@ void iface::cleanup() const {
 
         if (!phy_name.empty()) {
             log(LogLevel::DEBUG, "Moving %s (%s) to netns %s", name.c_str(), phy_name.c_str(), netns->c_str());
-            //cal move in default namespace
             hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, std::nullopt);
         }
     } else {

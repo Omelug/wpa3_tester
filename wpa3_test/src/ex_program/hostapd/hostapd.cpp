@@ -26,15 +26,16 @@ string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) 
     }
     // write config
     for (auto it = ap_setup.begin(); it != ap_setup.end(); ++it) {
+        out << it.key() << "=";
         if (it.value().is_string()) {
-            out << it.key() << "=" << it.value().get<std::string>() << "\n";
+            out << it.value().get<string>();
         } else {
-            out << it.key() << "=" << it.value().dump() << "\n";
+            out << it.value().dump();
         }
+        out << "\n";
     }
 
     out.close();
-
     log(LogLevel::INFO, ("hostapd_config: written " + cfg_path.string()).c_str());
     return cfg_path.string();
 }
@@ -62,20 +63,18 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
     const auto ssid       = client_setup.value("ssid",      string{"wpa3_test"});
     const auto passphrase = client_setup.value("psk",       string{"password123"});
 
-    //TODO default valuesi, but removable
     out << "network={" << '\n';
     // write config
     for (auto it = client_setup.begin(); it != client_setup.end(); ++it) {
+        out << it.key() << "=";
         if (it.value().is_string() &&  it.key() != "ssid" && it.key() != "sae_password") {
-            out << it.key() << "=" << it.value().get<std::string>() << "\n";
-        } else {
-            out << it.key() << "=" << it.value().dump() << "\n";
-        }
+            out << it.value().get<string>();
+        } else {out << it.value().dump();}
+        out << "\n";
     }
-    out << "}" << '\n';
+    out << "}\n";
 
     out.close();
-
     log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
     return cfg_path.string();
 }

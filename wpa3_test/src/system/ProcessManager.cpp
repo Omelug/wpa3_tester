@@ -112,19 +112,13 @@ void ProcessManager::init_logging(const string &run_folder){
     }
 
     for (auto &entry: process_logs | views::values) {
-        if (entry.log.is_open()) {
-            entry.log.close();
-        }
+        if (entry.log.is_open()) {entry.log.close();}
         entry.history.clear();
         entry.history_enabled = false;
     }
     process_logs.clear();
 }
 
-/*void ProcessManager::run(const string& actor_name, const vector<string> &cmd) {
-    // Forward to the overload with no explicit working dir (uses default cwd)
-    run(actor_name, cmd, std::filesystem::path{});
-}*/
 
 void ProcessManager::run(const string& actor_name,
                          const vector<string> &cmd,
@@ -177,53 +171,32 @@ void ProcessManager::start_drain_for(const std::string &actor_name) {
     const auto it = processes.find(actor_name);
     if (it == processes.end() || !it->second) return;
 
-    reproc::process *proc = it->second.get();
+    auto proc = it->second.get();
 
     std::thread([this, actor_name, proc]() {
         uint8_t buffer[4096];
 
-        bool out_open = true;
-        bool err_open = true;
+        std::pair<reproc::stream, std::string_view> streams[] = {
+            {reproc::stream::out, "stdout"},
+            {reproc::stream::err, "stderr"}
+        };
 
-        while (out_open || err_open) {
-            // poll vrací, který stream je připravený
-            auto [events, ec] = proc->poll(
-                (out_open ? reproc::event::out : 0) |
-                (err_open ? reproc::event::err : 0),
-                reproc::infinite
-            );
-
+        while (true) {
+            auto [events, ec] = proc->poll(reproc::event::out | reproc::event::err, reproc::infinite);
             if (ec) break;
 
-            if ((events & reproc::event::out) && out_open) {
-                auto [n, read_ec] =
-                    proc->read(reproc::stream::out, buffer, sizeof(buffer));
+            for (auto [stream, name] : streams) {
+                if (const auto event = (stream == reproc::stream::out)
+                    ? reproc::event::out : reproc::event::err; events & event) {
 
-                if (read_ec) {
-                    out_open = false;
-                } else if (n > 0) {
-                    handle_chunk(
-                        this,
-                        actor_name,
-                        "stdout",
-                        std::string(reinterpret_cast<char *>(buffer), n)
-                    );
-                }
-            }
+                    auto [n, read_ec] = proc->read(stream, buffer, sizeof(buffer));
+                    if (read_ec) {continue; }
 
-            if ((events & reproc::event::err) && err_open) {
-                auto [n, read_ec] =
-                    proc->read(reproc::stream::err, buffer, sizeof(buffer));
-
-                if (read_ec) {
-                    err_open = false;
-                } else if (n > 0) {
-                    handle_chunk(
-                        this,
-                        actor_name,
-                        "stderr",
-                        std::string(reinterpret_cast<char *>(buffer), n)
-                    );
+                    if (n > 0) {
+                        handle_chunk(this,
+                            actor_name, name.data(),
+                            string(reinterpret_cast<char*>(buffer), n));
+                    }
                 }
             }
         }
@@ -275,7 +248,7 @@ void ProcessManager::wait_for(const string &actor_name, const string &pattern){
     logs.wait.matched = false;
 
     {  // first pass: check existing history
-       // - in block because ss/line will be freed and dont waste memory
+       // - in block because ss/line will be freed and don't waste memory
         stringstream ss(logs.history);
         string line;
         while (getline(ss, line)) {

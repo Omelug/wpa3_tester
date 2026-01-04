@@ -75,7 +75,7 @@ class hw_capabilities {
 
 public:
     static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
-    static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns);
+    static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
 
     // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
     static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
@@ -84,7 +84,8 @@ public:
     // check availability
     static std::string read_sysfs(const std::string& iface, const std::string& file);
     static std::string get_driver_name(const std::string& iface);
+
     //format
     static int channel_to_freq_mhz(int channel);
-
 };
+

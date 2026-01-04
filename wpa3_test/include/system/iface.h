@@ -7,7 +7,7 @@
 class iface {
 public:
     void set_channel(int channel) const;
-    void set_ap_mode() const;
+    void set_managed_mode() const;
     void set_monitor_mode() const;
     void cleanup() const;
 

@@ -5,7 +5,7 @@
 #include "logger/log.h"
 #include <thread>
 #include <chrono>
-#include "../../../include/system/hw_capabilities.h"
+#include "system/hw_capabilities.h"
 #include <filesystem>
 
 using namespace std;
@@ -67,16 +67,6 @@ auto check_vulnerable(
 void speed_observation_start(RunStatus& rs){
     namespace fs = std::filesystem;
 
-    system("sudo killall -9 iperf3 2>/dev/null");
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-    /*const vector<string> ip_up = {"sudo", "ip", "link", "set", rs.get_actor("access_point")["iface"], "up"};
-    rs.process_manager.run("ip_up_AP", ip_up);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    const vector<string> ip_up2 = {"sudo", "ip", "link", "set", rs.get_actor("client")["iface"], "up"};
-    rs.process_manager.run("ip_up_STA", ip_up2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));*/
-
     const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "iperf";
     std::error_code ec;
     fs::create_directories(obs_dir, ec);
@@ -117,50 +107,43 @@ void speed_observation_start(RunStatus& rs){
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus& rs){
 
-    if (rs.config["actors"]["access_point"]["source"] != "internal") {
-        throw runtime_error("only internal access_point is supported");
-    }
-    if (rs.config["actors"]["client"]["source"] != "internal") {
+    if (rs.config["actors"]["access_point"]["source"] != "internal"
+        || rs.config["actors"]["client"]["source"] != "internal") {
         throw runtime_error("only internal access_point is supported");
     }
 
     const string hostapd_config_path = hostapd_config(rs.run_folder, rs.config["actors"]["access_point"]["setup"]["program_config"]);
     const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
 
-    const vector<string> hostapd_args = {
-        "sudo",
-        "hostapd",
-        "-i",
-        rs.get_actor("access_point")["iface"],
+    // -------- hostapd AP ------------
+    rs.process_manager.run("access_point",{
+        "sudo","hostapd",
+        "-i", rs.get_actor("access_point")["iface"],
         hostapd_config_path
-    };
-    rs.process_manager.run("access_point", hostapd_args);
+    });
     rs.process_manager.wait_for("access_point", "AP-ENABLED");
+    log(LogLevel::INFO, "access_point is running");
 
-    const vector<string> ip_addr_add_args_server = {  //TODO make more generic
+    hw_capabilities::run_cmd({
         "sudo","ip", "addr","add", "10.0.0.1/24", "dev",
         rs.get_actor("access_point")["iface"]
-    };
-    rs.process_manager.run("ip_addr_add_AP", ip_addr_add_args_server);
-    //TODO sync
-	log(LogLevel::INFO, "access_point is running");
+    }, std::nullopt);
 
+    // -------- wpa_supplicant STA ------------
     const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
-    const vector<string> wpa_supplicant_args = {
+    rs.process_manager.run("client", {
         "sudo","ip", "netns", "exec", netns_client,
         "wpa_supplicant",
         "-i",rs.get_actor("client")["iface"],
-		"-c",wpa_supp_config_path
-	};
-    rs.process_manager.run("client", wpa_supplicant_args);
+        "-c",wpa_supp_config_path
+    });
     rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
 
-    const vector<string> ip_addr_add_args_STA = {  //TODO make more generic
-        "ip", "netns", "exec", netns_client, "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
+    hw_capabilities::run_cmd({
+        "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
         rs.get_actor("client")["iface"]
-    };
-    rs.process_manager.run("ip_addr_add_STA", ip_addr_add_args_STA);
-    //TODO sync?
+    }, netns_client);
+
     rs.process_manager.wait_for("client", "EVENT-CONNECTED");
 	log(LogLevel::INFO, "client is connected");
 
@@ -190,11 +173,11 @@ void run_chs_attack(RunStatus& rs){
     //TODO log client, CTRL-EVENT-DISCONNECTED
     //std::this_thread::sleep_for(std::chrono::seconds(3));
     speed_observation_start(rs);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
     //speed_observation_stop(rs);
     log(LogLevel::INFO,"-----------------------END");
-
-    std::this_thread::sleep_for(std::chrono::seconds(9000));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     //throw not_implemented_error("Run not implemented");
 }

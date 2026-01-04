@@ -7,14 +7,10 @@
 #include <chrono>
 #include "system/hw_capabilities.h"
 #include <filesystem>
-#include <sciplot/Plot2D.hpp>
-#include <sciplot/Figure.hpp>
-#include <sciplot/Canvas.hpp>
-#include <sciplot/sciplot.hpp>
+#include "observer/iperf_wrapper.h"
 
 using namespace std;
 using namespace Tins;
-using namespace sciplot;
 
 void send_CSA_beacon(const HWAddress<6> &ap_mac,
                      const NetworkInterface &iface,
@@ -86,6 +82,7 @@ void speed_observation_start(RunStatus& rs){
         "iperf3",
         "-s",
         "-1",
+        "-i","0.1",
         "-B", "10.0.0.1",   // explicit bind
         "-f", "k",
         //"-J"
@@ -100,7 +97,8 @@ void speed_observation_start(RunStatus& rs){
         "iperf3",
         "-c", "10.0.0.1",
         "-u", // udp, because is not buffered
-        "-b", "1M",
+        "-b", "100M",
+        "-i","0.1",
         //"-B", "10.0.0.2",
         "--bind-dev", rs.get_actor("client")["iface"],
         "-t", to_string(rs.config["attack_config"]["attack_time"].get<int>()),
@@ -180,74 +178,6 @@ void run_chs_attack(RunStatus& rs){
     //speed_observation_stop(rs);
     log(LogLevel::INFO, "Attack END");
     std::this_thread::sleep_for(std::chrono::seconds(10));
-}
-
-
-static void iperf3_graph(const std::filesystem::path &log_path,
-                        const std::string &actor_tag,
-                        const std::string &output_png){
-    namespace fs = std::filesystem;
-    if (!fs::exists(log_path)) {
-        log(LogLevel::ERROR, "iperf3 log file not found: %s", log_path.string().c_str());
-        return;
-    }
-
-    ifstream ifs(log_path);
-    if (!ifs.is_open()) {
-        log(LogLevel::ERROR, "Failed to open iperf3 log file: %s", log_path.string().c_str());
-        return;
-    }
-
-    vector<double> xs;
-    vector<double> ys;
-
-    string line;
-    while (getline(ifs, line)) {
-        // only lines from given actor (e.g. [iperf3_client] or [iperf3_server]) only for sure,
-        if (line.find("[" + actor_tag + "]") == string::npos) continue;
-        // skip [cmd] line
-        if (line.find("[cmd]") != string::npos) continue;
-
-        //skip where is not Kbits/sec
-        auto pos_rate = line.find("Kbits/sec");
-        if (pos_rate == string::npos) continue;
-
-        size_t end = pos_rate;
-        while (end > 0 && (line[end - 1] == ' ' || line[end - 1] == '\t')) --end;
-        size_t start = end;
-        while (start > 0 && (isdigit(static_cast<unsigned char>(line[start - 1])) || line[start - 1] == '.')) --start;
-
-        const string bw_str = line.substr(start, end - start);
-        try {
-            const double bw = stod(bw_str);
-            ys.push_back(bw);
-            xs.push_back(static_cast<double>(ys.size()));
-        } catch (const std::exception &) {
-            continue;
-        }
-    }
-
-    if (xs.empty()) {
-        log(LogLevel::WARNING, "No bandwidth samples parsed from iperf3 log: %s", log_path.string().c_str());
-        return;
-    }
-
-    Plot2D plot;
-    plot.xlabel("Sample [s]");
-    plot.ylabel("Throughput [Kbit/s]");
-    plot.gnuplot("set logscale y");
-    plot.drawCurve(xs, ys).label(actor_tag);
-
-    Figure fig = {{plot}};
-    Canvas canvas = {{fig}};
-
-    const fs::path png_path = log_path.parent_path() / output_png;
-    try {
-        canvas.save(png_path.string());
-        log(LogLevel::INFO, "Saved iperf3 graph to %s", png_path.string().c_str());
-    } catch (const std::exception &e) {
-        log(LogLevel::ERROR, "Failed to save iperf3 graph %s: %s", png_path.string().c_str(), e.what());
-    }
 }
 
 void stats_chs_attack(const RunStatus& rs){

@@ -3,6 +3,14 @@ cmake_policy(SET CMP0167 NEW)
 
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+    message(STATUS "ccache found")
+else()
+    message(STATUS "ccache not found")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 #libtins a libwifi mají oba target uninstall
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
@@ -82,6 +90,13 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/sciplot/sciplot.git
         GIT_TAG        v0.3.1
 )
+
+FetchContent_Declare(
+        matplotplusplus
+        GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus.git
+        GIT_TAG        v1.2.2
+)
+
 # ------------------------------------------------
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -94,6 +109,7 @@ FetchContent_MakeAvailable(
         json_schema_validator
         linux_headers_wifi
         sciplot
+        matplotplusplus
 )
 
 if(doctest_SOURCE_DIR)
@@ -128,6 +144,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${LIBNL_INCLUDE_DIRS}
         ${WIFI_HEADERS_DIR}
         ${sciplot_SOURCE_DIR}
+        ${matplotplusplus_SOURCE_DIR}/source
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -140,6 +157,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         reproc++
         nl-3 nl-genl-3
         ${LIBNL_LIBRARIES}
+        matplot
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

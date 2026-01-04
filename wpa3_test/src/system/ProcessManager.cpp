@@ -140,7 +140,9 @@ void ProcessManager::run(const string& actor_name,
         throw runtime_error("Failed to start " + actor_name + ": " + ec.message());
     }
 
-    const fs::path log_path = log_base_dir / (actor_name + ".log");
+    fs::path log_dir = log_base_dir;
+    if (!working_dir_str.empty()) {log_dir = fs::path(working_dir_str);}
+    const fs::path log_path = log_dir / (actor_name + ".log");
 
     auto &logs = process_logs[actor_name];
     logs.log.close();
@@ -160,11 +162,10 @@ void ProcessManager::run(const string& actor_name,
     }
     const string line   =  current_timestamp() + " [" + actor_name + "] [cmd] " + cmd_line;
 
-    if (combined_log.is_open()) {write_log_line(combined_log, line);}
+    if (combined_log.is_open()) {write_log_line(combined_log, line);} // stays in global logger folder
     if (logs.log.is_open())     {write_log_line(logs.log, line);}
 
     processes[actor_name] = std::move(proc);
-
     start_drain_for(actor_name);
 }
 void ProcessManager::start_drain_for(const std::string &actor_name) {

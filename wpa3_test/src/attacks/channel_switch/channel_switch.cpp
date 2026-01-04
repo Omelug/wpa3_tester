@@ -75,32 +75,29 @@ void speed_observation_start(RunStatus& rs){
             "Failed to create iperf observer dir %s: %s",
             obs_dir.string().c_str(), ec.message().c_str());
     }
-    const vector<string> iperf_server_arg = {
+
+    rs.process_manager.run("iperf_server",{
         "stdbuf", "-oL", "-eL",
         "iperf3",
         "-s",
         "-1",
-        "-B", "10.0.0.1"   // explicitní bind
-    };
-
-    rs.process_manager.run("iperf_server", iperf_server_arg, obs_dir);
+        "-B", "10.0.0.1",   // explicit bind
+        "--logfile","iperf_server.json"
+    }, obs_dir);
     rs.process_manager.wait_for("iperf_server", "Server listening");
 
-    const int attack_time = rs.config["attack_config"]["attack_time"];
-    const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
-
-    const vector<string> iperf_client_arg = {
-        "ip", "netns", "exec", netns_client,
+    rs.process_manager.run("iperf_client", {
+        "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
         "stdbuf", "-oL", "-eL",
         "iperf3",
         "-c", "10.0.0.1",
-        "-u", // udo, because is is not buffered
+        "-u", // udp, because is not buffered
         "-b", "100M",
         //"-B", "10.0.0.2",
         "--bind-dev", rs.get_actor("client")["iface"],
-        "-t", std::to_string(attack_time)
-    };
-    rs.process_manager.run("iperf_client", iperf_client_arg, obs_dir);
+        "-t", to_string(rs.config["attack_config"]["attack_time"].get<int>()),
+        "--logfile","iperf_client.json"
+    }, obs_dir);
 
 };
 

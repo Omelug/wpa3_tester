@@ -66,7 +66,7 @@ string wpa_supplicant_config(const string& run_folder, const nlohmann::json& cli
     out << "network={" << '\n';
     // write config
     for (auto it = client_setup.begin(); it != client_setup.end(); ++it) {
-        out << it.key() << "=";
+        out << "\t" << it.key() << "=";
         if (it.value().is_string() &&  it.key() != "ssid" && it.key() != "sae_password") {
             out << it.value().get<string>();
         } else {out << it.value().dump();}

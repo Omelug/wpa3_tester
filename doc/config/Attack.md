@@ -17,3 +17,22 @@ sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_s
 
 <!-- TODO test list -->
 
+
+config:
+    create run status
+    check interface resources
+check requirements:
+    change interfaces config/namespaces
+setup:
+    start actors (and logging)
+    start observers
+    start pcap logging
+run:
+    run attacks
+    log
+statistic:
+    get gata from log
+    create graphs
+    create report for run
+
+    

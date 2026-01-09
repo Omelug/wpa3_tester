@@ -62,6 +62,7 @@ static void render_graph(const IperfData &data,
 
     } else if (lib == PlotLibrary::MATPLOT) {
         auto f = mp::figure(true);
+        f->quiet_mode(true);
         auto ax = f->current_axes();
 
         std::vector<double> y = data.bandwidths;
@@ -76,7 +77,7 @@ static void render_graph(const IperfData &data,
         ax->xlabel("Sample [ms]");
         ax->ylabel("Throughput [Kbit/s]");
         ax->legend();
-        f->draw();
+        //f->draw();
         f->save(output_path.string());
 
     }

@@ -8,51 +8,53 @@
 #include "Actor_config.h"
 #include "system/ProcessManager.h"
 
-class Actor_config;
-using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
-using AssignmentMap = std::map<std::string,std::string>;
+namespace wpa3_tester{
+    class Actor_config;
+    using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
+    using AssignmentMap = std::map<std::string,std::string>;
 
-class RunStatus {
+    class RunStatus {
 
-//actors
-ActorCMap external_actors;
-ActorCMap internal_actors;
-ActorCMap simulation_actors;
+        //actors
+        ActorCMap external_actors;
+        ActorCMap internal_actors;
+        ActorCMap simulation_actors;
 
-public:
-    nlohmann::json config;
-    std::string run_folder;
-    std::string configPath;
+    public:
+        nlohmann::json config;
+        std::string run_folder;
+        std::string configPath;
 
-    //mapping actor->interface
-    AssignmentMap internal_mapping;
-    //AssignmentMap external_mapping;
-    //AssignmentMap simulation_mapping;
+        //mapping actor->interface
+        AssignmentMap internal_mapping;
+        //AssignmentMap external_mapping;
+        //AssignmentMap simulation_mapping;
 
-    ProcessManager process_manager;
+        ProcessManager process_manager;
 
-	RunStatus() = default;
-    RunStatus(int argc, char ** argv);
+        RunStatus() = default;
+        RunStatus(int argc, char ** argv);
 
-    Actor_config& get_actor(const std::string& actor_name);
+        Actor_config& get_actor(const std::string& actor_name);
 
-    bool only_stats = false;
+        bool only_stats = false;
 
-private:
-    static std::string findConfigByTestName(const std::string &name);
+    private:
+        static std::string findConfigByTestName(const std::string &name);
 
-    // to scan available interfaces
-    ActorCMap scan_internal() const;
-    //ActorCMap scan_external() const;
-    //ActorCMap scan_simulation() const;
+        // to scan available interfaces
+        ActorCMap scan_internal() const;
+        //ActorCMap scan_external() const;
+        //ActorCMap scan_simulation() const;
 
-    std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
+        std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 
-public:
-    void config_validation();
-    void config_requirement();
-    void setup_test();
-    void run_test();
-    void stats_test();
-    void save_actor_interface_mapping();
-};
+    public:
+        void config_validation();
+        void config_requirement();
+        void setup_test();
+        void run_test();
+        void stats_test();
+        void save_actor_interface_mapping();
+    };
+}

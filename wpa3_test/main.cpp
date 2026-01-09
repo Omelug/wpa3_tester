@@ -6,8 +6,8 @@
 #include "logger/log.h"
 #include "system/ProcessManager.h"
 
+using namespace wpa3_tester;
 using namespace std;
-
 static RunStatus* globalRunStatus = nullptr;
 
 void signal_handler(const int signum) {

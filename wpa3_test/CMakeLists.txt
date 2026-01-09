@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0167 NEW)
-
+set(CMAKE_BUILD_TYPE Debug)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)

@@ -6,124 +6,126 @@
 #include <string>
 #include "attacks/attacks.h"
 
-using namespace std;
-using namespace filesystem;
+namespace wpa3_tester{
+    using namespace std;
+    using namespace filesystem;
 
-string RunStatus::findConfigByTestName(const string &name){
-    //TODO
-    throw config_error("Unknown test name: %s", name.c_str());
-}
-
-RunStatus::RunStatus(const int argc, char **argv){
-	argparse::ArgumentParser program("WPA3_tester", "1.0");
-
-    program.add_argument("--test")
-            .help("Find name by test") // TODO add ---test_list to show
-            .metavar("NAME");
-
-    program.add_argument("--config")
-            .help("Path to config file of test run")
-            .metavar("PATH");
-
-    program.add_argument("--only_stats")
-            .help("Run only statistics for an already finished test (no setup/attack)")
-            .default_value(false)
-            .implicit_value(true);
-
-    try{
-        program.parse_args(argc, argv);
-    } catch(const runtime_error &err){
-        throw config_error(err.what());
+    string RunStatus::findConfigByTestName(const string &name){
+        //TODO
+        throw config_error("Unknown test name: %s", name.c_str());
     }
 
-    if(!program.present("--test") && !program.present("--config")){
-        throw config_error("--test <test_name> or --config <path> is required");
-    }
+    RunStatus::RunStatus(const int argc, char **argv){
+        argparse::ArgumentParser program("WPA3_tester", "1.0");
 
-    only_stats = program.get<bool>("--only_stats");
+        program.add_argument("--test")
+                .help("Find name by test") // TODO add ---test_list to show
+                .metavar("NAME");
 
-    if(const auto testName = program.present<string>("--test")){
-        configPath = findConfigByTestName(*testName);
-    } else{
-        configPath = program.get<string>("--config");
-    }
+        program.add_argument("--config")
+                .help("Path to config file of test run")
+                .metavar("PATH");
 
-    if(!exists(configPath)){
-        throw config_error("Config not found: %s", configPath.c_str());
-    }
+        program.add_argument("--only_stats")
+                .help("Run only statistics for an already finished test (no setup/attack)")
+                .default_value(false)
+                .implicit_value(true);
 
-    log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
-}
-
-
-void RunStatus::run_test(){
-    attack_run[config["attacker_module"]](*this);
-    //TODO teardown , reset interfaces
-}
-
-void RunStatus::stats_test(){
-    attack_stats[config["attacker_module"]](*this);
-    //TODO teardown , reset interfaces?
-}
-
-void RunStatus::save_actor_interface_mapping(){
-
-    // mapping of actors -> iface to run_folder/mapping.txt
-    if (run_folder.empty()) {
-        log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
-        return;
-    }
-
-    const string path = run_folder + "/mapping.txt";
-    ofstream ofs(path, ios::out | ios::trunc);
-    if (!ofs) {
-        log(LogLevel::ERROR, "Failed to open %s for writing actor/interface mapping", path.c_str());
-        return;
-    }
-
-    ofs << "# Actor to interface mapping" << endl;
-    ofs << "Internal mapping" << endl;
-    for (const auto &[name, actor] : internal_actors) {
-        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-    }
-    log_actor_configs(internal_actors, &ofs);
-
-    ofs << "External mapping" << endl;
-    for (const auto &[name, actor] : external_actors) {
-        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-    }
-    log_actor_configs(external_actors, &ofs);
-
-    ofs << "Simulation mapping" << endl;
-    for (const auto &[name, actor] : simulation_actors) {
-        ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-    }
-    log_actor_configs(simulation_actors, &ofs);
-
-    ofs.close();
-    log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
-};
-
-Actor_config& RunStatus::get_actor(const string& actor_name){
-    Actor_config* found = nullptr;
-
-    auto check_map = [&](ActorCMap& m, const char* map_name) {
-        if (auto it = m.find(actor_name); it != m.end()) {
-            if (found != nullptr) {
-                throw config_error("Actor %s found in multiple maps (including %s)",
-                                   actor_name.c_str(), map_name);
-            }
-            found = it->second.get();
+        try{
+            program.parse_args(argc, argv);
+        } catch(const runtime_error &err){
+            throw config_error(err.what());
         }
+
+        if(!program.present("--test") && !program.present("--config")){
+            throw config_error("--test <test_name> or --config <path> is required");
+        }
+
+        only_stats = program.get<bool>("--only_stats");
+
+        if(const auto testName = program.present<string>("--test")){
+            configPath = findConfigByTestName(*testName);
+        } else{
+            configPath = program.get<string>("--config");
+        }
+
+        if(!exists(configPath)){
+            throw config_error("Config not found: %s", configPath.c_str());
+        }
+
+        log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
+    }
+
+
+    void RunStatus::run_test(){
+        attack_run[config["attacker_module"]](*this);
+        //TODO teardown , reset interfaces
+    }
+
+    void RunStatus::stats_test(){
+        attack_stats[config["attacker_module"]](*this);
+        //TODO teardown , reset interfaces?
+    }
+
+    void RunStatus::save_actor_interface_mapping(){
+
+        // mapping of actors -> iface to run_folder/mapping.txt
+        if (run_folder.empty()) {
+            log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
+            return;
+        }
+
+        const string path = run_folder + "/mapping.txt";
+        ofstream ofs(path, ios::out | ios::trunc);
+        if (!ofs) {
+            log(LogLevel::ERROR, "Failed to open %s for writing actor/interface mapping", path.c_str());
+            return;
+        }
+
+        ofs << "# Actor to interface mapping" << endl;
+        ofs << "Internal mapping" << endl;
+        for (const auto &[name, actor] : internal_actors) {
+            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+        }
+        log_actor_configs(internal_actors, &ofs);
+
+        ofs << "External mapping" << endl;
+        for (const auto &[name, actor] : external_actors) {
+            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+        }
+        log_actor_configs(external_actors, &ofs);
+
+        ofs << "Simulation mapping" << endl;
+        for (const auto &[name, actor] : simulation_actors) {
+            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+        }
+        log_actor_configs(simulation_actors, &ofs);
+
+        ofs.close();
+        log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
     };
 
-    check_map(external_actors, "external_actors");
-    check_map(internal_actors, "internal_actors");
-    check_map(simulation_actors, "simulation_actors");
+    Actor_config& RunStatus::get_actor(const string& actor_name){
+        Actor_config* found = nullptr;
 
-    if (!found) {
-        throw config_error("Actor %s not found in any actor map", actor_name.c_str());
+        auto check_map = [&](ActorCMap& m, const char* map_name) {
+            if (auto it = m.find(actor_name); it != m.end()) {
+                if (found != nullptr) {
+                    throw config_error("Actor %s found in multiple maps (including %s)",
+                                       actor_name.c_str(), map_name);
+                }
+                found = it->second.get();
+            }
+        };
+
+        check_map(external_actors, "external_actors");
+        check_map(internal_actors, "internal_actors");
+        check_map(simulation_actors, "simulation_actors");
+
+        if (!found) {
+            throw config_error("Actor %s not found in any actor map", actor_name.c_str());
+        }
+
+        return *found;
     }
-
-    return *found;
 }

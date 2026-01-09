@@ -1,8 +1,5 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="wpa3_tester" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml " REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
-    <envs>
-      <env name="-DCMAKE_BUILD_TYPE" value="Debug" />
-    </envs>
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

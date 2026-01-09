@@ -3,3 +3,7 @@ valgrind --tool=callgrind ./build/bin/wpa3_tester --config wpa3_test/attack_conf
 
 
 gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.1  | grep -vE '(void|auto|char&) std::|\(anonymous namespace\)::|0x[0-9a-fA-F]+|(void|long|bool) nlohmann::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' |  dot -Tsvg -o ./doc/callgraph/callgraph.svg
+
+gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.1  | grep -E 'digraph |graph|node|wpa3_tester::|}$' > ./doc/callgraph.dot |  dot -Tsvg -o ./doc/callgraph/callgraph.svg
+
+gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.1 -w -s | grep -E 'digraph |graph|node \[|(wpa3_tester::|main ->).*(wpa3_tester::|-> main)|}$' |  dot -Tsvg -o ./doc/callgraph/callgraph.svg

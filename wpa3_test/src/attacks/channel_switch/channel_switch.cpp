@@ -7,7 +7,6 @@
 #include <chrono>
 #include "system/hw_capabilities.h"
 #include <filesystem>
-#include "observer/iperf_wrapper.h"
 
 using namespace std;
 using namespace Tins;
@@ -43,7 +42,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 auto check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
-    const int ap_channel, int new_channel,
+    const int ap_channel, const int new_channel,
     const int ms_interval,const int attack_time)->void{
 
     const NetworkInterface iface(iface_name);
@@ -55,6 +54,7 @@ auto check_vulnerable(
         log(LogLevel::DEBUG, "sending CSA");
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
         this_thread::sleep_for(chrono::milliseconds(ms_interval));
+        //debug_step();
     }
 
     cout << "check_vulnerable called with:\n"
@@ -66,22 +66,22 @@ auto check_vulnerable(
 }
 
 void speed_observation_start(RunStatus& rs){
-    namespace fs = std::filesystem;
+    namespace fs = filesystem;
 
     const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "iperf3";
-    std::error_code ec;
+    error_code ec;
     fs::create_directories(obs_dir, ec);
     if (ec) {
         log(LogLevel::ERROR,
             "Failed to create iperf3 observer dir %s: %s",
             obs_dir.string().c_str(), ec.message().c_str());
     }
-
+    /*
     rs.process_manager.run("iperf3_server",{
         "stdbuf", "-oL", "-eL",
         "iperf3",
         "-s",
-        "-1",
+        //"-1",
         "-i","0.1",
         "-B", "10.0.0.1",   // explicit bind
         "-f", "k",
@@ -89,15 +89,17 @@ void speed_observation_start(RunStatus& rs){
         //"--logfile","iperf3_server.json"
     }, obs_dir);
     rs.process_manager.wait_for("iperf3_server", "Server listening");
-    //std::this_thread::sleep_for(std::chrono::seconds(5)); //TODO
+    */
+    //this_thread::sleep_for(chrono::seconds(5)); //TODO
 
+    /*
     rs.process_manager.run("iperf3_client", {
         "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
         "stdbuf", "-oL", "-eL",
         "iperf3",
         "-c", "10.0.0.1",
         "-u", // udp, because is not buffered
-        "-b", "100M",
+        "-b", "10M",
         "-i","0.1",
         //"-B", "10.0.0.2",
         "--bind-dev", rs.get_actor("client")["iface"],
@@ -105,7 +107,18 @@ void speed_observation_start(RunStatus& rs){
         "-f", "k",
         //"-J",
         //"--logfile","iperf_client.json"
+    }, obs_dir);*/
+
+    rs.process_manager.run("mz_gen", {
+        "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
+        "mausezahn", rs.get_actor("client")["iface"],
+        "-t", "udp", "sp=1234,dp=5201",
+        "-A", "10.0.0.2", "-B", "10.0.0.1",
+        "-p", "1250",  // 1250 bytů na paket
+        "-d", "1m",    // 1 milisekunda pauza mezi pakety
+        "-c", "0"      // nekonečno
     }, obs_dir);
+
 
 };
 
@@ -132,7 +145,7 @@ void setup_chs_attack(RunStatus& rs){
     hw_capabilities::run_cmd({
         "sudo","ip", "addr","add", "10.0.0.1/24", "dev",
         rs.get_actor("access_point")["iface"]
-    }, std::nullopt);
+    }, nullopt);
 
     // -------- wpa_supplicant STA ------------
     const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
@@ -142,6 +155,7 @@ void setup_chs_attack(RunStatus& rs){
         "-i",rs.get_actor("client")["iface"],
         "-c",wpa_supp_config_path
     });
+    //TODO stop after attack time, it dont info about client side measurement stop
     rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
 
     hw_capabilities::run_cmd({
@@ -172,18 +186,20 @@ void run_chs_attack(RunStatus& rs){
     const int attack_time = rs.config["attack_config"]["attack_time"];
 
     speed_observation_start(rs);
-    std::this_thread::sleep_for(std::chrono::seconds(15));
+    this_thread::sleep_for(chrono::seconds(10));
     log(LogLevel::INFO, "Attack START");
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
     //speed_observation_stop(rs);
     log(LogLevel::INFO, "Attack END");
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    this_thread::sleep_for(chrono::seconds(10));
 }
 
 void stats_chs_attack(const RunStatus& rs){
-    namespace fs = std::filesystem;
+
+    /*namespace fs = filesystem;
     const fs::path base = fs::path(rs.run_folder) / "observer" / "iperf3";
 
     iperf3_graph(base / "iperf3_client.log", "iperf3_client", "iperf3_client.png");
     iperf3_graph(base / "iperf3_server.log", "iperf3_server", "iperf3_server.png");
+    */
 }

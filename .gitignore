@@ -3,3 +3,4 @@ lib/external
 build
 cmake-build-debug
 run
+data

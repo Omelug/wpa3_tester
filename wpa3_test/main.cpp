@@ -45,7 +45,11 @@ int main(const int argc, char *argv[])  {
 
     runStatus.config_requirement(); //include req validation
     runStatus.setup_test();
+
+    //debug_step();
+
     runStatus.run_test();
     runStatus.stats_test();
+
     return 0;
 }

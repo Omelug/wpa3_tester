@@ -49,13 +49,11 @@ tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
 void cleanup_all_namespaces() {
     log(LogLevel::INFO, "Global cleanup: Removing all network namespaces...");
 
-    //TODO tohle je asi moc, (a je to u několikrát!!!)
+    //TODO tohle je asi moc, (a je to u několikrát!!!) a muselo by se to dát do observerů
     system("sudo pkill -9 iperf3 | true");
     system("sudo pkill -9 wpa_supplicant | true");
     system("sudo pkill -9 hostapd | true");
 
-    // 2. Najít všechna PHY rádia, která NEJSOU v hlavním namespace a vrátit je
-    // Prohledáme všechna phy a pošleme je do netns procesu 1 (hlavní systém)
     system("for phy in $(iw phy | grep wiphy | awk '{print $2}'); do "
            "  sudo iw phy phy$phy set netns 1 2>/dev/null; "
            "done");
@@ -68,7 +66,7 @@ void cleanup_all_namespaces() {
 void RunStatus::config_requirement() {
     cleanup_all_namespaces();
 
-    //check tor are not empty
+    //check actors are not empty
     if (!config.contains("actors") || !config["actors"].is_object()) {
         throw config_error("Actors are not in: %s", config.dump().c_str());
     }
@@ -132,7 +130,6 @@ void RunStatus::config_requirement() {
             ifc.set_channel(config["actors"][actorName]["channel"]);
         }
 
-        // save option properties to actor
         actor = make_unique<Actor_config>(*optIt->second);
     }
 

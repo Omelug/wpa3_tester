@@ -12,10 +12,10 @@
 #include <sciplot/sciplot.hpp>
 #include <matplot/matplot.h>
 
-using namespace std;
-using namespace sciplot;
-namespace mp = matplot;
-namespace wpa3_tester{
+namespace wpa3_tester::observer{
+    using namespace std;
+    using namespace sciplot;
+    namespace mp = matplot;
     IperfData parse_iperf_log(const filesystem::path &log_path, const string &actor_tag) {
         IperfData data;
         ifstream ifs(log_path);

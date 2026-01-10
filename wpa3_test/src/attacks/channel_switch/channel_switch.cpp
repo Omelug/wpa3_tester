@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "ex_program/ip/ip.h"
+#include "observer/mausezahn_wrapper.h"
 
 namespace wpa3_tester{
     using namespace std;
@@ -110,9 +111,9 @@ namespace wpa3_tester{
             //"-J",
             //"--logfile","iperf_client.json"
         }, obs_dir);*/
-        //run_mausezahn("client", "accesttpoint");
+        observer::start_musezahn(rs,"mz_gen", "client", "access_point");
         //    rs.run_observer("mausezahn");
-        rs.process_manager.run("mz_gen", {
+        /*rs.process_manager.run("mz_gen", {
             "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
             "mausezahn", rs.get_actor("client")["iface"],
             "-t", "udp", "sp=1234,dp=5201",
@@ -120,8 +121,7 @@ namespace wpa3_tester{
             "-p", "1250",  // 1250 bytes packet
             "-d", "1m",    // 1 milliseconds
             "-c", "0"      // not time limited
-        }, obs_dir);
-
+        }, obs_dir);*/
 
     };
 

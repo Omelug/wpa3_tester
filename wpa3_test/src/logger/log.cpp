@@ -1,5 +1,5 @@
-#include "../../include/logger/log.h"
-#include "../../include/logger/error_log.h"
+#include "logger/log.h"
+#include "logger/error_log.h"
 
 #include <cstdarg>
 #include <cstdio>

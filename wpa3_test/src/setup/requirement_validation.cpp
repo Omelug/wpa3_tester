@@ -1,9 +1,9 @@
-#include "../../include/config/RunStatus.h"
-#include "../../include/config/Actor_config.h"
-#include "../../include/system/hw_capabilities.h"
-#include "../../include/logger/error_log.h"
-#include "../../include/logger/log.h"
-#include "../../include/system/iface.h"
+#include "config/RunStatus.h"
+#include "config/Actor_config.h"
+#include "system/hw_capabilities.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
+#include "system/iface.h"
 
 using namespace std;
 using nlohmann::json;
@@ -114,17 +114,11 @@ namespace wpa3_tester{
 
             // create interface object (with optional netns from config)
             iface ifc{opt_iface, netns_opt};
-
             ifc.cleanup();
 
             //---------------  set mode based on actor requirements -------------------
-            if (actor->bool_conditions.at("monitor").value_or(false)) {
-                ifc.set_monitor_mode();
-            }
-
-            if (actor->bool_conditions.at("AP").value_or(false)) {
-                ifc.set_managed_mode();
-            }
+            if (actor->bool_conditions.at("monitor").value_or(false)) {ifc.set_monitor_mode();}
+            if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
 
             if (config["actors"][actorName].contains("channel")) {
                 ifc.set_channel(config["actors"][actorName]["channel"]);

@@ -116,8 +116,7 @@ namespace wpa3_tester{
                 return true; // found in subtree
             }
 
-            // back in tree
-            usedOptions.erase(optKey);
+            usedOptions.erase(optKey);  // back in tree
             currentAssignment.erase(currentRuleKey);
         }
         return false; // no valid option for this rule

@@ -15,10 +15,9 @@ namespace wpa3_tester{
 
             if (sel.contains("condition") && sel["condition"].is_array()) {
                 for (const auto& cond_name : sel["condition"]) {
-                    if (auto key = cond_name.get<string>();
-                        bool_conditions.contains(key)) {
+                    if (auto key = cond_name.get<string>(); bool_conditions.contains(key)) {
                         bool_conditions[key] = true;
-                        }
+                    }
                 }
             }
         }
@@ -36,7 +35,8 @@ namespace wpa3_tester{
         // Check boolean conditions
         for(auto const& [key, required_val] : bool_conditions) {
             if (!required_val.has_value()) {continue;}
-            if (auto it = offer.bool_conditions.find(key); it == offer.bool_conditions.end() || it->second != required_val) {
+            if (auto it = offer.bool_conditions.find(key);
+                it == offer.bool_conditions.end() || it->second != required_val) {
                 return false;
             }
         }

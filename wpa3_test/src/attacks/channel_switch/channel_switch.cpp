@@ -8,6 +8,8 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
+#include "ex_program/ip/ip.h"
+
 namespace wpa3_tester{
     using namespace std;
     using namespace Tins;
@@ -47,7 +49,6 @@ namespace wpa3_tester{
         const int ms_interval,const int attack_time)->void{
 
         const NetworkInterface iface(iface_name);
-
         const auto start_time = chrono::steady_clock::now();
         const auto end_time = start_time + chrono::seconds(attack_time);
 
@@ -109,15 +110,16 @@ namespace wpa3_tester{
             //"-J",
             //"--logfile","iperf_client.json"
         }, obs_dir);*/
-
+        //run_mausezahn("client", "accesttpoint");
+        //    rs.run_observer("mausezahn");
         rs.process_manager.run("mz_gen", {
             "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
             "mausezahn", rs.get_actor("client")["iface"],
             "-t", "udp", "sp=1234,dp=5201",
             "-A", "10.0.0.2", "-B", "10.0.0.1",
-            "-p", "1250",  // 1250 bytů na paket
-            "-d", "1m",    // 1 milisekunda pauza mezi pakety
-            "-c", "0"      // nekonečno
+            "-p", "1250",  // 1250 bytes packet
+            "-d", "1m",    // 1 milliseconds
+            "-c", "0"      // not time limited
         }, obs_dir);
 
 
@@ -129,40 +131,19 @@ namespace wpa3_tester{
         if (rs.config["actors"]["access_point"]["source"] != "internal"
             || rs.config["actors"]["client"]["source"] != "internal") {
             throw runtime_error("only internal access_point is supported");
-            }
+        }
 
-        const string hostapd_config_path = hostapd_config(rs.run_folder, rs.config["actors"]["access_point"]["setup"]["program_config"]);
-        const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, rs.config["actors"]["client"]["setup"]["program_config"]);
 
         // -------- hostapd AP ------------
-        rs.process_manager.run("access_point",{
-            "sudo","hostapd",
-            "-i", rs.get_actor("access_point")["iface"],
-            hostapd_config_path
-        });
+        run_hostapd(rs, "access_point");
         rs.process_manager.wait_for("access_point", "AP-ENABLED");
         log(LogLevel::INFO, "access_point is running");
-
-        hw_capabilities::run_cmd({
-            "sudo","ip", "addr","add", "10.0.0.1/24", "dev",
-            rs.get_actor("access_point")["iface"]
-        }, nullopt);
+        set_ip(rs, "access_point");  //TODO can be set before hostapd init?
 
         // -------- wpa_supplicant STA ------------
-        const auto netns_client = rs.config["actors"]["client"]["netns"].get<string>();
-        rs.process_manager.run("client", {
-            "sudo","ip", "netns", "exec", netns_client,
-            "wpa_supplicant",
-            "-i",rs.get_actor("client")["iface"],
-            "-c",wpa_supp_config_path
-        });
-        //TODO stop after attack time, it dont info about client side measurement stop
+        run_wpa_supplicant(rs, "client");
         rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
-
-        hw_capabilities::run_cmd({
-            "sudo","ip", "addr","add", "10.0.0.2/24", "dev",
-            rs.get_actor("client")["iface"]
-        }, netns_client);
+        set_ip(rs, "client");
 
         rs.process_manager.wait_for("client", "EVENT-CONNECTED");
         rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
@@ -173,7 +154,7 @@ namespace wpa3_tester{
     void speed_observation_stop(RunStatus& rs){
         rs.process_manager.stop("iperf3_server");
         rs.process_manager.stop("iperf3_client");
-    };
+    }
 
     void run_chs_attack(RunStatus& rs){
 
@@ -196,11 +177,10 @@ namespace wpa3_tester{
 
     void stats_chs_attack(const RunStatus& rs){
 
-        /*namespace fs = filesystem;
+        namespace fs = filesystem;
         const fs::path base = fs::path(rs.run_folder) / "observer" / "iperf3";
-
-        iperf3_graph(base / "iperf3_client.log", "iperf3_client", "iperf3_client.png");
-        iperf3_graph(base / "iperf3_server.log", "iperf3_server", "iperf3_server.png");
-        */
+        //TODO
+        //iperf3_graph(base / "iperf3_client.log", "iperf3_client", "iperf3_client.png");
+        //iperf3_graph(base / "iperf3_server.log", "iperf3_server", "iperf3_server.png");
     }
 }

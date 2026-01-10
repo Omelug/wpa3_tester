@@ -14,6 +14,5 @@ f: check WP2/SAe support correctly
 +: simulation interfaces
 +: README.md -> rozzestník pro /doc
 
-
-
-
+Test cases:
+- all process have to killed before test

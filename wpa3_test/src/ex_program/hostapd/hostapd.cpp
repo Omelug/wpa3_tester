@@ -78,4 +78,37 @@ namespace wpa3_tester{
         log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
         return cfg_path.string();
     }
+    void run_hostapd(RunStatus& run_status, const string &actor_name){
+        const string hostapd_config_path = hostapd_config(
+            run_status.run_folder,
+            run_status.config["actors"][actor_name]["setup"]["program_config"]);
+
+        run_status.process_manager.run(actor_name,{
+            "sudo","hostapd",
+            "-i", run_status.get_actor(actor_name)["iface"],
+            hostapd_config_path
+        });
+    }
+
+    void run_wpa_supplicant(RunStatus& run_status, const string &actor_name){
+        const string wpa_supp_config_path = wpa_supplicant_config(
+            run_status.run_folder,
+            run_status.config["actors"][actor_name]["setup"]["program_config"]
+            );
+
+        vector<string> command;
+        const auto netns_node = run_status.config["actors"][actor_name]["netns"];
+        if ( netns_node && !netns_node.is_null()) {
+            auto netns_client = netns_node.get<string>();
+            command.insert(command.end(), {"sudo", "ip", "netns", "exec", netns_client});
+        }
+
+        command.insert(command.end(), {
+            "wpa_supplicant",
+            "-i", run_status.get_actor(actor_name)["iface"],
+            "-c", wpa_supp_config_path
+        });
+        run_status.process_manager.run(actor_name, command);
+    }
+
 }

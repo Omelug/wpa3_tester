@@ -36,7 +36,6 @@ namespace wpa3_tester{
 
     void RunStatus::stats_test(){
         attack_stats[config["attacker_module"]](*this);
-        //TODO teardown , reset interfaces?
     }
 
     void RunStatus::save_actor_interface_mapping(){
@@ -81,7 +80,7 @@ namespace wpa3_tester{
         Actor_config* found = nullptr;
 
         auto check_map = [&](ActorCMap& m, const char* map_name) {
-            if (auto it = m.find(actor_name); it != m.end()) {
+            if (const auto it = m.find(actor_name); it != m.end()) {
                 if (found != nullptr) {
                     throw config_error("Actor %s found in multiple maps (including %s)",
                                        actor_name.c_str(), map_name);

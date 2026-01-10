@@ -88,8 +88,7 @@ namespace wpa3_tester{
             constexpr uint32_t AP_BIT_MASK = 1 << (NL80211_EXT_FEATURE_SAE_OFFLOAD_AP % 8);
 
             if (ext_features_len > AP_BYTE_INDEX) {
-                const uint8_t target_byte = static_cast<uint8_t *>(ext_features_data)[AP_BYTE_INDEX];
-                if (target_byte & AP_BIT_MASK) {
+                if (const uint8_t target_byte = static_cast<uint8_t *>(ext_features_data)[AP_BYTE_INDEX]; target_byte & AP_BIT_MASK) {
                     caps->wpa3_sae = true;  // AP WPA3
                 }
             }

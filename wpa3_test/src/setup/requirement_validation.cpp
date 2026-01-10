@@ -122,7 +122,7 @@ namespace wpa3_tester{
                 ifc.set_monitor_mode();
             }
 
-            if (config["actors"][actorName]["type"] == "AP") {
+            if (actor->bool_conditions.at("AP").value_or(false)) {
                 ifc.set_managed_mode();
             }
 

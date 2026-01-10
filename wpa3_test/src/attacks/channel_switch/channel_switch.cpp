@@ -189,8 +189,7 @@ namespace wpa3_tester{
         speed_observation_start(rs);
         this_thread::sleep_for(chrono::seconds(10));
         log(LogLevel::INFO, "Attack START");
-        check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-        //speed_observation_stop(rs);
+        check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);//speed_observation_stop(rs);
         log(LogLevel::INFO, "Attack END");
         this_thread::sleep_for(chrono::seconds(10));
     }

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include <tuple>
+#include <argparse/argparse.hpp>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
 #include "system/ProcessManager.h"
@@ -33,7 +34,8 @@ namespace wpa3_tester{
         ProcessManager process_manager;
 
         RunStatus() = default;
-        RunStatus(int argc, char ** argv);
+        //RunStatus(int argc, char ** argv);
+        explicit RunStatus(const argparse::ArgumentParser & program);
 
         Actor_config& get_actor(const std::string& actor_name);
 

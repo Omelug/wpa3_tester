@@ -1,6 +1,5 @@
-#include "../../include/config/RunStatus.h"
-#include "../../include/logger/error_log.h"
-
+#include "config/RunStatus.h"
+#include "logger/error_log.h"
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json-schema.hpp>

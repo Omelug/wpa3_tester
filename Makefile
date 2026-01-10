@@ -7,9 +7,7 @@ all: run
 .PHONY: all compile run clean_build
 
 
-clion_debug:
-	mkdir -p build
-	cmake --build ./build --target wpa3_tester -j 6
+clion_debug: compile
 	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 install:
@@ -17,9 +15,7 @@ install:
 
 compile:
 	@mkdir -p $(BUILD_DIR)
-	@
-	cmake -S wpa3_test -B $(BUILD_DIR) -Wno-dev
-	cmake --build $(BUILD_DIR) --parallel 8
+	cmake --build ./build --target wpa3_tester -j 6
 
 run: compile
 	mkdir -p data
@@ -44,7 +40,8 @@ graphviz:
 	sudo chown $(USER):$(USER) doc/callgraph/callgraph.out
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0 -w -s > ./doc/callgraph/unfiltered.dot
  	#TODO pozor na -n (limit zobrazení)
-	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s --node-label=self-time| \
+ 	# --node-label=self-time
+	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s | \
 		#grep -vE '(void|auto|char&) std::|\(anonymous namespace\)::|0x[0-9a-fA-F]+|nlohmann::|Tins::|libc.so|libgcc|libnl|__|_dl_|_[A-Za-z0-9]{32}|_[A-Za-z0-9]{64}|Id-linux|YAML::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' | \
 		grep -E 'digraph|nl80211|graph \[|node \[|(wpa3_tester::|main ->).*(wpa3_tester::|-> main)|nl80211|}$$' | \
 		grep -vE 'std::' \

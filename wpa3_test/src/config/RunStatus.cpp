@@ -4,43 +4,15 @@
 #include "logger/log.h"
 #include <argparse/argparse.hpp>
 #include <string>
+#include <yaml-cpp/yaml.h>
+
 #include "attacks/attacks.h"
 
 namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
 
-    string RunStatus::findConfigByTestName(const string &name){
-        //TODO
-        throw config_error("Unknown test name: %s", name.c_str());
-    }
-
-    RunStatus::RunStatus(const int argc, char **argv){
-        argparse::ArgumentParser program("WPA3_tester", "1.0");
-
-        program.add_argument("--test")
-                .help("Find name by test") // TODO add ---test_list to show
-                .metavar("NAME");
-
-        program.add_argument("--config")
-                .help("Path to config file of test run")
-                .metavar("PATH");
-
-        program.add_argument("--only_stats")
-                .help("Run only statistics for an already finished test (no setup/attack)")
-                .default_value(false)
-                .implicit_value(true);
-
-        try{
-            program.parse_args(argc, argv);
-        } catch(const runtime_error &err){
-            throw config_error(err.what());
-        }
-
-        if(!program.present("--test") && !program.present("--config")){
-            throw config_error("--test <test_name> or --config <path> is required");
-        }
-
+    RunStatus::RunStatus(const argparse::ArgumentParser &program){
         only_stats = program.get<bool>("--only_stats");
 
         if(const auto testName = program.present<string>("--test")){

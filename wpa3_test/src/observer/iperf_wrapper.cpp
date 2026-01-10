@@ -110,4 +110,36 @@ namespace wpa3_tester::observer{
             log(LogLevel::ERROR, "Rendering failed: %s", e.what());
         }
     }
+    /*
+       const fs::path obs_dir = observer::get_observer_folder(rs, "iperf");
+       rs.process_manager.run("iperf3_server",{
+           "stdbuf", "-oL", "-eL",
+           "iperf3",
+           "-s",
+           //"-1",
+           "-i","0.1",
+           "-B", "10.0.0.1",   // explicit bind
+           "-f", "k",
+           //"-J"
+           //"--logfile","iperf3_server.json"
+       }, obs_dir);
+       rs.process_manager.wait_for("iperf3_server", "Server listening");
+       */
+    //this_thread::sleep_for(chrono::seconds(5)); //TODO
+    /*
+    rs.process_manager.run("iperf3_client", {
+        "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
+        "stdbuf", "-oL", "-eL",
+        "iperf3",
+        "-c", "10.0.0.1",
+        "-u", // udp, because is not buffered
+        "-b", "10M",
+        "-i","0.1",
+        //"-B", "10.0.0.2",
+        "--bind-dev", rs.get_actor("client")["iface"],
+        "-t", to_string(rs.config["attack_config"]["attack_time"].get<int>()),
+        "-f", "k",
+        //"-J",
+        //"--logfile","iperf_client.json"
+    }, obs_dir);*/
 }

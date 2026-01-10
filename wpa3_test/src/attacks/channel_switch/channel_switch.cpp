@@ -10,6 +10,7 @@
 
 #include "ex_program/ip/ip.h"
 #include "observer/mausezahn_wrapper.h"
+#include "observer/tshark_wrapper.h"
 
 namespace wpa3_tester{
     using namespace std;
@@ -69,61 +70,10 @@ namespace wpa3_tester{
     }
 
     void speed_observation_start(RunStatus& rs){
-        namespace fs = filesystem;
-
-        const fs::path obs_dir = fs::path(rs.run_folder) / "observer" / "iperf3";
-        error_code ec;
-        fs::create_directories(obs_dir, ec);
-        if (ec) {
-            log(LogLevel::ERROR,
-                "Failed to create iperf3 observer dir %s: %s",
-                obs_dir.string().c_str(), ec.message().c_str());
-        }
-        /*
-        rs.process_manager.run("iperf3_server",{
-            "stdbuf", "-oL", "-eL",
-            "iperf3",
-            "-s",
-            //"-1",
-            "-i","0.1",
-            "-B", "10.0.0.1",   // explicit bind
-            "-f", "k",
-            //"-J"
-            //"--logfile","iperf3_server.json"
-        }, obs_dir);
-        rs.process_manager.wait_for("iperf3_server", "Server listening");
-        */
-        //this_thread::sleep_for(chrono::seconds(5)); //TODO
-
-        /*
-        rs.process_manager.run("iperf3_client", {
-            "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
-            "stdbuf", "-oL", "-eL",
-            "iperf3",
-            "-c", "10.0.0.1",
-            "-u", // udp, because is not buffered
-            "-b", "10M",
-            "-i","0.1",
-            //"-B", "10.0.0.2",
-            "--bind-dev", rs.get_actor("client")["iface"],
-            "-t", to_string(rs.config["attack_config"]["attack_time"].get<int>()),
-            "-f", "k",
-            //"-J",
-            //"--logfile","iperf_client.json"
-        }, obs_dir);*/
-        observer::start_musezahn(rs,"mz_gen", "client", "access_point");
-        //    rs.run_observer("mausezahn");
-        /*rs.process_manager.run("mz_gen", {
-            "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
-            "mausezahn", rs.get_actor("client")["iface"],
-            "-t", "udp", "sp=1234,dp=5201",
-            "-A", "10.0.0.2", "-B", "10.0.0.1",
-            "-p", "1250",  // 1250 bytes packet
-            "-d", "1m",    // 1 milliseconds
-            "-c", "0"      // not time limited
-        }, obs_dir);*/
-
-    };
+        observer::start_musezahn(rs, "mz_gen", "client", "access_point");
+        observer::start_thark(rs, "client");
+        observer::start_thark(rs, "access_point");
+    }
 
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
@@ -132,7 +82,6 @@ namespace wpa3_tester{
             || rs.config["actors"]["client"]["source"] != "internal") {
             throw runtime_error("only internal access_point is supported");
         }
-
 
         // -------- hostapd AP ------------
         run_hostapd(rs, "access_point");
@@ -149,7 +98,6 @@ namespace wpa3_tester{
         rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED");
         log(LogLevel::INFO, "client is connected");
     }
-
 
     void speed_observation_stop(RunStatus& rs){
         rs.process_manager.stop("iperf3_server");
@@ -172,15 +120,18 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Attack START");
         check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);//speed_observation_stop(rs);
         log(LogLevel::INFO, "Attack END");
-        this_thread::sleep_for(chrono::seconds(10));
+        this_thread::sleep_for(chrono::seconds(30));
     }
 
-    void stats_chs_attack(const RunStatus& rs){
-
-        namespace fs = filesystem;
-        const fs::path base = fs::path(rs.run_folder) / "observer" / "iperf3";
+    void stats_chs_attack(RunStatus &rs){
         //TODO
+        //namespace fs = filesystem;
+        //const fs::path base = fs::path(rs.run_folder) / "observer" / "iperf3";
         //iperf3_graph(base / "iperf3_client.log", "iperf3_client", "iperf3_client.png");
         //iperf3_graph(base / "iperf3_server.log", "iperf3_server", "iperf3_server.png");
+
+        observer::tshark_graph(rs, "client");
+        observer::tshark_graph(rs, "access_point");
+
     }
 }

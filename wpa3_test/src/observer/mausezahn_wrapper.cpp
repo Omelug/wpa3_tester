@@ -8,12 +8,8 @@ namespace wpa3_tester::observer{
     using namespace filesystem;
     constexpr string program_name = "mausezahn";
     void start_musezahn(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){
-        vector<string> command;
-        const auto netns_node = run_status.config["actors"][src_name]["netns"];
-        if ( netns_node && !netns_node.is_null()) {
-            auto netns_client = netns_node.get<string>();
-            command.insert(command.end(), {"sudo", "ip", "netns", "exec", netns_client});
-        }
+        vector<string> command = {"sudo"};
+        add_nets(run_status,command, src_name);
 
         command.insert(command.end(), {
             program_name, run_status.get_actor("client")["iface"],
@@ -21,7 +17,7 @@ namespace wpa3_tester::observer{
             "-A",  run_status.config["actors"][src_name]["ip_addr"].get<string>(),
             "-B",  run_status.config["actors"][dst_name]["ip_addr"].get<string>(),
             "-p", "1250",  // 1250 bytes packet
-            "-d", "1m",    // 1 milliseconds
+            "-d", "1m",    // 1 millisecond
             "-c", "0"      // not time limited
         });
         run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, program_name));

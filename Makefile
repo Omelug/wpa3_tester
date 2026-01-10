@@ -15,6 +15,7 @@ install:
 
 compile:
 	@mkdir -p $(BUILD_DIR)
+	cmake --build ./build
 	cmake --build ./build --target wpa3_tester -j 6
 
 run: compile

@@ -24,7 +24,7 @@ actors:
         wpa_passphrase: password123
         channel: 6
       channel: 6 # not set in hostapd, set once before test
-      ip_addr: "10.0.0.1"
+    ip_addr: "10.0.0.1"
   client:
     type: STA
     source: internal

@@ -60,6 +60,7 @@ namespace wpa3_tester{
                 log(LogLevel::DEBUG, "Moving %s (%s) to netns %s", name.c_str(), phy_name.c_str(), netns->c_str());
                 hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, std::nullopt);
             }
+
         } else {
             log(LogLevel::INFO, "Cleaning up interface %s", name.c_str());
         }

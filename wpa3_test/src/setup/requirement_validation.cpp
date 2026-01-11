@@ -46,20 +46,23 @@ namespace wpa3_tester{
        );
     }
 
+
     void cleanup_all_namespaces() {
-        log(LogLevel::INFO, "Global cleanup: Removing all network namespaces...");
+        log(LogLevel::INFO, "Global cleanup: Safely returning interfaces and removing namespaces...");
 
-        //TODO tohle je asi moc, (a je to u několikrát!!!) a muselo by se to dát do observerů
-        system("sudo pkill -9 iperf3 | true");
-        system("sudo pkill -9 wpa_supplicant | true");
-        system("sudo pkill -9 hostapd | true");
+        //TODO kill all?
+        system("sudo pkill -SIGTERM iperf3 wpa_supplicant hostapd tshark mausezahn 2>/dev/null || true");
+        this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        system("for phy in $(iw phy | grep wiphy | awk '{print $2}'); do "
-               "  sudo iw phy phy$phy set netns 1 2>/dev/null; "
+        system("for ns in $(ls /var/run/netns/ 2>/dev/null); do "
+               "  for phy in $(sudo ip netns exec $ns iw phy | grep wiphy | awk '{print $2}'); do "
+               "    sudo ip netns exec $ns iw phy phy$phy set netns 1; "
+               "  done; "
                "done");
-
         system("ls /var/run/netns/ | xargs -I {} sudo ip netns del {} 2>/dev/null");
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000)); //TODO dynamic? , wait for move of interface
+
+        log(LogLevel::INFO, "Cleanup complete. Waiting for kernel to stabilize...");
+        this_thread::sleep_for(std::chrono::seconds(2));
     }
 
 

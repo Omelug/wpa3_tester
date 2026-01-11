@@ -14,6 +14,7 @@
 
 namespace wpa3_tester{
     using namespace std;
+    using namespace filesystem;
     using namespace Tins;
 
     void send_CSA_beacon(const HWAddress<6> &ap_mac,
@@ -122,16 +123,59 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Attack END");
         this_thread::sleep_for(chrono::seconds(30));
     }
+    // ---------- STATS ----------------
+    void generate_report(const RunStatus & rs, const string & STA_graph_path, const string & AP_graph_path){
+        path report_path = path(rs.run_folder) / "report.md";
+        std::ofstream report(report_path);
 
-    void stats_chs_attack(RunStatus &rs){
-        //TODO
-        //namespace fs = filesystem;
-        //const fs::path base = fs::path(rs.run_folder) / "observer" / "iperf3";
-        //iperf3_graph(base / "iperf3_client.log", "iperf3_client", "iperf3_client.png");
-        //iperf3_graph(base / "iperf3_server.log", "iperf3_server", "iperf3_server.png");
+        if (!report.is_open()) {
+            std::cerr << "Failed to create report file!" << std::endl;
+            return;
+        }
 
-        observer::tshark_graph(rs, "client");
-        observer::tshark_graph(rs, "access_point");
+        auto attack_cfg = rs.config["attack_config"];
+        int attack_time = attack_cfg["attack_time"].get<int>();
+        int ms_interval = attack_cfg["ms_interval"].get<int>();
+        int new_channel = attack_cfg["new_channel"].get<int>();
 
+        report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
+
+        report << "## Attack Description\n";
+        report << "The **Channel Switch Announcement (CSA)** attack exploits a legitimate feature of the IEEE 802.11 standard. ";
+        report << "This feature is designed to inform client stations (STAs) that an Access Point (AP) is moving to a new frequency channel. ";
+        report << "By spoofing Beacon or Probe Response frames containing a CSA element, an attacker can trick clients into disconnecting from the legitimate AP ";
+        report << "and switching to a non-existent or attacker-controlled channel, effectively causing a Denial of Service (DoS).\n\n";
+
+        report << "## Attack Configuration\n";
+        report << "| Parameter | Value |\n";
+        report << "| :--- | :--- |\n";
+        report << "| **Attack Duration** | " << attack_time << " s |\n";
+        report << "| **Packet Interval** | " << ms_interval << " ms |\n";
+        report << "| **Target Channel** | " << new_channel << " |\n\n";
+
+        report << "## Traffic Analysis\n";
+        report << "The following charts represent the network throughput (packets/sec) captured during the test. ";
+        report << "A successful CSA attack is typically characterized by a sharp drop in received packets on the AP side as the client switches channels.\n\n";
+
+        report << "### Client-Side Throughput (STA)\n";
+        report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder).string() << ")\n\n";
+
+        report << "### Access Point Throughput (AP)\n";
+        report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder).string() << ")\n\n";
+
+        report << "## Conclusion\n";
+        report << "If the AP received packet count drops to zero while the STA continues to transmit, the client has successfully been diverted by the spoofed CSA frames. ";
+        report << "In WPA3, Management Frame Protection (MFP) should theoretically prevent this, unless the attack occurs during the transition mode or exploits implementation flaws.\n\n";
+
+        report << "---\n";
+
+        report.close();
+
+    }
+
+    void stats_chs_attack(const RunStatus &rs){
+        const string STA_graph_path = observer::tshark_graph(rs, "client");
+        string AP_graph_path = observer::tshark_graph(rs, "access_point");
+        generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

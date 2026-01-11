@@ -25,7 +25,7 @@ namespace wpa3_tester::observer{
         run_status.process_manager.run(node_name + "_cap", command, get_observer_folder(run_status, program_name));
     }
 
-    void tshark_graph(const RunStatus &run_status, const string &node_name) {
+    string tshark_graph(const RunStatus &run_status, const string &node_name) {
         string pcap_path = get_observer_folder(run_status, program_name) / (node_name + "_capture.pcap");
         string csv_path = get_observer_folder(run_status, program_name) / (node_name + ".csv");
         string graph_path = get_observer_folder(run_status, program_name) / (node_name + "_graph.png");
@@ -53,7 +53,7 @@ namespace wpa3_tester::observer{
             }
         }
 
-        auto f = mp::figure(true);
+        auto f = mp::figure();
         f->quiet_mode(true);
         f->width(1200);
         f->height(700);
@@ -70,16 +70,16 @@ namespace wpa3_tester::observer{
             }
         }
 
+        ax->xlabel("Time [s]");
+        ax->ylabel("Size [B]");
+        ax->title("Traffic: " + node_name);
+
         auto p = ax->semilogy(times, y, "ro");
         p->marker_size(6);
         p->marker_face_color({0, 0.5, 0.5});
         p->display_name("Packet size ");
-
-        mp::xlabel("Time [s]");
-        mp::ylabel("Size [B]");
-        mp::title("Traffic: " + node_name);
-        mp::legend();
         f->save(graph_path);
+        return graph_path;
     }
 }
 

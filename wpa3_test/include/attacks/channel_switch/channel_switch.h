@@ -21,7 +21,7 @@ namespace wpa3_tester{
     // registered functions in tester
     void setup_chs_attack(RunStatus& rs);
     void run_chs_attack(RunStatus& rs);
-    void stats_chs_attack(RunStatus &rs);
+    void stats_chs_attack(const RunStatus &rs);
 
     //help observer functions
     void speed_observation_start(RunStatus& rs);

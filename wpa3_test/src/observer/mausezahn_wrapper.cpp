@@ -1,4 +1,3 @@
-#pragma once
 #include <filesystem>
 #include "config/RunStatus.h"
 #include "observer/observers.h"
@@ -13,12 +12,13 @@ namespace wpa3_tester::observer{
 
         command.insert(command.end(), {
             program_name, run_status.get_actor("client")["iface"],
-            "-t", "udp", "sp=1234,dp=5201",
-            "-A",  run_status.config["actors"][src_name]["ip_addr"].get<string>(),
-            "-B",  run_status.config["actors"][dst_name]["ip_addr"].get<string>(),
-            "-p", "1250",  // 1250 bytes packet
             "-d", "1m",    // 1 millisecond
-            "-c", "0"      // not time limited
+            "-c", "0",      // not time limited
+            "-p", "1250",  // 1250 bytes packet
+            "-t", "udp", "sp=1234,dp=5201",
+            "-a",  run_status.get_actor(src_name)["mac"],
+            "-b",  run_status.get_actor(dst_name)["mac"],
+            "-P", "PAYLOAD"
         });
         run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, program_name));
     };

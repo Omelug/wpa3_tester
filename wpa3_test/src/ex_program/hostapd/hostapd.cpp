@@ -7,14 +7,14 @@
 
 namespace wpa3_tester{
     using namespace std;
+    using namespace filesystem;
     string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
-        namespace fs = filesystem;
 
-        fs::path folder(run_folder);
-        fs::path cfg_path = folder / "hostapd.conf";
+        path folder(run_folder);
+        path cfg_path = folder / "hostapd.conf";
 
         error_code ec;
-        fs::create_directories(folder, ec);
+        create_directories(folder, ec);
         if (ec) {
             log(LogLevel::ERROR,
                 ("hostapd_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
@@ -44,11 +44,11 @@ namespace wpa3_tester{
     string wpa_supplicant_config(const string& run_folder, const nlohmann::json& client_setup) {
         namespace fs = filesystem;
 
-        fs::path folder(run_folder);
-        fs::path cfg_path = folder / "wpa_supplicant.conf";
+        path folder(run_folder);
+        path cfg_path = folder / "wpa_supplicant.conf";
 
         error_code ec;
-        fs::create_directories(folder, ec);
+        create_directories(folder, ec);
         if (ec) {
             log(LogLevel::ERROR,
                 ("wpa_supplicant_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
@@ -85,11 +85,16 @@ namespace wpa3_tester{
             run_status.run_folder,
             run_status.config["actors"][actor_name]["setup"]["program_config"]);
 
-        run_status.process_manager.run(actor_name,{
-            "sudo","hostapd",
+        vector<string> command = {"sudo"};
+        observer::add_nets(run_status,command, actor_name);
+
+        command.insert(command.end(), {
+            "hostapd",
             "-i", run_status.get_actor(actor_name)["iface"],
-            hostapd_config_path
+            hostapd_config_path,
         });
+
+        run_status.process_manager.run(actor_name,command);
     }
 
     void run_wpa_supplicant(RunStatus& run_status, const string &actor_name){

@@ -13,6 +13,9 @@ ignore_interfaces:
   minItems: 1
   description: ignore interfaces (to ignore interface where is notebook connected to internet)
 properties:
+  extends:
+    type: string
+    description: Path to the parent YAML template
   name:
     type: string
     description: Test name
@@ -45,6 +48,7 @@ properties:
 definitions:
   Actor: # Actor
     type: object
+    additionalProperties: false
     required:
       - type
       - source
@@ -63,8 +67,28 @@ definitions:
       netns:
         type: string
         description: Namespace to isolate AP/STA for iperf3 etc. observation
+      ip_addr:
+        type: string
+        # Regex pro IPv4 (0.0.0.0 až 255.255.255.255)
+        pattern: '^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$'
+        description: Static IP address for the actor (e.g., 192.168.1.1)
+      channel:
+        type: integer
+      setup:
+        type: object
+        additionalProperties: false
+        properties:
+          channel:
+            type: integer
+          program:
+            type: string
+            enum: [ "hostapd", "wpa_supplicant", "iperf3" ]
+          program_config:
+            type: object
+            additionalProperties: true
       selection:
         type: object
+        additionalProperties: false
         properties:
           mac:
             type: string
@@ -86,8 +110,8 @@ definitions:
               enum: ["AP", "monitor", "2_4GHz", "5Gz", "WPA-PSK", "WPA3-SAE"]
             minItems: 1
             description: Condition for selection
+
         minProperties: 1
-      additionalProperties: false
 
     allOf:
       - if:

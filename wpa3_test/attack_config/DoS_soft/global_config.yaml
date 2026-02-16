@@ -1,0 +1,5 @@
+# set your paths #TODO create config wizard after first install
+
+# in this folder will be folder with cloned repository and binaries
+# (create empty folder if not sure, it will be build automatically)
+hostapd_build_folder: /home/kali/Documents/WPA3/hostapd

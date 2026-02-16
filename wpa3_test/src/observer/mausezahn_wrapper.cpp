@@ -12,9 +12,9 @@ namespace wpa3_tester::observer{
 
         command.insert(command.end(), {
             program_name, run_status.get_actor("client")["iface"],
-            "-d", "1m",    // 1 millisecond
+            "-d", "10m",    // 1 millisecond
             "-c", "0",      // not time limited
-            "-p", "1250",  // 1250 bytes packet
+            "-p", "100",  // 100 bytes packet
             "-t", "udp", "sp=1234,dp=5201",
             "-a",  run_status.get_actor(src_name)["mac"],
             "-b",  run_status.get_actor(dst_name)["mac"],

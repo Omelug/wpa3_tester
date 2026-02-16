@@ -120,7 +120,7 @@ namespace wpa3_tester{
     }
 
 
-    void ProcessManager::run(const string& actor_name,
+    void ProcessManager::run(const string& process_name,
                              const vector<string> &cmd,
                              const filesystem::path &working_dir) {
         namespace fs = filesystem;
@@ -130,21 +130,21 @@ namespace wpa3_tester{
         options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
         options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
 
-        std::string working_dir_str;
+        string working_dir_str;
         if (!working_dir.empty()) {
             working_dir_str = working_dir.string();
             options.working_directory = working_dir_str.c_str();
         }
 
         if (const error_code ec = proc->start(cmd, options)) {
-            throw runtime_error("Failed to start " + actor_name + ": " + ec.message());
+            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
         }
 
         fs::path log_dir = log_base_dir;
         if (!working_dir_str.empty()) {log_dir = fs::path(working_dir_str);}
-        const fs::path log_path = log_dir / (actor_name + ".log");
+        const fs::path log_path = log_dir / (process_name + ".log");
 
-        auto &logs = process_logs[actor_name];
+        auto &logs = process_logs[process_name];
         logs.log.close();
         logs.log.open(log_path, ios::out | ios::trunc);
         logs.history.clear();
@@ -152,7 +152,7 @@ namespace wpa3_tester{
         if (!logs.log.is_open()) {
             log(LogLevel::ERROR,
                 "Failed to open log for %s: %s",
-                actor_name.c_str(), log_path.string().c_str());
+                process_name.c_str(), log_path.string().c_str());
         }
 
         string cmd_line;
@@ -160,13 +160,13 @@ namespace wpa3_tester{
             if (i) cmd_line += ' ';
             cmd_line += cmd[i];
         }
-        const string line   =  current_timestamp() + " [" + actor_name + "] [cmd] " + cmd_line;
+        const string line   =  current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
 
         if (combined_log.is_open()) {write_log_line(combined_log, line);} // stays in global logger folder
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
 
-        processes[actor_name] = std::move(proc);
-        start_drain_for(actor_name);
+        processes[process_name] = std::move(proc);
+        start_drain_for(process_name);
     }
     void ProcessManager::start_drain_for(const std::string &actor_name) {
         const auto it = processes.find(actor_name);

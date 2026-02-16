@@ -110,7 +110,7 @@ int main(const int argc, char *argv[])  {
     runStatus.config_validation();
 
     const path base = current_path();
-    const path data_root = base / "data" / "wpa3_test" / "run" / runStatus.config["name"];
+    const path data_root = base / "data" / "wpa3_test" / runStatus.config["name"];
     const path last_run = data_root / "last_run";
 
     // Ensure parent directories exist
@@ -121,7 +121,7 @@ int main(const int argc, char *argv[])  {
         log(LogLevel::ERROR, "Failed to create run base directory: %s: %s", data_root.string().c_str(), ec.message().c_str());
         throw runtime_error("Unable to create run base directory");
     }
-    runStatus.run_folder = last_run.string(); //TODO should be changable with argument
+    runStatus.run_folder = last_run.string(); //TODO should be changeable with argument
 
     if(runStatus.only_stats){
         runStatus.stats_test();
@@ -134,6 +134,7 @@ int main(const int argc, char *argv[])  {
     //debug_step();
 
     runStatus.run_test();
+    //TODO removeall processes?
     runStatus.stats_test();
 
     return 0;

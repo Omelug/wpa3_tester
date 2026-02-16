@@ -39,7 +39,7 @@ namespace wpa3_tester{
 
     private:
         static void recreate_log_folder(const std::filesystem::path &log_base_dir);
-
+        void start_drain_for(const std::string &actor_name);
     public:
         ProcessManager() = default;
         ~ProcessManager();
@@ -50,15 +50,15 @@ namespace wpa3_tester{
         void init_logging(const std::string& run_folder);
 
         // what can actors
-        void run(const std::string& actor_name,
+        void run(const std::string& process_name,
                  const std::vector<std::string> &cmd,
                  const std::filesystem::path &working_dir = {});
-        void start_drain_for(const std::string &actor_name);
+
         void allow_history(const std::string &actor_name);
         void ignore_history(const std::string &actor_name);
         void discard_history(const std::string &actor_name);
 
-        void wait_for(const std::string &actor_name, const std::string &pattern);
+        void wait_for(const std::string &actor_name, const std::string &pattern); //TODOo return log
         void stop(const std::string &actor_name);
 
         // After stop (Ctrl + C or critical error)

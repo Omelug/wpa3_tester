@@ -1,6 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: channel_switch_test
-#wizard_fallback: true
 attacker_module: channel_switch
 ignore_interfaces: [wlan0]
 actors:
@@ -23,7 +22,7 @@ actors:
         rsn_pairwise: CCMP
         wpa_passphrase: password123
         channel: 6
-      channel: 6 # not set in hostapd, set once before test
+      channel: 6
     ip_addr: "10.0.0.1"
   client:
     type: STA
@@ -39,14 +38,13 @@ actors:
         pairwise: CCMP
         group: CCMP
       channel: 6
-    #mon_iface: mon #TODO
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
     type: STA
     source: internal
     selection:
-      driver: mt76x2u # rtl8xxxu didnt work, maybe other work
+      driver: mt76x2u
       condition: [monitor]
     channel: 6
 

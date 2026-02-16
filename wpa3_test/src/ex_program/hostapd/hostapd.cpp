@@ -113,5 +113,4 @@ namespace wpa3_tester{
         });
         run_status.process_manager.run(actor_name, command);
     }
-
 }

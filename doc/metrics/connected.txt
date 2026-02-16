@@ -1,0 +1,3 @@
+openwrt:
+    connected devices (json):
+        ubus call hostapd.phy0-ap0 get_clients

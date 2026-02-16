@@ -30,12 +30,12 @@ namespace wpa3_tester{
 
 
     void RunStatus::run_test(){
-        attack_run[config["attacker_module"]](*this);
+        attack_module_maps::run_map[config["attacker_module"]](*this);
         //TODO teardown , reset interfaces
     }
 
     void RunStatus::stats_test(){
-        attack_stats[config["attacker_module"]](*this);
+        attack_module_maps::stats_map[config["attacker_module"]](*this);
     }
 
     void RunStatus::save_actor_interface_mapping(){
@@ -53,7 +53,7 @@ namespace wpa3_tester{
             return;
         }
 
-        ofs << "# Actor to interface mapping" << endl;
+        ofs << "Actor->interface mapping" << endl;
         ofs << "Internal mapping" << endl;
         for (const auto &[name, actor] : internal_actors) {
             ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
@@ -82,8 +82,7 @@ namespace wpa3_tester{
         auto check_map = [&](ActorCMap& m, const char* map_name) {
             if (const auto it = m.find(actor_name); it != m.end()) {
                 if (found != nullptr) {
-                    throw config_error("Actor %s found in multiple maps (including %s)",
-                                       actor_name.c_str(), map_name);
+                    throw config_error("Actor %s found in multiple maps (including %s)",actor_name.c_str(), map_name);
                 }
                 found = it->second.get();
             }
@@ -93,10 +92,7 @@ namespace wpa3_tester{
         check_map(internal_actors, "internal_actors");
         check_map(simulation_actors, "simulation_actors");
 
-        if (!found) {
-            throw config_error("Actor %s not found in any actor map", actor_name.c_str());
-        }
-
+        if (!found) {throw config_error("Actor %s not found in any actor map", actor_name.c_str());}
         return *found;
     }
 }

@@ -34,8 +34,8 @@ namespace wpa3_tester{
             auto config_ptr = make_unique<Actor_config>(actor);
 
             if(source == "external") {ex_map[actor_name] = std::move(config_ptr); continue;}
-            if (source == "internal") { in_map[actor_name] = std::move(config_ptr); continue; }
-            if (source == "simulation") {sim_map[actor_name] = std::move(config_ptr); continue; }
+            if(source == "internal") {in_map[actor_name] = std::move(config_ptr); continue;}
+            if(source == "simulation") {sim_map[actor_name] = std::move(config_ptr); continue;}
             throw config_error("Unknown source %s in actor: %s", source.c_str(), actor_name.c_str());
         }
 
@@ -53,7 +53,7 @@ namespace wpa3_tester{
         //TODO kill all?
         system("sudo pkill -SIGTERM iperf3 wpa_supplicant hostapd tshark mausezahn 2>/dev/null || true");
         this_thread::sleep_for(std::chrono::milliseconds(500));
-
+        //TODO paths only for debian
         system("for ns in $(ls /var/run/netns/ 2>/dev/null); do "
                "  for phy in $(sudo ip netns exec $ns iw phy | grep wiphy | awk '{print $2}'); do "
                "    sudo ip netns exec $ns iw phy phy$phy set netns 1; "

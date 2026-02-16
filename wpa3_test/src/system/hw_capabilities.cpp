@@ -126,14 +126,14 @@ namespace wpa3_tester{
         vector<string> ruleKeys;
         for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
         AssignmentMap result;
-        if(set<string> usedOptions;
-            findSolution(ruleKeys, 0, rules, options, usedOptions, result)){
+        //backtracking
+        if(set<string> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)){
             log(LogLevel::DEBUG, "Solved!");
             for(auto const &[r, o]: result){
                 log(LogLevel::DEBUG, "\tActor %s -> interface %s", r.c_str(), o.c_str());
             }
             return result;
-            }
+        }
         throw req_error("Not found valid requirements");
     }
 

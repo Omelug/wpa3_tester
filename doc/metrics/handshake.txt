@@ -1,0 +1,7 @@
+tshark -r test.pcapng -t ad -Y "(wlan.fc.type_subtype == 11) || eapol" \
+-T fields \
+-e frame.number \
+-e frame.time \
+-e wlan.ra -e wlan.sa \
+-e wlan.fc.type_subtype \
+-e wlan_rsna_eapol.keydes.msgnr

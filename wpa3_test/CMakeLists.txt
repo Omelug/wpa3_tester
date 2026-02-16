@@ -118,7 +118,6 @@ if(doctest_SOURCE_DIR)
 endif()
 
 find_package(yaml-cpp REQUIRED)
-
 file(GLOB_RECURSE SOURCES
         "src/*.cpp"
         "src/*.h"

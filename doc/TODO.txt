@@ -7,12 +7,24 @@ f: add network manager off option for actors
 +: add external mon interfaces option (to dump connection)
 ch: channel should be in selection?
 +: macchanger for changes
-f: check WP2/SAe support correctly
+f: check WP2/SAE support correctly
 +: interfaces set of WPA2/SAE
 +: iperf3 observer
 +: external interfaces
 +: simulation interfaces
-+: README.md -> rozzestník pro /doc
++: README.md -> rozcestník pro /doc
++: VIF rozhraní (nejde současně odesílat a příjimat)
+?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
+r: change log prefix to use time like tshark
+
 
 Test cases:
-- all process have to killed before test
+f: all process have to killed before test
+
+Test suites:
++: all vars musí být stejně velký
+
+
+libraries:
+change library for graphs, matplot++ has no rotation of text
+

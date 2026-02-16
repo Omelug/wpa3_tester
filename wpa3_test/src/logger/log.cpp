@@ -4,11 +4,12 @@
 #include <cstdarg>
 #include <cstdio>
 #include <iostream>
+#include <ctime>
+#include <regex>
+#include <vector>
 
 #include "config/RunStatus.h"
 namespace wpa3_tester{
-    using namespace  std;
-
     const char *levelToString(const LogLevel level) {
         switch (level) {
             case LogLevel::DEBUG:    return "DEBUG";
@@ -21,6 +22,7 @@ namespace wpa3_tester{
     }
 
     void log(const LogLevel level, const char *fmt, ...) {
+        using namespace std;
         va_list args;
         va_start(args, fmt);
         va_list args_copy;
@@ -29,10 +31,10 @@ namespace wpa3_tester{
         va_end(args_copy);
         if (size < 0) {
             va_end(args);
-            throw runtime_error("vsnprintf failed");
+            throw std::runtime_error("vsnprintf failed");
         }
 
-        vector<char> buf(size + 1);
+        std::vector<char> buf(size + 1);
         vsnprintf(buf.data(), buf.size(), fmt, args);
         va_end(args);
 
@@ -43,7 +45,7 @@ namespace wpa3_tester{
     void log_actor_map(const char* name, const ActorCMap& m) {
         std::string keys;
         bool first = true;
-        for (const auto &k: m | views::keys) {
+        for (const auto &k: m | std::views::keys) {
             if (!first) keys += ", ";
             keys += k;
             first = false;
@@ -58,7 +60,8 @@ namespace wpa3_tester{
         return v.has_value() ? v->c_str() : fallback;
     }
 
-    void log_actor_configs(const ActorCMap& m, ofstream *ofs) {
+    void log_actor_configs(const ActorCMap& m, std::ofstream *ofs) {
+        using namespace std;
         for (const auto& [name, actor] : m) {
             // Build a human-readable line
             const string line =
@@ -97,4 +100,41 @@ namespace wpa3_tester{
             }
         }
     }
+
+    double log_time_to_epoch(const std::string& time_str) {
+        std::tm t = {};
+        if (strptime(time_str.c_str(), "%Y-%m-%d %H:%M:%S", &t) == nullptr) {
+            return 0.0;
+        }
+        t.tm_isdst = -1;
+        return static_cast<double>(std::mktime(&t));
+    }
+
+    std::vector<double> get_time_logs(const RunStatus& rs, const std::string& actor_name, const std::string& pattern) {
+        using namespace std;
+        vector<double> timestamps;
+        string actor_log = filesystem::path(rs.run_folder) / "logger" / (actor_name +".log");
+        ifstream file(actor_log);
+        string line;
+        regex re(R"(^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*)" + pattern);
+        smatch match;
+
+        while (getline(file, line)) {
+            if (regex_search(line, match, re)) {
+                double epoch = log_time_to_epoch(match[1].str());
+                if (epoch > 0) timestamps.push_back(epoch);
+            }
+        }
+        return timestamps;
+    }
+
+    std::string escape_tex(std::string text) {
+        size_t pos = 0;
+        while ((pos = text.find("_", pos)) != std::string::npos) {
+            text.replace(pos, 1, "\\_");
+            pos += 2;
+        }
+        return text;
+    }
+
 }

@@ -1,0 +1,4 @@
+actors:
+  extends: 03_ex2.yaml
+  only_actor:
+    type: STA

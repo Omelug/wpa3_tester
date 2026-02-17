@@ -7,26 +7,24 @@ all: run
 
 .PHONY: all compile run clean_build
 
-
 clion_debug: compile
 	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 install:
 	sudo apt install grc
 
-
-
 compile:
 	@mkdir -p $(BUILD_DIR)
 	@if [ ! -f $(BUILD_DIR)/build.ninja ] && [ ! -f $(BUILD_DIR)/Makefile ]; then \
 		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR) -G Ninja; \
 	fi
-	cmake --build $(BUILD_DIR) --target wpa3_tester -j 6
+	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc)
 
 run: compile
 	mkdir -p data
 	mkdir -p data/wpa3_test
-	grc -e -c $(GRC_CONF) sudo ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+	#grc -e -c $(GRC_CONF) \
+	sudo ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 # ------- clean ------------------
 clean_build:
@@ -53,4 +51,7 @@ graphviz:
 		grep -vE 'std::' \
 		> ./doc/callgraph/callgraph.dot
 	cat ./doc/callgraph/callgraph.dot | dot -Tsvg -o ./doc/callgraph/callgraph.svg
-	@echo "--- Saved to callgraph.svg ---"
+	@echo "--- Saved to callgraph.svg ---
+
+test:
+	cmake --build build --target test

@@ -96,6 +96,8 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus.git
         GIT_TAG        v1.2.2
 )
+set(MATPLOTPLUSPLUS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(MATPLOTPLUSPLUS_WITH_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # ------------------------------------------------
 
@@ -112,28 +114,28 @@ FetchContent_MakeAvailable(
         matplotplusplus
 )
 
-if(doctest_SOURCE_DIR)
-        include_directories(${doctest_SOURCE_DIR})
-        include_directories(${doctest_SOURCE_DIR}/doctest)
-endif()
+add_library(doctest_headers INTERFACE)
+target_include_directories(doctest_headers INTERFACE "${doctest_SOURCE_DIR}" "${doctest_SOURCE_DIR}/doctest")
+
 
 find_package(yaml-cpp REQUIRED)
-file(GLOB_RECURSE SOURCES
+file(GLOB_RECURSE CORE_SOURCES
         "src/*.cpp"
         "src/*.h"
         "include/*.h"
         "../../wpa3_test_suite/src/*.cpp"
 )
-list(APPEND SOURCES "../wpa3_test/main.cpp")
+message(STATUS "core sources: ${CORE_SOURCES}")
 
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
-add_executable(${PROJECT_NAME} ${SOURCES})
-
+add_executable(${PROJECT_NAME} "../wpa3_test/main.cpp")
+target_link_libraries(${PROJECT_NAME} PRIVATE wpa3_core)
+add_library(wpa3_core STATIC ${CORE_SOURCES})
 set(WIFI_HEADERS_DIR "${linux_headers_wifi_SOURCE_DIR}/..")
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(wpa3_core PUBLIC
         include
         ${doctest_SOURCE_DIR}
         ${argparse_SOURCE_DIR}/include
@@ -146,7 +148,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${matplotplusplus_SOURCE_DIR}/source
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(wpa3_core PUBLIC
+        doctest_headers
         yaml-cpp
         nlohmann_json_schema_validator
         nlohmann_json::nlohmann_json
@@ -162,5 +165,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+target_compile_definitions(wpa3_core PUBLIC PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+enable_testing()
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")
 include(CPack)
-target_compile_definitions(wpa3_tester PRIVATE PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

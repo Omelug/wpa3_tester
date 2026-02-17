@@ -1,0 +1,23 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: hostapd_versions_ts
+config_type: test_suite
+
+tests:
+  hostapd_gen:
+    type: generator
+    vars:
+      hostapd: [2.9, 2.10, 2.11]
+    config:
+      extends: ./channel_switch.yaml
+      name: channel_switch var_hostapd
+      actors:
+        acces_point:
+          setup:
+            program: hostapd
+            program_config:
+              version: var_hostapd
+
+#deleted_old: true
+rewrite: "errors"
+compile_external: true
+install_req: true

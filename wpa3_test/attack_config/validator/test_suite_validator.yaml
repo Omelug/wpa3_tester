@@ -1,5 +1,69 @@
-$schema: http://json-schema.org/draft-07/schema#
-title: Test suite
+$schema: "http://json-schema.org/draft-07/schema#"
+title: Validator pro WPA3 Test Suite
 type: object
-required:
-  - tests
+
+required: [name, config_type, tests]
+
+properties:
+  name:
+    type: string
+    description: "Name of test suite"
+
+  config_type:
+    type: string
+    const: test_suite
+    description: "Have to be test_suite"
+
+  tests:
+    type: object
+    additionalProperties:
+      oneOf:
+        - title: Path source
+          type: object
+          required: [type, path]
+          properties:
+            type:
+              const: path
+            path:
+              type: string
+
+        - title: Generator source
+          type: object
+          required: [type, vars, config]
+          properties:
+            type:
+              const: generator
+            vars:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: [string, number, boolean]
+            config:
+              type: object
+              description: "Structure of configuration with var_ prefix"
+          #TODO v C++ to projít, a vyhodit warning při nepouřitém var
+
+  deleted_old:
+    type: boolean
+    default: false
+
+  test_report:
+    type: boolean
+    default: false
+
+  rewrite:
+    oneOf:
+      - type: boolean
+        const: false
+      - type: string
+        enum: [errors, all]
+    default: false
+
+  compile_external:
+    type: boolean
+    default: false
+
+  install_req:
+    type: boolean
+    default: false

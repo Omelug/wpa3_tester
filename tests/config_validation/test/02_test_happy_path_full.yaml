@@ -1,0 +1,27 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: full_no_exteds_test
+attacker_module: attacker_module
+ignore_interfaces: [wlan0]
+actors:
+  access_point:
+    type: AP
+    source: internal
+    selection:
+      condition: [AP, monitor, 2_4GHz, 5Gz, "WPA-PSK", WPA3-SAE]
+      iface: wlan4
+      essid: SSID_select
+      driver: ath
+    setup:
+      program: "hostapd"
+      program_config:
+        program_config1: program
+        channel: 6
+    ip_addr: 1.42.242.0
+    channel: 3
+  client:
+    type: STA
+    source: internal
+
+attack_config:
+  att_opt: 42
+#TODO ještě rozšířit

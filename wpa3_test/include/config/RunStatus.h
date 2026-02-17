@@ -20,7 +20,6 @@ namespace wpa3_tester{
         ActorCMap external_actors;
         ActorCMap internal_actors;
         ActorCMap simulation_actors;
-        std::vector<std::string> template_hierarchy;
 
     public:
         nlohmann::json config;

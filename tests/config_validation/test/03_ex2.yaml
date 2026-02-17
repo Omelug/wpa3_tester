@@ -1,0 +1,3 @@
+only_actor:
+  type: AP
+  source: internal

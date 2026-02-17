@@ -1,0 +1,6 @@
+name: "WPA3-Test"
+extends: 04_ex1_module.yaml
+actors:
+  only_actor:
+    extends: 04_ex2_type.yaml
+    source: internal

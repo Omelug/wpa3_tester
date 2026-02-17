@@ -1,0 +1,3 @@
+name: "WPA3-Test"
+attacker_module: module1
+extends: 03_ex1.yaml

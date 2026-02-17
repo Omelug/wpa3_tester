@@ -16,21 +16,7 @@ struct ConfigTestCase {
     bool should_pass = true;
 };
 
-TEST_CASE("RunStatus Config Validation - Test configuration") {
-    fs::path this_file = std::source_location::current().file_name();
-    fs::path test_base = this_file.parent_path() / "config_validation"/"test";
-
-    std::vector<ConfigTestCase> tests = {
-        {"1. Minimal not extends", "01_test_happy_path_minimal.yaml",   "01_test_happy_path_minimal.yaml", true},
-        {"2. Full not extends",    "02_test_happy_path_full.yaml",      "02_test_happy_path_full.yaml",    true},
-        {"3. Extends line",        "03_test_extends_line.yaml",         "01_test_happy_path_minimal.yaml", true},
-        {"4. Extends V",           "04_test_extends_V.yaml",            "01_test_happy_path_minimal.yaml", true},
-        {"5. Circular extends", "05_error_circular_extends.yaml",     "", false},
-        {"6. Self extends", "06_error_self_extends.yaml",     "", false},
-        {"7. Normal missing error", "07_error_missing_key.yaml",     "", false},
-
-    };
-
+void test_case_loop(const fs::path& test_base, const std::vector<ConfigTestCase>& tests){
     for (const auto& t : tests) {
         SUBCASE(t.description.c_str()) {
             fs::path input_path = test_base / t.input_yaml;
@@ -54,8 +40,33 @@ TEST_CASE("RunStatus Config Validation - Test configuration") {
     }
 }
 
-TEST_CASE("RunStatus Config Validation - Validator configuration"){
+fs::path this_file = std::source_location::current().file_name();
+TEST_CASE("RunStatus Config Validation - Test configuration") {
+    const fs::path test_base = this_file.parent_path() / "config_validation"/"test";
 
+    std::vector<ConfigTestCase> tests = {
+        {"1. Minimal not extends", "01_test_happy_path_minimal.yaml",   "01_test_happy_path_minimal.yaml", true},
+        {"2. Full not extends",    "02_test_happy_path_full.yaml",      "02_test_happy_path_full.yaml",    true},
+        {"3. Extends line",        "03_test_extends_line.yaml",         "01_test_happy_path_minimal.yaml", true},
+        {"4. Extends V",           "04_test_extends_V.yaml",            "01_test_happy_path_minimal.yaml", true},
+        {"5. Circular extends", "05_error_circular_extends.yaml",     "", false},
+        {"6. Self extends", "06_error_self_extends.yaml",     "", false},
+        {"7. Normal missing error", "07_error_missing_key.yaml",     "", false},
+        {"8. path to folder", "01_test_happy_path_minimal.yaml",    "01_test_happy_path_minimal.yaml", true},
+
+        // TODO valids extends multiple folders
+    };
+    test_case_loop(test_base, tests);
+}
+
+TEST_CASE("RunStatus Config Validation - Validator configuration"){
+    const fs::path test_base = this_file.parent_path() / "config_validation"/"validator";
+    std::vector<ConfigTestCase> tests = {
+        {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
+        {"2. validator extends", "02_test_validator_extends.yaml",    "01_result_validator_minimal.yaml", true},
+        {"3. validator extends", "03_error_validator_extends.yaml",    "", false},
+    };
+    test_case_loop(test_base, tests);
 }
 
 TEST_CASE("RunStatus Config Validation - Test suite configuration"){

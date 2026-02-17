@@ -54,4 +54,5 @@ graphviz:
 	@echo "--- Saved to callgraph.svg ---
 
 test:
+	cmake --build build --target run_validation_tests
 	cmake --build build --target test

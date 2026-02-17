@@ -42,20 +42,29 @@ namespace wpa3_tester{
     }
 
     json resolve_extends(json current_node, const path& base_dir, vector<string>& hierarchy) {
-        if (!current_node.is_object()) {return current_node;}
+        if (!current_node.is_object()){
+            return current_node;
+        }
+        if (current_node.contains("validator") && current_node["validator"].is_string()) {
+            const path schema_rel_path = current_node["validator"].get<string>();
+            const path schema_abs_path = absolute(base_dir / schema_rel_path);
+            current_node["validator"] = schema_abs_path.string();
+        }
         if(!current_node.contains("extends")){
             for (auto& [key, value] : current_node.items()) {
                 value = resolve_extends(value, base_dir, hierarchy);
             }
             return current_node;
         }
+
         // extends
         const path parent_path = absolute(base_dir / current_node["extends"].get<string>());
         const string parent_path_str = parent_path.string();
-        // add to hiearchy
+
         if (ranges::find(hierarchy, parent_path_str) != hierarchy.end()) {
             throw config_error("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
         }
+
         hierarchy.push_back(parent_path_str);
         current_node.erase("extends");
 
@@ -64,9 +73,34 @@ namespace wpa3_tester{
         deep_merge(parent_json, current_node);
         parent_json = resolve_extends(parent_json, parent_path.parent_path(), hierarchy);
 
-        // remove from hiearchy
+        // remove from hierarchy
         hierarchy.pop_back();
         return parent_json;
+    }
+
+    void validate_recursive(nlohmann::json& current_node, const path& base_dir) {
+        if (current_node.is_object()) {
+
+            if (current_node.contains("validator") && current_node["validator"].is_string()) {
+                const auto schema_file = current_node["validator"].get<string>();
+                const path schema_path = base_dir / schema_file;
+
+                nlohmann::json_schema::json_validator global_validator;
+                const YNode node = YAML::LoadFile(schema_path.string());
+                global_validator.set_root_schema(yaml_to_json(node));
+                global_validator.validate(current_node);
+                current_node.erase("validator");
+            }
+
+            for (auto& [key, value] : current_node.items()) {
+                validate_recursive(value, base_dir);
+            }
+        }
+        else if (current_node.is_array()) {
+            for (auto& element : current_node) {
+                validate_recursive(element, base_dir);
+            }
+        }
     }
 
     void RunStatus::config_validation() {
@@ -80,35 +114,22 @@ namespace wpa3_tester{
             vector<string> hierarchy;
             config_json = resolve_extends(config_json, config_dir, hierarchy);
 
+            //part validation
+            validate_recursive(config_json,config_dir);
 
-            //validation
+            //global validation
             path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";
-            if(config_json["config_type"] == "test_suite"){
+            if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"){
                 //TODO save it is test suite
                 // config test_suite
                 // create pahs to tests
                 global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
             }
-            YNode global_schema_node = YAML::LoadFile(global_schema_path.string());
+            string schema_str = global_schema_path.string();
+            YNode global_schema_node = YAML::LoadFile(schema_str);
             nlohmann::json_schema::json_validator global_validator;
             global_validator.set_root_schema(yaml_to_json(global_schema_node));
             global_validator.validate(config_json);
-
-
-            // -------- attack config validation --------------
-
-            if(config_json.contains("attack_config")){
-                json attack_cfg = config_json["attack_config"];
-                //TODO validation
-                //path attack_schema_path = config_dir / attack_cfg["validator"].get<string>();
-
-                //YNode attack_schema_node = YAML::LoadFile(attack_schema_path.string());
-                //json attack_schema_json = yaml_to_json(attack_schema_node);
-
-                //nlohmann::json_schema::json_validator attack_validator;
-                //attack_validator.set_root_schema(attack_schema_json);
-                //attack_validator.validate(attack_cfg);
-            }
 
             this->config = config_json;
 

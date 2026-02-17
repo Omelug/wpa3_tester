@@ -1,0 +1,3 @@
+second_actor:
+  type: STA
+  source: internal

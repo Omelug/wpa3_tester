@@ -10,6 +10,8 @@
 
 #include "config/RunStatus.h"
 namespace wpa3_tester{
+    using namespace std;
+
     const char *levelToString(const LogLevel level) {
         switch (level) {
             case LogLevel::DEBUG:    return "DEBUG";
@@ -60,8 +62,10 @@ namespace wpa3_tester{
         return v.has_value() ? v->c_str() : fallback;
     }
 
-    void log_actor_configs(const ActorCMap& m, std::ofstream *ofs) {
-        using namespace std;
+    void log_actor_configs(const ActorCMap& m, std::ofstream& ofs) {
+        for (const auto &[name, actor] : m) {
+            ofs << "\t" << name << " -> " << (*actor)["iface"] << std::endl;
+        }
         for (const auto& [name, actor] : m) {
             // Build a human-readable line
             const string line =
@@ -72,8 +76,8 @@ namespace wpa3_tester{
 
             //log(LogLevel::DEBUG, "%s", line.c_str());
 
-            if (ofs && ofs->is_open()) {
-                (*ofs) << line << std::endl;
+            if (ofs.is_open()) {
+                ofs << line << std::endl;
             }
 
             string cond_str;
@@ -88,15 +92,15 @@ namespace wpa3_tester{
             if (cond_str.empty()) { cond_str = "<no conditions>"; }
 
             log(LogLevel::DEBUG, "Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
-            if (ofs && ofs->is_open()) {
-                (*ofs) << "  conditions: " << cond_str << std::endl;
+            if (ofs.is_open()) {
+                ofs << "  conditions: " << cond_str << std::endl;
             }
         }
 
         if (m.empty()) {
             log(LogLevel::DEBUG, "Actor map is empty");
-            if (ofs && ofs->is_open()) {
-                (*ofs) << "<empty actor map>" << std::endl;
+            if (ofs.is_open()) {
+                ofs << "<empty actor map>" << std::endl;
             }
         }
     }

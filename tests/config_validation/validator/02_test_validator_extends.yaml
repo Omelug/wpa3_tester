@@ -1,0 +1,5 @@
+name: "WPA3-Test"
+attacker_module: module1
+actors:
+  validator: 01_validator.schema.yaml
+  extends: 02_extends.yaml

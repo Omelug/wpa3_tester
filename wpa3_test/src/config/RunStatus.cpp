@@ -1,32 +1,42 @@
 #include "config/RunStatus.h"
+#include <csignal>
 #include <filesystem>
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include <argparse/argparse.hpp>
 #include <string>
 #include <yaml-cpp/yaml.h>
-
 #include "attacks/attacks.h"
+#include "setup/config_parser.h"
 
 namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
 
-    RunStatus::RunStatus(const argparse::ArgumentParser &program){
-        only_stats = program.get<bool>("--only_stats");
-
-        if(const auto testName = program.present<string>("--test")){
-            configPath = findConfigByTestName(*testName);
-        } else{
-            configPath = program.get<string>("--config");
-        }
-
-        if(!exists(configPath)){
-            throw config_error("Config not found: %s", configPath.c_str());
-        }
-
+    RunStatus::RunStatus(const std::string &configPath){
+        this->configPath = configPath;
+        if(!exists(configPath)){throw config_error("Config not found: %s", configPath.c_str());}
         log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
     }
+
+    void RunStatus::execute(){
+
+       //TODO  globalRunStatus = &runStatus;
+
+        config_validation();
+
+        // Ensure parent directories exist
+
+        error_code ec;
+        create_directories(run_folder, ec);
+        if (ec) {throw runtime_error("Unable to create run base directory");}
+
+        config_requirement(); //include req validation
+        setup_test();
+        run_test();
+        //TODO removeall processes?
+        stats_test();
+    };
 
 
     void RunStatus::run_test(){
@@ -55,22 +65,13 @@ namespace wpa3_tester{
 
         ofs << "Actor->interface mapping" << endl;
         ofs << "Internal mapping" << endl;
-        for (const auto &[name, actor] : internal_actors) {
-            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-        }
-        log_actor_configs(internal_actors, &ofs);
+        log_actor_configs(internal_actors, ofs);
 
         ofs << "External mapping" << endl;
-        for (const auto &[name, actor] : external_actors) {
-            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-        }
-        log_actor_configs(external_actors, &ofs);
+        log_actor_configs(external_actors, ofs);
 
         ofs << "Simulation mapping" << endl;
-        for (const auto &[name, actor] : simulation_actors) {
-            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
-        }
-        log_actor_configs(simulation_actors, &ofs);
+        log_actor_configs(simulation_actors, ofs);
 
         ofs.close();
         log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
@@ -94,5 +95,48 @@ namespace wpa3_tester{
 
         if (!found) {throw config_error("Actor %s not found in any actor map", actor_name.c_str());}
         return *found;
+    }
+
+    unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {
+        unordered_map<string, string> t_map;
+        const path attack_config_dir = path(PROJECT_ROOT_DIR)/ "attack_config";
+
+        if (!exists(attack_config_dir) || !is_directory(attack_config_dir)) {return t_map;}
+
+        for (const auto& entry : recursive_directory_iterator(attack_config_dir)) {
+            const auto& path = entry.path();
+            string filename = path.filename().string();
+            if (filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
+
+            try {
+                YAML::Node config = YAML::LoadFile(path.string());
+                nlohmann::json config_json = yaml_to_json(config);
+                if(!config_json.contains("name")){ throw config_error("Path %s has no valid name", path.string().c_str()); }
+                auto name = config["name"].as<string>();
+                if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"
+                    && ct == TEST_SUITE){
+                    t_map[name] = path.string();
+                }else if(ct == TEST){
+                    t_map[name] = path.string();
+                    if (t_map.contains(name)) {
+                        throw config_error("Configs " + t_map[name] +
+                            " and " + path.string() + " have same name!");
+                    }
+                }
+            } catch (const YAML::Exception& e) {throw config_error("Invalid yaml {}", e.what());}
+        }
+        return t_map;
+    }
+
+    string RunStatus::findConfigByTestName(const string &name){
+        auto tests = scan_attack_configs();
+        if (tests.contains(name)) {return tests[name];}
+        throw config_error("Unknown test name: %s", name.c_str());
+    }
+
+    void RunStatus::print_test_list() {
+        auto tests = scan_attack_configs(TEST);
+        if (tests.empty()) {cout << "In program are not any tests" << endl; return;}
+        for (const auto& [name, path] : tests) {cout << "Test: " << name << " -> " << path << endl;}
     }
 }

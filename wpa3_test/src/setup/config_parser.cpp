@@ -78,7 +78,7 @@ namespace wpa3_tester{
         return parent_json;
     }
 
-    void validate_recursive(nlohmann::json& current_node, const path& base_dir) {
+    void RunStatus::validate_recursive(nlohmann::json& current_node, const path& base_dir) {
         if (current_node.is_object()) {
 
             if (current_node.contains("validator") && current_node["validator"].is_string()) {
@@ -103,6 +103,7 @@ namespace wpa3_tester{
         }
     }
 
+
     void RunStatus::config_validation() {
         try {
             YNode config_node = YAML::LoadFile(this->configPath);
@@ -119,12 +120,6 @@ namespace wpa3_tester{
 
             //global validation
             path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";
-            if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"){
-                //TODO save it is test suite
-                // config test_suite
-                // create pahs to tests
-                global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
-            }
             string schema_str = global_schema_path.string();
             YNode global_schema_node = YAML::LoadFile(schema_str);
             nlohmann::json_schema::json_validator global_validator;

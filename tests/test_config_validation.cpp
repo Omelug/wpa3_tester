@@ -70,6 +70,12 @@ TEST_CASE("RunStatus Config Validation - Validator configuration"){
 }
 
 TEST_CASE("RunStatus Config Validation - Test suite configuration"){
-
+    const fs::path test_base = this_file.parent_path() / "config_validation"/"test_suite";
+    const std::vector<ConfigTestCase> tests = {
+        {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
+        {"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
+        //{"3. validator extends", "03_error_validator_extends.yaml",    "", false},
+    };
+    //TODO test suite testing
 }
 

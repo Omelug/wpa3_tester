@@ -1,0 +1,15 @@
+name: var generator
+config_type: test_suite
+tests:
+  hostapd_gen:
+    type: generator
+    vars:
+      hostapd: [2.9, 2.10, 2.11]
+    config:
+      extends: wpa3_test/attack_config/DoS/CSA_attack_base.yaml
+      actors:
+        acces_point:
+          setup:
+            program: hostapd
+            program_config:
+              version: var_hostapd

@@ -4,45 +4,52 @@
 #include <unordered_map>
 #include <memory>
 #include <tuple>
-#include <argparse/argparse.hpp>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
+
+    enum CONFIG_TYPE{
+        TEST,
+        TEST_SUITE
+    };
+
     class Actor_config;
     using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
-
         //actors
-        ActorCMap external_actors;
-        ActorCMap internal_actors;
-        ActorCMap simulation_actors;
+        ActorCMap external_actors{};
+        ActorCMap internal_actors{};
+        ActorCMap simulation_actors{};
 
     public:
-        nlohmann::json config;
-        std::string run_folder;
-        std::string configPath;
+        static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
+        nlohmann::json config{};
+        std::string run_folder{};
+        std::string configPath{};
 
         //mapping actor->interface
-        AssignmentMap internal_mapping;
+        AssignmentMap internal_mapping{};
         //AssignmentMap external_mapping;
         //AssignmentMap simulation_mapping;
 
-        ProcessManager process_manager;
+        ProcessManager process_manager{};
 
         RunStatus() = default;
-        //RunStatus(int argc, char ** argv);
-        explicit RunStatus(const argparse::ArgumentParser & program);
+        explicit RunStatus(const std::string & configPath);
+        void execute();
+        static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         Actor_config& get_actor(const std::string& actor_name);
+        //bool only_stats = false;
 
-        bool only_stats = false;
+        static void print_test_list();
+        static std::string findConfigByTestName(const std::string &name);
 
     private:
-        static std::string findConfigByTestName(const std::string &name);
 
         // to scan available interfaces
         ActorCMap scan_internal() const;
@@ -52,6 +59,7 @@ namespace wpa3_tester{
         std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 
     public:
+        static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
         void config_validation();
         void config_requirement();
         void setup_test();

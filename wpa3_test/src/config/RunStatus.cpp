@@ -23,7 +23,7 @@ namespace wpa3_tester{
 
        //TODO  globalRunStatus = &runStatus;
 
-        config_validation();
+        this->config = config_validation(this->configPath);
 
         // Ensure parent directories exist
 

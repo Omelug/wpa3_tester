@@ -59,8 +59,9 @@ namespace wpa3_tester{
         std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 
     public:
+        static nlohmann::json extends_recursive(const nlohmann::json &current_node, const std::string &configPath);
         static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
-        void config_validation();
+        static nlohmann::json config_validation(const std::string &configPath);
         void config_requirement();
         void setup_test();
         void run_test();

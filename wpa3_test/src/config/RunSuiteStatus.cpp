@@ -20,29 +20,26 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Used test suite config %s", this->configPath.c_str());
     }
 
-    void RunSuiteStatus::config_validation(){
+    json RunSuiteStatus::config_validation(const string &configPath){
         try {
-            YNode config_node = YAML::LoadFile(this->configPath);
+            YNode config_node = YAML::LoadFile(configPath);
             nlohmann::json config_json = yaml_to_json(config_node);
 
             // create base config node
-            const path config_path(this->configPath);
-            path config_dir = config_path.parent_path();
-            vector<string> hierarchy;
-            config_json = resolve_extends(config_json, config_dir, hierarchy);
+            config_json = RunStatus::extends_recursive(config_json, configPath);
 
             //part validation
-            RunStatus::validate_recursive(config_json,config_dir);
+            RunStatus::validate_recursive(config_json, path(configPath).parent_path());
 
             //global validation
             path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
-            string schema_str = global_schema_path.string();
-            YNode global_schema_node = YAML::LoadFile(schema_str);
             nlohmann::json_schema::json_validator global_validator;
-            global_validator.set_root_schema(yaml_to_json(global_schema_node));
+            global_validator.set_root_schema(yaml_to_json(
+                YAML::LoadFile(global_schema_path.string())
+            ));
             global_validator.validate(config_json);
 
-            this->config = config_json;
+            return config_json;
 
         } catch (const domain_error &e) {
             throw config_error(string("Schema error: ") + e.what());
@@ -50,6 +47,15 @@ namespace wpa3_tester{
             throw config_error(string("Error in config: ") + e.what());
         } catch (const exception& e) {
             throw config_error(string("Config validation error: ") + e.what());
+        }
+    }
+
+    void replace_all(std::string& str, const std::string& from, const std::string& to) {
+        if(from.empty()) return;
+        size_t start_pos = 0;
+        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length();
         }
     }
 
@@ -61,19 +67,57 @@ namespace wpa3_tester{
         create_directories(test_config_folder, ec);
         if (ec) {throw runtime_error("Unable to create directory");}
 
-        config_validation();
-
         std::vector<pair<std::string, path>> test_map;
-        for (auto& [test_name, test_info] : config.at("tests").items()) {
-            std::string type = test_info.at("type");
+        for (auto& [source_name, source_info] : config.at("tests").items()) {
+            std::string type = source_info.at("type");
             if (type == "path") {
-                path rel_path = test_info.at("path").get<std::string>();
+                path rel_path = source_info.at("path").get<std::string>();
                 path abs_path = absolute(configPath / rel_path);
-                test_map.emplace_back(test_name, abs_path);
-            }
-            else if (type == "generator") {
-                //TODO  not implemented
-                //std::cerr << "[Info] Test '" << test_name << "' uses generator (skipping).\n";
+                test_map.emplace_back(source_name, abs_path);
+            }else if (type == "generator") {
+                auto source_config = source_info.at("config");
+                auto gen_folder = test_config_folder / source_name;
+                //create folder
+                create_directories(test_config_folder, ec);
+                if (ec) {throw runtime_error("Unable to create generator directory");}
+
+                // check len are same
+                auto vars = source_info.at("vars");
+                size_t length = 0; bool first = true;
+                for (auto& [key, value] : vars.items()) {
+                    if (first) {
+                        length = value.size(); first = false;
+                    } else if (value.size() != length) {
+                        throw config_error("All vars lists must have the same length (error in '" + key + "')");
+                    }
+                }
+
+                auto source_config_raw = source_info.at("config").dump();
+                for (size_t i = 0; i < length; ++i) {
+                    string current_config = source_config_raw;
+
+                    // replace vars
+                    for (auto& [key, value] : vars.items()) {
+                       string placeholder = "var_" + key;
+                       string replacement;
+
+                        // strings/ arrays
+                        if (value[i].is_string()) replacement = value[i].get<std::string>();
+                        else replacement = value[i].dump();
+
+                        replace_all(current_config, placeholder, replacement);
+                    }
+                    if (current_config.find("var_") !=string::npos) {
+                        throw config_error("Unresolved var_ placeholders at index " + to_string(i));
+                    }
+
+                    json final_json = RunStatus::config_validation(json::parse(current_config));
+                    string test_name = final_json.at("name");
+                    string filename = std::to_string(i) + "_" + test_name + ".yaml";
+                    std::ofstream out(gen_folder / filename);
+                    out << final_json.dump();
+                    test_map.emplace_back(std::to_string(i) + "_" + test_name, gen_folder / filename);
+                }
             }
         }
         return test_map;
@@ -81,7 +125,9 @@ namespace wpa3_tester{
 
 
     void RunSuiteStatus::execute(){
+        this->config = config_validation(this->configPath);
         auto tests_paths = get_test_paths();
+        // run tests
         for (const auto& [name, test_path] : tests_paths) {
             RunStatus rs(test_path);
             path suite_name = rs.config.at("name").get<std::string>();
@@ -89,7 +135,7 @@ namespace wpa3_tester{
 
             // TODO co s test_report, compile_external, install_requerements ?
 
-            std::string rewrite_mode;
+           string rewrite_mode;
             if (config["rewrite"].is_string()) {
                 rewrite_mode = config["rewrite"].get<std::string>();
             } else if (config["rewrite"].is_boolean()) {
@@ -115,10 +161,9 @@ namespace wpa3_tester{
 
             rs.execute();
         }
-        // run tests
     }
 
-    string RunSuiteStatus::findConfigByTestSuiteName(const std::string &name){
+    string RunSuiteStatus::findConfigByTestSuiteName(const string &name){
         auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
         if (tests.contains(name)) {return tests[name];}
         throw config_error("Unknown test suite name: %s", name.c_str());

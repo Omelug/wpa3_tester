@@ -78,6 +78,13 @@ namespace wpa3_tester{
         return parent_json;
     }
 
+    json RunStatus::extends_recursive(const nlohmann::json& config_json, const string &configPath){
+        const path config_path(configPath);
+        path config_dir = config_path.parent_path();
+        vector<string> hierarchy;
+        return resolve_extends(config_json, config_dir, hierarchy);
+    }
+
     void RunStatus::validate_recursive(nlohmann::json& current_node, const path& base_dir) {
         if (current_node.is_object()) {
 
@@ -104,29 +111,23 @@ namespace wpa3_tester{
     }
 
 
-    void RunStatus::config_validation() {
+    json RunStatus::config_validation(const string &configPath){
         try {
-            YNode config_node = YAML::LoadFile(this->configPath);
+            YNode config_node = YAML::LoadFile(configPath);
             json config_json = yaml_to_json(config_node);
 
-           // create base config node
-            path config_path(this->configPath);
-            path config_dir = config_path.parent_path();
-            vector<string> hierarchy;
-            config_json = resolve_extends(config_json, config_dir, hierarchy);
-
-            //part validation
-            validate_recursive(config_json,config_dir);
+            // extends, validators
+            config_json = extends_recursive(config_json, configPath);
+            validate_recursive(config_json,  path(configPath).parent_path());
 
             //global validation
             path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";
-            string schema_str = global_schema_path.string();
-            YNode global_schema_node = YAML::LoadFile(schema_str);
             nlohmann::json_schema::json_validator global_validator;
-            global_validator.set_root_schema(yaml_to_json(global_schema_node));
+            global_validator.set_root_schema(yaml_to_json(
+                YAML::LoadFile(global_schema_path.string())
+            ));
             global_validator.validate(config_json);
-
-            this->config = config_json;
+            return config_json;
 
         } catch (const domain_error &e) {
             throw config_error(string("Schema error: ") + e.what());

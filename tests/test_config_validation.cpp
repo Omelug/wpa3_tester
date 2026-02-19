@@ -7,7 +7,10 @@
 #include <source_location>
 #include <yaml-cpp/node/parse.h>
 
+#include "config/RunSuiteStatus.h"
+
 namespace fs = std::filesystem;
+using namespace wpa3_tester;
 
 struct ConfigTestCase {
     std::string description;
@@ -20,21 +23,21 @@ void test_case_loop(const fs::path& test_base, const std::vector<ConfigTestCase>
     for (const auto& t : tests) {
         SUBCASE(t.description.c_str()) {
             fs::path input_path = test_base / t.input_yaml;
-            wpa3_tester::RunStatus rs;
+            RunStatus rs;
             rs.configPath = input_path.string();
 
             if (t.should_pass) {
-                REQUIRE_NOTHROW(rs.config_validation());
+                REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.configPath));
 
                 fs::path expected_path = test_base / t.expected_yaml;
-                nlohmann::json expected_json = wpa3_tester::yaml_to_json(YAML::LoadFile(expected_path.string()));
+                nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path.string()));
 
                 auto diff = nlohmann::json::diff(expected_json, rs.config);
                 INFO("Diff (expected vs actual): " << diff.dump(4));
                 INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
                 CHECK((rs.config == expected_json));
             } else {
-                CHECK_THROWS_AS(rs.config_validation(), wpa3_tester::config_error);
+                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.configPath), wpa3_tester::config_error);
             }
         }
     }
@@ -73,9 +76,24 @@ TEST_CASE("RunStatus Config Validation - Test suite configuration"){
     const fs::path test_base = this_file.parent_path() / "config_validation"/"test_suite";
     const std::vector<ConfigTestCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
-        {"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
+        //{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
         //{"3. validator extends", "03_error_validator_extends.yaml",    "", false},
     };
-    //TODO test suite testing
+    // TODO change to suite validation test_case_loop(test_base, tests);
 }
+TEST_CASE("RunStatus - Test suite test generation"){
+    const fs::path test_base = this_file.parent_path() / "config_validation"/"test_suite";
+    const std::vector<ConfigTestCase> tests = {
+        //{"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
+        //{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
+    };
 
+    /*auto correct_out= test_base / "out";
+    for (const auto& t : tests){
+        SUBCASE(t.description.c_str()){
+            RunSuiteStatus rss(test_config);
+            rss.run_folder = test_base / "test_run";
+            rss.execute();
+        }
+    }*/
+}

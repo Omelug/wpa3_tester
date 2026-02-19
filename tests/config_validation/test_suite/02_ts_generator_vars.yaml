@@ -6,7 +6,7 @@ tests:
     vars:
       hostapd: [2.9, 2.10, 2.11]
     config:
-      extends: wpa3_test/attack_config/DoS/CSA_attack_base.yaml
+      extends: 02_test.yaml
       actors:
         acces_point:
           setup:

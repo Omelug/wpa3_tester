@@ -22,7 +22,7 @@ namespace wpa3_tester{
 
     json RunSuiteStatus::config_validation(const string &configPath){
         try {
-            YNode config_node = YAML::LoadFile(configPath);
+            const YNode config_node = YAML::LoadFile(configPath);
             nlohmann::json config_json = yaml_to_json(config_node);
 
             // create base config node
@@ -32,7 +32,7 @@ namespace wpa3_tester{
             RunStatus::validate_recursive(config_json, path(configPath).parent_path());
 
             //global validation
-            path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
+            const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
             nlohmann::json_schema::json_validator global_validator;
             global_validator.set_root_schema(yaml_to_json(
                 YAML::LoadFile(global_schema_path.string())
@@ -78,7 +78,7 @@ namespace wpa3_tester{
                 auto source_config = source_info.at("config");
                 auto gen_folder = test_config_folder / source_name;
                 //create folder
-                create_directories(test_config_folder, ec);
+                create_directories(gen_folder, ec);
                 if (ec) {throw runtime_error("Unable to create generator directory");}
 
                 // check len are same
@@ -111,12 +111,30 @@ namespace wpa3_tester{
                         throw config_error("Unresolved var_ placeholders at index " + to_string(i));
                     }
 
-                    json final_json = RunStatus::config_validation(json::parse(current_config));
-                    string test_name = final_json.at("name");
-                    string filename = std::to_string(i) + "_" + test_name + ".yaml";
-                    std::ofstream out(gen_folder / filename);
-                    out << final_json.dump();
-                    test_map.emplace_back(std::to_string(i) + "_" + test_name, gen_folder / filename);
+                    string filename = std::to_string(i) + "_test" + ".yaml"; //TODO rename test suite name
+                    auto test_configPath = (gen_folder / filename);
+
+                    nlohmann::json final_json = nlohmann::json::parse(current_config);
+                    YAML::Node test_node = YAML::Load(final_json.dump());
+
+                    auto force_block_style = [](auto& self, YAML::Node node) -> void {
+                        if (node.IsMap() || node.IsSequence()) {
+                            node.SetStyle(YAML::EmitterStyle::Block);
+                            for (auto it = node.begin(); it != node.end(); ++it) {
+                                if (node.IsMap()) self(self, it->second);
+                                else self(self, *it);
+                            }
+                        }
+                    };
+                    force_block_style(force_block_style, test_node);
+
+                    //test_node.SetStyle(YAML::EmitterStyle::Block);
+                    std::ofstream out(test_configPath);
+                    out << test_node << endl;
+                    out.close();
+
+                    RunStatus::config_validation(test_configPath);
+                    test_map.emplace_back(std::to_string(i) + "_test" , test_configPath);
                 }
             }
         }

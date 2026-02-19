@@ -80,7 +80,7 @@ namespace wpa3_tester{
 
     json RunStatus::extends_recursive(const nlohmann::json& config_json, const string &configPath){
         const path config_path(configPath);
-        path config_dir = config_path.parent_path();
+        const path config_dir = config_path.parent_path();
         vector<string> hierarchy;
         return resolve_extends(config_json, config_dir, hierarchy);
     }
@@ -113,7 +113,7 @@ namespace wpa3_tester{
 
     json RunStatus::config_validation(const string &configPath){
         try {
-            YNode config_node = YAML::LoadFile(configPath);
+            const YNode config_node = YAML::LoadFile(configPath);
             json config_json = yaml_to_json(config_node);
 
             // extends, validators

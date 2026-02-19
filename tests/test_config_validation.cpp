@@ -81,19 +81,56 @@ TEST_CASE("RunStatus Config Validation - Test suite configuration"){
     };
     // TODO change to suite validation test_case_loop(test_base, tests);
 }
-TEST_CASE("RunStatus - Test suite test generation"){
-    const fs::path test_base = this_file.parent_path() / "config_validation"/"test_suite";
-    const std::vector<ConfigTestCase> tests = {
-        //{"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
-        //{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
+
+struct ConfigSuiteCase {
+    std::string description;
+    std::string input_ts_yaml;
+    std::string folder_name;
+};
+
+
+
+TEST_CASE("RunStatus - Test suite test generation") {
+    const fs::path test_base = fs::absolute(this_file.parent_path() / "config_validation" / "test_suite");
+
+    const std::vector<ConfigSuiteCase> tests = {
+        //{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
+        {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"}
     };
 
-    /*auto correct_out= test_base / "out";
-    for (const auto& t : tests){
-        SUBCASE(t.description.c_str()){
-            RunSuiteStatus rss(test_config);
-            rss.run_folder = test_base / "test_run";
-            rss.execute();
+    for (const auto& t : tests) {
+        SUBCASE(t.description.c_str()) {
+            fs::path ts_config_path = test_base / t.input_ts_yaml;
+
+            RunSuiteStatus rss(ts_config_path);
+
+            rss.run_folder = test_base / "run_out" / t.folder_name;
+
+            if (fs::exists(rss.run_folder)) {
+                fs::remove_all(rss.run_folder);
+            }
+            fs::create_directories(rss.run_folder);
+
+            rss.config = RunSuiteStatus::config_validation(rss.configPath);
+            auto tests_paths = rss.get_test_paths();
+
+            fs::path actual_dir = std::filesystem::path(rss.run_folder) / "test_config";
+            fs::path expected_dir = test_base / "expected" / t.folder_name;
+
+            CAPTURE(actual_dir.string());
+            CAPTURE(expected_dir.string());
+
+            REQUIRE(fs::exists(expected_dir));
+            REQUIRE(fs::exists(actual_dir));
+
+            SUBCASE("Directory diff") {
+                // -r: recursive, -q: only simple output
+                std::string cmd = "diff -rq " + expected_dir.string() + " " + actual_dir.string();
+                INFO("Running command: " << cmd);
+                int diff_result = std::system(cmd.c_str());
+
+                CHECK((diff_result == 0));
+            }
         }
-    }*/
+    }
 }

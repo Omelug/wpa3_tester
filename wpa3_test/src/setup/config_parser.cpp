@@ -11,6 +11,9 @@ namespace wpa3_tester{
 
     json yaml_to_json(const YNode& node) {
         if (node.IsScalar()) {
+            if (node.Tag() == "!") { // if ""
+                return node.as<string>();
+            }
             try { return node.as<bool>(); } catch (...) {}
             try { return node.as<int64_t>(); } catch (...) {}
             try { return node.as<double>(); } catch (...) {}
@@ -121,7 +124,7 @@ namespace wpa3_tester{
             validate_recursive(config_json,  path(configPath).parent_path());
 
             //global validation
-            path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";
+            const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";
             nlohmann::json_schema::json_validator global_validator;
             global_validator.set_root_schema(yaml_to_json(
                 YAML::LoadFile(global_schema_path.string())

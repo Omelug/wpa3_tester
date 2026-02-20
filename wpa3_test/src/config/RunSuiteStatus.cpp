@@ -98,22 +98,16 @@ namespace wpa3_tester{
 
                     // replace vars
                     for (auto& [key, value] : vars.items()) {
-                       string placeholder = "var_" + key;
-                       string replacement;
-
-                        // strings/ arrays
-                        if (value[i].is_string()) replacement = value[i].get<std::string>();
-                        else replacement = value[i].dump();
-
-                        replace_all(current_config, placeholder, replacement);
+                        const string json_placeholder = "\"var_" + key + "\"";
+                        string replacement = value[i].dump();
+                        replace_all(current_config, json_placeholder, replacement);
                     }
-                    if (current_config.find("var_") !=string::npos) {
+                    if (current_config.find("\"var_") != string::npos) {
                         throw config_error("Unresolved var_ placeholders at index " + to_string(i));
                     }
 
-                    string filename = std::to_string(i) + "_test" + ".yaml"; //TODO rename test suite name
+                    string filename = std::to_string(i) + "_test.yaml"; //TODO rename test suite name
                     auto test_configPath = (gen_folder / filename);
-
                     nlohmann::json final_json = nlohmann::json::parse(current_config);
                     YAML::Node test_node = YAML::Load(final_json.dump());
 
@@ -128,7 +122,6 @@ namespace wpa3_tester{
                     };
                     force_block_style(force_block_style, test_node);
 
-                    //test_node.SetStyle(YAML::EmitterStyle::Block);
                     std::ofstream out(test_configPath);
                     out << test_node << endl;
                     out.close();

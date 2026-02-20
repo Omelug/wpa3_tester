@@ -9,27 +9,27 @@
 
 #include "config/RunSuiteStatus.h"
 
-namespace fs = std::filesystem;
 using namespace wpa3_tester;
-
+using namespace  std;
+using namespace  filesystem;
 struct ConfigTestCase {
-    std::string description;
-    std::string input_yaml;
-    std::string expected_yaml;
+    string description;
+    string input_yaml;
+    string expected_yaml;
     bool should_pass = true;
 };
 
-void test_case_loop(const fs::path& test_base, const std::vector<ConfigTestCase>& tests){
+void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
     for (const auto& t : tests) {
         SUBCASE(t.description.c_str()) {
-            fs::path input_path = test_base / t.input_yaml;
+            path input_path = test_base / t.input_yaml;
             RunStatus rs;
             rs.configPath = input_path.string();
 
             if (t.should_pass) {
                 REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.configPath));
 
-                fs::path expected_path = test_base / t.expected_yaml;
+                path expected_path = test_base / t.expected_yaml;
                 nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path.string()));
 
                 auto diff = nlohmann::json::diff(expected_json, rs.config);
@@ -43,11 +43,11 @@ void test_case_loop(const fs::path& test_base, const std::vector<ConfigTestCase>
     }
 }
 
-fs::path this_file = std::source_location::current().file_name();
+path this_file = source_location::current().file_name();
 TEST_CASE("RunStatus Config Validation - Test configuration") {
-    const fs::path test_base = this_file.parent_path() / "config_validation"/"test";
+    const path test_base = this_file.parent_path() / "config_validation"/"test";
 
-    std::vector<ConfigTestCase> tests = {
+    const vector<ConfigTestCase> tests = {
         {"1. Minimal not extends", "01_test_happy_path_minimal.yaml",   "01_test_happy_path_minimal.yaml", true},
         {"2. Full not extends",    "02_test_happy_path_full.yaml",      "02_test_happy_path_full.yaml",    true},
         {"3. Extends line",        "03_test_extends_line.yaml",         "01_test_happy_path_minimal.yaml", true},
@@ -57,14 +57,14 @@ TEST_CASE("RunStatus Config Validation - Test configuration") {
         {"7. Normal missing error", "07_error_missing_key.yaml",     "", false},
         {"8. path to folder", "01_test_happy_path_minimal.yaml",    "01_test_happy_path_minimal.yaml", true},
 
-        // TODO valids extends multiple folders
+        // TODO valid extends multiple folders
     };
     test_case_loop(test_base, tests);
 }
 
 TEST_CASE("RunStatus Config Validation - Validator configuration"){
-    const fs::path test_base = this_file.parent_path() / "config_validation"/"validator";
-    std::vector<ConfigTestCase> tests = {
+    const path test_base = this_file.parent_path() / "config_validation"/"validator";
+    const vector<ConfigTestCase> tests = {
         {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
         {"2. validator extends", "02_test_validator_extends.yaml",    "01_result_validator_minimal.yaml", true},
         {"3. validator extends", "03_error_validator_extends.yaml",    "", false},
@@ -73,8 +73,8 @@ TEST_CASE("RunStatus Config Validation - Validator configuration"){
 }
 
 TEST_CASE("RunStatus Config Validation - Test suite configuration"){
-    const fs::path test_base = this_file.parent_path() / "config_validation"/"test_suite";
-    const std::vector<ConfigTestCase> tests = {
+    const path test_base = this_file.parent_path() / "config_validation"/"test_suite";
+    const vector<ConfigTestCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
         //{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
         //{"3. validator extends", "03_error_validator_extends.yaml",    "", false},
@@ -83,53 +83,103 @@ TEST_CASE("RunStatus Config Validation - Test suite configuration"){
 }
 
 struct ConfigSuiteCase {
-    std::string description;
-    std::string input_ts_yaml;
-    std::string folder_name;
+    string description;
+    string input_ts_yaml;
+    string folder_name;
 };
 
+void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
+    REQUIRE(exists(expected_dir));
+    REQUIRE(exists(actual_dir));
 
+    size_t files_checked = 0;
+    for (const auto& entry : recursive_directory_iterator(expected_dir)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".yaml") {
+            path rel = relative(entry.path(), expected_dir);
+            path actual_file = actual_dir / rel;
+
+            INFO("Comparing file: " << rel.string());
+            REQUIRE(exists(actual_file));
+
+            YAML::Node expected_node = YAML::LoadFile(entry.path().string());
+            YAML::Node actual_node = YAML::LoadFile(actual_file.string());
+
+            nlohmann::json j_exp = yaml_to_json(expected_node);
+            nlohmann::json j_act = yaml_to_json(actual_node);
+
+            auto patch = nlohmann::json::diff(j_exp, j_act);
+            INFO("Differences: " << patch.dump(4));
+
+            CHECK((j_exp == j_act));
+            files_checked++;
+        }
+    }
+    CHECK((files_checked > 0));
+}
+
+void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) {
+    auto get_tree_structure = [](const path& base_path) {
+        set<string> structure;
+        for (const auto& entry : recursive_directory_iterator(base_path)) {
+            structure.insert(relative(entry.path(), base_path).string());
+        }
+        return structure;
+    };
+
+    set<string> expected_tree = get_tree_structure(expected_dir);
+    set<string> actual_tree = get_tree_structure(actual_dir);
+
+    if (expected_tree != actual_tree) {
+        for (const auto& path : expected_tree) {
+            if (!actual_tree.contains(path)) {
+                INFO("Missing in actual: " << path);
+            }
+        }
+        for (const auto& path : actual_tree) {
+            if (!expected_tree.contains(path)) {
+                INFO("Extra in actual: " << path);
+            }
+        }
+    }
+
+    CHECK((expected_tree == actual_tree));
+}
 
 TEST_CASE("RunStatus - Test suite test generation") {
-    const fs::path test_base = fs::absolute(this_file.parent_path() / "config_validation" / "test_suite");
+    const path test_base = absolute(this_file.parent_path() / "config_validation" / "test_suite");
 
-    const std::vector<ConfigSuiteCase> tests = {
+    const vector<ConfigSuiteCase> tests = {
         //{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
         {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"}
     };
 
     for (const auto& t : tests) {
         SUBCASE(t.description.c_str()) {
-            fs::path ts_config_path = test_base / t.input_ts_yaml;
+            path ts_config_path = test_base / t.input_ts_yaml;
 
             RunSuiteStatus rss(ts_config_path);
 
             rss.run_folder = test_base / "run_out" / t.folder_name;
 
-            if (fs::exists(rss.run_folder)) {
-                fs::remove_all(rss.run_folder);
+            if (exists(rss.run_folder)) {
+                remove_all(rss.run_folder);
             }
-            fs::create_directories(rss.run_folder);
+            create_directories(rss.run_folder);
 
             rss.config = RunSuiteStatus::config_validation(rss.configPath);
             auto tests_paths = rss.get_test_paths();
 
-            fs::path actual_dir = std::filesystem::path(rss.run_folder) / "test_config";
-            fs::path expected_dir = test_base / "expected" / t.folder_name;
+            auto actual_dir = path(rss.run_folder);
+            path expected_dir = test_base / "expected" / t.folder_name;
 
             CAPTURE(actual_dir.string());
             CAPTURE(expected_dir.string());
 
-            REQUIRE(fs::exists(expected_dir));
-            REQUIRE(fs::exists(actual_dir));
-
-            SUBCASE("Directory diff") {
-                // -r: recursive, -q: only simple output
-                std::string cmd = "diff -rq " + expected_dir.string() + " " + actual_dir.string();
-                INFO("Running command: " << cmd);
-                int diff_result = std::system(cmd.c_str());
-
-                CHECK((diff_result == 0));
+            SUBCASE("Recursive YAML comparison") {
+                check_recursive_yaml(expected_dir, actual_dir);
+            }
+            SUBCASE("Directory tree structure comparison") {
+                check_dir_tree_structure(expected_dir, actual_dir);
             }
         }
     }

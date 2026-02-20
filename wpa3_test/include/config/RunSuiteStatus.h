@@ -12,7 +12,7 @@ namespace wpa3_tester{
         std::string run_folder;
         std::vector<std::string> test_paths;
         static void print_test_suite_list();
-        static void print_tests_in_suite(const std::string &name);
+        static void print_tests_in_suite(const std::string &ts_name);
         explicit RunSuiteStatus(const std::string &configPath);
         static nlohmann::json config_validation(const std::string &configPath);
         std::vector<std::pair<std::string, std::filesystem::path>> get_test_paths();

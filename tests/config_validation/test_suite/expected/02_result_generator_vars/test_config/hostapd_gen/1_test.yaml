@@ -1,0 +1,10 @@
+actors:
+  acces_point:
+    setup:
+      program: hostapd
+      program_config:
+        version: 2.10
+    source: internal
+    type: AP
+attacker_module: module1
+name: WPA3-Test

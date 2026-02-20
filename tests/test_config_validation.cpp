@@ -24,10 +24,10 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
         SUBCASE(t.description.c_str()) {
             path input_path = test_base / t.input_yaml;
             RunStatus rs;
-            rs.configPath = input_path.string();
+            rs.config_path = input_path.string();
 
             if (t.should_pass) {
-                REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.configPath));
+                REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.config_path));
 
                 path expected_path = test_base / t.expected_yaml;
                 nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path.string()));
@@ -37,7 +37,7 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
                 INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
                 CHECK((rs.config == expected_json));
             } else {
-                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.configPath), wpa3_tester::config_error);
+                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_error);
             }
         }
     }
@@ -166,7 +166,7 @@ TEST_CASE("RunStatus - Test suite test generation") {
             }
             create_directories(rss.run_folder);
 
-            rss.config = RunSuiteStatus::config_validation(rss.configPath);
+            rss.config = RunSuiteStatus::config_validation(rss.config_path);
             auto tests_paths = rss.get_test_paths();
 
             auto actual_dir = path(rss.run_folder);

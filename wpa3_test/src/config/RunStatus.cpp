@@ -13,17 +13,28 @@ namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
 
-    RunStatus::RunStatus(const std::string &configPath){
-        this->configPath = configPath;
-        if(!exists(configPath)){throw config_error("Config not found: %s", configPath.c_str());}
-        log(LogLevel::INFO, "Used config %s", this->configPath.c_str());
+    RunStatus::RunStatus(const std::string &config_path, string testName){
+        this->config_path = config_path;
+        if(!exists(config_path)){throw config_error("Config not found: %s", config_path.c_str());}
+
+        if(testName.empty()){
+            // load name from YAML if not name set
+            const YAML::Node node = YAML::LoadFile(config_path);
+            if (!node["name"] || !node["name"].IsScalar()){
+                throw config_error("Config missing required string field 'name': %s", config_path.c_str());
+            }
+            testName = node["name"].as<string>();
+        }
+
+        run_folder = (BASE_FOLDER / testName / "last_run").string();
+        log(LogLevel::INFO, "Used config %s", this->config_path.c_str());
     }
 
     void RunStatus::execute(){
 
-       //TODO  globalRunStatus = &runStatus;
+        globalRunStatus = this;
 
-        this->config = config_validation(this->configPath);
+        this->config = config_validation(this->config_path);
 
         // Ensure parent directories exist
 
@@ -34,7 +45,7 @@ namespace wpa3_tester{
         config_requirement(); //include req validation
         setup_test();
         run_test();
-        //TODO removeall processes?
+        //TODO remove all processes?
         stats_test();
     };
 
@@ -48,7 +59,7 @@ namespace wpa3_tester{
         attack_module_maps::stats_map[config["attacker_module"]](*this);
     }
 
-    void RunStatus::save_actor_interface_mapping(){
+    void RunStatus::save_actor_interface_mapping() const{
 
         // mapping of actors -> iface to run_folder/mapping.txt
         if (run_folder.empty()) {

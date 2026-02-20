@@ -15,7 +15,6 @@ using namespace wpa3_tester;
 using namespace std;
 using namespace filesystem;
 
-static RunStatus* globalRunStatus = nullptr;
 
 void signal_handler(const int signum) {
     if (globalRunStatus) {globalRunStatus->process_manager.stop_all();}
@@ -29,17 +28,17 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
           .metavar("NAME");
 
     program.add_argument("--test_list")
-           .help("List all named lists")
+           .help("List all named tests")
             .implicit_value(true)
             .default_value(false);
 
     // test suites
-    program.add_argument("--test")
-          .help("Find name by test")
+    program.add_argument("--test_suite")
+          .help("Find name by test suite")
           .metavar("NAME");
 
-    program.add_argument("--test_list")
-           .help("List all named lists")
+    program.add_argument("--test_suite_list")
+           .help("List all named test suites")
             .implicit_value(true)
             .default_value(false);
 
@@ -47,12 +46,6 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
     program.add_argument("--config")
             .help("Path to config file of test run")
             .metavar("PATH");
-
-    // flags
-    /*program.add_argument("--only_stats")
-            .help("Run only statistics for an already finished test (no setup/attack)")
-            .default_value(false)
-            .implicit_value(true);*/
 
     try{
         program.parse_args(argc, argv);
@@ -66,11 +59,11 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
       }*/
 
     //checks //TODO rozšířit
-    if(program.present("--test_list") && program.present("--test_suite_list"))
+    if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
         throw config_error("Cant use both lists");
-    if(2 <= (program.present("--test").has_value() +
-            program.present("--test_suite").has_value() +
-            program.present("--config").has_value()))
+    if(2 <= (program.present<string>("--test").has_value() +
+            program.present<string>("--test_suite").has_value() +
+            program.present<string>("--config").has_value()))
         throw config_error("Can't combinate  test/test_suite/config");
 
 }
@@ -99,30 +92,27 @@ static void solve_arguments(const argparse::ArgumentParser &program){
         }
     }
 
-    if(const auto configPath = program.present<string>("--config")){
-        YAML::Node config = YAML::LoadFile(configPath.value());
+    if(const auto config_path = program.present<string>("--config")){
+        YAML::Node config = YAML::LoadFile(config_path.value());
         nlohmann::json config_json = yaml_to_json(config);
         if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"){
-            RunSuiteStatus rss(configPath.value());
-            rss.run_folder = RunSuiteStatus::BASE_FOLDER / config_json.at("name") / "last_run";
+            RunSuiteStatus rss(config_path.value());
             rss.execute();
         }else{
-            RunStatus rs(configPath.value());
+            RunStatus rs(config_path.value());
             rs.execute();
         }
     }
 
     if(const auto testName = program.present<string>("--test")){
         string test_config = RunStatus::findConfigByTestName(testName.value());
-        RunStatus rs(test_config);
-        rs.run_folder = RunStatus::BASE_FOLDER / testName.value() / "last_run";
+        RunStatus rs(test_config, testName.value());
         rs.execute();
     }
 
     if(const auto testSuiteName = program.present<string>("--test_suite")){
-        string test_config = RunStatus::findConfigByTestName(testSuiteName.value());
-        RunSuiteStatus rss(test_config);
-        rss.run_folder = RunSuiteStatus::BASE_FOLDER / testSuiteName.value() / "last_run";
+        string test_config = RunSuiteStatus::findConfigByTestSuiteName(testSuiteName.value());
+        RunSuiteStatus rss(test_config, testSuiteName.value());
         rss.execute();
     }
 }

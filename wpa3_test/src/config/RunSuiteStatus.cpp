@@ -14,22 +14,31 @@ namespace wpa3_tester{
     using YNode = YAML::Node;
     using json = nlohmann::json;
 
-    RunSuiteStatus::RunSuiteStatus(const std::string &configPath){
-        this->configPath = configPath;
-        if(!exists(configPath)){throw config_error("Config not found: %s", configPath.c_str());}
-        log(LogLevel::INFO, "Used test suite config %s", this->configPath.c_str());
+    RunSuiteStatus::RunSuiteStatus(const std::string &config_path, string suite_name){
+        this->config_path = config_path;
+        if(!exists(config_path)){throw config_error("Config not found: %s", config_path.c_str());}
+
+        if(suite_name.empty()){
+            const YNode node = YAML::LoadFile(config_path);
+            if(!node["name"] || !node["name"].IsScalar())
+                throw config_error("Config missing required string field 'name': %s", config_path.c_str());
+            suite_name = node["name"].as<string>();
+        }
+
+        run_folder = (BASE_FOLDER / suite_name / "last_run").string();
+        log(LogLevel::INFO, "Used test suite config %s", this->config_path.c_str());
     }
 
-    json RunSuiteStatus::config_validation(const string &configPath){
+    json RunSuiteStatus::config_validation(const string &config_path){
         try {
-            const YNode config_node = YAML::LoadFile(configPath);
+            const YNode config_node = YAML::LoadFile(config_path);
             nlohmann::json config_json = yaml_to_json(config_node);
 
             // create base config node
-            config_json = RunStatus::extends_recursive(config_json, configPath);
+            config_json = RunStatus::extends_recursive(config_json, config_path);
 
             //part validation
-            RunStatus::validate_recursive(config_json, path(configPath).parent_path());
+            RunStatus::validate_recursive(config_json, path(config_path).parent_path());
 
             //global validation
             const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
@@ -72,7 +81,7 @@ namespace wpa3_tester{
             std::string type = source_info.at("type");
             if (type == "path") {
                 path rel_path = source_info.at("path").get<std::string>();
-                path abs_path = absolute(configPath / rel_path);
+                path abs_path = absolute(config_path / rel_path);
                 test_map.emplace_back(source_name, abs_path);
             }else if (type == "generator") {
                 auto source_config = source_info.at("config");
@@ -107,7 +116,7 @@ namespace wpa3_tester{
                     }
 
                     string filename = std::to_string(i) + "_test.yaml"; //TODO rename test suite name
-                    auto test_configPath = (gen_folder / filename);
+                    auto test_config_path = (gen_folder / filename);
                     nlohmann::json final_json = nlohmann::json::parse(current_config);
                     YAML::Node test_node = YAML::Load(final_json.dump());
 
@@ -122,12 +131,12 @@ namespace wpa3_tester{
                     };
                     force_block_style(force_block_style, test_node);
 
-                    std::ofstream out(test_configPath);
+                    std::ofstream out(test_config_path);
                     out << test_node << endl;
                     out.close();
 
-                    RunStatus::config_validation(test_configPath);
-                    test_map.emplace_back(std::to_string(i) + "_test" , test_configPath);
+                    RunStatus::config_validation(test_config_path);
+                    test_map.emplace_back(std::to_string(i) + "_test" , test_config_path);
                 }
             }
         }
@@ -136,7 +145,7 @@ namespace wpa3_tester{
 
 
     void RunSuiteStatus::execute(){
-        this->config = config_validation(this->configPath);
+        this->config = config_validation(this->config_path);
         auto tests_paths = get_test_paths();
         // run tests
         for (const auto& [name, test_path] : tests_paths) {

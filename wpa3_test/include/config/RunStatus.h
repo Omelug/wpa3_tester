@@ -20,6 +20,7 @@ namespace wpa3_tester{
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
+
         //actors
         ActorCMap external_actors{};
         ActorCMap internal_actors{};
@@ -29,7 +30,7 @@ namespace wpa3_tester{
         static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
         nlohmann::json config{};
         std::string run_folder{};
-        std::string configPath{};
+        std::string config_path{};
 
         //mapping actor->interface
         AssignmentMap internal_mapping{};
@@ -39,7 +40,7 @@ namespace wpa3_tester{
         ProcessManager process_manager{};
 
         RunStatus() = default;
-        explicit RunStatus(const std::string & configPath);
+        explicit RunStatus(const std::string & config_path, std::string testName = "");
         void execute();
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
@@ -59,13 +60,15 @@ namespace wpa3_tester{
         std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 
     public:
-        static nlohmann::json extends_recursive(const nlohmann::json &current_node, const std::string &configPath);
+        static nlohmann::json extends_recursive(const nlohmann::json &current_node, const std::string &config_path);
         static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
-        static nlohmann::json config_validation(const std::string &configPath);
+        static nlohmann::json config_validation(const std::string &config_path);
         void config_requirement();
         void setup_test();
         void run_test();
         void stats_test();
-        void save_actor_interface_mapping();
+        void save_actor_interface_mapping() const;
     };
+    static RunStatus* globalRunStatus = nullptr;
+
 }

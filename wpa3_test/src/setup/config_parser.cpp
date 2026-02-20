@@ -81,9 +81,8 @@ namespace wpa3_tester{
         return parent_json;
     }
 
-    json RunStatus::extends_recursive(const nlohmann::json& config_json, const string &configPath){
-        const path config_path(configPath);
-        const path config_dir = config_path.parent_path();
+    json RunStatus::extends_recursive(const nlohmann::json& config_json, const string &config_path){
+        const path config_dir = path(config_path).parent_path();
         vector<string> hierarchy;
         return resolve_extends(config_json, config_dir, hierarchy);
     }
@@ -114,14 +113,14 @@ namespace wpa3_tester{
     }
 
 
-    json RunStatus::config_validation(const string &configPath){
+    json RunStatus::config_validation(const string &config_path){
         try {
-            const YNode config_node = YAML::LoadFile(configPath);
+            const YNode config_node = YAML::LoadFile(config_path);
             json config_json = yaml_to_json(config_node);
 
             // extends, validators
-            config_json = extends_recursive(config_json, configPath);
-            validate_recursive(config_json,  path(configPath).parent_path());
+            config_json = extends_recursive(config_json, config_path);
+            validate_recursive(config_json,  path(config_path).parent_path());
 
             //global validation
             const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.yaml";

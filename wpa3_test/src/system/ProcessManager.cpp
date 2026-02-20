@@ -13,14 +13,27 @@
 
 namespace wpa3_tester{
     using namespace std;
+
+    // tshark like -t ad timestamp
     string current_timestamp() {
         using clock = chrono::system_clock;
         const auto now = clock::now();
         const time_t t = clock::to_time_t(now);
         tm buf{};
         localtime_r(&t, &buf);
-        char out[32];
-        strftime(out, sizeof(out), "%Y-%m-%d %H:%M:%S", &buf);
+
+        // nanoseconds sub-second part
+        const auto ns = chrono::duration_cast<chrono::nanoseconds>(now.time_since_epoch()) % 1'000'000'000;
+
+        // timezone offset (+HHMM)
+        char tz[8];
+        strftime(tz, sizeof(tz), "%z", &buf);
+
+        char datetime[32];
+        strftime(datetime, sizeof(datetime), "%Y-%m-%dT%H:%M:%S", &buf);
+
+        char out[64];
+        snprintf(out, sizeof(out), "%s.%09lld%s", datetime, static_cast<long long>(ns.count()), tz);
         return out;
     }
 

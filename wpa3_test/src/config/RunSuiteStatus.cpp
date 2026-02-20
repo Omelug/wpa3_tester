@@ -118,22 +118,7 @@ namespace wpa3_tester{
                     string filename = std::to_string(i) + "_test.yaml"; //TODO rename test suite name
                     auto test_config_path = (gen_folder / filename);
                     nlohmann::json final_json = nlohmann::json::parse(current_config);
-                    YAML::Node test_node = YAML::Load(final_json.dump());
-
-                    auto force_block_style = [](auto& self, YAML::Node node) -> void {
-                        if (node.IsMap() || node.IsSequence()) {
-                            node.SetStyle(YAML::EmitterStyle::Block);
-                            for (auto it = node.begin(); it != node.end(); ++it) {
-                                if (node.IsMap()) self(self, it->second);
-                                else self(self, *it);
-                            }
-                        }
-                    };
-                    force_block_style(force_block_style, test_node);
-
-                    std::ofstream out(test_config_path);
-                    out << test_node << endl;
-                    out.close();
+                    save_yaml(final_json, test_config_path);
 
                     RunStatus::config_validation(test_config_path);
                     test_map.emplace_back(std::to_string(i) + "_test" , test_config_path);

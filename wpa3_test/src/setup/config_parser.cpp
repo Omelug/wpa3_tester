@@ -1,8 +1,11 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json-schema.hpp>
+#include <fstream>
+
 namespace wpa3_tester{
     using namespace std;
     using json = nlohmann::json;
@@ -138,5 +141,24 @@ namespace wpa3_tester{
         } catch (const exception& e) {
             throw config_error(string("Config validation error: ") + e.what());
         }
+    }
+
+    void save_yaml(const json& json_obj, const path& out_path) {
+        const YAML::Node node = YAML::Load(json_obj.dump());
+        auto force_block_style = [](auto& self, YAML::Node node) -> void {
+            if (node.IsMap() || node.IsSequence()) {
+                node.SetStyle(YAML::EmitterStyle::Block);
+                for (auto it = node.begin(); it != node.end(); ++it) {
+                    if (node.IsMap()) self(self, it->second);
+                    else self(self, *it);
+                }
+            }
+        };
+        force_block_style(force_block_style, node);
+        ofstream out(out_path);
+        if (!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
+        out << node << endl;
+        out.close();
+        log(LogLevel::DEBUG, "Config saved to %s", out_path.c_str());
     }
 }

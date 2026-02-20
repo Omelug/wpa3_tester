@@ -37,13 +37,14 @@ namespace wpa3_tester{
         this->config = config_validation(this->config_path);
 
         // Ensure parent directories exist
-
         error_code ec;
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
 
         config_requirement(); //include req validation
         setup_test();
+        const path out_path = path(run_folder) / "test_config.yaml";
+        save_yaml(config, out_path);
         run_test();
         //TODO remove all processes?
         stats_test();

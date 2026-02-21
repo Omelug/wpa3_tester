@@ -53,12 +53,12 @@ namespace wpa3_tester{
 
 
     void RunStatus::run_test(){
-        attack_module_maps::run_map[config["attacker_module"]](*this);
+        attack_module_maps::run_map[config.at("attacker_module")](*this);
         //TODO teardown , reset interfaces
     }
 
     void RunStatus::stats_test(){
-        attack_module_maps::stats_map[config["attacker_module"]](*this);
+        attack_module_maps::stats_map[config.at("attacker_module")](*this);
     }
 
     void RunStatus::save_actor_interface_mapping() const{
@@ -126,7 +126,7 @@ namespace wpa3_tester{
                 nlohmann::json config_json = yaml_to_json(config);
                 if(!config_json.contains("name")){ throw config_error("Path %s has no valid name", path.string().c_str()); }
                 auto name = config["name"].as<string>();
-                if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"
+                if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"
                     && ct == TEST_SUITE){
                     t_map[name] = path.string();
                 }else if(ct == TEST){

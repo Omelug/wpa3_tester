@@ -24,6 +24,6 @@ namespace wpa3_tester{
 
         save_actor_interface_mapping();
         process_manager.init_logging(run_folder);
-        attack_module_maps::setup_map[config["attacker_module"]](*this);
+        attack_module_maps::setup_map[config.at("attacker_module")](*this);
     }
 }

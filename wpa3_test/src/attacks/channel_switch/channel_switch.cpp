@@ -78,9 +78,9 @@ namespace wpa3_tester{
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
 
-        if (rs.config["actors"]["access_point"]["source"] != "internal"
-            || rs.config["actors"]["client"]["source"] != "internal") {
-            throw runtime_error("only internal access_point is supported");
+        if (rs.config.at("actors").at("access_point").at("source") != "internal"
+            || rs.config.at("actors").at("client").at("source") != "internal") {
+            throw runtime_error("only internal actors are supported");
         }
 
         // -------- hostapd AP ------------
@@ -107,11 +107,11 @@ namespace wpa3_tester{
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
-        const string essid = rs.config["actors"]["access_point"]["setup"]["program_config"]["ssid"];
-        const int old_channel = rs.config["actors"]["access_point"]["setup"]["channel"];
-        const int new_channel = rs.config["attack_config"]["new_channel"];
-        const int ms_interval = rs.config["attack_config"]["ms_interval"];
-        const int attack_time = rs.config["attack_config"]["attack_time"];
+        const string essid = rs.config.at("actors").at("access_point").at("setup").at("program_config").at("ssid");
+        const int old_channel = rs.config.at("actors").at("access_point").at("setup").at("channel");
+        const int new_channel = rs.config.at("attack_config").at("new_channel");
+        const int ms_interval = rs.config.at("attack_config").at("ms_interval");
+        const int attack_time = rs.config.at("attack_config").at("attack_time");
 
         speed_observation_start(rs);
         this_thread::sleep_for(chrono::seconds(10));
@@ -132,9 +132,9 @@ namespace wpa3_tester{
         }
 
         auto attack_cfg = rs.config["attack_config"];
-        int attack_time = attack_cfg["attack_time"].get<int>();
-        int ms_interval = attack_cfg["ms_interval"].get<int>();
-        int new_channel = attack_cfg["new_channel"].get<int>();
+        int attack_time = attack_cfg.at("attack_time").get<int>();
+        int ms_interval = attack_cfg.at("ms_interval").get<int>();
+        int new_channel = attack_cfg.at("new_channel").get<int>();
 
         report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
         report << "## Attack Description\n";

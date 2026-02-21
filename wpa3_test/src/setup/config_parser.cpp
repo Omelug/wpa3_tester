@@ -93,8 +93,8 @@ namespace wpa3_tester{
     void RunStatus::validate_recursive(nlohmann::json& current_node, const path& base_dir) {
         if (current_node.is_object()) {
 
-            if (current_node.contains("validator") && current_node["validator"].is_string()) {
-                const auto schema_file = current_node["validator"].get<string>();
+            if (current_node.contains("validator") && current_node.at("validator").is_string()) {
+                const auto schema_file = current_node.at("validator").get<string>();
                 const path schema_path = base_dir / schema_file;
 
                 nlohmann::json_schema::json_validator global_validator;

@@ -10,7 +10,7 @@ namespace wpa3_tester{
         observer::add_nets(run_status,command, actor_name);
         command.insert(command.end(), {
             "sudo","ip", "addr","add",
-            run_status.config["actors"][actor_name]["ip_addr"].get<string>() + "/24",
+            run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>() + "/24",
             "dev",run_status.get_actor(actor_name)["iface"]
         });
         hw_capabilities::run_cmd(command);

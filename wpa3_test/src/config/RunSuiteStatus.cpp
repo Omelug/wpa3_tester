@@ -140,11 +140,9 @@ namespace wpa3_tester{
 
             // TODO co s test_report, compile_external, install_requerements ?
 
-           string rewrite_mode;
-            if (config["rewrite"].is_string()) {
-                rewrite_mode = config["rewrite"].get<std::string>();
-            } else if (config["rewrite"].is_boolean()) {
-                rewrite_mode = "false";
+           string rewrite_mode = "false";
+            if (config.contains("rewrite") && config.at("rewrite").is_string()) {
+                rewrite_mode = config.at("rewrite").get<std::string>();
             }
 
             if (exists(rs.run_folder)) {

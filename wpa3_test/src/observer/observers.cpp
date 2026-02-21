@@ -7,8 +7,8 @@ namespace wpa3_tester::observer{
     using namespace std;
     using namespace filesystem;
     void add_nets(const RunStatus& run_status, std::vector<std::string>& command, const std::string& src_name){
-        if(!run_status.config["actors"][src_name].contains("netns")){return;}
-        const auto netns_node = run_status.config["actors"][src_name]["netns"];
+        if(!run_status.config.at("actors").at(src_name).contains("netns")){return;}
+        const auto netns_node = run_status.config.at("actors").at(src_name).at("netns");
         if (!netns_node.is_null()) {
             auto netns_client = netns_node.get<string>();
             command.insert(command.end(), {"ip", "netns", "exec", netns_client});

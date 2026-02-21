@@ -93,7 +93,7 @@ static void solve_arguments(const argparse::ArgumentParser &program){
     if(const auto config_path = program.present<string>("--config")){
         YAML::Node config = YAML::LoadFile(config_path.value());
         nlohmann::json config_json = yaml_to_json(config);
-        if(config_json.contains("config_type") && config_json["config_type"] == "test_suite"){
+        if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"){
             RunSuiteStatus rss(config_path.value());
             rss.execute();
         }else{

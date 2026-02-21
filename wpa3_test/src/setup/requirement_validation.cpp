@@ -32,7 +32,7 @@ namespace wpa3_tester{
     tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
         ActorCMap ex_map, in_map, sim_map;
 
-        const json &actors = config["actors"];
+        const json &actors = config.at("actors");
         for (auto it = actors.begin(); it != actors.end(); ++it) {
             const string& actor_name = it.key();
             const json &actor = it.value();
@@ -160,11 +160,6 @@ namespace wpa3_tester{
     void RunStatus::config_requirement() {
         cleanup_all_namespaces();
 
-        //check actors are not empty
-        if (!config.contains("actors") || !config["actors"].is_object()) {
-            throw config_error("Actors are not in: %s", config.dump().c_str());
-        }
-
         //todo get map from
         auto [external, internal, simulation] = parse_requirements();
 
@@ -190,8 +185,8 @@ namespace wpa3_tester{
 
             //TODO move to
             optional<string> netns_opt;
-            if (config["actors"][actorName].contains("netns")) {
-                netns_opt = config["actors"][actorName]["netns"].get<string>();
+            if (config.at("actors").at(actorName).contains("netns")) {
+                netns_opt = config.at("actors").at(actorName).at("netns").get<string>();
                 hw_capabilities::create_ns(netns_opt.value());
             }
 
@@ -210,8 +205,8 @@ namespace wpa3_tester{
             if (actor->bool_conditions.at("monitor").value_or(false)) {ifc.set_monitor_mode();}
             if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
 
-            if (config["actors"][actorName].contains("channel")) {
-                ifc.set_channel(config["actors"][actorName]["channel"]);
+            if (config.at("actors").at(actorName).contains("channel")) {
+                ifc.set_channel(config.at("actors").at(actorName).at("channel"));
             }
 
             actor = make_unique<Actor_config>(*optIt->second);

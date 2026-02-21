@@ -83,7 +83,7 @@ namespace wpa3_tester{
     void run_hostapd(RunStatus& run_status, const string &actor_name){
         const string hostapd_config_path = hostapd_config(
             run_status.run_folder,
-            run_status.config["actors"][actor_name]["setup"]["program_config"]);
+            run_status.config.at("actors").at(actor_name).at("setup").at("program_config"));
 
         vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
@@ -100,7 +100,7 @@ namespace wpa3_tester{
     void run_wpa_supplicant(RunStatus& run_status, const string &actor_name){
         const string wpa_supp_config_path = wpa_supplicant_config(
             run_status.run_folder,
-            run_status.config["actors"][actor_name]["setup"]["program_config"]
+            run_status.config.at("actors").at(actor_name).at("setup").at("program_config")
             );
 
         vector<string> command = {"sudo"};

@@ -5,16 +5,16 @@ namespace wpa3_tester{
     using json = nlohmann::json;
 
     Actor_config::Actor_config(const json& j) {
-        if (j.contains("selection") && j["selection"].is_object()) {
-            const auto& sel = j["selection"];
+        if (j.contains("selection") && j.at("selection").is_object()) {
+            const auto& sel = j.at("selection");
             for (auto & [key, val] : str_con) {
                 if (sel.contains(key) && sel[key].is_string()) {
                     val = sel[key].get<string>();
                 }
             }
 
-            if (sel.contains("condition") && sel["condition"].is_array()) {
-                for (const auto& cond_name : sel["condition"]) {
+            if (sel.contains("condition") && sel.at("condition").is_array()) {
+                for (const auto& cond_name : sel.at("condition")) {
                     if (auto key = cond_name.get<string>(); bool_conditions.contains(key)) {
                         bool_conditions[key] = true;
                     }

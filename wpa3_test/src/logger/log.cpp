@@ -11,6 +11,7 @@
 #include "config/RunStatus.h"
 namespace wpa3_tester{
     using namespace std;
+    using namespace std::chrono;
 
     const char *levelToString(const LogLevel level) {
         switch (level) {
@@ -107,6 +108,7 @@ namespace wpa3_tester{
     double log_time_to_epoch(const string& time_str) {
         tm t = {};
         const char* p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+        log(LogLevel::ERROR, "Invalid time, can cause inconsistency");
         if (p == nullptr) return 0.0;
 
         // optional fractional seconds ".310201504"
@@ -137,6 +139,10 @@ namespace wpa3_tester{
     vector<double> get_time_logs(const RunStatus& rs, const string& process_name, const string& pattern) {
         vector<double> timestamps;
         const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
+        if(!filesystem::exists(actor_log)){
+            log(LogLevel::ERROR, ("Could not find file '" + actor_log + "'").c_str());
+            return {};
+        }
         ifstream file(actor_log);
         string line;
         regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)" + pattern);

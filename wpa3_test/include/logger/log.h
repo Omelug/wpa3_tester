@@ -28,4 +28,5 @@ namespace wpa3_tester{
     }
     std::vector<double> get_time_logs(const RunStatus& rs, const std::string& process_name, const std::string& pattern);
     std::string escape_tex(std::string text);
+    double log_time_to_epoch(const std::string& time_str);
 }

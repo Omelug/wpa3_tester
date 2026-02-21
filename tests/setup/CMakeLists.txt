@@ -1,0 +1,24 @@
+# validation tests
+add_executable(run_validation_tests test_config_validation.cpp)
+
+target_link_libraries(run_validation_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+
+target_compile_definitions(run_validation_tests PRIVATE
+        TEST_DATA_DIR="config_validation"
+)
+
+add_test(NAME ValidationTests COMMAND run_validation_tests)
+
+# system tests
+add_executable(run_cleanup_tests test_cleanup_namespaces.cpp)
+
+target_link_libraries(run_cleanup_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+
+add_test(NAME CleanupTests COMMAND run_cleanup_tests)
+

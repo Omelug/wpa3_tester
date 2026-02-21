@@ -104,22 +104,26 @@ namespace wpa3_tester{
         }
     }
 
-    // tshark like -t ad timestamp
-    double log_time_to_epoch(const string& time_str) {
+    // Returns a nanosecond-precision time_point (epoch == error sentinel)
+    LogTimePoint log_time_to_epoch_ns(const string& time_str) {
         tm t = {};
         const char* p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
-        log(LogLevel::ERROR, "Invalid time, can cause inconsistency");
-        if (p == nullptr) return 0.0;
+        if (p == nullptr) return LogTimePoint{};
 
-        // optional fractional seconds ".310201504"
-        double frac = 0.0;
+        // parse fractional seconds ".310201504" → nanoseconds
+        int64_t frac_ns = 0;
         if (*p == '.') {
-            char* end = nullptr;
-            frac = strtod(p, &end);
-            p = end;
+            ++p;
+            int64_t scale = 100'000'000; // first digit = 100ms in ns
+            while (isdigit(*p) && scale > 0) {
+                frac_ns += (*p - '0') * scale;
+                scale /= 10;
+                ++p;
+            }
+            while (isdigit(*p)) ++p;
         }
 
-        // timezone offset
+        // parse timezone offset "+0100" / "-0500"
         int tz_offset_sec = 0;
         if (*p == '+' || *p == '-') {
             const int sign = (*p == '+') ? 1 : -1;
@@ -131,15 +135,15 @@ namespace wpa3_tester{
         }
 
         t.tm_isdst = 0;
-        // timegm treats tm as UTC; subtract tz offset to convert local→UTC epoch
-        const time_t epoch = timegm(&t) - tz_offset_sec;
-        return static_cast<double>(epoch) + frac;
+        const time_t epoch_sec = timegm(&t) - tz_offset_sec;
+        const auto total_ns = static_cast<int64_t>(epoch_sec) * 1'000'000'000LL + frac_ns;
+        return LogTimePoint{nanoseconds{total_ns}};
     }
 
-    vector<double> get_time_logs(const RunStatus& rs, const string& process_name, const string& pattern) {
-        vector<double> timestamps;
+    vector<LogTimePoint> get_time_logs(const RunStatus& rs, const string& process_name, const string& pattern) {
+        vector<LogTimePoint> timestamps;
         const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
-        if(!filesystem::exists(actor_log)){
+        if (!filesystem::exists(actor_log)) {
             log(LogLevel::ERROR, ("Could not find file '" + actor_log + "'").c_str());
             return {};
         }
@@ -150,8 +154,8 @@ namespace wpa3_tester{
 
         while (getline(file, line)) {
             if (regex_search(line, match, re)) {
-                const double epoch = log_time_to_epoch(match[1].str());
-                if (epoch > 0) timestamps.push_back(epoch);
+                const LogTimePoint tp = log_time_to_epoch_ns(match[1].str());
+                if (tp.time_since_epoch().count() != 0) timestamps.push_back(tp);
             }
         }
         return timestamps;

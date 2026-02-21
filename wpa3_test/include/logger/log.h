@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <cstdint>
+#include <chrono>
 
 #include "config/RunStatus.h"
 namespace wpa3_tester{
@@ -26,7 +28,10 @@ namespace wpa3_tester{
         std::cin.get();
         std::cout << "ok" << std::endl;
     }
-    std::vector<double> get_time_logs(const RunStatus& rs, const std::string& process_name, const std::string& pattern);
+    using LogTimePoint = std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>;
+
+    // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
+    LogTimePoint log_time_to_epoch_ns(const std::string& time_str);
+    std::vector<LogTimePoint> get_time_logs(const RunStatus& rs, const std::string& process_name, const std::string& pattern);
     std::string escape_tex(std::string text);
-    double log_time_to_epoch(const std::string& time_str);
 }

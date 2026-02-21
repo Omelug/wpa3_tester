@@ -1,7 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-
 #include <ctime>
+#include <cstdint>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -9,19 +10,15 @@
 #include "config/RunStatus.h"
 #include "logger/log.h"
 
-namespace wpa3_tester {
-    double log_time_to_epoch(const std::string& time_str);
-}
-
 using namespace std;
+using wpa3_tester::LogTimePoint;
 
-TEST_CASE("log_time_to_epoch - basic UTC+1 timestamp") {
-    // 2026-02-20T14:38:08.000000000+0100
-    // UTC = 13:38:08  →  timegm({2026-02-20 14:38:08}) - 3600
-    const double epoch = wpa3_tester::log_time_to_epoch("2026-02-20T14:38:08.000000000+0100");
-    REQUIRE((epoch > 0));
+TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp") {
+    // 2026-02-20T14:38:08.000000000+0100  →  UTC 13:38:08
+    const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100");
+    REQUIRE((tp != LogTimePoint{}));
 
-    time_t t = static_cast<time_t>(epoch);
+    const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
     gmtime_r(&t, &utc);
     CHECK((utc.tm_year + 1900 == 2026));
@@ -30,20 +27,24 @@ TEST_CASE("log_time_to_epoch - basic UTC+1 timestamp") {
     CHECK((utc.tm_hour       == 13));   // 14:38 CET → 13:38 UTC
     CHECK((utc.tm_min        == 38));
     CHECK((utc.tm_sec        == 8));
+
+    // no fractional part
+    const auto frac = tp.time_since_epoch() % chrono::seconds{1};
+    CHECK((frac == chrono::nanoseconds{0}));
 }
 
-TEST_CASE("log_time_to_epoch - negative offset UTC-5") {
+TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5") {
     // 2026-02-20T08:38:08-0500  →  UTC 13:38:08
-    const double epoch = wpa3_tester::log_time_to_epoch("2026-02-20T08:38:08.000000000-0500");
-    time_t t = static_cast<time_t>(epoch);
+    const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T08:38:08.000000000-0500");
+    const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
     gmtime_r(&t, &utc);
     CHECK((utc.tm_hour == 13));
 }
 
-TEST_CASE("log_time_to_epoch - invalid string returns 0") {
-    CHECK((wpa3_tester::log_time_to_epoch("not-a-timestamp") == 0.0));
-    CHECK((wpa3_tester::log_time_to_epoch("") == 0.0));
+TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch") {
+    CHECK((wpa3_tester::log_time_to_epoch_ns("not-a-timestamp") == LogTimePoint{}));
+    CHECK((wpa3_tester::log_time_to_epoch_ns("") == LogTimePoint{}));
 }
 
 namespace {
@@ -52,7 +53,7 @@ namespace {
         string           actor_name;
 
         TempLog(const string& name, const string& content)
-            : run_folder(filesystem::temp_directory_path() / "wpa3_test_log_XXXXXX"),
+            : run_folder(filesystem::temp_directory_path() / "wpa3_test_log"),
               actor_name(name)
         {
             // mkdtemp needs a writable char buffer
@@ -87,9 +88,8 @@ TEST_CASE("get_time_logs - finds matching lines") {
     const auto times = wpa3_tester::get_time_logs(rs, "access_point", "AP-ENABLED");
     REQUIRE((times.size() == 2));
 
-    // second match is 2 seconds after first (14:38:08 vs 14:38:10)
-    INFO((doctest::Approx(times[1] - times[0])));
-    CHECK((doctest::Approx(times[1] - times[0]) == 2.189798496));
+    // 14:38:10.5 - 14:38:08.0 = 2.5 s
+    CHECK((times[1] - times[0] == chrono::milliseconds{2500}));
 }
 
 TEST_CASE("get_time_logs - no match returns empty") {

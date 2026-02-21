@@ -26,39 +26,59 @@ namespace wpa3_tester::observer{
         run_status.process_manager.run(node_name + "_cap", command, get_observer_folder(run_status, program_name));
     }
 
-    string extract_pcap_to_csv(const RunStatus& rs, const string& actor_name) {
-        const string pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
-        const string csv_path = get_observer_folder(rs, program_name) / (actor_name + ".csv");
+    path extract_pcap_to_csv(const RunStatus& rs, const string& actor_name) {
+        const path pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
+        const path csv_path = get_observer_folder(rs, program_name) / (actor_name + ".csv");
 
         const vector<string> gen_cmd = {
             "sh", "-c",
-            "tshark -r " + pcap_path + " -T fields -e frame.time_epoch -e frame.len -E separator=, > " + csv_path
+            "tshark -t ad -r " + pcap_path.string() +
+                " -T fields -e frame.time"
+                " -e frame.len "
+                "-E separator=, > " + csv_path.string()
         };
 
         hw_capabilities::run_cmd(gen_cmd);
         return csv_path;
     }
 
+    struct graph_lines{
+        vector<LogTimePoint>& highlight_times;
+        string& event_des;
+    };
+
     string plot_traffic_graph(const RunStatus& rs,
             const string& actor_name,
-            vector<double> times,const vector<double>& sizes,
-            vector<double> highlight_times,
-            const string&  event_desc) {
+            const vector<LogTimePoint>& times, const vector<double>& sizes,
+            const vector<LogTimePoint>& highlight_times,
+            const string& event_desc) {
         string graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
         if (times.empty()) return "";
 
-        const double start_time = times[0];
+        const auto tp_to_sec = [](const LogTimePoint& tp) {
+            return static_cast<double>(
+                chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count()) / 1e9;
+        };
+
+        const double start_time = tp_to_sec(times[0]);
         double max_time = 0;
 
-        for (auto& t : times) {
-            t -= start_time;
-            if (t > max_time) max_time = t;
-        }
-        for (auto& t : highlight_times) {
-            t -= start_time;
+        vector<double> rel_times;
+        rel_times.reserve(times.size());
+        for (const LogTimePoint& tp : times) {
+            const double t = tp_to_sec(tp) - start_time;
+            rel_times.push_back(t);
             if (t > max_time) max_time = t;
         }
 
+        // convert LogTimePoint highlights to seconds relative to start_time
+        vector<double> highlight_secs;
+        highlight_secs.reserve(highlight_times.size());
+        for (const LogTimePoint& tp : highlight_times) {
+            const double t = tp_to_sec(tp) - start_time;
+            highlight_secs.push_back(t);
+            if (t > max_time) max_time = t;
+        }
 
         const auto f = mp::figure();
         f->quiet_mode(true);
@@ -76,18 +96,18 @@ namespace wpa3_tester::observer{
         ax->ylabel("Size [B]");
         ax->title("Traffic: " + escape_tex(actor_name));
 
-        auto p = ax->semilogy(times, y, "ro");
+        auto p = ax->semilogy(rel_times, y, "ro");
         p->marker_size(4);
         p->marker_face_color({0, 0.5, 0.5});
         p->display_name("");
 
         ax->hold(true);
-        if (!highlight_times.empty()) {
+        if (!highlight_secs.empty()) {
             auto y_lims = ax->ylim();
             bool first_vline = true;
             const double text_y = y_lims[1] * 0.6;
 
-            for (double t : highlight_times) {
+            for (double t : highlight_secs) {
                 const auto vline = ax->plot({t, t}, {y_lims[0], y_lims[1]}, "--b");
                 vline->line_style("--");
                 vline->color("blue");
@@ -112,13 +132,14 @@ namespace wpa3_tester::observer{
 
     string tshark_graph(const RunStatus &rs,
         const string &actor_name,
-        const vector<double> &highlight_times,
+        const vector<LogTimePoint> &highlight_times,
         const string& event_desc) {
         string pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
-        string csv_path = extract_pcap_to_csv(rs, "client");
+        path csv_path = extract_pcap_to_csv(rs, "client");
         string graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
 
-        vector<double> times, sizes;
+        vector<LogTimePoint> times;
+        vector<double> sizes;
         ifstream file(csv_path);
         string line;
 
@@ -128,7 +149,9 @@ namespace wpa3_tester::observer{
             string t_str, s_str;
             if (getline(ss, t_str, ',') && getline(ss, s_str, ',')) {
                 try {
-                    times.push_back(stod(t_str));
+                    const LogTimePoint tp = log_time_to_epoch_ns(t_str);
+                    if (tp.time_since_epoch().count() == 0) continue;
+                    times.push_back(tp);
                     sizes.push_back(stod(s_str));
                 } catch (...) {
                     continue;

@@ -9,7 +9,7 @@ namespace wpa3_tester{
         vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
         command.insert(command.end(), {
-            "sudo","ip", "addr","add",
+            "ip", "addr","add",
             run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>() + "/24",
             "dev",run_status.get_actor(actor_name)["iface"]
         });

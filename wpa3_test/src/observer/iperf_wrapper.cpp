@@ -1,6 +1,4 @@
 #include "observer/iperf_wrapper.h"
-
-#include "attacks/channel_switch/channel_switch.h"
 #include "logger/error_log.h"
 #include <cassert>
 #include "logger/log.h"
@@ -83,9 +81,9 @@ namespace wpa3_tester::observer{
         }
     }
 
-    void iperf3_graph(const std::filesystem::path &log_path,
-                             const std::string &actor_tag,
-                             const std::string &output_png,
+    void iperf3_graph(const filesystem::path &log_path,
+                             const string &actor_tag,
+                             const string &output_png,
                              const PlotLibrary lib) {
 
         if (!filesystem::exists(log_path)) {

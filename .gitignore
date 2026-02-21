@@ -4,3 +4,4 @@ build
 cmake-build-debug
 run
 data
+/tests/setup/config_validation/test_suite/run_out

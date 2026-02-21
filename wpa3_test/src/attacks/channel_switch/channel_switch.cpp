@@ -167,8 +167,12 @@ namespace wpa3_tester{
     void stats_chs_attack(const RunStatus &rs){
         log(LogLevel::INFO , "CSA attack stats");
         const vector<LogTimePoint> switch_events = get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH");
-        const string STA_graph_path = observer::tshark_graph(rs, "client", switch_events, "SWITCH");
-        const string AP_graph_path = observer::tshark_graph(rs, "access_point", switch_events, "SWITCH");
+
+        vector<observer::graph_lines> events;
+        if (!switch_events.empty()) {events.push_back({switch_events,"SWITCH","blue"});}
+
+        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);
         generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

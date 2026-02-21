@@ -100,9 +100,9 @@ namespace wpa3_tester{
     }
 
     void speed_observation_stop(RunStatus& rs){
-        rs.process_manager.stop("iperf3_server");
-        rs.process_manager.stop("iperf3_client");
+        rs.process_manager.stop("mz_gen");
     }
+
     void run_chs_attack(RunStatus& rs){
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
@@ -127,7 +127,7 @@ namespace wpa3_tester{
         std::ofstream report(report_path);
 
         if (!report.is_open()) {
-            std::cerr << "Failed to create report file!" << std::endl;
+            log(LogLevel::ERROR, "Failed to create report file!");
             return;
         }
 
@@ -163,7 +163,7 @@ namespace wpa3_tester{
     }
 
     void stats_chs_attack(const RunStatus &rs){
-        cout << "CSA attack stats " << endl;
+        log(LogLevel::INFO , "CSA attack stats ");
         vector<double> times, sizes;
         const vector<double> switch_events = get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH");
         const string STA_graph_path = observer::tshark_graph(rs, "client", switch_events, "SWITCH");

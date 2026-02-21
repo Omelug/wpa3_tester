@@ -1,14 +1,11 @@
 #include <iostream>
 #include "config/RunStatus.h"
 #include <csignal>
-#include <thread>
 #include <unistd.h>
 #include <argparse/argparse.hpp>
 #include <yaml-cpp/yaml.h>
-
 #include "config/RunSuiteStatus.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
 #include "setup/config_parser.h"
 #include "system/ProcessManager.h"
 
@@ -121,7 +118,7 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 int main(const int argc, char *argv[])  {
 
     if (geteuid() != 0) {
-        std::cerr << "Error: must be run as root (sudo)" << std::endl;
+        cerr << "Error: must be run as root (sudo)" << endl;
         return 1;
     }
 
@@ -131,6 +128,5 @@ int main(const int argc, char *argv[])  {
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     solve_arguments(program);
-    //RunStatus runStatus(program);
     return 0;
 }

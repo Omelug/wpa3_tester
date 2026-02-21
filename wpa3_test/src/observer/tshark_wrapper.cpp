@@ -88,11 +88,11 @@ namespace wpa3_tester::observer{
             const double text_y = y_lims[1] * 0.6;
 
             for (double t : highlight_times) {
-                auto vline = ax->plot({t, t}, {y_lims[0], y_lims[1]}, "--b");
+                const auto vline = ax->plot({t, t}, {y_lims[0], y_lims[1]}, "--b");
                 vline->line_style("--");
                 vline->color("blue");
                 vline->line_width(2);
-                auto txt = ax->text(t, text_y, event_desc);
+                const auto txt = ax->text(t, text_y, event_desc);
                 txt->font_size(10);
                 txt->color("blue");
 

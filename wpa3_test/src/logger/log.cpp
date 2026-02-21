@@ -33,10 +33,10 @@ namespace wpa3_tester{
         va_end(args_copy);
         if (size < 0) {
             va_end(args);
-            throw std::runtime_error("vsnprintf failed");
+            throw runtime_error("vsnprintf failed");
         }
 
-        std::vector<char> buf(size + 1);
+        vector<char> buf(size + 1);
         vsnprintf(buf.data(), buf.size(), fmt, args);
         va_end(args);
 
@@ -45,9 +45,9 @@ namespace wpa3_tester{
     }
 
     void log_actor_map(const char* name, const ActorCMap& m) {
-        std::string keys;
+        string keys;
         bool first = true;
-        for (const auto &k: m | std::views::keys) {
+        for (const auto &k: m | views::keys) {
             if (!first) keys += ", ";
             keys += k;
             first = false;
@@ -58,13 +58,13 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "%s: %s", name, keys.c_str());
     }
 
-    static auto opt_or(const std::optional<std::string> &v, const char *fallback)->const char *{
+    static auto opt_or(const optional<string> &v, const char *fallback)->const char *{
         return v.has_value() ? v->c_str() : fallback;
     }
 
-    void log_actor_configs(const ActorCMap& m, std::ofstream& ofs) {
+    void log_actor_configs(const ActorCMap& m, ofstream& ofs) {
         for (const auto &[name, actor] : m) {
-            ofs << "\t" << name << " -> " << (*actor)["iface"] << std::endl;
+            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
         }
         for (const auto& [name, actor] : m) {
             // Build a human-readable line
@@ -76,9 +76,7 @@ namespace wpa3_tester{
 
             //log(LogLevel::DEBUG, "%s", line.c_str());
 
-            if (ofs.is_open()) {
-                ofs << line << std::endl;
-            }
+            if (ofs.is_open()) {ofs << line << endl;}
 
             string cond_str;
             bool first = true;
@@ -93,48 +91,69 @@ namespace wpa3_tester{
 
             log(LogLevel::DEBUG, "Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
             if (ofs.is_open()) {
-                ofs << "  conditions: " << cond_str << std::endl;
+                ofs << "  conditions: " << cond_str << endl;
             }
         }
 
         if (m.empty()) {
             log(LogLevel::DEBUG, "Actor map is empty");
             if (ofs.is_open()) {
-                ofs << "<empty actor map>" << std::endl;
+                ofs << "<empty actor map>" << endl;
             }
         }
     }
 
-    double log_time_to_epoch(const std::string& time_str) {
-        std::tm t = {};
-        if (strptime(time_str.c_str(), "%Y-%m-%d %H:%M:%S", &t) == nullptr) {
-            return 0.0;
+    // tshark like -t ad timestamp
+    double log_time_to_epoch(const string& time_str) {
+        tm t = {};
+        const char* p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+        if (p == nullptr) return 0.0;
+
+        // optional fractional seconds ".310201504"
+        double frac = 0.0;
+        if (*p == '.') {
+            char* end = nullptr;
+            frac = strtod(p, &end);
+            p = end;
         }
-        t.tm_isdst = -1;
-        return static_cast<double>(std::mktime(&t));
+
+        // timezone offset
+        int tz_offset_sec = 0;
+        if (*p == '+' || *p == '-') {
+            const int sign = (*p == '+') ? 1 : -1;
+            ++p;
+            int hhmm = 0;
+            for (int i = 0; i < 4 && isdigit(*p); ++i, ++p)
+                hhmm = hhmm * 10 + (*p - '0');
+            tz_offset_sec = sign * ((hhmm / 100) * 3600 + (hhmm % 100) * 60);
+        }
+
+        t.tm_isdst = 0;
+        // timegm treats tm as UTC; subtract tz offset to convert local→UTC epoch
+        const time_t epoch = timegm(&t) - tz_offset_sec;
+        return static_cast<double>(epoch) + frac;
     }
 
-    std::vector<double> get_time_logs(const RunStatus& rs, const std::string& actor_name, const std::string& pattern) {
-        using namespace std;
+    vector<double> get_time_logs(const RunStatus& rs, const string& process_name, const string& pattern) {
         vector<double> timestamps;
-        string actor_log = filesystem::path(rs.run_folder) / "logger" / (actor_name +".log");
+        const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
         ifstream file(actor_log);
         string line;
-        regex re(R"(^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*)" + pattern);
+        regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)" + pattern);
         smatch match;
 
         while (getline(file, line)) {
             if (regex_search(line, match, re)) {
-                double epoch = log_time_to_epoch(match[1].str());
+                const double epoch = log_time_to_epoch(match[1].str());
                 if (epoch > 0) timestamps.push_back(epoch);
             }
         }
         return timestamps;
     }
 
-    std::string escape_tex(std::string text) {
+    string escape_tex(string text) {
         size_t pos = 0;
-        while ((pos = text.find("_", pos)) != std::string::npos) {
+        while ((pos = text.find("_", pos)) != string::npos) {
             text.replace(pos, 1, "\\_");
             pos += 2;
         }

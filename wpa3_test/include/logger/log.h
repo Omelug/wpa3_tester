@@ -26,6 +26,6 @@ namespace wpa3_tester{
         std::cin.get();
         std::cout << "ok" << std::endl;
     }
-    std::vector<double> get_time_logs(const RunStatus& rs, const std::string& log_path, const std::string& pattern);
+    std::vector<double> get_time_logs(const RunStatus& rs, const std::string& process_name, const std::string& pattern);
     std::string escape_tex(std::string text);
 }

@@ -5,7 +5,9 @@
 
 namespace wpa3_tester{
     class RunSuiteStatus {
+
     public:
+        bool only_stats = false;
         static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_suites";
         nlohmann::json config;
         std::string config_path;

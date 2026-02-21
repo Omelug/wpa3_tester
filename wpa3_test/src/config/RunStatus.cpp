@@ -40,21 +40,20 @@ namespace wpa3_tester{
         error_code ec;
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
+        if(this->only_stats){stats_test(); return;}
 
         config_requirement(); //include req validation
         setup_test();
         const path out_path = path(run_folder) / "test_config.yaml";
         save_yaml(config, out_path);
         run_test();
-
-        //TODO remove all processes?
         stats_test();
     };
 
 
     void RunStatus::run_test(){
         attack_module_maps::run_map[config.at("attacker_module")](*this);
-        //TODO teardown , reset interfaces
+        process_manager.stop_all();
     }
 
     void RunStatus::stats_test(){

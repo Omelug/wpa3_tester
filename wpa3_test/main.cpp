@@ -45,16 +45,18 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
             .help("Path to config file of test run")
             .metavar("PATH");
 
+    // only stats flag
+    program.add_argument("--only_stats")
+           .help("Generate statistics only without running tests")
+            .implicit_value(true)
+            .default_value(false);
+
     try{
         program.parse_args(argc, argv);
     } catch(const runtime_error &err){
         throw config_error(err.what());
     }
 
-    /*if(runStatus.only_stats){
-          runStatus.stats_test();
-          return 0;
-      }*/
 
     //checks //TODO rozšířit
     if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
@@ -91,26 +93,33 @@ static void solve_arguments(const argparse::ArgumentParser &program){
     }
 
     if(const auto config_path = program.present<string>("--config")){
+        const bool only_stats = program.get<bool>("--only_stats");
         YAML::Node config = YAML::LoadFile(config_path.value());
         nlohmann::json config_json = yaml_to_json(config);
         if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"){
             RunSuiteStatus rss(config_path.value());
+            rss.only_stats = only_stats;
             rss.execute();
         }else{
             RunStatus rs(config_path.value());
+            rs.only_stats = only_stats;
             rs.execute();
         }
     }
 
     if(const auto testName = program.present<string>("--test")){
+        const bool only_stats = program.get<bool>("--only_stats");
         string test_config = RunStatus::findConfigByTestName(testName.value());
         RunStatus rs(test_config, testName.value());
+        rs.only_stats = only_stats;
         rs.execute();
     }
 
     if(const auto testSuiteName = program.present<string>("--test_suite")){
+        const bool only_stats = program.get<bool>("--only_stats");
         string test_config = RunSuiteStatus::findConfigByTestSuiteName(testSuiteName.value());
         RunSuiteStatus rss(test_config, testSuiteName.value());
+        rss.only_stats = only_stats;
         rss.execute();
     }
 }

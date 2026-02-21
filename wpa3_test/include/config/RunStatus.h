@@ -27,6 +27,7 @@ namespace wpa3_tester{
         ActorCMap simulation_actors{};
 
     public:
+        bool only_stats = false;
         static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
         nlohmann::json config{};
         std::string run_folder{};
@@ -45,8 +46,6 @@ namespace wpa3_tester{
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         Actor_config& get_actor(const std::string& actor_name);
-        //bool only_stats = false;
-
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 

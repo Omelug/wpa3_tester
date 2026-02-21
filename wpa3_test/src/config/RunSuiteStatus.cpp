@@ -135,6 +135,7 @@ namespace wpa3_tester{
         // run tests
         for (const auto& [name, test_path] : tests_paths) {
             RunStatus rs(test_path);
+            rs.only_stats = this->only_stats;
             path suite_name = rs.config.at("name").get<std::string>();
             rs.run_folder = path(this->run_folder) / suite_name / "last_run" / name;
 

@@ -2,6 +2,7 @@
 #include "config/RunStatus.h"
 #include <csignal>
 #include <thread>
+#include <unistd.h>
 #include <argparse/argparse.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -118,6 +119,11 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 }
 
 int main(const int argc, char *argv[])  {
+
+    if (geteuid() != 0) {
+        std::cerr << "Error: must be run as root (sudo)" << std::endl;
+        return 1;
+    }
 
     argparse::ArgumentParser program("WPA3_tester", "1.0");
     parse_arguments(program, argc, argv);

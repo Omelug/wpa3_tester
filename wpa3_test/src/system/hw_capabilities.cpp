@@ -182,18 +182,13 @@ namespace wpa3_tester{
                 "Command %s exited with status %d",
                 full_argv[0].c_str(), WEXITSTATUS(status));
         }
-
         return WEXITSTATUS(status);
     }
 
     int hw_capabilities::channel_to_freq_mhz(const int channel){
         // 2.4 GHz band: channels 1-13 -> 2412 + 5*(ch-1), channel 14 -> 2484
-        if(channel >= 1 && channel <= 13){
-            return 2412 + 5 * (channel - 1);
-        }
-        if(channel == 14){
-            return 2484;
-        }
+        if(channel >= 1 && channel <= 13){return 2412 + 5 * (channel - 1);}
+        if(channel == 14){ return 2484;}
 
         // 5 GHz band common non-DFS channels mapping (extend as needed)
         switch(channel){
@@ -226,5 +221,44 @@ namespace wpa3_tester{
                 log(LogLevel::WARNING, "Unknown Wi-Fi channel %d, using 0 MHz", channel);
                 return 0;
         }
+    }
+
+    string hw_capabilities::run_cmd_output(const vector<string> &argv) {
+        if (argv.empty()) return {};
+
+        vector<char *> args;
+        args.reserve(argv.size() + 1);
+        for (const auto &s : argv) { args.push_back(const_cast<char *>(s.c_str())); }
+        args.push_back(nullptr);
+
+        int pipefd[2];
+        if (pipe(pipefd) < 0) return {};
+
+        const pid_t pid = fork();
+        if (pid < 0) { close(pipefd[0]); close(pipefd[1]); return {}; }
+
+        if (pid == 0) {
+            close(pipefd[0]);
+            dup2(pipefd[1], STDOUT_FILENO);
+            close(pipefd[1]);
+            execvp(args[0], args.data());
+            _exit(127);
+        }
+
+        close(pipefd[1]);
+        string output;
+        char buf[256];
+        ssize_t n;
+        while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {
+            output.append(buf, static_cast<size_t>(n));
+        }
+        close(pipefd[0]);
+        waitpid(pid, nullptr, 0);
+        return output;
+    }
+
+    void hw_capabilities::create_ns(const std::string &ns_name){
+        run_cmd({"sudo","ip", "netns", "add", ns_name});
+        run_cmd({"sudo","ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
     }
 }

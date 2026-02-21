@@ -76,6 +76,7 @@ namespace wpa3_tester{
     public:
         static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
+        static std::string run_cmd_output(const std::vector<std::string> &argv);
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
         static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
@@ -87,5 +88,7 @@ namespace wpa3_tester{
 
         //format
         static int channel_to_freq_mhz(int channel);
+        static void create_ns(const std::string& ns_name);
+
     };
 }

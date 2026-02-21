@@ -1,7 +1,16 @@
-cmake_minimum_required(VERSION 3.5)
+
+cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
 set(CMAKE_BUILD_TYPE Debug)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
+
+# optimalization for coompiling/ linking
+execute_process(COMMAND lld --version RESULT_VARIABLE LLD_FOUND OUTPUT_QUIET ERROR_QUIET)
+if(LLD_FOUND EQUAL 0)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+    message(STATUS "Using LLD linker")
+endif()
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -98,6 +107,7 @@ FetchContent_Declare(
 )
 set(MATPLOTPLUSPLUS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(MATPLOTPLUSPLUS_WITH_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(MATPLOTPLUSPLUS_INSTALL OFF CACHE BOOL "" FORCE)
 
 # ------------------------------------------------
 
@@ -166,6 +176,41 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_definitions(wpa3_core PUBLIC PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+target_precompile_headers(wpa3_core PUBLIC
+        <vector>
+        <string>
+        <map>
+        <unordered_map>
+        <set>
+        <memory>
+        <optional>
+        <variant>
+        <tuple>
+        <functional>
+        <algorithm>
+        <numeric>
+        <ranges>
+        <fstream>
+        <iostream>
+        <filesystem>
+        <chrono>
+        <thread>
+        <mutex>
+        <atomic>
+        <stdexcept>
+        <cassert>
+        <cstdint>
+        <cstdlib>
+        <cstring>
+        <csignal>
+        # Third-party
+        <nlohmann/json.hpp>
+        <nlohmann/json-schema.hpp>
+        <yaml-cpp/yaml.h>
+        <tins/tins.h>
+        <argparse/argparse.hpp>
+        <reproc++/reproc.hpp>
+)
 
 enable_testing()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")

@@ -17,6 +17,7 @@ namespace wpa3_tester{
         std::optional<std::string> netns;
 
         int run(const std::vector<std::string> &argv) const;
+        static bool is_physical_interface(const std::string& iface_name);
     };
 }
 

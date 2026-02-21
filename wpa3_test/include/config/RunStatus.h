@@ -69,6 +69,6 @@ namespace wpa3_tester{
         void stats_test();
         void save_actor_interface_mapping() const;
     };
-    static RunStatus* globalRunStatus = nullptr;
 
+    inline RunStatus* globalRunStatus = nullptr;
 }

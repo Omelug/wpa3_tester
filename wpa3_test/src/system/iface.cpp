@@ -43,6 +43,7 @@ namespace wpa3_tester{
             log(LogLevel::ERROR, "cleanup() called with empty interface name");
             return;
         }
+
         if (netns.has_value()) {
             log(LogLevel::INFO, "Cleaning up interface %s in netns %s", name.c_str(), netns->c_str());
 
@@ -79,5 +80,10 @@ namespace wpa3_tester{
 
     int iface::run(const std::vector<std::string> &argv) const{
         return hw_capabilities::run_cmd(argv, netns);
+    }
+
+    bool iface::is_physical_interface(const std::string& iface_name) {
+        const filesystem::path p = filesystem::path("/sys/class/net") / iface_name / "device";
+        return filesystem::exists(p);
     }
 }

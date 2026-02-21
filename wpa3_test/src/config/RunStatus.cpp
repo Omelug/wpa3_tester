@@ -46,6 +46,7 @@ namespace wpa3_tester{
         const path out_path = path(run_folder) / "test_config.yaml";
         save_yaml(config, out_path);
         run_test();
+
         //TODO remove all processes?
         stats_test();
     };

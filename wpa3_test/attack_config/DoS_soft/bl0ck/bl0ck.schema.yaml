@@ -1,0 +1,26 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Channel Switch Attack Config
+type: object
+required:
+  - attack_time_sec
+  - type
+properties:
+  validator:
+    type: string
+    description: path to this schema
+  attack_time_sec:
+    type: integer
+    description: time of attack
+    minimum: 1
+  type:
+    type: string
+    enum: [ "BAR", "BA", "BARS" ]
+    description: typeof bl0ck attack
+  random:
+    type: boolean
+    default: false
+    description: is sender MAC address should be random
+  frame_number:
+    type: integer
+    description: Number of concurrent frames to send
+additionalProperties: false

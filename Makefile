@@ -3,7 +3,7 @@ TARGET := wpa3_tester
 GRC_CONF := ./debug/grc/wpa3_tester.grc
 SOURCE_DIR := wpa3_test
 
-all: run
+all: compile
 
 .PHONY: all compile run clean_build
 

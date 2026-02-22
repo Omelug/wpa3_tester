@@ -27,3 +27,4 @@ Test suites:
 libraries:
 change library for graphs, matplot++ has no rotation of text
 
+TODO attack uspočádat podle attack_config

@@ -119,7 +119,7 @@ namespace wpa3_tester{
             const auto& path = entry.path();
             string filename = path.filename().string();
             if (filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
-
+            cerr << "L"<< filename << "L"<<endl;
             try {
                 YAML::Node config = YAML::LoadFile(path.string());
                 nlohmann::json config_json = yaml_to_json(config);

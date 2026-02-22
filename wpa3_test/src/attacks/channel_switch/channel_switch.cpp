@@ -8,7 +8,6 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
-#include "ex_program/hostapd/hostapd_helper.h"
 #include "ex_program/ip/ip.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
@@ -102,14 +101,18 @@ namespace wpa3_tester{
     }
 
     void run_chs_attack(RunStatus& rs){
+        const auto& actors = rs.config.at("actors");
+        const auto& att_cfg = rs.config.at("attack_config");
+        const auto& ap_setup = actors.at("access_point").at("setup");
+
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
-        const string essid = rs.config.at("actors").at("access_point").at("setup").at("program_config").at("ssid");
-        const int old_channel = rs.config.at("actors").at("access_point").at("setup").at("channel");
-        const int new_channel = rs.config.at("attack_config").at("new_channel");
-        const int ms_interval = rs.config.at("attack_config").at("ms_interval");
-        const int attack_time = rs.config.at("attack_config").at("attack_time");
+        const string essid     = ap_setup.at("program_config").at("ssid");
+        const int old_channel  = ap_setup.at("channel");
+        const int new_channel  = att_cfg.at("new_channel");
+        const int ms_interval  = att_cfg.at("ms_interval");
+        const int attack_time  = att_cfg.at("attack_time");
 
         speed_observation_start(rs);
         this_thread::sleep_for(seconds(10));

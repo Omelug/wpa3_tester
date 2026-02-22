@@ -1,6 +1,6 @@
 ### Attack:
 Attack is configured by config in folder [attack_config](../../wpa3_test/attack_config) \
-Attacker file format is defined in [test_validator.yaml](../../wpa3_test/attack_config/validator/test_validator.yaml) with json schema. 
+Attacker file format is defined in [test_validator.yaml](../../wpa3_test/attack_config/validator/test_validator.schema.yaml) with json schema. 
 specific json schema validator for attack_config can be set in attack_config/validator 
 
 Config: \

@@ -1,7 +1,11 @@
 #include <sys/wait.h>
 #include <vector>
+#include <fstream>
 
 #include "system/iface.h"
+
+#include <random>
+
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 
@@ -85,5 +89,37 @@ namespace wpa3_tester{
     bool iface::is_physical_interface(const std::string& iface_name) {
         const filesystem::path p = filesystem::path("/sys/class/net") / iface_name / "device";
         return filesystem::exists(p);
+    }
+
+    string iface::get_mac_address(const std::string& iface_name) {
+        const filesystem::path mac_path = filesystem::path("/sys/class/net") / iface_name / "address";
+
+        if (!filesystem::exists(mac_path)) {
+            throw runtime_error("Interface " + iface_name + " not found or has no MAC address");
+        }
+
+        ifstream mac_file(mac_path);
+        if (!mac_file.is_open()) {
+            throw runtime_error("Failed to read MAC address for interface " + iface_name);
+        }
+
+        string mac_addr;
+        getline(mac_file, mac_addr);
+
+        mac_addr.erase(0, mac_addr.find_first_not_of(" \t\r\n"));
+        mac_addr.erase(mac_addr.find_last_not_of(" \t\r\n") + 1);
+
+        return mac_addr;
+    }
+
+    string iface::rand_mac() {
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(0, 255);
+
+        char mac[18];
+        snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                 dis(gen), dis(gen), dis(gen), dis(gen), dis(gen), dis(gen));
+        return string(mac);
     }
 }

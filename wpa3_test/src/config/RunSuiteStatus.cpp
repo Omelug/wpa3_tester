@@ -41,7 +41,7 @@ namespace wpa3_tester{
             RunStatus::validate_recursive(config_json, path(config_path).parent_path());
 
             //global validation
-            const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.yaml";
+            const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_suite_validator.schema.yaml";
             nlohmann::json_schema::json_validator global_validator;
             global_validator.set_root_schema(yaml_to_json(
                 YAML::LoadFile(global_schema_path.string())

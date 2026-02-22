@@ -4,7 +4,7 @@ cmake_policy(SET CMP0167 NEW)
 set(CMAKE_BUILD_TYPE Debug)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
 
-# optimalization for coompiling/ linking
+# optimization for compiling/ linking
 execute_process(COMMAND lld --version RESULT_VARIABLE LLD_FOUND OUTPUT_QUIET ERROR_QUIET)
 if(LLD_FOUND EQUAL 0)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")

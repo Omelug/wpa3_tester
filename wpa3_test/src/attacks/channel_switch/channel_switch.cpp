@@ -17,7 +17,6 @@ namespace wpa3_tester{
     using namespace filesystem;
     using namespace Tins;
     using namespace chrono;
-    using LogTimePoint = wpa3_tester::LogTimePoint;
 
     void send_CSA_beacon(const HWAddress<6> &ap_mac,
                          const NetworkInterface &iface,
@@ -54,13 +53,13 @@ namespace wpa3_tester{
         const int ms_interval,const int attack_time)->void{
 
         const NetworkInterface iface(iface_name);
-        const auto start_time = chrono::steady_clock::now();
-        const auto end_time = start_time + chrono::seconds(attack_time);
+        const auto start_time = steady_clock::now();
+        const auto end_time = start_time + seconds(attack_time);
 
-        while (chrono::steady_clock::now() < end_time) {
+        while (steady_clock::now() < end_time) {
             log(LogLevel::DEBUG, "sending CSA");
             send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
-            this_thread::sleep_for(chrono::milliseconds(ms_interval));
+            this_thread::sleep_for(milliseconds(ms_interval));
         }
 
         cout << "check_vulnerable called with:\n"
@@ -101,10 +100,6 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "client is connected");
     }
 
-    void speed_observation_stop(RunStatus& rs){
-        rs.process_manager.stop("mz_gen");
-    }
-
     void run_chs_attack(RunStatus& rs){
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
@@ -118,7 +113,7 @@ namespace wpa3_tester{
         speed_observation_start(rs);
         this_thread::sleep_for(chrono::seconds(10));
         log(LogLevel::INFO, "Attack START");
-        check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);//speed_observation_stop(rs);
+        check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
         log(LogLevel::INFO, "Attack END");
         this_thread::sleep_for(chrono::seconds(30));
     }
@@ -167,9 +162,15 @@ namespace wpa3_tester{
     void stats_chs_attack(const RunStatus &rs){
         log(LogLevel::INFO , "CSA attack stats");
         const vector<LogTimePoint> switch_events = get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH");
+        const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+        const vector<LogTimePoint> eapol_hs_events = get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED");
 
         vector<observer::graph_lines> events;
-        if (!switch_events.empty()) {events.push_back({switch_events,"SWITCH","blue"});}
+        if (!switch_events.empty()){
+            events.push_back({switch_events,"SWITCH","blue"});
+            events.push_back({disconn_events,"DISCONN","red"});
+            //events.push_back({eapol_hs_events,"EAP4w","green"});
+        }
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);

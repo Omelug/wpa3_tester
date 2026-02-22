@@ -25,5 +25,4 @@ namespace wpa3_tester{
 
     //help observer functions
     void speed_observation_start(RunStatus& rs);
-    void speed_observation_stop(RunStatus& rs);
 }

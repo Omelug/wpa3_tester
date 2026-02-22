@@ -33,8 +33,13 @@ namespace wpa3_tester{
     };
 
     using config_error          = typed_error<LogLevel::CRITICAL>;
+    using compile_error         = typed_error<LogLevel::CRITICAL>;
+    using install_error         = typed_error<LogLevel::CRITICAL>;
+
+    using req_error             = typed_error<LogLevel::CRITICAL>;
+
     using setup_error           = typed_error<LogLevel::CRITICAL>;
+
     using not_implemented_error = typed_error<LogLevel::CRITICAL>;
-    using headers_error         = typed_error<LogLevel::CRITICAL>;
-    using req_error             = typed_error<LogLevel::ERROR>;
+
 }

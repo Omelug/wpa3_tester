@@ -1,13 +1,15 @@
-#include "ex_program/hostapd/hostpad.h"
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include "config/global_paths.h"
+#include "ex_program/hostapd/hostpad.h"
 #include "logger/log.h"
 #include "observer/observers.h"
 
 namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
+
     string hostapd_config(const string& run_folder, const nlohmann::json& ap_setup) {
 
         path folder(run_folder);
@@ -28,6 +30,7 @@ namespace wpa3_tester{
         }
         // write config
         for (auto it = ap_setup.begin(); it != ap_setup.end(); ++it) {
+            if(it.key() == "version") continue;
             out << it.key() << "=";
             if (it.value().is_string()) {
                 out << it.value().get<string>();
@@ -41,6 +44,7 @@ namespace wpa3_tester{
         log(LogLevel::INFO, ("hostapd_config: written " + cfg_path.string()).c_str());
         return cfg_path.string();
     }
+
     string wpa_supplicant_config(const string& run_folder, const nlohmann::json& client_setup) {
         namespace fs = filesystem;
 
@@ -80,16 +84,19 @@ namespace wpa3_tester{
         log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
         return cfg_path.string();
     }
+
+
     void run_hostapd(RunStatus& run_status, const string &actor_name){
+        nlohmann::json program_config = run_status.config.at("actors").at(actor_name).at("setup").at("program_config");
         const string hostapd_config_path = hostapd_config(
             run_status.run_folder,
-            run_status.config.at("actors").at(actor_name).at("setup").at("program_config"));
+            program_config);
 
         vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {
-            "hostapd",
+            get_hostapd(program_config["version"]),
             "-i", run_status.get_actor(actor_name)["iface"],
             hostapd_config_path,
         });

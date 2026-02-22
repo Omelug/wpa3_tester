@@ -1,22 +1,11 @@
-#include <yaml-cpp/node/node.h>
-#include <yaml-cpp/node/parse.h>
+#include "config/global_paths.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::hostapd{
     using namespace std;
     using namespace filesystem;
-
-    path get_build_folder() {
-        /*path globalConfig = path(PROJECT_ROOT_DIR) /"attack_config"/"global_config.yaml";
-        YAML::Node config = YAML::LoadFile(globalConfig.string());
-        if (config["hostapd_build_folder"]) {
-            return config["hostapd_build_folder"].as<string>();
-        }
-        //TODO invalid path ?
-        throw std::runtime_error("hostapd_build_folder not found in global_config.yaml");*/
-        throw not_implemented_error("neimplementováno");
-    }
 
     string get_wpa_supplicant(nlohmann::json setup){
         /*if (!setup.contains("version") || setup["version"].is_null()) {
@@ -38,57 +27,61 @@ namespace wpa3_tester::hostapd{
         throw not_implemented_error("neimplementováno");
     }
 
-    string get_hostapd(nlohmann::json setup){
-        //TODO
-        /*if (!setup.contains("version") || setup["version"].is_null()) {
-            log(LogLevel::WARNING, "No hostapd version specified, using system default.");
-            return "hostapd";
-        }
-        string version = setup["version"].get<string>();
-        string bin_name = "hostapd_" + version;
-        replace(bin_name.begin(), bin_name.end(), '.', '_');
-        fs::path bin_path = base_path / bin_name;
+    void ensure_repo_cloned(const path& hostapd_folder) {
+        const path repo_path = hostapd_folder / "hostapd";
+        if (exists(repo_path)) {return;}
 
-        // 2. Pokud binárka neexistuje, zkusíme ji sestavit
-        if (!exists(bin_path)) {
-            log(LogLevel::INFO, "Hostapd version " + version + " not found. Starting build...");
-            try {
-                HostapdManager::build_version(version, base_path);
-            } catch (const exception& e) {
-                log(LogLevel::ERROR, "Build failed: " + string(e.what()));
-                log(LogLevel::WARNING, "Falling back to system default hostapd.");
-                return "hostapd";
+        log(LogLevel::INFO, ("Cloning hostapd repository into " + repo_path.string() + "...").c_str());
+
+        error_code ec;
+        create_directories(hostapd_folder, ec);
+        if (ec) {throw runtime_error("Failed to create directory: " + hostapd_folder.string());}
+
+        const string clone_cmd = "git clone https://w1.fi/hostap.git hostapd";
+        hw_capabilities::run_in(clone_cmd, hostapd_folder);
+        log(LogLevel::INFO, "Repository cloned successfully");
+    }
+
+    string find_matching_tag(const path& repo_dir, const string& version) {
+        string version_normalized = version;
+        ranges::replace(version_normalized, '.', '_');
+        const string target_tag = "hostapd_" + version_normalized;
+
+        // Parse tags into vector
+        const string tags_output = hw_capabilities::run_cmd_output({
+            "git",
+            "-C",
+            repo_dir.string(),
+            "tag"
+        });
+
+        vector<string> tags;
+        stringstream ss(tags_output);
+        string tag;
+        while (getline(ss, tag)) {
+            tag.erase(0, tag.find_first_not_of(" \t\r\n"));
+            tag.erase(tag.find_last_not_of(" \t\r\n") + 1);
+            if (!tag.empty()) {tags.push_back(tag);}
+        }
+
+        for (const auto& t : tags) {
+            if (t == target_tag) {
+                log(LogLevel::INFO, ("Found tag match: " + t).c_str());
+                return t;
             }
         }
 
-        return bin_path.string();*/
-        throw not_implemented_error("neimplementováno");
+        throw runtime_error("No hostapd tag found for version: " + version);
     }
 
-    void run(const string& cmd, const path& cwd = current_path()) {
-        const string full_cmd = "cd " + cwd.string() + " && " + cmd;
-        if (system(full_cmd.c_str()) != 0) {
-            throw runtime_error("Command failed: " + cmd);
-        }
-    }
-
-    void build_version(const string& version, const path& build_folder) {
+    void build_version(const string& version, const path& build_folder, path target) {
         path repo_path = build_folder / "hostapd";
         path hostapd_dir = repo_path / "hostapd";
         string tag = "hostapd_" + version;
         ranges::replace(tag, '.', '_');
 
-        if (!exists(repo_path)) {
-            run("git clone https://w1.fi/hostap.git hostapd", build_folder);
-        }
-
-        run("git fetch --tags", repo_path);
-        run("git checkout " + tag, repo_path);
-
         path config_path = hostapd_dir / ".config";
-        if (!exists(config_path)) {
-            copy(hostapd_dir / "defconfig", config_path);
-        }
+        if (!exists(config_path)) {copy(hostapd_dir / "defconfig", config_path);}
 
         ofstream conf(config_path, ios::app);
         conf << "\nCONFIG_IEEE80211W=y"
@@ -97,12 +90,42 @@ namespace wpa3_tester::hostapd{
                 "\nCONFIG_OCV=y\n";
         conf.close();
 
-        cout << "Compiling hostapd " << version << "..." << endl;
-        run("make clean", hostapd_dir);
-        run("make -j$(nproc)", hostapd_dir);
+        log(LogLevel::INFO, "Compiling hostapd %s ... ", version.c_str());
+        hw_capabilities::run_in("make clean", hostapd_dir);
+        hw_capabilities::run_in("make -j$(nproc)", hostapd_dir);
 
-        path target = build_folder / ("hostapd_" + version);
         copy_file(hostapd_dir / "hostapd", target, copy_options::overwrite_existing);
         permissions(target, perms::owner_all | perms::group_exec);
     }
+
+    string get_hostapd(const string &version) {
+        if (version.empty()) {
+            log(LogLevel::WARNING, "hostapd version not defined, using system default");
+            return "hostapd";
+        }
+
+        const string hostapd_folder_str = get_global_paths().at("paths").at("hostapd").at("hostapd_build_folder");
+        const path hostapd_folder(hostapd_folder_str);
+
+        string bin_name = "hostapd_" + version;
+        ranges::replace(bin_name, '.', '_');
+        const path hostapd_bin = hostapd_folder / bin_name;
+
+        // return if exists
+        if (exists(hostapd_bin)) {
+            log(LogLevel::INFO, ("Using existing hostapd binary: " + hostapd_bin.string()).c_str());
+            return hostapd_bin.string();
+        }
+
+        // preparation for build
+        ensure_repo_cloned(hostapd_folder);
+        const path repo_path = hostapd_folder / "hostapd";
+        const string tag = find_matching_tag(repo_path, version);
+        hw_capabilities::run_in("git fetch --tags", repo_path);
+        hw_capabilities::run_in("git checkout " + tag, repo_path);
+
+        build_version(version, hostapd_folder, hostapd_bin);
+        return hostapd_bin;
+    }
+
 }

@@ -137,6 +137,14 @@ namespace wpa3_tester{
         throw req_error("Not found valid requirements");
     }
 
+    // RUN functions // TODO refactor
+
+    void hw_capabilities::run_in(const string& cmd, const filesystem::path& cwd = filesystem::current_path()) {
+        const string full_cmd = "cd " + cwd.string() + " && " + cmd;
+        if (system(full_cmd.c_str()) != 0) {
+            throw runtime_error("Command failed: " + cmd);
+        }
+    }
 
     int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<string> &netns) {
         if (argv.empty()) return -1;

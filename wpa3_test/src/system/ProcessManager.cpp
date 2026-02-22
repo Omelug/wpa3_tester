@@ -132,7 +132,6 @@ namespace wpa3_tester{
         process_logs.clear();
     }
 
-
     void ProcessManager::run(const string& process_name,
                              const vector<string> &cmd,
                              const filesystem::path &working_dir) {

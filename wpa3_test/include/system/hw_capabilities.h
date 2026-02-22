@@ -75,6 +75,7 @@ namespace wpa3_tester{
 
     public:
         static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);
+        static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
         static std::string run_cmd_output(const std::vector<std::string> &argv);
 

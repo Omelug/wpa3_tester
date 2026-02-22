@@ -17,6 +17,7 @@ tests:
             program_config:
               version: var_hostapd
 
+
 #deleted_old: true
 rewrite: "errors"
 compile_external: true

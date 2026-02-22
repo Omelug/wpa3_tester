@@ -14,8 +14,8 @@ f: check WPA2/SAE support correctly
 +: README.md -> rozcestník pro /doc
 +: VIF rozhraní (nejde současně odesílat a příjimat)
 ?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
-
-
++: add possibility to add different ieee file to hostapd
+?: test hostapd debugging logs, if are same
 
 Test cases:
 f: all process have to killed before test

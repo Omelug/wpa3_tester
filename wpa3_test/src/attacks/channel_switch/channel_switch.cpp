@@ -8,6 +8,7 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "ex_program/ip/ip.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
@@ -85,13 +86,13 @@ namespace wpa3_tester{
         }
 
         // -------- hostapd AP ------------
-        run_hostapd(rs, "access_point");
+        hostapd::run_hostapd(rs, "access_point");
         rs.process_manager.wait_for("access_point", "AP-ENABLED");
         log(LogLevel::INFO, "access_point is running");
         set_ip(rs, "access_point");
 
         // -------- wpa_supplicant STA ------------
-        run_wpa_supplicant(rs, "client");
+        hostapd::run_wpa_supplicant(rs, "client");
         rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant");
         set_ip(rs, "client");
 
@@ -111,11 +112,11 @@ namespace wpa3_tester{
         const int attack_time = rs.config.at("attack_config").at("attack_time");
 
         speed_observation_start(rs);
-        this_thread::sleep_for(chrono::seconds(10));
+        this_thread::sleep_for(seconds(10));
         log(LogLevel::INFO, "Attack START");
         check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
         log(LogLevel::INFO, "Attack END");
-        this_thread::sleep_for(chrono::seconds(30));
+        this_thread::sleep_for(seconds(30));
     }
 
     // ---------- STATS ----------------

@@ -2,11 +2,12 @@
 #include <fstream>
 #include <stdexcept>
 #include "config/global_paths.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "ex_program/hostapd/hostpad.h"
 #include "logger/log.h"
 #include "observer/observers.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester::hostapd{
     using namespace std;
     using namespace filesystem;
 

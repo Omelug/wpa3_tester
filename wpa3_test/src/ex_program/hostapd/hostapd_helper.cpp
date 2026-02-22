@@ -7,8 +7,8 @@ namespace wpa3_tester::hostapd{
     using namespace std;
     using namespace filesystem;
 
-    string get_wpa_supplicant(nlohmann::json setup){
-        /*if (!setup.contains("version") || setup["version"].is_null()) {
+    /*string get_wpa_supplicant(nlohmann::json setup){
+        if (!setup.contains("version") || setup["version"].is_null()) {
             log(LogLevel::WARNING, "No wpa_supplicant version specified, using system default.");
             return "wpa_supplicant";
         }
@@ -23,9 +23,9 @@ namespace wpa3_tester::hostapd{
             build_version(version, get_build_folder());
         }
 
-        return bin_path.string();*/
+        return bin_path.string();
         throw not_implemented_error("neimplementováno");
-    }
+    }*/
 
     void ensure_repo_cloned(const path& hostapd_folder) {
         const path repo_path = hostapd_folder / "hostapd";
@@ -45,7 +45,7 @@ namespace wpa3_tester::hostapd{
     string find_matching_tag(const path& repo_dir, const string& version) {
         string version_normalized = version;
         ranges::replace(version_normalized, '.', '_');
-        const string target_tag = "hostapd_" + version_normalized;
+        const string target_tag = "hostap_" + version_normalized;
 
         // Parse tags into vector
         const string tags_output = hw_capabilities::run_cmd_output({
@@ -84,10 +84,20 @@ namespace wpa3_tester::hostapd{
         if (!exists(config_path)) {copy(hostapd_dir / "defconfig", config_path);}
 
         ofstream conf(config_path, ios::app);
-        conf << "\nCONFIG_IEEE80211W=y"
-                "\nCONFIG_SAE=y"
-                "\nCONFIG_WNM=y"
-                "\nCONFIG_OCV=y\n";
+        conf << "\n# --- Wi-Fi Framework Testing Extensions ---"
+            "\nCONFIG_IEEE80211W=y"         //PMF
+            "\nCONFIG_SAE=y"
+            "\nCONFIG_WNM=y"                // Wireless Network Management (needed in BSS Transition)
+            "\nCONFIG_OCV=y"                // Operating Channel Validation
+            "\nCONFIG_IEEE80211N=y"         // 802.11n
+            "\nCONFIG_IEEE80211AC=y"        // 802.11ac (VHT)
+            "\nCONFIG_IEEE80211AX=y"        // 802.11ax (HE / Wi-Fi 6)
+            "\nCONFIG_IEEE80211R=y"         // Fast BSS Transition (FT)
+            "\nCONFIG_INTERWORKING=y"       // 802.11u / Hotspot 2.0
+            "\nCONFIG_TESTING_OPTIONS=y"    // extra cli commands, injection
+            "\nCONFIG_CTRL_IFACE=y"         // hostapd_cli
+            "\nCONFIG_DEBUG_FILE=y"         // debug logging o file
+            "\n";
         conf.close();
 
         log(LogLevel::INFO, "Compiling hostapd %s ... ", version.c_str());
@@ -125,7 +135,7 @@ namespace wpa3_tester::hostapd{
         hw_capabilities::run_in("git checkout " + tag, repo_path);
 
         build_version(version, hostapd_folder, hostapd_bin);
+        copy(repo_path / "hostapd" / "hostapd", hostapd_bin, copy_options::overwrite_existing);
         return hostapd_bin;
     }
-
 }

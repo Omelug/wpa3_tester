@@ -13,7 +13,7 @@ namespace wpa3_tester::observer{
     namespace mp = matplot;
 
     constexpr string program_name = "tshark";
-    void start_thark(RunStatus &run_status, const string &node_name) {
+    void start_thark(RunStatus &run_status, const string &node_name, const string& filter) {
         vector<string> command = {"sudo"};
         add_nets(run_status,command, node_name);
 
@@ -21,7 +21,7 @@ namespace wpa3_tester::observer{
         command.insert(command.end(), {
             program_name, "-i", run_status.get_actor(node_name)["iface"],
             "-w", pcap_path,
-            "-f", "udp port 5201", //TODO hardcoded
+            "-f", filter,
         });
 
         run_status.process_manager.run(node_name + "_cap", command, get_observer_folder(run_status, program_name));
@@ -96,7 +96,7 @@ namespace wpa3_tester::observer{
                 }
             }
         }
-    };
+    }
 
     string plot_traffic_graph(const RunStatus& rs,
                               const string& actor_name,
@@ -160,14 +160,14 @@ namespace wpa3_tester::observer{
                 } catch (...) {}
             }
         }
-    };
+    }
 
 
     string tshark_graph(const RunStatus &rs,
                         const string &actor_name,
                         const std::vector<graph_lines>& events) {
         path graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
-        const path csv_path = extract_pcap_to_csv(rs, "client");
+        const path csv_path = extract_pcap_to_csv(rs, actor_name);
 
         vector<LogTimePoint> times;
         vector<double> sizes;

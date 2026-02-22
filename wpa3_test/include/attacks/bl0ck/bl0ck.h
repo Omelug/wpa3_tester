@@ -1,11 +1,9 @@
 #pragma once
 #include <string>
 #include <tins/tins.h>
+#include "config/RunStatus.h"
 
-namespace wpa3_tester{
-    // Forward declarations
-    class RunStatus;
-
+namespace wpa3_tester::bl0ck_attack{
     // Send a burst of bl0ck frames (BAR or BA)
     Tins::RadioTap get_bl0ck_frame(
         const Tins::HWAddress<6> &ap_hw,
@@ -24,4 +22,5 @@ namespace wpa3_tester{
     //void setup_bl0ck_attack(RunStatus& rs);
     void run_bl0ck_attack(RunStatus& rs);
     void stats_bl0ck_attack(const RunStatus& rs);
+    void speed_observation_start(RunStatus& rs);
 }

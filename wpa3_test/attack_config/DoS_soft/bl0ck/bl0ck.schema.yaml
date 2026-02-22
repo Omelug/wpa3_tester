@@ -1,9 +1,10 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: Channel Switch Attack Config
+title: Bl0ck Attack Config
 type: object
 required:
   - attack_time_sec
-  - type
+  - attack_variant
+  - frame_number
 properties:
   validator:
     type: string
@@ -12,9 +13,9 @@ properties:
     type: integer
     description: time of attack
     minimum: 1
-  type:
+  attack_variant:
     type: string
-    enum: [ "BAR", "BA", "BARS" ]
+    enum: ["BAR", "BA", "BARS"]
     description: typeof bl0ck attack
   random:
     type: boolean
@@ -23,4 +24,6 @@ properties:
   frame_number:
     type: integer
     description: Number of concurrent frames to send
+    minimum: 1
+    maximum: 3000
 additionalProperties: false

@@ -4,18 +4,19 @@
 
 namespace wpa3_tester::attack_module_maps{
     using namespace std;
+
     map<string, function<void(RunStatus&)>> setup_map = {
-        {"channel_switch", setup_chs_attack},
-        {"bl0ck", setup_chs_attack},
+        {"channel_switch", CSA_attack::setup_chs_attack},
+        {"bl0ck", CSA_attack::setup_chs_attack}
     };
 
     map<string, function<void(RunStatus&)>> run_map = {
-        {"channel_switch", run_chs_attack},
-        {"bl0ck", run_bl0ck_attack}
+        {"channel_switch", CSA_attack::run_chs_attack},
+        {"bl0ck", bl0ck_attack::run_bl0ck_attack}
     };
 
-    map<string, function<void(RunStatus&)>> stats_map = {
-        {"channel_switch", stats_chs_attack},
-        {"bl0ck", stats_bl0ck_attack},
+    map<string, function<void(const RunStatus&)>> stats_map = {
+        {"channel_switch", CSA_attack::stats_chs_attack},
+        {"bl0ck", bl0ck_attack::stats_bl0ck_attack}
     };
 }

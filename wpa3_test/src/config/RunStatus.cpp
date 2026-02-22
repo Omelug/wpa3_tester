@@ -118,7 +118,7 @@ namespace wpa3_tester{
         for (const auto& entry : recursive_directory_iterator(attack_config_dir)) {
             const auto& path = entry.path();
             string filename = path.filename().string();
-            if (filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
+            if (filename == "global_paths.yaml" || filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
             cerr << "L"<< filename << "L"<<endl;
             try {
                 YAML::Node config = YAML::LoadFile(path.string());
@@ -129,11 +129,11 @@ namespace wpa3_tester{
                     && ct == TEST_SUITE){
                     t_map[name] = path.string();
                 }else if(ct == TEST){
-                    t_map[name] = path.string();
                     if (t_map.contains(name)) {
                         throw config_error("Configs " + t_map[name] +
                             " and " + path.string() + " have same name!");
                     }
+                    t_map[name] = path.string();
                 }
             } catch (const YAML::Exception& e) {throw config_error("Invalid yaml {}", e.what());}
         }

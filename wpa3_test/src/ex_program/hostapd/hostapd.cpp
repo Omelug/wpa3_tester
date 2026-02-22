@@ -93,11 +93,16 @@ namespace wpa3_tester::hostapd{
             run_status.run_folder,
             program_config);
 
+        string version = "";
+        if (program_config.contains("version") && !program_config["version"].is_null()) {
+            version = program_config["version"].get<string>();
+        }
+
         vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {
-            get_hostapd(program_config["version"]),
+            get_hostapd(version),
             "-i", run_status.get_actor(actor_name)["iface"],
             hostapd_config_path,
         });

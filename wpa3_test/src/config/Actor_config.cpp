@@ -54,6 +54,14 @@ namespace wpa3_tester{
         return *(it->second);
     }
 
+    std::optional<std::string> Actor_config::get_optional(const std::string& key) const {
+        const auto it = str_con.find(key);
+        if (it == str_con.end()) {
+            return std::nullopt;
+        }
+        return it->second;
+    }
+
     bool Actor_config::get_bool(const std::string& key) const {
         const auto it = bool_conditions.find(key);
         if (it == bool_conditions.end()) {

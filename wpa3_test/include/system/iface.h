@@ -18,7 +18,7 @@ namespace wpa3_tester{
 
         int run(const std::vector<std::string> &argv) const;
         static bool is_physical_interface(const std::string& iface_name);
-        static std::string get_mac_address(const std::string& iface_name);
+        static std::string get_mac_address(const std::string& iface_name, const std::optional<std::string>& netns = std::nullopt);
         static std::string rand_mac();
     };
 }

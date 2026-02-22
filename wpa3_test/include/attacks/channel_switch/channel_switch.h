@@ -2,7 +2,7 @@
 #include <tins/tins.h>
 #include "config/RunStatus.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester::CSA_attack{
     void send_CSA_beacon(const Tins::HWAddress<6> &ap_mac,
                          const Tins::NetworkInterface &iface,
                          const std::string &ssid,

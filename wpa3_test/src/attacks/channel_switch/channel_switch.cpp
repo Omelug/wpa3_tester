@@ -12,7 +12,7 @@
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester::CSA_attack{
     using namespace std;
     using namespace filesystem;
     using namespace Tins;
@@ -72,8 +72,8 @@ namespace wpa3_tester{
 
     void speed_observation_start(RunStatus& rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_thark(rs, "client");
-        observer::start_thark(rs, "access_point");
+        observer::start_thark(rs, "client", "udp port 5201");
+        observer::start_thark(rs, "access_point", "udp port 5201");
     }
 
     // ----------------- MODULE functions ------------------

@@ -91,20 +91,59 @@ namespace wpa3_tester{
         return filesystem::exists(p);
     }
 
-    string iface::get_mac_address(const std::string& iface_name) {
-        const filesystem::path mac_path = filesystem::path("/sys/class/net") / iface_name / "address";
+    string iface::get_mac_address(const std::string& iface_name, const std::optional<std::string>& netns) {
+        // If no netns specified, read directly from sysfs
+        if (!netns.has_value()) {
+            const filesystem::path mac_path = filesystem::path("/sys/class/net") / iface_name / "address";
 
-        if (!filesystem::exists(mac_path)) {
-            throw runtime_error("Interface " + iface_name + " not found or has no MAC address");
+            if (!filesystem::exists(mac_path)) {
+                throw runtime_error("Interface " + iface_name + " not found or has no MAC address");
+            }
+
+            ifstream mac_file(mac_path);
+            if (!mac_file.is_open()) {
+                throw runtime_error("Failed to read MAC address for interface " + iface_name);
+            }
+
+            string mac_addr;
+            getline(mac_file, mac_addr);
+
+            mac_addr.erase(0, mac_addr.find_first_not_of(" \t\r\n"));
+            mac_addr.erase(mac_addr.find_last_not_of(" \t\r\n") + 1);
+
+            return mac_addr;
         }
 
-        ifstream mac_file(mac_path);
-        if (!mac_file.is_open()) {
-            throw runtime_error("Failed to read MAC address for interface " + iface_name);
+        // If netns specified, use ip command to get MAC address
+        // Build command: ip netns exec <netns> cat /sys/class/net/<iface>/address
+        vector<string> cmd = {
+            "ip", "netns", "exec", netns.value(),
+            "cat", "/sys/class/net/" + iface_name + "/address"
+        };
+
+        // Execute command and capture output
+        string full_cmd;
+        for (size_t i = 0; i < cmd.size(); ++i) {
+            if (i > 0) full_cmd += " ";
+            full_cmd += cmd[i];
+        }
+        full_cmd += " 2>&1";
+
+        FILE* pipe = popen(full_cmd.c_str(), "r");
+        if (!pipe) {
+            throw runtime_error("Failed to execute command to get MAC address for " + iface_name + " in netns " + netns.value());
         }
 
+        char buffer[128];
         string mac_addr;
-        getline(mac_file, mac_addr);
+        if (fgets(buffer, sizeof(buffer), pipe)) {
+            mac_addr = string(buffer);
+        }
+
+        int status = pclose(pipe);
+        if (status != 0 || mac_addr.empty()) {
+            throw runtime_error("Interface " + iface_name + " not found in netns " + netns.value() + " or has no MAC address");
+        }
 
         mac_addr.erase(0, mac_addr.find_first_not_of(" \t\r\n"));
         mac_addr.erase(mac_addr.find_last_not_of(" \t\r\n") + 1);

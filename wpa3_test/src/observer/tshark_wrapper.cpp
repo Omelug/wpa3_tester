@@ -14,7 +14,7 @@ namespace wpa3_tester::observer{
 
     constexpr string program_name = "tshark";
     void start_thark(RunStatus &run_status, const string &node_name, const string& filter) {
-        vector<string> command = {"sudo"};
+        vector<string> command = {"sudo", "-A"};
         add_nets(run_status,command, node_name);
 
         string pcap_path = get_observer_folder(run_status, program_name) / (node_name + "_capture.pcap");

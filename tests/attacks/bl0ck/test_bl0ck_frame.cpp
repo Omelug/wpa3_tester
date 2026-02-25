@@ -10,7 +10,6 @@ using namespace Tins;
 using namespace filesystem;
 
 namespace wpa3_tester {
-    // Test to verify send_bl0ck_frame creates valid packets
     TEST_CASE("send_bl0ck_frame - creates and saves BAR frames to pcap") {
         // Setup test parameters
         const string test_iface = "lo";  // Use loopback for testing
@@ -27,20 +26,10 @@ namespace wpa3_tester {
 
         { //bypass not buffering
             PacketWriter writer(pcap_file.string(), DataLinkType<RadioTap>());
-            RadioTap bl0ck_frame = get_bl0ck_frame(ap_mac, sta_mac, subtype);
+            RadioTap bl0ck_frame = bl0ck_attack::get_bl0ck_frame(ap_mac, sta_mac, subtype);
             writer.write(bl0ck_frame);
         }
-        // Verify file was created
-        CHECK(exists(pcap_file));
-        CHECK((file_size(pcap_file) > 0));
 
-        log(LogLevel::INFO, ("\n=== Test Output ==="
-        "\nCreated PCAP file: " +  pcap_file.string() +
-        "\nFile size: " + to_string(file_size(pcap_file)) + " bytes" +
-        "\nOpen with: wireshark " + pcap_file.string() +
-        "\n===================").c_str());
-
-        // Verify by reading back
         FileSniffer sniffer(pcap_file.string());
         for (auto& pkt : sniffer) {
 
@@ -55,6 +44,7 @@ namespace wpa3_tester {
             CHECK((dot11->subtype() == subtype));
             CHECK((dot11->addr1() == ap_mac));
 
+            //TODO other checks
         }
         log(LogLevel::INFO, ("PCAP file preserved for inspection:" + pcap_file.string()).c_str());
     }

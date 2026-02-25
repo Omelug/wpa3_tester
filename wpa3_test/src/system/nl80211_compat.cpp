@@ -1,15 +1,11 @@
 #include <fstream>
 #include <string>
-#include <vector>
 #include <linux_headers_wifi-src/nl80211.h>
 #include <linux/nl80211.h>
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
-
-#include <iostream>
 #include <net/if.h>
-
 #include "system/hw_capabilities.h"
 #include "logger/error_log.h"
 
@@ -64,7 +60,7 @@ namespace wpa3_tester{
 
             constexpr uint32_t NL80211_FEATURE_SAE_MASK = (1 << 5);
             if (feature_flags & NL80211_FEATURE_SAE_MASK) {
-                caps->wpa3_sae = true; //Statition WPA3
+                caps->wpa3_sae = true; //STA WPA3
             }
         }
         if (attrs[NL80211_ATTR_EXT_FEATURES]) {

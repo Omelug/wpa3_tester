@@ -98,7 +98,7 @@ namespace wpa3_tester::hostapd{
             version = program_config["version"].get<string>();
         }
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {"sudo", "-A"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {
@@ -116,7 +116,7 @@ namespace wpa3_tester::hostapd{
             run_status.config.at("actors").at(actor_name).at("setup").at("program_config")
             );
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {"sudo", "-A"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {

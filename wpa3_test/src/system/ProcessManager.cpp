@@ -2,17 +2,17 @@
 #include <memory>
 #include <system_error>
 #include <map>
-#include <iostream>
 #include <ranges>
 #include <regex>
 #include <chrono>
-#include <iomanip>
 #include <reproc++/drain.hpp>
 #include "logger/error_log.h"
 #include <thread>
 
 namespace wpa3_tester{
     using namespace std;
+    using namespace filesystem;
+
 
     // tshark like -t ad timestamp
     string current_timestamp() {
@@ -79,13 +79,12 @@ namespace wpa3_tester{
         return {};
     }
 
-    void ProcessManager::recreate_log_folder(const std::filesystem::path &log_base_dir){
-        namespace fs = filesystem;
+    void ProcessManager::recreate_log_folder(const path &log_base_dir){
         error_code ec;
 
         // if log folder exists -> clear
-        if (fs::exists(log_base_dir, ec)) {
-            fs::remove_all(log_base_dir, ec);
+        if (exists(log_base_dir, ec)) {
+            remove_all(log_base_dir, ec);
             if (ec) {
                 log(LogLevel::ERROR,
                     "Failed to clean logger directory: %s: %s",
@@ -96,7 +95,7 @@ namespace wpa3_tester{
         }
 
         // create log folder
-        fs::create_directories(log_base_dir, ec);
+        create_directories(log_base_dir, ec);
         if (ec) {
             log(LogLevel::ERROR,
                 "Failed to create logger directory: %s: %s",
@@ -108,13 +107,11 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::init_logging(const string &run_folder){
-        namespace fs = filesystem;
-
-        log_base_dir = fs::path(run_folder) / "logger";
+        log_base_dir = path(run_folder) / "logger";
         recreate_log_folder(log_base_dir);
 
         // create combated log
-        const fs::path combined_path = log_base_dir / "combined.log";
+        const path combined_path = log_base_dir / "combined.log";
         combined_log.close();
         combined_log.open(combined_path, ios::out | ios::trunc);
         if (!combined_log.is_open()) {
@@ -134,9 +131,7 @@ namespace wpa3_tester{
 
     void ProcessManager::run(const string& process_name,
                              const vector<string> &cmd,
-                             const filesystem::path &working_dir) {
-        namespace fs = filesystem;
-
+                             const path &working_dir) {
         auto proc = make_unique<reproc::process>();
         reproc::options options;
         options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
@@ -152,9 +147,9 @@ namespace wpa3_tester{
             throw runtime_error("Failed to start " + process_name + ": " + ec.message());
         }
 
-        fs::path log_dir = log_base_dir;
-        if (!working_dir_str.empty()) {log_dir = fs::path(working_dir_str);}
-        const fs::path log_path = log_dir / (process_name + ".log");
+        path log_dir = log_base_dir;
+        if (!working_dir_str.empty()) {log_dir = path(working_dir_str);}
+        const path log_path = log_dir / (process_name + ".log");
 
         auto &logs = process_logs[process_name];
         logs.log.close();
@@ -162,16 +157,11 @@ namespace wpa3_tester{
         logs.history.clear();
 
         if (!logs.log.is_open()) {
-            log(LogLevel::ERROR,
-                "Failed to open log for %s: %s",
-                process_name.c_str(), log_path.string().c_str());
+            log(LogLevel::ERROR, "Failed to open log for %s: %s", process_name.c_str(), log_path.string().c_str());
         }
 
         string cmd_line;
-        for (size_t i = 0; i < cmd.size(); ++i) {
-            if (i) cmd_line += ' ';
-            cmd_line += cmd[i];
-        }
+        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' ';cmd_line += cmd[i];}
         const string line   =  current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
 
         if (combined_log.is_open()) {write_log_line(combined_log, line);} // stays in global logger folder
@@ -180,16 +170,16 @@ namespace wpa3_tester{
         processes[process_name] = std::move(proc);
         start_drain_for(process_name);
     }
-    void ProcessManager::start_drain_for(const std::string &actor_name) {
+    void ProcessManager::start_drain_for(const string &actor_name) {
         const auto it = processes.find(actor_name);
         if (it == processes.end() || !it->second) return;
 
         auto proc = it->second.get();
 
-        std::thread([this, actor_name, proc]() {
+        thread([this, actor_name, proc]() {
             uint8_t buffer[4096];
 
-            std::pair<reproc::stream, std::string_view> streams[] = {
+            pair<reproc::stream, string_view> streams[] = {
                 {reproc::stream::out, "stdout"},
                 {reproc::stream::err, "stderr"}
             };
@@ -287,23 +277,29 @@ namespace wpa3_tester{
         logs.wait.active = false;
     }
 
-    void ProcessManager::stop(const std::string &actor_name){
-        using namespace std::chrono_literals;
+    void ProcessManager::stop(const string &actor_name){
+        using namespace chrono_literals;
 
         const auto it = processes.find(actor_name);
         if (it == processes.end() || !it->second) {
-            log(LogLevel::WARNING,"Cant stop actor {}, no in Process manager", actor_name.c_str());
+            log(LogLevel::WARNING,"Cannot stop actor %s, not in Process manager", actor_name.c_str());
             return;
         }
 
         reproc::process &proc = *it->second;
 
         reproc::stop_actions operations{};
-        //TODO add function for hard kill
-        // operations.first  = { reproc::stop::terminate, reproc::milliseconds(3000) };
+        // First try SIGTERM (graceful), then SIGKILL (forceful)
+        operations.first  = { reproc::stop::terminate, reproc::milliseconds(2000) };
         operations.second = { reproc::stop::kill,      reproc::milliseconds(1000) };
 
-        proc.stop(operations);
+        auto [exit_status, ec] = proc.stop(operations);
+        if (ec) {
+            log(LogLevel::WARNING, "Error stopping process %s: %s", actor_name.c_str(), ec.message().c_str());
+        } else {
+            log(LogLevel::DEBUG, "Process %s stopped with exit status %d", actor_name.c_str(), exit_status);
+        }
+
         processes.erase(it);
     }
 
@@ -315,15 +311,25 @@ namespace wpa3_tester{
         }
     }
 
-    void ProcessManager::stop_all(){
-        for(auto &proc: processes | views::values){
-            if(proc){
-                reproc::stop_actions operations{};
-                operations.first = {reproc::stop::terminate, reproc::milliseconds(1000)};
-                operations.second = {reproc::stop::kill, reproc::milliseconds(1000)};
-                proc->stop(operations);
+    void ProcessManager::stop_all() {
+        // Create a copy of process names to avoid iterator invalidation
+        vector<string> process_names;
+        process_names.reserve(processes.size());
+        for (const auto &name: processes | views::keys) {
+            process_names.push_back(name);
+        }
+
+        // Stop each process using the existing stop() method
+        for (const auto& name : process_names) {
+            try {
+                stop(name);
+            } catch (const exception& e) {
+                log(LogLevel::WARNING, "Error stopping process %s: %s", name.c_str(), e.what());
             }
         }
+
         processes.clear();
+        log(LogLevel::INFO, "All processes stopped");
     }
+
 }

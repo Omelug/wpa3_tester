@@ -6,7 +6,7 @@
 namespace wpa3_tester{
     using namespace std;
     void set_ip(RunStatus& run_status, const string &actor_name){
-        vector<string> command = {"sudo"};
+        vector<string> command = {"sudo", "-A"};
         observer::add_nets(run_status,command, actor_name);
         command.insert(command.end(), {
             "ip", "addr","add",

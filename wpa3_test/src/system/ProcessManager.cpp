@@ -5,153 +5,138 @@
 #include <ranges>
 #include <regex>
 #include <chrono>
-#include <reproc++/drain.hpp>
 #include "logger/error_log.h"
 #include <thread>
 
 namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
+    using namespace chrono;
 
-
-    // tshark like -t ad timestamp
-    string current_timestamp() {
-        using clock = chrono::system_clock;
-        const auto now = clock::now();
-        const time_t t = clock::to_time_t(now);
-        tm buf{};
-        localtime_r(&t, &buf);
-
-        // nanoseconds sub-second part
-        const auto ns = chrono::duration_cast<chrono::nanoseconds>(now.time_since_epoch()) % 1'000'000'000;
-
-        // timezone offset (+HHMM)
-        char tz[8];
-        strftime(tz, sizeof(tz), "%z", &buf);
-
-        char datetime[32];
-        strftime(datetime, sizeof(datetime), "%Y-%m-%dT%H:%M:%S", &buf);
-
-        char out[64];
-        snprintf(out, sizeof(out), "%s.%09lld%s", datetime, static_cast<long long>(ns.count()), tz);
-        return out;
-    }
-
-    void ProcessManager::write_log_line(ofstream &os, const string &line) {
-        os << line << endl;
-    }
-
-    static error_code handle_chunk(ProcessManager *pm,
-                                   const string &process_name,
-                                   const string &label,
-                                   const string &data)
+    void ProcessManager::handle_chunk(
+        const std::shared_ptr<ManagedProcess>& mp,
+        const std::string &process_name,
+        const std::string &label,
+        const std::string &data)
     {
-        const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+        const std::string prefix =
+            current_timestamp() + " [" + process_name + "] [" + label + "] ";
 
-        stringstream ss(data);
-        string line;
-        while (getline(ss, line)) {
+        std::stringstream ss(data);
+        std::string line;
+
+        while (std::getline(ss, line)) {
             if (line.empty()) continue;
-            const string full_line = prefix + line;
 
-            if (pm->combined_log.is_open()) {
-                ProcessManager::write_log_line(pm->combined_log, full_line);
+            const std::string full_line = prefix + line;
+            std::lock_guard lock(mtx_);
+            if (combined_log.is_open()) write_log_line(combined_log, full_line);
+            auto &logs = mp->logs;
+            if (logs.log.is_open()) write_log_line(logs.log, full_line);
+
+            if (logs.history_enabled) {logs.history += line;logs.history.push_back('\n');}
+
+            if (logs.wait.active) {
+                if (std::regex_search(line, logs.wait.pattern)) {
+                    logs.wait.matched = true;
+
+                    std::unique_lock signal_lock(wait_mutex);
+                    wait_cv.notify_all();
+                }
             }
+        }
+    }
 
-            if (auto it = pm->process_logs.find(process_name); it != pm->process_logs.end()) {
-                auto &[log, history, history_enabled, wait] = it->second;
-                if (log.is_open()) {ProcessManager::write_log_line(log, full_line);}
-                if (history_enabled) {
-                    history += line;
-                    history.push_back('\n');
+    void ProcessManager::start_drain_for(const std::string &process_name) {
+        std::shared_ptr<ManagedProcess> mp;
+        {
+            std::lock_guard lock(mtx_);
+            const auto it = processes.find(process_name);
+            if (it == processes.end() || !it->second)
+                return;
+            mp = it->second;
+        }
+        mp->shutting_down = false;
+        mp->drain_thread = std::thread([this, process_name, mp]() {
+
+            uint8_t buffer[4096];
+            while (!mp->shutting_down) {
+
+                auto [events, ec] =
+                    mp->proc->poll(reproc::event::out | reproc::event::err,
+                                   reproc::milliseconds(100));
+
+                if (ec == std::errc::timed_out)continue;
+                if(ec){
+                    log(LogLevel::INFO, "Draining thread for %s exiting: %s (code: %d)",
+                    process_name.c_str(), ec.message().c_str(), ec.value());
+                }
+                if (events & reproc::event::out) {
+                    auto [n, read_ec] =
+                        mp->proc->read(reproc::stream::out, buffer, sizeof(buffer));
+
+                    if (!read_ec && n > 0) {
+                        handle_chunk(mp,
+                                     process_name,
+                                     "stdout",
+                                     std::string(reinterpret_cast<char *>(buffer), n));
+                    }
                 }
 
-                // notify active wait listener, if any
-                if (wait.active) {
-                    if (regex_search(line, wait.pattern)) {
-                        wait.matched = true;
-                        unique_lock lock(pm->wait_mutex);
-                        pm->wait_cv.notify_all();
+                if (events & reproc::event::err) {
+                    auto [n, read_ec] =
+                        mp->proc->read(reproc::stream::err, buffer, sizeof(buffer));
+
+                    if (!read_ec && n > 0) {
+                        handle_chunk(mp,
+                                     process_name,
+                                     "stderr",
+                                     std::string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
             }
-        }
-        return {};
+            cerr << "Drain thread exited for " << process_name << std::endl;
+        });
     }
 
-    void ProcessManager::recreate_log_folder(const path &log_base_dir){
-        error_code ec;
 
-        // if log folder exists -> clear
-        if (exists(log_base_dir, ec)) {
-            remove_all(log_base_dir, ec);
-            if (ec) {
-                log(LogLevel::ERROR,
-                    "Failed to clean logger directory: %s: %s",
-                    log_base_dir.string().c_str(),
-                    ec.message().c_str());
-                throw runtime_error("Unable to clean logger directory");
-            }
-        }
-
-        // create log folder
-        create_directories(log_base_dir, ec);
-        if (ec) {
-            log(LogLevel::ERROR,
-                "Failed to create logger directory: %s: %s",
-                log_base_dir.string().c_str(),
-                ec.message().c_str());
-            throw runtime_error("Unable to create logger directory");
-        }
-
+    ProcessManager::~ProcessManager() {
+        stop_all();
+        lock_guard lock(mtx_);
+        if (combined_log.is_open())
+            combined_log.close();
     }
+    void ProcessManager::run(const std::string& process_name,
+                         const std::vector<std::string> &cmd,
+                         const path &working_dir)
+    {
+        auto mp = std::make_shared<ManagedProcess>();
+        mp->proc = std::make_shared<reproc::process>();
 
-    void ProcessManager::init_logging(const string &run_folder){
-        log_base_dir = path(run_folder) / "logger";
-        recreate_log_folder(log_base_dir);
-
-        // create combated log
-        const path combined_path = log_base_dir / "combined.log";
-        combined_log.close();
-        combined_log.open(combined_path, ios::out | ios::trunc);
-        if (!combined_log.is_open()) {
-            log(LogLevel::ERROR,
-                "Failed to open combined log file: %s",
-                combined_path.string().c_str());
-            throw runtime_error("Unable to open combined log file");
-        }
-
-        for (auto &entry: process_logs | views::values) {
-            if (entry.log.is_open()) {entry.log.close();}
-            entry.history.clear();
-            entry.history_enabled = false;
-        }
-        process_logs.clear();
-    }
-
-    void ProcessManager::run(const string& process_name,
-                             const vector<string> &cmd,
-                             const path &working_dir) {
-        auto proc = make_unique<reproc::process>();
-        reproc::options options;
-        options.stop.first = { reproc::stop::terminate, reproc::milliseconds(2000) };
-        options.stop.second = { reproc::stop::kill, reproc::milliseconds(2000) };
-
-        string working_dir_str;
-        if (!working_dir.empty()) {
-            working_dir_str = working_dir.string();
-            options.working_directory = working_dir_str.c_str();
-        }
-
-        if (const error_code ec = proc->start(cmd, options)) {
-            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
-        }
+        reproc::options options{};
+        options.stop.first  = { reproc::stop::terminate, reproc::milliseconds(500) };
+        options.stop.second = { reproc::stop::kill,      reproc::milliseconds(500) };
+        options.redirect.parent = false;
 
         path log_dir = log_base_dir;
-        if (!working_dir_str.empty()) {log_dir = path(working_dir_str);}
         const path log_path = log_dir / (process_name + ".log");
 
-        auto &logs = process_logs[process_name];
+        if (!working_dir.empty()) {
+            const auto wd = working_dir.string();
+            options.working_directory = wd.c_str();
+        }
+
+
+        if (const auto ec = mp->proc->start(cmd, options)) {
+            throw std::runtime_error("Failed to start " + process_name + ": " + ec.message());
+        }
+
+        {
+            std::lock_guard lock(mtx_);
+            processes[process_name] = mp;
+        }
+
+        auto &logs = processes[process_name]->logs;
         logs.log.close();
         logs.log.open(log_path, ios::out | ios::trunc);
         logs.history.clear();
@@ -161,105 +146,48 @@ namespace wpa3_tester{
         }
 
         string cmd_line;
-        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' ';cmd_line += cmd[i];}
+        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' '; cmd_line += cmd[i];}
         const string line   =  current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
 
-        if (combined_log.is_open()) {write_log_line(combined_log, line);} // stays in global logger folder
+        if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
 
-        processes[process_name] = std::move(proc);
         start_drain_for(process_name);
     }
-    void ProcessManager::start_drain_for(const string &actor_name) {
-        const auto it = processes.find(actor_name);
-        if (it == processes.end() || !it->second) return;
+    void ProcessManager::wait_for(const std::string &actor_name,
+                              const std::string &pattern)
+    {
+        std::shared_ptr<ManagedProcess> mp;
 
-        auto proc = it->second.get();
-
-        thread([this, actor_name, proc]() {
-            uint8_t buffer[4096];
-
-            pair<reproc::stream, string_view> streams[] = {
-                {reproc::stream::out, "stdout"},
-                {reproc::stream::err, "stderr"}
-            };
-
-            while (true) {
-                auto [events, ec] = proc->poll(reproc::event::out | reproc::event::err, reproc::infinite);
-                if (ec) break;
-
-                for (auto [stream, name] : streams) {
-                    if (const auto event = (stream == reproc::stream::out)
-                        ? reproc::event::out : reproc::event::err; events & event) {
-
-                        auto [n, read_ec] = proc->read(stream, buffer, sizeof(buffer));
-                        if (read_ec) {continue; }
-
-                        if (n > 0) {
-                            handle_chunk(this,
-                                actor_name, name.data(),
-                                string(reinterpret_cast<char*>(buffer), n));
-                        }
-                    }
-                }
+        {
+            std::lock_guard lock(mtx_);
+            auto it = processes.find(actor_name);
+            if (it == processes.end() || !it->second) {
+                throw std::runtime_error("Unknown process in wait_for: " + actor_name);
             }
-        }).detach();
-    }
-
-
-
-    void ProcessManager::allow_history(const string &actor_name) {
-        if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
-            it->second.history_enabled = true;
-            return;
-        }
-        throw setup_error("Process {} not found to allow history", actor_name.c_str());
-    }
-
-    void ProcessManager::ignore_history(const string &actor_name) {
-        if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
-            it->second.history_enabled = false;
-            it->second.history.clear();
-            return;
-        }
-        throw setup_error("Process {} not found to ignore history", actor_name.c_str());
-    }
-
-    void ProcessManager::discard_history(const string &actor_name) {
-        if (const auto it = process_logs.find(actor_name); it != process_logs.end()) {
-            it->second.history.clear();
-            return;
-        }
-        throw setup_error("Process {} not found to discard history", actor_name.c_str());
-    }
-
-    void ProcessManager::wait_for(const string &actor_name, const string &pattern){
-        if (const auto pit = processes.find(actor_name); pit == processes.end() || !pit->second) {
-            throw runtime_error("Unknown process in wait_for: " + actor_name);
+            mp = it->second;
         }
 
-        const auto actor_log = process_logs.find(actor_name);
-        if (actor_log == process_logs.end()) {
-            throw runtime_error("No logs for process in wait_for: " + actor_name);
-        }
+        auto &logs = mp->logs;
 
-        ProcessLogs &logs = actor_log->second;
-        logs.history_enabled = true;
+        {
+            std::lock_guard lock(mtx_);
 
-        logs.wait.pattern = regex(pattern);
-        logs.wait.active = true;
-        logs.wait.matched = false;
+            logs.history_enabled = true;
+            logs.wait.pattern = std::regex(pattern);
+            logs.wait.active = true;
+            logs.wait.matched = false;
 
-        {  // first pass: check existing history
-            // - in block because ss/line will be freed and don't waste memory
-            stringstream ss(logs.history);
-            string line;
-            while (getline(ss, line)) {
-                if (regex_search(line, logs.wait.pattern)) {
+            // first pass – search history
+            std::stringstream ss(logs.history);
+            std::string line;
+            while (std::getline(ss, line)) {
+                if (std::regex_search(line, logs.wait.pattern)) {
                     logs.wait.matched = true;
                     break;
                 }
             }
+
             if (logs.wait.matched) {
                 logs.history.clear();
                 logs.wait.active = false;
@@ -267,59 +195,72 @@ namespace wpa3_tester{
             }
         }
 
-
-        { // wait for new output to match
-            unique_lock lock(wait_mutex);
-            wait_cv.wait(lock, [&logs]{ return logs.wait.matched; });
+        // wait for match from drain thread
+        {
+            std::unique_lock lock(wait_mutex);
+            wait_cv.wait(lock, [&logs, mp] {
+                return logs.wait.matched || mp->shutting_down.load();
+            });
         }
 
+        std::lock_guard lock(mtx_);
         logs.history.clear();
         logs.wait.active = false;
     }
 
-    void ProcessManager::stop(const string &actor_name){
-        using namespace chrono_literals;
+    /*void ProcessManager::close_and_remove_log(const string& key) {
+        const auto it = processes.find(key);
+        if (it != processes.end()) {
+            if (it->second->logs.log.is_open()) {it->second->logs.log.close();}
+            processes.erase(it);
+        } else {
+            log(LogLevel::WARNING, "Log for %s not found.", key.c_str());
+        }
+    }*/
 
-        const auto it = processes.find(actor_name);
-        if (it == processes.end() || !it->second) {
-            log(LogLevel::WARNING,"Cannot stop actor %s, not in Process manager", actor_name.c_str());
-            return;
+    void ProcessManager::stop(const std::string &process_name)
+    {
+        std::shared_ptr<ManagedProcess> mp;
+
+        {
+            std::lock_guard lock(mtx_);
+            auto it = processes.find(process_name);
+            if (it == processes.end())
+                return;
+
+            mp = it->second;
+            processes.erase(it);
         }
 
-        reproc::process &proc = *it->second;
+        if (!mp) return;
+        mp->shutting_down = true;
+
+        mp->proc->close(reproc::stream::out);
+        mp->proc->close(reproc::stream::err);
 
         reproc::stop_actions operations{};
-        // First try SIGTERM (graceful), then SIGKILL (forceful)
-        operations.first  = { reproc::stop::terminate, reproc::milliseconds(2000) };
-        operations.second = { reproc::stop::kill,      reproc::milliseconds(1000) };
+        operations.first  = { reproc::stop::terminate, reproc::milliseconds(500) };
+        operations.second = { reproc::stop::kill,      reproc::milliseconds(500) };
 
-        auto [exit_status, ec] = proc.stop(operations);
-        if (ec) {
-            log(LogLevel::WARNING, "Error stopping process %s: %s", actor_name.c_str(), ec.message().c_str());
-        } else {
-            log(LogLevel::DEBUG, "Process %s stopped with exit status %d", actor_name.c_str(), exit_status);
-        }
+        mp->proc->stop(operations);
 
-        processes.erase(it);
-    }
+        // wait for drain thread
+        if (mp->drain_thread.joinable())
+            mp->drain_thread.join();
 
-    ProcessManager::~ProcessManager(){
-        stop_all();
-        combined_log.close();
-        for(auto &entry: process_logs | views::values){
-            if(entry.log.is_open()){ entry.log.close(); }
-        }
+        //close_and_remove_log(process_name);
     }
 
     void ProcessManager::stop_all() {
-        // Create a copy of process names to avoid iterator invalidation
         vector<string> process_names;
-        process_names.reserve(processes.size());
-        for (const auto &name: processes | views::keys) {
-            process_names.push_back(name);
+        {
+            lock_guard lock(mtx_);
+            process_names.reserve(processes.size());
+            for (const auto &name : processes | views::keys) {
+                process_names.push_back(name);
+            }
         }
 
-        // Stop each process using the existing stop() method
         for (const auto& name : process_names) {
             try {
                 stop(name);
@@ -328,8 +269,7 @@ namespace wpa3_tester{
             }
         }
 
-        processes.clear();
-        log(LogLevel::INFO, "All processes stopped");
+        log(LogLevel::DEBUG, "All processes stopped");
     }
 
 }

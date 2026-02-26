@@ -51,8 +51,9 @@ graphviz:
 		grep -vE 'std::' \
 		> ./doc/callgraph/callgraph.dot
 	cat ./doc/callgraph/callgraph.dot | dot -Tsvg -o ./doc/callgraph/callgraph.svg
-	@echo "--- Saved to callgraph.svg ---
+	@echo "--- Saved to callgraph.svg ---"
 
-test:
-	cmake --build build --target run_validation_tests
-	cmake --build build --target test
+test_build:
+	sudo cmake --build build
+test: test_build
+	sudo cmake --build build --target test

@@ -88,8 +88,8 @@ TEST_CASE("get_time_logs - finds matching lines") {
     const auto times = wpa3_tester::get_time_logs(rs, "access_point", "AP-ENABLED");
     REQUIRE((times.size() == 2));
 
-    // 14:38:10.5 - 14:38:08.0 = 2.5 s
-    CHECK((times[1] - times[0] == chrono::milliseconds{2500}));
+    INFO("%d",(times[1] - times[0]));
+    CHECK_EQ((times[1] - times[0]), chrono::nanoseconds{2189798496ns});
 }
 
 TEST_CASE("get_time_logs - no match returns empty") {

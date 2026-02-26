@@ -1,21 +1,43 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-#include <filesystem>
 #include <thread>
 #include <chrono>
-#include "system/ProcessManager.h"
+#include <doctest/doctest.h>
+
 #include "logger/log.h"
+#include "system/ProcessManager.h"
 
 using namespace std;
+using namespace filesystem;
 using namespace wpa3_tester;
 using namespace std::chrono_literals;
 
 namespace wpa3_tester {
+    TEST_CASE("ProcessManager run and stop simple process"){
+        {
+            ProcessManager pm;
+            vector<string> cmd = {"sleep","150"};
+            const auto test_dir = temp_directory_path() / "pm_test_stop_all";
+            create_directories(test_dir);
+            pm.init_logging(test_dir.string());
+
+            pm.run("test_proc", cmd);
+            this_thread::sleep_for(500ms);
+            CHECK((pm.processes.contains("test_proc")));
+            this_thread::sleep_for(500ms);
+
+            pm.stop("test_proc");
+            CHECK((!pm.processes.contains("test_proc")));
+        }
+        CHECK(true);
+    }
+
     TEST_CASE("ProcessManager - stop_all handles multiple processes") {
+
         ProcessManager pm;
 
-        const auto test_dir = filesystem::temp_directory_path() / "pm_test_stop_all";
-        filesystem::create_directories(test_dir);
+        const auto test_dir = temp_directory_path() / "pm_test_stop_all";
+        create_directories(test_dir);
 
         pm.init_logging(test_dir.string());
 
@@ -36,29 +58,29 @@ namespace wpa3_tester {
         pm.stop_all();
 
         CHECK(pm.processes.empty());
+
         log(LogLevel::INFO, "stop_all test completed successfully");
-        filesystem::remove_all(test_dir);
+        //remove_all(test_dir);
     }
 
     TEST_CASE("ProcessManager - stop_all handles empty process list") {
         ProcessManager pm;
 
-        const auto test_dir = filesystem::temp_directory_path() / "pm_test_empty";
-        filesystem::create_directories(test_dir);
+        const auto test_dir = temp_directory_path() / "pm_test_empty";
+        create_directories(test_dir);
         pm.init_logging(test_dir.string());
 
         CHECK_NOTHROW(pm.stop_all());
         CHECK(pm.processes.empty());
 
         log(LogLevel::INFO, "stop_all empty test completed successfully");
-        filesystem::remove_all(test_dir);
+        remove_all(test_dir);
     }
 
-    TEST_CASE("ProcessManager - stop individual process") {
+    TEST_CASE("ProcessManager - stop individual process"){
+        const auto test_dir = temp_directory_path() / "pm_test_stop_one";
         ProcessManager pm;
-
-        const auto test_dir = filesystem::temp_directory_path() / "pm_test_stop_one";
-        filesystem::create_directories(test_dir);
+        create_directories(test_dir);
         pm.init_logging(test_dir.string());
 
         vector<string> sleep_cmd1 = {"sleep", "300"};
@@ -80,27 +102,27 @@ namespace wpa3_tester {
         CHECK(pm.processes.empty());
 
         log(LogLevel::INFO, "stop individual process test completed successfully");
-        filesystem::remove_all(test_dir);
+        remove_all(test_dir);
     }
 
     TEST_CASE("ProcessManager - stop nonexistent process") {
         ProcessManager pm;
 
-        const auto test_dir = filesystem::temp_directory_path() / "pm_test_nonexistent";
-        filesystem::create_directories(test_dir);
+        const auto test_dir = temp_directory_path() / "pm_test_nonexistent";
+        create_directories(test_dir);
         pm.init_logging(test_dir.string());
 
         CHECK_NOTHROW(pm.stop("nonexistent_process"));
 
         log(LogLevel::INFO, "stop nonexistent process test completed successfully");
-        filesystem::remove_all(test_dir);
+        remove_all(test_dir);
     }
 
     TEST_CASE("ProcessManager - process logging") {
         ProcessManager pm;
 
-        const auto test_dir = filesystem::temp_directory_path() / "pm_test_logging";
-        filesystem::create_directories(test_dir);
+        const auto test_dir = temp_directory_path() / "pm_test_logging";
+        create_directories(test_dir);
         pm.init_logging(test_dir.string());
 
         vector<string> echo_cmd = {"echo", "test output"};
@@ -109,14 +131,14 @@ namespace wpa3_tester {
         this_thread::sleep_for(500ms);
 
         const auto log_file = pm.log_base_dir / "echo_test.log";
-        CHECK(filesystem::exists(log_file));
+        CHECK(exists(log_file));
 
         const auto combined_log = pm.log_base_dir / "combined.log";
-        CHECK(filesystem::exists(combined_log));
+        CHECK(exists(combined_log));
 
         pm.stop_all();
         log(LogLevel::INFO, "process logging test completed successfully");
-        filesystem::remove_all(test_dir);
+        //remove_all(test_dir);
     }
 }
 

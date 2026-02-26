@@ -11,7 +11,10 @@
 #include <reproc++/reproc.hpp>
 namespace wpa3_tester{
     class ProcessManager{
+        mutable std::mutex mtx_; // Pro ochranu processes a process_logs
+
     public:
+
         // log for whole test
         std::filesystem::path log_base_dir;
         std::ofstream combined_log;
@@ -29,8 +32,16 @@ namespace wpa3_tester{
             WaitListener  wait;
         };
 
-        std::map<std::string, std::unique_ptr<reproc::process>> processes;
-        std::map<std::string, ProcessLogs> process_logs;
+        struct ManagedProcess {
+            std::shared_ptr<reproc::process> proc;
+            std::thread drain_thread;
+            std::atomic<bool> shutting_down{false};
+            ProcessLogs logs;
+        };
+        std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
+
+        //std::map<std::string,std::shared_ptr<reproc::process>> processes;
+        //std::map<std::string, ProcessLogs> process_logs;
 
         std::mutex wait_mutex;
         std::condition_variable wait_cv;
@@ -39,7 +50,10 @@ namespace wpa3_tester{
 
     private:
         static void recreate_log_folder(const std::filesystem::path &log_base_dir);
-        void start_drain_for(const std::string &actor_name);
+        void handle_chunk(const std::shared_ptr<ManagedProcess> &mp, const std::string &process_name,
+                          const std::string &label,
+                          const std::string &data);
+        void start_drain_for(const std::string &process_name);
     public:
         ProcessManager() = default;
         ~ProcessManager();
@@ -47,6 +61,7 @@ namespace wpa3_tester{
         ProcessManager(const ProcessManager&) = delete;
         ProcessManager& operator=(const ProcessManager&) = delete;
 
+        static std::string current_timestamp();
         void init_logging(const std::string& run_folder);
 
         // what can actors
@@ -59,9 +74,9 @@ namespace wpa3_tester{
         void discard_history(const std::string &actor_name);
 
         void wait_for(const std::string &actor_name, const std::string &pattern); //TODOo return log
-        void stop(const std::string &actor_name);
+        //void close_and_remove_log(const std::string &key);
+        void stop(const std::string &process_name);
 
-        // After stop (Ctrl + C or critical error)
         void stop_all();
     };
 }

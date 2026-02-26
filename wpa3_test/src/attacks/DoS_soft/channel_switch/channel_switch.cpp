@@ -1,4 +1,4 @@
-#include "attacks/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "logger/error_log.h"
 #include <cassert>
 #include "ex_program/hostapd/hostpad.h"

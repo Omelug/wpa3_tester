@@ -17,16 +17,11 @@ f: check WPA2/SAE support correctly
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
 
-tests:
-create procerr_manager tests
-fro stop all
-
 Test cases:
 f: all process have to killed before test
 
-Test suites:
+tests:
 +: all vars musí být stejně velký
-
 
 libraries:
 change library for graphs, matplot++ has no rotation of text

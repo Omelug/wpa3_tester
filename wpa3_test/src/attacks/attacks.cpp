@@ -1,6 +1,6 @@
 #include "attacks/attacks.h"
-#include "attacks/channel_switch/channel_switch.h"
-#include "attacks/bl0ck/bl0ck.h"
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft//bl0ck/bl0ck.h"
 
 namespace wpa3_tester::attack_module_maps{
     using namespace std;

@@ -1,0 +1,21 @@
+name: var generator
+config_type: test_suite
+tests:
+  driver_perm:
+    type: generator
+    vars:
+      driver1: ["driver1", "driver2", "driver3"]
+      driver2: ["driver2", "driver3", "driver1"]
+      driver3: ["driver3", "driver1", "driver2"]
+    config:
+      extends: 03_test.yaml
+      actors:
+        acces_point:
+          selection:
+            driver: var_driver1
+        client:
+          selection:
+            driver: var_driver2
+        attacker:
+          selection:
+            driver: var_driver3

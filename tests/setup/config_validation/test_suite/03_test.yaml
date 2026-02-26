@@ -1,0 +1,12 @@
+name: "Driver Permutation"
+attacker_module: module1
+actors:
+  acces_point:
+    type: AP
+    source: internal
+  client:
+    type: STA
+    source: internal
+  attacker:
+    type: STA
+    source: internal

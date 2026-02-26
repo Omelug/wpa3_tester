@@ -4,6 +4,7 @@
 #include "setup/config_parser.h"
 #include <filesystem>
 #include <source_location>
+#include <doctest/doctest.h>
 #include <yaml-cpp/node/parse.h>
 #include "config/RunSuiteStatus.h"
 
@@ -148,7 +149,8 @@ TEST_CASE("RunStatus - Test suite test generation") {
 
     const vector<ConfigSuiteCase> tests = {
         //{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
-        {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"}
+        {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"},
+        {"3. driver permutations", "03_ts_driver_permutation.yaml", "03_result_driver_permutation"}
     };
 
     for (const auto& t : tests) {

@@ -8,12 +8,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sched.h>
+#include <doctest/doctest.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
 #include "system/hw_capabilities.h"
 
-// The function under test
 namespace wpa3_tester { void cleanup_all_namespaces(); }
 using namespace std;
 using namespace filesystem;

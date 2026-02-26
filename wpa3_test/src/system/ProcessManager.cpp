@@ -14,22 +14,22 @@ namespace wpa3_tester{
     using namespace chrono;
 
     void ProcessManager::handle_chunk(
-        const std::shared_ptr<ManagedProcess>& mp,
-        const std::string &process_name,
-        const std::string &label,
-        const std::string &data)
+        const shared_ptr<ManagedProcess>& mp,
+        const string &process_name,
+        const string &label,
+        const string &data)
     {
-        const std::string prefix =
+        const string prefix =
             current_timestamp() + " [" + process_name + "] [" + label + "] ";
 
-        std::stringstream ss(data);
-        std::string line;
+        stringstream ss(data);
+        string line;
 
-        while (std::getline(ss, line)) {
+        while (getline(ss, line)) {
             if (line.empty()) continue;
 
-            const std::string full_line = prefix + line;
-            std::lock_guard lock(mtx_);
+            const string full_line = prefix + line;
+            lock_guard lock(mtx_);
             if (combined_log.is_open()) write_log_line(combined_log, full_line);
             auto &logs = mp->logs;
             if (logs.log.is_open()) write_log_line(logs.log, full_line);
@@ -37,27 +37,27 @@ namespace wpa3_tester{
             if (logs.history_enabled) {logs.history += line;logs.history.push_back('\n');}
 
             if (logs.wait.active) {
-                if (std::regex_search(line, logs.wait.pattern)) {
+                if (regex_search(line, logs.wait.pattern)) {
                     logs.wait.matched = true;
 
-                    std::unique_lock signal_lock(wait_mutex);
+                    unique_lock signal_lock(wait_mutex);
                     wait_cv.notify_all();
                 }
             }
         }
     }
 
-    void ProcessManager::start_drain_for(const std::string &process_name) {
-        std::shared_ptr<ManagedProcess> mp;
+    void ProcessManager::start_drain_for(const string &process_name) {
+        shared_ptr<ManagedProcess> mp;
         {
-            std::lock_guard lock(mtx_);
+            lock_guard lock(mtx_);
             const auto it = processes.find(process_name);
             if (it == processes.end() || !it->second)
                 return;
             mp = it->second;
         }
         mp->shutting_down = false;
-        mp->drain_thread = std::thread([this, process_name, mp]() {
+        mp->drain_thread = thread([this, process_name, mp]() {
 
             uint8_t buffer[4096];
             while (!mp->shutting_down) {
@@ -66,7 +66,7 @@ namespace wpa3_tester{
                     mp->proc->poll(reproc::event::out | reproc::event::err,
                                    reproc::milliseconds(100));
 
-                if (ec == std::errc::timed_out)continue;
+                if (ec == errc::timed_out)continue;
                 if(ec){
                     log(LogLevel::INFO, "Draining thread for %s exiting: %s (code: %d)",
                     process_name.c_str(), ec.message().c_str(), ec.value());
@@ -79,7 +79,7 @@ namespace wpa3_tester{
                         handle_chunk(mp,
                                      process_name,
                                      "stdout",
-                                     std::string(reinterpret_cast<char *>(buffer), n));
+                                     string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
 
@@ -91,11 +91,11 @@ namespace wpa3_tester{
                         handle_chunk(mp,
                                      process_name,
                                      "stderr",
-                                     std::string(reinterpret_cast<char *>(buffer), n));
+                                     string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
             }
-            cerr << "Drain thread exited for " << process_name << std::endl;
+            cerr << "Drain thread exited for " << process_name << endl;
         });
     }
 
@@ -106,12 +106,12 @@ namespace wpa3_tester{
         if (combined_log.is_open())
             combined_log.close();
     }
-    void ProcessManager::run(const std::string& process_name,
-                         const std::vector<std::string> &cmd,
+    void ProcessManager::run(const string& process_name,
+                         const vector<string> &cmd,
                          const path &working_dir)
     {
-        auto mp = std::make_shared<ManagedProcess>();
-        mp->proc = std::make_shared<reproc::process>();
+        auto mp = make_shared<ManagedProcess>();
+        mp->proc = make_shared<reproc::process>();
 
         reproc::options options{};
         options.stop.first  = { reproc::stop::terminate, reproc::milliseconds(500) };
@@ -121,18 +121,19 @@ namespace wpa3_tester{
         path log_dir = log_base_dir;
         const path log_path = log_dir / (process_name + ".log");
 
+        string wd_string; // need to be outside if, to be valid
         if (!working_dir.empty()) {
-            const auto wd = working_dir.string();
-            options.working_directory = wd.c_str();
+            wd_string = working_dir.string();
+            options.working_directory = wd_string.c_str();
         }
 
 
         if (const auto ec = mp->proc->start(cmd, options)) {
-            throw std::runtime_error("Failed to start " + process_name + ": " + ec.message());
+            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
         }
 
         {
-            std::lock_guard lock(mtx_);
+            lock_guard lock(mtx_);
             processes[process_name] = mp;
         }
 
@@ -154,16 +155,16 @@ namespace wpa3_tester{
 
         start_drain_for(process_name);
     }
-    void ProcessManager::wait_for(const std::string &actor_name,
-                              const std::string &pattern)
+    void ProcessManager::wait_for(const string &actor_name,
+                              const string &pattern)
     {
-        std::shared_ptr<ManagedProcess> mp;
+        shared_ptr<ManagedProcess> mp;
 
         {
-            std::lock_guard lock(mtx_);
+            lock_guard lock(mtx_);
             auto it = processes.find(actor_name);
             if (it == processes.end() || !it->second) {
-                throw std::runtime_error("Unknown process in wait_for: " + actor_name);
+                throw runtime_error("Unknown process in wait_for: " + actor_name);
             }
             mp = it->second;
         }
@@ -171,18 +172,18 @@ namespace wpa3_tester{
         auto &logs = mp->logs;
 
         {
-            std::lock_guard lock(mtx_);
+            lock_guard lock(mtx_);
 
             logs.history_enabled = true;
-            logs.wait.pattern = std::regex(pattern);
+            logs.wait.pattern = regex(pattern);
             logs.wait.active = true;
             logs.wait.matched = false;
 
             // first pass – search history
-            std::stringstream ss(logs.history);
-            std::string line;
-            while (std::getline(ss, line)) {
-                if (std::regex_search(line, logs.wait.pattern)) {
+            stringstream ss(logs.history);
+            string line;
+            while (getline(ss, line)) {
+                if (regex_search(line, logs.wait.pattern)) {
                     logs.wait.matched = true;
                     break;
                 }
@@ -197,13 +198,13 @@ namespace wpa3_tester{
 
         // wait for match from drain thread
         {
-            std::unique_lock lock(wait_mutex);
+            unique_lock lock(wait_mutex);
             wait_cv.wait(lock, [&logs, mp] {
                 return logs.wait.matched || mp->shutting_down.load();
             });
         }
 
-        std::lock_guard lock(mtx_);
+        lock_guard lock(mtx_);
         logs.history.clear();
         logs.wait.active = false;
     }
@@ -218,12 +219,12 @@ namespace wpa3_tester{
         }
     }*/
 
-    void ProcessManager::stop(const std::string &process_name)
+    void ProcessManager::stop(const string &process_name)
     {
-        std::shared_ptr<ManagedProcess> mp;
+        shared_ptr<ManagedProcess> mp;
 
         {
-            std::lock_guard lock(mtx_);
+            lock_guard lock(mtx_);
             auto it = processes.find(process_name);
             if (it == processes.end())
                 return;

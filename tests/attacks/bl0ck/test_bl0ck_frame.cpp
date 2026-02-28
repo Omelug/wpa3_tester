@@ -2,7 +2,7 @@
 #include <doctest.h>
 #include <filesystem>
 #include <tins/tins.h>
-#include "attacks/bl0ck/bl0ck.h"
+#include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "logger/log.h"
 
 using namespace std;

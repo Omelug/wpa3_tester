@@ -47,7 +47,7 @@ namespace wpa3_tester{
             throw runtime_error("Unable to open combined log file");
         }
 
-        for (auto &entry: processes | views::values) {
+        for (const auto &entry: processes | views::values) {
             if (entry->logs.log.is_open()) {entry->logs.log.close();}
             entry->logs.history.clear();
             entry->logs.history_enabled = false;
@@ -57,6 +57,16 @@ namespace wpa3_tester{
     void ProcessManager::write_log_line(ofstream &os, const string &line) {
         os << line << endl;
     }
+
+    void ProcessManager::write_log_all(const string &line) {
+        lock_guard lock(mtx_); //FIXME lock for spcific logs ?
+        write_log_line(combined_log, line);
+        for (const auto& [name, proc] : processes){
+            const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
+            write_log_line(proc->logs.log, prefix + line);
+        }
+    }
+
 
     void ProcessManager::recreate_log_folder(const path &log_base_dir){
         error_code ec;
@@ -104,7 +114,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::discard_history(const string &actor_name) {
-        std::lock_guard lock(mtx_);
+        lock_guard lock(mtx_);
         if (const auto it = processes.find(actor_name); it != processes.end()) {
             it->second->logs.history.clear();
             return;

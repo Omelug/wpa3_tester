@@ -148,7 +148,7 @@ namespace wpa3_tester{
 
             const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
             kill_process_in_ns_name(ns_name);
-            hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name});
+            hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name}); //FIXMe tohle asi hlásí ERROR: Command sudo exited with status 1
             wait_to_default_ns(physical_interfaces);
 
             log(LogLevel::DEBUG, "Removed netns %s", ns_name.c_str());

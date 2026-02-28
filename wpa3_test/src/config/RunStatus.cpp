@@ -28,13 +28,12 @@ namespace wpa3_tester{
 
         run_folder = (BASE_FOLDER / testName / "last_run").string();
         log(LogLevel::INFO, "Used config %s", this->config_path.c_str());
+        this->config = config_validation(this->config_path);
     }
 
     void RunStatus::execute(){
 
         globalRunStatus = this;
-
-        this->config = config_validation(this->config_path);
 
         // Ensure parent directories exist
         error_code ec;
@@ -52,7 +51,9 @@ namespace wpa3_tester{
 
 
     void RunStatus::run_test(){
+        process_manager.write_log_all("@START");
         attack_module_maps::run_map[config.at("attacker_module")](*this);
+        process_manager.write_log_all("@END");
         process_manager.stop_all();
     }
 
@@ -128,7 +129,7 @@ namespace wpa3_tester{
                 if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"
                     && ct == TEST_SUITE){
                     t_map[name] = path.string();
-                }else if(ct == TEST){
+                }else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")){
                     if (t_map.contains(name)) {
                         throw config_error("Configs " + t_map[name] +
                             " and " + path.string() + " have same name!");

@@ -14,7 +14,7 @@ namespace wpa3_tester{
     using YNode = YAML::Node;
     using json = nlohmann::json;
 
-    RunSuiteStatus::RunSuiteStatus(const std::string &config_path, string suite_name){
+    RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
         this->config_path = config_path;
         if(!exists(config_path)){throw config_error("Config not found: %s", config_path.c_str());}
 
@@ -27,6 +27,7 @@ namespace wpa3_tester{
 
         run_folder = (BASE_FOLDER / suite_name / "last_run").string();
         log(LogLevel::INFO, "Used test suite config %s", this->config_path.c_str());
+        this->config = config_validation(this->config_path);
     }
 
     json RunSuiteStatus::config_validation(const string &config_path){
@@ -34,10 +35,7 @@ namespace wpa3_tester{
             const YNode config_node = YAML::LoadFile(config_path);
             nlohmann::json config_json = yaml_to_json(config_node);
 
-            // create base config node
             config_json = RunStatus::extends_recursive(config_json, config_path);
-
-            //part validation
             RunStatus::validate_recursive(config_json, path(config_path).parent_path());
 
             //global validation
@@ -58,15 +56,15 @@ namespace wpa3_tester{
             throw config_error(string("Config validation error: ") + e.what());
         }
     }
-
-    void replace_all(std::string& str, const std::string& from, const std::string& to) {
+    void replace_all(string& str, const string& from, const string& to) {
         if(from.empty()) return;
         size_t start_pos = 0;
-        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        while((start_pos = str.find(from, start_pos)) != string::npos) {
             str.replace(start_pos, from.length(), to);
             start_pos += to.length();
         }
     }
+
 
     vector<pair<string, path>> RunSuiteStatus::get_test_paths(){
         const auto test_config_folder = path(this->run_folder) / "test_config";
@@ -76,52 +74,54 @@ namespace wpa3_tester{
         create_directories(test_config_folder, ec);
         if (ec) {throw runtime_error("Unable to create directory");}
 
-        std::vector<pair<std::string, path>> test_map;
+        vector<pair<string, path>> test_map;
         for (auto& [source_name, source_info] : config.at("tests").items()) {
-            std::string type = source_info.at("type");
+            string type = source_info.at("type");
             if (type == "path") {
-                path rel_path = source_info.at("path").get<std::string>();
+                path rel_path = source_info.at("path").get<string>();
                 path abs_path = absolute(config_path / rel_path);
                 test_map.emplace_back(source_name, abs_path);
-            }else if (type == "generator") {
+            } else if (type == "generator") {
                 auto source_config = source_info.at("config");
                 auto gen_folder = test_config_folder / source_name;
-                //create folder
+
                 create_directories(gen_folder, ec);
-                if (ec) {throw runtime_error("Unable to create generator directory");}
+                if (ec) { throw runtime_error("Unable to create generator directory"); }
 
-                // check len are same
+                auto length = check_vars_len_same(source_info);
                 auto vars = source_info.at("vars");
-                size_t length = 0; bool first = true;
-                for (auto& [key, value] : vars.items()) {
-                    if (first) {
-                        length = value.size(); first = false;
-                    } else if (value.size() != length) {
-                        throw config_error("All vars lists must have the same length (error in '" + key + "')");
-                    }
-                }
 
-                auto source_config_raw = source_info.at("config").dump();
                 for (size_t i = 0; i < length; ++i) {
-                    string current_config = source_config_raw;
+                    auto test_config_path = (gen_folder / (to_string(i) + "_test.yaml"));
+                    
+                    auto tmp_path = path(test_config_path.string() + ".tmp.yaml");
+                    save_yaml(source_info.at("config"), tmp_path);
 
-                    // replace vars
+                    ifstream ifs(tmp_path);
+                    if (!ifs.is_open()) { throw runtime_error("Could not open temp file for reading"); }
+                    string config_str((istreambuf_iterator(ifs)), istreambuf_iterator<char>());
+                    ifs.close();
+                    
                     for (auto& [key, value] : vars.items()) {
-                        const string json_placeholder = "\"var_" + key + "\"";
-                        string replacement = value[i].dump();
-                        replace_all(current_config, json_placeholder, replacement);
-                    }
-                    if (current_config.find("\"var_") != string::npos) {
-                        throw config_error("Unresolved var_ placeholders at index " + to_string(i));
+                        const string json_placeholder = "var_" + key;
+                        auto replacement = value[i].get<string>();
+                        replace_all(config_str, json_placeholder, replacement);
                     }
 
-                    string filename = std::to_string(i) + "_test.yaml"; //TODO rename test suite name
-                    auto test_config_path = (gen_folder / filename);
-                    nlohmann::json final_json = nlohmann::json::parse(current_config);
-                    save_yaml(final_json, test_config_path);
+                    if (config_str.find("var_") != string::npos) {
+                        filesystem::remove(tmp_path);
+                        throw runtime_error("Unresolved var_ placeholders at index " + to_string(i));
+                    }
+
+                    filesystem::remove(tmp_path);
+
+                    ofstream ofs(test_config_path);
+                    if (!ofs.is_open()) { throw runtime_error("Could not open final config file for writing"); }
+                    ofs << config_str;
+                    ofs.close();
 
                     RunStatus::config_validation(test_config_path);
-                    test_map.emplace_back(std::to_string(i) + "_test" , test_config_path);
+                    test_map.emplace_back(to_string(i) + "_test", test_config_path);
                 }
             }
         }
@@ -130,29 +130,29 @@ namespace wpa3_tester{
 
 
     void RunSuiteStatus::execute(){
-        this->config = config_validation(this->config_path);
         auto tests_paths = get_test_paths();
         // run tests
         for (const auto& [name, test_path] : tests_paths) {
             RunStatus rs(test_path);
             rs.only_stats = this->only_stats;
-            path suite_name = rs.config.at("name").get<std::string>();
+            path suite_name = rs.config.at("name").get<string>();
             rs.run_folder = path(this->run_folder) / suite_name / "last_run" / name;
 
             // TODO co s test_report, compile_external, install_requerements ?
 
            string rewrite_mode = "false";
             if (config.contains("rewrite") && config.at("rewrite").is_string()) {
-                rewrite_mode = config.at("rewrite").get<std::string>();
+                rewrite_mode = config.at("rewrite").get<string>();
             }
 
             if (exists(rs.run_folder)) {
                 if (rewrite_mode == "all") {
+                    //FIXME
                     log(LogLevel::DEBUG, "Skipping: %s", name.c_str());
                     continue;
                 }
 
-                if (config.at("rewrite") == "errors" && !exists(path(rs.run_folder) / "errors.txt")) {
+                if (config.at("rewrite") == "errors" && exists(path(rs.run_folder) / "errors.txt")) {
                     log(LogLevel::WARNING, "Skipping test what cause error: %s", name.c_str());
                     continue;
                 }
@@ -184,6 +184,21 @@ namespace wpa3_tester{
         auto tests = rss.get_test_paths();
         if (tests.empty()) {cout << "Not tests in this suite" << endl; return;}
         for (const auto& [name, path] : tests) {cout << "Test: " << name << " -> " << path << endl;}
+    }
+
+    // help config validation functions
+    size_t RunSuiteStatus::check_vars_len_same(nlohmann::basic_json<> source_info){
+        // check len are same
+        auto vars = source_info.at("vars");
+        size_t length = 0; bool first = true;
+        for (auto& [key, value] : vars.items()) {
+            if (first) {
+                length = value.size(); first = false;
+            } else if (value.size() != length) {
+                throw config_error("All vars lists must have the same length (error in '" + key + "')");
+            }
+        }
+        return length;
     }
 
 }

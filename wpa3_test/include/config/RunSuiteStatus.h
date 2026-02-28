@@ -5,6 +5,7 @@
 
 namespace wpa3_tester{
     class RunSuiteStatus {
+        static size_t check_vars_len_same(nlohmann::basic_json<> basic_json);
 
     public:
         bool only_stats = false;

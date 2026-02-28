@@ -170,11 +170,10 @@ namespace wpa3_tester::CSA_attack{
         const vector<LogTimePoint> eapol_hs_events = get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED");
 
         vector<observer::graph_lines> events;
-        if (!switch_events.empty()){
-            events.push_back({switch_events,"SWITCH","blue"});
-            events.push_back({disconn_events,"DISCONN","red"});
-            //events.push_back({eapol_hs_events,"EAP4w","green"});
-        }
+        events.push_back({switch_events,"SWITCH","blue"});
+        events.push_back({disconn_events,"DISCONN","red"});
+        events.push_back({get_time_logs(rs, "client", "START"),"@START","yellow"});
+        events.push_back({get_time_logs(rs, "client", "END"),"@END","yellow"});
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);

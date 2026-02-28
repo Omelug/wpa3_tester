@@ -39,7 +39,7 @@ TEST_CASE("get_hostapd - returns existing binary if found") {
     path mock_binary = test_folder / "hostapd_2_10";
     ofstream(mock_binary) << "mock binary";
 
-    get_global_paths()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
+    get_global_paths()["hostapd"]["hostapd_build_folder"] = test_folder.string();
     string result = hostapd::get_hostapd("2.10");
 
     CHECK((result == mock_binary.string()));
@@ -52,7 +52,7 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
     path test_folder = temp_directory_path() / "hostapd_test_nonexistent";
     remove_all(test_folder);
 
-    get_global_paths()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
+    get_global_paths()["hostapd"]["hostapd_build_folder"] = test_folder.string();
 
     string result2_10 = hostapd::get_hostapd("2.10");
     CHECK(( (test_folder/ "hostapd_2_10").string() == result2_10));

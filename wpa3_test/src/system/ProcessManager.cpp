@@ -47,15 +47,10 @@ namespace wpa3_tester{
         }
     }
 
-    void ProcessManager::start_drain_for(const string &process_name) {
-        shared_ptr<ManagedProcess> mp;
-        {
-            lock_guard lock(mtx_);
-            const auto it = processes.find(process_name);
-            if (it == processes.end() || !it->second)
-                return;
-            mp = it->second;
-        }
+    void ProcessManager::start_drain_for(const string &process_name,
+                                          shared_ptr<ManagedProcess> mp) {
+        if (!mp) return;
+
         mp->shutting_down = false;
         mp->drain_thread = thread([this, process_name, mp]() {
 
@@ -68,8 +63,10 @@ namespace wpa3_tester{
 
                 if (ec == errc::timed_out)continue;
                 if(ec){
+                    // EPIPE (Broken pipe) is expected when process exits normally
                     log(LogLevel::INFO, "Draining thread for %s exiting: %s (code: %d)",
-                    process_name.c_str(), ec.message().c_str(), ec.value());
+                        process_name.c_str(), ec.message().c_str(), ec.value());
+                    break;
                 }
                 if (events & reproc::event::out) {
                     auto [n, read_ec] =
@@ -152,8 +149,6 @@ namespace wpa3_tester{
 
         if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
-
-        start_drain_for(process_name);
     }
     void ProcessManager::wait_for(const string &actor_name,
                               const string &pattern)
@@ -272,5 +267,4 @@ namespace wpa3_tester{
 
         log(LogLevel::DEBUG, "All processes stopped");
     }
-
 }

@@ -98,7 +98,7 @@ namespace wpa3_tester::hostapd{
             version = program_config["version"].get<string>();
         }
 
-        vector<string> command = {"sudo", "-A"};
+        vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {
@@ -111,16 +111,22 @@ namespace wpa3_tester::hostapd{
     }
 
     void run_wpa_supplicant(RunStatus& run_status, const string &actor_name){
+        nlohmann::json program_config = run_status.config.at("actors").at(actor_name).at("setup").at("program_config");
+
+        string version = "";
+        if (program_config.contains("version") && !program_config["version"].is_null()) {
+            version = program_config["version"].get<string>();
+        }
+
         const string wpa_supp_config_path = wpa_supplicant_config(
             run_status.run_folder,
-            run_status.config.at("actors").at(actor_name).at("setup").at("program_config")
-            );
+            program_config);
 
-        vector<string> command = {"sudo", "-A"};
+        vector<string> command = {"sudo"};
         observer::add_nets(run_status,command, actor_name);
 
         command.insert(command.end(), {
-            "wpa_supplicant",
+            get_wpa_supplicant(version),
             "-i", run_status.get_actor(actor_name)["iface"],
             "-c", wpa_supp_config_path
         });

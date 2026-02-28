@@ -152,9 +152,9 @@ namespace wpa3_tester{
     }
 
     string iface::rand_mac() {
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<> dis(0, 255);
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, 255);
 
         char mac[18];
         snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",

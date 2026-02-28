@@ -47,13 +47,14 @@ namespace wpa3_tester{
         std::condition_variable wait_cv;
 
         static void write_log_line(std::ofstream &os, const std::string &line);
+        void write_log_all(const std::string &line);
 
     private:
         static void recreate_log_folder(const std::filesystem::path &log_base_dir);
         void handle_chunk(const std::shared_ptr<ManagedProcess> &mp, const std::string &process_name,
                           const std::string &label,
                           const std::string &data);
-        void start_drain_for(const std::string &process_name);
+        void start_drain_for(const std::string &process_name, std::shared_ptr<ManagedProcess> mp);
     public:
         ProcessManager() = default;
         ~ProcessManager();

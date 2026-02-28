@@ -8,3 +8,13 @@ attack_config:
   attack_variant: "BAR"
   random: false
   frame_number: 10
+actors:
+  access_point:
+    selection:
+      driver: rtw_8821au
+  client:
+    selection:
+      driver: mt76x2u
+  attacker:
+    selection:
+      driver: rtl8xxxu

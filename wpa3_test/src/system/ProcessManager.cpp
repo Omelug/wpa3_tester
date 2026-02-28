@@ -5,6 +5,9 @@
 #include <ranges>
 #include <regex>
 #include <chrono>
+#include <cerrno>
+#include <iomanip>
+#include <sstream>
 #include "logger/error_log.h"
 #include <thread>
 
@@ -124,17 +127,16 @@ namespace wpa3_tester{
             options.working_directory = wd_string.c_str();
         }
 
-
-        if (const auto ec = mp->proc->start(cmd, options)) {
-            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
+        // Log command line FIRST for debugging
+        string cmd_line;
+        for (size_t i = 0; i < cmd.size(); ++i) {
+            if (i) cmd_line += ' ';
+            cmd_line += cmd[i];
         }
+        log(LogLevel::DEBUG, "Starting process '%s': %s", process_name.c_str(), cmd_line.c_str());
 
-        {
-            lock_guard lock(mtx_);
-            processes[process_name] = mp;
-        }
-
-        auto &logs = processes[process_name]->logs;
+        // Initialize logs BEFORE starting process
+        auto &logs = mp->logs;
         logs.log.close();
         logs.log.open(log_path, ios::out | ios::trunc);
         logs.history.clear();
@@ -143,15 +145,28 @@ namespace wpa3_tester{
             log(LogLevel::ERROR, "Failed to open log for %s: %s", process_name.c_str(), log_path.string().c_str());
         }
 
-        string cmd_line;
-        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' '; cmd_line += cmd[i];}
-        const string line   =  current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
+        {
+            lock_guard lock(mtx_);
+            processes[process_name] = mp;
+        }
 
+        if (const auto ec = mp->proc->start(cmd, options)) {
+            {
+                lock_guard lock(mtx_);
+                processes.erase(process_name);
+            }
+            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
+        }
+
+        start_drain_for(process_name, mp);
+
+        const string line = current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
         if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
     }
     void ProcessManager::wait_for(const string &actor_name,
-                              const string &pattern)
+                              const string &pattern,
+                              chrono::seconds timeout)
     {
         shared_ptr<ManagedProcess> mp;
 
@@ -191,12 +206,28 @@ namespace wpa3_tester{
             }
         }
 
-        // wait for match from drain thread
-        {
+        { // wait for match from drain thread with timeout
             unique_lock lock(wait_mutex);
-            wait_cv.wait(lock, [&logs, mp] {
+            const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp] {
                 return logs.wait.matched || mp->shutting_down.load();
             });
+
+            // Check if process was stopped (shutting_down but not matched)
+            if (mp->shutting_down.load() && !logs.wait.matched) {
+                lock_guard log_lock(mtx_);
+                logs.wait.active = false;
+                logs.history_enabled = false;
+                log(LogLevel::DEBUG, "wait_for for '%s' interrupted: process stopped", actor_name.c_str());
+                return; // wait for ot matched if stop
+            }
+
+            if (!matched) {
+                lock_guard log_lock(mtx_);
+                logs.wait.active = false;
+                throw wait_for_timeout(
+                    "Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
+                    pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
+            }
         }
 
         lock_guard lock(mtx_);
@@ -225,11 +256,22 @@ namespace wpa3_tester{
                 return;
 
             mp = it->second;
+
+            // Clean up wait state and notify any waiting threads
+            auto &logs = mp->logs;
+            logs.wait.active = false;
+            logs.wait.matched = false;
+            logs.history_enabled = false;
+
             processes.erase(it);
         }
 
-        if (!mp) return;
-        mp->shutting_down = true;
+        // Notify all waiting threads that process is shutting down
+        {
+            unique_lock lock(wait_mutex);
+            mp->shutting_down = true;
+            wait_cv.notify_all();
+        }
 
         mp->proc->close(reproc::stream::out);
         mp->proc->close(reproc::stream::err);

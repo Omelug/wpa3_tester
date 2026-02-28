@@ -3,8 +3,8 @@
 #include <thread>
 #include <chrono>
 #include <doctest/doctest.h>
-
 #include "logger/log.h"
+#include "logger/error_log.h"
 #include "system/ProcessManager.h"
 
 using namespace std;
@@ -140,5 +140,53 @@ namespace wpa3_tester {
         log(LogLevel::INFO, "process logging test completed successfully");
         //remove_all(test_dir);
     }
-}
 
+    TEST_CASE("ProcessManager - wait_for with timeout") {
+        ProcessManager pm;
+
+        const auto test_dir = temp_directory_path() / "pm_test_wait_timeout";
+        create_directories(test_dir);
+        pm.init_logging(test_dir.string());
+
+        SUBCASE("Pattern found within timeout") {
+            vector<string> echo_cmd = {"bash", "-c", "echo 'test pattern'; sleep 5"};
+            pm.run("echo_test", echo_cmd);
+
+            pm.allow_history("echo_test");
+            this_thread::sleep_for(200ms);
+
+            CHECK_NOTHROW(pm.wait_for("echo_test", "test pattern", 5s));
+            pm.stop("echo_test");
+        }
+
+        SUBCASE("Timeout waiting for pattern") {
+            vector<string> sleep_cmd = {"sleep", "10"};
+            pm.run("sleep_test", sleep_cmd);
+
+            pm.allow_history("sleep_test");
+
+            CHECK_THROWS_AS(pm.wait_for("sleep_test", "never_appears", 2s), wait_for_timeout);
+            pm.stop("sleep_test");
+        }
+
+        SUBCASE("Custom short timeout") {
+            vector<string> sleep_cmd = {"sleep", "10"};
+            pm.run("short_timeout", sleep_cmd);
+
+            pm.allow_history("short_timeout");
+
+            auto start = chrono::steady_clock::now();
+            CHECK_THROWS_AS(pm.wait_for("short_timeout", "not_found", 1s), wait_for_timeout);
+            auto duration = chrono::steady_clock::now() - start;
+
+            CHECK((duration >= 1s));
+            CHECK((duration < 2s));
+
+            pm.stop("short_timeout");
+        }
+
+        pm.stop_all();
+        log(LogLevel::INFO, "wait_for timeout test completed successfully");
+        remove_all(test_dir);
+    }
+}

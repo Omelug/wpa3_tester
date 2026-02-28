@@ -74,7 +74,8 @@ namespace wpa3_tester{
         void ignore_history(const std::string &actor_name);
         void discard_history(const std::string &actor_name);
 
-        void wait_for(const std::string &actor_name, const std::string &pattern); //TODOo return log
+        void wait_for(const std::string &actor_name, const std::string &pattern,
+                      std::chrono::seconds timeout = std::chrono::seconds(30));
         //void close_and_remove_log(const std::string &key);
         void stop(const std::string &process_name);
 

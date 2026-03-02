@@ -224,16 +224,16 @@ namespace wpa3_tester::observer{
                 auto rel_dur = tp - start_time;
                 double t = chrono::duration<double>(rel_dur).count();
 
-                double y = (event_block_index % 2 == 0) ? //FIXME
+                double y = (event_block_index % 2 == 0) ?
                     ymax - (ymax-y_center)*event_block_index*(1/static_cast<double>(events.size())):
                     ymin + (y_center-ymin)*event_block_index*(1/static_cast<double>(events.size()));
 
                 ostringstream row;
                 row << fixed << setprecision(6)
-                    << t << " "          // Sloupec 1: X (čas)
-                    << y << " "          // Sloupec 2: Y (pozice popisku)
-                    << y_center << " "   // Sloupec 3: Y_target (střed grafu)
-                    << "\"" << ev.event_des << "\""; // Sloupec 4: Text
+                    << t << " "          // time
+                    << y << " "          // label position
+                    << y_center << " "
+                    << "\"" << ev.event_des << "\"";
                 gpcmd(row.str());
                 label_index++;
             }
@@ -241,14 +241,12 @@ namespace wpa3_tester::observer{
 
             ostringstream part;
             part
-                // 1. Svislá čára od popisku ke středu (pomocí vectors)
+                // line from event point to y center
                 // using x : y : (0) : (y_target - y)
                 << block_name << " using 1:2:(0):($3-$2) with vectors nohead lc rgb '" << ev.color << "' dt 2 notitle, "
-
-                // 2. Bod na pozici popisku
+                // event point
                 << block_name << " using 1:2 with points pt 7 ps 1.2 lc rgb '" << ev.color << "' notitle, "
-
-                // 3. Samotný popisek (labels)
+                // event
                 << block_name << " using 1:2:4 with labels tc rgb '" << ev.color << "' "
                 << (label_index % 2 == 0 ? "offset 0,1" : "offset 0,-1") << " rotate by 45 notitle";
 

@@ -15,11 +15,10 @@
 namespace wpa3_tester::observer{
     using namespace std;
     using namespace filesystem;
-    namespace mp = matplot;
 
     constexpr string program_name = "tshark";
     void start_thark(RunStatus &run_status, const string &node_name, const string& filter) {
-        vector<string> command = {"sudo", "-A"};
+        vector<string> command = {"sudo"};
         add_nets(run_status,command, node_name);
 
         string pcap_path = get_observer_folder(run_status, program_name) / (node_name + "_capture.pcap");
@@ -45,62 +44,7 @@ namespace wpa3_tester::observer{
 
         hw_capabilities::run_cmd(gen_cmd);
         return csv_path;
-    }
-
-
-    double tp_to_sec(const LogTimePoint &tp) {
-        return static_cast<double>(
-            chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count()) / 1e9;
     };
-
-    pair<vector<double>, double> change_to_rel_double(
-            const vector<LogTimePoint>& times,
-            const double start_time) {
-        vector<double> rel_times;
-        rel_times.reserve(times.size());
-        double max_time = 0;
-
-        for (const LogTimePoint& tp : times) {
-            const double t = tp_to_sec(tp) - start_time;
-            rel_times.push_back(t);
-            if (t > max_time) max_time = t;
-        }
-        return {rel_times, max_time};
-    }
-
-    void add_events(const vector<graph_lines> & events,
-        const shared_ptr<matplot::axes_type> & ax,
-        const double start_time){
-        if (!events.empty()) {
-            auto y_lims = ax->ylim();
-            const double text_y = y_lims[1] * 0.6;
-
-            for (const auto& event : events) {
-                bool first_vline = true;
-
-                // Convert this event's highlight_times to relative seconds
-                for (const LogTimePoint& tp : event.highlight_times) {
-                    const double t = tp_to_sec(tp) - start_time;
-
-                    const auto vline = ax->plot({t, t}, {y_lims[0], y_lims[1]}, "--");
-                    vline->line_style("--");
-                    vline->color(event.color);
-                    vline->line_width(2);
-
-                    const auto txt = ax->text(t, text_y, event.event_des);
-                    txt->font_size(10);
-                    txt->color(event.color);
-
-                    if (first_vline) {
-                        vline->display_name(event.event_des);
-                        first_vline = false;
-                    } else {
-                        vline->display_name("");
-                    }
-                }
-            }
-        }
-    }
 
     void times_packet_sizes_from_csv(vector<LogTimePoint> & times, vector<double> & sizes, path csv_path){
         ifstream file(csv_path.string());
@@ -122,7 +66,6 @@ namespace wpa3_tester::observer{
     }
     void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint start_time){
         if (times.empty()) return;
-
         const LogTimePoint t0 = start_time;
         for (auto& t : times) {
             auto rel = t - t0;
@@ -148,10 +91,7 @@ namespace wpa3_tester::observer{
 
     string tshark_graph(const RunStatus &rs,
                         const string &actor_name,
-                        vector<graph_lines>& events)
-    {
-        namespace fs = std::filesystem;
-
+                        vector<graph_lines>& events){
         path folder = get_observer_folder(rs, program_name);
         create_directories(folder);
 
@@ -170,9 +110,7 @@ namespace wpa3_tester::observer{
         FILE* gp = popen("gnuplot", "w");
         if (!gp) throw runtime_error("Failed to start gnuplot");
 
-        auto gpcmd = [&](const string& cmd) {
-            fprintf(gp, "%s\n", cmd.c_str());
-        };
+        auto gpcmd = [&](const string& cmd) { fprintf(gp, "%s\n", cmd.c_str());};
 
         gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
         gpcmd("set output '" + output_path.string() + "'");
@@ -254,17 +192,14 @@ namespace wpa3_tester::observer{
         }
         gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));
 
-
         //plot
         ostringstream plotcmd;
         plotcmd << "plot ";
         for (size_t i = 0; i < plot_parts.size(); ++i) {
             plotcmd << plot_parts[i];
-            if (i + 1 < plot_parts.size())
-                plotcmd << ", ";
+            if (i + 1 < plot_parts.size()) plotcmd << ", ";
         }
         gpcmd(plotcmd.str());
-
         fflush(gp);
 
         int rc = pclose(gp);

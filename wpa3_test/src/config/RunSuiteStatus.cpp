@@ -146,14 +146,13 @@ namespace wpa3_tester{
             }
 
             if (exists(rs.run_folder)) {
-                if (rewrite_mode == "all") {
-                    //FIXME
+                if (rewrite_mode == "false") {
                     log(LogLevel::DEBUG, "Skipping: %s", name.c_str());
                     continue;
                 }
 
-                if (config.at("rewrite") == "errors" && exists(path(rs.run_folder) / "errors.txt")) {
-                    log(LogLevel::WARNING, "Skipping test what cause error: %s", name.c_str());
+                if (config.at("rewrite") == "errors" && !exists(path(rs.run_folder) / "errors.txt")) {
+                    log(LogLevel::WARNING, "Skipping successful test : %s", name.c_str());
                     continue;
                 }
 

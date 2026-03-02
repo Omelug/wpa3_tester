@@ -79,7 +79,7 @@ namespace wpa3_tester{
             string type = source_info.at("type");
             if (type == "path") {
                 path rel_path = source_info.at("path").get<string>();
-                path abs_path = absolute(config_path / rel_path);
+                path abs_path = absolute(path(config_path).parent_path() / rel_path);
                 test_map.emplace_back(source_name, abs_path);
             } else if (type == "generator") {
                 auto source_config = source_info.at("config");
@@ -161,7 +161,6 @@ namespace wpa3_tester{
                     remove_all(rs.run_folder);
                 }
             }
-
             rs.execute();
         }
     }

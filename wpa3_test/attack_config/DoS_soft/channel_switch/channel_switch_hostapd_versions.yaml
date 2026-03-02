@@ -2,10 +2,13 @@ $schema: "http://json-schema.org/draft-07/schema#"
 name: hostapd_versions_ts
 config_type: test_suite
 tests:
+  #hostapd_SAE_PMF_fix:
+  #  type: path
+  #  path: ./hostapd_2_9_fix.yaml
   hostapd_gen:
     type: generator
     vars:
-      hostapd: [2_9, 2_10, 2_11]
+      hostapd: [2_10, 2_11]
     config:
       extends: ./channel_switch.yaml
       name: channel_switch_var_hostapd

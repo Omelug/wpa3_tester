@@ -87,7 +87,6 @@ namespace wpa3_tester::hostapd{
         return cfg_path.string();
     }
 
-
     void run_hostapd(RunStatus& run_status, const string &actor_name){
         nlohmann::json program_config = run_status.config.at("actors").at(actor_name).at("setup").at("program_config");
         const string hostapd_config_path = hostapd_config(

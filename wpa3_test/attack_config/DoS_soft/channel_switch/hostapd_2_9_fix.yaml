@@ -1,0 +1,15 @@
+extends: ./channel_switch.yaml
+name: channel_switch_2_9
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_9
+        ieee80211w: 1
+
+  client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_9

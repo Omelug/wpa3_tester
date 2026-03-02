@@ -26,4 +26,12 @@ namespace wpa3_tester::observer{
         }
         return obs_dir;
     }
+    void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint start_time){
+        if (times.empty()) return;
+        const LogTimePoint t0 = start_time;
+        for (auto& t : times) {
+            auto rel = t - t0;
+            t = LogTimePoint(std::chrono::duration_cast<std::chrono::nanoseconds>(rel));
+        }
+    }
 }

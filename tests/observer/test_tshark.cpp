@@ -11,6 +11,7 @@
 #include "config/RunStatus.h"
 #include "observer/tshark_wrapper.h"
 #include "logger/log.h"
+#include "observer/observers.h"
 
 using namespace std;
 using namespace filesystem;
@@ -83,3 +84,27 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
         CHECK((actual_lines[i] == expected_lines[i]));
     }
 }
+
+TEST_CASE("transform_to_relative - converts absolute timestamps to relative") {
+    using namespace wpa3_tester;
+    using namespace chrono;
+
+    const auto start = system_clock::now();
+    const LogTimePoint start_tp = time_point_cast<nanoseconds>(start);
+
+    vector<LogTimePoint> times;
+    times.push_back(start_tp + seconds(1));
+    times.push_back(start_tp + seconds(2));
+    times.push_back(start_tp + milliseconds(3500));
+
+    observer::transform_to_relative(times, start_tp);
+
+    CHECK((duration_cast<seconds>(times[0].time_since_epoch()).count() == 1));
+    CHECK((duration_cast<seconds>(times[1].time_since_epoch()).count() == 2));
+    CHECK((duration_cast<milliseconds>(times[2].time_since_epoch()).count() == 3500));
+
+    vector<LogTimePoint> empty_times;
+    observer::transform_to_relative(empty_times, start_tp);
+    CHECK(empty_times.empty());
+}
+

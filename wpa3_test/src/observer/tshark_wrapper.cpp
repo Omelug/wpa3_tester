@@ -64,14 +64,6 @@ namespace wpa3_tester::observer{
             }
         }
     }
-    void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint start_time){
-        if (times.empty()) return;
-        const LogTimePoint t0 = start_time;
-        for (auto& t : times) {
-            auto rel = t - t0;
-            t = LogTimePoint(std::chrono::duration_cast<std::chrono::nanoseconds>(rel));
-        }
-    }
 
     LogTimePoint get_pcap_start_time(const string& pcap_path) {
         const vector<string> get_start_cmd = {

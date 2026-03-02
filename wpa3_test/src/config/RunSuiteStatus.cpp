@@ -171,7 +171,7 @@ namespace wpa3_tester{
         auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
         if (tests.contains(name)) {return tests[name];}
         throw config_error("Unknown test suite name: %s", name.c_str());
-    };
+    }
 
     void RunSuiteStatus::print_test_suite_list() {
         auto tests = RunStatus::scan_attack_configs(TEST_SUITE);

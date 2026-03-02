@@ -73,6 +73,7 @@ namespace wpa3_tester::hostapd{
         out << "network={" << '\n';
         // write config
         for (auto it = client_setup.begin(); it != client_setup.end(); ++it) {
+            if(it.key() == "version") continue;
             out << "\t" << it.key() << "=";
             if (it.value().is_string() &&  it.key() != "ssid" && it.key() != "sae_password") {
                 out << it.value().get<string>();

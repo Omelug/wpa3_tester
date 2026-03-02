@@ -1,9 +1,10 @@
 #include "config/RunStatus.h"
-#include <csignal>
 #include <filesystem>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 #include "logger/error_log.h"
 #include "logger/log.h"
-#include <argparse/argparse.hpp>
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include "attacks/attacks.h"
@@ -12,6 +13,17 @@
 namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
+
+    static string current_time_string() {
+        const auto now = chrono::system_clock::now();
+        const auto timer = chrono::system_clock::to_time_t(now);
+        tm bt{};
+        localtime_r(&timer, &bt);
+
+        ostringstream oss;
+        oss << put_time(&bt, "%Y-%m-%d %H:%M:%S");
+        return oss.str();
+    }
 
     RunStatus::RunStatus(const std::string &config_path, string testName){
         this->config_path = config_path;
@@ -39,15 +51,33 @@ namespace wpa3_tester{
         error_code ec;
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
-        if(this->only_stats){stats_test(); return;}
 
-        config_requirement(); //include req validation
-        setup_test();
-        const path out_path = path(run_folder) / "test_config.yaml";
-        save_yaml(config, out_path);
-        run_test();
-        stats_test();
-    };
+        try {
+            if(this->only_stats){stats_test(); return;}
+
+            config_requirement(); //include req validation
+            setup_test();
+            const path out_path = path(run_folder) / "test_config.yaml";
+            save_yaml(config, out_path);
+            run_test();
+            stats_test();
+        } catch (const exception& e) {
+            const path error_file = path(run_folder) / "errors.txt";
+            ofstream error_log(error_file, ios::out | ios::app);
+            if (error_log.is_open()) {
+                error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
+                error_log << "Exception type: " << typeid(e).name() << endl;
+                error_log << "Message: " << e.what() << endl;
+                error_log << endl;
+                error_log.close();
+                log(LogLevel::ERROR, "Error written to %s", error_file.string().c_str());
+            } else {
+                log(LogLevel::ERROR, "Failed to open error log file: %s", error_file.string().c_str());
+            }
+            //FIXME clean up
+            throw;
+        }
+    }
 
 
     void RunStatus::run_test(){

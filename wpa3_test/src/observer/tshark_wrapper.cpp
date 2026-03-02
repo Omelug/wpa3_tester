@@ -3,6 +3,11 @@
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include <matplot/matplot.h>
+#include <cstdio>
+#include <sstream>
+#include <iomanip>
+#include <stdexcept>
+#include <algorithm>
 
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -98,51 +103,6 @@ namespace wpa3_tester::observer{
         }
     }
 
-    string plot_traffic_graph(const RunStatus& rs,
-                              const string& actor_name,
-                              const vector<LogTimePoint>& times, const vector<double>& sizes,
-                              const std::vector<graph_lines>& events) {
-        string graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
-        if (times.empty()) return "";
-
-        const auto tp_to_sec = [](const LogTimePoint& tp) {
-            return static_cast<double>(
-                chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count()) / 1e9;
-        };
-
-        const double start_time = tp_to_sec(times[0]);
-        auto [rel_times, max_time] = change_to_rel_double(times, start_time);
-
-        const auto fig = mp::figure();
-        fig->quiet_mode(true);
-        fig->width(1200);
-        fig->height(700);
-
-        const auto ax = fig->current_axes();
-        ax->xlim({0, max_time});
-        ax->ylim({1, 3000});
-
-        vector<double> y = sizes;
-        for (auto& v : y) if (v <= 0.0) v = 1e-3;
-
-        ax->xlabel("Time [s]");
-        ax->ylabel("Size [B]");
-        ax->title("Traffic: " + escape_tex(actor_name));
-
-        const auto p = ax->semilogy(rel_times, y, "ro");
-        p->marker_size(4);
-        p->marker_face_color({0, 0.5, 0.5});
-        p->display_name("");
-
-        ax->hold(true);
-
-        add_events(events, ax, start_time);
-
-        auto lgd = ax->legend();
-        fig->save(graph_path);
-        return graph_path;
-    }
-
     void times_packet_sizes_from_csv(vector<LogTimePoint> & times, vector<double> & sizes, path csv_path){
         ifstream file(csv_path.string());
         string line;
@@ -162,24 +122,103 @@ namespace wpa3_tester::observer{
         }
     }
 
-
     string tshark_graph(const RunStatus &rs,
-                        const string &actor_name,
-                        const std::vector<graph_lines>& events) {
+                              const string &actor_name,
+                              const vector<graph_lines>& events)
+    {
+        namespace fs = filesystem;
+        // get times, sizes for trafffic
         path graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
         const path csv_path = extract_pcap_to_csv(rs, actor_name);
-
         vector<LogTimePoint> times;
         vector<double> sizes;
         times_packet_sizes_from_csv(times, sizes, csv_path);
 
-        if (times.empty()) {
-            log(LogLevel::ERROR, "No data found in pcap for", actor_name.c_str());
-            return "";
+        if (times.empty() || sizes.empty() || times.size() != sizes.size()) throw runtime_error("Invalid traffic data");
+
+        path output_path =  get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
+
+        FILE* gp = popen("gnuplot", "w");
+        if (!gp) throw runtime_error("Failed to start gnuplot");
+
+        auto gpcmd = [&](const string& cmd) {
+            fprintf(gp, "%s\n", cmd.c_str());
+        };
+
+        gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
+        gpcmd("set output '" + output_path.string() + "'");
+        gpcmd("set grid");
+        gpcmd("set xlabel 'Time (s)'");
+        gpcmd("set ylabel 'Packet Size'");
+
+        gpcmd("$traffic << EOD");
+        for (size_t i = 0; i < times.size(); ++i) {
+            double t = chrono::duration<double>(
+                           times[i].time_since_epoch()).count();
+            gpcmd(std::to_string(t) + " " + std::to_string(sizes[i]));
+        }
+        gpcmd("EOD");
+
+        auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
+        double ymin = *min_it;
+        double ymax = *max_it;
+        double pad = (ymax - ymin) * 0.2;
+        if (pad == 0) pad = 1.0;
+        ymin -= pad;
+        ymax += pad;
+
+        ostringstream yr;
+        yr << "set yrange [" << ymin << ":" << ymax << "]";
+        gpcmd(yr.str());
+
+        gpcmd("$events << EOD");
+
+        size_t global_index = 0;
+
+        for (const auto& ev : events) {
+            for (const auto& tp : ev.highlight_times) {
+
+                double t = chrono::duration<double>(
+                               tp.time_since_epoch()).count();
+
+                double y;
+                if (global_index % 2 == 0)
+                    y = ymax - pad * (0.3 + (global_index % 5) * 0.05);
+                else
+                    y = ymin + pad * (0.3 + (global_index % 5) * 0.05);
+
+                ostringstream oss;
+                oss << fixed << setprecision(6)
+                    << t << " " << y << " \""
+                    << ev.event_des << "\" \""
+                    << ev.color << "\"";
+
+                gpcmd(oss.str());
+                global_index++;
+            }
         }
 
-        return plot_traffic_graph(rs, actor_name, times, sizes, events);
-    }
+        gpcmd("EOD");
 
+        gpcmd("set multiplot layout 1,1 title 'Network Traffic - " + actor_name + "'");
+
+        ostringstream plotcmd;
+        plotcmd
+            << "plot "
+            << "$traffic using 1:2 with lines lw 2 lc rgb '#1f77b4' title 'Traffic', "
+            << "$events using 1:(" << ymin << "):(" << ymax << "):5 "
+            << "with lines lc rgb variable dt 2 notitle, "
+            << "$events using 1:2:5 with points pt 7 ps 1.5 lc rgb variable notitle, "
+            << "$events using 1:2:3:5 with labels tc rgb variable offset 0.5,0.5 notitle";
+
+        gpcmd(plotcmd.str());
+        gpcmd("unset multiplot");
+
+        fflush(gp);
+        int rc = pclose(gp);
+        if (rc != 0) throw runtime_error("Gnuplot failed");
+
+        return output_path.string();
+    }
 }
 

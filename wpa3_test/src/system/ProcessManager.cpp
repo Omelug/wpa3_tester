@@ -66,10 +66,23 @@ namespace wpa3_tester{
 
                 if (ec == errc::timed_out)continue;
                 if(ec){
-                    // EPIPE (Broken pipe) is expected when process exits normally
-                    log(LogLevel::INFO, "Draining thread for %s exiting: %s (code: %d)",
-                        process_name.c_str(), ec.message().c_str(), ec.value());
-                    break;
+                    if (ec == errc::broken_pipe ||
+                    ec == errc::no_such_process) {
+
+                    // Normální konec procesu
+                    log(LogLevel::DEBUG,
+                        "Drain thread for %s finished (normal exit): %s",
+                        process_name.c_str(),
+                        ec.message().c_str());
+                } else {
+                    log(LogLevel::ERROR,
+                        "Drain thread for %s error: %s (code: %d)",
+                        process_name.c_str(),
+                        ec.message().c_str(),
+                        ec.value());
+                }
+
+                break;
                 }
                 if (events & reproc::event::out) {
                     auto [n, read_ec] =
@@ -166,7 +179,7 @@ namespace wpa3_tester{
     }
     void ProcessManager::wait_for(const string &actor_name,
                               const string &pattern,
-                              chrono::seconds timeout)
+                              seconds timeout)
     {
         shared_ptr<ManagedProcess> mp;
 

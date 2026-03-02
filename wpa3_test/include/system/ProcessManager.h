@@ -75,7 +75,7 @@ namespace wpa3_tester{
         void discard_history(const std::string &actor_name);
 
         void wait_for(const std::string &actor_name, const std::string &pattern,
-                      std::chrono::seconds timeout = std::chrono::seconds(30));
+                      std::chrono::seconds timeout = std::chrono::minutes(60)); // 60 minutes (practically infinity)
         //void close_and_remove_log(const std::string &key);
         void stop(const std::string &process_name);
 

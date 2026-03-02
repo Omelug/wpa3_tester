@@ -19,5 +19,5 @@ namespace wpa3_tester::observer{
 
     std::string tshark_graph(const RunStatus &rs,
             const std::string& actor_name,
-            const std::vector<graph_lines>& events);
+            std::vector<graph_lines>& events);
 }

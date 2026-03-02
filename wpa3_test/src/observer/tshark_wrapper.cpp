@@ -38,10 +38,9 @@ namespace wpa3_tester::observer{
 
         const vector<string> gen_cmd = {
             "sh", "-c",
-            "tshark -t ad -r " + pcap_path.string() +
-                " -T fields -e frame.time"
-                " -e frame.len "
-                "-E separator=, > " + csv_path.string()
+            "tshark -l -t ad -r '" + pcap_path.string() +
+            "' -T fields -e frame.time -e frame.len -E separator=, > '" +
+            csv_path.string() + "'"
         };
 
         hw_capabilities::run_cmd(gen_cmd);
@@ -121,22 +120,52 @@ namespace wpa3_tester::observer{
             }
         }
     }
+    void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint start_time){
+        if (times.empty()) return;
+
+        const LogTimePoint t0 = start_time;
+        for (auto& t : times) {
+            auto rel = t - t0;
+            t = LogTimePoint(std::chrono::duration_cast<std::chrono::nanoseconds>(rel));
+        }
+    }
+
+    LogTimePoint get_pcap_start_time(const string& pcap_path) {
+        const vector<string> get_start_cmd = {
+            "tshark","-t","ad", "-r", pcap_path,
+            "-T", "fields", "-e", "frame.time", "-c", "1"
+        };
+
+        string start_str = hw_capabilities::run_cmd_output(get_start_cmd);
+        start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
+        start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
+
+        if (start_str.empty()) {
+            throw runtime_error("Failed to get ISO start time from PCAP: " + pcap_path);
+        }
+        return log_time_to_epoch_ns(start_str);
+    }
 
     string tshark_graph(const RunStatus &rs,
-                              const string &actor_name,
-                              const vector<graph_lines>& events)
+                        const string &actor_name,
+                        vector<graph_lines>& events)
     {
-        namespace fs = filesystem;
-        // get times, sizes for trafffic
-        path graph_path = get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
+        namespace fs = std::filesystem;
+
+        path folder = get_observer_folder(rs, program_name);
+        create_directories(folder);
+
+        path output_path = folder / (actor_name + "_graph.png");
         const path csv_path = extract_pcap_to_csv(rs, actor_name);
+
         vector<LogTimePoint> times;
         vector<double> sizes;
         times_packet_sizes_from_csv(times, sizes, csv_path);
-
-        if (times.empty() || sizes.empty() || times.size() != sizes.size()) throw runtime_error("Invalid traffic data");
-
-        path output_path =  get_observer_folder(rs, program_name) / (actor_name + "_graph.png");
+        const path pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
+        auto start_time = get_pcap_start_time(pcap_path);
+        transform_to_relative(times, start_time);
+        if (times.empty() || sizes.empty() || times.size() != sizes.size())
+            throw runtime_error("Invalid traffic data");
 
         FILE* gp = popen("gnuplot", "w");
         if (!gp) throw runtime_error("Failed to start gnuplot");
@@ -151,14 +180,6 @@ namespace wpa3_tester::observer{
         gpcmd("set xlabel 'Time (s)'");
         gpcmd("set ylabel 'Packet Size'");
 
-        gpcmd("$traffic << EOD");
-        for (size_t i = 0; i < times.size(); ++i) {
-            double t = chrono::duration<double>(
-                           times[i].time_since_epoch()).count();
-            gpcmd(std::to_string(t) + " " + std::to_string(sizes[i]));
-        }
-        gpcmd("EOD");
-
         auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
         double ymin = *min_it;
         double ymax = *max_it;
@@ -167,57 +188,75 @@ namespace wpa3_tester::observer{
         ymin -= pad;
         ymax += pad;
 
-        ostringstream yr;
-        yr << "set yrange [" << ymin << ":" << ymax << "]";
-        gpcmd(yr.str());
-
-        gpcmd("$events << EOD");
-
-        size_t global_index = 0;
-
-        for (const auto& ev : events) {
-            for (const auto& tp : ev.highlight_times) {
-
-                double t = chrono::duration<double>(
-                               tp.time_since_epoch()).count();
-
-                double y;
-                if (global_index % 2 == 0)
-                    y = ymax - pad * (0.3 + (global_index % 5) * 0.05);
-                else
-                    y = ymin + pad * (0.3 + (global_index % 5) * 0.05);
-
-                ostringstream oss;
-                oss << fixed << setprecision(6)
-                    << t << " " << y << " \""
-                    << ev.event_des << "\" \""
-                    << ev.color << "\"";
-
-                gpcmd(oss.str());
-                global_index++;
-            }
+        {
+            ostringstream yr;
+            yr << "set yrange [" << ymin << ":" << ymax << "]";
+            gpcmd(yr.str());
         }
 
+        // traffic
+        gpcmd("$traffic << EOD");
+        for (size_t i = 0; i < times.size(); ++i) {
+            double t = chrono::duration<double>(times[i].time_since_epoch()).count();
+            ostringstream line;
+            line << fixed << setprecision(9) << t << " " << sizes[i];
+            gpcmd(line.str());
+        }
         gpcmd("EOD");
 
-        gpcmd("set multiplot layout 1,1 title 'Network Traffic - " + actor_name + "'");
+        // events
+        vector<string> plot_parts;
+        plot_parts.push_back("$traffic using 1:2 with points pt 7 ps 0.7 lc rgb '#1f77b4' title 'Traffic'");
 
+        size_t event_block_index = 0;
+        size_t label_index = 0;
+        for (auto& ev : events) {
+            if (ev.highlight_times.empty()) continue;
+            string block_name = "$ev" + std::to_string(event_block_index++);
+            gpcmd(block_name + " << EOD");
+            for (const auto& tp : ev.highlight_times) {
+
+                //transform
+                auto rel_dur = tp - start_time;
+                double t = chrono::duration<double>(rel_dur).count();
+
+                // Teď je 't' malé číslo (např. 1.5), které přesně sedí k tshark -t r
+                double y = (label_index % 2 == 0) ? ymax - pad * 0.3 : ymin + pad * 0.3;
+
+                ostringstream row;
+                row << fixed << setprecision(6) << t << " " << y << " \"" << ev.event_des << "\"";
+                gpcmd(row.str());
+                label_index++;
+            }
+            gpcmd("EOD");
+
+            ostringstream part;
+            part
+                << block_name << " using 1:(" << ymin << "):(" << ymax << ") "
+                << "with lines lc rgb '" << ev.color << "' dt 2 notitle, "
+                << block_name << " using 1:2 "
+                << "with points pt 7 ps 1.5 lc rgb '" << ev.color << "' notitle, "
+                << block_name << " using 1:2:3 "
+                << "with labels tc rgb '" << ev.color << "' offset 0.5,0.5 notitle";
+            plot_parts.push_back(part.str());
+        }
+        gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));
+
+
+        //plot
         ostringstream plotcmd;
-        plotcmd
-            << "plot "
-            << "$traffic using 1:2 with lines lw 2 lc rgb '#1f77b4' title 'Traffic', "
-            << "$events using 1:(" << ymin << "):(" << ymax << "):5 "
-            << "with lines lc rgb variable dt 2 notitle, "
-            << "$events using 1:2:5 with points pt 7 ps 1.5 lc rgb variable notitle, "
-            << "$events using 1:2:3:5 with labels tc rgb variable offset 0.5,0.5 notitle";
-
+        plotcmd << "plot ";
+        for (size_t i = 0; i < plot_parts.size(); ++i) {
+            plotcmd << plot_parts[i];
+            if (i + 1 < plot_parts.size())
+                plotcmd << ", ";
+        }
         gpcmd(plotcmd.str());
-        gpcmd("unset multiplot");
 
         fflush(gp);
+
         int rc = pclose(gp);
         if (rc != 0) throw runtime_error("Gnuplot failed");
-
         return output_path.string();
     }
 }

@@ -183,14 +183,17 @@ namespace wpa3_tester::observer{
         auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
         double ymin = *min_it;
         double ymax = *max_it;
-        double pad = (ymax - ymin) * 0.2;
+        double y_center = (ymin + ymax) / 2.0;
+        double pad = (ymax - ymin) * 0.5;
         if (pad == 0) pad = 1.0;
         ymin -= pad;
         ymax += pad;
 
         {
             ostringstream yr;
-            yr << "set yrange [" << ymin << ":" << ymax << "]";
+            gpcmd("set tmargin 5");
+            gpcmd("set bmargin 5");
+            gpcmd("set yrange [" + std::to_string(ymin - pad) + ":" + std::to_string(ymax + pad) + "]");
             gpcmd(yr.str());
         }
 
@@ -210,6 +213,7 @@ namespace wpa3_tester::observer{
 
         size_t event_block_index = 0;
         size_t label_index = 0;
+
         for (auto& ev : events) {
             if (ev.highlight_times.empty()) continue;
             string block_name = "$ev" + std::to_string(event_block_index++);
@@ -220,11 +224,16 @@ namespace wpa3_tester::observer{
                 auto rel_dur = tp - start_time;
                 double t = chrono::duration<double>(rel_dur).count();
 
-                // Teď je 't' malé číslo (např. 1.5), které přesně sedí k tshark -t r
-                double y = (label_index % 2 == 0) ? ymax - pad * 0.3 : ymin + pad * 0.3;
+                double y = (event_block_index % 2 == 0) ? //FIXME
+                    ymax - (ymax-y_center)*event_block_index*(1/static_cast<double>(events.size())):
+                    ymin + (y_center-ymin)*event_block_index*(1/static_cast<double>(events.size()));
 
                 ostringstream row;
-                row << fixed << setprecision(6) << t << " " << y << " \"" << ev.event_des << "\"";
+                row << fixed << setprecision(6)
+                    << t << " "          // Sloupec 1: X (čas)
+                    << y << " "          // Sloupec 2: Y (pozice popisku)
+                    << y_center << " "   // Sloupec 3: Y_target (střed grafu)
+                    << "\"" << ev.event_des << "\""; // Sloupec 4: Text
                 gpcmd(row.str());
                 label_index++;
             }
@@ -232,12 +241,17 @@ namespace wpa3_tester::observer{
 
             ostringstream part;
             part
-                << block_name << " using 1:(" << ymin << "):(" << ymax << ") "
-                << "with lines lc rgb '" << ev.color << "' dt 2 notitle, "
-                << block_name << " using 1:2 "
-                << "with points pt 7 ps 1.5 lc rgb '" << ev.color << "' notitle, "
-                << block_name << " using 1:2:3 "
-                << "with labels tc rgb '" << ev.color << "' offset 0.5,0.5 notitle";
+                // 1. Svislá čára od popisku ke středu (pomocí vectors)
+                // using x : y : (0) : (y_target - y)
+                << block_name << " using 1:2:(0):($3-$2) with vectors nohead lc rgb '" << ev.color << "' dt 2 notitle, "
+
+                // 2. Bod na pozici popisku
+                << block_name << " using 1:2 with points pt 7 ps 1.2 lc rgb '" << ev.color << "' notitle, "
+
+                // 3. Samotný popisek (labels)
+                << block_name << " using 1:2:4 with labels tc rgb '" << ev.color << "' "
+                << (label_index % 2 == 0 ? "offset 0,1" : "offset 0,-1") << " rotate by 45 notitle";
+
             plot_parts.push_back(part.str());
         }
         gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));

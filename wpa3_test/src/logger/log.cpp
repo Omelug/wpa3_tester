@@ -59,10 +59,6 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "%s: %s", name, keys.c_str());
     }
 
-    static auto opt_or(const optional<string> &v, const char *fallback)->const char *{
-        return v.has_value() ? v->c_str() : fallback;
-    }
-
     void log_actor_configs(const ActorCMap& m, ofstream& ofs) {
         for (const auto &[name, actor] : m) {
             ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
@@ -70,10 +66,10 @@ namespace wpa3_tester{
         for (const auto& [name, actor] : m) {
             // Build a human-readable line
             const string line =
-                "Actor '" + name + "': iface=" + opt_or(actor->str_con.at("iface"), "<none>") +
-                ", mac="    + opt_or(actor->str_con.at("mac"),   "<none>") +
-                ", essid="  + opt_or(actor->str_con.at("essid"), "<none>") +
-                ", driver=" + opt_or(actor->str_con.at("driver"),"<none>");
+                "Actor '" + name + "': iface=" + actor->str_con.at("iface").value_or("<none>") +
+                ", mac="    + actor->str_con.at("mac").value_or("<none>") +
+                ", essid="  + actor->str_con.at("essid").value_or("<none>") +
+                ", driver=" + actor->str_con.at("driver").value_or("<none>");
 
             //log(LogLevel::DEBUG, "%s", line.c_str());
 

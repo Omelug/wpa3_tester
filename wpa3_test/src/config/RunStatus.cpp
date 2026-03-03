@@ -91,34 +91,38 @@ namespace wpa3_tester{
         attack_module_maps::stats_map[config.at("attacker_module")](*this);
     }
 
-    void RunStatus::save_actor_interface_mapping() const{
+    void write_actors_csv(const ActorCMap& actors, const string& type, ofstream& ofs){
+        for (const auto& [name, actor] : actors) {
+            ofs << type << ","
+                << name << ","
+                << actor->str_con.at("iface").value_or("<none>") << ","
+                << actor->str_con.at("mac").value_or("<none>") << ","
+                << actor->str_con.at("driver").value_or("<none>") << endl;
+        }
+    }
 
-        // mapping of actors -> iface to run_folder/mapping.txt
+    void RunStatus::save_actor_interface_mapping() const {
         if (run_folder.empty()) {
             log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
             return;
         }
 
-        const string path = run_folder + "/mapping.txt";
+        const string path = run_folder + "/mapping.csv";
         ofstream ofs(path, ios::out | ios::trunc);
         if (!ofs) {
-            log(LogLevel::ERROR, "Failed to open %s for writing actor/interface mapping", path.c_str());
+            log(LogLevel::ERROR, "Failed to open %s for writing CSV mapping", path.c_str());
             return;
         }
 
-        ofs << "Actor->interface mapping" << endl;
-        ofs << "Internal mapping" << endl;
-        log_actor_configs(internal_actors, ofs);
+        ofs << "Type,ActorName,Interface,MAC,Driver" << endl;
 
-        ofs << "External mapping" << endl;
-        log_actor_configs(external_actors, ofs);
-
-        ofs << "Simulation mapping" << endl;
-        log_actor_configs(simulation_actors, ofs);
+        write_actors_csv(internal_actors, "Internal", ofs);
+        write_actors_csv(external_actors, "External", ofs);
+        write_actors_csv(simulation_actors, "Simulation", ofs);
 
         ofs.close();
-        log(LogLevel::INFO, "Actor/interface mapping written to %s", path.c_str());
-    };
+        log(LogLevel::INFO, "Actor/interface mapping written to CSV: %s", path.c_str());
+    }
 
     Actor_config& RunStatus::get_actor(const string& actor_name){
         Actor_config* found = nullptr;

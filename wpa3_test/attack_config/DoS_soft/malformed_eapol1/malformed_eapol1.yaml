@@ -21,6 +21,7 @@ actors:
         rsn_pairwise: CCMP
         wpa_passphrase: password123
         channel: 6
+        version: 2_10
       channel: 6
     ip_addr: "10.0.0.1"
   client:
@@ -36,6 +37,7 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
+        version: 2_10
       channel: 6
     netns: sta
     ip_addr: "10.0.0.2"

@@ -120,7 +120,7 @@ namespace wpa3_tester::bl0ck_attack{
         const int frame_num = att_cfg.at("frame_number").get<int>();
         const bool is_random = att_cfg.at("random").get<bool>();
 
-        speed_observation_start(rs); // TODO separate from channel switch attack
+        speed_observation_start(rs);
 
         log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
         this_thread::sleep_for(seconds(10));

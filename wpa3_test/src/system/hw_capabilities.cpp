@@ -11,7 +11,7 @@
 
 #include "system/hw_capabilities.h"
 
-#include "config/global_paths.h"
+#include "config/global_config.h"
 #include "system/iface.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"

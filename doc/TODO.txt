@@ -1,6 +1,5 @@
 //TODO
 t: Actor with internal and AP should accept essid with different essid, but change it
-+: attacks setup catch
 f: add network manager off option for actors
 +: check in setup_chs_attack actors are available
 +: better req_error messages
@@ -20,10 +19,7 @@ f: check WPA2/SAE support correctly
 Test cases:
 f: all process have to killed before test
 
-tests:
-+: all vars musí být stejně velký
+TODO inject mode condition
 
-libraries:
-change library for graphs, matplot++ has no rotation of text
-
-TODO attack uspočádat podle attack_config
+// TODO new attacks?
+State Poisoning (2025_SACRED)

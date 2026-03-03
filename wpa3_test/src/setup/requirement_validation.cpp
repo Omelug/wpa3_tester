@@ -208,7 +208,6 @@ namespace wpa3_tester{
             if (config.at("actors").at(actorName).contains("channel")) {
                 ifc.set_channel(config.at("actors").at(actorName).at("channel"));
             }
-
             actor = make_unique<Actor_config>(*optIt->second);
         }
 

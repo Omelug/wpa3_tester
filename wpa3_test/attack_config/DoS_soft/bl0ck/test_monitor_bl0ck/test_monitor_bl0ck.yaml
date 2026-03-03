@@ -7,9 +7,13 @@ actors:
     source: internal
     selection:
       condition: [monitor]
+      driver: mt76x2u
+    channel: 1
+    netns: rx
   transceiver:
     type: STA
     source: internal
     selection:
       condition: [monitor]
-    netns: tx
+      driver: rtw_8821au
+    channel: 1

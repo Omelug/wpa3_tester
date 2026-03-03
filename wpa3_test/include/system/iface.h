@@ -5,6 +5,7 @@
 #include <vector>
 
 namespace wpa3_tester{
+    // class for working with
     class iface {
     public:
         void set_channel(int channel) const;

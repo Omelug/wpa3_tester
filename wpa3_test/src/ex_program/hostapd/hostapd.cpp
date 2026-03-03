@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
-#include "config/global_paths.h"
+#include "config/global_config.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "ex_program/hostapd/hostpad.h"
 #include "logger/log.h"
@@ -103,7 +103,7 @@ namespace wpa3_tester::hostapd{
 
         command.insert(command.end(), {
             get_hostapd(version),
-            "-dd",
+            //"-dd",
             "-i", run_status.get_actor(actor_name)["iface"],
             hostapd_config_path,
         });

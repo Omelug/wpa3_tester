@@ -94,7 +94,6 @@ namespace wpa3_tester::observer{
         }
 
         const IperfData data = parse_iperf_log(log_path, actor_tag);
-
         if (data.bandwidths.empty()) {
             log(LogLevel::WARNING, "No samples parsed for: %s", actor_tag.c_str());
             return;

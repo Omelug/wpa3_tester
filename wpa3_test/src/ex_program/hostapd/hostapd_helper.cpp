@@ -1,4 +1,4 @@
-#include "config/global_paths.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"

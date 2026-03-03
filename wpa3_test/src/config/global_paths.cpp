@@ -9,13 +9,13 @@ namespace wpa3_tester {
     using namespace filesystem;
     using json = nlohmann::json;
 
-    nlohmann::json& get_global_paths() {
+    nlohmann::json& get_global_config() {
         static json global_paths_cache{};
         static bool loaded = false;
 
         if (!loaded) {
             try {
-                const path global_paths_file = path(PROJECT_ROOT_DIR) / "attack_config" / "global_paths.yaml";
+                const path global_paths_file = path(PROJECT_ROOT_DIR) / "attack_config" / "global_config.yaml";
                 if (!exists(global_paths_file)) {
                     throw config_error("Global paths configuration file not found: " + global_paths_file.string());
                 }

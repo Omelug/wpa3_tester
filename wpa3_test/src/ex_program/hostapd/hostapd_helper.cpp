@@ -95,7 +95,7 @@ namespace wpa3_tester::hostapd{
             return "hostapd";
         }
 
-        const string hostapd_folder_str = get_global_paths().at("hostapd").at("hostapd_build_folder");
+        const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
         const path hostapd_folder(hostapd_folder_str);
 
         string bin_name = "hostapd_" + version;
@@ -158,7 +158,7 @@ namespace wpa3_tester::hostapd{
             return "wpa_supplicant";
         }
 
-        const string hostapd_folder_str = get_global_paths().at("hostapd").at("hostapd_build_folder");
+        const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
         const path hostapd_folder(hostapd_folder_str);
 
         string bin_name = "wpa_supplicant_" + version;

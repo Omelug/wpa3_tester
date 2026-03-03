@@ -1,9 +1,0 @@
-# THIS IS ONLY EXAMPLE
-# change needed paths
-#TODO create config wizard after first install
-
-# These config keys are not included in result config,
-hostapd:
-  # in this folder will be folder with cloned repository and binaries
-  # (create empty folder if not sure, it will be build automatically)
-  hostapd_build_folder: /home/kali/Documents/WPA3/hostapd

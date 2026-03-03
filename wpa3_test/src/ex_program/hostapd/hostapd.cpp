@@ -103,6 +103,7 @@ namespace wpa3_tester::hostapd{
 
         command.insert(command.end(), {
             get_hostapd(version),
+            "-dd",
             "-i", run_status.get_actor(actor_name)["iface"],
             hostapd_config_path,
         });
@@ -127,6 +128,7 @@ namespace wpa3_tester::hostapd{
 
         command.insert(command.end(), {
             get_wpa_supplicant(version),
+            //"-dd",
             "-i", run_status.get_actor(actor_name)["iface"],
             "-c", wpa_supp_config_path
         });

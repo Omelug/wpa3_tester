@@ -7,14 +7,24 @@ attack_config:
   attack_time_sec: 30
   attack_variant: "BAR"
   random: false
-  frame_number: 10
+  frame_number: 50
 actors:
   access_point:
-    selection:
-      driver: rtw_8821au
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+#    selection:
+#      driver: mt76x2u
   client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
     selection:
-      driver: mt76x2u
-  attacker:
-    selection:
-      driver: rtl8xxxu
+      condition: [monitor]
+#     driver: rtw_8821au
+
+#  attacker:
+#    selection:
+#      driver: rtl8xxxu

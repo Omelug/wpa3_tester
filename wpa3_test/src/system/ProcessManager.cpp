@@ -69,7 +69,6 @@ namespace wpa3_tester{
                     if (ec == errc::broken_pipe ||
                     ec == errc::no_such_process) {
 
-                    // Normální konec procesu
                     log(LogLevel::DEBUG,
                         "Drain thread for %s finished (normal exit): %s",
                         process_name.c_str(),
@@ -132,12 +131,13 @@ namespace wpa3_tester{
         options.redirect.parent = false;
 
         path log_dir = log_base_dir;
-        const path log_path = log_dir / (process_name + ".log");
+        path log_path = log_dir / (process_name + ".log");
 
         string wd_string; // need to be outside if, to be valid
         if (!working_dir.empty()) {
             wd_string = working_dir.string();
             options.working_directory = wd_string.c_str();
+            log_path = working_dir / (process_name + ".log");
         }
 
         // Log command line FIRST for debugging
@@ -179,7 +179,7 @@ namespace wpa3_tester{
     }
     void ProcessManager::wait_for(const string &actor_name,
                               const string &pattern,
-                              seconds timeout)
+                              const seconds timeout)
     {
         shared_ptr<ManagedProcess> mp;
 

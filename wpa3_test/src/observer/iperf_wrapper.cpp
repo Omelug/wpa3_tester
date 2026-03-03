@@ -10,11 +10,15 @@
 #include <sciplot/sciplot.hpp>
 #include <matplot/matplot.h>
 
+#include "observer/observers.h"
+
 namespace wpa3_tester::observer{
     using namespace std;
     using namespace sciplot;
-    namespace mp = matplot;
-    IperfData parse_iperf_log(const filesystem::path &log_path, const string &actor_tag) {
+    using namespace matplot;
+    using namespace filesystem;
+
+    IperfData parse_iperf_log(const path &log_path, const string &actor_tag) {
         IperfData data;
         ifstream ifs(log_path);
         if (!ifs.is_open()) return data;
@@ -36,17 +40,16 @@ namespace wpa3_tester::observer{
                 double bw = stod(line.substr(start, end - start));
                 data.bandwidths.push_back(bw);
                 data.intervals.push_back(static_cast<double>(data.bandwidths.size()));
-            } catch (...) { continue; }
+            } catch (...) {}
         }
         return data;
     }
 
     static void render_graph(const IperfData &data,
                              const string &label,
-                             const filesystem::path &output_path,
+                             const path &output_path,
                              const PlotLibrary lib){
         if (data.bandwidths.empty()) return;
-
         if (lib == PlotLibrary::SCIPLOT) {
             Plot2D plot;
             plot.xlabel("Sample [ms]");
@@ -59,7 +62,7 @@ namespace wpa3_tester::observer{
             canvas.save(output_path.string());
 
         } else if (lib == PlotLibrary::MATPLOT) {
-            auto f = mp::figure(true);
+            auto f = figure(true);
             f->quiet_mode(true);
             auto ax = f->current_axes();
 
@@ -77,16 +80,15 @@ namespace wpa3_tester::observer{
             ax->legend();
             //f->draw();
             f->save(output_path.string());
-
         }
     }
 
-    void iperf3_graph(const filesystem::path &log_path,
+    void iperf3_graph(const path &log_path,
                              const string &actor_tag,
                              const string &output_png,
                              const PlotLibrary lib) {
 
-        if (!filesystem::exists(log_path)) {
+        if (!exists(log_path)) {
             log(LogLevel::ERROR, "iperf3 log file not found: %s", log_path.string().c_str());
             return;
         }
@@ -98,7 +100,7 @@ namespace wpa3_tester::observer{
             return;
         }
 
-        const filesystem::path full_output_path = log_path.parent_path() / output_png;
+        const path full_output_path = log_path.parent_path() / output_png;
         try {
             render_graph(data, actor_tag, full_output_path, lib);
             log(LogLevel::INFO, "Graph saved via %s to %s",
@@ -108,6 +110,7 @@ namespace wpa3_tester::observer{
             log(LogLevel::ERROR, "Rendering failed: %s", e.what());
         }
     }
+
     /*
        const fs::path obs_dir = observer::get_observer_folder(rs, "iperf");
        rs.process_manager.run("iperf3_server",{
@@ -140,4 +143,34 @@ namespace wpa3_tester::observer{
         //"-J",
         //"--logfile","iperf_client.json"
     }, obs_dir);*/
+
+    constexpr string program_name = "iperf3";
+    void start_iperf3(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){
+        vector<string> command = {"sudo"};
+        add_nets(run_status,command, src_name);
+        command.insert(command.end(), {
+            "stdbuf", "-oL", "-eL",  // disable buffering for immediate output
+            program_name,
+            "-B", run_status.config.at("actors").at(src_name).at("ip_addr"),
+            "-c", run_status.config.at("actors").at(dst_name).at("ip_addr"),
+            "-u",
+            "-b", "10M",
+            "-t", "0" // infinity
+        });
+        run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, program_name));
+    }
+
+    void start_iperf3_server(RunStatus& run_status, const string &actor_name, const string &server_name){
+        vector<string> command = {"sudo"};
+        add_nets(run_status, command, server_name);
+        command.insert(command.end(), {
+            "stdbuf", "-oL", "-eL",  // disable buffering for immediate output
+            program_name,
+            "-s",                // server
+            "-p", "5201",        // port
+            //"--one-off"
+        });
+
+        run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, actor_name));
+    }
 }

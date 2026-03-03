@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "logger/error_log.h"
+#include "observer/iperf_wrapper.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
@@ -22,7 +23,7 @@ namespace wpa3_tester::bl0ck_attack{
         frame.subtype(subtype);
         frame.addr1(ap_hw); // Receiver Address (RA)
 
-        vector addr2_bytes(sta_hw.begin(), sta_hw.end());
+        const vector addr2_bytes(sta_hw.begin(), sta_hw.end());
 
         const vector<uint8_t> payload_data = {
             0x04, 0x00, 0x74, 0x49, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -87,8 +88,22 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     void speed_observation_start(RunStatus &rs){
-        observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_thark(rs, "client", "udp port 5201");
+        //observer::start_musezahn(rs, "mz_gen", "client", "access_point");
+        observer::start_iperf3_server(rs,"iperf_server", "access_point");
+        rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
+        observer::start_iperf3(rs,"iperf_client", "client", "access_point");
+
+        const string c_mac = rs.get_actor("client")["mac"];
+        const string a_mac = rs.get_actor("attacker")["mac"];
+        const string ap_mac = rs.get_actor("access_point")["mac"];
+
+        const string mac_filter = "(ether host " + c_mac + " or ether host " + a_mac + " or ether host " + ap_mac + ")";
+        const string full_filter = mac_filter; //+ " and (link[0] == 0x88 or link[0] == 0x84)";
+        observer::start_thark(rs, "attacker", full_filter);
+
+        //FIXME vypadá to, že
+        observer::start_thark(rs, "client", "(link[0] == 0x88 or link[0] == 0x84)");
+        //observer::start_thark(rs, "access_point", "udp port 5201");
     }
 
     void run_bl0ck_attack(RunStatus& rs){
@@ -118,18 +133,27 @@ namespace wpa3_tester::bl0ck_attack{
             }*/
             throw not_implemented_error("Unsupported attack type");
         }
-        this_thread::sleep_for(seconds(5));
+        this_thread::sleep_for(seconds(10));
         log(LogLevel::INFO, "Block Attack END");
     }
 
     void stats_bl0ck_attack(const RunStatus& rs){
         log(LogLevel::INFO , "Bl0ck attack stats");
-        //const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 
         vector<observer::graph_lines> events;
-        //events.push_back({disconn_events,"DISCONN", "red"});
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN", "red"});
+        events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
+        events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
-        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+
+        observer::tshark_graph(rs, "attacker", events);
+
+        // iperf graphs
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
+        observer::tshark_graph(rs, "client", events);
+        //observer::tshark_graph(rs, "access_point", events);
+
         log(LogLevel::INFO, "Bl0ck attack stop");
     }
 }

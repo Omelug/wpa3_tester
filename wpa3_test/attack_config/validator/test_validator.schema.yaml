@@ -11,12 +11,12 @@ config_type:
   type: string
   const: test
   description: "Have to be test or not included"
-ignore_interfaces:
-  type: array
-  items:
-    type: string
-  minItems: 1
-  description: ignore interfaces (to ignore interface where is notebook connected to internet)
+#ignore_interfaces:
+#  type: array
+#  items:
+#    type: string
+#  minItems: 1
+#  description: ignore interfaces (to ignore interface where is notebook connected to internet)
 properties:
   extends:
     type: string

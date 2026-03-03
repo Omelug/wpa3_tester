@@ -1,8 +1,10 @@
 #pragma once
 #include <filesystem>
 #include <vector>
+#include "config/RunStatus.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester::observer{
+
     enum class PlotLibrary {
         SCIPLOT,
         MATPLOT
@@ -17,4 +19,13 @@ namespace wpa3_tester{
                              const std::string &actor_tag,
                              const std::string &output_png,
                              PlotLibrary lib = PlotLibrary::MATPLOT);
+
+    void start_iperf3(RunStatus& run_status,
+                    const std::string &actor_name,
+                    const std::string &src_name,
+                    const std::string &dst_name);
+
+    void start_iperf3_server(RunStatus& run_status,
+                    const std::string &actor_name,
+                    const std::string &server_name);
 }

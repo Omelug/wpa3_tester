@@ -1,7 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: channel_switch_test
 attacker_module: channel_switch
-ignore_interfaces: [wlan0]
 actors:
   access_point:
     type: AP

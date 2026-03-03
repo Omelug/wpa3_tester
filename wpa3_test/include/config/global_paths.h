@@ -2,5 +2,5 @@
 #include <nlohmann/json.hpp>
 
 namespace wpa3_tester{
-    nlohmann::json& get_global_paths();
+    nlohmann::json& get_global_config();
 }

@@ -1,7 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: full_no_exteds_test
 attacker_module: attacker_module
-ignore_interfaces: [wlan0]
 actors:
   access_point:
     type: AP

@@ -1,0 +1,15 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: bl0ck_monitor_test
+attacker_module: bl0ck_monitor_test
+actors:
+  receiver:
+    type: STA
+    source: internal
+    selection:
+      condition: [monitor]
+  transceiver:
+    type: STA
+    source: internal
+    selection:
+      condition: [monitor]
+    netns: tx

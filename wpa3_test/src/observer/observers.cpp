@@ -21,8 +21,8 @@ namespace wpa3_tester::observer{
         create_directories(obs_dir, ec);
         if (ec) {
             log(LogLevel::ERROR,
-                "Failed to create iperf3 observer dir %s: %s",
-                obs_dir.string().c_str(), ec.message().c_str());
+                "Failed to create %s e %observer dir %s: %s",
+                observer_name.c_str(), obs_dir.string().c_str(), ec.message().c_str());
         }
         return obs_dir;
     }

@@ -95,8 +95,8 @@ namespace wpa3_tester::CSA_attack{
         rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
         set_ip(rs, "client");
 
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(10));
-        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(10));
+        rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(30));
+        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(30));
         log(LogLevel::INFO, "client is connected");
     }
 

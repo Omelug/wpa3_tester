@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 
 #include "system/hw_capabilities.h"
+
+#include "config/global_paths.h"
 #include "system/iface.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -53,7 +55,7 @@ namespace wpa3_tester{
         for(const auto &entry: filesystem::directory_iterator(net_path)){
             std::string name = entry.path().filename().string();
 
-            auto ignored_list = run_status.config.value("ignore_interfaces", std::vector<std::string>{});
+            auto ignored_list = get_global_config().value("ignore_interfaces", std::vector<std::string>{});
 
             if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(name)){
                 log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", name.c_str());

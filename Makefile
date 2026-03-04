@@ -54,6 +54,7 @@ graphviz:
 	@echo "--- Saved to callgraph.svg ---"
 
 test_build:
-	sudo cmake --build build
+	cmake --build build
+
 test: test_build
-	sudo cmake --build build --target test
+	sudo ctest --test-dir build --output-on-failure

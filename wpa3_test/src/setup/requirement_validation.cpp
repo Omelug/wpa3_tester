@@ -202,9 +202,9 @@ namespace wpa3_tester{
             ifc.cleanup();
 
             //---------------  set mode based on actor requirements -------------------
-            if (actor->bool_conditions.at("monitor").value_or(false)) {ifc.set_monitor_mode();}
+            if (actor->bool_conditions.at("monitor").value_or(false) ||
+                actor->bool_conditions.at("injection").value_or(false)) {ifc.set_monitor_mode();}
             if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
-
             if (config.at("actors").at(actorName).contains("channel")) {
                 ifc.set_channel(config.at("actors").at(actorName).at("channel"));
             }

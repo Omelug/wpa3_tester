@@ -35,7 +35,6 @@ namespace wpa3_tester{
 
     string hw_capabilities::get_driver_name(const string &iface){
         const string path = "/sys/class/net/" + iface + "/device/driver";
-
         try{
             if(filesystem::exists(path) && filesystem::is_symlink(path)){
                 return filesystem::read_symlink(path).filename().string();

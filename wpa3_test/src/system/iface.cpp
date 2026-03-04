@@ -37,9 +37,9 @@ namespace wpa3_tester{
         } else {
             log(LogLevel::INFO, "Setting interface %s to monitor mode", name.c_str());
         }
-        run({"ip", "link", "set", name, "down"});
-        run({"iw", "dev", name, "set", "type", "monitor"});
-        run({"ip", "link", "set", name, "up"});
+        run({"sudo","ip", "link", "set", name, "down"});
+        run({"sudo","iw", "dev", name, "set", "type", "monitor"});
+        run({"sudo","ip", "link", "set", name, "up"});
     }
 
     void iface::cleanup() const {
@@ -91,7 +91,7 @@ namespace wpa3_tester{
         return filesystem::exists(p);
     }
 
-    string iface::get_mac_address(const std::string& iface_name, const std::optional<std::string>& netns) {
+    /*string iface::get_mac_address(const std::string& iface_name, const std::optional<std::string>& netns) {
         // If no netns specified, read directly from sysfs
         if (!netns.has_value()) {
             const filesystem::path mac_path = filesystem::path("/sys/class/net") / iface_name / "address";
@@ -149,7 +149,7 @@ namespace wpa3_tester{
         mac_addr.erase(mac_addr.find_last_not_of(" \t\r\n") + 1);
 
         return mac_addr;
-    }
+    }*/
 
     string iface::rand_mac() {
         static std::random_device rd;

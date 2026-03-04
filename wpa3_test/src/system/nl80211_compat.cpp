@@ -6,32 +6,26 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
 #include <net/if.h>
-#include "system/hw_capabilities.h"
 #include "logger/error_log.h"
+#include "system/hw_capabilities.h"
+#include "system/runtime_checks.h"
 
 namespace wpa3_tester{
     using namespace wpa3_tester;
     using namespace std;
     void check_monitor(nlattr **attrs, NlCaps *caps) {
-        if (!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {
-            return;
-        }
+        if (!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {return;}
 
         nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
-
         nla_parse(iftypes,
                   NL80211_IFTYPE_MAX,
                   static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
                   nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]),nullptr);
-
         if (iftypes[NL80211_IFTYPE_MONITOR]) {caps->monitor = true;}
     }
 
     void check_type(nlattr **attrs, NlCaps *caps) {
-        if (!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {
-            return;
-        }
-
+        if (!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) {return;}
         nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
 
         nla_parse(iftypes,
@@ -62,6 +56,7 @@ namespace wpa3_tester{
             if (feature_flags & NL80211_FEATURE_SAE_MASK) {
                 caps->wpa3_sae = true; //STA WPA3
             }
+
         }
         if (attrs[NL80211_ATTR_EXT_FEATURES]) {
 
@@ -167,6 +162,14 @@ namespace wpa3_tester{
         cfg.bool_conditions["WPA-PSK"] = caps.wpa2_psk; //heuristic
         cfg.bool_conditions["WPA3-SAE"] = caps.wpa3_sae;
 
+        if (caps.monitor) {
+            bool real_injection = check_injection_runtime(iface);
+            cfg.bool_conditions["injection"] = real_injection;
+
+            if (!real_injection && caps.injection) {
+                log(LogLevel::WARNING, "Driver claims injection support, but runtime test failed!");
+            }
+        }
         nlmsg_free(msg);
         nl_socket_free(sock);
     }

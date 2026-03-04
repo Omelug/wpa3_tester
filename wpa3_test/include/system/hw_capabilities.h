@@ -39,6 +39,7 @@ namespace wpa3_tester{
         bool ap = false;
         bool sta = false;
         bool monitor = false;
+        bool injection = false;
 
         bool band24 = false;
         bool band5 = false;

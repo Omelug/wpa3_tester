@@ -11,6 +11,7 @@
 
 namespace wpa3_tester{
     using namespace std;
+    //TODO create test for this
     void iface::set_channel(const int channel) const {
         if (netns.has_value()) {
             log(LogLevel::INFO, "Setting interface %s to channel %d in netns %s", name.c_str(), channel, netns->c_str());
@@ -78,6 +79,9 @@ namespace wpa3_tester{
         run({"ip", "link", "set", name, "up"});
     }
 
+    void iface::create_sniff_iface(const std::string& sniff_iface){
+        run({"iw", "dev", name, "interface","add",sniff_iface,"type","monitor","flags","fcsfail", "otherbss"});
+    }
 
     iface::iface(std::string name, std::optional<std::string> netns)
         : name(std::move(name)), netns(std::move(netns)) {}

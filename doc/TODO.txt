@@ -15,7 +15,7 @@ f: check WPA2/SAE support correctly
 ?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
-
++: better backtracking error messages
 Test cases:
 f: all process have to killed before test
 
@@ -23,3 +23,4 @@ TODO inject mode condition
 
 // TODO new attacks?
 State Poisoning (2025_SACRED)
+

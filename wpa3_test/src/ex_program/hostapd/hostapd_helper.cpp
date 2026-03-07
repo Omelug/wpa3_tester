@@ -112,6 +112,11 @@ namespace wpa3_tester::hostapd{
         ensure_repo_cloned(hostapd_folder);
         const path repo_path = hostapd_folder / "hostapd";
         const string tag = find_matching_tag(repo_path, version);
+
+        hw_capabilities::run_in("git fetch --tags", repo_path);
+        hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+        hw_capabilities::run_in("git clean -fd", repo_path);
+
         hw_capabilities::run_in("git fetch --tags", repo_path);
         hw_capabilities::run_in("git checkout " + tag, repo_path);
 
@@ -137,6 +142,9 @@ namespace wpa3_tester::hostapd{
             "\nCONFIG_IEEE80211W=y"         // PMF
             "\nCONFIG_WNM=y"                // Wireless Network Management
             "\nCONFIG_OCV=y"                // Operating Channel Validation
+            "\nCONFIG_IEEE80211N=y"         // 802.11n
+            "\nCONFIG_IEEE80211AC=y"        // 802.11ac (VHT)
+            "\nCONFIG_IEEE80211AX=y"        // 802.11ax (HE / Wi-Fi 6)
             "\nCONFIG_IEEE80211R=y"         // Fast BSS Transition (FT)
             "\nCONFIG_INTERWORKING=y"       // 802.11u / Hotspot 2.0
             "\nCONFIG_CTRL_IFACE=y"         // wpa_cli

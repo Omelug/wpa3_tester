@@ -12,6 +12,7 @@ namespace wpa3_tester{
         void set_managed_mode() const;
         void set_monitor_mode() const;
         void cleanup() const;
+        void create_sniff_iface(const std::string & sniff_iface);
 
         explicit iface(std::string name, std::optional<std::string> netns = std::nullopt);
         std::string name;

@@ -19,7 +19,7 @@ namespace wpa3_tester::bl0ck_attack{
                int duration_sec,
                bool is_random);
 
-    //void setup_bl0ck_attack(RunStatus& rs);
+    void setup_attack(RunStatus& rs);
     void run_bl0ck_attack(RunStatus& rs);
     void stats_bl0ck_attack(const RunStatus& rs);
     void speed_observation_start(RunStatus& rs);

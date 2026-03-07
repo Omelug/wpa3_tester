@@ -14,17 +14,16 @@ actors:
       program: hostapd
       program_config:
         version: 2_10
-#    selection:
-#      driver: mt76x2u
+    selection:
+      driver: mt76x2u
   client:
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_10
     selection:
-      condition: [monitor]
-#     driver: rtw_8821au
+      driver: rtw_8821cu
 
-#  attacker:
-#    selection:
-#      driver: rtl8xxxu
+  attacker:
+    selection:
+      driver: mt76x2u

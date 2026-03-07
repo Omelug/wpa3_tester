@@ -82,13 +82,23 @@ namespace wpa3_tester{
 
     void RunStatus::run_test(){
         process_manager.write_log_all("@START");
-        attack_module_maps::run_map[config.at("attacker_module")](*this);
+        const auto module_name = config.at("attacker_module");
+        const auto run_it = attack_module_maps::run_map.find(module_name);
+
+        if (run_it != attack_module_maps::run_map.end()) {run_it->second(*this);
+        } else {log(LogLevel::DEBUG, "run function not set");}
+
         process_manager.write_log_all("@END");
         process_manager.stop_all();
     }
 
     void RunStatus::stats_test(){
-        attack_module_maps::stats_map[config.at("attacker_module")](*this);
+        const auto module_name = config.at("attacker_module");
+        const auto run_it = attack_module_maps::stats_map.find(module_name);
+
+        if (run_it != attack_module_maps::stats_map.end()) {run_it->second(*this);
+        } else {log(LogLevel::DEBUG, "run function not set");}
+
     }
 
     void write_actors_csv(const ActorCMap& actors, const string& type, ofstream& ofs){
@@ -154,7 +164,6 @@ namespace wpa3_tester{
             const auto& path = entry.path();
             string filename = path.filename().string();
             if (filename == "global_config.yaml" || filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
-            cerr << "L"<< filename << "L"<<endl;
             try {
                 YAML::Node config = YAML::LoadFile(path.string());
                 nlohmann::json config_json = yaml_to_json(config);

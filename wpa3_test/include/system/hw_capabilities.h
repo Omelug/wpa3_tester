@@ -47,6 +47,10 @@ namespace wpa3_tester{
 
         bool wpa2_psk = false; // heuristic
         bool wpa3_sae = false;
+
+        bool _80211n = false;   // 802.11n  (HT)
+        bool _80211ac = false;  // 802.11ac (VHT)
+        bool _80211ax= false;  // 802.11ax ()
     };
 
     struct CryptoCaps {
@@ -73,6 +77,7 @@ namespace wpa3_tester{
             AssignmentMap& currentAssignment
         );
         static int nl80211_cb(nl_msg *msg, void *arg);
+        static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 
     public:
         static AssignmentMap check_req_options(ActorCMap& rules, const ActorCMap& options);

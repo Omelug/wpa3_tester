@@ -79,8 +79,8 @@ namespace wpa3_tester::eapol_logoff{
 
     void speed_observation_start(RunStatus& rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_thark(rs, "client", "udp port 5201");
-        observer::start_thark(rs, "access_point", "udp port 5201");
+        observer::start_tshark(rs, "client", "udp port 5201");
+        observer::start_tshark(rs, "access_point", "udp port 5201");
     }
 
     void run_attack(RunStatus& rs){
@@ -90,7 +90,7 @@ namespace wpa3_tester::eapol_logoff{
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
         const NetworkInterface iface(iface_name);
-        const int channel = rs.config.at("actors").at("access_point").at("setup").at("channel");
+        const int channel = rs.config.at("actors").at("access_point").at("channel");
 
         RadioTap radiotap = get_malformed_eapol(ap_mac, sta_mac, channel);
         PacketSender sender;

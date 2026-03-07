@@ -16,6 +16,7 @@ namespace wpa3_tester{
             {"essid",  std::nullopt},
             {"driver", std::nullopt},
             //TODO {"netns", std::nullopt}
+            {"sniff_iface", std::nullopt},
         };
 
         std::map<std::string, std::optional<bool>> bool_conditions = {
@@ -26,7 +27,10 @@ namespace wpa3_tester{
             {"5GHz",     std::nullopt},
             {"6GHz",     std::nullopt},
             {"WPA-PSK",  std::nullopt},
-            {"WPA3-SAE", std::nullopt}
+            {"WPA3-SAE", std::nullopt},
+            {"80211n",   std::nullopt},
+            {"80211ac",  std::nullopt},
+            {"80211ax",  std::nullopt}
         };
         std::string operator[](const std::string& key) const;
         std::optional<std::string> get_optional(const std::string& key) const;

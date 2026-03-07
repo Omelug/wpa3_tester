@@ -101,10 +101,70 @@ namespace wpa3_tester{
         check_WPA2_PSK(attrs, caps);
         check_type(attrs, caps);
         check_monitor(attrs, caps);
+        check_band_caps(attrs,caps);
 
         return NL_SKIP;
     }
 
+    void hw_capabilities::check_band_caps(nlattr *attrs[], NlCaps *caps) {
+    if (!attrs[NL80211_ATTR_WIPHY_BANDS]) return;
+
+    nlattr *band;
+    int rem_band;
+
+    nla_for_each_nested(band, attrs[NL80211_ATTR_WIPHY_BANDS], rem_band) {
+        nlattr *band_attrs[NL80211_BAND_ATTR_MAX + 1]{};
+        nla_parse(band_attrs, NL80211_BAND_ATTR_MAX,
+                  static_cast<nlattr *>(nla_data(band)), nla_len(band), nullptr);
+
+        // --- 802.11n (HT) ---
+        if (band_attrs[NL80211_BAND_ATTR_HT_CAPA])
+            caps->_80211n = true;
+
+        // --- 802.11ac (VHT) ---
+        if (band_attrs[NL80211_BAND_ATTR_VHT_CAPA])
+            caps->_80211ac = true;
+
+        // --- 802.11ax (HE) --- per iftype
+        if (band_attrs[NL80211_BAND_ATTR_IFTYPE_DATA]) {
+            nlattr *iftype_data;
+            int rem_iftype;
+
+            nla_for_each_nested(iftype_data,
+                                band_attrs[NL80211_BAND_ATTR_IFTYPE_DATA],
+                                rem_iftype) {
+
+                nlattr *iftype_attrs[NL80211_BAND_IFTYPE_ATTR_MAX + 1]{};
+                nla_parse(iftype_attrs, NL80211_BAND_IFTYPE_ATTR_MAX,
+                          static_cast<nlattr *>(nla_data(iftype_data)),
+                          nla_len(iftype_data), nullptr);
+
+                if (iftype_attrs[NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY])
+                    caps->_80211ax = true;
+            }
+        }
+
+        // --- Frekvenční pásma ---
+        if (!band_attrs[NL80211_BAND_ATTR_FREQS]) continue;
+
+        nlattr *freq;
+        int rem_freq;
+
+        nla_for_each_nested(freq, band_attrs[NL80211_BAND_ATTR_FREQS], rem_freq) {
+            nlattr *freq_attrs[NL80211_FREQUENCY_ATTR_MAX + 1]{};
+            nla_parse(freq_attrs, NL80211_FREQUENCY_ATTR_MAX,
+                      static_cast<nlattr *>(nla_data(freq)), nla_len(freq), nullptr);
+
+            if (!freq_attrs[NL80211_FREQUENCY_ATTR_FREQ]) continue;
+
+            const uint32_t mhz = nla_get_u32(freq_attrs[NL80211_FREQUENCY_ATTR_FREQ]);
+
+            if (mhz >= 2412 && mhz <= 2484) caps->band24 = true;
+            if (mhz >= 5180 && mhz <= 5885) caps->band5  = true;
+            if (mhz >= 5925 && mhz <= 7125) caps->band6  = true;
+        }
+    }
+}
 
     uint32_t get_wiphy_idx_by_ifname(const std::string &ifname){
         const std::string path = "/sys/class/net/" + ifname + "/phy80211/index";
@@ -158,9 +218,12 @@ namespace wpa3_tester{
         cfg.bool_conditions["monitor"] = caps.monitor;
         cfg.bool_conditions["2_4GHz"] = caps.band24;
         cfg.bool_conditions["5GHz"] = caps.band5;
+        cfg.bool_conditions["6GHz"] = caps.band6;
 
-        cfg.bool_conditions["WPA-PSK"] = caps.wpa2_psk; //heuristic
-        cfg.bool_conditions["WPA3-SAE"] = caps.wpa3_sae;
+        cfg.bool_conditions["80211n"] = caps._80211n;
+        cfg.bool_conditions["80211ac"] = caps._80211ac;
+        cfg.bool_conditions["80211ax"] = caps._80211ax;
+
 
         if (caps.monitor) {
             bool real_injection = check_injection_runtime(iface);

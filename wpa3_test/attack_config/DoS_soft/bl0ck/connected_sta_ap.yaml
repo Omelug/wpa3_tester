@@ -7,22 +7,24 @@ actors:
     type: AP
     source: internal
     selection:
-      condition: [AP]
+      condition: [AP, 80211ac]
     setup:
       program: hostapd
       program_config:
         driver: nl80211
+        hw_mode: a
         ssid: wpa3_tester_AP
-        hw_mode: g
-        auth_algs: 1
+        #auth_algs: 1
         wpa: 2
         ieee80211n: 1
+        ieee80211ac: 1
         ieee80211w: 2
         wpa_key_mgmt: SAE
         rsn_pairwise: CCMP
-        wpa_passphrase: password123
-        channel: 6
-      channel: 6
+        sae_password: password123
+        channel: 36
+        vht_oper_chwidth: 0
+        #vht_oper_centr_freq_seg0_idx: 42
     ip_addr: "10.0.0.1"
   client:
     type: STA
@@ -31,18 +33,24 @@ actors:
       program: wpa_supplicant
       program_config:
         ssid: wpa3_tester_AP
-        sae_password: password123
+        #sae_password: password123
         ieee80211w: 2
-        proto: RSN
+        #proto: RSN
         key_mgmt: SAE
+        psk: "\"password123\""
         pairwise: CCMP
         group: CCMP
-      channel: 6
+        scan_freq: 5180        # kanál 36 = 5180 MHz
+        freq_list: 5180        # skenovat pouze tuto frekvenci
+    channel: 36
+    selection:
+      condition: [monitor, 80211ac]
     netns: sta
     ip_addr: "10.0.0.2"
+    sniff_iface: client_mon
   attacker:
     type: STA
     source: internal
     selection:
-      condition: [monitor]
-    channel: 6
+      condition: [monitor, injection]
+    channel: 36

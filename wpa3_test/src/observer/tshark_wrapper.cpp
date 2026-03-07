@@ -17,13 +17,21 @@ namespace wpa3_tester::observer{
     using namespace filesystem;
 
     constexpr string program_name = "tshark";
-    void start_thark(RunStatus &run_status, const string &node_name, const string& filter) {
+    void start_tshark(RunStatus &run_status, const string &node_name, const string& filter) {
         vector<string> command = {"sudo"};
         add_nets(run_status,command, node_name);
 
         string pcap_path = get_observer_folder(run_status, program_name) / (node_name + "_capture.pcap");
+        const optional<string>iface = run_status.get_actor(node_name).get_optional("sniff_iface");
+        string iface_str;
+        if(iface == nullopt){
+            iface_str = run_status.get_actor(node_name)["iface"];
+        }else {
+            iface_str = iface.value();
+        }
+
         command.insert(command.end(), {
-            program_name, "-i", run_status.get_actor(node_name)["iface"],
+            program_name, "-i", iface_str,
             "-w", pcap_path,
             "-f", filter,
         });

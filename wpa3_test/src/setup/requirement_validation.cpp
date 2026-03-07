@@ -183,7 +183,7 @@ namespace wpa3_tester{
             auto resIt = internal_mapping.find(actorName);
             if (resIt == internal_mapping.end()) {continue;}
 
-            //TODO move to
+            // Actor options what are valid everytime
             optional<string> netns_opt;
             if (config.at("actors").at(actorName).contains("netns")) {
                 netns_opt = config.at("actors").at(actorName).at("netns").get<string>();
@@ -202,8 +202,15 @@ namespace wpa3_tester{
             ifc.cleanup();
 
             //---------------  set mode based on actor requirements -------------------
-            if (actor->bool_conditions.at("monitor").value_or(false) ||
-                actor->bool_conditions.at("injection").value_or(false)) {ifc.set_monitor_mode();}
+
+            if (config.at("actors").at(actorName).contains("sniff_iface")){
+                actor->str_con["sniff_iface"] = config.at("actors").at(actorName).at("sniff_iface").get<string>();
+                ifc.create_sniff_iface("mon_" + actor->str_con["sniff_iface"].value());
+            }
+
+            bool monitor = actor->bool_conditions.at("monitor").value_or(false);
+            bool injection = actor->bool_conditions.at("injection").value_or(false);
+            if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt) {ifc.set_monitor_mode();}
             if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
             if (config.at("actors").at(actorName).contains("channel")) {
                 ifc.set_channel(config.at("actors").at(actorName).at("channel"));

@@ -47,4 +47,5 @@ actors:
     selection:
       driver: mt76x2u
       condition: [monitor]
-    channel: 6
+    setup:
+      channel: 6

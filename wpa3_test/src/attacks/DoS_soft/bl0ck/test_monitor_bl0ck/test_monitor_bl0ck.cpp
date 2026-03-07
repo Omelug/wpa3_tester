@@ -5,6 +5,9 @@
 #include "system/iface.h"
 #include <chrono>
 #include <thread>
+
+#include "ex_program/hostapd/hostpad.h"
+#include "ex_program/ip/ip.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 
@@ -35,13 +38,13 @@ namespace wpa3_tester::test_monitor_bl0ck{
     }
 
     void speed_observation_start(RunStatus &rs){
-        observer::start_thark(rs, "receiver", "(link[0] == 0x88 or link[0] == 0x84)");
-        observer::start_thark(rs, "transceiver", "(link[0] == 0x88 or link[0] == 0x84)");
+        observer::start_tshark(rs, "receiver","wlan[0] & 0xfc == 0x84 or wlan[0] & 0xfc == 0x94");
+        observer::start_tshark(rs, "transceiver", "wlan[0] & 0xfc == 0x84 or wlan[0] & 0xfc == 0x94");
     }
 
-    void setup_attack(RunStatus& rs){
+    /* void setup_attack(RunStatus& rs){
 
-    }
+    }*/
 
     void run_attack(RunStatus& rs){
         const NetworkInterface iface_obj(rs.get_actor("transceiver")["iface"]);

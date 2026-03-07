@@ -72,8 +72,8 @@ namespace wpa3_tester::CSA_attack{
 
     void speed_observation_start(RunStatus& rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_thark(rs, "client", "udp port 5201");
-        observer::start_thark(rs, "access_point", "udp port 5201");
+        observer::start_tshark(rs, "client", "udp port 5201");
+        observer::start_tshark(rs, "access_point", "udp port 5201");
     }
 
     // ----------------- MODULE functions ------------------

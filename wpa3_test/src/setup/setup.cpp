@@ -26,6 +26,11 @@ namespace wpa3_tester{
 
         save_actor_interface_mapping();
         process_manager.init_logging(run_folder);
-        attack_module_maps::setup_map[config.at("attacker_module")](*this);
+
+        const auto module_name = config.at("attacker_module");
+        const auto run_it = attack_module_maps::setup_map.find(module_name);
+
+        if (run_it != attack_module_maps::setup_map.end()) {run_it->second(*this);
+        } else {log(LogLevel::DEBUG, "setup function not set");}
     }
 }

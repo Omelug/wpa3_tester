@@ -45,6 +45,12 @@ namespace wpa3_tester{
         throw config_error("Driver check error: not found valid symlink"); ;
     }
 
+    int get_interface_arphrd_type(const filesystem::path& iface_path) {
+        std::ifstream file(iface_path / "type");
+        int type = 0;
+        if (file >> type) return type;
+        return 0;
+    }
 
     vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_status){
         std::vector<InterfaceInfo> result;
@@ -70,6 +76,7 @@ namespace wpa3_tester{
                 }else{
                     type = InterfaceType::Wifi;   // wireless Wi-Fi
                 }
+
             }else if(filesystem::exists(entry.path() / "bridge")){
                 type = InterfaceType::DockerBridge;  // Docker Bridge ('bridge')
             }else if(filesystem::exists(entry.path() / "tun_flags")){

@@ -23,4 +23,7 @@ namespace wpa3_tester::bl0ck_attack{
     void run_bl0ck_attack(RunStatus& rs);
     void stats_bl0ck_attack(const RunStatus& rs);
     void speed_observation_start(RunStatus& rs);
+
+    Tins::RadioTap get_BAR_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw);
+
 }

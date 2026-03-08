@@ -152,7 +152,7 @@ namespace wpa3_tester::observer{
             program_name,
             "-B", run_status.config.at("actors").at(src_name).at("ip_addr"),
             "-c", run_status.config.at("actors").at(dst_name).at("ip_addr"),
-            "-u",
+            //"-u", //TODO dát do observer conifg
             "-b", "10M",
             "-t", "0" // infinity
         });

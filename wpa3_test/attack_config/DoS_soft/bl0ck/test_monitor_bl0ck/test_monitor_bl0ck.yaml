@@ -15,5 +15,5 @@ actors:
     source: internal
     selection:
       condition: [monitor, injection]
-      driver: ath9k_htc
+      #driver: ath9k_htc
     channel: 1

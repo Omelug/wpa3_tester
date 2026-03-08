@@ -203,11 +203,6 @@ namespace wpa3_tester{
 
             //---------------  set mode based on actor requirements -------------------
 
-            if (config.at("actors").at(actorName).contains("sniff_iface")){
-                actor->str_con["sniff_iface"] = config.at("actors").at(actorName).at("sniff_iface").get<string>();
-                ifc.create_sniff_iface("mon_" + actor->str_con["sniff_iface"].value());
-            }
-
             bool monitor = actor->bool_conditions.at("monitor").value_or(false);
             bool injection = actor->bool_conditions.at("injection").value_or(false);
             if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt) {ifc.set_monitor_mode();}
@@ -215,7 +210,12 @@ namespace wpa3_tester{
             if (config.at("actors").at(actorName).contains("channel")) {
                 ifc.set_channel(config.at("actors").at(actorName).at("channel"));
             }
-            actor = make_unique<Actor_config>(*optIt->second);
+            actor = make_unique<Actor_config>(*optIt->second); //FIXME potřebuju to tu kopírovat?, nejdřív udělat testy na
+
+            if (config.at("actors").at(actorName).contains("sniff_iface")){
+                actor->str_con["sniff_iface"] = config.at("actors").at(actorName).at("sniff_iface").get<string>();
+                ifc.create_sniff_iface("mon_" + actor->str_con["sniff_iface"].value());
+            }
         }
 
         // TODO: simulation -> check hw compatibility

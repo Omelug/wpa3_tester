@@ -27,7 +27,7 @@ namespace wpa3_tester::observer{
         if(iface == nullopt){
             iface_str = run_status.get_actor(node_name)["iface"];
         }else {
-            iface_str = iface.value();
+            iface_str = "mon_" + iface.value();
         }
 
         command.insert(command.end(), {

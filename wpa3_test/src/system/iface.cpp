@@ -39,7 +39,8 @@ namespace wpa3_tester{
             log(LogLevel::INFO, "Setting interface %s to monitor mode", name.c_str());
         }
         run({"sudo","ip", "link", "set", name, "down"});
-        run({"sudo","iw", "dev", name, "set", "type", "monitor"});
+        run({"sudo", "iw", "dev", name, "set", "type", "monitor"});
+        run({"sudo", "iw", "dev", name, "set", "monitor", "fcsfail", "otherbss"});
         run({"sudo","ip", "link", "set", name, "up"});
     }
 
@@ -81,6 +82,7 @@ namespace wpa3_tester{
 
     void iface::create_sniff_iface(const std::string& sniff_iface){
         run({"iw", "dev", name, "interface","add",sniff_iface,"type","monitor","flags","fcsfail", "otherbss"});
+        run({"ip", "link", "set", sniff_iface, "up"});
     }
 
     iface::iface(std::string name, std::optional<std::string> netns)

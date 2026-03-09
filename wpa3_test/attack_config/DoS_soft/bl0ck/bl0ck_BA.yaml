@@ -4,7 +4,25 @@ attacker_module: bl0ck
 extends: connected_sta_ap.yaml
 attack_config:
   validator: ./bl0ck.schema.yaml
-  attack_time_sec: 30
+  attack_time_sec: 15
   attack_variant: "BA"
   random: false
   frame_number: 10
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+    selection:
+      driver: mt76x2u
+  client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+    selection:
+      driver: rtw_8821cu
+  attacker:
+    selection:
+      driver: mt76x2u

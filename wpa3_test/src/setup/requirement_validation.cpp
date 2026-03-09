@@ -18,7 +18,7 @@ namespace wpa3_tester{
     ActorCMap RunStatus::scan_internal() const{
         ActorCMap options_map;
 
-        for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces(*this)) {
+        for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
             if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
             json actor_json;
             actor_json["selection"]["iface"] = iface_name;

@@ -24,3 +24,4 @@ TODO inject mode condition
 // TODO new attacks?
 State Poisoning (2025_SACRED)
 
+// použít NIC a WNIC

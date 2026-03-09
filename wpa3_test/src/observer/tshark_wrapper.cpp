@@ -32,6 +32,7 @@ namespace wpa3_tester::observer{
 
         command.insert(command.end(), {
             program_name, "-i", iface_str,
+            "-p",
             "-w", pcap_path,
             "-f", filter,
         });
@@ -44,13 +45,26 @@ namespace wpa3_tester::observer{
         const path csv_path = get_observer_folder(rs, program_name) / (actor_name + ".csv");
 
         const vector<string> gen_cmd = {
-            "sh", "-c",
-            "tshark -l -t ad -r '" + pcap_path.string() +
-            "' -T fields -e frame.time -e frame.len -E separator=, > '" +
-            csv_path.string() + "'"
+            "tshark",
+            "-l",
+            "-t", "ad",
+            "-r", pcap_path.string(),
+            "-T", "fields",
+            "-e", "frame.number",
+            "-e", "frame.time",
+            "-e", "frame.len",
+            "-E", "separator=,"
         };
 
-        hw_capabilities::run_cmd(gen_cmd);
+        const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
+
+        ofstream csv_file(csv_path);
+        if (!csv_file.is_open()) {
+            throw runtime_error("Failed to write CSV: " + csv_path.string());
+        }
+        csv_file << csv_output;
+        csv_file.close();
+
         return csv_path;
     };
 
@@ -58,11 +72,11 @@ namespace wpa3_tester::observer{
         ifstream file(csv_path.string());
         string line;
 
-        // csv lines are in format epoch_time,size
+        // csv lines are in format frame_number,epoch_time,size
         while (getline(file, line)) {
             stringstream ss(line);
-            string t_str, s_str;
-            if (getline(ss, t_str, ',') && getline(ss, s_str, ',')) {
+            string frame_num_str, t_str, s_str;
+            if (getline(ss, frame_num_str, ',') && getline(ss, t_str, ',') && getline(ss, s_str, ',')) {
                 try {
                     const LogTimePoint tp = log_time_to_epoch_ns(t_str);
                     if (tp.time_since_epoch().count() == 0) continue;
@@ -87,6 +101,56 @@ namespace wpa3_tester::observer{
             throw runtime_error("Failed to get ISO start time from PCAP: " + pcap_path);
         }
         return log_time_to_epoch_ns(start_str);
+    }
+    vector<LogTimePoint> get_tshark_events(const RunStatus& rs, const string& process_name, const string& tshark_filter, const string& event_name) {
+        vector<LogTimePoint> timestamps;
+        const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
+        if (!exists(pcap_path)) {
+            log(LogLevel::ERROR, ("Could not find file '" + pcap_path.string() + "'").c_str());
+            return {};
+        }
+
+        const vector<string> gen_cmd = {
+            "tshark",
+            "-l",
+            "-t", "ad",
+            "-r", pcap_path.string(),
+            "-Y", tshark_filter,
+            "-T", "fields",
+            "-e", "frame.number",
+            "-e", "frame.time"
+        };
+
+        const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
+
+        const path csv_path = get_observer_folder(rs, program_name) / (process_name + "_" + event_name + ".csv");
+        ofstream csv_file(csv_path);
+        if (csv_file.is_open()) {csv_file << csv_output;csv_file.close();}
+
+        istringstream stream(csv_output);
+        string line;
+        while (getline(stream, line)) {
+            line.erase(0, line.find_first_not_of(" \n\r\t"));
+            line.erase(line.find_last_not_of(" \n\r\t") + 1);
+            if (line.empty()) continue;
+
+            try {
+                // Parse line: frame_number,timestamp
+                stringstream ss(line);
+                string frame_num_str, time_str;
+                if (getline(ss, frame_num_str, '\t') && getline(ss, time_str)) {
+                    const LogTimePoint tp = log_time_to_epoch_ns(time_str);
+                    if (tp.time_since_epoch().count() != 0) {
+                        timestamps.push_back(tp);
+                    }
+                }
+            } catch (const exception& e) {
+                log(LogLevel::WARNING, "Failed to parse timestamp '%s': %s", line.c_str(), e.what());
+            }
+        }
+
+        log(LogLevel::INFO, "Extracted %zu timestamps matching filter '%s'", timestamps.size(), tshark_filter.c_str());
+        return timestamps;
     }
 
     string tshark_graph(const RunStatus &rs,

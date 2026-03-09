@@ -87,7 +87,7 @@ namespace wpa3_tester{
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
         static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
-        static std::vector<InterfaceInfo> list_interfaces(const RunStatus& run_status);
+        static std::vector<InterfaceInfo> list_interfaces();
 
         // check availability
         static std::string read_sysfs(const std::string& iface, const std::string& file);

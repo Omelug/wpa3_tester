@@ -4,7 +4,7 @@ attacker_module: bl0ck
 extends: connected_sta_ap.yaml
 attack_config:
   validator: ./bl0ck.schema.yaml
-  attack_time_sec: 30
+  attack_time_sec: 15
   attack_variant: "BAR"
   random: false
   frame_number: 50

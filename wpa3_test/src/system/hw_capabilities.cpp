@@ -50,7 +50,7 @@ namespace wpa3_tester{
         return 0;
     }
 
-    vector<InterfaceInfo> hw_capabilities::list_interfaces(const RunStatus &run_status){
+    vector<InterfaceInfo> hw_capabilities::list_interfaces(){
         std::vector<InterfaceInfo> result;
         const filesystem::path net_path = "/sys/class/net";
 

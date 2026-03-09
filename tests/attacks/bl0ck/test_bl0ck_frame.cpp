@@ -26,7 +26,7 @@ namespace wpa3_tester {
 
         { //bypass not buffering
             PacketWriter writer(pcap_file.string(), DataLinkType<RadioTap>());
-            RadioTap bl0ck_frame = bl0ck_attack::get_bl0ck_frame(ap_mac, sta_mac, subtype);
+            RadioTap bl0ck_frame = bl0ck_attack::get_BAR_frame(ap_mac, sta_mac);
             writer.write(bl0ck_frame);
         }
 

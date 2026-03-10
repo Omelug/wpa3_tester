@@ -23,5 +23,5 @@ TODO inject mode condition
 
 // TODO new attacks?
 State Poisoning (2025_SACRED)
-
+Ghost Attack (badtoken pdf)
 // použít NIC a WNIC

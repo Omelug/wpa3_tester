@@ -159,7 +159,7 @@ namespace wpa3_tester{
         log_actor_map("simulation", simulation_actors);
 
         // ------------------ INTERNAL ---------------------------
-        const ActorCMap options_internal =  scan_internal();
+        const ActorCMap options_internal = internal_options();
         //find interface mapping
         internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
 

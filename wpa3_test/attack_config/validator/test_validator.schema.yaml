@@ -39,6 +39,25 @@ properties:
     minProperties: 1
     additionalProperties:
       $ref: '#/definitions/Actor'
+  scan_iface:
+    type: string
+    description: Interface to scan when source is external
+
+  if:
+    properties:
+      actors:
+        additionalProperties:
+          properties:
+            type:
+              const: external
+          required: [ type ]
+          not:
+            anyOf:
+              - required: [ whitebox_ip ]
+              - required: [ whitebox_host ]
+    required: [ actors ]
+  then:
+    required: [ scan_iface ]
 
   attack_config:
     type: object
@@ -64,11 +83,10 @@ definitions:
         type: string
         enum: ["simulation","internal", "external"]
         description: mac_hwsim, internal, external
-      # whitebox_ip
-      # whitebox_host
-      scan_iface:
+      whitebox_ip:
         type: string
-        description: Interface to scan when source is external
+      whitebox_host:
+        type: string
       netns:
         type: string
         description: Namespace to isolate AP/STA for iperf3 etc. observation
@@ -91,6 +109,17 @@ definitions:
           program_config:
             type: object
             additionalProperties: true
+      if: # whitebox_ip/whitebox_host not allowed if not external
+        not:
+          properties:
+            type:
+              const: external
+          required: [ type ]
+        then:
+          not:
+            anyOf:
+              - required: [ whitebox_ip ]
+              - required: [ whitebox_host ]
       selection:
         type: object
         additionalProperties: false
@@ -119,11 +148,3 @@ definitions:
       sniff_iface:
         type: string
         description: Name of interface for monitoring (will create like associated on iface in selection)
-    allOf:
-      - if:
-          properties:
-            source:
-              const: "external"
-        then:
-          required:
-            - scan_iface

@@ -58,3 +58,7 @@ test_build:
 
 test: test_build
 	sudo ctest --test-dir build --output-on-failure
+
+test_manual_build:
+	#cmake ./wpa3_test && cd build && make test_list_external_entities
+	cmake --build $(BUILD_DIR) --target test_list_external_entities -j $(shell nproc)

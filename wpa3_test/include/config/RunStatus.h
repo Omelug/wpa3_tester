@@ -15,6 +15,14 @@ namespace wpa3_tester{
         TEST_SUITE
     };
 
+    struct ExternalEntity {
+        std::string mac;
+        std::string ssid;
+        int channel = 0;
+        int signal  = 0;
+        bool is_ap  = false;
+    };
+
     class Actor_config;
     using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
     using AssignmentMap = std::map<std::string,std::string>;
@@ -43,17 +51,23 @@ namespace wpa3_tester{
         RunStatus() = default;
         explicit RunStatus(const std::string & config_path, std::string testName = "");
         void execute();
+        static void solve_new_pdu(Tins::PDU &pdu, std::map<std::string, ExternalEntity> &seen);
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         Actor_config& get_actor(const std::string& actor_name);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 
+        // For manual testing / wizards
+        static std::vector<ExternalEntity> list_external_entities(const std::string& iface, int timeout_sec);
+
     private:
 
         // to scan available interfaces
-        static ActorCMap scan_internal();
-        ActorCMap scan_external(const std::string& iface);
+        static ActorCMap internal_options();
+
+        ActorCMap external_options();
+
         ActorCMap create_simulation();
 
         std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();

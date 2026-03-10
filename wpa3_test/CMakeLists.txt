@@ -214,4 +214,5 @@ target_precompile_headers(wpa3_core PUBLIC
 
 enable_testing()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests_manual" "${CMAKE_BINARY_DIR}/tests_manual")
 include(CPack)

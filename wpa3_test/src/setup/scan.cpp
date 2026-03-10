@@ -5,6 +5,7 @@
 #include <tins/radiotap.h>
 #include <tins/dot11/dot11_data.h>
 
+#include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
@@ -156,11 +157,13 @@ namespace wpa3_tester{
                 auto cfg = make_unique<Actor_config>();
                 cfg->str_con["mac"] = entity.mac;
                 cfg->str_con["ssid"] = entity.ssid;
+                if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
                 options_map.emplace(entity.mac, std::move(cfg));
             }
-        };
+        }
 
-        //option2: whitebox_host -> whitebox_ip
+        //option2: whitebox_name -> whitebox_ip
+        const string conn_table = get_global_config().at("actors").at("conn_table");
 
         return options_map;
     }

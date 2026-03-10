@@ -128,7 +128,7 @@ namespace wpa3_tester{
         return false; // no valid option for this rule
     }
 
-    AssignmentMap hw_capabilities::check_req_options(ActorCMap &rules, const ActorCMap &options){
+    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMap &options){
         vector<string> ruleKeys;
         for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
         AssignmentMap result;

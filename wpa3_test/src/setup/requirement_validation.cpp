@@ -24,11 +24,11 @@ namespace wpa3_tester{
             const json &actor = it.value();
 
             string source = actor["source"];
-            auto config_ptr = make_unique<Actor_config>(actor);
+            auto actor_ptr = make_unique<Actor_config>(actor);
 
-            if(source == "external") {ex_map[actor_name] = std::move(config_ptr); continue;}
-            if(source == "internal") {in_map[actor_name] = std::move(config_ptr); continue;}
-            if(source == "simulation") {sim_map[actor_name] = std::move(config_ptr); continue;}
+            if(source == "external") {ex_map[actor_name] = std::move(actor_ptr); continue;}
+            if(source == "internal") {in_map[actor_name] = std::move(actor_ptr); continue;}
+            if(source == "simulation") {sim_map[actor_name] = std::move(actor_ptr); continue;}
             throw config_error("Unknown source %s in actor: %s", source.c_str(), actor_name.c_str());
         }
 
@@ -146,7 +146,6 @@ namespace wpa3_tester{
     void RunStatus::config_requirement() {
         cleanup_all_namespaces();
 
-        //todo get map from
         auto [external, internal, simulation] = parse_requirements();
 
         // persist maps in RunStatus
@@ -165,42 +164,36 @@ namespace wpa3_tester{
 
         // setup by mapping
         for (auto &[actor_name, actor] : internal_actors) {
-            const string &actorName = actor_name;
-            auto resIt = internal_mapping.find(actorName);
-            if (resIt == internal_mapping.end()) {continue;}
-
-            // Actor options what are valid everytime
-            optional<string> netns_opt;
-            if (config.at("actors").at(actorName).contains("netns")) {
-                netns_opt = config.at("actors").at(actorName).at("netns").get<string>();
-                hw_capabilities::create_ns(netns_opt.value());
-            }
+            auto resIt = internal_mapping.find(actor_name);
+            //TODO othle se snad nemuze stat
+            //if (resIt == internal_mapping.end()) {continue;}
 
             const string &opt_iface = resIt->second;
             auto optIt = options_internal.find(opt_iface);
-            if (optIt == options_internal.end() || !optIt->second) {
+            /*if (optIt == options_internal.end() || !optIt->second) {  //TODO tohle se asi nemže stát
                 throw config_error("Selected option %s for actor %s not found in options",
-                    opt_iface.c_str(), actorName.c_str());
-            }
+                    opt_iface.c_str(), actor_name.c_str());
+            }*/
 
-            // create interface object (with optional netns from config)
+            //---------------  setup based on actor selection -------------------
+            optional<string> netns_opt;
+            if (config.at("actors").at(actor_name).contains("netns")) {
+                netns_opt = config.at("actors").at(actor_name).at("netns").get<string>();
+                hw_capabilities::create_ns(netns_opt.value());
+            }
             iface ifc{opt_iface, netns_opt};
             ifc.cleanup();
-
-            //---------------  set mode based on actor requirements -------------------
-
             bool monitor = actor->bool_conditions.at("monitor").value_or(false);
             bool injection = actor->bool_conditions.at("injection").value_or(false);
             if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt) {ifc.set_monitor_mode();}
             if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
-            if (config.at("actors").at(actorName).contains("channel")) {
-                ifc.set_channel(config.at("actors").at(actorName).at("channel"));
+            if (config.at("actors").at(actor_name).contains("channel")) {
+                ifc.set_channel(config.at("actors").at(actor_name).at("channel"));
             }
-            actor = make_unique<Actor_config>(*optIt->second); //FIXME potřebuju to tu kopírovat?, nejdřív udělat testy na
-
-            if (config.at("actors").at(actorName).contains("sniff_iface")){
-                actor->str_con["sniff_iface"] = config.at("actors").at(actorName).at("sniff_iface").get<string>();
-                ifc.create_sniff_iface("mon_" + actor->str_con["sniff_iface"].value());
+            actor = make_unique<Actor_config>(*optIt->second);
+            if (config.at("actors").at(actor_name).contains("sniff_iface")){
+                actor->str_con["sniff_iface"] = config.at("actors").at(actor_name).at("sniff_iface").get<string>();
+                ifc.create_sniff_iface(MONITOR_IFACE_PREFIX + actor->str_con["sniff_iface"].value());
             }
         }
 

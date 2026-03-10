@@ -54,7 +54,7 @@ properties:
           not:
             anyOf:
               - required: [ whitebox_ip ]
-              - required: [ whitebox_host ]
+              - required: [ whitebox_name ]
     required: [ actors ]
   then:
     required: [ scan_iface ]
@@ -85,7 +85,7 @@ definitions:
         description: mac_hwsim, internal, external
       whitebox_ip:
         type: string
-      whitebox_host:
+      whitebox_name:
         type: string
       netns:
         type: string
@@ -109,7 +109,7 @@ definitions:
           program_config:
             type: object
             additionalProperties: true
-      if: # whitebox_ip/whitebox_host not allowed if not external
+      if: # whitebox_ip/whitebox_name not allowed if not external
         not:
           properties:
             type:
@@ -119,7 +119,7 @@ definitions:
           not:
             anyOf:
               - required: [ whitebox_ip ]
-              - required: [ whitebox_host ]
+              - required: [ whitebox_name ]
       selection:
         type: object
         additionalProperties: false

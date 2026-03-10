@@ -159,11 +159,12 @@ namespace wpa3_tester::CSA_attack{
         log(LogLevel::INFO , "CSA attack stats");
         const vector<LogTimePoint> switch_events = get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH");
         const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
-        //const vector<LogTimePoint> eapol_hs_events = get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED");
+        const vector<LogTimePoint> eapol_hs_events = get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED");
 
         vector<observer::graph_lines> events;
         events.push_back({switch_events,"SWITCH","blue"});
         events.push_back({disconn_events,"DISCONN","red"});
+        events.push_back({eapol_hs_events,"4Way","green"});
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 

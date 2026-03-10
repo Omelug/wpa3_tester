@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 namespace wpa3_tester{
+    inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
     class Actor_config {
     public:
         explicit Actor_config() = default;

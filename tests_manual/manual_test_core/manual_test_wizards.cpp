@@ -20,7 +20,6 @@ namespace wpa3_tester::manual_tests {
 
         // List available WiFi interfaces
         cout << "Scanning for available WiFi interfaces...\n\n";
-
         auto interfaces = hw_capabilities::list_interfaces();
         vector<string> wifi_interfaces;
 

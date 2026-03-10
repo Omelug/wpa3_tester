@@ -42,6 +42,31 @@ namespace wpa3_tester{
         return true;
     }
 
+    Actor_config& Actor_config::operator+=(const Actor_config& other) {
+        for (auto const& [key, val] : other.str_con) {
+            if (!val.has_value()) continue;
+            auto& mine = str_con[key];
+            if (!mine.has_value()) {
+                mine = val; // fill missing
+            } else if (mine != val) {
+                throw std::runtime_error("Actor_config conflict on key '" + key + "': '"
+                    + mine.value() + "' vs '" + val.value() + "'");
+            }
+        }
+
+        for (auto const& [key, val] : other.bool_conditions) {
+            if (!val.has_value()) continue;
+            auto& mine = bool_conditions[key];
+            if (!mine.has_value()) {
+                mine = val;
+            } else if (mine != val) {
+                throw std::runtime_error("Actor_config conflict on bool key '" + key + "'");
+            }
+        }
+
+        return *this;
+    }
+
     std::string Actor_config::operator[](const std::string& key) const {
         const auto it = str_con.find(key);
         if (it == str_con.end()) {
@@ -51,14 +76,6 @@ namespace wpa3_tester{
             throw config_error("Actor_config: string condition '%s' has no value", key.c_str());
         }
         return *(it->second);
-    }
-
-    std::optional<std::string> Actor_config::get_optional(const std::string& key) const {
-        const auto it = str_con.find(key);
-        if (it == str_con.end()) {
-            return std::nullopt;
-        }
-        return it->second;
     }
 
     bool Actor_config::get_bool(const std::string& key) const {

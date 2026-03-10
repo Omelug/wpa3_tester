@@ -11,13 +11,14 @@ namespace wpa3_tester{
         explicit Actor_config() = default;
         explicit Actor_config(const nlohmann::json& j);
         bool matches(const Actor_config &offer);
+        Actor_config &operator+=(const Actor_config &other);
 
         std::map<std::string, std::optional<std::string>> str_con = {
             {"iface",  std::nullopt},
             {"mac",    std::nullopt},
             {"essid",  std::nullopt},
             {"driver", std::nullopt},
-            //TODO {"netns", std::nullopt}
+            {"netns", std::nullopt},
             {"sniff_iface", std::nullopt},
         };
 
@@ -35,8 +36,18 @@ namespace wpa3_tester{
             {"80211ax",  std::nullopt},
             {"beacon_prot",  std::nullopt}
         };
+
         std::string operator[](const std::string& key) const;
-        std::optional<std::string> get_optional(const std::string& key) const;
+        std::optional<std::string> get(const std::string& key) const;
         bool get_bool(const std::string &key) const;
+
+        int run(const std::vector<std::string> &argv) const;
+
+        // change interface status
+        void set_channel(int channel) const;
+        void set_managed_mode() const;
+        void set_monitor_mode() const;
+        void cleanup() const;
+        void create_sniff_iface(const std::string & sniff_iface);
     };
 }

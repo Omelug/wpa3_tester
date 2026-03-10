@@ -7,12 +7,12 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 
-#include "system/iface.h"
+
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
     bool check_injection_runtime(const std::string& iface_name) {
-        const iface ifc{iface_name, std::nullopt};
+        const ActorConfig_iface_func ifc{iface_name, std::nullopt};
         ifc.set_monitor_mode();
         std::this_thread::sleep_for(std::chrono::seconds(5));
 

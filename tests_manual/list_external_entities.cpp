@@ -2,7 +2,7 @@
 #include <string>
 #include "config/RunStatus.h"
 #include "manual_test_core/manual_test_wizards.h"
-#include "system/iface.h"
+
 
 using namespace std;
 using namespace wpa3_tester;
@@ -33,7 +33,7 @@ int main() {
         }
     }
 
-    const iface selected {selected_iface, nullopt};
+    const ActorConfig_iface_func selected {selected_iface, nullopt};
     selected.set_monitor_mode();
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";
     cout << "Please wait...\n";

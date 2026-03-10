@@ -1,7 +1,7 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
-#include "system/iface.h"
+
 #include <random>
 #include <chrono>
 #include <thread>
@@ -14,6 +14,7 @@
 #include "logger/error_log.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/tshark_wrapper.h"
+#include "system/hw_capabilities.h"
 
 // rewrite from python https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file
 namespace wpa3_tester::bl0ck_attack{
@@ -147,7 +148,7 @@ namespace wpa3_tester::bl0ck_attack{
         RadioTap bars_frame;
         if (attack_type == "BARS") {
             //TODO BARS dont work
-            const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
+            const HWAddress<6> sta_hw = is_random ? HWAddress<6>(hw_capabilities::rand_mac()) : HWAddress<6>(STA_mac);
             bars_frame = get_BARS_frame(ap_hw, sta_hw, iface, 30);
             log(LogLevel::INFO, "BARS: Frame prepared with captured sequence number");
         }
@@ -155,7 +156,7 @@ namespace wpa3_tester::bl0ck_attack{
         int iteration = 0;
         while (steady_clock::now() < end_time) {
             try {
-                const HWAddress<6> sta_hw = is_random ? HWAddress<6>(iface::rand_mac()) : HWAddress<6>(STA_mac);
+                const HWAddress<6> sta_hw = is_random ? HWAddress<6>(hw_capabilities::rand_mac()) : HWAddress<6>(STA_mac);
                 RadioTap block_frame;
 
                 if (attack_type == "BAR") {block_frame = get_BAR_frame(ap_hw, sta_hw);}

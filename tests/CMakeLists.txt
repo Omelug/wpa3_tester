@@ -1,4 +1,5 @@
 add_subdirectory(logger)
+add_subdirectory(config)
 add_subdirectory(observer)
 add_subdirectory(setup)
 add_subdirectory(ex_program)

@@ -98,6 +98,6 @@ namespace wpa3_tester{
         //format
         static int channel_to_freq_mhz(int channel);
         static void create_ns(const std::string& ns_name);
-
+        static std::string rand_mac();
     };
 }

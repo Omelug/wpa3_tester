@@ -3,7 +3,6 @@
 #include "system/hw_capabilities.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
-#include "system/iface.h"
 #include <chrono>
 #include <filesystem>
 #include <csignal>
@@ -164,36 +163,30 @@ namespace wpa3_tester{
 
         // setup by mapping
         for (auto &[actor_name, actor] : internal_actors) {
-            auto resIt = internal_mapping.find(actor_name);
-            //TODO othle se snad nemuze stat
-            //if (resIt == internal_mapping.end()) {continue;}
-
-            const string &opt_iface = resIt->second;
-            auto optIt = options_internal.find(opt_iface);
-            /*if (optIt == options_internal.end() || !optIt->second) {  //TODO tohle se asi nemže stát
-                throw config_error("Selected option %s for actor %s not found in options",
-                    opt_iface.c_str(), actor_name.c_str());
-            }*/
+            auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
+            *actor += *opt_actor;
 
             //---------------  setup based on actor selection -------------------
-            optional<string> netns_opt;
             if (config.at("actors").at(actor_name).contains("netns")) {
-                netns_opt = config.at("actors").at(actor_name).at("netns").get<string>();
+                optional<string> netns_opt;
+                (*actor)["netns"] = config.at("actors").at(actor_name).at("netns").get<string>();
                 hw_capabilities::create_ns(netns_opt.value());
             }
-            iface ifc{opt_iface, netns_opt};
-            ifc.cleanup();
-            bool monitor = actor->bool_conditions.at("monitor").value_or(false);
-            bool injection = actor->bool_conditions.at("injection").value_or(false);
-            if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt) {ifc.set_monitor_mode();}
-            if (actor->bool_conditions.at("AP").value_or(false)) {ifc.set_managed_mode();}
-            if (config.at("actors").at(actor_name).contains("channel")) {
-                ifc.set_channel(config.at("actors").at(actor_name).at("channel"));
+            actor->cleanup();
+            const bool monitor = actor->bool_conditions.at("monitor").value_or(false);
+            const bool injection = actor->bool_conditions.at("injection").value_or(false);
+            if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt){
+                actor->set_monitor_mode();
             }
-            actor = make_unique<Actor_config>(*optIt->second);
+            if (actor->bool_conditions.at("AP").value_or(false)){
+                actor->set_managed_mode();
+            }
+            if (config.at("actors").at(actor_name).contains("channel")) {
+                actor->set_channel(config.at("actors").at(actor_name).at("channel"));
+            }
             if (config.at("actors").at(actor_name).contains("sniff_iface")){
                 actor->str_con["sniff_iface"] = config.at("actors").at(actor_name).at("sniff_iface").get<string>();
-                ifc.create_sniff_iface(MONITOR_IFACE_PREFIX + actor->str_con["sniff_iface"].value());
+                actor->create_sniff_iface(MONITOR_IFACE_PREFIX + actor->str_con["sniff_iface"].value());
             }
         }
 

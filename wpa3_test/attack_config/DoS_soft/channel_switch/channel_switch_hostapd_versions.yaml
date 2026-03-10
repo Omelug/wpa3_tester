@@ -5,6 +5,12 @@ tests:
   #hostapd_SAE_PMF_fix:
   #  type: path
   #  path: ./hostapd_2_9_fix.yaml
+  hostapd_2_10_ocv:
+    type: path
+    path: ./hostapd_2_10_ocv.yaml
+  hostapd_2_10_ocv_beacon_prot:
+    type: path
+    path: ./hostapd_2_10_ocv_beacon_prot.yaml
   hostapd_gen:
     type: generator
     vars:
@@ -25,7 +31,7 @@ tests:
               version: var_hostapd
 
 
-#deleted_old: true
+delete_old: true
 rewrite: "errors"
 compile_external: true
 install_req: true

@@ -40,8 +40,8 @@ actors:
         psk: "\"password123\""
         pairwise: CCMP
         group: CCMP
-        scan_freq: 5180        # kanál 36 = 5180 MHz
-        freq_list: 5180        # skenovat pouze tuto frekvenci
+        scan_freq: 5180        # channel 36 = 5180 MHz
+        freq_list: 5180        # scan
     channel: 36
     selection:
       condition: [monitor, 80211ac]

@@ -1,0 +1,16 @@
+extends: ./channel_switch.yaml
+name: channel_switch_2_10_ocv_beacon_prot
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+        ocv: 1
+        beacon_prot: 1
+  client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        beacon_prot: 1

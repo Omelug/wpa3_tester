@@ -38,6 +38,18 @@ namespace wpa3_tester{
         if (iftypes[NL80211_IFTYPE_AP]) {caps->ap = true;}
     }
 
+    void check_beacon_prot(nlattr *attrs[], NlCaps *caps) {
+        if (!attrs[NL80211_ATTR_EXT_FEATURES]) return;
+
+        const uint8_t *ext_features = static_cast<uint8_t *>(
+            nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
+        const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
+
+        // NL80211_EXT_FEATURE_BEACON_PROTECTION = 49
+        constexpr int feature = NL80211_EXT_FEATURE_BEACON_PROTECTION;
+        if (feature / 8 < len)
+            caps->beacon_prot = (ext_features[feature / 8] >> (feature % 8)) & 1;
+    }
 
     void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
         if (attrs[NL80211_ATTR_CIPHER_SUITES]) {
@@ -87,6 +99,7 @@ namespace wpa3_tester{
         }
     }
 
+
     int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
         auto *caps = static_cast<NlCaps *>(arg);
         const auto *gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
@@ -102,6 +115,7 @@ namespace wpa3_tester{
         check_type(attrs, caps);
         check_monitor(attrs, caps);
         check_band_caps(attrs,caps);
+        check_beacon_prot(attrs, caps);
 
         return NL_SKIP;
     }
@@ -213,6 +227,8 @@ namespace wpa3_tester{
         nl_send_auto(sock, msg); // send message to kernel
         nl_recvmsgs_default(sock); // get answer
 
+
+        //TODO ? rovnou vyplňovat  cfg? kratší, ale zas to nebude tak rozdělené )
         cfg.bool_conditions["AP"] = caps.ap;
         cfg.bool_conditions["STA"] = caps.sta;
         cfg.bool_conditions["monitor"] = caps.monitor;
@@ -224,6 +240,7 @@ namespace wpa3_tester{
         cfg.bool_conditions["80211ac"] = caps._80211ac;
         cfg.bool_conditions["80211ax"] = caps._80211ax;
 
+        cfg.bool_conditions["beacon_prot"] = caps._80211ax;
 
         if (caps.monitor) {
             bool real_injection = check_injection_runtime(iface);

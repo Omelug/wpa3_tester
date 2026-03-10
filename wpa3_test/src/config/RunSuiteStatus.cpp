@@ -163,6 +163,7 @@ namespace wpa3_tester{
             }
             rs.execute();
         }
+
     }
 
     string RunSuiteStatus::findConfigByTestSuiteName(const string &name){

@@ -65,8 +65,8 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
     REQUIRE(exists(csv_path));
 
     const vector<string> expected_lines = {
-        "2026-02-21T13:12:45.844734691+0100,149",
-        "2026-02-21T13:12:46.433775945+0100,149"
+        "1,2026-02-21T13:12:45.844734691+0100,149",
+        "2,2026-02-21T13:12:46.433775945+0100,149"
     };
 
     ifstream f(csv_path);

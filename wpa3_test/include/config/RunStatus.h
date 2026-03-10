@@ -52,9 +52,9 @@ namespace wpa3_tester{
     private:
 
         // to scan available interfaces
-        ActorCMap scan_internal() const;
-        //ActorCMap scan_external() const;
-        //ActorCMap scan_simulation() const;
+        static ActorCMap scan_internal();
+        ActorCMap scan_external(const std::string& iface);
+        ActorCMap create_simulation();
 
         std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
 

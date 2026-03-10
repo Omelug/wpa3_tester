@@ -30,7 +30,8 @@ namespace wpa3_tester{
             {"WPA3-SAE", std::nullopt},
             {"80211n",   std::nullopt},
             {"80211ac",  std::nullopt},
-            {"80211ax",  std::nullopt}
+            {"80211ax",  std::nullopt},
+            {"beacon_prot",  std::nullopt}
         };
         std::string operator[](const std::string& key) const;
         std::optional<std::string> get_optional(const std::string& key) const;

@@ -15,20 +15,6 @@
 using namespace std;
 using nlohmann::json;
 namespace wpa3_tester{
-    ActorCMap RunStatus::scan_internal() const{
-        ActorCMap options_map;
-
-        for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
-            if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
-            json actor_json;
-            actor_json["selection"]["iface"] = iface_name;
-            auto cfg = make_unique<Actor_config>(actor_json);
-            hw_capabilities::get_nl80211_caps(iface_name, *cfg);
-            options_map.emplace(iface_name, std::move(cfg));
-        }
-        return options_map;
-    }
-
     tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
         ActorCMap ex_map, in_map, sim_map;
 

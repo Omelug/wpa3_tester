@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "ex_program/ip/ip.h"
+#include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
@@ -57,7 +58,7 @@ namespace wpa3_tester::CSA_attack{
         const auto end_time = start_time + seconds(attack_time);
 
         while (steady_clock::now() < end_time) {
-            log(LogLevel::DEBUG, "sending CSA");
+            //log(LogLevel::DEBUG, "sending CSA");
             send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
             this_thread::sleep_for(milliseconds(ms_interval));
         }
@@ -109,7 +110,7 @@ namespace wpa3_tester::CSA_attack{
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
         const string essid     = ap_setup.at("program_config").at("ssid");
-        const int old_channel  = ap_setup.at("channel");
+        const int old_channel  = ap_setup.at("program_config").at("channel");
         const int new_channel  = att_cfg.at("new_channel");
         const int ms_interval  = att_cfg.at("ms_interval");
         const int attack_time  = att_cfg.at("attack_time");
@@ -124,7 +125,7 @@ namespace wpa3_tester::CSA_attack{
 
     // ---------- STATS ----------------
     void generate_report(const RunStatus & rs, const string & STA_graph_path, const string & AP_graph_path){
-        path report_path = path(rs.run_folder) / "report.md";
+        const path report_path = path(rs.run_folder) / "report.md";
         std::ofstream report(report_path);
 
         if (!report.is_open()) {
@@ -132,35 +133,26 @@ namespace wpa3_tester::CSA_attack{
             return;
         }
 
-        auto attack_cfg = rs.config["attack_config"];
-        int attack_time = attack_cfg.at("attack_time").get<int>();
-        int ms_interval = attack_cfg.at("ms_interval").get<int>();
-        int new_channel = attack_cfg.at("new_channel").get<int>();
-
         report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
+
         report << "## Attack Description\n";
-        //TODO
-        report << "## Attack Configuration\n";
-        report << "| Parameter | Value |\n";
-        report << "| :--- | :--- |\n";
-        report << "| **Attack Duration** | " << attack_time << " s |\n";
-        report << "| **Packet Interval** | " << ms_interval << " ms |\n";
-        report << "| **Target Channel** | " << new_channel << " |\n\n";
+        report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
+
+        report::attack_config_table(report, rs);
+        report::attack_mapping_table(report, rs);
 
         report << "## Traffic Analysis\n";
-        report << "The following charts represent the network throughput (packets/sec) captured during the test. ";
-        report << "A successful CSA attack is typically characterized by a sharp drop in received packets on the AP side as the client switches channels.\n\n";
+        report << "Charts represent the network speed captured during the test. (STA->AP)\n";
+        report << "Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
 
-        report << "### STA\n";
+        report << "### STA (client, wpa_supplicant "<<  rs.config.at("actors").at("client").at("setup").at("program_config").value("version", "default") <<")\n";
         report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder).string() << ")\n\n";
 
-        report << "### AP\n";
+        report << "### AP (access_point, hostapd " << rs.config.at("actors").at("client").at("setup").at("program_config").value("version", "default") << ")\n";
         report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder).string() << ")\n\n";
-
 
         report << "---\n";
         report.close();
-
     }
 
     void stats_chs_attack(const RunStatus &rs){

@@ -7,6 +7,7 @@
 namespace wpa3_tester{
     class Actor_config {
     public:
+        explicit Actor_config() = default;
         explicit Actor_config(const nlohmann::json& j);
         bool matches(const Actor_config &offer);
 

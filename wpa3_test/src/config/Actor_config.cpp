@@ -3,7 +3,6 @@
 namespace wpa3_tester{
     using namespace std;
     using json = nlohmann::json;
-
     Actor_config::Actor_config(const json& j) {
         if (j.contains("selection") && j.at("selection").is_object()) {
             const auto& sel = j.at("selection");

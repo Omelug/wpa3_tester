@@ -3,7 +3,7 @@ t: Actor with internal and AP should accept essid with different essid, but chan
 f: add network manager off option for actors
 +: check in setup_chs_attack actors are available
 +: better req_error messages
-+: add external mon interfaces option (to dump connection)
++: add external mon interfaces option (to dump OpennWrtConn)
 ch: channel should be in selection?
 +: macchanger for changes
 f: check WPA2/SAE support correctly

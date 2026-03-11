@@ -5,11 +5,6 @@
 
 namespace wpa3_tester::observer{
 
-    enum class PlotLibrary {
-        SCIPLOT,
-        MATPLOT
-    };
-
     struct IperfData {
         std::vector<double> intervals;
         std::vector<double> bandwidths;
@@ -17,8 +12,7 @@ namespace wpa3_tester::observer{
 
     void iperf3_graph(const std::filesystem::path &log_path,
                              const std::string &actor_tag,
-                             const std::string &output_png,
-                             PlotLibrary lib = PlotLibrary::MATPLOT);
+                             const std::string &output_png);
 
     void start_iperf3(RunStatus& run_status,
                     const std::string &actor_name,

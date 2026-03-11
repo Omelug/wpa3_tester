@@ -7,15 +7,11 @@
 #include <sciplot/Plot2D.hpp>
 #include <sciplot/Figure.hpp>
 #include <sciplot/Canvas.hpp>
-#include <sciplot/sciplot.hpp>
-#include <matplot/matplot.h>
-
 #include "observer/observers.h"
 
 namespace wpa3_tester::observer{
     using namespace std;
     using namespace sciplot;
-    using namespace matplot;
     using namespace filesystem;
 
     IperfData parse_iperf_log(const path &log_path, const string &actor_tag) {
@@ -47,46 +43,24 @@ namespace wpa3_tester::observer{
 
     static void render_graph(const IperfData &data,
                              const string &label,
-                             const path &output_path,
-                             const PlotLibrary lib){
-        if (data.bandwidths.empty()) return;
-        if (lib == PlotLibrary::SCIPLOT) {
-            Plot2D plot;
-            plot.xlabel("Sample [ms]");
-            plot.ylabel("Throughput [Kbit/s]");
-            plot.gnuplot("set logscale y");
-            plot.drawCurve(data.intervals, data.bandwidths).label(label);
+                             const path &output_path){
+        //throw not_implemented_error("GNUplot have to be used, matlot is mess");
 
-            Figure fig = {{plot}};
-            const Canvas canvas = {{fig}};
-            canvas.save(output_path.string());
+        if (data.bandwidths.empty()) return;  //FIXME použít gnuplot ?
+        Plot2D plot;
+        plot.xlabel("Sample [ms]");
+        plot.ylabel("Throughput [Kbit/s]");
+        plot.gnuplot("set logscale y");
+        plot.drawCurve(data.intervals, data.bandwidths).label(label);
 
-        } else if (lib == PlotLibrary::MATPLOT) {
-            auto f = figure(true);
-            f->quiet_mode(true);
-            auto ax = f->current_axes();
-
-            std::vector<double> y = data.bandwidths;
-            for (auto& v : y) {
-                if (v <= 0.0){
-                    constexpr double eps = 1e-3;
-                    v = eps;
-                }
-            } //do not use for stats ! contaminated data (add epsilon ofr better visualization)
-
-            ax->semilogy(data.intervals, y)->display_name(label);
-            ax->xlabel("Sample [ms]");
-            ax->ylabel("Throughput [Kbit/s]");
-            ax->legend();
-            //f->draw();
-            f->save(output_path.string());
-        }
+        Figure fig = {{plot}};
+        const Canvas canvas = {{fig}};
+        canvas.save(output_path.string());
     }
 
     void iperf3_graph(const path &log_path,
                              const string &actor_tag,
-                             const string &output_png,
-                             const PlotLibrary lib) {
+                             const string &output_png) {
 
         if (!exists(log_path)) {
             log(LogLevel::ERROR, "iperf3 log file not found: %s", log_path.string().c_str());
@@ -101,47 +75,12 @@ namespace wpa3_tester::observer{
 
         const path full_output_path = log_path.parent_path() / output_png;
         try {
-            render_graph(data, actor_tag, full_output_path, lib);
-            log(LogLevel::INFO, "Graph saved via %s to %s",
-                (lib == PlotLibrary::SCIPLOT ? "sciplot" : "matplot++"),
-                full_output_path.string().c_str());
+            render_graph(data, actor_tag, full_output_path);
+            log(LogLevel::INFO, "Graph saved via %s to %s", full_output_path.string().c_str());
         } catch (const exception &e) {
             log(LogLevel::ERROR, "Rendering failed: %s", e.what());
         }
     }
-
-    /*
-       const fs::path obs_dir = observer::get_observer_folder(rs, "iperf");
-       rs.process_manager.run("iperf3_server",{
-           "stdbuf", "-oL", "-eL",
-           "iperf3",
-           "-s",
-           //"-1",
-           "-i","0.1",
-           "-B", "10.0.0.1",   // explicit bind
-           "-f", "k",
-           //"-J"
-           //"--logfile","iperf3_server.json"
-       }, obs_dir);
-       rs.process_manager.wait_for("iperf3_server", "Server listening");
-       */
-    //this_thread::sleep_for(chrono::seconds(5)); //TODO
-    /*
-    rs.process_manager.run("iperf3_client", {
-        "ip", "netns", "exec", rs.config["actors"]["client"]["netns"].get<string>(),
-        "stdbuf", "-oL", "-eL",
-        "iperf3",
-        "-c", "10.0.0.1",
-        "-u", // udp, because is not buffered
-        "-b", "10M",
-        "-i","0.1",
-        //"-B", "10.0.0.2",
-        "--bind-dev", rs.get_actor("client")["iface"],
-        "-t", to_string(rs.config["attack_config"]["attack_time"].get<int>()),
-        "-f", "k",
-        //"-J",
-        //"--logfile","iperf_client.json"
-    }, obs_dir);*/
 
     constexpr string program_name = "iperf3";
     void start_iperf3(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){

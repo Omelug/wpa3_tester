@@ -8,13 +8,10 @@
 #include <vector>
 #include <sys/types.h>
 #include <sys/wait.h>
-
-#include "system/hw_capabilities.h"
-
 #include <random>
 
+#include "system/hw_capabilities.h"
 #include "config/global_config.h"
-
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"

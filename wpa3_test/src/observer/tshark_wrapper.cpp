@@ -2,7 +2,6 @@
 #include "config/RunStatus.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
-#include <matplot/matplot.h>
 #include <cstdio>
 #include <sstream>
 #include <iomanip>

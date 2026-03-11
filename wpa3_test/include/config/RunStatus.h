@@ -1,9 +1,8 @@
 #pragma once
-#include <string>
 #include <map>
-#include <unordered_map>
 #include <memory>
-#include <tuple>
+#include <string>
+#include <unordered_map>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
 #include "system/ProcessManager.h"
@@ -63,7 +62,7 @@ namespace wpa3_tester{
         // to scan available interfaces
         static ActorCMapU internal_options();
         ActorCMapU external_options();
-        //ActorCMap create_simulation();
+        ActorCMap create_simulation();
 
         void parse_requirements();
 

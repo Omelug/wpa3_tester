@@ -101,15 +101,6 @@ FetchContent_Declare(
         GIT_TAG        v0.3.1
 )
 
-FetchContent_Declare(
-        matplotplusplus
-        GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus.git
-        GIT_TAG        v1.2.2
-)
-set(MATPLOTPLUSPLUS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(MATPLOTPLUSPLUS_WITH_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(MATPLOTPLUSPLUS_INSTALL OFF CACHE BOOL "" FORCE)
-
 # ------------------------------------------------
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -122,7 +113,6 @@ FetchContent_MakeAvailable(
         json_schema_validator
         linux_headers_wifi
         sciplot
-        matplotplusplus
 )
 
 add_library(doctest_headers INTERFACE)
@@ -130,6 +120,14 @@ target_include_directories(doctest_headers INTERFACE "${doctest_SOURCE_DIR}" "${
 
 
 find_package(yaml-cpp REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
+pkg_check_modules(LIBSSH REQUIRED libssh)
+if(NOT LIBSSH_FOUND)
+    message(FATAL_ERROR "libssh not found. Run: sudo apt install libssh-dev")
+endif()
+
 file(GLOB_RECURSE CORE_SOURCES
         "src/*.cpp"
         "src/*.h"
@@ -137,9 +135,6 @@ file(GLOB_RECURSE CORE_SOURCES
 )
 message(STATUS "core sources: ${CORE_SOURCES}")
 
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
 add_executable(${PROJECT_NAME} "../wpa3_test/main.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE wpa3_core)
 add_library(wpa3_core STATIC ${CORE_SOURCES})
@@ -153,9 +148,9 @@ target_include_directories(wpa3_core PUBLIC
         ${json_schema_validator_SOURCE_DIR}/src
         ${reproc_SOURCE_DIR}/reproc++/include
         ${LIBNL_INCLUDE_DIRS}
+        ${LIBSSH_INCLUDE_DIRS}
         ${WIFI_HEADERS_DIR}
         ${sciplot_SOURCE_DIR}
-        ${matplotplusplus_SOURCE_DIR}/source
 )
 
 target_link_libraries(wpa3_core PUBLIC
@@ -169,7 +164,7 @@ target_link_libraries(wpa3_core PUBLIC
         reproc++
         nl-3 nl-genl-3
         ${LIBNL_LIBRARIES}
-        matplot
+        ${LIBSSH_LIBRARIES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

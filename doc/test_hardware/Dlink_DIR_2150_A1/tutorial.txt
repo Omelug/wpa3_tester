@@ -1,0 +1,22 @@
+Dlink_DIR_2150_A1
+
+openwrt
+web: root:dlinkroot
+
+sudo ip addr add 192.168.1.10/24 dev eth0
+sudo ip link set dev eth0 up
+sudo ip route add default via 192.168.1.1 dev eth0
+
+
+Po instalaci:
+
+	Fix pro čas:
+	/etc/init.d/sysntpd stop
+	ntpd -q -n -p 0.openwrt.pool.ntp.org 
+	/etc/init.d/sysntpd start
+
+Instalace:
+	opkg update
+	opkg install tcpdump-mini
+
+	tcpdump -i phy0-ap0 -n

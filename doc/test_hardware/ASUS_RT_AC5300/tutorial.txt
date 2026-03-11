@@ -1,0 +1,19 @@
+
+dd-wrt:
+
+https://dd-wrt.com/support/other-downloads/?path=betas%2Flatest%2Fasus-rt-ac5300%2F
+web: ddwrt/ddwrt (v ssh je to samé heslo, jen root@192.168.1.1 )
+
+enable ssh: Services > Services > Secure Shell (SSH) > Enable Daemon
+country: Wireless > Basic settings > Country Settings
+
+OpenWrt:
+https://forum.openwrt.org/t/call-for-testing-openwrt-support-for-asus-rt-ac3200-rt-ac5300/238045
+nebo https://toh.openwrt.org/?view=normal
+
+// pozor, nevysnoušeno
+sudo nmcli connection modify "eth0_switch" \
+  ipv4.method auto \
+  ipv4.never-default yes \
+  ipv4.route-metric 1000 && \
+sudo nmcli connection up "eth0_switch"

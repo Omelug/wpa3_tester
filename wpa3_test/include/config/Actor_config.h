@@ -48,6 +48,7 @@ namespace wpa3_tester{
 
         std::string operator[](const std::string& key) const;
         bool get_bool(const std::string &key) const;
+        std::string to_str() const;
 
         //  only internal
         int run(const std::vector<std::string> &argv) const;

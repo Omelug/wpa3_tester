@@ -94,4 +94,55 @@ namespace wpa3_tester{
         }
         return *(it->second);
     }
+
+    std::string Actor_config::to_str() const {
+        string result;
+
+        // string params
+        bool first_str = true;
+        for (const auto& [key, val] : str_con) {
+            if (val.has_value()) {
+                if (!first_str) result += ", ";
+                result += key + "=" + val.value();
+                first_str = false;
+            }
+        }
+
+        vector<string> true_conds;
+        vector<string> false_conds;
+
+        for (const auto& [key, val] : bool_conditions) {
+            if (val.has_value()) {
+                if (val.value()) {
+                    true_conds.push_back(key);
+                } else {
+                    false_conds.push_back(key);
+                }
+            }
+        }
+
+        // True list
+        if (!true_conds.empty()) {
+            if (!result.empty()) result += "\n";
+            result += "True: [";
+            for (size_t i = 0; i < true_conds.size(); ++i) {
+                if (i > 0) result += ", ";
+                result += true_conds[i];
+            }
+            result += "]";
+        }
+
+        // False list
+        if (!false_conds.empty()) {
+            if (!result.empty()) result += "\n";
+            result += "False: [";
+            for (size_t i = 0; i < false_conds.size(); ++i) {
+                if (i > 0) result += ", ";
+                result += false_conds[i];
+            }
+            result += "]";
+        }
+
+        return result;
+    }
 }

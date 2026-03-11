@@ -225,7 +225,7 @@ namespace wpa3_tester{
     ActorCMapU RunStatus::external_options(){
         ActorCMapU options_map;
 
-        //option1: whitebox_name -> whitebox_ip
+        //option1: whitebox_host -> whitebox_ip
         const path conn_table = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
             get_global_config().at("actors").at("conn_table").get<string>());
 

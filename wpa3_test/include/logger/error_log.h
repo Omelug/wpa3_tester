@@ -31,7 +31,7 @@ namespace wpa3_tester{
         explicit typed_error(const char *fmt, Args... args)
             : tester_error(Level, fmt, args...) {}
     };
-
+    //TODO přepsat error -> err pro zkrácení řádků
     using config_error          = typed_error<LogLevel::CRITICAL>;
     using compile_error         = typed_error<LogLevel::CRITICAL>;
     using install_error         = typed_error<LogLevel::CRITICAL>;
@@ -43,4 +43,5 @@ namespace wpa3_tester{
     using not_implemented_error = typed_error<LogLevel::CRITICAL>;
     using wait_for_timeout      = typed_error<LogLevel::ERROR>;
 
+    using ex_conn_err         = typed_error<LogLevel::CRITICAL>;
 }

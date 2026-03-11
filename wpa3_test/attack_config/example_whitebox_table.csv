@@ -1,2 +1,2 @@
-whitebox_name,whitebox_ip
-,
+whitebox_host,whitebox_ip,external_OS,ssh_user,ssh_password
+OpenWrt,192.168.1.1,openwrt,root,dlinkroot

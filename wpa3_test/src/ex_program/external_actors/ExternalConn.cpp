@@ -19,8 +19,10 @@ namespace wpa3_tester{
 
     bool ExternalConn::connect(){
 
-        // Check if actor has correct SSH input
-        if (!actor->str_con["whitebox_ip"].has_value()) {
+        // Check if actor has needed SSH params
+        if (!actor->str_con["whitebox_ip"].has_value()  ||
+            !actor->str_con["ssh_user"].has_value()     ||
+            !actor->str_con["ssh_password"].has_value()) {
             throw ex_conn_err("ExternalConn: actor missing whitebox_ip");
         }
 
@@ -43,13 +45,16 @@ namespace wpa3_tester{
             throw ex_conn_err(error_msg);
         }
 
-        // Authenticate with public key (preferred) or password
+        // auth with public key (preferred) or password
         if (ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS) {
-            const string error_msg = string("SSH authentication failed: ") + ssh_get_error(session);
-            ssh_disconnect(session);
-            ssh_free(session);
-            session = nullptr;
-            throw ex_conn_err(error_msg);
+            const std::string password = (*actor)["ssh_password"];
+            if (ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS) {
+                const string error_msg = string("SSH authentication failed: ") + ssh_get_error(session);
+                ssh_disconnect(session);
+                ssh_free(session);
+                session = nullptr;
+                throw ex_conn_err(error_msg);
+            }
         }
         return true;
     }

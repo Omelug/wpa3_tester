@@ -15,4 +15,18 @@ namespace wpa3_tester{
         });
          hw_capabilities::run_cmd(command);
     }
+
+    string resolve_host(const string& hostname) {
+        addrinfo hints{}, *res;
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+
+        if (getaddrinfo(hostname.c_str(), nullptr, &hints, &res) != 0){
+            throw runtime_error("Cannot resolve: " + hostname);
+        }
+        char ip[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in *>(res->ai_addr)->sin_addr, ip, sizeof(ip));
+        freeaddrinfo(res);
+        return string(ip);
+    }
 }

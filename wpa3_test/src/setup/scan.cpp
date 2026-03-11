@@ -1,3 +1,5 @@
+#include "setup/scan.h"
+
 #include <libtins-src/include/tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
@@ -145,8 +147,20 @@ namespace wpa3_tester{
         return result;
     }
 
-    //TODO simplify, add test
-    vector<unique_ptr<Actor_config>> get_actors_conn_table(const path& conn_table){
+    vector<string> scan::parse_csv_line(const string& line) {
+        vector<string> fields;
+        stringstream ss(line);
+        string field;
+        while (getline(ss, field, ',')) {
+            // Trim whitespace
+            field.erase(0, field.find_first_not_of(" \t\r\n"));
+            field.erase(field.find_last_not_of(" \t\r\n") + 1);
+            fields.push_back(field);
+        }
+        return fields;
+    }
+
+    vector<unique_ptr<Actor_config>> scan::get_actors_conn_table(const path& conn_table){
         vector<unique_ptr<Actor_config>> result;
 
         if (!exists(conn_table)) {
@@ -156,64 +170,50 @@ namespace wpa3_tester{
 
         ifstream file(conn_table);
         if (!file.is_open()) {
-            throw config_error("Failed to open connection table: %s ", conn_table.string().c_str());
+            throw config_error("Failed to open connection table: %s", conn_table.string().c_str());
         }
 
         string line;
-        vector<string> headers;
-
-        // header line
-        if (getline(file, line)) {
-            stringstream ss(line);
-            string header;
-            while (getline(ss, header, ',')) {
-                header.erase(0, header.find_first_not_of(" \t\r\n"));
-                header.erase(header.find_last_not_of(" \t\r\n") + 1);
-                headers.push_back(header);
-            }
+        if (!getline(file, line)) {
+            throw config_error("Empty connection table: %s", conn_table.string().c_str());
         }
 
-        if (headers.empty()) {
-            throw config_error("No headers found in connection table: %s", conn_table.string().c_str());
-        }
+        // Parse header
+        vector<string> headers = parse_csv_line(line);
+        map<string, size_t> col_idx;
+        for (size_t i = 0; i < headers.size(); ++i) {col_idx[headers[i]] = i;}
 
-        // Find column indices
-        int whitebox_host_idx = -1, whitebox_ip_idx = -1;
-        for (size_t i = 0; i < headers.size(); ++i) {
-            if (headers[i] == "whitebox_host") whitebox_host_idx = i;
-            else if (headers[i] == "whitebox_ip") whitebox_ip_idx = i;
-        }
-
-        if (whitebox_host_idx == -1 || whitebox_ip_idx == -1) {
-            log(LogLevel::ERROR, "Connection table missing required columns (whitebox_host, whitebox_ip): %s",
+        // Check required columns
+        if (!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")) {
+            throw config_error("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
                 conn_table.string().c_str());
-            return result;
         }
 
         // Read data lines
         while (getline(file, line)) {
             if (line.empty()) continue;
 
-            stringstream ss(line);
-            string field;
-            vector<string> fields;
-
-            while (getline(ss, field, ',')) {
-                field.erase(0, field.find_first_not_of(" \t\r\n"));
-                field.erase(field.find_last_not_of(" \t\r\n") + 1);
-                fields.push_back(field);
-            }
-
+            vector<string> fields = parse_csv_line(line);
             if (fields.empty()) continue;
 
             auto cfg = make_unique<Actor_config>();
 
-            if (whitebox_host_idx >= 0 && whitebox_host_idx < static_cast<int>(fields.size())) {
-                cfg->str_con["whitebox_host"] = fields[whitebox_host_idx];
-            }
-            if (whitebox_ip_idx >= 0 && whitebox_ip_idx < static_cast<int>(fields.size())) {
-                cfg->str_con["whitebox_ip"] = fields[whitebox_ip_idx];
-            }
+            // Set fields if column exists and has data
+            auto set_field = [&](const string& col_name, const string& cfg_key) {
+                if (col_idx.contains(col_name) && col_idx[col_name] <fields.size()) {
+                    const string& value = fields[col_idx[col_name]];
+                    if (!value.empty()) {
+                        cfg->str_con[cfg_key] = value;
+                    }
+                }
+            };
+
+            set_field("whitebox_host", "whitebox_host");
+            set_field("whitebox_ip", "whitebox_ip");
+            set_field("external_OS", "external_OS");
+            set_field("ssh_user", "ssh_user");
+            set_field("ssh_port", "ssh_port");
+            set_field("ssh_password", "ssh_password");
 
             result.push_back(std::move(cfg));
         }
@@ -229,7 +229,7 @@ namespace wpa3_tester{
         const path conn_table = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
             get_global_config().at("actors").at("conn_table").get<string>());
 
-        for(auto& cfg : get_actors_conn_table(conn_table)){
+        for(auto& cfg : scan::get_actors_conn_table(conn_table)){
             //TODO ping actor check
             const string& host = cfg->str_con["whitebox_host"].value();
             options_map.emplace(host, std::move(cfg));

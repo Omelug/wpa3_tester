@@ -22,8 +22,13 @@ namespace wpa3_tester{
             {"driver",         std::nullopt},
             {"netns",          std::nullopt},
             {"sniff_iface",    std::nullopt},
+            // external whitebox only
             {"whitebox_host",  std::nullopt},
             {"whitebox_ip",    std::nullopt},
+            {"ssh_user",       std::nullopt},
+            {"ssh_port",       std::nullopt},
+            {"ssh_password",   std::nullopt},
+            {"external_OS",    std::nullopt},
         };
 
         std::map<std::string, std::optional<bool>> bool_conditions = {

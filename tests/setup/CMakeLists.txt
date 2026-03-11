@@ -22,3 +22,12 @@ target_link_libraries(run_cleanup_tests PRIVATE
 
 add_test(NAME CleanupTests COMMAND run_cleanup_tests)
 
+# scan tests
+add_executable(run_scan_tests test_scan.cpp)
+
+target_link_libraries(run_scan_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+
+add_test(NAME ScanTests COMMAND run_scan_tests)

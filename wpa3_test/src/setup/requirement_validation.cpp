@@ -169,9 +169,9 @@ namespace wpa3_tester{
             actor->setup_actor(config);
         }
 
-        // -------------- SIMULATIONS
+        // ---------------- SIMULATIONS -------------------------
         // TODO: simulation -> check hw compatibility
-        ActorCMap options_simulation =  create_simulation();
+        //ActorCMap options_simulation =  create_simulation();
         // check if possible with simulation
         // create simulation
 

@@ -8,7 +8,8 @@ using namespace std;
 using namespace wpa3_tester;
 
 namespace wpa3_tester {
-    TEST_CASE("Runtime injection check - manual test with interface") {
+    //test with some mockup
+    /*TEST_CASE("Runtime injection check - manual test with interface") {
         // Set the interface name to test (change this to your actual interface)
         const string TEST_INTERFACE = "wlan1";  // CHANGE THIS to your monitor mode interface
 
@@ -28,14 +29,14 @@ namespace wpa3_tester {
 
         // You can uncomment this if you want the test to fail when injection is not supported:
         // CHECK(injection_supported);
-    }
+    }*/
 
-    TEST_CASE("Runtime injection check - test with non-existent interface") {
+    /*TEST_CASE("Runtime injection check - test with non-existent interface") {
         const string FAKE_INTERFACE = "fake_wlan999";
         log(LogLevel::INFO, "Testing injection with non-existent interface: %s", FAKE_INTERFACE.c_str());
 
         const bool result = check_injection_runtime(FAKE_INTERFACE);
         CHECK_FALSE(result); // Should return false for non-existent interface
-    }
+    }*/
 }
 

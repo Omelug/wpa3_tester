@@ -33,8 +33,9 @@ int main() {
         }
     }
 
-    const ActorConfig_iface_func selected {selected_iface, nullopt};
-    selected.set_monitor_mode();
+    const Actor_config actor{};
+    actor["iface"] = selected_iface;
+    actor.set_monitor_mode();
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";
     cout << "Please wait...\n";
 

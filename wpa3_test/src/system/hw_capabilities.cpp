@@ -98,7 +98,7 @@ namespace wpa3_tester{
         const vector<string> &ruleKeys,
         const size_t ruleIdx,
         const ActorCMap &rules,
-        const ActorCMap &options,
+        const ActorCMapU &options,
         set<string> &usedOptions,
         AssignmentMap &currentAssignment
     ){
@@ -131,7 +131,7 @@ namespace wpa3_tester{
         return false; // no valid option for this rule
     }
 
-    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMap &options){
+    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMapU &options){
         vector<string> ruleKeys;
         for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
         AssignmentMap result;
@@ -286,7 +286,7 @@ namespace wpa3_tester{
 
         char mac[18];
         snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
-                 dis(gen), dis(gen), dis(gen), dis(gen), dis(gen), dis(gen));
+            dis(gen), dis(gen), dis(gen), dis(gen), dis(gen), dis(gen));
         return string(mac);
     }
 }

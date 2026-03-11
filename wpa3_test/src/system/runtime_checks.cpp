@@ -12,8 +12,10 @@
 
 namespace wpa3_tester{
     bool check_injection_runtime(const std::string& iface_name) {
-        const ActorConfig_iface_func ifc{iface_name, std::nullopt};
-        ifc.set_monitor_mode();
+        const Actor_config actor{};
+        actor["iface"] = iface_name;
+        actor.set_monitor_mode();
+
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
         const int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
@@ -30,7 +32,7 @@ namespace wpa3_tester{
         sa.sll_protocol = htons(ETH_P_ALL);
 
         // 802.11 Null-Data s with empty Radiotap  (8 byte RT + 24 byte Dot11)
-        uint8_t test_frame[] = {
+        const uint8_t test_frame[] = {
             0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, // Radiotap (v0, length 8)
             0x04, 0x00, 0x00, 0x00,                         // Frame Control (Null Function), Duration
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff,             // Dest (Broadcast)

@@ -101,9 +101,9 @@ namespace wpa3_tester{
 
     }
 
-    void write_actors_csv(const ActorCMap& actors, const string& type, ofstream& ofs){
+    void write_actors_csv(const ActorCMapU& actors, ofstream& ofs){
         for (const auto& [name, actor] : actors) {
-            ofs << type << ","
+            ofs << actor->str_con.at("source").value_or("<none>") << ","
                 << name << ","
                 << actor->str_con.at("iface").value_or("<none>") << ","
                 << actor->str_con.at("mac").value_or("<none>") << ","
@@ -126,9 +126,7 @@ namespace wpa3_tester{
 
         ofs << "Type,ActorName,Interface,MAC,Driver" << endl;
 
-        write_actors_csv(internal_actors, "Internal", ofs);
-        write_actors_csv(external_actors, "External", ofs);
-        write_actors_csv(simulation_actors, "Simulation", ofs);
+        write_actors_csv(actors, ofs);
 
         ofs.close();
         log(LogLevel::INFO, "Actor/interface mapping written to CSV: %s", path.c_str());
@@ -137,7 +135,7 @@ namespace wpa3_tester{
     Actor_config& RunStatus::get_actor(const string& actor_name){
         Actor_config* found = nullptr;
 
-        auto check_map = [&](ActorCMap& m, const char* map_name) {
+        auto check_map = [&](ActorCMapU& m, const char* map_name) {
             if (const auto it = m.find(actor_name); it != m.end()) {
                 if (found != nullptr) {
                     throw config_error("Actor %s found in multiple maps (including %s)",actor_name.c_str(), map_name);
@@ -146,9 +144,7 @@ namespace wpa3_tester{
             }
         };
 
-        check_map(external_actors, "external_actors");
-        check_map(internal_actors, "internal_actors");
-        check_map(simulation_actors, "simulation_actors");
+        check_map(actors, "external_actors");
 
         if (!found) {throw config_error("Actor %s not found in any actor map", actor_name.c_str());}
         return *found;

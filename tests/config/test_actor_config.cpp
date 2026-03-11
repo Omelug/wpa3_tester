@@ -10,12 +10,15 @@ using json = nlohmann::json;
 
 TEST_CASE("Actor_config - json constructor with selection") {
     json j = {
-        {"selection", {
-            {"iface", "wlan0"},
-            {"driver", "ath9k"},
-            {"condition", {"monitor", "injection"}}
+        {
+            "selection", {
+                {"iface", "wlan0"},
+                {"driver", "ath9k"},
+                {"condition", {"monitor", "injection"}}
+            }
         },
-        {"netns", "sta"}}
+        {"netns", "sta"},
+        {"type", "STA"}
     };
 
     Actor_config actor(j);
@@ -24,7 +27,7 @@ TEST_CASE("Actor_config - json constructor with selection") {
     CHECK((actor.str_con.at("iface").value() == "wlan0"));
     CHECK(actor.str_con.at("driver").has_value());
     CHECK((actor.str_con.at("driver").value() == "ath9k"));
-    CHECK((actor.str_con.at("iface").value() == "sta"));
+    CHECK((actor.str_con.at("netns").value() == "sta"));
 
     CHECK((actor.bool_conditions.at("monitor").value_or(false) == true));
     CHECK((actor.bool_conditions.at("injection").value_or(false) == true));

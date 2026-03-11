@@ -24,15 +24,12 @@ namespace wpa3_tester{
     };
 
     class Actor_config;
-    using ActorCMap = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
+    using ActorCMap = std::unordered_map<std::string, Actor_config*>;
+    using ActorCMapU = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
-
-        //actors
-        ActorCMap external_actors{};
-        ActorCMap internal_actors{};
-        ActorCMap simulation_actors{};
+        ActorCMapU actors{};
 
     public:
         bool only_stats = false;
@@ -43,7 +40,7 @@ namespace wpa3_tester{
 
         //mapping actor->interface
         AssignmentMap internal_mapping{};
-        //AssignmentMap external_mapping;
+        AssignmentMap external_mapping;
         //AssignmentMap simulation_mapping;
 
         ProcessManager process_manager{};
@@ -64,13 +61,11 @@ namespace wpa3_tester{
     private:
 
         // to scan available interfaces
-        static ActorCMap internal_options();
+        static ActorCMapU internal_options();
+        ActorCMapU external_options();
+        //ActorCMap create_simulation();
 
-        ActorCMap external_options();
-
-        ActorCMap create_simulation();
-
-        std::tuple<ActorCMap, ActorCMap, ActorCMap> parse_requirements();
+        void parse_requirements();
 
     public:
         static nlohmann::json extends_recursive(const nlohmann::json &current_node, const std::string &config_path);

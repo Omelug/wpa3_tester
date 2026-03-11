@@ -14,6 +14,8 @@ namespace wpa3_tester{
 
     //TODO create test for this
     void Actor_config::set_channel(const int channel) const {
+        string name = str_con.at("iface").value();
+        const optional<string> netns = str_con.at("netns");
         if (netns.has_value()) {
             log(LogLevel::INFO, "Setting interface %s to channel %d in netns %s", name.c_str(), channel, netns->c_str());
         } else {
@@ -23,6 +25,9 @@ namespace wpa3_tester{
     }
 
     void Actor_config::set_managed_mode() const {
+        string name = str_con.at("iface").value();
+        const optional<string> netns = str_con.at("netns");
+
         if (netns.has_value()) {
             log(LogLevel::INFO, "Preparing interface %s for managed mode in netns %s", name.c_str(), netns->c_str());
         } else {
@@ -34,6 +39,8 @@ namespace wpa3_tester{
     }
 
     void Actor_config::set_monitor_mode() const {
+        string name = str_con.at("iface").value();
+        const optional<string> netns = str_con.at("netns");
         if (netns.has_value()) {
             log(LogLevel::INFO, "Setting interface %s to monitor mode in netns %s", name.c_str(), netns->c_str());
         } else {
@@ -46,7 +53,8 @@ namespace wpa3_tester{
     }
 
     void Actor_config::cleanup() const {
-        string name = str_con["iface"];
+        string name = str_con.at("iface").value();
+        optional<string> netns = str_con.at("netns");
         if (name.empty()) {
             log(LogLevel::ERROR, "cleanup() called with empty interface name");
             return;
@@ -83,11 +91,12 @@ namespace wpa3_tester{
     }
 
     void Actor_config::create_sniff_iface(const std::string& sniff_iface){
-        run({"iw", "dev", name, "interface","add",sniff_iface,"type","monitor","flags","fcsfail", "otherbss"});
+        string iface = str_con.at("iface").value();
+        run({"iw", "dev", iface, "interface","add",sniff_iface,"type","monitor","flags","fcsfail", "otherbss"});
         run({"ip", "link", "set", sniff_iface, "up"});
     }
 
     int Actor_config::run(const std::vector<std::string> &argv) const{
-        return hw_capabilities::run_cmd(argv, netns);
+        return hw_capabilities::run_cmd(argv, str_con.at("netns"));
     }
 }

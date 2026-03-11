@@ -1,23 +1,22 @@
 #include <libtins-src/include/tins/sniffer.h>
-#include <libtins-src/include/tins/dot11/dot11_beacon.h>
-#include <libtins-src/include/tins/dot11/dot11_probe.h>
-#include <tins/address_range.h>
-#include <tins/radiotap.h>
-#include <tins/dot11/dot11_data.h>
-
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include <fstream>
+#include <sstream>
 
 namespace wpa3_tester{
     using namespace std;
     using nlohmann::json;
     using namespace Tins;
+    using namespace filesystem;
 
+    // ---------------- INTERNAL
     // main id is iface
-    ActorCMap RunStatus::internal_options(){
-        ActorCMap options_map;
+    ActorCMapU RunStatus::internal_options(){
+        ActorCMapU options_map;
         for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
             if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
             auto cfg = make_unique<Actor_config>();
@@ -29,7 +28,6 @@ namespace wpa3_tester{
     }
 
     // ------------- EXTERNAL
-
     void RunStatus::solve_new_pdu(PDU& pdu, map<string, ExternalEntity>& seen){
         int signal = 0;
         if (pdu.find_pdu<RadioTap>()) {
@@ -133,7 +131,7 @@ namespace wpa3_tester{
             running = false;
         });
 
-        sniffer.set_timeout(100); // wai for ne packet (only for check living sniffer)
+        sniffer.set_timeout(100); // wait for next packet (only for check living sniffer)
         sniffer.sniff_loop([&](PDU& pdu) {
             handler(pdu);
             return running.load();
@@ -147,24 +145,106 @@ namespace wpa3_tester{
         return result;
     }
 
-    ActorCMap RunStatus::external_options(){
-        ActorCMap options_map;
+    //TODO simplify, add test
+    vector<unique_ptr<Actor_config>> get_actors_conn_table(const path& conn_table){
+        vector<unique_ptr<Actor_config>> result;
 
-        // option1: scan_iface
-        if (config.at("actors").contains("scan_iface")){
-            for (const auto& entity :
-                list_external_entities(config.at("actors").at("scan_iface"), 30)) {
-                auto cfg = make_unique<Actor_config>();
-                cfg->str_con["mac"] = entity.mac;
-                cfg->str_con["ssid"] = entity.ssid;
-                if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
-                options_map.emplace(entity.mac, std::move(cfg));
+        if (!exists(conn_table)) {
+            log(LogLevel::DEBUG, "Connection table file does not exist: %s", conn_table.string().c_str());
+            return result;
+        }
+
+        ifstream file(conn_table);
+        if (!file.is_open()) {
+            throw config_error("Failed to open connection table: %s ", conn_table.string().c_str());
+        }
+
+        string line;
+        vector<string> headers;
+
+        // header line
+        if (getline(file, line)) {
+            stringstream ss(line);
+            string header;
+            while (getline(ss, header, ',')) {
+                header.erase(0, header.find_first_not_of(" \t\r\n"));
+                header.erase(header.find_last_not_of(" \t\r\n") + 1);
+                headers.push_back(header);
             }
         }
 
-        //option2: whitebox_name -> whitebox_ip
-        const string conn_table = get_global_config().at("actors").at("conn_table");
+        if (headers.empty()) {
+            throw config_error("No headers found in connection table: %s", conn_table.string().c_str());
+        }
 
+        // Find column indices
+        int whitebox_host_idx = -1, whitebox_ip_idx = -1;
+        for (size_t i = 0; i < headers.size(); ++i) {
+            if (headers[i] == "whitebox_host") whitebox_host_idx = i;
+            else if (headers[i] == "whitebox_ip") whitebox_ip_idx = i;
+        }
+
+        if (whitebox_host_idx == -1 || whitebox_ip_idx == -1) {
+            log(LogLevel::ERROR, "Connection table missing required columns (whitebox_host, whitebox_ip): %s",
+                conn_table.string().c_str());
+            return result;
+        }
+
+        // Read data lines
+        while (getline(file, line)) {
+            if (line.empty()) continue;
+
+            stringstream ss(line);
+            string field;
+            vector<string> fields;
+
+            while (getline(ss, field, ',')) {
+                field.erase(0, field.find_first_not_of(" \t\r\n"));
+                field.erase(field.find_last_not_of(" \t\r\n") + 1);
+                fields.push_back(field);
+            }
+
+            if (fields.empty()) continue;
+
+            auto cfg = make_unique<Actor_config>();
+
+            if (whitebox_host_idx >= 0 && whitebox_host_idx < static_cast<int>(fields.size())) {
+                cfg->str_con["whitebox_host"] = fields[whitebox_host_idx];
+            }
+            if (whitebox_ip_idx >= 0 && whitebox_ip_idx < static_cast<int>(fields.size())) {
+                cfg->str_con["whitebox_ip"] = fields[whitebox_ip_idx];
+            }
+
+            result.push_back(std::move(cfg));
+        }
+
+        log(LogLevel::INFO, "Loaded %zu whitebox actors from connection table", result.size());
+        return result;
+    }
+
+    ActorCMapU RunStatus::external_options(){
+        ActorCMapU options_map;
+
+        //option1: whitebox_name -> whitebox_ip
+        const path conn_table = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
+            get_global_config().at("actors").at("conn_table").get<string>());
+
+        for(auto& cfg : get_actors_conn_table(conn_table)){
+            //TODO ping actor check
+            const string& host = cfg->str_con["whitebox_host"].value();
+            options_map.emplace(host, std::move(cfg));
+        }
+
+        // option2:blackbox - scan, cant be
+        //TODO get channels from actors and scan only these if not actor without it
+        for (const auto& entity :
+            list_external_entities(config.at("actors").at("scan_iface"), 30)) {
+            auto cfg = make_unique<Actor_config>();
+            cfg->str_con["mac"] = entity.mac;
+            cfg->str_con["ssid"] = entity.ssid;
+            if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
+            options_map.emplace(entity.mac, std::move(cfg));
+        }
         return options_map;
     }
 

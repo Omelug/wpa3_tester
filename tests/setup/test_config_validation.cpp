@@ -4,7 +4,6 @@
 #include "setup/config_parser.h"
 #include <filesystem>
 #include <source_location>
-#include <doctest/doctest.h>
 #include <yaml-cpp/node/parse.h>
 #include "config/RunSuiteStatus.h"
 

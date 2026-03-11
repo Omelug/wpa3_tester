@@ -14,28 +14,14 @@
 using namespace std;
 using nlohmann::json;
 namespace wpa3_tester{
-    tuple<ActorCMap, ActorCMap, ActorCMap> RunStatus::parse_requirements() {
-        ActorCMap ex_map, in_map, sim_map;
-
-        const json &actors = config.at("actors");
-        for (auto it = actors.begin(); it != actors.end(); ++it) {
+    void RunStatus::parse_requirements() {
+        const json &actors_json = config.at("actors");
+        for (auto it = actors_json.begin(); it != actors_json.end(); ++it) {
             const string& actor_name = it.key();
             const json &actor = it.value();
-
-            string source = actor["source"];
             auto actor_ptr = make_unique<Actor_config>(actor);
-
-            if(source == "external") {ex_map[actor_name] = std::move(actor_ptr); continue;}
-            if(source == "internal") {in_map[actor_name] = std::move(actor_ptr); continue;}
-            if(source == "simulation") {sim_map[actor_name] = std::move(actor_ptr); continue;}
-            throw config_error("Unknown source %s in actor: %s", source.c_str(), actor_name.c_str());
+            actors[actor_name] = std::move(actor_ptr);
         }
-
-        return std::make_tuple(
-           std::move(ex_map),
-           std::move(in_map),
-           std::move(sim_map)
-       );
     }
 
     static vector<pid_t> pids_in_ns(const string& ns_name) {
@@ -141,53 +127,46 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Cleanup complete.");
     }
 
+    ActorCMap get_actors(const ActorCMapU& actors, const std::string& source) {
+        std::unordered_map<std::string, Actor_config*> result;
+        for (auto& [name, cfg] : actors) {
+            auto it = cfg->str_con.find("source");
+            if (it != cfg->str_con.end() && it->second == source) {
+                result[name] = cfg.get();
+            }
+        }
+        return result;
+    }
 
     void RunStatus::config_requirement() {
         cleanup_all_namespaces();
 
-        auto [external, internal, simulation] = parse_requirements();
-
-        // persist maps in RunStatus
-        external_actors  = std::move(external);
-        internal_actors  = std::move(internal);
-        simulation_actors = std::move(simulation);
-
-        log_actor_map("external", external_actors);
-        log_actor_map("internal", internal_actors);
-        log_actor_map("simulation", simulation_actors);
+        parse_requirements();
+        log_actor_map("Actors: ", actors);
 
         // ------------------ INTERNAL ---------------------------
-        const ActorCMap options_internal = internal_options();
-        //find interface mapping
-        internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
+        const ActorCMapU options_internal = internal_options();
 
-        // setup by mapping
+        //find interface mapping
+        auto internal_actors = get_actors(actors, "internal");
+        internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
         for (auto &[actor_name, actor] : internal_actors) {
             auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
             *actor += *opt_actor;
+            (*actor)["actor_name"] = actor_name;
+            actor->setup_actor(config);
+        }
 
-            //---------------  setup based on actor selection -------------------
-            if (config.at("actors").at(actor_name).contains("netns")) {
-                optional<string> netns_opt;
-                (*actor)["netns"] = config.at("actors").at(actor_name).at("netns").get<string>();
-                hw_capabilities::create_ns(netns_opt.value());
-            }
-            actor->cleanup();
-            const bool monitor = actor->bool_conditions.at("monitor").value_or(false);
-            const bool injection = actor->bool_conditions.at("injection").value_or(false);
-            if ((monitor || injection) && actor->str_con["sniff_iface"] == nullopt){
-                actor->set_monitor_mode();
-            }
-            if (actor->bool_conditions.at("AP").value_or(false)){
-                actor->set_managed_mode();
-            }
-            if (config.at("actors").at(actor_name).contains("channel")) {
-                actor->set_channel(config.at("actors").at(actor_name).at("channel"));
-            }
-            if (config.at("actors").at(actor_name).contains("sniff_iface")){
-                actor->str_con["sniff_iface"] = config.at("actors").at(actor_name).at("sniff_iface").get<string>();
-                actor->create_sniff_iface(MONITOR_IFACE_PREFIX + actor->str_con["sniff_iface"].value());
-            }
+        // ------------------ EXTERNAL ---------------------------
+        const ActorCMapU options_external = external_options();
+        auto external_actors = get_actors(actors, "external");
+        external_mapping = hw_capabilities::check_req_options(external_actors, options_external);
+
+        for (auto &[actor_name, actor] : external_actors) {
+            auto& opt_actor = options_internal.at(external_mapping.at(actor_name));
+            *actor += *opt_actor;
+            (*actor)["actor_name"] = actor_name;
+            actor->setup_actor(config);
         }
 
         // TODO: simulation -> check hw compatibility

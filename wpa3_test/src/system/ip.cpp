@@ -4,6 +4,7 @@
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <regex>
 
 #include "logger/error_log.h"
 #include "observer/observers.h"
@@ -58,12 +59,12 @@ namespace wpa3_tester::ip{
         return ip_address;
     }
 
-    static bool ping(const string& ip, const int timeout_sec) {
+    bool ping(const string& ip, const int timeout_sec) {
         return hw_capabilities::run_cmd(
             {"ping", "-c", "1", "-W", std::to_string(timeout_sec), ip}, nullopt) == 0;
     }
 
-    static string get_mac_by_ip(const string& ip) {
+    string get_mac_by_ip(const string& ip) {
         // trigger ARP
         ping(ip);
         const string out = hw_capabilities::run_cmd_output({"arp", "-n", ip});

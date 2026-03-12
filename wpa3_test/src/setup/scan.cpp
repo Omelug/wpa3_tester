@@ -173,7 +173,7 @@ namespace wpa3_tester{
         ifstream file(conn_table);
         if (!file.is_open()) { throw scan_error("Failed to open connection table: %s", conn_table.string().c_str());}
         string line;
-        if (!getline(file, line)) {throw scan_error("Empty connection table: %s", conn_table.string().c_str());}
+        if (!getline(file, line)) {throw scan_error("Empty connection table: " + conn_table.string());}
 
         // Parse header
         vector<string> headers = parse_csv_line(line);
@@ -186,7 +186,6 @@ namespace wpa3_tester{
                 conn_table.string().c_str());
         }
 
-        // Read data lines
         while (getline(file, line)) {
             if (line.empty()) continue;
 
@@ -237,7 +236,7 @@ namespace wpa3_tester{
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor %s not reachable, skipping", ip.c_str());continue;}
 
             cfg->str_con["mac"] = ip::get_mac_by_ip(ip);
-            options_map.emplace((*cfg)["mac"], std::move(cfg)); // key is mac address
+            options_map.emplace((*cfg)["mac"], std::move(cfg));
         }
 
         // option2: blackbox - scan, cant be

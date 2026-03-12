@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "system/ip.h"
+
 namespace wpa3_tester{
     using namespace std;
     using nlohmann::json;
@@ -16,7 +18,7 @@ namespace wpa3_tester{
     using namespace filesystem;
 
     // ---------------- INTERNAL
-    // main id is iface
+    // return <string iface; internal_actor >
     ActorCMapU RunStatus::internal_options(){
         ActorCMapU options_map;
         for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
@@ -169,23 +171,18 @@ namespace wpa3_tester{
         }
 
         ifstream file(conn_table);
-        if (!file.is_open()) {
-            throw config_error("Failed to open connection table: %s", conn_table.string().c_str());
-        }
-
+        if (!file.is_open()) { throw scan_error("Failed to open connection table: %s", conn_table.string().c_str());}
         string line;
-        if (!getline(file, line)) {
-            throw config_error("Empty connection table: %s", conn_table.string().c_str());
-        }
+        if (!getline(file, line)) {throw scan_error("Empty connection table: %s", conn_table.string().c_str());}
 
         // Parse header
         vector<string> headers = parse_csv_line(line);
         map<string, size_t> col_idx;
         for (size_t i = 0; i < headers.size(); ++i) {col_idx[headers[i]] = i;}
 
-        // Check required columns
+        // required columns
         if (!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")) {
-            throw config_error("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
+            throw scan_error("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
                 conn_table.string().c_str());
         }
 
@@ -222,6 +219,7 @@ namespace wpa3_tester{
         return result;
     }
 
+    // return <string MAC; external_actor >
     ActorCMapU RunStatus::external_options(){
         ActorCMapU options_map;
 
@@ -230,21 +228,28 @@ namespace wpa3_tester{
             get_global_config().at("actors").at("conn_table").get<string>());
 
         for(auto& cfg : scan::get_actors_conn_table(conn_table)){
-            //TODO ping actor check
-            const string& host = cfg->str_con["whitebox_host"].value();
-            options_map.emplace(host, std::move(cfg));
+            if (!cfg->str_con.at("whitebox_ip").has_value()) {
+                const string ip_str = ip::resolve_host((*cfg)["whitebox_host"]);
+                cfg->str_con["whitebox_ip"] = ip_str;
+                log(LogLevel::DEBUG, "Resolved %s -> %s", (*cfg)["whitebox_host"].c_str(), ip_str.c_str());
+            }
+            const string ip = (*cfg)["whitebox_ip"];
+            if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor %s not reachable, skipping", ip.c_str());continue;}
+
+            cfg->str_con["mac"] = ip::get_mac_by_ip(ip);
+            options_map.emplace((*cfg)["mac"], std::move(cfg)); // key is mac address
         }
 
-        // option2:blackbox - scan, cant be
+        // option2: blackbox - scan, cant be
         //TODO get channels from actors and scan only these if not actor without it
-        for (const auto& entity :
+        /*for (const auto& entity :
             list_external_entities(config.at("actors").at("scan_iface"), 30)) {
             auto cfg = make_unique<Actor_config>();
             cfg->str_con["mac"] = entity.mac;
             cfg->str_con["ssid"] = entity.ssid;
             if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
             options_map.emplace(entity.mac, std::move(cfg));
-        }
+        }*/
         return options_map;
     }
 

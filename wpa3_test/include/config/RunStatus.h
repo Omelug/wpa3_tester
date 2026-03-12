@@ -29,6 +29,8 @@ namespace wpa3_tester{
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
+        // in actors are al actors in test
+        // internal are {}
         ActorCMapU actors{};
 
     public:
@@ -67,7 +69,7 @@ namespace wpa3_tester{
 
         // to scan available interfaces
         static ActorCMapU internal_options();
-        ActorCMapU external_options();
+        static ActorCMapU external_options();
         ActorCMap create_simulation();
 
         void parse_requirements();

@@ -35,7 +35,7 @@ namespace wpa3_tester::manual_tests {
                 iface_type == InterfaceType::WifiVirtualMon) {
                 cout << left << setw(5) << index
                      << setw(20) << iface_name
-                     << setw(20) << to_string(iface_type) << "\n";
+                     << setw(20) << iface_to_string(iface_type) << "\n";
                 wifi_interfaces.push_back(iface_name);
                 index++;
             }

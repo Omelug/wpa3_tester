@@ -68,6 +68,7 @@ namespace wpa3_tester{
         void setup_actor(const nlohmann::json& config);
     private:
         void setup_actor_internal(const nlohmann::json& config);
+        void setup_actor_external_whitebox(const nlohmann::json &config);
         //setup_actor_external();
         //setup_actor_simulation();
     };

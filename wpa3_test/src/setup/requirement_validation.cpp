@@ -14,13 +14,10 @@
 using namespace std;
 using nlohmann::json;
 namespace wpa3_tester{
+
     void RunStatus::parse_requirements() {
-        const json &actors_json = config.at("actors");
-        for (auto it = actors_json.begin(); it != actors_json.end(); ++it) {
-            const string& actor_name = it.key();
-            const json &actor = it.value();
-            auto actor_ptr = make_unique<Actor_config>(actor);
-            actors[actor_name] = std::move(actor_ptr);
+        for (const auto& [actor_name, actor] : config.at("actors").items()) {
+            actors[actor_name] = make_unique<Actor_config>(actor);
         }
     }
 
@@ -40,10 +37,7 @@ namespace wpa3_tester{
             const string net_ns_link = entry.path().string() + "/ns/net";
             struct stat link_stat{};
             if (stat(net_ns_link.c_str(), &link_stat) != 0) continue;
-
-            if (link_stat.st_ino == target_inode) {
-                result.push_back(stoi(filename));
-            }
+            if (link_stat.st_ino == target_inode) {result.push_back(stoi(filename));}
         }
         return result;
     }

@@ -8,7 +8,7 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
-#include "ex_program/ip/ip.h"
+#include "../../../../include/system/ip.h"
 #include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"

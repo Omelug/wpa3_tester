@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "ex_program/hostapd/hostpad.h"
-#include "ex_program/ip/ip.h"
+#include "../../../../include/system/ip.h"
 #include "logger/error_log.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/tshark_wrapper.h"

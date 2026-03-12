@@ -1,10 +1,11 @@
-#include "ex_program/ip/ip.h"
+#include "../../include/system/ip.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <sys/socket.h>
 
+#include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 
@@ -55,5 +56,20 @@ namespace wpa3_tester::ip{
         freeifaddrs(ifaddr);
         if (ip_address.empty()) {throw runtime_error("No IP address found for interface: " + iface);}
         return ip_address;
+    }
+
+    static bool ping(const string& ip, const int timeout_sec) {
+        return hw_capabilities::run_cmd(
+            {"ping", "-c", "1", "-W", std::to_string(timeout_sec), ip}, nullopt) == 0;
+    }
+
+    static string get_mac_by_ip(const string& ip) {
+        // trigger ARP
+        ping(ip);
+        const string out = hw_capabilities::run_cmd_output({"arp", "-n", ip});
+        smatch match;
+        if (!regex_search(out, match, regex(R"(([0-9a-f]{2}(?::[0-9a-f]{2}){5}))")))
+            throw scan_error("Cannot get MAC for IP: " + ip);
+        return match[1].str();
     }
 }

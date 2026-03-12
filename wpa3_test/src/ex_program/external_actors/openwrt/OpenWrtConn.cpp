@@ -1,7 +1,7 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 
 #include "config/global_config.h"
-#include "ex_program/ip/ip.h"
+#include "../../../../include/system/ip.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester {

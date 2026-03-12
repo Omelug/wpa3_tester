@@ -23,7 +23,7 @@ namespace wpa3_tester{
         InterfaceType type;
     };
 
-    inline std::string to_string(const InterfaceType type) {
+    inline std::string iface_to_string(const InterfaceType type) {
         switch (type) {
             case InterfaceType::Loopback:       return "loopback";
             case InterfaceType::Wifi:           return "wifi";

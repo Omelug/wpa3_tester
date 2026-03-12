@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 #include "Actor_config.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -49,10 +50,13 @@ namespace wpa3_tester{
         RunStatus() = default;
         explicit RunStatus(const std::string & config_path, std::string testName = "");
         void execute();
+        void register_ExternalConn(ExternalConn * external_conn);
         static void solve_new_pdu(Tins::PDU &pdu, std::map<std::string, ExternalEntity> &seen);
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         Actor_config& get_actor(const std::string& actor_name);
+        ExternalConn* get_external_conn(const std::string& actor_name);
+        ExternalConn* get_or_create_connection(const std::string& actor_name);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include "attacks/attacks.h"
+#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "setup/config_parser.h"
 
 namespace wpa3_tester{
@@ -79,6 +80,33 @@ namespace wpa3_tester{
         }
     }
 
+    ExternalConn* RunStatus::get_or_create_connection(const string& actor_name){
+
+        // Get actor pointer
+        Actor_config* actor = &get_actor(actor_name);
+
+        const string program = config.at("actors").at(actor_name).at("setup").at("program").get<string>();
+
+        // Create connection - use raw pointer to avoid type issues with unique_ptr
+        ExternalConn* conn_raw = nullptr;
+        if (program == "openwrt") {
+            conn_raw = new OpenWrtConn(actor);
+        } else {
+            conn_raw = new ExternalConn(actor);
+        }
+
+        unique_ptr<ExternalConn> conn(conn_raw);
+
+        if (!conn->connect()) {
+            throw config_error("Failed to connect to external actor '%s'", actor_name.c_str());
+        }
+
+        ExternalConn* raw_ptr = conn.get();
+        actor->conn = std::move(conn);
+        log(LogLevel::DEBUG, "Created and registered ExternalConn for actor: %s", actor_name.c_str());
+
+        return raw_ptr;
+    }
 
     void RunStatus::run_test(){
         process_manager.write_log_all("@START");

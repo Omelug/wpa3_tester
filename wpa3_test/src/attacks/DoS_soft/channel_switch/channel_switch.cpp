@@ -58,7 +58,6 @@ namespace wpa3_tester::CSA_attack{
         const auto end_time = start_time + seconds(attack_time);
 
         while (steady_clock::now() < end_time) {
-            //log(LogLevel::DEBUG, "sending CSA");
             send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
             this_thread::sleep_for(milliseconds(ms_interval));
         }

@@ -46,7 +46,7 @@ namespace wpa3_tester{
 
         // auth with public key (preferred) or password
         if (ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS) {
-            const std::string password = (*actor)["ssh_password"];
+            const string password = (*actor)["ssh_password"];
             if (ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS) {
                 const string error_msg = string("SSH authentication failed: ") + ssh_get_error(session);
                 ssh_disconnect(session);
@@ -58,37 +58,35 @@ namespace wpa3_tester{
         return true;
     }
 
+    string ExternalConn::get_hostname(){ return exec("uname -n"); }
+    string ExternalConn::get_interfaces() { return exec("ip link show"); }
+    string ExternalConn::get_wifi_status() { return exec("iwinfo"); }
+
     string ExternalConn::exec(const string& cmd) const{
         if (!session) {throw ex_conn_err("Cannot exec: not connected (call connect() first)");}
 
         const ssh_channel channel = ssh_channel_new(session);
         if (!channel) {throw ex_conn_err("Failed to create SSH channel");}
 
-        // Helper lambda to cleanup and throw
+        // Helper lambda to clean up and throw
         auto cleanup_and_throw = [&](const string& msg) {
             ssh_channel_free(channel);
             throw ex_conn_err(msg);
         };
 
-        if (ssh_channel_open_session(channel) != SSH_OK) {
-            cleanup_and_throw("Failed to open SSH channel session");
-        }
-
-        if (ssh_channel_request_exec(channel, cmd.c_str()) != SSH_OK) {
+        if (ssh_channel_open_session(channel) != SSH_OK) {cleanup_and_throw("Failed to open SSH channel session");}
+        if (ssh_channel_request_exec(channel, cmd.c_str()) != SSH_OK){
             cleanup_and_throw("Failed to execute command: " + cmd);
         }
 
         string result;
         char buf[1024];
         int n;
-        while ((n = ssh_channel_read(channel, buf, sizeof(buf), 0)) > 0) {
-            result.append(buf, n);
-        }
+        while ((n = ssh_channel_read(channel, buf, sizeof(buf), 0)) > 0) {result.append(buf, n);}
 
         ssh_channel_send_eof(channel);
         ssh_channel_close(channel);
         ssh_channel_free(channel);
-
         return result;
     }
 

@@ -55,10 +55,11 @@ int main() {
         selected_actor->str_con["whitebox_host"].value_or("Unknown"));
 
     // Create OpenWrt connection
-    auto conn = OpenWrtConn(selected_actor.get());
+    auto conn = dynamic_cast<OpenWrtConn*>(selected_actor.get()->conn.get());
+    if (!conn) throw runtime_error("Connection is not OpenWrtConn");
 
     cout << "Establishing SSH connection..." << endl;
-    if (!conn.connect()) {
+    if (!conn->connect()) {
         cerr << "ERROR: Failed to connect" << endl;
         return 1;
     }
@@ -68,28 +69,28 @@ int main() {
 
     try {
         cout << "\n--- Hostname ---" << endl;
-        cout << conn.get_hostname();
+        cout << conn->get_hostname();
 
         cout << "\n--- OpenWrt Release ---" << endl;
-        cout << conn.exec("cat /etc/openwrt_release");
+        cout << conn->exec("cat /etc/openwrt_release");
 
         cout << "\n--- Kernel Version ---" << endl;
-        cout << conn.exec("uname -r");
+        cout << conn->exec("uname -r");
 
         cout << "\n--- Memory Info ---" << endl;
-        cout << conn.exec("free -h");
+        cout << conn->exec("free -h");
 
         cout << "\n--- CPU Info ---" << endl;
-        string cpuinfo = conn.exec("cat /proc/cpuinfo | grep -E '(model name|Processor|Hardware)'");
-        if (cpuinfo.empty()) {cpuinfo = conn.exec("cat /proc/cpuinfo | head -n 10");}
+        string cpuinfo = conn->exec("cat /proc/cpuinfo | grep -E '(model name|Processor|Hardware)'");
+        if (cpuinfo.empty()) {cpuinfo = conn->exec("cat /proc/cpuinfo | head -n 10");}
         cout << cpuinfo;
 
         cout << "\n--- Network Interfaces ---" << endl;
-        cout << conn.get_interfaces();
+        cout << conn->get_interfaces();
 
         cout << "\n--- WiFi Status ---" << endl;
         try {
-            cout << conn.get_wifi_status();
+            cout << conn->get_wifi_status();
         } catch (...) {
             cout << "(iwinfo not available or no WiFi interfaces)" << endl;
         }
@@ -97,7 +98,7 @@ int main() {
         // Hostapd version (if available)
         cout << "\n--- Hostapd Version ---" << endl;
         try {
-            const string hostapd_version = conn.exec("hostapd -v 2>&1 | head -n 1");
+            const string hostapd_version = conn->exec("hostapd -v 2>&1 | head -n 1");
             cout << hostapd_version;
             if (hostapd_version.back() != '\n') cout << endl;
         } catch (...) {
@@ -107,7 +108,7 @@ int main() {
         // UCI wireless config
         cout << "\n--- UCI Wireless Config ---" << endl;
         try {
-            const string uci_wireless = conn.exec("uci show wireless 2>/dev/null");
+            const string uci_wireless = conn->exec("uci show wireless 2>/dev/null");
             if (!uci_wireless.empty()) {
                 cout << uci_wireless;
             } else {

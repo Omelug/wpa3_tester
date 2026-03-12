@@ -3,15 +3,20 @@
 #include <optional>
 #include <string>
 #include <nlohmann/json.hpp>
+#include "ex_program/external_actors/ExternalConn.h"
 
 namespace wpa3_tester{
     inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
+    class ExternalConn;
+
     class Actor_config {
     public:
         explicit Actor_config() = default;
         explicit Actor_config(const nlohmann::json& j);
         bool matches(const Actor_config &offer);
         Actor_config &operator+=(const Actor_config &other);
+
+        std::unique_ptr<ExternalConn> conn;
 
         std::map<std::string, std::optional<std::string>> str_con = {
             {"actor_name",     std::nullopt},

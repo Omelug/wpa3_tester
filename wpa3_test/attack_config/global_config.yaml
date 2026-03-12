@@ -2,7 +2,7 @@
 # change needed paths
 #TODO create config wizard after first install
 
-ignore_interfaces: [wlan0]
+internet_interface: wlan0
 paths:
   # These config keys are not included in result config,
   hostapd:
@@ -11,3 +11,4 @@ paths:
     hostapd_build_folder: /home/kali/Documents/WPA3/hostapd
 actors:
   conn_table: ./example_whitebox_table.csv
+  ignore_interfaces: [wlan0]

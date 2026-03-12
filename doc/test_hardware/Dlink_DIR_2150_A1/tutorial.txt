@@ -20,3 +20,13 @@ Instalace:
 	opkg install tcpdump-mini
 
 	tcpdump -i phy0-ap0 -n
+
+Internet:
+kali:
+    echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+    sudo iptables -t nat -A POSTROUTING -o <internet_ip:wlan0> -j MASQUERADE
+openwrt:
+    uci set network.lan.gateway=<IP_tveho_PC> 192.168.1.188
+    uci set network.lan.dns=8.8.8.8
+    uci commit network
+    /etc/init.d/network restart

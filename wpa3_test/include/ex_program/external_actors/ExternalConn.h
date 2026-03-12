@@ -4,12 +4,13 @@
 
 namespace wpa3_tester{
     class ExternalConn{
+    protected:
         Actor_config* actor;
         ssh_session session = nullptr;
     public:
         explicit ExternalConn(Actor_config* actor);
-        ~ExternalConn();
-        bool connect();
+        virtual ~ExternalConn();
+        virtual bool connect();
         std::string exec(const std::string &cmd) const;
     };
 

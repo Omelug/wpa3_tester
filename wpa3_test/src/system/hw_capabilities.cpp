@@ -58,7 +58,7 @@ namespace wpa3_tester{
         for(const auto &entry: filesystem::directory_iterator(net_path)){
             std::string name = entry.path().filename().string();
 
-            auto ignored_list = get_global_config().value("ignore_interfaces", std::vector<std::string>{});
+            auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", std::vector<std::string>{});
 
             if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(name)){
                 log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", name.c_str());
@@ -285,5 +285,17 @@ namespace wpa3_tester{
         snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
             dis(gen), dis(gen), dis(gen), dis(gen), dis(gen), dis(gen));
         return string(mac);
+    }
+
+    string hw_capabilities::get_iface(const string& ip_address) {
+        const string output = run_cmd_output({"ip", "route", "get", ip_address});
+        if (output.empty()) throw runtime_error("Failed to get route for IP: " + ip_address);
+
+        smatch match;
+        if (!regex_search(output, match, regex(R"(dev (\S+))"))){
+            throw runtime_error("Could not find interface for IP: " + ip_address);
+        }
+
+        return match[1].str();
     }
 }

@@ -39,7 +39,9 @@ namespace wpa3_tester{
 
         //mapping actor->interface
         AssignmentMap internal_mapping{};
-        AssignmentMap external_mapping;
+        //mapping actor->MAC
+        AssignmentMap external_mapping{};
+
         //AssignmentMap simulation_mapping;
 
         ProcessManager process_manager{};

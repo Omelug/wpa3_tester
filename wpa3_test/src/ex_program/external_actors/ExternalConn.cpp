@@ -16,7 +16,6 @@ namespace wpa3_tester{
         }
     }
 
-
     bool ExternalConn::connect(){
 
         // Check if actor has needed SSH params

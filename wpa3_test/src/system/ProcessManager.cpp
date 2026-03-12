@@ -248,16 +248,6 @@ namespace wpa3_tester{
         logs.wait.active = false;
     }
 
-    /*void ProcessManager::close_and_remove_log(const string& key) {
-        const auto it = processes.find(key);
-        if (it != processes.end()) {
-            if (it->second->logs.log.is_open()) {it->second->logs.log.close();}
-            processes.erase(it);
-        } else {
-            log(LogLevel::WARNING, "Log for %s not found.", key.c_str());
-        }
-    }*/
-
     void ProcessManager::stop(const string &process_name)
     {
         shared_ptr<ManagedProcess> mp;
@@ -298,8 +288,6 @@ namespace wpa3_tester{
         // wait for drain thread
         if (mp->drain_thread.joinable())
             mp->drain_thread.join();
-
-        //close_and_remove_log(process_name);
     }
 
     void ProcessManager::stop_all() {

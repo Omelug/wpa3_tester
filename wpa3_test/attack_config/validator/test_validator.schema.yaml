@@ -11,12 +11,6 @@ config_type:
   type: string
   const: test
   description: "Have to be test or not included"
-#ignore_interfaces:
-#  type: array
-#  items:
-#    type: string
-#  minItems: 1
-#  description: ignore interfaces (to ignore interface where is notebook connected to internet)
 properties:
   extends:
     type: string
@@ -67,6 +61,14 @@ properties:
         type: string
         description: validator
 
+  compile_external:
+    type: boolean
+    default: false
+
+  install_req:
+    type: boolean
+    default: false
+
 definitions:
   Actor:
     type: object
@@ -87,6 +89,7 @@ definitions:
         type: string
       whitebox_host:
         type: string
+        description: hostname
       netns:
         type: string
         description: Namespace to isolate AP/STA for iperf3 etc. observation

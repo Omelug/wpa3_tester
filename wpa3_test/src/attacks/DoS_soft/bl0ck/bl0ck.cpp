@@ -240,12 +240,12 @@ namespace wpa3_tester::bl0ck_attack{
         hostapd::run_hostapd(rs, "access_point");
         rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(20));
         log(LogLevel::INFO, "access_point is running");
-        set_ip(rs, "access_point");
+        ip::set_ip(rs, "access_point");
 
         // -------- wpa_supplicant STA ------------
         hostapd::run_wpa_supplicant(rs, "client");
         rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
-        set_ip(rs, "client");
+        ip::set_ip(rs, "client");
 
         rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(30));
         rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(30));

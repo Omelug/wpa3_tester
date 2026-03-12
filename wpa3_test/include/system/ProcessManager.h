@@ -9,9 +9,10 @@
 #include <condition_variable>
 #include <regex>
 #include <reproc++/reproc.hpp>
+
 namespace wpa3_tester{
     class ProcessManager{
-        mutable std::mutex mtx_; // Pro ochranu processes a process_logs
+        mutable std::mutex mtx_; // for processes and process_logs security
 
     public:
 
@@ -19,6 +20,7 @@ namespace wpa3_tester{
         std::filesystem::path log_base_dir;
         std::ofstream combined_log;
 
+        //TODO lépe popsat mutexy, je v tom strašnej zmatek
         struct WaitListener {
             std::regex pattern{};
             bool active = false;
@@ -38,11 +40,8 @@ namespace wpa3_tester{
             std::atomic<bool> shutting_down{false};
             ProcessLogs logs;
         };
+
         std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
-
-        //std::map<std::string,std::shared_ptr<reproc::process>> processes;
-        //std::map<std::string, ProcessLogs> process_logs;
-
         std::mutex wait_mutex;
         std::condition_variable wait_cv;
 
@@ -76,7 +75,6 @@ namespace wpa3_tester{
 
         void wait_for(const std::string &actor_name, const std::string &pattern,
                       std::chrono::seconds timeout = std::chrono::minutes(60)); // 60 minutes (practically infinity)
-        //void close_and_remove_log(const std::string &key);
         void stop(const std::string &process_name);
 
         void stop_all();

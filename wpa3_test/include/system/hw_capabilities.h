@@ -99,5 +99,6 @@ namespace wpa3_tester{
         static int channel_to_freq_mhz(int channel);
         static void create_ns(const std::string& ns_name);
         static std::string rand_mac();
+        static std::string get_iface(const std::string& ip_address);
     };
 }

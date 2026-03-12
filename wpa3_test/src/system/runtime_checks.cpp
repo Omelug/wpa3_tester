@@ -12,8 +12,8 @@
 
 namespace wpa3_tester{
     bool check_injection_runtime(const std::string& iface_name) {
-        const Actor_config actor{};
-        actor["iface"] = iface_name;
+        Actor_config actor{};
+        actor.str_con["iface"] = iface_name;
         actor.set_monitor_mode();
 
         std::this_thread::sleep_for(std::chrono::seconds(5));

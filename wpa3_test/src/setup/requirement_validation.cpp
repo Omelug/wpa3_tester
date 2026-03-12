@@ -18,6 +18,7 @@ namespace wpa3_tester{
     void RunStatus::parse_requirements() {
         for (const auto& [actor_name, actor] : config.at("actors").items()) {
             actors[actor_name] = make_unique<Actor_config>(actor);
+            actors[actor_name]->str_con["actor_name"] = actor_name;
         }
     }
 
@@ -113,7 +114,7 @@ namespace wpa3_tester{
 
             const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
             kill_process_in_ns_name(ns_name);
-            hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name}); //FIXMe tohle asi hlásí ERROR: Command sudo exited with status 1
+            hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name});
             wait_to_default_ns(physical_interfaces);
 
             log(LogLevel::DEBUG, "Removed netns %s", ns_name.c_str());
@@ -146,22 +147,21 @@ namespace wpa3_tester{
         internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
         for (auto &[actor_name, actor] : internal_actors) {
             auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
-            *actor += *opt_actor;
-            (*actor)["actor_name"] = actor_name;
-            actor->setup_actor(config);
+            actor->setup_actor(config, opt_actor.get());
         }
 
-        // ------------------ EXTERNAL ---------------------------
-        const ActorCMapU options_external = external_options();
-        auto external_actors = get_actors(actors, "external");
-        external_mapping = hw_capabilities::check_req_options(external_actors, options_external);
+        // ------------------ EXTERNAL WHITEBOX ----------------------
+        const ActorCMapU options_external = external_wb_options();
+        auto external_wb_actors = get_actors(actors, "external");
+        external_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
 
-        for (auto &[actor_name, actor] : external_actors) {
-            auto& opt_actor = options_internal.at(external_mapping.at(actor_name));
-            *actor += *opt_actor;
-            (*actor)["actor_name"] = actor_name;
-            actor->setup_actor(config);
+        for (auto &[actor_name, actor] : external_wb_actors) {
+            auto& opt_actor = options_external.at(external_mapping.at(actor_name));
+            actor->setup_actor(config, opt_actor.get());
         }
+
+
+        // ------------------ EXTERNAL BLACKBOX ---------------------------
 
         // ---------------- SIMULATIONS -------------------------
         // TODO: simulation -> check hw compatibility

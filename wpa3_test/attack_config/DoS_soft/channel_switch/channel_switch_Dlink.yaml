@@ -1,22 +1,20 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: channel_switch_test
-attacker_module: channel_switch_Dlink
+name: channel_switch_Dlink
+attacker_module: channel_switch
 actors:
   access_point:
     type: AP
     source: external
     selection:
+      whitebox_host: OpenWrt
       condition: [AP]
     setup:
-      selection:
-        whitebox_host: OpenWrt
+      program: openwrt
+      program_config: # set with openwrt programs
         ssid: OpenWrt
-        program: openwrt
-        program_config: # set with openwrt programs
-          channel: 1
-          password: password123
-          # TODO dát do každého volání aby to nemuselo být takhle ?
-          req_programs: [tcpdump]
+        channel: 1
+        password: password123
+        req_programs: [ tcpdump ]
     #ip_addr: "10.0.0.1"
   client:
     type: STA

@@ -1,0 +1,19 @@
+name: ap_with_sniff_iface_valid
+attacker_module: test_module
+
+actors:
+  access_point:
+    type: AP
+    source: internal
+    sniff_iface: mon0
+    setup:
+      program: hostapd
+
+  attacker:
+    type: STA
+    source: internal
+    selection:
+      condition: ["monitor", "injection"]
+    setup:
+      program: wpa_supplicant
+

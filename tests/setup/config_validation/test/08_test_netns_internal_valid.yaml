@@ -1,0 +1,18 @@
+name: netns_internal_valid_test
+attacker_module: test_module
+
+actors:
+  access_point:
+    type: AP
+    source: internal
+    netns: ap_namespace
+    setup:
+      program: hostapd
+
+  client:
+    type: STA
+    source: internal
+    netns: client_namespace
+    setup:
+      program: wpa_supplicant
+

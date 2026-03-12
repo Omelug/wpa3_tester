@@ -85,11 +85,6 @@ definitions:
         type: string
         enum: ["simulation","internal", "external"]
         description: mac_hwsim, internal, external
-      whitebox_ip:
-        type: string
-      whitebox_host:
-        type: string
-        description: hostname
       netns:
         type: string
         description: Namespace to isolate AP/STA for iperf3 etc. observation
@@ -108,25 +103,19 @@ definitions:
             type: integer
           program:
             type: string
-            enum: [ "hostapd", "wpa_supplicant", "iperf3" ]
+            enum: [ "hostapd", "wpa_supplicant", "iperf3", "openwrt"]
           program_config:
             type: object
-            additionalProperties: true
-      if: # whitebox_ip/whitebox_host not allowed if not external
-        not:
-          properties:
-            type:
-              const: external
-          required: [ type ]
-        then:
-          not:
-            anyOf:
-              - required: [ whitebox_ip ]
-              - required: [ whitebox_host ]
+            description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
       selection:
         type: object
         additionalProperties: false
         properties:
+          whitebox_ip:
+            type: string
+          whitebox_host:
+            type: string
+            description: hostname
           mac:
             type: string
             pattern: '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$'
@@ -151,3 +140,27 @@ definitions:
       sniff_iface:
         type: string
         description: Name of interface for monitoring (will create like associated on iface in selection)
+    # Validation rules
+    allOf:
+      # netns can only be used with source: internal
+      - if:
+          required: [ netns ]
+        then:
+          properties:
+            source:
+              const: internal
+          required: [ source ]
+          errorMessage: "netns can only be used with source: internal"
+      # whitebox_ip/whitebox_host not allowed if not external
+      - if:
+          not:
+            properties:
+              source:
+                const: external
+            required: [ source ]
+        then:
+          not:
+            anyOf:
+              - required: [ whitebox_ip ]
+              - required: [ whitebox_host ]
+          errorMessage: "whitebox_ip/whitebox_host not allowed if not external"

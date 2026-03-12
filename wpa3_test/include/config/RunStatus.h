@@ -24,13 +24,14 @@ namespace wpa3_tester{
     };
 
     class Actor_config;
+    class ExternalConn;
     using ActorCMap = std::unordered_map<std::string, Actor_config*>;
     using ActorCMapU = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
-        // in actors are al actors in test
-        // internal are {}
+        // in actors are all actors in test
+        // internal have key string iface, external mac
         ActorCMapU actors{};
 
     public:
@@ -52,12 +53,10 @@ namespace wpa3_tester{
         RunStatus() = default;
         explicit RunStatus(const std::string & config_path, std::string testName = "");
         void execute();
-        void register_ExternalConn(ExternalConn * external_conn);
         static void solve_new_pdu(Tins::PDU &pdu, std::map<std::string, ExternalEntity> &seen);
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         Actor_config& get_actor(const std::string& actor_name);
-        ExternalConn* get_external_conn(const std::string& actor_name);
         ExternalConn* get_or_create_connection(const std::string& actor_name);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
@@ -65,11 +64,13 @@ namespace wpa3_tester{
         // For manual testing / wizards
         static std::vector<ExternalEntity> list_external_entities(const std::string& iface, int timeout_sec);
 
+
     private:
 
         // to scan available interfaces
         static ActorCMapU internal_options();
-        static ActorCMapU external_options();
+        static ActorCMapU external_wb_options();
+        static ActorCMapU external_bb_options();
         ActorCMap create_simulation();
 
         void parse_requirements();

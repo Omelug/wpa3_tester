@@ -53,8 +53,9 @@ TEST_CASE("RunStatus Config Validation - Test configuration") {
         {"5. Circular extends", "05_error_circular_extends.yaml",     "", false},
         {"6. Self extends", "06_error_self_extends.yaml",     "", false},
         {"7. Normal missing error", "07_error_missing_key.yaml",     "", false},
-        {"8. path to folder", "01_test_happy_path_minimal.yaml",    "01_test_happy_path_minimal.yaml", true},
-
+        {"8. netns with internal (valid)", "08_test_netns_internal_valid.yaml", "08_test_netns_internal_valid.yaml", true},
+        {"9. netns with external (invalid)", "09_error_netns_external.yaml", "", false},
+        {"10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false},
         // TODO valid extends multiple folders
     };
     test_case_loop(test_base, tests);

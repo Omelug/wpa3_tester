@@ -23,16 +23,16 @@ namespace wpa3_tester{
 
         if(j.contains("type")){
             if (j.at("type") == "AP"){bool_conditions["AP"] = true;}
-            if (j.at("type") == "STA"){bool_conditions["STA"] = false;}
+            if (j.at("type") == "STA"){bool_conditions["STA"] = true;}
         }
         if (j.contains("netns")){str_con["netns"] = j.at("netns");}
         if (j.contains("source")){str_con["source"] = j.at("source");}
     }
 
-
     bool Actor_config::matches(const Actor_config& offer) {
         for (auto const & [key, required_val] : str_con) {
-            if (!required_val.has_value()) { continue; }
+            if (!required_val.has_value()) { continue;}
+            if (!offer.str_con.at(key).has_value()) { continue;}
             if (auto it = offer.str_con.find(key); it == offer.str_con.end() || it->second != required_val) {
                 return false;
             }
@@ -41,6 +41,7 @@ namespace wpa3_tester{
         // Check boolean conditions
         for(auto const& [key, required_val] : bool_conditions) {
             if (!required_val.has_value()) {continue;}
+            if (!offer.bool_conditions.at(key).has_value()) { continue;}
             if (auto it = offer.bool_conditions.find(key);
                 it == offer.bool_conditions.end() || it->second != required_val) {
                 return false;
@@ -123,8 +124,7 @@ namespace wpa3_tester{
 
         // True list
         if (!true_conds.empty()) {
-            if (!result.empty()) result += "\n";
-            result += "True: [";
+            result += " True: [";
             for (size_t i = 0; i < true_conds.size(); ++i) {
                 if (i > 0) result += ", ";
                 result += true_conds[i];
@@ -134,15 +134,13 @@ namespace wpa3_tester{
 
         // False list
         if (!false_conds.empty()) {
-            if (!result.empty()) result += "\n";
-            result += "False: [";
+            result += " False: [";
             for (size_t i = 0; i < false_conds.size(); ++i) {
                 if (i > 0) result += ", ";
                 result += false_conds[i];
             }
             result += "]";
         }
-
         return result;
     }
 }

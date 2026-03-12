@@ -5,19 +5,28 @@
 namespace wpa3_tester{
     using namespace std;
 
-    void Actor_config::setup_actor(const nlohmann::json& config){
-        if(str_con.at("source").value() == "internal") setup_actor_internal(config);
+    void Actor_config::setup_actor(const nlohmann::json& config, const Actor_config* real_actor){
 
-        throw not_implemented_error("external and internal not supported yet"); //TODO
+        if(str_con.at("source").value() == "internal") setup_actor_internal(config, real_actor);
+        else if(str_con.at("source").value() == "external" &&
+            (real_actor->str_con.at("whitebox_host").has_value() || real_actor->str_con.at("whitebox_ip").has_value())){
+            setup_actor_external_whitebox(config, real_actor);
+        }else{
+            throw not_implemented_error("not supported yet"); //TODO
+        }
     }
 
-    void Actor_config::setup_actor_internal(const nlohmann::json& config){
-        auto actor_json = config.at("actors").at(str_con["actor_name"].value());
-        if (actor_json.contains("netns")) {
+    void Actor_config::setup_actor_internal(const nlohmann::json& config, const Actor_config* real_actor){
+        if (config.contains("netns")) {
             const optional<string> netns_opt;
-            str_con["netns"] = actor_json.at("netns").get<string>();
+            str_con["netns"] = config.at("netns").get<string>();
             hw_capabilities::create_ns(netns_opt.value());
         }
+        str_con["driver"] = real_actor->str_con.at("driver");
+        str_con["mac"] = real_actor->str_con.at("mac");
+        str_con["iface"] = real_actor->str_con.at("iface");
+
+        auto actor_json = config.at("actors").at(str_con.at("actor_name").value());
         this->cleanup();
         const bool monitor = bool_conditions.at("monitor").value_or(false);
         const bool injection = bool_conditions.at("injection").value_or(false);
@@ -29,8 +38,11 @@ namespace wpa3_tester{
             create_sniff_iface(MONITOR_IFACE_PREFIX + str_con["sniff_iface"].value());
         }
     }
-    void Actor_config::setup_actor_external_whitebox(const nlohmann::json& config){
+
+    void Actor_config::setup_actor_external_whitebox(const nlohmann::json& config, const Actor_config* real_actor){
         auto actor_json = config.at("actors").at(str_con["actor_name"].value());
+        throw not_implemented_error("external WB");
+        //FIXME
         //this->cleanup();
         const bool monitor = bool_conditions.at("monitor").value_or(false);
         const bool injection = bool_conditions.at("injection").value_or(false);

@@ -28,6 +28,12 @@ set(CMAKE_ERROR_DEPRECATED OFF CACHE BOOL "" FORCE)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 
+# Speed up compilation
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Parallel linking with ninja
+set_property(GLOBAL PROPERTY JOB_POOLS link_job_pool=2)
+set(CMAKE_JOB_POOL_LINK link_job_pool)
+
 include(FetchContent)
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -135,9 +141,9 @@ file(GLOB_RECURSE CORE_SOURCES
 )
 message(STATUS "core sources: ${CORE_SOURCES}")
 
-add_executable(${PROJECT_NAME} "../wpa3_test/main.cpp")
-target_link_libraries(${PROJECT_NAME} PRIVATE wpa3_core)
+# Single library with Unity Build
 add_library(wpa3_core STATIC ${CORE_SOURCES})
+
 set(WIFI_HEADERS_DIR "${linux_headers_wifi_SOURCE_DIR}/..")
 
 target_include_directories(wpa3_core PUBLIC
@@ -167,10 +173,14 @@ target_link_libraries(wpa3_core PUBLIC
         ${LIBSSH_LIBRARIES}
 )
 
+add_executable(${PROJECT_NAME} "../wpa3_test/main.cpp")
+target_link_libraries(${PROJECT_NAME} PRIVATE wpa3_core)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_definitions(wpa3_core PUBLIC PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
 target_precompile_headers(wpa3_core PUBLIC
         <vector>
         <string>
@@ -205,8 +215,8 @@ target_precompile_headers(wpa3_core PUBLIC
         <tins/tins.h>
         <argparse/argparse.hpp>
         <reproc++/reproc.hpp>
+        <sciplot/sciplot.hpp>
 )
-
 enable_testing()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests_manual" "${CMAKE_BINARY_DIR}/tests_manual")

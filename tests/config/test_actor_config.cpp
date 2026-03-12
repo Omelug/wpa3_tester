@@ -78,6 +78,28 @@ TEST_CASE("Actor_config - matches method") {
 
         CHECK_FALSE(required.matches(offer));
     }
+
+    SUBCASE("Offer missing required string") {
+        Actor_config required;
+        required.str_con["iface"] = "wlan0";
+        Actor_config offer;
+        CHECK(required.matches(offer));
+    }
+
+    SUBCASE("Offer missing required bool") {
+        Actor_config required;
+        required.bool_conditions["monitor"] = true;
+        Actor_config offer;
+        CHECK(required.matches(offer));
+    }
+
+    SUBCASE("Required nullopt matches anything") {
+        Actor_config required;
+        Actor_config offer;
+        offer.str_con["iface"] = "wlan0";
+        offer.bool_conditions["monitor"] = true;
+        CHECK(required.matches(offer));
+    }
 }
 
 TEST_CASE("Actor_config - operator+= merge") {
@@ -131,4 +153,25 @@ TEST_CASE("Actor_config - operator[] accessor") {
 
     // Key exists but has no value should throw
     CHECK_THROWS_AS(actor["mac"], config_error);
+}
+
+TEST_CASE("Actor_config - operator+=complex") {
+    json j = {
+        {
+            "selection", {
+                {"driver", "mt76x2u"},
+                {"condition", {"STA", "monitor"}}
+            }
+        }
+    };
+    Actor_config actor(j);
+    Actor_config actor2(j);
+    actor.bool_conditions["2_4GHz"] = false;
+    actor.bool_conditions["5GHz"] = false;
+    actor.bool_conditions["80211ac"] = false;
+    actor.bool_conditions["80211n"] = true;
+    actor.bool_conditions["AP"] = false;
+    actor.bool_conditions["STA"] = true;
+
+    CHECK_NOTHROW(actor += actor2);
 }

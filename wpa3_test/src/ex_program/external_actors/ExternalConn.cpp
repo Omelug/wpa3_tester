@@ -44,16 +44,14 @@ namespace wpa3_tester{
             throw ex_conn_err(error_msg);
         }
 
-        // auth with public key (preferred) or password
-        if (ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS) {
-            const string password = (*actor)["ssh_password"];
-            if (ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS) {
-                const string error_msg = string("SSH authentication failed: ") + ssh_get_error(session);
-                ssh_disconnect(session);
-                ssh_free(session);
-                session = nullptr;
-                throw ex_conn_err(error_msg);
-            }
+        // auth with password (preferred) or public key
+        const string password = (*actor)["ssh_password"];
+        if (password.empty()) {
+            if (ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS)
+                throw ex_conn_err("SSH auth failed: no password and no key");
+        } else {
+            if (ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS)
+                throw ex_conn_err("SSH auth failed: " + string(ssh_get_error(session)));
         }
         return true;
     }

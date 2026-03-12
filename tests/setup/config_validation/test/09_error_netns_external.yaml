@@ -1,0 +1,13 @@
+name: netns_external_invalid_test
+attacker_module: test_module
+
+actors:
+  access_point:
+    type: AP
+    source: external
+    netns: ap_namespace
+    selection:
+      whitebox_ip: "192.168.1.1"
+    setup:
+      program: openwrt
+

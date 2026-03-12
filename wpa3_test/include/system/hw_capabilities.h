@@ -50,7 +50,7 @@ namespace wpa3_tester{
 
         bool _80211n = false;   // 802.11n  (HT)
         bool _80211ac = false;  // 802.11ac (VHT)
-        bool _80211ax= false;  // 802.11ax ()
+        bool _80211ax= false;  // 802.11ax
 
         bool beacon_prot = false;
     };

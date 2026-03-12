@@ -54,7 +54,7 @@ graphviz:
 	@echo "--- Saved to callgraph.svg ---"
 
 test_build:
-	cmake --build build
+	cmake --build build -j $(shell nproc)
 
 test: test_build
 	sudo ctest --test-dir build --output-on-failure

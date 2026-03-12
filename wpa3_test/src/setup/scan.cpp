@@ -25,6 +25,7 @@ namespace wpa3_tester{
             if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
             auto cfg = make_unique<Actor_config>();
             cfg->str_con["iface"] = iface_name;
+            cfg->str_con["source"] = "internal";
             hw_capabilities::get_nl80211_caps(iface_name, *cfg);
             options_map.emplace(iface_name, std::move(cfg));
         }
@@ -219,7 +220,7 @@ namespace wpa3_tester{
     }
 
     // return <string MAC; external_actor >
-    ActorCMapU RunStatus::external_options(){
+    ActorCMapU RunStatus::external_wb_options(){
         ActorCMapU options_map;
 
         //option1: whitebox_host -> whitebox_ip
@@ -230,6 +231,7 @@ namespace wpa3_tester{
             if (!cfg->str_con.at("whitebox_ip").has_value()) {
                 const string ip_str = ip::resolve_host((*cfg)["whitebox_host"]);
                 cfg->str_con["whitebox_ip"] = ip_str;
+                cfg->str_con["source"] = "external";
                 log(LogLevel::DEBUG, "Resolved %s -> %s", (*cfg)["whitebox_host"].c_str(), ip_str.c_str());
             }
             const string ip = (*cfg)["whitebox_ip"];
@@ -239,6 +241,11 @@ namespace wpa3_tester{
             options_map.emplace((*cfg)["mac"], std::move(cfg));
         }
 
+
+        return options_map;
+    }
+    ActorCMapU RunStatus::external_bb_options(){
+        ActorCMapU options_map;
         // option2: blackbox - scan, cant be
         //TODO get channels from actors and scan only these if not actor without it
         /*for (const auto& entity :
@@ -251,7 +258,6 @@ namespace wpa3_tester{
         }*/
         return options_map;
     }
-
     ActorCMap create_simulation(){
         throw not_implemented_error("simulation hwsim not implemented");
     }

@@ -140,6 +140,10 @@ namespace wpa3_tester{
             }
             return result;
         }
+
+        Actor_config::print_ActorCMap("Actor rules", rules);
+        Actor_config::print_ActorCMap("Actor options", options);
+
         throw req_error("Not found valid requirements");
     }
 

@@ -1,7 +1,7 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 
 #include "config/global_config.h"
-#include "../../../../include/system/ip.h"
+#include "system/ip.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester {
@@ -16,7 +16,7 @@ namespace wpa3_tester {
 
     void OpenWrtConn::forward_internet() const{
         hw_capabilities::run_cmd({"bash", "-c", "echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward"});
-        auto  internet_iface = get_global_config().at("actors").at("internet_interface").get<string>();
+        auto  internet_iface = get_global_config().at("internet_interface").get<string>();
         hw_capabilities::run_cmd({"sudo", "iptables", "-t", "nat", "-A", "POSTROUTING", "-o", internet_iface, "-j", "MASQUERADE"});
 
         const string remote_ip = (*actor)["whitebox_ip"];

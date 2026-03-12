@@ -50,12 +50,15 @@ int main() {
     }
 
     auto& selected_actor = actors[selected_idx];
+    ExternalConn* conn_raw = new OpenWrtConn(selected_actor.get());
+    unique_ptr<ExternalConn> conn_ex(conn_raw);
+    selected_actor->conn = std::move(conn_ex);
 
     manual_tests::cli_section("Connecting to " +
         selected_actor->str_con["whitebox_host"].value_or("Unknown"));
 
     // Create OpenWrt connection
-    auto conn = dynamic_cast<OpenWrtConn*>(selected_actor.get()->conn.get());
+    const auto conn = dynamic_cast<OpenWrtConn*>(selected_actor.get()->conn.get());
     if (!conn) throw runtime_error("Connection is not OpenWrtConn");
 
     cout << "Establishing SSH connection..." << endl;
@@ -70,24 +73,18 @@ int main() {
     try {
         cout << "\n--- Hostname ---" << endl;
         cout << conn->get_hostname();
-
         cout << "\n--- OpenWrt Release ---" << endl;
         cout << conn->exec("cat /etc/openwrt_release");
-
         cout << "\n--- Kernel Version ---" << endl;
         cout << conn->exec("uname -r");
-
         cout << "\n--- Memory Info ---" << endl;
         cout << conn->exec("free -h");
-
         cout << "\n--- CPU Info ---" << endl;
         string cpuinfo = conn->exec("cat /proc/cpuinfo | grep -E '(model name|Processor|Hardware)'");
         if (cpuinfo.empty()) {cpuinfo = conn->exec("cat /proc/cpuinfo | head -n 10");}
         cout << cpuinfo;
-
         cout << "\n--- Network Interfaces ---" << endl;
         cout << conn->get_interfaces();
-
         cout << "\n--- WiFi Status ---" << endl;
         try {
             cout << conn->get_wifi_status();

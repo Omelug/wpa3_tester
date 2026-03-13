@@ -163,4 +163,5 @@ definitions:
             anyOf:
               - required: [ whitebox_ip ]
               - required: [ whitebox_host ]
+              - required: [ external_OS ]
           errorMessage: "whitebox_ip/whitebox_host not allowed if not external"

@@ -43,16 +43,16 @@ digraph {
     }
 
     // start
-    wpa_tester[
+    wpa3_tester[
         shape=rectangle,
         color="#33aa33",
         style=filled,
         fillcolor="#eeffee",
-        label="wpa_tester"
+        label="wpa3_tester"
     ];
 
-    wpa_tester -> configfile [label="--config"];
-    wpa_tester -> test_map[label="--test"];
+    wpa3_tester -> configfile [label="--config"];
+    wpa3_tester -> test_map[label="--test"];
     test_map -> configfile [label="load test config"];
 
     configfile -> config_validation [label="json schema"];

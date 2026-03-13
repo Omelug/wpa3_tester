@@ -95,7 +95,7 @@ namespace wpa3_tester{
         const vector<string> &ruleKeys,
         const size_t ruleIdx,
         const ActorCMap &rules,
-        const ActorCMapU &options,
+        const ActorCMap &options,
         set<string> &usedOptions,
         AssignmentMap &currentAssignment
     ){
@@ -104,13 +104,13 @@ namespace wpa3_tester{
 
         const string &currentRuleKey = ruleKeys[ruleIdx];
         const auto &ruleIt = rules.find(currentRuleKey);
-        if(ruleIt == rules.end() || !ruleIt->second){
+        if(ruleIt == rules.end() /*|| !ruleIt->second*/){
             throw config_error("Missing rule actor config for key: %s", currentRuleKey.c_str());
         }
         Actor_config &currentRuleReq = *ruleIt->second;
 
         for(auto const &[optKey, optConfigPtr]: options){
-            if(!optConfigPtr){ continue; } // skip empty
+            //if(!optConfigPtr){ continue; } // skip empty
             if(usedOptions.contains(optKey)){ continue; } // already used this option
 
             if(Actor_config &optConfig = *optConfigPtr; !currentRuleReq.matches(optConfig)){ continue; } // node found
@@ -128,7 +128,7 @@ namespace wpa3_tester{
         return false; // no valid option for this rule
     }
 
-    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMapU &options){
+    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMap &options){
         vector<string> ruleKeys;
         for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
         AssignmentMap result;

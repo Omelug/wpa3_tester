@@ -19,7 +19,7 @@ int main() {
 
     cout << "Using connection table: " << conn_table_path << endl;
 
-    const vector<unique_ptr<Actor_config>> actors = scan::get_actors_conn_table(conn_table_path);
+    const vector<ActorPtr> actors = scan::get_actors_conn_table(conn_table_path);
     if (actors.empty()) {cerr << "ERROR: No actors found in connection table" << endl;return 1;}
     cout << "\nFound " << actors.size() << " actor(s) in connection table:" << endl;
 
@@ -51,7 +51,7 @@ int main() {
 
     auto& selected_actor = actors[selected_idx];
     ExternalConn* conn_raw = new OpenWrtConn(selected_actor.get());
-    unique_ptr<ExternalConn> conn_ex(conn_raw);
+    shared_ptr<ExternalConn> conn_ex(conn_raw);
     selected_actor->conn = std::move(conn_ex);
 
     manual_tests::cli_section("Connecting to " +

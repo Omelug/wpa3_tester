@@ -80,29 +80,16 @@ namespace wpa3_tester{
         }*/
     }
 
-    ExternalConn* RunStatus::get_or_create_connection(const string& actor_name){
-
-        // Get actor pointer
-        Actor_config* actor = &get_actor(actor_name);
-
-        const string program = config.at("actors").at(actor_name).at("setup").at("program").get<string>();
-
-        // Create connection - use raw pointer to avoid type issues with unique_ptr
+    ExternalConn* RunStatus::get_or_create_connection(const wpa3_tester::ActorPtr &actor){
         ExternalConn* conn_raw = nullptr;
-        if (program == "openwrt") {
-            conn_raw = new OpenWrtConn(actor);
-        } else {
-            conn_raw = new ExternalConn(actor);
-        }
-        unique_ptr<ExternalConn> conn(conn_raw);
+        if (actor["external_OS"] == "openwrt") {conn_raw = new OpenWrtConn(actor);
+        } else {conn_raw = new ExternalConn(actor);}
 
-        if (!conn->connect()) {
-            throw config_error("Failed to connect to external actor '%s'", actor_name.c_str());
-        }
+        const shared_ptr<ExternalConn> conn(conn_raw);
+        if (!conn->connect()) {throw config_error("Failed to connect to external actor ");}
 
         ExternalConn* raw_ptr = conn.get();
-        actor->conn = std::move(conn);
-        log(LogLevel::DEBUG, "Created and registered ExternalConn for actor: %s", actor_name.c_str());
+        actor->conn = conn;
 
         return raw_ptr;
     }
@@ -128,7 +115,7 @@ namespace wpa3_tester{
 
     }
 
-    void write_actors_csv(const ActorCMapU& actors, ofstream& ofs){
+    void write_actors_csv(const ActorCMap& actors, ofstream& ofs){
         for (const auto& [name, actor] : actors) {
             ofs << actor->str_con.at("source").value_or("<none>") << ","
                 << name << ","
@@ -159,22 +146,10 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Actor/interface mapping written to CSV: %s", path.c_str());
     }
 
-    Actor_config& RunStatus::get_actor(const string& actor_name){
-        Actor_config* found = nullptr;
-
-        auto check_map = [&](ActorCMapU& m, const char* map_name) {
-            if (const auto it = m.find(actor_name); it != m.end()) {
-                if (found != nullptr) {
-                    throw config_error("Actor %s found in multiple maps (including %s)",actor_name.c_str(), map_name);
-                }
-                found = it->second.get();
-            }
-        };
-
-        check_map(actors, "external_actors");
-
-        if (!found) {throw config_error("Actor %s not found in any actor map", actor_name.c_str());}
-        return *found;
+    //TODO only gtter now,
+    wpa3_tester::ActorPtr &RunStatus::get_actor(const string &actor_name){
+        if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
+        throw config_error("Actor %s not found in any actor map", actor_name.c_str());
     }
 
     unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {

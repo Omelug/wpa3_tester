@@ -69,7 +69,9 @@ TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces") {
         guards.emplace_back(n);
         REQUIRE_NOTHROW(wpa3_tester::hw_capabilities::create_ns(n));
     }
-
+    CHECK(netns_exists("wpa3_test_ns1"));
+    CHECK(netns_exists("wpa3_test_ns2"));
+    CHECK(netns_exists("wpa3_test_ns3"));
     wpa3_tester::cleanup_all_namespaces();
 
     for (const auto& n : names){

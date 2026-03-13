@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
+
+#include "ActorPtr.h"
 #include "Actor_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "system/ProcessManager.h"
@@ -25,14 +27,12 @@ namespace wpa3_tester{
 
     class Actor_config;
     class ExternalConn;
-    using ActorCMap = std::unordered_map<std::string, Actor_config*>;
-    using ActorCMapU = std::unordered_map<std::string, std::unique_ptr<Actor_config>>;
     using AssignmentMap = std::map<std::string,std::string>;
 
     class RunStatus {
         // in actors are all actors in test
         // internal have key string iface, external mac
-        ActorCMapU actors{};
+        ActorCMap actors{};
 
     public:
         bool only_stats = false;
@@ -56,8 +56,8 @@ namespace wpa3_tester{
         static void solve_new_pdu(Tins::PDU &pdu, std::map<std::string, ExternalEntity> &seen);
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
-        Actor_config& get_actor(const std::string& actor_name);
-        ExternalConn* get_or_create_connection(const std::string& actor_name);
+        ActorPtr &get_actor(const std::string &actor_name);
+        static ExternalConn* get_or_create_connection(const ActorPtr &actor);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 
@@ -68,9 +68,9 @@ namespace wpa3_tester{
     private:
 
         // to scan available interfaces
-        static ActorCMapU internal_options();
-        static ActorCMapU external_wb_options();
-        static ActorCMapU external_bb_options();
+        static ActorCMap internal_options();
+        static ActorCMap external_wb_options();
+        static ActorCMap external_bb_options();
         ActorCMap create_simulation();
 
         void parse_requirements();

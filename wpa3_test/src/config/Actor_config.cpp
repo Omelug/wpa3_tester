@@ -1,4 +1,6 @@
 #include "config/Actor_config.h"
+
+#include "config/ActorPtr.h"
 #include "logger/error_log.h"
 namespace wpa3_tester{
     using namespace std;
@@ -142,5 +144,18 @@ namespace wpa3_tester{
             result += "]";
         }
         return result;
+    }
+
+    void Actor_config::print_ActorCMap(const std::string& title, ActorCMap actors) {
+        cout << title << ":\n";
+        for (const auto& [key, actor_ptr] : actors) {
+            const ActorPtr actor = actor_ptr;
+            auto it = actor->str_con.find("whitebox_host");
+            cout << "[" << key << "] "
+                      << (it != actor->str_con.end() && it->second.has_value()
+                          ? it->second.value() : "Actor_" + key)
+                      << actor->to_str() << "\n";
+        }
+        cout << flush;
     }
 }

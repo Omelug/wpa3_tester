@@ -45,7 +45,11 @@ namespace wpa3_tester{
         cerr << levelToString(level) << ": " << msg << endl;
     }
 
-    void log_actor_map(const char* name, const ActorCMapU& m) {
+    void log(const LogLevel level, const std::string& msg) {
+        cerr << levelToString(level) << ": " << msg << endl;
+    }
+
+    void log_actor_map(const char* name, const ActorCMap& m) {
         string keys;
         bool first = true;
         for (const auto &k: m | views::keys) {

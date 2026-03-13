@@ -1,9 +1,5 @@
 #include <sys/wait.h>
 #include <vector>
-#include <fstream>
-
-
-
 #include <random>
 
 #include "logger/log.h"
@@ -12,58 +8,64 @@
 namespace wpa3_tester{
     using namespace std;
 
+    //TODO nějak strašně ukecané s těma logama
+
     //TODO create test for this
-    void Actor_config::set_channel(const int channel) const {
-        string name = str_con.at("iface").value();
+    void Actor_config::set_channel(const int channel){
+        const string& iface = str_con.at("iface").value();
+        if(conn.get() != nullptr){conn->set_channel(iface, channel); return;}
         const optional<string> netns = str_con.at("netns");
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Setting interface %s to channel %d in netns %s", name.c_str(), channel, netns->c_str());
+            log(LogLevel::INFO, "Setting interface %s to channel %d in netns %s",
+                iface.c_str(), channel, netns->c_str());
         } else {
-            log(LogLevel::INFO, "Setting interface %s to channel %d", name.c_str(), channel);
+            log(LogLevel::INFO, "Setting interface %s to channel %d", iface.c_str(), channel);
         }
-        run({"iw", "dev", name, "set", "channel", std::to_string(channel)});
+        run({"iw", "dev", iface, "set", "channel", std::to_string(channel)});
     }
 
-    void Actor_config::set_managed_mode() const {
-        string name = str_con.at("iface").value();
+    void Actor_config::set_managed_mode() {
+        const string& iface = str_con.at("iface").value();
+        if(conn.get() != nullptr){conn->set_managed_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Preparing interface %s for managed mode in netns %s", name.c_str(), netns->c_str());
+            log(LogLevel::INFO, "Preparing interface %s for managed mode in netns %s", iface.c_str(), netns->c_str());
         } else {
-            log(LogLevel::INFO, "Preparing interface %s for managed mode", name.c_str());
+            log(LogLevel::INFO, "Preparing interface %s for managed mode", iface.c_str());
         }
-        run({"ip", "link", "set", name, "down"});
-        run({"iw", "dev", name, "set", "type", "managed"});
-        run({"ip", "link", "set", name, "up"});
+        run({"ip", "link", "set", iface, "down"});
+        run({"iw", "dev", iface, "set", "type", "managed"});
+        run({"ip", "link", "set", iface, "up"});
     }
 
-    void Actor_config::set_monitor_mode() const {
-        string name = str_con.at("iface").value();
+    void Actor_config::set_monitor_mode() {
+        const string& iface = str_con.at("iface").value();
+        if(conn.get() != nullptr){conn->set_monitor_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Setting interface %s to monitor mode in netns %s", name.c_str(), netns->c_str());
+            log(LogLevel::INFO, "Setting interface %s to monitor mode in netns %s", iface.c_str(), netns->c_str());
         } else {
-            log(LogLevel::INFO, "Setting interface %s to monitor mode", name.c_str());
+            log(LogLevel::INFO, "Setting interface %s to monitor mode", iface.c_str());
         }
-        run({"sudo","ip", "link", "set", name, "down"});
-        run({"sudo", "iw", "dev", name, "set", "type", "monitor"});
-        run({"sudo", "iw", "dev", name, "set", "monitor", "fcsfail", "otherbss"});
-        run({"sudo","ip", "link", "set", name, "up"});
+        run({"sudo","ip", "link", "set", iface, "down"});
+        run({"sudo", "iw", "dev", iface, "set", "type", "monitor"});
+        run({"sudo", "iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
+        run({"sudo","ip", "link", "set", iface, "up"});
     }
 
     void Actor_config::cleanup() const {
-        string name = str_con.at("iface").value();
+        string iface = str_con.at("iface").value();
         optional<string> netns = str_con.at("netns");
-        if (name.empty()) {
+        if (iface.empty()) {
             log(LogLevel::ERROR, "cleanup() called with empty interface name");
             return;
         }
 
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Cleaning up interface %s in netns %s", name.c_str(), netns->c_str());
+            log(LogLevel::INFO, "Cleaning up interface %s in netns %s", iface.c_str(), netns->c_str());
 
-            const string phy_find_cmd = "iw dev " + name + " info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
+            const string phy_find_cmd = "iw dev " + iface + " info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
             char buffer[128];
             string phy_name;
             FILE* pipe = popen(phy_find_cmd.c_str(), "r");
@@ -74,25 +76,31 @@ namespace wpa3_tester{
             if (pipe) pclose(pipe);
 
             if (!phy_name.empty()) {
-                log(LogLevel::DEBUG, "Moving %s (%s) to netns %s", name.c_str(), phy_name.c_str(), netns->c_str());
+                log(LogLevel::DEBUG, "Moving %s (%s) to netns %s", iface.c_str(), phy_name.c_str(), netns->c_str());
                 hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, std::nullopt);
             }
 
         } else {
-            log(LogLevel::INFO, "Cleaning up interface %s", name.c_str());
+            log(LogLevel::INFO, "Cleaning up interface %s", iface.c_str());
         }
 
-        run({"pkill", "-f", "wpa_supplicant.*-i" + name});
-        run({"pkill", "-f", "hostapd.*" + name});
-        run({"ip", "link", "set", name, "down"});
+        run({"pkill", "-f", "wpa_supplicant.*-i" + iface});
+        run({"pkill", "-f", "hostapd.*" + iface});
+        run({"ip", "link", "set", iface, "down"});
         run({"rfkill", "unblock", "wifi"});
-        run({"ip", "addr", "flush", "dev", name});
-        run({"ip", "link", "set", name, "up"});
+        run({"ip", "addr", "flush", "dev", iface});
+        run({"ip", "link", "set", iface, "up"});
     }
 
-    void Actor_config::create_sniff_iface(const std::string& sniff_iface){
-        string iface = str_con.at("iface").value();
-        run({"iw", "dev", iface, "interface","add",sniff_iface,"type","monitor","flags","fcsfail", "otherbss"});
+    void Actor_config::create_sniff_iface(const std::string& sniff_iface) const{
+        const string& iface = str_con.at("iface").value();
+        if(conn.get() != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
+
+        //TODo quite fallback
+        if (run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor",
+            "flags", "fcsfail", "otherbss"}) != 0){
+            run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
+        }
         run({"ip", "link", "set", sniff_iface, "up"});
     }
 

@@ -17,8 +17,8 @@ namespace wpa3_tester{
 
     void RunStatus::parse_requirements() {
         for (const auto& [actor_name, actor] : config.at("actors").items()) {
-            actors[actor_name] = make_unique<Actor_config>(actor);
-            actors[actor_name]->str_con["actor_name"] = actor_name;
+            auto [it, inserted] = actors.emplace(actor_name, ActorPtr(std::make_shared<Actor_config>(actor)));
+            it->second->str_con["actor_name"] = actor_name;
         }
     }
 
@@ -122,12 +122,12 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Cleanup complete.");
     }
 
-    ActorCMap get_actors(const ActorCMapU& actors, const std::string& source) {
-        std::unordered_map<std::string, Actor_config*> result;
+    ActorCMap get_actors(const ActorCMap& actors, const std::string& source) {
+        std::unordered_map<std::string, ActorPtr> result;
         for (auto& [name, cfg] : actors) {
             auto it = cfg->str_con.find("source");
             if (it != cfg->str_con.end() && it->second == source) {
-                result[name] = cfg.get();
+                result.emplace(name, cfg);
             }
         }
         return result;
@@ -140,24 +140,24 @@ namespace wpa3_tester{
         log_actor_map("Actors: ", actors);
 
         // ------------------ INTERNAL ---------------------------
-        const ActorCMapU options_internal = internal_options();
+        const ActorCMap options_internal = internal_options();
 
         //find interface mapping
         auto internal_actors = get_actors(actors, "internal");
         internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
         for (auto &[actor_name, actor] : internal_actors) {
             auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
-            actor->setup_actor(config, opt_actor.get());
+            actor->setup_actor(config, opt_actor);
         }
 
         // ------------------ EXTERNAL WHITEBOX ----------------------
-        const ActorCMapU options_external = external_wb_options();
+        const ActorCMap options_external = external_wb_options();
         auto external_wb_actors = get_actors(actors, "external");
         external_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
 
         for (auto &[actor_name, actor] : external_wb_actors) {
             auto& opt_actor = options_external.at(external_mapping.at(actor_name));
-            actor->setup_actor(config, opt_actor.get());
+            actor->setup_actor(config, opt_actor);
         }
 
 

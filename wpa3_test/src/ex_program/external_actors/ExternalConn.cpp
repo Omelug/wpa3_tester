@@ -1,13 +1,10 @@
 #include "ex_program/external_actors/ExternalConn.h"
-
 #include "logger/error_log.h"
 
 namespace wpa3_tester{
     using namespace std;
 
-    ExternalConn::ExternalConn(Actor_config* actor){ // can be pointer here, if it will be from unique pointer
-           this->actor = actor;
-    };
+    ExternalConn::ExternalConn(const ActorPtr &actor): actor(actor){};
 
     ExternalConn::~ExternalConn(){
         if (session) {
@@ -60,32 +57,58 @@ namespace wpa3_tester{
     string ExternalConn::get_interfaces() { return exec("ip link show"); }
     string ExternalConn::get_wifi_status() { return exec("iwinfo"); }
 
-    string ExternalConn::exec(const string& cmd) const{
-        if (!session) {throw ex_conn_err("Cannot exec: not connected (call connect() first)");}
+    string ExternalConn::exec(const string& cmd, int* ret_code) const {
+        if (!session) throw ex_conn_err("Cannot exec: not connected");
 
-        const ssh_channel channel = ssh_channel_new(session);
-        if (!channel) {throw ex_conn_err("Failed to create SSH channel");}
+        const struct ChannelGuard {
+            ssh_channel ch;
+            explicit ChannelGuard(ssh_session s) : ch(ssh_channel_new(s)) {}
+            ~ChannelGuard() { if (ch) { ssh_channel_send_eof(ch); ssh_channel_close(ch); ssh_channel_free(ch); } }
+        } guard(session);
 
-        // Helper lambda to clean up and throw
-        auto cleanup_and_throw = [&](const string& msg) {
-            ssh_channel_free(channel);
-            throw ex_conn_err(msg);
-        };
-
-        if (ssh_channel_open_session(channel) != SSH_OK) {cleanup_and_throw("Failed to open SSH channel session");}
-        if (ssh_channel_request_exec(channel, cmd.c_str()) != SSH_OK){
-            cleanup_and_throw("Failed to execute command: " + cmd);
-        }
+        if (!guard.ch) throw ex_conn_err("Failed to create SSH channel");
+        if (ssh_channel_open_session(guard.ch) != SSH_OK)
+            throw ex_conn_err("Failed to open SSH channel");
+        if (ssh_channel_request_exec(guard.ch, cmd.c_str()) != SSH_OK)
+            throw ex_conn_err("Failed to execute: " + cmd);
 
         string result;
         char buf[1024];
         int n;
-        while ((n = ssh_channel_read(channel, buf, sizeof(buf), 0)) > 0) {result.append(buf, n);}
+        while ((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0)
+            result.append(buf, n);
 
-        ssh_channel_send_eof(channel);
-        ssh_channel_close(channel);
-        ssh_channel_free(channel);
+        if (ret_code) {
+            uint32_t exit_status = 0;
+            ssh_channel_get_exit_state(guard.ch, &exit_status, nullptr, nullptr);
+            *ret_code = static_cast<int>(exit_status);
+        }
         return result;
     }
 
+    void ExternalConn::create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const{
+        //FIXME quiet fallback, check before if possible
+        const string add_cmd = "iw dev " + iface + " interface add " + sniff_iface + " type monitor flags fcsfail otherbss"
+                             + " || iw dev " + iface + " interface add " + sniff_iface + " type monitor";
+        exec(add_cmd);
+        exec("ip link set " + sniff_iface + " up");
+    }
+
+    bool ExternalConn::set_channel(const std::string &iface, const int channel) const{
+        int ret; // for monitor/station mód
+        exec("iw dev " + iface + " set channel " + to_string(channel) + " 2>&1", &ret);
+        return ret;
+    }
+
+    void ExternalConn::set_monitor_mode(const std::string &iface) const{
+        exec("ip link set " + iface + " down");
+        exec("iw dev " + iface + " set type monitor");
+        exec("ip link set " + iface + " up");
+    }
+
+    void ExternalConn::set_managed_mode(const std::string &iface) const{
+        exec("ip link set " + iface + " down");
+        exec("iw dev " + iface + " set type managed");
+        exec("ip link set " + iface + " up");
+    }
 }

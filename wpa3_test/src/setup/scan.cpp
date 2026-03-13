@@ -19,8 +19,8 @@ namespace wpa3_tester{
 
     // ---------------- INTERNAL
     // return <string iface; internal_actor >
-    ActorCMapU RunStatus::internal_options(){
-        ActorCMapU options_map;
+    ActorCMap RunStatus::internal_options(){
+        ActorCMap options_map;
         for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
             if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
             auto cfg = make_unique<Actor_config>();
@@ -163,8 +163,8 @@ namespace wpa3_tester{
         return fields;
     }
 
-    vector<unique_ptr<Actor_config>> scan::get_actors_conn_table(const path& conn_table){
-        vector<unique_ptr<Actor_config>> result;
+    vector<ActorPtr> scan::get_actors_conn_table(const path& conn_table){
+        vector<ActorPtr> result;
 
         if (!exists(conn_table)) {
             log(LogLevel::DEBUG, "Connection table file does not exist: %s", conn_table.string().c_str());
@@ -193,7 +193,7 @@ namespace wpa3_tester{
             vector<string> fields = parse_csv_line(line);
             if (fields.empty()) continue;
 
-            auto cfg = make_unique<Actor_config>();
+            auto cfg = make_shared<Actor_config>();
 
             // Set fields if column exists and has data
             auto set_field = [&](const string& col_name, const string& cfg_key) {
@@ -212,7 +212,7 @@ namespace wpa3_tester{
             set_field("ssh_port", "ssh_port");
             set_field("ssh_password", "ssh_password");
 
-            result.push_back(std::move(cfg));
+            result.push_back(ActorPtr(cfg));
         }
 
         log(LogLevel::INFO, "Loaded %zu whitebox actors from connection table", result.size());
@@ -220,8 +220,8 @@ namespace wpa3_tester{
     }
 
     // return <string MAC; external_actor >
-    ActorCMapU RunStatus::external_wb_options(){
-        ActorCMapU options_map;
+    ActorCMap RunStatus::external_wb_options(){
+        ActorCMap options_map;
 
         //option1: whitebox_host -> whitebox_ip
         const path conn_table = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
@@ -238,14 +238,15 @@ namespace wpa3_tester{
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor %s not reachable, skipping", ip.c_str());continue;}
 
             cfg->str_con["mac"] = ip::get_mac_by_ip(ip);
+            //TDOO FIXME
+            //cfg->conn = get_or_create_connection();
+            //for iface in
             options_map.emplace((*cfg)["mac"], std::move(cfg));
         }
-
-
         return options_map;
     }
-    ActorCMapU RunStatus::external_bb_options(){
-        ActorCMapU options_map;
+    ActorCMap RunStatus::external_bb_options(){
+        ActorCMap options_map;
         // option2: blackbox - scan, cant be
         //TODO get channels from actors and scan only these if not actor without it
         /*for (const auto& entity :
@@ -258,6 +259,7 @@ namespace wpa3_tester{
         }*/
         return options_map;
     }
+
     ActorCMap create_simulation(){
         throw not_implemented_error("simulation hwsim not implemented");
     }

@@ -71,5 +71,14 @@ namespace wpa3_tester {
         }
         return success;
     }
+    void OpenWrtConn::set_monitor_mode(const std::string &iface) const{
+        exec("wifi down");  // stop hostapd/supplicant
+        ExternalConn::set_monitor_mode(iface);
+    }
+
+    void OpenWrtConn::set_managed_mode(const std::string &iface) const{
+        ExternalConn::set_managed_mode(iface);
+        exec("wifi up");  // restart hostapd/supplicant
+    }
 }
 

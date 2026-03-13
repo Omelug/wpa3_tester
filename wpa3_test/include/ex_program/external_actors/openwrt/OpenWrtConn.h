@@ -18,7 +18,9 @@ namespace wpa3_tester {
         void get_hw_info() const;
         void get_openwrt_info() const;
 
-        explicit OpenWrtConn(Actor_config* actor): ExternalConn(actor) {};
+        explicit OpenWrtConn(const wpa3_tester::ActorPtr &actor): ExternalConn(actor) {};
         bool connect() override;
+        void set_monitor_mode(const std::string &iface) const override;
+        void set_managed_mode(const std::string &iface) const override;
     };
 }

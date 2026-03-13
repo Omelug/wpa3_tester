@@ -14,6 +14,7 @@ namespace  wpa3_tester{
         Actor_config& operator*()  const;
         std::string operator[](const std::string& key) const;
         Actor_config* get() const;
+        std::shared_ptr<Actor_config> shared() const;
     };
     using ActorCMap = std::unordered_map<std::string,ActorPtr>;
 }

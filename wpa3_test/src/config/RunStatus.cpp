@@ -80,14 +80,13 @@ namespace wpa3_tester{
         }*/
     }
 
-    void RunStatus::get_or_create_connection(ActorPtr& actor){
+    void RunStatus::get_or_create_connection(const ActorPtr& actor){
         ExternalConn* conn_raw = nullptr;
         if (actor["external_OS"] == "openwrt") {conn_raw = new OpenWrtConn(actor);
         } else {conn_raw = new ExternalConn(actor);}
 
-        shared_ptr<ExternalConn> conn(conn_raw);
+        const shared_ptr<ExternalConn> conn(conn_raw);
         if (!conn->connect()) {throw config_error("Failed to connect to external actor ");}
-
         actor->conn = conn;
     }
 

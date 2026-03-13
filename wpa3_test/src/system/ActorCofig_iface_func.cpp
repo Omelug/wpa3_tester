@@ -2,6 +2,7 @@
 #include <vector>
 #include <random>
 
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 
@@ -11,7 +12,7 @@ namespace wpa3_tester{
     //TODO nějak strašně ukecané s těma logama
 
     //TODO create test for this
-    void Actor_config::set_channel(const int channel){
+    void Actor_config::set_channel(const int channel) const{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_channel(iface, channel); return;}
         const optional<string> netns = str_con.at("netns");
@@ -24,30 +25,28 @@ namespace wpa3_tester{
         run({"iw", "dev", iface, "set", "channel", std::to_string(channel)});
     }
 
-    void Actor_config::set_managed_mode() {
+    void Actor_config::set_managed_mode() const{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_managed_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Preparing interface %s for managed mode in netns %s", iface.c_str(), netns->c_str());
-        } else {
-            log(LogLevel::INFO, "Preparing interface %s for managed mode", iface.c_str());
-        }
+            log(LogLevel::INFO, "Preparing interface "+iface+" for managed mode in netns " + netns.value());
+        } else {log(LogLevel::INFO, "Preparing interface"+iface+" for managed mode");}
+
         run({"ip", "link", "set", iface, "down"});
         run({"iw", "dev", iface, "set", "type", "managed"});
         run({"ip", "link", "set", iface, "up"});
     }
 
-    void Actor_config::set_monitor_mode() {
+    void Actor_config::set_monitor_mode() const{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_monitor_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Setting interface %s to monitor mode in netns %s", iface.c_str(), netns->c_str());
-        } else {
-            log(LogLevel::INFO, "Setting interface %s to monitor mode", iface.c_str());
-        }
+            log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode in netns "+ netns.value());
+        } else {log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");}
+
         run({"sudo","ip", "link", "set", iface, "down"});
         run({"sudo", "iw", "dev", iface, "set", "type", "monitor"});
         run({"sudo", "iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});

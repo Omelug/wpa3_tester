@@ -8,4 +8,5 @@ namespace  wpa3_tester{
     Actor_config& ActorPtr::operator*()  const { return *ptr; }
     std::string ActorPtr::operator[](const std::string& key) const { return (*ptr)[key]; }
     Actor_config* ActorPtr::get() const { return ptr.get(); }
+    std::shared_ptr<Actor_config> ActorPtr::shared() const { return ptr; }
 }

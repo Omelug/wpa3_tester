@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "ex_program/external_actors/ExternalConn.h"
 #include "system/ip.h"
 
 namespace wpa3_tester{
@@ -30,6 +31,19 @@ namespace wpa3_tester{
             options_map.emplace(iface_name, std::move(cfg));
         }
         return options_map;
+    }
+
+    void RunStatus::add_actors_by_iface(ActorCMap &options_map, const ActorPtr &cfg){
+        const vector<string> ifaces = cfg->conn->get_interfaces();
+        for (const string& iface : ifaces) {
+            auto actor_cfg = make_shared<Actor_config>(*cfg);
+            actor_cfg->str_con["iface"] = iface;
+            actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
+            actor_cfg->str_con["driver"] = cfg->conn->get_driver(iface);
+
+            const string key = actor_cfg->str_con.at("mac").value_or(iface);
+            options_map.emplace(key, std::move(actor_cfg));
+        }
     }
 
     // ------------- EXTERNAL
@@ -155,7 +169,6 @@ namespace wpa3_tester{
         stringstream ss(line);
         string field;
         while (getline(ss, field, ',')) {
-            // Trim whitespace
             field.erase(0, field.find_first_not_of(" \t\r\n"));
             field.erase(field.find_last_not_of(" \t\r\n") + 1);
             fields.push_back(field);
@@ -237,12 +250,8 @@ namespace wpa3_tester{
             const string ip = (*cfg)["whitebox_ip"];
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor %s not reachable, skipping", ip.c_str());continue;}
 
-            cfg->str_con["mac"] = ip::get_mac_by_ip(ip);
-            //TDOO FIXME
-
-            get_or_create_connection(cfg->conn);
-            //for iface in
-            options_map.emplace((*cfg)["mac"], std::move(cfg));
+            get_or_create_connection(cfg);
+            add_actors_by_iface(options_map, cfg);
         }
         return options_map;
     }

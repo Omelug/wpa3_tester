@@ -1,5 +1,6 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
+#include <sstream>
 
 namespace wpa3_tester{
     using namespace std;
@@ -54,7 +55,22 @@ namespace wpa3_tester{
     }
 
     string ExternalConn::get_hostname(){ return exec("uname -n"); }
-    string ExternalConn::get_interfaces() { return exec("ip link show"); }
+
+    vector<string> ExternalConn::get_interfaces() {
+        // list only wifi (802.11) interfaces via iw
+        const string output = exec("iw dev 2>/dev/null | awk '/Interface/{print $2}'");
+        vector<string> ifaces;
+        istringstream ss(output);
+        string line;
+        while (getline(ss, line)) { //TODo getline cykly pak pojít a pokud jde, zjednodušit
+            const auto start = line.find_first_not_of(" \t\r\n");
+            if (start == string::npos) continue;
+            line = line.substr(start, line.find_last_not_of(" \t\r\n") - start + 1);
+            if (!line.empty()) ifaces.push_back(line);
+        }
+        return ifaces;
+    }
+
     string ExternalConn::get_wifi_status() { return exec("iwinfo"); }
 
     string ExternalConn::exec(const string& cmd, int* ret_code) const {
@@ -110,5 +126,13 @@ namespace wpa3_tester{
         exec("ip link set " + iface + " down");
         exec("iw dev " + iface + " set type managed");
         exec("ip link set " + iface + " up");
+    }
+
+    string ExternalConn::get_mac_address(const string &iface) const{
+        return exec("cat /sys/class/net/" + iface + "/address 2>/dev/null | tr -d '\\n'");
+    }
+
+    std::string ExternalConn::get_driver(const std::string &iface) const{
+        return exec("basename $(readlink /sys/class/net/" + iface + "/device/driver) 2>/dev/null | tr -d '\\n'");
     }
 }

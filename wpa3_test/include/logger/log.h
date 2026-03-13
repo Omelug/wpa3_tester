@@ -16,6 +16,7 @@ namespace wpa3_tester{
     };
 
     void log(LogLevel level, const char *fmt, ...);
+    void log(LogLevel level, const std::string& msg);
     void log_actor_map(const char* name, const ActorCMap& m);
     void log_actor_configs(const ActorCMap& m, std::ofstream& ofs);
 

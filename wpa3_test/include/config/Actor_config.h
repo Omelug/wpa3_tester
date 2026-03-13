@@ -18,6 +18,7 @@ namespace wpa3_tester{
         bool matches(const Actor_config &offer);
         Actor_config &operator+=(const Actor_config &other);
         std::shared_ptr<ExternalConn> conn;
+        Actor_config(const Actor_config& other);
 
         std::map<std::string, std::optional<std::string>> str_con = {
             {"actor_name",     std::nullopt},
@@ -64,9 +65,9 @@ namespace wpa3_tester{
         void create_sniff_iface(const std::string & sniff_iface) const;
 
         // change interface status
-        void set_channel(int channel);
-        void set_managed_mode();
-        void set_monitor_mode();
+        void set_channel(int channel) const;
+        void set_managed_mode() const;
+        void set_monitor_mode() const;
 
         void setup_actor(const nlohmann::json& config, const ActorPtr &real_actor);
     private:

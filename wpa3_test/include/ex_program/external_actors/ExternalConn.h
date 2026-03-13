@@ -16,8 +16,10 @@ namespace wpa3_tester{
         virtual bool connect();
 
         virtual std::string get_hostname();
-        virtual std::string get_interfaces();
+        virtual std::vector<std::string> get_interfaces();
         virtual std::string get_wifi_status();
+        std::string get_mac_address(const std::string &iface) const;
+        std::string get_driver(const std::string &iface) const;
 
         std::string exec(const std::string &cmd, int * ret_err = nullptr) const;
         void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;

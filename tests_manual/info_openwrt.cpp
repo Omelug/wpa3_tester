@@ -33,7 +33,7 @@ int main() {
         } else {
             cout << "Actor_" << i;
         }
-        cout << actor->to_str() << endl;
+        cout << " "<< actor->to_str() << endl;
         cout << endl;
     }
 

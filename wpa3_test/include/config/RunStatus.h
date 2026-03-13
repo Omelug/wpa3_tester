@@ -7,7 +7,6 @@
 
 #include "ActorPtr.h"
 #include "Actor_config.h"
-#include "ex_program/external_actors/ExternalConn.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -57,7 +56,7 @@ namespace wpa3_tester{
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         ActorPtr &get_actor(const std::string &actor_name);
-        static ExternalConn* get_or_create_connection(const ActorPtr &actor);
+        static void get_or_create_connection(ActorPtr &actor);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 

@@ -4,7 +4,7 @@
 namespace wpa3_tester{
     using namespace std;
 
-    void Actor_config::setup_actor(const nlohmann::json& config, const wpa3_tester::ActorPtr &real_actor){
+    void Actor_config::setup_actor(const nlohmann::json& config, const ActorPtr &real_actor){
         const bool internal = str_con.at("source").value() == "internal";
         const bool external_WB = str_con.at("source").value() == "external" &&
             (real_actor->str_con.at("whitebox_host").has_value() || real_actor->str_con.at("whitebox_ip").has_value());

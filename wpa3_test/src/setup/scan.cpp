@@ -239,7 +239,8 @@ namespace wpa3_tester{
 
             cfg->str_con["mac"] = ip::get_mac_by_ip(ip);
             //TDOO FIXME
-            //cfg->conn = get_or_create_connection();
+
+            get_or_create_connection(cfg->conn);
             //for iface in
             options_map.emplace((*cfg)["mac"], std::move(cfg));
         }

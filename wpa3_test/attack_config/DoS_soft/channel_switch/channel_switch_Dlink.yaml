@@ -10,18 +10,24 @@ actors:
       condition: [AP]
     setup:
       program: openwrt
-      program_config: # set with openwrt programs
+      program_config:
+        validator: ../../validator/programs/openwrt.schema.yaml
         ssid: OpenWrt
-        channel: 1
-        password: password123
-        req_programs: [ tcpdump ]
-    #ip_addr: "10.0.0.1"
+        channel: 6
+        key: password123
+        proto: RSN
+        encryption: sae-mixed
+        mode: ap
+        htmode: HT20
+        # req_programs: [ tcpdump ]
+    ip_addr: "10.0.0.1"
   client:
     type: STA
     source: internal
     setup:
       program: wpa_supplicant
       program_config:
+        version: 2_10
         ssid: OpenWrt
         sae_password: password123
         ieee80211w: 2
@@ -31,7 +37,7 @@ actors:
         group: CCMP
     channel: 1
     netns: sta
-    #ip_addr: "10.0.0.2"
+    ip_addr: "10.0.0.2"
   attacker:
     type: STA
     source: internal

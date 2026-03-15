@@ -56,7 +56,7 @@ namespace wpa3_tester{
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         ActorPtr &get_actor(const std::string &actor_name);
-        static void get_or_create_connection(const ActorPtr &actor);
+        void get_or_create_connection(const ActorPtr &actor) const;
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 
@@ -69,7 +69,7 @@ namespace wpa3_tester{
         // to scan available interfaces
         static ActorCMap internal_options();
         static void add_actors_by_iface(ActorCMap & pairs, const ActorPtr & cfg);
-        static ActorCMap external_wb_options();
+        ActorCMap external_wb_options() const;
         static ActorCMap external_bb_options();
         ActorCMap create_simulation();
 

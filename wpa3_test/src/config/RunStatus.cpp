@@ -80,13 +80,16 @@ namespace wpa3_tester{
         }*/
     }
 
-    void RunStatus::get_or_create_connection(const ActorPtr& actor){
+    void RunStatus::get_or_create_connection(const ActorPtr& actor) const{
         ExternalConn* conn_raw = nullptr;
-        if (actor["external_OS"] == "openwrt") {conn_raw = new OpenWrtConn(actor);
-        } else {conn_raw = new ExternalConn(actor);}
+        if(actor["external_OS"] == "openwrt"){
+            conn_raw = new OpenWrtConn();
+        }else{
+          throw not_implemented_error("Not known external_OS: " + actor["external_OS"]);
+        }
 
         const shared_ptr<ExternalConn> conn(conn_raw);
-        if (!conn->connect()) {throw config_error("Failed to connect to external actor ");}
+        if (!conn->connect(*this, actor)) {throw config_error("Failed to connect to external actor ");}
         actor->conn = conn;
     }
 
@@ -143,7 +146,7 @@ namespace wpa3_tester{
     }
 
     //TODO only gtter now,
-    wpa3_tester::ActorPtr &RunStatus::get_actor(const string &actor_name){
+    ActorPtr &RunStatus::get_actor(const string &actor_name){
         if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
         throw config_error("Actor %s not found in any actor map", actor_name.c_str());
     }

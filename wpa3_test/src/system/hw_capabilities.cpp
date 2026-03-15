@@ -147,6 +147,7 @@ namespace wpa3_tester{
         throw req_error("Not found valid requirements");
     }
 
+
     // RUN functions // TODO refactor
 
     void hw_capabilities::run_in(const string& cmd, const filesystem::path& cwd = filesystem::current_path()) {
@@ -236,8 +237,7 @@ namespace wpa3_tester{
             case 161: return 5805;
             case 165: return 5825;
             default:
-                log(LogLevel::WARNING, "Unknown Wi-Fi channel %d, using 0 MHz", channel);
-                return 0;
+                throw config_error("Unknown Wi-Fi channel %d, using 0 MHz", channel);
         }
     }
 

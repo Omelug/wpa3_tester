@@ -28,3 +28,7 @@ Ghost Attack (badtoken pdf)
 
 PDF:
 // použít NIC a WNIC k vysvětlení interface
+
+
+- Every ahysical radio can have only one interface in these tests
+-> re to to roadmapor implementa and highlight in documentation

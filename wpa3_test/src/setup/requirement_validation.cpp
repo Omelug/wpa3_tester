@@ -140,26 +140,21 @@ namespace wpa3_tester{
         log_actor_map("Actors: ", actors);
 
         // ------------------ INTERNAL ---------------------------
-        const ActorCMap options_internal = internal_options();
-
-        //find interface mapping
         auto internal_actors = get_actors(actors, "internal");
-        internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
-        for (auto &[actor_name, actor] : internal_actors) {
-            auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
-            actor->setup_actor(config, opt_actor);
+        ActorCMap options_internal;
+        if(!internal_actors.empty()){
+            options_internal = internal_options();
+            //find interface mapping
+            internal_mapping = hw_capabilities::check_req_options(internal_actors, options_internal);
         }
 
         // ------------------ EXTERNAL WHITEBOX ----------------------
-        const ActorCMap options_external = external_wb_options();
         auto external_wb_actors = get_actors(actors, "external");
-        external_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
-
-        for (auto &[actor_name, actor] : external_wb_actors) {
-            auto& opt_actor = options_external.at(external_mapping.at(actor_name));
-            actor->setup_actor(config, opt_actor);
+        ActorCMap options_external{};
+        if(!external_wb_actors.empty()){ //TODO rozdělit na external_wb_mapiipng a bb
+            options_external = external_wb_options();
+            external_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
         }
-
 
         // ------------------ EXTERNAL BLACKBOX ---------------------------
 
@@ -168,6 +163,17 @@ namespace wpa3_tester{
         //ActorCMap options_simulation =  create_simulation();
         // check if possible with simulation
         // create simulation
+
+        // SETUP ACTORS
+        for (auto &[actor_name, actor] : internal_actors) {
+            auto& opt_actor = options_internal.at(internal_mapping.at(actor_name));
+            actor->setup_actor(config, opt_actor);
+        }
+
+        for (auto &[actor_name, actor] : external_wb_actors) {
+            auto& opt_actor = options_external.at(external_mapping.at(actor_name));
+            actor->setup_actor(config, opt_actor);
+        }
 
     }
 }

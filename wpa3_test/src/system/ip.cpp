@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <regex>
 
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
@@ -13,14 +14,20 @@
 namespace wpa3_tester::ip{
     using namespace std;
     void set_ip(RunStatus& run_status, const string &actor_name){
-        vector<string> command = {"sudo"};
-        observer::add_nets(run_status,command, actor_name);
-        command.insert(command.end(), {
-            "ip", "addr","add",
-            run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>() + "/24",
-            "dev",run_status.get_actor(actor_name)["iface"]
-        });
-         hw_capabilities::run_cmd(command);
+        auto ip_addr = run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>();
+        const auto actor = run_status.get_actor(actor_name);
+        if(actor.get()->conn != nullptr){
+            run_status.get_actor(actor_name).get()->conn->set_ip(actor["iface"],ip_addr);
+        }else{
+            vector<string> command = {"sudo"};
+            observer::add_nets(run_status,command, actor_name);
+            command.insert(command.end(), {
+                "ip", "addr","add",
+                ip_addr + "/24",
+                "dev", actor["iface"]
+            });
+            hw_capabilities::run_cmd(command);
+        }
     }
 
     string resolve_host(const string& hostname) {

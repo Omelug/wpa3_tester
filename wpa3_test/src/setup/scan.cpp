@@ -33,16 +33,17 @@ namespace wpa3_tester{
         return options_map;
     }
 
-    void RunStatus::add_actors_by_iface(ActorCMap &options_map, const ActorPtr &cfg){
-        const vector<string> ifaces = cfg->conn->get_interfaces();
-        for (const string& iface : ifaces) {
+    void RunStatus::add_actors_by_iface(ActorCMap &pairs, const ActorPtr &cfg){
+        //cfg->conn->ensure_wifi_ifaces();
+        const vector<string> radios = cfg->conn->get_radio_list();
+        for (const string& iface : radios) {
             auto actor_cfg = make_shared<Actor_config>(*cfg);
-            actor_cfg->str_con["iface"] = iface;
-            actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
+            //actor_cfg->str_con["iface"] = iface;
+            //actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
             actor_cfg->str_con["driver"] = cfg->conn->get_driver(iface);
 
             const string key = actor_cfg->str_con.at("mac").value_or(iface);
-            options_map.emplace(key, std::move(actor_cfg));
+            pairs.emplace(key, std::move(actor_cfg));
         }
     }
 
@@ -225,7 +226,7 @@ namespace wpa3_tester{
             set_field("ssh_port", "ssh_port");
             set_field("ssh_password", "ssh_password");
 
-            result.push_back(ActorPtr(cfg));
+            result.emplace_back(cfg);
         }
 
         log(LogLevel::INFO, "Loaded %zu whitebox actors from connection table", result.size());
@@ -233,7 +234,7 @@ namespace wpa3_tester{
     }
 
     // return <string MAC; external_actor >
-    ActorCMap RunStatus::external_wb_options(){
+    ActorCMap RunStatus::external_wb_options() const{
         ActorCMap options_map;
 
         //option1: whitebox_host -> whitebox_ip
@@ -247,8 +248,8 @@ namespace wpa3_tester{
                 cfg->str_con["source"] = "external";
                 log(LogLevel::DEBUG, "Resolved %s -> %s", (*cfg)["whitebox_host"].c_str(), ip_str.c_str());
             }
-            const string ip = (*cfg)["whitebox_ip"];
-            if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor %s not reachable, skipping", ip.c_str());continue;}
+            const string ip = cfg["whitebox_ip"];
+            if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");continue;}
 
             get_or_create_connection(cfg);
             add_actors_by_iface(options_map, cfg);

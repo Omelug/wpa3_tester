@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "../../../../include/system/ip.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
@@ -76,19 +77,29 @@ namespace wpa3_tester::CSA_attack{
         observer::start_tshark(rs, "access_point", "udp port 5201");
     }
 
+    void setup_AP(RunStatus& rs,const string& actor_name){
+        const auto ap_actor = rs.get_actor(actor_name);
+        if(ap_actor->conn != nullptr){
+            ap_actor->conn.get()->setup_ap(rs, ap_actor);
+        }else{
+            // -------- hostapd AP ------------
+            hostapd::run_hostapd(rs, actor_name);
+            rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
+            log(LogLevel::INFO, actor_name+" is running");
+        }
+        ip::set_ip(rs, actor_name);
+    };
+
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
 
-        if (rs.config.at("actors").at("access_point").at("source") != "internal"
+        if (rs.config.at("actors").at("attacker").at("source") != "internal"
             || rs.config.at("actors").at("client").at("source") != "internal") {
             throw runtime_error("only internal actors are supported");
         }
 
-        // -------- hostapd AP ------------
-        hostapd::run_hostapd(rs, "access_point");
-        rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(10));
-        log(LogLevel::INFO, "access_point is running");
-        ip::set_ip(rs, "access_point");
+        // ------ AP
+        setup_AP(rs, "access_point");
 
         // -------- wpa_supplicant STA ------------
         hostapd::run_wpa_supplicant(rs, "client");

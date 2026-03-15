@@ -5,8 +5,6 @@
 #include <ranges>
 #include <regex>
 #include <chrono>
-#include <cerrno>
-#include <iomanip>
 #include <sstream>
 #include "logger/error_log.h"
 #include <thread>

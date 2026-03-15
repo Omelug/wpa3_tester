@@ -5,7 +5,7 @@
 namespace wpa3_tester{
     using namespace std;
 
-    ExternalConn::ExternalConn(const ActorPtr &actor): actor(actor){};
+    ExternalConn::ExternalConn(){};
 
     ExternalConn::~ExternalConn(){
         if (session) {
@@ -14,7 +14,7 @@ namespace wpa3_tester{
         }
     }
 
-    bool ExternalConn::connect(){
+    bool ExternalConn::connect(const RunStatus &rs, const ActorPtr &actor){
 
         // Check if actor has needed SSH params
         if (!actor->str_con["whitebox_ip"].has_value()  ||
@@ -56,37 +56,32 @@ namespace wpa3_tester{
 
     string ExternalConn::get_hostname(){ return exec("uname -n"); }
 
-    vector<string> ExternalConn::get_interfaces() {
-        // list only wifi (802.11) interfaces via iw
-        const string output = exec("iw dev 2>/dev/null | awk '/Interface/{print $2}'");
-        vector<string> ifaces;
-        istringstream ss(output);
-        string line;
-        while (getline(ss, line)) { //TODo getline cykly pak pojít a pokud jde, zjednodušit
-            const auto start = line.find_first_not_of(" \t\r\n");
-            if (start == string::npos) continue;
-            line = line.substr(start, line.find_last_not_of(" \t\r\n") - start + 1);
-            if (!line.empty()) ifaces.push_back(line);
-        }
-        return ifaces;
+    vector<string> ExternalConn::get_radio_list() {
+        throw not_implemented_error("not default get_interface function");
     }
 
-    string ExternalConn::get_wifi_status() { return exec("iwinfo"); }
+    string ExternalConn::get_mac_address(const string &iface) const{
+        return exec("cat /sys/class/net/" + iface + "/address 2>/dev/null | tr -d '\\n'");
+    }
+
+    std::string ExternalConn::get_driver(const std::string &radio) const {
+        // radio0 → phy0 → /sys/class/ieee80211/phy0/device/driver
+        const string phy = "phy" + radio.substr(5);  // "radio0" → "phy0"
+        return exec("basename $(readlink /sys/class/ieee80211/" + phy + "/device/driver) 2>/dev/null | tr -d '\\n'");
+    }
 
     string ExternalConn::exec(const string& cmd, int* ret_code) const {
         if (!session) throw ex_conn_err("Cannot exec: not connected");
 
         const struct ChannelGuard {
             ssh_channel ch;
-            explicit ChannelGuard(ssh_session s) : ch(ssh_channel_new(s)) {}
+            explicit ChannelGuard(const ssh_session s) : ch(ssh_channel_new(s)) {}
             ~ChannelGuard() { if (ch) { ssh_channel_send_eof(ch); ssh_channel_close(ch); ssh_channel_free(ch); } }
         } guard(session);
 
         if (!guard.ch) throw ex_conn_err("Failed to create SSH channel");
-        if (ssh_channel_open_session(guard.ch) != SSH_OK)
-            throw ex_conn_err("Failed to open SSH channel");
-        if (ssh_channel_request_exec(guard.ch, cmd.c_str()) != SSH_OK)
-            throw ex_conn_err("Failed to execute: " + cmd);
+        if (ssh_channel_open_session(guard.ch) != SSH_OK) throw ex_conn_err("Failed to open SSH channel");
+        if (ssh_channel_request_exec(guard.ch, cmd.c_str()) != SSH_OK) throw ex_conn_err("Failed to execute: " + cmd);
 
         string result;
         char buf[1024];
@@ -105,7 +100,7 @@ namespace wpa3_tester{
     void ExternalConn::create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const{
         //FIXME quiet fallback, check before if possible
         const string add_cmd = "iw dev " + iface + " interface add " + sniff_iface + " type monitor flags fcsfail otherbss"
-                             + " || iw dev " + iface + " interface add " + sniff_iface + " type monitor";
+                               + " || iw dev " + iface + " interface add " + sniff_iface + " type monitor";
         exec(add_cmd);
         exec("ip link set " + sniff_iface + " up");
     }
@@ -127,12 +122,9 @@ namespace wpa3_tester{
         exec("iw dev " + iface + " set type managed");
         exec("ip link set " + iface + " up");
     }
-
-    string ExternalConn::get_mac_address(const string &iface) const{
-        return exec("cat /sys/class/net/" + iface + "/address 2>/dev/null | tr -d '\\n'");
-    }
-
-    std::string ExternalConn::get_driver(const std::string &iface) const{
-        return exec("basename $(readlink /sys/class/net/" + iface + "/device/driver) 2>/dev/null | tr -d '\\n'");
+    void ExternalConn::set_ip(const std::string &iface, const std::string &ip_addr) const {
+        exec("ip addr flush dev " + iface);
+        exec("ip addr add " + ip_addr + "/24 dev " + iface);
+        exec("ip link set " + iface + " up");
     }
 }

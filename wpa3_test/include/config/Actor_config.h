@@ -30,6 +30,7 @@ namespace wpa3_tester{
             {"netns",          std::nullopt},
             {"sniff_iface",    std::nullopt},
             // external whitebox only
+            {"radio",          std::nullopt}, // same like phy for this project
             {"whitebox_host",  std::nullopt},
             {"whitebox_ip",    std::nullopt},
             {"ssh_user",       std::nullopt},
@@ -68,8 +69,8 @@ namespace wpa3_tester{
         void set_channel(int channel) const;
         void set_managed_mode() const;
         void set_monitor_mode() const;
-
         void setup_actor(const nlohmann::json& config, const ActorPtr &real_actor);
+
     private:
         void setup_actor_internal(const nlohmann::json &config, const ActorPtr &real_actor);
         void setup_actor_external_whitebox(const nlohmann::json & config, const ActorPtr &real_actor);

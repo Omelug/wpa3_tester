@@ -50,7 +50,7 @@ int main() {
     }
 
     auto& selected_actor = actors[selected_idx];
-    ExternalConn* conn_raw = new OpenWrtConn(selected_actor.get());
+    ExternalConn* conn_raw = new OpenWrtConn();
     shared_ptr<ExternalConn> conn_ex(conn_raw);
     selected_actor->conn = std::move(conn_ex);
 
@@ -84,7 +84,7 @@ int main() {
         if (cpuinfo.empty()) {cpuinfo = conn->exec("cat /proc/cpuinfo | head -n 10");}
         cout << cpuinfo;
         cout << "\n--- Network Interfaces ---" << endl;
-        cout << conn->get_interfaces();
+        cout << conn->get_radio_list();
         cout << "\n--- WiFi Status ---" << endl;
         try {
             cout << conn->get_wifi_status();

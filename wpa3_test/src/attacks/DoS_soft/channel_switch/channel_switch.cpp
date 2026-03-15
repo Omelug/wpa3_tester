@@ -74,7 +74,7 @@ namespace wpa3_tester::CSA_attack{
     void speed_observation_start(RunStatus& rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
         observer::start_tshark(rs, "client", "udp port 5201");
-        observer::start_tshark(rs, "access_point", "udp port 5201");
+        //TODO tcpddump observer::start_tshark(rs, "access_point", "udp port 5201");
     }
 
     void setup_AP(RunStatus& rs,const string& actor_name){
@@ -85,9 +85,9 @@ namespace wpa3_tester::CSA_attack{
         }else{
             // -------- hostapd AP ------------
             hostapd::run_hostapd(rs, actor_name);
-            rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
-            log(LogLevel::INFO, actor_name+" is running");
         }
+        rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
+        log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
     };
 
@@ -120,6 +120,7 @@ namespace wpa3_tester::CSA_attack{
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
+        //TODO  essid a channel tahat z reálného actor
         const string essid     = ap_setup.at("program_config").at("ssid");
         const int old_channel  = ap_setup.at("program_config").at("channel");
         const int new_channel  = att_cfg.at("new_channel");

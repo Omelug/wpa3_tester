@@ -13,12 +13,13 @@ actors:
       program_config:
         validator: ../../validator/programs/openwrt.schema.yaml
         ssid: OpenWrt
-        channel: 6
+        channel: 36
         key: password123
         proto: RSN
         encryption: sae-mixed
         mode: ap
         htmode: HT20
+      channel: 36
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:

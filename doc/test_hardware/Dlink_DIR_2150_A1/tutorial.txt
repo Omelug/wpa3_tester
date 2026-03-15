@@ -32,3 +32,6 @@ openwrt:
     uci set network.lan.dns=8.8.8.8
     uci commit network
     /etc/init.d/network restart
+
+
+firstboot -y && reboot

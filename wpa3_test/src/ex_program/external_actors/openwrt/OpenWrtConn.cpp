@@ -95,6 +95,7 @@ namespace wpa3_tester {
 
         // wait for ifname and store in actor
         actor->str_con["iface"] = wait_for_ifname(section);
+        actor->str_con["mac"] = get_mac_address(actor->str_con["iface"].value());
         actor->str_con["radio"] = radio_name;
     }
 
@@ -130,29 +131,18 @@ namespace wpa3_tester {
     auto OpenWrtConn::set_ip(const std::string &iface, const std::string &ip_addr) const -> void {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
-        string network_section;
-        for (const auto& [radio_name, radio] : j.items()) {
-            for (const auto& wifi_iface : radio.at("interfaces")) {
-                if (wifi_iface.value("ifname", "") == iface) {
-                    network_section = wifi_iface.at("config").at("network")[0].get<string>();
-                    break;
-                }
-            }
-            if (!network_section.empty()) break;
-        }
-
-        if (network_section.empty()) throw ex_conn_err("No network section for iface: " + iface);
-
-        // ensure wpa3_tester network section exists
         string iface_safe = iface;
         ranges::replace(iface_safe, '-', '_');
         const string wpa3_section = "wpa3_tester_" + iface_safe;
+
+        // vždy vytvoř/přepiš wpa3_tester sekci — nikdy nemeň lan
         int rc;
         exec("uci get network." + wpa3_section + " 2>/dev/null", &rc);
         if (rc != 0) {
             exec("uci set network." + wpa3_section + "=interface");
             exec("uci set network." + wpa3_section + ".proto=static");
-            // redirect wifi-iface to wpa3_tester section
+
+            //  disconnect from , připoj k wpa3_section
             for (const auto& [radio_name, radio] : j.items()) {
                 for (const auto& wifi_iface : radio.at("interfaces")) {
                     if (wifi_iface.value("ifname", "") == iface) {
@@ -162,11 +152,10 @@ namespace wpa3_tester {
                 }
             }
             exec("uci commit wireless");
-            network_section = wpa3_section;
         }
 
-        exec("uci set network." + network_section + ".ipaddr=" + ip_addr);
-        exec("uci set network." + network_section + ".netmask=255.255.255.0");
+        exec("uci set network." + wpa3_section + ".ipaddr=" + ip_addr);
+        exec("uci set network." + wpa3_section + ".netmask=255.255.255.0");
         exec("uci commit network");
         exec("/etc/init.d/network restart");
     }

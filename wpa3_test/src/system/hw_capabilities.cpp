@@ -23,7 +23,7 @@ namespace wpa3_tester{
         const string path = "/sys/class/net/" + iface + "/" + file;
 
         ifstream ifs(path);
-        if(!ifs.is_open()){ throw config_error("Cant find %s", path.c_str());}
+        if(!ifs.is_open()){ return "phy not found";}
 
         string content;
         getline(ifs, content);
@@ -43,6 +43,10 @@ namespace wpa3_tester{
         throw config_error("Driver check error: not found valid symlink"); ;
     }
 
+    string hw_capabilities::get_phy(const string &iface){
+        return read_sysfs(iface, "phy80211");
+    }
+
     int get_interface_arphrd_type(const filesystem::path& iface_path) {
         std::ifstream file(iface_path / "type");
         int type = 0;
@@ -56,20 +60,20 @@ namespace wpa3_tester{
 
         if(!exists(net_path)) return result;
         for(const auto &entry: filesystem::directory_iterator(net_path)){
-            std::string name = entry.path().filename().string();
+            std::string iface = entry.path().filename().string();
 
             auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", std::vector<std::string>{});
 
-            if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(name)){
-                log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", name.c_str());
+            if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
+                log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", iface.c_str());
                 continue;
             }
 
             auto type = InterfaceType::Unknown;
-            if(name == "lo"){
+            if(iface == "lo"){
                 type = InterfaceType::Loopback;  // Loopback ('lo')
             }else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
-                if(name.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
+                if(iface.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
                     type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
                 }else{
                     type = InterfaceType::Wifi;   // wireless Wi-Fi
@@ -79,12 +83,13 @@ namespace wpa3_tester{
                 type = InterfaceType::DockerBridge;  // Docker Bridge ('bridge')
             }else if(filesystem::exists(entry.path() / "tun_flags")){
                 type = InterfaceType::VPN; // VPN / TUN (tun_flags)
-            } else if(name.find("veth") == 0){
+            } else if(iface.find("veth") == 0){
                 type = InterfaceType::VirtualVeth; // virtual veth docker container etc)
             } else if(filesystem::exists(entry.path() / "device")){
                 type = InterfaceType::Ethernet; // Wire ethernet
             }
-            result.push_back({name, type});
+            const string radio = get_phy(iface);
+            result.push_back({iface, radio,type});
         }
         return result;
     }

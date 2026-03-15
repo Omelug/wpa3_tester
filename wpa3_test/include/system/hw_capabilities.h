@@ -20,6 +20,7 @@ namespace wpa3_tester{
 
     struct InterfaceInfo {
         std::string name;
+        std::string radio; // phyX
         InterfaceType type;
     };
 
@@ -94,6 +95,7 @@ namespace wpa3_tester{
         // check availability
         static std::string read_sysfs(const std::string& iface, const std::string& file);
         static std::string get_driver_name(const std::string& iface);
+        static std::string get_phy(const std::string &iface);
 
         //format
         static int channel_to_freq_mhz(int channel);

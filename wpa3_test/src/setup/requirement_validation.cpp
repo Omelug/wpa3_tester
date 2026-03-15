@@ -170,8 +170,9 @@ namespace wpa3_tester{
             actor->setup_actor(config, opt_actor);
         }
 
-        for (auto &[actor_name, actor] : external_wb_actors) {
-            auto& opt_actor = options_external.at(external_mapping.at(actor_name));
+        for (auto &[radio_name, actor] : external_wb_actors) {
+            //FIXME, tohle udělat tak, aby to šlo bez klíčů (aby radio_name nemuselo být unikátní)
+            auto& opt_actor = options_external.at(external_mapping.at(radio_name));
             actor->setup_actor(config, opt_actor);
         }
 

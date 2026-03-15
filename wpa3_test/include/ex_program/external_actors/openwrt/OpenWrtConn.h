@@ -9,7 +9,8 @@ namespace wpa3_tester {
         // --- device functions
         void forward_internet(const std::string &remote_ip) const;
         void time_fix() const;
-        void check_req(const RunStatus &rs, const std::string &actor_name) const;
+        void check_req(const nlohmann::json &config, const std::string &actor_name);
+        void check_req(const nlohmann::json &config, const std::string &actor_name) const;
         std::string wait_for_ifname(const std::string &section, int retries = 10) const;
 
     public:
@@ -26,5 +27,6 @@ namespace wpa3_tester {
         std::string get_wifi_iface_index(const std::string &radio) const;
         std::string get_wifi_iface_section(const std::string &iface) const;
         void setup_ap(const RunStatus &rs, const ActorPtr &actor) override;
+        void logger(RunStatus& rs, const std::string & actor_name) override;
     };
 }

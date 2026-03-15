@@ -19,7 +19,7 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-        # req_programs: [ tcpdump ]
+      req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
     type: STA

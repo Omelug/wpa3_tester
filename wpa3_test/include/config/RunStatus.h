@@ -68,7 +68,7 @@ namespace wpa3_tester{
 
         // to scan available interfaces
         static ActorCMap internal_options();
-        static void add_actors_by_iface(ActorCMap & pairs, const ActorPtr & cfg);
+        static void add_actors_by_radio(ActorCMap & pairs, const ActorPtr & cfg);
         ActorCMap external_wb_options() const;
         static ActorCMap external_bb_options();
         ActorCMap create_simulation();

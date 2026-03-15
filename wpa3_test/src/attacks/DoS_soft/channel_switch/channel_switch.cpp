@@ -80,6 +80,7 @@ namespace wpa3_tester::CSA_attack{
     void setup_AP(RunStatus& rs,const string& actor_name){
         const auto ap_actor = rs.get_actor(actor_name);
         if(ap_actor->conn != nullptr){
+            ap_actor->conn.get()->logger(rs, actor_name);
             ap_actor->conn.get()->setup_ap(rs, ap_actor);
         }else{
             // -------- hostapd AP ------------

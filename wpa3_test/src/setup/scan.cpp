@@ -22,27 +22,29 @@ namespace wpa3_tester{
     // return <string iface; internal_actor >
     ActorCMap RunStatus::internal_options(){
         ActorCMap options_map;
-        for (const auto& [iface_name, iface_type] : hw_capabilities::list_interfaces()) {
+        for (const auto& [iface_name, radio_name, iface_type] : hw_capabilities::list_interfaces()) {
             if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
             auto cfg = make_unique<Actor_config>();
             cfg->str_con["iface"] = iface_name;
             cfg->str_con["source"] = "internal";
+            cfg->str_con["radio"] = radio_name;
             hw_capabilities::get_nl80211_caps(iface_name, *cfg);
             options_map.emplace(iface_name, std::move(cfg));
         }
         return options_map;
     }
 
-    void RunStatus::add_actors_by_iface(ActorCMap &pairs, const ActorPtr &cfg){
+    void RunStatus::add_actors_by_radio(ActorCMap &pairs, const ActorPtr &cfg){
         //cfg->conn->ensure_wifi_ifaces();
         const vector<string> radios = cfg->conn->get_radio_list();
-        for (const string& iface : radios) {
+        for (const string& radio_name : radios) {
             auto actor_cfg = make_shared<Actor_config>(*cfg);
             //actor_cfg->str_con["iface"] = iface;
             //actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
-            actor_cfg->str_con["driver"] = cfg->conn->get_driver(iface);
+            actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
+            actor_cfg->str_con["radio"] = radio_name;
 
-            const string key = actor_cfg->str_con.at("mac").value_or(iface);
+            const string key = actor_cfg->str_con.at("radio").value();
             pairs.emplace(key, std::move(actor_cfg));
         }
     }
@@ -233,7 +235,7 @@ namespace wpa3_tester{
         return result;
     }
 
-    // return <string MAC; external_actor >
+    // return <string radio_name; external_actor >
     ActorCMap RunStatus::external_wb_options() const{
         ActorCMap options_map;
 
@@ -252,7 +254,7 @@ namespace wpa3_tester{
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");continue;}
 
             get_or_create_connection(cfg);
-            add_actors_by_iface(options_map, cfg);
+            add_actors_by_radio(options_map, cfg);
         }
         return options_map;
     }

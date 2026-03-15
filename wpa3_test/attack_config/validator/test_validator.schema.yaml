@@ -107,6 +107,9 @@ definitions:
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
+          req_programs:
+            type: array
+            description: Array of program names what has to be installed
       selection:
         type: object
         additionalProperties: false

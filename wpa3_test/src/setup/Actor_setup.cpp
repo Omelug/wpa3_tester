@@ -17,6 +17,17 @@ namespace wpa3_tester{
         if(internal){
             str_con["mac"] = real_actor->str_con.at("mac");
             str_con["iface"] = real_actor->str_con.at("iface");
+            str_con["radio"] = real_actor->str_con.at("radio");
+        }
+        if(external_WB){
+            str_con["whitebox_host"] = real_actor->str_con.at("whitebox_host");
+            str_con["whitebox_ip"] = real_actor->str_con.at("whitebox_ip");
+            str_con["ssh_user"] = real_actor->str_con.at("ssh_user");
+            str_con["ssh_port"] = real_actor->str_con.at("ssh_port");
+            str_con["ssh_password"] = real_actor->str_con.at("ssh_password");
+            str_con["external_OS"] = real_actor->str_con.at("external_OS");
+            const auto radio = real_actor->str_con["radio"].value();
+            conn->setup_iface(radio, shared_from_this());
         }
 
         if(internal) setup_actor_internal(config, real_actor);
@@ -25,10 +36,6 @@ namespace wpa3_tester{
             auto actor_json = config.at("actors").at(str_con["actor_name"].value());
             const bool monitor = bool_conditions.at("monitor").value_or(false);
             const bool injection = bool_conditions.at("injection").value_or(false);
-
-            if(external_WB){
-                conn->setup_iface(str_con["radio"].value(), std::shared_ptr<Actor_config>(this));
-            }
 
             if (bool_conditions.at("AP").value_or(false)){set_managed_mode();}
             if (actor_json.contains("channel")) {set_channel(actor_json.at("channel"));}
@@ -52,6 +59,7 @@ namespace wpa3_tester{
     void Actor_config::setup_actor_external_whitebox(const nlohmann::json& config, const ActorPtr &real_actor){
         auto actor_json = config.at("actors").at(str_con["actor_name"].value());
         //this->cleanup();
+        real_actor->conn->check_req(config, str_con["actor_name"].value());
     }
 
 

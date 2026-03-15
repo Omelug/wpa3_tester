@@ -14,7 +14,7 @@
 namespace wpa3_tester::ip{
     using namespace std;
     void set_ip(RunStatus& run_status, const string &actor_name){
-        auto ip_addr = run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>();
+        const auto ip_addr = run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>();
         const auto actor = run_status.get_actor(actor_name);
         if(actor.get()->conn != nullptr){
             run_status.get_actor(actor_name).get()->conn->set_ip(actor["iface"],ip_addr);

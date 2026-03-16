@@ -42,10 +42,7 @@ namespace wpa3_tester{
             //actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
             actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
             actor_cfg->str_con["radio"] = radio_name;
-
-            //TODO add boolen checks
-            //actor_cfg->bool_conditions[""] = ;
-
+            cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
             options.push_back(ActorPtr(actor_cfg));
         }
     }

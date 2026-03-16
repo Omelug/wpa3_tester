@@ -181,7 +181,7 @@ namespace wpa3_tester::CSA_attack{
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);
-        generate_report(rs, STA_graph_path, AP_graph_path);
+        //const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);
+        //generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

@@ -7,19 +7,19 @@ actors:
     source: external
     selection:
       whitebox_host: OpenWrt
-      condition: [AP]
+      condition: [AP, 2_4GHz]
     setup:
       program: openwrt
       program_config:
         validator: ../../validator/programs/openwrt.schema.yaml
         ssid: OpenWrt
-        channel: 36
+        channel: 6
         key: password123
         proto: RSN
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-      channel: 36
+      channel: 6
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
@@ -36,7 +36,7 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-    channel: 1
+    channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:

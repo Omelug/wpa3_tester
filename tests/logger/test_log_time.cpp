@@ -112,3 +112,5 @@ TEST_CASE("get_time_logs - missing log file returns empty") {
     CHECK(times.empty());
 }
 
+
+

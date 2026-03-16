@@ -22,7 +22,7 @@ namespace wpa3_tester{
         const string path = "/sys/class/net/" + iface + "/" + file;
 
         ifstream ifs(path);
-        if(!ifs.is_open()){ return "phy not found";}
+        if(!ifs.is_open()){ throw config_err("read_sysfs failed");}
 
         string content;
         getline(ifs, content);
@@ -42,8 +42,10 @@ namespace wpa3_tester{
         throw config_err("Driver check error: not found valid symlink"); ;
     }
 
-    string hw_capabilities::get_phy(const string &iface){
-        return read_sysfs(iface, "phy80211");
+    string hw_capabilities::get_phy(const string &iface) {
+        const filesystem::path link = "/sys/class/net/" + iface + "/phy80211";
+        if (!filesystem::exists(link)) return "";
+        return filesystem::read_symlink(link).filename().string();
     }
 
     int get_interface_arphrd_type(const filesystem::path& iface_path) {
@@ -120,7 +122,7 @@ namespace wpa3_tester{
             if (!currentRuleReq.matches(*options[i])) continue;
 
             usedOptions.insert(i);
-            currentAssignment.insert_or_assign(actor_name, ruleIt->second);
+            currentAssignment.insert_or_assign(actor_name, options[i]);
 
             if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) return true;
 

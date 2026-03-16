@@ -67,8 +67,6 @@ namespace wpa3_tester::hostapd{
         }
 
         // wpa_supplicant.conf
-        const auto ssid       = client_setup.at("ssid").get<string>();
-        const auto passphrase = client_setup.at("psk").get<string>();
 
         out << "network={" << '\n';
         // write config

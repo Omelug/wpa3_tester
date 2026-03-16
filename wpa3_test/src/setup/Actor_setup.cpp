@@ -48,7 +48,8 @@ namespace wpa3_tester{
     }
 
     void Actor_config::setup_actor_internal(const nlohmann::json& config, const ActorPtr &real_actor){
-        auto actor_json = config.at("actors").at(str_con.at("actor_name").value());
+        const auto actor_name = str_con.at("actor_name").value();
+        auto actor_json = config.at("actors").at(actor_name);
         if (actor_json.contains("netns")) {
             str_con["netns"] = actor_json.at("netns").get<string>();
             hw_capabilities::create_ns(str_con.at("netns").value());

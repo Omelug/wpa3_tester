@@ -155,7 +155,7 @@ namespace wpa3_tester{
         // ------------------ EXTERNAL BLACKBOX ---------------------------
 
         // ---------------- SIMULATIONS -------------------------
-        // TODO: simulation -> check hw compatibility
+        // simulation -> check hw compatibility
         //ActorCMap options_simulation =  create_simulation();
         // check if possible with simulation
         // create simulation
@@ -167,7 +167,6 @@ namespace wpa3_tester{
         }
 
         for (auto &[actor_name, actor] : external_wb_actors) {
-            //FIXME, tohle udělat tak, aby to šlo bez klíčů (aby radio_name nemuselo být unikátní)
             auto& opt_actor = external_wb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);
         }

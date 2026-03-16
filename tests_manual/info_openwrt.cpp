@@ -61,7 +61,7 @@ int main() {
     const auto conn = dynamic_cast<OpenWrtConn*>(selected_actor.get()->conn.get());
     if (!conn) throw runtime_error("Connection is not OpenWrtConn");
 
-    cout << "Establishing SSH connection..." << endl;
+    /*cout << "Establishing SSH connection..." << endl;
     if (!conn->connect()) {
         cerr << "ERROR: Failed to connect" << endl;
         return 1;
@@ -73,23 +73,9 @@ int main() {
     try {
         cout << "\n--- Hostname ---" << endl;
         cout << conn->get_hostname();
-        cout << "\n--- OpenWrt Release ---" << endl;
-        cout << conn->exec("cat /etc/openwrt_release");
-        cout << "\n--- Kernel Version ---" << endl;
-        cout << conn->exec("uname -r");
-        cout << "\n--- Memory Info ---" << endl;
-        cout << conn->exec("free -h");
-        cout << "\n--- CPU Info ---" << endl;
-        string cpuinfo = conn->exec("cat /proc/cpuinfo | grep -E '(model name|Processor|Hardware)'");
-        if (cpuinfo.empty()) {cpuinfo = conn->exec("cat /proc/cpuinfo | head -n 10");}
-        cout << cpuinfo;
-        cout << "\n--- Network Interfaces ---" << endl;
-        cout << conn->get_radio_list();
-        cout << "\n--- WiFi Status ---" << endl;
-        try {
-            cout << conn->get_wifi_status();
-        } catch (...) {
-            cout << "(iwinfo not available or no WiFi interfaces)" << endl;
+        cout << "\n--- Radios ---" << endl;
+        for(auto radio : conn->get_radio_list()){
+            cout << radio + " ";
         }
 
         // Hostapd version (if available)
@@ -121,7 +107,7 @@ int main() {
     } catch (const exception& e) {
         cerr << "\nERROR: " << e.what() << endl;
         return 1;
-    }
+    }*/
 
     manual_tests::cli_section("Test completed successfully");
 

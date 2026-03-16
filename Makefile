@@ -63,4 +63,5 @@ test_manual_build:
 	cmake --build $(BUILD_DIR) --target \
 		test_list_external_entities \
 		test_info_openwrt \
+		test_manual_channel_switch \
 		-j $(shell nproc)

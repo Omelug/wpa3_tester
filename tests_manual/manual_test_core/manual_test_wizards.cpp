@@ -30,7 +30,7 @@ namespace wpa3_tester::manual_tests {
         cout << string(45, '-') << "\n";
 
         int index = 1;
-        for (const auto& [iface_name, iface_type] : interfaces) {
+        for (const auto& [iface_name, radio_name, iface_type] : interfaces) {
             if (iface_type == InterfaceType::Wifi ||
                 iface_type == InterfaceType::WifiVirtualMon) {
                 cout << left << setw(5) << index

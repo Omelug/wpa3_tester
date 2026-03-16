@@ -25,7 +25,7 @@ namespace wpa3_tester {
     void OpenWrtConn::time_fix() const{
         exec("/etc/init.d/sysntpd stop");
         int ret = 0;
-        exec("ntpd -q -n -p 0.openwrt.pool.ntp.org", &ret);
+        exec("ntpd -q -n -p 0.openwrt.pool.ntp.org", false, &ret);
         if (ret != 0) throw ex_conn_err("Failed to sync time with NTP");
         exec("/etc/init.d/sysntpd start");
     }
@@ -38,7 +38,7 @@ namespace wpa3_tester {
         auto req_programs = setup_node.at("req_programs");
         for (const auto& program_name : req_programs) {
             int ret = 0;
-            exec("opkg install " + program_name.get<string>(), &ret);
+            exec("opkg install " + program_name.get<string>(), false, &ret);
             if(ret){throw config_err("Cannot install " + program_name.get<string>() + ", try opkg update");}
         }
     }

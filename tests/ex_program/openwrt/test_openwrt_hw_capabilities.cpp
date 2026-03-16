@@ -18,7 +18,7 @@ class MockOpenWrtConn : public OpenWrtConn {
 public:
     mutable int mock_ret = 0;
     mutable std::string mock_output = "";
-    std::string exec(const std::string &cmd, int * ret_err = nullptr) const{
+    std::string exec(const std::string &cmd,bool kill_on_exit = false, int * ret_err = nullptr) const override{
         if (ret_err) *ret_err = mock_ret;
         return mock_output;
     }

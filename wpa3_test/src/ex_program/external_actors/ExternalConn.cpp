@@ -57,7 +57,7 @@ namespace wpa3_tester{
     string ExternalConn::get_hostname(){ return exec("uname -n"); }
 
     vector<string> ExternalConn::get_radio_list() {
-        throw not_implemented_error("not default get_interface function");
+        throw not_implemented_err("not default get_interface function");
     }
 
     string ExternalConn::get_mac_address(const string &iface) const{

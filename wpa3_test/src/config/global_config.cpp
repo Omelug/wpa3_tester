@@ -17,7 +17,7 @@ namespace wpa3_tester {
             try {
                 const path global_config_file = path(PROJECT_ROOT_DIR) / "attack_config" / "global_config.yaml";
                 if (!exists(global_config_file)) {
-                    throw config_error("Global paths configuration file not found: " + global_config_file.string());
+                    throw config_err("Global paths configuration file not found: " + global_config_file.string());
                 }
 
                 const YAML::Node yaml_node = YAML::LoadFile(global_config_file.string());
@@ -25,9 +25,9 @@ namespace wpa3_tester {
                 loaded = true;
 
             } catch (const YAML::Exception& e) {
-                throw config_error(string("Failed to parse global_config.yaml: ") + e.what());
+                throw config_err(string("Failed to parse global_config.yaml: ") + e.what());
             } catch (const exception& e) {
-                throw config_error(string("Failed to load global_config.yaml: ") + e.what());
+                throw config_err(string("Failed to load global_config.yaml: ") + e.what());
             }
         }
         return global_config_cache;

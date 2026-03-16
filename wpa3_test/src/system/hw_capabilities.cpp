@@ -38,9 +38,9 @@ namespace wpa3_tester{
                 return filesystem::read_symlink(path).filename().string();
             }
         } catch(const filesystem::filesystem_error &e){
-            throw config_error("Driver check error: %s", e.what());
+            throw config_err("Driver check error: %s", e.what());
         }
-        throw config_error("Driver check error: not found valid symlink"); ;
+        throw config_err("Driver check error: not found valid symlink"); ;
     }
 
     string hw_capabilities::get_phy(const string &iface){
@@ -110,7 +110,7 @@ namespace wpa3_tester{
         const string &currentRuleKey = ruleKeys[ruleIdx];
         const auto &ruleIt = rules.find(currentRuleKey);
         if(ruleIt == rules.end() /*|| !ruleIt->second*/){
-            throw config_error("Missing rule actor config for key: %s", currentRuleKey.c_str());
+            throw config_err("Missing rule actor config for key: %s", currentRuleKey.c_str());
         }
         Actor_config &currentRuleReq = *ruleIt->second;
 
@@ -149,7 +149,7 @@ namespace wpa3_tester{
         Actor_config::print_ActorCMap("Actor rules", rules);
         Actor_config::print_ActorCMap("Actor options", options);
 
-        throw req_error("Not found valid requirements");
+        throw req_err("Not found valid requirements");
     }
 
 
@@ -242,7 +242,7 @@ namespace wpa3_tester{
             case 161: return 5805;
             case 165: return 5825;
             default:
-                throw config_error("Unknown Wi-Fi channel %d, using 0 MHz", channel);
+                throw config_err("Unknown Wi-Fi channel %d, using 0 MHz", channel);
         }
     }
 

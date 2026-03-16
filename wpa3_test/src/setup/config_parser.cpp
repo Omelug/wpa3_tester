@@ -68,7 +68,7 @@ namespace wpa3_tester{
         const string parent_path_str = parent_path.string();
 
         if (ranges::find(hierarchy, parent_path_str) != hierarchy.end()) {
-            throw config_error("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
+            throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
         }
 
         hierarchy.push_back(parent_path_str);
@@ -135,11 +135,11 @@ namespace wpa3_tester{
             return config_json;
 
         } catch (const domain_error &e) {
-            throw config_error(string("Schema error: ") + e.what());
+            throw config_err(string("Schema error: ") + e.what());
         } catch (const invalid_argument &e) {
-            throw config_error(string("Error in config: ") + e.what());
+            throw config_err(string("Error in config: ") + e.what());
         } catch (const exception& e) {
-            throw config_error(string("Config validation error: ") + e.what());
+            throw config_err(string("Config validation error: ") + e.what());
         }
     }
 

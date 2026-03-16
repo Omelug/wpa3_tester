@@ -190,9 +190,9 @@ namespace wpa3_tester{
         }
 
         ifstream file(conn_table);
-        if (!file.is_open()) { throw scan_error("Failed to open connection table: %s", conn_table.string().c_str());}
+        if (!file.is_open()) { throw scan_err("Failed to open connection table: %s", conn_table.string().c_str());}
         string line;
-        if (!getline(file, line)) {throw scan_error("Empty connection table: " + conn_table.string());}
+        if (!getline(file, line)) {throw scan_err("Empty connection table: " + conn_table.string());}
 
         // Parse header
         vector<string> headers = parse_csv_line(line);
@@ -201,7 +201,7 @@ namespace wpa3_tester{
 
         // required columns
         if (!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")) {
-            throw scan_error("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
+            throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
                 conn_table.string().c_str());
         }
 
@@ -275,7 +275,7 @@ namespace wpa3_tester{
     }
 
     ActorCMap create_simulation(){
-        throw not_implemented_error("simulation hwsim not implemented");
+        throw not_implemented_err("simulation hwsim not implemented");
     }
 
 }

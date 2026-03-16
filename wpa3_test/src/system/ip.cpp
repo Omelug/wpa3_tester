@@ -77,7 +77,7 @@ namespace wpa3_tester::ip{
         const string out = hw_capabilities::run_cmd_output({"arp", "-n", ip});
         smatch match;
         if (!regex_search(out, match, regex(R"(([0-9a-f]{2}(?::[0-9a-f]{2}){5}))")))
-            throw scan_error("Cannot get MAC for IP: " + ip);
+            throw scan_err("Cannot get MAC for IP: " + ip);
         return match[1].str();
     }
 }

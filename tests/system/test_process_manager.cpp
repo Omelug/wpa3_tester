@@ -165,7 +165,7 @@ namespace wpa3_tester {
 
             pm.allow_history("sleep_test");
 
-            CHECK_THROWS_AS(pm.wait_for("sleep_test", "never_appears", 2s), wait_for_timeout);
+            CHECK_THROWS_AS(pm.wait_for("sleep_test", "never_appears", 2s), timeout_err);
             pm.stop("sleep_test");
         }
 
@@ -176,7 +176,7 @@ namespace wpa3_tester {
             pm.allow_history("short_timeout");
 
             auto start = chrono::steady_clock::now();
-            CHECK_THROWS_AS(pm.wait_for("short_timeout", "not_found", 1s), wait_for_timeout);
+            CHECK_THROWS_AS(pm.wait_for("short_timeout", "not_found", 1s), timeout_err);
             auto duration = chrono::steady_clock::now() - start;
 
             CHECK((duration >= 1s));

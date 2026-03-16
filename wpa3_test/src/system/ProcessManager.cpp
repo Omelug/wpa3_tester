@@ -235,7 +235,7 @@ namespace wpa3_tester{
             if (!matched) {
                 lock_guard log_lock(mtx_);
                 logs.wait.active = false;
-                throw wait_for_timeout(
+                throw timeout_err(
                     "Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
                     pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
             }

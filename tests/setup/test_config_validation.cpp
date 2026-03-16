@@ -35,7 +35,7 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
                 INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
                 CHECK((rs.config == expected_json));
             } else {
-                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_error);
+                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_err);
             }
         }
     }

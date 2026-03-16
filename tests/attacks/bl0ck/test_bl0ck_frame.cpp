@@ -10,6 +10,7 @@ using namespace Tins;
 using namespace filesystem;
 
 namespace wpa3_tester {
+    //TODO rewrite test
     /*TEST_CASE("send_bl0ck_frame - creates and saves BAR frames to pcap") {
         // Setup test parameters
         const string test_iface = "lo";  // Use loopback for testing
@@ -44,7 +45,6 @@ namespace wpa3_tester {
             CHECK((dot11->subtype() == subtype));
             CHECK((dot11->addr1() == ap_mac));
 
-            //TODO other checks
         }
         log(LogLevel::INFO, ("PCAP file preserved for inspection:" + pcap_file.string()).c_str());
     }*/

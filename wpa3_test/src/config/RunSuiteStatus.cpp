@@ -16,12 +16,12 @@ namespace wpa3_tester{
 
     RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
         this->config_path = config_path;
-        if(!exists(config_path)){throw config_error("Config not found: %s", config_path.c_str());}
+        if(!exists(config_path)){throw config_err("Config not found: %s", config_path.c_str());}
 
         if(suite_name.empty()){
             const YNode node = YAML::LoadFile(config_path);
             if(!node["name"] || !node["name"].IsScalar())
-                throw config_error("Config missing required string field 'name': %s", config_path.c_str());
+                throw config_err("Config missing required string field 'name': %s", config_path.c_str());
             suite_name = node["name"].as<string>();
         }
 
@@ -49,11 +49,11 @@ namespace wpa3_tester{
             return config_json;
 
         } catch (const domain_error &e) {
-            throw config_error(string("Schema error: ") + e.what());
+            throw config_err(string("Schema error: ") + e.what());
         } catch (const invalid_argument &e) {
-            throw config_error(string("Error in config: ") + e.what());
+            throw config_err(string("Error in config: ") + e.what());
         } catch (const exception& e) {
-            throw config_error(string("Config validation error: ") + e.what());
+            throw config_err(string("Config validation error: ") + e.what());
         }
     }
     void replace_all(string& str, const string& from, const string& to) {
@@ -169,7 +169,7 @@ namespace wpa3_tester{
     string RunSuiteStatus::findConfigByTestSuiteName(const string &name){
         auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
         if (tests.contains(name)) {return tests[name];}
-        throw config_error("Unknown test suite name: %s", name.c_str());
+        throw config_err("Unknown test suite name: %s", name.c_str());
     }
 
     void RunSuiteStatus::print_test_suite_list() {
@@ -194,7 +194,7 @@ namespace wpa3_tester{
             if (first) {
                 length = value.size(); first = false;
             } else if (value.size() != length) {
-                throw config_error("All vars lists must have the same length (error in '" + key + "')");
+                throw config_err("All vars lists must have the same length (error in '" + key + "')");
             }
         }
         return length;

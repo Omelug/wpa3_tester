@@ -149,10 +149,10 @@ TEST_CASE("Actor_config - operator[] accessor") {
     CHECK(actor["iface"] == "wlan0");
 
     // Missing key should throw
-    CHECK_THROWS_AS(actor["driver"], config_error);
+    CHECK_THROWS_AS(actor["driver"], config_err);
 
     // Key exists but has no value should throw
-    CHECK_THROWS_AS(actor["mac"], config_error);
+    CHECK_THROWS_AS(actor["mac"], config_err);
 }
 
 TEST_CASE("Actor_config - operator+=complex") {

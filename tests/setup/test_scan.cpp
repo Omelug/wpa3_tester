@@ -64,7 +64,7 @@ TEST_CASE("get_actors_conn_table - error cases") {
         out << "whitebox_ip,external_OS\n";
         out << "192.168.1.1,OpenWrt\n";
         out.close();
-        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_error);
+        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_err);
         remove(test_file);
     }
 
@@ -73,14 +73,14 @@ TEST_CASE("get_actors_conn_table - error cases") {
         out << "whitebox_host,external_OS\n";
         out << "router1,OpenWrt\n";
         out.close();
-        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_error);
+        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_err);
         remove(test_file);
     }
 
     SUBCASE("Empty file throws") {
         ofstream out(test_file);
         out.close();
-        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_error);
+        CHECK_THROWS_AS(scan::get_actors_conn_table(test_file), config_err);
         remove(test_file);
     }
 }

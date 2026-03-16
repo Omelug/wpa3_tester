@@ -54,17 +54,17 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
     try{
         program.parse_args(argc, argv);
     } catch(const runtime_error &err){
-        throw config_error(err.what());
+        throw config_err(err.what());
     }
 
 
     //checks //TODO rozšířit
     if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
-        throw config_error("Cant use both lists");
+        throw config_err("Cant use both lists");
     if(2 <= (program.present<string>("--test").has_value() +
             program.present<string>("--test_suite").has_value() +
             program.present<string>("--config").has_value()))
-        throw config_error("Can't combinate  test/test_suite/config");
+        throw config_err("Can't combinate  test/test_suite/config");
 
 }
 

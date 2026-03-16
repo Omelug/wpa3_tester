@@ -28,13 +28,13 @@ namespace wpa3_tester{
 
     RunStatus::RunStatus(const std::string &config_path, string testName){
         this->config_path = config_path;
-        if(!exists(config_path)){throw config_error("Config not found: %s", config_path.c_str());}
+        if(!exists(config_path)){throw config_err("Config not found: %s", config_path.c_str());}
 
         if(testName.empty()){
             // load name from YAML if not name set
             const YAML::Node node = YAML::LoadFile(config_path);
             if (!node["name"] || !node["name"].IsScalar()){
-                throw config_error("Config missing required string field 'name': %s", config_path.c_str());
+                throw config_err("Config missing required string field 'name': %s", config_path.c_str());
             }
             testName = node["name"].as<string>();
         }
@@ -85,11 +85,11 @@ namespace wpa3_tester{
         if(actor["external_OS"] == "openwrt"){
             conn_raw = new OpenWrtConn();
         }else{
-          throw not_implemented_error("Not known external_OS: " + actor["external_OS"]);
+          throw not_implemented_err("Not known external_OS: " + actor["external_OS"]);
         }
 
         const shared_ptr<ExternalConn> conn(conn_raw);
-        if (!conn->connect(*this, actor)) {throw config_error("Failed to connect to external actor ");}
+        if (!conn->connect(*this, actor)) {throw config_err("Failed to connect to external actor ");}
         actor->conn = conn;
     }
 
@@ -148,7 +148,7 @@ namespace wpa3_tester{
     //TODO only gtter now,
     ActorPtr &RunStatus::get_actor(const string &actor_name){
         if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
-        throw config_error("Actor %s not found in any actor map", actor_name.c_str());
+        throw config_err("Actor %s not found in any actor map", actor_name.c_str());
     }
 
     unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {
@@ -164,19 +164,19 @@ namespace wpa3_tester{
             try {
                 YAML::Node config = YAML::LoadFile(path.string());
                 nlohmann::json config_json = yaml_to_json(config);
-                if(!config_json.contains("name")){ throw config_error("Path %s has no valid name", path.string().c_str()); }
+                if(!config_json.contains("name")){ throw config_err("Path %s has no valid name", path.string().c_str()); }
                 auto name = config["name"].as<string>();
                 if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"
                     && ct == TEST_SUITE){
                     t_map[name] = path.string();
                 }else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")){
                     if (t_map.contains(name)) {
-                        throw config_error("Configs " + t_map[name] +
+                        throw config_err("Configs " + t_map[name] +
                             " and " + path.string() + " have same name!");
                     }
                     t_map[name] = path.string();
                 }
-            } catch (const YAML::Exception& e) {throw config_error("Invalid yaml {}", e.what());}
+            } catch (const YAML::Exception& e) {throw config_err("Invalid yaml {}", e.what());}
         }
         return t_map;
     }
@@ -184,7 +184,7 @@ namespace wpa3_tester{
     string RunStatus::findConfigByTestName(const string &name){
         auto tests = scan_attack_configs();
         if (tests.contains(name)) {return tests[name];}
-        throw config_error("Unknown test name: %s", name.c_str());
+        throw config_err("Unknown test name: %s", name.c_str());
     }
 
     void RunStatus::print_test_list() {

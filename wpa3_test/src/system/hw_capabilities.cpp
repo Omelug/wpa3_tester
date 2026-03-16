@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <map>
 #include <set>
 #include <string>
 #include <unistd.h>
@@ -54,7 +53,7 @@ namespace wpa3_tester{
         return 0;
     }
 
-    vector<InterfaceInfo> hw_capabilities::list_interfaces(optional<InterfaceType> filter = nullptr){
+    vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceType> filter){
         std::vector<InterfaceInfo> result;
         const filesystem::path net_path = "/sys/class/net";
 
@@ -101,52 +100,44 @@ namespace wpa3_tester{
     // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
     bool hw_capabilities::findSolution(
-        const vector<string> &ruleKeys,
+        const std::vector<std::string> &ruleKeys,
         const size_t ruleIdx,
         const ActorCMap &rules,
-        const ActorCMap &options,
-        set<string> &usedOptions,
+        const std::vector<ActorPtr> &options,
+        std::unordered_set<size_t> &usedOptions,
         AssignmentMap &currentAssignment
     ){
-        // all set? -> solution found
-        if(ruleIdx == ruleKeys.size()){ return true; }
+        if (ruleIdx == ruleKeys.size()) return true;
 
-        const string &currentRuleKey = ruleKeys[ruleIdx];
-        const auto &ruleIt = rules.find(currentRuleKey);
-        if(ruleIt == rules.end() /*|| !ruleIt->second*/){
-            throw config_err("Missing rule actor config for key: %s", currentRuleKey.c_str());
-        }
+        const string &actor_name = ruleKeys[ruleIdx];
+        const auto &ruleIt = rules.find(actor_name);
+        if (ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
+
         Actor_config &currentRuleReq = *ruleIt->second;
 
-        for(auto const &[optKey, optConfigPtr]: options){
-            //if(!optConfigPtr){ continue; } // skip empty
-            if(usedOptions.contains(optKey)){ continue; } // already used this option
+        for (size_t i = 0; i < options.size(); i++) {
+            if (usedOptions.contains(i)) continue;
+            if (!currentRuleReq.matches(*options[i])) continue;
 
-            if(Actor_config &optConfig = *optConfigPtr; !currentRuleReq.matches(optConfig)){ continue; } // node found
+            usedOptions.insert(i);
+            currentAssignment.insert_or_assign(actor_name, ruleIt->second);
 
-            usedOptions.insert(optKey);
-            currentAssignment[currentRuleKey] = optKey;
+            if (findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) return true;
 
-            if(findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)){
-                return true; // found in subtree
-            }
-
-            usedOptions.erase(optKey);  // back in tree
-            currentAssignment.erase(currentRuleKey);
+            usedOptions.erase(i);
+            currentAssignment.erase(actor_name);
         }
-        return false; // no valid option for this rule
+        return false;
     }
 
-    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const ActorCMap &options){
+    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options) {
         vector<string> ruleKeys;
-        for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
+        for (const auto &key : rules | views::keys) ruleKeys.push_back(key);
+
         AssignmentMap result;
-        //backtracking
-        if(set<string> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)){
+        if (unordered_set<size_t> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
             log(LogLevel::DEBUG, "Solved!");
-            for(auto const &[r, o]: result){
-                log(LogLevel::DEBUG, "\tActor %s -> interface %s", r.c_str(), o.c_str());
-            }
+            for (auto const &[r, o] : result) log(LogLevel::DEBUG, "\tRule "+r+" -> option "+ o->to_str());
             return result;
         }
 
@@ -188,11 +179,8 @@ namespace wpa3_tester{
         args.push_back(nullptr);
 
         const pid_t pid = fork();
-        if (pid < 0) {
-            log(LogLevel::ERROR, "fork() failed for command %s", full_argv[0].c_str());
-            return -1;
-        }
 
+        if (pid < 0) {log(LogLevel::ERROR, "fork() failed for command %s", full_argv[0].c_str()); return -1;}
         if (pid == 0) {execvp(args[0], args.data());_exit(127);}
 
         int status = 0;
@@ -202,13 +190,9 @@ namespace wpa3_tester{
         }
 
         if (WIFSIGNALED(status)) {
-            log(LogLevel::WARNING,
-                "Command %s terminated by signal %d",
-                full_argv[0].c_str(), WTERMSIG(status));
+            log(LogLevel::WARNING, "Command %s terminated by signal %d", full_argv[0].c_str(), WTERMSIG(status));
         } else if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
-            log(LogLevel::ERROR,
-                "Command %s exited with status %d",
-                full_argv[0].c_str(), WEXITSTATUS(status));
+            log(LogLevel::ERROR, "Command %s exited with status %d", full_argv[0].c_str(), WEXITSTATUS(status));
         }
         return WEXITSTATUS(status);
     }
@@ -276,9 +260,7 @@ namespace wpa3_tester{
         string output;
         char buf[256];
         ssize_t n;
-        while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {
-            output.append(buf, static_cast<size_t>(n));
-        }
+        while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {output.append(buf, static_cast<size_t>(n));}
         close(pipefd[0]);
         waitpid(pid, nullptr, 0);
         return output;

@@ -26,7 +26,7 @@ namespace wpa3_tester{
 
     class Actor_config;
     class ExternalConn;
-    using AssignmentMap = std::map<std::string,std::string>;
+    using AssignmentMap = std::unordered_map<std::string, ActorPtr>;
 
     class RunStatus {
         // in actors are all actors in test
@@ -40,12 +40,10 @@ namespace wpa3_tester{
         std::string run_folder{};
         std::string config_path{};
 
-        //mapping actor->interface
-        AssignmentMap internal_mapping{};
-        //mapping actor->MAC
-        AssignmentMap external_wb_mapping{};
-
-        //AssignmentMap simulation_mapping;
+        ActorCMap internal_mapping{};
+        ActorCMap external_wb_mapping{};
+        //ActorCMap external_bb_mapping{};
+        //ActorCMap simulation_mapping;
 
         ProcessManager process_manager{};
 
@@ -67,11 +65,11 @@ namespace wpa3_tester{
     private:
 
         // to scan available interfaces
-        static ActorCMap internal_options();
-        static void add_actors_by_radio(ActorCMap & pairs, const ActorPtr & cfg);
-        ActorCMap external_wb_options() const;
-        static ActorCMap external_bb_options();
-        ActorCMap create_simulation();
+        static std::vector<ActorPtr> internal_options();
+        static void add_actors_by_radio(std::vector<ActorPtr> & options, const ActorPtr & cfg);
+        std::vector<ActorPtr> external_wb_options() const;
+        static std::vector<ActorPtr> external_bb_options();
+        //static std::vector<ActorPtr> create_simulation();
 
         void parse_requirements();
 

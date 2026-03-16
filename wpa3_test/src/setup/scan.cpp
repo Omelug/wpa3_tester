@@ -20,33 +20,33 @@ namespace wpa3_tester{
 
     // ---------------- INTERNAL
     // return <string iface; internal_actor >
-    ActorCMap RunStatus::internal_options(){
-        ActorCMap options_map;
+    vector<ActorPtr> RunStatus::internal_options(){
+        vector<ActorPtr> options;
         for (const auto& [iface_name, radio_name, iface_type] : hw_capabilities::list_interfaces(InterfaceType::Wifi)) {
-            auto cfg = make_unique<Actor_config>();
+            auto cfg = make_shared<Actor_config>();
             cfg->str_con["iface"] = iface_name;
             cfg->str_con["source"] = "internal";
             cfg->str_con["radio"] = radio_name;
             hw_capabilities::get_nl80211_caps(iface_name, *cfg);
-            options_map.emplace(iface_name, std::move(cfg));
+            options.push_back(ActorPtr(cfg));
         }
-        return options_map;
+        return options;
     }
 
-    void RunStatus::add_actors_by_radio(ActorCMap &pairs, const ActorPtr &cfg){
+    void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
         //cfg->conn->ensure_wifi_ifaces();
         const vector<string> radios = cfg->conn->get_radio_list();
         for (const string& radio_name : radios) {
-            auto actor_cfg = make_shared<Actor_config>(*cfg);
+            const auto actor_cfg = make_shared<Actor_config>(*cfg);
             //actor_cfg->str_con["iface"] = iface;
             //actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
             actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
             actor_cfg->str_con["radio"] = radio_name;
 
             //TODO add boolen checks
+            //actor_cfg->bool_conditions[""] = ;
 
-            const string key = actor_cfg->str_con.at("radio").value();
-            pairs.emplace(key, std::move(actor_cfg));
+            options.push_back(ActorPtr(actor_cfg));
         }
     }
 
@@ -237,8 +237,8 @@ namespace wpa3_tester{
     }
 
     // return <string radio_name; external_actor >
-    ActorCMap RunStatus::external_wb_options() const{
-        ActorCMap options_map;
+    vector<ActorPtr> RunStatus::external_wb_options() const{
+        vector<ActorPtr> options;
 
         //option1: whitebox_host -> whitebox_ip
         const path conn_table = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
@@ -254,28 +254,27 @@ namespace wpa3_tester{
             const string ip = cfg["whitebox_ip"];
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");continue;}
             get_or_create_connection(cfg);
-            add_actors_by_radio(options_map, cfg);
+            add_actors_by_radio(options, cfg);
         }
-        return options_map;
+        return options;
     }
-    ActorCMap RunStatus::external_bb_options(){
-        ActorCMap options_map;
+    vector<ActorPtr> RunStatus::external_bb_options(){
+        vector<ActorPtr> options;
         // option2: blackbox - scan, cant be
         //TODO get channels from actors and scan only these if not actor without it
         /*for (const auto& entity :
             list_external_entities(config.at("actors").at("scan_iface"), 30)) {
-            auto cfg = make_unique<Actor_config>();
+            auto cfg = make_shared<Actor_config>();
             cfg->str_con["mac"] = entity.mac;
             cfg->str_con["ssid"] = entity.ssid;
             if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
-            options_map.emplace(entity.mac, std::move(cfg));
+            options.push_back(cfg);
         }*/
-        return options_map;
+        return options;
     }
 
-    ActorCMap create_simulation(){
+    vector<ActorPtr> create_simulation(){
         throw not_implemented_err("simulation hwsim not implemented");
     }
 
 }
-

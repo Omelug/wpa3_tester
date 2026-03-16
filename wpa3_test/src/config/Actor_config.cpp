@@ -150,7 +150,13 @@ namespace wpa3_tester{
         }
         return result;
     }
-
+    void Actor_config::print_ActorCMap(const std::string& title, vector<ActorPtr> actors){
+        cout << title << ":\n";
+        for (size_t i = 0; i < actors.size(); ++i) {
+            cout << "[" << i << "] " << actors[i]->to_str() << "\n";
+        }
+        cout << flush;
+    }
     void Actor_config::print_ActorCMap(const std::string& title, ActorCMap actors) {
         cout << title << ":\n";
         for (const auto& [key, actor_ptr] : actors) {

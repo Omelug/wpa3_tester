@@ -57,7 +57,7 @@ namespace wpa3_tester{
         std::string operator[](const std::string& key) const;
         bool get_bool(const std::string &key) const;
         std::string to_str() const;
-
+        static void print_ActorCMap(const std::string &title, std::vector<ActorPtr> actors);
         static void print_ActorCMap(const std::string& title, ActorCMap actors);
 
         //  only internal

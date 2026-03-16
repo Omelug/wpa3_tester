@@ -3,6 +3,7 @@
 #include <netlink/netlink.h>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "../config/RunStatus.h"
 
@@ -71,26 +72,26 @@ namespace wpa3_tester{
 
     class hw_capabilities {
         static bool findSolution(
-            const std::vector<std::string>& ruleKeys,
+            const std::vector<std::string> &ruleKeys,
             size_t ruleIdx,
-            const ActorCMap& rules,
-            const ActorCMap& options,
+            const ActorCMap &rules,
+            const std::vector<ActorPtr> &options,
             //only for recursive
-            std::set<std::string>& usedOptions,
-            AssignmentMap& currentAssignment
+            std::unordered_set<size_t> &usedOptions,
+            AssignmentMap &currentAssignment
         );
         static int nl80211_cb(nl_msg *msg, void *arg);
         static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 
     public:
-        static AssignmentMap check_req_options(const ActorCMap &rules, const ActorCMap &options);
+        static AssignmentMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
         static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
         static std::string run_cmd_output(const std::vector<std::string> &argv);
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
         static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
-        static std::vector<InterfaceInfo> list_interfaces();
+        static std::vector<InterfaceInfo> list_interfaces(std::optional<InterfaceType> filter = std::nullopt);
 
         // check availability
         static std::string read_sysfs(const std::string& iface, const std::string& file);

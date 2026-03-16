@@ -138,7 +138,7 @@ namespace wpa3_tester {
 
         // vždy vytvoř/přepiš wpa3_tester sekci — nikdy nemeň lan
         int rc;
-        exec("uci get network." + wpa3_section + " 2>/dev/null", &rc);
+        exec("uci get network." + wpa3_section + " 2>/dev/null", false, &rc);
         if (rc != 0) {
             exec("uci set network." + wpa3_section + "=interface");
             exec("uci set network." + wpa3_section + ".proto=static");
@@ -230,7 +230,7 @@ namespace wpa3_tester {
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const std::string& radio) {
         const string phy = "phy" + radio.substr(5);
         int ret = 0;
-        const string output = exec("iw phy " + phy + " info", &ret);
+        const string output = exec("iw phy " + phy + " info", false, &ret);
         if (ret != 0) {throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);}
         parse_hw_capabilities(cfg, output);
     }

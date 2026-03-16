@@ -115,6 +115,7 @@ namespace wpa3_tester{
         lock_guard lock(mtx_);
         if (combined_log.is_open()) combined_log.close();
     }
+
     void ProcessManager::run(const string& process_name,
                          const vector<string> &cmd,
                          const path &working_dir)

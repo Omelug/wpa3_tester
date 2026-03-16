@@ -2,6 +2,7 @@
 #include <doctest.h>
 #include <iostream>
 #include <string>
+#include <nlohmann/json.hpp>
 #include "config/RunStatus.h"
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
@@ -12,27 +13,29 @@ using namespace wpa3_tester;
 using namespace filesystem;
 using namespace  manual_tests;
 
-TEST_CASE("Info OpenWrt") {
-    cli_section("Info from OpenWrt actor");
-
+static pair<shared_ptr<OpenWrtConn>, ActorPtr>& get_conn_actor() {
     static pair<shared_ptr<OpenWrtConn>, ActorPtr> conn_actor = []() {
         const ActorPtr actor = wb_actor_selection();
-        auto conn_raw = new OpenWrtConn();
-        const shared_ptr<OpenWrtConn> c(conn_raw);
-        actor->conn = c;
-        REQUIRE(c->connect(actor));
-        return make_pair(c, actor);
+        auto conn = make_shared<OpenWrtConn>();
+        actor->conn = conn;
+        actor->str_con["actor_name"] = "test_actor";
+        if (!conn->connect(actor))
+            throw manual_test_err("Failed to connect");
+        return make_pair(conn, actor);
     }();
+    return conn_actor;
+}
 
-    auto conn = conn_actor.first;
-    auto actor = conn_actor.second;
+TEST_CASE("Info OpenWrt"){
+    cli_section("Info from OpenWrt actor");
+    auto& [conn, actor] = get_conn_actor();
 
     cli_section("System Information");
 
     SUBCASE("Hostname") {
         cout << "\n--- Hostname ---" << endl;
         cout << conn->get_hostname();
-        CHECK(ask_ok("Valid Hostname?"));
+        CHECK(manual_tests::ask_ok("Valid Hostname?"));
     }
 
     SUBCASE("Hostapd Version") {
@@ -78,6 +81,26 @@ TEST_CASE("Info OpenWrt") {
         cout << "Fixed time: " << fixed << " (" << conn->exec("date") << ")" << endl;
         CHECK((abs(fixed - expected) < 60));
     }
+}
+
+TEST_CASE("Logger OpenWrt") {
+    auto& [conn, actor] = get_conn_actor();
+
+    SUBCASE("Logger") {
+        cout << "\n--- Logger Test ---" << endl;
+
+        RunStatus rs;
+        rs.actors.emplace(actor["actor_name"], actor);
+        const auto test_dir = temp_directory_path() / "openwrt_logger_test";
+        create_directories(test_dir);
+        rs.process_manager.init_logging(test_dir);
+
+        conn->logger(rs, actor["actor_name"]);
+        this_thread::sleep_for(chrono::milliseconds(500));
+        conn->exec("logger 'Test log message from wpa3_tester'");
+        rs.process_manager.wait_for(actor["actor_name"], "Test log message", chrono::seconds(5));
+    }
 
     cli_section("Test completed successfully");
 }
+

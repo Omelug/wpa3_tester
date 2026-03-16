@@ -127,6 +127,7 @@ namespace wpa3_tester{
         exec("iw dev " + iface + " set type managed");
         exec("ip link set " + iface + " up");
     }
+
     void ExternalConn::set_ip(const std::string &iface, const std::string &ip_addr) const {
         exec("ip addr flush dev " + iface);
         exec("ip addr add " + ip_addr + "/24 dev " + iface);

@@ -18,7 +18,7 @@ class MockOpenWrtConn : public OpenWrtConn {
 public:
     mutable int mock_ret = 0;
     mutable std::string mock_output = "";
-    std::string exec(const std::string &cmd, int * ret_err = nullptr) const override {
+    std::string exec(const std::string &cmd, int * ret_err = nullptr) const{
         if (ret_err) *ret_err = mock_ret;
         return mock_output;
     }
@@ -97,3 +97,4 @@ TEST_CASE("get_radio_list - mock wifi status") {
     CHECK((radios[0] == "radio0"));
     CHECK((radios[1] == "radio1"));
 }
+

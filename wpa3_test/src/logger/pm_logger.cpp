@@ -41,9 +41,7 @@ namespace wpa3_tester{
         combined_log.close();
         combined_log.open(combined_path, ios::out | ios::trunc);
         if (!combined_log.is_open()) {
-            log(LogLevel::ERROR,
-                "Failed to open combined log file: %s",
-                combined_path.string().c_str());
+            log(LogLevel::ERROR, "Failed to open combined log file: "+ combined_path.string());
             throw runtime_error("Unable to open combined log file");
         }
 
@@ -75,10 +73,7 @@ namespace wpa3_tester{
         if (exists(log_base_dir, ec)) {
             remove_all(log_base_dir, ec);
             if (ec) {
-                log(LogLevel::ERROR,
-                    "Failed to clean logger directory: %s: %s",
-                    log_base_dir.string().c_str(),
-                    ec.message().c_str());
+                log(LogLevel::ERROR, "Failed to clean logger directory: "+log_base_dir.string()+":"+ec.message());
                 throw runtime_error("Unable to clean logger directory");
             }
         }
@@ -86,11 +81,7 @@ namespace wpa3_tester{
         // create log folder
         create_directories(log_base_dir, ec);
         if (ec) {
-            log(LogLevel::ERROR,
-                "Failed to create logger directory: %s: %s",
-                log_base_dir.string().c_str(),
-                ec.message().c_str());
-            throw runtime_error("Unable to create logger directory");
+            log(LogLevel::ERROR,"Failed to clean logger directory: "+log_base_dir.string()+":"+ec.message());
         }
     }
 

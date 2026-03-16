@@ -12,7 +12,7 @@ namespace wpa3_tester::hostapd{
         const path repo_path = hostapd_folder / "hostapd";
         if (exists(repo_path)) {return;}
 
-        log(LogLevel::INFO, ("Cloning hostapd repository into " + repo_path.string() + "...").c_str());
+        log(LogLevel::INFO, "Cloning hostapd repository into "+repo_path.string()+"...");
 
         error_code ec;
         create_directories(hostapd_folder, ec);
@@ -47,7 +47,7 @@ namespace wpa3_tester::hostapd{
 
         for (const auto& t : tags) {
             if (t == target_tag) {
-                log(LogLevel::INFO, ("Found tag match: " + t).c_str());
+                log(LogLevel::INFO, "Found tag match: "+t );
                 return t;
             }
         }
@@ -81,7 +81,7 @@ namespace wpa3_tester::hostapd{
             "\n";
         conf.close();
 
-        log(LogLevel::INFO, "Compiling hostapd %s ... ", version.c_str());
+        log(LogLevel::INFO, "Compiling hostapd "+version+" ... ");
         hw_capabilities::run_in("make clean", hostapd_dir);
         hw_capabilities::run_in("make -j$(nproc)", hostapd_dir);
 
@@ -104,7 +104,7 @@ namespace wpa3_tester::hostapd{
 
         // return if exists
         if (exists(hostapd_bin)) {
-            log(LogLevel::INFO, ("Using existing hostapd binary: " + hostapd_bin.string()).c_str());
+            log(LogLevel::INFO, "Using existing hostapd binary: "+hostapd_bin.string());
             return hostapd_bin.string();
         }
 
@@ -152,7 +152,7 @@ namespace wpa3_tester::hostapd{
             "\n";
         conf.close();
 
-        log(LogLevel::INFO, "Compiling wpa_supplicant %s ... ", version.c_str());
+        log(LogLevel::INFO, "Compiling wpa_supplicant "+version+" ... ");
         hw_capabilities::run_in("make clean", wpa_supp_dir);
         hw_capabilities::run_in("make -j$(nproc)", wpa_supp_dir);
 
@@ -175,7 +175,7 @@ namespace wpa3_tester::hostapd{
 
         // return if exists
         if (exists(wpa_supp_bin)) {
-            log(LogLevel::INFO, ("Using existing wpa_supplicant binary: " + wpa_supp_bin.string()).c_str());
+            log(LogLevel::INFO, "Using existing wpa_supplicant binary: "+wpa_supp_bin.string());
             return wpa_supp_bin.string();
         }
 

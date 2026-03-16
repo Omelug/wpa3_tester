@@ -49,7 +49,7 @@ namespace wpa3_tester{
         cerr << levelToString(level) << ": " << msg << endl;
     }
 
-    void log_actor_map(const char* name, const ActorCMap& m) {
+    void log_actor_map(const string &name, const ActorCMap& m) {
         string keys;
         bool first = true;
         for (const auto &k: m | views::keys) {
@@ -57,10 +57,8 @@ namespace wpa3_tester{
             keys += k;
             first = false;
         }
-        if (keys.empty()) {
-            keys = "<empty>";
-        }
-        log(LogLevel::DEBUG, "%s: %s", name, keys.c_str());
+        if (keys.empty()) {keys = "<empty>";}
+        log(LogLevel::DEBUG, name+":"+ keys);
     }
 
     void log_actor_configs(const ActorCMap& m, ofstream& ofs) {
@@ -72,7 +70,7 @@ namespace wpa3_tester{
             const string line =
                 "Actor '" + name + "': iface=" + actor->str_con.at("iface").value_or("<none>") +
                 ", mac="    + actor->str_con.at("mac").value_or("<none>") +
-                ", essid="  + actor->str_con.at("essid").value_or("<none>") +
+                ", essid="  + actor->str_con.at("ssid").value_or("<none>") +
                 ", driver=" + actor->str_con.at("driver").value_or("<none>");
 
             //log(LogLevel::DEBUG, "%s", line.c_str());
@@ -90,7 +88,7 @@ namespace wpa3_tester{
             }
             if (cond_str.empty()) { cond_str = "<no conditions>"; }
 
-            log(LogLevel::DEBUG, "Actor '%s' conditions: %s", name.c_str(), cond_str.c_str());
+            log(LogLevel::DEBUG, "Actor '"+name+"' conditions: "+cond_str);
             if (ofs.is_open()) {
                 ofs << "  conditions: " << cond_str << endl;
             }
@@ -144,7 +142,7 @@ namespace wpa3_tester{
         vector<LogTimePoint> timestamps;
         const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
         if (!filesystem::exists(actor_log)) {
-            log(LogLevel::ERROR, ("Could not find file '" + actor_log + "'").c_str());
+            log(LogLevel::ERROR, "Could not find file '" + actor_log + "'");
             return {};
         }
         ifstream file(actor_log);

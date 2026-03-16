@@ -13,16 +13,11 @@ namespace wpa3_tester{
         error_code ec;
         if (exists(run_folder, ec)) {
             remove_all(run_folder, ec);
-            if (ec) {
-                log(LogLevel::ERROR, "Failed to clean last_run directory: %s: %s", run_folder.c_str(), ec.message().c_str());
-                throw runtime_error("Unable to clean last_run directory");
-            }
+            if (ec) {throw runtime_error("Failed to clean last_run directory: "+run_folder+":"+ec.message());}
         }
+
         create_directories(run_folder, ec);
-        if (ec) {
-            log(LogLevel::ERROR, "Failed to create last_run directory: %s: %s",run_folder.c_str(), ec.message().c_str());
-            throw runtime_error("Unable to create last_run directory");
-        }
+        if (ec){throw runtime_error("Failed to create last_run directory: "+run_folder+":"+ec.message());}
 
         save_actor_interface_mapping();
         process_manager.init_logging(run_folder);

@@ -105,7 +105,7 @@ namespace wpa3_tester::observer{
         vector<LogTimePoint> timestamps;
         const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
         if (!exists(pcap_path)) {
-            log(LogLevel::ERROR, ("Could not find file '" + pcap_path.string() + "'").c_str());
+            log(LogLevel::ERROR, "Could not find file '"+pcap_path.string()+"'");
             return {};
         }
 
@@ -143,9 +143,7 @@ namespace wpa3_tester::observer{
                         timestamps.push_back(tp);
                     }
                 }
-            } catch (const exception& e) {
-                log(LogLevel::WARNING, "Failed to parse timestamp '%s': %s", line.c_str(), e.what());
-            }
+            } catch (const exception& e) {log(LogLevel::WARNING, "Failed to parse timestamp '"+line+"':"+e.what());}
         }
 
         log(LogLevel::INFO, "Extracted %zu timestamps matching filter '%s'", timestamps.size(), tshark_filter.c_str());

@@ -40,7 +40,7 @@ namespace wpa3_tester{
         }
 
         run_folder = (BASE_FOLDER / testName / "last_run").string();
-        log(LogLevel::INFO, "Used config %s", this->config_path.c_str());
+        log(LogLevel::INFO, "Used config "+this->config_path);
         this->config = config_validation(this->config_path);
     }
 
@@ -110,7 +110,7 @@ namespace wpa3_tester{
         const auto run_it = attack_module_maps::stats_map.find(module_name);
 
         if (run_it != attack_module_maps::stats_map.end()) {run_it->second(*this);
-        } else {log(LogLevel::DEBUG, "run function not set");}
+        } else { log(LogLevel::DEBUG, "run function not set"); }
 
     }
 
@@ -125,24 +125,18 @@ namespace wpa3_tester{
     }
 
     void RunStatus::save_actor_interface_mapping() const {
-        if (run_folder.empty()) {
-            log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
-            return;
-        }
+        if (run_folder.empty()) {log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");return;}
 
         const string path = run_folder + "/mapping.csv";
         ofstream ofs(path, ios::out | ios::trunc);
-        if (!ofs) {
-            log(LogLevel::ERROR, "Failed to open %s for writing CSV mapping", path.c_str());
-            return;
-        }
+        if (!ofs) {log(LogLevel::ERROR, "Failed to open "+path+" for writing CSV mapping");return;}
 
         ofs << "Type,ActorName,Interface,MAC,Driver" << endl;
 
         write_actors_csv(actors, ofs);
 
         ofs.close();
-        log(LogLevel::INFO, "Actor/interface mapping written to CSV: %s", path.c_str());
+        log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+ path);
     }
 
     //TODO only gtter now,

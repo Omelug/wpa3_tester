@@ -16,13 +16,12 @@ f: check WPA2/SAE support correctly
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
 +: better backtracking error messages
++: create config wizard after first install
 
 Test cases:
 f: all process have to killed before test
 
-TODO inject mode condition
-
-// TODO new attacks?
+// new attacks?
 State Poisoning (2025_SACRED)
 Ghost Attack (badtoken pdf)
 

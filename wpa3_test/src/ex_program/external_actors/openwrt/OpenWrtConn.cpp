@@ -79,7 +79,7 @@ namespace wpa3_tester {
         }
         if (section.empty()) section = "wpa3_tester_" + radio_name;  // create new
 
-        log(LogLevel::DEBUG, "Setting up wifi-iface %s for %s", section.c_str(), radio_name.c_str());
+        log(LogLevel::DEBUG, "Setting up wifi-iface "+section+" for "+radio_name);
 
         exec("uci set wireless." + section + "=wifi-iface");
         exec("uci set wireless." + section + ".device=" + radio_name);

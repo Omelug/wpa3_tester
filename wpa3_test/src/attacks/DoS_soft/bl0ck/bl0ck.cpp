@@ -58,7 +58,7 @@ namespace wpa3_tester::bl0ck_attack{
                             const HWAddress<6> &sta_hw,
                             const string& iface,
                             const int timeout_sec) {
-        log(LogLevel::INFO, "BARS: Starting sniffer to capture QoS data from %s", sta_hw.to_string().c_str());
+        log(LogLevel::INFO, "BARS: Starting sniffer to capture QoS data from "+ sta_hw.to_string());
 
         struct SniffResult {
             bool found = false;
@@ -93,7 +93,7 @@ namespace wpa3_tester::bl0ck_attack{
                     }
                 }
             } catch (const exception& e) {
-                log(LogLevel::WARNING, "BARS: Error processing packet: %s", e.what());
+                log(LogLevel::WARNING, "BARS: Error processing packet: "+ e.what());
             }
             return true;
         };
@@ -107,7 +107,7 @@ namespace wpa3_tester::bl0ck_attack{
                 Sniffer sniffer(iface, config);
                 sniffer.sniff_loop(packet_handler);
             } catch (const exception& e) {
-                log(LogLevel::ERROR, "BARS: Sniffer error: %s", e.what());
+                log(LogLevel::ERROR, "BARS: Sniffer error: "+e.what());
                 lock_guard lock(result->mtx);
                 result->found = false;
                 result->cv.notify_one();

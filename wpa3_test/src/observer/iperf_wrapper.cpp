@@ -44,7 +44,7 @@ namespace wpa3_tester::observer{
     static void render_graph(const IperfData &data,
                              const string &label,
                              const path &output_path){
-        //throw not_implemented_error("GNUplot have to be used, matlot is mess");
+        //throw not_implemented_error("GNUplot have to be used, matplot is mess");
 
         if (data.bandwidths.empty()) return;  //FIXME použít gnuplot ?
         Plot2D plot;
@@ -62,23 +62,17 @@ namespace wpa3_tester::observer{
                              const string &actor_tag,
                              const string &output_png) {
 
-        if (!exists(log_path)) {
-            log(LogLevel::ERROR, "iperf3 log file not found: %s", log_path.string().c_str());
-            return;
-        }
+        if (!exists(log_path)){throw config_err("iperf3 log file not found: "+log_path.string());}
 
         const IperfData data = parse_iperf_log(log_path, actor_tag);
-        if (data.bandwidths.empty()) {
-            log(LogLevel::WARNING, "No samples parsed for: %s", actor_tag.c_str());
-            return;
-        }
+        if (data.bandwidths.empty()) {log(LogLevel::WARNING, "No samples parsed for: "+actor_tag);return;}
 
         const path full_output_path = log_path.parent_path() / output_png;
         try {
             render_graph(data, actor_tag, full_output_path);
-            log(LogLevel::INFO, "Graph saved via %s to %s", full_output_path.string().c_str());
+            log(LogLevel::INFO, "Graph saved via "+full_output_path.string());
         } catch (const exception &e) {
-            log(LogLevel::ERROR, "Rendering failed: %s", e.what());
+            log(LogLevel::ERROR, "Rendering failed: "+ e.what());
         }
     }
 
@@ -91,7 +85,7 @@ namespace wpa3_tester::observer{
             program_name,
             "-B", run_status.config.at("actors").at(src_name).at("ip_addr"),
             "-c", run_status.config.at("actors").at(dst_name).at("ip_addr"),
-            //"-u", //TODO dát do observer conifg
+            //"-u", //dát do observer conifg
             "-b", "10M",
             "-t", "0" // infinity
         });

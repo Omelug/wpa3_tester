@@ -21,8 +21,7 @@ namespace {
 struct TsharkGuard {
     TsharkGuard() {
         if (system("tshark --version > /dev/null 2>&1") != 0) {
-            log(wpa3_tester::LogLevel::ERROR,
-                "[skip] tshark not found, skipping observer tests.");
+            log(wpa3_tester::LogLevel::ERROR, "[skip] tshark not found, skipping observer tests");
             exit(0);
         }
     }

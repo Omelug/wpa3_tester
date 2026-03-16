@@ -19,7 +19,7 @@ namespace wpa3_tester::report{
         auto mapping = path(rs.run_folder) / "mapping.csv";
 
         if (!exists(mapping)) {
-            log(LogLevel::WARNING, "Mapping file not found: %s", mapping.string().c_str());
+            log(LogLevel::WARNING, "Mapping file not found: "+mapping.string());
             return;
         }
 
@@ -27,7 +27,7 @@ namespace wpa3_tester::report{
 
         ifstream csv_file(mapping);
         if (!csv_file.is_open()) {
-            log(LogLevel::ERROR, "Failed to open mapping file: %s", mapping.string().c_str());
+            log(LogLevel::ERROR, "Failed to open mapping file: "+mapping.string());
             return;
         }
 

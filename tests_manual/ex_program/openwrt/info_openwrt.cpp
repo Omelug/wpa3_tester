@@ -112,7 +112,7 @@ TEST_CASE("Tcpdump OpenWrt") {
     SUBCASE("Tcpdump Remote") {
         cout << "\n--- Tcpdump Remote Test ---" << endl;
 
-        const string chosen_iface = "phy0-ap0"; //FIXME get_openwrt_iface_wizard(conn.get());
+        const string chosen_iface = get_openwrt_iface_wizard(conn.get());
         if (chosen_iface.empty()) {
             throw manual_test_err("No interface selected, skipping test.");
         }

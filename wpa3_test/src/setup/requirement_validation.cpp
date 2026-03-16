@@ -75,7 +75,7 @@ namespace wpa3_tester{
                 std::nullopt);
             if (rc == 0) {
                 result.push_back(iface);
-                log(LogLevel::DEBUG, "Physical iface in ns %s: %s", ns_name.c_str(), iface.c_str());
+                log(LogLevel::DEBUG, "Physical iface in ns "+ns_name+": "+iface);
             }
         }
         return result;
@@ -98,7 +98,7 @@ namespace wpa3_tester{
         }
         for (const auto& name : ifaces) {
             if (!filesystem::exists("/sys/class/net/" + name)) {
-                log(LogLevel::WARNING, "Interface %s did not return to root ns in time!", name.c_str());
+                log(LogLevel::WARNING, "Interface "+name+" did not return to root ns in time!");
             }
         }
     }
@@ -117,7 +117,7 @@ namespace wpa3_tester{
             hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name});
             wait_to_default_ns(physical_interfaces);
 
-            log(LogLevel::DEBUG, "Removed netns %s", ns_name.c_str());
+            log(LogLevel::DEBUG, "Removed netns "+ns_name);
         }
         log(LogLevel::INFO, "Cleanup complete.");
     }

@@ -1,6 +1,5 @@
 # THIS IS ONLY EXAMPLE
 # change needed paths
-#TODO create config wizard after first install
 
 internet_interface: wlan0
 paths:

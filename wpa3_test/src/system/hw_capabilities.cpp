@@ -66,7 +66,7 @@ namespace wpa3_tester{
             auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", std::vector<std::string>{});
 
             if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
-                log(LogLevel::DEBUG, "Ignoring interface %s due to ignore_interfaces config", iface.c_str());
+                log(LogLevel::DEBUG, "Ignoring interface "+iface+" due to ignore_interfaces config");
                 continue;
             }
 
@@ -182,12 +182,12 @@ namespace wpa3_tester{
 
         const pid_t pid = fork();
 
-        if (pid < 0) {log(LogLevel::ERROR, "fork() failed for command %s", full_argv[0].c_str()); return -1;}
+        if (pid < 0) {log(LogLevel::ERROR, "fork() failed for command "+full_argv[0]); return -1;}
         if (pid == 0) {execvp(args[0], args.data());_exit(127);}
 
         int status = 0;
         if (waitpid(pid, &status, 0) < 0) {
-            log(LogLevel::ERROR, "waitpid() failed for command %s", full_argv[0].c_str());
+            log(LogLevel::ERROR, "waitpid() failed for command "+ full_argv[0]);
             return -1;
         }
 

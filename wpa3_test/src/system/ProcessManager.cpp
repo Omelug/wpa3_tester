@@ -20,8 +20,7 @@ namespace wpa3_tester{
         const string &label,
         const string &data)
     {
-        const string prefix =
-            current_timestamp() + " [" + process_name + "] [" + label + "] ";
+        const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
 
         stringstream ss(data);
         string line;
@@ -67,16 +66,10 @@ namespace wpa3_tester{
                     if (ec == errc::broken_pipe ||
                     ec == errc::no_such_process) {
 
-                    log(LogLevel::DEBUG,
-                        "Drain thread for %s finished (normal exit): %s",
-                        process_name.c_str(),
-                        ec.message().c_str());
+                    log(LogLevel::DEBUG, "Drain thread for "+process_name+" finished (normal exit): "+ec.message());
                 } else {
-                    log(LogLevel::ERROR,
-                        "Drain thread for %s error: %s (code: %d)",
-                        process_name.c_str(),
-                        ec.message().c_str(),
-                        ec.value());
+                    log(LogLevel::ERROR, "Drain thread for %s error: %s (code: %d)",
+                        process_name.c_str(), ec.message().c_str(), ec.value());
                 }
 
                 break;
@@ -140,11 +133,8 @@ namespace wpa3_tester{
 
         // Log command line FIRST for debugging
         string cmd_line;
-        for (size_t i = 0; i < cmd.size(); ++i) {
-            if (i) cmd_line += ' ';
-            cmd_line += cmd[i];
-        }
-        log(LogLevel::DEBUG, "Starting process '%s': %s", process_name.c_str(), cmd_line.c_str());
+        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' ';cmd_line += cmd[i];}
+        log(LogLevel::DEBUG, "Starting process '"+process_name+"': "+cmd_line);
 
         // Initialize logs BEFORE starting process
         auto &logs = mp->logs;
@@ -152,9 +142,7 @@ namespace wpa3_tester{
         logs.log.open(log_path, ios::out | ios::trunc);
         logs.history.clear();
 
-        if (!logs.log.is_open()) {
-            log(LogLevel::ERROR, "Failed to open log for %s: %s", process_name.c_str(), log_path.string().c_str());
-        }
+        if (!logs.log.is_open()) { throw config_err("Failed to open log for "+process_name+": "+log_path.string());}
 
         {
             lock_guard lock(mtx_);
@@ -229,7 +217,7 @@ namespace wpa3_tester{
                 lock_guard log_lock(mtx_);
                 logs.wait.active = false;
                 logs.history_enabled = false;
-                log(LogLevel::DEBUG, "wait_for for '%s' interrupted: process stopped", actor_name.c_str());
+                log(LogLevel::DEBUG, "wait_for for '"+actor_name+"' interrupted: process stopped");
                 return; // wait for ot matched if stop
             }
 
@@ -308,7 +296,7 @@ namespace wpa3_tester{
             try {
                 stop(name);
             } catch (const exception& e) {
-                log(LogLevel::WARNING, "Error stopping process %s: %s", name.c_str(), e.what());
+                log(LogLevel::WARNING, "Error stopping process "+name+": "+e.what());
             }
         }
 

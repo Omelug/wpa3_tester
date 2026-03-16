@@ -11,7 +11,7 @@ namespace wpa3_tester{
 
         template<typename... Args>
         tester_error(const LogLevel level, const char *fmt, Args... args)
-            : std::runtime_error(vprintf_format(fmt, args...)) {
+        : std::runtime_error(vprintf_format(fmt, args...)) {
             log(level, "%s", std::runtime_error::what());
         }
 

@@ -181,7 +181,7 @@ namespace wpa3_tester{
         vector<ActorPtr> result;
 
         if (!exists(conn_table)) {
-            log(LogLevel::DEBUG, "Connection table file does not exist: %s", conn_table.string().c_str());
+            log(LogLevel::DEBUG, "Connection table file does not exist: "+conn_table.string());
             return result;
         }
 
@@ -243,10 +243,10 @@ namespace wpa3_tester{
 
         for(auto& cfg : scan::get_actors_conn_table(conn_table)){
             if (!cfg->str_con.at("whitebox_ip").has_value()) {
-                const string ip_str = ip::resolve_host((*cfg)["whitebox_host"]);
+                const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
                 cfg->str_con["whitebox_ip"] = ip_str;
                 cfg->str_con["source"] = "external";
-                log(LogLevel::DEBUG, "Resolved %s -> %s", (*cfg)["whitebox_host"].c_str(), ip_str.c_str());
+                log(LogLevel::DEBUG, "Resolved %s -> %s", cfg["whitebox_host"].c_str(), ip_str.c_str());
             }
             const string ip = cfg["whitebox_ip"];
             if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");continue;}

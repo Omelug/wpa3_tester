@@ -19,11 +19,7 @@ namespace wpa3_tester::observer{
         const path obs_dir = path(rs.run_folder) / "observer" / observer_name;
         error_code ec;
         create_directories(obs_dir, ec);
-        if (ec) {
-            log(LogLevel::ERROR,
-                "Failed to create %s e %observer dir %s: %s",
-                observer_name.c_str(), obs_dir.string().c_str(), ec.message().c_str());
-        }
+        if (ec) {log(LogLevel::ERROR, "Failed to create "+observer_name+" observer dir "+obs_dir+":"+ec.message());}
         return obs_dir;
     }
     void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint &start_time){

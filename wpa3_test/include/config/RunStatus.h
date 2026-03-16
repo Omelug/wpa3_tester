@@ -11,10 +11,8 @@
 
 namespace wpa3_tester{
 
-    enum CONFIG_TYPE{
-        TEST,
-        TEST_SUITE
-    };
+    enum CONFIG_TYPE{TEST,TEST_SUITE};
+    inline auto var_PREFIX = std::string("var_");
 
     struct ExternalEntity {
         std::string mac;

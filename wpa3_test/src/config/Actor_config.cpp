@@ -1,5 +1,4 @@
 #include "config/Actor_config.h"
-
 #include "config/ActorPtr.h"
 #include "logger/error_log.h"
 namespace wpa3_tester{

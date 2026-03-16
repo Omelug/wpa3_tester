@@ -19,30 +19,28 @@ namespace wpa3_tester::hostapd{
         error_code ec;
         create_directories(folder, ec);
         if (ec) {
-            log(LogLevel::ERROR,
-                ("hostapd_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
+            log(LogLevel::ERROR, "hostapd_config: failed to ensure run folder: "+folder.string()+":"+ec.message());
             throw runtime_error("hostapd_config: unable to create run folder");
         }
 
-        ofstream out(cfg_path);
-        if (!out) {
-            log(LogLevel::ERROR, ("hostapd_config: failed to open config file: " + cfg_path.string()).c_str());
+        ofstream hostapd_conf(cfg_path);
+        if (!hostapd_conf) {
+            log(LogLevel::ERROR, "hostapd_config: failed to open config file: "+cfg_path.string());
             throw runtime_error("hostapd_config: unable to open config file");
         }
         // write config
         for (auto it = ap_setup.begin(); it != ap_setup.end(); ++it) {
             if(it.key() == "version") continue;
-            out << it.key() << "=";
+            hostapd_conf << it.key() << "=";
             if (it.value().is_string()) {
-                out << it.value().get<string>();
+                hostapd_conf << it.value().get<string>();
             } else {
-                out << it.value().dump();
+                hostapd_conf << it.value().dump();
             }
-            out << "\n";
+            hostapd_conf << "\n";
         }
-
-        out.close();
-        log(LogLevel::INFO, ("hostapd_config: written " + cfg_path.string()).c_str());
+        hostapd_conf.close();
+        log(LogLevel::INFO, "hostapd_config: written " + cfg_path.string());
         return cfg_path.string();
     }
 
@@ -55,14 +53,13 @@ namespace wpa3_tester::hostapd{
         error_code ec;
         create_directories(folder, ec);
         if (ec) {
-            log(LogLevel::ERROR,
-                ("wpa_supplicant_config: failed to ensure run folder: " + folder.string() + ": " + ec.message()).c_str());
+            log(LogLevel::ERROR, "wpa_supplicant_config: failed to ensure run folder: "+run_folder+": "+ec.message());
             throw runtime_error("wpa_supplicant_config: unable to create run folder");
         }
 
         ofstream out(cfg_path);
         if (!out) {
-            log(LogLevel::ERROR, ("wpa_supplicant_config: failed to open config file: " + cfg_path.string()).c_str());
+            log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: "+cfg_path.string());
             throw runtime_error("wpa_supplicant_config: unable to open config file");
         }
 
@@ -81,7 +78,7 @@ namespace wpa3_tester::hostapd{
         out << "}\n";
 
         out.close();
-        log(LogLevel::INFO, ("wpa_supplicant_config: written " + cfg_path.string()).c_str());
+        log(LogLevel::INFO, "wpa_supplicant_config: written "+cfg_path.string());
         return cfg_path.string();
     }
 

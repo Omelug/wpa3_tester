@@ -42,7 +42,6 @@ properties:
             config:
               type: object
               description: "Structure of configuration with var_ prefix"
-          #TODO v C++ to projít, a vyhodit warning při nepouřitém var
 
   deleted_old:
     type: boolean

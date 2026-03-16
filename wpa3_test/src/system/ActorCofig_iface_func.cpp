@@ -9,20 +9,12 @@
 namespace wpa3_tester{
     using namespace std;
 
-    //TODO nějak strašně ukecané s těma logama
-
     //TODO create test for this
     void Actor_config::set_channel(const int channel) const{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_channel(iface, channel); return;}
-        const optional<string> netns = str_con.at("netns");
-        if (netns.has_value()) {
-            log(LogLevel::INFO, "Setting interface %s to channel %d in netns %s",
-                iface.c_str(), channel, netns->c_str());
-        } else {
-            log(LogLevel::INFO, "Setting interface %s to channel %d", iface.c_str(), channel);
-        }
-        run({"iw", "dev", iface, "set", "channel", std::to_string(channel)});
+        log(LogLevel::INFO, "Setting interface "+iface+" to channel "+to_string(channel));
+        run({"iw", "dev", iface, "set", "channel", to_string(channel)});
     }
 
     void Actor_config::set_managed_mode() const{
@@ -30,9 +22,7 @@ namespace wpa3_tester{
         if(conn.get() != nullptr){conn->set_managed_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
-        if (netns.has_value()) {
-            log(LogLevel::INFO, "Preparing interface "+iface+" for managed mode in netns " + netns.value());
-        } else {log(LogLevel::INFO, "Preparing interface"+iface+" for managed mode");}
+        log(LogLevel::INFO, "Preparing interface"+iface+" for managed mode");
 
         run({"ip", "link", "set", iface, "down"});
         run({"iw", "dev", iface, "set", "type", "managed"});
@@ -43,9 +33,8 @@ namespace wpa3_tester{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_monitor_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
-        if (netns.has_value()) {
-            log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode in netns "+ netns.value());
-        } else {log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");}
+
+        log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");
 
         run({"sudo","ip", "link", "set", iface, "down"});
         run({"sudo", "iw", "dev", iface, "set", "type", "monitor"});
@@ -62,7 +51,7 @@ namespace wpa3_tester{
         }
 
         if (netns.has_value()) {
-            log(LogLevel::INFO, "Cleaning up interface %s in netns %s", iface.c_str(), netns->c_str());
+            log(LogLevel::INFO, "Cleaning up interface "+iface+" in netns "+*netns);
 
             const string phy_find_cmd = "iw dev " + iface + " info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
             char buffer[128];
@@ -75,16 +64,15 @@ namespace wpa3_tester{
             if (pipe) pclose(pipe);
 
             if (!phy_name.empty()) {
-                log(LogLevel::DEBUG, "Moving %s (%s) to netns %s", iface.c_str(), phy_name.c_str(), netns->c_str());
+                log(LogLevel::DEBUG, "Moving "+iface+" ("+phy_name+") to netns "+*netns);
                 hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, std::nullopt);
             }
-
         } else {
-            log(LogLevel::INFO, "Cleaning up interface %s", iface.c_str());
+            log(LogLevel::INFO, "Cleaning up interface "+iface);
         }
 
-        run({"pkill", "-f", "wpa_supplicant.*-i" + iface});
-        run({"pkill", "-f", "hostapd.*" + iface});
+        run({"pkill", "-f", "wpa_supplicant.*-i"+iface});
+        run({"pkill", "-f", "hostapd.*"+iface});
         run({"ip", "link", "set", iface, "down"});
         run({"rfkill", "unblock", "wifi"});
         run({"ip", "addr", "flush", "dev", iface});

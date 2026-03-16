@@ -65,7 +65,7 @@ namespace wpa3_tester{
 
     void log_actor_configs(const ActorCMap& m, ofstream& ofs) {
         for (const auto &[name, actor] : m) {
-            ofs << "\t" << name << " -> " << (*actor)["iface"] << endl;
+            ofs << "\t" << name << " -> " << actor["iface"] << endl;
         }
         for (const auto& [name, actor] : m) {
             // Build a human-readable line

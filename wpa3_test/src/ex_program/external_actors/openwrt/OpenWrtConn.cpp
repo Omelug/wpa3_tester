@@ -24,7 +24,9 @@ namespace wpa3_tester {
 
     void OpenWrtConn::time_fix() const{
         exec("/etc/init.d/sysntpd stop");
-        exec("ntpd -q -n -p 0.openwrt.pool.ntp.org");
+        int ret = 0;
+        exec("ntpd -q -n -p 0.openwrt.pool.ntp.org", &ret);
+        if (ret != 0) throw ex_conn_err("Failed to sync time with NTP");
         exec("/etc/init.d/sysntpd start");
     }
 
@@ -65,8 +67,7 @@ namespace wpa3_tester {
         const auto& radio = j.at(radio_name);
 
         // enable disabled radio
-        if (radio.value("disabled", false))
-            exec("uci set wireless." + radio_name + ".disabled=0");
+        if (radio.value("disabled", false)) exec("uci set wireless." + radio_name + ".disabled=0");
 
         // find existing section or create new
         string section;

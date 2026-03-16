@@ -68,3 +68,32 @@ TEST_CASE("get_hw_capabilities - exec failure") {
 
     CHECK_THROWS_AS(conn.get_hw_capabilities(cfg, "radio0"), ex_conn_err);
 }
+
+TEST_CASE("get_radio_list - mock wifi status") {
+    MockOpenWrtConn conn;
+
+    // Mock output for wifi status
+    conn.mock_output = R"(
+{
+    "radio0": {
+        "up": true,
+        "pending": false,
+        "autostart": true,
+        "disabled": false,
+        "interfaces": []
+    },
+    "radio1": {
+        "up": false,
+        "pending": false,
+        "autostart": true,
+        "disabled": true,
+        "interfaces": []
+    }
+}
+)";
+
+    const auto radios = conn.get_radio_list();
+    CHECK((radios.size() == 2));
+    CHECK((radios[0] == "radio0"));
+    CHECK((radios[1] == "radio1"));
+}

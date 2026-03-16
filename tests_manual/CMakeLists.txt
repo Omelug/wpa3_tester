@@ -19,7 +19,7 @@ set_target_properties(test_list_external_entities PROPERTIES
 )
 
 # Test2: Get info from OpenWrt actor
-add_executable(test_info_openwrt "./info_openwrt.cpp")
+add_executable(test_info_openwrt "ex_program/openwrt/info_openwrt.cpp")
 target_link_libraries(test_info_openwrt PRIVATE manual_test_core)
 
 set_target_properties(test_info_openwrt PROPERTIES

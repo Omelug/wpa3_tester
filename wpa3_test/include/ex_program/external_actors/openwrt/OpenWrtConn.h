@@ -7,13 +7,13 @@
 namespace wpa3_tester {
     class OpenWrtConn : public ExternalConn {
         // --- device functions
-        void forward_internet(const std::string &remote_ip) const;
-        void time_fix() const;
-        void check_req(const nlohmann::json &config, const std::string &actor_name);
-        void check_req(const nlohmann::json &config, const std::string &actor_name) const;
+        void check_req(const nlohmann::json &config, const std::string &actor_name) override;
         std::string wait_for_ifname(const std::string &section, int retries = 10) const;
 
     public:
+        void forward_internet(const std::string &remote_ip) const;
+        void time_fix() const;
+
         void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor) override;
 
         explicit OpenWrtConn() {};

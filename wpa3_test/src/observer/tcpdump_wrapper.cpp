@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer{
     using namespace std;
@@ -57,6 +58,12 @@ namespace wpa3_tester::observer{
             actor["ssh_user"] + "@" + actor["whitebox_ip"],
             tcpdump_cmd
         };
+        const string local_pcap  = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
         rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
+        rs.process_manager.on_stop(actor_name + "_cap", [&remote_pcap, local_pcap, actor]() {
+           const vector<string> scp_cmd = {"sshpass", "-p", actor["ssh_password"], "scp", actor["ssh_user"] +"@" + actor["whitebox_host"] + ":" + remote_pcap, local_pcap};
+           hw_capabilities::run_cmd(scp_cmd);
+           actor->conn->exec("rm " + remote_pcap);  // cleanup
+       });
     }
 }

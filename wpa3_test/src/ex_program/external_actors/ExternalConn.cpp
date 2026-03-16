@@ -30,9 +30,9 @@ namespace wpa3_tester{
         if (!session) {throw ex_conn_err("ssh_new failed");}
 
         // ssh options
-        const string& host = (*actor)["whitebox_ip"];
+        const string& host = actor["whitebox_ip"];
         ssh_options_set(session, SSH_OPTIONS_HOST, host.c_str());
-        ssh_options_set(session, SSH_OPTIONS_USER, (*actor)["ssh_user"].c_str());
+        ssh_options_set(session, SSH_OPTIONS_USER, actor["ssh_user"].c_str());
         const int port = stoi(actor->str_con["ssh_port"].value_or("22"));
         ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 
@@ -45,7 +45,7 @@ namespace wpa3_tester{
         }
 
         // auth with password (preferred) or public key
-        const string password = (*actor)["ssh_password"];
+        const string password = actor["ssh_password"];
         if (password.empty()) {
             if (ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS)
                 throw ex_conn_err("SSH auth failed: no password and no key");

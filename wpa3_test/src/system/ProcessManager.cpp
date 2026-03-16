@@ -174,6 +174,7 @@ namespace wpa3_tester{
         if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
     }
+
     void ProcessManager::wait_for(const string &actor_name,
                               const string &pattern,
                               const seconds timeout)

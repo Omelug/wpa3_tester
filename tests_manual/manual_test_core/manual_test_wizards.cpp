@@ -7,8 +7,12 @@
 #include "system/hw_capabilities.h"
 #include "manual_test_wizards.h"
 
+#include "setup/scan.h"
+
 namespace wpa3_tester::manual_tests {
     using namespace std;
+    using namespace filesystem;
+
     void cli_section(const string& section_title){
         cout << "\n========================================\n";
         cout << "  " << section_title <<" \n";
@@ -154,5 +158,46 @@ namespace wpa3_tester::manual_tests {
         cout << "Total entities found: " << entities.size()
              << " (" << aps.size() << " APs, " << stas.size() << " STAs)\n";
         cout << "========================================\n\n";
+    }
+    bool ask_ok(const std::string& question) {
+        std::string input;
+        do {
+            std::cout << question << " (y/n): ";
+            std::getline(std::cin, input);
+            if (input == "ok" || input == "OK") return true;
+            if (input == "y" || input == "Y") return true;
+            if (input == "n" || input == "N") return false;
+        } while (true);
+    }
+    ActorPtr wb_actor_selection(){
+        cout << "\nThis test need OpenWrt devices defined in connection table" << endl;
+        const path conn_table_path = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
+                                                          "example_whitebox_table.csv");
+
+        cout << "Using connection table: " << conn_table_path << endl;
+        vector<ActorPtr> actors = scan::get_actors_conn_table(conn_table_path);
+        if (actors.empty()){throw manual_test_err("ERROR: No actors found in connection table, test cant be run");}
+        cout << "\nFound " << actors.size() << " actor(s) in connection table:" << endl;
+
+        for (size_t i = 0; i < actors.size(); ++i) {
+            const auto& actor = actors[i];
+            cout << "  [" << i << "] ";
+            if (actor->str_con["whitebox_host"].has_value()) {
+                cout << actor->str_con["whitebox_host"].value();
+            } else {
+                cout << "Actor_" << i;
+            }
+            cout << " "<< actor->to_str() << endl;
+            cout << endl;
+        }
+
+        // Select actor
+        size_t selected_idx = 0;
+        if (actors.size() > 1) {
+            cout << "\nSelect actor index [0-" << (actors.size() - 1) << "]: ";
+            cin >> selected_idx;
+            if (selected_idx >= actors.size()) {throw manual_test_err("ERROR: Invalid actor index");}
+        }
+        return actors[selected_idx];
     }
 }

@@ -1,0 +1,6 @@
+# OpenWrt tests
+configure_file(iw_phy_output.txt ${CMAKE_CURRENT_BINARY_DIR}/iw_phy_output.txt COPYONLY)
+
+add_executable(test_openwrt_hw_capabilities test_openwrt_hw_capabilities.cpp)
+target_link_libraries(test_openwrt_hw_capabilities PRIVATE wpa3_core)
+add_test(NAME OpenWrtHwCapabilitiesTest COMMAND test_openwrt_hw_capabilities)

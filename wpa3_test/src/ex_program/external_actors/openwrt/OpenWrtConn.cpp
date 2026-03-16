@@ -227,38 +227,31 @@ namespace wpa3_tester {
     }
 
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const std::string& radio) {
-        const string phy = "phy" + radio.substr(5);
-        const string output = exec("iw phy " + phy + " info");
-
-        // supported bands
-        if (output.find("Band 1:") != string::npos) cfg.bool_conditions["2_4GHz"] = true;
-        if (output.find("Band 2:") != string::npos) cfg.bool_conditions["5GHz"] = true;
-        if (output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos){
-            cfg.bool_conditions["6GHz"] = true;
+        const string phy = "phy" + radio.substr(5);  // "radio0" -> "phy0"
+        int ret;
+        const string output = exec("iw phy " + phy + " info", &ret);
+        if (ret != 0) {
+            throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);
         }
+        parse_hw_capabilities(cfg, output);
+    }
+
+    void OpenWrtConn::parse_hw_capabilities(Actor_config& cfg, const std::string& output) {
+        // supported bands
+        cfg.bool_conditions["2_4GHz"] = (output.find("Band 1:") != string::npos);
+        cfg.bool_conditions["5GHz"] = (output.find("Band 2:") != string::npos);
+        cfg.bool_conditions["6GHz"] = (
+            output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos
+        );
 
         // supported modes
-        if (output.find("* AP") != string::npos)      cfg.bool_conditions["AP"] = true;
-        if (output.find("* monitor") != string::npos) cfg.bool_conditions["monitor"] = true;
+        cfg.bool_conditions["AP"] = (output.find(" * AP") != string::npos);
+        cfg.bool_conditions["STA"] = (output.find(" * managed") != string::npos);
+        cfg.bool_conditions["monitor"] = (output.find(" * monitor") != string::npos);
 
-        const string features = exec("iw phy " + phy + " info | grep -i 'tx frame\\|inject'");
-        cfg.bool_conditions["injection"] = !features.empty();
-
-        // standards
-        if (output.find("HT20") != string::npos || output.find("HT40") != string::npos){
-            cfg.bool_conditions["80211n"] = true;
-        }
-        if (output.find("VHT") != string::npos) cfg.bool_conditions["80211ac"] = true;
-        if (output.find("HE ") != string::npos) cfg.bool_conditions["80211ax"] = true;
-
-        // WPA-PSK / WPA3-SAE - hostapd capabilities
-        const string hostapd = exec("hostapd -v 2>&1");
-        cfg.bool_conditions["WPA-PSK"]  = hostapd.find("WPA2") != string::npos ||
-                                           hostapd.find("PSK")  != string::npos;
-        cfg.bool_conditions["WPA3-SAE"] = hostapd.find("SAE") != string::npos;
-
-        // beacon protection
-        const string beacon = exec("iw phy " + phy + " info | grep -i 'beacon prot\\|BIGTK'");
-        cfg.bool_conditions["beacon_prot"] = !beacon.empty();
+        // Supported standards
+        cfg.bool_conditions["80211n"] = (output.find("HT20") != string::npos || output.find("HT40") != string::npos);
+        cfg.bool_conditions["80211ac"] = (output.find("VHT") != string::npos);
+        cfg.bool_conditions["80211ax"] = (output.find("HE") != string::npos);
     }
 }

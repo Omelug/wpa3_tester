@@ -29,5 +29,6 @@ namespace wpa3_tester {
         void setup_ap(const RunStatus &rs, const ActorPtr &actor) override;
         void logger(RunStatus& rs, const std::string & actor_name) override;
         void get_hw_capabilities(Actor_config& cfg, const std::string& radio) override;
+        static void parse_hw_capabilities(Actor_config& cfg, const std::string& output);
     };
 }

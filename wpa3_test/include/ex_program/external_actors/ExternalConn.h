@@ -19,7 +19,7 @@ namespace wpa3_tester{
         std::string get_mac_address(const std::string &iface) const;
         std::string get_driver(const std::string &radio) const;
 
-        std::string exec(const std::string &cmd, int * ret_err = nullptr) const;
+        virtual std::string exec(const std::string &cmd, int * ret_err = nullptr) const;
         void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;
         bool set_channel(const std::string &iface, int channel) const;
         virtual void set_monitor_mode(const std::string & iface) const;

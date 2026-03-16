@@ -16,12 +16,12 @@ namespace wpa3_tester{
 
     RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
         this->config_path = config_path;
-        if(!exists(config_path)){throw config_err("Config not found: %s", config_path.c_str());}
+        if(!exists(config_path)){throw config_err("Config not found: "+config_path);}
 
         if(suite_name.empty()){
             const YNode node = YAML::LoadFile(config_path);
             if(!node["name"] || !node["name"].IsScalar())
-                throw config_err("Config missing required string field 'name': %s", config_path.c_str());
+                throw config_err("Config missing required string field 'name': "+config_path);
             suite_name = node["name"].as<string>();
         }
 
@@ -169,7 +169,7 @@ namespace wpa3_tester{
     string RunSuiteStatus::findConfigByTestSuiteName(const string &name){
         auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
         if (tests.contains(name)) {return tests[name];}
-        throw config_err("Unknown test suite name: %s", name.c_str());
+        throw config_err("Unknown test suite name: "+name);
     }
 
     void RunSuiteStatus::print_test_suite_list() {
@@ -194,7 +194,7 @@ namespace wpa3_tester{
             if (first) {
                 length = value.size(); first = false;
             } else if (value.size() != length) {
-                throw config_err("All vars lists must have the same length (error in '" + key + "')");
+                throw config_err("All vars lists must have the same length (error in '"+key+"')");
             }
         }
         return length;

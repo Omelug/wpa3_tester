@@ -39,7 +39,7 @@ namespace wpa3_tester {
         for (const auto& program_name : req_programs) {
             int ret = 0;
             exec("opkg install " + program_name.get<string>(), false, &ret);
-            if(ret){throw config_err("Cannot install " + program_name.get<string>() + ", try opkg update");}
+            if(ret){throw config_err("Cannot install "+program_name.get<string>()+", try opkg update");}
         }
     }
 

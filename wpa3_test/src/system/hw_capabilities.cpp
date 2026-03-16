@@ -37,7 +37,7 @@ namespace wpa3_tester{
                 return filesystem::read_symlink(path).filename().string();
             }
         } catch(const filesystem::filesystem_error &e){
-            throw config_err("Driver check error: %s", e.what());
+            throw config_err("Driver check error: " + string(e.what()));
         }
         throw config_err("Driver check error: not found valid symlink"); ;
     }

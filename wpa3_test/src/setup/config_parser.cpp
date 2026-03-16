@@ -68,7 +68,7 @@ namespace wpa3_tester{
         const string parent_path_str = parent_path.string();
 
         if (ranges::find(hierarchy, parent_path_str) != hierarchy.end()) {
-            throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
+            throw config_err("Circular inheritance detected! File already in hierarchy: "+parent_path_str);
         }
 
         hierarchy.push_back(parent_path_str);

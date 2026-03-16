@@ -84,10 +84,10 @@ namespace wpa3_tester{
     std::string Actor_config::operator[](const std::string& key) const {
         const auto it = str_con.find(key);
         if (it == str_con.end()) {
-            throw config_err("Actor_config: missing required string condition '%s'", key.c_str());
+            throw config_err("Actor_config: missing required string condition '"+key+"'");
         }
         if (!it->second.has_value()) {
-            throw config_err("Actor_config: string condition '%s' has no value", key.c_str());
+            throw config_err("Actor_config: string condition '"+key+"' has no value");
         }
         return *(it->second);
     }
@@ -95,10 +95,10 @@ namespace wpa3_tester{
     bool Actor_config::get_bool(const std::string& key) const {
         const auto it = bool_conditions.find(key);
         if (it == bool_conditions.end()) {
-            throw config_err("Actor_config: missing required bool condition '%s'", key.c_str());
+            throw config_err("Actor_config: missing required bool condition '"+key+"'");
         }
         if (!it->second.has_value()) {
-            throw config_err("Actor_config: bool condition '%s' has no value", key.c_str());
+            throw config_err("Actor_config: bool condition '"+key+"' has no value");
         }
         return *(it->second);
     }

@@ -101,7 +101,7 @@ namespace wpa3_tester{
             it->second->logs.history_enabled = true;
             return;
         }
-        throw setup_err("Process {} not found to allow history", actor_name.c_str());
+        throw setup_err("Process "+actor_name+" not found to allow history");
     }
 
     void ProcessManager::ignore_history(const string &actor_name) {
@@ -110,7 +110,7 @@ namespace wpa3_tester{
             it->second->logs.history.clear();
             return;
         }
-        throw setup_err("Process {} not found to ignore history", actor_name.c_str());
+        throw setup_err("Process "+actor_name+" not found to ignore history");
     }
 
     void ProcessManager::discard_history(const string &actor_name) {
@@ -119,7 +119,7 @@ namespace wpa3_tester{
             it->second->logs.history.clear();
             return;
         }
-        throw setup_err("Process {} not found to discard history", actor_name.c_str());
+        throw setup_err("Process "+actor_name+" not found for discard history");
     }
     // -----------------------
 

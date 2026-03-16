@@ -153,10 +153,11 @@ namespace wpa3_tester::observer{
     }
 
     string tshark_graph(const RunStatus &rs,
-                        const string &actor_name,
-                        vector<graph_lines>& events){
-        path folder = get_observer_folder(rs, program_name);
-        create_directories(folder);
+                    const string &actor_name,
+                    vector<graph_lines>& events,
+                    const path &folder){
+        const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
+        create_directories(real_folder);
 
         path output_path = folder / (actor_name + "_graph.png");
         const path csv_path = extract_pcap_to_csv(rs, actor_name);

@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <regex>
+#include <functional>
 #include <reproc++/reproc.hpp>
 
 namespace wpa3_tester{
@@ -39,6 +40,7 @@ namespace wpa3_tester{
             std::thread drain_thread;
             std::atomic<bool> shutting_down{false};
             ProcessLogs logs;
+            std::function<void()> on_stop_callback;
         };
 
         std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
@@ -76,6 +78,7 @@ namespace wpa3_tester{
         void wait_for(const std::string &actor_name, const std::string &pattern,
                       std::chrono::seconds timeout = std::chrono::minutes(60)); // 60 minutes (practically infinity)
         void stop(const std::string &process_name);
+        void on_stop(const std::string& process_name, const std::function<void()> &callback);
 
         void stop_all();
     };

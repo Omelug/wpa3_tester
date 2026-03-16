@@ -19,5 +19,6 @@ namespace wpa3_tester::observer{
     std::vector<LogTimePoint> get_tshark_events(const RunStatus& rs, const std::string& process_name, const std::string& tshark_filter, const std::string& event_name);
     std::string tshark_graph(const RunStatus &rs,
             const std::string& actor_name,
-            std::vector<graph_lines>& events);
+            std::vector<graph_lines>& events,
+            const std::filesystem::path& folder = "");
 }

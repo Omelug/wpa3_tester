@@ -189,4 +189,28 @@ namespace wpa3_tester {
         log(LogLevel::INFO, "wait_for timeout test completed successfully");
         remove_all(test_dir);
     }
+
+    TEST_CASE("ProcessManager - on_stop callback") {
+        ProcessManager pm;
+
+        const auto test_dir = temp_directory_path() / "pm_test_on_stop";
+        create_directories(test_dir);
+        pm.init_logging(test_dir.string());
+
+        vector<string> sleep_cmd = {"sleep", "300"};
+        pm.run("test_proc", sleep_cmd);
+
+        bool callback_called = false;
+        pm.on_stop("test_proc", [&callback_called]() {
+            callback_called = true;
+        });
+
+        this_thread::sleep_for(100ms);
+        pm.stop("test_proc");
+
+        CHECK(callback_called);
+
+        log(LogLevel::INFO, "on_stop callback test completed successfully");
+        remove_all(test_dir);
+    }
 }

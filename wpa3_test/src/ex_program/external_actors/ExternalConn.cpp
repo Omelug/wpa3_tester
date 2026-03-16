@@ -9,12 +9,14 @@ namespace wpa3_tester{
 
     ExternalConn::~ExternalConn(){
         if (session) {
+            // clean up all process associated with this session
+            try { ExternalConn::exec("pkill -s 0 -TERM"); } catch (...) {}
             ssh_disconnect(session);
             ssh_free(session);
         }
     }
 
-    bool ExternalConn::connect(const RunStatus &rs, const ActorPtr &actor){
+    bool ExternalConn::connect(const ActorPtr &actor){
 
         // Check if actor has needed SSH params
         if (!actor->str_con["whitebox_ip"].has_value()  ||
@@ -70,7 +72,11 @@ namespace wpa3_tester{
         return exec("basename $(readlink /sys/class/ieee80211/" + phy + "/device/driver) 2>/dev/null | tr -d '\\n'");
     }
 
-    string ExternalConn::exec(const string& cmd, int* ret_code) const {
+    string ExternalConn::exec(const string& cmd, bool kill_on_exit, int* ret_err) const {
+        const string final_cmd = kill_on_exit
+        ? "setsid sh -c 'trap \"kill -- -$$\" EXIT; " + cmd + "'"
+        : cmd;
+
         if (!session) throw ex_conn_err("Cannot exec: not connected");
 
         const struct ChannelGuard {
@@ -81,18 +87,17 @@ namespace wpa3_tester{
 
         if (!guard.ch) throw ex_conn_err("Failed to create SSH channel");
         if (ssh_channel_open_session(guard.ch) != SSH_OK) throw ex_conn_err("Failed to open SSH channel");
-        if (ssh_channel_request_exec(guard.ch, cmd.c_str()) != SSH_OK) throw ex_conn_err("Failed to execute: " + cmd);
+        if (ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK) throw ex_conn_err("Failed to execute: " + final_cmd);
 
         string result;
         char buf[1024];
         int n;
-        while ((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0)
-            result.append(buf, n);
+        while ((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0){ result.append(buf, n);}
 
-        if (ret_code) {
+        if (ret_err) {
             uint32_t exit_status = 0;
             ssh_channel_get_exit_state(guard.ch, &exit_status, nullptr, nullptr);
-            *ret_code = static_cast<int>(exit_status);
+            *ret_err = static_cast<int>(exit_status);
         }
         return result;
     }
@@ -106,8 +111,8 @@ namespace wpa3_tester{
     }
 
     bool ExternalConn::set_channel(const std::string &iface, const int channel) const{
-        int ret; // for monitor/station mód
-        exec("iw dev " + iface + " set channel " + to_string(channel) + " 2>&1", &ret);
+        int ret = 0; // for monitor/station mód
+        exec("iw dev " + iface + " set channel " + to_string(channel) + " 2>&1", false, &ret);
         return ret;
     }
 

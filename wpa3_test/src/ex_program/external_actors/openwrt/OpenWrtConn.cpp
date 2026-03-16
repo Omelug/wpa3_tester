@@ -35,7 +35,7 @@ namespace wpa3_tester {
         if(!setup_node.contains("req_programs")){return;}
         auto req_programs = setup_node.at("req_programs");
         for (const auto& program_name : req_programs) {
-            int ret;
+            int ret = 0;
             exec("opkg install " + program_name.get<string>(), &ret);
             if(ret){throw config_err("Cannot install " + program_name.get<string>() + ", try opkg update");}
         }
@@ -99,8 +99,8 @@ namespace wpa3_tester {
         actor->str_con["radio"] = radio_name;
     }
 
-    bool OpenWrtConn::connect(const RunStatus& rs, const ActorPtr &actor) {
-        const bool success = ExternalConn::connect(rs, actor);
+    bool OpenWrtConn::connect(const ActorPtr &actor) {
+        const bool success = ExternalConn::connect(actor);
         if (success) {
             forward_internet(actor["whitebox_ip"]);
             time_fix();
@@ -227,12 +227,10 @@ namespace wpa3_tester {
     }
 
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const std::string& radio) {
-        const string phy = "phy" + radio.substr(5);  // "radio0" -> "phy0"
-        int ret;
+        const string phy = "phy" + radio.substr(5);
+        int ret = 0;
         const string output = exec("iw phy " + phy + " info", &ret);
-        if (ret != 0) {
-            throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);
-        }
+        if (ret != 0) {throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);}
         parse_hw_capabilities(cfg, output);
     }
 

@@ -17,7 +17,7 @@ namespace wpa3_tester {
         void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor) override;
 
         explicit OpenWrtConn() {};
-        bool connect(const RunStatus &rs, const ActorPtr &actor) override;
+        bool connect(const ActorPtr &actor) override;
         std::vector<std::string> get_radio_list() override;
 
         void set_monitor_mode(const std::string &iface) const override;

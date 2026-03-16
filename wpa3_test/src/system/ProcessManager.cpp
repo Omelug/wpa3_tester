@@ -113,8 +113,7 @@ namespace wpa3_tester{
     ProcessManager::~ProcessManager() {
         stop_all();
         lock_guard lock(mtx_);
-        if (combined_log.is_open())
-            combined_log.close();
+        if (combined_log.is_open()) combined_log.close();
     }
     void ProcessManager::run(const string& process_name,
                          const vector<string> &cmd,
@@ -183,11 +182,11 @@ namespace wpa3_tester{
 
         {
             lock_guard lock(mtx_);
-            auto it = processes.find(actor_name);
-            if (it == processes.end() || !it->second) {
+            const auto proc_iter = processes.find(actor_name);
+            if (proc_iter == processes.end() || !proc_iter->second) {
                 throw runtime_error("Unknown process in wait_for: " + actor_name);
             }
-            mp = it->second;
+            mp = proc_iter->second;
         }
 
         auto &logs = mp->logs;
@@ -252,11 +251,10 @@ namespace wpa3_tester{
 
         {
             lock_guard lock(mtx_);
-            auto it = processes.find(process_name);
-            if (it == processes.end())
-                return;
+            const auto proc_iter = processes.find(process_name);
+            if (proc_iter == processes.end()) return;
 
-            mp = it->second;
+            mp = proc_iter->second;
 
             // Clean up wait state and notify any waiting threads
             auto &logs = mp->logs;
@@ -264,7 +262,7 @@ namespace wpa3_tester{
             logs.wait.matched = false;
             logs.history_enabled = false;
 
-            processes.erase(it);
+            processes.erase(proc_iter);
         }
 
         // Notify all waiting threads that process is shutting down
@@ -283,9 +281,17 @@ namespace wpa3_tester{
 
         mp->proc->stop(operations);
 
+        // Call on_stop callback if registered
+        if (mp->on_stop_callback) {
+            try {
+                mp->on_stop_callback();
+            } catch (const exception& e) {
+                log(LogLevel::WARNING, "Error in on_stop callback for "+ process_name +":"+ e.what());
+            }
+        }
+
         // wait for drain thread
-        if (mp->drain_thread.joinable())
-            mp->drain_thread.join();
+        if (mp->drain_thread.joinable()){ mp->drain_thread.join();}
     }
 
     void ProcessManager::stop_all() {
@@ -293,9 +299,7 @@ namespace wpa3_tester{
         {
             lock_guard lock(mtx_);
             process_names.reserve(processes.size());
-            for (const auto &name : processes | views::keys) {
-                process_names.push_back(name);
-            }
+            for (const auto &name : processes | views::keys) {process_names.push_back(name);}
         }
 
         for (const auto& name : process_names) {
@@ -307,5 +311,13 @@ namespace wpa3_tester{
         }
 
         log(LogLevel::DEBUG, "All processes stopped");
+    }
+
+    void ProcessManager::on_stop(const string& process_name, const function<void()> &callback) {
+        lock_guard lock(mtx_);
+        const auto proc_iter = processes.find(process_name);
+        if (proc_iter != processes.end() && proc_iter->second) {
+            proc_iter->second->on_stop_callback = callback;
+        }
     }
 }

@@ -8,10 +8,12 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
-#include "../../../../include/system/ip.h"
+#include "system/ip.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
+#include "observer/observers.h"
+#include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
 namespace wpa3_tester::CSA_attack{
@@ -74,7 +76,7 @@ namespace wpa3_tester::CSA_attack{
     void speed_observation_start(RunStatus& rs){
         observer::start_musezahn(rs, "mz_gen", "client", "access_point");
         observer::start_tshark(rs, "client", "udp port 5201");
-        //TODO tcpddump observer::start_tshark(rs, "access_point", "udp port 5201");
+        observer::start_tcpdump(rs, "access_point", "udp port 5201");
     }
 
     void setup_AP(RunStatus& rs,const string& actor_name){
@@ -181,7 +183,7 @@ namespace wpa3_tester::CSA_attack{
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-        //const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);
+        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events,  observer::get_observer_folder(rs, "tcpdump"));
         //generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

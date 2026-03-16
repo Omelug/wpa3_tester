@@ -89,7 +89,7 @@ namespace wpa3_tester{
         }
 
         const shared_ptr<ExternalConn> conn(conn_raw);
-        if (!conn->connect(*this, actor)) {throw config_err("Failed to connect to external actor ");}
+        if (!conn->connect(actor)) {throw config_err("Failed to connect to external actor ");}
         actor->conn = conn;
     }
 

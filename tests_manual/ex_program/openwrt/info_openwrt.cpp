@@ -2,11 +2,14 @@
 #include <doctest.h>
 #include <iostream>
 #include <string>
-#include <nlohmann/json.hpp>
+#include <thread>
+#include <chrono>
 #include "config/RunStatus.h"
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "observer/observers.h"
 #include "setup/scan.h"
+#include "observer/tcpdump_wrapper.h"
 
 using namespace std;
 using namespace wpa3_tester;
@@ -100,7 +103,42 @@ TEST_CASE("Logger OpenWrt") {
         conn->exec("logger 'Test log message from wpa3_tester'");
         rs.process_manager.wait_for(actor["actor_name"], "Test log message", chrono::seconds(5));
     }
-
     cli_section("Test completed successfully");
 }
 
+TEST_CASE("Tcpdump OpenWrt") {
+    auto& [conn, actor] = get_conn_actor();
+
+    SUBCASE("Tcpdump Remote") {
+        cout << "\n--- Tcpdump Remote Test ---" << endl;
+
+        const string chosen_iface = "phy0-ap0"; //FIXME get_openwrt_iface_wizard(conn.get());
+        if (chosen_iface.empty()) {
+            throw manual_test_err("No interface selected, skipping test.");
+        }
+
+        RunStatus rs;
+
+        rs.actors.emplace(actor["actor_name"], actor);
+        const auto test_dir = temp_directory_path() / "openwrt_logger_test";
+        rs.run_folder = test_dir;
+        create_directories(test_dir);
+        rs.process_manager.init_logging(path(test_dir / "logger"));
+
+        rs.actors.emplace(actor["actor_name"], actor);
+        actor->str_con["iface"] = chosen_iface;
+
+        observer::start_tcpdump_remote(rs, actor["actor_name"], "");
+        this_thread::sleep_for(chrono::seconds(1));
+
+        // Check if tcpdump is running on remote
+        const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");
+        CHECK(!ps_output.empty());
+        rs.process_manager.stop(actor["actor_name"]+ "_cap");
+        const path pcap_path = observer::get_observer_folder(rs, "tcpdump") / (actor["actor_name"] + "_capture.pcap");
+        CHECK(exists(pcap_path));
+        cout << "Pcap file created: " << pcap_path << endl;
+        cout << "Tcpdump remote process running: " << ps_output << endl;
+    }
+    cli_section("Test completed successfully");
+}

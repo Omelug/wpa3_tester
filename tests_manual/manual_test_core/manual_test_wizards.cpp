@@ -200,4 +200,35 @@ namespace wpa3_tester::manual_tests {
         }
         return actors[selected_idx];
     }
+
+    std::string get_openwrt_iface_wizard(OpenWrtConn* conn) {
+        cli_section("OpenWrt Interface Selection for Tcpdump");
+
+        const string output = conn->exec("ip link show | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://'");
+        vector<string> ifaces;
+        stringstream ss(output);
+        string line;
+        while (getline(ss, line)) {
+            ifaces.push_back(line);
+        }
+
+        if (ifaces.empty()) {
+            cout << "No interfaces found!" << endl;
+            return "";
+        }
+
+        cout << "Available interfaces on OpenWrt:" << endl;
+        for (size_t i = 0; i < ifaces.size(); ++i) {
+            cout << "  [" << i << "] " << ifaces[i] << endl;
+        }
+
+        cout << "\nSelect interface index [0-" << (ifaces.size() - 1) << "]: ";
+        size_t idx;
+        cin >> idx;
+        if (idx >= ifaces.size()) {
+            cout << "Invalid index" << endl;
+            return "";
+        }
+        return ifaces[idx];
+    }
 }

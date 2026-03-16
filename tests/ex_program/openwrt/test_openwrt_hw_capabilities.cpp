@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 #include <boost/assert/source_location.hpp>
-
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "config/Actor_config.h"
 #include "logger/error_log.h"

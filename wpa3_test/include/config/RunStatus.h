@@ -72,7 +72,6 @@ namespace wpa3_tester{
         std::vector<ActorPtr> external_wb_options() const;
         static std::vector<ActorPtr> external_bb_options();
         //static std::vector<ActorPtr> create_simulation();
-
         void parse_requirements();
 
     public:

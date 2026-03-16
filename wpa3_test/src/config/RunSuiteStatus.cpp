@@ -138,7 +138,7 @@ namespace wpa3_tester{
             path suite_name = rs.config.at("name").get<string>();
             rs.run_folder = path(this->run_folder) / suite_name / "last_run" / name;
 
-            // TODO co s test_report, compile_external, install_requerements ?
+            // TODO test_report, compile_external, install_requerements  - přepsat, ale tak aby ovlivnňovali jen generování!
 
            string rewrite_mode = "false";
             if (config.contains("rewrite") && config.at("rewrite").is_string()) {

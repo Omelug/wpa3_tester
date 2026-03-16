@@ -54,7 +54,7 @@ namespace wpa3_tester{
         return 0;
     }
 
-    vector<InterfaceInfo> hw_capabilities::list_interfaces(){
+    vector<InterfaceInfo> hw_capabilities::list_interfaces(optional<InterfaceType> filter = nullptr){
         std::vector<InterfaceInfo> result;
         const filesystem::path net_path = "/sys/class/net";
 
@@ -73,7 +73,7 @@ namespace wpa3_tester{
             if(iface == "lo"){
                 type = InterfaceType::Loopback;  // Loopback ('lo')
             }else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
-                if(iface.rfind("mon", 0) == 0) { // start with mon //TODO  dirty but works ?
+                if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0) { // start with prefix, not good fix
                     type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
                 }else{
                     type = InterfaceType::Wifi;   // wireless Wi-Fi
@@ -89,7 +89,11 @@ namespace wpa3_tester{
                 type = InterfaceType::Ethernet; // Wire ethernet
             }
             const string radio = get_phy(iface);
-            result.push_back({iface, radio,type});
+            if(filter.has_value()){
+                if(filter.value() == type){result.push_back({iface, radio,type});}
+            }else{
+                result.push_back({iface, radio,type});
+            }
         }
         return result;
     }

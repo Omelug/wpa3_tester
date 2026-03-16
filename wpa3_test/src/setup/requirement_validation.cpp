@@ -153,7 +153,7 @@ namespace wpa3_tester{
         ActorCMap options_external{};
         if(!external_wb_actors.empty()){ //TODO rozdělit na external_wb_mapiipng a bb
             options_external = external_wb_options();
-            external_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
+            external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, options_external);
         }
 
         // ------------------ EXTERNAL BLACKBOX ---------------------------
@@ -172,7 +172,7 @@ namespace wpa3_tester{
 
         for (auto &[radio_name, actor] : external_wb_actors) {
             //FIXME, tohle udělat tak, aby to šlo bez klíčů (aby radio_name nemuselo být unikátní)
-            auto& opt_actor = options_external.at(external_mapping.at(radio_name));
+            auto& opt_actor = options_external.at(external_wb_mapping.at(radio_name));
             actor->setup_actor(config, opt_actor);
         }
 

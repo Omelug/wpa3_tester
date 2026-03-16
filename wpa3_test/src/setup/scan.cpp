@@ -22,8 +22,7 @@ namespace wpa3_tester{
     // return <string iface; internal_actor >
     ActorCMap RunStatus::internal_options(){
         ActorCMap options_map;
-        for (const auto& [iface_name, radio_name, iface_type] : hw_capabilities::list_interfaces()) {
-            if(iface_type != InterfaceType::Wifi) continue; //TODO add to selection?
+        for (const auto& [iface_name, radio_name, iface_type] : hw_capabilities::list_interfaces(InterfaceType::Wifi)) {
             auto cfg = make_unique<Actor_config>();
             cfg->str_con["iface"] = iface_name;
             cfg->str_con["source"] = "internal";

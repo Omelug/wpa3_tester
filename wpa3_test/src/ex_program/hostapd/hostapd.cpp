@@ -66,9 +66,9 @@ namespace wpa3_tester::hostapd{
             throw runtime_error("wpa_supplicant_config: unable to open config file");
         }
 
-        // wpa_supplicant.conf //TODO remove default ?
-        const auto ssid       = client_setup.value("ssid",      string{"wpa3_test"});
-        const auto passphrase = client_setup.value("psk",       string{"password123"});
+        // wpa_supplicant.conf
+        const auto ssid       = client_setup.at("ssid").get<string>();
+        const auto passphrase = client_setup.at("psk").get<string>();
 
         out << "network={" << '\n';
         // write config

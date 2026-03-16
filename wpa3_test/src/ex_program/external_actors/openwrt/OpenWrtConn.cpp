@@ -17,7 +17,7 @@ namespace wpa3_tester {
         const string local_ip = ip::get_ip(local_iface);
 
         exec("uci set network.lan.gateway=" + local_ip);
-        exec("uci set network.lan.dns=8.8.8.8"); //TODO najít lepší DNS
+        exec("uci set network.lan.dns=8.8.8.8");
         exec("uci commit network");
         exec("/etc/init.d/network restart");
     }

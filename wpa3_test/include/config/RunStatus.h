@@ -43,7 +43,7 @@ namespace wpa3_tester{
         //mapping actor->interface
         AssignmentMap internal_mapping{};
         //mapping actor->MAC
-        AssignmentMap external_mapping{};
+        AssignmentMap external_wb_mapping{};
 
         //AssignmentMap simulation_mapping;
 

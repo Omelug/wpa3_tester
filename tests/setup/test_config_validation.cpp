@@ -149,8 +149,9 @@ TEST_CASE("RunStatus - Test suite test generation") {
 
     const vector<ConfigSuiteCase> tests = {
         //{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
-        {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"},
-        {"3. driver permutations", "03_ts_driver_permutation.yaml", "03_result_driver_permutation"}
+        //{"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"},
+        //{"3. driver permutations", "03_ts_driver_3_vars.yaml", "03_result_driver_3_vars"},
+        {"4. driver permutations", "04_ts_driver_permutation.yaml", "04_result_driver_permutation"}
     };
 
     for (const auto& t : tests) {

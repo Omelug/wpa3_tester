@@ -92,10 +92,7 @@ namespace wpa3_tester::manual_tests {
         return selected_iface;
     }
 
-    /**
-     * Helper function to print external entities in a formatted table
-     */
-    void print_external_entities(const vector<ExternalEntity>& entities) {
+    void print_external_entities(const vector<ActorPtr>& entities) {
         if (entities.empty()) {
             cout << "No entities found!\n";
             cout << "\nPossible reasons:\n";
@@ -106,53 +103,16 @@ namespace wpa3_tester::manual_tests {
         }
 
         // Separate APs and STAs
-        vector<ExternalEntity> aps;
-        vector<ExternalEntity> stas;
+        vector<ActorPtr> aps;
+        vector<ActorPtr> stas;
 
         for (const auto& entity : entities) {
-            if (entity.is_ap) { aps.push_back(entity);
+            if (entity->get_bool("AP")) { aps.push_back(entity);
             } else { stas.push_back(entity);}
         }
 
-        // Display Access Points
-        cout << "\nAccess Points (" << aps.size() << " found):\n";
-        cout << string(80, '-') << "\n";
-        cout << left << setw(20) << "MAC Address"
-             << setw(25) << "SSID"
-             << setw(10) << "Channel"
-             << setw(10) << "Signal" << "\n";
-        cout << string(80, '-') << "\n";
-
-        for (const auto& ap : aps) {
-            cout << left << setw(20) << ap.mac
-                 << setw(25) << (ap.ssid.empty() ? "<hidden>" : ap.ssid)
-                 << setw(10);
-            if (ap.channel == 0) { cout << "N/A";
-            } else { cout << ap.channel;}
-            cout << setw(10);
-            if (ap.signal == 0) { cout << "N/A";
-            } else { cout << ap.signal << " dBm";}
-            cout << "\n";
-        }
-
-        cout << "\n";
-
-        // Display Stations
-        cout << "Stations (" << stas.size() << " found):\n";
-        cout << string(80, '-') << "\n";
-        cout << left << setw(20) << "MAC Address"
-             << setw(25) << "SSID (if known)"
-             << setw(10) << "Signal" << "\n";
-        cout << string(80, '-') << "\n";
-
-        for (const auto& sta : stas) {
-            cout << left << setw(20) << sta.mac
-                 << setw(25) << (sta.ssid.empty() ? "N/A" : sta.ssid)
-                 << setw(10);
-            if (sta.signal == 0) { cout << "N/A";
-            } else {cout << sta.signal << " dBm";}
-            cout << "\n";
-        }
+        Actor_config::print_ActorCMap("Access points", aps);
+        Actor_config::print_ActorCMap("Statisons:", stas);
 
         cout << "\n========================================\n";
         cout << "Total entities found: " << entities.size()

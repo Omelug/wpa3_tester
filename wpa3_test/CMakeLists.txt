@@ -19,7 +19,7 @@ else()
     message(STATUS "ccache not found")
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 #libtins a libwifi mají oba target uninstall
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)

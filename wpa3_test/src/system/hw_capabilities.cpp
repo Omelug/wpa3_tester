@@ -17,6 +17,7 @@
 
 namespace wpa3_tester{
     using namespace std;
+    using namespace filesystem;
 
     string hw_capabilities::read_sysfs(const string &iface, const string &file){
         const string path = "/sys/class/net/" + iface + "/" + file;
@@ -43,27 +44,27 @@ namespace wpa3_tester{
     }
 
     string hw_capabilities::get_phy(const string &iface) {
-        const filesystem::path link = "/sys/class/net/" + iface + "/phy80211";
-        if (!filesystem::exists(link)) return "";
-        return filesystem::read_symlink(link).filename().string();
+        const path link = "/sys/class/net/" + iface + "/phy80211";
+        if (!exists(link)) return "";
+        return read_symlink(link).filename().string();
     }
 
-    int get_interface_arphrd_type(const filesystem::path& iface_path) {
-        std::ifstream file(iface_path / "type");
+    int get_interface_arphrd_type(const path& iface_path) {
+        ifstream file(iface_path / "type");
         int type = 0;
         if (file >> type) return type;
         return 0;
     }
 
     vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceType> filter){
-        std::vector<InterfaceInfo> result;
-        const filesystem::path net_path = "/sys/class/net";
+        vector<InterfaceInfo> result;
+        const path net_path = "/sys/class/net";
 
         if(!exists(net_path)) return result;
-        for(const auto &entry: filesystem::directory_iterator(net_path)){
-            std::string iface = entry.path().filename().string();
+        for(const auto &entry: directory_iterator(net_path)){
+            string iface = entry.path().filename().string();
 
-            auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", std::vector<std::string>{});
+            auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", vector<string>{});
 
             if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
                 log(LogLevel::DEBUG, "Ignoring interface "+iface+" due to ignore_interfaces config");
@@ -73,20 +74,20 @@ namespace wpa3_tester{
             auto type = InterfaceType::Unknown;
             if(iface == "lo"){
                 type = InterfaceType::Loopback;  // Loopback ('lo')
-            }else if(filesystem::exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
+            }else if(exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
                 if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0) { // start with prefix, not good fix
                     type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
                 }else{
                     type = InterfaceType::Wifi;   // wireless Wi-Fi
                 }
 
-            }else if(filesystem::exists(entry.path() / "bridge")){
+            }else if(exists(entry.path() / "bridge")){
                 type = InterfaceType::DockerBridge;  // Docker Bridge ('bridge')
-            }else if(filesystem::exists(entry.path() / "tun_flags")){
+            }else if(exists(entry.path() / "tun_flags")){
                 type = InterfaceType::VPN; // VPN / TUN (tun_flags)
             } else if(iface.find("veth") == 0){
                 type = InterfaceType::VirtualVeth; // virtual veth docker container etc)
-            } else if(filesystem::exists(entry.path() / "device")){
+            } else if(exists(entry.path() / "device")){
                 type = InterfaceType::Ethernet; // Wire ethernet
             }
             const string radio = get_phy(iface);
@@ -102,12 +103,12 @@ namespace wpa3_tester{
     // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
     bool hw_capabilities::findSolution(
-        const std::vector<std::string> &ruleKeys,
+        const vector<string> &ruleKeys,
         const size_t ruleIdx,
         const ActorCMap &rules,
-        const std::vector<ActorPtr> &options,
-        std::unordered_set<size_t> &usedOptions,
-        AssignmentMap &currentAssignment
+        const vector<ActorPtr> &options,
+        unordered_set<size_t> &usedOptions,
+        ActorMap &currentAssignment
     ){
         if (ruleIdx == ruleKeys.size()) return true;
 
@@ -132,11 +133,11 @@ namespace wpa3_tester{
         return false;
     }
 
-    AssignmentMap hw_capabilities::check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options) {
+    ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options) {
         vector<string> ruleKeys;
         for (const auto &key : rules | views::keys) ruleKeys.push_back(key);
 
-        AssignmentMap result;
+        ActorMap result;
         if (unordered_set<size_t> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
             log(LogLevel::DEBUG, "Solved!");
             for (auto const &[r, o] : result) log(LogLevel::DEBUG, "\tRule "+r+" -> option "+ o->to_str());
@@ -159,7 +160,7 @@ namespace wpa3_tester{
         }
     }
 
-    int hw_capabilities::run_cmd(const vector<string> &argv, const std::optional<string> &netns) {
+    int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns) {
         if (argv.empty()) return -1;
 
         // prepend ip netns exec if netns is set
@@ -199,43 +200,51 @@ namespace wpa3_tester{
         return WEXITSTATUS(status);
     }
 
-    int hw_capabilities::channel_to_freq_mhz(const int channel){
-        // 2.4 GHz band: channels 1-13 -> 2412 + 5*(ch-1), channel 14 -> 2484
-        if(channel >= 1 && channel <= 13){return 2412 + 5 * (channel - 1);}
-        if(channel == 14){ return 2484;}
-
-        // 5 GHz band common non-DFS channels mapping (extend as needed)
-        switch(channel){
-            case 36: return 5180;
-            case 40: return 5200;
-            case 44: return 5220;
-            case 48: return 5240;
-            case 52: return 5260;
-            case 56: return 5280;
-            case 60: return 5300;
-            case 64: return 5320;
-            case 100: return 5500;
-            case 104: return 5520;
-            case 108: return 5540;
-            case 112: return 5560;
-            case 116: return 5580;
-            case 120: return 5600;
-            case 124: return 5620;
-            case 128: return 5640;
-            case 132: return 5660;
-            case 136: return 5680;
-            case 140: return 5700;
-            case 144: return 5720;
-            case 149: return 5745;
-            case 153: return 5765;
-            case 157: return 5785;
-            case 161: return 5805;
-            case 165: return 5825;
-            default:
-                throw config_err("Unknown Wi-Fi channel %d, using 0 MHz", channel);
+    int hw_capabilities::freq_to_channel(const int freq) {
+        // 2.4 GHz
+        if (freq == 2484) return 14;
+        if (freq >= 2412 && freq <= 2472) {
+            const int ch = (freq - 2407) / 5;
+            if ((freq - 2407) % 5 == 0) return ch;
         }
+
+        // 5 GHz
+        if (freq >= 5180 && freq <= 5885) {
+            const int ch = (freq - 5000) / 5;
+            if ((freq - 5000) % 5 == 0) return ch;
+        }
+
+        // 6 GHz
+        if (freq >= 5955 && freq <= 7115) {
+            const int ch = (freq - 5950) / 5;
+            if ((freq - 5950) % 5 == 0) return ch;
+        }
+
+        throw std::invalid_argument("Invalid frequency: " + std::to_string(freq) + " MHz");
     }
 
+    int hw_capabilities::channel_to_freq(const int channel, const WifiBand band) {
+        // 2.4 GHz
+        if(band == WifiBand::BAND_2_4 || band == WifiBand::BAND_2_4_or_5){
+            if (channel == 14) return 2484;
+            if (channel >= 1 && channel <= 13) return 2407 + channel * 5;
+        }
+        // 5 GHz
+        if(band == WifiBand::BAND_5 || band == WifiBand::BAND_2_4_or_5){
+            if (channel >= 36 && channel <= 177) {
+                if ((channel - 36) % 4 == 0 || channel == 177) return 5000 + channel * 5;
+            }
+        }
+
+        // 6 GHz
+        if(band == WifiBand::BAND_6){
+            if (channel >= 1 && channel <= 233) {
+                const int freq = 5950 + channel * 5;
+                if (freq >= 5955 && freq <= 7115) return freq;
+            }
+        }
+        throw std::invalid_argument("Invalid channel: " + std::to_string(channel));
+    }
     string hw_capabilities::run_cmd_output(const vector<string> &argv) {
         if (argv.empty()) return {};
 
@@ -268,15 +277,15 @@ namespace wpa3_tester{
         return output;
     }
 
-    void hw_capabilities::create_ns(const std::string &ns_name){
+    void hw_capabilities::create_ns(const string &ns_name){
         run_cmd({"sudo","ip", "netns", "add", ns_name});
         run_cmd({"sudo","ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
     }
 
     string hw_capabilities::rand_mac() {
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(0, 255);
+        static random_device rd;
+        static mt19937 gen(rd());
+        uniform_int_distribution<> dis(0, 255);
 
         char mac[18];
         snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -286,12 +295,10 @@ namespace wpa3_tester{
 
     string hw_capabilities::get_iface(const string& ip_address) {
         const string output = run_cmd_output({"ip", "route", "get", ip_address});
-        if (output.empty()) throw runtime_error("Failed to get route for IP: " + ip_address);
+        if (output.empty()) throw runtime_error("Failed to get route for IP: "+ip_address);
 
         smatch match;
-        if (!regex_search(output, match, regex(R"(dev (\S+))"))){
-            throw runtime_error("Could not find interface for IP: " + ip_address);
-        }
+        if (!regex_search(output, match, regex(R"(dev (\S+))"))){throw runtime_error("Could not find interface for IP: "+ip_address);}
 
         return match[1].str();
     }

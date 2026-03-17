@@ -25,6 +25,13 @@ namespace wpa3_tester{
         InterfaceType type;
     };
 
+    enum class WifiBand {
+        BAND_2_4_or_5,
+        BAND_2_4,
+        BAND_5,
+        BAND_6
+    };
+
     inline std::string iface_to_string(const InterfaceType type) {
         switch (type) {
             case InterfaceType::Loopback:       return "loopback";
@@ -78,15 +85,16 @@ namespace wpa3_tester{
             const std::vector<ActorPtr> &options,
             //only for recursive
             std::unordered_set<size_t> &usedOptions,
-            AssignmentMap &currentAssignment
+            ActorMap &currentAssignment
         );
         static int nl80211_cb(nl_msg *msg, void *arg);
         static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 
     public:
-        static AssignmentMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
+        static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
         static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
+        static int freq_to_channel(int freq);
         static std::string run_cmd_output(const std::vector<std::string> &argv);
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
@@ -99,7 +107,7 @@ namespace wpa3_tester{
         static std::string get_phy(const std::string &iface);
 
         //format
-        static int channel_to_freq_mhz(int channel);
+        static int channel_to_freq(int channel, WifiBand band= WifiBand::BAND_2_4_or_5);
         static void create_ns(const std::string& ns_name);
         static std::string rand_mac();
         static std::string get_iface(const std::string& ip_address);

@@ -13,7 +13,6 @@ namespace wpa3_tester{
     using namespace filesystem;
     using namespace nlohmann;
     using YNode = YAML::Node;
-    using paths_map = vector <pair<string, path>>;
 
     RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
         this->config_path = config_path;
@@ -58,7 +57,7 @@ namespace wpa3_tester{
         }
     }
 
-    void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source_name, paths_map &test_map) const{
+    void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source_name, config_paths &test_map) const{
         const path rel_path = source_j.at("path").get<string>();
         path abs_path = absolute(path(config_path).parent_path() / rel_path);
         test_map.emplace_back(source_name, abs_path);
@@ -73,7 +72,7 @@ namespace wpa3_tester{
         }
     }
 
-    void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string &source_name, const path &test_config_folder, paths_map &test_map){
+    void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map){
         auto source_config = source_info.at("config");
         auto gen_folder = test_config_folder / source_name;
 
@@ -103,11 +102,11 @@ namespace wpa3_tester{
 
             // unresolved var_
             if (config_str.find(var_PREFIX) != string::npos) {
-                filesystem::remove(tmp_path);
+                remove(tmp_path);
                 throw runtime_error("Unresolved "+var_PREFIX+" placeholders at index " + to_string(i));
             }
 
-            filesystem::remove(tmp_path);
+            remove(tmp_path);
             ofstream ofs(test_config_path);
             if (!ofs.is_open()) { throw runtime_error("Could not open final config file for writing"); }
             ofs << config_str;
@@ -118,18 +117,24 @@ namespace wpa3_tester{
         }
     }
 
-    vector<pair<string, path>> RunSuiteStatus::get_test_paths(){
+    config_paths RunSuiteStatus::get_test_paths(){
         const auto test_config_folder = path(this->run_folder) / "test_config";
 
         error_code ec; //create test folder
         create_directories(test_config_folder, ec);
         if (ec) {throw runtime_error("Unable to create directory");}
 
-        vector<pair<string, path>> test_map;
+        config_paths test_map;
         for (auto& [source_name, source_info] : config.at("tests").items()) {
-            string type = source_info.at("type");
-            if (type == "path") {defined_by_path(source_info, source_name, test_map);}
-            if (type == "generator") {defined_by_generator(source_info, source_name, test_config_folder, test_map);}
+            const string & type = source_info.at("type");
+            if (type == "path"){
+                defined_by_path(source_info, source_name, test_map);
+                continue;
+            }
+            if (type == "generator"){
+                defined_by_generator(source_info, source_name, test_config_folder, test_map);
+                continue;
+            }
             throw config_err("invalid source type");
         }
 
@@ -156,7 +161,7 @@ namespace wpa3_tester{
         auto tests_paths = get_test_paths();
         // run tests
         for (const auto& [name, test_path] : tests_paths) {
-            RunStatus rs(test_path);
+            RunStatus rs(test_path, name, ".");
             rs.only_stats = this->only_stats;
             path suite_name = rs.config.at("name").get<string>();
             rs.run_folder = path(this->run_folder) / suite_name / "last_run" / name;
@@ -184,7 +189,6 @@ namespace wpa3_tester{
             }
             rs.execute();
         }
-
     }
 
     string RunSuiteStatus::findConfigByTestSuiteName(const string &name){

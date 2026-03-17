@@ -113,9 +113,7 @@ TEST_CASE("Tcpdump OpenWrt") {
         cout << "\n--- Tcpdump Remote Test ---" << endl;
 
         const string chosen_iface = get_openwrt_iface_wizard(conn.get());
-        if (chosen_iface.empty()) {
-            throw manual_test_err("No interface selected, skipping test.");
-        }
+        if (chosen_iface.empty()) {throw manual_test_err("No interface selected, skipping test.");}
 
         RunStatus rs;
 

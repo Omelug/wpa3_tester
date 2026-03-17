@@ -39,7 +39,7 @@ int main() {
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";
     cout << "Please wait...\n";
 
-    vector<ExternalEntity> entities;
+    vector<ActorPtr> entities;
     try {
         entities = RunStatus::list_external_entities(selected_iface, timeout);
     } catch (const exception& e) {

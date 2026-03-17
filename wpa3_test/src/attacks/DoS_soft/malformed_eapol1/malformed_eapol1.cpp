@@ -71,7 +71,7 @@ namespace wpa3_tester::eapol_logoff{
         auto my_flags = static_cast<RadioTap::FrameFlags>(RadioTap::CFP | RadioTap::WEP);
         radiotap.flags(my_flags);
         radiotap.rate(2); // Rate in Mbps
-        radiotap.channel(hw_capabilities::channel_to_freq_mhz(ap_channel), RadioTap::CCK);
+        radiotap.channel(hw_capabilities::channel_to_freq(ap_channel), RadioTap::CCK);
 
         radiotap.inner_pdu(dot11);
         return radiotap;

@@ -28,7 +28,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
     beacon.channel_switch(cs);
 
     RadioTap radiotap;
-    const int freq_mhz = wpa3_tester::hw_capabilities::channel_to_freq_mhz(ap_channel);
+    const int freq_mhz = wpa3_tester::hw_capabilities::channel_to_freq(ap_channel);
     radiotap.channel(freq_mhz, RadioTap::OFDM);
     radiotap.inner_pdu(beacon);
 

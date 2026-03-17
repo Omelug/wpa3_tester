@@ -14,17 +14,9 @@ namespace wpa3_tester{
     enum CONFIG_TYPE{TEST,TEST_SUITE};
     inline auto var_PREFIX = std::string("var_");
 
-    struct ExternalEntity {
-        std::string mac;
-        std::string ssid;
-        int channel = 0;
-        int signal  = 0;
-        bool is_ap  = false;
-    };
-
     class Actor_config;
     class ExternalConn;
-    using AssignmentMap = std::unordered_map<std::string, ActorPtr>;
+    using ActorMap = std::unordered_map<std::string, ActorPtr>;
 
     class RunStatus {
         // in actors are all actors in test
@@ -48,18 +40,18 @@ namespace wpa3_tester{
         ProcessManager process_manager{};
 
         RunStatus() = default;
-        explicit RunStatus(const std::string & config_path, std::string testName = "");
+        RunStatus(const std::string &config_path, std::string testName = "", const std::string &sub_folder = "");
         void execute();
-        static void solve_new_pdu(Tins::PDU &pdu, std::map<std::string, ExternalEntity> &seen);
+        static void solve_new_pdu(Tins::PDU &pdu, ActorMap &seen);
         static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
         ActorPtr &get_actor(const std::string &actor_name);
-        void get_or_create_connection(const ActorPtr &actor) const;
+        static void get_or_create_connection(const ActorPtr &actor);
         static void print_test_list();
         static std::string findConfigByTestName(const std::string &name);
 
         // For manual testing / wizards
-        static std::vector<ExternalEntity> list_external_entities(const std::string& iface, int timeout_sec);
+        static std::vector<ActorPtr> list_external_entities(const std::string& iface, int timeout_sec);
 
 
     private:
@@ -67,8 +59,8 @@ namespace wpa3_tester{
         // to scan available interfaces
         static std::vector<ActorPtr> internal_options();
         static void add_actors_by_radio(std::vector<ActorPtr> & options, const ActorPtr & cfg);
-        std::vector<ActorPtr> external_wb_options() const;
-        static std::vector<ActorPtr> external_bb_options();
+        static std::vector<ActorPtr> external_wb_options();
+        std::vector<ActorPtr> external_bb_options();
         //static std::vector<ActorPtr> create_simulation();
         void parse_requirements();
 

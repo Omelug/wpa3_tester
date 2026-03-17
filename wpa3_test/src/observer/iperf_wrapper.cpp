@@ -72,7 +72,7 @@ namespace wpa3_tester::observer{
             render_graph(data, actor_tag, full_output_path);
             log(LogLevel::INFO, "Graph saved via "+full_output_path.string());
         } catch (const exception &e) {
-            log(LogLevel::ERROR, "Rendering failed: "+ e.what());
+            log(LogLevel::ERROR, "Rendering failed: "+ string(e.what()));
         }
     }
 
@@ -85,7 +85,7 @@ namespace wpa3_tester::observer{
             program_name,
             "-B", run_status.config.at("actors").at(src_name).at("ip_addr"),
             "-c", run_status.config.at("actors").at(dst_name).at("ip_addr"),
-            //"-u", //dát do observer conifg
+            //"-u", //dát do observer config
             "-b", "10M",
             "-t", "0" // infinity
         });

@@ -28,7 +28,7 @@ namespace wpa3_tester{
             cfg->str_con["source"] = "internal";
             cfg->str_con["radio"] = radio_name;
             hw_capabilities::get_nl80211_caps(iface_name, *cfg);
-            options.push_back(ActorPtr(cfg));
+            options.emplace_back(cfg);
         }
         return options;
     }
@@ -43,99 +43,101 @@ namespace wpa3_tester{
             actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
             actor_cfg->str_con["radio"] = radio_name;
             cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
-            options.push_back(ActorPtr(actor_cfg));
+            options.emplace_back(actor_cfg);
         }
     }
 
     // ------------- EXTERNAL
-    void RunStatus::solve_new_pdu(PDU& pdu, map<string, ExternalEntity>& seen){
-        int signal = 0;
-        if (pdu.find_pdu<RadioTap>()) {
-            signal = pdu.rfind_pdu<RadioTap>().dbm_signal();
+    void RunStatus::solve_new_pdu(PDU& pdu, ActorMap& seen){
+        int8_t signal = -1;
+        int channel = -1;
+
+        if (auto *radiotap = pdu.find_pdu<RadioTap>()) {
+            signal = radiotap->dbm_signal();
+            channel = radiotap->channel_freq();
+            if (channel > 0) { channel = hw_capabilities::freq_to_channel(channel); }
         }
 
-        // --- AP: Beacon ---
-        if (auto *beacon = pdu.find_pdu<Dot11Beacon>()) {
-            const string mac = beacon->addr2().to_string();
-            if (!seen.contains(mac)) {
-                ExternalEntity e;
-                e.mac    = mac;
-                e.is_ap  = true;
-                e.signal = signal;
-                try { e.ssid = beacon->ssid(); } catch (...) {}
-                try {
-                    auto ds = beacon->search_option(Dot11ManagementFrame::DS_SET);
-                    e.channel = ds->data_ptr()[0];
-                } catch (...) {}
-                seen[mac] = e;
+        const auto add_entity = [&](const string& mac, bool is_ap, const string& ssid = "") {
+            auto actor_config = make_shared<Actor_config>();
+            actor_config->str_con["mac"] = mac;
+            actor_config->str_con["source"] = "external";
+            actor_config->str_con["ssid"] = ssid;
+            actor_config->bool_conditions["AP"] = is_ap;
+            
+            if (channel > 0) {
+                actor_config->str_con["channel"] = to_string(channel);
+                if (channel >= 1 && channel <= 14) {
+                    actor_config->bool_conditions["2_4GHz"] = true;
+                } else if (channel >= 36 && channel <= 177) {
+                    actor_config->bool_conditions["5GHz"] = true;
+                } else if (channel >= 1 && channel <= 233) {
+                    actor_config->bool_conditions["6GHz"] = true;
+                }
             }
-        }
+            
+            if (signal != -1) {
+                actor_config->str_con["signal"] = to_string(signal);
+            }
 
-        // --- AP: Probe Response ---
+            if (seen.contains(mac)) {
+                const auto& existing = seen.at(mac);
+                if (!ssid.empty()) existing->str_con["ssid"] = ssid;
+                if (channel > 0) existing->str_con["channel"] = to_string(channel);
+                if (signal != -1) existing->str_con["signal"] = to_string(signal);
+            } else {
+                // Add new actor config
+                seen.emplace(mac, ActorPtr(actor_config));
+            }
+        };
+
+        // AP: Beacon
+        if (const auto *beacon = pdu.find_pdu<Dot11Beacon>()) {
+            const string mac = beacon->addr2().to_string();
+            string ssid;
+            try { ssid = beacon->ssid(); } catch (...) {}
+            
+            // Try to get channel from beacon DS parameter
+            try {
+                auto ds = beacon->search_option(Dot11ManagementFrame::DS_SET);
+                channel = ds->data_ptr()[0];
+            } catch (...) {}
+            
+            add_entity(mac, true, ssid);
+        }
+        // AP: Probe Response  
         else if (auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()) {
             const string mac = probe_resp->addr2().to_string();
-            if (!seen.contains(mac)) {
-                ExternalEntity e;
-                e.mac    = mac;
-                e.is_ap  = true;
-                e.signal = signal;
-                try { e.ssid = probe_resp->ssid(); } catch (...) {}
-                seen[mac] = e;
-            }
+            string ssid;
+            try { ssid = probe_resp->ssid(); } catch (...) {}
+            add_entity(mac, true, ssid);
         }
-
-        // --- STA: Probe Request ---
+        // STA: Probe Request
         else if (auto *probe_req = pdu.find_pdu<Dot11ProbeRequest>()) {
             const string mac = probe_req->addr2().to_string();
-            if (!seen.contains(mac)) {
-                ExternalEntity e;
-                e.mac    = mac;
-                e.is_ap  = false;
-                e.signal = signal;
-                try { e.ssid = probe_req->ssid(); } catch (...) {}
-                seen[mac] = e;
-            }
+            string ssid;
+            try { ssid = probe_req->ssid(); } catch (...) {}
+            add_entity(mac, false, ssid);
         }
+        // Data frames
         else if (auto *data = pdu.find_pdu<Dot11Data>()) {
-            const bool to_ds   = data->to_ds();
+            const bool to_ds = data->to_ds();
             const bool from_ds = data->from_ds();
 
-            string sta_mac;
-            string ap_mac;
-
             if (to_ds && !from_ds) { // STA → AP
-                sta_mac = data->addr2().to_string();
-                ap_mac  = data->addr1().to_string();
+                add_entity(data->addr2().to_string(), false);  // STA
+                add_entity(data->addr1().to_string(), true);   // AP
             } else if (!to_ds && from_ds) { // AP → STA
-                sta_mac = data->addr1().to_string();
-                ap_mac  = data->addr2().to_string();
-            } else {
-                // to_ds && from_ds = WDS bridge — ignore
-                // !to_ds && !from_ds = IBSS — ignore
-                return;
+                add_entity(data->addr1().to_string(), false);  // STA
+                add_entity(data->addr2().to_string(), true);   // AP
             }
-
-            // STA
-            if (!seen.contains(sta_mac)) {
-                ExternalEntity e;
-                e.mac   = sta_mac;
-                e.is_ap = false;
-                seen[sta_mac] = e;
-            }
-
-            // AP (ssid not known)
-            if (!seen.contains(ap_mac)) {
-                ExternalEntity e;
-                e.mac   = ap_mac;
-                e.is_ap = true;
-                seen[ap_mac] = e; //FIXME this rewrite valid ssid
-            }
+            // WDS/IBSS frames ignored
         }
     }
 
 
-    vector<ExternalEntity> RunStatus::list_external_entities(const string &iface, const int timeout_sec) {
-        map<string, ExternalEntity> seen; // MAC deduplication
+    vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const int timeout_sec) {
+        ActorMap seen; // MAC deduplication
 
         Sniffer sniffer(iface, SnifferConfiguration{});
 
@@ -145,24 +147,17 @@ namespace wpa3_tester{
             } catch (...) {}
             return true;
         };
+
         atomic running{true};
-        thread timer([&]() {
-            this_thread::sleep_for(chrono::seconds(timeout_sec));
-            running = false;
-        });
+        thread timer([&]() {this_thread::sleep_for(chrono::seconds(timeout_sec)); running = false;});
 
         sniffer.set_timeout(100); // wait for next packet (only for check living sniffer)
-        sniffer.sniff_loop([&](PDU& pdu) {
-            handler(pdu);
-            return running.load();
-        });
+        sniffer.sniff_loop([&](PDU& pdu) { handler(pdu); return running.load();});
 
         timer.join();
 
-        vector<ExternalEntity> result;
-        result.reserve(seen.size());
-        for (auto &entity: seen | views::values) result.push_back(entity);
-        return result;
+        // change format to vector
+        return seen | views::values | ranges::to<vector<ActorPtr>>();
     }
 
     vector<string> scan::parse_csv_line(const string& line) {
@@ -234,7 +229,7 @@ namespace wpa3_tester{
     }
 
     // return <string radio_name; external_actor >
-    vector<ActorPtr> RunStatus::external_wb_options() const{
+    vector<ActorPtr> RunStatus::external_wb_options(){
         vector<ActorPtr> options;
 
         //option1: whitebox_host -> whitebox_ip
@@ -256,18 +251,9 @@ namespace wpa3_tester{
         return options;
     }
     vector<ActorPtr> RunStatus::external_bb_options(){
-        vector<ActorPtr> options;
         // option2: blackbox - scan, cant be
-        //TODO get channels from actors and scan only these if not actor without it
-        /*for (const auto& entity :
-            list_external_entities(config.at("actors").at("scan_iface"), 30)) {
-            auto cfg = make_shared<Actor_config>();
-            cfg->str_con["mac"] = entity.mac;
-            cfg->str_con["ssid"] = entity.ssid;
-            if(entity.is_ap){cfg->bool_conditions["AP"] = true;}
-            options.push_back(cfg);
-        }*/
-        return options;
+        //TODO scan ifaces, scan channels
+        return list_external_entities(config.at("actors").at("scan_iface"), 30);
     }
 
     vector<ActorPtr> create_simulation(){

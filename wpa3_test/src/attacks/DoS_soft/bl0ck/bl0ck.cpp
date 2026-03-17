@@ -93,7 +93,7 @@ namespace wpa3_tester::bl0ck_attack{
                     }
                 }
             } catch (const exception& e) {
-                log(LogLevel::WARNING, "BARS: Error processing packet: "+ e.what());
+                log(LogLevel::WARNING, "BARS: Error processing packet: "+string(e.what()));
             }
             return true;
         };
@@ -107,7 +107,7 @@ namespace wpa3_tester::bl0ck_attack{
                 Sniffer sniffer(iface, config);
                 sniffer.sniff_loop(packet_handler);
             } catch (const exception& e) {
-                log(LogLevel::ERROR, "BARS: Sniffer error: "+e.what());
+                log(LogLevel::ERROR, "BARS: Sniffer error: "+string(e.what()));
                 lock_guard lock(result->mtx);
                 result->found = false;
                 result->cv.notify_one();
@@ -117,8 +117,7 @@ namespace wpa3_tester::bl0ck_attack{
         {  // Wait for QoS data or timeout
             unique_lock lock(result->mtx);
             if (!result->cv.wait_for(lock, seconds(timeout_sec), [result]() { return result->found; })) {
-                log(LogLevel::ERROR, "BARS: Timeout waiting for QoS data from %s", sta_hw.to_string().c_str());
-                throw runtime_error("BARS: Failed to capture QoS data within timeout");
+                throw runtime_error("BARS: Timeout waiting for QoS data from "+ sta_hw.to_string());
             }
         }
 

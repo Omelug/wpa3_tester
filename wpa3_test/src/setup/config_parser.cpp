@@ -159,6 +159,6 @@ namespace wpa3_tester{
         if (!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
         out << node << endl;
         out.close();
-        log(LogLevel::DEBUG, "Config saved to "+out_path);
+        log(LogLevel::DEBUG, "Config saved to "+out_path.string());
     }
 }

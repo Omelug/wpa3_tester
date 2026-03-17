@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <optional>
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include <string>
@@ -26,7 +27,31 @@ namespace wpa3_tester{
         return oss.str();
     }
 
-    RunStatus::RunStatus(const std::string &config_path, string testName){
+    string relative_from(const string& base_dir_name, const string& config_path) {
+        const path config_full_path = absolute(config_path);
+        const path config_dir = config_full_path.parent_path();
+
+        // Find the base directory in the path
+        path current = config_dir;
+        string relative_path;
+
+        while (!current.empty() && current.filename() != base_dir_name) {
+            if (!relative_path.empty()) {
+                relative_path = current.filename().string() + "/" + relative_path;
+            } else {
+                relative_path = current.filename().string();
+            }
+            current = current.parent_path();
+        }
+
+        // If we found the base directory, return the relative path
+        if (!current.empty() && current.filename() == base_dir_name) {
+            return relative_path.empty() ? "." : relative_path;
+        }
+        return ".";
+    }
+
+    RunStatus::RunStatus(const std::string &config_path, string testName, const std::string &sub_folder){
         this->config_path = config_path;
         if(!exists(config_path)){throw config_err("Config not found: "+ config_path);}
 
@@ -34,13 +59,17 @@ namespace wpa3_tester{
             // load name from YAML if not name set
             const YAML::Node node = YAML::LoadFile(config_path);
             if (!node["name"] || !node["name"].IsScalar()){
-                throw config_err("Config missing required string field 'name':" + config_path);
+                throw config_err("Config missing required string field 'name':"+config_path);
             }
             testName = node["name"].as<string>();
         }
-
-        run_folder = (BASE_FOLDER / testName / "last_run").string();
-        log(LogLevel::INFO, "Used config "+this->config_path);
+        // add subfolder from test default
+        string actual_sub_folder = ".";
+        if (sub_folder == "") {
+            actual_sub_folder = relative_from("attack_config", this->config_path);
+        }
+        run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
+        log(LogLevel::INFO, "Used config " + this->config_path);
         this->config = config_validation(this->config_path);
     }
 
@@ -53,7 +82,7 @@ namespace wpa3_tester{
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
 
-        //try { //TODO cleanup
+        try {
             if(this->only_stats){stats_test(); return;}
 
             config_requirement(); //include req validation
@@ -62,7 +91,7 @@ namespace wpa3_tester{
             save_yaml(config, out_path);
             run_test();
             stats_test();
-        /*} catch (const exception& e) {
+        } catch (const exception& e) {
             const path error_file = path(run_folder) / "errors.txt";
             ofstream error_log(error_file, ios::out | ios::app);
             if (error_log.is_open()) {
@@ -77,10 +106,10 @@ namespace wpa3_tester{
             }
             //FIXME clean up
             throw;
-        }*/
+        }
     }
 
-    void RunStatus::get_or_create_connection(const ActorPtr& actor) const{
+    void RunStatus::get_or_create_connection(const ActorPtr& actor){
         ExternalConn* conn_raw = nullptr;
         if(actor["external_OS"] == "openwrt"){
             conn_raw = new OpenWrtConn();
@@ -139,10 +168,9 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+ path);
     }
 
-    //TODO only gtter now,
     ActorPtr &RunStatus::get_actor(const string &actor_name){
         if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
-        throw config_err("Actor "+actor_name+" not found in any actor map");
+        throw config_err("Actor "+actor_name+" not found in actors map");
     }
 
     unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {

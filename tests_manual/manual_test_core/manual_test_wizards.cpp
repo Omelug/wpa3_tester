@@ -19,7 +19,7 @@ namespace wpa3_tester::manual_tests {
         cout << "========================================\n\n";
     }
 
-    string get_iface_wizard() {
+    unique_ptr<string> get_iface_wizard() {
         cli_section("WiFi Interface Selection");
 
         // List available WiFi interfaces
@@ -45,29 +45,21 @@ namespace wpa3_tester::manual_tests {
             }
         }
 
-        if (wifi_interfaces.empty()) {
-            cout << "\nNo WiFi interfaces found!\n";
-            cout << "Please ensure you have WiFi hardware available.\n";
-            return "";
-        }
+        if (wifi_interfaces.empty()) {throw manual_test_err("No WiFi interfaces found!");}
 
         // Prompt user to select interface
         cout << "\nSelect an interface (enter number or name): ";
         string input;
         getline(cin, input);
 
-        if (input.empty()) {
-            cout << "Selection cancelled.\n";
-            return "";
-        }
+        if (input.empty()) { throw manual_test_err("Selection cancelled.");}
 
         string selected_iface;
         try {
             // Try parsing as number
             int selection = stoi(input);
             if (selection < 1 || selection > static_cast<int>(wifi_interfaces.size())) {
-                cout << "Invalid selection!\n";
-                return "";
+                throw manual_test_err("Invalid selection!");
             }
             selected_iface = wifi_interfaces[selection - 1];
         } catch (...) {
@@ -82,14 +74,11 @@ namespace wpa3_tester::manual_tests {
                     break;
                 }
             }
-            if (!found) {
-                cout << "Interface '" << selected_iface << "' not found in available WiFi interfaces!\n";
-                return "";
-            }
+            if (!found) {throw manual_test_err("Interface '"+selected_iface+"' not found in available WiFi ifaces!");}
         }
 
         cout << "Selected interface: " << selected_iface << "\n\n";
-        return selected_iface;
+        return std::make_unique<std::string>(selected_iface);
     }
 
     void print_external_entities(const vector<ActorPtr>& entities) {
@@ -112,7 +101,7 @@ namespace wpa3_tester::manual_tests {
         }
 
         Actor_config::print_ActorCMap("Access points", aps);
-        Actor_config::print_ActorCMap("Statisons:", stas);
+        Actor_config::print_ActorCMap("Stations:", stas);
 
         cout << "\n========================================\n";
         cout << "Total entities found: " << entities.size()

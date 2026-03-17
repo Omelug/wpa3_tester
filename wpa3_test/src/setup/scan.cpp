@@ -59,7 +59,7 @@ namespace wpa3_tester{
         }
 
         const auto add_entity = [&](const string& mac, bool is_ap, const string& ssid = "") {
-            auto actor_config = make_shared<Actor_config>();
+            const auto actor_config = make_shared<Actor_config>();
             actor_config->str_con["mac"] = mac;
             actor_config->str_con["source"] = "external";
             actor_config->str_con["ssid"] = ssid;
@@ -99,8 +99,7 @@ namespace wpa3_tester{
             
             // Try to get channel from beacon DS parameter
             try {
-                auto ds = beacon->search_option(Dot11ManagementFrame::DS_SET);
-                channel = ds->data_ptr()[0];
+                if(const auto ds = beacon->search_option(Dot11ManagementFrame::DS_SET)) channel = ds->data_ptr()[0];
             } catch (...) {}
             
             add_entity(mac, true, ssid);

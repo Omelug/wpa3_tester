@@ -7,13 +7,10 @@
 using namespace std;
 using namespace wpa3_tester;
 
-// TODO  popsat a upravit,
 int main() {
     manual_tests::cli_section("External Entity Scanner - Manual Test");
 
-    const string selected_iface = manual_tests::get_iface_wizard();
-    if (selected_iface.empty()) {cout << "No interface selected. Exiting.\n"; return 1;}
-
+    const auto selected_iface = manual_tests::get_iface_wizard();
     //timeout ?
     cout << "Enter scan timeout in seconds (default: 30): ";
     string timeout_input;
@@ -33,15 +30,16 @@ int main() {
         }
     }
 
-    const Actor_config actor{};
-    actor["iface"] = selected_iface;
+    Actor_config actor{};
+    actor.str_con["iface"] = *selected_iface;
+
     actor.set_monitor_mode();
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";
     cout << "Please wait...\n";
 
     vector<ActorPtr> entities;
     try {
-        entities = RunStatus::list_external_entities(selected_iface, timeout);
+        entities = RunStatus::list_external_entities(actor["iface"], timeout);
     } catch (const exception& e) {
         cout << "Error during scanning: " << e.what() << "\n";
         cout << "\nPossible issues:\n";

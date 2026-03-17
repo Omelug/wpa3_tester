@@ -12,7 +12,6 @@ namespace wpa3_tester {
 
     TEST_CASE("RunStatus::solve_new_pdu - Beacon frame") {
         ActorMap seen;
-        
         auto beacon = make_shared<Dot11Beacon>();
         beacon->addr2("00:11:22:33:44:55");  // AP MAC
         beacon->ssid("TestNetwork");

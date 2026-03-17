@@ -27,12 +27,12 @@ properties:
             path:
               type: string
 
-        - title: Generator source
+        - title: Generator source #include permutation
           type: object
           required: [type, vars, config]
           properties:
             type:
-              const: generator
+              enum: ["generator", "permutation"]
             vars:
               type: object
               additionalProperties:

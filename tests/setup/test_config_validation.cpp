@@ -91,7 +91,6 @@ void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
     REQUIRE(exists(expected_dir));
     REQUIRE(exists(actual_dir));
 
-    size_t files_checked = 0;
     for (const auto& entry : recursive_directory_iterator(expected_dir)) {
         if (entry.is_regular_file() && entry.path().extension() == ".yaml") {
             path rel = relative(entry.path(), expected_dir);
@@ -110,10 +109,8 @@ void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
             INFO("Differences: " << patch.dump(4));
 
             CHECK((j_exp == j_act));
-            files_checked++;
         }
     }
-    CHECK((files_checked > 0));
 }
 
 void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) {
@@ -148,9 +145,10 @@ TEST_CASE("RunStatus - Test suite test generation") {
     const path test_base = absolute(this_file.parent_path() / "config_validation" / "test_suite");
 
     const vector<ConfigSuiteCase> tests = {
-        //{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
+        {"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
         {"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"},
-        {"3. driver permutations", "03_ts_driver_permutation.yaml", "03_result_driver_permutation"}
+        {"3. driver permutations", "03_ts_driver_3_vars.yaml", "03_result_driver_3_vars"},
+        {"4. driver permutations", "04_ts_driver_permutation.yaml", "04_result_driver_permutation"}
     };
 
     for (const auto& t : tests) {

@@ -198,7 +198,7 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     static string bpf_mac_ra_or_ta(const string &mac) {
-        return "(" + bpf_mac_at(4, mac) + " or " + bpf_mac_at(10, mac) + ")";
+        return "("+bpf_mac_at(4, mac) + " or "+bpf_mac_at(10, mac) + ")";
     }
 
     void speed_observation_start(RunStatus &rs, const string& bl0ck_att_type){
@@ -209,7 +209,7 @@ namespace wpa3_tester::bl0ck_attack{
         const string ap_mac = rs.get_actor("access_point")["mac"];
 
         const string mac_filter =
-        "((wlan host " + c_mac + " or wlan host " + a_mac + " or wlan host " + ap_mac + ")"
+        "((wlan host "+c_mac + " or wlan host "+a_mac + " or wlan host " + ap_mac + ")"
         " and ((wlan[0] & 0xfc) == 0x88"    // QoS Data
         " or (wlan[0] & 0xfc) == 0xd0))"   // Action (ADDBA)
         // BAR/BA — MAC filters without offset

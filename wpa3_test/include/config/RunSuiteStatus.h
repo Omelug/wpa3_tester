@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <nlohmann/json.hpp>
+
+#include "Actor_config.h"
+#include "Actor_config.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -22,6 +25,12 @@ namespace wpa3_tester{
         void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
         static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
                                          const std::filesystem::path &test_config_folder, config_paths&test_map);
+        static void generate_test_files(
+            nlohmann::basic_json<> source_info,
+            const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> &groups,
+            const std::filesystem::path &gen_folder, config_paths &test_map);
+        static void defined_by_permutation(nlohmann::basic_json<> source_info, const std::string &source_name,
+                                           const std::filesystem::path &test_config_folder, config_paths &test_map);
         config_paths get_test_paths();
         void execute();
         static std::string findConfigByTestSuiteName(const std::string &name);

@@ -30,11 +30,11 @@ namespace {
 }
 
 static bool netns_exists(const string& name) {
-    return exists("/var/run/netns/" + name);
+    return exists("/var/run/netns/"+name);
 }
 
 static pid_t start_process_in_netns(const string& ns, const string& prog) {
-    const string ns_path = "/var/run/netns/" + ns;
+    const string ns_path = "/var/run/netns/"+ns;
     const pid_t pid = fork();
     if (pid == 0) {
         // Enter the network namespace directly (no sudo wrapper)
@@ -53,7 +53,7 @@ static pid_t start_process_in_netns(const string& ns, const string& prog) {
 
 // Check whether a PID is still alive (visible in /proc).
 static bool pid_alive(const pid_t pid) {
-    return exists("/proc/" + to_string(pid));
+    return exists("/proc/"+to_string(pid));
 }
 
 struct NsGuard {

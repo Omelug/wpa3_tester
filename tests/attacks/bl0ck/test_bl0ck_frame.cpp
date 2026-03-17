@@ -46,7 +46,7 @@ namespace wpa3_tester {
             CHECK((dot11->addr1() == ap_mac));
 
         }
-        log(LogLevel::INFO, ("PCAP file preserved for inspection:" + pcap_file.string()).c_str());
+        log(LogLevel::INFO, ("PCAP file preserved for inspection:"+pcap_file.string()).c_str());
     }*/
 }
 

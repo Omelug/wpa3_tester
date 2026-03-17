@@ -129,7 +129,6 @@ TEST_CASE("Tcpdump OpenWrt") {
         observer::start_tcpdump_remote(rs, actor["actor_name"], "");
         this_thread::sleep_for(chrono::seconds(1));
 
-        // Check if tcpdump is running on remote
         const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");
         CHECK(!ps_output.empty());
         rs.process_manager.stop(actor["actor_name"]+ "_cap");

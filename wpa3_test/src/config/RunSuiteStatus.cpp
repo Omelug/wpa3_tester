@@ -4,6 +4,8 @@
 #include <nlohmann/json-schema.hpp>
 #include <nlohmann/json.hpp>
 
+#include "config/Actor_config.h"
+#include "config/Actor_config.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "system/ProcessManager.h"
@@ -84,7 +86,7 @@ namespace wpa3_tester{
         auto vars = source_info.at("vars");
 
         for (size_t i = 0; i < length; ++i) {
-            auto test_config_path = (gen_folder / (to_string(i) + "_test.yaml"));
+            auto test_config_path = gen_folder / (to_string(i) + "_test.yaml");
 
             auto tmp_path = path(test_config_path.string() + ".tmp.yaml");
             save_yaml(source_info.at("config"), tmp_path);
@@ -116,6 +118,135 @@ namespace wpa3_tester{
             test_map.emplace_back(to_string(i) + "_test", test_config_path);
         }
     }
+    
+    map<string, size_t> analyze_template_vars(const string& config_template) {
+        map<string, set<size_t>> found_indices;
+        const regex var_regex(var_PREFIX + "([a-zA-Z0-9]+)_([0-9]+)");
+        smatch match;
+
+        // scan config for used vars
+        auto search_start(config_template.cbegin());
+        while (regex_search(search_start, config_template.cend(), match, var_regex)) {
+            found_indices[match[1]].insert(stoul(match[2]));
+            search_start = match.suffix().first;
+        }
+
+        // 0... N , save count
+        map<string, size_t> required_counts;
+        for (auto& [name, indices] : found_indices) {
+            const size_t max_idx = *indices.rbegin();
+            if (indices.size() != max_idx + 1) {
+                throw setup_err("Variable '"+name+"' has gaps in indexing, expected sequence from 0 to " + to_string(max_idx));
+            }
+            required_counts[name] = indices.size();
+        }
+
+        return required_counts;
+    }
+
+    vector<pair<string, vector<vector<string>>>> prepare_variable_groups(
+        const json& vars_node,const map<string, size_t>& required_counts){
+        vector<pair<string, vector<vector<string>>>> groups;
+
+        for (auto const& [name, count] : required_counts) {
+            if (!vars_node.contains(name)) {
+                throw runtime_error("Variable '" + name + "' missing in 'vars' definition.");
+            }
+
+            auto elements = vars_node.at(name).get<vector<string>>();
+            if (count > elements.size()) {
+                throw runtime_error("Variable '" + name + "' needs " + to_string(count) + " values.");
+            }
+
+            // variations for one group
+            ranges::sort(elements);
+            vector<vector<string>> variations;
+
+            do { // generate all permutations + deduplication
+                vector current_var(elements.begin(), next(elements.begin(), static_cast<std::ptrdiff_t>(count)));
+                if (ranges::find(variations, current_var) == variations.end()) {
+                    variations.push_back(current_var);
+                }
+            } while (ranges::next_permutation(elements).found);
+
+            groups.emplace_back(name, variations);
+        }
+
+        return groups;
+    }
+
+    void RunSuiteStatus::generate_test_files(
+        basic_json<> source_info,
+        const vector<pair<string, vector<vector<string>>>>& groups,
+        const path& gen_folder,
+        config_paths& test_map)
+    {
+        path tmp_template = gen_folder / "template_base.tmp.yaml";
+        save_yaml(source_info.at("config"), tmp_template);
+
+        ifstream ifs(tmp_template);
+        if (!ifs.is_open()) { throw runtime_error("Could not open template file for reading"); }
+        string raw_yaml_template((istreambuf_iterator(ifs)), istreambuf_iterator<char>());
+        ifs.close();
+
+        vector<size_t> indices(groups.size(), 0);
+        bool done = false;
+        size_t test_counter = 0;
+
+
+        while (!done){
+            string current_config_str = raw_yaml_template;
+            for (size_t g = 0; g < groups.size(); ++g) {
+                const string& var_name = groups[g].first;
+                const vector<string>& current_variation = groups[g].second[indices[g]];
+
+                for (size_t i = 0; i < current_variation.size(); ++i) {
+                    string placeholder = var_PREFIX + var_name + "_" + to_string(i);
+                    replace_all(current_config_str, placeholder, current_variation[i]);
+                }
+            }
+
+            if (current_config_str.find(var_PREFIX) != string::npos) {
+                throw runtime_error("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
+            }
+
+            string test_id = to_string(test_counter);
+            path test_path = gen_folder / (test_id + "_test.yaml");
+
+            // save result to file
+            ofstream ofs(test_path);
+            if (!ofs.is_open()) { throw runtime_error("Could not open final config file for writing"); }
+            ofs << current_config_str;
+            ofs.close();
+
+            // result test config validation
+            RunStatus::config_validation(test_path);
+            test_map.emplace_back(test_id + "_test", test_path);
+
+            // another index or stop
+            test_counter++;
+            for (size_t i = groups.size(); i-- > 0; ) {
+                if (++indices[i] < groups[i].second.size()) { break; }
+                if (i == 0) { done = true; }
+                else { indices[i] = 0; }
+            }
+        }
+        remove(tmp_template);
+    }
+
+    void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map){
+        auto gen_folder = test_config_folder / source_name;
+        create_directories(gen_folder);
+
+        const auto vars_node = source_info.at("vars");
+        const string config_template = source_info.at("config").dump();
+
+        const auto required_counts = analyze_template_vars(config_template);
+
+        // vector of (var_name, vector of var variations)
+        const auto groups = prepare_variable_groups(vars_node, required_counts);
+        generate_test_files(source_info, groups, gen_folder, test_map);
+    }
 
     config_paths RunSuiteStatus::get_test_paths(){
         const auto test_config_folder = path(this->run_folder) / "test_config";
@@ -133,6 +264,10 @@ namespace wpa3_tester{
             }
             if (type == "generator"){
                 defined_by_generator(source_info, source_name, test_config_folder, test_map);
+                continue;
+            }
+            if (type == "permutation"){
+                defined_by_permutation(source_info, source_name, test_config_folder, test_map);
                 continue;
             }
             throw config_err("invalid source type");

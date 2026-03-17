@@ -58,8 +58,8 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val; // fill missing
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on key '" + key + "': '"
-                    + mine.value() + "' vs '" + val.value() + "'");
+                throw std::runtime_error("Actor_config conflict on key '"+key + "': '"
+                    + mine.value() + "' vs '"+val.value() + "'");
             }
         }
 

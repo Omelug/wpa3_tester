@@ -35,7 +35,7 @@ struct TempRunFolder {
     TempRunFolder(const string& actor_name, const path& src_pcap)
         : actor(actor_name)
     {
-        run_folder = temp_directory_path() / ("wpa3_tshark_" + to_string(chrono::system_clock::now().time_since_epoch().count()));
+        run_folder = temp_directory_path() / ("wpa3_tshark_"+to_string(chrono::system_clock::now().time_since_epoch().count()));
         const path obs_dir = run_folder / "observer" / "tshark";
         create_directories(obs_dir);
 

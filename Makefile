@@ -65,3 +65,17 @@ test_manual_build:
 		test_info_openwrt \
 		test_manual_channel_switch \
 		-j $(shell nproc)
+
+INFO_FILE = $(BUILD_DIR)/coverage.info
+CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info
+REPORT_DIR = $(BUILD_DIR)coverage_report
+
+coverage:
+	lcov --directory $(BUILD_DIR) --zerocounters
+	sudo ctest --test-dir $(BUILD_DIR) --output-on-failure
+	lcov --directory $(BUILD_DIR) --capture --output-file $(INFO_FILE) --ignore-errors inconsistent,inconsistent
+	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors inconsistent,inconsistent
+	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors inconsistent,inconsistent
+
+lcov:
+	cmake --build build --target coverage

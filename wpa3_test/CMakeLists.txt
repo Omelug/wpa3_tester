@@ -20,6 +20,13 @@ else()
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
+# ----------- LIBRARIES -------------------
+
 #libtins a libwifi mají oba target uninstall
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)

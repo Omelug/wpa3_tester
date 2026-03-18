@@ -156,7 +156,7 @@ namespace wpa3_tester{
         };
         force_block_style(force_block_style, node);
         ofstream out(out_path);
-        if (!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
+        if (!out) throw runtime_error("Failed to open "+out_path.string() +" for writing");
         out << node << endl;
         out.close();
         log(LogLevel::DEBUG, "Config saved to "+out_path.string());

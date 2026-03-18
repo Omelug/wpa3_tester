@@ -16,7 +16,7 @@ namespace wpa3_tester {
         const string local_iface = hw_capabilities::get_iface(remote_ip);
         const string local_ip = ip::get_ip(local_iface);
 
-        exec("uci set network.lan.gateway=" + local_ip);
+        exec("uci set network.lan.gateway="+local_ip);
         exec("uci set network.lan.dns=8.8.8.8");
         exec("uci commit network");
         exec("/etc/init.d/network restart");
@@ -38,7 +38,7 @@ namespace wpa3_tester {
         auto req_programs = setup_node.at("req_programs");
         for (const auto& program_name : req_programs) {
             int ret = 0;
-            exec("opkg install " + program_name.get<string>(), false, &ret);
+            exec("opkg install "+program_name.get<string>(), false, &ret);
             if(ret){throw config_err("Cannot install "+program_name.get<string>()+", try opkg update");}
         }
     }
@@ -56,18 +56,18 @@ namespace wpa3_tester {
             log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        throw ex_conn_err("ifname not available for section: " + section);
+        throw ex_conn_err("ifname not available for section: "+section);
     }
 
 
     void OpenWrtConn::setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor) {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
-        if (!j.contains(radio_name)) throw ex_conn_err("Radio not found: " + radio_name);
+        if (!j.contains(radio_name)) throw ex_conn_err("Radio not found: "+radio_name);
         const auto& radio = j.at(radio_name);
 
         // enable disabled radio
-        if (radio.value("disabled", false)) exec("uci set wireless." + radio_name + ".disabled=0");
+        if (radio.value("disabled", false)) exec("uci set wireless."+radio_name+".disabled=0");
 
         // find existing section or create new
         string section;
@@ -77,19 +77,19 @@ namespace wpa3_tester {
                 break;  // reuse existing
             }
         }
-        if (section.empty()) section = "wpa3_tester_" + radio_name;  // create new
+        if (section.empty()) section = "wpa3_tester_"+radio_name;  // create new
 
         log(LogLevel::DEBUG, "Setting up wifi-iface "+section+" for "+radio_name);
 
-        exec("uci set wireless." + section + "=wifi-iface");
-        exec("uci set wireless." + section + ".device=" + radio_name);
-        exec("uci set wireless." + section + ".mode=" + actor->str_con["mode"].value_or("ap"));
-        exec("uci set wireless." + section + ".ssid=" + actor->str_con["ssid"].value_or("OpenWrt_" + radio_name));
-        exec("uci set wireless." + section + ".encryption=" + actor->str_con["encryption"].value_or("none"));
-        exec("uci set wireless." + section + ".network=lan");
+        exec("uci set wireless."+section+"=wifi-iface");
+        exec("uci set wireless."+section+".device="+radio_name);
+        exec("uci set wireless."+section+".mode="+actor->str_con["mode"].value_or("ap"));
+        exec("uci set wireless."+section+".ssid="+actor->str_con["ssid"].value_or("OpenWrt_"+radio_name));
+        exec("uci set wireless."+section +".encryption="+actor->str_con["encryption"].value_or("none"));
+        exec("uci set wireless."+section +".network=lan");
 
         if (actor->str_con["key"].has_value())
-            exec("uci set wireless." + section + ".key=" + actor->str_con["key"].value());
+            exec("uci set wireless."+section +".key="+actor->str_con["key"].value());
 
         exec("uci commit wireless");
         exec("wifi reload");
@@ -134,35 +134,35 @@ namespace wpa3_tester {
 
         string iface_safe = iface;
         ranges::replace(iface_safe, '-', '_');
-        const string wpa3_section = "wpa3_tester_" + iface_safe;
+        const string wpa3_section = "wpa3_tester_"+iface_safe;
 
         // vždy vytvoř/přepiš wpa3_tester sekci — nikdy nemeň lan
         int rc;
-        exec("uci get network." + wpa3_section + " 2>/dev/null", false, &rc);
+        exec("uci get network."+wpa3_section +" 2>/dev/null", false, &rc);
         if (rc != 0) {
-            exec("uci set network." + wpa3_section + "=interface");
-            exec("uci set network." + wpa3_section + ".proto=static");
+            exec("uci set network."+wpa3_section +"=interface");
+            exec("uci set network."+wpa3_section +".proto=static");
 
             //  disconnect from , připoj k wpa3_section
             for (const auto& [radio_name, radio] : j.items()) {
                 for (const auto& wifi_iface : radio.at("interfaces")) {
                     if (wifi_iface.value("ifname", "") == iface) {
                         const string wifi_section = wifi_iface.at("section").get<string>();
-                        exec("uci set wireless." + wifi_section + ".network=" + wpa3_section);
+                        exec("uci set wireless."+wifi_section +".network="+wpa3_section);
                     }
                 }
             }
             exec("uci commit wireless");
         }
 
-        exec("uci set network." + wpa3_section + ".ipaddr=" + ip_addr);
-        exec("uci set network." + wpa3_section + ".netmask=255.255.255.0");
+        exec("uci set network."+wpa3_section +".ipaddr="+ip_addr);
+        exec("uci set network."+wpa3_section +".netmask=255.255.255.0");
         exec("uci commit network");
         exec("/etc/init.d/network restart");
     }
 
     string OpenWrtConn::get_radio(const string &iface) const{
-        return exec("uci show wireless | grep " + iface + " | cut -d. -f2");
+        return exec("uci show wireless | grep "+iface +" | cut -d. -f2");
     }
 
     string OpenWrtConn::get_wifi_iface_section(const string& iface) const {
@@ -174,19 +174,19 @@ namespace wpa3_tester {
                     return wifi_iface.at("section").get<string>();
                 const string sec = wifi_iface.value("section", "");
                 if (!sec.empty()) {
-                    const string uci_iface = exec("uci get wireless." + sec + ".ifname 2>/dev/null");
+                    const string uci_iface = exec("uci get wireless."+sec +".ifname 2>/dev/null");
                     if (uci_iface.find(iface) != string::npos)
                         return sec;
                 }
             }
         }
-        throw ex_conn_err("No section found for iface: " + iface);
+        throw ex_conn_err("No section found for iface: "+iface);
     }
 
     // -------------------------------------------
 
     string OpenWrtConn::get_wifi_iface_index(const string& radio) const{
-        const string output = exec("uci show wireless | grep '\\.device=' | grep -n '=" + radio + "' | cut -d: -f1");
+        const string output = exec("uci show wireless | grep '\\.device=' | grep -n '="+radio + "' | cut -d: -f1");
         if (output.empty()) return "0"; //FIXME quite fallback
         const int line = stoi(output) - 1; // uci index from 0
         return to_string(line);
@@ -199,15 +199,15 @@ namespace wpa3_tester {
         static const set<string> radio_keys = {"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled"};
         const string wifi_iface = get_wifi_iface_section(actor["iface"]);
 
-        exec("uci set wireless." + actor["radio"] + ".disabled=0");
-        exec("uci set wireless." + wifi_iface + ".device=" + actor["radio"]);
+        exec("uci set wireless."+actor["radio"] + ".disabled=0");
+        exec("uci set wireless."+wifi_iface + ".device="+actor["radio"]);
         for (const auto& [key, val] : program_config.items()) {
             const string value = val.is_string() ? val.get<string>() : val.dump();
 
             if (radio_keys.contains(key)){
-                exec("uci set wireless." + actor["radio"] + "." + key + "=" + value);
+                exec("uci set wireless."+actor["radio"] + "."+key + "="+value);
             }else{
-                exec("uci set wireless." + wifi_iface + "." + key + "=" + value);
+                exec("uci set wireless."+wifi_iface + "."+key + "="+value);
             }
         }
         exec("uci commit wireless");
@@ -222,17 +222,17 @@ namespace wpa3_tester {
             "stdbuf", "-oL",  // Line buffering for stdout
             "sshpass", "-p", actor["ssh_password"],
             "ssh", "-o", "StrictHostKeyChecking=no",
-            user + "@" + host,
+            user + "@"+host,
             "logread -f"
         };
         rs.process_manager.run(actor_name , command);
     }
 
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const std::string& radio) {
-        const string phy = "phy" + radio.substr(5);
+        const string phy = "phy"+radio.substr(5);
         int ret = 0;
-        const string output = exec("iw phy " + phy + " info", false, &ret);
-        if (ret != 0) {throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);}
+        const string output = exec("iw phy "+phy + " info", false, &ret);
+        if (ret != 0) {throw ex_conn_err("Failed to get hw capabilities for phy "+phy + ": "+output);}
         parse_hw_capabilities(cfg, output);
     }
 

@@ -41,7 +41,7 @@ namespace wpa3_tester{
         combined_log.close();
         combined_log.open(combined_path, ios::out | ios::trunc);
         if (!combined_log.is_open()) {
-            log(LogLevel::ERROR, "Failed to open combined log file: "+ combined_path.string());
+            log(LogLevel::ERROR, "Failed to open combined log file: "+combined_path.string());
             throw runtime_error("Unable to open combined log file");
         }
 
@@ -60,7 +60,7 @@ namespace wpa3_tester{
         lock_guard lock(mtx_); //FIXME lock for spcific logs ?
         write_log_line(combined_log, line);
         for (const auto& [name, proc] : processes){
-            const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
+            const string prefix = current_timestamp()+" ["+name+"] [write_log_all] ";
             write_log_line(proc->logs.log, prefix + line);
         }
     }

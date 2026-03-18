@@ -58,7 +58,7 @@ namespace wpa3_tester::bl0ck_attack{
                             const HWAddress<6> &sta_hw,
                             const string& iface,
                             const int timeout_sec) {
-        log(LogLevel::INFO, "BARS: Starting sniffer to capture QoS data from "+ sta_hw.to_string());
+        log(LogLevel::INFO, "BARS: Starting sniffer to capture QoS data from "+sta_hw.to_string());
 
         struct SniffResult {
             bool found = false;
@@ -117,7 +117,7 @@ namespace wpa3_tester::bl0ck_attack{
         {  // Wait for QoS data or timeout
             unique_lock lock(result->mtx);
             if (!result->cv.wait_for(lock, seconds(timeout_sec), [result]() { return result->found; })) {
-                throw runtime_error("BARS: Timeout waiting for QoS data from "+ sta_hw.to_string());
+                throw runtime_error("BARS: Timeout waiting for QoS data from "+sta_hw.to_string());
             }
         }
 
@@ -198,7 +198,7 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     static string bpf_mac_ra_or_ta(const string &mac) {
-        return "("+bpf_mac_at(4, mac) + " or "+bpf_mac_at(10, mac) + ")";
+        return "("+bpf_mac_at(4, mac)+" or "+bpf_mac_at(10, mac)+")";
     }
 
     void speed_observation_start(RunStatus &rs, const string& bl0ck_att_type){
@@ -209,18 +209,18 @@ namespace wpa3_tester::bl0ck_attack{
         const string ap_mac = rs.get_actor("access_point")["mac"];
 
         const string mac_filter =
-        "((wlan host "+c_mac + " or wlan host "+a_mac + " or wlan host " + ap_mac + ")"
+        "((wlan host "+c_mac+" or wlan host "+a_mac+" or wlan host "+ap_mac+")"
         " and ((wlan[0] & 0xfc) == 0x88"    // QoS Data
         " or (wlan[0] & 0xfc) == 0xd0))"   // Action (ADDBA)
         // BAR/BA — MAC filters without offset
         " or ((wlan[0] & 0xfc) == 0x84 and (" +
-        bpf_mac_ra_or_ta(c_mac) + " or " +
-        bpf_mac_ra_or_ta(a_mac) + " or " +
-        bpf_mac_ra_or_ta(ap_mac) + "))" +
+        bpf_mac_ra_or_ta(c_mac)+" or " +
+        bpf_mac_ra_or_ta(a_mac)+" or " +
+        bpf_mac_ra_or_ta(ap_mac)+"))" +
         " or ((wlan[0] & 0xfc) == 0x94 and (" +
-        bpf_mac_ra_or_ta(c_mac) + " or " +
-        bpf_mac_ra_or_ta(a_mac) + " or " +
-        bpf_mac_ra_or_ta(ap_mac) + "))";
+        bpf_mac_ra_or_ta(c_mac) +" or " +
+        bpf_mac_ra_or_ta(a_mac) +" or " +
+        bpf_mac_ra_or_ta(ap_mac) +"))";
 
         observer::start_tshark(rs, "attacker", mac_filter); //FIXME
         observer::start_tshark(rs, "client", mac_filter); //FIXME

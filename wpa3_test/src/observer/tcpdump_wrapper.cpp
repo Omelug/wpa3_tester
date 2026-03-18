@@ -25,7 +25,7 @@ namespace wpa3_tester::observer{
         vector<string> command = {"sudo"};
         add_nets(rs, command, actor_name);
 
-        string pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
+        string pcap_path = get_observer_folder(rs, program_name) / (actor_name+"_capture.pcap");
         const optional<string> iface = rs.get_actor(actor_name)->str_con.at("sniff_iface");
         string iface_str;
         if(iface == nullopt){
@@ -41,29 +41,29 @@ namespace wpa3_tester::observer{
             "-f", filter,
         });
 
-        rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
+        rs.process_manager.run(actor_name+"_cap", command, get_observer_folder(rs, program_name));
     }
 
     void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string& filter) {
         const auto& actor = rs.get_actor(actor_name);
-        const string remote_pcap = "/overlay/" + actor_name + "_capture.pcap";
+        const string remote_pcap = "/overlay/"+actor_name+"_capture.pcap";
         const string iface_str = actor["iface"];
 
-        string tcpdump_cmd = "tcpdump -i " + iface_str + " -p -w " + remote_pcap;
-        if (!filter.empty()) tcpdump_cmd += " " + filter;
+        string tcpdump_cmd = "tcpdump -i "+iface_str+" -p -w "+remote_pcap;
+        if (!filter.empty()) tcpdump_cmd += " "+filter;
 
         const vector<string> command = {
             "sshpass", "-p", actor["ssh_password"],
             "ssh", "-o", "StrictHostKeyChecking=no",
-            actor["ssh_user"] + "@" + actor["whitebox_ip"],
+            actor["ssh_user"]+"@"+actor["whitebox_ip"],
             tcpdump_cmd
         };
-        const string local_pcap  = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
-        rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(actor_name + "_cap", [remote_pcap, local_pcap, actor]() {
-           const vector<string> scp_cmd = {"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] +"@" + actor["whitebox_ip"] + ":" + remote_pcap, local_pcap};
+        const string local_pcap  = get_observer_folder(rs, program_name) / (actor_name+"_capture.pcap");
+        rs.process_manager.run(actor_name+"_cap", command, get_observer_folder(rs, program_name));
+        rs.process_manager.on_stop(actor_name+"_cap", [remote_pcap, local_pcap, actor]() {
+           const vector<string> scp_cmd = {"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] +"@"+actor["whitebox_ip"]+":"+remote_pcap, local_pcap};
            hw_capabilities::run_cmd(scp_cmd);
-           actor->conn->exec("rm " + remote_pcap);  // cleanup
+           actor->conn->exec("rm "+remote_pcap);  // cleanup
        });
     }
 }

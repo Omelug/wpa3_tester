@@ -27,7 +27,7 @@ namespace wpa3_tester{
         }
 
         run_folder = (BASE_FOLDER / suite_name / "last_run").string();
-        log(LogLevel::INFO, "Used test suite config "+ this->config_path);
+        log(LogLevel::INFO, "Used test suite config "+this->config_path);
         this->config = config_validation(this->config_path);
     }
 
@@ -85,9 +85,9 @@ namespace wpa3_tester{
         auto vars = source_info.at("vars");
 
         for (size_t i = 0; i < length; ++i) {
-            auto test_config_path = gen_folder / (to_string(i) + "_test.yaml");
+            auto test_config_path = gen_folder / (to_string(i) +"_test.yaml");
 
-            auto tmp_path = path(test_config_path.string() + ".tmp.yaml");
+            auto tmp_path = path(test_config_path.string() +".tmp.yaml");
             save_yaml(source_info.at("config"), tmp_path);
 
             ifstream ifs(tmp_path);
@@ -104,7 +104,7 @@ namespace wpa3_tester{
             // unresolved var_
             if (config_str.find(var_PREFIX) != string::npos) {
                 remove(tmp_path);
-                throw runtime_error("Unresolved "+var_PREFIX+" placeholders at index " + to_string(i));
+                throw runtime_error("Unresolved "+var_PREFIX+" placeholders at index "+to_string(i));
             }
 
             remove(tmp_path);
@@ -114,13 +114,13 @@ namespace wpa3_tester{
             ofs.close();
 
             RunStatus::config_validation(test_config_path);
-            test_map.emplace_back(to_string(i) + "_test", test_config_path);
+            test_map.emplace_back(to_string(i) +"_test", test_config_path);
         }
     }
     
     map<string, size_t> analyze_template_vars(const string& config_template) {
         map<string, set<size_t>> found_indices;
-        const regex var_regex(var_PREFIX + "([a-zA-Z0-9]+)_([0-9]+)");
+        const regex var_regex(var_PREFIX +"([a-zA-Z0-9]+)_([0-9]+)");
         smatch match;
 
         // scan config for used vars
@@ -135,7 +135,7 @@ namespace wpa3_tester{
         for (auto& [name, indices] : found_indices) {
             const size_t max_idx = *indices.rbegin();
             if (indices.size() != max_idx + 1) {
-                throw setup_err("Variable '"+name+"' has gaps in indexing, expected sequence from 0 to " + to_string(max_idx));
+                throw setup_err("Variable '"+name+"' has gaps in indexing, expected sequence from 0 to "+to_string(max_idx));
             }
             required_counts[name] = indices.size();
         }
@@ -149,12 +149,12 @@ namespace wpa3_tester{
 
         for (auto const& [name, count] : required_counts) {
             if (!vars_node.contains(name)) {
-                throw runtime_error("Variable '" + name + "' missing in 'vars' definition.");
+                throw runtime_error("Variable '"+name +"' missing in 'vars' definition.");
             }
 
             auto elements = vars_node.at(name).get<vector<string>>();
             if (count > elements.size()) {
-                throw runtime_error("Variable '" + name + "' needs " + to_string(count) + " values.");
+                throw runtime_error("Variable '"+name +"' needs "+to_string(count) +" values.");
             }
 
             // variations for one group
@@ -200,17 +200,17 @@ namespace wpa3_tester{
                 const vector<string>& current_variation = groups[g].second[indices[g]];
 
                 for (size_t i = 0; i < current_variation.size(); ++i) {
-                    string placeholder = var_PREFIX + var_name + "_" + to_string(i);
+                    string placeholder = var_PREFIX + var_name +"_"+to_string(i);
                     replace_all(current_config_str, placeholder, current_variation[i]);
                 }
             }
 
             if (current_config_str.find(var_PREFIX) != string::npos) {
-                throw runtime_error("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
+                throw runtime_error("Unresolved "+var_PREFIX +" placeholders in test "+to_string(test_counter));
             }
 
             string test_id = to_string(test_counter);
-            path test_path = gen_folder / (test_id + "_test.yaml");
+            path test_path = gen_folder / (test_id +"_test.yaml");
 
             // save result to file
             ofstream ofs(test_path);
@@ -220,7 +220,7 @@ namespace wpa3_tester{
 
             // result test config validation
             RunStatus::config_validation(test_path);
-            test_map.emplace_back(test_id + "_test", test_path);
+            test_map.emplace_back(test_id +"_test", test_path);
 
             // another index or stop
             test_counter++;

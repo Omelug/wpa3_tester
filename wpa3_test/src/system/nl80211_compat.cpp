@@ -176,7 +176,7 @@ namespace wpa3_tester{
     }
 
     uint32_t get_wiphy_idx_by_ifname(const std::string &ifname){
-        const std::string path = "/sys/class/net/" + ifname + "/phy80211/index";
+        const std::string path = "/sys/class/net/"+ifname+"/phy80211/index";
         std::ifstream file(path);
         if(uint32_t idx = 0; file >> idx) return idx;
         return 0;

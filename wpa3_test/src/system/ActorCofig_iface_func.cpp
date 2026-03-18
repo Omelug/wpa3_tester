@@ -52,7 +52,7 @@ namespace wpa3_tester{
         if (netns.has_value()) {
             log(LogLevel::INFO, "Cleaning up interface "+iface+" in netns "+*netns);
 
-            const string phy_find_cmd = "iw dev " + iface + " info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
+            const string phy_find_cmd = "iw dev "+iface+" info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
             char buffer[128];
             string phy_name;
             FILE* pipe = popen(phy_find_cmd.c_str(), "r");

@@ -20,7 +20,7 @@ namespace wpa3_tester::observer{
         vector<string> command = {"sudo"};
         add_nets(run_status,command, node_name);
 
-        string pcap_path = get_observer_folder(run_status, program_name) / (node_name + "_capture.pcap");
+        string pcap_path = get_observer_folder(run_status, program_name) / (node_name+"_capture.pcap");
         const optional<string>iface = run_status.get_actor(node_name)->str_con.at("sniff_iface");
         string iface_str;
         if(iface == nullopt){
@@ -36,12 +36,12 @@ namespace wpa3_tester::observer{
             "-f", filter,
         });
 
-        run_status.process_manager.run(node_name + "_cap", command, get_observer_folder(run_status, program_name));
+        run_status.process_manager.run(node_name+"_cap", command, get_observer_folder(run_status, program_name));
     }
 
     path extract_pcap_to_csv(const string& actor_name, const path& real_folder){
-        const path pcap_path = real_folder / (actor_name + "_capture.pcap");
-        const path csv_path = real_folder / (actor_name + ".csv");
+        const path pcap_path = real_folder / (actor_name+"_capture.pcap");
+        const path csv_path = real_folder / (actor_name+".csv");
 
         const vector<string> gen_cmd = {
             "tshark",
@@ -59,7 +59,7 @@ namespace wpa3_tester::observer{
 
         ofstream csv_file(csv_path);
         if (!csv_file.is_open()) {
-            throw runtime_error("Failed to write CSV: " + csv_path.string());
+            throw runtime_error("Failed to write CSV: "+csv_path.string());
         }
         csv_file << csv_output;
         csv_file.close();
@@ -96,12 +96,12 @@ namespace wpa3_tester::observer{
         start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
         start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
 
-        if (start_str.empty()) {throw runtime_error("Failed to get ISO start time from PCAP: " + pcap_path);}
+        if (start_str.empty()) {throw runtime_error("Failed to get ISO start time from PCAP: "+pcap_path);}
         return log_time_to_epoch_ns(start_str);
     }
     vector<LogTimePoint> get_tshark_events(const RunStatus& rs, const string& process_name, const string& tshark_filter, const string& event_name) {
         vector<LogTimePoint> timestamps;
-        const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
+        const path pcap_path = get_observer_folder(rs, program_name) / (process_name+"_capture.pcap");
         if (!exists(pcap_path)) {
             log(LogLevel::ERROR, "Could not find file '"+pcap_path.string()+"'");
             return {};
@@ -120,7 +120,7 @@ namespace wpa3_tester::observer{
 
         const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
 
-        const path csv_path = get_observer_folder(rs, program_name) / (process_name + "_" + event_name + ".csv");
+        const path csv_path = get_observer_folder(rs, program_name) / (process_name+"_"+event_name +".csv");
         ofstream csv_file(csv_path);
         if (csv_file.is_open()) {csv_file << csv_output;csv_file.close();}
 
@@ -155,13 +155,13 @@ namespace wpa3_tester::observer{
         const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
         create_directories(real_folder);
 
-        path output_path = real_folder / (actor_name + "_graph.png");
+        path output_path = real_folder / (actor_name +"_graph.png");
         const path csv_path = extract_pcap_to_csv(actor_name, real_folder);
 
         vector<LogTimePoint> times;
         vector<double> sizes;
         times_packet_sizes_from_csv(times, sizes, csv_path);
-        const path pcap_path = real_folder / (actor_name + "_capture.pcap");
+        const path pcap_path = real_folder / (actor_name +"_capture.pcap");
         auto start_time = get_pcap_start_time(pcap_path);
         transform_to_relative(times, start_time);
         if (times.empty() || sizes.empty() || times.size() != sizes.size())
@@ -173,7 +173,7 @@ namespace wpa3_tester::observer{
         auto gpcmd = [&](const string& cmd) { fprintf(gp, "%s\n", cmd.c_str());};
 
         gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
-        gpcmd("set output '" + output_path.string() + "'");
+        gpcmd("set output '"+output_path.string() +"'");
         gpcmd("set grid");
         gpcmd("set xlabel 'Time (s)'");
         gpcmd("set ylabel 'Packet Size'");
@@ -191,7 +191,7 @@ namespace wpa3_tester::observer{
             ostringstream yr;
             gpcmd("set tmargin 5");
             gpcmd("set bmargin 5");
-            gpcmd("set yrange [" + std::to_string(ymin - pad) + ":" + std::to_string(ymax + pad) + "]");
+            gpcmd("set yrange ["+std::to_string(ymin - pad) +":"+std::to_string(ymax + pad) +"]");
             gpcmd(yr.str());
         }
 
@@ -214,8 +214,8 @@ namespace wpa3_tester::observer{
 
         for (auto& ev : events) {
             if (ev.highlight_times.empty()) continue;
-            string block_name = "$ev" + std::to_string(event_block_index++);
-            gpcmd(block_name + " << EOD");
+            string block_name = "$ev"+std::to_string(event_block_index++);
+            gpcmd(block_name +" << EOD");
             for (const auto& tp : ev.highlight_times) {
 
                 //transform
@@ -250,7 +250,7 @@ namespace wpa3_tester::observer{
 
             plot_parts.push_back(part.str());
         }
-        gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));
+        gpcmd(escape_tex("set title 'Network Traffic - "+actor_name +"'"));
 
         //plot
         ostringstream plotcmd;

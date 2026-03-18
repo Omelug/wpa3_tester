@@ -40,7 +40,7 @@ namespace wpa3_tester::hostapd{
             hostapd_conf << "\n";
         }
         hostapd_conf.close();
-        log(LogLevel::INFO, "hostapd_config: written " + cfg_path.string());
+        log(LogLevel::INFO, "hostapd_config: written "+cfg_path.string());
         return cfg_path.string();
     }
 

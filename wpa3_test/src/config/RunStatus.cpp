@@ -37,7 +37,7 @@ namespace wpa3_tester{
 
         while (!current.empty() && current.filename() != base_dir_name) {
             if (!relative_path.empty()) {
-                relative_path = current.filename().string() + "/" + relative_path;
+                relative_path = current.filename().string() +"/"+relative_path;
             } else {
                 relative_path = current.filename().string();
             }
@@ -53,7 +53,7 @@ namespace wpa3_tester{
 
     RunStatus::RunStatus(const std::string &config_path, string testName, const std::string &sub_folder){
         this->config_path = config_path;
-        if(!exists(config_path)){throw config_err("Config not found: "+ config_path);}
+        if(!exists(config_path)){throw config_err("Config not found: "+config_path);}
 
         if(testName.empty()){
             // load name from YAML if not name set
@@ -69,7 +69,7 @@ namespace wpa3_tester{
             actual_sub_folder = relative_from("attack_config", this->config_path);
         }
         run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
-        log(LogLevel::INFO, "Used config " + this->config_path);
+        log(LogLevel::INFO, "Used config "+this->config_path);
         this->config = config_validation(this->config_path);
     }
 
@@ -114,7 +114,7 @@ namespace wpa3_tester{
         if(actor["external_OS"] == "openwrt"){
             conn_raw = new OpenWrtConn();
         }else{
-          throw not_implemented_err("Not known external_OS: " + actor["external_OS"]);
+          throw not_implemented_err("Not known external_OS: "+actor["external_OS"]);
         }
 
         const shared_ptr<ExternalConn> conn(conn_raw);
@@ -156,7 +156,7 @@ namespace wpa3_tester{
     void RunStatus::save_actor_interface_mapping() const {
         if (run_folder.empty()) {log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");return;}
 
-        const string path = run_folder + "/mapping.csv";
+        const string path = run_folder +"/mapping.csv";
         ofstream ofs(path, ios::out | ios::trunc);
         if (!ofs) {log(LogLevel::ERROR, "Failed to open "+path+" for writing CSV mapping");return;}
 
@@ -165,7 +165,7 @@ namespace wpa3_tester{
         write_actors_csv(actors, ofs);
 
         ofs.close();
-        log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+ path);
+        log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+path);
     }
 
     ActorPtr &RunStatus::get_actor(const string &actor_name){
@@ -205,7 +205,7 @@ namespace wpa3_tester{
     string RunStatus::findConfigByTestName(const string &name){
         auto tests = scan_attack_configs();
         if (tests.contains(name)) {return tests[name];}
-        throw config_err("Unknown test name: "+ name);
+        throw config_err("Unknown test name: "+name);
     }
 
     void RunStatus::print_test_list() {

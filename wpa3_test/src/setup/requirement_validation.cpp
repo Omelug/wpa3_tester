@@ -23,7 +23,7 @@ namespace wpa3_tester{
     }
 
     static vector<pid_t> pids_in_ns(const string& ns_name) {
-        const string ns_path = "/var/run/netns/" + ns_name;
+        const string ns_path = "/var/run/netns/"+ns_name;
 
         struct stat ns_stat{};
         if (stat(ns_path.c_str(), &ns_stat) != 0) return {};
@@ -35,7 +35,7 @@ namespace wpa3_tester{
             // only numeric entries (PIDs)
             if (filename.find_first_not_of("0123456789") != string::npos) continue;
 
-            const string net_ns_link = entry.path().string() + "/ns/net";
+            const string net_ns_link = entry.path().string()+"/ns/net";
             struct stat link_stat{};
             if (stat(net_ns_link.c_str(), &link_stat) != 0) continue;
             if (link_stat.st_ino == target_inode) {result.push_back(stoi(filename));}
@@ -50,7 +50,7 @@ namespace wpa3_tester{
 
         const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
         for (const pid_t p : pids) {
-            while (filesystem::exists("/proc/" + std::to_string(static_cast<long>(p)))) {
+            while (filesystem::exists("/proc/"+std::to_string(static_cast<long>(p)))) {
                 if (chrono::steady_clock::now() >= deadline) {
                     kill(p, SIGKILL);
                     break;
@@ -71,7 +71,7 @@ namespace wpa3_tester{
         string iface;
         while (ss >> iface) {
             const int rc = hw_capabilities::run_cmd(
-                {"sudo", "ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/" + iface + "/device"},
+                {"sudo", "ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/"+iface +"/device"},
                 std::nullopt);
             if (rc == 0) {
                 result.push_back(iface);
@@ -88,7 +88,7 @@ namespace wpa3_tester{
         while (chrono::steady_clock::now() - start < timeout) {
             bool all_present = true;
             for (const auto& name : ifaces) {
-                if (!filesystem::exists("/sys/class/net/" + name)) {
+                if (!filesystem::exists("/sys/class/net/"+name)) {
                     all_present = false;
                     break;
                 }
@@ -97,7 +97,7 @@ namespace wpa3_tester{
             this_thread::sleep_for(chrono::milliseconds(20));
         }
         for (const auto& name : ifaces) {
-            if (!filesystem::exists("/sys/class/net/" + name)) {
+            if (!filesystem::exists("/sys/class/net/"+name)) {
                 log(LogLevel::WARNING, "Interface "+name+" did not return to root ns in time!");
             }
         }

@@ -17,7 +17,7 @@ namespace wpa3_tester::observer{
 
         string line;
         while (getline(ifs, line)) {
-            if (line.find("[" + actor_tag + "]") == string::npos) continue;
+            if (line.find("["+actor_tag+"]") == string::npos) continue;
             if (line.find("[cmd]") != string::npos) continue;
             if (line.find("- - - - - - - - - - -") != string::npos) break;
             const auto pos_rate = line.find("Kbits/sec");
@@ -83,7 +83,7 @@ namespace wpa3_tester::observer{
             render_graph(data, actor_tag, full_output_path);
             log(LogLevel::INFO, "Graph saved via "+full_output_path.string());
         } catch (const exception &e) {
-            log(LogLevel::ERROR, "Rendering failed: "+ string(e.what()));
+            log(LogLevel::ERROR, "Rendering failed: "+string(e.what()));
         }
     }
 

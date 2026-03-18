@@ -182,7 +182,7 @@ namespace wpa3_tester{
         ifstream file(conn_table);
         if (!file.is_open()) { throw scan_err("Failed to open connection table: %s", conn_table.string().c_str());}
         string line;
-        if (!getline(file, line)) {throw scan_err("Empty connection table: " + conn_table.string());}
+        if (!getline(file, line)) {throw scan_err("Empty connection table: "+conn_table.string());}
 
         // Parse header
         vector<string> headers = parse_csv_line(line);

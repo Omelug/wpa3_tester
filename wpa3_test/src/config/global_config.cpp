@@ -17,7 +17,7 @@ namespace wpa3_tester {
             try {
                 const path global_config_file = path(PROJECT_ROOT_DIR) / "attack_config" / "global_config.yaml";
                 if (!exists(global_config_file)) {
-                    throw config_err("Global paths configuration file not found: " + global_config_file.string());
+                    throw config_err("Global paths configuration file not found: "+global_config_file.string());
                 }
 
                 const YAML::Node yaml_node = YAML::LoadFile(global_config_file.string());

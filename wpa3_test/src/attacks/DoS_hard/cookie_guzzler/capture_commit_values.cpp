@@ -18,7 +18,7 @@ namespace wpa3_tester::cookie_guzzler{
 
     SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec) {
         Sniffer sniffer(iface);
-        sniffer.set_filter("wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string());
+        sniffer.set_filter("wlan type mgt subtype auth and wlan addr2 "+ap_mac.to_string());
 
         SAEPair result;
 
@@ -52,7 +52,7 @@ namespace wpa3_tester::cookie_guzzler{
     // run_cmd for logging or useless:
     void start_wpa_supplicant(const string &iface, const string &conf_path, const string &pid_file) {
         // -B (background) -P <pid file>
-        const string cmd = "wpa_supplicant -B -i " + iface + " -c " + conf_path + " -P " + pid_file;
+        const string cmd = "wpa_supplicant -B -i "+iface+" -c "+conf_path+" -P "+pid_file;
         log(LogLevel::INFO, "Run wpa_supplicant to get handshake values...");
         system(cmd.c_str());
     }
@@ -63,7 +63,7 @@ namespace wpa3_tester::cookie_guzzler{
             pid_t pid;
             file >> pid;
             if (pid > 0) {
-                log(LogLevel::INFO, "Stop wpa_supplicant (PID: " + to_string(pid) + ")");
+                log(LogLevel::INFO, "Stop wpa_supplicant (PID: "+to_string(pid)+")");
                 kill(pid, SIGTERM);
             }
             file.close();

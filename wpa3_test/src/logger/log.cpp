@@ -58,7 +58,7 @@ namespace wpa3_tester{
             first = false;
         }
         if (keys.empty()) {keys = "<empty>";}
-        log(LogLevel::DEBUG, name+":"+ keys);
+        log(LogLevel::DEBUG, name+":"+keys);
     }
 
     void log_actor_configs(const ActorCMap& m, ofstream& ofs) {
@@ -68,10 +68,10 @@ namespace wpa3_tester{
         for (const auto& [name, actor] : m) {
             // Build a human-readable line
             const string line =
-                "Actor '" + name + "': iface=" + actor->str_con.at("iface").value_or("<none>") +
+                "Actor '"+name +"': iface="+actor->str_con.at("iface").value_or("<none>") +
                 ", mac="    + actor->str_con.at("mac").value_or("<none>") +
                 ", essid="  + actor->str_con.at("ssid").value_or("<none>") +
-                ", driver=" + actor->str_con.at("driver").value_or("<none>");
+                ", driver="+actor->str_con.at("driver").value_or("<none>");
 
             //log(LogLevel::DEBUG, "%s", line.c_str());
 
@@ -83,7 +83,7 @@ namespace wpa3_tester{
                 string val_repr = "None";
                 if (bool_v.has_value()) { val_repr = (*bool_v ? "true" : "false"); }
                 if (!first) { cond_str += ", "; }
-                cond_str += cond_name + "=" + val_repr;
+                cond_str += cond_name +"="+val_repr;
                 first = false;
             }
             if (cond_str.empty()) { cond_str = "<no conditions>"; }
@@ -140,14 +140,14 @@ namespace wpa3_tester{
 
     vector<LogTimePoint> get_time_logs(const RunStatus& rs, const string& process_name, const string& pattern) {
         vector<LogTimePoint> timestamps;
-        const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
+        const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name +".log");
         if (!filesystem::exists(actor_log)) {
-            log(LogLevel::ERROR, "Could not find file '" + actor_log + "'");
+            log(LogLevel::ERROR, "Could not find file '"+actor_log +"'");
             return {};
         }
         ifstream file(actor_log);
         string line;
-        regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)" + pattern);
+        regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)"+pattern);
         smatch match;
 
         while (getline(file, line)) {

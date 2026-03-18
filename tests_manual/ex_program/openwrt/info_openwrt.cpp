@@ -131,8 +131,8 @@ TEST_CASE("Tcpdump OpenWrt") {
 
         const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");
         CHECK(!ps_output.empty());
-        rs.process_manager.stop(actor["actor_name"]+ "_cap");
-        const path pcap_path = observer::get_observer_folder(rs, "tcpdump") / (actor["actor_name"] + "_capture.pcap");
+        rs.process_manager.stop(actor["actor_name"]+"_cap");
+        const path pcap_path = observer::get_observer_folder(rs, "tcpdump") / (actor["actor_name"] +"_capture.pcap");
         CHECK(exists(pcap_path));
         cout << "Pcap file created: " << pcap_path << endl;
         cout << "Tcpdump remote process running: " << ps_output << endl;

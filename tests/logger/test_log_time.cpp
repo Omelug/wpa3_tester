@@ -66,7 +66,7 @@ namespace {
             const auto log_dir = run_folder / "logger";
             filesystem::create_directories(log_dir);
 
-            ofstream f(log_dir / (name + ".log"));
+            ofstream f(log_dir / (name+".log"));
             f << content;
         }
 

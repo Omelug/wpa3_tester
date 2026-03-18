@@ -54,8 +54,8 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val; // fill missing
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on key '"+key + "': '"
-                    + mine.value() + "' vs '"+val.value() + "'");
+                throw std::runtime_error("Actor_config conflict on key '"+key +"': '"
+                    + mine.value() +"' vs '"+val.value() +"'");
             }
         }
 
@@ -65,7 +65,7 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val;
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on bool key '" + key + "'");
+                throw std::runtime_error("Actor_config conflict on bool key '"+key +"'");
             }
         }
         return *this;
@@ -107,7 +107,7 @@ namespace wpa3_tester{
         for (const auto& [key, val] : str_con) {
             if (val.has_value()) {
                 if (!first_str) result += ", ";
-                result += key + "=" + val.value();
+                result += key +"="+val.value();
                 first_str = false;
             }
         }
@@ -160,7 +160,7 @@ namespace wpa3_tester{
             auto it = actor->str_con.find("whitebox_host");
             cout << "[" << key << "] "
                       << (it != actor->str_con.end() && it->second.has_value()
-                          ? it->second.value() : "Actor_" + key + " ")
+                          ? it->second.value() : "Actor_"+key +" ")
                       << actor->to_str() << "\n";
         }
         cout << flush;

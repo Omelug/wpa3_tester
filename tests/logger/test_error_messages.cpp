@@ -45,7 +45,7 @@ TEST_CASE("config_err - string + string") {
 TEST_CASE("config_err - formatted message with c_str()") {
     const string path = "/some/path/to/file";
     try {
-        throw config_err("Path "+path + " has no valid name");
+        throw config_err("Path "+path+" has no valid name");
     } catch (const config_err& e) {
         CHECK(string(e.what()) == "Path /some/path/to/file has no valid name");
     }

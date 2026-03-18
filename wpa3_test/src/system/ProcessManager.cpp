@@ -20,7 +20,7 @@ namespace wpa3_tester{
         const string &label,
         const string &data)
     {
-        const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+        const string prefix = current_timestamp()+" ["+process_name+"] ["+label+"] ";
 
         stringstream ss(data);
         string line;
@@ -124,13 +124,13 @@ namespace wpa3_tester{
         options.redirect.parent = false;
 
         path log_dir = log_base_dir;
-        path log_path = log_dir / (process_name + ".log");
+        path log_path = log_dir / (process_name+".log");
 
         string wd_string; // need to be outside if, to be valid
         if (!working_dir.empty()) {
             wd_string = working_dir.string();
             options.working_directory = wd_string.c_str();
-            log_path = working_dir / (process_name + ".log");
+            log_path = working_dir / (process_name+".log");
         }
 
         // Log command line FIRST for debugging
@@ -156,12 +156,12 @@ namespace wpa3_tester{
                 lock_guard lock(mtx_);
                 processes.erase(process_name);
             }
-            throw runtime_error("Failed to start " + process_name + ": " + ec.message());
+            throw runtime_error("Failed to start "+process_name+": "+ec.message());
         }
 
         start_drain_for(process_name, mp);
 
-        const string line = current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
+        const string line = current_timestamp()+" ["+process_name+"] [cmd] "+cmd_line;
         if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
     }
@@ -176,7 +176,7 @@ namespace wpa3_tester{
             lock_guard lock(mtx_);
             const auto proc_iter = processes.find(actor_name);
             if (proc_iter == processes.end() || !proc_iter->second) {
-                throw runtime_error("Unknown process in wait_for: " + actor_name);
+                throw runtime_error("Unknown process in wait_for: "+actor_name);
             }
             mp = proc_iter->second;
         }
@@ -283,7 +283,7 @@ namespace wpa3_tester{
             try {
                 mp->on_stop_callback();
             } catch (const exception& e) {
-                log(LogLevel::WARNING, "Error in on_stop callback for "+ process_name +":"+ e.what());
+                log(LogLevel::WARNING, "Error in on_stop callback for "+process_name +":"+e.what());
             }
         }
 
@@ -306,7 +306,6 @@ namespace wpa3_tester{
                 log(LogLevel::WARNING, "Error stopping process "+name+": "+e.what());
             }
         }
-
         log(LogLevel::DEBUG, "All processes stopped");
     }
 

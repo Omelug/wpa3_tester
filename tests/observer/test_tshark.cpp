@@ -40,7 +40,7 @@ struct TempRunFolder {
         create_directories(obs_dir);
 
         // copy so the test is self-contained
-        copy_file(src_pcap, obs_dir / (actor_name + "_capture.pcap"));
+        copy_file(src_pcap, obs_dir / (actor_name+"_capture.pcap"));
     }
 
     ~TempRunFolder() { remove_all(run_folder); }

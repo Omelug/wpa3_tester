@@ -20,7 +20,7 @@ namespace wpa3_tester{
     using namespace filesystem;
 
     string hw_capabilities::read_sysfs(const string &iface, const string &file){
-        const string path = "/sys/class/net/" + iface + "/" + file;
+        const string path = "/sys/class/net/"+iface+"/"+file;
 
         ifstream ifs(path);
         if(!ifs.is_open()){ throw config_err("read_sysfs failed");}
@@ -32,19 +32,19 @@ namespace wpa3_tester{
     }
 
     string hw_capabilities::get_driver_name(const string &iface){
-        const string path = "/sys/class/net/" + iface + "/device/driver";
+        const string path = "/sys/class/net/"+iface+"/device/driver";
         try{
             if(filesystem::exists(path) && filesystem::is_symlink(path)){
                 return filesystem::read_symlink(path).filename().string();
             }
         } catch(const filesystem::filesystem_error &e){
-            throw config_err("Driver check error: " + string(e.what()));
+            throw config_err("Driver check error: "+string(e.what()));
         }
         throw config_err("Driver check error: not found valid symlink"); ;
     }
 
     string hw_capabilities::get_phy(const string &iface) {
-        const path link = "/sys/class/net/" + iface + "/phy80211";
+        const path link = "/sys/class/net/"+iface+"/phy80211";
         if (!exists(link)) return "";
         return read_symlink(link).filename().string();
     }
@@ -114,7 +114,7 @@ namespace wpa3_tester{
 
         const string &actor_name = ruleKeys[ruleIdx];
         const auto &ruleIt = rules.find(actor_name);
-        if (ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
+        if (ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: "+actor_name);
 
         Actor_config &currentRuleReq = *ruleIt->second;
 
@@ -140,7 +140,7 @@ namespace wpa3_tester{
         ActorMap result;
         if (unordered_set<size_t> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
             log(LogLevel::DEBUG, "Solved!");
-            for (auto const &[r, o] : result) log(LogLevel::DEBUG, "\tRule "+r+" -> option "+ o->to_str());
+            for (auto const &[r, o] : result) log(LogLevel::DEBUG, "\tRule "+r+" -> option "+o->to_str());
             return result;
         }
 
@@ -154,9 +154,9 @@ namespace wpa3_tester{
     // RUN functions // TODO refactor
 
     void hw_capabilities::run_in(const string& cmd, const filesystem::path& cwd = filesystem::current_path()) {
-        const string full_cmd = "cd " + cwd.string() + " && " + cmd;
+        const string full_cmd = "cd "+cwd.string()+" && "+cmd;
         if (system(full_cmd.c_str()) != 0) {
-            throw runtime_error("Command failed: " + cmd);
+            throw runtime_error("Command failed: "+cmd);
         }
     }
 
@@ -188,7 +188,7 @@ namespace wpa3_tester{
 
         int status = 0;
         if (waitpid(pid, &status, 0) < 0) {
-            log(LogLevel::ERROR, "waitpid() failed for command "+ full_argv[0]);
+            log(LogLevel::ERROR, "waitpid() failed for command "+full_argv[0]);
             return -1;
         }
 
@@ -220,7 +220,7 @@ namespace wpa3_tester{
             if ((freq - 5950) % 5 == 0) return ch;
         }
 
-        throw std::invalid_argument("Invalid frequency: " + std::to_string(freq) + " MHz");
+        throw std::invalid_argument("Invalid frequency: "+std::to_string(freq)+" MHz");
     }
 
     int hw_capabilities::channel_to_freq(const int channel, const WifiBand band) {
@@ -243,7 +243,7 @@ namespace wpa3_tester{
                 if (freq >= 5955 && freq <= 7115) return freq;
             }
         }
-        throw std::invalid_argument("Invalid channel: " + std::to_string(channel));
+        throw std::invalid_argument("Invalid channel: "+std::to_string(channel));
     }
     string hw_capabilities::run_cmd_output(const vector<string> &argv) {
         if (argv.empty()) return {};

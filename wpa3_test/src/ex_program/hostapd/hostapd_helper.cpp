@@ -16,7 +16,7 @@ namespace wpa3_tester::hostapd{
 
         error_code ec;
         create_directories(hostapd_folder, ec);
-        if (ec) {throw runtime_error("Failed to create directory: " + hostapd_folder.string());}
+        if (ec) {throw runtime_error("Failed to create directory: "+hostapd_folder.string());}
 
         const string clone_cmd = "git clone https://w1.fi/hostap.git hostapd";
         hw_capabilities::run_in(clone_cmd, hostapd_folder);
@@ -26,7 +26,7 @@ namespace wpa3_tester::hostapd{
     string find_matching_tag(const path& repo_dir, const string& version) {
         string version_normalized = version;
         ranges::replace(version_normalized, '.', '_');
-        const string target_tag = "hostap_" + version_normalized;
+        const string target_tag = "hostap_"+version_normalized;
 
         // Parse tags into vector
         const string tags_output = hw_capabilities::run_cmd_output({
@@ -52,13 +52,13 @@ namespace wpa3_tester::hostapd{
             }
         }
 
-        throw runtime_error("No hostapd tag found for version: " + version);
+        throw runtime_error("No hostapd tag found for version: "+version);
     }
 
     void build_version(const string& version, const path& build_folder, path target) {
         path repo_path = build_folder / "hostapd";
         path hostapd_dir = repo_path / "hostapd";
-        string tag = "hostapd_" + version;
+        string tag = "hostapd_"+version;
         ranges::replace(tag, '.', '_');
 
         path config_path = hostapd_dir / ".config";
@@ -98,7 +98,7 @@ namespace wpa3_tester::hostapd{
         const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
         const path hostapd_folder(hostapd_folder_str);
 
-        string bin_name = "hostapd_" + version;
+        string bin_name = "hostapd_"+version;
         ranges::replace(bin_name, '.', '_');
         const path hostapd_bin = hostapd_folder / bin_name;
 
@@ -118,7 +118,7 @@ namespace wpa3_tester::hostapd{
         hw_capabilities::run_in("git clean -fd", repo_path);
 
         hw_capabilities::run_in("git fetch --tags", repo_path);
-        hw_capabilities::run_in("git checkout " + tag, repo_path);
+        hw_capabilities::run_in("git checkout "+tag, repo_path);
 
         build_version(version, hostapd_folder, hostapd_bin);
         copy(repo_path / "hostapd" / "hostapd", hostapd_bin, copy_options::overwrite_existing);
@@ -169,7 +169,7 @@ namespace wpa3_tester::hostapd{
         const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
         const path hostapd_folder(hostapd_folder_str);
 
-        string bin_name = "wpa_supplicant_" + version;
+        string bin_name = "wpa_supplicant_"+version;
         ranges::replace(bin_name, '.', '_');
         const path wpa_supp_bin = hostapd_folder / bin_name;
 
@@ -184,7 +184,7 @@ namespace wpa3_tester::hostapd{
         const path repo_path = hostapd_folder / "hostapd";
         const string tag = find_matching_tag(repo_path, version);
         hw_capabilities::run_in("git fetch --tags", repo_path);
-        hw_capabilities::run_in("git checkout " + tag, repo_path);
+        hw_capabilities::run_in("git checkout "+tag, repo_path);
 
         build_wpa_supplicant_version(version, hostapd_folder, wpa_supp_bin);
         copy(repo_path / "wpa_supplicant" / "wpa_supplicant", wpa_supp_bin, copy_options::overwrite_existing);

@@ -57,8 +57,7 @@ namespace wpa3_tester::CSA_attack{
         const int ms_interval,const int attack_time)->void{
 
         const NetworkInterface iface(iface_name);
-        const auto start_time = steady_clock::now();
-        const auto end_time = start_time + seconds(attack_time);
+        const auto end_time =  steady_clock::now() + seconds(attack_time);
 
         while (steady_clock::now() < end_time) {
             send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
@@ -91,7 +90,7 @@ namespace wpa3_tester::CSA_attack{
         rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
         log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
-    };
+    }
 
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
@@ -117,14 +116,13 @@ namespace wpa3_tester::CSA_attack{
     void run_chs_attack(RunStatus& rs){
         const auto& actors = rs.config.at("actors");
         const auto& att_cfg = rs.config.at("attack_config");
-        const auto& ap_setup = actors.at("access_point").at("setup");
+        const auto& ap_actor= actors.at("access_point");
 
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
-        //TODO  essid a channel tahat z reálného actor
-        const string essid     = ap_setup.at("program_config").at("ssid");
-        const int old_channel  = ap_setup.at("program_config").at("channel");
+        const string essid     = ap_actor["ssid"];
+        const int old_channel  = ap_actor["channel"];
         const int new_channel  = att_cfg.at("new_channel");
         const int ms_interval  = att_cfg.at("ms_interval");
         const int attack_time  = att_cfg.at("attack_time");

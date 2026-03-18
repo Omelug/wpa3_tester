@@ -5,7 +5,6 @@
 #include <nlohmann/json.hpp>
 
 #include "config/Actor_config.h"
-#include "config/Actor_config.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "system/ProcessManager.h"

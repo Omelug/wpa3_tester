@@ -4,14 +4,10 @@
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include <filesystem>
-#include <sciplot/Plot2D.hpp>
-#include <sciplot/Figure.hpp>
-#include <sciplot/Canvas.hpp>
 #include "observer/observers.h"
 
 namespace wpa3_tester::observer{
     using namespace std;
-    using namespace sciplot;
     using namespace filesystem;
 
     IperfData parse_iperf_log(const path &log_path, const string &actor_tag) {
@@ -43,19 +39,34 @@ namespace wpa3_tester::observer{
 
     static void render_graph(const IperfData &data,
                              const string &label,
-                             const path &output_path){
-        //throw not_implemented_error("GNUplot have to be used, matplot is mess");
+                             const path &output_path) {
+        if (data.bandwidths.empty() || data.intervals.empty()) return;
 
-        if (data.bandwidths.empty()) return;  //FIXME použít gnuplot ?
-        Plot2D plot;
-        plot.xlabel("Sample [ms]");
-        plot.ylabel("Throughput [Kbit/s]");
-        plot.gnuplot("set logscale y");
-        plot.drawCurve(data.intervals, data.bandwidths).label(label);
+        FILE* gp = popen("gnuplot", "w");
+        if (!gp) {throw runtime_error("Could not open pipe to gnuplot. Is it installed?");}
 
-        Figure fig = {{plot}};
-        const Canvas canvas = {{fig}};
-        canvas.save(output_path.string());
+        string ext = output_path.extension().string();
+        if (ext == ".png") {fprintf(gp, "set terminal pngcairo size 800,600\n");
+        } else if (ext == ".svg") {fprintf(gp, "set terminal svg size 800,600\n");
+        } else {
+            fprintf(gp, "set terminal pdf\n");
+        }
+
+        fprintf(gp, "set output '%s'\n", output_path.c_str());
+        fprintf(gp, "set title 'Iperf Throughput: %s'\n", label.c_str());
+        fprintf(gp, "set xlabel 'Sample [ms]'\n");
+        fprintf(gp, "set ylabel 'Throughput [Kbit/s]'\n");
+        fprintf(gp, "set logscale y\n");
+        fprintf(gp, "set grid\n");
+
+        fprintf(gp, "plot '-' with lines lw 2 title '%s'\n", label.c_str());
+
+        for (size_t i = 0; i < data.bandwidths.size(); ++i) {
+            fprintf(gp, "%f %f\n", data.intervals[i], data.bandwidths[i]);
+        }
+
+        fprintf(gp, "e\n");
+        pclose(gp);
     }
 
     void iperf3_graph(const path &log_path,

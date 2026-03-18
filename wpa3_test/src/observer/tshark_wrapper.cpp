@@ -39,9 +39,9 @@ namespace wpa3_tester::observer{
         run_status.process_manager.run(node_name + "_cap", command, get_observer_folder(run_status, program_name));
     }
 
-    path extract_pcap_to_csv(const RunStatus& rs, const string& actor_name) {
-        const path pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
-        const path csv_path = get_observer_folder(rs, program_name) / (actor_name + ".csv");
+    path extract_pcap_to_csv(const string& actor_name, const path& real_folder){
+        const path pcap_path = real_folder / (actor_name + "_capture.pcap");
+        const path csv_path = real_folder / (actor_name + ".csv");
 
         const vector<string> gen_cmd = {
             "tshark",
@@ -96,9 +96,7 @@ namespace wpa3_tester::observer{
         start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
         start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
 
-        if (start_str.empty()) {
-            throw runtime_error("Failed to get ISO start time from PCAP: " + pcap_path);
-        }
+        if (start_str.empty()) {throw runtime_error("Failed to get ISO start time from PCAP: " + pcap_path);}
         return log_time_to_epoch_ns(start_str);
     }
     vector<LogTimePoint> get_tshark_events(const RunStatus& rs, const string& process_name, const string& tshark_filter, const string& event_name) {
@@ -157,13 +155,13 @@ namespace wpa3_tester::observer{
         const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
         create_directories(real_folder);
 
-        path output_path = folder / (actor_name + "_graph.png");
-        const path csv_path = extract_pcap_to_csv(rs, actor_name);
+        path output_path = real_folder / (actor_name + "_graph.png");
+        const path csv_path = extract_pcap_to_csv(actor_name, real_folder);
 
         vector<LogTimePoint> times;
         vector<double> sizes;
         times_packet_sizes_from_csv(times, sizes, csv_path);
-        const path pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
+        const path pcap_path = real_folder / (actor_name + "_capture.pcap");
         auto start_time = get_pcap_start_time(pcap_path);
         transform_to_relative(times, start_time);
         if (times.empty() || sizes.empty() || times.size() != sizes.size())

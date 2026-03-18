@@ -18,7 +18,7 @@ namespace wpa3_tester{
         bool matches(const Actor_config &offer);
         Actor_config &operator+=(const Actor_config &other);
         std::shared_ptr<ExternalConn> conn;
-        Actor_config(const Actor_config& other);
+        //explicit Actor_config(const Actor_config& other);
 
         std::map<std::string, std::optional<std::string>> str_con = {
             {"actor_name",     std::nullopt},

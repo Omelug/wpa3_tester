@@ -65,7 +65,7 @@ namespace wpa3_tester{
         }
         // add subfolder from test default
         string actual_sub_folder = ".";
-        if (sub_folder == "") {
+        if (sub_folder.empty()) {
             actual_sub_folder = relative_from("attack_config", this->config_path);
         }
         run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();

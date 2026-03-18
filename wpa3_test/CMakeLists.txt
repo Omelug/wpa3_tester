@@ -103,17 +103,6 @@ FetchContent_Declare(
         DOWNLOAD_NO_EXTRACT TRUE
 )
 
-set(SCIPLOT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(SCIPLOT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(SCIPLOT_EXPORT_TARGETS OFF CACHE BOOL "" FORCE)
-set(SCIPLOT_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-        sciplot
-        GIT_REPOSITORY https://github.com/sciplot/sciplot.git
-        GIT_TAG        v0.3.1
-)
-
 # ------------------------------------------------
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -125,7 +114,6 @@ FetchContent_MakeAvailable(
         json
         json_schema_validator
         linux_headers_wifi
-        sciplot
 )
 
 add_library(doctest_headers INTERFACE)
@@ -163,7 +151,6 @@ target_include_directories(wpa3_core PUBLIC
         ${LIBNL_INCLUDE_DIRS}
         ${LIBSSH_INCLUDE_DIRS}
         ${WIFI_HEADERS_DIR}
-        ${sciplot_SOURCE_DIR}
 )
 
 target_link_libraries(wpa3_core PUBLIC
@@ -222,7 +209,6 @@ target_precompile_headers(wpa3_core PUBLIC
         <tins/tins.h>
         <argparse/argparse.hpp>
         <reproc++/reproc.hpp>
-        <sciplot/sciplot.hpp>
 )
 enable_testing()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")

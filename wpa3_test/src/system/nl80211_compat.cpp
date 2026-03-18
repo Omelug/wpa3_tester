@@ -221,8 +221,6 @@ namespace wpa3_tester{
         nl_send_auto(sock, msg); // send message to kernel
         nl_recvmsgs_default(sock); // get answer
 
-
-        //TODO ? rovnou vyplňovat  cfg? kratší, ale zas to nebude tak rozdělené )
         cfg.bool_conditions["AP"] = caps.ap;
         cfg.bool_conditions["STA"] = caps.sta;
         cfg.bool_conditions["monitor"] = caps.monitor;

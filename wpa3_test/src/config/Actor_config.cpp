@@ -74,10 +74,11 @@ namespace wpa3_tester{
         }
         return *this;
     }
-    Actor_config::Actor_config(const Actor_config& other): conn(other.conn)
+    /*Actor_config::Actor_config(const Actor_config& other): std::enable_shared_from_this<Actor_config>(other)
+         , conn(other.conn)
          , str_con(other.str_con)
          , bool_conditions(other.bool_conditions) // same conn
-    {}
+    {}*/
 
 
     std::string Actor_config::operator[](const std::string& key) const {

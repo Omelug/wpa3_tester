@@ -43,7 +43,7 @@ graphviz:
 	mkdir -p doc/callgraph
 	sudo chown $(USER):$(USER) doc/callgraph/callgraph.out
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0 -w -s > ./doc/callgraph/unfiltered.dot
- 	#TODO pozor na -n (limit zobrazení)
+ 	#pozor na -n (limit zobrazení)
  	# --node-label=self-time
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s | \
 		#grep -vE '(void|auto|char&) std::|\(anonymous namespace\)::|0x[0-9a-fA-F]+|nlohmann::|Tins::|libc.so|libgcc|libnl|__|_dl_|_[A-Za-z0-9]{32}|_[A-Za-z0-9]{64}|Id-linux|YAML::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' | \

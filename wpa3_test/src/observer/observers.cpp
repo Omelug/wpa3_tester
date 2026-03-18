@@ -22,6 +22,7 @@ namespace wpa3_tester::observer{
         if (ec) {log(LogLevel::ERROR, "Failed to create "+observer_name+" observer dir "+obs_dir.string()+":"+ec.message());}
         return obs_dir;
     }
+
     void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint &start_time){
         if (times.empty()) return;
         const LogTimePoint t0 = start_time;

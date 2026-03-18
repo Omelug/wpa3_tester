@@ -9,7 +9,6 @@
 namespace wpa3_tester{
     using namespace std;
 
-    //TODO create test for this
     void Actor_config::set_channel(const int channel) const{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->set_channel(iface, channel); return;}
@@ -83,9 +82,9 @@ namespace wpa3_tester{
         const string& iface = str_con.at("iface").value();
         if(conn.get() != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
 
-        //TODo quite fallback
         if (run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor",
             "flags", "fcsfail", "otherbss"}) != 0){
+            log(LogLevel::WARNING, "Failed to create monitor interface with flags");
             run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
         }
         run({"ip", "link", "set", sniff_iface, "up"});

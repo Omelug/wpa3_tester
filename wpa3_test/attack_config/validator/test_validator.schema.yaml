@@ -75,13 +75,8 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - type
       - source
     properties:
-      type:
-        type: string
-        enum: ["AP", "STA", "process"]
-        description: Access point
       source:
         type: string
         enum: ["simulation","internal", "external"]

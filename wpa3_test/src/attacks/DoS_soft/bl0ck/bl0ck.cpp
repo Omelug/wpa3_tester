@@ -300,7 +300,6 @@ namespace wpa3_tester::bl0ck_attack{
         observer::tshark_graph(rs, "client", events);
         //observer::tshark_graph(rs, "access_point", events);
 
-        // TODO iperf graphs
         log(LogLevel::INFO, "Bl0ck attack stop");
     }
 }

@@ -1,4 +1,3 @@
 only_actor:
   validator: 02_inner_validator.schema.yaml
-
   source: internal

@@ -2,5 +2,4 @@ name: "WPA3-Test"
 extends: 06_error_self_extends.yaml
 actors:
   only_actor:
-
     source: internal

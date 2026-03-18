@@ -3,7 +3,7 @@ name: channel_switch_test
 attacker_module: channel_switch
 actors:
   access_point:
-    type: AP
+
     source: internal
     selection:
       condition: [AP]
@@ -24,7 +24,7 @@ actors:
     channel: 6
     ip_addr: "10.0.0.1"
   client:
-    type: STA
+
     source: internal
     setup:
       program: wpa_supplicant
@@ -40,7 +40,7 @@ actors:
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
-    type: STA
+
     source: internal
     selection:
       driver: mt76x2u

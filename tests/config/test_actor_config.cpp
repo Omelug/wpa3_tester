@@ -18,7 +18,6 @@ TEST_CASE("Actor_config - json constructor with selection") {
             }
         },
         {"netns", "sta"},
-        {"type", "STA"}
     };
 
     Actor_config actor(j);

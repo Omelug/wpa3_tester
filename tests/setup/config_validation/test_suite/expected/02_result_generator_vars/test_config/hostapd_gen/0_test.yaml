@@ -7,4 +7,3 @@ actors:
       program_config:
         version: 2.9
     source: internal
-    type: AP

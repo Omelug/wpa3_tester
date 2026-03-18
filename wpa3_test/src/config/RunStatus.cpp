@@ -82,7 +82,7 @@ namespace wpa3_tester{
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
 
-        try {
+        //try {
             if(this->only_stats){stats_test(); return;}
 
             config_requirement(); //include req validation
@@ -91,7 +91,7 @@ namespace wpa3_tester{
             save_yaml(config, out_path);
             run_test();
             stats_test();
-        } catch (const exception& e) {
+        /*} catch (const exception& e) {
             const path error_file = path(run_folder) / "errors.txt";
             ofstream error_log(error_file, ios::out | ios::app);
             if (error_log.is_open()) {
@@ -106,7 +106,7 @@ namespace wpa3_tester{
             }
             //FIXME clean up
             throw;
-        }
+        }*/
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){

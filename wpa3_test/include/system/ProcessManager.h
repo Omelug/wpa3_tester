@@ -55,7 +55,7 @@ namespace wpa3_tester{
         void handle_chunk(const std::shared_ptr<ManagedProcess> &mp, const std::string &process_name,
                           const std::string &label,
                           const std::string &data);
-        void start_drain_for(const std::string &process_name, std::shared_ptr<ManagedProcess> mp);
+        void start_drain_for(const std::string &process_name, const std::shared_ptr<ManagedProcess>& mp);
     public:
         ProcessManager() = default;
         ~ProcessManager();

@@ -1,13 +1,13 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: channel_switch_Dlink
-attacker_module: channel_switch
+name: cookie_guzzler
+attacker_module: cookie_guzzler
 actors:
   access_point:
 
     source: external
     selection:
       whitebox_host: OpenWrt
-      condition: [AP, 2_4GHz]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: openwrt
       program_config:
@@ -25,12 +25,9 @@ actors:
   client:
 
     source: internal
-    selection:
-      condition: [ monitor ]
     setup:
       program: wpa_supplicant
       program_config:
-        version: 2_10
         ssid: OpenWrt_2_4GHz
         sae_password: password123
         ieee80211w: 2
@@ -48,11 +45,13 @@ actors:
       driver: mt76x2u
       condition: [monitor]
     channel: 6
-
-attack_config:
-  validator: ./channel_switch.schema.yaml
-  attack_time: 30
-  ms_interval: 100
-  new_channel: 1
-
-install_req: true
+    sniff_iface: att
+  #rogue_ap:
+  #
+  #  source: internal
+  #  selection:
+  #    driver: mt76x2u
+  #    condition: [ monitor ]
+  #  program: hostapd_mana
+  #  program_config:
+  #  channel: 6

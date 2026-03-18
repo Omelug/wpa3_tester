@@ -1,13 +1,9 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_monitor_bl0ck.h"
 #include "config/RunStatus.h"
-#include "logger/log.h"
-
 #include <chrono>
 #include <thread>
 
-#include "ex_program/hostapd/hostpad.h"
-#include "../../../../../include/system/ip.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 

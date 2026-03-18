@@ -3,16 +3,16 @@ actors:
     selection:
       driver: driver3
     source: internal
-    type: AP
+
   attacker:
     selection:
       driver: driver2
     source: internal
-    type: STA
+
   client:
     selection:
       driver: driver1
     source: internal
-    type: STA
+
 attacker_module: module1
 name: Driver Permutation

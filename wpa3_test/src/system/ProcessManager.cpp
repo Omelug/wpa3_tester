@@ -47,58 +47,60 @@ namespace wpa3_tester{
         }
     }
 
-    void ProcessManager::start_drain_for(const string &process_name,
-                                          shared_ptr<ManagedProcess> mp) {
+    void ProcessManager::start_drain_for(const string &process_name, const shared_ptr<ManagedProcess>& mp) {
         if (!mp) return;
-
         mp->shutting_down = false;
         mp->drain_thread = thread([this, process_name, mp]() {
-
             uint8_t buffer[4096];
-            while (!mp->shutting_down) {
+            while (!mp->shutting_down){
+                auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err, reproc::milliseconds(100));
 
-                auto [events, ec] =
-                    mp->proc->poll(reproc::event::out | reproc::event::err,
-                                   reproc::milliseconds(100));
-
-                if (ec == errc::timed_out)continue;
+                if (ec == errc::timed_out) continue;
                 if(ec){
-                    if (ec == errc::broken_pipe ||
-                    ec == errc::no_such_process) {
-
-                    log(LogLevel::DEBUG, "Drain thread for "+process_name+" finished (normal exit): "+ec.message());
-                } else {
-                    log(LogLevel::ERROR, "Drain thread for %s error: %s (code: %d)",
-                        process_name.c_str(), ec.message().c_str(), ec.value());
+                    if (ec == errc::broken_pipe ||ec == errc::no_such_process) {
+                        log(LogLevel::DEBUG, "Drain thread for "+process_name+" finished (normal exit): "+ec.message());
+                    } else {
+                        log(LogLevel::ERROR, "Drain thread for %s error: %s (code: %d)",
+                            process_name.c_str(), ec.message().c_str(), ec.value());
+                    }
+                    break;
                 }
 
-                break;
-                }
-                if (events & reproc::event::out) {
-                    auto [n, read_ec] =
-                        mp->proc->read(reproc::stream::out, buffer, sizeof(buffer));
+                struct StreamInfo { reproc::stream stream; const char* label; int event; };
+                constexpr StreamInfo streams[] = {
+                    { reproc::stream::out, "stdout", reproc::event::out },
+                    { reproc::stream::err, "stderr", reproc::event::err }
+                };
 
-                    if (!read_ec && n > 0) {
-                        handle_chunk(mp,
-                                     process_name,
-                                     "stdout",
-                                     string(reinterpret_cast<char *>(buffer), n));
+                for (const auto &s : streams) {
+                    if (!(events & s.event)) continue;
+
+                    while (true) {
+                        auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+
+                        if (read_ec){
+                            if (read_ec == errc::resource_unavailable_try_again ||
+                                read_ec == errc::operation_would_block){
+                                break;
+                            }
+                            break;
+                        }
+                        if (n == 0) break;
+                        handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
 
-                if (events & reproc::event::err) {
-                    auto [n, read_ec] =
-                        mp->proc->read(reproc::stream::err, buffer, sizeof(buffer));
 
-                    if (!read_ec && n > 0) {
-                        handle_chunk(mp,
-                                     process_name,
-                                     "stderr",
-                                     string(reinterpret_cast<char *>(buffer), n));
+                // Flush anything left in the pipe after shutting_down is set
+                for (const auto &s : streams) {
+                    while (true) {
+                        auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+                        if (read_ec || n == 0) break;
+                        handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
             }
-            cerr << "Drain thread exited for " << process_name << endl;
+            log(LogLevel::DEBUG, "Drain thread exited for "+process_name);
         });
     }
 
@@ -235,8 +237,7 @@ namespace wpa3_tester{
         logs.wait.active = false;
     }
 
-    void ProcessManager::stop(const string &process_name)
-    {
+    void ProcessManager::stop(const string &process_name){
         shared_ptr<ManagedProcess> mp;
 
         {
@@ -262,8 +263,14 @@ namespace wpa3_tester{
             wait_cv.notify_all();
         }
 
-        mp->proc->close(reproc::stream::out);
-        mp->proc->close(reproc::stream::err);
+        auto close_result = mp->proc->close(reproc::stream::out);
+        if (close_result.value() != 0){
+            log(LogLevel::WARNING,"Failed to close stdout stream: "+close_result.message());
+        }
+        close_result = mp->proc->close(reproc::stream::err);
+        if (close_result.value() != 0){
+            log(LogLevel::WARNING, "Failed to close stderr stream: "+close_result.message());
+        }
 
         reproc::stop_actions operations{};
         operations.first  = { reproc::stop::terminate, reproc::milliseconds(500) };

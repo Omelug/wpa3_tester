@@ -87,6 +87,7 @@ namespace wpa3_tester::hostapd{
         const string hostapd_config_path = hostapd_config(
             run_status.run_folder,
             program_config);
+        run_status.get_actor(actor_name)->str_con["ssid"] = program_config["ssid"].get<string>();
 
         string version = "";
         if (program_config.contains("version") && !program_config["version"].is_null()) {

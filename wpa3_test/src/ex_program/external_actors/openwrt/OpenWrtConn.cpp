@@ -219,6 +219,7 @@ namespace wpa3_tester {
         const string host = actor["whitebox_ip"];
         const string user = actor["ssh_user"];
         const vector<string> command = {
+            "stdbuf", "-oL",  // Line buffering for stdout
             "sshpass", "-p", actor["ssh_password"],
             "ssh", "-o", "StrictHostKeyChecking=no",
             user + "@" + host,

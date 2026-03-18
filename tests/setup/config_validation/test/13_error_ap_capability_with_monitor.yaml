@@ -4,7 +4,7 @@ attacker_module: test_module
 actors:
   # This should FAIL - actor requesting AP capability cannot also have monitor
   multi_role_actor:
-    type: STA
+
     source: internal
     selection:
       condition: ["AP", "monitor", "injection"]

@@ -109,7 +109,7 @@ namespace wpa3_tester::CSA_attack{
         ip::set_ip(rs, "client");
 
         rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(30));
+        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
         log(LogLevel::INFO, "client is connected");
     }
 

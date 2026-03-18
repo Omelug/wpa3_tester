@@ -16,8 +16,8 @@ path this_file = source_location::current().file_name();
 class MockOpenWrtConn : public OpenWrtConn {
 public:
     mutable int mock_ret = 0;
-    mutable std::string mock_output = "";
-    std::string exec(const std::string &cmd,bool kill_on_exit = false, int * ret_err = nullptr) const override{
+    mutable std::string mock_output;
+    std::string exec(const std::string &cmd, bool kill_on_exit, int *ret_err ) const override{
         if (ret_err) *ret_err = mock_ret;
         return mock_output;
     }
@@ -50,8 +50,7 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info") {
 
 TEST_CASE("parse_hw_capabilities - empty output") {
     Actor_config cfg;
-    const string output = "";
-
+    const string output;
     OpenWrtConn::parse_hw_capabilities(cfg, output);
 
     CHECK((cfg.bool_conditions["2_4GHz"] == false));
@@ -71,7 +70,7 @@ TEST_CASE("get_hw_capabilities - exec failure") {
 TEST_CASE("get_radio_list - mock wifi status") {
     MockOpenWrtConn conn;
 
-    // Mock output for wifi status
+    // Mock output for Wi-Fi status
     conn.mock_output = R"(
 {
     "radio0": {

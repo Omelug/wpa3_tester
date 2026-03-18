@@ -2,5 +2,5 @@ name: "WPA3-Test"
 extends: 05_cicle.yaml
 actors:
   only_actor:
-    type: STA
+
     source: internal

@@ -3,7 +3,7 @@ attacker_module: test_module
 
 actors:
   access_point:
-    type: AP
+
     source: internal
     selection:
       condition: ["AP", "monitor"]

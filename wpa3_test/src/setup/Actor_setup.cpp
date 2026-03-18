@@ -41,8 +41,8 @@ namespace wpa3_tester{
             if (actor_json.contains("channel")) {set_channel(actor_json.at("channel"));}
             if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode();}
             if (actor_json.contains("sniff_iface")){
-                str_con["sniff_iface"] = actor_json.at("sniff_iface").get<string>();
-                create_sniff_iface(MONITOR_IFACE_PREFIX + str_con["sniff_iface"].value());
+                str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
+                create_sniff_iface(str_con["sniff_iface"].value());
             }
         }
     }

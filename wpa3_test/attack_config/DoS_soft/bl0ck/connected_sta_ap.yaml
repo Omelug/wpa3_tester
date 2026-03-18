@@ -4,7 +4,7 @@ attacker_module: bl0ck
 config_type: component
 actors:
   access_point:
-    type: AP
+
     source: internal
     selection:
       condition: [AP, 80211ac]
@@ -27,7 +27,7 @@ actors:
         #vht_oper_centr_freq_seg0_idx: 42
     ip_addr: "10.0.0.1"
   client:
-    type: STA
+
     source: internal
     setup:
       program: wpa_supplicant
@@ -49,7 +49,7 @@ actors:
     ip_addr: "10.0.0.2"
     sniff_iface: client_mon
   attacker:
-    type: STA
+
     source: internal
     selection:
       condition: [monitor, injection]

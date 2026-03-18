@@ -22,10 +22,6 @@ namespace wpa3_tester{
             }
         }
 
-        if(j.contains("type")){
-            if (j.at("type") == "AP"){bool_conditions["AP"] = true;}
-            if (j.at("type") == "STA"){bool_conditions["STA"] = true;}
-        }
         if (j.contains("netns")){str_con["netns"] = j.at("netns");}
         if (j.contains("source")){str_con["source"] = j.at("source");}
     }

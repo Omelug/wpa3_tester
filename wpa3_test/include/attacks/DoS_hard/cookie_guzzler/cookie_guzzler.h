@@ -15,7 +15,7 @@ namespace wpa3_tester::cookie_guzzler{
         bool success = false;
     };
 
-    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, SAEPair sae_params);
+    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params);
     void run_attack(RunStatus &rs);
     SAEPair get_commit_values(const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, int timeout);
 }

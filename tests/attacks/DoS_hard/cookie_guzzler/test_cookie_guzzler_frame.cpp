@@ -13,12 +13,20 @@ namespace wpa3_tester {
         const HWAddress<6> sta_mac("AA:BB:CC:DD:EE:FF");
         
         SAEPair sae_params;
-        sae_params.scalar = {0x01, 0x02, 0x03, 0x04};
-        sae_params.element = {0x05, 0x06, 0x07, 0x08};
+        // Valid SAE commit frame with proper scalar and element
+        sae_params.scalar = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+                             0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f};
+        sae_params.element = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+                             0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+                             0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+                             0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f};
         sae_params.success = true;
 
         RadioTap frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
-
+        {
+            PacketWriter pcap_writer("test_cookie_guzzler_frame.pcap", DataLinkType<RadioTap>());
+            pcap_writer.write(frame);
+        }
 
         // Verify 802.11 layer
         const Dot11Authentication* auth = frame.find_pdu<Dot11Authentication>();
@@ -43,13 +51,23 @@ namespace wpa3_tester {
         REQUIRE((raw_pdu != nullptr));
         
         auto payload = raw_pdu->payload();
-        REQUIRE((payload.size() == 8));  // 4 bytes scalar + 4 bytes element
+        // Expected size: 2 (group) + 32 (scalar) + 64 (element) = 98 bytes
+        REQUIRE((payload.size() == 98));
+
+        // Check group
+        CHECK((payload[0] == 0x13));  // Group high byte
+        CHECK((payload[1] == 0x00));  // Group low byte (19)
         
-        // Check scalar part
-        for (size_t i = 0; i < 4; ++i) { CHECK((payload[i] == sae_params.scalar[i])); }
+        // Check scalar data (bytes 2-33)
+        for (size_t i = 0; i < 32; ++i) {
+            CHECK((payload[2 + i] == sae_params.scalar[i]));
+        }
         
-        // Check element part
-        for (size_t i = 0; i < 4; ++i) { CHECK((payload[i + 4] == sae_params.element[i]));}
+        // Check finite field element data (bytes 34-97)
+        for (size_t i = 0; i < 64; ++i) {
+            CHECK((payload[34 + i] == sae_params.element[i]));
+        }
+
     }
 
     TEST_CASE("get_cookie_guzzler_frame - handles empty SAE parameters") {
@@ -68,6 +86,6 @@ namespace wpa3_tester {
         REQUIRE((raw_pdu != nullptr));
 
         auto payload = raw_pdu->payload();
-        CHECK(payload.empty());
+        CHECK((payload.size() == 2));
     }
 }

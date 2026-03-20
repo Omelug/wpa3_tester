@@ -45,7 +45,7 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
     SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec,  pcap_t *handle) {
-        SAEPair result;
+        SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
         if(handle == nullptr){
@@ -62,9 +62,9 @@ namespace wpa3_tester::cookie_guzzler{
         pcap_setfilter(handle, &fp);
         pcap_freecode(&fp);
 
-        const auto deadline = chrono::steady_clock::now() + seconds(timeout_sec);
+        const auto deadline = steady_clock::now() + seconds(timeout_sec);
 
-        while (chrono::steady_clock::now() < deadline) {
+        while (steady_clock::now() < deadline) {
             pcap_pkthdr *header;
             const uint8_t *packet;
             const int res = pcap_next_ex(handle, &header, &packet);
@@ -74,13 +74,9 @@ namespace wpa3_tester::cookie_guzzler{
 
             const auto frame = parse_sae_commit(packet, header->caplen);
             if (!frame) continue;
-
+            result = frame.value();
+            result.success = true;
             log(LogLevel::DEBUG, "SAE payload size: " + to_string(frame->scalar.size()));
-
-            result.group_id = frame->group_id;
-            result.scalar   = frame->scalar;
-            result.element  = frame->element;
-            result.success  = true;
             break;
         }
 

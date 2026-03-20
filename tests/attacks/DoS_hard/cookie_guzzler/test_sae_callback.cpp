@@ -121,9 +121,9 @@ TEST_CASE("SAECallback HandlesShortPayload") {
     beacon.addr1("ff:ff:ff:ff:ff:ff");
     beacon.addr2("00:11:22:33:44:55");
     beacon.addr3("00:11:22:33:44:55");
-    
+
+
     auto pdu = radio / beacon / auth_pdu / raw_pdu;
-    
     // Test the callback
     bool should_continue = callback(pdu);
     

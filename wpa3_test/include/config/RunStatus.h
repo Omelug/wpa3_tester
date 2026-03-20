@@ -1,5 +1,4 @@
 #pragma once
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -20,7 +19,7 @@ namespace wpa3_tester{
 
     class RunStatus {
         // in actors are all actors in test
-        // internal have key string iface, external mac
+        // internal have key string iface, external MAC
 
     public:
         //public only for testing
@@ -34,7 +33,7 @@ namespace wpa3_tester{
 
         ActorCMap internal_mapping{};
         ActorCMap external_wb_mapping{};
-        //ActorCMap external_bb_mapping{};
+        ActorCMap external_bb_mapping{};
         //ActorCMap simulation_mapping;
 
         ProcessManager process_manager{};
@@ -51,7 +50,9 @@ namespace wpa3_tester{
         static std::string findConfigByTestName(const std::string &name);
 
         // For manual testing / wizards
-        static std::vector<ActorPtr> list_external_entities(const std::string& iface, int timeout_sec);
+        static std::vector<ActorPtr> list_external_entities(
+            const std::string &iface, int timeout_sec, const std::vector<int> &channels
+        );
 
 
     private:
@@ -60,6 +61,7 @@ namespace wpa3_tester{
         static std::vector<ActorPtr> internal_options();
         static void add_actors_by_radio(std::vector<ActorPtr> & options, const ActorPtr & cfg);
         static std::vector<ActorPtr> external_wb_options();
+        std::vector<int> get_external_WB_channels();
         std::vector<ActorPtr> external_bb_options();
         //static std::vector<ActorPtr> create_simulation();
         void parse_requirements();

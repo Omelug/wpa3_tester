@@ -165,4 +165,9 @@ namespace wpa3_tester{
         }
         cout << flush;
     }
+
+    bool Actor_config::is_external_WB() const{
+        return str_con.at("source").value() == "external" &&
+             (str_con.at("whitebox_host").has_value() || str_con.at("whitebox_ip").has_value());
+    }
 }

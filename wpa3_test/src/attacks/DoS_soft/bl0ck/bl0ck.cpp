@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "ex_program/hostapd/hostpad.h"
-#include "system/ip.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "observer/iperf_wrapper.h"
@@ -230,28 +229,6 @@ namespace wpa3_tester::bl0ck_attack{
         iperf_conn(rs, "client",  "access_point");
     }
 
-    void setup_attack(RunStatus& rs){
-        if (rs.config.at("actors").at("access_point").at("source") != "internal"
-            || rs.config.at("actors").at("client").at("source") != "internal") {
-            throw runtime_error("only internal actors are supported");
-            }
-
-        // -------- hostapd AP ------------
-        hostapd::run_hostapd(rs, "access_point");
-        rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(20));
-        log(LogLevel::INFO, "access_point is running");
-        ip::set_ip(rs, "access_point");
-
-        // -------- wpa_supplicant STA ------------
-        hostapd::run_wpa_supplicant(rs, "client");
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
-        ip::set_ip(rs, "client");
-
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(30));
-        log(LogLevel::INFO, "client is connected");
-    }
-
 
     void run_bl0ck_attack(RunStatus& rs){
         const auto& att_cfg = rs.config.at("attack_config");
@@ -284,8 +261,7 @@ namespace wpa3_tester::bl0ck_attack{
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
         events.push_back({
-            observer::get_tshark_events(rs, "attacker",
-                "wlan.fc.type_subtype == 0x000d", "ADDBA")
+            observer::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA")
             ,"ADDBA","blue"});
         events.push_back({
             observer::get_tshark_events(rs, "attacker",

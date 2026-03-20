@@ -26,10 +26,4 @@ set_target_properties(test_info_openwrt PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/manual_tests"
 )
 
-# Test3: Manual channel switch test
-add_executable(test_manual_channel_switch "./attacks/manual_channel_switch.cpp")
-target_link_libraries(test_manual_channel_switch PRIVATE manual_test_core)
-
-set_target_properties(test_manual_channel_switch PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/manual_tests"
-)
+add_subdirectory(attacks)

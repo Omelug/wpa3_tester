@@ -64,6 +64,7 @@ test_manual_build:
 		test_list_external_entities \
 		test_info_openwrt \
 		test_manual_channel_switch \
+		test_manual_get_commit_values \
 		-j $(shell nproc)
 
 INFO_FILE = $(BUILD_DIR)/coverage.info

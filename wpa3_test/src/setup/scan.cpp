@@ -135,27 +135,56 @@ namespace wpa3_tester{
     }
 
 
-    vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const int timeout_sec) {
+    vector<ActorPtr> RunStatus::list_external_entities(
+        const string &iface, const int timeout_sec,const vector<int> &channels) {
         ActorMap seen; // MAC deduplication
+        
+        if (channels.empty()) { throw setup_err("No channels specified for scanning"); }
 
-        Sniffer sniffer(iface, SnifferConfiguration{});
+        SnifferConfiguration config;
 
-        auto handler = [&](PDU &pdu) -> bool {
-            try {
-                solve_new_pdu(pdu, seen);
-            } catch (...) {}
-            return true;
-        };
-
+        // Monitor mode
+        config.set_promisc_mode(true);
+        config.set_rfmon(true);
+        
         atomic running{true};
         thread timer([&]() {this_thread::sleep_for(chrono::seconds(timeout_sec)); running = false;});
-
-        sniffer.set_timeout(100); // wait for next packet (only for check living sniffer)
-        sniffer.sniff_loop([&](PDU& pdu) { handler(pdu); return running.load();});
-
+        
+        for (const int channel : channels) {
+            log(LogLevel::INFO, "Scanning channel " + to_string(channel) + " on interface " + iface);
+            
+            // channel change
+            string set_channel_cmd = "iw dev " + iface + " set channel " + to_string(channel);
+            system(set_channel_cmd.c_str());
+            this_thread::sleep_for(chrono::milliseconds(500));
+            Sniffer sniffer(iface, config);
+            
+            auto handler = [&](PDU &pdu) -> bool {
+                try {
+                    solve_new_pdu(pdu, seen);
+                } catch (...) {}
+                return running.load();
+            };
+            
+            // channel time
+            constexpr int minimum_channel_sec = 2;
+            int channel_time = timeout_sec / channels.size();
+            if (channel_time < minimum_channel_sec) channel_time = minimum_channel_sec;
+            
+            atomic channel_running{true};
+            thread channel_timer([&](){
+                this_thread::sleep_for(chrono::seconds(channel_time)); channel_running = false;
+            });
+            
+            sniffer.set_timeout(100);
+            sniffer.sniff_loop([&](PDU& pdu) { 
+                if (!channel_running.load()) return false;
+                return handler(pdu) && running.load(); 
+            });
+            channel_timer.join();
+            if (!running.load()) break; // Stop if main timer expired
+        }
         timer.join();
-
-        // change format to vector
         return seen | views::values | ranges::to<vector<ActorPtr>>();
     }
 
@@ -249,10 +278,44 @@ namespace wpa3_tester{
         }
         return options;
     }
+
+    vector<int> RunStatus::get_external_WB_channels(){
+        //get channels from external actors
+        vector<int> all_channels;
+        for (const auto& [actor_name, actor_config] : config.at("actors").items()) {
+            if (actor_config.contains("selection") && actor_config.at("selection").contains("channel")) {
+                int channel = actor_config.at("selection").at("channel");
+                all_channels.push_back(channel);
+            }else{
+                log(LogLevel::WARNING, "Actor %s missing channel configuration", actor_name.c_str());
+            }
+        }
+        
+        // Remove duplicates and sort
+        ranges::sort(all_channels);
+        all_channels.erase(ranges::unique(all_channels).begin(), all_channels.end());
+        
+        if (all_channels.empty()) {
+            log(LogLevel::WARNING, "No channels found in external actor configurations");
+            return {};
+        }
+        
+        log(LogLevel::INFO, "Scanning channels: " + [&]() {
+            string result;
+            for (size_t i = 0; i < all_channels.size(); ++i) {
+                result += to_string(all_channels[i]);
+                if (i < all_channels.size() - 1) result += ", ";
+            }
+            return result;
+        }());
+        
+        return all_channels;
+    }
+
     vector<ActorPtr> RunStatus::external_bb_options(){
-        // option2: blackbox - scan, cant be
-        //TODO scan ifaces, scan channels
-        return list_external_entities(config.at("actors").at("scan_iface"), 30);
+        const vector<int> all_channels = get_external_WB_channels();
+        if (all_channels.empty()) { return {};}
+        return list_external_entities(config.at("actors").at("scan_iface"), 30, all_channels);
     }
 
     vector<ActorPtr> create_simulation(){

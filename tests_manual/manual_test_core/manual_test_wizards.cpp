@@ -2,12 +2,12 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 
 #include "config/RunStatus.h"
 #include "system/hw_capabilities.h"
-#include "manual_test_wizards.h"
-
 #include "setup/scan.h"
+#include "manual_test_wizards.h"
 
 namespace wpa3_tester::manual_tests {
     using namespace std;
@@ -150,7 +150,7 @@ namespace wpa3_tester::manual_tests {
         return actors[selected_idx];
     }
 
-    std::string get_openwrt_iface_wizard(OpenWrtConn* conn) {
+    std::string get_openwrt_iface_wizard(const OpenWrtConn* conn) {
         cli_section("OpenWrt Interface Selection for Tcpdump");
 
         const string output = conn->exec("ip link show | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://'");
@@ -179,5 +179,89 @@ namespace wpa3_tester::manual_tests {
             return "";
         }
         return ifaces[idx];
+    }
+
+    int get_2_4_channel_wizard() {
+        cli_section("WiFi Channel Selection");
+        
+        cout << "Available WiFi channels (2.4GHz):\n";
+        cout << "  [1]  Channel 1  (2412 MHz)\n";
+        cout << "  [2]  Channel 2  (2417 MHz)\n";
+        cout << "  [3]  Channel 3  (2422 MHz)\n";
+        cout << "  [4]  Channel 4  (2427 MHz)\n";
+        cout << "  [5]  Channel 5  (2432 MHz)\n";
+        cout << "  [6]  Channel 6  (2437 MHz)\n";
+        cout << "  [7]  Channel 7  (2442 MHz)\n";
+        cout << "  [8]  Channel 8  (2447 MHz)\n";
+        cout << "  [9]  Channel 9  (2452 MHz)\n";
+        cout << "  [10] Channel 10 (2457 MHz)\n";
+        cout << "  [11] Channel 11 (2462 MHz)\n";
+        cout << "  [12] Channel 12 (2467 MHz)\n";
+        cout << "  [13] Channel 13 (2472 MHz)\n";
+        cout << "  [14] Channel 14 (2484 MHz)\n";
+        cout << "\nSelect channel [1-14]: ";
+        
+        int channel;
+        cin >> channel;
+        cin.ignore(); // Clear newline
+        
+        if (channel < 1 || channel > 14) {
+            throw manual_test_err("Invalid channel selection. Must be between 1-14.");
+        }
+        
+        return channel;
+    }
+
+    TargetInfo get_target_wizard(const string& iface, int channel) {
+        cli_section("Target Selection - Scanning for Networks");
+        
+        cout << "Scanning for networks on channel " << channel << "...\n";
+        cout << "Interface: " << iface << "\n\n";
+        
+        // Use list_external_entities function
+        vector channels = {channel};
+        RunStatus rs; // Create temporary RunStatus instance
+        const vector<ActorPtr> entities = rs.list_external_entities(iface, 4, channels);
+        
+        vector<TargetInfo> targets;
+        
+        for (const auto& actor : entities) {
+            TargetInfo target;
+            target.bssid = (*actor)["mac"];
+            target.ssid = (*actor)["ssid"];
+            target.channel = channel;
+            
+            // Skip if no SSID or MAC
+            if (target.bssid.empty() || target.ssid.empty()) {
+                continue;
+            }
+            
+            targets.push_back(target);
+        }
+        
+        if (targets.empty()){ throw manual_test_err("No networks found on channel "+to_string(channel)); }
+        
+        // Sort by ssid
+        ranges::sort(targets, [](const TargetInfo& a, const TargetInfo& b) {return a.ssid > b.ssid;});
+        
+        cout << "Found " << targets.size() << " networks:\n";
+        cout << "  [IDX]  BSSID           SSID                    \n";
+        cout << "  -----------------------------------------------\n";
+        
+        for (size_t i = 0; i < targets.size(); ++i) {
+            const auto& t = targets[i];
+            cout << "  [" << setw(2) << i << "]  " 
+                 << t.bssid << "  " 
+                 << setw(16) << left << (t.ssid.length() > 16 ? t.ssid.substr(0, 13) + "..." : t.ssid) << "  "
+                 << setw(2) << t.channel << "\n";
+        }
+        
+        cout << "\nSelect target [0-" << (targets.size() - 1) << "]: " << flush;
+        size_t idx;
+        cin >> idx;
+        cin.ignore(); // Clear newline
+        
+        if (idx >= targets.size()) { throw manual_test_err("Invalid target selection."); }
+        return targets[idx];
     }
 }

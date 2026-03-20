@@ -7,8 +7,7 @@ namespace wpa3_tester{
 
     void Actor_config::setup_actor(const nlohmann::json& config, const ActorPtr &real_actor){
         const bool internal = str_con.at("source").value() == "internal";
-        const bool external_WB = str_con.at("source").value() == "external" &&
-            (real_actor->str_con.at("whitebox_host").has_value() || real_actor->str_con.at("whitebox_ip").has_value());
+        const bool external_WB = is_external_WB();
         conn = real_actor->conn;
         if(internal || external_WB){
             // (same if set in config)
@@ -30,7 +29,7 @@ namespace wpa3_tester{
             conn->setup_iface(radio, shared_from_this());
         }
 
-        if(internal) setup_actor_internal(config, real_actor);
+        if(internal) setup_actor_internal(config);
         if(external_WB){setup_actor_external_whitebox(config, real_actor);}
         if(internal || external_WB){
             auto actor_json = config.at("actors").at(str_con["actor_name"].value());
@@ -42,12 +41,12 @@ namespace wpa3_tester{
             if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode();}
             if (actor_json.contains("sniff_iface")){
                 str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
-                create_sniff_iface(str_con["sniff_iface"].value());
+                create_sniff_iface();
             }
         }
     }
 
-    void Actor_config::setup_actor_internal(const nlohmann::json& config, const ActorPtr &real_actor){
+    void Actor_config::setup_actor_internal(const nlohmann::json &config){
         const auto actor_name = str_con.at("actor_name").value();
         auto actor_json = config.at("actors").at(actor_name);
         if (actor_json.contains("netns")) {

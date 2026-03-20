@@ -20,10 +20,6 @@ else()
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(--coverage -O0 -g)
-    add_link_options(--coverage)
-endif()
 
 # ----------- LIBRARIES -------------------
 
@@ -115,6 +111,13 @@ FetchContent_MakeAvailable(
         json_schema_validator
         linux_headers_wifi
 )
+
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
 
 add_library(doctest_headers INTERFACE)
 target_include_directories(doctest_headers INTERFACE "${doctest_SOURCE_DIR}" "${doctest_SOURCE_DIR}/doctest")

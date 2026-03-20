@@ -66,21 +66,16 @@ int main(const int argc, char* argv[]){
         return 1;
     }
 
-    try{
-        const HWAddress<6> ap_mac(argv[1]);
-        const HWAddress<6> sta_mac(argv[2]);
-        const string iface_name = argv[3];
-        const string ssid = argv[4];
-        const int ap_channel = stoi(argv[5]);
-        const int new_channel = stoi(argv[6]);
-        const int ms_interval = stoi(argv[7]);
-        const int attack_time = stoi(argv[8]);
+    const HWAddress<6> ap_mac(argv[1]);
+    const HWAddress<6> sta_mac(argv[2]);
+    const string iface_name = argv[3];
+    const string ssid = argv[4];
+    const int ap_channel = stoi(argv[5]);
+    const int new_channel = stoi(argv[6]);
+    const int ms_interval = stoi(argv[7]);
+    const int attack_time = stoi(argv[8]);
 
-        check_vulnerable(ap_mac, sta_mac, iface_name, ssid, ap_channel, new_channel, ms_interval, attack_time);
-    } catch(const exception &e){
-        cerr << "Error: " << e.what() << endl;
-        return 1;
-    }
+    check_vulnerable(ap_mac, sta_mac, iface_name, ssid, ap_channel, new_channel, ms_interval, attack_time);
 
     return 0;
 }

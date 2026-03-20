@@ -15,6 +15,7 @@
 #include "observer/observers.h"
 #include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
+#include "setup/program.h"
 
 namespace wpa3_tester::CSA_attack{
     using namespace std;
@@ -79,34 +80,27 @@ namespace wpa3_tester::CSA_attack{
     }
 
     void setup_AP(RunStatus& rs,const string& actor_name){
-        const auto ap_actor = rs.get_actor(actor_name);
-        if(ap_actor->conn != nullptr){
-            ap_actor->conn.get()->logger(rs, actor_name);
-            ap_actor->conn.get()->setup_ap(rs, ap_actor);
-        }else{
-            // -------- hostapd AP ------------
-            hostapd::run_hostapd(rs, actor_name);
-        }
+        program::start(rs, actor_name);
         rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
         log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
     }
 
+    void setup_STA(RunStatus& rs,const string& actor_name){
+        program::start(rs, actor_name);
+        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
+        ip::set_ip(rs, "client");
+    }
+
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
 
-        if (rs.config.at("actors").at("attacker").at("source") != "internal"
-            || rs.config.at("actors").at("client").at("source") != "internal") {
+        if (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal") {
             throw runtime_error("only internal actors are supported");
         }
 
-        // ------ AP
         setup_AP(rs, "access_point");
-
-        // -------- wpa_supplicant STA ------------
-        hostapd::run_wpa_supplicant(rs, "client");
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
-        ip::set_ip(rs, "client");
+        setup_STA(rs, "client");
 
         rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
         rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));

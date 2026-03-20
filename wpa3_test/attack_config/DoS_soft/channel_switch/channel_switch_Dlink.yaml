@@ -3,7 +3,6 @@ name: channel_switch_Dlink
 attacker_module: channel_switch
 actors:
   access_point:
-
     source: external
     selection:
       whitebox_host: OpenWrt
@@ -23,7 +22,6 @@ actors:
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
-
     source: internal
     selection:
       condition: [ monitor ]
@@ -42,7 +40,6 @@ actors:
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
-
     source: internal
     selection:
       driver: mt76x2u

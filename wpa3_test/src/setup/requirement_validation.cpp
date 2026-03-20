@@ -146,13 +146,27 @@ namespace wpa3_tester{
             internal_mapping = hw_capabilities::check_req_options(internal_actors, internal_options());
         }
 
+        //  external wb/bb separation
+        auto external_actors = get_actors(actors, "external");
+        ActorCMap external_wb_actors;
+        ActorCMap external_bb_actors;
+
+        for (const auto &actor: actors | views::values){
+           if(actor->is_external_WB()){
+               external_wb_actors.emplace(actor["actor_name"], actor);
+           }else{
+               external_bb_actors.emplace(actor["actor_name"], actor);
+           }
+        }
         // ------------------ EXTERNAL WHITEBOX ----------------------
-        auto external_wb_actors = get_actors(actors, "external");
         if(!external_wb_actors.empty()){
             external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, external_wb_options());
         }
 
-        // ------------------ EXTERNAL BLACKBOX ---------------------------
+        // ------------------ EXTERNAL BLACKBOX ----------------------
+        if (!external_bb_actors.empty()) {
+            external_wb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_wb_options());
+        }
 
         // ---------------- SIMULATIONS -------------------------
         // simulation -> check hw compatibility
@@ -168,6 +182,10 @@ namespace wpa3_tester{
 
         for (auto &[actor_name, actor] : external_wb_actors) {
             auto& opt_actor = external_wb_mapping.at(actor_name);
+            actor->setup_actor(config, opt_actor);
+        }
+        for (auto &[actor_name, actor] : external_wb_actors) {
+            auto& opt_actor = external_bb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);
         }
     }

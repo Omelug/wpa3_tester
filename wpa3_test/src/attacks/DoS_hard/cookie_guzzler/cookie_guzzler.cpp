@@ -77,11 +77,11 @@ namespace wpa3_tester::cookie_guzzler{
 
     void run_attack(RunStatus &rs){
         const ActorPtr ap = rs.get_actor("access_point");
-        auto ssid = rs.config.at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<string>();
+        const auto ssid = rs.config.at("actors").at("access_point")
+            .at("setup").at("program_config").at("ssid").get<string>();
         const ActorPtr attacker = rs.get_actor("attacker");
 
-        //TODO timeout from attack config
-        const SAEPair sae_params = get_commit_values(attacker["sniff_iface"], ssid, ap["mac"], 30);
+        const SAEPair sae_params = get_commit_values(attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         if (sae_params.success) {
             log(LogLevel::INFO, "SAE Commit captured");
             const HWAddress<6> ap_mac(ap["mac"]);

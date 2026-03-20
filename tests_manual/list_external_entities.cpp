@@ -39,7 +39,7 @@ int main() {
 
     vector<ActorPtr> entities;
     try {
-        entities = RunStatus::list_external_entities(actor["iface"], timeout);
+        entities = RunStatus::list_external_entities(actor["iface"], timeout, {6, 13});
     } catch (const exception& e) {
         cout << "Error during scanning: " << e.what() << "\n";
         cout << "\nPossible issues:\n";

@@ -11,14 +11,14 @@ namespace wpa3_tester{
 
     void Actor_config::set_channel(const int channel) const{
         const string& iface = str_con.at("iface").value();
-        if(conn.get() != nullptr){conn->set_channel(iface, channel); return;}
+        if(conn != nullptr){conn->set_channel(iface, channel); return;}
         log(LogLevel::INFO, "Setting interface "+iface+" to channel "+to_string(channel));
         run({"iw", "dev", iface, "set", "channel", to_string(channel)});
     }
 
     void Actor_config::set_managed_mode() const{
         const string& iface = str_con.at("iface").value();
-        if(conn.get() != nullptr){conn->set_managed_mode(iface); return;}
+        if(conn != nullptr){conn->set_managed_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
         log(LogLevel::INFO, "Preparing interface"+iface+" for managed mode");
@@ -30,7 +30,7 @@ namespace wpa3_tester{
 
     void Actor_config::set_monitor_mode() const{
         const string& iface = str_con.at("iface").value();
-        if(conn.get() != nullptr){conn->set_monitor_mode(iface); return;}
+        if(conn != nullptr){conn->set_monitor_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
         log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");
@@ -78,9 +78,10 @@ namespace wpa3_tester{
         run({"ip", "link", "set", iface, "up"});
     }
 
-    void Actor_config::create_sniff_iface(const std::string& sniff_iface) const{
+    void Actor_config::create_sniff_iface() const{
         const string& iface = str_con.at("iface").value();
-        if(conn.get() != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
+        const string& sniff_iface = str_con.at("sniff_iface").value();
+        if(conn != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
 
         if (run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor",
             "flags", "fcsfail", "otherbss"}) != 0){

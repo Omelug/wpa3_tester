@@ -4,7 +4,6 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
-
 #include "ActorPtr.h"
 
 namespace wpa3_tester{
@@ -18,14 +17,13 @@ namespace wpa3_tester{
         bool matches(const Actor_config &offer);
         Actor_config &operator+=(const Actor_config &other);
         std::shared_ptr<ExternalConn> conn;
-        //explicit Actor_config(const Actor_config& other);
 
         std::map<std::string, std::optional<std::string>> str_con = {
             {"actor_name",     std::nullopt},
             {"source",         std::nullopt},
             {"iface",          std::nullopt},
             {"mac",            std::nullopt},
-            {"ssid",          std::nullopt},
+            {"ssid",           std::nullopt},
             {"driver",         std::nullopt},
             {"netns",          std::nullopt},
             {"sniff_iface",    std::nullopt},
@@ -59,11 +57,12 @@ namespace wpa3_tester{
         std::string to_str() const;
         static void print_ActorCMap(const std::string &title, std::vector<ActorPtr> actors);
         static void print_ActorCMap(const std::string& title, ActorCMap actors);
+        bool is_external_WB() const;
 
         //  only internal
         int run(const std::vector<std::string> &argv) const;
         void cleanup() const;
-        void create_sniff_iface(const std::string & sniff_iface) const;
+        void create_sniff_iface() const;
 
         // change interface status
         void set_channel(int channel) const;
@@ -72,7 +71,7 @@ namespace wpa3_tester{
         void setup_actor(const nlohmann::json& config, const ActorPtr &real_actor);
 
     private:
-        void setup_actor_internal(const nlohmann::json &config, const ActorPtr &real_actor);
+        void setup_actor_internal(const nlohmann::json &config);
         void setup_actor_external_whitebox(const nlohmann::json & config, const ActorPtr &real_actor);
         //setup_actor_simulation();
     };

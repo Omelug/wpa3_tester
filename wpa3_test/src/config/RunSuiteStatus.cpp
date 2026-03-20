@@ -85,7 +85,7 @@ namespace wpa3_tester{
         auto vars = source_info.at("vars");
 
         for (size_t i = 0; i < length; ++i) {
-            auto test_config_path = gen_folder / (to_string(i) +"_test.yaml");
+            auto test_config_path = gen_folder / (to_string(i)+"_test.yaml");
 
             auto tmp_path = path(test_config_path.string() +".tmp.yaml");
             save_yaml(source_info.at("config"), tmp_path);
@@ -117,7 +117,7 @@ namespace wpa3_tester{
             test_map.emplace_back(to_string(i) +"_test", test_config_path);
         }
     }
-    
+
     map<string, size_t> analyze_template_vars(const string& config_template) {
         map<string, set<size_t>> found_indices;
         const regex var_regex(var_PREFIX +"([a-zA-Z0-9]+)_([0-9]+)");

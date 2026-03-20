@@ -54,8 +54,8 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val; // fill missing
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on key '"+key +"': '"
-                    + mine.value() +"' vs '"+val.value() +"'");
+                throw std::runtime_error("Actor_config conflict on key '"+key+"': '"
+                    + mine.value()+"' vs '"+val.value()+"'");
             }
         }
 
@@ -65,17 +65,11 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val;
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on bool key '"+key +"'");
+                throw std::runtime_error("Actor_config conflict on bool key '"+key+"'");
             }
         }
         return *this;
     }
-    /*Actor_config::Actor_config(const Actor_config& other): std::enable_shared_from_this<Actor_config>(other)
-         , conn(other.conn)
-         , str_con(other.str_con)
-         , bool_conditions(other.bool_conditions) // same conn
-    {}*/
-
 
     std::string Actor_config::operator[](const std::string& key) const {
         const auto it = str_con.find(key);

@@ -3,17 +3,14 @@ actors:
     selection:
       driver: driver2
     source: internal
-
   attacker:
     selection:
       condition:
         - 2_4GHz
     source: internal
-
   client:
     selection:
       driver: driver3
     source: internal
-
 attacker_module: module1
 name: Driver Permutation

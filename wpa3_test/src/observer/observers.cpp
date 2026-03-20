@@ -31,4 +31,8 @@ namespace wpa3_tester::observer{
             t = LogTimePoint(std::chrono::duration_cast<std::chrono::nanoseconds>(rel));
         }
     }
+
+    void setup_observers(RunStatus &rs){
+       rs.observers;
+    }
 }

@@ -6,16 +6,17 @@
 
 #include "ActorPtr.h"
 #include "Actor_config.h"
+#include "ObserverPtr.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
-
     enum CONFIG_TYPE{TEST,TEST_SUITE};
     inline auto var_PREFIX = std::string("var_");
 
     class Actor_config;
     class ExternalConn;
     using ActorMap = std::unordered_map<std::string, ActorPtr>;
+    using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
     class RunStatus {
         // in actors are all actors in test
@@ -24,6 +25,7 @@ namespace wpa3_tester{
     public:
         //public only for testing
         ActorCMap actors{};
+        ObserverMap observers{};
 
         bool only_stats = false;
         static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";

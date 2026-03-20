@@ -1,0 +1,18 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: sae_commit_monitor_test
+attacker_module: sae_commit_monitor_test
+actors:
+  receiver:
+    source: internal
+    selection:
+      condition: [monitor]
+#      driver: mt76x2u
+    channel: 1
+    netns: rx
+    sniff_iface: rx
+  transceiver:
+    source: internal
+    selection:
+      condition: [monitor, injection]
+      driver: ath9k_htc
+    channel: 1

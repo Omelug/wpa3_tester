@@ -11,14 +11,26 @@
 #include <sys/wait.h>
 #include <thread>
 
+#include "config/Observer_config.h"
+
 using namespace std;
 using nlohmann::json;
 namespace wpa3_tester{
-
+    using namespace observer;
     void RunStatus::parse_requirements() {
         for (const auto& [actor_name, actor] : config.at("actors").items()) {
-            auto [it, inserted] = actors.emplace(actor_name, ActorPtr(std::make_shared<Actor_config>(actor)));
+            auto [it, inserted] = actors.emplace(
+                actor_name,
+                ActorPtr(std::make_shared<Actor_config>(actor))
+            );
             it->second->str_con["actor_name"] = actor_name;
+        }
+        for (const auto& [observer_name, observer] : config.at("observers").items()) {
+            auto [it, inserted] = observers.emplace(
+                observer_name,
+                ObserverPtr(std::make_shared<Observer_config>(observer))
+            );
+            it->second->observer_name = observer_name;
         }
     }
 
@@ -75,7 +87,7 @@ namespace wpa3_tester{
                 std::nullopt);
             if (rc == 0) {
                 result.push_back(iface);
-                log(LogLevel::DEBUG, "Physical iface in ns "+ns_name+": "+iface);
+                log(LogLevel::DEBUG, "iface in ns "+ns_name+": "+iface);
             }
         }
         return result;
@@ -154,7 +166,7 @@ namespace wpa3_tester{
         for (const auto &actor: actors | views::values){
            if(actor->is_external_WB()){
                external_wb_actors.emplace(actor["actor_name"], actor);
-           }else{
+           }else if(actor["source"] == "external"){
                external_bb_actors.emplace(actor["actor_name"], actor);
            }
         }
@@ -184,7 +196,7 @@ namespace wpa3_tester{
             auto& opt_actor = external_wb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);
         }
-        for (auto &[actor_name, actor] : external_wb_actors) {
+        for (auto &[actor_name, actor] : external_bb_actors) {
             auto& opt_actor = external_bb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);
         }

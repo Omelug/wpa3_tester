@@ -9,6 +9,36 @@
 namespace wpa3_tester {
     using namespace std;
 
+    void OpenWrtConn::check_req(const nlohmann::json &config, const std::string &actor_name){
+        //TODO check config
+        //exec("opkg update");
+        const auto& setup_node = config.at("actors").at(actor_name).at("setup");
+        if(!setup_node.contains("req_programs")){return;}
+        auto req_programs = setup_node.at("req_programs");
+        for (const auto& program_name : req_programs) {
+            int ret = 0;
+            exec("opkg install "+program_name.get<string>(), false, &ret);
+            if(ret){throw config_err("Cannot install "+program_name.get<string>()+", try opkg update");}
+        }
+    }
+
+    //FIXME hnusné čekání, podívat se na inotifywait
+    string OpenWrtConn::wait_for_ifname(const string& section) const {
+        constexpr int retries = 10;
+        for (int i = 0; i < retries; i++) {
+            const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
+            for (const auto& [radio_name, radio] : j.items()) {
+                for (const auto& iface : radio.at("interfaces")) {
+                    if (iface.value("section", "") == section && iface.contains("ifname"))
+                        return iface["ifname"].get<string>();
+                }
+            }
+            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        throw ex_conn_err("ifname not available for section: "+section);
+    }
+
     void OpenWrtConn::forward_internet(const string& remote_ip) const{
         hw_capabilities::run_cmd({"bash", "-c", "echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward"});
         auto  internet_iface = get_global_config().at("internet_interface").get<string>();
@@ -29,36 +59,6 @@ namespace wpa3_tester {
         if (ret != 0) throw ex_conn_err("Failed to sync time with NTP");
         exec("/etc/init.d/sysntpd start");
     }
-
-    void OpenWrtConn::check_req(const nlohmann::json &config, const std::string &actor_name){
-        //TODO check config
-        //exec("opkg update");
-        const auto& setup_node = config.at("actors").at(actor_name).at("setup");
-        if(!setup_node.contains("req_programs")){return;}
-        auto req_programs = setup_node.at("req_programs");
-        for (const auto& program_name : req_programs) {
-            int ret = 0;
-            exec("opkg install "+program_name.get<string>(), false, &ret);
-            if(ret){throw config_err("Cannot install "+program_name.get<string>()+", try opkg update");}
-        }
-    }
-
-    //FIXME hnusné čekání, podívat se na inotifywait
-    string OpenWrtConn::wait_for_ifname(const string& section, const int retries) const {
-        for (int i = 0; i < retries; i++) {
-            const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
-            for (const auto& [radio_name, radio] : j.items()) {
-                for (const auto& iface : radio.at("interfaces")) {
-                    if (iface.value("section", "") == section && iface.contains("ifname"))
-                        return iface["ifname"].get<string>();
-                }
-            }
-            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-        throw ex_conn_err("ifname not available for section: "+section);
-    }
-
 
     void OpenWrtConn::setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor) {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
@@ -136,19 +136,17 @@ namespace wpa3_tester {
         ranges::replace(iface_safe, '-', '_');
         const string wpa3_section = "wpa3_tester_"+iface_safe;
 
-        // vždy vytvoř/přepiš wpa3_tester sekci — nikdy nemeň lan
         int rc;
         exec("uci get network."+wpa3_section +" 2>/dev/null", false, &rc);
         if (rc != 0) {
             exec("uci set network."+wpa3_section +"=interface");
             exec("uci set network."+wpa3_section +".proto=static");
 
-            //  disconnect from , připoj k wpa3_section
             for (const auto& [radio_name, radio] : j.items()) {
                 for (const auto& wifi_iface : radio.at("interfaces")) {
                     if (wifi_iface.value("ifname", "") == iface) {
                         const string wifi_section = wifi_iface.at("section").get<string>();
-                        exec("uci set wireless."+wifi_section +".network="+wpa3_section);
+                        exec(format("uci set wireless.{}.network={}", wifi_section, wpa3_section));
                     }
                 }
             }
@@ -205,9 +203,9 @@ namespace wpa3_tester {
             const string value = val.is_string() ? val.get<string>() : val.dump();
 
             if (radio_keys.contains(key)){
-                exec("uci set wireless."+actor["radio"] + "."+key + "="+value);
+                exec(format("uci set wireless.{}.{}={}", actor["radio"], key, value));
             }else{
-                exec("uci set wireless."+wifi_iface + "."+key + "="+value);
+                exec(format("uci set wireless.{}.{}={}", wifi_iface, key, value));
             }
         }
         exec("uci commit wireless");

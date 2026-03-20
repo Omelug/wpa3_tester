@@ -153,7 +153,7 @@ namespace wpa3_tester{
 
     // RUN functions // TODO refactor
 
-    void hw_capabilities::run_in(const string& cmd, const filesystem::path& cwd = filesystem::current_path()) {
+    void hw_capabilities::run_in(const string& cmd, const path& cwd = current_path()) {
         const string full_cmd = "cd "+cwd.string()+" && "+cmd;
         if (system(full_cmd.c_str()) != 0) {
             throw runtime_error("Command failed: "+cmd);

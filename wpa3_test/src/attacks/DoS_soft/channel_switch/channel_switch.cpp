@@ -81,7 +81,7 @@ namespace wpa3_tester::CSA_attack{
 
     void setup_AP(RunStatus& rs,const string& actor_name){
         program::start(rs, actor_name);
-        rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(20));
+        rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(40));
         log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
     }

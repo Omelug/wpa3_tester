@@ -18,4 +18,4 @@ target_link_libraries(run_sae_callback_tests PRIVATE
         tins
 )
 
-add_test(NAME SAECallbackTests COMMAND run_sae_callback_tests)
+add_test(NAME CallbackTests COMMAND run_sae_callback_tests)

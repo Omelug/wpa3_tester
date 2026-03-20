@@ -26,12 +26,11 @@ namespace wpa3_tester::observer{
         if(iface == nullopt){
             iface_str = run_status.get_actor(node_name)["iface"];
         }else {
-            iface_str = MONITOR_IFACE_PREFIX + iface.value();
+            iface_str = iface.value();
         }
 
         command.insert(command.end(), {
             program_name, "-i", iface_str,
-            "-p",
             "-w", pcap_path,
             "-f", filter,
         });
@@ -141,7 +140,7 @@ namespace wpa3_tester::observer{
                         timestamps.push_back(tp);
                     }
                 }
-            } catch (const exception& e) {log(LogLevel::WARNING, "Failed to parse timestamp '"+line+"':"+e.what());}
+            } catch (const exception& e) { log(LogLevel::WARNING, "Failed to parse timestamp '"+line+"':"+e.what());}
         }
 
         log(LogLevel::INFO, "Extracted %zu timestamps matching filter '%s'", timestamps.size(), tshark_filter.c_str());
@@ -207,7 +206,7 @@ namespace wpa3_tester::observer{
 
         // events
         vector<string> plot_parts;
-        plot_parts.push_back("$traffic using 1:2 with points pt 7 ps 0.7 lc rgb '#1f77b4' title 'Traffic'");
+        plot_parts.emplace_back("$traffic using 1:2 with points pt 7 ps 0.7 lc rgb '#1f77b4' title 'Traffic'");
 
         size_t event_block_index = 0;
         size_t label_index = 0;

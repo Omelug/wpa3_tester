@@ -70,10 +70,20 @@ namespace wpa3_tester{
             log(LogLevel::INFO, "Cleaning up interface "+iface);
         }
 
+        // FIXME taohle by nemělo být potřeba po testu
+        run({"pkill", "-f", "tshark.*" + iface});
+        run({"pkill", "-f", "tcpdump.*" + iface});
+
+        run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
+        if(str_con.at("sniff_iface").has_value()){
+            run({"iw", "dev", str_con.at("sniff_iface").value(), "del"});
+
+
         run({"pkill", "-f", "wpa_supplicant.*-i"+iface});
         run({"pkill", "-f", "hostapd.*"+iface});
+
         run({"ip", "link", "set", iface, "down"});
-        run({"rfkill", "unblock", "wifi"});
+        run({"rfkill", "unblock", "wifi"});}
         run({"ip", "addr", "flush", "dev", iface});
         run({"ip", "link", "set", iface, "up"});
     }

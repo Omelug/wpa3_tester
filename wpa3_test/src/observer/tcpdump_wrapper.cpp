@@ -36,7 +36,6 @@ namespace wpa3_tester::observer{
 
         command.insert(command.end(), {
             "tcpdump", "-i", iface_str,
-            "-p",
             "-w", pcap_path,
             "-f", filter,
         });

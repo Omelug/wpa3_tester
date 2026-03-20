@@ -1,10 +1,11 @@
 #include "attacks/attacks.h"
 
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
+#include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
-#include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_monitor_bl0ck.h"
+#include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
 
 namespace wpa3_tester::attack_module_maps{
     using namespace std;
@@ -20,6 +21,7 @@ namespace wpa3_tester::attack_module_maps{
         {"channel_switch", CSA_attack::run_chs_attack},
         {"bl0ck", bl0ck_attack::run_bl0ck_attack},
         {"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},
+        {"sae_commit_monitor_test", test_sae_commit_monitor::run_attack},
         {"malformed_eapol1", eapol_logoff::run_attack},
         {"cookie_guzzler", cookie_guzzler::run_attack}
     };
@@ -28,6 +30,8 @@ namespace wpa3_tester::attack_module_maps{
         {"channel_switch", CSA_attack::stats_chs_attack},
         {"bl0ck", bl0ck_attack::stats_bl0ck_attack},
         {"bl0ck_monitor_test", test_monitor_bl0ck::stats_attack},
-        {"malformed_eapol1", eapol_logoff::stats}
+        {"sae_commit_monitor_test", test_sae_commit_monitor::stats_attack},
+        {"malformed_eapol1", eapol_logoff::stats},
+        {"cookie_guzzler", cookie_guzzler::stats_attack}
     };
 }

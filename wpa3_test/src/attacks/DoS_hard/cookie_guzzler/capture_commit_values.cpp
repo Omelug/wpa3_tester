@@ -44,23 +44,29 @@ namespace wpa3_tester::cookie_guzzler{
         return frame;
     }
 
-    SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec,  pcap_t *handle) {
+    SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle) {
         SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
-        if(handle == nullptr){
+        const bool owns_handle = (handle == nullptr);
+        if (owns_handle) {
             handle = pcap_open_live(iface.c_str(), 65535, 1, 100, errbuf);
+            if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
         }
-        if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+
+        auto handle_guard = unique_ptr<pcap_t, decltype(&pcap_close)>(
+            owns_handle ? handle : nullptr,
+            pcap_close
+        );
 
         const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
         bpf_program fp{};
         if (pcap_compile(handle, &fp, filter_str.c_str(), 0, PCAP_NETMASK_UNKNOWN) < 0) {
-            pcap_close(handle);
             throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
         }
+
+        auto fp_guard = unique_ptr<bpf_program, decltype(&pcap_freecode)>(&fp, pcap_freecode);
         pcap_setfilter(handle, &fp);
-        pcap_freecode(&fp);
 
         const auto deadline = steady_clock::now() + seconds(timeout_sec);
 
@@ -74,13 +80,13 @@ namespace wpa3_tester::cookie_guzzler{
 
             const auto frame = parse_sae_commit(packet, header->caplen);
             if (!frame) continue;
+
             result = frame.value();
             result.success = true;
             log(LogLevel::DEBUG, "SAE payload size: " + to_string(frame->scalar.size()));
             break;
         }
 
-        pcap_close(handle);
         return result;
     }
 
@@ -131,7 +137,6 @@ namespace wpa3_tester::cookie_guzzler{
             conf << "}\n";
             conf.close();
         }
-
         return conf_path;
     }
 
@@ -142,6 +147,7 @@ namespace wpa3_tester::cookie_guzzler{
         const string conf_path = create_wpa_supplicant_config(ssid);
         start_wpa_supplicant(iface, filesystem::absolute(conf_path), pid_file);
         SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
+        if (handler != nullptr) pcap_close(handler);
         stop_wpa_supplicant("pid_file");
         filesystem::remove(conf_path);
         return sae_params;

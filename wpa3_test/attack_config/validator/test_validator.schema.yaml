@@ -34,6 +34,11 @@ properties:
     minProperties: 1
     additionalProperties:
       $ref: '#/definitions/Actor'
+  observers:
+    type: object
+    description: Test observer definitions
+    additionalProperties:
+      $ref: '#/definitions/Observer'
   scan_iface:
     type: string
     description: Interface to scan when source is external
@@ -164,3 +169,10 @@ definitions:
               - required: [ whitebox_host ]
               - required: [ external_OS ]
           errorMessage: "whitebox_ip/whitebox_host not allowed if not external"
+  Observer:
+    type: object
+    additionalProperties: false
+    required:
+      - actor
+      - program
+      - program_config

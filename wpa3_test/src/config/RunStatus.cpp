@@ -9,6 +9,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include "attacks/attacks.h"
+#include "config/Observer_config.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "setup/config_parser.h"
 
@@ -212,5 +213,11 @@ namespace wpa3_tester{
         auto tests = scan_attack_configs(TEST);
         if (tests.empty()) {cout << "In program are not any tests" << endl; return;}
         for (const auto& [name, path] : tests) {cout << "Test: " << name << " -> " << path << endl;}
+    }
+
+    void RunStatus::start_observers(){
+        for (const auto &observer: observers | views::values) {
+            observer->start(*this);
+        }
     }
 }

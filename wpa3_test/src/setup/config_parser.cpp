@@ -116,6 +116,7 @@ namespace wpa3_tester{
     }
 
 
+
     json RunStatus::config_validation(const string &config_path){
         try {
             const YNode config_node = YAML::LoadFile(config_path);
@@ -127,13 +128,39 @@ namespace wpa3_tester{
 
             //global validation
             const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.schema.yaml";
-            nlohmann::json_schema::json_validator global_validator;
-            global_validator.set_root_schema(yaml_to_json(
-                YAML::LoadFile(global_schema_path.string())
-            ));
+            const auto schema_dir = global_schema_path.parent_path();
+            size_t depth = 0;
+            constexpr size_t MAX_RECURSION_DEPTH = 20;
+            const nlohmann::json_schema::schema_loader loader = [&depth, schema_dir](const nlohmann::json_uri &uri, nlohmann::json &schema) {
+                if (++depth > MAX_RECURSION_DEPTH) {
+                    throw std::runtime_error("Max recursion depth reached at: " + uri.to_string());
+                }
+                const std::string p = uri.path();
+                path ref_path;
+
+                const std::string clean_p = (!p.empty() && p[0] == '/') ? p.substr(1) : p;
+
+                if (clean_p.compare(0, 2, "./") == 0 || clean_p.compare(0, 3, "../") == 0) {
+                    ref_path = schema_dir / clean_p;
+                } else if (!p.empty() && p[0] == '/') {
+                    ref_path = p;
+                } else {
+                    ref_path = schema_dir / clean_p;
+                }
+
+                ref_path = weakly_canonical(ref_path);
+
+                if (exists(ref_path)) {
+                    schema = yaml_to_json(YAML::LoadFile(ref_path.string()));
+                } else {
+                    throw std::runtime_error("Schema not found: " + ref_path.string());
+                }
+            };
+            const auto &j= yaml_to_json(YAML::LoadFile(global_schema_path.string()));
+            const nlohmann::json_schema::json_validator global_validator(j, loader);
+            //global_validator.set_root_schema();
             global_validator.validate(config_json);
             return config_json;
-
         } catch (const domain_error &e) {
             throw config_err(string("Schema error: ") + e.what());
         } catch (const invalid_argument &e) {

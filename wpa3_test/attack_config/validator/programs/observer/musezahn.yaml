@@ -1,9 +1,13 @@
 $schema: "http://json-schema.org/draft-07/schema#"
-title: tcpdump program_config
+title: musezahn program_config
 type: object
 properties:
   validator:
     type: string
   filter:
     type: string
+  target_actor:
+    type: string
+    description: Target actor to observe
+required: [target_actor]
 additionalProperties: false

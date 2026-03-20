@@ -3,8 +3,7 @@ title: tshark program_config
 type: object
 properties:
   validator:
-      type: string
+    type: string
   filter:
     type: string
-required: [actor, filter]
 additionalProperties: false

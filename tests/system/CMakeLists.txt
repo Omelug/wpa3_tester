@@ -6,7 +6,7 @@ target_link_libraries(hw_cap_tests PRIVATE
 )
 add_test(NAME HWCapabilitiesTests COMMAND hw_cap_tests)
 
-add_executable(run_pdu_solve_tests test_process_manager.cpp)
+add_executable(run_pdu_solve_tests test_solve_new_pdu.cpp)
 target_link_libraries(run_pdu_solve_tests PRIVATE
         wpa3_core
         doctest_headers

@@ -51,11 +51,12 @@ namespace wpa3_tester{
     void RunStatus::solve_new_pdu(PDU& pdu, ActorMap& seen){
         int8_t signal = -1;
         int channel = -1;
+        int channel_freq = -1;
 
-        if (auto *radiotap = pdu.find_pdu<RadioTap>()) {
+        if (const auto *radiotap = pdu.find_pdu<RadioTap>()) {
             signal = radiotap->dbm_signal();
-            channel = radiotap->channel_freq();
-            if (channel > 0) { channel = hw_capabilities::freq_to_channel(channel); }
+            channel_freq = radiotap->channel_freq();
+            if (channel_freq > 0) { channel = hw_capabilities::freq_to_channel(channel_freq); }
         }
 
         const auto add_entity = [&](const string& mac, bool is_ap, const string& ssid = "") {
@@ -64,21 +65,20 @@ namespace wpa3_tester{
             actor_config->str_con["source"] = "external";
             actor_config->str_con["ssid"] = ssid;
             actor_config->bool_conditions["AP"] = is_ap;
-            
-            if (channel > 0) {
-                actor_config->str_con["channel"] = to_string(channel);
-                if (channel >= 1 && channel <= 14) {
+
+            if (channel_freq > 0) {
+                if (channel_freq >= 2412 && channel_freq <= 2484) {
                     actor_config->bool_conditions["2_4GHz"] = true;
-                } else if (channel >= 36 && channel <= 177) {
+                } else if (channel_freq >= 5170 && channel_freq <= 5885) {
                     actor_config->bool_conditions["5GHz"] = true;
-                } else if (channel >= 1 && channel <= 233) {
+                } else if (channel_freq >= 5945 && channel_freq <= 7125) {
                     actor_config->bool_conditions["6GHz"] = true;
                 }
+                const int channel_num = hw_capabilities::freq_to_channel(channel_freq);
+                actor_config->str_con["channel"] = to_string(channel_num);
             }
             
-            if (signal != -1) {
-                actor_config->str_con["signal"] = to_string(signal);
-            }
+            if (signal != -1) { actor_config->str_con["signal"] = to_string(signal); }
 
             if (seen.contains(mac)) {
                 const auto& existing = seen.at(mac);
@@ -86,7 +86,6 @@ namespace wpa3_tester{
                 if (channel > 0) existing->str_con["channel"] = to_string(channel);
                 if (signal != -1) existing->str_con["signal"] = to_string(signal);
             } else {
-                // Add new actor config
                 seen.emplace(mac, ActorPtr(actor_config));
             }
         };
@@ -105,21 +104,21 @@ namespace wpa3_tester{
             add_entity(mac, true, ssid);
         }
         // AP: Probe Response  
-        else if (auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()) {
+        else if (const auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()) {
             const string mac = probe_resp->addr2().to_string();
             string ssid;
             try { ssid = probe_resp->ssid(); } catch (...) {}
             add_entity(mac, true, ssid);
         }
         // STA: Probe Request
-        else if (auto *probe_req = pdu.find_pdu<Dot11ProbeRequest>()) {
+        else if (const auto *probe_req = pdu.find_pdu<Dot11ProbeRequest>()) {
             const string mac = probe_req->addr2().to_string();
             string ssid;
             try { ssid = probe_req->ssid(); } catch (...) {}
             add_entity(mac, false, ssid);
         }
         // Data frames
-        else if (auto *data = pdu.find_pdu<Dot11Data>()) {
+        else if (const auto *data = pdu.find_pdu<Dot11Data>()) {
             const bool to_ds = data->to_ds();
             const bool from_ds = data->from_ds();
 

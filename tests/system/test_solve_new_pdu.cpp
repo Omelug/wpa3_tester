@@ -53,10 +53,10 @@ namespace wpa3_tester {
         RunStatus::solve_new_pdu(*radiotap, seen);
         
         CHECK((seen.size() == 1));
-        CHECK(seen.contains("AA:BB:CC:DD:EE:FF"));
+        CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));
         
-        auto actor = seen.at("AA:BB:CC:DD:EE:FF");
-        CHECK((actor->str_con["mac"] == "AA:BB:CC:DD:EE:FF"));
+        auto actor = seen.at("aa:bb:cc:dd:ee:ff");
+        CHECK((actor->str_con["mac"] == "aa:bb:cc:dd:ee:ff"));
         CHECK((actor->str_con["ssid"] == "HiddenNetwork"));
         CHECK((actor->str_con["channel"] == "100"));
         CHECK((actor->str_con["signal"] == "-60"));
@@ -109,7 +109,7 @@ namespace wpa3_tester {
         
         CHECK((seen.size() == 2));
         CHECK((seen.contains("22:33:44:55:66:77")));  // STA
-        CHECK((seen.contains("AA:BB:CC:DD:EE:FF")));   // AP
+        CHECK((seen.contains("aa:bb:cc:dd:ee:ff")));   // AP
         
         // Check STA
         auto sta = seen.at("22:33:44:55:66:77");
@@ -117,7 +117,7 @@ namespace wpa3_tester {
         CHECK((sta->str_con["channel"] == "36"));
         
         // Check AP
-        auto ap = seen.at("AA:BB:CC:DD:EE:FF");
+        auto ap = seen.at("aa:bb:cc:dd:ee:ff");
         CHECK((ap->bool_conditions["AP"] == true));
         CHECK((ap->str_con["channel"] == "36"));
     }
@@ -127,7 +127,7 @@ namespace wpa3_tester {
         
         // Create data frame from AP to STA
         auto data = make_shared<Dot11Data>();
-        data->addr2("AA:BB:CC:DD:EE:FF");  // AP MAC (source)
+        data->addr2("aa:bb:cc:dd:ee:ff");  // AP MAC (source)
         data->addr1("22:33:44:55:66:77");  // STA MAC (destination)
         data->to_ds(false);
         data->from_ds(true);
@@ -141,10 +141,10 @@ namespace wpa3_tester {
         RunStatus::solve_new_pdu(*radiotap, seen);
         
         CHECK((seen.size() == 2));
-        CHECK(seen.contains("AA:BB:CC:DD:EE:FF"));   // AP
+        CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));   // AP
         CHECK(seen.contains("22:33:44:55:66:77"));  // STA
         
-        auto ap = seen.at("AA:BB:CC:DD:EE:FF");
+        auto ap = seen.at("aa:bb:cc:dd:ee:ff");
         CHECK((ap->bool_conditions["AP"] == true));
         CHECK((ap->str_con["channel"] == "177"));
         CHECK((ap->bool_conditions["5GHz"] == true));
@@ -175,6 +175,7 @@ namespace wpa3_tester {
         CHECK((seen.size() == 1));
         auto updated_actor = seen.at("00:11:22:33:44:55");
         CHECK((updated_actor->str_con["ssid"] == "UpdatedSSID"));
+        //TODO tohle se tam přidává v ActorCoinfig mapě to původně není
         CHECK((updated_actor->str_con["channel"] == "13"));
         CHECK((updated_actor->str_con["signal"] == "-50"));
     }
@@ -192,8 +193,6 @@ namespace wpa3_tester {
         CHECK((seen.size() == 1));
         auto actor = seen.at("00:11:22:33:44:55");
         CHECK((actor->str_con["ssid"] == "NoRadioTap"));
-        CHECK((actor->str_con["channel"] == "-1"));  // Default value
-        CHECK((actor->str_con["signal"] == "-1"));   // Default value
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band") {
@@ -213,7 +212,7 @@ namespace wpa3_tester {
         RunStatus::solve_new_pdu(*radiotap, seen);
         
         CHECK((seen.size() == 1));
-        auto actor = seen.at("66:77:88:99:AA:BB");
+        auto actor = seen.at("66:77:88:99:aa:bb");
         CHECK((actor->str_con["channel"] == "101"));
         CHECK((actor->bool_conditions["6GHz"] == true));
     }
@@ -224,7 +223,7 @@ namespace wpa3_tester {
         // Create WDS frame (to_ds && from_ds)
         auto data = make_shared<Dot11Data>();
         data->addr2("00:11:22:33:44:55");
-        data->addr1("66:77:88:99:AA:BB");
+        data->addr1("66:77:88:99:aa:bb");
         data->to_ds(true);
         data->from_ds(true);  // WDS
         

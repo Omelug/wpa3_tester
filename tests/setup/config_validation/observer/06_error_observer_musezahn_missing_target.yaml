@@ -1,0 +1,10 @@
+name: "WPA3-Test"
+attacker_module: module1
+actors:
+  only_actor:
+    source: internal
+observers:
+  observer:
+    program: musezahn
+    program_config:
+      filter: "wlan.fc.type_subtype == 0x08"

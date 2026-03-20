@@ -1,9 +1,12 @@
 $schema: "http://json-schema.org/draft-07/schema#"
-title: tcpdump program_config
+title: recursive observer schema
 type: object
 properties:
-  validator:
+  program:
     type: string
   filter:
     type: string
+  program_config:
+    $ref: "./07_recursive.schema.yaml"
+required: [program]
 additionalProperties: false

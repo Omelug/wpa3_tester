@@ -10,7 +10,6 @@ actors:
     setup:
       program: openwrt
       program_config:
-        validator: ../../validator/programs/openwrt.schema.yaml
         ssid: OpenWrt_2_4GHz
         channel: 6
         key: password123

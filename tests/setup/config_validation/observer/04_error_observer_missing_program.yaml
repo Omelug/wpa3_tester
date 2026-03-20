@@ -1,0 +1,9 @@
+name: "WPA3-Test"
+attacker_module: module1
+observers:
+  observer:
+    actor: only_actor
+    filter: "wlan.fc.type_subtype == 0x08"
+actors:
+  only_actor:
+    source: internal

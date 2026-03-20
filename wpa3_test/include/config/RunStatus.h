@@ -49,6 +49,7 @@ namespace wpa3_tester{
         ActorPtr &get_actor(const std::string &actor_name);
         static void get_or_create_connection(const ActorPtr &actor);
         static void print_test_list();
+        void start_observers();
         static std::string findConfigByTestName(const std::string &name);
 
         // For manual testing / wizards
@@ -69,7 +70,7 @@ namespace wpa3_tester{
         void parse_requirements();
 
     public:
-        static nlohmann::json extends_recursive(const nlohmann::json &current_node, const std::string &config_path);
+        static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::string &config_path);
         static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
         static nlohmann::json config_validation(const std::string &config_path);
         void config_requirement();

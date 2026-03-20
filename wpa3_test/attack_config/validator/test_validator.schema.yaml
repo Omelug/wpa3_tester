@@ -1,13 +1,10 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Test Configuration Schema
 type: object
-required:  # - observers
-  #- attack_config
+required:
   - name
   - attacker_module
   - actors
-  # - observers
-  #- attack_config
 config_type:
   type: string
   const: test
@@ -104,13 +101,23 @@ definitions:
             type: integer
           program:
             type: string
-            enum: [ "hostapd", "wpa_supplicant", "iperf3", "openwrt"]
+            enum: [ "hostapd", "wpa_supplicant", "openwrt"]
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
           req_programs:
             type: array
             description: Array of program names what has to be installed
+        allOf:
+          - if:
+              properties:
+                program:
+                  const: openwrt
+            then:
+              properties:
+                program_config:
+                  $ref: './programs/actor/openwrt.yaml'
+          #TODO hostapd,
       selection:
         type: object
         additionalProperties: false
@@ -176,3 +183,38 @@ definitions:
       - actor
       - program
       - program_config
+    properties:
+      actor:
+        type: string
+        description: Actor to observe
+      program:
+        type: string
+        enum: [ "musezahn", "tcpdump", "tshark" ]
+        description: Program to use for observation
+      program_config:
+        type: object
+    allOf:
+      - if:
+          properties:
+            program:
+              const: musezahn
+        then:
+          properties:
+            program_config:
+              $ref: './programs/observer/musezahn.yaml'
+      - if:
+          properties:
+            program:
+              const: tcpdump
+        then:
+          properties:
+            program_config:
+              $ref: './programs/observer/tcpdump.yaml'
+      - if:
+          properties:
+            program:
+              const: tshark
+        then:
+          properties:
+            program_config:
+              $ref: './programs/observer/tshark.yaml'

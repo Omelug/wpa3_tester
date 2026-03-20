@@ -71,6 +71,19 @@ TEST_CASE("RunStatus Config Validation - Validator configuration"){
     test_case_loop(test_base, tests);
 }
 
+TEST_CASE("RunStatus Config Validation - Observer configuration"){
+    const path test_base = this_file.parent_path() / "config_validation"/"observer";
+    const vector<ConfigTestCase> tests = {
+        {"1. observer tcpdump valid", "01_test_observer_tcpdump_valid.yaml",    "01_result_observer_tcpdump_valid.yaml", true},
+        {"2. observer tshark valid", "02_test_observer_tshark_valid.yaml",    "02_result_observer_tshark_valid.yaml", true},
+        {"4. observer missing program", "04_error_observer_missing_program.yaml",    "", false},
+        {"5. observer invalid program", "05_error_observer_invalid_program.yaml",    "", false},
+        {"6. observer musezahn missing target", "06_error_observer_musezahn_missing_target.yaml",    "", false},
+        {"7. observer recursive schema", "07_recursive.yaml", "", false},
+    };
+    test_case_loop(test_base, tests);
+}
+
 TEST_CASE("RunStatus Config Validation - Test suite configuration"){
     const path test_base = this_file.parent_path() / "config_validation"/"test_suite";
     const vector<ConfigTestCase> tests = {

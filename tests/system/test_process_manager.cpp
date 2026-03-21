@@ -2,7 +2,6 @@
 #include <doctest.h>
 #include <thread>
 #include <chrono>
-#include <doctest/doctest.h>
 #include "logger/log.h"
 #include "logger/error_log.h"
 #include "system/ProcessManager.h"
@@ -23,11 +22,11 @@ namespace wpa3_tester {
 
             pm.run("test_proc", cmd);
             this_thread::sleep_for(500ms);
-            CHECK((pm.processes.contains("test_proc")));
+            CHECK((pm.process_exists("test_proc")));
             this_thread::sleep_for(500ms);
 
             pm.stop("test_proc");
-            CHECK((!pm.processes.contains("test_proc")));
+            CHECK((!pm.process_exists("test_proc")));
         }
         CHECK(true);
     }
@@ -49,15 +48,15 @@ namespace wpa3_tester {
         pm.run("test_proc2", sleep_cmd2);
         pm.run("test_proc3", sleep_cmd3);
 
-        CHECK((pm.processes.size() == 3));
-        CHECK((pm.processes.contains("test_proc1")));
-        CHECK((pm.processes.contains("test_proc2")));
-        CHECK((pm.processes.contains("test_proc3")));
+        CHECK((pm.processes_size() == 3));
+        CHECK((pm.process_exists("test_proc1")));
+        CHECK((pm.process_exists("test_proc2")));
+        CHECK((pm.process_exists("test_proc3")));
 
-        this_thread::sleep_for(100ms);
+        this_thread::sleep_for(chrono::milliseconds(500));
         pm.stop_all();
 
-        CHECK(pm.processes.empty());
+        CHECK((pm.processes_size() == 0));
 
         log(LogLevel::INFO, "stop_all test completed successfully");
         //remove_all(test_dir);
@@ -71,7 +70,7 @@ namespace wpa3_tester {
         pm.init_logging(test_dir.string());
 
         CHECK_NOTHROW(pm.stop_all());
-        CHECK(pm.processes.empty());
+        CHECK((pm.processes_size() == 0));
 
         log(LogLevel::INFO, "stop_all empty test completed successfully");
         remove_all(test_dir);
@@ -89,17 +88,17 @@ namespace wpa3_tester {
         pm.run("proc1", sleep_cmd1);
         pm.run("proc2", sleep_cmd2);
 
-        CHECK((pm.processes.size() == 2));
+        CHECK((pm.processes_size() == 2));
 
         this_thread::sleep_for(100ms);
         pm.stop("proc1");
 
-        CHECK((pm.processes.size() == 1));
-        CHECK((!pm.processes.contains("proc1")));
-        CHECK((pm.processes.contains("proc2")));
+        CHECK((pm.processes_size() == 1));
+        CHECK((!pm.process_exists("proc1")));
+        CHECK((pm.process_exists("proc2")));
 
         pm.stop_all();
-        CHECK(pm.processes.empty());
+        CHECK((pm.processes_size() == 0));
 
         log(LogLevel::INFO, "stop individual process test completed successfully");
         remove_all(test_dir);

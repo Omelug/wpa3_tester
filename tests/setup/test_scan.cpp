@@ -10,6 +10,42 @@ using namespace std;
 using namespace wpa3_tester;
 using namespace  filesystem;
 
+TEST_CASE("RunStatus::setup_test - directory management") {
+    const path test_run_folder = temp_directory_path() / "test_setup_run";
+    
+    SUBCASE("Creates and cleans run folder") {
+        create_directories(test_run_folder);
+        ofstream test_file(test_run_folder / "existing_file.txt");
+        test_file << "test content";
+        test_file.close();
+        
+        REQUIRE(exists(test_run_folder));
+        REQUIRE(exists(test_run_folder / "existing_file.txt"));
+        
+        RunStatus rs;
+        rs.run_folder = test_run_folder.string();
+        rs.config["attacker_module"] = "nonexistent_module";
+        
+        REQUIRE_NOTHROW(rs.setup_test());
+        
+        REQUIRE(exists(test_run_folder));
+        REQUIRE_FALSE(exists(test_run_folder / "existing_file.txt"));
+        remove_all(test_run_folder);
+    }
+    
+    SUBCASE("Handles non-existent directory") {
+        REQUIRE_FALSE(exists(test_run_folder));
+        
+        RunStatus rs;
+        rs.run_folder = test_run_folder.string();
+        rs.config["attacker_module"] = "nonexistent_module";
+        
+        REQUIRE_NOTHROW(rs.setup_test());
+        REQUIRE(exists(test_run_folder));
+        remove_all(test_run_folder);
+    }
+}
+
 TEST_CASE("get_actors_conn_table - basic parsing") {
     const path test_file = temp_directory_path() / "test_conn_table.csv";
 

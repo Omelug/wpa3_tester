@@ -1,0 +1,9 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: tshark recursive
+name: test_tshark
+actors:
+  program: tshark
+  filter: ""
+  program_config:
+    validator: "./07_recursive.schema.yaml"
+

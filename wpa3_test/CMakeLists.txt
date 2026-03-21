@@ -113,10 +113,10 @@ FetchContent_MakeAvailable(
 )
 
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(--coverage -O0 -g)
-    add_link_options(--coverage)
-endif()
+#if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#    add_compile_options(--coverage -O0 -g)
+#    add_link_options(--coverage)
+#endif()
 
 
 add_library(doctest_headers INTERFACE)
@@ -177,6 +177,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_definitions(wpa3_core PUBLIC PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# debug deadlock
+target_compile_options(wpa3_tester PRIVATE -fsanitize=thread -g)
+target_link_options(wpa3_tester PRIVATE -fsanitize=thread)
 
 target_precompile_headers(wpa3_core PUBLIC
         <vector>

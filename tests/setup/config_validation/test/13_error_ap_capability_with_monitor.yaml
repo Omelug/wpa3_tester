@@ -1,10 +1,8 @@
 name: ap_capability_with_monitor_invalid
 attacker_module: test_module
-
 actors:
   # This should FAIL - actor requesting AP capability cannot also have monitor
   multi_role_actor:
-
     source: internal
     selection:
       condition: ["AP", "monitor", "injection"]

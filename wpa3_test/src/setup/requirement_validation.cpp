@@ -25,6 +25,7 @@ namespace wpa3_tester{
             );
             it->second->str_con["actor_name"] = actor_name;
         }
+        if(!config.contains("observers")) return;
         for (const auto& [observer_name, observer] : config.at("observers").items()) {
             auto [it, inserted] = observers.emplace(
                 observer_name,

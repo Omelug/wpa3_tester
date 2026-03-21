@@ -1,16 +1,12 @@
 name: ap_with_sniff_iface_valid
 attacker_module: test_module
-
 actors:
   access_point:
-
     source: internal
     sniff_iface: mon0
     setup:
       program: hostapd
-
   attacker:
-
     source: internal
     selection:
       condition: ["monitor", "injection"]

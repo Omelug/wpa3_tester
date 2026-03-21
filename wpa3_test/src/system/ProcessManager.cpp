@@ -25,25 +25,22 @@ namespace wpa3_tester{
         stringstream ss(data);
         string line;
 
-        while (getline(ss, line)) {
+        while (getline(ss, line)){
             if (line.empty()) continue;
-
             const string full_line = prefix + line;
-            lock_guard lock(mtx_);
-            if (combined_log.is_open()) write_log_line(combined_log, full_line);
-            auto &logs = mp->logs;
-            if (logs.log.is_open()) write_log_line(logs.log, full_line);
-
-            if (logs.history_enabled) {logs.history += line;logs.history.push_back('\n');}
-
-            if (logs.wait.active) {
-                if (regex_search(line, logs.wait.pattern)) {
+            bool should_notify = false;
+            {
+                lock_guard lock(logger_mtx);
+                if (combined_log.is_open()) write_log_line(combined_log, full_line);
+                auto &logs = mp->logs;
+                if (logs.log.is_open()) write_log_line(logs.log, full_line);
+                if (logs.history_enabled) {logs.history += line;logs.history.push_back('\n');}
+                if (logs.wait.pattern && regex_search(line, *logs.wait.pattern)) {
                     logs.wait.matched = true;
-
-                    unique_lock signal_lock(wait_mutex);
-                    wait_cv.notify_all();
+                    should_notify = true;
                 }
             }
+            if (should_notify) wait_cv.notify_all();
         }
     }
 
@@ -52,9 +49,18 @@ namespace wpa3_tester{
         mp->shutting_down = false;
         mp->drain_thread = thread([this, process_name, mp]() {
             uint8_t buffer[4096];
-            while (!mp->shutting_down){
-                auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err, reproc::milliseconds(100));
 
+            struct StreamInfo { reproc::stream stream; const char* label; int event; };
+            constexpr StreamInfo streams[] = {
+                    { reproc::stream::out, "stdout", reproc::event::out },
+                    { reproc::stream::err, "stderr", reproc::event::err }
+                };
+
+            while (true){
+                log(LogLevel::DEBUG, "poll start "+process_name);
+                auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err | reproc::event::exit, reproc::milliseconds(100));
+                log(LogLevel::DEBUG, "poll end "+process_name);
+                if (mp->shutting_down) break;
                 if (ec == errc::timed_out) continue;
                 if(ec){
                     if (ec == errc::broken_pipe ||ec == errc::no_such_process) {
@@ -65,13 +71,6 @@ namespace wpa3_tester{
                     }
                     break;
                 }
-
-                struct StreamInfo { reproc::stream stream; const char* label; int event; };
-                constexpr StreamInfo streams[] = {
-                    { reproc::stream::out, "stdout", reproc::event::out },
-                    { reproc::stream::err, "stderr", reproc::event::err }
-                };
-
                 for (const auto &s : streams) {
                     if (!(events & s.event)) continue;
 
@@ -89,17 +88,23 @@ namespace wpa3_tester{
                         handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
+            }
+            mp->proc->close(reproc::stream::in);
 
+            // Flush anything left in the pipe after shutting_down is set
+            log(LogLevel::DEBUG, "flush start "+process_name);
+            for (const auto &s : streams) {
+                while (true) {
+                    auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
+                    if (poll_ec || !(events & s.event)) break;  // no data or error
 
-                // Flush anything left in the pipe after shutting_down is set
-                for (const auto &s : streams) {
-                    while (true) {
-                        auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-                        if (read_ec || n == 0) break;
-                        handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
-                    }
+                    auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+                    if (read_ec || n == 0) break;
+                    handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                 }
             }
+
+            log(LogLevel::DEBUG, "flush done "+process_name);
             log(LogLevel::DEBUG, "Drain thread exited for "+process_name);
         });
     }
@@ -107,7 +112,7 @@ namespace wpa3_tester{
 
     ProcessManager::~ProcessManager() {
         stop_all();
-        lock_guard lock(mtx_);
+        lock_guard lock(logger_mtx);
         if (combined_log.is_open()) combined_log.close();
     }
 
@@ -147,13 +152,13 @@ namespace wpa3_tester{
         if (!logs.log.is_open()) { throw config_err("Failed to open log for "+process_name+": "+log_path.string());}
 
         {
-            lock_guard lock(mtx_);
+            lock_guard lock(logger_mtx);
             processes[process_name] = mp;
         }
 
         if (const auto ec = mp->proc->start(cmd, options)) {
             {
-                lock_guard lock(mtx_);
+                lock_guard lock(logger_mtx);
                 processes.erase(process_name);
             }
             throw runtime_error("Failed to start "+process_name+": "+ec.message());
@@ -162,6 +167,7 @@ namespace wpa3_tester{
         start_drain_for(process_name, mp);
 
         const string line = current_timestamp()+" ["+process_name+"] [cmd] "+cmd_line;
+        lock_guard lock(logger_mtx);
         if (combined_log.is_open()) {write_log_line(combined_log, line);}
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
     }
@@ -173,29 +179,24 @@ namespace wpa3_tester{
         shared_ptr<ManagedProcess> mp;
 
         {
-            lock_guard lock(mtx_);
+            lock_guard lock(logger_mtx);
             const auto proc_iter = processes.find(actor_name);
             if (proc_iter == processes.end() || !proc_iter->second) {
                 throw runtime_error("Unknown process in wait_for: "+actor_name);
             }
             mp = proc_iter->second;
-        }
 
-        auto &logs = mp->logs;
-
-        {
-            lock_guard lock(mtx_);
+            auto &logs = mp->logs;
 
             logs.history_enabled = true;
             logs.wait.pattern = regex(pattern);
-            logs.wait.active = true;
             logs.wait.matched = false;
 
             // first pass – search history
             stringstream ss(logs.history);
             string line;
             while (getline(ss, line)) {
-                if (regex_search(line, logs.wait.pattern)) {
+                if (regex_search(line, *logs.wait.pattern)) {
                     logs.wait.matched = true;
                     break;
                 }
@@ -203,98 +204,91 @@ namespace wpa3_tester{
 
             if (logs.wait.matched) {
                 logs.history.clear();
-                logs.wait.active = false;
+                logs.wait.pattern = nullopt;
                 return;
             }
         }
 
         { // wait for match from drain thread with timeout
             unique_lock lock(wait_mutex);
+            auto &logs = mp->logs;
             const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp] {
                 return logs.wait.matched || mp->shutting_down.load();
             });
 
             // Check if process was stopped (shutting_down but not matched)
             if (mp->shutting_down.load() && !logs.wait.matched) {
-                lock_guard log_lock(mtx_);
-                logs.wait.active = false;
+                lock_guard data_lock(logger_mtx);
+                logs.wait.pattern = nullopt;
                 logs.history_enabled = false;
                 log(LogLevel::DEBUG, "wait_for for '"+actor_name+"' interrupted: process stopped");
                 return; // wait for ot matched if stop
             }
 
             if (!matched) {
-                lock_guard log_lock(mtx_);
-                logs.wait.active = false;
+                lock_guard data_lock(logger_mtx);
+                logs.wait.pattern = nullopt;
                 throw timeout_err(
                     "Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
                     pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
             }
-        }
 
-        lock_guard lock(mtx_);
-        logs.history.clear();
-        logs.wait.active = false;
+            lock_guard data_lock(logger_mtx);
+            logs.history.clear();
+            logs.wait.pattern = nullopt;
+        }
     }
 
     void ProcessManager::stop(const string &process_name){
+        //log(LogLevel::DEBUG, "stop() called for "+process_name);
         shared_ptr<ManagedProcess> mp;
-
         {
-            lock_guard lock(mtx_);
+            lock_guard lock(logger_mtx);
             const auto proc_iter = processes.find(process_name);
             if (proc_iter == processes.end()) return;
 
             mp = proc_iter->second;
 
             // Clean up wait state and notify any waiting threads
-            auto &logs = mp->logs;
-            logs.wait.active = false;
-            logs.wait.matched = false;
-            logs.history_enabled = false;
-
+            mp->logs.history_enabled = false;
+            mp->shutting_down = true;
             processes.erase(proc_iter);
         }
-
-        // Notify all waiting threads that process is shutting down
-        {
-            unique_lock lock(wait_mutex);
-            mp->shutting_down = true;
-            wait_cv.notify_all();
-        }
-
-        auto close_result = mp->proc->close(reproc::stream::out);
-        if (close_result.value() != 0){
-            log(LogLevel::WARNING,"Failed to close stdout stream: "+close_result.message());
-        }
-        close_result = mp->proc->close(reproc::stream::err);
-        if (close_result.value() != 0){
-            log(LogLevel::WARNING, "Failed to close stderr stream: "+close_result.message());
-        }
+        //log(LogLevel::DEBUG, "shutting_down set for "+process_name);
+        wait_cv.notify_all();
 
         reproc::stop_actions operations{};
         operations.first  = { reproc::stop::terminate, reproc::milliseconds(500) };
         operations.second = { reproc::stop::kill,      reproc::milliseconds(500) };
 
+        //log(LogLevel::DEBUG, "terminate() calling");
+        mp->proc->terminate();
+        //log(LogLevel::DEBUG, "terminate() done");
+        mp->proc->kill();
+        //log(LogLevel::DEBUG, "kill() done");
+
+        //log(LogLevel::DEBUG, "joining...");
+        if (mp->drain_thread.joinable()) mp->drain_thread.join();
+        //log(LogLevel::DEBUG, "join done");
+
         mp->proc->stop(operations);
+        log(LogLevel::DEBUG, "proc->stop done for "+process_name);
 
         // Call on_stop callback if registered
-        if (mp->on_stop_callback) {
+        if (mp->on_stop_callback){
             try {
                 mp->on_stop_callback();
             } catch (const exception& e) {
                 log(LogLevel::WARNING, "Error in on_stop callback for "+process_name +":"+e.what());
             }
         }
-
-        // wait for drain thread
-        if (mp->drain_thread.joinable()){ mp->drain_thread.join();}
     }
 
     void ProcessManager::stop_all() {
+
         vector<string> process_names;
         {
-            lock_guard lock(mtx_);
+            lock_guard lock(logger_mtx);
             process_names.reserve(processes.size());
             for (const auto &name : processes | views::keys) {process_names.push_back(name);}
         }
@@ -310,7 +304,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::on_stop(const string& process_name, const function<void()> &callback) {
-        lock_guard lock(mtx_);
+        lock_guard lock(logger_mtx);
         const auto proc_iter = processes.find(process_name);
         if (proc_iter != processes.end() && proc_iter->second) {
             proc_iter->second->on_stop_callback = callback;

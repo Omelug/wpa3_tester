@@ -1,12 +1,9 @@
 name: ap_with_monitor_invalid
 attacker_module: test_module
-
 actors:
   access_point:
-
     source: internal
     selection:
       condition: ["AP", "monitor"]
     setup:
       program: hostapd
-

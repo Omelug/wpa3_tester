@@ -32,7 +32,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::init_logging(const string &run_folder){
-        std::lock_guard lock(mtx_);
+        std::lock_guard lock(logger_mtx);
         log_base_dir = path(run_folder) / "logger";
         recreate_log_folder(log_base_dir);
 
@@ -57,12 +57,22 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::write_log_all(const string &line) {
-        lock_guard lock(mtx_); //FIXME lock for spcific logs ?
+        lock_guard lock(logger_mtx);
         write_log_line(combined_log, line);
         for (const auto& [name, proc] : processes){
             const string prefix = current_timestamp()+" ["+name+"] [write_log_all] ";
             write_log_line(proc->logs.log, prefix + line);
         }
+    }
+
+    size_t ProcessManager::processes_size() const{
+        lock_guard lock(logger_mtx);
+        return processes.size();
+    }
+
+    bool ProcessManager::process_exists(const std::string &process_name){
+        lock_guard lock(logger_mtx);
+        return processes.contains(process_name);
     }
 
 
@@ -71,6 +81,7 @@ namespace wpa3_tester{
 
         // if log folder exists -> clear
         if (exists(log_base_dir, ec)) {
+            permissions(log_base_dir, perms::all, perm_options::add, ec);
             remove_all(log_base_dir, ec);
             if (ec) {
                 log(LogLevel::ERROR, "Failed to clean logger directory: "+log_base_dir.string()+":"+ec.message());
@@ -81,13 +92,13 @@ namespace wpa3_tester{
         // create log folder
         create_directories(log_base_dir, ec);
         if (ec) {
-            log(LogLevel::ERROR,"Failed to clean logger directory: "+log_base_dir.string()+":"+ec.message());
+            log(LogLevel::ERROR,"Failed to create logger directory: "+log_base_dir.string()+":"+ec.message());
         }
     }
 
     // ----------------- history functions
     void ProcessManager::allow_history(const string &actor_name) {
-        lock_guard lock(mtx_);
+        lock_guard lock(logger_mtx);
         if (const auto it = processes.find(actor_name); it != processes.end()) {
             it->second->logs.history_enabled = true;
             return;
@@ -96,6 +107,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::ignore_history(const string &actor_name) {
+        lock_guard lock(logger_mtx);
         if (const auto it = processes.find(actor_name); it != processes.end()) {
             it->second->logs.history_enabled = false;
             it->second->logs.history.clear();
@@ -105,7 +117,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::discard_history(const string &actor_name) {
-        lock_guard lock(mtx_);
+        lock_guard lock(logger_mtx);
         if (const auto it = processes.find(actor_name); it != processes.end()) {
             it->second->logs.history.clear();
             return;

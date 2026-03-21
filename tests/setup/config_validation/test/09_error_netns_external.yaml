@@ -1,9 +1,7 @@
 name: netns_external_invalid_test
 attacker_module: test_module
-
 actors:
   access_point:
-
     source: external
     netns: ap_namespace
     selection:

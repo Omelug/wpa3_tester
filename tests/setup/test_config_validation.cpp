@@ -5,7 +5,10 @@
 #include <filesystem>
 #include <source_location>
 #include <yaml-cpp/node/parse.h>
+#include "config/Observer_config.h"
 #include "config/RunSuiteStatus.h"
+#include "config/ActorPtr.h"
+#include "config/ObserverPtr.h"
 
 using namespace wpa3_tester;
 using namespace  std;
@@ -79,7 +82,7 @@ TEST_CASE("RunStatus Config Validation - Observer configuration"){
         {"4. observer missing program", "04_error_observer_missing_program.yaml",    "", false},
         {"5. observer invalid program", "05_error_observer_invalid_program.yaml",    "", false},
         {"6. observer musezahn missing target", "06_error_observer_musezahn_missing_target.yaml",    "", false},
-        {"7. observer recursive schema", "07_recursive.yaml", "", false},
+        {"7. observer recursive schema", "07_recursive_t.yaml", "", false},
     };
     test_case_loop(test_base, tests);
 }
@@ -152,6 +155,65 @@ void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) 
     }
 
     CHECK((expected_tree == actual_tree));
+}
+
+TEST_CASE("RunStatus - parse_requirements()"){
+    const path test_base = this_file.parent_path() / "config_validation"/"test";
+    
+    SUBCASE("Parse actors and observers from config") {
+        path config_path = test_base / "01_test_happy_path_minimal.yaml";
+        RunStatus rs;
+        rs.config_path = config_path.string();
+        rs.config = RunStatus::config_validation(rs.config_path);
+
+        rs.config["observers"] = nlohmann::json{
+            {"tcpdump_observer", {
+                {"program", "tcpdump"},
+                {"filter", "wlan.fc.type_subtype == 0x08"}
+            }},
+            {"tshark_observer", {
+                {"program", "tshark"},
+                {"filter", "eapol"}
+            }}
+        };
+        
+        REQUIRE_NOTHROW(rs.parse_requirements());
+        
+        REQUIRE((rs.actors.size() == 1));
+        REQUIRE(rs.actors.contains("only_actor"));
+        REQUIRE((rs.get_actor("only_actor")["actor_name"] == "only_actor"));
+        REQUIRE((rs.observers.size() == 2));
+        REQUIRE((rs.observers.contains("tcpdump_observer")));
+        REQUIRE((rs.observers.contains("tshark_observer")));
+        REQUIRE((rs.observers.at("tcpdump_observer")->observer_name == "tcpdump_observer"));
+        REQUIRE((rs.observers.at("tshark_observer")->observer_name == "tshark_observer"));
+    }
+    
+    SUBCASE("Empty observers") {
+        path config_path = test_base / "01_test_happy_path_minimal.yaml";
+        RunStatus rs;
+        rs.config_path = config_path.string();
+        rs.config = RunStatus::config_validation(rs.config_path);
+
+        rs.config["observers"] = nlohmann::json::object();
+        
+        REQUIRE_NOTHROW(rs.parse_requirements());
+        REQUIRE(rs.observers.empty());
+    }
+    
+    SUBCASE("Multiple actors parsing - actor_names") {
+        path config_path = test_base / "02_test_happy_path_full.yaml";
+        RunStatus rs;
+        rs.config_path = config_path.string();
+        rs.config = RunStatus::config_validation(rs.config_path);
+
+        REQUIRE_NOTHROW(rs.parse_requirements());
+        REQUIRE((rs.actors.size() >= 1));
+
+        for (const auto& [actor_name, actor] : rs.actors) {
+            REQUIRE((actor->str_con["actor_name"] == actor_name));
+        }
+    }
 }
 
 TEST_CASE("RunStatus - Test suite test generation") {

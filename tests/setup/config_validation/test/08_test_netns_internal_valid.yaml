@@ -1,16 +1,12 @@
 name: netns_internal_valid_test
 attacker_module: test_module
-
 actors:
   access_point:
-
     source: internal
     netns: ap_namespace
     setup:
       program: hostapd
-
   client:
-
     source: internal
     netns: client_namespace
     setup:

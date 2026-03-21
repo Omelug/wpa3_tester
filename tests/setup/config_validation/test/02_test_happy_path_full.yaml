@@ -17,7 +17,6 @@ actors:
     ip_addr: 1.42.242.0
     channel: 3
   client:
-
     source: internal
 
 attack_config:

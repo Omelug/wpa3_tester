@@ -13,19 +13,10 @@
 
 namespace wpa3_tester{
     class ProcessManager{
-        mutable std::mutex mtx_; // for processes and process_logs security
 
-    public:
-
-        // log for whole test
-        std::filesystem::path log_base_dir;
-        std::ofstream combined_log;
-
-        //TODO lépe popsat mutexy, je v tom strašnej zmatek
         struct WaitListener {
-            std::regex pattern{};
-            bool active = false;
-            bool matched = false;
+            std::optional<std::regex> pattern; // nullopt == not active wait_for
+            std::atomic<bool> matched{false};
         };
 
         struct ProcessLogs {
@@ -40,15 +31,21 @@ namespace wpa3_tester{
             std::thread drain_thread;
             std::atomic<bool> shutting_down{false};
             ProcessLogs logs;
+            //std::mutex proc_mutex;
             std::function<void()> on_stop_callback;
         };
-
         std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
+        std::ofstream combined_log;
+        mutable std::mutex logger_mtx; // for processes and process_logs security
         std::mutex wait_mutex;
         std::condition_variable wait_cv;
-
+    public:
+        std::filesystem::path log_base_dir;
+        // log for whole test
         static void write_log_line(std::ofstream &os, const std::string &line);
         void write_log_all(const std::string &line);
+        size_t processes_size() const;
+        bool process_exists(const std::string &process_name);
 
     private:
         static void recreate_log_folder(const std::filesystem::path &log_base_dir);

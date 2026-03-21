@@ -1,4 +1,5 @@
 name: "WPA3-Test"
+attacker_module: module1
 extends: 06_error_self_extends.yaml
 actors:
   only_actor:

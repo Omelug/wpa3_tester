@@ -18,7 +18,7 @@ compile:
 	@if [ ! -f $(BUILD_DIR)/build.ninja ] && [ ! -f $(BUILD_DIR)/Makefile ]; then \
 		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR) -G Ninja; \
 	fi
-	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc)
+	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc --ignore=4)
 
 run: compile
 	mkdir -p data
@@ -54,7 +54,7 @@ graphviz:
 	@echo "--- Saved to callgraph.svg ---"
 
 test_build:
-	cmake --build build -j $(shell nproc)
+	cmake --build build -j $(shell nproc --ignore=4)
 
 test: test_build
 	sudo ctest --test-dir build --output-on-failure
@@ -65,18 +65,21 @@ test_manual_build:
 		test_info_openwrt \
 		test_manual_channel_switch \
 		test_manual_get_commit_values \
-		-j $(shell nproc)
-
+		-j $(shell nproc --ignore=2)
 INFO_FILE = $(BUILD_DIR)/coverage.info
 CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info
 REPORT_DIR = $(BUILD_DIR)coverage_report
 
-coverage:
+coverage_build:
+	mkdir -p $(BUILD_DIR_COVERAGE)
+	@if [ ! -f $(BUILD_DIR_COVERAGE)/build.ninja ] && [ ! -f $(BUILD_DIR_COVERAGE)/Makefile ]; then \
+        cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_COVERAGE) -G Ninja -DENABLE_COVERAGE=ON; \
+    fi
+	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc --ignore=4)
+
+coverage: coverage_build
 	lcov --directory $(BUILD_DIR) --zerocounters
 	sudo ctest --test-dir $(BUILD_DIR) --output-on-failure
 	lcov --directory $(BUILD_DIR) --capture --output-file $(INFO_FILE) --ignore-errors inconsistent,inconsistent
 	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors inconsistent,inconsistent
 	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors inconsistent,inconsistent
-
-lcov:
-	cmake --build build --target coverage

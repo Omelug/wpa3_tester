@@ -21,6 +21,13 @@ endif()
 
 set(CMAKE_CXX_STANDARD 23)
 
+option(ENABLE_COVERAGE "Enable coverage" OFF)
+
+if(ENABLE_COVERAGE)
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
 # ----------- LIBRARIES -------------------
 
 #libtins a libwifi mají oba target uninstall
@@ -112,13 +119,6 @@ FetchContent_MakeAvailable(
         linux_headers_wifi
 )
 
-
-#if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#    add_compile_options(--coverage -O0 -g)
-#    add_link_options(--coverage)
-#endif()
-
-
 add_library(doctest_headers INTERFACE)
 target_include_directories(doctest_headers INTERFACE "${doctest_SOURCE_DIR}" "${doctest_SOURCE_DIR}/doctest")
 
@@ -178,10 +178,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 target_compile_definitions(wpa3_core PUBLIC PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
-# debug deadlock
-target_compile_options(wpa3_tester PRIVATE -fsanitize=thread -g)
-target_link_options(wpa3_tester PRIVATE -fsanitize=thread)
-
 target_precompile_headers(wpa3_core PUBLIC
         <vector>
         <string>
@@ -216,6 +212,9 @@ target_precompile_headers(wpa3_core PUBLIC
         <tins/tins.h>
         <argparse/argparse.hpp>
         <reproc++/reproc.hpp>
+        <sstream>
+        <regex>
+        <system_error>
 )
 enable_testing()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tests")

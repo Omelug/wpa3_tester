@@ -17,7 +17,7 @@ namespace wpa3_tester{
     using namespace std;
     using namespace filesystem;
 
-    static string current_time_string() {
+     string current_time_string() {
         const auto now = chrono::system_clock::now();
         const auto timer = chrono::system_clock::to_time_t(now);
         tm bt{};
@@ -32,24 +32,25 @@ namespace wpa3_tester{
         const path config_full_path = absolute(config_path);
         const path config_dir = config_full_path.parent_path();
 
-        // Find the base directory in the path
         path current = config_dir;
         string relative_path;
 
-        while (!current.empty() && current.filename() != base_dir_name) {
-            if (!relative_path.empty()) {
-                relative_path = current.filename().string() +"/"+relative_path;
-            } else {
-                relative_path = current.filename().string();
-            }
-            current = current.parent_path();
-        }
+         while (current != current.parent_path()) {
+             if (current.filename() == base_dir_name) {
+                 return relative_path.empty() ? "." : relative_path;
+             }
+             if (!relative_path.empty()) {
+                 relative_path = current.filename().string().append("/").append(relative_path);
+             } else {
+                 relative_path = current.filename().string();
+             }
+             current = current.parent_path();
+         }
 
-        // If we found the base directory, return the relative path
         if (!current.empty() && current.filename() == base_dir_name) {
             return relative_path.empty() ? "." : relative_path;
         }
-        return ".";
+        throw config_err("folder name not found");
     }
 
     RunStatus::RunStatus(const std::string &config_path, string testName, const std::string &sub_folder){

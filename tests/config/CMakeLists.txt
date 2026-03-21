@@ -6,3 +6,14 @@ target_link_libraries(run_config_tests PRIVATE
 )
 add_test(NAME ConfigTests COMMAND run_config_tests)
 
+# RunStatus utility functions tests
+add_executable(run_runstatus_utils_tests test_run_status_utils.cpp)
+
+target_link_libraries(run_runstatus_utils_tests PRIVATE
+        wpa3_core
+        doctest_headers
+        yaml-cpp
+)
+
+add_test(NAME RunStatusUtilsTests COMMAND run_runstatus_utils_tests)
+

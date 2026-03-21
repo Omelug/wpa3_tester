@@ -18,6 +18,9 @@ namespace wpa3_tester{
     using ActorMap = std::unordered_map<std::string, ActorPtr>;
     using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
+    std::string current_time_string();
+    std::string relative_from(const std::string& base_dir_name, const std::string& config_path);
+
     class RunStatus {
         // in actors are all actors in test
         // internal have key string iface, external MAC

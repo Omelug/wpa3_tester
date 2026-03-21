@@ -183,7 +183,7 @@ namespace wpa3_tester{
         for (const auto& entry : recursive_directory_iterator(attack_config_dir)) {
             const auto& path = entry.path();
             string filename = path.filename().string();
-            if (filename == "global_config.yaml" || filename.ends_with(".schema.yaml") || path.extension() != ".yaml") {continue;}
+            if (filename == "global_config.yaml" || filename.ends_with(".schema.yaml") || path.extension() != ".yaml" || path.string().find("/validator/") != string::npos) {continue;}
             try {
                 YAML::Node config = YAML::LoadFile(path.string());
                 nlohmann::json config_json = yaml_to_json(config);

@@ -79,33 +79,7 @@ namespace wpa3_tester::CSA_attack{
         observer::start_tcpdump(rs, "access_point", "udp port 5201");
     }
 
-    void setup_AP(RunStatus& rs,const string& actor_name){
-        program::start(rs, actor_name);
-        rs.process_manager.wait_for(actor_name, "AP-ENABLED", seconds(40));
-        log(LogLevel::INFO, actor_name+" is running");
-        ip::set_ip(rs, actor_name);
-    }
-
-    void setup_STA(RunStatus& rs,const string& actor_name){
-        program::start(rs, actor_name);
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", seconds(10));
-        ip::set_ip(rs, "client");
-    }
-
     // ----------------- MODULE functions ------------------
-    void setup_chs_attack(RunStatus& rs){
-
-        if (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal") {
-            throw runtime_error("only internal actors are supported");
-        }
-
-        setup_AP(rs, "access_point");
-        setup_STA(rs, "client");
-
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
-        log(LogLevel::INFO, "client is connected");
-    }
 
     void run_chs_attack(RunStatus& rs){
         const auto& actors = rs.config.at("actors");

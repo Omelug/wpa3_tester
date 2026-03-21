@@ -8,6 +8,9 @@ paths:
     # in this folder will be folder with cloned repository and binaries
     # (create empty folder if not sure, it will be build automatically)
     hostapd_build_folder: /home/kali/Documents/WPA3/hostapd
+  dragonslayer:
+    # dragonslayer folder (!dragonslayer has subfolder dragonslayer)
+    dragonslayer_folder: /home/kali/Documents/WPA3/Tools/dragonslayer
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [wlan0]

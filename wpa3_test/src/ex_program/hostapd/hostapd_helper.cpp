@@ -78,6 +78,7 @@ namespace wpa3_tester::hostapd{
             "\nCONFIG_TESTING_OPTIONS=y"    // extra cli commands, injection
             "\nCONFIG_CTRL_IFACE=y"         // hostapd_cli
             "\nCONFIG_DEBUG_FILE=y"         // debug logging o file
+            "\nCONFIG_EAP_PWD=y"
             "\n";
         conf.close();
 
@@ -149,6 +150,7 @@ namespace wpa3_tester::hostapd{
             "\nCONFIG_INTERWORKING=y"       // 802.11u / Hotspot 2.0
             "\nCONFIG_CTRL_IFACE=y"         // wpa_cli
             "\nCONFIG_DEBUG_FILE=y"         // debug logging to file
+            "\nCONFIG_EAP_PWD=y"
             "\n";
         conf.close();
 

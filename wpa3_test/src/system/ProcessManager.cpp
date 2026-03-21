@@ -57,9 +57,9 @@ namespace wpa3_tester{
                 };
 
             while (true){
-                log(LogLevel::DEBUG, "poll start "+process_name);
+                //log(LogLevel::DEBUG, "poll start "+process_name);
                 auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err | reproc::event::exit, reproc::milliseconds(100));
-                log(LogLevel::DEBUG, "poll end "+process_name);
+                //log(LogLevel::DEBUG, "poll end "+process_name);
                 if (mp->shutting_down) break;
                 if (ec == errc::timed_out) continue;
                 if(ec){
@@ -131,11 +131,11 @@ namespace wpa3_tester{
         path log_dir = log_base_dir;
         path log_path = log_dir / (process_name+".log");
 
-        string wd_string; // need to be outside if, to be valid
+        string wd_string;
         if (!working_dir.empty()) {
             wd_string = working_dir.string();
             options.working_directory = wd_string.c_str();
-            log_path = working_dir / (process_name+".log");
+            //log_path = working_dir /"logger"/ (process_name+".log");
         }
 
         // Log command line FIRST for debugging

@@ -29,8 +29,9 @@ namespace wpa3_tester::reflection{
     void run_attack(RunStatus& rs){
         const auto attacker = rs.get_actor("attacker");
         start_dragonslayer(rs, attacker["actor_name"], attacker["iface"]);
-        this_thread::sleep_for(chrono::seconds(100));
+        rs.process_manager.wait_for("attacker", "server is vulnerable to reflection", chrono::seconds(40));
     }
+
     /*void stats(const RunStatus& rs){
     }*/
 }

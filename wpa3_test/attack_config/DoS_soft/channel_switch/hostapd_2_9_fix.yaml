@@ -7,7 +7,6 @@ actors:
       program_config:
         version: 2_9
         ieee80211w: 1
-
   client:
     setup:
       program: wpa_supplicant

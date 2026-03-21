@@ -1,10 +1,10 @@
 BUILD_DIR := build
+BUILD_DIR_COVERAGE := build/coverage
 TARGET := wpa3_tester
 GRC_CONF := ./debug/grc/wpa3_tester.grc
 SOURCE_DIR := wpa3_test
 
 all: compile
-
 .PHONY: all compile run clean_build
 
 clion_debug: compile
@@ -68,7 +68,7 @@ test_manual_build:
 		-j $(shell nproc --ignore=2)
 INFO_FILE = $(BUILD_DIR)/coverage.info
 CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info
-REPORT_DIR = $(BUILD_DIR)coverage_report
+REPORT_DIR = $(BUILD_DIR)/coverage_report
 
 coverage_build:
 	mkdir -p $(BUILD_DIR_COVERAGE)
@@ -77,9 +77,10 @@ coverage_build:
     fi
 	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc --ignore=4)
 
+IGNORE_ERRORS = inconsistent,inconsistent,range
 coverage: coverage_build
-	lcov --directory $(BUILD_DIR) --zerocounters
-	sudo ctest --test-dir $(BUILD_DIR) --output-on-failure
-	lcov --directory $(BUILD_DIR) --capture --output-file $(INFO_FILE) --ignore-errors inconsistent,inconsistent
-	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors inconsistent,inconsistent
-	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors inconsistent,inconsistent
+	lcov --directory $(BUILD_DIR_COVERAGE) --zerocounters
+	sudo ctest --test-dir $(BUILD_DIR_COVERAGE) --output-on-failure
+	lcov --directory $(BUILD_DIR_COVERAGE) --capture --output-file $(INFO_FILE) --ignore-errors $(IGNORE_ERRORS)
+	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors $(IGNORE_ERRORS)
+	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors  $(IGNORE_ERRORS)

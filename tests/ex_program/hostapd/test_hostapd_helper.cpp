@@ -4,26 +4,13 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
+#include "config/global_config.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace filesystem;
 using json = nlohmann::json;
-
-namespace wpa3_tester {
-    json& get_global_config() {
-        static auto mock_global_config = json{
-            {"paths", {
-                {"hostapd", {
-                    {"hostapd_build_folder", "/tmp/hostapd_test"}
-                }}
-            }}
-        };
-        return mock_global_config;
-    }
-}
-
 using namespace wpa3_tester;
 
 TEST_CASE("get_hostapd - empty version returns system default") {

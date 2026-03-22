@@ -14,7 +14,6 @@ namespace wpa3_tester::hostapd{
     using namespace filesystem;
     using namespace nlohmann;
 
-
     static string get_field_or_parse(
   const json& program_config,
   const string& key,
@@ -104,8 +103,8 @@ namespace wpa3_tester::hostapd{
             rs.run_folder,
             actor_name,
             program_config, path(rs.config_path).parent_path());
-        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, rs.config_path);
-        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, rs.config_path);
+        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_path);
+        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_path);
 
         string version = "";
         if (program_config.contains("version") && !program_config["version"].is_null()) {
@@ -184,7 +183,7 @@ namespace wpa3_tester::hostapd{
             program_config, path(rs.config_path).parent_path());
 
         vector<string> command = {"sudo"};
-        observer::add_nets(rs,command, actor_name);
+        observer::add_nets(rs, command, actor_name);
 
         command.insert(command.end(), {
             get_wpa_supplicant(version),
@@ -192,8 +191,23 @@ namespace wpa3_tester::hostapd{
             "-i", rs.get_actor(actor_name)["iface"],
             "-c", wpa_supp_config_path
         });
-        rs.process_manager.run(actor_name, command, rs.run_folder);
+        rs.process_manager.run(actor_name, command, wpa_supp_config_path);
     }
 
     // --------- HOSTAPD_MANA ---------
+    void run_hostapd_mana(RunStatus& rs, const string &actor_name){
+        json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
+        const string hostapd_config_config_path = path(rs.config_path) / program_config.at("hostapd_mana_path").get<string>();
+        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, rs.config_path);
+        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, rs.config_path);
+
+        vector<string> command = {"sudo"};
+        observer::add_nets(rs,command, actor_name);
+        command.insert(command.end(), {
+            "hostapd-mana",
+            "-i", rs.get_actor(actor_name)["iface"],
+            hostapd_config_config_path,
+        });
+        rs.process_manager.run(actor_name,command, rs.run_folder);
+    }
 }

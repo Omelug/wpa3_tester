@@ -10,4 +10,5 @@ namespace wpa3_tester::hostapd{
 
     void run_hostapd(RunStatus& rs, const std::string& actor_name);
     void run_wpa_supplicant(RunStatus& rs, const std::string& actor_name);
+    void run_hostapd_mana(RunStatus& rs, const std::string &actor_name);
 }

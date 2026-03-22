@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: channel_switch_rogueAP
-extends: ./channel_switch.yaml
+extends: ../channel_switch.yaml
 attacker_module: channel_switch
 actors:
   attacker:
@@ -12,7 +12,7 @@ actors:
   rogue_ap:
     program: hostapd-mana
     program_config:
-      hostapd_mana_path:
+      hostapd_mana_path: ./hostpad-mana.conf
 attack_config:
   validator: ./channel_switch.schema.yaml
   attack_time: 30

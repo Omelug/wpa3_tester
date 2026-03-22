@@ -186,7 +186,6 @@ namespace wpa3_tester{
                 throw runtime_error("Unknown process in wait_for: "+actor_name);
             }
             mp = proc_iter->second;
-
             auto &logs = mp->logs;
 
             logs.history_enabled = true;

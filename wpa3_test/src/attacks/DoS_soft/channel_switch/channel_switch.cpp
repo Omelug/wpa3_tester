@@ -9,7 +9,6 @@
 #include <filesystem>
 
 #include "attacks/components/setup_connections.h"
-#include "system/ip.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
@@ -82,11 +81,14 @@ namespace wpa3_tester::CSA_attack{
 
     // ----------------- MODULE functions ------------------
 
-    void setup_attack(RunStatus& rs){
-        components::client_ap_attacker_setup(rs);
+    void setup_chs_attack(RunStatus& rs){
         if(rs.config.at("actors").contains("rogue_ap")){
+            copy_file(path(rs.config_path).parent_path()/"hostapd-mana.conf", path(rs.run_folder)/"hostapd-mana.conf");
             program::start(rs, "rogue_ap");
+            rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
+            log(LogLevel::INFO, "Rogue AP up");
         }
+        components::client_ap_attacker_setup(rs);
     }
 
     void run_chs_attack(RunStatus& rs){
@@ -155,6 +157,10 @@ namespace wpa3_tester::CSA_attack{
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         const string AP_graph_path =
             observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+        /*if(rs.config.at("actors").contains("rogue_ap")){
+            events.push_back({get_time_logs(rs,"rogue_ap","MANA: Captured a WPA/2 handshake"),"MANA","black"});
+            observer::tshark_graph(rs, "rogue_ap", events);
+        }*/
         //generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

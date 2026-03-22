@@ -13,19 +13,25 @@ namespace wpa3_tester{
         if(program == "hostapd"){
             if(actor["source"] != "internal") throw setup_err(program+" can be only internal");
             hostapd::run_hostapd(rs, actor_name);
+            return;
         }
         if(program == "wpa_supplicant"){
             if(actor["source"] != "internal") throw setup_err(program+" can be only internal");
             hostapd::run_wpa_supplicant(rs, actor_name);
+            return;
         }
         if(program == "openwrt"){
             if(actor->conn == nullptr) throw setup_err("openwrt have to have connection");
             actor->conn.get()->logger(rs, actor_name);
             actor->conn.get()->setup_ap(rs, actor);
+            return;
         }
         if(program == "hostapd-mana"){
-
+            if(actor["source"] != "internal") throw setup_err(program+" can be only internal");
+            hostapd::run_hostapd_mana(rs, actor_name);
+            return;
         }
+        throw setup_err(program+" not found for start");
     }
 }
 

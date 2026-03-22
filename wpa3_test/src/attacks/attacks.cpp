@@ -14,7 +14,7 @@ namespace wpa3_tester::attack_module_maps{
     using namespace std;
 
     map<string, function<void(RunStatus&)>> setup_map = {
-        {"channel_switch", components::client_ap_attacker_setup},
+        {"channel_switch", CSA_attack::setup_chs_attack},
         {"bl0ck", components::client_ap_attacker_setup},
         {"malformed_eapol1", components::client_ap_attacker_setup},
         {"cookie_guzzler", components::client_ap_attacker_setup},

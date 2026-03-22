@@ -152,14 +152,17 @@ namespace wpa3_tester::hostapd{
         }
 
         // wpa_supplicant.conf
-        out << "network={" << '\n';
-        // write config
+        static const set<string> quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
+
+        out << "network={\n";
         for (auto it = client_setup.begin(); it != client_setup.end(); ++it) {
-            if(it.key() == "version") continue;
+            if (it.key() == "version") continue;
             out << "\t" << it.key() << "=";
-            if (it.value().is_string() &&  it.key() != "ssid" && it.key() != "sae_password") {
+            if (it.value().is_string() && !quoted_keys.contains(it.key())) {
                 out << it.value().get<string>();
-            } else {out << it.value().dump();}
+            } else {
+                out << it.value().dump();
+            }
             out << "\n";
         }
         out << "}\n";
@@ -191,15 +194,15 @@ namespace wpa3_tester::hostapd{
             "-i", rs.get_actor(actor_name)["iface"],
             "-c", wpa_supp_config_path
         });
-        rs.process_manager.run(actor_name, command, wpa_supp_config_path);
+        rs.process_manager.run(actor_name, command, rs.run_folder);
     }
 
     // --------- HOSTAPD_MANA ---------
     void run_hostapd_mana(RunStatus& rs, const string &actor_name){
         json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
-        const string hostapd_config_config_path = path(rs.config_path) / program_config.at("hostapd_mana_path").get<string>();
-        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, rs.config_path);
-        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, rs.config_path);
+        const string hostapd_config_config_path = path(rs.run_folder) / program_config.at("hostapd-mana_path").get<string>();
+        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_config_path);
+        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_config_path);
 
         vector<string> command = {"sudo"};
         observer::add_nets(rs,command, actor_name);

@@ -1,20 +1,64 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: channel_switch_rogueAP
-extends: ../channel_switch.yaml
 attacker_module: channel_switch
 actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [ AP ]
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+        driver: nl80211
+        ssid: test_channel_switch
+        hw_mode: g
+        auth_algs: 1
+        wpa: 2
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        wpa_passphrase: password123
+        sae_password: password123
+        channel: 6
+    channel: 6
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        ssid: test_channel_switch
+        sae_password: password123
+        ieee80211w: 1
+        proto: RSN
+        key_mgmt: SAE WPA-PSK
+        psk: password123
+        pairwise: CCMP
+        group: CCMP
+    channel: 6
+    netns: sta
+    ip_addr: "10.0.0.2"
   attacker:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [monitor]
+      condition: [ monitor ]
     channel: 6
   rogue_ap:
-    program: hostapd-mana
-    program_config:
-      hostapd_mana_path: ./hostpad-mana.conf
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [ monitor ]
+    setup:
+      program: hostapd-mana
+      program_config:
+        hostapd-mana_path: ./hostapd-mana.conf
+    channel: 1
 attack_config:
-  validator: ./channel_switch.schema.yaml
-  attack_time: 30
+  validator: ../channel_switch.schema.yaml
+  attack_time: 40
   ms_interval: 100
   new_channel: 1

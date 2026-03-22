@@ -199,6 +199,18 @@ definitions:
               - required: [ whitebox_host ]
               - required: [ external_OS ]
           errorMessage: "whitebox_ip/whitebox_host not allowed if not external"
+      - if:
+          properties:
+            source:
+              const: external
+          required: [ source ]
+        then:
+          properties:
+            setup:
+              properties:
+                program:
+                  enum: [ "openwrt" ]
+          errorMessage: "openwrt program can only be used with source: external"
   Observer:
     type: object
     additionalProperties: false

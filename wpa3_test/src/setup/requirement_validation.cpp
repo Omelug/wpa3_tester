@@ -178,7 +178,7 @@ namespace wpa3_tester{
 
         // ------------------ EXTERNAL BLACKBOX ----------------------
         if (!external_bb_actors.empty()) {
-            external_wb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_wb_options());
+            external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_bb_options());
         }
 
         // ---------------- SIMULATIONS -------------------------
@@ -197,6 +197,7 @@ namespace wpa3_tester{
             auto& opt_actor = external_wb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);
         }
+
         for (auto &[actor_name, actor] : external_bb_actors) {
             auto& opt_actor = external_bb_mapping.at(actor_name);
             actor->setup_actor(config, opt_actor);

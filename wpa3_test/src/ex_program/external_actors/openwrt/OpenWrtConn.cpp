@@ -192,6 +192,9 @@ namespace wpa3_tester {
 
     void OpenWrtConn::setup_ap(const RunStatus& rs, const ActorPtr &actor) {
         nlohmann::json program_config = rs.config.at("actors").at(actor["actor_name"]).at("setup").at("program_config");
+        cerr <<  program_config.dump() << endl;
+        actor->str_con["ssid"] = program_config.at("ssid").get<string>();
+        actor->str_con["channel"] = std::to_string(program_config.at("channel").get<int>());
 
         // radio level keys
         static const set<string> radio_keys = {"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled"};

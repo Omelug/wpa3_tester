@@ -80,7 +80,6 @@ namespace wpa3_tester::CSA_attack{
     }
 
     // ----------------- MODULE functions ------------------
-
     void setup_chs_attack(RunStatus& rs){
         if(rs.config.at("actors").contains("rogue_ap")){
             copy_file(path(rs.config_path).parent_path()/"hostapd-mana.conf", path(rs.run_folder)/"hostapd-mana.conf");
@@ -90,6 +89,9 @@ namespace wpa3_tester::CSA_attack{
         }
         components::client_ap_attacker_setup(rs);
     }
+
+    void send_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const Tins::NetworkInterface &iface, const std::string &ssid,
+        int ap_channel){}
 
     void run_chs_attack(RunStatus& rs){
         const auto& att_cfg = rs.config.at("attack_config");
@@ -116,27 +118,20 @@ namespace wpa3_tester::CSA_attack{
     void generate_report(const RunStatus & rs, const string & STA_graph_path, const string & AP_graph_path){
         const path report_path = path(rs.run_folder) / "report.md";
         std::ofstream report(report_path);
-
         if (!report.is_open()){ log(LogLevel::ERROR, "Failed to create report file!"); return; }
 
         report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
-
         report << "## Attack Description\n";
         report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
-
         report::attack_config_table(report, rs);
         report::attack_mapping_table(report, rs);
-
         report << "## Traffic Analysis\n";
         report << "Charts represent the network speed captured during the test. (STA->AP)\n";
         report << "Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
-
         report << "### STA (client, wpa_supplicant "<<  rs.config.at("actors").at("client").at("setup").at("program_config").value("version", "default") <<")\n";
         report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder).string() << ")\n\n";
-
         report << "### AP (access_point, hostapd " << rs.config.at("actors").at("client").at("setup").at("program_config").value("version", "default") << ")\n";
         report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder).string() << ")\n\n";
-
         report << "---\n";
         report.close();
     }
@@ -154,13 +149,13 @@ namespace wpa3_tester::CSA_attack{
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
+        if(rs.config.at("actors").contains("rogue_ap")){
+            events.push_back({get_time_logs(rs,"rogue_ap","MANA: Captured a WPA/2 handshake"),"MANA","black"});
+        }
+
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         const string AP_graph_path =
             observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
-        /*if(rs.config.at("actors").contains("rogue_ap")){
-            events.push_back({get_time_logs(rs,"rogue_ap","MANA: Captured a WPA/2 handshake"),"MANA","black"});
-            observer::tshark_graph(rs, "rogue_ap", events);
-        }*/
-        //generate_report(rs, STA_graph_path, AP_graph_path);
+        generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

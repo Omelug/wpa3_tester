@@ -35,7 +35,8 @@ namespace wpa3_tester::observer{
             "-f", filter,
         });
 
-        run_status.process_manager.run(node_name+"_cap", command, get_observer_folder(run_status, program_name));
+        auto tshark_dir =  get_observer_folder(run_status, program_name);
+        run_status.process_manager.run(node_name+"_cap", command, tshark_dir, tshark_dir);
     }
 
     path extract_pcap_to_csv(const string& actor_name, const path& real_folder){

@@ -101,7 +101,7 @@ definitions:
             type: integer
           program:
             type: string
-            enum: [ "hostapd", "wpa_supplicant", "openwrt"]
+            enum: [ "hostapd", "wpa_supplicant", "openwrt", "hostapd-mana"]
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
@@ -117,7 +117,30 @@ definitions:
               properties:
                 program_config:
                   $ref: './programs/actor/openwrt.yaml'
-          #TODO hostapd,
+          - if:
+              properties:
+                program:
+                  const: hostapd
+            then:
+              properties:
+                program_config:
+                  $ref: './programs/actor/hostapd.yaml'
+          - if:
+              properties:
+                program:
+                  const: hostapd-mana
+            then:
+              properties:
+                program_config:
+                  $ref: './programs/actor/hostapd-mana.yaml'
+          - if:
+              properties:
+                program:
+                  const: wpa_supplicant
+            then:
+              properties:
+                program_config:
+                  $ref: './programs/actor/wpa_supplicant.yaml'
       selection:
         type: object
         additionalProperties: false

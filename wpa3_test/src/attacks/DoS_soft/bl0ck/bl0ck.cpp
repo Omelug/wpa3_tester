@@ -9,7 +9,7 @@
 #include <condition_variable>
 #include <memory>
 
-#include "ex_program/hostapd/hostpad.h"
+#include "ex_program/hostapd/hostapd.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "observer/iperf_wrapper.h"

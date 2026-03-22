@@ -5,5 +5,5 @@ actors:
     setup:
       program: hostapd
       program_config:
-        version: 2.9
+        version: 2_9
     source: internal

@@ -1,0 +1,30 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: invalid_curve_attack
+attacker_module: invalid_curve
+actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [AP]
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_7
+        hostapd_path: "./hostapd.conf"
+    channel: 6
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        wpa_supplicant_path: "./valid_client.conf"
+    channel: 6
+    netns: sta
+    ip_addr: "10.0.0.2"
+  attacker:
+    source: internal
+    selection:
+      condition: [monitor]
+    channel: 6

@@ -24,6 +24,7 @@ namespace wpa3_tester{
             {"iface",          std::nullopt},
             {"mac",            std::nullopt},
             {"ssid",           std::nullopt},
+            {"channel",        std::nullopt},
             {"driver",         std::nullopt},
             {"netns",          std::nullopt},
             {"sniff_iface",    std::nullopt},

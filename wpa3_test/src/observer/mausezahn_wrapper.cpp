@@ -20,7 +20,8 @@ namespace wpa3_tester::observer{
             "-b",  run_status.get_actor(dst_name)["mac"],
             "-P", "PAYLOAD"
         });
-        run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, program_name));
-    };
+        const path observer_dir = get_observer_folder(run_status, program_name);
+        run_status.process_manager.run(actor_name, command, observer_dir, observer_dir);
+    }
 }
 

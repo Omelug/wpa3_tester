@@ -19,6 +19,7 @@ actors:
         wpa_key_mgmt: SAE
         rsn_pairwise: CCMP
         wpa_passphrase: password123
+        sae_password: password123
         channel: 6
     channel: 6
     ip_addr: "10.0.0.1"
@@ -43,7 +44,6 @@ actors:
       driver: mt76x2u
       condition: [monitor]
     channel: 6
-
 attack_config:
   validator: ./channel_switch.schema.yaml
   attack_time: 30

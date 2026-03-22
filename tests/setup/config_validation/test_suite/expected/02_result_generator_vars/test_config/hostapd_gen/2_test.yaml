@@ -3,7 +3,7 @@ actors:
     setup:
       program: hostapd
       program_config:
-        version: 2.11
+        version: 2_11
     source: internal
 
 attacker_module: module1

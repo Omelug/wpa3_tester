@@ -66,7 +66,8 @@ namespace wpa3_tester{
         // what can actors
         void run(const std::string& process_name,
                  const std::vector<std::string> &cmd,
-                 const std::filesystem::path &working_dir = {});
+                 const std::filesystem::path &working_dir = {},
+                 const std::filesystem::path &logging_dir = {});
 
         void allow_history(const std::string &actor_name);
         void ignore_history(const std::string &actor_name);

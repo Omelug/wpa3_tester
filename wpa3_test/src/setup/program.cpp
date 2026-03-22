@@ -1,7 +1,7 @@
 #include "setup/program.h"
 
 #include "ex_program/external_actors/ExternalConn.h"
-#include "ex_program/hostapd/hostpad.h"
+#include "ex_program/hostapd/hostapd.h"
 #include "logger/error_log.h"
 
 using namespace std;
@@ -22,6 +22,9 @@ namespace wpa3_tester{
             if(actor->conn == nullptr) throw setup_err("openwrt have to have connection");
             actor->conn.get()->logger(rs, actor_name);
             actor->conn.get()->setup_ap(rs, actor);
+        }
+        if(program == "hostapd-mana"){
+
         }
     }
 }

@@ -1,13 +1,14 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "logger/error_log.h"
 #include <cassert>
-#include "ex_program/hostapd/hostpad.h"
+#include "ex_program/hostapd/hostapd.h"
 #include "logger/log.h"
 #include <thread>
 #include <chrono>
 #include "system/hw_capabilities.h"
 #include <filesystem>
 
+#include "attacks/components/setup_connections.h"
 #include "system/ip.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
@@ -81,16 +82,22 @@ namespace wpa3_tester::CSA_attack{
 
     // ----------------- MODULE functions ------------------
 
+    void setup_attack(RunStatus& rs){
+        components::client_ap_attacker_setup(rs);
+        if(rs.config.at("actors").contains("rogue_ap")){
+            program::start(rs, "rogue_ap");
+        }
+    }
+
     void run_chs_attack(RunStatus& rs){
-        const auto& actors = rs.config.at("actors");
         const auto& att_cfg = rs.config.at("attack_config");
-        const auto& ap_actor= actors.at("access_point");
+        const auto& ap_actor= rs.get_actor("access_point");
 
         const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
         const string essid     = ap_actor["ssid"];
-        const int old_channel  = ap_actor["channel"];
+        const int old_channel  = stoi(ap_actor["channel"]);
         const int new_channel  = att_cfg.at("new_channel");
         const int ms_interval  = att_cfg.at("ms_interval");
         const int attack_time  = att_cfg.at("attack_time");

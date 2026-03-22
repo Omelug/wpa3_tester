@@ -118,7 +118,8 @@ namespace wpa3_tester{
 
     void ProcessManager::run(const string& process_name,
                          const vector<string> &cmd,
-                         const path &working_dir)
+                         const path &working_dir,
+                         const path &logging_dir)
     {
         auto mp = make_shared<ManagedProcess>();
         mp->proc = make_shared<reproc::process>();
@@ -129,14 +130,14 @@ namespace wpa3_tester{
         options.redirect.parent = false;
 
         path log_dir = log_base_dir;
-        path log_path = log_dir / (process_name+".log");
 
         string wd_string;
         if (!working_dir.empty()) {
             wd_string = working_dir.string();
             options.working_directory = wd_string.c_str();
-            //log_path = working_dir /"logger"/ (process_name+".log");
         }
+        if (!logging_dir.empty()) {log_dir= logging_dir;}
+        path log_path = log_dir / (process_name+".log");
 
         // Log command line FIRST for debugging
         string cmd_line;

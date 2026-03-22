@@ -3,7 +3,6 @@ name: malformed_eapol1
 attacker_module: malformed_eapol1
 actors:
   access_point:
-
     source: internal
     selection:
       condition: [AP]
@@ -25,7 +24,6 @@ actors:
       channel: 6
     ip_addr: "10.0.0.1"
   client:
-
     source: internal
     setup:
       program: wpa_supplicant
@@ -42,7 +40,6 @@ actors:
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
-
     source: internal
     selection:
       driver: mt76x2u

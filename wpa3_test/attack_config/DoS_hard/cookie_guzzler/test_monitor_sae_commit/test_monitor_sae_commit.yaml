@@ -7,7 +7,7 @@ actors:
     selection:
       condition: [monitor]
 #      driver: mt76x2u
-    channel: 1
+      channel: 1
     netns: rx
     sniff_iface: rx
   transceiver:
@@ -15,4 +15,4 @@ actors:
     selection:
       condition: [monitor, injection]
       driver: ath9k_htc
-    channel: 1
+      channel: 1

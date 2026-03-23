@@ -35,3 +35,7 @@ openwrt:
 
 
 firstboot -y && reboot
+
+pro podporu EAP:
+opkg remove wpad-basic-mbedtls
+opkg install wpad-wolfssl

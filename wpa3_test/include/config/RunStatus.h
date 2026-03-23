@@ -67,7 +67,7 @@ namespace wpa3_tester{
         static std::vector<ActorPtr> internal_options();
         static void add_actors_by_radio(std::vector<ActorPtr> & options, const ActorPtr & cfg);
         static std::vector<ActorPtr> external_wb_options();
-        std::vector<int> get_external_WB_channels();
+        std::vector<int> get_external_BB_channels();
         std::vector<ActorPtr> external_bb_options();
         //static std::vector<ActorPtr> create_simulation();
 

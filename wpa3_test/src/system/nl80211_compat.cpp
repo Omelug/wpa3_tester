@@ -183,7 +183,7 @@ namespace wpa3_tester{
     }
 
     void hw_capabilities::get_nl80211_caps(const std::string &iface, Actor_config &cfg){
-        cfg.str_con["mac"] = read_sysfs(iface, "address");
+        cfg.set_mac(read_sysfs(iface, "address"));
         cfg.str_con["driver"] = get_driver_name(iface);
 
         /* ---------- nl80211 dynamic capabilities ---------- */

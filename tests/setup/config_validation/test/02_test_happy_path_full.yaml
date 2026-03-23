@@ -9,13 +9,13 @@ actors:
       iface: wlan4
       essid: SSID_select
       driver: ath
+      channel: 6
     setup:
       program: "hostapd"
       program_config:
         program_config1: program
         channel: 6
     ip_addr: 1.42.242.0
-    channel: 3
   client:
     source: internal
 

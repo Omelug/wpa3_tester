@@ -1,5 +1,4 @@
-#include "setup/scan.h"
-
+#include "scan/scan.h"
 #include <libtins-src/include/tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
@@ -8,7 +7,6 @@
 #include "system/hw_capabilities.h"
 #include <fstream>
 #include <sstream>
-
 #include "ex_program/external_actors/ExternalConn.h"
 #include "system/ip.h"
 
@@ -38,8 +36,6 @@ namespace wpa3_tester{
         const vector<string> radios = cfg->conn->get_radio_list();
         for (const string& radio_name : radios) {
             const auto actor_cfg = make_shared<Actor_config>(*cfg);
-            //actor_cfg->str_con["iface"] = iface;
-            //actor_cfg->str_con["mac"]   = cfg->conn->get_mac_address(iface);
             actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
             actor_cfg->str_con["radio"] = radio_name;
             cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
@@ -50,13 +46,11 @@ namespace wpa3_tester{
     // ------------- EXTERNAL
     void RunStatus::solve_new_pdu(PDU& pdu, ActorMap& seen){
         int8_t signal = -1;
-        int channel = -1;
         int channel_freq = -1;
 
         if (const auto *radiotap = pdu.find_pdu<RadioTap>()) {
             signal = radiotap->dbm_signal();
             channel_freq = radiotap->channel_freq();
-            if (channel_freq > 0) { channel = hw_capabilities::freq_to_channel(channel_freq); }
         }
 
         const auto add_entity = [&](const string& mac, bool is_ap, const string& ssid = "") {
@@ -67,8 +61,7 @@ namespace wpa3_tester{
                 actor_config = ActorPtr(make_shared<Actor_config>());
                 seen.emplace(mac, actor_config);
             }
-
-            actor_config->str_con["mac"] = mac;
+            actor_config->set_mac(mac);
             actor_config->str_con["source"] = "external";
             actor_config->str_con["ssid"] = ssid;
             actor_config->bool_conditions["AP"] = is_ap;
@@ -93,12 +86,6 @@ namespace wpa3_tester{
             const string mac = beacon->addr2().to_string();
             string ssid;
             try { ssid = beacon->ssid(); } catch (...) {}
-            
-            // Try to get channel from beacon DS parameter
-            try {
-                if(const auto ds = beacon->search_option(Dot11ManagementFrame::DS_SET)) channel = ds->data_ptr()[0];
-            } catch (...) {}
-            
             add_entity(mac, true, ssid);
         }
         // AP: Probe Response  
@@ -143,12 +130,14 @@ namespace wpa3_tester{
         // Monitor mode
         config.set_promisc_mode(true);
         config.set_rfmon(true);
-        
+        config.set_timeout(100);
+
         atomic running{true};
-        thread timer([&]() {this_thread::sleep_for(chrono::seconds(timeout_sec)); running = false;});
+        thread timer([&]() {this_thread::sleep_for(chrono::seconds(timeout_sec)); running = false;}); //TODO not ompimal, use po
         
         for (const int channel : channels) {
-            log(LogLevel::INFO, "Scanning channel " + to_string(channel) + " on interface " + iface);
+            log(LogLevel::INFO,
+                "Scanning channel " + to_string(channel) + " on interface " + iface+" for "+to_string(timeout_sec)+" seconds");
             
             // channel change
             string set_channel_cmd = "iw dev " + iface + " set channel " + to_string(channel);
@@ -276,15 +265,15 @@ namespace wpa3_tester{
         return options;
     }
 
-    vector<int> RunStatus::get_external_WB_channels(){
+    vector<int> RunStatus::get_external_BB_channels(){
         //get channels from external actors
         vector<int> all_channels;
         for (const auto& [actor_name, actor_config] : config.at("actors").items()) {
-            if (actor_config.contains("selection") && actor_config.at("selection").contains("channel")) {
+            if (actor_config.at("selection").contains("channel")) {
                 int channel = actor_config.at("selection").at("channel");
                 all_channels.push_back(channel);
             }else{
-                log(LogLevel::WARNING, "Actor %s missing channel configuration", actor_name.c_str());
+                log(LogLevel::WARNING, "Actor %s missing channel configuration", actor_name.c_str()); //FIXME, scann all ?
             }
         }
         
@@ -310,9 +299,10 @@ namespace wpa3_tester{
     }
 
     vector<ActorPtr> RunStatus::external_bb_options(){
-        const vector<int> all_channels = get_external_WB_channels();
+        const vector<int> all_channels = get_external_BB_channels();
         if (all_channels.empty()) { return {};}
-        return list_external_entities(config.at("actors").at("scan_iface"), 30, all_channels);
+        const int timeout_external_bb_scan = get_global_config().at("timeout_external_bb_scan").get<int>();
+        return list_external_entities(config.at("scan_iface"), timeout_external_bb_scan, all_channels);
     }
 
     vector<ActorPtr> create_simulation(){

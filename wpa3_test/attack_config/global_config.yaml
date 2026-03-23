@@ -2,6 +2,7 @@
 # change needed paths
 
 internet_interface: wlan0
+timeout_external_bb_scan: 5
 paths:
   # These config keys are not included in result config,
   hostapd:

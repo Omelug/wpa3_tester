@@ -3,15 +3,13 @@ name: bl0ck_monitor_test
 attacker_module: bl0ck_monitor_test
 actors:
   receiver:
-
     source: internal
     selection:
+      channel: 1
       condition: [monitor]
 #      driver: mt76x2u
-    channel: 1
     netns: rx
   transceiver:
-
     source: internal
     selection:
       condition: [monitor, injection]

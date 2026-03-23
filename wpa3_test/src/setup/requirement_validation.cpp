@@ -164,10 +164,10 @@ namespace wpa3_tester{
         ActorCMap external_wb_actors;
         ActorCMap external_bb_actors;
 
-        for (const auto &actor: actors | views::values){
+        for (const auto &actor: external_actors | views::values){
            if(actor->is_external_WB()){
                external_wb_actors.emplace(actor["actor_name"], actor);
-           }else if(actor["source"] == "external"){
+           }else{
                external_bb_actors.emplace(actor["actor_name"], actor);
            }
         }

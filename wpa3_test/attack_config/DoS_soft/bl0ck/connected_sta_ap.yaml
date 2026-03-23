@@ -4,7 +4,6 @@ attacker_module: bl0ck
 config_type: component
 actors:
   access_point:
-
     source: internal
     selection:
       condition: [AP, 80211ac]
@@ -27,7 +26,6 @@ actors:
         #vht_oper_centr_freq_seg0_idx: 42
     ip_addr: "10.0.0.1"
   client:
-
     source: internal
     setup:
       program: wpa_supplicant
@@ -42,15 +40,14 @@ actors:
         group: CCMP
         scan_freq: 5180        # channel 36 = 5180 MHz
         freq_list: 5180        # scan
-    channel: 36
     selection:
+      channel: 36
       condition: [monitor, 80211ac]
     netns: sta
     ip_addr: "10.0.0.2"
     sniff_iface: client_mon
   attacker:
-
     source: internal
     selection:
+      channel: 36
       condition: [monitor, injection]
-    channel: 36

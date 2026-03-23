@@ -10,9 +10,11 @@ properties:
     type: string
     minLength: 1
     maxLength: 32
+    default: OpenWrt
   mode:
     type: string
     enum: [ap, sta, monitor, adhoc, mesh]
+    default: ap
   hidden:
     type: boolean
   disabled:
@@ -54,6 +56,7 @@ properties:
   encryption:
     type: string
     enum: [none, psk, psk2, psk-mixed, sae, sae-mixed, owe, wep, ccmp, tkip]
+    default: none
   key:
     type: string
     minLength: 8
@@ -64,7 +67,7 @@ properties:
     type: integer
     enum: [0, 1, 2]
     description: "0=disabled, 1=optional, 2=required (WPA3)"
-
+    default: 1
   # --- WPA3 SAE ---
   sae_pwe:
     type: integer
@@ -142,7 +145,10 @@ properties:
     type: integer
     minimum: -255
     maximum: 0
-
+  # ---------
+  network:
+    type: string
+    default: lan
 required: [ssid, mode]
 if:
   properties:

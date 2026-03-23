@@ -103,7 +103,9 @@ namespace wpa3_tester::bl0ck_attack{
                 SnifferConfiguration config;
                 config.set_promisc_mode(true);
                 config.set_filter("type data subtype 0x08");
+                config.set_timeout(100);
                 Sniffer sniffer(iface, config);
+                //TODO  sniff_loop isblcoksinr, use poll
                 sniffer.sniff_loop(packet_handler);
             } catch (const exception& e) {
                 log(LogLevel::ERROR, "BARS: Sniffer error: "+string(e.what()));

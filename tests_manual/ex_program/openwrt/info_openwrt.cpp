@@ -8,7 +8,7 @@
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "observer/observers.h"
-#include "setup/scan.h"
+#include "../../../wpa3_test/include/scan/scan.h"
 #include "observer/tcpdump_wrapper.h"
 
 using namespace std;

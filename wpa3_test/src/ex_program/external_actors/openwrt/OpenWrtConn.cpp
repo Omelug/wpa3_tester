@@ -9,7 +9,7 @@
 namespace wpa3_tester {
     using namespace std;
 
-    void OpenWrtConn::check_req(const nlohmann::json &config, const std::string &actor_name){
+    void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
         //TODO check config
         //exec("opkg update");
         const auto& setup_node = config.at("actors").at(actor_name).at("setup");
@@ -34,7 +34,7 @@ namespace wpa3_tester {
                 }
             }
             log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            this_thread::sleep_for(chrono::seconds(1));
         }
         throw ex_conn_err("ifname not available for section: "+section);
     }
@@ -60,7 +60,7 @@ namespace wpa3_tester {
         exec("/etc/init.d/sysntpd start");
     }
 
-    void OpenWrtConn::setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor,  const nlohmann::json config) {
+    void OpenWrtConn::setup_iface(const string &radio_name, const shared_ptr<Actor_config> &actor,  const nlohmann::json config) {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
         if (!j.contains(radio_name)) throw ex_conn_err("Radio not found: "+radio_name);
@@ -83,26 +83,19 @@ namespace wpa3_tester {
 
         exec("uci set wireless."+section+"=wifi-iface");
         exec("uci set wireless."+section+".device="+radio_name);
+
         const auto program_config = config.at("actors").at(actor->str_con["actor_name"].value()).at("setup").at("program_config");
-        //TODO for(iten in program_config){
-            exec("uci set wireless."+section+".mode="+program_config.value("mode","ap"));
-        //}
-        exec("uci set wireless."+section+".mode="+program_config.value("mode","ap"));
-        exec("uci set wireless."+section+".ssid="+actor->str_con["ssid"].value_or("OpenWrt_"+radio_name));
-        exec("uci set wireless."+section +".encryption="+program_config.value("encryption","none"));
-        exec("uci set wireless."+section+".ieee80211w=" + to_string(program_config.value("ieee80211w", 1)));
-
+        for (auto& [key, value] : program_config.items()) {
+            if(value.is_string()) exec("uci set wireless."+section+"."+key+"='"+value.get<string>()+"'");
+        }
         exec("uci set wireless."+section +".network=lan");
-
-        if (actor->str_con["key"].has_value())
-            exec("uci set wireless."+section +".key="+actor->str_con["key"].value());
 
         exec("uci commit wireless");
         exec("wifi reload");
 
         // wait for ifname and store in actor
         actor->str_con["iface"] = wait_for_ifname(section);
-        actor->str_con["mac"] = get_mac_address(actor->str_con["iface"].value());
+        actor->set_mac(get_mac_address(actor->str_con["iface"].value()));
         actor->str_con["radio"] = radio_name;
     }
 
@@ -125,17 +118,17 @@ namespace wpa3_tester {
         return radios;
     }
 
-    void OpenWrtConn::set_monitor_mode(const std::string &iface) const{
+    void OpenWrtConn::set_monitor_mode(const string &iface) const{
         exec("wifi down");  // stop hostapd/supplicant
         ExternalConn::set_monitor_mode(iface);
     }
 
-    void OpenWrtConn::set_managed_mode(const std::string &iface) const{
+    void OpenWrtConn::set_managed_mode(const string &iface) const{
         ExternalConn::set_managed_mode(iface);
         exec("wifi up");  // restart hostapd/supplicant
     }
 
-    auto OpenWrtConn::set_ip(const std::string &iface, const std::string &ip_addr) const -> void {
+    auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const -> void {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
         string iface_safe = iface;
@@ -200,7 +193,7 @@ namespace wpa3_tester {
         nlohmann::json program_config = rs.config.at("actors").at(actor["actor_name"]).at("setup").at("program_config");
         cerr <<  program_config.dump() << endl;
         actor->str_con["ssid"] = program_config.at("ssid").get<string>();
-        actor->str_con["channel"] = std::to_string(program_config.at("channel").get<int>());
+        actor->str_con["channel"] = to_string(program_config.at("channel").get<int>());
 
         // radio level keys
         static const set<string> radio_keys = {"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled"};
@@ -221,7 +214,7 @@ namespace wpa3_tester {
         exec("wifi reload");
     }
 
-    void OpenWrtConn::logger(RunStatus& rs, const std::string &actor_name){
+    void OpenWrtConn::logger(RunStatus& rs, const string &actor_name){
         const auto actor = rs.get_actor(actor_name);
         const string host = actor["whitebox_ip"];
         const string user = actor["ssh_user"];
@@ -235,7 +228,7 @@ namespace wpa3_tester {
         rs.process_manager.run(actor_name , command);
     }
 
-    void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const std::string& radio) {
+    void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const string& radio) {
         const string phy = "phy"+radio.substr(5);
         int ret = 0;
         const string output = exec("iw phy "+phy + " info", false, &ret);
@@ -243,7 +236,7 @@ namespace wpa3_tester {
         parse_hw_capabilities(cfg, output);
     }
 
-    void OpenWrtConn::parse_hw_capabilities(Actor_config& cfg, const std::string& output) {
+    void OpenWrtConn::parse_hw_capabilities(Actor_config& cfg, const string& output) {
         // supported bands
         cfg.bool_conditions["2_4GHz"] = (output.find("Band 1:") != string::npos);
         cfg.bool_conditions["5GHz"] = (output.find("Band 2:") != string::npos);

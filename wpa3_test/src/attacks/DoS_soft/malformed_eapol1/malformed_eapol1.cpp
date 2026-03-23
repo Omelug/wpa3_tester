@@ -90,7 +90,7 @@ namespace wpa3_tester::eapol_logoff{
         const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
         const string iface_name = rs.get_actor("attacker")["iface"];
         const NetworkInterface iface(iface_name);
-        const int channel = rs.config.at("actors").at("access_point").at("channel");
+        const int channel = stoi(rs.get_actor("access_point")["channel"]);
 
         RadioTap radiotap = get_malformed_eapol(ap_mac, sta_mac, channel);
         PacketSender sender;

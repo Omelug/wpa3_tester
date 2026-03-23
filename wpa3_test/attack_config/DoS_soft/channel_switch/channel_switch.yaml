@@ -6,6 +6,7 @@ actors:
     source: internal
     selection:
       condition: [AP]
+      channel: 6
     setup:
       program: hostapd
       program_config:
@@ -21,10 +22,11 @@ actors:
         wpa_passphrase: password123
         sae_password: password123
         channel: 6
-    channel: 6
     ip_addr: "10.0.0.1"
   client:
     source: internal
+    selection:
+      channel: 6
     setup:
       program: wpa_supplicant
       program_config:
@@ -35,7 +37,6 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-    channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
@@ -43,7 +44,7 @@ actors:
     selection:
       driver: mt76x2u
       condition: [monitor]
-    channel: 6
+      channel: 6
 attack_config:
   validator: ./channel_switch.schema.yaml
   attack_time: 30

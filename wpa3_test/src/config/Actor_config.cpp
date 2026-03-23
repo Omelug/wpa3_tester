@@ -9,6 +9,10 @@ namespace wpa3_tester{
             const auto& sel = j.at("selection");
             for (auto & [key, val] : str_con) {
                 if (sel.contains(key) && sel[key].is_string()) {
+                    if(key == "mac"){
+                        set_mac(sel[key].get<string>());
+                        continue;
+                    }
                     val = sel[key].get<string>();
                 }
             }

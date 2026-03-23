@@ -8,6 +8,7 @@ actors:
     selection:
       whitebox_host: OpenWrt
       condition: [ AP, 2_4GHz ]
+      channel: 6
     setup:
       program: openwrt
       program_config:
@@ -18,7 +19,6 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-      channel: 6
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
@@ -42,7 +42,7 @@ actors:
     selection:
       condition: [monitor, injection]
       driver: ath9k_htc
-    channel: 6
+      channel: 6
     sniff_iface: att
   #rogue_ap:
   #
@@ -50,8 +50,9 @@ actors:
   #  selection:
   #    driver: mt76x2u
   #    condition: [ monitor ]
+  #    channel: 6
   #  program: hostapd_mana
   #  program_config:
-  #  channel: 6
+
 attack_config:
   attack_time_sec: 30

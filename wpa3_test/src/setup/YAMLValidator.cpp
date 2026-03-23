@@ -13,7 +13,6 @@ using namespace nlohmann;
 YAMLValidator::YAMLValidator(const path &schema_path){
     const auto schema_dir = schema_path.parent_path();
     r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
-    log(wpa3_tester::LogLevel::DEBUG, r_schema.dump(2));
     size_t depth = 0;
     constexpr size_t MAX_RECURSION_DEPTH = 20;
     const json_schema::schema_loader loader = [&depth, schema_dir](const json_uri &uri, json &schema) {

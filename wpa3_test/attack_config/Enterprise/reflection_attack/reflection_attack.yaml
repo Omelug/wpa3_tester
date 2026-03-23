@@ -5,6 +5,7 @@ actors:
   access_point:
     source: internal
     selection:
+      channel: 6
       condition: [AP]
     setup:
       program: hostapd
@@ -56,7 +57,6 @@ actors:
         wpa_passphrase: secret passphrase
         wpa_key_mgmt: WPA-EAP
         rsn_pairwise: CCMP
-    channel: 6
     ip_addr: "10.0.0.1"
   client:
     source: internal
@@ -65,11 +65,12 @@ actors:
       program_config:
         version: 2_10
         wpa_supplicant_path: "./valid_client.conf"
-    channel: 6
+    selection:
+      channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
     source: internal
     selection:
       condition: [monitor]
-    channel: 6
+      channel: 6

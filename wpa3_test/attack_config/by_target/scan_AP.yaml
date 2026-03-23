@@ -1,0 +1,20 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: scan_AP
+validator: scan_AP.schema.yaml
+attacker_module: scan_AP
+scan_iface: wlan1
+actors:
+  target:
+    source: external
+    selection:
+      mac: "78:98:E8:55:3E:8D"
+      channel: 6
+  scanner:
+    source: internal
+    selection:
+      channel: 6
+attack_config:
+  beacon_scan: true
+  beacon_timeout_sec: 10
+  EAP_scan: true
+  #ACM: true

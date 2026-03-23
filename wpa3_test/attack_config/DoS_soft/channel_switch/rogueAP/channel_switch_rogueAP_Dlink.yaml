@@ -6,6 +6,7 @@ actors:
     source: external
     selection:
       whitebox_host: OpenWrt
+      channel: 6
       condition: [ AP, 2_4GHz ]
     setup:
       program: openwrt
@@ -17,9 +18,7 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-      channel: 6
       req_programs: [ tcpdump ]
-    channel: 6
     ip_addr: "10.0.0.1"
   client:
     source: internal
@@ -35,7 +34,8 @@ actors:
         psk: password123
         pairwise: CCMP
         group: CCMP
-    channel: 6
+    selection:
+      channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
@@ -43,17 +43,17 @@ actors:
     selection:
       driver: mt76x2u
       condition: [ monitor ]
-    channel: 6
+      channel: 6
   rogue_ap:
     source: internal
     selection:
+      channel: 1
       driver: mt76x2u
       condition: [ monitor ]
     setup:
       program: hostapd-mana
       program_config:
         hostapd-mana_path: ./hostapd-mana.conf
-    channel: 1
 attack_config:
   validator: ../channel_switch.schema.yaml
   attack_time: 180

@@ -5,6 +5,7 @@ actors:
   access_point:
     source: external
     selection:
+      channel: 6
       whitebox_host: OpenWrt
       condition: [AP, 2_4GHz]
     setup:
@@ -18,12 +19,12 @@ actors:
         mode: ap
         htmode: HT20
         ieee80211w: 2
-      channel: 6
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
     source: internal
     selection:
+      channel: 6
       condition: [ monitor ]
     setup:
       program: wpa_supplicant
@@ -36,7 +37,6 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-    channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
@@ -44,7 +44,7 @@ actors:
     selection:
       driver: mt76x2u
       condition: [monitor]
-    channel: 6
+      channel: 6
 
 attack_config:
   validator: ./channel_switch.schema.yaml

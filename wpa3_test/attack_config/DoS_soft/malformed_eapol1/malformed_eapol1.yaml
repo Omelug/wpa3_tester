@@ -5,6 +5,7 @@ actors:
   access_point:
     source: internal
     selection:
+      channel: 6
       condition: [AP]
     setup:
       program: hostapd
@@ -21,7 +22,6 @@ actors:
         wpa_passphrase: password123
         channel: 6
         version: 2_10
-      channel: 6
     ip_addr: "10.0.0.1"
   client:
     source: internal
@@ -36,6 +36,7 @@ actors:
         pairwise: CCMP
         group: CCMP
         version: 2_10
+    selection:
       channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
@@ -44,5 +45,4 @@ actors:
     selection:
       driver: mt76x2u
       condition: [monitor]
-    setup:
       channel: 6

@@ -35,25 +35,26 @@ actors:
         psk: password123
         pairwise: CCMP
         group: CCMP
-    channel: 6
+    selection:
+      channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
     source: internal
     selection:
+      channel: 6
       driver: mt76x2u
       condition: [ monitor ]
-    channel: 6
   rogue_ap:
     source: internal
     selection:
       driver: mt76x2u
+      channel: 1
       condition: [ monitor ]
     setup:
       program: hostapd-mana
       program_config:
         hostapd-mana_path: ./hostapd-mana.conf
-    channel: 1
 attack_config:
   validator: ../channel_switch.schema.yaml
   attack_time: 40

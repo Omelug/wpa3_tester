@@ -1,0 +1,26 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: External scan config
+type: object
+required:
+  - actors
+  - attack_config
+actors:
+  required:
+    - access_point
+    - client
+    - attacker
+attack_config:
+  type: object
+  additionalProperties: false
+  properties:
+    beacon_scan:
+      type: bool
+    beacon_timeout_sec:
+      type: integer
+    ACM:
+      type: bool
+    EAP_scan:
+      type: bool
+    EAP_timeout_sec:
+      type: integer
+

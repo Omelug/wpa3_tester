@@ -5,6 +5,12 @@
 namespace wpa3_tester{
     using namespace std;
 
+    void Actor_config::set_mac(const std::string &mac_address){
+        string mac_lower = mac_address;
+        ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
+        str_con["mac"] = mac_lower;
+    }
+
     void Actor_config::setup_actor(const nlohmann::json& config, const ActorPtr &real_actor){
         const bool internal = str_con.at("source").value() == "internal";
         const bool external_WB = is_external_WB();
@@ -14,7 +20,7 @@ namespace wpa3_tester{
             str_con["driver"] = real_actor->str_con.at("driver");
         }
         if(internal){
-            str_con["mac"] = real_actor->str_con.at("mac");
+            set_mac(real_actor["mac"]);
             str_con["iface"] = real_actor->str_con.at("iface");
             str_con["radio"] = real_actor->str_con.at("radio");
         }
@@ -37,7 +43,12 @@ namespace wpa3_tester{
             const bool injection = bool_conditions.at("injection").value_or(false);
 
             if (bool_conditions.at("AP").value_or(false)){set_managed_mode();}
-            if (actor_json.contains("channel")) {set_channel(actor_json.at("channel"));}
+
+            int channel = -1; // channel
+            if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
+            else if (const auto d = str_con["channel"]) channel = stoi(d.value());
+            if (channel != -1) {set_channel(channel);}
+
             if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode();}
             if (actor_json.contains("sniff_iface")){
                 str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();

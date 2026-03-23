@@ -69,6 +69,7 @@ namespace wpa3_tester{
         void set_channel(int channel) const;
         void set_managed_mode() const;
         void set_monitor_mode() const;
+        void set_mac(const std::string &mac_address);
         void setup_actor(const nlohmann::json& config, const ActorPtr &real_actor);
 
     private:

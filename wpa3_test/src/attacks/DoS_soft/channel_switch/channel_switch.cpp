@@ -90,9 +90,6 @@ namespace wpa3_tester::CSA_attack{
         components::client_ap_attacker_setup(rs);
     }
 
-    void send_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const Tins::NetworkInterface &iface, const std::string &ssid,
-        int ap_channel){}
-
     void run_chs_attack(RunStatus& rs){
         const auto& att_cfg = rs.config.at("attack_config");
         const auto& ap_actor= rs.get_actor("access_point");
@@ -150,7 +147,7 @@ namespace wpa3_tester::CSA_attack{
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
         if(rs.config.at("actors").contains("rogue_ap")){
-            events.push_back({get_time_logs(rs,"rogue_ap","MANA: Captured a WPA/2 handshake"),"MANA","black"});
+            events.push_back({get_time_logs(rs,"rogue_ap","Captured a WPA"),"MANA","black"});
         }
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);

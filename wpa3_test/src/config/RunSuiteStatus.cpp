@@ -46,9 +46,7 @@ namespace wpa3_tester{
                 YAML::LoadFile(global_schema_path.string())
             ));
             global_validator.validate(config_json);
-
             return config_json;
-
         } catch (const domain_error &e) {
             throw config_err(string("Schema error: ") + e.what());
         } catch (const invalid_argument &e) {

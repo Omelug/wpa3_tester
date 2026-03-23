@@ -151,7 +151,8 @@ namespace wpa3_tester{
                 << name << ","
                 << actor->str_con.at("iface").value_or("<none>") << ","
                 << actor->str_con.at("mac").value_or("<none>") << ","
-                << actor->str_con.at("driver").value_or("<none>") << endl;
+                << actor->str_con.at("driver").value_or("<none>") << ","
+                << actor->str_con.at("channel").value_or("<none>") << endl;
         }
     }
 
@@ -162,7 +163,7 @@ namespace wpa3_tester{
         ofstream ofs(path, ios::out | ios::trunc);
         if (!ofs) {log(LogLevel::ERROR, "Failed to open "+path+" for writing CSV mapping");return;}
 
-        ofs << "Type,ActorName,Interface,MAC,Driver" << endl;
+        ofs << "Type,ActorName,Interface,MAC,Driver,channel" << endl;
 
         write_actors_csv(actors, ofs);
 

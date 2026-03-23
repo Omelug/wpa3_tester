@@ -68,7 +68,10 @@ namespace wpa3_tester::cookie_guzzler{
 
             //  burst of packet
             constexpr size_t BURST_SIZE = 128;
-            for (size_t i = 0; i < BURST_SIZE; ++i) {sender.send(cg_frame);}
+            for (size_t i = 0; i < BURST_SIZE; ++i){
+                sender.send(cg_frame);
+                this_thread::sleep_for(nanoseconds(100));
+            }
             counter += BURST_SIZE;
 
             if (counter >= next_log) {

@@ -66,11 +66,9 @@ properties:
 
   compile_external:
     type: boolean
-    default: false
 
   install_req:
     type: boolean
-    default: false
 
 definitions:
   Actor:

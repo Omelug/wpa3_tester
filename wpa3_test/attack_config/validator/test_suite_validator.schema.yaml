@@ -45,11 +45,9 @@ properties:
 
   deleted_old:
     type: boolean
-    default: false
 
   test_report:
     type: boolean
-    default: false
 
   rewrite:
     oneOf:
@@ -57,12 +55,9 @@ properties:
         const: false
       - type: string
         enum: [errors, all]
-    default: false
 
   compile_external:
     type: boolean
-    default: false
 
   install_req:
     type: boolean
-    default: false

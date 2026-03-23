@@ -3,8 +3,8 @@
 #include "logger/log.h"
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
-#include <nlohmann/json-schema.hpp>
 #include <fstream>
+#include "setup/YAMLValidator.h"
 
 namespace wpa3_tester{
     using namespace std;
@@ -51,11 +51,14 @@ namespace wpa3_tester{
         if (!current_node.is_object()){
             return current_node;
         }
+
+        // resolve validator paths to be absolute
         if (current_node.contains("validator") && current_node["validator"].is_string()) {
             const path schema_rel_path = current_node["validator"].get<string>();
             const path schema_abs_path = absolute(base_dir / schema_rel_path);
             current_node["validator"] = schema_abs_path.string();
         }
+
         if(!current_node.contains("extends")){
             for (auto& [key, value] : current_node.items()) {
                 value = resolve_extends(value, base_dir, hierarchy);
@@ -97,10 +100,9 @@ namespace wpa3_tester{
                 const auto schema_file = current_node.at("validator").get<string>();
                 const path schema_path = base_dir / schema_file;
 
-                nlohmann::json_schema::json_validator global_validator;
+                const YAMLValidator validator(schema_path);
                 const YNode node = YAML::LoadFile(schema_path.string());
-                global_validator.set_root_schema(yaml_to_json(node));
-                global_validator.validate(current_node);
+                validator.validate(current_node);
                 current_node.erase("validator");
             }
 
@@ -115,8 +117,6 @@ namespace wpa3_tester{
         }
     }
 
-
-
     json RunStatus::config_validation(const string &config_path){
         try {
             const YNode config_node = YAML::LoadFile(config_path);
@@ -128,38 +128,8 @@ namespace wpa3_tester{
 
             //global validation
             const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.schema.yaml";
-            const auto schema_dir = global_schema_path.parent_path();
-            size_t depth = 0;
-            constexpr size_t MAX_RECURSION_DEPTH = 20;
-            const nlohmann::json_schema::schema_loader loader = [&depth, schema_dir](const nlohmann::json_uri &uri, nlohmann::json &schema) {
-                if (++depth > MAX_RECURSION_DEPTH) {
-                    throw std::runtime_error("Max recursion depth reached at: " + uri.to_string());
-                }
-                const std::string p = uri.path();
-                path ref_path;
-
-                const std::string clean_p = (!p.empty() && p[0] == '/') ? p.substr(1) : p;
-
-                if (clean_p.compare(0, 2, "./") == 0 || clean_p.compare(0, 3, "../") == 0) {
-                    ref_path = schema_dir / clean_p;
-                } else if (!p.empty() && p[0] == '/') {
-                    ref_path = p;
-                } else {
-                    ref_path = schema_dir / clean_p;
-                }
-
-                ref_path = weakly_canonical(ref_path);
-
-                if (exists(ref_path)) {
-                    schema = yaml_to_json(YAML::LoadFile(ref_path.string()));
-                } else {
-                    throw std::runtime_error("Schema not found: " + ref_path.string());
-                }
-            };
-            const auto &j= yaml_to_json(YAML::LoadFile(global_schema_path.string()));
-            const nlohmann::json_schema::json_validator global_validator(j, loader);
-            //global_validator.set_root_schema();
-            global_validator.validate(config_json);
+            const YAMLValidator validator(global_schema_path);
+            validator.validate(config_json);
             return config_json;
         } catch (const domain_error &e) {
             throw config_err(string("Schema error: ") + e.what());
@@ -172,11 +142,11 @@ namespace wpa3_tester{
 
     void save_yaml(const json& json_obj, const path& out_path) {
         const YAML::Node node = YAML::Load(json_obj.dump());
-        auto force_block_style = [](auto& self, YAML::Node node) -> void {
-            if (node.IsMap() || node.IsSequence()) {
-                node.SetStyle(YAML::EmitterStyle::Block);
-                for (auto it = node.begin(); it != node.end(); ++it) {
-                    if (node.IsMap()) self(self, it->second);
+        auto force_block_style = [](auto& self, YAML::Node yaml_node) -> void {
+            if (yaml_node.IsMap() || yaml_node.IsSequence()) {
+                yaml_node.SetStyle(YAML::EmitterStyle::Block);
+                for (auto it = yaml_node.begin(); it != yaml_node.end(); ++it) {
+                    if (yaml_node.IsMap()) self(self, it->second);
                     else self(self, *it);
                 }
             }

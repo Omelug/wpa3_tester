@@ -60,7 +60,7 @@ namespace wpa3_tester {
         exec("/etc/init.d/sysntpd start");
     }
 
-    void OpenWrtConn::setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor) {
+    void OpenWrtConn::setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor,  const nlohmann::json config) {
         const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
         if (!j.contains(radio_name)) throw ex_conn_err("Radio not found: "+radio_name);
@@ -78,14 +78,20 @@ namespace wpa3_tester {
             }
         }
         if (section.empty()) section = "wpa3_tester_"+radio_name;  // create new
-
         log(LogLevel::DEBUG, "Setting up wifi-iface "+section+" for "+radio_name);
+
 
         exec("uci set wireless."+section+"=wifi-iface");
         exec("uci set wireless."+section+".device="+radio_name);
-        exec("uci set wireless."+section+".mode="+actor->str_con["mode"].value_or("ap"));
+        const auto program_config = config.at("actors").at(actor->str_con["actor_name"].value()).at("setup").at("program_config");
+        //TODO for(iten in program_config){
+            exec("uci set wireless."+section+".mode="+program_config.value("mode","ap"));
+        //}
+        exec("uci set wireless."+section+".mode="+program_config.value("mode","ap"));
         exec("uci set wireless."+section+".ssid="+actor->str_con["ssid"].value_or("OpenWrt_"+radio_name));
-        exec("uci set wireless."+section +".encryption="+actor->str_con["encryption"].value_or("none"));
+        exec("uci set wireless."+section +".encryption="+program_config.value("encryption","none"));
+        exec("uci set wireless."+section+".ieee80211w=" + to_string(program_config.value("ieee80211w", 1)));
+
         exec("uci set wireless."+section +".network=lan");
 
         if (actor->str_con["key"].has_value())

@@ -5,6 +5,7 @@ actors:
     setup:
       program: hostapd
       program_config:
+        country_code: CZ
         version: 2_10
         hw_mode: a
         channel: 36
@@ -14,3 +15,11 @@ actors:
       program_config:
         version: 2_10
       channel: 36
+  attacker:
+    channel: 36
+
+attack_config:
+  validator: ./channel_switch.schema.yaml
+  attack_time: 30
+  ms_interval: 100
+  new_channel: 40 # no Channel Availability Check #TODO

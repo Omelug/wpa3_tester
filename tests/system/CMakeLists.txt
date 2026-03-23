@@ -21,6 +21,14 @@ target_link_libraries(run_system_tests PRIVATE
 )
 add_test(NAME SystemTests COMMAND run_system_tests)
 
+# validator tests
+add_executable(run_validator_tests test_validator.cpp)
+target_link_libraries(run_validator_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME YAMLValidatorTests COMMAND run_validator_tests)
+
 # injection check manual test
 add_executable(run_injection_check_test test_injection_check.cpp)
 target_link_libraries(run_injection_check_test PRIVATE

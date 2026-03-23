@@ -26,7 +26,7 @@ namespace wpa3_tester{
             str_con["ssh_password"] = real_actor->str_con.at("ssh_password");
             str_con["external_OS"] = real_actor->str_con.at("external_OS");
             const auto radio = real_actor->str_con["radio"].value();
-            conn->setup_iface(radio, shared_from_this());
+            conn->setup_iface(radio, shared_from_this(), config);
         }
 
         if(internal) setup_actor_internal(config);

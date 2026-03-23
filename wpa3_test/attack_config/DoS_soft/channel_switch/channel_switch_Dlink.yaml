@@ -17,6 +17,7 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
+        ieee80211w: 2
       channel: 6
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"

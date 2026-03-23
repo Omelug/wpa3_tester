@@ -1,5 +1,6 @@
 #include "attacks/attacks.h"
 
+#include "attacks/by_target/scan_AP.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
@@ -19,7 +20,7 @@ namespace wpa3_tester::attack_module_maps{
         {"malformed_eapol1", components::client_ap_attacker_setup},
         {"cookie_guzzler", components::client_ap_attacker_setup},
         {"reflection_attack", reflection::setup_attack},
-        {"invalid_curve", invalid_curve::setup_attack}
+        {"invalid_curve", invalid_curve::setup_attack},
     };
 
     map<string, function<void(RunStatus&)>> run_map = {
@@ -30,7 +31,8 @@ namespace wpa3_tester::attack_module_maps{
         {"malformed_eapol1", eapol_logoff::run_attack},
         {"cookie_guzzler", cookie_guzzler::run_attack},
         {"reflection_attack", reflection::run_attack},
-        {"invalid_curve", invalid_curve::run_attack}
+        {"invalid_curve", invalid_curve::run_attack},
+        {"scan_AP", attack_scan::run_attack}
     };
 
     map<string, function<void(const RunStatus&)>> stats_map = {

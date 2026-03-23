@@ -74,7 +74,7 @@ namespace wpa3_tester{
             auto type = InterfaceType::Unknown;
             if(iface == "lo"){
                 type = InterfaceType::Loopback;  // Loopback ('lo')
-            }else if(exists(entry.path() / "wireless") || filesystem::exists(entry.path() / "phy80211")){
+            }else if(exists(entry.path() / "wireless") || exists(entry.path() / "phy80211")){
                 if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0) { // start with prefix, not good fix
                     type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
                 }else{

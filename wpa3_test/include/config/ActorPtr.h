@@ -8,6 +8,7 @@ namespace  wpa3_tester{
     class ActorPtr {
     public:
         std::shared_ptr<Actor_config> ptr;
+        explicit ActorPtr() = default;
         explicit ActorPtr(std::shared_ptr<Actor_config> p);
 
         Actor_config* operator->() const;

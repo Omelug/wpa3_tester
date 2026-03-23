@@ -60,7 +60,14 @@ namespace wpa3_tester{
         }
 
         const auto add_entity = [&](const string& mac, bool is_ap, const string& ssid = "") {
-            const auto actor_config = make_shared<Actor_config>();
+            ActorPtr actor_config;
+            if (seen.contains(mac)) {
+                actor_config = seen.at(mac);
+            } else {
+                actor_config = ActorPtr(make_shared<Actor_config>());
+                seen.emplace(mac, actor_config);
+            }
+
             actor_config->str_con["mac"] = mac;
             actor_config->str_con["source"] = "external";
             actor_config->str_con["ssid"] = ssid;
@@ -79,15 +86,6 @@ namespace wpa3_tester{
             }
             
             if (signal != -1) { actor_config->str_con["signal"] = to_string(signal); }
-
-            if (seen.contains(mac)) {
-                const auto& existing = seen.at(mac);
-                if (!ssid.empty()) existing->str_con["ssid"] = ssid;
-                if (channel > 0) existing->str_con["channel"] = to_string(channel);
-                if (signal != -1) existing->str_con["signal"] = to_string(signal);
-            } else {
-                seen.emplace(mac, ActorPtr(actor_config));
-            }
         };
 
         // AP: Beacon

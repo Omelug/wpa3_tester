@@ -1,6 +1,9 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: reflection_attack_sae
 attacker_module: reflection_attack
+
+# TODO not valid now, module cant run
+scan_iface: wlan1
 actors:
   access_point:
     source: external
@@ -14,7 +17,13 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        wpa_supplicant_path: "./valid_client.conf"
+        ssid: OpenWrt_radio0
+        sae_password: password123
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: SAE
+        pairwise: CCMP
+        group: CCMP
     selection:
       channel: 6
     netns: sta

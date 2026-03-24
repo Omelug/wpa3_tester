@@ -7,8 +7,9 @@ actors:
   target:
     source: external
     selection:
-      mac: "78:98:E8:55:3E:8D"
+      mac: "78:98:e8:55:3e:8d"
       channel: 6
+      condition: [monitor]
   scanner:
     source: internal
     selection:

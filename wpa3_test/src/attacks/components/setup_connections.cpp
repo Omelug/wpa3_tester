@@ -39,11 +39,13 @@ namespace wpa3_tester::components{
             throw runtime_error("only internal actors are supported");
         }
 
-        setup_AP(rs, "access_point");
+        if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
         setup_STA(rs, "client");
 
         rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
-        rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
+        //if(rs.get_actor("access_point")->is_WB()){
+        //    rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
+        //} // ony check, not
         log(LogLevel::INFO, "client is connected");
     }
 }

@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
-#include "../../wpa3_test/include/scan/scan.h"
+#include "scan/scan.h"
 
 using namespace std;
 using namespace wpa3_tester;

@@ -35,22 +35,23 @@ properties:
   scan_iface:
     type: string
     description: Interface to scan when source is external
-
-  if:
-    properties:
-      actors:
-        additionalProperties:
-          properties:
-            source:
-              const: external
-          required: [ type ]
-          not:
-            anyOf:
-              - required: [ whitebox_ip ]
-              - required: [ whitebox_host ]
-    required: [ actors ]
-  then:
-    required: [ scan_iface ]
+  #FIXME, tohle v draft-07, kterou json kniihovna podporuje asi nejde,
+#  if:
+#    properties:
+#      actors:
+#        type: object
+#        additionalProperties:
+#          properties:
+#            source:
+#              enum: [ external ]
+#          required: [ source ]
+#          not:
+#            anyOf:
+#              - required: [ whitebox_ip ]
+#              - required: [ whitebox_host ]
+#    required: [ actors ]
+#  then:
+#    required: [ scan_iface ]
 
   attack_config:
     type: object

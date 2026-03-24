@@ -84,6 +84,11 @@ namespace wpa3_tester::scan {
             case 254: info.method = "Expanded-Type"; break;
             default:  info.method = "Unknown-" + to_string(type); break;
         }
+        if (type == 254 && payload.size() >= 12) {
+            // bytes 5-7: Vendor-Id
+            // bytes 8-11: Vendor-Type
+            info.method = "Expanded-Method (Vendor: " + to_string(payload[5]) + ")";
+        }
         return info;
     }
 
@@ -96,15 +101,13 @@ namespace wpa3_tester::scan {
 
         Sniffer sniffer(iface, config);
         int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
+        if (fd == -1) {throw runtime_error("Sniffer FD is not selectable");}
+        pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
         const auto start = steady_clock::now();
         map<string, EAP_Session> active_sessions;
 
         while (true) {
             if (steady_clock::now() - start > seconds(timeout_sec)) break;
-
-            pollfd pfd;
-            pfd.fd = fd;
-            pfd.events = POLLIN;
 
             int ret = poll(&pfd, 1, 100);
 
@@ -114,7 +117,8 @@ namespace wpa3_tester::scan {
                 break;
             }
             //timeout
-            if (ret == 0 || pfd.revents & POLLIN) { continue;}
+            if (ret == 0) break;
+            if(!(pfd.revents & POLLIN)) continue;
 
             const unique_ptr<PDU> pdu(sniffer.next_packet());
             if (!pdu) continue;

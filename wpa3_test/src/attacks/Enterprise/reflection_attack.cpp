@@ -9,7 +9,11 @@ using namespace filesystem;
 
 namespace wpa3_tester::reflection{
     void setup_attack(RunStatus& rs){
-        copy_file(path(rs.config_path).parent_path()/"hostapd.eap_user", path(rs.run_folder)/"hostapd.eap_user");
+        copy_file(path(rs.config_path).parent_path()/"config/hostapd.eap_user", path(rs.run_folder)/"hostapd.eap_user");
+        copy_file(
+            path(rs.config_path).parent_path()/"config/dragonslayer.conf",
+            path(rs.run_folder)/"dragonslayer.conf"
+            );
         components::client_ap_attacker_setup_enterprise(rs);
     }
 
@@ -19,11 +23,14 @@ namespace wpa3_tester::reflection{
         const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
         // TODO compile dragonslayer, if not compiled
         command.insert(command.end(), {
-            dragonslayer_folder+"/dragonslayer-client.sh",
+            //"stdbuf", "-oL", "-eL",
+            dragonslayer_folder+"/wpa_supplicant/wpa_supplicant",
+            "-D", "nl80211",
+            "-c", path(rs.run_folder)/"dragonslayer.conf",
             "-i", iface,
             "-a", "0"
         });
-        rs.process_manager.run(actor_name, command, path(dragonslayer_folder));
+        rs.process_manager.run(actor_name, command, path(dragonslayer_folder)/"dragonslayer");
     }
 
     void run_attack(RunStatus& rs){

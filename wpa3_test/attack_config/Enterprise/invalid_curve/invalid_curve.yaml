@@ -19,7 +19,7 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        wpa_supplicant_path: "./valid_client.conf"
+        wpa_supplicant_path: "./config/valid_client.conf"
     selection:
       channel: 6
     netns: sta

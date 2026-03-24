@@ -20,27 +20,32 @@ namespace wpa3_tester{
         const string &label,
         const string &data)
     {
-        const string prefix = current_timestamp()+" ["+process_name+"] ["+label+"] ";
+        lock_guard lock(logger_mtx);
+        auto &incomplete = mp->logs.buffers[label];
+        incomplete += data;
 
-        stringstream ss(data);
-        string line;
+        size_t pos;
+        while ((pos = incomplete.find('\n')) != string::npos) {
+            string line = incomplete.substr(0, pos);
+            incomplete.erase(0, pos + 1);
 
-        while (getline(ss, line)){
             if (line.empty()) continue;
+
+            const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
             const string full_line = prefix + line;
-            bool should_notify = false;
-            {
-                lock_guard lock(logger_mtx);
-                if (combined_log.is_open()) write_log_line(combined_log, full_line);
-                auto &logs = mp->logs;
-                if (logs.log.is_open()) write_log_line(logs.log, full_line);
-                if (logs.history_enabled) {logs.history += line;logs.history.push_back('\n');}
-                if (logs.wait.pattern && regex_search(line, *logs.wait.pattern)) {
-                    logs.wait.matched = true;
-                    should_notify = true;
+
+            if (combined_log.is_open()) write_log_line(combined_log, full_line);
+            if (mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
+            if (mp->logs.history_enabled) {mp->logs.history += line + "\n";}
+
+            if (mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)) {
+                mp->logs.wait.matched = true;
+
+                {
+                    lock_guard wait_lock(wait_mutex);
+                    wait_cv.notify_all();
                 }
             }
-            if (should_notify) wait_cv.notify_all();
         }
     }
 
@@ -203,7 +208,7 @@ namespace wpa3_tester{
             }
 
             if (logs.wait.matched) {
-                logs.history.clear();
+                logs.history.clear(); //FIXME only until matched
                 logs.wait.pattern = nullopt;
                 return;
             }

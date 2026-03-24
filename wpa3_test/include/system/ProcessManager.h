@@ -24,6 +24,7 @@ namespace wpa3_tester{
             std::string   history;
             bool          history_enabled = false;
             WaitListener  wait;
+            std::map<std::string, std::string> buffers;
         };
 
         struct ManagedProcess {

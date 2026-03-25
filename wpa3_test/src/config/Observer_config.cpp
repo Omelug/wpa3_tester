@@ -24,7 +24,6 @@ namespace wpa3_tester::observer{
         }
 
         if(program == "musezahn"){
-            log(LogLevel::DEBUG, observer_config.dump());
             const auto target_actor = program_config.at("target_actor").get<string>();
             start_musezahn(rs, actor_name+"_mz_gen", actor_name, target_actor);
             return;

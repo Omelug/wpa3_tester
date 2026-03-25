@@ -56,12 +56,11 @@ observers:
     program_config:
       filter: ""
       #filter: "udp port 5201"
-  ap_actor:
-    actor: client
+  ap_resources:
+    actor: access_point
     program: resource_checker
     program_config:
       interval: 1
-
 attack_config:
   bitrate: 54
   number_of_random_mac: 20

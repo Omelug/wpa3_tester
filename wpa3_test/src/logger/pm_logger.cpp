@@ -32,7 +32,7 @@ namespace wpa3_tester{
     }
 
     void ProcessManager::init_logging(const string &run_folder){
-        std::lock_guard lock(logger_mtx);
+        lock_guard lock(logger_mtx);
         log_base_dir = path(run_folder) / "logger";
         recreate_log_folder(log_base_dir);
 
@@ -70,18 +70,52 @@ namespace wpa3_tester{
         return processes.size();
     }
 
-    bool ProcessManager::process_exists(const std::string &process_name) const{
+    bool ProcessManager::process_exists(const string &process_name) const{
         lock_guard lock(logger_mtx);
         return processes.contains(process_name);
     }
 
-    int ProcessManager::get_pid(const std::string &process_name) {
-        std::lock_guard lock(logger_mtx);
-        const auto it = processes.find(process_name);
-        if (it != processes.end() && it->second->proc != nullptr) {
-            return it->second->proc->pid().second.value();
+    int get_target_pid(int current_pid) {
+        string comm;
+        ifstream("/proc/" + to_string(current_pid) + "/comm") >> comm;
+
+        if (comm != "sudo" && comm != "stdbuf") return current_pid;
+
+        for (const auto& entry : directory_iterator("/proc")) {
+            if (!entry.is_directory()) continue;
+
+            string filename = entry.path().filename().string();
+            if (!ranges::all_of(filename, ::isdigit)) continue;
+
+            ifstream stat_file(entry.path() / "stat");
+            if (!stat_file) continue;
+
+            int pid;
+            string comm_stat;
+            char state;
+            int ppid;
+
+            if (stat_file >> pid >> comm_stat >> state >> ppid) {
+                if (ppid == current_pid) {
+                    return get_target_pid(pid);
+                }
+            }
         }
-        throw setup_err(" Process not found");
+
+        return current_pid;
+    }
+    
+    int ProcessManager::get_pid(const string &process_name) {
+        lock_guard lock(logger_mtx);
+        const auto it = processes.find(process_name);
+
+        if (it == processes.end()) {
+            throw setup_err("Process '"+process_name+"' not found in process map.");
+        }
+        if (it->second->proc == nullptr) {
+            throw setup_err("Process '"+process_name+"' found, but its underlying proc object is null.");
+        }
+        return get_target_pid(it->second->proc->pid().first);
     }
 
     void ProcessManager::recreate_log_folder(const path &log_base_dir){

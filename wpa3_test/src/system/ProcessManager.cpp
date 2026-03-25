@@ -178,9 +178,10 @@ namespace wpa3_tester{
         if (logs.log.is_open())     {write_log_line(logs.log, line);}
     }
 
-    void ProcessManager::wait_for(const string &actor_name,
-                              const string &pattern,
-                              const seconds timeout)
+    bool ProcessManager::wait_for(const string &actor_name,
+                                  const string &pattern,
+                                  const seconds timeout,
+                                  const bool throw_err)
     {
         shared_ptr<ManagedProcess> mp;
 
@@ -210,7 +211,7 @@ namespace wpa3_tester{
             if (logs.wait.matched) {
                 logs.history.clear(); //FIXME only until matched
                 logs.wait.pattern = nullopt;
-                return;
+                return true;
             }
         }
 
@@ -227,21 +228,25 @@ namespace wpa3_tester{
                 logs.wait.pattern = nullopt;
                 logs.history_enabled = false;
                 log(LogLevel::DEBUG, "wait_for for '"+actor_name+"' interrupted: process stopped");
-                return; // wait for ot matched if stop
+                return false; // wait for ot matched if stop
             }
 
             if (!matched) {
                 lock_guard data_lock(logger_mtx);
                 logs.wait.pattern = nullopt;
-                throw timeout_err(
-                    "Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
-                    pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
+                if(throw_err){
+                    throw timeout_err(
+                        "Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
+                        pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
+                }
+                return false;
             }
 
             lock_guard data_lock(logger_mtx);
             logs.history.clear();
             logs.wait.pattern = nullopt;
         }
+        return true;
     }
 
     void ProcessManager::stop(const string &process_name){

@@ -29,3 +29,5 @@ actors:
     selection:
       condition: [monitor]
       channel: 6
+attack_config:
+  target_type: ap

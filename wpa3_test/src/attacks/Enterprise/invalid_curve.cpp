@@ -10,21 +10,37 @@ using namespace filesystem;
 
 namespace wpa3_tester::invalid_curve{
 
-    void start_dragonslayer(RunStatus & rs, const string &actor_name, const string &iface){
+    void start_dragonslayer(RunStatus & rs, const string &actor_name, const string &iface, const string &target_type){
+        assert(target_type == "ap" || target_type == "sta");
         vector<string> command = {"sudo"};
         observer::add_nets(rs, command, actor_name);
         const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
-        // TODO compile dragonslayer, if not compiled
-        command.insert(command.end(), {
-            dragonslayer_folder+"/dragonslayer-server.sh",
-            "-i", iface,
-            "-a", "1"
-        });
+        if(target_type == "ap"){
+            command.insert(command.end(), {
+              dragonslayer_folder+"/wpa_supplicant/wpa_supplicant",
+              "-D", "nl80211",
+              "-c", path(rs.run_folder)/"dragonslayer.conf",
+              "-i", iface,
+              "-a", "1"
+          });
+        }
+        if(target_type == "sta"){
+            command.insert(command.end(), {
+             dragonslayer_folder+"/hostapd/hostapd",
+             path(rs.run_folder)/"dragonslayer.conf",
+             "-i", iface,
+             "-a", "1"
+         });
+        }
         rs.process_manager.run(actor_name, command, path(dragonslayer_folder));
     }
 
     void setup_attack(RunStatus& rs){
-        copy_file(path(rs.config_path).parent_path()/"hostapd.eap_user", path(rs.run_folder)/"hostapd.eap_user");
+        copy_file(path(rs.config_path).parent_path()/"config/hostapd.eap_user", path(rs.run_folder)/"hostapd.eap_user");
+        copy_file(
+            path(rs.config_path).parent_path()/"config/dragonslayer.conf",
+            path(rs.run_folder)/"dragonslayer.conf"
+            );
 
         // -------- AP
         program::start(rs, "access_point");
@@ -34,19 +50,32 @@ namespace wpa3_tester::invalid_curve{
 
         // ---- attacker
         const auto attacker = rs.get_actor("attacker");
-        start_dragonslayer(rs, attacker["actor_name"], attacker["iface"]);
     }
 
     void run_attack(RunStatus& rs){
-        // ----- connect STA
-        program::start(rs, "client");
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", std::chrono::seconds(10));
-        ip::set_ip(rs, "client");
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
-        rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
-        log(LogLevel::INFO, "client is connected");
-        rs.process_manager.wait_for("attacker", "Client is vulnerable to invalid curve attack", chrono::seconds(10));
-        //FIXME run multiple times (33% of fail)
+        const auto& att_cfg = rs.config.at("attack_config");
+        const auto target_type = att_cfg.at("target_type").get<string>();
+        const auto& attacker = rs.get_actor("attacker");
+
+        if(target_type == "ap"){
+            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"],"ap");
+            rs.process_manager.wait_for("attacker", "Server is vulnerable to invalid curve attack", chrono::seconds(40));
+        }
+        if(target_type == "sta"){
+            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"],"sta");
+            program::start(rs, "client");
+
+            size_t replay = 5;
+            //TODO run multiple times (33% of fail)
+            for(size_t i = 0; i < replay; i++){
+                rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(10));
+                if(rs.process_manager.wait_for("attacker", "Client is vulnerable to invalid curve attack",
+                    chrono::seconds(4), false)) break;
+                    rs.process_manager.stop("client");
+
+            }
+        }
+
     }
 
     /*void stats(const RunStatus& rs){

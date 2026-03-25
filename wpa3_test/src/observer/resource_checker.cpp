@@ -15,7 +15,7 @@ namespace wpa3_tester::observer {
 
     constexpr string_view program_name = "resource_checker";
 
-    void start_resource_monitoring(RunStatus &rs, const string &actor_name, int interval_sec) {
+    void start_resource_monitoring(RunStatus &rs, const string &actor_name, const int interval_sec) {
         const auto actor = rs.get_actor(actor_name);
 
         if (actor->conn != nullptr) {
@@ -24,7 +24,7 @@ namespace wpa3_tester::observer {
         }
 
         const int target_pid = rs.process_manager.get_pid(actor_name);
-        const string log_path = get_observer_folder(rs, string(program_name)) / (actor_name + "_res.csv");
+        const string log_dir = get_observer_folder(rs, string(program_name));
 
         const vector<string> command = {
             "pidstat",
@@ -33,8 +33,7 @@ namespace wpa3_tester::observer {
             "-r", // ram statistics
             to_string(interval_sec) // interval
         };
-
-        rs.process_manager.run(actor_name + "_res", command, get_observer_folder(rs, string(program_name)), log_path);
+        rs.process_manager.run(actor_name + "_res", command, get_observer_folder(rs, string(program_name)), log_dir);
     }
 
     void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, int interval_sec) {

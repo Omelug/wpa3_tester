@@ -5,6 +5,8 @@
 namespace wpa3_tester::observer{
     using namespace std;
     using namespace filesystem;
+    using namespace nlohmann;
+
     constexpr string program_name = "mausezahn";
     void start_musezahn(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){
         vector<string> command = {"sudo"};

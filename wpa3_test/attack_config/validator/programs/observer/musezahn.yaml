@@ -4,8 +4,6 @@ type: object
 properties:
   validator:
     type: string
-  filter:
-    type: string
   target_actor:
     type: string
     description: Target actor to observe

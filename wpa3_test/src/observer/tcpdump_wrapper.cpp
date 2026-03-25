@@ -2,11 +2,6 @@
 #include "config/RunStatus.h"
 #include "observer/observers.h"
 #include "observer/tcpdump_wrapper.h"
-#include <cstdio>
-#include <sstream>
-#include <iomanip>
-#include <stdexcept>
-#include <algorithm>
 
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "system/hw_capabilities.h"
@@ -36,9 +31,9 @@ namespace wpa3_tester::observer{
 
         command.insert(command.end(), {
             "tcpdump", "-i", iface_str,
-            "-w", pcap_path,
-            "-f", filter,
+            "-w", pcap_path
         });
+        if (!filter.empty()) { command.push_back("-f"); command.push_back(filter); }
 
         rs.process_manager.run(actor_name+"_cap", command, get_observer_folder(rs, program_name));
     }

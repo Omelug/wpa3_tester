@@ -10,7 +10,7 @@ namespace wpa3_tester::observer{
         std::string observer_name;
         const nlohmann::json& observer_config;
         explicit Observer_config(const nlohmann::json& observer_config): observer_config(observer_config){};
-        int start(RunStatus &rs) const;
+        void start(RunStatus &rs) const;
         std::string to_str() const;
     };
 }

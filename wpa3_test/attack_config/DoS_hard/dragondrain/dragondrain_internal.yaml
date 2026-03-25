@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: dragondrain
+name: dragondrain_internal
 validator: dragondrain.schema.yaml
 attacker_module: dragondrain
 actors:
@@ -29,7 +29,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        ssid: OpenWrt_2_4GHz
+        ssid: test_channel_switch
         sae_password: password123
         ieee80211w: 2
         proto: RSN
@@ -49,14 +49,18 @@ observers:
     actor: client
     program: musezahn
     program_config:
-      #filter: "udp port 5201"
-      target_actor: target_actor
+      target_actor: access_point
   tcpdump_att:
     actor: attacker
     program: tcpdump
+    program_config:
+      filter: ""
+      #filter: "udp port 5201"
   ap_actor:
     actor: client
-    program: cpu_ram_chceker
+    program: resource_checker
+    program_config:
+      interval: 1
 
 attack_config:
   bitrate: 54

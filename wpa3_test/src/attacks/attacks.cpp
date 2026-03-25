@@ -4,6 +4,7 @@
 #include "attacks/components/setup_connections.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
+#include "attacks/DoS_hard/dragondrain/dragondrain.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
@@ -21,6 +22,7 @@ namespace wpa3_tester::attack_module_maps{
         {"cookie_guzzler", components::client_ap_attacker_setup},
         {"reflection_attack", reflection::setup_attack},
         {"invalid_curve", invalid_curve::setup_attack},
+        {"dragondrain", components::client_ap_attacker_setup},
     };
 
     map<string, function<void(RunStatus&)>> run_map = {
@@ -32,7 +34,8 @@ namespace wpa3_tester::attack_module_maps{
         {"cookie_guzzler", cookie_guzzler::run_attack},
         {"reflection_attack", reflection::run_attack},
         {"invalid_curve", invalid_curve::run_attack},
-        {"scan_AP", attack_scan::run_attack}
+        {"scan_AP", attack_scan::run_attack},
+        {"dragondrain", dragondrain::run_attack},
     };
 
     map<string, function<void(const RunStatus&)>> stats_map = {
@@ -44,5 +47,6 @@ namespace wpa3_tester::attack_module_maps{
         {"cookie_guzzler", cookie_guzzler::stats_attack},
         //{"reflection_attack", reflection::stats}
         //{"invalid_curve", invalid_curve::run_attack}
+        {"dragondrain", dragondrain::stats_attack},
     };
 }

@@ -32,9 +32,8 @@ namespace wpa3_tester::observer{
         command.insert(command.end(), {
             program_name, "-i", iface_str,
             "-w", pcap_path,
-            "-f", filter,
         });
-
+        if (!filter.empty()) { command.push_back("-f"); command.push_back(filter); }
         auto tshark_dir =  get_observer_folder(run_status, program_name);
         run_status.process_manager.run(node_name+"_cap", command, tshark_dir, tshark_dir);
     }

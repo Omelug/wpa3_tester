@@ -33,7 +33,6 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-    channel: 6
     netns: sta
     ip_addr: "10.0.0.2"
     sniff_iface: client

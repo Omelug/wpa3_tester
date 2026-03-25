@@ -1,0 +1,28 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Config for dragondrain wrapper
+type: object
+required:
+  - actors
+  - attack_config
+actors:
+  required:
+    - access_point
+    - client
+    - attacker
+  additionalProperties: false
+attack_config:
+  type: object
+  properties:
+    bitrate:
+      type: integer
+      default: 54
+    number_of_random_mac:
+      type: integer
+      description: number of generated mac addresses what are used for attack
+      default: 200
+    #g:
+    #  type: integer
+    #  description: group, only P-521, has to be checked
+    #  enum: [21, ]
+    additionalProperties: false
+

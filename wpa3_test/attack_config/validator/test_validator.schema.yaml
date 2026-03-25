@@ -217,7 +217,7 @@ definitions:
         description: Actor to observe
       program:
         type: string
-        enum: [ "musezahn", "tcpdump", "tshark" ]
+        enum: [ "musezahn", "tcpdump", "tshark", "cpu_ram_chceker"]
         description: Program to use for observation
       program_config:
         type: object

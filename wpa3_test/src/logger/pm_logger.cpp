@@ -70,11 +70,19 @@ namespace wpa3_tester{
         return processes.size();
     }
 
-    bool ProcessManager::process_exists(const std::string &process_name){
+    bool ProcessManager::process_exists(const std::string &process_name) const{
         lock_guard lock(logger_mtx);
         return processes.contains(process_name);
     }
 
+    int ProcessManager::get_pid(const std::string &process_name) {
+        std::lock_guard lock(logger_mtx);
+        const auto it = processes.find(process_name);
+        if (it != processes.end() && it->second->proc != nullptr) {
+            return it->second->proc->pid().second.value();
+        }
+        throw setup_err(" Process not found");
+    }
 
     void ProcessManager::recreate_log_folder(const path &log_base_dir){
         error_code ec;

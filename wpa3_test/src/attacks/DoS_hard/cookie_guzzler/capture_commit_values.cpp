@@ -1,5 +1,4 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
-
 #include <fstream>
 #include <unistd.h>
 #include <csignal>

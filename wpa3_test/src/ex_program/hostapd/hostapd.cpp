@@ -106,7 +106,7 @@ namespace wpa3_tester::hostapd{
         rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_path);
         rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_path);
 
-        string version = "";
+        string version;
         if (program_config.contains("version") && !program_config["version"].is_null()) {
             version = program_config["version"].get<string>();
         }
@@ -128,7 +128,6 @@ namespace wpa3_tester::hostapd{
     string wpa_supplicant_config(const string& run_folder, const string& actor_name, const json& client_setup, const path &config_folder) {
 
         path folder(run_folder);
-        //TODO více wpa_supplicant se přepíše
         path cfg_path = folder / (actor_name+"_wpa_supplicant.conf");
 
         error_code ec;
@@ -175,7 +174,7 @@ namespace wpa3_tester::hostapd{
     void run_wpa_supplicant(RunStatus& rs, const string &actor_name){
         json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
 
-        string version = "";
+        string version;
         if (program_config.contains("version") && !program_config["version"].is_null()) {
             version = program_config["version"].get<string>();
         }
@@ -199,8 +198,17 @@ namespace wpa3_tester::hostapd{
 
     // --------- HOSTAPD_MANA ---------
     void run_hostapd_mana(RunStatus& rs, const string &actor_name){
+
+        const path hostapd_config_config_path = path(rs.run_folder)/(actor_name+"_hostapd_mana.conf");
+
         json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
-        const string hostapd_config_config_path = path(rs.run_folder) / program_config.at("hostapd-mana_path").get<string>();
+        auto rogue_ap_setup = rs.config.at("actors").at(actor_name).at("setup").at("program");
+        if(rogue_ap_setup.contains("hostapd-mana_path")){
+            const path hostapd_path = rogue_ap_setup["hostapd-mana_path"].get<string>();
+            const path src = hostapd_path.is_absolute() ? hostapd_path : path(rs.config_path).parent_path() / hostapd_path;
+            copy_file(src, hostapd_config_config_path, copy_options::overwrite_existing);
+        }
+
         rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_config_path);
         rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_config_path);
 

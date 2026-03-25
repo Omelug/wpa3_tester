@@ -1,0 +1,64 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: dragondrain
+validator: dragondrain.schema.yaml
+attacker_module: dragondrain
+actors:
+  access_point:
+    source: internal
+    selection:
+      channel: 6
+      condition: [AP]
+    setup:
+      program: hostapd
+      program_config:
+        driver: nl80211
+        ssid: test_channel_switch
+        hw_mode: g
+        auth_algs: 1
+        wpa: 2
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        wpa_passphrase: password123
+        sae_password: password123
+        channel: 6
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        ssid: OpenWrt_2_4GHz
+        sae_password: password123
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: SAE
+        pairwise: CCMP
+        group: CCMP
+    netns: sta
+    ip_addr: "10.0.0.2"
+  attacker:
+    source: internal
+    selection:
+      condition: [monitor, injection]
+      driver: ath9k_htc
+      channel: 6
+observers:
+  client_musezahn:
+    actor: client
+    program: musezahn
+    program_config:
+      #filter: "udp port 5201"
+      target_actor: target_actor
+  tcpdump_att:
+    actor: attacker
+    program: tcpdump
+  ap_actor:
+    actor: client
+    program: cpu_ram_chceker
+
+attack_config:
+  bitrate: 54
+  number_of_random_mac: 20
+

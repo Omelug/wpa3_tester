@@ -82,7 +82,6 @@ namespace wpa3_tester::CSA_attack{
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
         if(rs.config.at("actors").contains("rogue_ap")){
-            copy_file(path(rs.config_path).parent_path()/"hostapd-mana.conf", path(rs.run_folder)/"hostapd-mana.conf");
             program::start(rs, "rogue_ap");
             rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
             log(LogLevel::INFO, "Rogue AP up");

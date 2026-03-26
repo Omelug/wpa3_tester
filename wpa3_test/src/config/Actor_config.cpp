@@ -157,9 +157,10 @@ namespace wpa3_tester{
             const ActorPtr actor = actor_ptr;
             auto it = actor->str_con.find("whitebox_host");
             cout << "[" << key << "] "
-                      << (it != actor->str_con.end() && it->second.has_value()
-                          ? it->second.value() : "Actor_"+key +" ")
-                      << actor->to_str() << "\n";
+                << (it != actor->str_con.end() && it->second.has_value() ? it->second.value() : "Actor_"+key)
+                << " "
+                << actor->to_str()
+                << "\n";
         }
         cout << flush;
     }

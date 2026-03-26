@@ -9,7 +9,6 @@ actors:
     selection:
       mac: "78:98:e8:55:3e:8d"
       channel: 6
-      condition: [monitor]
   scanner:
     source: internal
     selection:

@@ -1,0 +1,37 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: dragondrain_Dlink
+validator: "./dragondrain.schema.yaml"
+attacker_module: dragondrain
+actors:
+  access_point:
+    extends: ../../target/Dlink/Dlink_wb.yaml
+  client:
+    extends: ../../target/Dlink/mixed_client_2_4.yaml
+  attacker:
+    source: internal
+    selection:
+      condition: [monitor, injection]
+      driver: ath9k_htc
+      channel: 6
+observers:
+  client_musezahn:
+    actor: client
+    program: musezahn
+    program_config:
+      target_actor: access_point
+  tcpdump_att:
+    actor: attacker
+    program: tcpdump
+    program_config:
+      filter: ""
+      #filter: "udp port 5201"
+  ap_resources:
+    actor: access_point
+    program: resource_checker
+    program_config:
+      interval: 1
+attack_config:
+  bitrate: 54
+  number_of_random_mac: 1
+  timeout_sec: 30
+  r: 200

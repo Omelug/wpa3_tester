@@ -64,4 +64,7 @@ observers:
 attack_config:
   bitrate: 54
   number_of_random_mac: 20
+  interval: 1
+  timeout_sec: 30
+  r: 200
 

@@ -1,0 +1,17 @@
+source: external
+selection:
+  whitebox_host: OpenWrt
+  condition: [ AP, 2_4GHz ]
+  channel: 6
+setup:
+  program: openwrt
+  program_config:
+    ssid: OpenWrt_2_4GHz
+    channel: 6
+    key: password123
+    proto: RSN
+    encryption: sae-mixed
+    mode: ap
+    htmode: HT20
+  req_programs: [ tcpdump ]
+ip_addr: "10.0.0.1"

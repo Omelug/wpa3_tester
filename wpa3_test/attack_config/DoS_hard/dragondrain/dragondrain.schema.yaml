@@ -19,6 +19,13 @@ attack_config:
     number_of_random_mac:
       type: integer
       description: number of generated mac addresses what are used for attack
+      default: 1
+    timeout_sec:
+      type: integer
+      description: attack time (dragondrain)
+      default: 30
+    r:
+      type: integer
       default: 200
     #g:
     #  type: integer

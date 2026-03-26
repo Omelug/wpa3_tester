@@ -6,7 +6,7 @@
 namespace wpa3_tester::observer{
     using namespace std;
     using namespace filesystem;
-    void add_nets(const RunStatus& run_status, std::vector<std::string>& command, const std::string& src_name){
+    void add_nets(const RunStatus& run_status, vector<string>& command, const string& src_name){
         if(!run_status.config.at("actors").at(src_name).contains("netns")){return;}
         const auto netns_node = run_status.config.at("actors").at(src_name).at("netns");
         if (!netns_node.is_null()) {
@@ -23,12 +23,12 @@ namespace wpa3_tester::observer{
         return obs_dir;
     }
 
-    void transform_to_relative(std::vector<LogTimePoint>& times, const LogTimePoint &start_time){
+    void transform_to_relative(vector<LogTimePoint>& times, const LogTimePoint &start_time){
         if (times.empty()) return;
         const LogTimePoint t0 = start_time;
         for (auto& t : times) {
             auto rel = t - t0;
-            t = LogTimePoint(std::chrono::duration_cast<std::chrono::nanoseconds>(rel));
+            t = LogTimePoint(chrono::duration_cast<chrono::nanoseconds>(rel));
         }
     }
 }

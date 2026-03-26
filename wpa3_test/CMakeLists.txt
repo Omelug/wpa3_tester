@@ -28,6 +28,26 @@ if(ENABLE_COVERAGE)
     add_link_options(--coverage)
 endif()
 
+# Awk scripts (separated for debugging)
+
+file(GLOB AWK_FILES "${CMAKE_CURRENT_SOURCE_DIR}/awk_scripts/*.awk")
+foreach(SOURCE_FILE ${AWK_FILES})
+    get_filename_component(FILE_NAME ${SOURCE_FILE} NAME_WE)
+    set(HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/awk_scripts/generated_${FILE_NAME}.h")
+    file(READ ${SOURCE_FILE} AWK_CONTENTS)
+    set(VAR_NAME "AWK_SCRIPT_${FILE_NAME}")
+    set(HEADER_CODE
+            "#pragma once
+
+static const char* ${VAR_NAME} = R\"awk(
+${AWK_CONTENTS}
+)awk\"\;
+"
+    )
+    file(WRITE ${HEADER_FILE} ${HEADER_CODE})
+endforeach()
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/awk_scripts)
+
 # ----------- LIBRARIES -------------------
 
 #libtins a libwifi mají oba target uninstall
@@ -145,6 +165,7 @@ add_library(wpa3_core STATIC ${CORE_SOURCES})
 set(WIFI_HEADERS_DIR "${linux_headers_wifi_SOURCE_DIR}/..")
 
 target_include_directories(wpa3_core PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}/awk_scripts
         include
         ${doctest_SOURCE_DIR}
         ${argparse_SOURCE_DIR}/include

@@ -1,9 +1,9 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
-#include <cassert>
 
 #include "config/global_config.h"
 #include "ex_program/hostapd/hostapd.h"
 #include "observer/observers.h"
+#include "observer/resource_checker.h"
 
 namespace wpa3_tester::dragondrain{
     using namespace std;
@@ -11,9 +11,16 @@ namespace wpa3_tester::dragondrain{
     using namespace Tins;
     using namespace chrono;
 
+    //TODO setup
+    //check ath_masker
+    // check dragondrain_folder
 
     auto start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
-                           const string &channel, const int bitrate, const int num_random_mac)->void{
+                           const string &channel, const nlohmann::json &att_cfg)->void{
+        const int bitrate = att_cfg.at("bitrate").get<int>();
+        const int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
+        const int r = att_cfg.at("r").get<int>();
+
         vector<string> command = {"sudo"};
         observer::add_nets(rs, command, actor_name);
         const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
@@ -25,7 +32,7 @@ namespace wpa3_tester::dragondrain{
             "-b", to_string(bitrate),
             "-n", to_string(num_random_mac),
             "-M", "100",
-            "-r", "200"
+            "-r", to_string(r)
         });
         rs.process_manager.run(actor_name, command, dragondrain_folder);
     }
@@ -36,23 +43,26 @@ namespace wpa3_tester::dragondrain{
         const auto attacker = rs.get_actor("attacker");
 
         const auto target = rs.get_actor("access_point");
-        string target_mac = target["mac"];
-        string channel = target["channel"];
+        const string target_mac = target["mac"];
+        const string channel = target["channel"];
 
-        int bitrate = att_cfg.at("bitrate").get<int>();
-        int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
-            start_dragondrain(rs, attacker["actor_name"], attacker["iface"], target_mac, channel, bitrate, num_random_mac);
-
-        ofstream attack_result(path(rs.run_folder) / "result.txt");
-
-        //TODO change string
-        attack_result << to_string(
-            rs.process_manager.wait_for("attacker", "SERVER_VULNERABLE_STRING", seconds(140), false)
-        );
-        attack_result.close();
+        this_thread::sleep_for(seconds(10));
+        start_dragondrain(rs, "attacker", attacker["iface"], target_mac, channel, att_cfg);
+        this_thread::sleep_for(seconds(att_cfg.at("timeout_sec").get<int>()));
+        rs.process_manager.stop("attacker");
+        this_thread::sleep_for(seconds(30));
     }
 
     void stats_attack(const RunStatus &rs){
+        // generate graph with ob
+        const auto ap = rs.config.at("actors").at("access_point");
+        const auto log_path = observer::get_observer_folder(rs, "resource_checker")/("access_point"+observer::SUFFIX_res+".log");
+        if(ap["source"] == "external"){
+            observer::create_resource_monitor_graph(log_path);
+        }
 
+        if(ap["source"] == "internal"){
+            observer::create_resource_pid_graph(log_path);
+        }
     }
 }

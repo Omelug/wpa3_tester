@@ -28,6 +28,8 @@ namespace wpa3_tester{
         run({"ip", "link", "set", iface, "up"});
     }
 
+
+    //TODO nejdřív napsat pořádné testy, apk optimalizavat
     void Actor_config::set_monitor_mode() const{
         const string& iface = str_con.at("iface").value();
         if(conn != nullptr){conn->set_monitor_mode(iface); return;}

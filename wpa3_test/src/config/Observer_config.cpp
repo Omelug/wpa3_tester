@@ -31,7 +31,7 @@ namespace wpa3_tester::observer{
 
         if(program == "resource_checker"){
             const auto interval = program_config.at("interval").get<int>();
-            start_resource_monitoring(rs, actor_name, interval);
+            resource_checker::start_resource_monitoring(rs, actor_name, interval);
             return;
         }
         throw runtime_error("Invalid observer program: "+program);

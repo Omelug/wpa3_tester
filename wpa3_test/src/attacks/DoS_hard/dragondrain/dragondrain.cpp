@@ -56,13 +56,6 @@ namespace wpa3_tester::dragondrain{
     void stats_attack(const RunStatus &rs){
         // generate graph with ob
         const auto ap = rs.config.at("actors").at("access_point");
-        const auto log_path = observer::get_observer_folder(rs, "resource_checker")/("access_point"+observer::SUFFIX_res+".log");
-        if(ap["source"] == "external"){
-            observer::create_resource_monitor_graph(log_path);
-        }
-
-        if(ap["source"] == "internal"){
-            observer::create_resource_pid_graph(log_path);
-        }
+        observer::resource_checker::create_graph(rs, ap["source"]);
     }
 }

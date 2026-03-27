@@ -1,6 +1,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
-#include <sstream>
+#include <libssh/sftp.h>
+#include <fcntl.h>
 
 namespace wpa3_tester{
     using namespace std;
@@ -132,5 +133,78 @@ namespace wpa3_tester{
         exec("ip addr flush dev "+iface);
         exec("ip addr add "+ip_addr +"/24 dev "+iface);
         exec("ip link set "+iface +" up");
+    }
+
+    void ExternalConn::upload_file(const string& local_path, const string& remote_path) const {
+        if (!session) throw ex_conn_err("SSH session not connected");
+
+        const sftp_session sftp = sftp_new(session);
+        if (!sftp || sftp_init(sftp) != SSH_OK) {
+            if (sftp) sftp_free(sftp);
+            throw ex_conn_err("SFTP init failed");
+        }
+
+        ifstream local_f(local_path, ios::binary);
+        if (!local_f) { sftp_free(sftp); throw ex_conn_err("Local file not found: " + local_path); }
+
+        const sftp_file remote_f = sftp_open(sftp, remote_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0755);
+        if (!remote_f) { sftp_free(sftp); throw ex_conn_err("Remote open failed"); }
+
+        char buffer[4096];
+        while (local_f.read(buffer, sizeof(buffer)) || local_f.gcount() > 0) {
+            if (sftp_write(remote_f, buffer, local_f.gcount()) < 0) break;
+        }
+
+        sftp_close(remote_f);
+        sftp_free(sftp);
+    }
+
+    void ExternalConn::upload_script_raw(const string& local_path, const string& remote_path) const {
+        ifstream ifile(local_path);
+        if (!ifile) throw ex_conn_err("Local script not found");
+
+        stringstream buffer;
+        buffer << ifile.rdbuf();
+        string content = buffer.str();
+        // works for text files, no for binary data (null bytes etc)
+        exec("cat << 'EOF' > " + remote_path + "\n" + content + "\nEOF\n");
+    }
+
+
+
+    void ExternalConn::download_file(const string& remote_path, const string& local_path) const {
+        if (!session) throw ex_conn_err("SSH session not connected");
+
+        const sftp_session sftp = sftp_new(session);
+        if (sftp == nullptr) throw ex_conn_err("Error allocating SFTP session");
+
+        if (sftp_init(sftp) != SSH_OK) {
+            sftp_free(sftp);
+            throw ex_conn_err("Error initializing SFTP session");
+        }
+
+        const sftp_file file = sftp_open(sftp, remote_path.c_str(), O_RDONLY, 0);
+        if (file == nullptr) {
+            sftp_free(sftp);
+            throw ex_conn_err("Error opening remote file: " + remote_path);
+        }
+
+        ofstream local_file(local_path, ios::binary);
+        if (!local_file.is_open()) {
+            sftp_close(file);
+            sftp_free(sftp);
+            throw ex_conn_err("Error opening local file for writing: " + local_path);
+        }
+
+        char buffer[4096];
+        int nbytes;
+        while ((nbytes = sftp_read(file, buffer, sizeof(buffer))) > 0) {
+            local_file.write(buffer, nbytes);
+        }
+
+        sftp_close(file);
+        sftp_free(sftp);
+        local_file.close();
+        if (nbytes < 0) throw ex_conn_err("Error reading from remote file");
     }
 }

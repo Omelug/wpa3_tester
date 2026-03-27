@@ -34,10 +34,10 @@ namespace wpa3_tester{
     string hw_capabilities::get_driver_name(const string &iface){
         const string path = "/sys/class/net/"+iface+"/device/driver";
         try{
-            if(filesystem::exists(path) && filesystem::is_symlink(path)){
-                return filesystem::read_symlink(path).filename().string();
+            if(exists(path) && is_symlink(path)){
+                return read_symlink(path).filename().string();
             }
-        } catch(const filesystem::filesystem_error &e){
+        } catch(const filesystem_error &e){
             throw config_err("Driver check error: "+string(e.what()));
         }
         throw config_err("Driver check error: not found valid symlink"); ;

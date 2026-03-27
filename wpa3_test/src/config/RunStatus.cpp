@@ -112,17 +112,18 @@ namespace wpa3_tester{
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){
-        ExternalConn* conn_raw = nullptr;
-        if(actor["external_OS"] == "openwrt"){
-            conn_raw = new OpenWrtConn();
-        }else{
-          throw not_implemented_err("Not known external_OS: "+actor["external_OS"]);
-        }
+         shared_ptr<ExternalConn> conn;
+         if(actor["external_OS"] == "openwrt"){
+             conn = make_shared<OpenWrtConn>();
+         } else {
+             throw not_implemented_err("Not known external_OS: " + actor["external_OS"].get<string>());
+         }
 
-        const shared_ptr<ExternalConn> conn(conn_raw);
-        if (!conn->connect(actor)) {throw config_err("Failed to connect to external actor ");}
-        actor->conn = conn;
-    }
+         if (!conn->connect(actor)) {
+             throw config_err("Failed to connect to external actor");
+         }
+         actor->conn = conn;
+     }
 
     void RunStatus::run_test(){
         process_manager.write_log_all("@START");

@@ -1,5 +1,6 @@
 #include "../../include/system/ip.h"
 
+#include <fcntl.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
@@ -66,9 +67,40 @@ namespace wpa3_tester::ip{
         return ip_address;
     }
 
+    auto is_port_open(const std::string &ip, int port, const int timeout_ms)->bool{
+        const int sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) return false;
+
+        fcntl(sock, F_SETFL, O_NONBLOCK);
+
+        sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
+
+        connect(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
+
+        pollfd pfd;
+        pfd.fd = sock;
+        pfd.events = POLLOUT;
+
+        const int res = poll(&pfd, 1, timeout_ms);
+        bool connected = false;
+
+        if (res > 0) {
+            int err;
+            socklen_t len = sizeof(err);
+            getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &len);
+            if (err == 0) connected = true;
+        }
+
+        close(sock);
+        return connected;
+    }
+
     bool ping(const string& ip, const int timeout_sec) {
         return hw_capabilities::run_cmd(
-            {"ping", "-c", "1", "-W", std::to_string(timeout_sec), ip}, nullopt) == 0;
+            {"ping", "-c", "1", "-n","-W", std::to_string(timeout_sec), ip}, nullopt) == 0;
     }
 
     string get_mac_by_ip(const string& ip) {

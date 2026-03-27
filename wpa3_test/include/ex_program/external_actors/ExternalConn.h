@@ -25,6 +25,9 @@ namespace wpa3_tester{
         virtual void set_monitor_mode(const std::string & iface) const;
         virtual void set_managed_mode(const std::string & iface) const;
         virtual void set_ip(const std::string &iface, const std::string &ip_addr) const;
+        void upload_file(const std::string &local_path, const std::string &remote_path) const;
+        void upload_script_raw(const std::string &local_path, const std::string &remote_path) const;
+        void download_file(const std::string &remote_path, const std::string &local_path) const;
 
         virtual void setup_ap(const RunStatus &rs, const ActorPtr &actor) = 0;
         virtual void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor, const nlohmann::json config) = 0;

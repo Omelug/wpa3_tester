@@ -1,9 +1,8 @@
 #pragma once
-#include <filesystem>
 #include <string>
 #include "config/RunStatus.h"
 
-namespace wpa3_tester::observer{
+namespace wpa3_tester::observer::resource_checker{
     const std::string SUFFIX_res = "_res";
     struct ResourceRecord {
         long long timestamp;
@@ -20,4 +19,5 @@ namespace wpa3_tester::observer{
                             const std::vector<long long>& acm_timestamps);
     void create_resource_monitor_graph(const std::string& data_filepath);
     void create_resource_pid_graph(const std::string& data_filepath);
+    void create_graph(const RunStatus &rs, const std::string &source);
 }

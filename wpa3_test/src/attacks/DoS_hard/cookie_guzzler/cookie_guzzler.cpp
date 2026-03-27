@@ -9,6 +9,7 @@
 #include "logger/log.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/observers.h"
+#include "observer/resource_checker.h"
 #include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
@@ -82,12 +83,6 @@ namespace wpa3_tester::cookie_guzzler{
         log(LogLevel::INFO, "Done. Total packets sent: "+to_string(counter));
     }
 
-    void speed_observation_start(RunStatus& rs){
-        observer::start_musezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_tshark(rs, "client", "udp port 5201");
-        observer::start_tcpdump(rs, "access_point", "udp port 5201");
-    }
-
     void run_attack(RunStatus &rs){
         const ActorPtr ap = rs.get_actor("access_point");
         const auto ssid = rs.config.at("actors").at("access_point")
@@ -96,7 +91,7 @@ namespace wpa3_tester::cookie_guzzler{
 
         const SAEPair sae_params = get_commit_values(attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         if (sae_params.success) {
-            speed_observation_start(rs);
+            rs.start_observers();
             log(LogLevel::INFO, "SAE Commit captured");
             const HWAddress<6> ap_mac(ap["mac"]);
             const auto& att_cfg = rs.config.at("attack_config");
@@ -112,6 +107,9 @@ namespace wpa3_tester::cookie_guzzler{
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         const string AP_graph_path =
             observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+
+        const auto ap = rs.config.at("actors").at("access_point");
+        observer::resource_checker::create_graph(rs, ap["source"]);
     }
 
 }

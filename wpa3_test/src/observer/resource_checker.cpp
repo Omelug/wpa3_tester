@@ -2,31 +2,32 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include "generated_monitor.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester::observer {
+namespace wpa3_tester::observer::resource_checker{
     using namespace std;
     using namespace filesystem;
     const string program_name = "resource_checker";
 
     void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, const string &iface, const int interval_sec, const string &local_log) {
         const auto& actor = rs.get_actor(actor_name);
-        const string remote_log = "/tmp/" + actor_name+SUFFIX_res+".log";
-        const string stat_cmd = "awk -v delay=" + to_string(interval_sec) +
-                            " -v iface=\"" + iface + "\" '" +
-                            AWK_SCRIPT_monitor + "' > " + remote_log;
-        const vector<string> ssh_command = {
-            "sshpass", "-p", actor["ssh_password"],
-            "ssh", "-o", "StrictHostKeyChecking=no", actor["ssh_user"] + "@" + actor["whitebox_ip"], stat_cmd
-        };
+        const string local_script = (path(PROJECT_ROOT_DIR) / "awk_scripts/monitor.awk").string();
+        const string remote_script = "/tmp/monitor_" + actor_name + ".awk";
+        string remote_log = "/tmp/" + actor_name + SUFFIX_res + ".log";
+        const string pid_file = remote_log + ".pid";
 
-        rs.process_manager.run(actor_name+SUFFIX_res, ssh_command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(actor_name+SUFFIX_res, [remote_log, local_log, actor]() {
-            hw_capabilities::run_cmd({"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] + "@" + actor["whitebox_ip"] + ":" + remote_log, local_log});
+        actor->conn->upload_script_raw(local_script, remote_script);
+        const string stat_cmd = "awk -v delay=" + to_string(interval_sec) +
+                          " -v iface='" + iface + "' -f " + remote_script +
+                          " > " + remote_log + " 2>&1 & echo $! > " + pid_file;
+        actor->conn->exec(stat_cmd, false);
+
+        rs.process_manager.on_stop(actor_name+SUFFIX_res, [remote_log, local_log, actor, pid_file]() {
+            actor->conn->exec("kill $(cat " + pid_file + "); rm " + pid_file);
+            actor->conn->download_file(remote_log, local_log);
             actor->conn->exec("rm " + remote_log);
         });
     }
@@ -249,6 +250,12 @@ namespace wpa3_tester::observer {
         pclose(gnuplot);
     }
 
+    void create_graph(const RunStatus &rs, const string& source){
+        const auto log_path = get_observer_folder(rs, "resource_checker")/("access_point"+SUFFIX_res+".log");
+        if(source == "external") create_resource_monitor_graph(log_path);
+        if(source == "internal") create_resource_pid_graph(log_path);
+    }
+
     // ------------------------ ACM monitoring ---------------------
     vector<long long> parse_acm_log(const string& filepath) {
         vector<long long> timestamps;
@@ -269,6 +276,8 @@ namespace wpa3_tester::observer {
         const string remote_log = "/tmp/" + actor_name + "_acm.log";
         const string local_log = get_observer_folder(rs, program_name) / (actor_name + "_acm.log");
 
+
+        //TODO
         const string cmd = R"(logread -f | awk '/anti-clogging/ { "date +%s" | getline ts; close("date +%s"); print ts " " $0; fflush(); }' > )" + remote_log;
 
         const vector<string> ssh_command = {
@@ -280,13 +289,7 @@ namespace wpa3_tester::observer {
 
         rs.process_manager.run(actor_name + "_acm", ssh_command, get_observer_folder(rs, program_name));
         rs.process_manager.on_stop(actor_name + "_acm", [remote_log, local_log, actor]() {
-            const vector<string> scp_cmd = {
-                "sshpass", "-p", actor["ssh_password"],
-                "scp", "-O",
-                actor["ssh_user"] + "@" + actor["whitebox_ip"] + ":" + remote_log,
-                local_log
-            };
-            hw_capabilities::run_cmd(scp_cmd);
+            actor->conn->download_file(remote_log, local_log);
             actor->conn->exec("rm " + remote_log);
         });
     }

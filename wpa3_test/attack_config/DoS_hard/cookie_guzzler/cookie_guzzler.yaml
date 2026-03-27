@@ -52,6 +52,26 @@ actors:
   #    channel: 6
   #  program: hostapd_mana
   #  program_config:
-
+observers:
+  client_musezahn:
+    actor: client
+    program: musezahn
+    program_config:
+      target_actor: access_point
+  tshark_client:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  program_config_ap:
+    actor: access_point
+    program: tcpdump
+    program_config:
+      filter: "udp port 5201"
+  ap_resources:
+    actor: access_point
+    program: resource_checker
+    program_config:
+      interval: 1
 attack_config:
-  attack_time_sec: 30
+  attack_time_sec: 10

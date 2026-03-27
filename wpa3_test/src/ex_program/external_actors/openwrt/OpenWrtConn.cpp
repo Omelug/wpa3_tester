@@ -42,7 +42,7 @@ namespace wpa3_tester {
     void OpenWrtConn::forward_internet(const string& remote_ip) const{
         hw_capabilities::run_cmd({"bash", "-c", "echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward"});
         auto  internet_iface = get_global_config().at("internet_interface").get<string>();
-        hw_capabilities::run_cmd({"sudo", "iptables", "-t", "nat", "-A", "POSTROUTING", "-o", internet_iface, "-j", "MASQUERADE"});
+        hw_capabilities::run_cmd({"iptables", "-t", "nat", "-A", "POSTROUTING", "-o", internet_iface, "-j", "MASQUERADE"});
         const string local_iface = hw_capabilities::get_iface(remote_ip);
         const string local_ip = ip::get_ip(local_iface);
 

@@ -17,7 +17,7 @@ namespace wpa3_tester::observer{
             start_tcpdump_remote(rs, actor_name, filter);
             return;
         }
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         add_nets(rs, command, actor_name);
 
         string pcap_path = get_observer_folder(rs, program_name) / (actor_name+"_capture.pcap");

@@ -12,7 +12,7 @@ namespace wpa3_tester::invalid_curve{
 
     void start_dragonslayer(RunStatus & rs, const string &actor_name, const string &iface, const string &target_type){
         assert(target_type == "ap" || target_type == "sta");
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs, command, actor_name);
         const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
         if(target_type == "ap"){

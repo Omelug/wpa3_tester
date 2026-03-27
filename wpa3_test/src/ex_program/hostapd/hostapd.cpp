@@ -111,7 +111,7 @@ namespace wpa3_tester::hostapd{
             version = program_config["version"].get<string>();
         }
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs,command, actor_name);
 
         command.insert(command.end(), {
@@ -184,7 +184,7 @@ namespace wpa3_tester::hostapd{
             actor_name,
             program_config, path(rs.config_path).parent_path());
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs, command, actor_name);
 
         command.insert(command.end(), {
@@ -212,7 +212,7 @@ namespace wpa3_tester::hostapd{
         rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_config_path);
         rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_config_path);
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs,command, actor_name);
         command.insert(command.end(), {
             "hostapd-mana",

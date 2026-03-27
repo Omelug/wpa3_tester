@@ -207,4 +207,24 @@ namespace wpa3_tester{
         local_file.close();
         if (nbytes < 0) throw ex_conn_err("Error reading from remote file");
     }
+
+    void ExternalConn::disconnect() {
+        if (!session) return;
+
+        /*if (active_channel) {
+            ssh_channel_close(active_channel);
+            ssh_channel_free(active_channel);
+            active_channel = nullptr;
+        }*/
+
+        /*try {
+            if (ssh_is_connected(session)) {
+                exec("pkill -u root -TERM", reproc::milliseconds(500));
+            }
+        } catch (...) {}*/
+
+        ssh_disconnect(session);
+        ssh_free(session);
+        session = nullptr;
+    }
 }

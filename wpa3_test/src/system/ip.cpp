@@ -20,7 +20,7 @@ namespace wpa3_tester::ip{
         if(actor.get()->conn != nullptr){
             run_status.get_actor(actor_name).get()->conn->set_ip(actor["iface"],ip_addr);
         }else{
-            vector<string> command = {"sudo"};
+            vector<string> command = {};
             observer::add_nets(run_status,command, actor_name);
             command.insert(command.end(), {
                 "ip", "addr","add",

@@ -83,7 +83,7 @@ TEST_CASE("cleanup_all_namespaces - kills processes and removes namespace") {
     const string ns = "wpa3_test_ns4";
     NsGuard guard(ns);
 
-    wpa3_tester::hw_capabilities::run_cmd({"sudo", "ip", "netns", "add", ns});
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "add", ns});
 
     pid_t child = start_process_in_netns(ns, "sleep");
     REQUIRE((child > 0));

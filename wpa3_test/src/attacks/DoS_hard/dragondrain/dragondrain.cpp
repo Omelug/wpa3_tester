@@ -21,7 +21,7 @@ namespace wpa3_tester::dragondrain{
         const int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
         const int r = att_cfg.at("r").get<int>();
 
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs, command, actor_name);
         const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
         command.insert(command.end(), {

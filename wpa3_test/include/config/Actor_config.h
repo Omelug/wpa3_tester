@@ -14,6 +14,7 @@ namespace wpa3_tester{
     public:
         explicit Actor_config() = default;
         explicit Actor_config(const nlohmann::json& j);
+        ~Actor_config();
         bool matches(const Actor_config &offer);
         Actor_config &operator+=(const Actor_config &other);
         std::shared_ptr<ExternalConn> conn;

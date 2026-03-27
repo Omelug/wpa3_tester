@@ -89,7 +89,7 @@ namespace wpa3_tester::observer{
 
     constexpr string program_name = "iperf3";
     void start_iperf3(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         add_nets(run_status,command, src_name);
         command.insert(command.end(), {
             "stdbuf", "-oL", "-eL",  // disable buffering for immediate output
@@ -104,7 +104,7 @@ namespace wpa3_tester::observer{
     }
 
     void start_iperf3_server(RunStatus& run_status, const string &actor_name, const string &server_name){
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         add_nets(run_status, command, server_name);
         command.insert(command.end(), {
             "stdbuf", "-oL", "-eL",  // disable buffering for immediate output

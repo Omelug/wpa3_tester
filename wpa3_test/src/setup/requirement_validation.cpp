@@ -77,14 +77,14 @@ namespace wpa3_tester{
 
     static vector<string> psy_if_in_ns(const string& ns_name) {
         const string out = hw_capabilities::run_cmd_output(
-            {"sudo", "ip", "netns", "exec", ns_name, "ls", "/sys/class/net"});
+            {"ip", "netns", "exec", ns_name, "ls", "/sys/class/net"});
 
         vector<string> result;
         istringstream ss(out);
         string iface;
         while (ss >> iface) {
             const int rc = hw_capabilities::run_cmd(
-                {"sudo", "ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/"+iface +"/device"},
+                {"ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/"+iface +"/device"},
                 std::nullopt);
             if (rc == 0) {
                 result.push_back(iface);
@@ -127,7 +127,7 @@ namespace wpa3_tester{
 
             const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
             kill_process_in_ns_name(ns_name);
-            hw_capabilities::run_cmd({"sudo", "ip", "netns", "del", ns_name});
+            hw_capabilities::run_cmd({"ip", "netns", "del", ns_name});
             wait_to_default_ns(physical_interfaces);
 
             log(LogLevel::DEBUG, "Removed netns "+ns_name);

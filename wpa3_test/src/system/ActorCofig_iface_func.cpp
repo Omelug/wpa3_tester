@@ -37,10 +37,10 @@ namespace wpa3_tester{
 
         log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");
 
-        run({"sudo","ip", "link", "set", iface, "down"});
-        run({"sudo", "iw", "dev", iface, "set", "type", "monitor"});
-        run({"sudo", "iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
-        run({"sudo","ip", "link", "set", iface, "up"});
+        run({"ip", "link", "set", iface, "down"});
+        run({"iw", "dev", iface, "set", "type", "monitor"});
+        run({ "iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
+        run({"ip", "link", "set", iface, "up"});
     }
 
     void Actor_config::cleanup() const {

@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <random>
+#include <reproc++/drain.hpp>
+#include <reproc++/reproc.hpp>
 
 #include "system/hw_capabilities.h"
 #include "config/global_config.h"
@@ -181,16 +183,15 @@ namespace wpa3_tester{
         for (auto &s : full_argv) {args.push_back(const_cast<char *>(s.c_str()));}
         args.push_back(nullptr);
 
-        const pid_t pid = fork();
+        reproc::process proc;
+        reproc::options options;
+        options.redirect.parent = true; // Pokud chceš, aby výstup šel do tvé konzole
 
-        if (pid < 0) {log(LogLevel::ERROR, "fork() failed for command "+full_argv[0]); return -1;}
-        if (pid == 0) {execvp(args[0], args.data());_exit(127);}
-
-        int status = 0;
-        if (waitpid(pid, &status, 0) < 0) {
-            log(LogLevel::ERROR, "waitpid() failed for command "+full_argv[0]);
+        if (const error_code ec = proc.start(full_argv, options)) {
+            log(LogLevel::ERROR, "Failed to start %s: %s", full_argv[0].c_str(), ec.message().c_str());
             return -1;
         }
+        auto [status, wait_ec] = proc.wait(reproc::infinite);
 
         if (WIFSIGNALED(status)) {
             log(LogLevel::WARNING, "Command %s terminated by signal %d", full_argv[0].c_str(), WTERMSIG(status));
@@ -245,41 +246,33 @@ namespace wpa3_tester{
         }
         throw std::invalid_argument("Invalid channel: "+std::to_string(channel));
     }
+
     string hw_capabilities::run_cmd_output(const vector<string> &argv) {
         if (argv.empty()) return {};
 
-        vector<char *> args;
-        args.reserve(argv.size() + 1);
-        for (const auto &s : argv) { args.push_back(const_cast<char *>(s.c_str())); }
-        args.push_back(nullptr);
+        reproc::process proc;
+        reproc::options options;
 
-        int pipefd[2];
-        if (pipe(pipefd) < 0) return {};
+        options.redirect.out.type = reproc::redirect::pipe;
 
-        const pid_t pid = fork();
-        if (pid < 0) { close(pipefd[0]); close(pipefd[1]); return {}; }
+        std::error_code ec = proc.start(argv, options);
+        if (ec) {return {};}
 
-        if (pid == 0) {
-            close(pipefd[0]);
-            dup2(pipefd[1], STDOUT_FILENO);
-            close(pipefd[1]);
-            execvp(args[0], args.data());
-            _exit(127);
-        }
+        string output_str;
+        reproc::sink::string sink_obj(output_str);
 
-        close(pipefd[1]);
-        string output;
-        char buf[256];
-        ssize_t n;
-        while ((n = read(pipefd[0], buf, sizeof(buf))) > 0) {output.append(buf, static_cast<size_t>(n));}
-        close(pipefd[0]);
-        waitpid(pid, nullptr, 0);
-        return output;
+        ec = reproc::drain(proc, sink_obj, reproc::sink::null);
+        if (ec) {return {};}
+
+        auto [status, wait_ec] = proc.wait(reproc::infinite);
+        if (wait_ec) {return {};}
+        return output_str;
     }
 
+
     void hw_capabilities::create_ns(const string &ns_name){
-        run_cmd({"sudo","ip", "netns", "add", ns_name});
-        run_cmd({"sudo","ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
+        run_cmd({"ip", "netns", "add", ns_name});
+        run_cmd({"ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
     }
 
     string hw_capabilities::rand_mac() {
@@ -290,7 +283,7 @@ namespace wpa3_tester{
         char mac[18];
         snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
             dis(gen), dis(gen), dis(gen), dis(gen), dis(gen), dis(gen));
-        return string(mac);
+        return mac;
     }
 
     string hw_capabilities::get_iface(const string& ip_address) {

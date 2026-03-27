@@ -15,7 +15,9 @@ using namespace filesystem;
 
 
 void signal_handler(const int signum) {
-    if (globalRunStatus) {globalRunStatus->process_manager.stop_all();}
+    if (globalRunStatus){
+        globalRunStatus->process_manager.stop_all();
+    }
     exit(signum);
 }
 

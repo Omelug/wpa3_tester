@@ -9,7 +9,7 @@ namespace wpa3_tester::observer{
 
     constexpr string program_name = "mausezahn";
     void start_musezahn(RunStatus& run_status, const string &actor_name, const string &src_name, const string &dst_name){
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         add_nets(run_status,command, src_name);
 
         command.insert(command.end(), {

@@ -1,5 +1,6 @@
 #include "config/Actor_config.h"
 #include "config/ActorPtr.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 namespace wpa3_tester{
     using namespace std;
@@ -28,6 +29,13 @@ namespace wpa3_tester{
 
         if (j.contains("netns")){str_con["netns"] = j.at("netns");}
         if (j.contains("source")){str_con["source"] = j.at("source");}
+    }
+
+    Actor_config::~Actor_config() {
+        if (conn) {
+            conn->disconnect();
+            conn.reset();
+        }
     }
 
     bool Actor_config::matches(const Actor_config& offer) {

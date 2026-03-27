@@ -23,7 +23,7 @@ namespace wpa3_tester::reflection{
     }
 
     void start_dragonslayer(RunStatus & rs, const string &actor_name, const string &iface, const string &target_type){
-        vector<string> command = {"sudo"};
+        vector<string> command = {};
         observer::add_nets(rs, command, actor_name);
         const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
         // TODO compile dragonslayer, if not compiled

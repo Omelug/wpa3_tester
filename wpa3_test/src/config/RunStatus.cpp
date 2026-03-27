@@ -75,6 +75,17 @@ namespace wpa3_tester{
         this->config = config_validation(this->config_path);
     }
 
+    void RunStatus::clean(){
+         this->process_manager.stop_all();
+         for(const auto& actor: actors | views::values){
+             if(actor->conn){
+                 actor->conn->disconnect();
+             }
+         }
+         this->actors.clear();
+         this->observers.clear();
+     };
+
     void RunStatus::execute(){
 
         globalRunStatus = this;
@@ -84,7 +95,7 @@ namespace wpa3_tester{
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
 
-        //try {
+        try {
             if(this->only_stats){stats_test(); return;}
 
             config_requirement(); //include req validation
@@ -93,7 +104,7 @@ namespace wpa3_tester{
             save_yaml(config, out_path);
             run_test();
             stats_test();
-        /*} catch (const exception& e) {
+        } catch (const exception& e) {
             const path error_file = path(run_folder) / "errors.txt";
             ofstream error_log(error_file, ios::out | ios::app);
             if (error_log.is_open()) {
@@ -106,9 +117,9 @@ namespace wpa3_tester{
             } else {
                 log(LogLevel::ERROR, "Failed to open error log file: %s", error_file.string().c_str());
             }
-            //FIXME clean up
-            throw;
-        }*/
+            log(LogLevel::INFO, "Cleaning up resources before exit...");
+            clean();
+        }
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){
@@ -116,7 +127,7 @@ namespace wpa3_tester{
          if(actor["external_OS"] == "openwrt"){
              conn = make_shared<OpenWrtConn>();
          } else {
-             throw not_implemented_err("Not known external_OS: " + actor["external_OS"].get<string>());
+             throw not_implemented_err("Not known external_OS: " + actor["external_OS"]);
          }
 
          if (!conn->connect(actor)) {

@@ -118,6 +118,7 @@ namespace wpa3_tester{
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){
+        if(actor->conn){return;}
          shared_ptr<ExternalConn> conn;
          if(actor["external_OS"] == "openwrt"){
              conn = make_shared<OpenWrtConn>();

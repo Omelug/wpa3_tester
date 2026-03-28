@@ -187,8 +187,8 @@ namespace wpa3_tester{
         reproc::options options;
         options.redirect.parent = true;
 
-        auto fd_count = distance(directory_iterator("/proc/self/fd"),
-                              directory_iterator{});
+        //auto fd_count = distance(directory_iterator("/proc/self/fd"),
+        //                      directory_iterator{});
         //log(LogLevel::DEBUG, "Current open FDs: %ld | Command: %s", fd_count, argv[0].c_str());
         //log(LogLevel::DEBUG, "Running command: %s", full_argv[0].c_str());
         if (const error_code ec = proc.start(full_argv, options)) {

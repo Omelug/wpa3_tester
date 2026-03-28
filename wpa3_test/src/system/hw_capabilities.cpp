@@ -162,7 +162,7 @@ namespace wpa3_tester{
         }
     }
 
-    int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns) {
+    int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns){
         if (argv.empty()) return -1;
 
         // prepend ip netns exec if netns is set
@@ -185,20 +185,26 @@ namespace wpa3_tester{
 
         reproc::process proc;
         reproc::options options;
-        options.redirect.parent = true; // Pokud chceš, aby výstup šel do tvé konzole
+        options.redirect.parent = true;
 
+        auto fd_count = distance(directory_iterator("/proc/self/fd"),
+                              directory_iterator{});
+        //log(LogLevel::DEBUG, "Current open FDs: %ld | Command: %s", fd_count, argv[0].c_str());
+        //log(LogLevel::DEBUG, "Running command: %s", full_argv[0].c_str());
         if (const error_code ec = proc.start(full_argv, options)) {
-            log(LogLevel::ERROR, "Failed to start %s: %s", full_argv[0].c_str(), ec.message().c_str());
+            log(LogLevel::ERROR, "Failed to start "+full_argv[0]+" "+ec.message());
             return -1;
         }
         auto [status, wait_ec] = proc.wait(reproc::infinite);
-
-        if (WIFSIGNALED(status)) {
-            log(LogLevel::WARNING, "Command %s terminated by signal %d", full_argv[0].c_str(), WTERMSIG(status));
-        } else if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
-            log(LogLevel::ERROR, "Command %s exited with status %d", full_argv[0].c_str(), WEXITSTATUS(status));
+        this_thread::sleep_for(chrono::milliseconds(100)); //FIXME
+        if (wait_ec) {
+            log(LogLevel::ERROR, "Wait failed: "+wait_ec.message());
+            return -1;
         }
-        return WEXITSTATUS(status);
+        if (status != 0) {
+            log(LogLevel::ERROR, "Command exited with status %d", full_argv[0].c_str(), status);
+        }
+        return status;
     }
 
     int hw_capabilities::freq_to_channel(const int freq) {
@@ -221,7 +227,7 @@ namespace wpa3_tester{
             if ((freq - 5950) % 5 == 0) return ch;
         }
 
-        throw std::invalid_argument("Invalid frequency: "+std::to_string(freq)+" MHz");
+        throw invalid_argument("Invalid frequency: "+to_string(freq)+" MHz");
     }
 
     int hw_capabilities::channel_to_freq(const int channel, const WifiBand band) {
@@ -244,7 +250,7 @@ namespace wpa3_tester{
                 if (freq >= 5955 && freq <= 7115) return freq;
             }
         }
-        throw std::invalid_argument("Invalid channel: "+std::to_string(channel));
+        throw invalid_argument("Invalid channel: "+to_string(channel));
     }
 
     string hw_capabilities::run_cmd_output(const vector<string> &argv) {
@@ -255,7 +261,7 @@ namespace wpa3_tester{
 
         options.redirect.out.type = reproc::redirect::pipe;
 
-        std::error_code ec = proc.start(argv, options);
+        error_code ec = proc.start(argv, options);
         if (ec) {return {};}
 
         string output_str;

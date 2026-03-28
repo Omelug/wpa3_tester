@@ -8,14 +8,14 @@ using namespace std;
 namespace wpa3_tester::components{
     void setup_AP(RunStatus& rs,const string& actor_name){
         program::start(rs, actor_name);
-        rs.process_manager.wait_for(actor_name, "AP-ENABLED", std::chrono::seconds(40));
+        rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
         log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
     }
 
     void setup_STA(RunStatus& rs,const string& actor_name){
         program::start(rs, actor_name);
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", std::chrono::seconds(10));
+        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", chrono::seconds(10));
         ip::set_ip(rs, "client");
     }
 

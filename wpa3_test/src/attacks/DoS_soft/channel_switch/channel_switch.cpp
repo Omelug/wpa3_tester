@@ -113,7 +113,7 @@ namespace wpa3_tester::CSA_attack{
     // ---------- STATS ----------------
     void generate_report(const RunStatus & rs, const string & STA_graph_path, const string & AP_graph_path){
         const path report_path = path(rs.run_folder) / "report.md";
-        std::ofstream report(report_path);
+        ofstream report(report_path);
         if (!report.is_open()){ log(LogLevel::ERROR, "Failed to create report file!"); return; }
 
         report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";

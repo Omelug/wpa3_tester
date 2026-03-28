@@ -258,7 +258,10 @@ namespace wpa3_tester{
                 log(LogLevel::DEBUG, "Resolved %s -> %s", cfg["whitebox_host"].c_str(), ip_str.c_str());
             }
             const string ip = cfg["whitebox_ip"];
-            if (!ip::ping(ip)) {log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");continue;}
+            if (!ip::ping(ip)){
+                log(LogLevel::WARNING, "Actor "+ip+" not reachable, skipping");
+                continue;
+            }
             get_or_create_connection(cfg);
             add_actors_by_radio(options, cfg);
         }

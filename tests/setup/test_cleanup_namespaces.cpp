@@ -58,7 +58,7 @@ static bool pid_alive(const pid_t pid) {
 
 struct NsGuard {
     string name;
-    explicit NsGuard(string  n) : name(std::move(n)) {}
+    explicit NsGuard(string  n) : name(move(n)) {}
     ~NsGuard() = default;
 };
 

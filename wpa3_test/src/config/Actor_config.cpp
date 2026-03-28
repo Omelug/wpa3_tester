@@ -5,6 +5,15 @@
 namespace wpa3_tester{
     using namespace std;
     using json = nlohmann::json;
+
+    Actor_config::Actor_config(const Actor_config& other)
+    : std::enable_shared_from_this<Actor_config>()
+    {
+            this->str_con = other.str_con;
+            this->bool_conditions = other.bool_conditions;
+            this->conn = other.conn;
+    }
+
     Actor_config::Actor_config(const json& j) {
         if (j.contains("selection") && j.at("selection").is_object()) {
             const auto& sel = j.at("selection");
@@ -32,9 +41,8 @@ namespace wpa3_tester{
     }
 
     Actor_config::~Actor_config() {
-        if (conn) {
+        if (conn && conn.use_count() == 1) {
             conn->disconnect();
-            conn.reset();
         }
     }
 
@@ -66,7 +74,7 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val; // fill missing
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on key '"+key+"': '"
+                throw runtime_error("Actor_config conflict on key '"+key+"': '"
                     + mine.value()+"' vs '"+val.value()+"'");
             }
         }
@@ -77,13 +85,13 @@ namespace wpa3_tester{
             if (!mine.has_value()) {
                 mine = val;
             } else if (mine != val) {
-                throw std::runtime_error("Actor_config conflict on bool key '"+key+"'");
+                throw runtime_error("Actor_config conflict on bool key '"+key+"'");
             }
         }
         return *this;
     }
 
-    std::string Actor_config::operator[](const std::string& key) const {
+    string Actor_config::operator[](const string& key) const {
         const auto it = str_con.find(key);
         if (it == str_con.end()) {
             throw config_err("Actor_config: missing required string condition '"+key+"'");
@@ -94,7 +102,7 @@ namespace wpa3_tester{
         return *(it->second);
     }
 
-    bool Actor_config::get_bool(const std::string& key) const {
+    bool Actor_config::get_bool(const string& key) const {
         const auto it = bool_conditions.find(key);
         if (it == bool_conditions.end()) {
             throw config_err("Actor_config: missing required bool condition '"+key+"'");
@@ -105,7 +113,7 @@ namespace wpa3_tester{
         return *(it->second);
     }
 
-    std::string Actor_config::to_str() const {
+    string Actor_config::to_str() const {
         string result;
 
         // string params
@@ -152,14 +160,14 @@ namespace wpa3_tester{
         }
         return result;
     }
-    void Actor_config::print_ActorCMap(const std::string& title, const vector<ActorPtr> &actors){
+    void Actor_config::print_ActorCMap(const string& title, const vector<ActorPtr> &actors){
         cout << title << ":\n";
         for (size_t i = 0; i < actors.size(); ++i) {
             cout << "[" << i << "] " << actors[i]->to_str() << "\n";
         }
         cout << flush;
     }
-    void Actor_config::print_ActorCMap(const std::string& title, ActorCMap actors) {
+    void Actor_config::print_ActorCMap(const string& title, ActorCMap actors) {
         cout << title << ":\n";
         for (const auto& [key, actor_ptr] : actors) {
             const ActorPtr actor = actor_ptr;

@@ -44,7 +44,7 @@ namespace wpa3_tester::invalid_curve{
 
         // -------- AP
         program::start(rs, "access_point");
-        rs.process_manager.wait_for("access_point", "AP-ENABLED", std::chrono::seconds(40));
+        rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
         log(LogLevel::INFO, "access_point is running");
         ip::set_ip(rs, "access_point");
 

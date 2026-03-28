@@ -9,7 +9,7 @@
 using namespace std;
 using namespace filesystem;
 using namespace wpa3_tester;
-using namespace std::chrono_literals;
+using namespace chrono_literals;
 
 namespace wpa3_tester {
     TEST_CASE("ProcessManager run and stop simple process"){

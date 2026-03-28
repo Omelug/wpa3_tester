@@ -11,7 +11,7 @@
 #include "config/RunStatus.h"
 namespace wpa3_tester{
     using namespace std;
-    using namespace std::chrono;
+    using namespace chrono;
 
     const char *levelToString(const LogLevel level) {
         switch (level) {
@@ -45,7 +45,7 @@ namespace wpa3_tester{
         cerr << levelToString(level) << ": " << msg << endl;
     }
 
-    void log(const LogLevel level, const std::string& msg) {
+    void log(const LogLevel level, const string& msg) {
         cerr << levelToString(level) << ": " << msg << endl;
     }
 

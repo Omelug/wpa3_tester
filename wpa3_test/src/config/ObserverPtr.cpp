@@ -4,7 +4,7 @@
 
 namespace  wpa3_tester::observer{
     using namespace std;
-    ObserverPtr::ObserverPtr(shared_ptr<Observer_config> p): ptr(std::move(p)){}
+    ObserverPtr::ObserverPtr(shared_ptr<Observer_config> p): ptr(move(p)){}
     Observer_config* ObserverPtr::operator->() const { return ptr.get(); }
     Observer_config& ObserverPtr::operator*()  const { return *ptr; }
     Observer_config* ObserverPtr::get() const { return ptr.get(); }

@@ -13,6 +13,7 @@ namespace wpa3_tester{
     class Actor_config : public std::enable_shared_from_this<Actor_config>{
     public:
         explicit Actor_config() = default;
+        Actor_config(const Actor_config& other);
         explicit Actor_config(const nlohmann::json& j);
         ~Actor_config();
         bool matches(const Actor_config &offer);

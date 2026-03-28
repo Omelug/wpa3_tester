@@ -67,7 +67,7 @@ namespace wpa3_tester::ip{
         return ip_address;
     }
 
-    auto is_port_open(const std::string &ip, int port, const int timeout_ms)->bool{
+    auto is_port_open(const string &ip, int port, const int timeout_ms)->bool{
         const int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) return false;
 
@@ -100,7 +100,7 @@ namespace wpa3_tester::ip{
 
     bool ping(const string& ip, const int timeout_sec) {
         return hw_capabilities::run_cmd(
-            {"ping", "-c", "1", "-n","-W", std::to_string(timeout_sec), ip}, nullopt) == 0;
+            {"ping", "-c", "1", "-n","-W", to_string(timeout_sec), ip}, nullopt) == 0;
     }
 
     string get_mac_by_ip(const string& ip) {

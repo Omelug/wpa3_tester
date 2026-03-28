@@ -27,9 +27,9 @@ namespace wpa3_tester {
         }
 
         SUBCASE("Invalid frequencies") {
-            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(2411), std::invalid_argument);
-            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(3000), std::invalid_argument);
-            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(-1), std::invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(2411), invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(3000), invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::freq_to_channel(-1), invalid_argument);
         }
     }
 
@@ -54,9 +54,9 @@ namespace wpa3_tester {
         }
 
         SUBCASE("Invalid channels") {
-            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(0), std::invalid_argument);
-            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(15), std::invalid_argument);
-            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(-1), std::invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(0), invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(15), invalid_argument);
+            CHECK_THROWS_AS(hw_capabilities::channel_to_freq(-1), invalid_argument);
         }
     }
 

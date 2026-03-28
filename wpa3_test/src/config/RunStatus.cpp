@@ -53,7 +53,7 @@ namespace wpa3_tester{
         throw config_err("folder name not found");
     }
 
-    RunStatus::RunStatus(const std::string &config_path, string testName, const std::string &sub_folder){
+    RunStatus::RunStatus(const string &config_path, string testName, const std::string &sub_folder){
         this->config_path = config_path;
         if(!exists(config_path)){throw config_err("Config not found: "+config_path);}
 

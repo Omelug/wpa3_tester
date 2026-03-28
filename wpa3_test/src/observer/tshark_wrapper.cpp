@@ -190,7 +190,7 @@ namespace wpa3_tester::observer{
             ostringstream yr;
             gpcmd("set tmargin 5");
             gpcmd("set bmargin 5");
-            gpcmd("set yrange ["+std::to_string(ymin - pad) +":"+std::to_string(ymax + pad) +"]");
+            gpcmd("set yrange ["+to_string(ymin - pad) +":"+to_string(ymax + pad) +"]");
             gpcmd(yr.str());
         }
 
@@ -213,7 +213,7 @@ namespace wpa3_tester::observer{
 
         for (auto& ev : events) {
             if (ev.highlight_times.empty()) continue;
-            string block_name = "$ev"+std::to_string(event_block_index++);
+            string block_name = "$ev"+to_string(event_block_index++);
             gpcmd(block_name +" << EOD");
             for (const auto& tp : ev.highlight_times) {
 

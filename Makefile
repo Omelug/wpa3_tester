@@ -46,9 +46,9 @@ graphviz:
  	#pozor na -n (limit zobrazení)
  	# --node-label=self-time
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s | \
-		#grep -vE '(void|auto|char&) std::|\(anonymous namespace\)::|0x[0-9a-fA-F]+|nlohmann::|Tins::|libc.so|libgcc|libnl|__|_dl_|_[A-Za-z0-9]{32}|_[A-Za-z0-9]{64}|Id-linux|YAML::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' | \
+		#grep -vE '(void|auto|char&) |\(anonymous namespace\)::|0x[0-9a-fA-F]+|nlohmann::|Tins::|libc.so|libgcc|libnl|__|_dl_|_[A-Za-z0-9]{32}|_[A-Za-z0-9]{64}|Id-linux|YAML::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' | \
 		grep -E 'digraph|nl80211|graph \[|node \[|(wpa3_tester::|main ->).*(wpa3_tester::|-> main)|nl80211|}$$' | \
-		grep -vE 'std::' \
+		grep -vE '' \
 		> ./doc/callgraph/callgraph.dot
 	cat ./doc/callgraph/callgraph.dot | dot -Tsvg -o ./doc/callgraph/callgraph.svg
 	@echo "--- Saved to callgraph.svg ---"

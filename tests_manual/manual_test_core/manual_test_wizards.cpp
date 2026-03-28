@@ -78,7 +78,7 @@ namespace wpa3_tester::manual_tests {
         }
 
         cout << "Selected interface: " << selected_iface << "\n\n";
-        return std::make_unique<std::string>(selected_iface);
+        return make_unique<string>(selected_iface);
     }
 
     void print_external_entities(const vector<ActorPtr>& entities) {
@@ -108,11 +108,11 @@ namespace wpa3_tester::manual_tests {
              << " (" << aps.size() << " APs, " << stas.size() << " STAs)\n";
         cout << "========================================\n\n";
     }
-    bool ask_ok(const std::string& question) {
-        std::string input;
+    bool ask_ok(const string& question) {
+        string input;
         do {
-            std::cout << question << " (y/n): ";
-            std::getline(std::cin, input);
+            cout << question << " (y/n): ";
+            getline(cin, input);
             if (input == "ok" || input == "OK") return true;
             if (input == "y" || input == "Y") return true;
             if (input == "n" || input == "N") return false;
@@ -150,7 +150,7 @@ namespace wpa3_tester::manual_tests {
         return actors[selected_idx];
     }
 
-    std::string get_openwrt_iface_wizard(const OpenWrtConn* conn) {
+    string get_openwrt_iface_wizard(const OpenWrtConn* conn) {
         cli_section("OpenWrt Interface Selection for Tcpdump");
 
         const string output = conn->exec("ip link show | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://'");

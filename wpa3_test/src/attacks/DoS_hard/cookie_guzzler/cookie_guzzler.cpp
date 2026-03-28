@@ -7,10 +7,8 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
-#include "observer/mausezahn_wrapper.h"
 #include "observer/observers.h"
 #include "observer/resource_checker.h"
-#include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 

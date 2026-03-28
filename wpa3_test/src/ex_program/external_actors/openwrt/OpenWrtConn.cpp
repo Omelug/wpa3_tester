@@ -218,6 +218,8 @@ namespace wpa3_tester {
         const auto actor = rs.get_actor(actor_name);
         const string host = actor["whitebox_ip"];
         const string user = actor["ssh_user"];
+        RunStatus::get_or_create_connection(actor);
+        //TODO change to conn
         const vector<string> command = {
             "stdbuf", "-oL",  // Line buffering for stdout
             "sshpass", "-p", actor["ssh_password"],

@@ -5,7 +5,7 @@
 namespace wpa3_tester{
     using namespace std;
 
-    void Actor_config::set_mac(const std::string &mac_address){
+    void Actor_config::set_mac(const string &mac_address){
         string mac_lower = mac_address;
         ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
         str_con["mac"] = mac_lower;

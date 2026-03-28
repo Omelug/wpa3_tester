@@ -160,7 +160,7 @@ namespace wpa3_tester{
             vector<vector<string>> variations;
 
             do { // generate all permutations + deduplication
-                vector current_var(elements.begin(), next(elements.begin(), static_cast<std::ptrdiff_t>(count)));
+                vector current_var(elements.begin(), next(elements.begin(), static_cast<ptrdiff_t>(count)));
                 if (ranges::find(variations, current_var) == variations.end()) {
                     variations.push_back(current_var);
                 }

@@ -67,18 +67,19 @@ namespace wpa3_tester{
         return exec("cat /sys/class/net/"+iface+"/address 2>/dev/null | tr -d '\\n'");
     }
 
-    std::string ExternalConn::get_driver(const std::string &radio) const {
+    string ExternalConn::get_driver(const string &radio) const {
         // radio0 → phy0 → /sys/class/ieee80211/phy0/device/driver
         const string phy = "phy"+radio.substr(5);  // "radio0" → "phy0"
         return exec("basename $(readlink /sys/class/ieee80211/"+phy+"/device/driver) 2>/dev/null | tr -d '\\n'");
     }
 
-    string ExternalConn::exec(const string& cmd, bool kill_on_exit, int* ret_err) const {
+    string ExternalConn::exec(const string& cmd, const bool kill_on_exit, int* ret_err) const {
         const string final_cmd = kill_on_exit
         ? "setsid sh -c 'trap \"kill -- -$$\" EXIT; "+cmd+"'"
         : cmd;
 
-        if (!session) throw ex_conn_err("Cannot exec: not connected");
+        if (!session)
+            throw ex_conn_err("Cannot exec: not connected");
 
         const struct ChannelGuard {
             ssh_channel ch;
@@ -103,7 +104,7 @@ namespace wpa3_tester{
         return result;
     }
 
-    void ExternalConn::create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const{
+    void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
         //FIXME quiet fallback, check before if possible
         const string add_cmd = "iw dev "+iface+" interface add "+sniff_iface+" type monitor flags fcsfail otherbss"
                               +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
@@ -111,25 +112,25 @@ namespace wpa3_tester{
         exec("ip link set "+sniff_iface +" up");
     }
 
-    bool ExternalConn::set_channel(const std::string &iface, const int channel) const{
+    bool ExternalConn::set_channel(const string &iface, const int channel) const{
         int ret = 0; // for monitor/station mód
         exec("iw dev "+iface +" set channel "+to_string(channel) +" 2>&1", false, &ret);
         return ret;
     }
 
-    void ExternalConn::set_monitor_mode(const std::string &iface) const{
+    void ExternalConn::set_monitor_mode(const string &iface) const{
         exec("ip link set "+iface +" down");
         exec("iw dev "+iface +" set type monitor");
         exec("ip link set "+iface +" up");
     }
 
-    void ExternalConn::set_managed_mode(const std::string &iface) const{
+    void ExternalConn::set_managed_mode(const string &iface) const{
         exec("ip link set "+iface +" down");
         exec("iw dev "+iface +" set type managed");
         exec("ip link set "+iface +" up");
     }
 
-    void ExternalConn::set_ip(const std::string &iface, const std::string &ip_addr) const {
+    void ExternalConn::set_ip(const string &iface, const string &ip_addr) const {
         exec("ip addr flush dev "+iface);
         exec("ip addr add "+ip_addr +"/24 dev "+iface);
         exec("ip link set "+iface +" up");

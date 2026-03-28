@@ -66,7 +66,7 @@ namespace wpa3_tester{
 
             if (!phy_name.empty()) {
                 log(LogLevel::DEBUG, "Moving "+iface+" ("+phy_name+") to netns "+*netns);
-                hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, std::nullopt);
+                hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, nullopt);
             }
         } else {
             log(LogLevel::INFO, "Cleaning up interface "+iface);
@@ -95,15 +95,15 @@ namespace wpa3_tester{
         const string& sniff_iface = str_con.at("sniff_iface").value();
         if(conn != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
 
-        if (run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor",
-            "flags", "fcsfail", "otherbss"}) != 0){
-            log(LogLevel::WARNING, "Failed to create monitor interface with flags");
-            run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
-        }
+        const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
+                                      filesystem::directory_iterator{});
+        log(LogLevel::DEBUG, "Current open FDs: %ld", fd_count);
+        //run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
+        run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor","flags", "fcsfail", "otherbss"});
         run({"ip", "link", "set", sniff_iface, "up"});
     }
 
-    int Actor_config::run(const std::vector<std::string> &argv) const{
+    int Actor_config::run(const vector<string> &argv) const{
         return hw_capabilities::run_cmd(argv, str_con.at("netns"));
     }
 }

@@ -175,14 +175,14 @@ namespace wpa3_tester{
         }
     }
 
-    uint32_t get_wiphy_idx_by_ifname(const std::string &ifname){
-        const std::string path = "/sys/class/net/"+ifname+"/phy80211/index";
-        std::ifstream file(path);
+    uint32_t get_wiphy_idx_by_ifname(const string &ifname){
+        const string path = "/sys/class/net/"+ifname+"/phy80211/index";
+        ifstream file(path);
         if(uint32_t idx = 0; file >> idx) return idx;
         return 0;
     }
 
-    void hw_capabilities::get_nl80211_caps(const std::string &iface, Actor_config &cfg){
+    void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
         cfg.set_mac(read_sysfs(iface, "address"));
         cfg.str_con["driver"] = get_driver_name(iface);
 

@@ -6,7 +6,7 @@ namespace wpa3_tester::report{
     using namespace std;
     using namespace filesystem;
 
-    void attack_config_table(std::ofstream& report, const RunStatus& rs){
+    void attack_config_table(ofstream& report, const RunStatus& rs){
         auto attack_cfg = rs.config.at("attack_config");
         report << "## Attack Configuration\n\n";
         for (auto& [key, value] : attack_cfg.items()) {
@@ -15,7 +15,7 @@ namespace wpa3_tester::report{
         report << "\n";
     }
 
-    void attack_mapping_table(std::ofstream& report, const RunStatus& rs){
+    void attack_mapping_table(ofstream& report, const RunStatus& rs){
         auto mapping = path(rs.run_folder) / "mapping.csv";
 
         if (!exists(mapping)) {

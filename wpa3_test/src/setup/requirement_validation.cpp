@@ -14,6 +14,7 @@
 #include "config/Observer_config.h"
 
 using namespace std;
+using namespace filesystem;
 using nlohmann::json;
 namespace wpa3_tester{
     using namespace observer;
@@ -21,7 +22,7 @@ namespace wpa3_tester{
         for (const auto& [actor_name, actor] : config.at("actors").items()) {
             auto [it, inserted] = actors.emplace(
                 actor_name,
-                ActorPtr(std::make_shared<Actor_config>(actor))
+                ActorPtr(make_shared<Actor_config>(actor))
             );
             it->second->str_con["actor_name"] = actor_name;
         }
@@ -29,7 +30,7 @@ namespace wpa3_tester{
         for (const auto& [observer_name, observer] : config.at("observers").items()) {
             auto [it, inserted] = observers.emplace(
                 observer_name,
-                ObserverPtr(std::make_shared<Observer_config>(observer))
+                ObserverPtr(make_shared<Observer_config>(observer))
             );
             it->second->observer_name = observer_name;
         }
@@ -63,7 +64,7 @@ namespace wpa3_tester{
 
         const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
         for (const pid_t p : pids) {
-            while (filesystem::exists("/proc/"+std::to_string(static_cast<long>(p)))) {
+            while (filesystem::exists("/proc/"+to_string(static_cast<long>(p)))) {
                 if (chrono::steady_clock::now() >= deadline) {
                     kill(p, SIGKILL);
                     break;
@@ -85,7 +86,7 @@ namespace wpa3_tester{
         while (ss >> iface) {
             const int rc = hw_capabilities::run_cmd(
                 {"ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/"+iface +"/device"},
-                std::nullopt);
+                nullopt);
             if (rc == 0) {
                 result.push_back(iface);
                 log(LogLevel::DEBUG, "iface in ns "+ns_name+": "+iface);
@@ -116,7 +117,40 @@ namespace wpa3_tester{
         }
     }
 
+    void kill_processes_in_all_non_default_ns() {
+        const filesystem::path netns_dir = "/var/run/netns";
+
+        if (!exists(netns_dir)) return;
+
+        for (const auto& entry : directory_iterator(netns_dir)) {
+            string ns_name = entry.path().filename().string();
+            log(LogLevel::INFO, "Cleaning up processes in namespace: %s", ns_name.c_str());
+            //hw_capabilities::run_cmd({"ip", "netns", "exec", ns_name, "pkill", "-9", "-f", ".*"});
+
+            const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
+            kill_process_in_ns_name(ns_name);
+            hw_capabilities::run_cmd({"ip", "netns", "del", ns_name});
+            wait_to_default_ns(physical_interfaces);
+        }
+    }
+
     void cleanup_all_namespaces() {
+        log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
+
+        kill_processes_in_all_non_default_ns();
+
+        const int res = hw_capabilities::run_cmd({"ip", "-all", "netns", "del"});
+        if (res == 0) {
+            log(LogLevel::INFO, "All network namespaces cleared successfully.");
+        } else {
+            log(LogLevel::WARNING, "ip -all netns del failed, system might need a reboot.");
+        }
+
+        this_thread::sleep_for(chrono::milliseconds(500));
+
+        log(LogLevel::INFO, "Cleanup complete.");
+    }
+    /*void cleanup_all_namespaces() {
         namespace fs = filesystem;
         log(LogLevel::INFO, "Global cleanup: returning interfaces and removing namespaces...");
         const fs::path netns_dir = "/var/run/netns";
@@ -133,10 +167,10 @@ namespace wpa3_tester{
             log(LogLevel::DEBUG, "Removed netns "+ns_name);
         }
         log(LogLevel::INFO, "Cleanup complete.");
-    }
+    }*/
 
-    ActorCMap get_actors(const ActorCMap& actors, const std::string& source) {
-        std::unordered_map<std::string, ActorPtr> result;
+    ActorCMap get_actors(const ActorCMap& actors, const string& source) {
+        unordered_map<string, ActorPtr> result;
         for (auto& [name, cfg] : actors) {
             auto it = cfg->str_con.find("source");
             if (it != cfg->str_con.end() && it->second == source) {
@@ -190,6 +224,7 @@ namespace wpa3_tester{
         // SETUP ACTORS
         for (auto &[actor_name, actor] : internal_actors) {
             auto& opt_actor = internal_mapping.at(actor_name);
+            log(LogLevel::DEBUG, "Setup attempt for actor, current map size: %zu", actors.size());
             actor->setup_actor(config, opt_actor);
         }
 

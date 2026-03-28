@@ -10,13 +10,15 @@
 
 #include "system/hw_capabilities.h"
 
+using namespace std;
+
 namespace wpa3_tester{
-    bool check_injection_runtime(const std::string& iface_name) {
+    bool check_injection_runtime(const string& iface_name) {
         Actor_config actor{};
         actor.str_con["iface"] = iface_name;
         actor.set_monitor_mode();
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        this_thread::sleep_for(chrono::seconds(5));
 
         const int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if (sock < 0) return false;

@@ -16,8 +16,8 @@ path this_file = source_location::current().file_name();
 class MockOpenWrtConn : public OpenWrtConn {
 public:
     mutable int mock_ret = 0;
-    mutable std::string mock_output;
-    std::string exec(const std::string &cmd, bool kill_on_exit, int *ret_err ) const override{
+    mutable string mock_output;
+    string exec(const string &cmd, bool kill_on_exit, int *ret_err ) const override{
         if (ret_err) *ret_err = mock_ret;
         return mock_output;
     }

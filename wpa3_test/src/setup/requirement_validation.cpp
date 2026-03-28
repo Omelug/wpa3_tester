@@ -102,7 +102,7 @@ namespace wpa3_tester{
         while (chrono::steady_clock::now() - start < timeout) {
             bool all_present = true;
             for (const auto& name : ifaces) {
-                if (!filesystem::exists("/sys/class/net/"+name)) {
+                if (!exists("/sys/class/net/"+name)) {
                     all_present = false;
                     break;
                 }
@@ -111,14 +111,14 @@ namespace wpa3_tester{
             this_thread::sleep_for(chrono::milliseconds(20));
         }
         for (const auto& name : ifaces) {
-            if (!filesystem::exists("/sys/class/net/"+name)) {
+            if (!exists("/sys/class/net/"+name)) {
                 log(LogLevel::WARNING, "Interface "+name+" did not return to root ns in time!");
             }
         }
     }
 
     void kill_processes_in_all_non_default_ns() {
-        const filesystem::path netns_dir = "/var/run/netns";
+        const path netns_dir = "/var/run/netns";
 
         if (!exists(netns_dir)) return;
 
@@ -150,24 +150,6 @@ namespace wpa3_tester{
 
         log(LogLevel::INFO, "Cleanup complete.");
     }
-    /*void cleanup_all_namespaces() {
-        namespace fs = filesystem;
-        log(LogLevel::INFO, "Global cleanup: returning interfaces and removing namespaces...");
-        const fs::path netns_dir = "/var/run/netns";
-        if (!fs::exists(netns_dir)) { log(LogLevel::INFO, "Cleanup complete."); return;}
-
-        for (const auto& ns_entry : fs::directory_iterator(netns_dir)) {
-            const string ns_name = ns_entry.path().filename().string();
-
-            const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
-            kill_process_in_ns_name(ns_name);
-            hw_capabilities::run_cmd({"ip", "netns", "del", ns_name});
-            wait_to_default_ns(physical_interfaces);
-
-            log(LogLevel::DEBUG, "Removed netns "+ns_name);
-        }
-        log(LogLevel::INFO, "Cleanup complete.");
-    }*/
 
     ActorCMap get_actors(const ActorCMap& actors, const string& source) {
         unordered_map<string, ActorPtr> result;

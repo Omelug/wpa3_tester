@@ -77,11 +77,6 @@ namespace wpa3_tester{
 
     void RunStatus::clean(){
          this->process_manager.stop_all();
-         for(const auto& actor: actors | views::values){
-             if(actor->conn){
-                 actor->conn->disconnect();
-             }
-         }
          this->actors.clear();
          this->observers.clear();
      };
@@ -123,6 +118,7 @@ namespace wpa3_tester{
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){
+        if(actor->conn){return;}
          shared_ptr<ExternalConn> conn;
          if(actor["external_OS"] == "openwrt"){
              conn = make_shared<OpenWrtConn>();

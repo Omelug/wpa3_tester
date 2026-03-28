@@ -22,26 +22,30 @@ namespace wpa3_tester {
         }
     }
 
-    //FIXME hnusné čekání, podívat se na inotifywait
     string OpenWrtConn::wait_for_ifname(const string& section) const {
-        constexpr int retries = 10;
-        this_thread::sleep_for(chrono::seconds(2));
+        constexpr int retries = 15;
+        const string cmd = "ubus call network.wireless status | "
+                     "jsonfilter -e \"$.*.interfaces[@.section='" + section + "'].ifname\"";
+
         for (int i = 0; i < retries; i++) {
-            const auto output = exec("wifi status 2>/dev/null");
-            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
-            if (output.empty()) {
-                this_thread::sleep_for(chrono::seconds(1));
-                continue;
-            }
-            auto j = nlohmann::json::parse(output);
-            for (const auto& [radio_name, radio] : j.items()) {
-                for (const auto& iface : radio.at("interfaces")) {
-                    if (iface.value("section", "") == section && iface.contains("ifname"))
-                        return iface["ifname"].get<string>();
+            string ifname = exec(cmd);
+            erase(ifname, '\n');
+            erase(ifname, '\r');
+
+            if (!ifname.empty()) {
+                int ret = 0;
+                exec("ls /sys/class/net/" + ifname + " >/dev/null 2>&1", false, &ret);
+
+                if (ret == 0) {
+                    log(LogLevel::DEBUG, "Found ifname: %s for section %s", ifname.c_str(), section.c_str());
+                    return ifname;
                 }
             }
+
+            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i + 1, retries);
+            this_thread::sleep_for(chrono::seconds(1));
         }
-        throw ex_conn_err("ifname not available for section: "+section);
+        throw ex_conn_err("ifname not available for section: " + section);
     }
 
     void OpenWrtConn::forward_internet(const string& remote_ip) const{

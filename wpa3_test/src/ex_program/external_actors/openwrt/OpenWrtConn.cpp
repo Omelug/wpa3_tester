@@ -101,7 +101,6 @@ namespace wpa3_tester {
 
         exec("uci commit wireless");
         exec("wifi reload");
-        this_thread::sleep_for(chrono::seconds(2));
 
         // wait for ifname and store in actor
         actor->str_con["iface"] = wait_for_ifname(section);
@@ -222,15 +221,12 @@ namespace wpa3_tester {
         }
         exec("uci commit wireless");
         exec("wifi reload");
-        this_thread::sleep_for(chrono::seconds(2));
     }
 
     void OpenWrtConn::logger(RunStatus& rs, const string &actor_name){
         const auto actor = rs.get_actor(actor_name);
         const string host = actor["whitebox_ip"];
         const string user = actor["ssh_user"];
-        RunStatus::get_or_create_connection(actor);
-        //TODO change to conn
         const vector<string> command = {
             "stdbuf", "-oL",  // Line buffering for stdout
             "sshpass", "-p", actor["ssh_password"],

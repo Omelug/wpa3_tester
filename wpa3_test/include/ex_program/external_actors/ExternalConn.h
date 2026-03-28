@@ -7,7 +7,10 @@ namespace wpa3_tester{
     class RunStatus;
     class Actor_config;
     class ExternalConn{
+    public:
+        using DisconnectCallback = std::function<void()>;
     protected:
+        std::vector<DisconnectCallback> disconnect_callbacks;
         ssh_session session = nullptr;
     public:
         explicit ExternalConn();
@@ -34,6 +37,7 @@ namespace wpa3_tester{
         virtual void check_req(const nlohmann::json &config, const std::string &actor_name) = 0;
         virtual void logger(RunStatus& rs, const std::string & actor_name) = 0;
         virtual void get_hw_capabilities(Actor_config& cfg, const std::string& radio) = 0;
+        void on_disconnect(DisconnectCallback cb);
         void disconnect();
     };
 }

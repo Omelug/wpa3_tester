@@ -81,6 +81,15 @@ namespace wpa3_tester{
          this->observers.clear();
      };
 
+    void print_exception_tree(const std::exception& e, std::ostream& os, int level = 0) {
+        os << std::string(level * 2, ' ') << "- " << e.what() << std::endl;
+        try {
+            std::rethrow_if_nested(e);
+        } catch (const std::exception& nested) {
+            print_exception_tree(nested, os, level + 1);
+        } catch (...) {}
+    }
+
     void RunStatus::execute(){
 
         globalRunStatus = this;
@@ -90,7 +99,7 @@ namespace wpa3_tester{
         create_directories(run_folder, ec);
         if (ec) {throw runtime_error("Unable to create run base directory");}
 
-        try {
+        //try {
             if(this->only_stats){stats_test(); return;}
 
             config_requirement(); //include req validation
@@ -99,13 +108,14 @@ namespace wpa3_tester{
             save_yaml(config, out_path);
             run_test();
             stats_test();
-        } catch (const exception& e) {
+        /*} catch (const exception& e) {
             const path error_file = path(run_folder) / "errors.txt";
             ofstream error_log(error_file, ios::out | ios::app);
             if (error_log.is_open()) {
                 error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
                 error_log << "Exception type: " << typeid(e).name() << endl;
                 error_log << "Message: " << e.what() << endl;
+                print_exception_tree(e, error_log);
                 error_log << endl;
                 error_log.close();
                 log(LogLevel::ERROR, "Error written to %s", error_file.string().c_str());
@@ -114,7 +124,7 @@ namespace wpa3_tester{
             }
             log(LogLevel::INFO, "Cleaning up resources before exit...");
             clean();
-        }
+        }*/
     }
 
     void RunStatus::get_or_create_connection(const ActorPtr& actor){

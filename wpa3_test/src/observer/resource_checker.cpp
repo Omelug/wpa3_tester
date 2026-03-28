@@ -24,8 +24,7 @@ namespace wpa3_tester::observer::resource_checker{
                           " -v iface='" + iface + "' -f " + remote_script +
                           " > " + remote_log + " 2>&1 & echo $! > " + pid_file;
         actor->conn->exec(stat_cmd, false);
-
-        rs.process_manager.on_stop(actor_name+SUFFIX_res, [remote_log, local_log, actor, pid_file]() {
+        actor->conn->on_disconnect([remote_log, local_log, actor, pid_file]() {
             actor->conn->exec("kill $(cat " + pid_file + "); rm " + pid_file);
             actor->conn->download_file(remote_log, local_log);
             actor->conn->exec("rm " + remote_log);

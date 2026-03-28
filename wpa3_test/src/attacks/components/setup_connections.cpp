@@ -28,7 +28,7 @@ namespace wpa3_tester::components{
         setup_AP(rs, "access_point");
         setup_STA(rs, "client");
 
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
+        rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(60));
         rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", chrono::seconds(40));
         log(LogLevel::INFO, "client is connected");
     }

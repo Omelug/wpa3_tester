@@ -21,7 +21,7 @@ namespace wpa3_tester::observer{
         add_nets(rs, command, actor_name);
 
         string pcap_path = get_observer_folder(rs, program_name) / (actor_name+"_capture.pcap");
-        const optional<string> iface = rs.get_actor(actor_name)->str_con.at("sniff_iface");
+        const optional<string> iface = rs.get_actor(actor_name)->str_con["sniff_iface"];
         string iface_str;
         if(iface == nullopt){
             iface_str = rs.get_actor(actor_name)["iface"];
@@ -57,7 +57,9 @@ namespace wpa3_tester::observer{
         rs.process_manager.on_stop(actor_name+"_cap", [remote_pcap, local_pcap, actor]() {
            const vector<string> scp_cmd = {"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] +"@"+actor["whitebox_ip"]+":"+remote_pcap, local_pcap};
            hw_capabilities::run_cmd(scp_cmd);
-           actor->conn->exec("rm "+remote_pcap);  // cleanup
+       });
+       actor->conn->on_disconnect([remote_pcap, actor]() {
+           actor->conn->exec("rm "+remote_pcap);
        });
     }
 }

@@ -105,6 +105,7 @@ namespace wpa3_tester{
     }
 
     void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
+        exec("iw dev " + sniff_iface + " del 2>/dev/null");
         //FIXME quiet fallback, check before if possible
         const string add_cmd = "iw dev "+iface+" interface add "+sniff_iface+" type monitor flags fcsfail otherbss"
                       +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
@@ -168,7 +169,7 @@ namespace wpa3_tester{
         stringstream buffer;
         buffer << ifile.rdbuf();
         string content = buffer.str();
-        // works for text files, no for binary data (null bytes etc)
+        // works for text files, no for binary data (null bytes etc.)
         exec("cat << 'EOF' > " + remote_path + "\n" + content + "\nEOF\n");
     }
 
@@ -177,53 +178,74 @@ namespace wpa3_tester{
     void ExternalConn::download_file(const string& remote_path, const string& local_path) const {
         if (!session) throw ex_conn_err("SSH session not connected");
 
-        const sftp_session sftp = sftp_new(session);
-        if (sftp == nullptr) throw ex_conn_err("Error allocating SFTP session");
-
-        if (sftp_init(sftp) != SSH_OK) {
-            sftp_free(sftp);
-            throw ex_conn_err("Error initializing SFTP session");
+        ssh_scp scp = ssh_scp_new(session, SSH_SCP_READ, remote_path.c_str());
+        if (scp == nullptr) {
+            throw ex_conn_err("Error allocating SCP session: " + string(ssh_get_error(session)));
         }
 
-        const sftp_file file = sftp_open(sftp, remote_path.c_str(), O_RDONLY, 0);
-        if (file == nullptr) {
-            sftp_free(sftp);
-            throw ex_conn_err("Error opening remote file: " + remote_path);
+        if (ssh_scp_init(scp) != SSH_OK) {
+            string err = ssh_get_error(session);
+            ssh_scp_free(scp);
+            throw ex_conn_err("Error initializing SCP session: " + err);
         }
 
+        int res = ssh_scp_pull_request(scp);
+        if (res != SSH_SCP_REQUEST_NEWFILE) {
+            ssh_scp_free(scp);
+            throw ex_conn_err("SCP did not offer a new file (maybe path is wrong?): " + remote_path);
+        }
+
+        size_t size = ssh_scp_request_get_size(scp);
         ofstream local_file(local_path, ios::binary);
         if (!local_file.is_open()) {
-            sftp_close(file);
-            sftp_free(sftp);
+            ssh_scp_deny_request(scp, "Cannot open local file");
+            ssh_scp_free(scp);
             throw ex_conn_err("Error opening local file for writing: " + local_path);
         }
 
+        ssh_scp_accept_request(scp);
+
         char buffer[4096];
-        int nbytes;
-        while ((nbytes = sftp_read(file, buffer, sizeof(buffer))) > 0) {
+        size_t downloaded = 0;
+        while (downloaded < size) {
+            int to_read = (size - downloaded > sizeof(buffer)) ? sizeof(buffer) : (size - downloaded);
+            int nbytes = ssh_scp_read(scp, buffer, to_read);
+
+            if (nbytes == SSH_ERROR) {
+                string err = ssh_get_error(session);
+                ssh_scp_free(scp);
+                local_file.close();
+                throw ex_conn_err("Error reading from SCP: " + err);
+            }
+
             local_file.write(buffer, nbytes);
+            downloaded += nbytes;
         }
 
-        sftp_close(file);
-        sftp_free(sftp);
+        ssh_scp_close(scp);
+        ssh_scp_free(scp);
         local_file.close();
-        if (nbytes < 0) throw ex_conn_err("Error reading from remote file");
+
+        log(LogLevel::DEBUG, "Successfully downloaded %zu bytes via SCP to %s", size, local_path.c_str());
+    }
+
+    void ExternalConn::on_disconnect(DisconnectCallback cb) {
+        disconnect_callbacks.push_back(std::move(cb));
     }
 
     void ExternalConn::disconnect() {
         if (!session) return;
 
-        /*if (active_channel) {
-            ssh_channel_close(active_channel);
-            ssh_channel_free(active_channel);
-            active_channel = nullptr;
-        }*/
-
-        /*try {
-            if (ssh_is_connected(session)) {
-                exec("pkill -u root -TERM", reproc::milliseconds(500));
+        //LIFO
+        for (auto it = disconnect_callbacks.rbegin(); it != disconnect_callbacks.rend(); ++it) {
+            try {
+                if (*it) (*it)();
+            } catch (const exception& e) {
+                log(LogLevel::ERROR, "Error in disconnect callback: %s", e.what());
             }
-        } catch (...) {}*/
+        }
+
+        disconnect_callbacks.clear();
 
         ssh_disconnect(session);
         ssh_free(session);

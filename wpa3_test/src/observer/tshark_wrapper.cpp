@@ -21,7 +21,7 @@ namespace wpa3_tester::observer{
         add_nets(run_status,command, node_name);
 
         string pcap_path = get_observer_folder(run_status, program_name) / (node_name+"_capture.pcap");
-        const optional<string>iface = run_status.get_actor(node_name)->str_con.at("sniff_iface");
+        const optional<string>iface = run_status.get_actor(node_name)->str_con["sniff_iface"];
         string iface_str;
         if(iface == nullopt){
             iface_str = run_status.get_actor(node_name)["iface"];

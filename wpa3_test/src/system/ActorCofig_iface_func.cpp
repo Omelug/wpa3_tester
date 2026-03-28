@@ -93,7 +93,17 @@ namespace wpa3_tester{
     void Actor_config::create_sniff_iface() const{
         const string& iface = str_con.at("iface").value();
         const string& sniff_iface = str_con.at("sniff_iface").value();
-        if(conn != nullptr){conn->create_sniff_iface(iface, sniff_iface); return;}
+        if(conn != nullptr){
+            throw not_implemented_err("External cant have sniff_iface");
+            //conn->create_sniff_iface(iface, sniff_iface); return;
+        }
+
+        if (std::filesystem::exists("/sys/class/net/" + sniff_iface)) {
+            log(LogLevel::INFO, "Sniff interface %s already exists. Skipping creation.", sniff_iface.c_str());
+            run({"ip", "link", "set", sniff_iface, "up"});
+            return;
+        }
+
 
         const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
                                       filesystem::directory_iterator{});

@@ -47,45 +47,54 @@ namespace wpa3_tester::cookie_guzzler{
         SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
-        const bool owns_handle = (handle == nullptr);
+        bool owns_handle = (handle == nullptr);
         if (owns_handle) {
-            handle = pcap_open_live(iface.c_str(), 65535, 1, 100, errbuf);
+            handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
             if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+            pcap_setnonblock(handle, 1, errbuf);
         }
 
-        auto handle_guard = unique_ptr<pcap_t, decltype(&pcap_close)>(
+        auto handle_guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(
             owns_handle ? handle : nullptr,
-            pcap_close
+            [](pcap_t* h) { if(h) pcap_close(h); }
         );
 
         const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
         bpf_program fp{};
-        if (pcap_compile(handle, &fp, filter_str.c_str(), 0, PCAP_NETMASK_UNKNOWN) < 0) {
+        if (pcap_compile(handle, &fp, filter_str.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0) {
             throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
         }
-
-        auto fp_guard = unique_ptr<bpf_program, decltype(&pcap_freecode)>(&fp, pcap_freecode);
         pcap_setfilter(handle, &fp);
+        pcap_freecode(&fp);
+
+        const int fd = pcap_get_selectable_fd(handle);
+        if (fd == -1) throw runtime_error("Pcap FD not selectable");
 
         const auto deadline = steady_clock::now() + seconds(timeout_sec);
 
         while (steady_clock::now() < deadline) {
+            auto now = steady_clock::now();
+            const int remaining_ms = duration_cast<milliseconds>(deadline - now).count();
+            if (remaining_ms <= 0) break;
+
+            pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+            const int ret = poll(&pfd, 1, remaining_ms);
+            if (ret < 0) {
+                if (errno == EINTR) continue;
+                break;
+            }
+            if (ret == 0) break;
             pcap_pkthdr *header;
             const uint8_t *packet;
-            const int res = pcap_next_ex(handle, &header, &packet);
-
-            if (res == 0) continue;
-            if (res < 0) break;
-
-            const auto frame = parse_sae_commit(packet, header->caplen);
-            if (!frame) continue;
-
-            result = frame.value();
-            result.success = true;
-            log(LogLevel::DEBUG, "SAE payload size: " + to_string(frame->scalar.size()));
-            break;
+            while (pcap_next_ex(handle, &header, &packet) == 1) {
+                if (auto frame = parse_sae_commit(packet, header->caplen)) {
+                    result = frame.value();
+                    result.success = true;
+                    log(LogLevel::DEBUG, "Captured SAE commit, scalar size: %zu", result.scalar.size());
+                    return result;
+                }
+            }
         }
-
         return result;
     }
 
@@ -104,7 +113,7 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
     // run_cmd for logging or useless:
-    void start_wpa_supplicant(const string &iface, const string &conf_path, const string &pid_file) {
+    void start_wpa_supplicant(RunStatus &rs, const string &iface, const string &conf_path, const string &pid_file) {
 
         if (filesystem::exists(pid_file)) { stop_wpa_supplicant(pid_file);}
 
@@ -113,7 +122,7 @@ namespace wpa3_tester::cookie_guzzler{
         if (filesystem::exists(socket)) filesystem::remove(socket);
 
         log(LogLevel::INFO, "Run wpa_supplicant to get handshake values...");
-        hw_capabilities::run_cmd({
+        rs.process_manager.run("get_commit", {
             "wpa_supplicant", "-B",
             "-i", iface,
             "-c", conf_path,
@@ -140,11 +149,11 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
 
-    SAEPair get_commit_values(const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
+    SAEPair get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
         if(iface == sniff_iface) throw invalid_argument("Interface names do cant be same");
         const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
         const string conf_path = create_wpa_supplicant_config(ssid);
-        start_wpa_supplicant(iface, filesystem::absolute(conf_path), pid_file);
+        start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
         SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
         if (handler != nullptr) pcap_close(handler);
         stop_wpa_supplicant("pid_file");

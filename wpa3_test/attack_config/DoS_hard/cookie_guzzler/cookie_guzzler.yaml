@@ -34,7 +34,7 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    #ip_addr: "10.0.0.2"
+    ip_addr: "10.0.0.2"
     #sniff_iface: client
   attacker:
     source: internal
@@ -42,7 +42,7 @@ actors:
       condition: [monitor, injection]
       driver: ath9k_htc
       channel: 6
-    #sniff_iface: att
+    sniff_iface: att
   #rogue_ap:
   #
   #  source: internal
@@ -58,16 +58,16 @@ observers:
     program: musezahn
     program_config:
       target_actor: access_point
-  #tshark_client:
-  #  actor: client
-  #  program: tshark
-  #  program_config:
-  #    filter: "udp port 5201"
-  #program_config_ap:
-  #  actor: access_point
-  #  program: tcpdump
-  #  program_config:
-  #    filter: "udp port 5201"
+  tshark_client:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  program_config_ap:
+    actor: access_point
+    program: tcpdump
+    program_config:
+      filter: "udp port 5201"
   ap_resources:
     actor: access_point
     program: resource_checker

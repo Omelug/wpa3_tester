@@ -122,7 +122,7 @@ namespace wpa3_tester{
         const path netns_dir = "/var/run/netns";
         if (!exists(netns_dir)) { log(LogLevel::INFO, "Cleanup complete."); return;}
 
-        for (const auto& ns_entry : fs::directory_iterator(netns_dir)) {
+        for (const auto& ns_entry : directory_iterator(netns_dir)) {
             const string ns_name = ns_entry.path().filename().string();
 
             const vector<string> physical_interfaces = psy_if_in_ns(ns_name);

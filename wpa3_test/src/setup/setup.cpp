@@ -25,7 +25,10 @@ namespace wpa3_tester{
         const auto module_name = config.at("attacker_module");
         const auto run_it = attack_module_maps::setup_map.find(module_name);
 
-        if (run_it != attack_module_maps::setup_map.end()) {run_it->second(*this);
-        } else {log(LogLevel::DEBUG, "setup function not set");}
+        if (run_it != attack_module_maps::setup_map.end()) {
+            run_it->second(*this);
+        } else{
+            log(LogLevel::DEBUG, "setup function not set");
+        }
     }
 }

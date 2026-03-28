@@ -25,16 +25,21 @@ namespace wpa3_tester {
     //FIXME hnusné čekání, podívat se na inotifywait
     string OpenWrtConn::wait_for_ifname(const string& section) const {
         constexpr int retries = 10;
+        this_thread::sleep_for(chrono::seconds(2));
         for (int i = 0; i < retries; i++) {
-            const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
+            const auto output = exec("wifi status 2>/dev/null");
+            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
+            if (output.empty()) {
+                this_thread::sleep_for(chrono::seconds(1));
+                continue;
+            }
+            auto j = nlohmann::json::parse(output);
             for (const auto& [radio_name, radio] : j.items()) {
                 for (const auto& iface : radio.at("interfaces")) {
                     if (iface.value("section", "") == section && iface.contains("ifname"))
                         return iface["ifname"].get<string>();
                 }
             }
-            log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i+1, retries);
-            this_thread::sleep_for(chrono::seconds(1));
         }
         throw ex_conn_err("ifname not available for section: "+section);
     }
@@ -92,6 +97,7 @@ namespace wpa3_tester {
 
         exec("uci commit wireless");
         exec("wifi reload");
+        this_thread::sleep_for(chrono::seconds(2));
 
         // wait for ifname and store in actor
         actor->str_con["iface"] = wait_for_ifname(section);
@@ -212,6 +218,7 @@ namespace wpa3_tester {
         }
         exec("uci commit wireless");
         exec("wifi reload");
+        this_thread::sleep_for(chrono::seconds(2));
     }
 
     void OpenWrtConn::logger(RunStatus& rs, const string &actor_name){

@@ -14,9 +14,9 @@ namespace wpa3_tester {
         void forward_internet(const std::string &remote_ip) const;
         void time_fix() const;
 
-        void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor, const nlohmann::json config) override;
+        void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor, nlohmann::json config) override;
 
-        explicit OpenWrtConn() {};
+        explicit OpenWrtConn() = default;
         bool connect(const ActorPtr &actor) override;
         std::vector<std::string> get_radio_list() override;
 

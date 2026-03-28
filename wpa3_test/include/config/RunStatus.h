@@ -58,7 +58,7 @@ namespace wpa3_tester{
 
         // For manual testing / wizards
         static std::vector<ActorPtr> list_external_entities(
-            const std::string &iface, int timeout_sec, const std::vector<int> &channels
+            const std::string &iface, size_t timeout_sec, const std::vector<int> &channels
         );
 
 

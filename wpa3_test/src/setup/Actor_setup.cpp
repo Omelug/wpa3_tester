@@ -44,7 +44,7 @@ namespace wpa3_tester{
 
             if (bool_conditions.at("AP").value_or(false)){set_managed_mode();}
 
-            int channel = -1; // channel
+            int channel = -1;
             if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
             else if (const auto d = str_con["channel"]) channel = stoi(d.value());
             if (channel != -1) {set_channel(channel);}

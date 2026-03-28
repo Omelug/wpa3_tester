@@ -107,7 +107,8 @@ namespace wpa3_tester{
     void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
         //FIXME quiet fallback, check before if possible
         const string add_cmd = "iw dev "+iface+" interface add "+sniff_iface+" type monitor flags fcsfail otherbss"
-                              +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
+                      +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
+        exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);
         exec(add_cmd);
         exec("ip link set "+sniff_iface +" up");
     }

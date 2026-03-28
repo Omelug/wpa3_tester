@@ -118,59 +118,48 @@ namespace wpa3_tester{
         }
     }
 
-
     vector<ActorPtr> RunStatus::list_external_entities(
-        const string &iface, const int timeout_sec,const vector<int> &channels) {
-        ActorMap seen; // MAC deduplication
-        
-        if (channels.empty()) { throw setup_err("No channels specified for scanning"); }
+        const string &iface, const size_t timeout_sec, const vector<int> &channels) {
+
+        ActorMap seen;
+        if (channels.empty()) throw setup_err("No channels specified for scanning");
 
         SnifferConfiguration config;
-
-        // Monitor mode
         config.set_promisc_mode(true);
         config.set_rfmon(true);
-        config.set_timeout(100);
+        config.set_timeout(10);
 
-        atomic running{true};
-        thread timer([&]() {this_thread::sleep_for(chrono::seconds(timeout_sec)); running = false;}); //TODO not ompimal, use po
-        
+        const auto total_end_time = chrono::steady_clock::now() + chrono::seconds(timeout_sec);
+        // one channel time
+        constexpr size_t SEC_MINIMUM = 2;
+        const size_t channel_sec = max<size_t>(SEC_MINIMUM, timeout_sec / channels.size());
+
         for (const int channel : channels) {
-            log(LogLevel::INFO,
-                "Scanning channel " + to_string(channel) + " on interface " + iface+" for "+to_string(timeout_sec)+" seconds");
-            
-            // channel change
+            if (chrono::steady_clock::now() >= total_end_time) break;
+            log(LogLevel::INFO, "Scanning channel " + to_string(channel) + " on " + iface);
+
             string set_channel_cmd = "iw dev " + iface + " set channel " + to_string(channel);
-            system(set_channel_cmd.c_str());
-            this_thread::sleep_for(chrono::milliseconds(500));
+            if (system(set_channel_cmd.c_str()) != 0) {
+                log(LogLevel::ERROR, "Failed to set channel " + to_string(channel));
+            }
+            this_thread::sleep_for(chrono::milliseconds(200));
+
             Sniffer sniffer(iface, config);
-            
-            auto handler = [&](PDU &pdu) -> bool {
-                try {
-                    solve_new_pdu(pdu, seen);
-                } catch (...) {}
-                return running.load();
-            };
-            
-            // channel time
-            constexpr int minimum_channel_sec = 2;
-            int channel_time = timeout_sec / channels.size();
-            if (channel_time < minimum_channel_sec) channel_time = minimum_channel_sec;
-            
-            atomic channel_running{true};
-            thread channel_timer([&](){
-                this_thread::sleep_for(chrono::seconds(channel_time)); channel_running = false;
-            });
-            
-            sniffer.set_timeout(100);
-            sniffer.sniff_loop([&](PDU& pdu) { 
-                if (!channel_running.load()) return false;
-                return handler(pdu) && running.load(); 
-            });
-            channel_timer.join();
-            if (!running.load()) break; // Stop if main timer expired
+            auto channel_end_time = chrono::steady_clock::now() + chrono::seconds(channel_sec);
+
+            while (true) {
+                auto now = chrono::steady_clock::now();
+                if (now >= channel_end_time || now >= total_end_time) break;
+
+                sniffer.sniff_loop([&](PDU &pdu) {
+                    try {
+                        solve_new_pdu(pdu, seen);
+                    } catch (...) {}
+
+                    return chrono::steady_clock::now() < channel_end_time;
+                }, 1); // solve only one packet
+            }
         }
-        timer.join();
         return seen | views::values | ranges::to<vector<ActorPtr>>();
     }
 

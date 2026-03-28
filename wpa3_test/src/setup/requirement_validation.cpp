@@ -117,7 +117,41 @@ namespace wpa3_tester{
         }
     }
 
+    void kill_processes_in_all_non_default_ns() {
+        const filesystem::path netns_dir = "/var/run/netns";
+
+        if (!exists(netns_dir)) return;
+
+        for (const auto& entry : directory_iterator(netns_dir)) {
+            string ns_name = entry.path().filename().string();
+            log(LogLevel::INFO, "Cleaning up processes in namespace: %s", ns_name.c_str());
+            //hw_capabilities::run_cmd({"ip", "netns", "exec", ns_name, "pkill", "-9", "-f", ".*"});
+
+            const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
+            kill_process_in_ns_name(ns_name);
+            hw_capabilities::run_cmd({"ip", "netns", "del", ns_name});
+            wait_to_default_ns(physical_interfaces);
+        }
+    }
+
     void cleanup_all_namespaces() {
+        log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
+
+        kill_processes_in_all_non_default_ns();
+
+        const int res = hw_capabilities::run_cmd({"ip", "-all", "netns", "del"});
+        if (res == 0) {
+            log(LogLevel::INFO, "All network namespaces cleared successfully.");
+        } else {
+            log(LogLevel::WARNING, "ip -all netns del failed, system might need a reboot.");
+        }
+
+        this_thread::sleep_for(chrono::milliseconds(500));
+
+        log(LogLevel::INFO, "Cleanup complete.");
+    }
+    /*void cleanup_all_namespaces() {
+        namespace fs = filesystem;
         log(LogLevel::INFO, "Global cleanup: returning interfaces and removing namespaces...");
         const path netns_dir = "/var/run/netns";
         if (!exists(netns_dir)) { log(LogLevel::INFO, "Cleanup complete."); return;}
@@ -133,7 +167,7 @@ namespace wpa3_tester{
             log(LogLevel::DEBUG, "Removed netns "+ns_name);
         }
         log(LogLevel::INFO, "Cleanup complete.");
-    }
+    }*/
 
     ActorCMap get_actors(const ActorCMap& actors, const string& source) {
         unordered_map<string, ActorPtr> result;

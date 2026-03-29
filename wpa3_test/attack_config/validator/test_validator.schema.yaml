@@ -143,6 +143,17 @@ definitions:
             description: hostname
           channel:
             type: integer
+          ht_mode:
+            type: string
+            enum:
+              - ""        # Legacy (without HT)
+              - "NOHT"    # turn off HT
+              - "HT20"    # 20MHz (same as for VHT20 )
+              - "HT40-"   # 40MHz Lower
+              - "HT40+"   # 40MHz Upper
+              - "80MHz"   # VHT 80MHz
+              - "160MHz"  # VHT/HE 160MHz
+              - "320MHz"  # EHT (Wi-Fi 7)
           mac:
             type: string
             pattern: '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$'

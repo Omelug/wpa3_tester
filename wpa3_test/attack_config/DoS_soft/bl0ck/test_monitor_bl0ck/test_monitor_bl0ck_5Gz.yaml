@@ -1,19 +1,16 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: bl0ck_monitor_test
+name: bl0ck_monitor_test_5GHz
 attacker_module: bl0ck_monitor_test
 actors:
   receiver:
     source: internal
     selection:
-      channel: 1
-      condition: [monitor]
-      driver: mt76x2u
+      channel: 36
+      condition: [5GHz, monitor]
     netns: rx
   transceiver:
     source: internal
     selection:
-      condition: [monitor, injection]
-
-      #driver: rtl8xxxu
-      #driver: ath9k_htc
-      channel: 1
+      driver: rtw_8821cu
+      condition: [5GHz, monitor, injection]
+      channel: 36

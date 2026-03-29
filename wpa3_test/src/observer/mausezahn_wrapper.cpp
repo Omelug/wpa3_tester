@@ -13,7 +13,7 @@ namespace wpa3_tester::observer{
         add_nets(run_status,command, src_name);
 
         command.insert(command.end(), {
-            program_name, run_status.get_actor("client")["iface"],
+            program_name, run_status.get_actor(src_name)["iface"],
             "-d", "10m",    // 1 millisecond
             "-c", "0",      // not time limited
             "-p", "100",  // 100 bytes packet

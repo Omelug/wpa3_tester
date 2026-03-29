@@ -4,7 +4,67 @@ attacker_module: bl0ck
 extends: connected_sta_ap.yaml
 attack_config:
   validator: ./bl0ck.schema.yaml
-  attack_time_sec: 30
+  attack_time_sec: 15
   attack_variant: "BARS"
   random: false
-  frame_number: 10
+  frame_number: 50
+actors:
+  access_point:
+    source: internal
+    selection:
+      driver: rtw_8821au
+      condition: [ AP, 80211ac, 5GHz]
+    setup:
+      program: hostapd
+      program_config:
+        channel: 36
+        driver: nl80211
+        hw_mode: a
+        ieee80211ac: 1
+        ieee80211n: 1
+        ieee80211w: 2
+        rsn_pairwise: CCMP
+        sae_password: password123
+        ssid: wpa3_tester_AP
+        version: 2_10
+        vht_oper_chwidth: 0
+        wpa: 2
+        wpa_key_mgmt: SAE
+        ht_capab: "[HT20][RX-STBC]"
+        #vht_capab: [ VHT20 ]
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        freq_list: 5180
+        group: CCMP
+        ieee80211w: 2
+        key_mgmt: SAE
+        pairwise: CCMP
+        psk: "\"password123\""
+        sae_password: password123
+        scan_freq: 5180
+        ssid: wpa3_tester_AP
+        version: 2_10
+    selection:
+      driver: mt76x2u
+      channel: 36
+      condition: [ monitor, 80211ac, 5GHz]
+    netns: sta
+    ip_addr: "10.0.0.2"
+    sniff_iface: client_mon
+  attacker:
+    source: internal
+    selection:
+      channel: 36
+      ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
+      condition: [ monitor, injection, 5GHz]
+      driver: rtw_8821cu
+observers:
+  client_mausezahn:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: access_point

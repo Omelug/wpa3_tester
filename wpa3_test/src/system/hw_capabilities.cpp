@@ -202,7 +202,8 @@ namespace wpa3_tester{
             return -1;
         }
         if (status != 0) {
-            log(LogLevel::ERROR, "Command exited with status %d", full_argv[0].c_str(), status);
+            log(LogLevel::ERROR, "Command %s exited with status %d", full_argv[0].c_str(), status);
+            return -1;
         }
         return status;
     }

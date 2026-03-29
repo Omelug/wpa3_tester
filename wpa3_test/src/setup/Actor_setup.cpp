@@ -44,10 +44,11 @@ namespace wpa3_tester{
 
             if (bool_conditions.at("AP").value_or(false)){set_managed_mode();}
 
-            int channel = -1;
-            if (const auto d = str_con["channel"]) channel = stoi(d.value());
+            int channel = -1;if (const auto d = str_con["channel"]) channel = stoi(d.value());
             else if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
-            if (channel != -1) {set_channel(channel);}
+            if (channel != -1){
+                set_channel(channel, str_con["ht_mode"].value_or(""));
+            }
 
             if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode();}
             if (actor_json.contains("sniff_iface")){

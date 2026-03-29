@@ -110,13 +110,17 @@ namespace wpa3_tester{
         const string add_cmd = "iw dev "+iface+" interface add "+sniff_iface+" type monitor flags fcsfail otherbss"
                       +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
         exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);
+
         exec(add_cmd);
         exec("ip link set "+sniff_iface +" up");
     }
 
-    bool ExternalConn::set_channel(const string &iface, const int channel) const{
-        int ret = 0; // for monitor/station mód
-        exec("iw dev "+iface +" set channel "+to_string(channel) +" 2>&1", false, &ret);
+    bool ExternalConn::set_channel(const string &iface, const int channel, const string &ht_mode) const {
+        int ret = 0;
+        string cmd = "iw dev " + iface + " set channel " + to_string(channel);
+        if (!ht_mode.empty()) { cmd += " " + ht_mode;}
+        cmd += " 2>&1";
+        exec(cmd, false, &ret);
         return ret;
     }
 

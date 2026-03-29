@@ -27,6 +27,7 @@ namespace wpa3_tester{
             {"mac",            std::nullopt},
             {"ssid",           std::nullopt},
             {"channel",        std::nullopt},
+            {"ht_mode",        std::nullopt},
             {"driver",         std::nullopt},
             {"netns",          std::nullopt},
             {"sniff_iface",    std::nullopt},
@@ -69,7 +70,7 @@ namespace wpa3_tester{
         void create_sniff_iface() const;
 
         // change interface status
-        void set_channel(int channel) const;
+        void set_channel(int channel, const std::string &ht_mode = "") const;
         void set_managed_mode() const;
         void set_monitor_mode() const;
         void set_mac(const std::string &mac_address);

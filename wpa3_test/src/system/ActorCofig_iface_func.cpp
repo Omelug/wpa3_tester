@@ -9,11 +9,23 @@
 namespace wpa3_tester{
     using namespace std;
 
-    void Actor_config::set_channel(const int channel) const{
+    void Actor_config::set_channel(const int channel, const string& ht_mode) const {
         const string& iface = str_con.at("iface").value();
-        if(conn != nullptr){conn->set_channel(iface, channel); return;}
-        log(LogLevel::INFO, "Setting interface "+iface+" to channel "+to_string(channel));
-        run({"iw", "dev", iface, "set", "channel", to_string(channel)});
+
+        if (conn != nullptr) {
+            conn->set_channel(iface, channel, ht_mode);
+            return;
+        }
+
+        const string chan_str = to_string(channel);
+        log(LogLevel::INFO, "Setting interface " + iface + " to channel " + chan_str + " " + ht_mode);
+
+        vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
+        if (!ht_mode.empty()) {
+            cmd.push_back(ht_mode);
+        }
+
+        run(cmd);
     }
 
     void Actor_config::set_managed_mode() const{
@@ -39,7 +51,7 @@ namespace wpa3_tester{
 
         run({"ip", "link", "set", iface, "down"});
         run({"iw", "dev", iface, "set", "type", "monitor"});
-        run({ "iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
+        run({"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
         run({"ip", "link", "set", iface, "up"});
     }
 
@@ -99,28 +111,17 @@ namespace wpa3_tester{
         }
 
 
-        string netns = "";
-        if (str_con.contains("netns")) {
-            netns = str_con.at("netns").value();
-        }
+        string netns = "--"; //only for print
+        if (str_con.contains("netns")) {netns = str_con.at("netns").value();}
 
-        vector<string> check_cmd;
-        if (!netns.empty()) {
-            check_cmd = {"ip", "netns", "exec", netns, "ip", "link", "show", sniff_iface};
-        } else {
-            check_cmd = {"ip", "link", "show", sniff_iface};
-        }
-
-        try {
-            log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
-            run(check_cmd);
+        log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
+        if( run({"ip", "link", "show", sniff_iface}) == 0){
             log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
-            run({"ip", "link", "set", sniff_iface, "up"}); // run() si s netns poradí samo
+            run({"ip", "link", "set", sniff_iface, "up"});
             return;
-        } catch (...) {
-            log(LogLevel::DEBUG, "Interface %s not found, creating new one.", sniff_iface.c_str());
         }
 
+        log(LogLevel::DEBUG, "Interface %s not found, creating new one.", sniff_iface.c_str());
         const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
                                       filesystem::directory_iterator{});
         log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str()); //FIXME sem se to d

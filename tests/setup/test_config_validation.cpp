@@ -81,7 +81,7 @@ TEST_CASE("RunStatus Config Validation - Observer configuration"){
         {"2. observer tshark valid", "02_test_observer_tshark_valid.yaml",    "02_result_observer_tshark_valid.yaml", true},
         {"4. observer missing program", "04_error_observer_missing_program.yaml",    "", false},
         {"5. observer invalid program", "05_error_observer_invalid_program.yaml",    "", false},
-        {"6. observer musezahn missing target", "06_error_observer_musezahn_missing_target.yaml",    "", false},
+        {"6. observer mausezahn missing target", "06_error_observer_mausezahn_missing_target.yaml",    "", false},
         {"7. observer recursive schema", "07_recursive_t.yaml", "", false},
     };
     test_case_loop(test_base, tests);

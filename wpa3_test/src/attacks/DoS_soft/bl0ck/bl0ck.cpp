@@ -203,7 +203,7 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     void speed_observation_start(RunStatus &rs){
-        //observer::start_musezahn(rs, "mz_gen", "client", "access_point");
+        //observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
 
         const string c_mac = rs.get_actor("client")["mac"];
         const string a_mac = rs.get_actor("attacker")["mac"];
@@ -227,7 +227,7 @@ namespace wpa3_tester::bl0ck_attack{
         observer::start_tshark(rs, "client", mac_filter); //FIXME
         //observer::start_tshark(rs, "access_point", mac_filter);
 
-        iperf_conn(rs, "client",  "access_point");
+        //iperf_conn(rs, "client",  "access_point");
     }
 
 

@@ -23,9 +23,9 @@ namespace wpa3_tester::observer{
             return;
         }
 
-        if(program == "musezahn"){
+        if(program == "mausezahn"){
             const auto target_actor = program_config.at("target_actor").get<string>();
-            start_musezahn(rs, actor_name+"_mz_gen", actor_name, target_actor);
+            start_mausezahn(rs, actor_name+"_mz_gen", actor_name, target_actor);
             return;
         }
 

@@ -217,7 +217,7 @@ definitions:
         description: Actor to observe
       program:
         type: string
-        enum: [ "musezahn", "tcpdump", "tshark", "resource_checker"]
+        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker"]
         description: Program to use for observation
       program_config:
         type: object
@@ -225,11 +225,11 @@ definitions:
       - if:
           properties:
             program:
-              const: musezahn
+              const: mausezahn
         then:
           properties:
             program_config:
-              $ref: './programs/observer/musezahn.yaml'
+              $ref: './programs/observer/mausezahn.yaml'
       - if:
           properties:
             program:

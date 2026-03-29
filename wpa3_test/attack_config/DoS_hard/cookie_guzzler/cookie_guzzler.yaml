@@ -53,9 +53,9 @@ actors:
   #  program: hostapd_mana
   #  program_config:
 observers:
-  client_musezahn:
+  client_mausezahn:
     actor: client
-    program: musezahn
+    program: mausezahn
     program_config:
       target_actor: access_point
   tshark_client:

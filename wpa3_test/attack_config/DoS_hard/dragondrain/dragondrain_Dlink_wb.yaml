@@ -14,9 +14,9 @@ actors:
       driver: ath9k_htc
       channel: 6
 observers:
-  client_musezahn:
+  client_mausezahn:
     actor: client
-    program: musezahn
+    program: mausezahn
     program_config:
       target_actor: access_point
   tcpdump_att:

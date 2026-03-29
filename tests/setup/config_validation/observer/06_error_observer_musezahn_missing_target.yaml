@@ -5,6 +5,6 @@ actors:
     source: internal
 observers:
   observer:
-    program: musezahn
+    program: mausezahn
     program_config:
       filter: "wlan.fc.type_subtype == 0x08"

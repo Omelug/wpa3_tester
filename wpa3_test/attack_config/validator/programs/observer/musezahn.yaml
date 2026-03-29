@@ -1,5 +1,5 @@
 $schema: "http://json-schema.org/draft-07/schema#"
-title: musezahn program_config
+title: mausezahn program_config
 type: object
 properties:
   validator:

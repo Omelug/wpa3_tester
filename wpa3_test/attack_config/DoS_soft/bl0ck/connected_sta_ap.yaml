@@ -31,7 +31,7 @@ actors:
       program: wpa_supplicant
       program_config:
         ssid: wpa3_tester_AP
-        #sae_password: password123
+        sae_password: password123
         ieee80211w: 2
         #proto: RSN
         key_mgmt: SAE

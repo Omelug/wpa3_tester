@@ -15,15 +15,20 @@ namespace wpa3_tester{
     }
 
     Actor_config::Actor_config(const json& j) {
+
         if (j.contains("selection") && j.at("selection").is_object()) {
             const auto& sel = j.at("selection");
             for (auto & [key, val] : str_con) {
-                if (sel.contains(key) && sel[key].is_string()) {
-                    if(key == "mac"){
-                        set_mac(sel[key].get<string>());
-                        continue;
+                if(sel.contains(key)){
+                    if (sel[key].is_string()) {
+                        if(key == "mac"){
+                            set_mac(sel[key].get<string>());
+                            continue;
+                        }
+                        val = sel[key].get<string>();
+                    }else if (sel[key].is_number()) { // number saved like string
+                        val = to_string(sel[key].get<int>());
                     }
-                    val = sel[key].get<string>();
                 }
             }
 

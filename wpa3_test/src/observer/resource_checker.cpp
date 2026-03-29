@@ -124,6 +124,7 @@ namespace wpa3_tester::observer::resource_checker{
     void create_resource_monitor_graph(const string& data_filepath){
         const string output_imagepath = path(data_filepath).replace_extension(".png").string();
         vector<ResourceRecord> resources = parse_resource_log(data_filepath);
+        remove(output_imagepath);
         generate_resource_graph(data_filepath, output_imagepath, {}); //TODO ACM events
     }
 

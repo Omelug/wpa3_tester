@@ -202,7 +202,7 @@ namespace wpa3_tester::bl0ck_attack{
         return "("+bpf_mac_at(4, mac)+" or "+bpf_mac_at(10, mac)+")";
     }
 
-    void speed_observation_start(RunStatus &rs, const string& bl0ck_att_type){
+    void speed_observation_start(RunStatus &rs){
         //observer::start_musezahn(rs, "mz_gen", "client", "access_point");
 
         const string c_mac = rs.get_actor("client")["mac"];
@@ -226,7 +226,6 @@ namespace wpa3_tester::bl0ck_attack{
         observer::start_tshark(rs, "attacker", mac_filter); //FIXME
         observer::start_tshark(rs, "client", mac_filter); //FIXME
         //observer::start_tshark(rs, "access_point", mac_filter);
-        this_thread::sleep_for(seconds(10));//FIXME wait for tshark
 
         iperf_conn(rs, "client",  "access_point");
     }
@@ -245,7 +244,7 @@ namespace wpa3_tester::bl0ck_attack{
         const int frame_num = att_cfg.at("frame_number").get<int>();
         const bool is_random = att_cfg.at("random").get<bool>();
 
-        speed_observation_start(rs, bl0ck_att_type);
+        speed_observation_start(rs);
 
         log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
         this_thread::sleep_for(seconds(10));

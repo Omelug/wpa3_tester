@@ -10,20 +10,52 @@ attack_config:
   frame_number: 50
 actors:
   access_point:
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [ AP, 80211ac, 5GHz]
     setup:
       program: hostapd
       program_config:
         version: 2_10
-    selection:
-      driver: mt76x2u
+        driver: nl80211
+        hw_mode: a
+        ssid: wpa3_tester_AP
+        wpa: 2
+        ieee80211n: 1
+        ieee80211ac: 1
+        ieee80211w: 2
+        vht_oper_chwidth: 0          # 0 = 20/40MHz, 1 = 80MHz (standard pro AC)
+        #vht_oper_centr_freq_seg0_idx:42  # Středový index pro 80MHz kanál začínající na 36
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        sae_password: password123
+        channel: 36
+    ip_addr: "10.0.0.1"
   client:
+    source: internal
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_10
-    selection:
-      driver: rtw_8821cu
-
-  attacker:
+        ssid: wpa3_tester_AP
+        sae_password: password123
+        ieee80211w: 2
+        key_mgmt: SAE
+        psk: "\"password123\""
+        pairwise: CCMP
+        group: CCMP
+        scan_freq: 5180        # channel 36 = 5180 MHz
+        freq_list: 5180        # scan
     selection:
       driver: mt76x2u
+      channel: 36
+      condition: [ monitor, 80211ac, 5GHz]
+    netns: sta
+    ip_addr: "10.0.0.2"
+    sniff_iface: client_mon
+  attacker:
+    source: internal
+    selection:
+      channel: 36
+      condition: [ monitor, injection, 5GHz]

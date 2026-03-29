@@ -98,10 +98,27 @@ namespace wpa3_tester{
             //conn->create_sniff_iface(iface, sniff_iface); return;
         }
 
-        if (std::filesystem::exists("/sys/class/net/" + sniff_iface)) {
-            log(LogLevel::INFO, "Sniff interface %s already exists. Skipping creation.", sniff_iface.c_str());
-            run({"ip", "link", "set", sniff_iface, "up"});
+
+        string netns = "";
+        if (str_con.contains("netns")) {
+            netns = str_con.at("netns").value();
+        }
+
+        vector<string> check_cmd;
+        if (!netns.empty()) {
+            check_cmd = {"ip", "netns", "exec", netns, "ip", "link", "show", sniff_iface};
+        } else {
+            check_cmd = {"ip", "link", "show", sniff_iface};
+        }
+
+        try {
+            log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
+            run(check_cmd);
+            log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
+            run({"ip", "link", "set", sniff_iface, "up"}); // run() si s netns poradí samo
             return;
+        } catch (...) {
+            log(LogLevel::DEBUG, "Interface %s not found, creating new one.", sniff_iface.c_str());
         }
 
         const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),

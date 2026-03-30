@@ -42,7 +42,7 @@ namespace wpa3_tester::reflection{
         const auto& att_cfg = rs.config.at("attack_config");
 
         const auto attacker = rs.get_actor("attacker");
-        auto target_type = att_cfg.at("target_type").get<string>();
+        const auto target_type = att_cfg.at("target_type").get<string>();
         start_dragonslayer(rs, attacker["actor_name"], attacker["iface"], target_type);
 
         ofstream attack_result(path(rs.run_folder) / "result.txt");

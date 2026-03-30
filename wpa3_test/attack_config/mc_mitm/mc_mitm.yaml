@@ -1,0 +1,53 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: mc_mitm_test
+attacker_module: mc_mitm
+actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [AP]
+      channel: 6
+    setup:
+      program: hostapd
+      program_config:
+        driver: nl80211
+        ssid: mc_mitm_test
+        hw_mode: g
+        auth_algs: 1
+        wpa: 2
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        wpa_passphrase: password123
+        sae_password: password123
+        channel: 6
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    selection:
+      channel: 6
+    setup:
+      program: wpa_supplicant
+      program_config:
+        ssid: mc_mitm_test
+        sae_password: password123
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: SAE
+        pairwise: CCMP
+        group: CCMP
+    netns: sta
+    ip_addr: "10.0.0.2"
+  att_real_channel:
+    source: internal
+    selection:
+      condition: [monitor, injection]
+      channel: 6
+    sniff_iface: "att_real"
+  att_rogue_channel:
+    source: internal
+    selection:
+      condition: [ monitor, injection]
+      channel: 6
+    sniff_iface: "att_rogue"

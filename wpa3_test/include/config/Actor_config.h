@@ -71,6 +71,7 @@ namespace wpa3_tester{
 
         // change interface status
         void set_channel(int channel, const std::string &ht_mode = "") const;
+        void set_ap_mode() const;
         void set_managed_mode() const;
         void set_monitor_mode() const;
         void set_mac(const std::string &mac_address);

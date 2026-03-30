@@ -97,7 +97,8 @@ namespace wpa3_tester::attack_scan{
         return ss.str();
     }
 
-    void RSN_scan(const string& interface, const int timeout_sec, ScanAP &scan_ap, const path &beacon_pcap) {
+    unique_ptr<Dot11Beacon> RSN_scan(const string& interface, const int timeout_sec, ScanAP &scan_ap,
+        const optional<path> &beacon_pcap) {
         SnifferConfiguration sniff_config;
         sniff_config.set_snap_len(2000);
         sniff_config.set_timeout(100);
@@ -107,10 +108,10 @@ namespace wpa3_tester::attack_scan{
         sniff_config.set_filter(filter);
 
         Sniffer sniffer(interface, sniff_config);
-        PacketWriter writer(beacon_pcap, DataLinkType<RadioTap>());
 
         const int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
-        if (fd == -1) {throw runtime_error("Sniffer FD is not selectable");}
+        if (fd == -1) { throw runtime_error("Sniffer FD is not selectable"); }
+
         pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 
         const auto start_time = steady_clock::now();
@@ -122,25 +123,29 @@ namespace wpa3_tester::attack_scan{
 
             const int remaining_ms = duration_cast<milliseconds>(end_time - now).count();
             if (remaining_ms <= 0) break;
-
             const int ret = poll(&pfd, 1, remaining_ms);
+
             if (ret < 0) {
                 if (errno == EINTR) continue;
                 break;
             }
-
-            if (ret == 0) break;
-            if(!(pfd.revents & POLLIN)) continue;
+            if (ret == 0) break; // Timeout
+            if (!(pfd.revents & POLLIN)) continue;
 
             while (const unique_ptr<PDU> pdu{sniffer.next_packet()}) {
                 if (const auto beacon = pdu->find_pdu<Dot11Beacon>()) {
                     scan_ap.ssid = beacon->ssid();
-                    scan_ap.rsn = beacon->rsn_information();
-                    writer.write(*pdu);
-                    return;
+                    try {
+                        scan_ap.rsn = beacon->rsn_information();
+                    } catch (const option_not_found&) {} // no RSN in OPen networks
+                    if(beacon_pcap == nullopt){
+                        PacketWriter writer(beacon_pcap.value().string(), DataLinkType<RadioTap>());
+                        writer.write(*pdu);
+                    }return unique_ptr<Dot11Beacon>(beacon->clone());
                 }
             }
         }
+        return nullptr;
     }
 
     void run_attack(RunStatus& rs) {

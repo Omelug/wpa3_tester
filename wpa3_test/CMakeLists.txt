@@ -159,6 +159,7 @@ if(NOT LIBSSH_FOUND)
     message(FATAL_ERROR "libssh not found. Run: sudo apt install libssh-dev")
 endif()
 
+# TODO separate to smaller namespaces, it start to be too slow
 file(GLOB_RECURSE CORE_SOURCES
         "src/*.cpp"
         "src/*.h"

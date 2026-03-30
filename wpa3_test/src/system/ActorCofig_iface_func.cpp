@@ -28,6 +28,16 @@ namespace wpa3_tester{
         run(cmd);
     }
 
+    void Actor_config::set_ap_mode() const {
+        const string& iface = str_con.at("iface").value();
+        log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
+        run({"ip", "link", "set", iface, "down"});
+        run({"iw", "dev", iface, "set", "type", "__ap"});
+        run({"ip", "link", "set", iface, "up"});
+        //run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
+        log(LogLevel::INFO, "Starting hostapd on " + iface);
+    }
+
     void Actor_config::set_managed_mode() const{
         const string& iface = str_con.at("iface").value();
         if(conn != nullptr){conn->set_managed_mode(iface); return;}
@@ -112,7 +122,9 @@ namespace wpa3_tester{
 
 
         string netns = "--"; //only for print
-        if (str_con.contains("netns")) {netns = str_con.at("netns").value();}
+        if (str_con.contains("netns") && str_con.at("netns").has_value()){
+            netns = str_con.at("netns").value();
+        }
 
         log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
         if( run({"ip", "link", "show", sniff_iface}) == 0){

@@ -111,5 +111,6 @@ namespace wpa3_tester{
         static void create_ns(const std::string& ns_name);
         static std::string rand_mac();
         static std::string get_iface(const std::string& ip_address);
+        static void set_macaddress(const std::string & iface, const std::string & new_mac_str);
     };
 }

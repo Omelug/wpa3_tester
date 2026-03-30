@@ -20,8 +20,8 @@ namespace wpa3_tester::components{
     }
 
     void client_ap_attacker_setup(RunStatus& rs){
-
-        if (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal") {
+        // check if contains rs.get_actor("attacker")["source"] != "internal"
+        if (rs.get_actor("client")["source"] != "internal") {
             throw runtime_error("only internal actors are supported");
         }
 

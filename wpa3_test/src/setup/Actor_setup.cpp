@@ -1,3 +1,4 @@
+#include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "system/hw_capabilities.h"
@@ -42,7 +43,10 @@ namespace wpa3_tester{
             const bool monitor = bool_conditions.at("monitor").value_or(false);
             const bool injection = bool_conditions.at("injection").value_or(false);
 
-            if (bool_conditions.at("AP").value_or(false)){set_managed_mode();}
+            if (bool_conditions.at("AP").value_or(false)){
+                //set_managed_mode();
+                set_ap_mode();
+            }
 
             int channel = -1;if (const auto d = str_con["channel"]) channel = stoi(d.value());
             else if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());

@@ -11,6 +11,7 @@
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
 #include "attacks/Enterprise/invalid_curve.h"
 #include "attacks/Enterprise/reflection_attack.h"
+#include "attacks/mc_mitm/mc_mitm_attack.h"
 
 namespace wpa3_tester::attack_module_maps{
     using namespace std;
@@ -23,6 +24,7 @@ namespace wpa3_tester::attack_module_maps{
         {"reflection_attack", reflection::setup_attack},
         {"invalid_curve", invalid_curve::setup_attack},
         {"dragondrain", components::client_ap_attacker_setup},
+        {"mc_mitm", mc_mitm::setup_attack}
     };
 
     map<string, function<void(RunStatus&)>> run_map = {
@@ -36,6 +38,7 @@ namespace wpa3_tester::attack_module_maps{
         {"invalid_curve", invalid_curve::run_attack},
         {"scan_AP", attack_scan::run_attack},
         {"dragondrain", dragondrain::run_attack},
+        {"mc_mitm", mc_mitm::run_attack}
     };
 
     map<string, function<void(const RunStatus&)>> stats_map = {
@@ -48,5 +51,6 @@ namespace wpa3_tester::attack_module_maps{
         //{"reflection_attack", reflection::stats}
         //{"invalid_curve", invalid_curve::run_attack}
         {"dragondrain", dragondrain::stats_attack},
+        //{"mc_mitm", mc_mitm::run_attack}
     };
 }

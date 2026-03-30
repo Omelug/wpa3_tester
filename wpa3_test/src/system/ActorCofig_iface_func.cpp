@@ -28,12 +28,43 @@ namespace wpa3_tester{
         run(cmd);
     }
 
-    void Actor_config::set_ap_mode() const {
+    void Actor_config::down_iface() const {
+        run({"ip", "link", "set", str_con.at("iface").value(), "down"});
+    }
+
+    bool is_interface_up(const string& iface) {
+        ifstream status_file("/sys/class/net/" + iface + "/operstate");
+        string status;
+        if (status_file >> status) {return (status == "up");}
+        return false;
+    }
+
+    void Actor_config::up_iface() const{
+        const string& iface = str_con.at("iface").value();
+
+        if (is_interface_up(iface)) {
+            log(LogLevel::DEBUG, iface + " is already UP, skipping.");
+            return;
+        }
+        log(LogLevel::INFO, "Bringing " + iface + " UP...");
+        run({"ip", "link", "set", iface, "up"});
+    }
+    void Actor_config::up_sniff_iface() const{
+        const string& sniff_iface = str_con.at("sniff_iface").value();
+
+        if (is_interface_up(sniff_iface)) {
+            log(LogLevel::DEBUG, sniff_iface + " is already UP, skipping.");
+            return;
+        }
+        log(LogLevel::INFO, "Bringing " + sniff_iface + " UP...");
+        run({"ip", "link", "set", sniff_iface, "up"});
+    }
+
+    void Actor_config::set_ap_mode() const{
         const string& iface = str_con.at("iface").value();
         log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
-        run({"ip", "link", "set", iface, "down"});
+        down_iface();
         run({"iw", "dev", iface, "set", "type", "__ap"});
-        run({"ip", "link", "set", iface, "up"});
         //run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
         log(LogLevel::INFO, "Starting hostapd on " + iface);
     }
@@ -45,9 +76,14 @@ namespace wpa3_tester{
 
         log(LogLevel::INFO, "Preparing interface"+iface+" for managed mode");
 
-        run({"ip", "link", "set", iface, "down"});
+        down_iface();
         run({"iw", "dev", iface, "set", "type", "managed"});
-        run({"ip", "link", "set", iface, "up"});
+    }
+
+    void Actor_config::setup_mac_addr(const string& mac) const{
+        const string& iface = str_con.at("iface").value();
+        if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
+        hw_capabilities::set_macaddress(iface, mac);
     }
 
 
@@ -59,10 +95,9 @@ namespace wpa3_tester{
 
         log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");
 
-        run({"ip", "link", "set", iface, "down"});
+        down_iface();
         run({"iw", "dev", iface, "set", "type", "monitor"});
         run({"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
-        run({"ip", "link", "set", iface, "up"});
     }
 
     void Actor_config::cleanup() const {
@@ -106,10 +141,10 @@ namespace wpa3_tester{
         run({"pkill", "-f", "wpa_supplicant.*-i"+iface});
         run({"pkill", "-f", "hostapd.*"+iface});
 
-        run({"ip", "link", "set", iface, "down"});
+        down_iface();
         run({"rfkill", "unblock", "wifi"});}
         run({"ip", "addr", "flush", "dev", iface});
-        run({"ip", "link", "set", iface, "up"});
+        up_iface(); //TODO needed ?
     }
 
     void Actor_config::create_sniff_iface() const{
@@ -129,7 +164,7 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
         if( run({"ip", "link", "show", sniff_iface}) == 0){
             log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
-            run({"ip", "link", "set", sniff_iface, "up"});
+            up_iface();
             return;
         }
 
@@ -139,7 +174,7 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str()); //FIXME sem se to d
         //run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
         run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor","flags", "fcsfail", "otherbss"});
-        run({"ip", "link", "set", sniff_iface, "up"});
+        up_iface();
     }
 
     int Actor_config::run(const vector<string> &argv) const{

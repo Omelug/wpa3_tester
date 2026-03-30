@@ -36,6 +36,7 @@ namespace wpa3_tester{
             conn->setup_iface(radio, shared_from_this(), config);
         }
 
+
         if(internal) setup_actor_internal(config);
         if(external_WB){setup_actor_external_whitebox(config, real_actor);}
         if(internal || external_WB){
@@ -43,12 +44,8 @@ namespace wpa3_tester{
             const bool monitor = bool_conditions.at("monitor").value_or(false);
             const bool injection = bool_conditions.at("injection").value_or(false);
 
-            if (bool_conditions.at("AP").value_or(false)){
-                //set_managed_mode();
-                set_ap_mode();
-            }
-
-            int channel = -1;if (const auto d = str_con["channel"]) channel = stoi(d.value());
+            int channel = -1;
+            if (const auto d = str_con["channel"]) channel = stoi(d.value());
             else if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
             if (channel != -1){
                 set_channel(channel, str_con["ht_mode"].value_or(""));
@@ -59,6 +56,11 @@ namespace wpa3_tester{
                 str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
                 create_sniff_iface();
             }
+            if (bool_conditions.at("AP").value_or(false)){
+                //set_managed_mode();
+                set_ap_mode();
+            }
+            up_iface();
         }
     }
 

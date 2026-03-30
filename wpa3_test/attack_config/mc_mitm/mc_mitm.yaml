@@ -10,6 +10,7 @@ actors:
     setup:
       program: hostapd
       program_config:
+        version: 2_10
         driver: nl80211
         ssid: mc_mitm_test
         hw_mode: g
@@ -30,6 +31,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        version: 2_10
         ssid: mc_mitm_test
         sae_password: password123
         ieee80211w: 2
@@ -42,12 +44,19 @@ actors:
   att_real_channel:
     source: internal
     selection:
-      condition: [monitor, injection]
+      driver: mt76x2u
+      condition: [ monitor, injection]
       channel: 6
     sniff_iface: "att_real"
   att_rogue_channel:
     source: internal
     selection:
-      condition: [ monitor, injection]
-      channel: 6
+      condition: [ AP, monitor, injection]
+      channel: 1
     sniff_iface: "att_rogue"
+observers:
+  channel1_tshark:
+    actor: att_rogue_channel
+    program: tshark
+    program_config:
+      filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp"

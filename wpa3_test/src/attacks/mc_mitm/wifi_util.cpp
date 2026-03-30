@@ -36,30 +36,12 @@ void exec(const vector<string>& cmd, bool check) {
     return result;
 }*/
 
-// ---------------------------------------------------------------------------
-// Interface helpers
-// ---------------------------------------------------------------------------
-
 string get_macaddress(const string& iface) {
     ifstream f("/sys/class/net/" + iface + "/address");
     string mac;
     getline(f, mac);
     return mac;
 }
-
-void set_macaddress(const string& iface, const string& mac) {
-    if (get_macaddress(iface) == mac) return;
-    exec({"ifconfig", iface, "down"});
-    exec({"macchanger", "-m", mac, iface});
-}
-
-/*int get_channel(const string& iface) {
-    string out = exec_output({"iw", iface, "info"});
-    regex re("channel (\\d+)");
-    smatch m;
-    if (!regex_search(out, m, re)) return -1;
-    return stoi(m[1]);
-}*/
 
 void set_channel(const string& iface, int channel) {
     exec({"iw", iface, "set", "channel", to_string(channel)});
@@ -181,7 +163,7 @@ bool dot11_is_group(const Tins::Dot11& pkt) {
 }
 
 string get_ssid(const Tins::Dot11Beacon& beacon) {
-    auto opt = beacon.search_option(Tins::Dot11::SSID);
+    const auto opt = beacon.search_option(Tins::Dot11::SSID);
     if (!opt) return "";
     return string(opt->data_ptr(), opt->data_ptr() + opt->data_size());
 }
@@ -192,22 +174,6 @@ const Tins::Dot11::option* get_element(const Tins::Dot11& pkt, uint8_t id) {
             return &opt;
     }
     return nullptr;
-}
-
-Tins::Dot11::option construct_csa(const int channel, int count) {
-    // CSA IE: switch_mode(1), new_chan(1), switch_count(1)
-    vector<uint8_t> data = {
-        0x01,                          // switch mode: no Tx until switch
-        static_cast<uint8_t>(channel),
-        static_cast<uint8_t>(count)
-    };
-    return Tins::Dot11::option(IEEE_TLV_TYPE_CSA, data.begin(), data.end());
-}
-
-Tins::Dot11Beacon* append_csa(const Tins::Dot11Beacon& beacon, int channel, int count) {
-    auto* copy = beacon.clone();
-    copy->add_option(construct_csa(channel, count));
-    return copy;
 }
 
 Tins::Dot11ProbeResponse* beacon_to_probe_resp(const Tins::Dot11Beacon& beacon) {
@@ -226,49 +192,6 @@ Tins::Dot11ProbeResponse* beacon_to_probe_resp(const Tins::Dot11Beacon& beacon) 
     }
     return resp;
 }
-
-vector<uint8_t> find_network(const string& iface,
-                                  const string& ssid,
-                                  int timeout_ms) {
-    log(wpa3_tester::LogLevel::INFO, "Searching for target network...");
-
-    vector channels = {0, 1, 6, 11, 3, 8, 2, 7, 4, 10, 5, 9};
-
-    for (int chan : channels) {
-        if (chan != 0)
-            set_channel(iface, chan);
-
-        Tins::SnifferConfiguration cfg;
-        cfg.set_filter("wlan type mgt subtype beacon");
-        cfg.set_timeout(timeout_ms);
-
-        try {
-            Tins::Sniffer sniffer(iface, cfg);
-            vector<uint8_t> found;
-
-            sniffer.sniff_loop([&](Tins::PDU& pdu) -> bool {
-                auto* beacon = pdu.find_pdu<Tins::Dot11Beacon>();
-                if (!beacon) return true;
-                if (get_ssid(*beacon) == ssid) {
-                    found = beacon->serialize();
-                    return false;
-                }
-                return true;
-            });
-
-            if (!found.empty()) {
-                log(wpa3_tester::LogLevel::DEBUG, "Found beacon on channel " + to_string(chan));
-                return found;
-            }
-        } catch (...) {}
-    }
-
-    return {};
-}
-
-// ---------------------------------------------------------------------------
-// EAPOL helpers
-// ---------------------------------------------------------------------------
 
 int get_eapol_msg_num(const Tins::Dot11Data& pkt) {
     // Walk the inner PDU chain looking for raw EAPOL bytes

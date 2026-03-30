@@ -17,6 +17,7 @@ namespace wpa3_tester{
         Actor_config actor{};
         actor.str_con["iface"] = iface_name;
         actor.set_monitor_mode();
+        actor.up_iface();
 
         this_thread::sleep_for(chrono::seconds(5));
 

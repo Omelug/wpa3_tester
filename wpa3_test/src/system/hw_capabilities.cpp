@@ -310,9 +310,9 @@ namespace wpa3_tester{
         return mac;
     }
 
-    void hw_capabilities::set_macaddress(const std::string &iface, const std::string &new_mac_str){
+    void hw_capabilities::set_macaddress(const string& iface, const string& new_mac_str) {
         if (get_macaddress(iface) == new_mac_str) return;
-        run_cmd({"ifconfig", iface, "down"});
+        run_cmd({"ifconfig",iface,"down"});
         run_cmd({"macchanger", "-m", new_mac_str, iface});
     }
 }

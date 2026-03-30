@@ -5,19 +5,12 @@
 #include "logger/log.h"
 
 namespace wpa3_tester{
-    // ---------------------------------------------------------------------------
-    // NetworkConfig
-    // ---------------------------------------------------------------------------
 
     struct NetworkConfig {
         std::string ssid;
         int real_channel  = -1;
         int rogue_channel = -1;
     };
-
-    // ---------------------------------------------------------------------------
-    // ClientState
-    // ---------------------------------------------------------------------------
 
     class ClientState {
     public:
@@ -43,8 +36,6 @@ namespace wpa3_tester{
             state = s;
         }
 
-        bool is_state(State s) const { return state == s; }
-
         // Returns true if this call actually advanced to GotMitm for the first time.
         bool mark_got_mitm() {
             if (state <= Connecting) {
@@ -55,13 +46,8 @@ namespace wpa3_tester{
             return false;
         }
 
-        // Override to implement selective forwarding (e.g. drop EAPOL Msg4 for KRACK).
         virtual bool should_forward(const Tins::PDU& /*pkt*/) const { return true; }
-
-        // Override to modify packets in transit (e.g. set A-MSDU flag for FragAttacks).
         virtual Tins::PDU* modify_packet(Tins::PDU* pkt) const { return pkt; }
-
-        void attack_start() { update_state(Attack_Started); }
 
     private:
         static std::string state2str(State s) {

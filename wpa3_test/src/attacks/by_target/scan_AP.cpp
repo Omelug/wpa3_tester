@@ -138,7 +138,7 @@ namespace wpa3_tester::attack_scan{
                     try {
                         scan_ap.rsn = beacon->rsn_information();
                     } catch (const option_not_found&) {} // no RSN in OPen networks
-                    if(beacon_pcap == nullopt){
+                    if(beacon_pcap != nullopt){
                         PacketWriter writer(beacon_pcap.value().string(), DataLinkType<RadioTap>());
                         writer.write(*pdu);
                     }return unique_ptr<Dot11Beacon>(beacon->clone());

@@ -1,9 +1,12 @@
+#include "attacks/components/setup_connections.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 
 #include "config/global_config.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd.h"
 #include "observer/observers.h"
 #include "observer/resource_checker.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::dragondrain{
     using namespace std;
@@ -37,25 +40,34 @@ namespace wpa3_tester::dragondrain{
         rs.process_manager.run(actor_name, command, dragondrain_folder);
     }
 
+    void setup_attack(RunStatus &rs) {
+        components::client_ap_attacker_setup(rs);
+
+        //check ath_maker module
+        const string ath_folder = get_global_config().at("paths").at("dragondrain").at("ath_folder");
+        hw_capabilities::run_in("bash ./load.sh", ath_folder);
+    }
+
     void run_attack(RunStatus& rs) {
         rs.start_observers();
         const auto& att_cfg = rs.config.at("attack_config");
         const auto attacker = rs.get_actor("attacker");
 
-        const auto target = rs.get_actor("access_point");
-        const string target_mac = target["mac"];
-        const string channel = target["channel"];
+        const auto ap = rs.get_actor("access_point");
+        const string target_mac = ap["mac"];
+        const string channel = ap["channel"];
 
         this_thread::sleep_for(seconds(10));
         start_dragondrain(rs, "attacker", attacker["iface"], target_mac, channel, att_cfg);
         this_thread::sleep_for(seconds(att_cfg.at("timeout_sec").get<int>()));
         rs.process_manager.stop("attacker");
         this_thread::sleep_for(seconds(30));
+        ap->conn->disconnect();
     }
 
     void stats_attack(const RunStatus &rs){
         // generate graph with ob
         const auto ap = rs.config.at("actors").at("access_point");
-        observer::resource_checker::create_graph(rs, ap["source"]);
+        observer::resource_checker::create_graph(rs, ap.at("source").get<string>());
     }
 }

@@ -78,7 +78,7 @@ namespace wpa3_tester{
         const string final_cmd = kill_on_exit
         ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'"
         : cmd;
-        log(LogLevel::DEBUG, "exec " + final_cmd);
+        //log(LogLevel::DEBUG, "exec " + final_cmd);
         if (!session)
             throw ex_conn_err("Cannot exec: not connected");
 

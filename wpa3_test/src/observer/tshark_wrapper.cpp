@@ -95,7 +95,7 @@ namespace wpa3_tester::observer{
         start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
         start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
 
-        if (start_str.empty()) {throw runtime_error("Failed to get ISO start time from PCAP: "+pcap_path);}
+        //debug if (start_str.empty()){throw runtime_error("Failed to get ISO start time from PCAP: "+pcap_path);}
         return log_time_to_epoch_ns(start_str);
     }
     vector<LogTimePoint> get_tshark_events(const RunStatus& rs, const string& process_name, const string& tshark_filter, const string& event_name) {

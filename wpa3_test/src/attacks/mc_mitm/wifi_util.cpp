@@ -15,10 +15,11 @@
 // Shell helpers
 // ---------------------------------------------------------------------------
 using namespace std;
+//TODO uklidit do hwcapabilities
 void exec(const vector<string>& cmd, bool check) {
     string full;
     for (auto& s : cmd) full += s + " ";
-    int ret = system(full.c_str());
+    const int ret = system(full.c_str());
     if (check && ret != 0)
         throw runtime_error("Command failed: " + full);
 }

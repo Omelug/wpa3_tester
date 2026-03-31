@@ -3,12 +3,10 @@
 #include <tins/tins.h>
 #include <string>
 #include <random>
-
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
-#include "observer/observers.h"
 #include "observer/resource_checker.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
@@ -88,23 +86,28 @@ namespace wpa3_tester::cookie_guzzler{
             .at("setup").at("program_config").at("ssid").get<string>();
         const ActorPtr attacker = rs.get_actor("attacker");
 
-        const SAEPair sae_params = get_commit_values(rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
+        const SAEPair sae_params = get_commit_values(
+            rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         if (sae_params.success) {
             rs.start_observers();
             log(LogLevel::INFO, "SAE Commit captured");
             const HWAddress<6> ap_mac(ap["mac"]);
             const auto& att_cfg = rs.config.at("attack_config");
             const int duration = att_cfg.at("attack_time_sec").get<int>();
+            // change to monitor mode
+            attacker->set_monitor_mode();
+            attacker->up_iface();
             check_vuln(attacker["iface"], ap_mac, duration, sae_params);
         } else {
-            log(LogLevel::ERROR, "SAE Commit capture failed");
+            throw runtime_error("SAE Commit capture failed");
         }
+        this_thread::sleep_for(seconds(30)); //TODO attack attack
         ap->conn->disconnect();
     }
 
     void stats_attack(const RunStatus &rs){
         vector<observer::graph_lines> events;
-        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+        //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         //const string AP_graph_path =
         //    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
 

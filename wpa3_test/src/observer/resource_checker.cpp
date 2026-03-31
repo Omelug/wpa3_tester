@@ -213,12 +213,12 @@ namespace wpa3_tester::observer::resource_checker{
         FILE* gnuplot = popen("gnuplot", "w");
         if (!gnuplot) return;
 
-        fprintf(gnuplot, "set terminal pngcairo size 1024,768\n");
+        fprintf(gnuplot, "set terminal pngcairo size 1600,600\n");
         fprintf(gnuplot, "set output '%s'\n", output_imagepath.c_str());
         fprintf(gnuplot, "set xdata time\n");
         fprintf(gnuplot, "set timefmt '%%s'\n");
-        fprintf(gnuplot, "set format x '%%H:%%M:%%S'\n");
-
+        fprintf(gnuplot, "set format x '%%M:%%S'\n");
+        fprintf(gnuplot, "set xtics rotate by -45\n");
         fprintf(gnuplot, "set ytics nomirror\n");
         fprintf(gnuplot, "set y2tics\n");
         fprintf(gnuplot, "set ylabel 'CPU Usage (%%)'\n");

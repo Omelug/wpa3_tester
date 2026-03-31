@@ -23,7 +23,7 @@ namespace wpa3_tester::attack_module_maps{
         {"cookie_guzzler", components::client_ap_attacker_setup},
         {"reflection_attack", reflection::setup_attack},
         {"invalid_curve", invalid_curve::setup_attack},
-        {"dragondrain", components::client_ap_attacker_setup},
+        {"dragondrain", dragondrain::setup_attack},
         {"mc_mitm", mc_mitm::setup_attack}
     };
 

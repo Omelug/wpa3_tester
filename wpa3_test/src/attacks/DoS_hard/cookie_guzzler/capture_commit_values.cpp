@@ -47,7 +47,7 @@ namespace wpa3_tester::cookie_guzzler{
         SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
-        bool owns_handle = (handle == nullptr);
+        const bool owns_handle = (handle == nullptr);
         if (owns_handle) {
             handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
             if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
@@ -58,6 +58,15 @@ namespace wpa3_tester::cookie_guzzler{
             owns_handle ? handle : nullptr,
             [](pcap_t* h) { if(h) pcap_close(h); }
         );
+
+        /* only for debug
+        pcap_dumper_t *dumper = pcap_dump_open(handle, "/tmp/frame_ddebug.pcap");
+        auto dumper_guard = unique_ptr<pcap_dumper_t, void(*)(pcap_dumper_t*)>(
+            dumper,
+            [](pcap_dumper_t* d) { if(d) pcap_dump_close(d); }
+        );
+        if (!dumper) log(LogLevel::DEBUG, "pcap_dump_open failed: %s", pcap_geterr(handle));
+        */
 
         const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
         bpf_program fp{};
@@ -87,7 +96,8 @@ namespace wpa3_tester::cookie_guzzler{
             pcap_pkthdr *header;
             const uint8_t *packet;
             while (pcap_next_ex(handle, &header, &packet) == 1) {
-                if (auto frame = parse_sae_commit(packet, header->caplen)) {
+                //if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
+                if (const auto frame = parse_sae_commit(packet, header->caplen)) {
                     result = frame.value();
                     result.success = true;
                     log(LogLevel::DEBUG, "Captured SAE commit, scalar size: %zu", result.scalar.size());
@@ -156,7 +166,7 @@ namespace wpa3_tester::cookie_guzzler{
         start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
         SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
         if (handler != nullptr) pcap_close(handler);
-        stop_wpa_supplicant("pid_file");
+        stop_wpa_supplicant(pid_file);
         filesystem::remove(conf_path);
         return sae_params;
     }

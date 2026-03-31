@@ -50,6 +50,7 @@ namespace wpa3_tester{
         run({"ip", "link", "set", iface, "up"});
     }
     void Actor_config::up_sniff_iface() const{
+        if(!str_con.at("sniff_iface").has_value()) return; //TODO quite fail
         const string& sniff_iface = str_con.at("sniff_iface").value();
 
         if (is_interface_up(sniff_iface)) {
@@ -156,12 +157,6 @@ namespace wpa3_tester{
         }
 
 
-        string netns = "--"; //only for print
-        if (str_con.contains("netns") && str_con.at("netns").has_value()){
-            netns = str_con.at("netns").value();
-        }
-
-        log(LogLevel::DEBUG, "Checking if %s exists in netns '%s'", sniff_iface.c_str(), netns.c_str());
         if( run({"ip", "link", "show", sniff_iface}) == 0){
             log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
             up_iface();

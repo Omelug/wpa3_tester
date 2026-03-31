@@ -35,7 +35,12 @@ namespace wpa3_tester{
         bool should_notify = false;
         {
             lock_guard lock(logger_mtx);
-            const auto mp = processes[process_name];
+            const auto it = processes.find(process_name);
+            if (it == processes.end() || !it->second) {
+                log(LogLevel::WARNING, "handle_chunk: process not found: " + process_name);
+                return;
+            }
+            const auto mp = it->second;
             auto &incomplete = mp->logs.buffers[label];
             incomplete += data;
 
@@ -238,7 +243,7 @@ namespace wpa3_tester{
             unique_lock lock(wait_mutex);
             auto &logs = mp->logs;
             const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp, pattern] {
-                log(LogLevel::DEBUG, "WAIT_CHECK pattern: "+ pattern);
+                //log(LogLevel::DEBUG, "WAIT_CHECK pattern: "+ pattern);
                 // regex matched or shutting down -> continue
                 return logs.wait.matched || mp->shutting_down.load();
             });

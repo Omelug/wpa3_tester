@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       condition: [monitor]
-#      driver: mt76x2u
+      driver: ath9k_htc
       channel: 1
     netns: rx
     sniff_iface: rx
@@ -14,5 +14,6 @@ actors:
     source: internal
     selection:
       condition: [monitor, injection]
-      driver: ath9k_htc
+      #driver: ath9k_htc
+      driver: mt76x2u
       channel: 1

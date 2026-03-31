@@ -64,6 +64,7 @@ namespace wpa3_tester{
                 set_ap_mode();
             }
             up_iface();
+            up_sniff_iface();
         }
     }
 

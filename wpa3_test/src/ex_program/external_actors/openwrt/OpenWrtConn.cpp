@@ -225,11 +225,15 @@ namespace wpa3_tester {
     }
 
     void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
-        const int port = 5140;
-        const string kali_ip = "192.168.1.134";  // nebo z config
-
+        constexpr int port = 5140;
+        const string kali_ip = "192.168.1.134"; //FIXME
         rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
-        exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " &");
+        exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name + ".pid");
+
+        const auto ap = rs.get_actor(actor_name);
+        ap->conn->on_disconnect([this, actor_name]() {
+            exec("kill $(cat /tmp/logread_" + actor_name + ".pid); rm /tmp/logread_" + actor_name + ".pid");
+        });
     }
 
     /*void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {

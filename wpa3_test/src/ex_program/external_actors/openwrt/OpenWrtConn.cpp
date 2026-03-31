@@ -228,7 +228,6 @@ namespace wpa3_tester {
         const string host = actor["whitebox_ip"];
         const string user = actor["ssh_user"];
         const vector<string> command = {
-            "stdbuf", "-oL",  // Line buffering for stdout
             "sshpass", "-p", actor["ssh_password"],
             "ssh", "-o", "StrictHostKeyChecking=no",
             user + "@"+host,
@@ -236,6 +235,18 @@ namespace wpa3_tester {
         };
         rs.process_manager.run(actor_name , command);
     }
+    /*void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
+        exec("uci set system.@system[0].log_ip=192.168.1.134"); //FIXME 192.168.1.134  # IP tveho Kali
+        exec("uci set system.@system[0].log_port=514");
+        exec("uci set system.@system[0].log_proto=udp");
+        exec("uci commit system");
+        exec("/etc/init.d/log restart");
+        const vector<string> command = {
+            "nc", "-u", "-l", "-k", "-p", "514"
+        };
+        rs.process_manager.run(actor_name, command);
+    }*/
+
 
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const string& radio) {
         const string phy = "phy"+radio.substr(5);

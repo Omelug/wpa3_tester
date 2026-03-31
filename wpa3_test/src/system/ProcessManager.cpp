@@ -15,38 +15,41 @@ namespace wpa3_tester{
     using namespace chrono;
 
     void ProcessManager::handle_chunk(
-        const shared_ptr<ManagedProcess>& mp,
-        const string &process_name,
-        const string &label,
-        const string &data)
+    const shared_ptr<ManagedProcess>& mp,
+    const string &process_name,
+    const string &label,
+    const string &data)
     {
-        lock_guard lock(logger_mtx);
-        auto &incomplete = mp->logs.buffers[label];
-        incomplete += data;
+        bool should_notify = false;
+        {
+            lock_guard lock(logger_mtx);
+            auto &incomplete = mp->logs.buffers[label];
+            incomplete += data;
 
-        size_t pos;
-        while ((pos = incomplete.find('\n')) != string::npos) {
-            string line = incomplete.substr(0, pos);
-            incomplete.erase(0, pos + 1);
+            size_t pos;
+            while ((pos = incomplete.find('\n')) != string::npos) {
+                string line = incomplete.substr(0, pos);
+                incomplete.erase(0, pos + 1);
 
-            if (line.empty()) continue;
+                if (line.empty()) continue;
 
-            const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
-            const string full_line = prefix + line;
+                const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+                const string full_line = prefix + line;
 
-            if (combined_log.is_open()) write_log_line(combined_log, full_line);
-            if (mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
-            if (mp->logs.history_enabled) {mp->logs.history += line + "\n";}
+                if (combined_log.is_open()) write_log_line(combined_log, full_line);
+                if (mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
+                if (mp->logs.history_enabled) mp->logs.history += line + "\n";
 
-            if (mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)) {
-                mp->logs.wait.matched = true;
-
-                {
-                    lock_guard wait_lock(wait_mutex);
-                    wait_cv.notify_all();
+                if (mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)) {
+                    log(LogLevel::DEBUG, "MATCH " + process_name + " " + line);
+                    mp->logs.wait.matched = true;
+                    should_notify = true;
                 }
             }
-        }
+        } // logger_mtx
+
+        if (should_notify)
+            wait_cv.notify_all();
     }
 
     void ProcessManager::start_drain_for(const string &process_name, const shared_ptr<ManagedProcess>& mp) {
@@ -126,6 +129,7 @@ namespace wpa3_tester{
                          const path &working_dir,
                          const path &logging_dir)
     {
+        log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
         auto mp = make_shared<ManagedProcess>();
         mp->proc = make_shared<reproc::process>();
 
@@ -154,6 +158,8 @@ namespace wpa3_tester{
         logs.log.close();
         logs.log.open(log_path, ios::out | ios::trunc);
         logs.history.clear();
+        logs.history_enabled = true;
+
 
         if (!logs.log.is_open()) { throw config_err("Failed to open log for "+process_name+": "+log_path.string());}
 
@@ -184,7 +190,7 @@ namespace wpa3_tester{
                                   const bool throw_err)
     {
         shared_ptr<ManagedProcess> mp;
-
+        log(LogLevel::DEBUG, "WAIT pattern:"+ pattern);
         {
             lock_guard lock(logger_mtx);
             const auto proc_iter = processes.find(actor_name);
@@ -194,7 +200,6 @@ namespace wpa3_tester{
             mp = proc_iter->second;
             auto &logs = mp->logs;
 
-            logs.history_enabled = true;
             logs.wait.pattern = regex(pattern);
             logs.wait.matched = false;
 
@@ -203,6 +208,7 @@ namespace wpa3_tester{
             string line;
             while (getline(ss, line)) {
                 if (regex_search(line, *logs.wait.pattern)) {
+                    log(LogLevel::DEBUG, "MATCH without history " + actor_name + " " + line);
                     logs.wait.matched = true;
                     break;
                 }
@@ -218,9 +224,12 @@ namespace wpa3_tester{
         { // wait for match from drain thread with timeout
             unique_lock lock(wait_mutex);
             auto &logs = mp->logs;
-            const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp] {
+            const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp, pattern] {
+                log(LogLevel::DEBUG, "WAIT_CHECK pattern: "+ pattern);
+                // regex matched or shutting down -> continue
                 return logs.wait.matched || mp->shutting_down.load();
             });
+
 
             // Check if process was stopped (shutting_down but not matched)
             if (mp->shutting_down.load() && !logs.wait.matched) {
@@ -231,7 +240,7 @@ namespace wpa3_tester{
                 return false; // wait for ot matched if stop
             }
 
-            if (!matched) {
+            if (!matched) { // !matched = time interrupted
                 lock_guard data_lock(logger_mtx);
                 logs.wait.pattern = nullopt;
                 if(throw_err){

@@ -37,7 +37,9 @@ namespace wpa3_tester{
         };
         std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
         std::ofstream combined_log;
-        mutable std::mutex logger_mtx; // for processes and process_logs security
+        // for processes and process_logs security
+        mutable std::mutex logger_mtx;
+        // waiting for pattern matching
         std::mutex wait_mutex;
         std::condition_variable wait_cv;
     public:

@@ -147,14 +147,32 @@ namespace wpa3_tester {
         create_directories(test_dir);
         pm.init_logging(test_dir.string());
 
-        SUBCASE("Pattern found within timeout") {
-            vector<string> echo_cmd = {"bash", "-c", "echo 'test pattern'; sleep 5"};
+        SUBCASE("Pattern found in history") {
+            vector<string> echo_cmd = {"bash", "-c", "echo 'test pattern'; sleep 15"};
             pm.run("echo_test", echo_cmd);
-
-            pm.allow_history("echo_test");
+            //pm.allow_history("echo_test");
             this_thread::sleep_for(200ms);
 
             CHECK_NOTHROW(pm.wait_for("echo_test", "test pattern", 5s));
+            pm.stop("echo_test");
+        }
+
+        SUBCASE("Pattern found within timeout") {
+            vector<string> echo_cmd = {"bash", "-c", "sleep 2; echo 'test pattern'; "};
+            pm.run("echo_test", echo_cmd);
+            this_thread::sleep_for(200ms);
+            CHECK_NOTHROW(pm.wait_for("echo_test", "test pattern", 5s));
+            pm.stop("echo_test");
+        }
+
+        SUBCASE("Pattern found - 2 processes") {
+            vector<string> echo_cmd = {"bash", "-c", "sleep 2; echo 'test1 pattern'; "};
+            vector<string> echo_cmd2 = {"bash", "-c", "echo 'test2 pattern'; "};
+            pm.run("echo_test", echo_cmd);
+            pm.run("echo_test2", echo_cmd2);
+            this_thread::sleep_for(200ms);
+            CHECK_NOTHROW(pm.wait_for("echo_test", "test1 pattern", 5s));
+            CHECK_NOTHROW(pm.wait_for("echo_test2", "test2 pattern", 5s));
             pm.stop("echo_test");
         }
 

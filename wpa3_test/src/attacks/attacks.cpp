@@ -5,6 +5,7 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
 #include "attacks/DoS_hard/dragondrain/dragondrain.h"
+#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
@@ -34,6 +35,7 @@ namespace wpa3_tester::attack_module_maps{
         {"sae_commit_monitor_test", test_sae_commit_monitor::run_attack},
         {"malformed_eapol1", eapol_logoff::run_attack},
         {"cookie_guzzler", cookie_guzzler::run_attack},
+        {"pmk_gobbler", pmk_gobbler::run_attack},
         {"reflection_attack", reflection::run_attack},
         {"invalid_curve", invalid_curve::run_attack},
         {"scan_AP", attack_scan::run_attack},
@@ -48,6 +50,7 @@ namespace wpa3_tester::attack_module_maps{
         {"sae_commit_monitor_test", test_sae_commit_monitor::stats_attack},
         {"malformed_eapol1", eapol_logoff::stats},
         {"cookie_guzzler", cookie_guzzler::stats_attack},
+        {"pmk_gobbler", pmk_gobbler::stats_attack},
         //{"reflection_attack", reflection::stats}
         //{"invalid_curve", invalid_curve::run_attack}
         {"dragondrain", dragondrain::stats_attack},

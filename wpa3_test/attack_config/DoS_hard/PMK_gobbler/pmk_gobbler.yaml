@@ -1,0 +1,64 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: pmk_gobbler_Dlink
+attacker_module: pmk_gobbler
+actors:
+  access_point:
+    source: external
+    selection:
+      whitebox_host: OpenWrt
+      condition: [ AP, 2_4GHz ]
+      channel: 6
+    setup:
+      program: openwrt
+      program_config:
+        ssid: OpenWrt_2_4GHz
+        channel: 6
+        key: password123
+        proto: RSN
+        encryption: sae-mixed
+        mode: ap
+        htmode: HT20
+      req_programs: [ tcpdump ]
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    selection:
+      driver: ath9k_htc
+    setup:
+      program: wpa_supplicant
+      program_config:
+        ssid: OpenWrt_2_4GHz
+        sae_password: password123
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: SAE
+        pairwise: CCMP
+        group: CCMP
+    netns: sta
+    ip_addr: "10.0.0.2"
+    sniff_iface: client
+  attacker:
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [monitor, injection]
+      channel: 6
+    sniff_iface: att
+observers:
+  #client_mausezahn:
+  #  actor: client
+  #  program: mausezahn
+  #  program_config:
+  #    target_actor: access_point
+  tshark_attacker:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: ""
+  ap_resources:
+    actor: access_point
+    program: resource_checker
+    program_config:
+      interval: 1
+attack_config:
+  attack_time_sec: 10

@@ -186,6 +186,8 @@ namespace wpa3_tester{
         reproc::process proc;
         reproc::options options;
         options.redirect.parent = true;
+        options.redirect.out.type = reproc::redirect::parent;
+        options.redirect.err.type = reproc::redirect::parent;
 
         //auto fd_count = distance(directory_iterator("/proc/self/fd"),
         //                      directory_iterator{});
@@ -195,6 +197,7 @@ namespace wpa3_tester{
             log(LogLevel::ERROR, "Failed to start "+full_argv[0]+" "+ec.message());
             return -1;
         }
+
         auto [status, wait_ec] = proc.wait(reproc::infinite);
         this_thread::sleep_for(chrono::milliseconds(100)); //FIXME
         if (wait_ec) {

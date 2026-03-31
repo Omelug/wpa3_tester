@@ -106,6 +106,7 @@ TEST_CASE("Logger OpenWrt") {
     cli_section("Test completed successfully");
 }
 
+
 TEST_CASE("Tcpdump OpenWrt") {
     auto& [conn, actor] = get_conn_actor();
 

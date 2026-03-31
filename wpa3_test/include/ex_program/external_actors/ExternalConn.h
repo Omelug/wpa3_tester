@@ -10,6 +10,7 @@ namespace wpa3_tester{
     public:
         using DisconnectCallback = std::function<void()>;
     protected:
+        mutable std::mutex session_mtx; //mutex to create ssh channels
         std::vector<DisconnectCallback> disconnect_callbacks;
         ssh_session session = nullptr;
     public:
@@ -35,7 +36,9 @@ namespace wpa3_tester{
         virtual void setup_ap(const RunStatus &rs, const ActorPtr &actor) = 0;
         virtual void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor, const nlohmann::json config) = 0;
         virtual void check_req(const nlohmann::json &config, const std::string &actor_name) = 0;
-        virtual void logger(RunStatus& rs, const std::string & actor_name) = 0;
+        virtual void logger(RunStatus& rs, const std::string & actor_name){
+            throw not_implemented_err("logger not implemented default");
+        };
         virtual void get_hw_capabilities(Actor_config& cfg, const std::string& radio) = 0;
         void on_disconnect(DisconnectCallback cb);
         void disconnect();

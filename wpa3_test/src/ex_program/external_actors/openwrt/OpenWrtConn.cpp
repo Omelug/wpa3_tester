@@ -49,7 +49,7 @@ namespace wpa3_tester {
     }
 
     void OpenWrtConn::forward_internet(const string& remote_ip) const{
-        hw_capabilities::run_cmd({"bash", "-c", "echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward"});
+        hw_capabilities::run_cmd({"bash", "-c", "echo 1 | tee /proc/sys/net/ipv4/ip_forward"});
         auto  internet_iface = get_global_config().at("internet_interface").get<string>();
         hw_capabilities::run_cmd({"iptables", "-t", "nat", "-A", "POSTROUTING", "-o", internet_iface, "-j", "MASQUERADE"});
         const string local_iface = hw_capabilities::get_iface(remote_ip);
@@ -171,8 +171,9 @@ namespace wpa3_tester {
         return exec("uci show wireless | grep "+iface +" | cut -d. -f2");
     }
 
+
     string OpenWrtConn::get_wifi_iface_section(const string& iface) const {
-        const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
+        const auto j = nlohmann::json::parse(exec("wifi status"));
 
         for (const auto& [radio_name, radio] : j.items()) {
             for (const auto& wifi_iface : radio.at("interfaces")) {
@@ -223,18 +224,14 @@ namespace wpa3_tester {
         exec("wifi reload");
     }
 
-    void OpenWrtConn::logger(RunStatus& rs, const string &actor_name){
-        const auto actor = rs.get_actor(actor_name);
-        const string host = actor["whitebox_ip"];
-        const string user = actor["ssh_user"];
-        const vector<string> command = {
-            "sshpass", "-p", actor["ssh_password"],
-            "ssh", "-o", "StrictHostKeyChecking=no",
-            user + "@"+host,
-            "logread -f"
-        };
-        rs.process_manager.run(actor_name , command);
+    void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
+        const int port = 5140;
+        const string kali_ip = "192.168.1.134";  // nebo z config
+
+        rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
+        exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " &");
     }
+
     /*void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
         exec("uci set system.@system[0].log_ip=192.168.1.134"); //FIXME 192.168.1.134  # IP tveho Kali
         exec("uci set system.@system[0].log_port=514");

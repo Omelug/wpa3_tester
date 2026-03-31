@@ -53,13 +53,14 @@ namespace wpa3_tester{
 
     private:
         static void recreate_log_folder(const std::filesystem::path &log_base_dir);
-        void handle_chunk(const std::shared_ptr<ManagedProcess> &mp, const std::string &process_name,
-                          const std::string &label,
-                          const std::string &data);
         void start_drain_for(const std::string &process_name, const std::shared_ptr<ManagedProcess>& mp);
     public:
         ProcessManager() = default;
         ~ProcessManager();
+
+        void handle_chunk(const std::string &process_name,
+                          const std::string &label,
+                          const std::string &data);
 
         ProcessManager(const ProcessManager&) = delete;
         ProcessManager& operator=(const ProcessManager&) = delete;
@@ -67,6 +68,7 @@ namespace wpa3_tester{
         static std::string current_timestamp();
         void init_logging(const std::string& run_folder);
 
+        void run_dummy(const std::string &process_name);
         // what can actors
         void run(const std::string& process_name,
                  const std::vector<std::string> &cmd,

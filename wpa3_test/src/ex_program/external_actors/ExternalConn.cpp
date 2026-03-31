@@ -74,10 +74,11 @@ namespace wpa3_tester{
     }
 
     string ExternalConn::exec(const string& cmd, const bool kill_on_exit, int* ret_err) const {
+        std::lock_guard lock(session_mtx);
         const string final_cmd = kill_on_exit
-        ? "setsid sh -c 'trap \"kill -- -$$\" EXIT; "+cmd+"'"
+        ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'"
         : cmd;
-
+        log(LogLevel::DEBUG, "exec " + final_cmd);
         if (!session)
             throw ex_conn_err("Cannot exec: not connected");
 
@@ -87,9 +88,12 @@ namespace wpa3_tester{
             ~ChannelGuard() { if (ch) { ssh_channel_send_eof(ch); ssh_channel_close(ch); ssh_channel_free(ch); } }
         } guard(session);
 
-        if (!guard.ch) throw ex_conn_err("Failed to create SSH channel");
-        if (ssh_channel_open_session(guard.ch) != SSH_OK) throw ex_conn_err("Failed to open SSH channel");
-        if (ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK) throw ex_conn_err("Failed to execute: "+final_cmd);
+        if (!guard.ch)
+            throw ex_conn_err("Failed to create SSH channel: " + string(ssh_get_error(session)));
+        if (ssh_channel_open_session(guard.ch) != SSH_OK)
+            throw ex_conn_err("Failed to open SSH channel: " + string(ssh_get_error(session)));
+        if (ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK)
+            throw ex_conn_err("Failed to execute: "+final_cmd+" | SSH error: " + ssh_get_error(session));
 
         string result;
         char buf[1024];

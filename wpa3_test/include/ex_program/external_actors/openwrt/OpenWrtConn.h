@@ -6,6 +6,7 @@
 
 namespace wpa3_tester {
     class OpenWrtConn : public ExternalConn {
+        std::thread logger_thread;
         // --- device functions
         void check_req(const nlohmann::json &config, const std::string &actor_name) override;
         std::string wait_for_ifname(const std::string &section) const;

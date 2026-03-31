@@ -14,8 +14,20 @@ namespace wpa3_tester{
     using namespace filesystem;
     using namespace chrono;
 
+    void ProcessManager::run_dummy(const string& process_name) {
+        const auto mp = make_shared<ManagedProcess>();
+        mp->proc = nullptr;
+        mp->logs.history_enabled = true;
+
+        const path log_path = log_base_dir / (process_name + ".log");
+        mp->logs.log.open(log_path, ios::out | ios::trunc);
+
+        lock_guard lock(logger_mtx);
+        processes[process_name] = mp;
+    }
+
     void ProcessManager::handle_chunk(
-    const shared_ptr<ManagedProcess>& mp,
+    //const shared_ptr<ManagedProcess>& mp,
     const string &process_name,
     const string &label,
     const string &data)
@@ -23,6 +35,7 @@ namespace wpa3_tester{
         bool should_notify = false;
         {
             lock_guard lock(logger_mtx);
+            const auto mp = processes[process_name];
             auto &incomplete = mp->logs.buffers[label];
             incomplete += data;
 
@@ -93,7 +106,7 @@ namespace wpa3_tester{
                             break;
                         }
                         if (n == 0) break;
-                        handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+                        handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                     }
                 }
             }
@@ -108,7 +121,7 @@ namespace wpa3_tester{
 
                     auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
                     if (read_ec || n == 0) break;
-                    handle_chunk(mp, process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+                    handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
                 }
             }
 
@@ -280,17 +293,18 @@ namespace wpa3_tester{
         operations.first  = { reproc::stop::terminate, reproc::milliseconds(500) };
         operations.second = { reproc::stop::kill,      reproc::milliseconds(500) };
 
-        //log(LogLevel::DEBUG, "terminate() calling");
-        mp->proc->terminate();
-        //log(LogLevel::DEBUG, "terminate() done");
-        mp->proc->kill();
-        //log(LogLevel::DEBUG, "kill() done");
-
+        if (mp->proc){
+            //log(LogLevel::DEBUG, "terminate() calling");
+            mp->proc->terminate();
+            //log(LogLevel::DEBUG, "terminate() done");
+            mp->proc->kill();
+            //log(LogLevel::DEBUG, "kill() done");
+        }
         //log(LogLevel::DEBUG, "joining...");
         if (mp->drain_thread.joinable()) mp->drain_thread.join();
         //log(LogLevel::DEBUG, "join done");
 
-        mp->proc->stop(operations);
+        if (mp->proc){ mp->proc->stop(operations);}
         log(LogLevel::DEBUG, "proc->stop done for "+process_name);
 
         // Call on_stop callback if registered

@@ -22,7 +22,7 @@ namespace wpa3_tester{
         }
         if(program == "openwrt"){
             if(actor->conn == nullptr) throw setup_err("openwrt have to have connection");
-            actor->conn.get()->setup_ap(rs, actor);
+            actor->conn.get()->setup_ap(rs, actor); // reload wifi -> show ENABLED again
             actor->conn.get()->logger(rs, actor_name);
             return;
         }

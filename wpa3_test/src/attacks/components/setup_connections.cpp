@@ -10,7 +10,7 @@ namespace wpa3_tester::components{
         program::start(rs, actor_name);
 
         //FIXME this dont work with external logread  (some issue with buffering?)
-        rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
+        //rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
         log(LogLevel::INFO, actor_name+" is running");
         ip::set_ip(rs, actor_name);
     }

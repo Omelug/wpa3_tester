@@ -46,7 +46,7 @@ namespace wpa3_tester::pmk_gobbler {
     }
 
     //TODO add test
-    optional<ACMCookie> parse_acm_response(const uint8_t *packet, uint32_t len) {
+    optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) {
         const auto sae = dos_helpers::parse_sae_commit(packet, len);
         if (!sae) return nullopt;
         const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
@@ -139,7 +139,7 @@ namespace wpa3_tester::pmk_gobbler {
                 const int ret = poll(&pfd, 1, max(remaining_ms, 0));
                 if (ret < 0) {
                     if (errno == EINTR) continue;
-                    log(LogLevel::WARNING, "trigger poll error: " + to_string(errno));
+                    log(LogLevel::WARNING, "trigger poll error: "+to_string(errno));
                     break;
                 }
                 if (ret == 0 || !(pfd.revents & POLLIN)) continue;
@@ -149,20 +149,20 @@ namespace wpa3_tester::pmk_gobbler {
                 while (pcap_next_ex(handle, &header, &packet) == 1) {
                     if (auto cookie = parse_acm_response(packet, header->caplen)) {
                         if(cookie->token.empty()) continue;
-                        log(LogLevel::INFO, "ACM confirmed active after " + to_string(i + 1) + " frames");
+                        log(LogLevel::INFO, "ACM confirmed active after "+to_string(i + 1) + " frames");
                         return std::move(*cookie);
                     }
                 }
             }
         }
-        throw runtime_error("ACM not activated after " + to_string(trigger_count) + " frames");
+        throw run_err("ACM not activated after " + to_string(trigger_count) + " frames");
     }
 
     void burst_with_cookies(const string &iface, const HWAddress<6> &ap_mac,
                             CookieStore &store, const int attack_time_sec, const dos_helpers::SAEPair &sae_params) {
         PacketSender sender(iface);
         long long sent     = 0;
-        long long next_log = 500;
+        long long next_log = 0;
         const auto end_time = steady_clock::now() + seconds(attack_time_sec);
 
         log(LogLevel::INFO, "Burst phase started, duration: %ds", attack_time_sec);
@@ -197,14 +197,13 @@ namespace wpa3_tester::pmk_gobbler {
                     lock_guard l(store.mtx);
                     q_size = store.queue.size();
                 }
-                log(LogLevel::DEBUG, "Sent: " + to_string(sent)
-                    + ", cookies remaining: " + to_string(q_size));
-                next_log += 5000;
+                log(LogLevel::DEBUG, "Sent: %zu, cookies remaining: %d", sent, q_size);
+                next_log += 500;
             }
         }
 
         store.stop.store(true); // signal capture thread to exit
-        log(LogLevel::INFO, "Burst done. Total packets sent: " + to_string(sent));
+        log(LogLevel::INFO, "Burst done. Total packets sent: %d", sent);
     }
 
     void run_attack(RunStatus &rs) {

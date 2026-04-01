@@ -47,7 +47,7 @@ void manual_get_commit_values_test() {
     // Perform the capture
     const HWAddress<6> ap_mac(ap_mac_str);
     RunStatus rs;
-    const cookie_guzzler::SAEPair sae_params =
+    const dos_helpers::SAEPair sae_params =
         cookie_guzzler::get_commit_values(rs, iface_name, iface_config["sniff_iface"], ssid, ap_mac, timeout);
 
     if (sae_params.success) {

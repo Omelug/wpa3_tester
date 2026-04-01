@@ -18,10 +18,10 @@ TEST_CASE("ParsesCommitFromPcap") {
 
     pcap_pkthdr *header;
     const uint8_t *packet;
-    optional<SAEPair> result;
+    optional<wpa3_tester::dos_helpers::SAEPair> result;
 
     while (pcap_next_ex(handle, &header, &packet) > 0) {
-        result = parse_sae_commit(packet, header->caplen);
+        result = wpa3_tester::dos_helpers::parse_sae_commit(packet, header->caplen);
         if (result) break;
     }
 

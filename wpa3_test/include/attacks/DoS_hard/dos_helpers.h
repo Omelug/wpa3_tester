@@ -4,6 +4,7 @@
 
 namespace wpa3_tester::dos_helpers {
     struct SAEPair {
+        uint16_t status;
         uint16_t group_id;
         std::vector<uint8_t> token;
         std::vector<uint8_t> scalar;

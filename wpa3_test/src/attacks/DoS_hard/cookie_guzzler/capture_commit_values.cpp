@@ -22,7 +22,7 @@ namespace wpa3_tester::cookie_guzzler{
         const bool owns_handle = (handle == nullptr);
         if (owns_handle) {
             handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
-            if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+            if (!handle) throw runtime_error("pcap_open_live failed: "+string(errbuf));
             pcap_setnonblock(handle, 1, errbuf);
         }
 
@@ -40,10 +40,10 @@ namespace wpa3_tester::cookie_guzzler{
         if (!dumper) log(LogLevel::DEBUG, "pcap_dump_open failed: %s", pcap_geterr(handle));
         */
 
-        const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
+        const string filter_str = "wlan type mgt subtype auth and wlan addr2 "+ap_mac.to_string();
         bpf_program fp{};
         if (pcap_compile(handle, &fp, filter_str.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0) {
-            throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
+            throw runtime_error("pcap_compile failed: "+string(pcap_geterr(handle)));
         }
         pcap_setfilter(handle, &fp);
         pcap_freecode(&fp);
@@ -100,7 +100,7 @@ namespace wpa3_tester::cookie_guzzler{
         if (filesystem::exists(pid_file)) { stop_wpa_supplicant(pid_file);}
 
         // Clean up stale socket
-        const string socket = "/var/run/wpa_supplicant/" + iface;
+        const string socket = "/var/run/wpa_supplicant/"+iface;
         if (filesystem::exists(socket)) filesystem::remove(socket);
 
         log(LogLevel::INFO, "Run wpa_supplicant to get handshake values...");

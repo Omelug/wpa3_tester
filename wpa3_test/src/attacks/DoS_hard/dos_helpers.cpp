@@ -2,14 +2,15 @@
 #include <optional>
 
 using namespace std;
-
+using namespace Tins;
 namespace wpa3_tester::dos_helpers {
+
     optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len) {
         if (len < 4) return nullopt;
 
-        const Tins::RadioTap rt(packet, len);
+        const RadioTap rt(packet, len);
         bool has_fcs = false;
-        if (rt.present() & Tins::RadioTap::PresentFlags::FLAGS) {
+        if (rt.present() & RadioTap::PresentFlags::FLAGS) {
             const uint8_t flags = rt.flags();
             if (flags & 0x10) {
                 has_fcs = true;
@@ -78,4 +79,32 @@ namespace wpa3_tester::dos_helpers {
         frame.success = true;
         return frame;
     }
+
+    RadioTap make_sae_commit(const HWAddress<6> &ap_mac,const HWAddress<6> &sta_mac,
+        SAEPair sae_params) {
+
+        Dot11Authentication auth;
+        auth.addr1(ap_mac);
+        auth.addr2(sta_mac);
+        auth.addr3(ap_mac);
+        auth.type(Dot11::MANAGEMENT);
+        auth.subtype(Dot11::AUTH);
+        auth.auth_algorithm(3); // SAE
+        auth.auth_seq_number(1);
+        auth.status_code(sae_params.status);
+
+        // group 19 (P-256) | optional ACM token | dummy scalar | dummy element
+        vector<uint8_t> payload;
+        payload.push_back(sae_params.group_id & 0xFF);
+        payload.push_back((sae_params.group_id >> 8) & 0xFF);
+        payload.insert(payload.end(), sae_params.token.begin(), sae_params.token.end());
+        payload.insert(payload.end(), sae_params.scalar.begin(), sae_params.scalar.end());
+        payload.insert(payload.end(), sae_params.element.begin(), sae_params.element.end());
+
+        auth.inner_pdu(RawPDU(payload));
+        RadioTap rt;
+        rt.inner_pdu(auth);
+        return rt;
+    }
+
 }

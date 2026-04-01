@@ -16,9 +16,9 @@ namespace wpa3_tester::mc_mitm{
     void setup_attack(RunStatus& rs){
         components::client_ap_attacker_setup(rs);
 
+        const auto ap        = rs.get_actor("access_point");
         const auto att_real_channel = rs.get_actor("att_real_channel");
         const auto att_rogue_channel = rs.get_actor("att_rogue_channel");
-        const auto ap = rs.get_actor("access_point");
 
         //TODO only for  2.4 GHz
         att_real_channel->str_con["channel"] = ap["channel"];

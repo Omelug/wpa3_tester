@@ -1,5 +1,4 @@
 #pragma once
-#include <libtins-src/include/tins/dot11/sae_dot11_auth.h>
 #include <tins/hw_address.h>
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "logger/log.h"

@@ -32,4 +32,8 @@ namespace wpa3_tester::attack_scan{
         const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt);
 
     void run_attack(RunStatus& rs);
+
+    //TODO scan
+    // check ACm threashold
+    // check SAE GROUPS
 }

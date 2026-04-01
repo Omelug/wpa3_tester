@@ -32,7 +32,7 @@ namespace wpa3_tester{
         explicit ClientState(const std::string& mac) : macaddr(mac) {}
 
         void update_state(State s) {
-            log(LogLevel::DEBUG, "Client " + macaddr + " moved to state " + state2str(s));
+            log(LogLevel::DEBUG, "Client "+macaddr + " moved to state "+state2str(s));
             state = s;
         }
 
@@ -40,7 +40,7 @@ namespace wpa3_tester{
         bool mark_got_mitm() {
             if (state <= Connecting) {
                 update_state(GotMitm);
-                log(LogLevel::INFO, "Established MitM position against client " + macaddr);
+                log(LogLevel::INFO, "Established MitM position against client "+macaddr);
                 return true;
             }
             return false;

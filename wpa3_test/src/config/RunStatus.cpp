@@ -53,7 +53,7 @@ namespace wpa3_tester{
         throw config_err("folder name not found");
     }
 
-    RunStatus::RunStatus(const string &config_path, string testName, const std::string &sub_folder){
+    RunStatus::RunStatus(const string &config_path, string testName, const string &sub_folder){
         this->config_path = config_path;
         if(!exists(config_path)){throw config_err("Config not found: "+config_path);}
 
@@ -81,11 +81,11 @@ namespace wpa3_tester{
          this->observers.clear();
      };
 
-    void print_exception_tree(const std::exception& e, std::ostream& os, int level = 0) {
-        os << std::string(level * 2, ' ') << "- " << e.what() << std::endl;
+    void print_exception_tree(const exception& e, ostream& os, int level = 0) {
+        os << string(level * 2, ' ') << "- " << e.what() << endl;
         try {
-            std::rethrow_if_nested(e);
-        } catch (const std::exception& nested) {
+            rethrow_if_nested(e);
+        } catch (const exception& nested) {
             print_exception_tree(nested, os, level + 1);
         } catch (...) {}
     }
@@ -232,7 +232,9 @@ namespace wpa3_tester{
     void RunStatus::print_test_list() {
         auto tests = scan_attack_configs(TEST);
         if (tests.empty()) {cout << "In program are not any tests" << endl; return;}
-        for (const auto& [name, path] : tests) {cout << "Test: " << name << " -> " << path << endl;}
+        for (const auto& [name, path] : tests){
+            cout << "Test: " << name << " -> " << path << endl;
+        }
     }
 
     void RunStatus::start_observers(){

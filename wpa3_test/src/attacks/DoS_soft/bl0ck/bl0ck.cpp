@@ -68,7 +68,7 @@ namespace wpa3_tester::bl0ck_attack{
         config.set_immediate_mode(true);
         config.set_timeout(100);
         config.set_promisc_mode(true);
-        config.set_filter("wlan type data and wlan addr2 " + sta_hw.to_string());
+        config.set_filter("wlan type data and wlan addr2 "+sta_hw.to_string());
 
         Sniffer sniffer(iface, config);
         const auto start_time = steady_clock::now();

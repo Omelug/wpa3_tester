@@ -44,11 +44,12 @@ BEGIN {
         } close("/proc/net/dev");
 
         # WiFi Survey
-        Cmd = "iw dev " iface " survey dump 2>/dev/null";
-        Active = 0; Busy = 0;
+        Cmd = "iw dev phy0-ap0 survey dump 2>/dev/null";
+        Active = 0; Busy = 0; InUse = 0;
         while ((Cmd | getline line) > 0) {
-            if (line ~ /active time:/) { split(line, a, ":"); split(a[2], b, " "); Active = b[1]; }
-            if (line ~ /busy time:/) { split(line, a, ":"); split(a[2], b, " "); Busy = b[1]; }
+            if (line ~ /\[in use\]/) InUse = 1;
+            if (InUse && line ~ /active time:/)  { split(line, a, ":"); split(a[2], b, " "); Active = b[2]; }
+            if (InUse && line ~ /busy time:/)    { split(line, a, ":"); split(a[2], b, " "); Busy   = b[2]; InUse = 0; }
         } close(Cmd);
 
         if (PrevActive != "") {
@@ -57,7 +58,7 @@ BEGIN {
         }
         PrevActive = Active; PrevBusy = Busy;
 
-        # Tiskni pouze pokud už máme data pro srovnání (od druhého průchodu)
+        # skip first data row
         if (length(Out) > 15) {
             print Out " " Mem " " int(Airtime) " " RxDrops;
             fflush();

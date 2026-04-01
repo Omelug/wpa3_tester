@@ -17,7 +17,7 @@ YAMLValidator::YAMLValidator(const path &schema_path){
     constexpr size_t MAX_RECURSION_DEPTH = 20;
     const json_schema::schema_loader loader = [&depth, schema_dir](const json_uri &uri, json &schema) {
         if (++depth > MAX_RECURSION_DEPTH) {
-            throw runtime_error("Max recursion depth reached at: " + uri.to_string());
+            throw runtime_error("Max recursion depth reached at: "+uri.to_string());
         }
         const string& p = uri.path();
         path ref_path;
@@ -37,7 +37,7 @@ YAMLValidator::YAMLValidator(const path &schema_path){
         if (exists(ref_path)) {
             schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
         } else {
-            throw runtime_error("Schema not found: " + ref_path.string());
+            throw runtime_error("Schema not found: "+ref_path.string());
         }
     };
     validator = json_validator(r_schema, loader);

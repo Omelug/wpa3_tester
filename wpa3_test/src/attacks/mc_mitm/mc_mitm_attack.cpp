@@ -4,6 +4,7 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
@@ -84,6 +85,12 @@ namespace wpa3_tester::mc_mitm{
 
     }
 
-    /*void stats(const RunStatus& rs){
-    }*/
+    void stats(const RunStatus& rs){
+        vector<observer::graph_lines> events;
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
+        events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
+        events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
+        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+    }
 }

@@ -7,7 +7,8 @@ namespace wpa3_tester::CSA_attack{
                          const Tins::NetworkInterface &iface,
                          const std::string &ssid,
                          int ap_channel,
-                         int new_channel);
+                         int new_channel,
+                         int switch_count = 3);
 
     void check_vulnerable(const Tins::HWAddress<6>& ap_mac,
                           const Tins::HWAddress<6>& sta_mac,

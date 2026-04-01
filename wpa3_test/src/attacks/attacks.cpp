@@ -62,6 +62,6 @@ namespace wpa3_tester::attack_module_maps{
         //{"reflection_attack", reflection::stats}
         //{"invalid_curve", invalid_curve::run_attack}
         {"dragondrain", dragondrain::stats_attack},
-        //{"mc_mitm", mc_mitm::run_attack}
+        {"mc_mitm", mc_mitm::stats},
     };
 }

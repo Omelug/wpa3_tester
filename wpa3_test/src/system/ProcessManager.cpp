@@ -147,7 +147,7 @@ namespace wpa3_tester{
                          const path &working_dir,
                          const path &logging_dir)
     {
-        log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
+        //log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
         auto mp = make_shared<ManagedProcess>();
         mp->proc = make_shared<reproc::process>();
 

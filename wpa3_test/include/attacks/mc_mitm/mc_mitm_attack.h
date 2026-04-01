@@ -11,4 +11,5 @@ using namespace filesystem;
 namespace wpa3_tester::mc_mitm{
     void setup_attack(RunStatus& rs);
     void run_attack(RunStatus& rs);
+    void stats(const RunStatus& rs);
 }

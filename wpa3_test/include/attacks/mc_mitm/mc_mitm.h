@@ -3,8 +3,6 @@
 #include <unordered_map>
 #include <queue>
 #include <memory>
-#include <atomic>
-
 #include <tins/tins.h>
 #include "client_state.h"
 #include "logger/log.h"
@@ -23,6 +21,7 @@ namespace wpa3_tester{
 
         void run(int timeout_sec);
         void stop();
+        static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
 
         std::string nic_real_ap, nic_rogue_ap, nic_real_mon, nic_rogue_mon;
         std::string ssid;
@@ -53,9 +52,7 @@ namespace wpa3_tester{
         double last_print_real_chan  = 0.0;
         double last_print_rogue_chan = 0.0;
 
-        // ---- helpers ----
         static double now_sec();
-
         void send_disas(const std::string &macaddr) const;
         void handle_rx_real_chan(Tins::PDU& pdu);
         void handle_rx_rogue_chan(Tins::PDU& pdu);

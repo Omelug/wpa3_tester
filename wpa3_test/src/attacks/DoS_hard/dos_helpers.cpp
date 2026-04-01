@@ -45,19 +45,4 @@ namespace wpa3_tester::dos_helpers {
         return frame;
     }
 
-    bool is_valid_pair(const SAEPair &p) {
-        if (!p.success) return false;
-        if (p.scalar.size() != 32 || p.element.size() != 64) return false;
-
-        const bool scalar_zero = all_of(p.scalar.begin(), p.scalar.end(),
-            [](uint8_t b){ return b == 0; });
-        if (scalar_zero) return false;
-
-        // element = x || y (each 32 bytes); neither coordinate may be zero
-        const bool x_zero = all_of(p.element.begin(), p.element.begin() + 32,
-            [](uint8_t b){ return b == 0; });
-        const bool y_zero = all_of(p.element.begin() + 32, p.element.end(),
-            [](uint8_t b){ return b == 0; });
-        return !x_zero && !y_zero;
-    }
 }

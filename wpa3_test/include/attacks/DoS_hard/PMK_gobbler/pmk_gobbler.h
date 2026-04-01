@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <deque>
 #include <mutex>
 #include <atomic>
 #include <tins/hw_address.h>
@@ -14,18 +13,18 @@ namespace wpa3_tester::pmk_gobbler{
     };
 
     struct CookieStore {
-        std::deque<ACMCookie> queue;
+        std::unordered_map<std::string, ACMCookie> queue; // key = sta_mac.to_string()
         std::mutex mtx;
         std::atomic<bool> stop{false};
     };
 
-    std::optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) ;
+    std::optional<ACMCookie> parse_acm_response(const uint8_t *packet, uint32_t len) ;
 
     void capture_cookies(const std::string &sniff_iface,
                          const Tins::HWAddress<6> &ap_mac,
                          CookieStore &store);
 
-    ACMCookie trigger_acm(const std::string &iface, const std::string &sniff_iface,
+    ACMCookie trigger_acm(const std::string &iface,
                           const Tins::HWAddress<6> &ap_mac,
                           int trigger_count);
 

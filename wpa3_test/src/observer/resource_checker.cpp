@@ -61,36 +61,38 @@ namespace wpa3_tester::observer::resource_checker{
         vector<ResourceRecord> records;
         ifstream file(filepath);
         string line;
+        int n_cores = -1;
 
         while (getline(file, line)) {
             if (line.empty()) continue;
 
+            // Parse header to get core count
+            if (line[0] == '#') {
+                // count "cpu" prefixed tokens
+                istringstream h(line);
+                string tok;
+                n_cores = 0;
+                while (h >> tok)
+                    if (tok.rfind("cpu", 0) == 0) ++n_cores;
+                continue;
+            }
+
+            if (n_cores < 0) continue; // no header yet
+
             istringstream iss(line);
             ResourceRecord record;
             if (!(iss >> record.timestamp)) continue;
-            int val;
-            vector<int> temp_vals;
-            while (iss >> val) {temp_vals.push_back(val);}
 
-            // minimum 3 values: RAM, Airtime, Drops
-            if (temp_vals.size() < 3) continue;
+            record.core_percents.resize(n_cores);
+            for (int i = 0; i < n_cores; ++i)
+                if (!(iss >> record.core_percents[i])) goto skip;
 
-            //  last is RX Drops
-            record.rx_drops = temp_vals.back();
-            temp_vals.pop_back();
-
-            // last-1 Airtime %
-            record.airtime_pct = temp_vals.back();
-            temp_vals.pop_back();
-
-            // last -2 Free RAM kB
-            record.mem_free_kb = temp_vals.back();
-            temp_vals.pop_back();
-
-            // rest are stats aboutCPU
-            record.core_percents = temp_vals;
+            if (!(iss >> record.mem_free_kb)) continue;
+            if (!(iss >> record.airtime_pct)) continue;
+            if (!(iss >> record.rx_drops))   continue;
 
             records.push_back(record);
+            skip:;
         }
         return records;
     }
@@ -191,18 +193,18 @@ namespace wpa3_tester::observer::resource_checker{
                              const string& output_imagepath,
                              const vector<long long>& acm_timestamps) {
 
-        // Read the first line to dynamically calculate the number of cores
+        // Skip header line — read second line for column count
         ifstream file(data_filepath);
         string first_line;
-        getline(file, first_line);
+        getline(file, first_line); // skip '#' header
+        string second_line;
+        getline(file, second_line);
         file.close();
 
         int num_columns = 0;
-        istringstream iss(first_line);
+        istringstream iss(second_line);
         string token;
-        while (iss >> token) {
-            num_columns++;
-        }
+        while (iss >> token) num_columns++;
 
         // Columns: Timestamp(1) + Cores(N) + RAM(1) + Airtime(1) + Drops(1) = N + 4
         int num_cores = max(1, num_columns - 4);
@@ -212,7 +214,7 @@ namespace wpa3_tester::observer::resource_checker{
 
         FILE* gnuplot = popen("gnuplot", "w");
         if (!gnuplot) return;
-
+        fprintf(gnuplot, "set datafile commentschars '#'\n"); // skip # lines
         fprintf(gnuplot, "set terminal pngcairo size 1600,600\n");
         fprintf(gnuplot, "set output '%s'\n", output_imagepath.c_str());
         fprintf(gnuplot, "set xdata time\n");
@@ -271,6 +273,7 @@ namespace wpa3_tester::observer::resource_checker{
         }
         return timestamps;
     }
+
     void start_acm_monitoring_remote(RunStatus &rs, const string &actor_name) {
         const auto& actor = rs.get_actor(actor_name);
         const string remote_log = "/tmp/" + actor_name + "_acm.log";

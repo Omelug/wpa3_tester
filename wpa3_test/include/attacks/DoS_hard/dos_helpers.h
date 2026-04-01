@@ -12,5 +12,4 @@ namespace wpa3_tester::dos_helpers {
     };
 
     std::optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len);
-    bool is_valid_pair(const SAEPair &p);
 }

@@ -54,7 +54,7 @@ observers:
     actor: client
     program: tshark
     program_config:
-      filter: "udp port 5201"
+      filter: ""
   tshark_attacker:
     actor: attacker
     program: tshark
@@ -66,6 +66,6 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 10
+  attack_time_sec: 250
   acm_trigger_count: 2560
 # TODO validator

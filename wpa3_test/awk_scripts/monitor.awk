@@ -1,4 +1,12 @@
 BEGIN {
+    # Print header so parser knows column layout
+    "cat /proc/cpuinfo | grep -c processor" | getline ncores;
+    close("cat /proc/cpuinfo | grep -c processor");
+    printf "# timestamp";
+    for (I = 1; I <= ncores; I++) printf " cpu%d", I;
+    print " mem_free_kb airtime_pct rx_drops";
+    fflush();
+
     #print "DEBUG: Monitoring started..." > "/deProcessManager.cppv/stderr";
     while(1) {
         "date +%s" | getline now; close("date +%s");

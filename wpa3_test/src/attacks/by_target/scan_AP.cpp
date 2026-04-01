@@ -129,7 +129,7 @@ namespace wpa3_tester::attack_scan{
                 if (errno == EINTR) continue;
                 break;
             }
-            if (ret == 0) break; // Timeout
+            //if (ret == 0) break; // Timeout
             if (!(pfd.revents & POLLIN)) continue;
 
             while (const unique_ptr<PDU> pdu{sniffer.next_packet()}) {

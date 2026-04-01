@@ -50,6 +50,11 @@ observers:
   #  program: mausezahn
   #  program_config:
   #    target_actor: access_point
+  tshark_client:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
   tshark_attacker:
     actor: attacker
     program: tshark
@@ -62,3 +67,5 @@ observers:
       interval: 1
 attack_config:
   attack_time_sec: 10
+  acm_trigger_count: 2560
+# TODO validator

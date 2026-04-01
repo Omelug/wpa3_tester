@@ -16,7 +16,8 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params){
+    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
+        const dos_helpers::SAEPair &sae_params){
 
         // Build the 802.11 Auth frame
         Dot11Authentication auth;
@@ -52,7 +53,8 @@ namespace wpa3_tester::cookie_guzzler{
         return radiotap;
     }
 
-    void check_vuln(const string &iface_name,const HWAddress<6> &ap_mac, const int attack_time, const SAEPair &sae_params){
+    void check_vuln(const string &iface_name,const HWAddress<6> &ap_mac, const int attack_time,
+        const dos_helpers::SAEPair &sae_params){
 
         PacketSender sender(iface_name);
 
@@ -82,11 +84,12 @@ namespace wpa3_tester::cookie_guzzler{
 
     void run_attack(RunStatus &rs){
         const ActorPtr ap = rs.get_actor("access_point");
+        //TODO this should be in setup_actor
         const auto ssid = rs.config.at("actors").at("access_point")
             .at("setup").at("program_config").at("ssid").get<string>();
         const ActorPtr attacker = rs.get_actor("attacker");
 
-        const SAEPair sae_params = get_commit_values(
+        const dos_helpers::SAEPair sae_params = get_commit_values(
             rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         if (sae_params.success) {
             rs.start_observers();

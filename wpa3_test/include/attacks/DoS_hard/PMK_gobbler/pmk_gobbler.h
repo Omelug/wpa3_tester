@@ -4,7 +4,6 @@
 #include <deque>
 #include <mutex>
 #include <atomic>
-#include <libtins-src/include/tins/radiotap.h>
 #include <tins/hw_address.h>
 #include "config/RunStatus.h"
 
@@ -20,7 +19,7 @@ namespace wpa3_tester::pmk_gobbler{
         std::atomic<bool> stop{false};
     };
 
-    std::optional<ACMCookie> parse_acm_response(const Tins::RadioTap &pkt);
+    std::optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) ;
 
     void capture_cookies(const std::string &sniff_iface,
                          const Tins::HWAddress<6> &ap_mac,

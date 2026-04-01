@@ -36,7 +36,7 @@ namespace wpa3_tester{
     using install_err         = typed_error<LogLevel::CRITICAL>;
 
     using req_err            = typed_error<LogLevel::CRITICAL>;
-
+    using run_err           = typed_error<LogLevel::CRITICAL>;
     using setup_err           = typed_error<LogLevel::CRITICAL>;
     using scan_err          = typed_error<LogLevel::CRITICAL>;
     using stats_err          = typed_error<LogLevel::ERROR>;

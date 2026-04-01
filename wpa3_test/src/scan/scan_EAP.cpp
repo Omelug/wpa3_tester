@@ -117,7 +117,7 @@ namespace wpa3_tester::scan {
                 break;
             }
             //timeout
-            if (ret == 0) break;
+            //if (ret == 0) break;
             if(!(pfd.revents & POLLIN)) continue;
 
             const unique_ptr<PDU> pdu(sniffer.next_packet());

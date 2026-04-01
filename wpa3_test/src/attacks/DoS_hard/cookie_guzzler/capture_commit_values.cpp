@@ -12,39 +12,11 @@
 
 using namespace std;
 using namespace Tins;
+using namespace chrono;
+
 namespace wpa3_tester::cookie_guzzler{
-
-    optional<SAEPair> parse_sae_commit(const uint8_t *packet, const uint32_t len) {
-        if (len < 4) return nullopt;
-
-        const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
-
-        constexpr size_t dot11_header = 24;
-        constexpr size_t auth_fixed   = 6;
-        const size_t auth_offset = radiotap_len + dot11_header;
-        const size_t sae_offset  = auth_offset + auth_fixed;
-
-        if (len <= sae_offset) return nullopt;
-
-        const uint16_t algo = *reinterpret_cast<const uint16_t *>(packet + auth_offset);
-        const uint16_t seq  = *reinterpret_cast<const uint16_t *>(packet + auth_offset + 2);
-
-        if (algo != 3 || seq != 1) return nullopt;
-
-        const uint8_t *sae_data = packet + sae_offset;
-        const size_t   sae_size = len - sae_offset;
-
-        if (sae_size < (2 + 32 + 64)) return nullopt;
-
-        SAEPair frame;
-        frame.group_id = *reinterpret_cast<const uint16_t *>(sae_data);
-        frame.scalar.assign(sae_data + 2,  sae_data + 34);
-        frame.element.assign(sae_data + 34, sae_data + 98);
-        return frame;
-    }
-
-    SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle) {
-        SAEPair result{};
+    dos_helpers::SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle) {
+        dos_helpers::SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
         const bool owns_handle = (handle == nullptr);
@@ -92,12 +64,12 @@ namespace wpa3_tester::cookie_guzzler{
                 if (errno == EINTR) continue;
                 break;
             }
-            if (ret == 0) break;
+            if (ret == 0 || !(pfd.revents & POLLIN)) continue;;
             pcap_pkthdr *header;
             const uint8_t *packet;
             while (pcap_next_ex(handle, &header, &packet) == 1) {
                 //if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
-                if (const auto frame = parse_sae_commit(packet, header->caplen)) {
+                if (const auto frame = dos_helpers::parse_sae_commit(packet, header->caplen)) {
                     result = frame.value();
                     result.success = true;
                     log(LogLevel::DEBUG, "Captured SAE commit, scalar size: %zu", result.scalar.size());
@@ -159,12 +131,12 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
 
-    SAEPair get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
+    dos_helpers::SAEPair get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
         if(iface == sniff_iface) throw invalid_argument("Interface names do cant be same");
         const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
         const string conf_path = create_wpa_supplicant_config(ssid);
         start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
-        SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
+        dos_helpers::SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
         if (handler != nullptr) pcap_close(handler);
         stop_wpa_supplicant(pid_file);
         filesystem::remove(conf_path);

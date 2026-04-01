@@ -2,23 +2,16 @@
 #include <tins/tins.h>
 #include <string>
 #include <random>
+
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 
-using namespace std;
-using namespace Tins;
-using namespace chrono;
-
 namespace wpa3_tester::cookie_guzzler{
-    struct SAEPair {
-        uint16_t group_id;
-        std::vector<uint8_t> scalar;
-        std::vector<uint8_t> element;
-        bool success = false;
-    };
-
-    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params);
+    Tins::RadioTap get_cookie_guzzler_frame(const Tins::HWAddress<6> &ap_mac,
+        const Tins::HWAddress<6> &sta_mac, const dos_helpers::SAEPair &sae_params);
     void run_attack(RunStatus &rs);
     void stats_attack(const RunStatus &rs);
-    SAEPair get_commit_values(RunStatus &rs, const string &iface,const string &sniff_iface, const string &ssid,
-        const HWAddress<6> &ap_mac, int timeout, pcap_t *handler = nullptr);
+    dos_helpers::SAEPair get_commit_values(RunStatus &rs,
+        const std::string &iface, const std::string &sniff_iface, const std::string &ssid,
+        const Tins::HWAddress<6> &ap_mac, int timeout, pcap_t *handler = nullptr);
 }

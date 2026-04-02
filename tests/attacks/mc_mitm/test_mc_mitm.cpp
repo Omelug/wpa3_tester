@@ -21,10 +21,11 @@ namespace wpa3_tester {
         pcap_next_ex(handle, &header, &packet);
         std::vector frame_data(packet, packet + header->caplen);
         pcap_close(handle);
-        
+
         return frame_data;
     }
 
+    // TODO change to FCS a
     TEST_CASE("patch_channel_raw - beacon frame") {
         // Test with beacon_test.pcapng
         vector<uint8_t> beacon_data = read_pcap_file("beacon_test.pcapng");
@@ -43,6 +44,7 @@ namespace wpa3_tester {
         REQUIRE((beacon_data != original_data));
         REQUIRE((beacon_data.size() != original_data.size()));
 
+
         INFO("Beacon frame size before: " << original_data.size());
         INFO("Beacon frame size after: " << beacon_data.size());
     }
@@ -53,15 +55,31 @@ namespace wpa3_tester {
         vector<uint8_t> original_data = probe_data; // Keep copy for comparison
         McMitm::patch_channel_raw(probe_data, 11);
 
+        RadioTap rt(probe_data.data(), probe_data.size());
+        const Dot11ManagementFrame &mgmt = rt.rfind_pdu<Dot11ManagementFrame>();
+
+        // --- DS Parameter Set (ID=3) ---
+        {
+            const auto ds_opt = mgmt.search_option(Dot11ManagementFrame::DS_SET);
+            REQUIRE((ds_opt != nullptr));
+            REQUIRE((ds_opt->data_size() == 1));
+            REQUIRE((ds_opt->data_ptr()[0] == 11));
+        }
+
+        // --- HT Operation (ID=61) ---
+        {
+            const auto ht_opt = mgmt.search_option(Dot11ManagementFrame::HT_OPERATION);
+            REQUIRE((ht_opt != nullptr));
+            REQUIRE((ht_opt->data_size() >= 1));
+            REQUIRE((ht_opt->data_ptr()[0] == 11));
+        }
+
         PacketWriter writer("probe_res_result.pcap", Tins::DataLinkType<RadioTap>());
         RawPDU raw_pdu(probe_data);
         writer.write(raw_pdu);
 
         // Verify that the data was modified
         REQUIRE((probe_data != original_data));
-        //RadioTap rt(probe_data.data(), probe_data.size());
-        //REQUIRE((probe_data.size() == original_data.size()));
-        //CHECK((rt.channel_freq() == 2460));
 
         INFO("Probe response frame size before: " << original_data.size());
         INFO("Probe response frame size after: " << probe_data.size());
@@ -80,5 +98,22 @@ namespace wpa3_tester {
         REQUIRE((small_data == original_small)); // Should remain unchanged
     }
 
+    TEST_CASE("beacon_to_probe_resp") {
+        Dot11Beacon beacon;
+        beacon.addr2("aa:bb:cc:dd:ee:ff");
+        beacon.addr3("aa:bb:cc:dd:ee:ff");
+        beacon.interval(100);
+        beacon.ds_parameter_set(6);
+        beacon.ssid("TestNet");
+
+        unique_ptr<Dot11ProbeResponse> probe(beacon_to_probe_resp(beacon, 11));
+
+        REQUIRE((probe->addr2() == beacon.addr2()));
+        REQUIRE((probe->addr3() == beacon.addr3()));
+        REQUIRE((probe->interval() == beacon.interval()));
+        REQUIRE((probe->ds_parameter_set() == 11));
+        REQUIRE((probe->search_option(Dot11::SSID) != nullptr));
+        REQUIRE((probe->search_option(Dot11::TIM) == nullptr));
+    }
 
 }

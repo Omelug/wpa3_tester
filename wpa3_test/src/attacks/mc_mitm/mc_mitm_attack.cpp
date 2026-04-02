@@ -36,14 +36,10 @@ namespace wpa3_tester::mc_mitm{
         McMitm attack(att_real_channel["iface"], att_rogue_channel["iface"], ap["ssid"], client["mac"]);
         //attack.run();
 
-        //const bool check_rogue_beacons =
-        //    (hw_capabilities::get_driver_name(att_real_channel["sniff_iface"]) == "ath9k_htc");
         att_real_channel->setup_mac_addr(client["mac"]);
         att_rogue_channel->setup_mac_addr(ap["mac"]);
         att_real_channel->up_iface();
         att_rogue_channel->up_iface();
-        att_real_channel->up_sniff_iface();
-        att_rogue_channel->up_sniff_iface();
 
         rs.start_observers();
 
@@ -61,16 +57,14 @@ namespace wpa3_tester::mc_mitm{
         cfg_rogue.set_immediate_mode(true);
 
         //TODO move to actor:setup ?
-        attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["sniff_iface"],  cfg_real);
-        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue_channel["sniff_iface"], cfg_rogue);
+        attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["iface"],  cfg_real);
+        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue_channel["iface"], cfg_rogue);
         attack_scan::ScanAP scan_ap{};
 
         scan_ap.bssid = ap["mac"];
         attack.beacon = RSN_scan(att_real_channel["iface"], 10, scan_ap);
-        if(attack.beacon == nullptr){
-            throw runtime_error("beacon not found");
-        }
-        start_ap(att_rogue_channel["iface"], stoi(att_rogue_channel["channel"]), attack.beacon.get());
+        if(attack.beacon == nullptr) throw runtime_error("beacon not found");
+
         log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
         this_thread::sleep_for(seconds(1));
 
@@ -79,7 +73,7 @@ namespace wpa3_tester::mc_mitm{
         attack.netconfig.ssid = ap["ssid"];
         attack.ap_mac = ap["mac"];
         attack.client_mac = client["mac"];
-        attack.run(40); //TODO timeout
+        attack.run(30); //TODO timeout
     }
 
     void stats(const RunStatus& rs){
@@ -89,5 +83,6 @@ namespace wpa3_tester::mc_mitm{
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
         //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+        observer::tshark_graph(rs, "att_rogue_channel", events);
     }
 }

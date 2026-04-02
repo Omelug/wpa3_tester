@@ -54,7 +54,6 @@ namespace wpa3_tester{
         double last_print_rogue_chan = 0.0;
 
         static double now_sec();
-        void send_disas(const std::string &macaddr) const;
         static void patch_channel_raw(std::vector<uint8_t>& raw, uint8_t channel);
         void handle_rx_real_chan(Tins::PDU& pdu);
         void handle_rx_rogue_chan(Tins::PDU& pdu);

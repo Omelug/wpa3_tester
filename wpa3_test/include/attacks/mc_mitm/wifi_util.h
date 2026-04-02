@@ -37,7 +37,7 @@ bool dot11_is_group(const Tins::Dot11& pkt);
 std::string get_ssid(const Tins::Dot11Beacon& beacon);
 const Tins::Dot11::option* get_element(const Tins::Dot11& pkt, uint8_t id);
 
-Tins::Dot11ProbeResponse* beacon_to_probe_resp(const Tins::Dot11Beacon& beacon);
+Tins::Dot11ProbeResponse* beacon_to_probe_resp(const Tins::Dot11Beacon& beacon, int rogue_channel);
 
 // EAPOL helpers
 int  get_eapol_msg_num(const Tins::Dot11Data& pkt);

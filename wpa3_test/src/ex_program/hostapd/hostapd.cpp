@@ -83,6 +83,7 @@ namespace wpa3_tester::hostapd{
         // write config
         for (auto it = ap_setup.begin(); it != ap_setup.end(); ++it) {
             if(it.key() == "version") continue;
+            if(it.key() == "other_options") continue;
             hostapd_conf << it.key() << "=";
             if (it.value().is_string()) {
                 hostapd_conf << it.value().get<string>();
@@ -116,10 +117,14 @@ namespace wpa3_tester::hostapd{
 
         command.insert(command.end(), {
             get_hostapd(version),
-            //"-dd",
             "-i", rs.get_actor(actor_name)["iface"],
             hostapd_config_path,
         });
+        if (program_config.contains("other_options") && !program_config["other_options"].is_null()) {
+            istringstream ss(program_config["other_options"].get<string>());
+            string token;
+            while (ss >> token) command.push_back(token);
+        }
         rs.process_manager.run(actor_name,command, rs.run_folder);
     }
 
@@ -156,6 +161,7 @@ namespace wpa3_tester::hostapd{
         out << "network={\n";
         for (auto it = client_setup.begin(); it != client_setup.end(); ++it) {
             if (it.key() == "version") continue;
+            if(it.key() == "other_options") continue;
             out << "\t" << it.key() << "=";
             if (it.value().is_string() && !quoted_keys.contains(it.key())) {
                 out << it.value().get<string>();
@@ -189,36 +195,64 @@ namespace wpa3_tester::hostapd{
 
         command.insert(command.end(), {
             get_wpa_supplicant(version),
-            //"-dd",
             "-i", rs.get_actor(actor_name)["iface"],
             "-c", wpa_supp_config_path
         });
+        if (program_config.contains("other_options") && !program_config["other_options"].is_null()) {
+            istringstream ss(program_config["other_options"].get<string>());
+            string token;
+            while (ss >> token) command.push_back(token);
+        }
         rs.process_manager.run(actor_name, command, rs.run_folder);
     }
 
     // --------- HOSTAPD_MANA ---------
     void run_hostapd_mana(RunStatus& rs, const string &actor_name){
 
-        const path hostapd_config_config_path = path(rs.run_folder)/(actor_name+"_hostapd_mana.conf");
+        const path hostapd_mana_config_path = path(rs.run_folder)/(actor_name+"_hostapd_mana.conf");
 
-        json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
+        const json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
         auto rogue_ap_setup = rs.config.at("actors").at(actor_name).at("setup").at("program");
         if(rogue_ap_setup.contains("hostapd-mana_path")){
             const path hostapd_path = rogue_ap_setup["hostapd-mana_path"].get<string>();
             const path src = hostapd_path.is_absolute() ? hostapd_path : path(rs.config_path).parent_path() / hostapd_path;
-            copy_file(src, hostapd_config_config_path, copy_options::overwrite_existing);
+            copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
         }
 
-        rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_config_config_path);
-        rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_config_config_path);
+        if( rs.get_actor(actor_name)["source"] == "internal"){
+            rs.get_actor(actor_name)->str_con["ssid"] = get_ssid(program_config, hostapd_mana_config_path);
+            rs.get_actor(actor_name)->str_con["channel"] = get_channel(program_config, hostapd_mana_config_path);
+        }
 
         vector<string> command = {};
         observer::add_nets(rs,command, actor_name);
+
         command.insert(command.end(), {
             "hostapd-mana",
+            //"-P", pid_file, // write PID to file, dont work without -B (background)
             "-i", rs.get_actor(actor_name)["iface"],
-            hostapd_config_config_path,
+            hostapd_mana_config_path,
         });
-        rs.process_manager.run(actor_name,command, rs.run_folder);
+
+        rs.process_manager.run(actor_name, command, rs.run_folder);
+
+        const string log_path = (path(rs.run_folder) / "logger" / "rogue_ap.log").string();
+        ifstream log_file(log_path);
+        if (!log_file.is_open()) return;
+
+        const string output_path = (path(rs.run_folder) / "captured_hashes.txt").string();
+        ofstream out(output_path);
+
+        string line;
+        set<string> seen; // deduplicate
+        while (getline(log_file, line)) {
+            const auto pos = line.find("MANA WPA2 HASHCAT | ");
+            if (pos == string::npos) continue;
+            const string hash = line.substr(pos + 20); // skip "MANA WPA2 HASHCAT | "
+            if (seen.insert(hash).second) {
+                out << hash << "\n";
+                log(LogLevel::INFO, "Captured hash: " + hash.substr(0, 32) + "...");
+            }
+        }
     }
 }

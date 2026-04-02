@@ -10,12 +10,12 @@
 namespace wpa3_tester{
     class McMitm {
     public:
-        McMitm(const std::string& nic_real,
-               const std::string& nic_rogue,
-               const std::string& nic_real_mon,
-               const std::string& nic_rogue_mon,
-               const std::string& ssid,
-               const std::string& client_mac);
+        McMitm(
+            std::string nic_real,
+            std::string nic_rogue,
+            std::string ssid,
+            std::string client_mac
+        );
 
         ~McMitm();
 
@@ -23,7 +23,7 @@ namespace wpa3_tester{
         void stop();
         static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
 
-        std::string nic_real_ap, nic_rogue_ap, nic_real_mon, nic_rogue_mon;
+        std::string nic_real_ap, nic_rogue_ap; //, nic_real_mon, nic_rogue_mon;
         std::string ssid;
         std::string client_mac;
 
@@ -36,10 +36,10 @@ namespace wpa3_tester{
         std::unordered_map<std::string, std::unique_ptr<ClientState>> clients;
 
         // (scheduled_time, macaddr) — min-heap
-        using DisasEntry = std::pair<double, std::string>;
-        std::priority_queue<DisasEntry,
-                            std::vector<DisasEntry>,
-                            std::greater<DisasEntry>> disas_queue;
+        //using DisasEntry = std::pair<double, std::string>;
+        //std::priority_queue<DisasEntry,
+        //                    std::vector<DisasEntry>,
+        //                    std::greater<DisasEntry>> disas_queue;
 
         std::unique_ptr<Tins::PacketSender> sender_real;
         std::unique_ptr<Tins::PacketSender> sender_rogue;
@@ -54,11 +54,9 @@ namespace wpa3_tester{
 
         static double now_sec();
         void send_disas(const std::string &macaddr) const;
+        static void patch_channel_raw(std::vector<uint8_t>& raw, uint8_t channel);
         void handle_rx_real_chan(Tins::PDU& pdu);
         void handle_rx_rogue_chan(Tins::PDU& pdu);
-
-        void add_client(std::unique_ptr<ClientState> client);
-        void del_client(const std::string& macaddr);
         ClientState* find_client(const std::string& mac);
 
         // print helpers

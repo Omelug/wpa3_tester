@@ -8,8 +8,8 @@ namespace wpa3_tester{
 
     struct NetworkConfig {
         std::string ssid;
-        int real_channel  = -1;
-        int rogue_channel = -1;
+        uint8_t real_channel  = -1;
+        uint8_t rogue_channel = -1;
     };
 
     class ClientState {

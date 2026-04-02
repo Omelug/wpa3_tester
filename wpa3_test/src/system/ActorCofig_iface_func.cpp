@@ -81,10 +81,14 @@ namespace wpa3_tester{
         run({"iw", "dev", iface, "set", "type", "managed"});
     }
 
-    void Actor_config::setup_mac_addr(const string& mac) const{
+    void Actor_config::setup_mac_addr(const string& mac) const {
         const string& iface = str_con.at("iface").value();
-        if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
+        if (conn != nullptr) { throw not_implemented_err("not valid for external "); }
         hw_capabilities::set_macaddress(iface, mac);
+
+        if (str_con.contains("sniff_iface") && str_con.at("sniff_iface").has_value()) {
+            hw_capabilities::set_macaddress(str_con.at("sniff_iface").value(), mac);
+        }
     }
 
 

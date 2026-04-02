@@ -33,9 +33,7 @@ namespace wpa3_tester::mc_mitm{
         const auto ap = rs.get_actor("access_point");
         const auto client = rs.get_actor("client");
 
-        McMitm attack(att_real_channel["iface"], att_rogue_channel["iface"],
-            att_real_channel["sniff_iface"], att_rogue_channel["sniff_iface"],
-            ap["ssid"], client["mac"]);
+        McMitm attack(att_real_channel["iface"], att_rogue_channel["iface"], ap["ssid"], client["mac"]);
         //attack.run();
 
         //const bool check_rogue_beacons =
@@ -49,8 +47,8 @@ namespace wpa3_tester::mc_mitm{
 
         rs.start_observers();
 
-        attack.sender_real  = make_unique<PacketSender>(att_real_channel["sniff_iface"]);
-        attack.sender_rogue = make_unique<PacketSender>(att_rogue_channel["sniff_iface"]);
+        attack.sender_real  = make_unique<PacketSender>(att_real_channel["iface"]);
+        attack.sender_rogue = make_unique<PacketSender>(att_rogue_channel["iface"]);
 
         string bpf = "(wlan addr1 " + ap["mac"] + ") or (wlan addr2 " + ap["mac"] + ")";
         bpf += " or (wlan addr1 " + client["mac"] + ") or (wlan addr2 " + client["mac"] + ")";
@@ -81,8 +79,7 @@ namespace wpa3_tester::mc_mitm{
         attack.netconfig.ssid = ap["ssid"];
         attack.ap_mac = ap["mac"];
         attack.client_mac = client["mac"];
-        attack.run(10); //TODO timeout
-
+        attack.run(40); //TODO timeout
     }
 
     void stats(const RunStatus& rs){
@@ -91,6 +88,6 @@ namespace wpa3_tester::mc_mitm{
         events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
-        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+        //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
     }
 }

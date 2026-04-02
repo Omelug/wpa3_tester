@@ -309,13 +309,22 @@ namespace wpa3_tester{
         if (mp->drain_thread.joinable()) mp->drain_thread.join();
         //log(LogLevel::DEBUG, "join done");
 
+        // Call on_stop callback if registered
+        if (mp->before_stop_callback){
+            try {
+                mp->before_stop_callback();
+            } catch (const exception& e) {
+                log(LogLevel::WARNING, "Error in on_stop callback for "+process_name +":"+e.what());
+            }
+        }
+
         if (mp->proc){ mp->proc->stop(operations);}
         log(LogLevel::DEBUG, "proc->stop done for "+process_name);
 
         // Call on_stop callback if registered
-        if (mp->on_stop_callback){
+        if (mp->after_stop_callback){
             try {
-                mp->on_stop_callback();
+                mp->after_stop_callback();
             } catch (const exception& e) {
                 log(LogLevel::WARNING, "Error in on_stop callback for "+process_name +":"+e.what());
             }
@@ -341,11 +350,19 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "All processes stopped");
     }
 
-    void ProcessManager::on_stop(const string& process_name, const function<void()> &callback) {
+    //TODO add test
+    void ProcessManager::before_stop(const string& process_name, const function<void()> &callback) {
         lock_guard lock(logger_mtx);
         const auto proc_iter = processes.find(process_name);
         if (proc_iter != processes.end() && proc_iter->second) {
-            proc_iter->second->on_stop_callback = callback;
+            proc_iter->second->before_stop_callback = callback;
+        }
+    }
+    void ProcessManager::after_stop(const string& process_name, const function<void()> &callback) {
+        lock_guard lock(logger_mtx);
+        const auto proc_iter = processes.find(process_name);
+        if (proc_iter != processes.end() && proc_iter->second) {
+            proc_iter->second->after_stop_callback = callback;
         }
     }
 }

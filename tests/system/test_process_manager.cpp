@@ -218,7 +218,7 @@ namespace wpa3_tester {
         pm.run("test_proc", sleep_cmd);
 
         bool callback_called = false;
-        pm.on_stop("test_proc", [&callback_called]() {
+        pm.after_stop("test_proc", [&callback_called]() {
             callback_called = true;
         });
 

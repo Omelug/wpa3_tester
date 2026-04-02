@@ -104,7 +104,7 @@ const Dot11::option* get_element(const Dot11& pkt, uint8_t id) {
     return nullptr;
 }
 
-Dot11ProbeResponse* beacon_to_probe_resp(const Dot11Beacon& beacon) {
+Dot11ProbeResponse* beacon_to_probe_resp(const Dot11Beacon& beacon, const int rogue_channel) {
     auto* resp = new Dot11ProbeResponse();
     resp->addr2(beacon.addr2());
     resp->addr3(beacon.addr3());
@@ -112,10 +112,15 @@ Dot11ProbeResponse* beacon_to_probe_resp(const Dot11Beacon& beacon) {
     resp->interval(beacon.interval());
     resp->capabilities() = beacon.capabilities();
 
-    // Copy all IEs except TIM
     for (const auto& opt : beacon.options()) {
-        if (opt.option() != IEEE_TLV_TYPE_TIM)
-            resp->add_option(opt);
+        if (opt.option() == IEEE_TLV_TYPE_TIM) continue;
+
+        if (opt.option() == IEEE_TLV_TYPE_CHANNEL) {
+            // Override DS Parameter set with rogue channel
+            resp->ds_parameter_set(rogue_channel);
+            continue;
+        }
+        resp->add_option(opt);
     }
     return resp;
 }

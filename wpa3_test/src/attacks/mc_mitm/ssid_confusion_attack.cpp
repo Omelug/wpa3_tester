@@ -57,9 +57,7 @@ namespace wpa3_tester::ssid_confusion {
         const bool   strip_rsn    = att_cfg.value("strip_rsn", false);
         const int    timeout      = att_cfg.value("attack_time_sec", 30);
 
-        McMitm attack(att_real["iface"], att_rogue["iface"],
-                      att_real["sniff_iface"], att_rogue["sniff_iface"],
-                      real_ssid, client["mac"]);
+        McMitm attack(att_real["iface"], att_rogue["iface"], real_ssid, client["mac"]);
         attack.setup_ifaces(att_real, client["mac"], att_rogue, ap["mac"]);
         rs.start_observers();
 
@@ -92,7 +90,6 @@ namespace wpa3_tester::ssid_confusion {
 
         log(LogLevel::INFO, "SSID Confusion setup: real='"+real_ssid+"' rogue='"+confused_ssid+"'");
 
-        start_ap(att_rogue["iface"], stoi(att_rogue["channel"]), confused_beacon.get());
         log(LogLevel::INFO, "Rogue AP started, waiting 1 s to initialize ...");
         this_thread::sleep_for(seconds(1));
 

@@ -7,4 +7,7 @@ properties:
   wpa_supplicant_path:
       type: string
       description: relative path from final config to config
+  other_options:
+      type: string
+      description: arguments for program
 additionalProperties: true

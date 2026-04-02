@@ -63,6 +63,7 @@ namespace wpa3_tester{
                 //set_managed_mode();
                 set_ap_mode();
             }
+            if (bool_conditions.at("managed").value_or(false)){set_managed_mode();}
             up_iface();
             up_sniff_iface();
         }

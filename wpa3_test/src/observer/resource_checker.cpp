@@ -291,7 +291,7 @@ namespace wpa3_tester::observer::resource_checker{
         };
 
         rs.process_manager.run(actor_name + "_acm", ssh_command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(actor_name + "_acm", [remote_log, local_log, actor]() {
+        rs.process_manager.after_stop(actor_name + "_acm", [remote_log, local_log, actor]() {
             actor->conn->download_file(remote_log, local_log);
             actor->conn->exec("rm " + remote_log);
         });

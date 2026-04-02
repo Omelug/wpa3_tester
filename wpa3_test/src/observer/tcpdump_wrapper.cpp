@@ -54,7 +54,7 @@ namespace wpa3_tester::observer{
         };
         const string local_pcap  = get_observer_folder(rs, program_name) / (actor_name+"_capture.pcap");
         rs.process_manager.run(actor_name+"_cap", command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(actor_name+"_cap", [remote_pcap, local_pcap, actor]() {
+        rs.process_manager.after_stop(actor_name+"_cap", [remote_pcap, local_pcap, actor]() {
            const vector<string> scp_cmd = {"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] +"@"+actor["whitebox_ip"]+":"+remote_pcap, local_pcap};
            hw_capabilities::run_cmd(scp_cmd);
        });

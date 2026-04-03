@@ -51,8 +51,8 @@ namespace wpa3_tester::mc_mitm{
         bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
 
         SnifferConfiguration cfg_real, cfg_rogue;
-        cfg_real.set_filter(bpf);
-        cfg_rogue.set_filter(bpf);
+        //cfg_real.set_filter(bpf);
+        //cfg_rogue.set_filter(bpf);
         cfg_real.set_immediate_mode(true);
         cfg_rogue.set_immediate_mode(true);
         cfg_real.set_timeout(1);

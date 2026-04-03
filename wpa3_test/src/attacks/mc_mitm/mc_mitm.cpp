@@ -188,16 +188,30 @@ namespace wpa3_tester{
         dump_hex("AFTER PATCH", raw, 48);
     }
 
-    void McMitm::handle_rx_real_chan(PDU& pdu) {
+    void McMitm::handle_rx_real_chan(PDU& pdu){
         const auto* dot11 = pdu.find_pdu<Dot11>();
         if (!dot11) return;
 
         const string addr1 = dot11->addr1().to_string();
         string addr2;
-        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>())
+        if (const auto* mgmt = pdu.find_pdu<Dot11ManagementFrame>()) {
             addr2 = mgmt->addr2().to_string();
-        else if (const auto* data = pdu.find_pdu<Dot11Data>())
+        } else if (const auto* data = pdu.find_pdu<Dot11Data>()) {
             addr2 = data->addr2().to_string();
+        } else {
+            //TPODO encrpypted
+            // fallback – přečti addr2 přímo z raw bytes
+            const auto* rt = pdu.find_pdu<RadioTap>();
+            if (rt) {
+                const auto raw = pdu.serialize();
+                const uint16_t rt_len = raw[2] | (raw[3] << 8);
+                if (raw.size() >= rt_len + 16) {
+                    HWAddress<6> hw(raw.data() + rt_len + 10);
+                    addr2 = hw.to_string();
+                }
+            }
+        }
+
 
         // Frames from client TO real AP — push back to rogue channel via CSA
         if (addr1 == ap_mac) {
@@ -228,12 +242,6 @@ namespace wpa3_tester{
                 }
             }
 
-
-            // Serialize, patch raw bytes, resend
-            //auto raw = pdu.serialize();
-            //patch_channel_raw(raw, netconfig.rogue_channel);
-            //auto patched = RawPDU(raw.data(), raw.size());
-            //sender_rogue->send(patched, nic_rogue_ap);
             sender_rogue->send(pdu, nic_rogue_ap);
             print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
         }

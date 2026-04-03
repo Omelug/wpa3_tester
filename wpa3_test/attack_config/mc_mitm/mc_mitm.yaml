@@ -82,4 +82,4 @@ observers:
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"
 attack_config:
-  attack_time: 60
+  attack_time: 20

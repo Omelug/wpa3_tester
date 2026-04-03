@@ -29,6 +29,8 @@ int chan2freq(int channel);
 std::string get_ssid(const Tins::Dot11Beacon& beacon);
 
 Tins::Dot11ProbeResponse* beacon_to_probe_resp(const Tins::Dot11Beacon& beacon, int rogue_channel);
+Tins::Dot11Beacon* beacon_channel_patch(const Tins::Dot11Beacon& beacon, int rogue_channel);
+Tins::Dot11AssocResponse* assoc_resp_channel_patch(const Tins::Dot11AssocResponse& assoc, int rogue_channel);
 
 // EAPOL helpers
 int  get_eapol_msg_num(const Tins::Dot11Data& pkt);

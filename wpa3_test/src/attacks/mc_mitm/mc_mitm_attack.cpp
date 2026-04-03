@@ -85,7 +85,8 @@ namespace wpa3_tester::mc_mitm{
         events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
-        //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+
+        //observer::tshark_graph(rs, "client", events);
         observer::tshark_graph(rs, "att_rogue_channel", events);
     }
 }

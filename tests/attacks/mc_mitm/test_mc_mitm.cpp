@@ -32,8 +32,7 @@ namespace wpa3_tester {
         vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
         
         // Patch to channel 6
-        constexpr uint8_t target_channel = 6;
-        McMitm::patch_channel_raw(beacon_data, target_channel);
+        McMitm::patch_channel_raw(beacon_data, 6);
 
 
         PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());

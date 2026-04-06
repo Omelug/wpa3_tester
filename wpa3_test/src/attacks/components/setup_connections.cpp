@@ -13,13 +13,17 @@ namespace wpa3_tester::components{
         // rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
         log(LogLevel::INFO, actor_name+" is running");
-        ip::set_ip(rs, actor_name);
+        if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+            ip::set_ip(rs, actor_name);
+        }
     }
 
     void setup_STA(RunStatus& rs,const string& actor_name){
         program::start(rs, actor_name);
-        rs.process_manager.wait_for("client", "Successfully initialized wpa_supplicant", chrono::seconds(10));
-        ip::set_ip(rs, "client");
+        rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", chrono::seconds(10));
+        if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+            ip::set_ip(rs, actor_name);
+        }
     }
 
     void client_ap_attacker_setup(RunStatus& rs){

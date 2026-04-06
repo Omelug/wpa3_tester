@@ -23,7 +23,6 @@ actors:
         wpa_passphrase: password123
         sae_password: password123
         channel: 6
-    ip_addr: "10.0.0.1"
     netns: ap
   client:
     source: internal
@@ -33,7 +32,7 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        #other_options: "-dd"
+        other_options: "-d"
         ssid: mc_mitm_test
         sae_password: password123
         ieee80211w: 2
@@ -42,7 +41,6 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    ip_addr: "10.0.0.2"
     sniff_iface: "client"
   att_real_channel:
     source: internal
@@ -50,14 +48,12 @@ actors:
       driver: mt76x2u
       condition: [ monitor, injection]
       channel: 6
-    #sniff_iface: "att_real"
   att_rogue_channel:
     source: internal
     selection:
       driver: mt76x2u
       condition: [ monitor, injection]
       channel: 1
-    #sniff_iface: "att_rogue"
 observers:
   #client_mausezahn:
   #  actor: client

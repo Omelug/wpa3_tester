@@ -171,7 +171,6 @@ namespace wpa3_tester{
         const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
                                       filesystem::directory_iterator{});
         log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str()); //FIXME sem se to d
-        //run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
         run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor","flags", "fcsfail", "otherbss"});
         up_iface();
     }

@@ -58,10 +58,6 @@ namespace wpa3_tester{
         probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
         beacon.reset(beacon_channel_patch(*beacon, netconfig.rogue_channel));
 
-        //sender_rogue->send(rt);
-        //auto rogue_beacon_raw = rt.serialize();
-        //patch_channel_raw(rogue_beacon_raw, netconfig.rogue_channel);
-
         CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
         last_real_beacon  = now_sec();
@@ -73,7 +69,6 @@ namespace wpa3_tester{
         pcap_setnonblock(sniffer_rogue->get_pcap_handle(), 1, nullptr);
 
         while (true) {
-            //cerr << "wadawdawd" << endl;
             if (deadline > 0 && now_sec() > deadline) {
                 log(LogLevel::INFO, "McMitm timeout reached, stopping.");
                 break;

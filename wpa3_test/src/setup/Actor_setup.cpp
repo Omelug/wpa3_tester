@@ -42,19 +42,21 @@ namespace wpa3_tester{
         if(internal || external_WB){
             auto actor_json = config.at("actors").at(str_con["actor_name"].value());
             const bool monitor = bool_conditions.at("monitor").value_or(false);
+            string monitor_flags = "";
+            if (bool_conditions.at("active_monitor")) monitor_flags += "active";
             const bool injection = bool_conditions.at("injection").value_or(false);
 
             int channel = -1;
             if (const auto d = str_con["channel"]) channel = stoi(d.value());
             else if (const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
             if (channel != -1){
-                set_channel(channel, str_con["ht_mode"].value_or(""));
+                 set_channel(channel, str_con["ht_mode"].value_or(""));
             }
 
-            if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode();}
+            if ((monitor || injection) && str_con["sniff_iface"] == nullopt){set_monitor_mode(monitor_flags);}
             if (actor_json.contains("sniff_iface")){
                 str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
-                create_sniff_iface();
+                create_sniff_iface(); //TODO add monitor flags ?
             }
         }
         if(internal){

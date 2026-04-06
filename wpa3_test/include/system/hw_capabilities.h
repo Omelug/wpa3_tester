@@ -112,5 +112,7 @@ namespace wpa3_tester{
         static std::string rand_mac();
         static std::string get_iface(const std::string& ip_address);
         static void set_macaddress(const std::string & iface, const std::string & new_mac_str);
+        void supports_active_monitor(const std::string &iface, Actor_config &cfg);
+        static void set_channel(const std::string &iface, int channel);
     };
 }

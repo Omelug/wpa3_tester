@@ -44,6 +44,7 @@ namespace wpa3_tester{
         std::map<std::string, std::optional<bool>> bool_conditions = {
             {"AP",          std::nullopt},
             {"injection",   std::nullopt},
+            {"active_monitor",  std::nullopt},
             {"managed",     std::nullopt},
             {"monitor",     std::nullopt},
             {"2_4GHz",      std::nullopt},
@@ -78,7 +79,7 @@ namespace wpa3_tester{
         void up_sniff_iface() const;
         void set_managed_mode() const;
         void setup_mac_addr(const std::string &mac) const;
-        void set_monitor_mode() const;
+        void set_monitor_mode(const std::string &monitor_flags = "") const;
         void set_mac(const std::string &mac_address);
         void setup_actor(const nlohmann::json& config, const ActorPtr &real_actor);
 

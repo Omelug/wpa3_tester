@@ -189,10 +189,6 @@ namespace wpa3_tester{
         options.redirect.out.type = reproc::redirect::parent;
         options.redirect.err.type = reproc::redirect::parent;
 
-        //auto fd_count = distance(directory_iterator("/proc/self/fd"),
-        //                      directory_iterator{});
-        //log(LogLevel::DEBUG, "Current open FDs: %ld | Command: %s", fd_count, argv[0].c_str());
-        //log(LogLevel::DEBUG, "Running command: %s", full_argv[0].c_str());
         if (const error_code ec = proc.start(full_argv, options)) {
             log(LogLevel::ERROR, "Failed to start "+full_argv[0]+" "+ec.message());
             return -1;
@@ -205,7 +201,13 @@ namespace wpa3_tester{
             return -1;
         }
         if (status != 0) {
-            log(LogLevel::ERROR, "Command %s exited with status %d", full_argv[0].c_str(), status);
+            string command_str;
+            for (const auto& arg : full_argv) {
+                command_str += arg + " ";
+            }
+
+            log(LogLevel::ERROR, "Command failed! Status: %d | Full command: %s",
+                status, command_str.c_str());
             return -1;
         }
         return status;
@@ -317,5 +319,42 @@ namespace wpa3_tester{
         if (get_macaddress(iface) == new_mac_str) return;
         run_cmd({"ifconfig",iface,"down"});
         run_cmd({"macchanger", "-m", new_mac_str, iface});
+    }
+
+    void hw_capabilities::supports_active_monitor(const std::string &iface, Actor_config &cfg) {
+
+        const string result = run_cmd_output({"iw", "dev", iface, "info"});
+
+        // find "wiphy X"
+        int phy_idx = -1;
+        istringstream ss(result);
+        string line;
+        while (getline(ss, line)) {
+            if (line.find("wiphy") != string::npos) {
+                sscanf(line.c_str(), " wiphy %d", &phy_idx);
+                break;
+            }
+        }
+        if (phy_idx < 0) {
+            cfg.bool_conditions["active_monitor"] = false;
+            return;
+        }
+
+        const string phy_info = run_cmd_output({"iw", "phy", "phy" + to_string(phy_idx), "info"});
+        istringstream ss2(phy_info);
+        while (getline(ss2, line)) {
+            if (line.find("active monitor") != string::npos) {
+                cfg.bool_conditions["active_monitor"] = true;
+                return;
+            }
+        }
+        cfg.bool_conditions["active_monitor"] = false;
+    }
+
+    void hw_capabilities::set_channel(const std::string &iface, const int channel){
+        const string chan_str = to_string(channel);
+        log(LogLevel::INFO, "Setting interface " + iface + " to channel " + chan_str);
+        const vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
+        run_cmd(cmd);
     }
 }

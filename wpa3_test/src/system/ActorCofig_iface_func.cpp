@@ -43,7 +43,7 @@ namespace wpa3_tester{
         const string& iface = str_con.at("iface").value();
 
         if (is_interface_up(iface)) {
-            log(LogLevel::DEBUG, iface + " is already UP, skipping.");
+            log(LogLevel::DEBUG, iface + " is already UP.");
             return;
         }
         log(LogLevel::INFO, "Bringing " + iface + " UP...");
@@ -93,16 +93,22 @@ namespace wpa3_tester{
 
 
     //TODO nejdřív napsat pořádné testy, apk optimalizavat
-    void Actor_config::set_monitor_mode() const{
+    void Actor_config::set_monitor_mode(const string &monitor_flags) const{
         const string& iface = str_con.at("iface").value();
         if(conn != nullptr){conn->set_monitor_mode(iface); return;}
         const optional<string> netns = str_con.at("netns");
 
-        log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode");
+        log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode + " + monitor_flags);
 
         down_iface();
         run({"iw", "dev", iface, "set", "type", "monitor"});
-        run({"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"});
+        up_iface();
+
+        vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
+        if (!monitor_flags.empty()) {
+            flags.push_back(monitor_flags);
+        }
+        run(flags);
     }
 
     void Actor_config::cleanup() const {

@@ -76,14 +76,12 @@ Dot11Beacon* beacon_channel_patch(const Dot11Beacon& beacon, const int rogue_cha
     for (const auto& opt : beacon.options()) {
         if (opt.option() == Dot11::DS_SET) {
             uint8_t ch = rogue_channel;
-            //resp->remove_option(Dot11::DS_SET);
             resp->add_option({Dot11::DS_SET, 1, &ch});
             continue;
         }
         if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
             vector ht(opt.data_ptr(), opt.data_ptr() + opt.data_size());
             ht[0] = rogue_channel;
-            //resp->remove_option(Dot11::HT_OPERATION);
             resp->add_option({Dot11::HT_OPERATION, ht.size(), ht.data()});
             continue;
         }

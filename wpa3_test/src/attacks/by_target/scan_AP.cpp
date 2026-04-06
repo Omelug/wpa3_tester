@@ -100,8 +100,8 @@ namespace wpa3_tester::attack_scan{
     unique_ptr<Dot11Beacon> RSN_scan(const string& interface, const int timeout_sec, ScanAP &scan_ap,
         const optional<path> &beacon_pcap) {
         SnifferConfiguration sniff_config;
-        sniff_config.set_snap_len(2000);
-        sniff_config.set_timeout(100);
+        //sniff_config.set_timeout(100);
+        sniff_config.set_immediate_mode(true);
         sniff_config.set_rfmon(true);
 
         const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
@@ -129,10 +129,10 @@ namespace wpa3_tester::attack_scan{
                 if (errno == EINTR) continue;
                 break;
             }
-            //if (ret == 0) break; // Timeout
+            if (ret == 0) continue;
             if (!(pfd.revents & POLLIN)) continue;
 
-            while (const unique_ptr<PDU> pdu{sniffer.next_packet()}) {
+            if (const unique_ptr<PDU> pdu{sniffer.next_packet()}) {
                 if (const auto beacon = pdu->find_pdu<Dot11Beacon>()) {
                     scan_ap.ssid = beacon->ssid();
                     try {
@@ -141,7 +141,8 @@ namespace wpa3_tester::attack_scan{
                     if(beacon_pcap != nullopt){
                         PacketWriter writer(beacon_pcap.value().string(), DataLinkType<RadioTap>());
                         writer.write(*pdu);
-                    }return unique_ptr<Dot11Beacon>(beacon->clone());
+                    }
+                    return unique_ptr<Dot11Beacon>(beacon->clone());
                 }
             }
         }

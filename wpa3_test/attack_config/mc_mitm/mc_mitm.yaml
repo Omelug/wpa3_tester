@@ -41,18 +41,18 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    sniff_iface: "client"
+    #sniff_iface: "client"
   att_real_channel:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor, injection, active_monitor]
+      condition: [ monitor, injection] #active_monitor
       channel: 6
   att_rogue_channel:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor, injection, active_monitor]
+      condition: [ monitor, injection] # active_monitor
       channel: 1
 observers:
   #client_mausezahn:
@@ -78,4 +78,4 @@ observers:
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"
 attack_config:
-  attack_time: 20
+  attack_time: 10

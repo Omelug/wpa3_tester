@@ -46,8 +46,17 @@ namespace wpa3_tester{
             log(LogLevel::DEBUG, iface + " is already UP.");
             return;
         }
-        log(LogLevel::INFO, "Bringing " + iface + " UP...");
+        log(LogLevel::INFO, "Bringing " + iface + " UP ...");
         run({"ip", "link", "set", iface, "up"});
+
+        int i = 0;
+        for (; i < 20; i++) {
+            if (is_interface_up(iface)) break;
+            usleep(100000); // 100ms
+        }
+        if(i >= 20){
+            log(LogLevel::ERROR, "Failed to bring " + iface + " UP.");
+        }
     }
     void Actor_config::up_sniff_iface() const{
         if(!str_con.at("sniff_iface").has_value()) return; //TODO quite fail
@@ -102,8 +111,6 @@ namespace wpa3_tester{
 
         down_iface();
         run({"iw", "dev", iface, "set", "type", "monitor"});
-        up_iface();
-
         vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
         if (!monitor_flags.empty()) {
             flags.push_back(monitor_flags);

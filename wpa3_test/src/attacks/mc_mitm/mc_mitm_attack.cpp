@@ -50,24 +50,22 @@ namespace wpa3_tester::mc_mitm{
         bpf += " or (wlan addr1 " + client["mac"] + ") or (wlan addr2 " + client["mac"] + ")";
         bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
 
-        SnifferConfiguration cfg_real, cfg_rogue;
-        //cfg_real.set_filter(bpf);
-        //cfg_rogue.set_filter(bpf);
-        cfg_real.set_immediate_mode(true);
-        cfg_rogue.set_immediate_mode(true);
-        cfg_real.set_timeout(1);
-        cfg_rogue.set_timeout(1);
+        SnifferConfiguration sniff_cfg;
+        sniff_cfg.set_filter(bpf);
+        sniff_cfg.set_immediate_mode(true);
+        sniff_cfg.set_timeout(100);
+        sniff_cfg.set_rfmon(true);
 
         //TODO move to actor:setup ?
-        attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["iface"],  cfg_real);
-        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue_channel["iface"], cfg_rogue);
-        attack_scan::ScanAP scan_ap{};
+        attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["iface"],  sniff_cfg);
+        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue_channel["iface"], sniff_cfg);
 
+        attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap["mac"];
-        attack.beacon = RSN_scan(att_real_channel["iface"], 10, scan_ap);
+        attack.beacon = RSN_scan(att_real_channel["iface"], 10, scan_ap, path("/tmp/beacon.pcap"));
         if(attack.beacon == nullptr) throw runtime_error("beacon not found");
 
-        log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
+        log(LogLevel::INFO, "Giving rogue AP one second to initialize ...");
         this_thread::sleep_for(seconds(1));
 
         //TODO move to constrcutor

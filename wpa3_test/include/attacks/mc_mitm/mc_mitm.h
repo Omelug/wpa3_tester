@@ -24,13 +24,16 @@ namespace wpa3_tester{
 
         ~McMitm();
 
+        void send_fake_real_beacon_on_real_chan() const;
+        void send_deauth_as_ap() const;
         void run(int timeout_sec);
         void stop();
         static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
 
         // ---- state ----
         NetworkConfig netconfig;
-        std::unique_ptr<Tins::Dot11Beacon>       beacon;
+        std::unique_ptr<Tins::Dot11Beacon> beacon_old;
+        std::unique_ptr<Tins::Dot11Beacon> beacon;
         std::unique_ptr<Tins::Dot11ProbeResponse> probe_resp;
 
         std::unordered_map<std::string, std::unique_ptr<ClientState>> clients;

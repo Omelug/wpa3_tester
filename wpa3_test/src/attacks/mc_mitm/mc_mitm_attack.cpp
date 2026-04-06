@@ -18,33 +18,33 @@ namespace wpa3_tester::mc_mitm{
         components::client_ap_attacker_setup(rs);
 
         const auto ap        = rs.get_actor("access_point");
-        const auto att_real_channel = rs.get_actor("att_real_channel");
-        const auto att_rogue_channel = rs.get_actor("att_rogue_channel");
+        const auto rogue_client = rs.get_actor("rogue_client");
+        const auto rogue_ap = rs.get_actor("rogue_ap");
 
         //TODO only for  2.4 GHz
-        att_real_channel->str_con["channel"] = ap["channel"];
+        rogue_client->str_con["channel"] = ap["channel"];
         // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
-        att_rogue_channel->str_con["channel"] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
+        rogue_ap->str_con["channel"] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
     }
 
     void run_attack(RunStatus& rs){
-        const auto att_real_channel = rs.get_actor("att_real_channel");
-        const auto att_rogue_channel = rs.get_actor("att_rogue_channel");
+        const auto rogue_client = rs.get_actor("rogue_client");
+        const auto rogue_ap = rs.get_actor("rogue_ap");
         const auto ap = rs.get_actor("access_point");
         const auto client = rs.get_actor("client");
 
-        McMitm attack(att_real_channel["iface"], att_rogue_channel["iface"], ap["ssid"], client["mac"]);
+        McMitm attack(rogue_client["iface"], rogue_ap["iface"], ap["ssid"], client["mac"]);
         //attack.run();
 
-        att_real_channel->setup_mac_addr(client["mac"]);
-        att_rogue_channel->setup_mac_addr(ap["mac"]);
-        att_real_channel->up_iface();
-        att_rogue_channel->up_iface();
+        rogue_client->setup_mac_addr(client["mac"]);
+        rogue_ap->setup_mac_addr(ap["mac"]);
+        rogue_client->up_iface();
+        rogue_ap->up_iface();
 
         rs.start_observers();
 
-        attack.sender_real  = make_unique<PacketSender>(att_real_channel["iface"]);
-        attack.sender_rogue = make_unique<PacketSender>(att_rogue_channel["iface"]);
+        attack.sender_real  = make_unique<PacketSender>(rogue_client["iface"]);
+        attack.sender_rogue = make_unique<PacketSender>(rogue_ap["iface"]);
 
         string bpf = "(wlan addr1 " + ap["mac"] + ") or (wlan addr2 " + ap["mac"] + ")";
         bpf += " or (wlan addr1 " + client["mac"] + ") or (wlan addr2 " + client["mac"] + ")";
@@ -57,12 +57,12 @@ namespace wpa3_tester::mc_mitm{
         sniff_cfg.set_rfmon(true);
 
         //TODO move to actor:setup ?
-        attack.sniffer_real  = make_unique<Sniffer>(att_real_channel["iface"],  sniff_cfg);
-        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue_channel["iface"], sniff_cfg);
+        attack.sniffer_real  = make_unique<Sniffer>(rogue_client["iface"],  sniff_cfg);
+        attack.sniffer_rogue = make_unique<Sniffer>(rogue_ap["iface"], sniff_cfg);
 
         attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap["mac"];
-        attack.beacon = RSN_scan(att_real_channel["iface"], 10, scan_ap, path("/tmp/beacon.pcap"));
+        attack.beacon = RSN_scan(rogue_client["iface"], 10, scan_ap, path("/tmp/beacon.pcap"));
         if(attack.beacon == nullptr) throw runtime_error("beacon not found");
 
         log(LogLevel::INFO, "Giving rogue AP one second to initialize ...");
@@ -70,7 +70,7 @@ namespace wpa3_tester::mc_mitm{
 
         //TODO move to constrcutor
         attack.netconfig.real_channel = stoi(ap["channel"]);
-        attack.netconfig.rogue_channel = stoi(att_rogue_channel["channel"]);
+        attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
         attack.netconfig.ssid = ap["ssid"];
         attack.ap_mac = ap["mac"];
         attack.client_mac = client["mac"];
@@ -85,6 +85,6 @@ namespace wpa3_tester::mc_mitm{
         events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
         //observer::tshark_graph(rs, "client", events);
-        observer::tshark_graph(rs, "att_rogue_channel", events);
+        observer::tshark_graph(rs, "rogue_ap", events);
     }
 }

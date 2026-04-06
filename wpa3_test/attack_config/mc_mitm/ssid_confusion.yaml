@@ -41,14 +41,14 @@ actors:
         group: CCMP
     netns: sta
     ip_addr: "10.0.0.2"
-  att_real_channel:
+  rogue_client:
     source: internal
     selection:
       driver: mt76x2u
       condition: [monitor, injection]
       channel: 6
     sniff_iface: "att_real"
-  att_rogue_channel:
+  rogue_ap:
     source: internal
     selection:
       condition: [AP, monitor, injection]
@@ -62,7 +62,7 @@ attack_config:
   attack_time_sec: 30
 observers:
   rogue_tshark:
-    actor: att_rogue_channel
+    actor: rogue_ap
     program: tshark
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype auth or type mgt subtype assoc-req"

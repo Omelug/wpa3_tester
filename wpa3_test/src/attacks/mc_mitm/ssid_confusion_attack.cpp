@@ -46,8 +46,8 @@ namespace wpa3_tester::ssid_confusion {
     }
 
     void run_attack(RunStatus& rs) {
-        const auto att_real  = rs.get_actor("att_real_channel");
-        const auto att_rogue = rs.get_actor("att_rogue_channel");
+        const auto att_real  = rs.get_actor("rogue_client");
+        const auto att_rogue = rs.get_actor("rogue_ap");
         const auto ap        = rs.get_actor("access_point");
         const auto client       = rs.get_actor("client");
 

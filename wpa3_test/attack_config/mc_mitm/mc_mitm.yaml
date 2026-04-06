@@ -42,13 +42,13 @@ actors:
         group: CCMP
     netns: sta
     #sniff_iface: "client"
-  att_real_channel:
+  rogue_client:
     source: internal
     selection:
       driver: mt76x2u
       condition: [ monitor, injection] #active_monitor
       channel: 6
-  att_rogue_channel:
+  rogue_ap:
     source: internal
     selection:
       driver: mt76x2u
@@ -62,18 +62,18 @@ observers:
   #    target_actor: access_point
 
   #client_tshark:
-  #  actor: att_real_channel
+  #  actor: rogue_client
   #  program: tshark
   #  program_config:
   #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or (type data and ether proto 0x888e)"
 
   channel1_tshark:
-    actor: att_rogue_channel
+    actor: rogue_ap
     program: tshark
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"
   channel6_tshark:
-    actor: att_real_channel
+    actor: rogue_client
     program: tshark
     program_config:
       filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"

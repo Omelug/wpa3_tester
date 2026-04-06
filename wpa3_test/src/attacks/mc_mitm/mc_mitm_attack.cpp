@@ -26,6 +26,16 @@ namespace wpa3_tester::mc_mitm{
         // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
         rogue_ap->str_con["channel"] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
     }
+    void start_strict_tsharks(RunStatus& rs){
+        const auto ap_mac = rs.get_actor("access_point")["mac"];
+        const auto client_mac = rs.get_actor("client")["mac"];
+
+        const string mac_filter =
+        "(wlan host "+ ap_mac +" or wlan host "+client_mac+")";
+
+        observer::start_tshark(rs, "rogue_ap", mac_filter);
+        observer::start_tshark(rs, "rogue_client", mac_filter);
+    }
 
     void run_attack(RunStatus& rs){
         const auto rogue_client = rs.get_actor("rogue_client");
@@ -44,7 +54,8 @@ namespace wpa3_tester::mc_mitm{
         rogue_client->up_iface();
         rogue_ap->up_iface();
 
-        rs.start_observers();
+        start_strict_tsharks(rs);
+        //rs.start_observers();
 
         attack.sender_real  = make_unique<PacketSender>(rogue_client["iface"]);
         attack.sender_rogue = make_unique<PacketSender>(rogue_ap["iface"]);
@@ -57,7 +68,7 @@ namespace wpa3_tester::mc_mitm{
         sniff_cfg.set_filter(bpf);
         sniff_cfg.set_immediate_mode(true);
         sniff_cfg.set_timeout(100);
-        sniff_cfg.set_rfmon(true);
+        // already in monitor modesniff_cfg.set_rfmon(true);
 
         //TODO move to actor:setup ?
         attack.sniffer_real  = make_unique<Sniffer>(rogue_client["iface"],  sniff_cfg);

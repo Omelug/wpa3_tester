@@ -65,28 +65,30 @@ Dot11ProbeResponse* beacon_to_probe_resp(const Dot11Beacon& beacon, const int ro
 //TODO move
 Dot11Beacon* beacon_channel_patch(const Dot11Beacon& beacon, const int rogue_channel) {
     auto* resp = new Dot11Beacon();
+    resp->addr1(Dot11::BROADCAST);
     resp->addr2(beacon.addr2());
     resp->addr3(beacon.addr3());
-    resp->timestamp(0xAAAAAAAAAAAAAAAAULL);
+    //resp->timestamp(0xAAAAAAAAAAAAAAAAULL);
     resp->interval(beacon.interval());
     resp->capabilities() = beacon.capabilities();
-    resp->remove_option(Dot11::DS_SET);
-    resp->ds_parameter_set(rogue_channel);
+
 
     for (const auto& opt : beacon.options()) {
-        if (opt.option() == IEEE_TLV_TYPE_TIM) continue;
-        if (opt.option() == IEEE_TLV_TYPE_CHANNEL) continue;
-
-        if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
-            vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
-            ht_data[0] = rogue_channel;
-            resp->add_option({Dot11::HT_OPERATION, ht_data.size(), ht_data.data()});
+        if (opt.option() == Dot11::DS_SET) {
+            uint8_t ch = rogue_channel;
+            //resp->remove_option(Dot11::DS_SET);
+            resp->add_option({Dot11::DS_SET, 1, &ch});
             continue;
         }
-
+        if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+            vector ht(opt.data_ptr(), opt.data_ptr() + opt.data_size());
+            ht[0] = rogue_channel;
+            //resp->remove_option(Dot11::HT_OPERATION);
+            resp->add_option({Dot11::HT_OPERATION, ht.size(), ht.data()});
+            continue;
+        }
         resp->add_option(opt);
     }
-
     return resp;
 }
 

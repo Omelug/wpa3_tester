@@ -54,7 +54,7 @@ actors:
       driver: mt76x2u
       condition: [ monitor, injection] # active_monitor
       channel: 1
-observers:
+#observers: (allow start_observers if uesd )
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn
@@ -67,15 +67,16 @@ observers:
   #  program_config:
   #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or (type data and ether proto 0x888e)"
 
-  channel1_tshark:
-    actor: rogue_ap
-    program: tshark
-    program_config:
-      filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"
-  channel6_tshark:
-    actor: rogue_client
-    program: tshark
-    program_config:
-      filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp or (type data and ether proto 0x888e)"
+  # MOVED TO CODE start_strict_tsharks
+  #channel1_tshark:
+  #  actor: rogue_ap
+  #  program: tshark
+  #  program_config:
+  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
+  #channel6_tshark:
+  #  actor: rogue_client
+  #  program: tshark
+  #  program_config:
+  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
 attack_config:
-  attack_time: 10
+  attack_time: 20

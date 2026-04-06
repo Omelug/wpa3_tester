@@ -166,6 +166,10 @@ namespace wpa3_tester{
         if (!logging_dir.empty()) {log_dir= logging_dir;}
         path log_path = log_dir / (process_name+".log");
 
+        string cmd_debug;
+        for (const auto& s : cmd) cmd_debug += "[" + s + "] ";
+        log(LogLevel::DEBUG, "Full command: %s", cmd_debug.c_str());
+
         // Log command line FIRST for debugging
         string cmd_line;
         for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' ';cmd_line += cmd[i];}

@@ -33,7 +33,10 @@ namespace wpa3_tester::mc_mitm{
         const auto ap = rs.get_actor("access_point");
         const auto client = rs.get_actor("client");
 
-        McMitm attack(rogue_client["iface"], rogue_ap["iface"], ap["ssid"], client["mac"]);
+        McMitm attack(
+            rogue_client["iface"], rogue_ap["iface"],
+            ap["ssid"],
+            ap["mac"], client["mac"]);
         //attack.run();
 
         rogue_client->setup_mac_addr(client["mac"]);
@@ -72,8 +75,6 @@ namespace wpa3_tester::mc_mitm{
         attack.netconfig.real_channel = stoi(ap["channel"]);
         attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
         attack.netconfig.ssid = ap["ssid"];
-        attack.ap_mac = ap["mac"];
-        attack.client_mac = client["mac"];
         attack.run(rs.config.at("attack_config").at("attack_time").get<int>());
     }
 

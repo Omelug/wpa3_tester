@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       condition: [AP]
-      channel: 6
+      channel: 11
     setup:
       program: hostapd
       program_config:
@@ -22,17 +22,17 @@ actors:
         rsn_pairwise: CCMP
         wpa_passphrase: password123
         sae_password: password123
-        channel: 6
+        channel: 11
     netns: ap
   client:
     source: internal
     selection:
-      channel: 6
+      channel: 11
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        other_options: "-d"
+        other_options: "-dd"
         ssid: mc_mitm_test
         sae_password: password123
         ieee80211w: 2
@@ -41,13 +41,13 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    #sniff_iface: "client"
+    sniff_iface: "client"
   rogue_client:
     source: internal
     selection:
       driver: mt76x2u
       condition: [ monitor, injection] #active_monitor
-      channel: 6
+      channel: 11
   rogue_ap:
     source: internal
     selection:

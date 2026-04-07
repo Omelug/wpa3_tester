@@ -8,62 +8,74 @@
 #include "logger/log.h"
 
 namespace wpa3_tester{
+
     class McMitm {
     private:
-        std::string r_client_iface, r_ap_iface;
+        std::string r_mon_client, r_ap_client, r_mon_ap, r_ap_ap;
         std::string ssid;
-        std::string ap_mac, client_mac;
+        Tins::HWAddress<6> ap_mac;
+        Tins::HWAddress<6> client_mac;
     public:
-        McMitm(
-            std::string nic_real,
-            std::string nic_rogue,
-            std::string ssid,
-            std::string ap_mac,
-            std::string client_mac
-        );
-
+        // AP <-> rogue_client <-> rogue AP <-> client
+        McMitm(const std::string &r_client_iface, const std::string &r_ap_iface, const std::string &ssid,
+               const std::string &ap_mac, const std::string &client_mac);
         ~McMitm();
 
-        void send_fake_real_beacon_on_real_chan() const;
+        void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>>& target = std::nullopt) const;
+        void send_disas(const Tins::HWAddress<6>& macaddr) const;
+        void queue_disas(const Tins::HWAddress<6>& macaddr);
+        void try_channel_switch(const Tins::HWAddress<6>& macaddr);
         void send_deauth_as_ap() const;
+        bool should_check_rogue_beacons() const;
+        void configure_interfaces();
+
         void run(int timeout_sec);
         void stop();
-        static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
+
+        //static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
 
         // ---- state ----
         NetworkConfig netconfig;
+
         std::unique_ptr<Tins::Dot11Beacon> beacon_old;
         std::unique_ptr<Tins::Dot11Beacon> beacon;
         std::unique_ptr<Tins::Dot11ProbeResponse> probe_resp;
+        using DisasEntry = std::pair<std::chrono::steady_clock::time_point, Tins::HWAddress<6>>;
+        std::vector<DisasEntry> disas_queue;
 
         std::unordered_map<std::string, std::unique_ptr<ClientState>> clients;
 
-        std::unique_ptr<Tins::PacketSender> sender_real;
-        std::unique_ptr<Tins::PacketSender> sender_rogue;
+        std::unique_ptr<Tins::PacketSender> sender_r_client;
+        std::unique_ptr<Tins::PacketSender> sender_r_ap;
 
         std::unique_ptr<Tins::Sniffer> sniffer_real;
         std::unique_ptr<Tins::Sniffer> sniffer_rogue;
 
-        double last_real_beacon  = 0.0;
-        double last_rogue_beacon = 0.0;
-        double last_print_real_chan  = 0.0;
-        double last_print_rogue_chan = 0.0;
+        using time_point = std::chrono::steady_clock::time_point;
+        time_point last_real_beacon;
+        time_point last_rogue_beacon;
+        time_point last_print_real_chan;
+        time_point last_print_rogue_chan;
 
-        static double now_sec();
         static void patch_channel_raw(std::vector<uint8_t>& raw, uint8_t channel);
         void handle_rx_real_chan(Tins::PDU& pdu);
         void handle_rx_rogue_chan(Tins::PDU& pdu);
+
         ClientState* find_client(const std::string& mac);
+        void add_client(ClientState client){
+            clients[client.macaddr] = std::make_unique<ClientState>(std::move(client));
+        }
+        void del_client(const Tins::HWAddress<6>& macaddr){ clients.erase(macaddr.to_string()); }
 
         // print helpers
         static std::string frame_to_str(const Tins::Dot11 &pkt);
         static void print_rx(LogLevel level, const std::string &prefix,
-                             const Tins::Dot11 &pkt,
+                             const Tins::Dot11 &frame,
                              const std::string &suffix = "");
 
-        static double display_client_traffic(const Tins::Dot11& pkt,
-                                             const std::string& prefix,
-                                             double prevtime,
-                                             const std::string& suffix = "");
+        static time_point display_client_traffic(
+            const Tins::PDU &pdu,
+            const std::string &prefix,
+            time_point prevtime, const std::string &suffix = "");
     };
 }

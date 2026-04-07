@@ -2,57 +2,60 @@ $schema: http://json-schema.org/draft-07/schema#
 name: mc_mitm_test
 attacker_module: mc_mitm
 actors:
-  access_point:
-    source: internal
-    selection:
-      condition: [AP]
-      channel: 11
-    setup:
-      program: hostapd
-      program_config:
-        version: 2_10
-        driver: nl80211
-        ssid: mc_mitm_test
-        hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        rsn_pairwise: CCMP
-        wpa_passphrase: password123
-        sae_password: password123
-        channel: 11
-    netns: ap
-  client:
-    source: internal
-    selection:
-      channel: 11
-    setup:
-      program: wpa_supplicant
-      program_config:
-        version: 2_10
-        other_options: "-dd"
-        ssid: mc_mitm_test
-        sae_password: password123
-        ieee80211w: 2
-        proto: RSN
-        key_mgmt: SAE
-        pairwise: CCMP
-        group: CCMP
-    netns: sta
-    sniff_iface: "client"
+#  access_point:
+#    source: internal
+#    selection:
+#      condition: [AP]
+#      channel: 11
+#    setup:
+#      program: hostapd
+#      program_config:
+#        version: 2_10
+#        driver: nl80211
+#        ssid: mc_mitm_test
+#        hw_mode: g
+#        auth_algs: 1
+#        wpa: 2
+#        ieee80211n: 1
+#        ieee80211w: 2
+#        wpa_key_mgmt: SAE
+#        rsn_pairwise: CCMP
+#        wpa_passphrase: password123
+#        sae_password: password123
+#        channel: 11
+#    netns: ap
+#
+#  client:
+#    source: internal
+#    selection:
+#      channel: 11
+#    setup:
+#      program: wpa_supplicant
+#      program_config:
+#        version: 2_10
+#        other_options: "-dd"
+#        ssid: mc_mitm_test
+#        sae_password: password123
+#        ieee80211w: 2
+#        proto: RSN
+#        key_mgmt: SAE
+#        pairwise: CCMP
+#        group: CCMP
+#    netns: sta
+#    sniff_iface: "client"
   rogue_client:
     source: internal
     selection:
       driver: mt76x2u
+      #condition: [ managed ]
       condition: [ monitor, injection] #active_monitor
       channel: 11
   rogue_ap:
     source: internal
     selection:
-      driver: mt76x2u
-      condition: [ monitor, injection] # active_monitor
+      #driver: mt76x2u
+      driver: ath9k_htc
+      #condition: [ monitor, injection] # active_monitor
       channel: 1
 #observers: (allow start_observers if uesd )
   #client_mausezahn:
@@ -80,3 +83,6 @@ actors:
   #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
 attack_config:
   attack_time: 20
+  target_ap_mac: 78:98:E8:55:3E:8D
+  target_client_mac: 30:ab:6a:39:88:46
+  ssid: test_channel_switch

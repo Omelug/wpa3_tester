@@ -117,7 +117,7 @@ namespace wpa3_tester{
         return match[1].str();
     }
 
-    string get_macaddress(const string& iface) {
+    string hw_capabilities::get_macaddress(const string& iface) {
         ifstream f("/sys/class/net/" + iface + "/address");
         string mac;
         getline(f, mac);
@@ -166,7 +166,7 @@ namespace wpa3_tester{
         const vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
         run_cmd(cmd);
     }
-    
+
     string get_iface_type(const string& iface){
         const string output = hw_capabilities::run_cmd_output({"iw", iface, "info"});
         if (output.empty())
@@ -179,17 +179,23 @@ namespace wpa3_tester{
         return match[1].str();
     }
     
-    void set_monitor_mode(const string& iface, bool up, int mtu){
-        if (get_iface_type(iface) != "monitor") {
-            hw_capabilities::run_cmd({"ifconfig", iface, "down"});
-            hw_capabilities::run_cmd({"iw", iface, "set", "type", "monitor"});
-            this_thread::sleep_for(chrono::milliseconds(500));
-            hw_capabilities::run_cmd({"iw", iface, "set", "type", "monitor"});
+    bool hw_capabilities::set_monitor_active(const string& iface){
+        run_cmd({"ifconfig", iface, "down"});
+        if (run_cmd({"iw", iface, "set", "monitor", "active"}) != 0) {
+            log(LogLevel::WARNING, format("Interface {} doesn't support active monitor mode", iface));
+            return false;
         }
+        return true;
+    }
 
-        if (up)
-            hw_capabilities::run_cmd({"ifconfig", iface, "up"});
-
-        hw_capabilities::run_cmd({"ifconfig", iface, "mtu", to_string(mtu)});
+    void hw_capabilities::set_monitor_mode(const string& iface, const int mtu){
+        if (get_iface_type(iface) != "monitor") {
+            run_cmd({"ifconfig", iface, "down"});
+            run_cmd({"iw", iface, "set", "monitor", "none"});
+            this_thread::sleep_for(chrono::milliseconds(500));
+            run_cmd({"iw", iface, "set", "monitor", "none"});
+        }
+        run_cmd({"ifconfig", iface, "up"});
+        run_cmd({"ifconfig", iface, "mtu", to_string(mtu)});
     }
 }

@@ -73,10 +73,11 @@ namespace wpa3_tester{
     void Actor_config::set_ap_mode() const{
         const string& iface = str_con.at("iface").value();
         log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
+
         down_iface();
         run({"iw", "dev", iface, "set", "type", "__ap"});
         //run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
-        log(LogLevel::INFO, "Starting hostapd on " + iface);
+
     }
 
     void Actor_config::set_managed_mode() const{
@@ -110,6 +111,7 @@ namespace wpa3_tester{
         log(LogLevel::INFO, "Setting interface "+iface+" to monitor mode + " + monitor_flags);
 
         down_iface();
+
         run({"iw", "dev", iface, "set", "type", "monitor"});
         vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
         if (!monitor_flags.empty()) {

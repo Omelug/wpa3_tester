@@ -92,9 +92,10 @@ namespace wpa3_tester{
 
     public:
         static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
+
+        // run helpers
         static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
-        static int freq_to_channel(int freq);
         static std::string run_cmd_output(const std::vector<std::string> &argv);
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
@@ -107,12 +108,18 @@ namespace wpa3_tester{
         static std::string get_phy(const std::string &iface);
 
         //format
+        static int freq_to_channel(int freq);
         static int channel_to_freq(int channel, WifiBand band= WifiBand::BAND_2_4_or_5);
         static void create_ns(const std::string& ns_name);
         static std::string rand_mac();
+
+        // working with interfaces
         static std::string get_iface(const std::string& ip_address);
+        static std::string get_macaddress(const std::string &iface);
         static void set_macaddress(const std::string & iface, const std::string & new_mac_str);
-        void supports_active_monitor(const std::string &iface, Actor_config &cfg);
+        static void supports_active_monitor(const std::string &iface, Actor_config &cfg);
         static void set_channel(const std::string &iface, int channel);
+        static bool set_monitor_active(const std::string& iface);
+        static void set_monitor_mode(const std::string& iface, int mtu);
     };
 }

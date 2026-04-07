@@ -11,11 +11,11 @@ namespace wpa3_tester{
         uint8_t real_channel  = -1;
         uint8_t rogue_channel = -1;
     };
+    //FIXME parse_beacon fiucntion?
+    //FIXME find_rogue_channel
 
     class ClientState {
     public:
-        virtual ~ClientState() = default;
-
         enum State {
             Initializing = 0,
             Connecting,
@@ -23,17 +23,31 @@ namespace wpa3_tester{
             Attack_Started,
             Attack_Done
         };
-
-        std::string macaddr;
         State       state      = Initializing;
-        double      last_real   = 0.0;
-        double      last_rogue  = 0.0;
+        std::string macaddr;
+
+        using time_point = std::chrono::steady_clock::time_point;
+        time_point last_real  = std::chrono::steady_clock::now();
+        time_point last_rogue = std::chrono::steady_clock::now();
+
+    public:
+        virtual ~ClientState() = default;
 
         explicit ClientState(const std::string& mac) : macaddr(mac) {}
 
-        void update_state(State s) {
+        void reset(){
+            state      = Initializing;
+            last_real   = std::chrono::steady_clock::now();
+            last_rogue  = std::chrono::steady_clock::now();
+        }
+
+        void update_state(const State s) {
             log(LogLevel::DEBUG, "Client "+macaddr + " moved to state "+state2str(s));
             state = s;
+        }
+
+        bool is_state(const State s) const{
+            return this->state == s;
         }
 
         // Returns true if this call actually advanced to GotMitm for the first time.
@@ -46,15 +60,19 @@ namespace wpa3_tester{
             return false;
         }
 
+        // By default, everything is forwarded.
         virtual bool should_forward(const Tins::PDU& /*pkt*/) const { return true; }
-        virtual Tins::PDU* modify_packet(Tins::PDU* pkt) const { return pkt; }
+        // By default, frames are not modified.
+        virtual void modify_packet(Tins::PDU& pkt) const{}
+
+        void attack_start(){ update_state(Attack_Started);}
 
     private:
-        static std::string state2str(State s) {
+        static std::string state2str(const State state) {
             static const char* names[] = {
                 "Initializing", "Connecting", "GotMitm", "Attack_Started", "Attack_Done"
             };
-            return (s < 5) ? names[s] : "Unknown";
+            return (state < 5) ? names[state] : "Unknown";
         }
     };
 }

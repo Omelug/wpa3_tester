@@ -29,7 +29,7 @@ namespace wpa3_tester::ssid_confusion {
         b->interval(real.interval());
         b->capabilities() = real.capabilities();
 
-        for (const auto& opt : real.options()) {
+        /*FIXME for (const auto& opt : real.options()) {
             if (opt.option() == IEEE_TLV_TYPE_SSID) {
                 // Advertise a different SSID than the real AP
                 b->add_option(Dot11::option(
@@ -41,7 +41,7 @@ namespace wpa3_tester::ssid_confusion {
             } else {
                 b->add_option(opt);
             }
-        }
+        }*/
         return b;
     }
 

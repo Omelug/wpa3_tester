@@ -65,6 +65,7 @@ test_manual_build:
 		test_info_openwrt \
 		test_manual_channel_switch \
 		test_manual_get_commit_values \
+		test_manual_mc_mitm \
 		-j $(shell nproc --ignore=2)
 INFO_FILE = $(BUILD_DIR)/coverage.info
 CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info

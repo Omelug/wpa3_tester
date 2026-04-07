@@ -100,13 +100,13 @@ namespace wpa3_tester::attack_scan{
     unique_ptr<Dot11Beacon> RSN_scan(const string& interface, const int timeout_sec, ScanAP &scan_ap,
         const optional<path> &beacon_pcap) {
         SnifferConfiguration sniff_config;
-        //sniff_config.set_timeout(100);
+        sniff_config.set_timeout(100);
         sniff_config.set_immediate_mode(true);
-        sniff_config.set_rfmon(true);
+        //sniff_config.set_rfmon(true);
 
         const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
         sniff_config.set_filter(filter);
-
+        log(LogLevel::INFO, "Scanning with "+ filter);
         Sniffer sniffer(interface, sniff_config);
 
         const int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());

@@ -216,12 +216,12 @@ void start_ap(const string& iface, const string& base_iface, int channel,
     //(weird af but I will not debug it if I need restart notebook for run)
     wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "down"});
     wpa3_tester::hw_capabilities::run_cmd({"iw", iface, "set", "type", "__ap"});
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "up"});
+
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
 
-
+    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "up"});
+    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
 
     string cmd_str;
     for (const auto& arg : cmd) cmd_str += arg + " ";
@@ -229,9 +229,14 @@ void start_ap(const string& iface, const string& base_iface, int channel,
 
     wpa3_tester::hw_capabilities::run_cmd(cmd);
 
+    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
+    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
+
     // With rt2800usb we need "ifconfig up" after "ap start" to make the interface
     // acknowledge received frames and send ACKs
+    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "up"});
     wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
+
 }
 
 void stop_ap(const string& iface){

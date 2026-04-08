@@ -59,13 +59,6 @@ namespace wpa3_tester::mc_mitm{
         //TODO start_strict_tsharks(rs);
         //rs.start_observers();
 
-        attack.sender_r_client  = make_unique<PacketSender>(rogue_client["iface"]);
-        attack.sender_r_ap = make_unique<PacketSender>(rogue_ap["iface"]);
-
-        //TODO move to actor:setup ?
-        //attack.sniffer_real  = make_unique<Sniffer>(rogue_client["iface"],  sniff_cfg);
-        //attack.sniffer_rogue = make_unique<Sniffer>(rogue_ap["iface"], sniff_cfg);
-
         attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap_mac;
         attack.beacon = RSN_scan(rogue_client["iface"], 10, scan_ap, path("/tmp/beacon.pcap"));

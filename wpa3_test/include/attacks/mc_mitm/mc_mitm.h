@@ -5,13 +5,14 @@
 #include <memory>
 #include <tins/tins.h>
 #include "client_state.h"
+#include "MonitorSocket.h"
 #include "logger/log.h"
 
 namespace wpa3_tester{
 
     class McMitm {
     private:
-        std::string r_mon_client, r_ap_client, r_mon_ap, r_ap_ap;
+        std::string nic_real_mon, nic_real_ap, nic_rogue_mon, nic_rogue_ap;
         std::string ssid;
         Tins::HWAddress<6> ap_mac;
         Tins::HWAddress<6> client_mac;
@@ -45,11 +46,8 @@ namespace wpa3_tester{
 
         std::unordered_map<std::string, std::unique_ptr<ClientState>> clients;
 
-        std::unique_ptr<Tins::PacketSender> sender_r_client;
-        std::unique_ptr<Tins::PacketSender> sender_r_ap;
-
-        std::unique_ptr<Tins::Sniffer> sniffer_real;
-        std::unique_ptr<Tins::Sniffer> sniffer_rogue;
+        std::unique_ptr<MonitorSocket> sock_real;
+        std::unique_ptr<MonitorSocket> sock_rogue;
 
         using time_point = std::chrono::steady_clock::time_point;
         time_point last_real_beacon;
@@ -58,8 +56,8 @@ namespace wpa3_tester{
         time_point last_print_rogue_chan;
 
         static void patch_channel_raw(std::vector<uint8_t>& raw, uint8_t channel);
-        void handle_rx_real_chan(Tins::PDU& pdu);
-        void handle_rx_rogue_chan(Tins::PDU& pdu);
+        void handle_rx_real_chan();
+        void handle_rx_rogue_chan();
 
         ClientState* find_client(const std::string& mac);
         void add_client(ClientState client){

@@ -16,12 +16,12 @@ int main() {
     const string r_client_iface = "wlan1";
     const string r_ap_iface     = "wlan2";
     const string ap_ssid        = "test_channel_switch";
-    const string ap_mac         = "78:98:e8:55:3e:8d";
+    const string ap_mac         = "02:00:00:00:03:00";
     //const string client_mac     = "30:ab:6a:39:88:46";
-    const string client_mac     = "a0:d7:68:10:25:6d";
-    const int    real_channel   = 6;
+    const string client_mac     = "02:00:00:00:02:00";
+    const int    real_channel   = 11;
     const int    rogue_channel  = 1;
-    const int    attack_time    = 200;
+    const int    attack_time    = 20;
 
     McMitm attack(r_client_iface, r_ap_iface, ap_ssid, ap_mac, client_mac);
 

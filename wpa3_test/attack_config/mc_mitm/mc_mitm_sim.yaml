@@ -1,0 +1,64 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: mc_mitm_test
+attacker_module: mc_mitm
+actors:
+  access_point:
+    source: simulation
+    selection:
+      channel: 6
+      condition: [ AP ]
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+        hostapd_path: "./config/hostapd.conf"
+  client:
+    source: simulation
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        wpa_supplicant_path: "./config/wpa_supplicant.conf"
+    selection:
+      channel: 6
+    netns: sta
+  rogue_client:
+    source: simulation
+    selection:
+      condition: [ monitor, injection] #active_monitor
+      channel: 11
+  rogue_ap:
+    source: simulation
+    selection:
+      condition: [ monitor, injection] # active_monitor
+      channel: 1
+
+#observers: (allow start_observers if uesd )
+  #client_mausezahn:
+  #  actor: client
+  #  program: mausezahn
+  #  program_config:
+  #    target_actor: access_point
+
+  #client_tshark:
+  #  actor: rogue_client
+  #  program: tshark
+  #  program_config:
+  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or (type data and ether proto 0x888e)"
+
+  # MOVED TO CODE start_strict_tsharks
+  #channel1_tshark:
+  #  actor: rogue_ap
+  #  program: tshark
+  #  program_config:
+  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
+  #channel6_tshark:
+  #  actor: rogue_client
+  #  program: tshark
+  #  program_config:
+  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
+attack_config:
+  attack_time: 20
+  target_ap_mac: 78:98:E8:55:3E:8D
+  target_client_mac: 30:ab:6a:39:88:46
+  ssid: test_channel_switch

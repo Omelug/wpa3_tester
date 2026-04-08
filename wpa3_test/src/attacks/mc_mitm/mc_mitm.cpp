@@ -112,7 +112,7 @@ namespace wpa3_tester{
         hw_capabilities::run_cmd({"ifconfig", nic_rogue_mon, "down"});
 
         // 2. Configure monitor mode on interfaces
-        hw_capabilities::run_cmd({"iw", nic_rogue_mon, "interface", "add", nic_rogue_ap, "type", "__ap"});
+        exec({"iw","dev", nic_rogue_mon, "interface", "add", nic_rogue_ap, "type", "__ap"});
         hw_capabilities::set_monitor_mode(nic_real_mon, 2000);
         hw_capabilities::set_monitor_mode(nic_rogue_mon, 2000);
 
@@ -129,8 +129,7 @@ namespace wpa3_tester{
 
         //  1 configure interfaces
         configure_interfaces();
-        const bool start_nic_real_ap =  true;
-        //FIXME const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(nic_real_mon);
+        const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(nic_real_mon);
 
         // 2. Set up the nic_real_mon interface and use it to find the target network.
         //    Make sure to use a recent backports driver package so we can capture
@@ -171,21 +170,20 @@ namespace wpa3_tester{
 
         // Now that we know the AP channel, put the monitor interface in active ACK mode
         if (start_nic_real_ap) {
-            exec({"iw", nic_real_mon, "interface", "add", nic_real_ap, "type", "__ap"});
+            exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "__ap", "addr", client_mac.to_string()});
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_ap.c_str(), client_mac.to_string().c_str());
-            exec({"ifconfig", nic_real_mon, "down"});
             exec({"ifconfig", nic_real_ap,  "down"});
             hw_capabilities::set_macaddress(nic_real_ap, client_mac.to_string());
             start_ap(nic_real_ap, nic_real_mon,  netconfig.real_channel, *beacon);
         } else {
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_mon.c_str(), client_mac.to_string().c_str());
-            exec({"ifconfig", nic_real_mon, "down"});
             exec({"ifconfig", nic_real_ap,  "down"});
             hw_capabilities::set_macaddress(nic_real_mon, client_mac.to_string());
+            hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
+            exec({"ifconfig", nic_real_mon, "up"});
         }
 
         exec({"ifconfig", nic_real_mon, "up"});
-        exec({"ifconfig", nic_real_ap, "up"});
         hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
 
         sock_real  = make_unique<MonitorSocket>(nic_real_mon);
@@ -194,7 +192,6 @@ namespace wpa3_tester{
         // 3. Set up the rogue AP and interfaces
         log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_rogue_ap.c_str(), ap_mac.to_string().c_str());
         exec({"ifconfig", nic_rogue_mon, "down"});
-        exec({"ifconfig", nic_rogue_ap,  "down"});
         hw_capabilities::set_macaddress(nic_rogue_ap, ap_mac.to_string());
 
         // Set up a rogue AP that clones the target network

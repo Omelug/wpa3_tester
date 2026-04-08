@@ -24,6 +24,7 @@ namespace wpa3_tester::mc_mitm{
         // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
         rogue_ap->str_con["channel"] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
     }
+
     void start_strict_tsharks(RunStatus& rs){
         const auto ap_mac = rs.get_actor("rogue_client")["mac"];
         const auto client_mac = rs.get_actor("rogue_ap")["mac"];

@@ -215,7 +215,7 @@ void start_ap(const string& iface, const string& base_iface, int channel,
     //TODO some drivers drop kernel if up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
     wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "down"});
-    wpa3_tester::hw_capabilities::run_cmd({"iw", iface, "set", "type", "__ap"});
+    exec({"iw", iface, "set", "type", "__ap"});
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});

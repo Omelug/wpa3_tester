@@ -10,6 +10,7 @@ f: check WPA2/SAE support correctly
 +: interfaces set of WPA2/SAE
 +: external interfaces
 +: simulation interfaces
+    // https://github.com/bcopeland/wmediumd
 +: README.md -> rozcestník pro /doc
 +: VIF rozhraní (nejde současně odesílat a příjimat)
 ?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp

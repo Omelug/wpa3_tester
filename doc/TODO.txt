@@ -1,34 +1,41 @@
-//TODO
-t: Actor with internal and AP should accept essid with different essid, but change it
+//TODO  Road map
+
+Scan:
++: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
+AP_MAX_INACTIVITY (stejné jako v 2022_)
++: ACM activation time (external, internal in hostapd)
+
++: přidat spoučtní testů do .run (Clion)
++: add option to add actor without interface
 f: add network manager off option for actors
 +: check in setup_chs_attack actors are available
-+: better req_error messages
++: better req_error backtracking messages (or table if needed, add debug config)
 +: add external mon interfaces option (to dump OpennWrtConn)
-ch: channel should be in selection?
-+: macchanger for changes
 f: check WPA2/SAE support correctly
 +: interfaces set of WPA2/SAE
-+: external interfaces
 +: simulation interfaces
     // https://github.com/bcopeland/wmediumd
 +: README.md -> rozcestník pro /doc
 +: VIF rozhraní (nejde současně odesílat a příjimat)
-?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
-+: better backtracking error messages
 +: create config wizard after first install
+
 
 Test cases:
 f: all process have to killed before test
+t: Actor with internal and AP should accept essid with different essid, but change it
+t: některé čipy mohou prej přestat komunikovat po změně pomocí macchanger, zkontrolovat hlavn RTL
 
 // new attacks?
 State Poisoning (2025_SACRED)
 Ghost Attack (badtoken pdf)
 
+????????????????:
+?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
+
 PDF:
 // použít NIC a WNIC k vysvětlení interface
-
 
 - Every ahysical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation

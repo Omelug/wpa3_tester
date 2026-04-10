@@ -36,11 +36,23 @@ namespace wpa3_tester::invalid_curve{
     }
 
     void setup_attack(RunStatus& rs){
+
+        const auto target_type =  rs.config.at("attack_config").at("target_type").get<string>();
+        assert(target_type == "ap" || target_type == "sta");
+        if(target_type == "ap"){
+            copy_file(
+                path(rs.config_path).parent_path()/"config/dragonslayer-wpa_supplicant.conf",
+                path(rs.run_folder)/"dragonslayer.conf"
+                );
+        }
+        if(target_type == "sta"){
+            copy_file(
+                path(rs.config_path).parent_path()/"config/dragonslayer-hostapd.conf",
+                path(rs.run_folder)/"dragonslayer.conf"
+                );
+        }
+
         copy_file(path(rs.config_path).parent_path()/"config/hostapd.eap_user", path(rs.run_folder)/"hostapd.eap_user");
-        copy_file(
-            path(rs.config_path).parent_path()/"config/dragonslayer.conf",
-            path(rs.run_folder)/"dragonslayer.conf"
-            );
 
         // -------- AP
         program::start(rs, "access_point");
@@ -58,20 +70,20 @@ namespace wpa3_tester::invalid_curve{
         const auto& attacker = rs.get_actor("attacker");
 
         if(target_type == "ap"){
-            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"],"ap");
-            rs.process_manager.wait_for("attacker", "Server is vulnerable to invalid curve attack", chrono::seconds(40));
+            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"], target_type);
+            rs.process_manager.wait_for("attacker", "Server is vulnerable to invalid curve attack", chrono::seconds(60));
         }
         if(target_type == "sta"){
-            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"],"sta");
+            start_dragonslayer(rs, attacker["actor_name"], attacker["iface"], target_type);
             program::start(rs, "client");
 
-            size_t replay = 5;
+            constexpr size_t replay = 5;
             //TODO run multiple times (33% of fail)
             for(size_t i = 0; i < replay; i++){
-                rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(10));
+                rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(20));
                 if(rs.process_manager.wait_for("attacker", "Client is vulnerable to invalid curve attack",
                     chrono::seconds(4), false)) break;
-                    rs.process_manager.stop("client");
+                    //rs.process_manager.stop("client");
 
             }
         }

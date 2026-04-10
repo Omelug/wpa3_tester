@@ -29,6 +29,7 @@ actors:
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
+    validator: ../dragonslayer.schema.yaml
     source: internal
     selection:
       condition: [monitor]

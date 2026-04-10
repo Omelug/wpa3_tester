@@ -1,0 +1,14 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: DragonSlayer wrapper attack config
+type: object
+required:
+  - target_type
+properties:
+  validator:
+    type: string
+    description: path to this schema
+  target_type:
+    type: string
+    enum: ["ap", "sta"]
+    description: type of target (ap -> starting dragonslayer sta, sta -> starting dragonslayer ap)
+additionalProperties: false

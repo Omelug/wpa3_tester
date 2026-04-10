@@ -105,14 +105,14 @@ namespace wpa3_tester {
         beacon.ds_parameter_set(6);
         beacon.ssid("TestNet");
 
-        unique_ptr<Dot11ProbeResponse> probe(beacon_to_probe_resp(beacon, 11));
+        Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, 11));
 
-        REQUIRE((probe->addr2() == beacon.addr2()));
-        REQUIRE((probe->addr3() == beacon.addr3()));
-        REQUIRE((probe->interval() == beacon.interval()));
-        REQUIRE((probe->ds_parameter_set() == 11));
-        REQUIRE((probe->search_option(Dot11::SSID) != nullptr));
-        REQUIRE((probe->search_option(Dot11::TIM) == nullptr));
+        REQUIRE((probe.addr2() == beacon.addr2()));
+        REQUIRE((probe.addr3() == beacon.addr3()));
+        REQUIRE((probe.interval() == beacon.interval()));
+        REQUIRE((probe.ds_parameter_set() == 11));
+        REQUIRE((probe.search_option(Dot11::SSID) != nullptr));
+        REQUIRE((probe.search_option(Dot11::TIM) == nullptr));
     }
 
 }

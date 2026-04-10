@@ -253,10 +253,10 @@ namespace wpa3_tester::bl0ck_attack{
             observer::get_tshark_events(rs, "attacker",
                 "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
             ,"BA_fn4","cyan"});
-        events.push_back({
+        /*events.push_back({
           observer::get_tshark_events(rs, "attacker",
               "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
-          ,"BA_fn4","purple"});
+          ,"BA_fn4","purple"});*/
 
         observer::tshark_graph(rs, "attacker", events);
         observer::tshark_graph(rs, "client", events);

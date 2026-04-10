@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: mc_mitm_test
+name: mc_mitm_test_sim
 attacker_module: mc_mitm
 actors:
   access_point:

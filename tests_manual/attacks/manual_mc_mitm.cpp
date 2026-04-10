@@ -15,7 +15,7 @@ int main() {
 
     const string r_client_iface = "wlan1";
     const string r_ap_iface     = "wlan2";
-    const string ap_ssid        = "test_channel_switch";
+    const string ap_ssid        = "test_mc_mitm";
     const string ap_mac         = "02:00:00:00:03:00";
     //const string client_mac     = "30:ab:6a:39:88:46";
     const string client_mac     = "02:00:00:00:02:00";

@@ -21,7 +21,11 @@ namespace wpa3_tester{
             str_con["driver"] = real_actor->str_con.at("driver");
         }
         if(internal){
-            set_mac(real_actor["mac"]);
+            if(!str_con["mac"].has_value()){
+                set_mac(real_actor["mac"]);
+            }else{
+                //TODO macchanger
+            }
             str_con["iface"] = real_actor->str_con.at("iface");
             str_con["radio"] = real_actor->str_con.at("radio");
         }
@@ -38,11 +42,11 @@ namespace wpa3_tester{
 
 
         if(internal) setup_actor_internal(config);
-        if(external_WB){setup_actor_external_whitebox(config, real_actor);}
+        if(external_WB){ setup_actor_external_whitebox(config, real_actor); }
         if(internal || external_WB){
             auto actor_json = config.at("actors").at(str_con["actor_name"].value());
             const bool monitor = bool_conditions.at("monitor").value_or(false);
-            string monitor_flags = "";
+            string monitor_flags;
             if (bool_conditions.at("active_monitor")) monitor_flags += "active";
             const bool injection = bool_conditions.at("injection").value_or(false);
 

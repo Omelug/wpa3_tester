@@ -1,0 +1,15 @@
+For compilation #TODO version
+gcc
+cmake
+make
+
+These programs have to be installed and accessible:
+
+hostapd (if not specified version)
+wpa_supplicant (if not specified version)
+macchanger
+ip (iproute2)
+iw
+
+for mitm/fragattacks:
+ifconfig (net-tools)

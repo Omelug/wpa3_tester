@@ -52,6 +52,7 @@ namespace wpa3_tester{
     }
 
     bool Actor_config::matches(const Actor_config& offer) {
+        //TODO with templeates:
         for (auto const & [key, required_val] : str_con) {
             if (!required_val.has_value()) { continue;}
             if (!offer.str_con.at(key).has_value()) { continue;}

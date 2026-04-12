@@ -68,6 +68,13 @@ namespace wpa3_tester::cookie_guzzler{
             pcap_pkthdr *header;
             const uint8_t *packet;
             while (pcap_next_ex(handle, &header, &packet) == 1) {
+                if (header->caplen < 10) {
+                    log(LogLevel::DEBUG, "Packet too short: %u", header->caplen);
+                    continue;
+                }
+
+                log(LogLevel::DEBUG, "Hex: %02x %02x %02x %02x", packet[0], packet[1], packet[2], packet[3]);
+
                 //if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
                 if (const auto frame = dos_helpers::parse_sae_commit(packet, header->caplen)) {
                     result = frame.value();

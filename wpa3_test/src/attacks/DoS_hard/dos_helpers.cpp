@@ -1,21 +1,18 @@
 #include "attacks/DoS_hard/dos_helpers.h"
 #include <optional>
 
+#include "logger/log.h"
+
 using namespace std;
 using namespace Tins;
 namespace wpa3_tester::dos_helpers {
 
     optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len) {
         if (len < 4) return nullopt;
+        uint16_t rt_len = packet[2] | (packet[3] << 8);
+        if (len <= rt_len + 24) return std::nullopt;
 
-        const RadioTap rt(packet, len);
-        bool has_fcs = false;
-        if (rt.present() & RadioTap::PresentFlags::FLAGS) {
-            const uint8_t flags = rt.flags();
-            if (flags & 0x10) {
-                has_fcs = true;
-            }
-        }
+        bool has_fcs = (packet[14] & 0x10); // Bit 4
 
         const uint16_t radiotap_len = packet[2] | (packet[3] << 8);
         constexpr size_t dot11_header = 24;

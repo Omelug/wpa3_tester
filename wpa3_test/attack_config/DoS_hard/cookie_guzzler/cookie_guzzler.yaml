@@ -24,7 +24,7 @@ actors:
   client:
     source: internal
     selection:
-      driver: ath9k_htc
+      driver: mt76x2u
     setup:
       program: wpa_supplicant
       program_config:
@@ -41,7 +41,7 @@ actors:
   attacker:
     source: internal
     selection:
-      driver: mt76x2u
+      driver: ath9k_htc
       condition: [monitor, injection]
       channel: 6
     sniff_iface: att
@@ -81,4 +81,4 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 10
+  attack_time_sec: 180

@@ -44,6 +44,7 @@ namespace wpa3_tester{
         std::map<std::string, std::optional<bool>> bool_conditions = {
             {"AP",          std::nullopt},
             {"injection",   std::nullopt},
+            {"control_monitor",  std::nullopt},
             {"active_monitor",  std::nullopt},
             {"managed",     std::nullopt},
             {"monitor",     std::nullopt},

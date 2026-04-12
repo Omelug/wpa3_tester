@@ -10,12 +10,14 @@
 #include "observer/resource_checker.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
+    
     RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
         const dos_helpers::SAEPair &sae_params){
 
@@ -54,7 +56,7 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
     void check_vuln(const string &iface_name,const HWAddress<6> &ap_mac, const int attack_time,
-        const dos_helpers::SAEPair &sae_params){
+        const dos_helpers::SAEPair &sae_params, const string &att_mac){
 
         PacketSender sender(iface_name);
 
@@ -63,7 +65,7 @@ namespace wpa3_tester::cookie_guzzler{
 
         const auto end_time = steady_clock::now() + seconds(attack_time);
         while (steady_clock::now() < end_time) {
-            const string sta_mac = hw_capabilities::rand_mac();
+            const string sta_mac = firmware::get_ath_masker_mac(att_mac);
             auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
 
             //  burst of packet
@@ -100,7 +102,7 @@ namespace wpa3_tester::cookie_guzzler{
             // change to monitor mode
             attacker->set_monitor_mode();
             attacker->up_iface();
-            check_vuln(attacker["iface"], ap_mac, duration, sae_params);
+            check_vuln(attacker["iface"], ap_mac, duration, sae_params, attacker["mac"]);
         } else {
             throw runtime_error("SAE Commit capture failed");
         }

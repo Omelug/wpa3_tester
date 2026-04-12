@@ -47,7 +47,8 @@ namespace wpa3_tester{
             auto actor_json = config.at("actors").at(str_con["actor_name"].value());
             const bool monitor = bool_conditions.at("monitor").value_or(false);
             string monitor_flags;
-            if (bool_conditions.at("active_monitor")) monitor_flags += "active";
+            if (bool_conditions.at("active_monitor")) monitor_flags += " active";
+            if (bool_conditions.at("control_monitor")) monitor_flags += " control";
             const bool injection = bool_conditions.at("injection").value_or(false);
 
             int channel = -1;

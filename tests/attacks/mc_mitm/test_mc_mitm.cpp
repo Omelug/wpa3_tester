@@ -43,7 +43,6 @@ namespace wpa3_tester {
         REQUIRE((beacon_data != original_data));
         REQUIRE((beacon_data.size() != original_data.size()));
 
-
         INFO("Beacon frame size before: " << original_data.size());
         INFO("Beacon frame size after: " << beacon_data.size());
     }

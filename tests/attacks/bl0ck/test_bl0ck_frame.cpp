@@ -16,7 +16,6 @@ namespace wpa3_tester {
         const string test_iface = "lo";  // Use loopback for testing
         const HWAddress<6> ap_mac("00:11:22:33:44:55");
         const HWAddress<6> sta_mac("AA:BB:CC:DD:EE:FF");
-        constexpr int subtype = 8;  // BAR
 
         // Create output directory
         const path output_dir = temp_directory_path() / "bl0ck_test";
@@ -33,12 +32,13 @@ namespace wpa3_tester {
 
         FileSniffer sniffer(pcap_file.string());
         for (auto& pkt : sniffer) {
+            constexpr int subtype = 8;
 
             // Verify packet structure
             const RadioTap* radiotap = pkt.pdu()->find_pdu<RadioTap>();
             REQUIRE((radiotap != nullptr));
 
-            const Dot11* dot11 = radiotap->find_pdu<Dot11>();
+            const auto* dot11 = radiotap->find_pdu<Dot11>();
             REQUIRE((dot11 != nullptr));
 
             CHECK((dot11->type() == Dot11::CONTROL));

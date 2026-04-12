@@ -172,7 +172,10 @@ namespace wpa3_tester{
 
         // Log command line FIRST for debugging
         string cmd_line;
-        for (size_t i = 0; i < cmd.size(); ++i) {if (i) cmd_line += ' ';cmd_line += cmd[i];}
+        for (size_t i = 0; i < cmd.size(); ++i){
+            if (i) cmd_line += ' ';
+            cmd_line += cmd[i];
+        }
         log(LogLevel::DEBUG, "Starting process '"+process_name+"': "+cmd_line);
 
         // Initialize logs BEFORE starting process

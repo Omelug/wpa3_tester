@@ -65,7 +65,7 @@ namespace wpa3_tester::cookie_guzzler{
 
         const auto end_time = steady_clock::now() + seconds(attack_time);
         while (steady_clock::now() < end_time) {
-            const string sta_mac = firmware::get_ath_masker_mac(att_mac);
+            const string sta_mac = firmware::get_random_ath_masker_mac(att_mac);
             auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
 
             //  burst of packet

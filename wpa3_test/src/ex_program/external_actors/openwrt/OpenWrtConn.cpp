@@ -15,10 +15,10 @@ namespace wpa3_tester {
         const auto& setup_node = config.at("actors").at(actor_name).at("setup");
         if(!setup_node.contains("req_programs")){return;}
         auto req_programs = setup_node.at("req_programs");
-        for (const auto& program_name : req_programs) {
+        for (const auto& req_name : req_programs) {
             int ret = 0;
-            exec("opkg install "+program_name.get<string>(), false, &ret);
-            if(ret){throw config_err("Cannot install "+program_name.get<string>()+", try opkg update");}
+            exec("opkg install "+req_name.get<string>(), false, &ret);
+            if(ret){throw config_err("Cannot install "+req_name.get<string>()+", try opkg update");}
         }
     }
 

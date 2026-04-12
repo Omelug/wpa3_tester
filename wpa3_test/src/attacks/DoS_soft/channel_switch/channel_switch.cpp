@@ -115,7 +115,6 @@ namespace wpa3_tester::CSA_attack{
         check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
         log(LogLevel::INFO, "Attack END");
         this_thread::sleep_for(seconds(10));
-
     }
 
     // ---------- STATS ----------------

@@ -2,6 +2,7 @@
 
 #include "attacks/by_target/scan_AP.h"
 #include "attacks/components/setup_connections.h"
+#include "attacks/DoS_hard/ath_masker/ath_masker_test.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
 #include "attacks/DoS_hard/dragondrain/dragondrain.h"
@@ -31,6 +32,7 @@ namespace wpa3_tester::attack_module_maps{
         {"dragondrain", dragondrain::setup_attack},
         //{"mc_mitm", mc_mitm::setup_attack},
         {"ssid_confusion", mc_mitm::setup_attack},
+        {"ath_masker_test", ath_masker_test::setup_attack},
     };
 
     map<string, function<void(RunStatus&)>> run_map = {
@@ -48,6 +50,7 @@ namespace wpa3_tester::attack_module_maps{
         {"dragondrain", dragondrain::run_attack},
         {"mc_mitm", mc_mitm::run_attack},
         {"ssid_confusion", ssid_confusion::run_attack},
+        {"ath_masker_test", ath_masker_test::run_attack},
     };
 
     map<string, function<void(const RunStatus&)>> stats_map = {
@@ -63,5 +66,6 @@ namespace wpa3_tester::attack_module_maps{
         //{"invalid_curve", invalid_curve::run_attack}
         {"dragondrain", dragondrain::stats_attack},
         {"mc_mitm", mc_mitm::stats},
+        {"ath_masker_test", ath_masker_test::stats},
     };
 }

@@ -79,7 +79,7 @@ namespace wpa3_tester{
          this->process_manager.stop_all();
          this->actors.clear();
          this->observers.clear();
-     };
+    }
 
     void print_exception_tree(const exception& e, ostream& os, int level = 0) {
         os << string(level * 2, ' ') << "- " << e.what() << endl;
@@ -97,7 +97,7 @@ namespace wpa3_tester{
         // Ensure parent directories exist
         error_code ec;
         create_directories(run_folder, ec);
-        if (ec) {throw runtime_error("Unable to create run base directory");}
+        if (ec) throw runtime_error("Unable to create run base directory");
 
         //try {
             if(this->only_stats){stats_test(); return;}
@@ -140,7 +140,7 @@ namespace wpa3_tester{
              throw config_err("Failed to connect to external actor");
          }
          actor->conn = conn;
-     }
+    }
 
     void RunStatus::run_test(){
         process_manager.write_log_all("@START");

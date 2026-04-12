@@ -163,8 +163,8 @@ namespace wpa3_tester{
     }
 
     void RunStatus::config_requirement() {
+        check_local_requirements();
         cleanup_all_namespaces();
-
         parse_requirements();
         log_actor_map("Actors: ", actors);
 

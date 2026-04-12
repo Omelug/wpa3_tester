@@ -1,11 +1,11 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: ath_masker_test
 attacker_module: ath_masker_test
+validator: ./ath_masker_test.schema.yaml
 actors:
   access_point:
     source: internal
     selection:
-      whitebox_host: OpenWrt
       condition: [ AP, 2_4GHz ]
       channel: 6
     setup:
@@ -13,30 +13,26 @@ actors:
       program_config:
         version: 2_10
         hostapd_path: "./simple_hostapd.conf"
+    sniff_iface: ap
   attacker:
     source: internal
+    setup:
+      requirements: [ath_masker]
     selection:
       driver: ath9k_htc
-      condition: [monitor, injection, control_active]
-      #TODO add firmware: [ath_masker]
+      condition: [monitor, control_monitor]
       channel: 6
-    sniff_iface: att
 observers:
   tshark_client:
-    actor: client
+    actor: access_point
     program: tshark
     program_config:
-      filter: ""
+      filter: "special_filter:actors_5_bytes"
   tshark_attacker:
     actor: attacker
     program: tshark
     program_config:
-      filter: ""
-  ap_resources:
-    actor: access_point
-    program: resource_checker
-    program_config:
-      interval: 1
+      filter: "special_filter:actors_5_bytes"
 attack_config:
   # TODO validator
   test_mac_count: 100

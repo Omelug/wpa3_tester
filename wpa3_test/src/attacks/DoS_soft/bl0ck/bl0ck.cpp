@@ -184,6 +184,7 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     static string bpf_mac_ra_or_ta(const string &mac) {
+        //TODO nemá tu být &&
         return "("+bpf_mac_at(4, mac)+" or "+bpf_mac_at(10, mac)+")";
     }
 

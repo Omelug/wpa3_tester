@@ -16,15 +16,80 @@ namespace wpa3_tester::observer{
     using namespace filesystem;
 
     constexpr string program_name = "tshark";
-    void start_tshark(RunStatus &run_status, const string &node_name, const string& filter) {
-        vector<string> command = {};
-        add_nets(run_status,command, node_name);
 
-        string pcap_path = get_observer_folder(run_status, program_name) / (node_name+"_capture.pcap");
-        const optional<string>iface = run_status.get_actor(node_name)->str_con["sniff_iface"];
+    //helper functino for join or filters
+    string or_filter(const vector<string> &mac_filters){
+        if (mac_filters.empty()) return "";
+        ostringstream oss;
+        oss << "(";
+        for (size_t i = 0; i < mac_filters.size(); ++i) {
+            oss << mac_filters[i];
+            if (i < mac_filters.size() - 1) { oss << " or "; }
+        }
+        oss << ")";
+        return oss.str();
+    }
+
+    string masked_mac_filter_5(const RunStatus &rs) {
+        vector<string> mac_filters;
+
+        for (const auto &actor : rs.actors | views::values) {
+            string clean_mac = actor["mac"];
+            if (clean_mac.length() < 10) continue;
+            erase(clean_mac, ':');
+            string pre = clean_mac.substr(0, 10);
+
+            // Kontrola Address 1 (Příjemce - důležité pro ACK)
+            // Offset 4 (4 bajty) a offset 8 (1 bajt)
+            string addr1 = "(link[4:4] == 0x" + pre.substr(0, 8) +
+                           " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
+
+            // Kontrola Address 2 (Odesílatel - tvoje Probe Requesty)
+            // Offset 10 (4 bajty) a offset 14 (1 bajt)
+            string addr2 = "(link[10:4] == 0x" + pre.substr(0, 8) +
+                           " and link[14:1] == 0x" + pre.substr(8, 2) + ")";
+
+            mac_filters.push_back("(" + addr1 + " or " + addr2 + ")");
+
+            /*erase(clean_mac, ':');
+            string prefix = actor["mac"].substr(0, 14); // "AA:BB:CC:DD:EE"
+            mac_filters.push_back("wlan host " + prefix + ":00/40");
+
+            if (clean_mac.length() == 12) {
+                string prefix = clean_mac.substr(0, 10);
+
+                // BPF offset for 802.11:
+                // link[10:4] first 4 bytes SA (Source Address)
+                // link[14:1] 5. byte SA
+                //string f = "wlan host " + clean_mac;
+                string f = "(link[10:4] == 0x" + prefix.substr(0, 8) +
+                           " and link[14:1] == 0x" + prefix.substr(8, 2) + ")";
+                mac_filters.push_back(f);
+            }*/
+        }
+        return or_filter(mac_filters);
+    }
+
+    // include broadcast
+    string all_actors_mac_filter(const RunStatus &rs) {
+        vector<string> mac_filters;
+
+        for (const auto &actor: rs.actors | views::values) {
+            mac_filters.push_back("ether host " + actor["mac"]);
+        }
+        mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
+        return or_filter(mac_filters);
+    }
+    
+    void start_tshark(RunStatus &rs, const string &node_name, const string& filter) {
+        vector<string> command = {};
+        add_nets(rs,command, node_name);
+
+        string pcap_path = get_observer_folder(rs, program_name) / (node_name+"_capture.pcap");
+        const optional<string>iface = rs.get_actor(node_name)->str_con["sniff_iface"];
         string iface_str;
         if(iface == nullopt){
-            iface_str = run_status.get_actor(node_name)["iface"];
+            iface_str = rs.get_actor(node_name)["iface"];
         }else {
             iface_str = iface.value();
         }
@@ -33,9 +98,18 @@ namespace wpa3_tester::observer{
             program_name, "-i", iface_str,
             "-w", pcap_path,
         });
-        if (!filter.empty()) { command.push_back("-f"); command.push_back(filter); }
-        auto tshark_dir =  get_observer_folder(run_status, program_name);
-        run_status.process_manager.run(node_name+"_cap", command, tshark_dir, tshark_dir);
+        if (!filter.empty()){
+            command.emplace_back("-f");
+            if(filter == "special_filter:actors"){
+                command.push_back(all_actors_mac_filter(rs));
+            } else if(filter == "special_filter:actors_5_bytes"){
+                command.push_back(masked_mac_filter_5(rs));
+            }else{
+                command.push_back(filter);
+            }
+        }
+        const auto tshark_dir =  get_observer_folder(rs, program_name);
+        rs.process_manager.run(node_name+"_cap", command, tshark_dir, tshark_dir);
     }
 
     path extract_pcap_to_csv(const string& actor_name, const path& real_folder){
@@ -264,6 +338,68 @@ namespace wpa3_tester::observer{
         int rc = pclose(gp);
         if (rc != 0) throw runtime_error("Gnuplot failed");
         return output_path.string();
+    }
+
+    // ------------ retransmission graph ---------------
+    void generate_time_series_retry_graph(const RunStatus &rs,
+                    const string &actor_name,
+                    const path &folder) {
+        const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
+        create_directories(real_folder);
+        const path output_path = real_folder / (actor_name +"_graph.png");
+        const path pcap_path = real_folder / (actor_name +"_capture.pcap");
+
+        // Tshark vytáhne: [Relativní čas] [Je to retry? (0/1)]
+        // Filtr: wlan.addr == mac (vše od/pro tvého aktéra)
+        const string cmd = "tshark -r " + pcap_path.string() +
+                    // " -Y \"wlan.addr == " + mac + "\" " +
+                     " -T fields -e frame.time_relative -e wlan.fc.retry";
+
+        FILE* pipe = popen(cmd.c_str(), "r");
+        if (!pipe) return;
+
+        // Struktura pro agragaci: sekunda -> {celkem, retries}
+        // Klíčem bude čas zaokrouhlený na 0.1s (nebo 1s podle délky testu)
+        map<double, pair<int, int>> stats_map;
+
+        char buffer[256];
+        char ts_buf[64], retry_buf[64];
+        while (fgets(buffer, sizeof(buffer), pipe)) {
+            if (sscanf(buffer, "%63s %63s", ts_buf, retry_buf) == 2) {
+                double timestamp = atof(ts_buf);
+                int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
+
+                double bin = floor(timestamp * 10.0) / 10.0;
+                stats_map[bin].first++;
+                if (is_retry) stats_map[bin].second++;
+            }
+        }
+        pclose(pipe);
+
+        FILE* gp = popen("gnuplot", "w");
+        fprintf(gp, "set terminal pngcairo size 1200,600\n");
+        fprintf(gp, "set output '%s'\n", output_path.c_str());
+        fprintf(gp, "set title 'Retransmit Rate over Time '\n");
+        fprintf(gp, "set xlabel 'Time (s)'\n");
+        fprintf(gp, "set ylabel 'Retry Percentage (%%)'\n");
+        fprintf(gp, "set yrange [0:110]\n");
+        fprintf(gp, "set grid\n");
+        fprintf(gp, "set style fill transparent solid 0.5 noborder\n");
+
+        fprintf(gp, "$MyData << EOD\n");
+        for (auto const& [time, counts] : stats_map) {
+            double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
+            fprintf(gp, "%f %f\n", time, percent);
+        }
+        fprintf(gp, "EOD\n"); // Tady musí být EOD pro ukončení bloku
+
+        // 2. Teď teprve plotujeme z toho bloku
+        // Všimni si, že teď už nepoužíváme '-', ale název bloku $MyData
+        fprintf(gp, "plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
+                    "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle \n");
+
+        fflush(gp);
+        pclose(gp);
     }
 }
 

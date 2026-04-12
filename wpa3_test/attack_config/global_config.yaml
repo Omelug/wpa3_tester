@@ -15,7 +15,7 @@ paths:
     dragonslayer_folder: /home/kali/Documents/WPA3/Tools/dragonslayer
   dragondrain:
     dragondrain_folder: /home/kali/Documents/WPA3/Tools/dragondrain-and-time
-    ath_folder: /home/kali/Documents/WPA3/Tools/ath_masker
+  ath_masker: /home/kali/Documents/WPA3/Tools/ath_masker
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [wlan0]

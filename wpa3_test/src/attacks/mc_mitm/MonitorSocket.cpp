@@ -1,4 +1,3 @@
-#pragma once
 #include <tins/tins.h>
 #include <string>
 #include <memory>

@@ -44,7 +44,7 @@ namespace wpa3_tester::dragondrain{
         components::client_ap_attacker_setup(rs);
 
         //check ath_maker module
-        const string ath_folder = get_global_config().at("paths").at("dragondrain").at("ath_folder");
+        const string ath_folder = get_global_config().at("paths").at("ath_masker");
         hw_capabilities::run_in("bash ./load.sh", ath_folder);
     }
 

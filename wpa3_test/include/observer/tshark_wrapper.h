@@ -10,7 +10,7 @@ namespace wpa3_tester::observer{
         std::string color = "blue";
     };
 
-    void start_tshark(RunStatus &run_status, const std::string &node_name, const std::string& filter = "udp port 5201");
+    void start_tshark(RunStatus &rs, const std::string &node_name, const std::string& filter = "udp port 5201");
     std::string plot_traffic_graph(const RunStatus& rs,
             const std::string& actor_name,
             const std::vector<LogTimePoint>& times, const std::vector<double>& sizes,
@@ -21,4 +21,7 @@ namespace wpa3_tester::observer{
             const std::string& actor_name,
             std::vector<graph_lines>& events,
             const std::filesystem::path& folder = "");
+    void generate_time_series_retry_graph(const RunStatus &rs,
+                    const std::string &actor_name,
+                    const std::filesystem::path &folder = "");
 }

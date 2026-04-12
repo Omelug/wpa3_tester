@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "setup/YAMLValidator.h"
+#include "system/firmware/ath9k_htc.h"
 
 namespace wpa3_tester{
     using namespace std;
@@ -136,6 +137,29 @@ namespace wpa3_tester{
             throw config_err(string("Error in config: ") + e.what());
         } catch (const exception& e) {
             throw config_err(string("Config validation error: ") + e.what());
+        }
+    }
+    void RunStatus::ensure_requirement(const string &req){
+        if(req == "ath_masker"){ firmware::load_ath_masker(); return; }
+        throw not_implemented_err("Requirement"+req+" was not implemented");
+    }
+
+    void RunStatus::check_local_requirements() {
+        std::set<std::string> all_requirements;
+        // get all requirements (actor doesnt matter)
+        for (auto& [actor_name, actor_data] : config.at("actors").items()) {
+            if (actor_data.contains("setup") && actor_data.at("setup").contains("requirements")){
+                for (auto& req : actor_data.at("setup").at("requirements")) {
+                    if (req.is_string()) {
+                        all_requirements.insert(req.get<std::string>());
+                    }
+                }
+            }
+        }
+
+        for (const auto& req : all_requirements) {
+            log(LogLevel::WARNING, "Found requirement: " +req);
+            ensure_requirement(req);
         }
     }
 

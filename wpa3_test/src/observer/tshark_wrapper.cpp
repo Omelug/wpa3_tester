@@ -349,8 +349,7 @@ namespace wpa3_tester::observer{
         const path output_path = real_folder / (actor_name +"_graph.png");
         const path pcap_path = real_folder / (actor_name +"_capture.pcap");
 
-        // Tshark vytáhne: [Relativní čas] [Je to retry? (0/1)]
-        // Filtr: wlan.addr == mac (vše od/pro tvého aktéra)
+        // [relative time] [ retry? (True/False)]
         const string cmd = "tshark -r " + pcap_path.string() +
                     // " -Y \"wlan.addr == " + mac + "\" " +
                      " -T fields -e frame.time_relative -e wlan.fc.retry";
@@ -358,16 +357,16 @@ namespace wpa3_tester::observer{
         FILE* pipe = popen(cmd.c_str(), "r");
         if (!pipe) return;
 
-        // Struktura pro agragaci: sekunda -> {celkem, retries}
-        // Klíčem bude čas zaokrouhlený na 0.1s (nebo 1s podle délky testu)
+        // second -> {all_frames, retries}
+        // rounded for  0.1s
         map<double, pair<int, int>> stats_map;
 
         char buffer[256];
         char ts_buf[64], retry_buf[64];
         while (fgets(buffer, sizeof(buffer), pipe)) {
             if (sscanf(buffer, "%63s %63s", ts_buf, retry_buf) == 2) {
-                double timestamp = atof(ts_buf);
-                int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
+                const double timestamp = std::atof(ts_buf);
+                const int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
 
                 double bin = floor(timestamp * 10.0) / 10.0;
                 stats_map[bin].first++;
@@ -391,10 +390,8 @@ namespace wpa3_tester::observer{
             double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
             fprintf(gp, "%f %f\n", time, percent);
         }
-        fprintf(gp, "EOD\n"); // Tady musí být EOD pro ukončení bloku
+        fprintf(gp, "EOD\n");
 
-        // 2. Teď teprve plotujeme z toho bloku
-        // Všimni si, že teď už nepoužíváme '-', ale název bloku $MyData
         fprintf(gp, "plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
                     "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle \n");
 

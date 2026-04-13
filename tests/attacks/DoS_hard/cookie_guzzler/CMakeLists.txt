@@ -10,7 +10,7 @@ target_link_libraries(run_cookie_guzzler_tests PRIVATE
 add_test(NAME CookieGuzzlerFrameTests COMMAND run_cookie_guzzler_tests)
 
 # SAE callback tests
-add_executable(run_sae_callback_tests test_sae_callback.cpp)
+add_executable(run_sae_callback_tests test_dos_helpers.cpp)
 
 target_link_libraries(run_sae_callback_tests PRIVATE
         wpa3_core

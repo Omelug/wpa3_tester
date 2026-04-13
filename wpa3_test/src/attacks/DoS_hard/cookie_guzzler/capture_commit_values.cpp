@@ -15,7 +15,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-    dos_helpers::SAEPair capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle) {
+    optional<dos_helpers::SAEPair> capture_sae_commit(const string &iface, const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle) {
         dos_helpers::SAEPair result{};
         char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -78,13 +78,12 @@ namespace wpa3_tester::cookie_guzzler{
                 //if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
                 if (const auto frame = dos_helpers::parse_sae_commit(packet, header->caplen)) {
                     result = frame.value();
-                    result.success = true;
                     log(LogLevel::DEBUG, "Captured SAE commit, scalar size: %zu", result.scalar.size());
                     return result;
                 }
             }
         }
-        return result;
+        return nullopt;
     }
 
     void stop_wpa_supplicant(const string &pid_file){
@@ -138,12 +137,14 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
 
-    dos_helpers::SAEPair get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface, const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
+    optional<dos_helpers::SAEPair> get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface,
+                                                     const string &ssid, const HWAddress<6> &ap_mac, const int timeout,
+                                                     pcap_t *handler) {
         if(iface == sniff_iface) throw invalid_argument("Interface names do cant be same");
         const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
         const string conf_path = create_wpa_supplicant_config(ssid);
         start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
-        dos_helpers::SAEPair sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
+        optional<dos_helpers::SAEPair> sae_params = capture_sae_commit(sniff_iface, ap_mac, timeout, handler);
         if (handler != nullptr) pcap_close(handler);
         stop_wpa_supplicant(pid_file);
         filesystem::remove(conf_path);

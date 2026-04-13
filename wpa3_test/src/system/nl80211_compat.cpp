@@ -72,7 +72,7 @@ namespace wpa3_tester{
         if (attrs[NL80211_ATTR_EXT_FEATURES]) {
 
             void *ext_features_data = nla_data(attrs[NL80211_ATTR_EXT_FEATURES]);
-            size_t ext_features_len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
+            const size_t ext_features_len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 
             constexpr uint32_t STA_BYTE_INDEX = NL80211_EXT_FEATURE_SAE_OFFLOAD / 8; // 7
             constexpr uint32_t STA_BIT_MASK = 1 << (NL80211_EXT_FEATURE_SAE_OFFLOAD % 8); // 1 << 4 (16)

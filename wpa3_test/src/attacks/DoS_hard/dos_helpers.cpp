@@ -8,13 +8,25 @@ using namespace Tins;
 namespace wpa3_tester::dos_helpers {
 
     optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len) {
+        // --- RadioTap ---
         if (len < 4) return nullopt;
-        uint16_t rt_len = packet[2] | (packet[3] << 8);
-        if (len <= rt_len + 24) return std::nullopt;
-
-        bool has_fcs = (packet[14] & 0x10); // Bit 4
-
         const uint16_t radiotap_len = packet[2] | (packet[3] << 8);
+        // Bezpečné čtení has_fcs z RadioTap Flags
+        // Flags je bit 1 v present field (bytes 4-7)
+        const uint32_t present = packet[4] | (packet[5] << 8) |
+                                 (packet[6] << 16) | (packet[7] << 24);
+        const bool has_flags_field = (present >> 1) & 1;
+
+        bool has_fcs = false;
+        if (has_flags_field) {
+            // TSFT (bit 0) zabírá 8 bytů pokud přítomen, jinak Flags je hned na byte 8
+            const bool has_tsft = present & 1;
+            const uint8_t flags_offset = 8 + (has_tsft ? 8 : 0);
+            if (len > radiotap_len + flags_offset)
+                has_fcs = (packet[8 + (has_tsft ? 8 : 0)] & 0x10);
+        }
+
+        // --- Offsety ---
         constexpr size_t dot11_header = 24;
         constexpr size_t auth_fixed   = 6; // Algo(2) + Seq(2) + Status(2)
         const size_t auth_offset = radiotap_len + dot11_header;
@@ -22,63 +34,83 @@ namespace wpa3_tester::dos_helpers {
 
         if (len < sae_offset + 2) return nullopt;
 
-        const uint16_t algo   = *reinterpret_cast<const uint16_t *>(packet + auth_offset);
-        const uint16_t seq    = *reinterpret_cast<const uint16_t *>(packet + auth_offset + 2);
-        const uint16_t status = *reinterpret_cast<const uint16_t *>(packet + auth_offset + 4);
+        fprintf(stderr, "DEBUG radiotap_len=%u\n", radiotap_len);
+        fprintf(stderr, "DEBUG auth_offset=%zu\n", auth_offset);
+        fprintf(stderr, "DEBUG bytes at auth_offset: %02x %02x %02x %02x %02x %02x\n",
+                packet[auth_offset],   packet[auth_offset+1],
+                packet[auth_offset+2], packet[auth_offset+3],
+                packet[auth_offset+4], packet[auth_offset+5]);
 
-        // SAE Commit musí mít Algo 3 a Sequence 1
+        // --- Auth header ---
+        const uint16_t algo   = packet[auth_offset]     | (packet[auth_offset+1] << 8);
+        const uint16_t seq    = packet[auth_offset+2]   | (packet[auth_offset+3] << 8);
+        const uint16_t status = packet[auth_offset+4]   | (packet[auth_offset+5] << 8);
+
         if (algo != 3 || seq != 1) return nullopt;
 
+        // --- SAE data (za auth_fixed) ---
         const uint8_t *sae_data = packet + sae_offset;
-        const size_t   sae_size = len - sae_offset;
+        size_t remaining = len - sae_offset;
+        if (has_fcs && remaining >= 4) remaining -= 4;
 
+        if (remaining < 2) return nullopt;
+
+        // --- Group ID ---
         SAEPair frame;
-        frame.status = status;
-        frame.group_id = *reinterpret_cast<const uint16_t *>(sae_data);
+        frame.status   = status;
+        frame.group_id = static_cast<uint16_t>(sae_data[0]) |
+                (static_cast<uint16_t>(sae_data[1]) << 8);
 
-        // length by Group ID
         size_t scalar_len = 0;
         size_t element_len = 0;
-
         switch (frame.group_id) {
-            case 19: // NIST P-256
-                scalar_len = 32;
-                element_len = 64;
-                break;
-            case 20: // NIST P-384
-                scalar_len = 48;
-                element_len = 96;
-                break;
-            case 21: // NIST P-521
-                scalar_len = 66;
-                element_len = 132;
-                break;
-            default:
-                throw std::runtime_error("Unknown group ID");
+            case 19: scalar_len = 32; element_len = 64;  break; // NIST P-256
+            case 20: scalar_len = 48; element_len = 96;  break; // NIST P-384
+            case 21: scalar_len = 66; element_len = 132; break; // NIST P-521
+            default: return nullopt;
         }
 
         const size_t crypto_total = scalar_len + element_len;
-        const size_t min_required = 2 + crypto_total;
-        if (sae_size < min_required) return nullopt;
-        if (sae_size < (2 + crypto_total)) return nullopt;
+        const uint8_t *ptr = sae_data + 2; // skip Group ID
+        remaining -= 2;
 
-        size_t token_len = sae_size - 2 - crypto_total;
-        if (has_fcs) {token_len -= 4; }
-        if (token_len > 0){
-            frame.token.assign(sae_data + 2, sae_data + 2 +token_len);
+        // --- Token + Scalar + Element depends on status code (wireshark packet-ieee80211.c) ---
+
+        if (status == 76) {
+            // only anti-clogging token, no scalar/element
+            if (remaining > 0)
+                frame.token.assign(ptr, ptr + remaining);
+            frame.success = true;
+            return frame;
         }
 
-        const uint8_t *crypto_ptr = sae_data + 2 + token_len;
+        if (status == 0 || status == 126) {
+            // Token je přítomen pokud je dat víc než scalar+element
+            if (remaining > crypto_total) {
+                const size_t token_len = remaining - crypto_total;
+                frame.token.assign(ptr, ptr + token_len);
+                ptr       += token_len;
+                remaining -= token_len;
+            }
 
-        frame.scalar.assign(crypto_ptr, crypto_ptr + scalar_len);
-        frame.element.assign(crypto_ptr + scalar_len, crypto_ptr + crypto_total);
+            // Scalar + Element
+            if (remaining < crypto_total) return nullopt;
+            frame.scalar.assign(ptr, ptr + scalar_len);
+            frame.element.assign(ptr + scalar_len, ptr + crypto_total);
+            frame.success = true;
+            return frame;
+        }
 
-        frame.success = true;
+        // status 77 — group ID jsme přečetli, ale scalar/element nejsou garantovány
+        frame.success = false;
         return frame;
     }
 
     RadioTap make_sae_commit(const HWAddress<6> &ap_mac,const HWAddress<6> &sta_mac,
-        SAEPair sae_params) {
+        const SAEPair &sae_params) {
+
+        //TODO check invalid  combinations of params chekc
+        if(!sae_params.is_valid()) {}
 
         Dot11Authentication auth;
         auth.addr1(ap_mac);

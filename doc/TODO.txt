@@ -5,22 +5,23 @@ Scan:
 AP_MAX_INACTIVITY (stejné jako v 2022_)
 +: ACM activation time (external, internal in hostapd)
 
+Better code:
 +: přidat spoučtní testů do .run (Clion)
-+: add option to add actor without interface
-f: add network manager off option for actors
-+: check in setup_chs_attack actors are available
 +: better req_error backtracking messages (or table if needed, add debug config)
-+: add external mon interfaces option (to dump OpennWrtConn)
-f: check WPA2/SAE support correctly
-+: interfaces set of WPA2/SAE
++: check in setup_chs_attack actors are available
 +: simulation interfaces
     // https://github.com/bcopeland/wmediumd
 +: README.md -> rozcestník pro /doc
-+: VIF rozhraní (nejde současně odesílat a příjimat)
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
-+: create config wizard after first install
 
+
+New features:
++: create config wizard after first install
++: add option to add actor without interface
+f: add network manager off option for actors
++: VIF rozhraní (nejde současně odesílat a příjimat)
++: add sniff_face mon interfaces option in OpennWrtConn
 
 Test cases:
 +: test, který by prošel šechny configy testů a vypsal jaké jsou validní
@@ -32,8 +33,8 @@ t: některé čipy mohou prej přestat komunikovat po změně pomocí macchanger
 State Poisoning (2025_SACRED)
 Ghost Attack (badtoken pdf)
 
-????????????????:
-?: (Asi ne, zbytečné na tak malé soubory) https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
+Optimalization:
+?: https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
 
 PDF:
 // použít NIC a WNIC k vysvětlení interface

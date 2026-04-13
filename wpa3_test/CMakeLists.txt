@@ -115,7 +115,7 @@ set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         libtins
-        GIT_REPOSITORY https://github.com/Omelug/libtins.git
+        GIT_REPOSITORY https://github.com/mfontanini/libtins.git
         GIT_TAG        master
         GIT_SUBMODULES ""
 )

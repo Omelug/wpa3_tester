@@ -80,12 +80,11 @@ namespace wpa3_tester::dos_helpers {
             // only anti-clogging token, no scalar/element
             if (remaining > 0)
                 frame.token.assign(ptr, ptr + remaining);
-            frame.success = true;
             return frame;
         }
 
         if (status == 0 || status == 126) {
-            // Token je přítomen pokud je dat víc než scalar+element
+            // Token if more data than scalar+element
             if (remaining > crypto_total) {
                 const size_t token_len = remaining - crypto_total;
                 frame.token.assign(ptr, ptr + token_len);
@@ -97,12 +96,10 @@ namespace wpa3_tester::dos_helpers {
             if (remaining < crypto_total) return nullopt;
             frame.scalar.assign(ptr, ptr + scalar_len);
             frame.element.assign(ptr + scalar_len, ptr + crypto_total);
-            frame.success = true;
             return frame;
         }
 
-        // status 77 — group ID jsme přečetli, ale scalar/element nejsou garantovány
-        frame.success = false;
+        // status 77 — group ID ok, but  scalar/element //FIXME
         return frame;
     }
 

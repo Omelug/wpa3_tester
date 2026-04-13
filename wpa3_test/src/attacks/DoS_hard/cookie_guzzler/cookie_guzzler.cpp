@@ -91,9 +91,9 @@ namespace wpa3_tester::cookie_guzzler{
             .at("setup").at("program_config").at("ssid").get<string>();
         const ActorPtr attacker = rs.get_actor("attacker");
 
-        const dos_helpers::SAEPair sae_params = get_commit_values(
+        const optional<dos_helpers::SAEPair> sae_params = get_commit_values(
             rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
-        if (sae_params.success) {
+        if (sae_params.has_value()) {
             rs.start_observers();
             log(LogLevel::INFO, "SAE Commit captured");
             const HWAddress<6> ap_mac(ap["mac"]);
@@ -102,7 +102,7 @@ namespace wpa3_tester::cookie_guzzler{
             // change to monitor mode
             attacker->set_monitor_mode();
             attacker->up_iface();
-            check_vuln(attacker["iface"], ap_mac, duration, sae_params, attacker["mac"]);
+            check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"]);
         } else {
             throw runtime_error("SAE Commit capture failed");
         }

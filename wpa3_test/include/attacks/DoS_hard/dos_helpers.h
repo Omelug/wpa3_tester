@@ -9,10 +9,8 @@ namespace wpa3_tester::dos_helpers {
         std::vector<uint8_t> token;
         std::vector<uint8_t> scalar;
         std::vector<uint8_t> element;
-        bool success = false;
 
         bool is_valid() const {
-            if (!success) return false;
 
             switch (status) {
                 case 0:
@@ -43,7 +41,6 @@ namespace wpa3_tester::dos_helpers {
             return "SAEPair {\n"
                    "  status:   " + std::to_string(status)           + "\n"
                    "  group_id: " + std::to_string(group_id)         + "\n"
-                   "  success:  " + (success ? "true" : "false")     + "\n"
                    "  valid:    " + (is_valid() ? "true" : "false")  + "\n"
                    "  scalar  (" + std::to_string(scalar.size())  + " bytes): " + bytes_to_hex(scalar)  + "\n"
                    "  element (" + std::to_string(element.size()) + " bytes): " + bytes_to_hex(element) + "\n"

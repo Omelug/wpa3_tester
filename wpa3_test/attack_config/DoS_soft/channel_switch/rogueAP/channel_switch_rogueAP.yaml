@@ -7,7 +7,6 @@ actors:
     selection:
       condition: [ AP ]
     setup:
-      program: hostapd
       program: openwrt
       program_config:
         ssid: OpenWrt_2_4GHz

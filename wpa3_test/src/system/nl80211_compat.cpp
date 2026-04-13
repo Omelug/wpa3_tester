@@ -1,6 +1,6 @@
 #include <fstream>
 #include <string>
-#include <linux_headers_wifi-src/nl80211.h>
+#include <nl80211.h>
 #include <linux/nl80211.h>
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>

@@ -91,7 +91,7 @@ namespace wpa3_tester::memory_omnivore {
         attacker->up_iface();
 
         log(LogLevel::INFO, "Setup done, group_id=%u, scalar size=%zu",
-            sae_params->group_id, sae_params.scalar->size());
+            sae_params->group_id, sae_params->scalar.size());
 
         const HWAddress<6> ap_mac(ap["mac"]);
         const string iface = attacker["iface"];

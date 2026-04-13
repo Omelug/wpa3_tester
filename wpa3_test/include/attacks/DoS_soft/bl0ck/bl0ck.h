@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <tins/tins.h>
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::bl0ck_attack{

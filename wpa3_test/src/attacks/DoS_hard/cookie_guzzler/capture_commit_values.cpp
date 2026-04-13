@@ -2,7 +2,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <csignal>
-#include <libtins-src/include/tins/sniffer.h>
+#include <tins/sniffer.h>
 #include <tins/hw_address.h>
 
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"

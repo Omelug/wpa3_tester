@@ -1,5 +1,5 @@
 #include "scan/scan.h"
-#include <libtins-src/include/tins/sniffer.h>
+#include <tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"

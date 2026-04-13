@@ -1,5 +1,4 @@
 #pragma once
-#include <tins/tins.h>
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::CSA_attack{

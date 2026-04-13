@@ -1,6 +1,6 @@
-#include <libtins-src/include/tins/llc.h>
-#include <libtins-src/include/tins/packet_sender.h>
-#include <libtins-src/include/tins/rawpdu.h>
+#include <tins/llc.h>
+#include <tins/packet_sender.h>
+#include <tins/rawpdu.h>
 #include <tins/hw_address.h>
 
 #include "observer/mausezahn_wrapper.h"

@@ -1,7 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <set>
-#include <libtins-src/include/tins/pdu.h>
+#include <tins/pdu.h>
 #include "attacks/by_target/scan_AP.h"
 
 namespace wpa3_tester::scan{

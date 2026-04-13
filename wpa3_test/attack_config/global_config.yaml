@@ -3,7 +3,7 @@
 
 internet_interface: wlan0
 timeout_external_bb_scan: 5
-#TODO add regulatory domain  sudo iw reg set CZ + eroror from this
+#TODO add regulatory domain  sudo iw reg set CZ + error from this
 paths:
   # These config keys are not included in result config,
   hostapd:

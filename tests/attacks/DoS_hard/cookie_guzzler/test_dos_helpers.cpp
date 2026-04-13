@@ -1,8 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
-#include <tins/tins.h>
-#include <atomic>
+
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester::cookie_guzzler;

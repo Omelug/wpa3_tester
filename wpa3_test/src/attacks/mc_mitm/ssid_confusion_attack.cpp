@@ -1,14 +1,8 @@
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
 
-#include <thread>
-#include <chrono>
 #include <tins/tins.h>
-
-#include "attacks/by_target/scan_AP.h"
 #include "attacks/mc_mitm/mc_mitm.h"
-#include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
-#include "logger/log.h"
 
 using namespace std;
 using namespace Tins;

@@ -1,9 +1,5 @@
 #include "attacks/mc_mitm/wifi_util.h"
-
-#include <fstream>
 #include <stdexcept>
-#include <tins/tins.h>
-
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 

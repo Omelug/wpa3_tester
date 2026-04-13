@@ -18,7 +18,7 @@ compile:
 	@if [ ! -f $(BUILD_DIR)/build.ninja ] && [ ! -f $(BUILD_DIR)/Makefile ]; then \
 		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR) -G Ninja; \
 	fi
-	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc --ignore=4)
+	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc --ignore=2)
 
 run: compile
 	mkdir -p data
@@ -54,7 +54,7 @@ graphviz:
 	@echo "--- Saved to callgraph.svg ---"
 
 test_build:
-	cmake --build build -j $(shell nproc --ignore=4)
+	cmake --build build -j $(shell nproc --ignore=2)
 
 test: test_build
 	sudo ctest --test-dir build --output-on-failure
@@ -76,7 +76,7 @@ coverage_build:
 	@if [ ! -f $(BUILD_DIR_COVERAGE)/build.ninja ] && [ ! -f $(BUILD_DIR_COVERAGE)/Makefile ]; then \
         cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_COVERAGE) -G Ninja -DENABLE_COVERAGE=ON; \
     fi
-	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc --ignore=4)
+	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc --ignore=2)
 
 IGNORE_ERRORS = inconsistent,inconsistent,range
 coverage: coverage_build

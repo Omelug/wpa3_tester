@@ -1,7 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-#include <tins/tins.h>
-#include <fstream>
 #include <vector>
 
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"

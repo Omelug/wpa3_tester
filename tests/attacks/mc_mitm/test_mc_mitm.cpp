@@ -1,39 +1,21 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-#include <fstream>
 #include <vector>
 #include "attacks/mc_mitm/mc_mitm.h"
+#include "pcap_helper.h"
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
 namespace wpa3_tester {
-
-    static vector<uint8_t> read_pcap_file(const string& filename) {
-        char errbuf[PCAP_ERRBUF_SIZE];
-        pcap_t* handle = pcap_open_offline(filename.c_str(), errbuf);
-
-        pcap_pkthdr* header;
-        const u_char* packet;
-
-        pcap_next_ex(handle, &header, &packet);
-        std::vector frame_data(packet, packet + header->caplen);
-        pcap_close(handle);
-
-        return frame_data;
-    }
-
     // TODO change to FCS a
     TEST_CASE("patch_channel_raw - beacon frame") {
         // Test with beacon_test.pcapng
-        vector<uint8_t> beacon_data = read_pcap_file("beacon_test.pcapng");
+        vector<uint8_t> beacon_data = test_helpers::read_pcap_file("beacon_test.pcapng");
         vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
-        
-        // Patch to channel 6
+
         McMitm::patch_channel_raw(beacon_data, 6);
-
-
         PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());
         RawPDU raw_pdu(beacon_data);
         writer.write(raw_pdu);
@@ -48,7 +30,7 @@ namespace wpa3_tester {
 
     TEST_CASE("patch_channel_raw - probe response frame") {
         // Test with probe_res.pcapng
-        vector<uint8_t> probe_data = read_pcap_file("probe_res.pcapng");
+        vector<uint8_t> probe_data = test_helpers::read_pcap_file("probe_res.pcapng");
         vector<uint8_t> original_data = probe_data; // Keep copy for comparison
         McMitm::patch_channel_raw(probe_data, 11);
 

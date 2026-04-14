@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include <vector>
-
+#include "pcap_helper.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 
 using namespace std;
@@ -12,32 +12,16 @@ namespace wpa3_tester {
 
     TEST_CASE("parse_acm_response - valid ACM commit packet from pcap") {
         char errbuf[PCAP_ERRBUF_SIZE];
-        string filename = "ACM_commit_test.pcapng";
-        pcap_t* handle = pcap_open_offline(filename.c_str(), errbuf);
-
-        pcap_pkthdr* header;
-        const u_char* packet;
-
-        pcap_next_ex(handle, &header, &packet);
-        vector frame_data(packet, packet + header->caplen);
-        pcap_close(handle);
-
-        REQUIRE(!frame_data.empty());
-        
-        // Test parsing the ACM response
-        auto result = parse_acm_response(frame_data.data(), static_cast<uint32_t>(frame_data.size()));
+        auto frame = test_helpers::read_pcap_file("ACM_commit_test.pcapng");
+        auto result = parse_acm_response(frame.data(), frame.size());
         
         REQUIRE(result.has_value());
-        
         const ACMCookie& cookie = result.value();
-        
-        //  Receiver address: DLinkInterna_55:3e:8d (78:98:e8:55:3e:8d)
+
+        //  Receiver address: 78:98:e8:55:3e:8d
         HWAddress<6> expected_sta_mac("78:98:e8:55:3e:8d");
         CHECK_EQ(cookie.sta_mac, expected_sta_mac);
-        
-        // Check that token is not empty (should contain the anti-clogging token)
         REQUIRE(!cookie.token.empty());
-        
         // Anti-Clogging Token: 0001d5e6fdae673642ddbb59598404fbf768f848820e3dcaaeffefa1c6d3ace7
         vector<uint8_t> expected_token = {
             0x00, 0x01, 0xd5, 0xe6, 0xfd, 0xae, 0x67, 0x36,
@@ -47,5 +31,4 @@ namespace wpa3_tester {
         };
         CHECK_EQ(cookie.token, expected_token);
     }
-
 }

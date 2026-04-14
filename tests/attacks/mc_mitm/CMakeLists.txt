@@ -2,6 +2,7 @@
 add_executable(run_mc_mitm_tests test_mc_mitm.cpp)
 
 target_link_libraries(run_mc_mitm_tests PRIVATE
+        test_helpers
         wpa3_core
         doctest_headers
         tins
@@ -11,6 +12,7 @@ set(TEST_DATA_FILES
         beacon_test.pcapng
         probe_res.pcapng
 )
+
 # TODO better than configure_file
 foreach(data_file ${TEST_DATA_FILES})
     add_custom_command(

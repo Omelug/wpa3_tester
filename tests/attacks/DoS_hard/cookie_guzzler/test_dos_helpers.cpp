@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "pcap_helper.h"
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester::cookie_guzzler;
-
 
 const vector<uint8_t> expected_scalar =
 {0xcd, 0x3a, 0x57, 0x89, 0xa1, 0x86, 0xa7, 0xae, 0x9f, 0x2d, 0xcc, 0xb1, 0x6a, 0x70, 0xc9, 0xaf,
@@ -21,20 +21,9 @@ TEST_CASE("ParsesCommitFromPcap") {
     // Use the real pcap file
     filesystem::path pcap_path = filesystem::path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
-    char errbuf[PCAP_ERRBUF_SIZE];
-    pcap_t *handle = pcap_open_offline(pcap_path.string().c_str(), errbuf);
-    REQUIRE((handle != nullptr));
-
-    pcap_pkthdr *header;
-    const uint8_t *packet;
-    optional<wpa3_tester::dos_helpers::SAEPair> result;
-
-    while (pcap_next_ex(handle, &header, &packet) > 0) {
-        result = wpa3_tester::dos_helpers::parse_sae_commit(packet, header->caplen);
-        if (result) break;
-    }
-
-    pcap_close(handle);
+    vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path.string());
+    optional<wpa3_tester::dos_helpers::SAEPair> result
+        = wpa3_tester::dos_helpers::parse_sae_commit(probe_data.data(), probe_data.size());
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);

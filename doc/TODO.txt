@@ -6,6 +6,9 @@ Version v 0.0.0.0:
 r: small TODO
 r: sniffer loops
 rt: test helper function to separated file
+r: change == to in REQUIRE (simmilr like CHECK ) + check where should be CHECK/ where CHECK
+r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
+
 
 //DONE
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
@@ -39,7 +42,7 @@ f: add network manager off option for actors
 +: add sniff_face mon interfaces option in OpennWrtConn
 
 Test cases:
-+: test, který by prošel šechny configy testů a vypsal jaké jsou validní
++: test, který by prošel všechny configy testů a vypsal jaké jsou validní
 f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně pomocí macchanger, zkontrolovat hlavn RTL

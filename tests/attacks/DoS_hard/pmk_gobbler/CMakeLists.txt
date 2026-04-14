@@ -2,6 +2,7 @@
 add_executable(run_parse_acm_response_tests test_parse_acm_response.cpp)
 
 target_link_libraries(run_parse_acm_response_tests PRIVATE
+        test_helpers
         wpa3_core
         doctest_headers
         tins

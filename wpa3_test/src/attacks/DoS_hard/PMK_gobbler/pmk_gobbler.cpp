@@ -19,12 +19,11 @@ using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler {
 
-    //TODO add test
     optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len) {
         const auto sae = dos_helpers::parse_sae_commit(packet, len);
         if (!sae) return nullopt;
         const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
-        if (len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt;
+        if (len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt; //TODO proč tu je 10 ?
 
         ACMCookie entry;
         entry.sta_mac = HWAddress<6>(packet + radiotap_len + 4); // addr1 = destination STA

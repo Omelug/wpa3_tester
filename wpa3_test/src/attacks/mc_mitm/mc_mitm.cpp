@@ -300,6 +300,7 @@ namespace wpa3_tester{
         if (raw.size() < 4) return;
         //dump_hex("BEFORE PATCH", raw, 48);
 
+
         size_t effective_size = raw.size();
         RadioTap rt(raw.data(), raw.size());
         if ((rt.present() & RadioTap::FLAGS) && (rt.flags() & RadioTap::FCS)) {

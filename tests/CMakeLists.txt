@@ -1,3 +1,4 @@
+add_subdirectory(test_helpers)
 add_subdirectory(logger)
 add_subdirectory(config)
 add_subdirectory(observer)

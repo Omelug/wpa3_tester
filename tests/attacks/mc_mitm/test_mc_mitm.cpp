@@ -15,14 +15,13 @@ namespace wpa3_tester {
         vector<uint8_t> beacon_data = test_helpers::read_pcap_file("beacon_test.pcapng");
         vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
-        McMitm::patch_channel_raw(beacon_data, 6);
+        McMitm::patch_channel_raw(beacon_data, 11);
         PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());
         RawPDU raw_pdu(beacon_data);
         writer.write(raw_pdu);
 
         // Verify that the data was modified
         REQUIRE((beacon_data != original_data));
-        REQUIRE((beacon_data.size() != original_data.size()));
 
         INFO("Beacon frame size before: " << original_data.size());
         INFO("Beacon frame size after: " << beacon_data.size());

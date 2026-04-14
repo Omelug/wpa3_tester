@@ -6,6 +6,7 @@
 #include <tins/tins.h>
 
 #include "attacks/by_target/scan_AP.h"
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -296,49 +297,41 @@ namespace wpa3_tester{
         cerr << dec << endl;
     }*/
 
-    void McMitm::patch_channel_raw(vector<uint8_t> &raw, const uint8_t channel) {
-        if (raw.size() < 4) return;
+    void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channel) {
+        if (beacon_raw.size() < 4) return;
         //dump_hex("BEFORE PATCH", raw, 48);
 
+        const uint16_t old_rt_len = beacon_raw[2] | (beacon_raw[3] << 8);
 
-        size_t effective_size = raw.size();
-        RadioTap rt(raw.data(), raw.size());
-        if ((rt.present() & RadioTap::FLAGS) && (rt.flags() & RadioTap::FCS)) {
-            effective_size -= 4; // get off FCS
+        const long header_fixed = old_rt_len + 24 + 12;
+        vector new_raw(beacon_raw.begin(), beacon_raw.begin() + header_fixed);
+
+        size_t effective_size = beacon_raw.size();
+        if(dos_helpers::check_fcs_present(beacon_raw.data(), beacon_raw.size())){
+            effective_size -= 4;
         }
-
-        const vector<uint8_t> rt_patched = rt.serialize();
-        const uint16_t old_rt_len = raw[2] | (raw[3] << 8);
-
-        const long   header_fixed    = old_rt_len + 24 + 12;
-        vector new_raw(raw.begin(), raw.begin() + header_fixed);
 
         size_t pos = header_fixed; // Tag parsing
         while (pos + 2 <= effective_size) {
-            const uint8_t id  = raw[pos];
-            const uint8_t len = raw[pos + 1];
+            const uint8_t id  = beacon_raw[pos];
+            const uint8_t len = beacon_raw[pos + 1];
 
-            if (pos + 2 + len > raw.size()) {
-                //cerr << "ERR: Malformed IE at pos " << pos << " (ID: " << static_cast<int>(id) << ")" << endl;
-                break;
-            }
-            // Patching logic
+            if (pos + 2 + len > effective_size) break;
+
             if (id == Dot11::DS_SET && len == 1) {
-                raw[pos + 2] = channel; // DS Parameter
+                beacon_raw[pos + 2] = channel;
             } else if (id == Dot11::HT_OPERATION && len >= 1) {
-                raw[pos + 2] = channel; // HT Operation
+                beacon_raw[pos + 2] = channel;
             }
 
-            new_raw.insert(new_raw.end(), raw.begin() + static_cast<long>(pos), raw.begin() + static_cast<long>(pos) + 2 + len);
             pos += 2 + len;
         }
 
-        raw = std::move(new_raw);
         //dump_hex("AFTER PATCH", raw, 48);
     }
 
     void McMitm::handle_rx_real_chan(){
-        auto pdu = sock_real->recv();
+        const auto pdu = sock_real->recv();
         if (!pdu) return;
 
         const auto* dot11 = pdu->find_pdu<Dot11>();
@@ -384,7 +377,6 @@ namespace wpa3_tester{
             }else if (dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) {
                 print_rx(LogLevel::INFO, "Real channel", *dot11);
                 del_client(addr2.to_string());
-
             } else if (clients.contains(addr2.to_string())) {
                 const auto& client = clients.at(addr2.to_string());
                 client->last_real = display_client_traffic(*dot11, "Real channel", client->last_real);
@@ -428,7 +420,7 @@ namespace wpa3_tester{
                     last_real_beacon = steady_clock::now();
             }
 
-            bool might_forward = clients.contains(addr1.to_string()) &&
+            const bool might_forward = clients.contains(addr1.to_string()) &&
                          clients.at(addr1.to_string())->should_forward(*pdu);
 
             //FIXME might_forward = might_forward || (args.group && dot11_is_group(*dot11));

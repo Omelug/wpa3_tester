@@ -10,7 +10,7 @@ using namespace std;
 using namespace Tins;
 namespace wpa3_tester::dos_helpers{
 
-    bool check_fcs_present(const uint8_t* packet, uint32_t len) {
+    bool check_fcs_present(const uint8_t* packet, const uint32_t len) {
         ieee80211_radiotap_iterator it;
 
         auto* header = (struct ieee80211_radiotap_header*)packet;

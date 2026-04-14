@@ -55,7 +55,7 @@ namespace wpa3_tester{
         time_point last_print_real_chan;
         time_point last_print_rogue_chan;
 
-        static void patch_channel_raw(std::vector<uint8_t>& raw, uint8_t channel);
+        static void patch_channel_raw(std::vector<uint8_t>& beacon_raw, uint8_t channel);
         void handle_rx_real_chan();
         void handle_rx_rogue_chan();
 

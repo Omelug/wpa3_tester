@@ -18,6 +18,8 @@ Scan:
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 AP_MAX_INACTIVITY (stejné jako v 2022_)
 +: ACM activation time (external, internal in hostapd)
+f: scan EAP dont work?
+
 
 Documentation:
 +: README.md -> rozcestník pro /doc
@@ -32,7 +34,8 @@ ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
     // https://github.com/bcopeland/wmediumd
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
-
+ch: change functions to work with HWAdress, not string
+r: change all C++ file to .hpp (and change Cmake to accept it)
 
 New features:
 +: create config wizard after first install
@@ -40,6 +43,7 @@ New features:
 f: add network manager off option for actors
 +: VIF rozhraní (nejde současně odesílat a příjimat)
 +: add sniff_face mon interfaces option in OpennWrtConn
++: extends check for arguemnts
 
 Test cases:
 +: test, který by prošel všechny configy testů a vypsal jaké jsou validní

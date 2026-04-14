@@ -190,7 +190,6 @@ namespace wpa3_tester{
         bool done = false;
         size_t test_counter = 0;
 
-
         while (!done){
             string current_config_str = raw_yaml_template;
             for (size_t g = 0; g < groups.size(); ++g) {
@@ -204,7 +203,7 @@ namespace wpa3_tester{
             }
 
             if (current_config_str.find(var_PREFIX) != string::npos) {
-                throw runtime_error("Unresolved "+var_PREFIX +" placeholders in test "+to_string(test_counter));
+                throw runtime_error("Unresolved "+var_PREFIX+" placeholders in test "+to_string(test_counter));
             }
 
             string test_id = to_string(test_counter);
@@ -223,9 +222,12 @@ namespace wpa3_tester{
             // another index or stop
             test_counter++;
             for (size_t i = groups.size(); i-- > 0; ) {
-                if (++indices[i] < groups[i].second.size()) { break; }
-                if (i == 0) { done = true; }
-                else { indices[i] = 0; }
+                if (++indices[i] < groups[i].second.size()) break;
+                if (i == 0){
+                    done = true;
+                }else{
+                    indices[i] = 0;
+                }
             }
         }
         remove(tmp_template);

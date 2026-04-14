@@ -1,12 +1,12 @@
 #include "attacks/by_target/scan_AP.h"
 #include <future>
-#include <tins/sniffer.h>
 #include "config/RunStatus.h"
 #include "observer/observers.h"
 #include "scan/scan_EAP.h"
 #include "scan/scan_STA.h"
 #include <sys/poll.h>
 
+#include "attacks/components/sniffer_helper.h"
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
@@ -26,7 +26,7 @@ namespace wpa3_tester::attack_scan{
 
         stringstream ss;
         array<char, 256> buffer;
-        unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
+        const unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) return "Error: popen failed";
 
         while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
@@ -97,57 +97,38 @@ namespace wpa3_tester::attack_scan{
         return ss.str();
     }
 
-    unique_ptr<Dot11Beacon> RSN_scan(const string& interface, const int timeout_sec, ScanAP &scan_ap,
-        const optional<path> &beacon_pcap) {
-        SnifferConfiguration sniff_config;
-        sniff_config.set_timeout(100);
-        sniff_config.set_immediate_mode(true);
-        //sniff_config.set_rfmon(true);
+    static optional<unique_ptr<Dot11Beacon>> handle_beacon(
+    PDU& pdu, ScanAP& scan_ap, const optional<path>& beacon_pcap)
+    {
+        const auto* beacon = pdu.find_pdu<Dot11Beacon>();
+        if (!beacon) return nullopt;
 
-        const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
-        sniff_config.set_filter(filter);
-        log(LogLevel::INFO, "Scanning with "+ filter);
-        Sniffer sniffer(interface, sniff_config);
+        scan_ap.ssid = beacon->ssid();
+        try { scan_ap.rsn = beacon->rsn_information(); }
+        catch (const option_not_found&) {}
 
-        const int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
-        if (fd == -1) { throw runtime_error("Sniffer FD is not selectable"); }
+        if (beacon_pcap)
+            PacketWriter(beacon_pcap->string(), DataLinkType<RadioTap>()).write(pdu);
 
-        pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+        return unique_ptr<Dot11Beacon>(beacon->clone());
+    }
 
-        const auto start_time = steady_clock::now();
-        const auto end_time = start_time + seconds(timeout_sec);
+    unique_ptr<Dot11Beacon> RSN_scan(const string& interface, const int timeout_sec,
+        ScanAP& scan_ap, const optional<path>& beacon_pcap)
+    {
+        const string filter =
+            "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
 
-        while (true) {
-            auto now = steady_clock::now();
-            if (now >= end_time) break;
+        auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
+            [&](PDU& pdu) { return handle_beacon(pdu, scan_ap, beacon_pcap); },
+            interface, filter, timeout_sec);
 
-            const int remaining_ms = duration_cast<milliseconds>(end_time - now).count();
-            if (remaining_ms <= 0) break;
-            const int ret = poll(&pfd, 1, remaining_ms);
-
-            if (ret < 0) {
-                if (errno == EINTR) continue;
-                break;
-            }
-            if (ret == 0) continue;
-            if (!(pfd.revents & POLLIN)) continue;
-
-            if (const unique_ptr<PDU> pdu{sniffer.next_packet()}) {
-                if (const auto beacon = pdu->find_pdu<Dot11Beacon>()) {
-                    scan_ap.ssid = beacon->ssid();
-                    try {
-                        scan_ap.rsn = beacon->rsn_information();
-                    } catch (const option_not_found&) {} // no RSN in OPen networks
-                    if(beacon_pcap != nullopt){
-                        PacketWriter writer(beacon_pcap.value().string(), DataLinkType<RadioTap>());
-                        writer.write(*pdu);
-                    }
-                    return unique_ptr<Dot11Beacon>(beacon->clone());
-                }
-            }
-        }
+        if (auto* val = get_if<unique_ptr<Dot11Beacon>>(&result))
+            return std::move(*val);
         return nullptr;
     }
+
+
 
     void run_attack(RunStatus& rs) {
         const auto& att_cfg = rs.config.at("attack_config");

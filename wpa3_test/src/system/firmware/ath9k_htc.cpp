@@ -13,7 +13,6 @@
 using namespace std;
 
 namespace wpa3_tester::firmware{
-    //TODO change funciton to work with Adress object, not string
     string get_random_ath_masker_mac(const string& attacker_mac) {
         stringstream ss(attacker_mac);
         string segment;
@@ -26,7 +25,7 @@ namespace wpa3_tester::firmware{
 
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dis(1, 255); //TODO in dragondrain test it dont ACK zero
+        uniform_int_distribution<> dis(1, 255);
         int random_byte = dis(gen);
 
         stringstream hex_ss;

@@ -31,7 +31,7 @@ namespace wpa3_tester::ath_masker_test{
             probe.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
             probe.addr2(ath_mac);
             probe.addr3(ap["mac"]);
-            probe.ssid(""); //TODO add essid for clear filtering
+            probe.ssid("");
             probe.supported_rates({ 1.0f, 2.0f, 5.5f, 11.0f });
             RadioTap radiotap{};
             const int freq_mhz = hw_capabilities::channel_to_freq(stoi(ap["channel"]));

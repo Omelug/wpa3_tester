@@ -6,16 +6,17 @@
 
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+using namespace std;
 
 namespace wpa3_tester {
 
-    MonitorSocket::MonitorSocket(const std::string& iface, const bool detect_injected)
+    MonitorSocket::MonitorSocket(const string& iface, const bool detect_injected)
         : iface_(iface), detect_injected_(detect_injected),
           sender_(iface), sniffer_(iface, make_sniff_cfg())
     {}
 
     // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
-    void MonitorSocket::send(Tins::PDU& pdu, int channel) {
+    void MonitorSocket::send(Tins::PDU& pdu, const int channel) {
         if (detect_injected_) {
             // Set More Data flag so we can detect injected frames
             if (auto* dot11 = pdu.find_pdu<Tins::Dot11>())
@@ -37,9 +38,7 @@ namespace wpa3_tester {
         }
     }
 
-    // Receive one frame, stripping FCS if present
-    // Returns nullptr if no frame or parse error
-    std::unique_ptr<Tins::PDU> MonitorSocket::recv() {
+    unique_ptr<Tins::PDU> MonitorSocket::recv() {
         pcap_pkthdr* header;
         const u_char* frame;
         const int fd = pcap_get_selectable_fd(sniffer_.get_pcap_handle());
@@ -52,7 +51,7 @@ namespace wpa3_tester {
             return nullptr;
 
         try {
-            auto rt = std::make_unique<Tins::RadioTap>(frame, header->caplen);
+            auto rt = make_unique<Tins::RadioTap>(frame, header->caplen);
             strip_fcs(*rt);
             return rt;
         } catch (...) {
@@ -66,7 +65,7 @@ namespace wpa3_tester {
         cfg.set_timeout(0);
         return cfg;
     }
-    void MonitorSocket::set_filter(const std::string& bpf) {
+    void MonitorSocket::set_filter(const string& bpf) {
         sniffer_.set_filter(bpf);
     }
 

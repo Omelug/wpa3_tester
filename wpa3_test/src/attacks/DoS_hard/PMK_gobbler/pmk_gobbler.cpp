@@ -23,7 +23,7 @@ namespace wpa3_tester::pmk_gobbler {
         const auto sae = dos_helpers::parse_sae_commit(packet, len);
         if (!sae) return nullopt;
         const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
-        if (len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt; //TODO proč tu je 10 ?
+        if (len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt;
 
         ACMCookie entry;
         entry.sta_mac = HWAddress<6>(packet + radiotap_len + 4); // addr1 = destination STA
@@ -115,6 +115,7 @@ namespace wpa3_tester::pmk_gobbler {
                     log(LogLevel::WARNING, "trigger poll error: "+to_string(errno));
                     break;
                 }
+
                 if (ret == 0 || !(pfd.revents & POLLIN)) continue;
 
                 pcap_pkthdr *header;
@@ -194,7 +195,7 @@ namespace wpa3_tester::pmk_gobbler {
         const int trigger_count = att_cfg.at("acm_trigger_count").get<int>();
         const int attack_time   = att_cfg.at("attack_time_sec").get<int>();
 
-        const auto ssid = rs.config.at("actors").at("access_point") //TODO should be iin setup_actor
+        const auto ssid = rs.config.at("actors").at("access_point")
             .at("setup").at("program_config").at("ssid").get<string>();
         const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
             rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);

@@ -24,7 +24,6 @@ namespace wpa3_tester{
         if (!ht_mode.empty()) {
             cmd.push_back(ht_mode);
         }
-
         run(cmd);
     }
 
@@ -58,6 +57,7 @@ namespace wpa3_tester{
             log(LogLevel::ERROR, "Failed to bring " + iface + " UP.");
         }
     }
+
     void Actor_config::up_sniff_iface() const{
         if(!str_con.at("sniff_iface").has_value()) return; //TODO quite fail
         const string& sniff_iface = str_con.at("sniff_iface").value();

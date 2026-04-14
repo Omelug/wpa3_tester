@@ -1,9 +1,11 @@
-#include <iostream>
-#include "config/RunStatus.h"
 #include <csignal>
+#include <iostream>
 #include <unistd.h>
 #include <argparse/argparse.hpp>
 #include <yaml-cpp/yaml.h>
+#include "config/RunStatus.h"
+
+#include "inteprrupt.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
@@ -13,13 +15,6 @@ using namespace wpa3_tester;
 using namespace std;
 using namespace filesystem;
 
-
-void signal_handler(const int signum) {
-    if (globalRunStatus){
-        globalRunStatus->process_manager.stop_all();
-    }
-    exit(signum);
-}
 
 void parse_arguments(argparse::ArgumentParser & program, const int argc, char *argv[]){
     // test
@@ -59,8 +54,6 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
         throw config_err(err.what());
     }
 
-
-    //checks //TODO rozšířit
     if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
         throw config_err("Cant use both lists");
     if(2 <= (program.present<string>("--test").has_value() +
@@ -127,7 +120,7 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 }
 
 int main(const int argc, char *argv[])  {
-
+    setup_signals();
     if (geteuid() != 0) {
         cerr << "Error: must be run as root (sudo)" << endl;
         return 1;
@@ -135,9 +128,6 @@ int main(const int argc, char *argv[])  {
 
     argparse::ArgumentParser program("WPA3_tester", "1.0");
     parse_arguments(program, argc, argv);
-
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
     solve_arguments(program);
     return 0;
 }

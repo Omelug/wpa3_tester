@@ -4,6 +4,8 @@
 #include <tins/rawpdu.h>
 #include <tins/sniffer.h>
 #include <sys/poll.h>
+
+#include "attacks/components/sniffer_helper.h"
 #include "logger/log.h"
 
 using namespace std;
@@ -92,86 +94,61 @@ namespace wpa3_tester::scan {
         return info;
     }
 
-    void active_eap_identity_scan(const string& iface, const string& target_ap_mac, const int timeout_sec) {
-        SnifferConfiguration config;
-        config.set_rfmon(true);
-        config.set_filter("ether host "+target_ap_mac+" and ether proto 0x888e");
-        config.set_timeout(100);
-        config.set_immediate_mode(true);
+    static optional<monostate> handle_eap_pdu(
+        PDU& pdu,
+        const string& target_ap_mac,
+        map<string, EAP_Session>& sessions)
+    {
+        const auto* dot11_data = pdu.find_pdu<Dot11Data>();
+        const auto* raw        = pdu.find_pdu<RawPDU>();
+        if (!dot11_data || !raw) return nullopt;
 
-        Sniffer sniffer(iface, config);
-        int fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
-        if (fd == -1) {throw runtime_error("Sniffer FD is not selectable");}
-        pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
-        const auto start = steady_clock::now();
-        map<string, EAP_Session> active_sessions;
+        const string addr1 = dot11_data->addr1().to_string();
+        const string addr2 = dot11_data->addr2().to_string();
+        const string client_mac = (addr1 == target_ap_mac) ? addr2 : addr1;
 
-        while (true) {
-            if (steady_clock::now() - start > seconds(timeout_sec)) break;
+        const EAP_Info info = parse_eap_packet(*raw);
 
-            int ret = poll(&pfd, 1, 100);
+        auto& session = sessions[client_mac];
+        session.last_seen      = steady_clock::now();
+        session.last_type_code = info.type_code;
 
-            if (ret < 0) {
-                if (errno == EINTR) continue; // system timeout
-                log(LogLevel::WARNING, " scan EAP error: "+ to_string(errno));
+        if (info.identity && session.identities.insert(*info.identity).second)
+            log(LogLevel::INFO, "[*] New Identity for " + client_mac + ": " + *info.identity);
+
+        if (info.method && session.methods.insert(*info.method).second)
+            log(LogLevel::INFO, "[+] New Method for " + client_mac + ": " + *info.method);
+
+        switch (info.code) {
+            case 1: // Request
+            case 2: // Response
+                if (session.status == AuthStatus::UNKNOWN)
+                    session.status = AuthStatus::IN_PROGRESS;
                 break;
-            }
-            //timeout
-            //if (ret == 0) break;
-            if(!(pfd.revents & POLLIN)) continue;
-
-            const unique_ptr<PDU> pdu(sniffer.next_packet());
-            if (!pdu) continue;
-
-            const auto dot11_data = pdu->find_pdu<Dot11Data>();
-            const auto raw = pdu->find_pdu<RawPDU>();
-            if (!dot11_data || !raw) continue;
-
-            string addr1 = dot11_data->addr1().to_string();
-            string addr2 = dot11_data->addr2().to_string();
-
-            string client_mac = (addr1 == target_ap_mac) ? addr2 : addr1;
-            EAP_Info info = parse_eap_packet(*raw);
-            
-            auto& session = active_sessions[client_mac];
-            session.last_seen = steady_clock::now();
-            session.last_type_code = info.type_code;
-
-            if (info.identity) {
-                if (session.identities.insert(*info.identity).second) {
-                    log(LogLevel::INFO, "[*] New Identity for "+client_mac+": "+*info.identity);
+            case 3: // SUCCESS
+                if (session.status != AuthStatus::SUCCESS) {
+                    session.status = AuthStatus::SUCCESS;
+                    log(LogLevel::INFO, "[OK] Auth SUCCESS: Client " + client_mac + " is now CONNECTED.");
                 }
-            }
-
-            if (info.method) {
-                if (session.methods.insert(*info.method).second) {
-                    log(LogLevel::INFO, "[+] New Method for "+client_mac+": "+*info.method);
+                break;
+            case 4: // FAILURE
+                if (session.status != AuthStatus::FAILED) {
+                    session.status = AuthStatus::FAILED;
+                    log(LogLevel::INFO, "[!] Auth FAILURE: Client " + client_mac + " was REJECTED.");
                 }
-            }
-
-            switch (info.code) {
-                case 1: // Request
-                case 2: // Response
-                    if (session.status == AuthStatus::UNKNOWN) {
-                        session.status = AuthStatus::IN_PROGRESS;
-                    }
-                    break;
-
-                case 3: // SUCCESS
-                    if (session.status != AuthStatus::SUCCESS) {
-                        session.status = AuthStatus::SUCCESS;
-                        log(LogLevel::INFO,"[OK] Auth SUCCESS: Client "+client_mac+" is now CONNECTED.");
-                    }
-                    break;
-
-                case 4: // FAILURE
-                    if (session.status != AuthStatus::FAILED) {
-                        session.status = AuthStatus::FAILED;
-                        log(LogLevel::INFO,"[!] Auth FAILURE: Client "+client_mac+" was REJECTED.");
-                    }
-                    break;
-                default: throw runtime_error("Unknown code: "+to_string(info.code));
-            }
+                break;
+            default:
+                throw runtime_error("Unknown EAP code: " + to_string(info.code));
         }
+
+        return nullopt; // until timeout
+    }
+
+    void active_eap_identity_scan(const string& iface, const string& target_ap_mac, const int timeout_sec) {
+        map<string, EAP_Session> sessions;
+        const string filter = "";
+        components::poll_sniffer_pdu<monostate>(
+            [&](PDU& pdu) { return handle_eap_pdu(pdu, target_ap_mac, sessions); },
+            iface, filter, timeout_sec);
     }
 }

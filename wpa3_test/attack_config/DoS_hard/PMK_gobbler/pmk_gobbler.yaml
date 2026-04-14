@@ -8,6 +8,7 @@ actors:
       whitebox_host: OpenWrt
       condition: [ AP, 2_4GHz ]
       channel: 6
+      ssid: OpenWrt_2_4GHz
     setup:
       program: openwrt
       program_config:

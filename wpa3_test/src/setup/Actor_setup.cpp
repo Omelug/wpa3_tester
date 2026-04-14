@@ -63,7 +63,9 @@ namespace wpa3_tester{
                 str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
                 create_sniff_iface(); //TODO add monitor flags ?
             }
+            str_con["ssid"] = real_actor->str_con.at("ssid");
         }
+
         if(internal){
             //FIXMe shouod be avaible for external_WB
             if (bool_conditions.at("AP").value_or(false)){
@@ -74,6 +76,7 @@ namespace wpa3_tester{
             up_iface();
             up_sniff_iface();
         }
+
     }
 
     void Actor_config::setup_actor_internal(const nlohmann::json &config){

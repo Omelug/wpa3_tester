@@ -34,10 +34,7 @@ namespace wpa3_tester::bl0ck_attack{
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
         };
-        RadioTap rt{}; // fill with driver?
-        //constexpr uint16_t channel_flags = RadioTap::OFDM | RadioTap::FIVE_GZ;
-        //rt.channel(5180, channel_flags);
-
+        const RadioTap rt{}; //FIXME valid with all adapters? fill with driver?
         return rt / bar / RawPDU(payload_data);
     }
 
@@ -82,9 +79,9 @@ namespace wpa3_tester::bl0ck_attack{
                 break;
             }
 
-            unique_ptr<PDU> pdu(sniffer.next_packet());
+            const unique_ptr<PDU> pdu(sniffer.next_packet());
 
-            if (!pdu) {continue;}
+            if (!pdu) continue;
 
             if (const auto* dot11 = pdu->find_pdu<Dot11>()) {
                 log(LogLevel::DEBUG, "BARS: Packet from to %s",
@@ -161,7 +158,7 @@ namespace wpa3_tester::bl0ck_attack{
         log(LogLevel::INFO, "Block attack completed after %d iterations", iteration);
     }
 
-    void iperf_conn(RunStatus &rs, const string& src_client,  const string&  dst_server){
+    void iperf_conn(RunStatus &rs, const string& src_client, const string&  dst_server){
         observer::start_iperf3_server(rs,"iperf_server", dst_server);
         rs.process_manager.wait_for("iperf_server","Server listening on ", seconds(30));
         observer::start_iperf3(rs,"iperf_client", src_client, dst_server);

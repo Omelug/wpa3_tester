@@ -24,7 +24,7 @@ namespace wpa3_tester{
             if(!str_con["mac"].has_value()){
                 set_mac(real_actor["mac"]);
             }else{
-                //TODO macchanger
+                setup_mac_addr(real_actor["mac"]);
             }
             str_con["iface"] = real_actor->str_con.at("iface");
             str_con["radio"] = real_actor->str_con.at("radio");

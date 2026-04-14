@@ -45,7 +45,7 @@ namespace wpa3_tester::ip{
         return string(ip);
     }
 
-    string get_ip(const string& iface) { //TODO tests with  hwhsim
+    string get_ip(const string& iface) {
         ifaddrs *ifaddr = nullptr;
         if (getifaddrs(&ifaddr) == -1) {throw runtime_error("Failed to get interface addresses");}
 

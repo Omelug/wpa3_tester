@@ -49,7 +49,7 @@ namespace wpa3_tester::dos_helpers {
         }
     };
 
-    std::optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len);
+    std::optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, uint32_t len);
     Tins::RadioTap make_sae_commit(const Tins::HWAddress<6> &ap_mac,
                                           const Tins::HWAddress<6> &sta_mac,
                                           const SAEPair &sae_params);

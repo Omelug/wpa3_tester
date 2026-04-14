@@ -19,7 +19,7 @@ namespace wpa3_tester {
         const u_char* packet;
 
         pcap_next_ex(handle, &header, &packet);
-        std::vector frame_data(packet, packet + header->caplen);
+        vector frame_data(packet, packet + header->caplen);
         pcap_close(handle);
 
         REQUIRE(!frame_data.empty());

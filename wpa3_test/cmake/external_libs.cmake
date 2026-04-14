@@ -77,16 +77,27 @@ FetchContent_Declare(linux_headers_wifi
         DOWNLOAD_NO_EXTRACT TRUE
 )
 
+FetchContent_Declare(
+        radiotap
+        GIT_REPOSITORY https://github.com/radiotap/radiotap-library.git
+        GIT_TAG        master # nebo konkrétní commit/verze
+)
+
 FetchContent_MakeAvailable(
         reproc libtins doctest argparse
-        json json_schema_validator linux_headers_wifi
+        json json_schema_validator linux_headers_wifi radiotap
 )
+
+add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
+target_include_directories(radiotap_lib PUBLIC ${radiotap_SOURCE_DIR})
+set_source_files_properties("${radiotap_SOURCE_DIR}/radiotap.c" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 add_library(doctest_headers INTERFACE)
 target_include_directories(doctest_headers INTERFACE
         "${doctest_SOURCE_DIR}"
         "${doctest_SOURCE_DIR}/doctest"
 )
+
 
 find_package(yaml-cpp REQUIRED)
 find_package(PkgConfig REQUIRED)

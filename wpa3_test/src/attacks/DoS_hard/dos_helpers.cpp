@@ -1,30 +1,42 @@
 #include "attacks/DoS_hard/dos_helpers.h"
 #include <optional>
-
+extern "C" {
+    #include "radiotap.h"
+    #include "radiotap_iter.h"
+}
 #include "logger/log.h"
 
 using namespace std;
 using namespace Tins;
-namespace wpa3_tester::dos_helpers {
+namespace wpa3_tester::dos_helpers{
 
-    optional<SAEPair> parse_sae_commit(const uint8_t *packet, uint32_t len) {
+    bool check_fcs_present(const uint8_t* packet, uint32_t len) {
+        ieee80211_radiotap_iterator it;
+
+        auto* header = (struct ieee80211_radiotap_header*)packet;
+
+        if (ieee80211_radiotap_iterator_init(&it, header, static_cast<int>(len), nullptr) != 0) {
+            return false;
+        }
+
+        while (ieee80211_radiotap_iterator_next(&it) == 0) {
+            if (it.this_arg_index == IEEE80211_RADIOTAP_FLAGS) {
+                if (it.this_arg != nullptr) {
+                    const uint8_t flags = *it.this_arg;
+                    return (flags & 0x10); // 0x10 = FCS at end
+                }
+            }
+        }
+
+        return false;
+    }
+
+    optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, uint32_t len) {
         // --- RadioTap ---
         if (len < 4) return nullopt;
-        const uint16_t radiotap_len = packet[2] | (packet[3] << 8);
-        // Bezpečné čtení has_fcs z RadioTap Flags
-        // Flags je bit 1 v present field (bytes 4-7)
-        const uint32_t present = packet[4] | (packet[5] << 8) |
-                                 (packet[6] << 16) | (packet[7] << 24);
-        const bool has_flags_field = (present >> 1) & 1;
+        const uint16_t radiotap_len = frame_rt[2] | (frame_rt[3] << 8);
 
-        bool has_fcs = false;
-        if (has_flags_field) {
-            // TSFT (bit 0) zabírá 8 bytů pokud přítomen, jinak Flags je hned na byte 8
-            const bool has_tsft = present & 1;
-            const uint8_t flags_offset = 8 + (has_tsft ? 8 : 0);
-            if (len > radiotap_len + flags_offset)
-                has_fcs = (packet[8 + (has_tsft ? 8 : 0)] & 0x10);
-        }
+        const bool has_fcs =  check_fcs_present(frame_rt, len);
 
         // --- Offsety ---
         constexpr size_t dot11_header = 24;
@@ -37,19 +49,19 @@ namespace wpa3_tester::dos_helpers {
         fprintf(stderr, "DEBUG radiotap_len=%u\n", radiotap_len);
         fprintf(stderr, "DEBUG auth_offset=%zu\n", auth_offset);
         fprintf(stderr, "DEBUG bytes at auth_offset: %02x %02x %02x %02x %02x %02x\n",
-                packet[auth_offset],   packet[auth_offset+1],
-                packet[auth_offset+2], packet[auth_offset+3],
-                packet[auth_offset+4], packet[auth_offset+5]);
+                frame_rt[auth_offset],   frame_rt[auth_offset+1],
+                frame_rt[auth_offset+2], frame_rt[auth_offset+3],
+                frame_rt[auth_offset+4], frame_rt[auth_offset+5]);
 
         // --- Auth header ---
-        const uint16_t algo   = packet[auth_offset]     | (packet[auth_offset+1] << 8);
-        const uint16_t seq    = packet[auth_offset+2]   | (packet[auth_offset+3] << 8);
-        const uint16_t status = packet[auth_offset+4]   | (packet[auth_offset+5] << 8);
+        const uint16_t algo   = frame_rt[auth_offset]   | (frame_rt[auth_offset+1] << 8);
+        const uint16_t seq    = frame_rt[auth_offset+2] | (frame_rt[auth_offset+3] << 8);
+        const uint16_t status = frame_rt[auth_offset+4] | (frame_rt[auth_offset+5] << 8);
 
         if (algo != 3 || seq != 1) return nullopt;
 
         // --- SAE data (za auth_fixed) ---
-        const uint8_t *sae_data = packet + sae_offset;
+        const uint8_t *sae_data = frame_rt + sae_offset;
         size_t remaining = len - sae_offset;
         if (has_fcs && remaining >= 4) remaining -= 4;
 
@@ -58,8 +70,7 @@ namespace wpa3_tester::dos_helpers {
         // --- Group ID ---
         SAEPair frame;
         frame.status   = status;
-        frame.group_id = static_cast<uint16_t>(sae_data[0]) |
-                (static_cast<uint16_t>(sae_data[1]) << 8);
+        frame.group_id = static_cast<uint16_t>(sae_data[0]) | (static_cast<uint16_t>(sae_data[1]) << 8);
 
         size_t scalar_len = 0;
         size_t element_len = 0;

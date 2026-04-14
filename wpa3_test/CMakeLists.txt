@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-project(wpa3_tester VERSION 0.1.0 LANGUAGES CXX)
+project(wpa3_tester VERSION 0.1.0 LANGUAGES C CXX)
 
 # --- VALGRIND / CTEST CONFIGURATION ---
 find_program(MEMORYCHECK_COMMAND valgrind)
@@ -42,7 +42,10 @@ include(cmake/dependencies.cmake)
 include(cmake/libraries.cmake)
 include(cmake/targets.cmake)
 
-add_executable(${PROJECT_NAME} "../wpa3_test/main.cpp")
+add_executable(${PROJECT_NAME}
+        "../wpa3_test/main.cpp"
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
         -Wl,--whole-archive wpa3_core -Wl,--no-whole-archive
         wpa3_deps

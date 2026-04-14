@@ -1,4 +1,6 @@
 add_library(wpa3_deps INTERFACE)
+target_link_libraries(wpa3_deps INTERFACE radiotap_lib)
+
 
 target_include_directories(wpa3_deps INTERFACE
         ${linux_headers_wifi_SOURCE_DIR}
@@ -15,6 +17,7 @@ target_include_directories(wpa3_deps INTERFACE
         ${reproc_SOURCE_DIR}/reproc++/include
         ${LIBNL_INCLUDE_DIRS}
         ${LIBSSH_INCLUDE_DIRS}
+        ${radiotap_SOURCE_DIR}
         ${WIFI_HEADERS_DIR}
 )
 

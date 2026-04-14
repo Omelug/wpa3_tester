@@ -48,7 +48,7 @@ namespace wpa3_tester {
         pm.run("test_proc2", sleep_cmd2);
         pm.run("test_proc3", sleep_cmd3);
 
-        CHECK((pm.processes_size() == 3));
+        CHECK_EQ(pm.processes_size(), 3);
         CHECK((pm.process_exists("test_proc1")));
         CHECK((pm.process_exists("test_proc2")));
         CHECK((pm.process_exists("test_proc3")));
@@ -56,7 +56,7 @@ namespace wpa3_tester {
         this_thread::sleep_for(chrono::milliseconds(500));
         pm.stop_all();
 
-        CHECK((pm.processes_size() == 0));
+        CHECK_EQ(pm.processes_size(), 0);
 
         log(LogLevel::INFO, "stop_all test completed successfully");
         //remove_all(test_dir);
@@ -70,7 +70,7 @@ namespace wpa3_tester {
         pm.init_logging(test_dir.string());
 
         CHECK_NOTHROW(pm.stop_all());
-        CHECK((pm.processes_size() == 0));
+        CHECK_EQ(pm.processes_size(), 0);
 
         log(LogLevel::INFO, "stop_all empty test completed successfully");
         remove_all(test_dir);
@@ -88,17 +88,17 @@ namespace wpa3_tester {
         pm.run("proc1", sleep_cmd1);
         pm.run("proc2", sleep_cmd2);
 
-        CHECK((pm.processes_size() == 2));
+        CHECK_EQ(pm.processes_size(), 2);
 
         this_thread::sleep_for(100ms);
         pm.stop("proc1");
 
-        CHECK((pm.processes_size() == 1));
+        CHECK_EQ(pm.processes_size(), 1);
         CHECK((!pm.process_exists("proc1")));
         CHECK((pm.process_exists("proc2")));
 
         pm.stop_all();
-        CHECK((pm.processes_size() == 0));
+        CHECK_EQ(pm.processes_size(), 0);
 
         log(LogLevel::INFO, "stop individual process test completed successfully");
         remove_all(test_dir);

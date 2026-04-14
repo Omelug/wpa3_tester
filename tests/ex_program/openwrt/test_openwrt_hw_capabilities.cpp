@@ -35,17 +35,17 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info") {
 
     OpenWrtConn::parse_hw_capabilities(cfg, output);
 
-    CHECK((cfg.bool_conditions["2_4GHz"] == true));
-    CHECK((cfg.bool_conditions["5GHz"] == false));
-    CHECK((cfg.bool_conditions["6GHz"] == false));
+    CHECK(cfg.bool_conditions["2_4GHz"]);
+    CHECK_EQ((cfg.bool_conditions["5GHz"]), false);
+    CHECK_EQ((cfg.bool_conditions["6GHz"]), false);
 
-    CHECK((cfg.bool_conditions["AP"] == true));
-    CHECK((cfg.bool_conditions["STA"] == true));
-    CHECK((cfg.bool_conditions["monitor"] == true));
+    CHECK(cfg.bool_conditions["AP"]);
+    CHECK(cfg.bool_conditions["STA"]);
+    CHECK(cfg.bool_conditions["monitor"]);
 
-    CHECK((cfg.bool_conditions["80211n"] == true));
-    CHECK((cfg.bool_conditions["80211ac"] == false));
-    CHECK((cfg.bool_conditions["80211ax"] == false));
+    CHECK(cfg.bool_conditions["80211n"]);
+    CHECK_EQ((cfg.bool_conditions["80211ac"]), false);
+    CHECK_EQ((cfg.bool_conditions["80211ax"]), false);
 }
 
 TEST_CASE("parse_hw_capabilities - empty output") {
@@ -53,9 +53,9 @@ TEST_CASE("parse_hw_capabilities - empty output") {
     const string output;
     OpenWrtConn::parse_hw_capabilities(cfg, output);
 
-    CHECK((cfg.bool_conditions["2_4GHz"] == false));
-    CHECK((cfg.bool_conditions["AP"] == false));
-    CHECK((cfg.bool_conditions["80211n"] == false));
+    CHECK_EQ(cfg.bool_conditions["2_4GHz"], false);
+    CHECK_EQ(cfg.bool_conditions["AP"], false);
+    CHECK_EQ(cfg.bool_conditions["80211n"], false);
 }
 
 TEST_CASE("get_hw_capabilities - exec failure") {
@@ -91,8 +91,8 @@ TEST_CASE("get_radio_list - mock wifi status") {
 )";
 
     const auto radios = conn.get_radio_list();
-    CHECK((radios.size() == 2));
-    CHECK((radios[0] == "radio0"));
-    CHECK((radios[1] == "radio1"));
+    CHECK_EQ(radios.size(), 2);
+    CHECK_EQ(radios[0], "radio0");
+    CHECK_EQ(radios[1], "radio1");
 }
 

@@ -33,7 +33,7 @@ namespace wpa3_tester {
         
         //  Receiver address: DLinkInterna_55:3e:8d (78:98:e8:55:3e:8d)
         HWAddress<6> expected_sta_mac("78:98:e8:55:3e:8d");
-        CHECK((cookie.sta_mac == expected_sta_mac));
+        CHECK_EQ(cookie.sta_mac, expected_sta_mac);
         
         // Check that token is not empty (should contain the anti-clogging token)
         REQUIRE(!cookie.token.empty());
@@ -45,7 +45,7 @@ namespace wpa3_tester {
             0xf7, 0x68, 0xf8, 0x48, 0x82, 0x0e, 0x3d, 0xca,
             0xae, 0xff, 0xef, 0xa1, 0xc6, 0xd3, 0xac, 0xe7
         };
-        CHECK((cookie.token == expected_token));
+        CHECK_EQ(cookie.token, expected_token);
     }
 
 }

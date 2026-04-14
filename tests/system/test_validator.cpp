@@ -70,8 +70,8 @@ properties:
     YAMLValidator validator(f.schema());
     validator.validate(config);
 
-    CHECK((config["ieee80211w"] == 1));
-    CHECK((config["channel"] == 6));
+    CHECK_EQ(config["ieee80211w"], 1);
+    CHECK_EQ(config["channel"], 6);
 }
 
 TEST_CASE("YAMLValidator - apply_defaults does not overwrite existing values") {
@@ -87,7 +87,7 @@ properties:
     YAMLValidator validator(f.schema());
     validator.validate(config);
 
-    CHECK((config["channel"] == 11));
+    CHECK_EQ(config["channel"], 11);
 }
 
 TEST_CASE("YAMLValidator - apply_defaults nested object") {
@@ -106,7 +106,7 @@ properties:
     YAMLValidator validator(f.schema());
     validator.validate(config);
 
-    CHECK((config["setup"]["ieee80211w"] == 2));
+    CHECK_EQ(config["setup"]["ieee80211w"], 2);
 }
 
 TEST_CASE("YAMLValidator - apply_defaults object default value") {
@@ -124,8 +124,8 @@ properties:
     YAMLValidator validator(f.schema());
     validator.validate(config);
 
-    CHECK((config["options"]["retries"] == 3));
-    CHECK((config["options"]["timeout"] == 30));
+    CHECK_EQ(config["options"]["retries"], 3);
+    CHECK_EQ(config["options"]["timeout"], 30);
 }
 
 TEST_CASE("YAMLValidator - external schema ref") {

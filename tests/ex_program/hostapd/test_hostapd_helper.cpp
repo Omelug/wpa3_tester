@@ -15,7 +15,7 @@ using namespace wpa3_tester;
 
 TEST_CASE("get_hostapd - empty version returns system default") {
     string result = hostapd::get_hostapd("");
-    CHECK((result == "hostapd"));
+    CHECK_EQ(result, "hostapd");
 }
 
 TEST_CASE("get_hostapd - returns existing binary if found") {
@@ -29,7 +29,7 @@ TEST_CASE("get_hostapd - returns existing binary if found") {
     get_global_config()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
     string result = hostapd::get_hostapd("2.10");
 
-    CHECK((result == mock_binary.string()));
+    CHECK_EQ(result, mock_binary.string());
     CHECK(exists(mock_binary));
     remove_all(test_folder);
 }
@@ -42,11 +42,11 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
     get_global_config()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
 
     string result2_10 = hostapd::get_hostapd("2.10");
-    CHECK(( (test_folder/ "hostapd_2_10").string() == result2_10));
+    CHECK_EQ( (test_folder/ "hostapd_2_10").string(), result2_10);
     CHECK(exists(result2_10));
 
     string result2_9 = hostapd::get_hostapd("2.9");
-    CHECK(((test_folder/ "hostapd_2_9").string() == result2_9));
+    CHECK_EQ((test_folder/ "hostapd_2_9").string(), result2_9);
     CHECK(exists(result2_9));
 
     MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()}));

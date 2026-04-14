@@ -75,7 +75,7 @@ TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces") {
     wpa3_tester::cleanup_all_namespaces();
 
     for (const auto& n : names){
-        CHECK_FALSE(netns_exists(n));
+        CHECK_EQ((netns_exists(n)), false);
     }
 }
 

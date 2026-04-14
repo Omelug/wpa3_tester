@@ -81,7 +81,7 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
 
     REQUIRE((actual_lines.size() == expected_lines.size()));
     for (size_t i = 0; i < expected_lines.size(); ++i) {
-        CHECK((actual_lines[i] == expected_lines[i]));
+        CHECK_EQ(actual_lines[i], expected_lines[i]);
     }
 }*/
 
@@ -99,9 +99,9 @@ TEST_CASE("transform_to_relative - converts absolute timestamps to relative") {
 
     observer::transform_to_relative(times, start_tp);
 
-    CHECK((duration_cast<seconds>(times[0].time_since_epoch()).count() == 1));
-    CHECK((duration_cast<seconds>(times[1].time_since_epoch()).count() == 2));
-    CHECK((duration_cast<milliseconds>(times[2].time_since_epoch()).count() == 3500));
+    CHECK_EQ(duration_cast<seconds>(times[0].time_since_epoch()).count(), 1);
+    CHECK_EQ(duration_cast<seconds>(times[1].time_since_epoch()).count(), 2);
+    CHECK_EQ(duration_cast<milliseconds>(times[2].time_since_epoch()).count(), 3500);
 
     vector<LogTimePoint> empty_times;
     observer::transform_to_relative(empty_times, start_tp);

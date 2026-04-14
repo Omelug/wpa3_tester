@@ -59,7 +59,7 @@ TEST_CASE("make_sae_commit - base"){
         const auto sta_mac = HWAddress<6>("AA:BB:Cc:DD:EE:FF");
         rt = wpa3_tester::dos_helpers::make_sae_commit(ap_mac, sta_mac, sae_params);
     }
-    CHECK((rt.pdu_type() == Dot11::RADIOTAP));
+    CHECK_EQ(rt.pdu_type(), Dot11::RADIOTAP);
     Dot11Authentication auth;
     CHECK_NOTHROW(auth = rt.rfind_pdu<Dot11Authentication>());
 

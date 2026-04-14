@@ -36,6 +36,7 @@ namespace wpa3_tester::attack_module_maps{
         {"ssid_confusion", mc_mitm::setup_attack},
         {"ath_masker_test", ath_masker_test::setup_attack},
     };
+
     /* map of attacker_module->attack run function*/
     inline std::map<std::string, std::function<void(RunStatus&)>> run_map = {
         {"channel_switch", CSA_attack::run_chs_attack},
@@ -54,6 +55,7 @@ namespace wpa3_tester::attack_module_maps{
         {"ssid_confusion", ssid_confusion::run_attack},
         {"ath_masker_test", ath_masker_test::run_attack},
     };
+
     /* map of attacker_module->stats run function*/
     inline std::map<std::string, std::function<void(const RunStatus&)>> stats_map = {
         {"channel_switch", CSA_attack::stats_chs_attack},

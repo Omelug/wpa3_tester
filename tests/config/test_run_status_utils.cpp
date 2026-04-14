@@ -19,14 +19,14 @@ TEST_CASE("current_time_string - format validation") {
     CHECK(regex_match(time_str, time_pattern));
     
     // Check length should be exactly 19 characters (YYYY-MM-DD HH:MM:SS)
-    CHECK((time_str.length() == 19));
+    CHECK_EQ(time_str.length(), 19);
     
     // Check specific separators
-    CHECK((time_str[4] == '-'));
-    CHECK((time_str[7] == '-'));
-    CHECK((time_str[10] == ' '));
-    CHECK((time_str[13] == ':'));
-    CHECK((time_str[16] == ':'));
+    CHECK_EQ(time_str[4], '-');
+    CHECK_EQ(time_str[7], '-');
+    CHECK_EQ(time_str[10], ' ');
+    CHECK_EQ(time_str[13], ':');
+    CHECK_EQ(time_str[16], ':');
 }
 
 TEST_CASE("current_time_string - reasonable values") {
@@ -53,7 +53,7 @@ TEST_CASE("current_time_string - consistency") {
     // small delay to ensure different timestamps
     this_thread::sleep_for(chrono::milliseconds(100));
     string time2 = current_time_string();
-    CHECK((time1.length() == time2.length()));
+    CHECK_EQ(time1.length(), time2.length());
     
     // Time2 should be >= Time1 (allowing for same second)
     CHECK((time2 >= time1));
@@ -65,7 +65,7 @@ TEST_CASE("relative_from - basic functionality") {
     create_directories(attack_config.parent_path());
     
     string result = relative_from("attack_config", attack_config.string());
-    CHECK((result == "subdir/nested"));
+    CHECK_EQ(result, "subdir/nested");
 
     remove_all(test_base);
 }
@@ -77,7 +77,7 @@ TEST_CASE("relative_from - direct child") {
     create_directories(attack_config.parent_path());
     
     string result = relative_from("attack_config", attack_config.string());
-    CHECK((result == "."));
+    CHECK_EQ(result, ".");
     remove_all(test_base);
 }
 
@@ -100,7 +100,7 @@ TEST_CASE("relative_from - complex nested structure") {
     string result = relative_from("attack_config", attack_config.string());
     
     // Should return "Enterprise/reflection_attack"
-    CHECK((result == "Enterprise/reflection_attack"));
+    CHECK_EQ(result, "Enterprise/reflection_attack");
     
     remove_all(test_base);
 }
@@ -114,7 +114,7 @@ TEST_CASE("relative_from - absolute path handling") {
     string abs_path = absolute(attack_config).string();
     string result = relative_from("attack_config", abs_path);
     
-    CHECK((result == "."));
+    CHECK_EQ(result, ".");
     
     remove_all(test_base);
 }
@@ -126,7 +126,7 @@ TEST_CASE("relative_from - single level nesting") {
     
     string result = relative_from("attack_config", attack_config.string());
     
-    CHECK((result == "single"));
+    CHECK_EQ(result, "single");
     
     remove_all(test_base);
 }
@@ -175,8 +175,8 @@ actors:
     // Override with explicit test name
     RunStatus rs(config_file.string(), "explicit_test_name");
 
-    CHECK((rs.config_path == config_file.string()));
-    CHECK((rs.config["attacker_module"] == "test_module"));
+    CHECK_EQ(rs.config_path, config_file.string());
+    CHECK_EQ(rs.config["attacker_module"], "test_module");
     
     remove_all(test_dir);
 }
@@ -202,9 +202,9 @@ actors:
 
     // Check that config was loaded and validated
     CHECK((rs.config.contains("name")));
-    CHECK((rs.config["name"] == "test_validation"));
+    CHECK_EQ(rs.config["name"], "test_validation");
     CHECK((rs.config.contains("attacker_module")));
-    CHECK((rs.config["attacker_module"] == "test_module"));
+    CHECK_EQ(rs.config["attacker_module"], "test_module");
     CHECK((rs.config.contains("actors")));
     
     remove_all(test_dir);

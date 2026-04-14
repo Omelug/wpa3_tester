@@ -23,13 +23,13 @@ TEST_CASE("Actor_config - json constructor with selection") {
     Actor_config actor(j);
 
     CHECK(actor.str_con.at("iface").has_value());
-    CHECK((actor.str_con.at("iface").value() == "wlan0"));
+    CHECK_EQ(actor.str_con.at("iface").value(), "wlan0");
     CHECK(actor.str_con.at("driver").has_value());
-    CHECK((actor.str_con.at("driver").value() == "ath9k"));
-    CHECK((actor.str_con.at("netns").value() == "sta"));
+    CHECK_EQ(actor.str_con.at("driver").value(), "ath9k");
+    CHECK_EQ(actor.str_con.at("netns").value(), "sta");
 
-    CHECK((actor.bool_conditions.at("monitor").value_or(false) == true));
-    CHECK((actor.bool_conditions.at("injection").value_or(false) == true));
+    CHECK(actor.bool_conditions.at("monitor").value_or(false));
+    CHECK(actor.bool_conditions.at("injection").value_or(false));
     CHECK_FALSE((actor.bool_conditions.at("AP").has_value()));
 }
 
@@ -113,10 +113,10 @@ TEST_CASE("Actor_config - operator+= merge") {
 
         base += other;
 
-        CHECK((base["iface"] == "wlan0"));
-        CHECK((base["driver"] == "ath9k"));
-        CHECK((base.get_bool("monitor") == true));
-        CHECK((base.get_bool("injection") == true));
+        CHECK_EQ(base["iface"], "wlan0");
+        CHECK_EQ(base["driver"], "ath9k");
+        CHECK(base.get_bool("monitor"));
+        CHECK(base.get_bool("injection"));
     }
 
     SUBCASE("Merge with same values") {
@@ -127,7 +127,7 @@ TEST_CASE("Actor_config - operator+= merge") {
         other.str_con["iface"] = "wlan0"; // same value
 
         CHECK_NOTHROW(base += other);
-        CHECK((base.str_con.at("iface").value() == "wlan0"));
+        CHECK_EQ(base.str_con.at("iface").value(), "wlan0");
     }
 
     SUBCASE("Merge with conflicting values throws") {

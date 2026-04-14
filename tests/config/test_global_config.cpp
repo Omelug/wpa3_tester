@@ -39,9 +39,9 @@ actors:
     REQUIRE(config.contains("paths"));
     REQUIRE(config.contains("actors"));
     INFO(config["paths"]["hostapd"].dump());
-    CHECK((config["paths"]["hostapd"].at("hostapd_build_folder").get<string>() == "/test/hostapd"));
-    CHECK((config["actors"]["conn_table"] == "./test_table.csv"));
-    CHECK((config["actors"]["ignore_interfaces"].size() == 2));
+    CHECK_EQ(config["paths"]["hostapd"].at("hostapd_build_folder").get<string>(), "/test/hostapd");
+    CHECK_EQ(config["actors"]["conn_table"], "./test_table.csv");
+    CHECK_EQ(config["actors"]["ignore_interfaces"].size(), 2);
 }
 
 TEST_CASE("get_global_config - file not found") {
@@ -64,13 +64,13 @@ TEST_CASE("get_global_config - static cache") {
     f.write(R"(test_value: "original")");
 
     nlohmann::json& config1 = get_global_config(f.dir, true);
-    CHECK((config1["test_value"] == "original"));
+    CHECK_EQ(config1["test_value"], "original");
 
     f.write(R"(test_value: "modified")");
 
     nlohmann::json& config2 = get_global_config(f.dir, false);
-    CHECK((config2["test_value"] == "original"));
-    CHECK((&config1 == &config2));
+    CHECK_EQ(config2["test_value"], "original");
+    CHECK_EQ(&config1, &config2);
 }
 
 TEST_CASE("get_global_config - empty file") {

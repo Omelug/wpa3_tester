@@ -1,17 +1,32 @@
-//TODO  Road map
+//TODO
 
++: new featere, f: fix, r: refactoring, t: test, ch: change, ?: what?
+
+Version v 0.0.0.0:
+r: small TODO
+r: sniffer loops
+rt: test helper function to separated file
+
+//DONE
+rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
+
+----------------------------- TBD -----------------------------------
 Scan:
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 AP_MAX_INACTIVITY (stejné jako v 2022_)
 +: ACM activation time (external, internal in hostapd)
 
+Documentation:
++: README.md -> rozcestník pro /doc
+
 Better code:
+prerequisities tested versions
+ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
 +: přidat spoučtní testů do .run (Clion)
 +: better req_error backtracking messages (or table if needed, add debug config)
 +: check in setup_chs_attack actors are available
 +: simulation interfaces
     // https://github.com/bcopeland/wmediumd
-+: README.md -> rozcestník pro /doc
 +: add possibility to add different ieee file to hostapd
 ?: test hostapd debugging logs, if are same
 
@@ -41,3 +56,4 @@ PDF:
 
 - Every ahysical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation
+--------------------------------------------------------------------------------------------

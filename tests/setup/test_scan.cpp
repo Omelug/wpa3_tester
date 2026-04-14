@@ -58,14 +58,14 @@ TEST_CASE("get_actors_conn_table - basic parsing") {
 
         auto result = scan::get_actors_conn_table(test_file);
 
-        CHECK((result.size() == 2));
-        CHECK((result[0]->str_con["whitebox_host"].value() == "router1"));
-        CHECK((result[0]->str_con["whitebox_ip"].value() == "192.168.1.1"));
-        CHECK((result[0]->str_con["external_OS"].value() == "openwrt"));
+        CHECK_EQ(result.size(), 2);
+        CHECK_EQ(result[0]->str_con["whitebox_host"].value(), "router1");
+        CHECK_EQ(result[0]->str_con["whitebox_ip"].value(), "192.168.1.1");
+        CHECK_EQ(result[0]->str_con["external_OS"].value(), "openwrt");
 
-        CHECK((result[1]->str_con["whitebox_host"].value() == "laptop"));
-        CHECK((result[1]->str_con["whitebox_ip"].value() == "192.168.1.100"));
-        CHECK((result[1]->str_con["external_OS"].value() == "ddwrt"));
+        CHECK_EQ(result[1]->str_con["whitebox_host"].value(), "laptop");
+        CHECK_EQ(result[1]->str_con["whitebox_ip"].value(), "192.168.1.100");
+        CHECK_EQ(result[1]->str_con["external_OS"].value(), "ddwrt");
 
         remove(test_file);
     }
@@ -78,9 +78,9 @@ TEST_CASE("get_actors_conn_table - basic parsing") {
 
         auto result = scan::get_actors_conn_table(test_file);
 
-        CHECK((result.size() == 1));
-        CHECK((result[0]->str_con["whitebox_host"].value() == "router1"));
-        CHECK((result[0]->str_con["whitebox_ip"].value() == "192.168.1.1"));
+        CHECK_EQ(result.size(), 1);
+        CHECK_EQ(result[0]->str_con["whitebox_host"].value(), "router1");
+        CHECK_EQ(result[0]->str_con["whitebox_ip"].value(), "192.168.1.1");
 
         remove(test_file);
     }
@@ -132,10 +132,10 @@ TEST_CASE("get_actors_conn_table - edge cases") {
 
         auto result = scan::get_actors_conn_table(test_file);
 
-        CHECK((result.size() == 1));
-        CHECK((result[0]->str_con["whitebox_host"].value() == "router1"));
-        CHECK((result[0]->str_con["whitebox_ip"].value() == "192.168.1.1"));
-        CHECK((result[0]->str_con["external_OS"].value() == "OpenWrt"));
+        CHECK_EQ(result.size(), 1);
+        CHECK_EQ(result[0]->str_con["whitebox_host"].value(), "router1");
+        CHECK_EQ(result[0]->str_con["whitebox_ip"].value(), "192.168.1.1");
+        CHECK_EQ(result[0]->str_con["external_OS"].value(), "OpenWrt");
 
         remove(test_file);
     }
@@ -147,9 +147,9 @@ TEST_CASE("get_actors_conn_table - edge cases") {
         out.close();
 
         auto result = scan::get_actors_conn_table(test_file);
-        CHECK((result.size() == 1));
-        CHECK((result[0]->str_con["whitebox_host"].value() == "router1"));
-        CHECK((result[0]->str_con["whitebox_ip"].value() == "192.168.1.1"));
+        CHECK_EQ(result.size(), 1);
+        CHECK_EQ(result[0]->str_con["whitebox_host"].value(), "router1");
+        CHECK_EQ(result[0]->str_con["whitebox_ip"].value(), "192.168.1.1");
         CHECK_FALSE((result[0]->str_con["external_OS"].has_value()));
 
         remove(test_file);

@@ -38,9 +38,9 @@ namespace wpa3_tester {
             const auto* dot11 = radiotap->find_pdu<Dot11>();
             REQUIRE((dot11 != nullptr));
 
-            CHECK((dot11->type() == Dot11::CONTROL));
-            CHECK((dot11->subtype() == subtype));
-            CHECK((dot11->addr1() == ap_mac));
+            CHECK_EQ(dot11->type(), Dot11::CONTROL);
+            CHECK_EQ(dot11->subtype(), subtype);
+            CHECK_EQ(dot11->addr1(), ap_mac);
 
         }
         log(LogLevel::INFO, ("PCAP file preserved for inspection:"+pcap_file.string()).c_str());

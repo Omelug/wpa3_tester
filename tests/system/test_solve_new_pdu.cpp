@@ -23,17 +23,17 @@ namespace wpa3_tester {
 
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         CHECK(seen.contains("00:11:22:33:44:55"));
         
         auto actor = seen.at("00:11:22:33:44:55");
-        CHECK((actor->str_con["mac"] == "00:11:22:33:44:55"));
-        CHECK((actor->str_con["source"] == "external"));
-        CHECK((actor->str_con["ssid"] == "TestNetwork"));
-        CHECK((actor->str_con["channel"] == "6"));
-        CHECK((actor->str_con["signal"] == "-45"));
-        CHECK((actor->bool_conditions["AP"] == true));
-        CHECK((actor->bool_conditions["2_4GHz"] == true));
+        CHECK_EQ(actor->str_con["mac"], "00:11:22:33:44:55");
+        CHECK_EQ(actor->str_con["source"], "external");
+        CHECK_EQ(actor->str_con["ssid"], "TestNetwork");
+        CHECK_EQ(actor->str_con["channel"], "6");
+        CHECK_EQ(actor->str_con["signal"], "-45");
+        CHECK(actor->bool_conditions["AP"]);
+        CHECK(actor->bool_conditions["2_4GHz"]);
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - Probe Response") {
@@ -52,16 +52,16 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));
         
         auto actor = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK((actor->str_con["mac"] == "aa:bb:cc:dd:ee:ff"));
-        CHECK((actor->str_con["ssid"] == "HiddenNetwork"));
-        CHECK((actor->str_con["channel"] == "100"));
-        CHECK((actor->str_con["signal"] == "-60"));
-        CHECK((actor->bool_conditions["AP"] == true));
-        CHECK((actor->bool_conditions["5GHz"] == true));
+        CHECK_EQ(actor->str_con["mac"], "aa:bb:cc:dd:ee:ff");
+        CHECK_EQ(actor->str_con["ssid"], "HiddenNetwork");
+        CHECK_EQ(actor->str_con["channel"], "100");
+        CHECK_EQ(actor->str_con["signal"], "-60");
+        CHECK(actor->bool_conditions["AP"]);
+        CHECK(actor->bool_conditions["5GHz"]);
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - Probe Request") {
@@ -79,14 +79,14 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         CHECK((seen.contains("11:22:33:44:55:66")));
         
         auto actor = seen.at("11:22:33:44:55:66");
-        CHECK((actor->str_con["mac"] == "11:22:33:44:55:66"));
-        CHECK((actor->str_con["ssid"] == "MyNetwork"));
-        CHECK((actor->bool_conditions["AP"] == false));
-        CHECK((actor->bool_conditions["2_4GHz"] == true));
+        CHECK_EQ(actor->str_con["mac"], "11:22:33:44:55:66");
+        CHECK_EQ(actor->str_con["ssid"], "MyNetwork");
+        CHECK_EQ(actor->bool_conditions["AP"], false);
+        CHECK(actor->bool_conditions["2_4GHz"]);
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP") {
@@ -107,19 +107,19 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 2));
+        CHECK_EQ(seen.size(), 2);
         CHECK((seen.contains("22:33:44:55:66:77")));  // STA
         CHECK((seen.contains("aa:bb:cc:dd:ee:ff")));   // AP
         
         // Check STA
         auto sta = seen.at("22:33:44:55:66:77");
-        CHECK((sta->bool_conditions["AP"] == false));
-        CHECK((sta->str_con["channel"] == "36"));
+        CHECK_EQ(sta->bool_conditions["AP"], false);
+        CHECK_EQ(sta->str_con["channel"], "36");
         
         // Check AP
         auto ap = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK((ap->bool_conditions["AP"] == true));
-        CHECK((ap->str_con["channel"] == "36"));
+        CHECK(ap->bool_conditions["AP"]);
+        CHECK_EQ(ap->str_con["channel"], "36");
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA") {
@@ -140,14 +140,14 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 2));
+        CHECK_EQ(seen.size(), 2);
         CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));   // AP
         CHECK(seen.contains("22:33:44:55:66:77"));  // STA
         
         auto ap = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK((ap->bool_conditions["AP"] == true));
-        CHECK((ap->str_con["channel"] == "177"));
-        CHECK((ap->bool_conditions["5GHz"] == true));
+        CHECK(ap->bool_conditions["AP"]);
+        CHECK_EQ(ap->str_con["channel"], "177");
+        CHECK(ap->bool_conditions["5GHz"]);
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - Update existing entity") {
@@ -172,12 +172,12 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         auto updated_actor = seen.at("00:11:22:33:44:55");
-        CHECK((updated_actor->str_con["ssid"] == "UpdatedSSID"));
+        CHECK_EQ(updated_actor->str_con["ssid"], "UpdatedSSID");
         //TODO tohle se tam přidává v ActorCoinfig mapě to původně není
-        CHECK((updated_actor->str_con["channel"] == "13"));
-        CHECK((updated_actor->str_con["signal"] == "-50"));
+        CHECK_EQ(updated_actor->str_con["channel"], "13");
+        CHECK_EQ(updated_actor->str_con["signal"], "-50");
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - No RadioTap") {
@@ -190,9 +190,9 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*beacon, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("00:11:22:33:44:55");
-        CHECK((actor->str_con["ssid"] == "NoRadioTap"));
+        CHECK_EQ(actor->str_con["ssid"], "NoRadioTap");
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band") {
@@ -211,10 +211,10 @@ namespace wpa3_tester {
         
         RunStatus::solve_new_pdu(*radiotap, seen);
         
-        CHECK((seen.size() == 1));
+        CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("66:77:88:99:aa:bb");
-        CHECK((actor->str_con["channel"] == "101"));
-        CHECK((actor->bool_conditions["6GHz"] == true));
+        CHECK_EQ(actor->str_con["channel"], "101");
+        CHECK(actor->bool_conditions["6GHz"]);
     }
 
     TEST_CASE("RunStatus::solve_new_pdu - WDS/IBSS frames ignored") {
@@ -235,6 +235,6 @@ namespace wpa3_tester {
         RunStatus::solve_new_pdu(*radiotap, seen);
         
         // Should be ignored, no entities added
-        CHECK((seen.size() == 0));
+        CHECK_EQ(seen.size(), 0);
     }
 }

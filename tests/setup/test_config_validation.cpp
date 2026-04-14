@@ -36,7 +36,7 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
                 auto diff = nlohmann::json::diff(expected_json, rs.config);
                 INFO("Diff (expected vs actual): " << diff.dump(4));
                 INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
-                CHECK((rs.config == expected_json));
+                CHECK_EQ(rs.config, expected_json);
             } else {
                 CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_err);
             }
@@ -124,7 +124,7 @@ void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
             auto patch = nlohmann::json::diff(j_exp, j_act);
             INFO("Differences: " << patch.dump(4));
 
-            CHECK((j_exp == j_act));
+            CHECK_EQ(j_exp, j_act);
         }
     }
 }
@@ -154,7 +154,7 @@ void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) 
         }
     }
 
-    CHECK((expected_tree == actual_tree));
+    CHECK_EQ(expected_tree, actual_tree);
 }
 
 TEST_CASE("RunStatus - parse_requirements()"){

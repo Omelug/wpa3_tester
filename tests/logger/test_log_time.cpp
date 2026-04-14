@@ -21,16 +21,16 @@ TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp") {
     const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
     gmtime_r(&t, &utc);
-    CHECK((utc.tm_year + 1900 == 2026));
-    CHECK((utc.tm_mon  + 1   == 2));
-    CHECK((utc.tm_mday       == 20));
-    CHECK((utc.tm_hour       == 13));   // 14:38 CET → 13:38 UTC
-    CHECK((utc.tm_min        == 38));
-    CHECK((utc.tm_sec        == 8));
+    CHECK_EQ(utc.tm_year + 1900, 2026);
+    CHECK_EQ(utc.tm_mon + 1, 2);
+    CHECK_EQ(utc.tm_mday, 20);
+    CHECK_EQ(utc.tm_hour, 13);   // 14:38 CET → 13:38 UTC
+    CHECK_EQ(utc.tm_min, 38);
+    CHECK_EQ(utc.tm_sec, 8);
 
     // no fractional part
     const auto frac = tp.time_since_epoch() % chrono::seconds{1};
-    CHECK((frac == chrono::nanoseconds{0}));
+    CHECK_EQ(frac, chrono::nanoseconds{0});
 }
 
 TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5") {
@@ -39,12 +39,12 @@ TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5") {
     const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
     gmtime_r(&t, &utc);
-    CHECK((utc.tm_hour == 13));
+    CHECK_EQ(utc.tm_hour, 13);
 }
 
 TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch") {
-    CHECK((wpa3_tester::log_time_to_epoch_ns("not-a-timestamp") == LogTimePoint{}));
-    CHECK((wpa3_tester::log_time_to_epoch_ns("") == LogTimePoint{}));
+    CHECK_EQ(wpa3_tester::log_time_to_epoch_ns("not-a-timestamp"), LogTimePoint{});
+    CHECK_EQ(wpa3_tester::log_time_to_epoch_ns(""), LogTimePoint{});
 }
 
 namespace {

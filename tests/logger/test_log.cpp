@@ -26,5 +26,5 @@ TEST_CASE("log - debug message with actor name") {
     // Restore original cerr
     cerr.rdbuf(original_cerr);
 
-    CHECK((captured_output.str().find(expected_message) != string::npos));
+    CHECK_NE(captured_output.str().find(expected_message), string::npos);
 }

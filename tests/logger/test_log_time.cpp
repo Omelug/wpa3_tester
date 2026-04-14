@@ -16,7 +16,7 @@ using wpa3_tester::LogTimePoint;
 TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp") {
     // 2026-02-20T14:38:08.000000000+0100  →  UTC 13:38:08
     const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100");
-    REQUIRE((tp != LogTimePoint{}));
+    REQUIRE_NE(tp, LogTimePoint{});
 
     const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
@@ -86,7 +86,7 @@ TEST_CASE("get_time_logs - finds matching lines") {
     rs.run_folder = tmp.run_folder;
 
     const auto times = wpa3_tester::get_time_logs(rs, "access_point", "AP-ENABLED");
-    REQUIRE((times.size() == 2));
+    REQUIRE_EQ(times.size(), 2);
 
     INFO("%d",(times[1] - times[0]));
     CHECK_EQ((times[1] - times[0]), chrono::nanoseconds{2189798496ns});

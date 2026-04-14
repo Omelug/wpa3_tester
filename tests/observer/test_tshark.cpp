@@ -79,7 +79,7 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
             actual_lines.push_back(line);
     }
 
-    REQUIRE((actual_lines.size() == expected_lines.size()));
+    CHECK_EQ(actual_lines.size(), expected_lines.size());
     for (size_t i = 0; i < expected_lines.size(); ++i) {
         CHECK_EQ(actual_lines[i], expected_lines[i]);
     }

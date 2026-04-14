@@ -5,13 +5,13 @@
 Version v 0.0.0.0:
 r: small TODO
 r: sniffer loops
-rt: test helper function to separated file
-r: change == to in REQUIRE (simmilr like CHECK ) + check where should be CHECK/ where CHECK
 r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
 
 
 //DONE
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
+rt: test helper function to separated file
+r: change == to in REQUIRE, check CHECK/REQUIRE
 
 ----------------------------- TBD -----------------------------------
 Scan:

@@ -33,10 +33,10 @@ namespace wpa3_tester {
 
             // Verify packet structure
             const RadioTap* radiotap = pkt.pdu()->find_pdu<RadioTap>();
-            REQUIRE((radiotap != nullptr));
+            REQUIRE_NE(radiotap, nullptr);
 
             const auto* dot11 = radiotap->find_pdu<Dot11>();
-            REQUIRE((dot11 != nullptr));
+            REQUIRE_NE(dot11, nullptr);
 
             CHECK_EQ(dot11->type(), Dot11::CONTROL);
             CHECK_EQ(dot11->subtype(), subtype);

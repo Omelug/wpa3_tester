@@ -179,14 +179,14 @@ TEST_CASE("RunStatus - parse_requirements()"){
         
         REQUIRE_NOTHROW(rs.parse_requirements());
         
-        REQUIRE((rs.actors.size() == 1));
+        REQUIRE_EQ(rs.actors.size(), 1);
         REQUIRE(rs.actors.contains("only_actor"));
-        REQUIRE((rs.get_actor("only_actor")["actor_name"] == "only_actor"));
-        REQUIRE((rs.observers.size() == 2));
+        CHECK_EQ(rs.get_actor("only_actor")["actor_name"], "only_actor");
+        REQUIRE_EQ(rs.observers.size(), 2);
         REQUIRE((rs.observers.contains("tcpdump_observer")));
         REQUIRE((rs.observers.contains("tshark_observer")));
-        REQUIRE((rs.observers.at("tcpdump_observer")->observer_name == "tcpdump_observer"));
-        REQUIRE((rs.observers.at("tshark_observer")->observer_name == "tshark_observer"));
+        CHECK_EQ(rs.observers.at("tcpdump_observer")->observer_name, "tcpdump_observer");
+        CHECK_EQ(rs.observers.at("tshark_observer")->observer_name, "tshark_observer");
     }
     
     SUBCASE("Empty observers") {
@@ -211,7 +211,7 @@ TEST_CASE("RunStatus - parse_requirements()"){
         REQUIRE((rs.actors.size() >= 1));
 
         for (const auto& [actor_name, actor] : rs.actors) {
-            REQUIRE((actor->str_con["actor_name"] == actor_name));
+            CHECK_EQ(actor->str_con["actor_name"], actor_name);
         }
     }
 }

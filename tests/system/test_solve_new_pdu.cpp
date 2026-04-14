@@ -175,7 +175,6 @@ namespace wpa3_tester {
         CHECK_EQ(seen.size(), 1);
         auto updated_actor = seen.at("00:11:22:33:44:55");
         CHECK_EQ(updated_actor->str_con["ssid"], "UpdatedSSID");
-        //TODO tohle se tam přidává v ActorCoinfig mapě to původně není
         CHECK_EQ(updated_actor->str_con["channel"], "13");
         CHECK_EQ(updated_actor->str_con["signal"], "-50");
     }

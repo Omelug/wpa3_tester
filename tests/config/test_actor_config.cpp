@@ -51,9 +51,9 @@ TEST_CASE("Actor_config - matches method") {
 
         Actor_config offer;
         offer.str_con["iface"] = "wlan0";
-        offer.str_con["driver"] = "ath9k"; // extra fields ok
+        offer.str_con["driver"] = "ath9k";
         offer.bool_conditions["monitor"] = true;
-        offer.bool_conditions["injection"] = true; // extra fields ok
+        offer.bool_conditions["injection"] = true;
 
         CHECK(required.matches(offer));
     }
@@ -135,7 +135,7 @@ TEST_CASE("Actor_config - operator+= merge") {
         base.str_con["iface"] = "wlan0";
 
         Actor_config other;
-        other.str_con["iface"] = "wlan1"; // conflict!
+        other.str_con["iface"] = "wlan1"; // conflict
 
         CHECK_THROWS_AS(base += other, runtime_error);
     }
@@ -147,7 +147,7 @@ TEST_CASE("Actor_config - operator[] accessor") {
 
     CHECK(actor["iface"] == "wlan0");
 
-    // Missing key should throw
+    // Missing key
     CHECK_THROWS_AS(actor["driver"], config_err);
 
     // Key exists but has no value should throw

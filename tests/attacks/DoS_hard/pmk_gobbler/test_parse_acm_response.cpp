@@ -18,7 +18,7 @@ namespace wpa3_tester {
         REQUIRE(result.has_value());
         const ACMCookie& cookie = result.value();
 
-        //  Receiver address: 78:98:e8:55:3e:8d
+        // receiver address
         HWAddress<6> expected_sta_mac("78:98:e8:55:3e:8d");
         CHECK_EQ(cookie.sta_mac, expected_sta_mac);
         REQUIRE(!cookie.token.empty());

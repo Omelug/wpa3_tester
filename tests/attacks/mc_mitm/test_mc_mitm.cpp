@@ -11,7 +11,6 @@ using namespace wpa3_tester;
 namespace wpa3_tester {
     // TODO change to FCS a
     TEST_CASE("patch_channel_raw - beacon frame") {
-        // Test with beacon_test.pcapng
         vector<uint8_t> beacon_data = test_helpers::read_pcap_file("beacon_test.pcapng");
         vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
@@ -28,9 +27,8 @@ namespace wpa3_tester {
     }
 
     TEST_CASE("patch_channel_raw - probe response frame") {
-        // Test with probe_res.pcapng
         vector<uint8_t> probe_data = test_helpers::read_pcap_file("probe_res.pcapng");
-        vector<uint8_t> original_data = probe_data; // Keep copy for comparison
+        vector<uint8_t> original_data = probe_data;
         McMitm::patch_channel_raw(probe_data, 11);
 
         RadioTap rt(probe_data.data(), probe_data.size());
@@ -56,7 +54,6 @@ namespace wpa3_tester {
         RawPDU raw_pdu(probe_data);
         writer.write(raw_pdu);
 
-        // Verify that the data was modified
         REQUIRE_NE(probe_data, original_data);
 
         INFO("Probe response frame size before: " << original_data.size());
@@ -73,7 +70,7 @@ namespace wpa3_tester {
         vector<uint8_t> small_data = {0x00, 0x01, 0x02};
         vector<uint8_t> original_small = small_data;
         McMitm::patch_channel_raw(small_data, 6);
-        CHECK_EQ(small_data, original_small); // Should remain unchanged
+        CHECK_EQ(small_data, original_small);
     }
 
     TEST_CASE("beacon_to_probe_resp") {

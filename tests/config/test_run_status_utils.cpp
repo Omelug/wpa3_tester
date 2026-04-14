@@ -54,8 +54,7 @@ TEST_CASE("current_time_string - consistency") {
     this_thread::sleep_for(chrono::milliseconds(100));
     string time2 = current_time_string();
     CHECK_EQ(time1.length(), time2.length());
-    
-    // Time2 should be >= Time1 (allowing for same second)
+
     CHECK((time2 >= time1));
 }
 
@@ -98,10 +97,8 @@ TEST_CASE("relative_from - complex nested structure") {
     create_directories(attack_config.parent_path());
     
     string result = relative_from("attack_config", attack_config.string());
-    
-    // Should return "Enterprise/reflection_attack"
+
     CHECK_EQ(result, "Enterprise/reflection_attack");
-    
     remove_all(test_base);
 }
 
@@ -115,7 +112,6 @@ TEST_CASE("relative_from - absolute path handling") {
     string result = relative_from("attack_config", abs_path);
     
     CHECK_EQ(result, ".");
-    
     remove_all(test_base);
 }
 
@@ -127,7 +123,6 @@ TEST_CASE("relative_from - single level nesting") {
     string result = relative_from("attack_config", attack_config.string());
     
     CHECK_EQ(result, "single");
-    
     remove_all(test_base);
 }
 
@@ -141,7 +136,7 @@ TEST_CASE("RunStatus constructor - missing name field") {
     path config_file = test_dir / "test_config.yaml";
     create_directories(test_dir);
     
-    // Create config without name field
+    // conifig without name field
     ofstream config(config_file);
     config << R"(
 attacker_module: "test_module"
@@ -161,7 +156,7 @@ TEST_CASE("RunStatus constructor - with explicit test name") {
     path config_file = test_dir / "test_config.yaml";
     create_directories(test_dir);
 
-    // Create valid config
+    // valid config
     ofstream config(config_file);
     config << R"(
 name: "default_name"
@@ -200,7 +195,6 @@ actors:
 
     RunStatus rs(config_file.string());
 
-    // Check that config was loaded and validated
     CHECK((rs.config.contains("name")));
     CHECK_EQ(rs.config["name"], "test_validation");
     CHECK((rs.config.contains("attacker_module")));

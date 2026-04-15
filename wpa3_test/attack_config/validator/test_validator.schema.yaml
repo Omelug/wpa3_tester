@@ -98,7 +98,10 @@ definitions:
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
           requirements:
             type: array
-            description: Program names what has to be installed
+            description: Program names what has to be installed (on local test PC)
+          req_programs: #TODO add condition only for External WB
+            type: array
+            description: Program names what has to be installed (on external)
         allOf:
           - if:
               properties:

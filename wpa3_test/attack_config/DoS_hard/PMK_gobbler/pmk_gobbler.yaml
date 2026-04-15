@@ -8,7 +8,6 @@ actors:
       whitebox_host: OpenWrt
       condition: [ AP, 2_4GHz ]
       channel: 6
-      ssid: OpenWrt_2_4GHz
     setup:
       program: openwrt
       program_config:
@@ -68,6 +67,6 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 100
+  attack_time_sec: 200
   acm_trigger_count: 2560
 # TODO validator

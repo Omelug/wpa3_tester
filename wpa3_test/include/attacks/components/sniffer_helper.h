@@ -62,7 +62,7 @@ namespace wpa3_tester::components{
     std::variant<T, StopReason> poll_sniffer_pdu(
         Handler&& on_packet,
         const std::string& interface,
-        const std::string filter = "",
+        const std::string& filter = "",
         const int timeout_sec = -1
         )
     {

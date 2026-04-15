@@ -6,7 +6,7 @@ attack_config:
   attack_time_sec: 15
   attack_variant: "BARS"
   random: false
-  frame_number: 50
+  frame_in_batch: 50
 actors:
   access_point:
     source: internal

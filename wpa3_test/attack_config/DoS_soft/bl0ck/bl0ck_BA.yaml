@@ -6,7 +6,7 @@ attack_config:
   attack_time_sec: 30
   attack_variant: "BA"
   random: false
-  frame_number: 10
+  frame_in_batch: 50
 actors:
   access_point:
     source: internal
@@ -59,7 +59,7 @@ actors:
     selection:
       channel: 36
       condition: [ monitor, injection, 5GHz]
-      driver: rtw_8821cu
+      #driver: rtw_8821cu
 observers:
   ap_mausezahn:
     actor: access_point

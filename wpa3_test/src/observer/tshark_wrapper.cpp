@@ -144,7 +144,7 @@ namespace wpa3_tester::observer{
         ifstream file(csv_path.string());
         string line;
 
-        // csv lines are in format frame_number,epoch_time,size
+        // csv lines are in format frame_in_batch,epoch_time,size
         while (getline(file, line)) {
             stringstream ss(line);
             string frame_num_str, t_str, s_str;
@@ -205,7 +205,7 @@ namespace wpa3_tester::observer{
             if (line.empty()) continue;
 
             try {
-                // Parse line: frame_number,timestamp
+                // Parse line: frame_in_batch,timestamp
                 stringstream ss(line);
                 string frame_num_str, time_str;
                 if (getline(ss, frame_num_str, '\t') && getline(ss, time_str)) {

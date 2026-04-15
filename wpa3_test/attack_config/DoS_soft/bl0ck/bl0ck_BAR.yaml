@@ -3,10 +3,10 @@ name: bl0ck_BAR
 attacker_module: bl0ck
 attack_config:
   validator: ./bl0ck.schema.yaml
-  attack_time_sec: 30
+  attack_time_sec: 15
   attack_variant: "BAR"
   random: false
-  frame_number: 50
+  frame_in_batch: 50
 actors:
   access_point:
     source: internal

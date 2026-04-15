@@ -13,7 +13,7 @@ namespace wpa3_tester::bl0ck_attack{
     void block(const std::string& STA_mac,
                const std::string& AP_mac,
                const std::string& iface,
-               int frame_num,
+               int frame_in_batch,
                const std::string& attack_type,
                int duration_sec,
                bool is_random);

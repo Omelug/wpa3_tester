@@ -4,7 +4,7 @@ type: object
 required:
   - attack_time_sec
   - attack_variant
-  - frame_number
+  - frame_in_batch
 properties:
   validator:
     type: string
@@ -21,7 +21,7 @@ properties:
     type: boolean
     default: false
     description: is sender MAC address should be random
-  frame_number:
+  frame_in_batch:
     type: integer
     description: Number of concurrent frames to send
     minimum: 1

@@ -157,14 +157,13 @@ namespace wpa3_tester{
         if(str_con.at("sniff_iface").has_value()){
             run({"iw", "dev", str_con.at("sniff_iface").value(), "del"});
 
-
         run({"pkill", "-f", "wpa_supplicant.*-i"+iface});
         run({"pkill", "-f", "hostapd.*"+iface});
 
         down_iface();
         run({"rfkill", "unblock", "wifi"});}
         run({"ip", "addr", "flush", "dev", iface});
-        up_iface(); //TODO needed ?
+        up_iface();
     }
 
     void Actor_config::create_sniff_iface() const{
@@ -186,7 +185,16 @@ namespace wpa3_tester{
         const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
                                       filesystem::directory_iterator{});
         log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str());
-        run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor","flags", "fcsfail", "otherbss"});
+
+        string monitor_flags;
+        if (bool_conditions.at("active_monitor")) monitor_flags += " active";
+        if (bool_conditions.at("control_monitor")) monitor_flags += " control";
+
+        vector<string> cmd = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
+        if (!monitor_flags.empty()) {
+            cmd.push_back(monitor_flags);
+        }
+        run(cmd);
         up_iface();
     }
 

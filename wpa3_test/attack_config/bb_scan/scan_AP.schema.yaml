@@ -23,6 +23,6 @@ properties:
         type: integer
       ACM_trigger:
         type: boolean
-      ACM_trigger_timeout_sec:
+      acm_trigger_count:
         type: integer
 

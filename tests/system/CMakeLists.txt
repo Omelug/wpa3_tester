@@ -29,6 +29,14 @@ target_link_libraries(run_validator_tests PRIVATE
 )
 add_test(NAME YAMLValidatorTests COMMAND run_validator_tests)
 
+# ProcessManager  callbacks
+add_executable(run_callback_tests test_ProcessManager_callbacks.cpp)
+target_link_libraries(run_callback_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME PMCallbackTests COMMAND run_callback_tests)
+
 # injection check manual test
 add_executable(run_injection_check_test test_injection_check.cpp)
 target_link_libraries(run_injection_check_test PRIVATE

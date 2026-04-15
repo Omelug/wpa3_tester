@@ -10,6 +10,18 @@ using namespace std;
 using namespace Tins;
 namespace wpa3_tester::dos_helpers{
 
+    std::string bytes_to_hex(const std::vector<uint8_t> &bytes) {
+        if (bytes.empty()) return "(empty)";
+        std::string result;
+        for (size_t i = 0; i < bytes.size(); ++i) {
+            char buf[3];
+            snprintf(buf, sizeof(buf), "%02x", bytes[i]);
+            result += buf;
+            if (i < bytes.size() - 1) result += ":";
+        }
+        return result;
+    }
+
     bool check_fcs_present(const uint8_t* packet, const uint32_t len) {
         ieee80211_radiotap_iterator it;
 
@@ -31,7 +43,7 @@ namespace wpa3_tester::dos_helpers{
         return false;
     }
 
-    optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, uint32_t len) {
+    optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, const uint32_t len) {
         // --- RadioTap ---
         if (len < 4) return nullopt;
         const uint16_t radiotap_len = frame_rt[2] | (frame_rt[3] << 8);
@@ -46,12 +58,12 @@ namespace wpa3_tester::dos_helpers{
 
         if (len < sae_offset + 2) return nullopt;
 
-        fprintf(stderr, "DEBUG radiotap_len=%u\n", radiotap_len);
+        /*fprintf(stderr, "DEBUG radiotap_len=%u\n", radiotap_len);
         fprintf(stderr, "DEBUG auth_offset=%zu\n", auth_offset);
         fprintf(stderr, "DEBUG bytes at auth_offset: %02x %02x %02x %02x %02x %02x\n",
                 frame_rt[auth_offset],   frame_rt[auth_offset+1],
                 frame_rt[auth_offset+2], frame_rt[auth_offset+3],
-                frame_rt[auth_offset+4], frame_rt[auth_offset+5]);
+                frame_rt[auth_offset+4], frame_rt[auth_offset+5]);*/
 
         // --- Auth header ---
         const uint16_t algo   = frame_rt[auth_offset]   | (frame_rt[auth_offset+1] << 8);

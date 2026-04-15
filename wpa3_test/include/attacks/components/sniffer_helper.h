@@ -101,8 +101,9 @@ namespace wpa3_tester::components{
                 throw std::runtime_error("poll error: " + std::to_string(errno));
             }
 
-            if (pfds[1].revents & POLLIN) return StopReason::Interrupted;
-            if (ret == 0)                 return StopReason::Timeout;
+            if (pfds[1].revents & POLLIN)
+                return StopReason::Interrupted;
+            if (ret == 0 || !(pfds[0].revents & POLLIN)) continue;
 
             if (pfds[0].revents & POLLIN) {
                 if (const std::unique_ptr<Tins::PDU> pdu{sniffer.next_packet()}) {

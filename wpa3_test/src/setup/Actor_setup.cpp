@@ -21,13 +21,13 @@ namespace wpa3_tester{
             str_con["driver"] = real_actor->str_con.at("driver");
         }
         if(internal){
+            str_con["iface"] = real_actor->str_con.at("iface");
+            str_con["radio"] = real_actor->str_con.at("radio");
             if(!str_con["mac"].has_value()){
                 set_mac(real_actor["mac"]);
             }else{
                 setup_mac_addr(real_actor["mac"]);
             }
-            str_con["iface"] = real_actor->str_con.at("iface");
-            str_con["radio"] = real_actor->str_con.at("radio");
         }
         if(external_WB){
             str_con["whitebox_host"] = real_actor->str_con.at("whitebox_host");

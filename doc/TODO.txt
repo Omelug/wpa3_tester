@@ -12,7 +12,7 @@ r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hla
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
 rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
-
+f: BA/BAR blck aattck work only on one mediatek
 ----------------------------- TBD -----------------------------------
 Scan:
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
@@ -44,6 +44,9 @@ f: add network manager off option for actors
 +: VIF rozhraní (nejde současně odesílat a příjimat)
 +: add sniff_face mon interfaces option in OpennWrtConn
 +: extends check for arguemnts
+
+Fixes:
+f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)
 
 Test cases:
 +: test, který by prošel všechny configy testů a vypsal jaké jsou validní

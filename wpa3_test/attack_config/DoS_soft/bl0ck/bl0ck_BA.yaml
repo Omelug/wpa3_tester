@@ -3,7 +3,7 @@ name: bl0ck_BA
 attacker_module: bl0ck
 attack_config:
   validator: ./bl0ck.schema.yaml
-  attack_time_sec: 15
+  attack_time_sec: 30
   attack_variant: "BA"
   random: false
   frame_number: 10
@@ -46,6 +46,8 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
+      #TODO nejde moc rozdělit kromě MAC adresy,
+      mac: "00:c0:ca:b7:69:2a" # je tam stejný driver i firmware, ale funguje jen na ALFA mediatek
       driver: mt76x2u
       channel: 36
       condition: [ monitor, 80211ac, 5GHz]

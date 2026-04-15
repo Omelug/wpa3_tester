@@ -1,4 +1,3 @@
-#include <csignal>
 #include <iostream>
 #include <unistd.h>
 #include <argparse/argparse.hpp>

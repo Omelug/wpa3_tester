@@ -1,7 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: bl0ck_BARS
 attacker_module: bl0ck
-extends: connected_sta_ap.yaml
 attack_config:
   validator: ./bl0ck.schema.yaml
   attack_time_sec: 15
@@ -49,6 +48,7 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
+      mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
       channel: 36
       condition: [ monitor, 80211ac, 5GHz]
@@ -59,9 +59,9 @@ actors:
     source: internal
     selection:
       channel: 36
-      ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
+      #ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
       condition: [ monitor, injection, 5GHz]
-      driver: rtw_8821cu
+      #driver: rtw_8821cu
 observers:
   client_mausezahn:
     actor: client

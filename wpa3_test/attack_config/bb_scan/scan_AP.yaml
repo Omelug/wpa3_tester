@@ -1,21 +1,31 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: scan_AP
-validator: scan_AP.schema.yaml
+validator: "./scan_AP.schema.yaml"
 attacker_module: scan_AP
 scan_iface: wlan1
 actors:
   target:
     source: external
     selection:
-      mac: "2C:41:38:F1:59:10"
-      channel: 2
+      mac: "78:98:E8:55:3E:8D"
+      channel: 6
   scanner:
     source: internal
     selection:
       condition: [monitor]
-      channel: 2
+      channel: 6
+    sniff_iface: scanner
+
+observers:
+  tshark_client:
+    actor: scanner
+    program: tshark
+    program_config:
+      filter: ""
+
 attack_config:
   beacon_scan: true
   beacon_timeout_sec: 10
   EAP_scan: true
-  #ACM: true
+  ACM_trigger: true
+  ACM_trigger_timeout_sec: 10

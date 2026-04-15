@@ -1,0 +1,23 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Cookie guzzler Config
+type: object
+required:
+  - actors
+  - attack_config
+properties:
+  actors:
+    required:
+      - access_point
+      - client
+      - attacker
+  attack_config:
+    type: object
+    required:
+      - attack_time_sec
+      - acm_trigger_count
+    properties:
+      attack_time:
+        type: integer
+        description: time of sending cookie guzzler packets
+        minimum: 1
+      additionalProperties: false

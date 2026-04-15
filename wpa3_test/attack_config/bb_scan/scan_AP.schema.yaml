@@ -4,23 +4,25 @@ type: object
 required:
   - actors
   - attack_config
-actors:
-  required:
-    - access_point
-    - client
-    - attacker
-attack_config:
-  type: object
-  additionalProperties: false
-  properties:
-    beacon_scan:
-      type: bool
-    beacon_timeout_sec:
-      type: integer
-    ACM:
-      type: bool
-    EAP_scan:
-      type: bool
-    EAP_timeout_sec:
-      type: integer
+properties:
+  actors:
+    required:
+      - target
+      - scanner
+  attack_config:
+    type: object
+    additionalProperties: false
+    properties:
+      beacon_scan:
+        type: boolean
+      beacon_timeout_sec:
+        type: integer
+      EAP_scan:
+        type: boolean
+      EAP_timeout_sec:
+        type: integer
+      ACM_trigger:
+        type: boolean
+      ACM_trigger_timeout_sec:
+        type: integer
 

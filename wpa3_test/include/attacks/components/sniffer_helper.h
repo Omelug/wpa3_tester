@@ -14,7 +14,7 @@ namespace wpa3_tester::components{
     template<typename T, typename Handler>
         std::variant<T, StopReason> poll_sniffer(
         pcap_t* handle,
-        const int timeout_ms,
+        const int timeout_sec,
         Handler&& on_packet)
     {
         char errbuf[PCAP_ERRBUF_SIZE];
@@ -27,8 +27,8 @@ namespace wpa3_tester::components{
             { .fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0 },
         };
 
-        const auto deadline = (timeout_ms >= 0)
-            ? std::optional{std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms)}
+        const auto deadline = (timeout_sec >= 0)
+            ? std::optional{std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec)}
         : std::nullopt;
 
         while (true) {
@@ -53,7 +53,7 @@ namespace wpa3_tester::components{
             const uint8_t* pkt;
             while (pcap_next_ex(handle, &hdr, &pkt) == 1) {
                 if (auto result = on_packet(pkt, hdr->caplen))
-                    return move(*result);
+                    return std::move(*result);
             }
         }
     }
@@ -105,11 +105,9 @@ namespace wpa3_tester::components{
                 return StopReason::Interrupted;
             if (ret == 0 || !(pfds[0].revents & POLLIN)) continue;
 
-            if (pfds[0].revents & POLLIN) {
-                if (const std::unique_ptr<Tins::PDU> pdu{sniffer.next_packet()}) {
-                    if (auto result = on_packet(*pdu))
-                        return move(*result);
-                }
+            if (const std::unique_ptr<Tins::PDU> pdu{sniffer.next_packet()}) {
+                if (auto result = on_packet(*pdu))
+                    return move(*result);
             }
         }
     }

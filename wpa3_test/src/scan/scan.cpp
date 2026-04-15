@@ -136,11 +136,11 @@ namespace wpa3_tester{
 
         for (const int channel : channels) {
             if (chrono::steady_clock::now() >= total_end_time) break;
-            log(LogLevel::INFO, "Scanning channel " + to_string(channel) + " on " + iface);
+            log(LogLevel::INFO, "Scanning channel "+to_string(channel)+" on "+iface);
 
-            string set_channel_cmd = "iw dev " + iface + " set channel " + to_string(channel);
+            string set_channel_cmd = "iw dev "+iface+" set channel "+to_string(channel);
             if (system(set_channel_cmd.c_str()) != 0) {
-                log(LogLevel::ERROR, "Failed to set channel " + to_string(channel));
+                log(LogLevel::ERROR, "Failed to set channel "+to_string(channel));
             }
             this_thread::sleep_for(chrono::milliseconds(200));
 
@@ -265,7 +265,7 @@ namespace wpa3_tester{
                 int channel = actor_config.at("selection").at("channel");
                 all_channels.push_back(channel);
             }else{
-                log(LogLevel::WARNING, "Actor %s missing channel configuration", actor_name.c_str()); //FIXME, scann all ?
+                log(LogLevel::WARNING, "Actor "+actor_name+" missing channel configuration");
             }
         }
         
@@ -278,7 +278,7 @@ namespace wpa3_tester{
             return {};
         }
         
-        log(LogLevel::INFO, "Scanning channels: " + [&]() {
+        log(LogLevel::INFO, "Scanning channels: "+[&]() {
             string result;
             for (size_t i = 0; i < all_channels.size(); ++i) {
                 result += to_string(all_channels[i]);

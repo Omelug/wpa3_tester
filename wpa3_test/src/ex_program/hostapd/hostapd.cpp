@@ -30,17 +30,17 @@ namespace wpa3_tester::hostapd{
                 return parse_from_file(config_path);
             } catch (...) {}
         }
-        throw config_err("Field '" + key + "' not found in config or file: " + config_path);
+        throw config_err("Field '"+key+"' not found in config or file: "+config_path);
     }
 
     static string parse_key_from_file(const string& config_path, const string& key) {
         ifstream f(config_path);
         string line;
         while (getline(f, line)) {
-            if (line.starts_with(key + "="))
+            if (line.starts_with(key+"="))
                 return line.substr(key.size() + 1);
         }
-        throw config_err("Key '" + key + "' not found in file: " + config_path);
+        throw config_err("Key '"+key+"' not found in file: "+config_path);
     }
 
     string get_ssid(const json& program_config, const string& config_path) {
@@ -251,7 +251,7 @@ namespace wpa3_tester::hostapd{
             const string hash = line.substr(pos + 20); // skip "MANA WPA2 HASHCAT | "
             if (seen.insert(hash).second) {
                 out << hash << "\n";
-                log(LogLevel::INFO, "Captured hash: " + hash.substr(0, 32) + "...");
+                log(LogLevel::INFO, "Captured hash: "+hash.substr(0, 32)+"...");
             }
         }
     }

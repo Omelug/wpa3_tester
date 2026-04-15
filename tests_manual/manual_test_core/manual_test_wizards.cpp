@@ -252,7 +252,7 @@ namespace wpa3_tester::manual_tests {
             const auto& t = targets[i];
             cout << "  [" << setw(2) << i << "]  " 
                  << t.bssid << "  " 
-                 << setw(16) << left << (t.ssid.length() > 16 ? t.ssid.substr(0, 13) + "..." : t.ssid) << "  "
+                 << setw(16) << left << (t.ssid.length() > 16 ? t.ssid.substr(0, 13)+"..." : t.ssid) << "  "
                  << setw(2) << t.channel << "\n";
         }
         

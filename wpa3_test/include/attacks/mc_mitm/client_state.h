@@ -11,8 +11,6 @@ namespace wpa3_tester{
         uint8_t real_channel  = -1;
         uint8_t rogue_channel = -1;
     };
-    //FIXME parse_beacon fiucntion?
-    //FIXME find_rogue_channel
 
     class ClientState {
     public:
@@ -42,7 +40,7 @@ namespace wpa3_tester{
         }
 
         void update_state(const State s) {
-            log(LogLevel::DEBUG, "Client "+macaddr + " moved to state "+state2str(s));
+            log(LogLevel::DEBUG, "Client "+macaddr+" moved to state "+state2str(s));
             state = s;
         }
 

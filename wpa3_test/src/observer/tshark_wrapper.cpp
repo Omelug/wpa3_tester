@@ -41,19 +41,19 @@ namespace wpa3_tester::observer{
 
             // Kontrola Address 1 (Příjemce - důležité pro ACK)
             // Offset 4 (4 bajty) a offset 8 (1 bajt)
-            string addr1 = "(link[4:4] == 0x" + pre.substr(0, 8) +
-                           " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
+            string addr1 = "(link[4:4] == 0x"+pre.substr(0, 8) +
+                           " and link[8:1] == 0x"+pre.substr(8, 2)+")";
 
             // Kontrola Address 2 (Odesílatel - tvoje Probe Requesty)
             // Offset 10 (4 bajty) a offset 14 (1 bajt)
-            string addr2 = "(link[10:4] == 0x" + pre.substr(0, 8) +
-                           " and link[14:1] == 0x" + pre.substr(8, 2) + ")";
+            string addr2 = "(link[10:4] == 0x"+pre.substr(0, 8) +
+                           " and link[14:1] == 0x"+pre.substr(8, 2)+")";
 
-            mac_filters.push_back("(" + addr1 + " or " + addr2 + ")");
+            mac_filters.push_back("("+addr1+" or "+addr2+")");
 
             /*erase(clean_mac, ':');
             string prefix = actor["mac"].substr(0, 14); // "AA:BB:CC:DD:EE"
-            mac_filters.push_back("wlan host " + prefix + ":00/40");
+            mac_filters.push_back("wlan host "+prefix+":00/40");
 
             if (clean_mac.length() == 12) {
                 string prefix = clean_mac.substr(0, 10);
@@ -61,9 +61,9 @@ namespace wpa3_tester::observer{
                 // BPF offset for 802.11:
                 // link[10:4] first 4 bytes SA (Source Address)
                 // link[14:1] 5. byte SA
-                //string f = "wlan host " + clean_mac;
-                string f = "(link[10:4] == 0x" + prefix.substr(0, 8) +
-                           " and link[14:1] == 0x" + prefix.substr(8, 2) + ")";
+                //string f = "wlan host "+clean_mac;
+                string f = "(link[10:4] == 0x"+prefix.substr(0, 8) +
+                           " and link[14:1] == 0x"+prefix.substr(8, 2)+")";
                 mac_filters.push_back(f);
             }*/
         }
@@ -75,7 +75,7 @@ namespace wpa3_tester::observer{
         vector<string> mac_filters;
 
         for (const auto &actor: rs.actors | views::values) {
-            mac_filters.push_back("ether host " + actor["mac"]);
+            mac_filters.push_back("ether host "+actor["mac"]);
         }
         mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
         return or_filter(mac_filters);
@@ -351,7 +351,7 @@ namespace wpa3_tester::observer{
 
         // [relative time] [ retry? (True/False)]
         const string cmd = "tshark -r " + pcap_path.string() +
-                    // " -Y \"wlan.addr == " + mac + "\" " +
+                    // " -Y \"wlan.addr == " + mac+"\" " +
                      " -T fields -e frame.time_relative -e wlan.fc.retry";
 
         FILE* pipe = popen(cmd.c_str(), "r");

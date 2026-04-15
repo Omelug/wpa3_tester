@@ -30,12 +30,12 @@ namespace wpa3_tester::dos_helpers {
 
         std::string to_str() const {
             return "SAEPair {\n"
-                   "  status:   " + std::to_string(status)           + "\n"
-                   "  group_id: " + std::to_string(group_id)         + "\n"
-                   "  valid:    " + (is_valid() ? "true" : "false")  + "\n"
-                   "  scalar  (" + std::to_string(scalar.size())  + " bytes): " + bytes_to_hex(scalar)  + "\n"
-                   "  element (" + std::to_string(element.size()) + " bytes): " + bytes_to_hex(element) + "\n"
-                   "  token   (" + std::to_string(token.size())   + " bytes): " + bytes_to_hex(token)   + "\n"
+                   "  status:   "+std::to_string(status)          +"\n"
+                   "  group_id: "+std::to_string(group_id)        +"\n"
+                   "  valid:    "+(is_valid() ? "true" : "false") +"\n"
+                   "  scalar  ("+std::to_string(scalar.size()) +" bytes): "+bytes_to_hex(scalar) +"\n"
+                   "  element ("+std::to_string(element.size())+" bytes): "+bytes_to_hex(element)+"\n"
+                   "  token   ("+std::to_string(token.size())  +" bytes): "+bytes_to_hex(token)  +"\n"
                    "}";
         }
     };

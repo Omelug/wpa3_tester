@@ -65,7 +65,7 @@ namespace wpa3_tester{
         if (status != 0) {
             string command_str;
             for (const auto& arg : full_argv) {
-                command_str += arg + " ";
+                command_str += arg+" ";
             }
 
             log(LogLevel::ERROR, "Command failed! Status: %d | Full command: %s",

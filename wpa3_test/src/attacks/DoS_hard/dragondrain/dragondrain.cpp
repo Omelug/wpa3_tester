@@ -28,7 +28,7 @@ namespace wpa3_tester::dragondrain{
         observer::add_nets(rs, command, actor_name);
         const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
         command.insert(command.end(), {
-            dragondrain_folder + "/src/dragondrain",
+            dragondrain_folder+"/src/dragondrain",
             "-d", iface,
             "-a", target_mac,
             "-c", channel,

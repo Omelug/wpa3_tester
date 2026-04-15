@@ -6,9 +6,7 @@ namespace wpa3_tester{
     using namespace std;
     using json = nlohmann::json;
 
-    Actor_config::Actor_config(const Actor_config& other)
-    : std::enable_shared_from_this<Actor_config>()
-    {
+    Actor_config::Actor_config(const Actor_config& other){
             this->str_con = other.str_con;
             this->bool_conditions = other.bool_conditions;
             this->conn = other.conn;
@@ -52,10 +50,9 @@ namespace wpa3_tester{
     }
 
     bool Actor_config::matches(const Actor_config& offer) {
-        //TODO with templeates:
         for (auto const & [key, required_val] : str_con) {
-            if (!required_val.has_value()) { continue;}
-            if (!offer.str_con.at(key).has_value()) { continue;}
+            if (!required_val.has_value()) continue;
+            if (!offer.str_con.at(key).has_value()) continue;
             if (auto it = offer.str_con.find(key); it == offer.str_con.end() || it->second != required_val) {
                 return false;
             }
@@ -63,8 +60,8 @@ namespace wpa3_tester{
 
         // Check boolean conditions
         for(auto const& [key, required_val] : bool_conditions) {
-            if (!required_val.has_value()) {continue;}
-            if (!offer.bool_conditions.at(key).has_value()) { continue;}
+            if (!required_val.has_value()) continue;
+            if (!offer.bool_conditions.at(key).has_value()) continue;
             if (auto it = offer.bool_conditions.find(key);
                 it == offer.bool_conditions.end() || it->second != required_val) {
                 return false;

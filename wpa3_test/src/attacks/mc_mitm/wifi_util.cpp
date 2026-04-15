@@ -9,10 +9,10 @@ using namespace Tins;
 //TODO uklidit do hwcapabilities
 void exec(const vector<string>& cmd, const bool check) {
     string full;
-    for (auto& s : cmd) full += s + " ";
+    for (auto& s : cmd) full += s+" ";
     const int ret = system(full.c_str());
     if (check && ret != 0)
-        throw runtime_error("Command failed: " + full);
+        throw runtime_error("Command failed: "+full);
 }
 
 
@@ -153,7 +153,7 @@ void start_ap(const string& iface, const string& base_iface, int channel,
         if (ssid_ie && ssid_ie->data_size() > 0)
             ap_ssid = string(reinterpret_cast<const char*>(ssid_ie->data_ptr()), ssid_ie->data_size());
         else
-            ap_ssid = "libwifi-ap-" + wpa3_tester::hw_capabilities::get_macaddress(iface);
+            ap_ssid = "libwifi-ap-"+wpa3_tester::hw_capabilities::get_macaddress(iface);
     }
 
     // Split beacon into head (before TIM) and tail (after TIM)
@@ -220,8 +220,8 @@ void start_ap(const string& iface, const string& base_iface, int channel,
     wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
 
     string cmd_str;
-    for (const auto& arg : cmd) cmd_str += arg + " ";
-    log(wpa3_tester::LogLevel::INFO, "Starting AP using: " + cmd_str);
+    for (const auto& arg : cmd) cmd_str += arg+" ";
+    log(wpa3_tester::LogLevel::INFO, "Starting AP using: "+cmd_str);
 
     wpa3_tester::hw_capabilities::run_cmd(cmd);
 
@@ -237,7 +237,7 @@ void start_ap(const string& iface, const string& base_iface, int channel,
 
 void stop_ap(const string& iface){
     const vector<string> cmd = {"iw", "dev", iface, "ap", "stop"};
-    log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev " + iface + " ap stop");
+    log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev "+iface+" ap stop");
     wpa3_tester::hw_capabilities::run_cmd(cmd);
 }
 

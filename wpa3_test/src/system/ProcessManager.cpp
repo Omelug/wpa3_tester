@@ -19,7 +19,7 @@ namespace wpa3_tester{
         mp->proc = nullptr;
         mp->logs.history_enabled = true;
 
-        const path log_path = log_base_dir / (process_name + ".log");
+        const path log_path = log_base_dir / (process_name+".log");
         mp->logs.log.open(log_path, ios::out | ios::trunc);
 
         lock_guard lock(logger_mtx);
@@ -51,15 +51,15 @@ namespace wpa3_tester{
 
                 if (line.empty()) continue;
 
-                const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
+                const string prefix = current_timestamp()+" [" + process_name+"] [" + label+"] ";
                 const string full_line = prefix + line;
 
                 if (combined_log.is_open()) write_log_line(combined_log, full_line);
                 if (mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
-                if (mp->logs.history_enabled) mp->logs.history += line + "\n";
+                if (mp->logs.history_enabled) mp->logs.history += line+"\n";
 
                 if (mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)) {
-                    log(LogLevel::DEBUG, "MATCH " + process_name + " " + line);
+                    log(LogLevel::DEBUG, "MATCH " + process_name+" " + line);
                     mp->logs.wait.matched = true;
                     should_notify = true;
                 }
@@ -167,7 +167,7 @@ namespace wpa3_tester{
         path log_path = log_dir / (process_name+".log");
 
         string cmd_debug;
-        for (const auto& s : cmd) cmd_debug += "[" + s + "] ";
+        for (const auto& s : cmd) cmd_debug += "[" + s+"] ";
         log(LogLevel::DEBUG, "Full command: %s", cmd_debug.c_str());
 
         // Log command line FIRST for debugging
@@ -233,7 +233,7 @@ namespace wpa3_tester{
             string line;
             while (getline(ss, line)) {
                 if (regex_search(line, *logs.wait.pattern)) {
-                    log(LogLevel::DEBUG, "MATCH without history " + actor_name + " " + line);
+                    log(LogLevel::DEBUG, "MATCH without history " + actor_name+" " + line);
                     logs.wait.matched = true;
                     break;
                 }

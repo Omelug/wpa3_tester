@@ -77,7 +77,7 @@ namespace wpa3_tester{
 
     int get_target_pid(int current_pid) {
         string comm;
-        ifstream("/proc/" + to_string(current_pid) + "/comm") >> comm;
+        ifstream("/proc/"+to_string(current_pid)+"/comm") >> comm;
 
         if (comm != "sudo" && comm != "stdbuf") return current_pid;
 

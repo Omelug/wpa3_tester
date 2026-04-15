@@ -43,7 +43,7 @@ namespace wpa3_tester::components{
 
             if (ret < 0) {
                 if (errno == EINTR) continue;
-                throw std::runtime_error("poll error: " + std::to_string(errno));
+                throw std::runtime_error("poll error: "+std::to_string(errno));
             }
 
             if (pfds[1].revents & POLLIN) return StopReason::Interrupted;
@@ -98,7 +98,7 @@ namespace wpa3_tester::components{
 
             if (ret < 0) {
                 if (errno == EINTR) continue;
-                throw std::runtime_error("poll error: " + std::to_string(errno));
+                throw std::runtime_error("poll error: "+std::to_string(errno));
             }
 
             if (pfds[1].revents & POLLIN)

@@ -18,7 +18,7 @@ namespace wpa3_tester::attack_scan{
 
     string ScanAP::to_tshark_str(const path &beacon_path) {
         if (!exists(beacon_path)) return "Error: File not found";
-        const string command = "tshark -r " + beacon_path.string() +
+        const string command = "tshark -r "+beacon_path.string() +
                               " -T fields "
                               "-e wlan.ssid "
                               "-e wlan_mgt.rsn.akms "
@@ -119,7 +119,7 @@ namespace wpa3_tester::attack_scan{
         ScanAP& scan_ap, const optional<path>& beacon_pcap)
     {
         const string filter =
-            "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
+            "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 "+scan_ap.bssid;
 
         auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
             [&](PDU& pdu) { return handle_beacon(pdu, scan_ap, beacon_pcap); },

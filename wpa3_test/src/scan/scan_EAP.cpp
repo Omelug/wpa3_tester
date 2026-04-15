@@ -84,12 +84,12 @@ namespace wpa3_tester::scan {
             case 50:  info.method = "EAP-AKA-PRIME"; break;
             case 52:  info.method = "EAP-PWD"; break;
             case 254: info.method = "Expanded-Type"; break;
-            default:  info.method = "Unknown-" + to_string(type); break;
+            default:  info.method = "Unknown-"+to_string(type); break;
         }
         if (type == 254 && payload.size() >= 12) {
             // bytes 5-7: Vendor-Id
             // bytes 8-11: Vendor-Type
-            info.method = "Expanded-Method (Vendor: " + to_string(payload[5]) + ")";
+            info.method = "Expanded-Method (Vendor: "+to_string(payload[5])+")";
         }
         return info;
     }
@@ -114,10 +114,10 @@ namespace wpa3_tester::scan {
         session.last_type_code = info.type_code;
 
         if (info.identity && session.identities.insert(*info.identity).second)
-            log(LogLevel::INFO, "[*] New Identity for " + client_mac + ": " + *info.identity);
+            log(LogLevel::INFO, "[*] New Identity for "+client_mac+": "+*info.identity);
 
         if (info.method && session.methods.insert(*info.method).second)
-            log(LogLevel::INFO, "[+] New Method for " + client_mac + ": " + *info.method);
+            log(LogLevel::INFO, "[+] New Method for "+client_mac+": "+*info.method);
 
         switch (info.code) {
             case 1: // Request
@@ -128,17 +128,17 @@ namespace wpa3_tester::scan {
             case 3: // SUCCESS
                 if (session.status != AuthStatus::SUCCESS) {
                     session.status = AuthStatus::SUCCESS;
-                    log(LogLevel::INFO, "[OK] Auth SUCCESS: Client " + client_mac + " is now CONNECTED.");
+                    log(LogLevel::INFO, "[OK] Auth SUCCESS: Client "+client_mac+" is now CONNECTED.");
                 }
                 break;
             case 4: // FAILURE
                 if (session.status != AuthStatus::FAILED) {
                     session.status = AuthStatus::FAILED;
-                    log(LogLevel::INFO, "[!] Auth FAILURE: Client " + client_mac + " was REJECTED.");
+                    log(LogLevel::INFO, "[!] Auth FAILURE: Client "+client_mac+" was REJECTED.");
                 }
                 break;
             default:
-                throw runtime_error("Unknown EAP code: " + to_string(info.code));
+                throw runtime_error("Unknown EAP code: "+to_string(info.code));
         }
 
         return nullopt; // until timeout

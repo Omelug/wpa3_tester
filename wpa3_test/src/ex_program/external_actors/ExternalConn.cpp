@@ -76,9 +76,9 @@ namespace wpa3_tester{
     string ExternalConn::exec(const string& cmd, const bool kill_on_exit, int* ret_err) const {
         std::lock_guard lock(session_mtx);
         const string final_cmd = kill_on_exit
-        ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'"
+        ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd+"'"
         : cmd;
-        //log(LogLevel::DEBUG, "exec " + final_cmd);
+        //log(LogLevel::DEBUG, "exec "+final_cmd);
         if (!session)
             throw ex_conn_err("Cannot exec: not connected");
 
@@ -89,11 +89,11 @@ namespace wpa3_tester{
         } guard(session);
 
         if (!guard.ch)
-            throw ex_conn_err("Failed to create SSH channel: " + string(ssh_get_error(session)));
+            throw ex_conn_err("Failed to create SSH channel: "+string(ssh_get_error(session)));
         if (ssh_channel_open_session(guard.ch) != SSH_OK)
-            throw ex_conn_err("Failed to open SSH channel: " + string(ssh_get_error(session)));
+            throw ex_conn_err("Failed to open SSH channel: "+string(ssh_get_error(session)));
         if (ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK)
-            throw ex_conn_err("Failed to execute: "+final_cmd+" | SSH error: " + ssh_get_error(session));
+            throw ex_conn_err("Failed to execute: "+final_cmd+" | SSH error: "+ssh_get_error(session));
 
         string result;
         char buf[1024];
@@ -109,11 +109,11 @@ namespace wpa3_tester{
     }
 
     void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
-        exec("iw dev " + sniff_iface + " del 2>/dev/null");
+        exec("iw dev "+sniff_iface+" del 2>/dev/null");
         //FIXME quiet fallback, check before if possible
         const string add_cmd = "iw dev "+iface+" interface add "+sniff_iface+" type monitor flags fcsfail otherbss"
                       +" || iw dev "+iface +" interface add "+sniff_iface +" type monitor";
-        exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);
+        exec("ip link show "+sniff_iface+" >/dev/null 2>&1 && ip link delete "+sniff_iface);
 
         exec(add_cmd);
         exec("ip link set "+sniff_iface +" up");
@@ -121,8 +121,8 @@ namespace wpa3_tester{
 
     bool ExternalConn::set_channel(const string &iface, const int channel, const string &ht_mode) const {
         int ret = 0;
-        string cmd = "iw dev " + iface + " set channel " + to_string(channel);
-        if (!ht_mode.empty()) { cmd += " " + ht_mode;}
+        string cmd = "iw dev "+iface+" set channel "+to_string(channel);
+        if (!ht_mode.empty()) { cmd += " "+ht_mode;}
         cmd += " 2>&1";
         exec(cmd, false, &ret);
         return ret;
@@ -156,7 +156,7 @@ namespace wpa3_tester{
         }
 
         ifstream local_f(local_path, ios::binary);
-        if (!local_f) { sftp_free(sftp); throw ex_conn_err("Local file not found: " + local_path); }
+        if (!local_f) { sftp_free(sftp); throw ex_conn_err("Local file not found: "+local_path); }
 
         const sftp_file remote_f = sftp_open(sftp, remote_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0755);
         if (!remote_f) { sftp_free(sftp); throw ex_conn_err("Remote open failed"); }
@@ -178,7 +178,7 @@ namespace wpa3_tester{
         buffer << ifile.rdbuf();
         string content = buffer.str();
         // works for text files, no for binary data (null bytes etc.)
-        exec("cat << 'EOF' > " + remote_path + "\n" + content + "\nEOF\n");
+        exec("cat << 'EOF' > "+remote_path+"\n" + content+"\nEOF\n");
     }
 
 

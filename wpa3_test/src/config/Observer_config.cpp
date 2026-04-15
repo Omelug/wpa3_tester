@@ -38,6 +38,6 @@ namespace wpa3_tester::observer{
     }
 
     string Observer_config::to_str() const {
-        return "Observer: " + observer_name;
+        return "Observer: "+observer_name;
     }
 }

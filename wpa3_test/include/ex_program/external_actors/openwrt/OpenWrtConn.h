@@ -25,7 +25,6 @@ namespace wpa3_tester {
         void set_managed_mode(const std::string &iface) const override;
         void set_ip(const std::string &iface, const std::string &ip_addr) const override;
         std::string get_radio(const std::string &iface) const;
-        std::string get_wifi_iface_index(const std::string &radio) const;
         std::string get_wifi_iface_section(const std::string &iface) const;
         void setup_ap(const RunStatus &rs, const ActorPtr &actor) override;
         void logger(RunStatus& rs, const std::string & actor_name) override;

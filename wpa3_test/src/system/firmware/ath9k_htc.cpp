@@ -21,7 +21,7 @@ namespace wpa3_tester::firmware{
         while (getline(ss, segment, ':')) { parts.push_back(segment);}
 
         string result;
-        for (int i = 0; i < 5; ++i) { result += parts[i] + ":"; }
+        for (int i = 0; i < 5; ++i) { result += parts[i]+":"; }
 
         random_device rd;
         mt19937 gen(rd());

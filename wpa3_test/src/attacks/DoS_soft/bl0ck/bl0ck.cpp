@@ -66,7 +66,7 @@ namespace wpa3_tester::bl0ck_attack{
         BARSContext& ctx,
         const int timeout_sec)
     {
-        const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_hw.to_string();
+        const string filter = "wlan type data subtype qos-data and wlan addr2 "+sta_hw.to_string();
 
         components::poll_sniffer_pdu<monostate>(
             [&](PDU& pdu) -> optional<monostate> {

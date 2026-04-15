@@ -118,7 +118,7 @@ namespace wpa3_tester{
     }
 
     string hw_capabilities::get_macaddress(const string& iface) {
-        ifstream f("/sys/class/net/" + iface + "/address");
+        ifstream f("/sys/class/net/" + iface+"/address");
         string mac;
         getline(f, mac);
         return mac;
@@ -162,7 +162,7 @@ namespace wpa3_tester{
 
     void hw_capabilities::set_channel(const string &iface, const int channel){
         const string chan_str = to_string(channel);
-        log(LogLevel::INFO, "Setting interface " + iface + " to channel " + chan_str);
+        log(LogLevel::INFO, "Setting interface " + iface+" to channel " + chan_str);
         const vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
         run_cmd(cmd);
     }

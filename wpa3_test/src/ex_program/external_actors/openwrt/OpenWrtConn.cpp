@@ -25,7 +25,7 @@ namespace wpa3_tester {
     string OpenWrtConn::wait_for_ifname(const string& section) const {
         constexpr int retries = 15;
         const string cmd = "ubus call network.wireless status | "
-                     "jsonfilter -e \"$.*.interfaces[@.section='" + section + "'].ifname\"";
+                     "jsonfilter -e \"$.*.interfaces[@.section='"+section+"'].ifname\"";
 
         for (int i = 0; i < retries; i++) {
             string ifname = exec(cmd);
@@ -34,7 +34,7 @@ namespace wpa3_tester {
 
             if (!ifname.empty()) {
                 int ret = 0;
-                exec("ls /sys/class/net/" + ifname + " >/dev/null 2>&1", false, &ret);
+                exec("ls /sys/class/net/"+ifname+" >/dev/null 2>&1", false, &ret);
 
                 if (ret == 0) {
                     log(LogLevel::DEBUG, "Found ifname: %s for section %s", ifname.c_str(), section.c_str());
@@ -45,7 +45,7 @@ namespace wpa3_tester {
             log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i + 1, retries);
             this_thread::sleep_for(chrono::seconds(1));
         }
-        throw ex_conn_err("ifname not available for section: " + section);
+        throw ex_conn_err("ifname not available for section: "+section);
     }
 
     void OpenWrtConn::forward_internet(const string& remote_ip) const{
@@ -196,13 +196,6 @@ namespace wpa3_tester {
 
     // -------------------------------------------
 
-    string OpenWrtConn::get_wifi_iface_index(const string& radio) const{
-        const string output = exec("uci show wireless | grep '\\.device=' | grep -n '="+radio + "' | cut -d: -f1");
-        if (output.empty()) return "0"; //FIXME quite fallback
-        const int line = stoi(output) - 1; // uci index from 0
-        return to_string(line);
-    }
-
     void OpenWrtConn::setup_ap(const RunStatus& rs, const ActorPtr &actor) {
         nlohmann::json program_config = rs.config.at("actors").at(actor["actor_name"]).at("setup").at("program_config");
         cerr <<  program_config.dump() << endl;
@@ -213,8 +206,8 @@ namespace wpa3_tester {
         static const set<string> radio_keys = {"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled"};
         const string wifi_iface = get_wifi_iface_section(actor["iface"]);
 
-        exec("uci set wireless."+actor["radio"] + ".disabled=0");
-        exec("uci set wireless."+wifi_iface + ".device="+actor["radio"]);
+        exec("uci set wireless."+actor["radio"]+".disabled=0");
+        exec("uci set wireless."+wifi_iface+".device="+actor["radio"]);
         for (const auto& [key, val] : program_config.items()) {
             const string value = val.is_string() ? val.get<string>() : val.dump();
 
@@ -231,33 +224,20 @@ namespace wpa3_tester {
     void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
         constexpr int port = 5140;
         const string kali_ip = "192.168.1.134"; //FIXME
-        rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
-        exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name + ".pid");
+        rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:"+to_string(port)+",reuseaddr", "STDOUT"});
+        exec("logread -f -l 100 -r "+kali_ip+" "+to_string(port)+" & echo $! > /tmp/logread_" + actor_name+".pid");
 
         const auto ap = rs.get_actor(actor_name);
         ap->conn->on_disconnect([this, actor_name]() {
-            exec("kill $(cat /tmp/logread_" + actor_name + ".pid); rm /tmp/logread_" + actor_name + ".pid");
+            exec("kill $(cat /tmp/logread_" + actor_name+".pid); rm /tmp/logread_" + actor_name+".pid");
         });
     }
-
-    /*void OpenWrtConn::logger(RunStatus& rs, const string& actor_name) {
-        exec("uci set system.@system[0].log_ip=192.168.1.134"); //FIXME 192.168.1.134  # IP tveho Kali
-        exec("uci set system.@system[0].log_port=514");
-        exec("uci set system.@system[0].log_proto=udp");
-        exec("uci commit system");
-        exec("/etc/init.d/log restart");
-        const vector<string> command = {
-            "nc", "-u", "-l", "-k", "-p", "514"
-        };
-        rs.process_manager.run(actor_name, command);
-    }*/
-
 
     void OpenWrtConn::get_hw_capabilities(Actor_config& cfg, const string& radio) {
         const string phy = "phy"+radio.substr(5);
         int ret = 0;
-        const string output = exec("iw phy "+phy + " info", false, &ret);
-        if (ret != 0) {throw ex_conn_err("Failed to get hw capabilities for phy "+phy + ": "+output);}
+        const string output = exec("iw phy "+phy+" info", false, &ret);
+        if (ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy "+phy+": "+output);
         parse_hw_capabilities(cfg, output);
     }
 

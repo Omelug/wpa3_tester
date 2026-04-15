@@ -126,13 +126,13 @@ namespace wpa3_tester::pmk_gobbler {
                 if (pcap_next_ex(handle, &header, &packet) == 1) {
                     if (auto cookie = parse_acm_response(packet, header->caplen)) {
                         if(cookie->token.empty()) continue;
-                        log(LogLevel::INFO, "ACM confirmed active after "+to_string(i) + " frames");
+                        log(LogLevel::INFO, "ACM confirmed active after "+to_string(i)+" frames");
                         return {std::move(*cookie), i};
                     }
                 }
             }
         }
-        throw run_err("ACM not activated after "+to_string(trigger_count) + " frames");
+        throw run_err("ACM not activated after "+to_string(trigger_count)+" frames");
     }
 
     void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac,

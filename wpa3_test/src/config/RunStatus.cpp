@@ -133,7 +133,7 @@ namespace wpa3_tester{
          if(actor["external_OS"] == "openwrt"){
              conn = make_shared<OpenWrtConn>();
          } else {
-             throw not_implemented_err("Not known external_OS: " + actor["external_OS"]);
+             throw not_implemented_err("Not known external_OS: "+actor["external_OS"]);
          }
 
          if (!conn->connect(actor)) {

@@ -15,19 +15,19 @@ namespace wpa3_tester::observer::resource_checker{
     void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, const string &iface, const int interval_sec, const string &local_log) {
         const auto& actor = rs.get_actor(actor_name);
         const string local_script = (path(PROJECT_ROOT_DIR) / "awk_scripts/monitor.awk").string();
-        const string remote_script = "/tmp/monitor_" + actor_name + ".awk";
-        string remote_log = "/tmp/" + actor_name + SUFFIX_res + ".log";
-        const string pid_file = remote_log + ".pid";
+        const string remote_script = "/tmp/monitor_"+actor_name+".awk";
+        string remote_log = "/tmp/"+actor_name + SUFFIX_res+".log";
+        const string pid_file = remote_log+".pid";
 
         actor->conn->upload_script_raw(local_script, remote_script);
-        const string stat_cmd = "awk -v delay=" + to_string(interval_sec) +
-                          " -v iface='" + iface + "' -f " + remote_script +
-                          " > " + remote_log + " 2>&1 & echo $! > " + pid_file;
+        const string stat_cmd = "awk -v delay="+to_string(interval_sec) +
+                          " -v iface='"+iface+"' -f "+remote_script +
+                          " > "+remote_log+" 2>&1 & echo $! > "+pid_file;
         actor->conn->exec(stat_cmd, false);
         actor->conn->on_disconnect([remote_log, local_log, actor, pid_file]() {
-            actor->conn->exec("kill $(cat " + pid_file + "); rm " + pid_file);
+            actor->conn->exec("kill $(cat "+pid_file+"); rm "+pid_file);
             actor->conn->download_file(remote_log, local_log);
-            actor->conn->exec("rm " + remote_log);
+            actor->conn->exec("rm "+remote_log);
         });
     }
 
@@ -99,26 +99,26 @@ namespace wpa3_tester::observer::resource_checker{
 
     /* TODO void start_ping_monitoring_remote(RunStatus &rs, const string &client_actor_name, const string &target_ip, int interval_sec) {
         const auto& actor = rs.get_actor(client_actor_name);
-        const string remote_log = "/tmp/" + client_actor_name + "_ping.log";
-        const string local_log = get_observer_folder(rs, program_name) / (client_actor_name + "_ping.log");
+        const string remote_log = "/tmp/"+client_actor_name+"_ping.log";
+        const string local_log = get_observer_folder(rs, program_name) / (client_actor_name+"_ping.log");
 
         const string ping_cmd =
             "while true; do "
             "now=$(date +%s); "
-            "res=$(ping -c 1 -W 1 " + target_ip + " | awk -F'time=' '/time=/ {print $2}' | awk '{print $1}'); "
+            "res=$(ping -c 1 -W 1 "+target_ip+" | awk -F'time=' '/time=/ {print $2}' | awk '{print $1}'); "
             "if [ -z \"$res\" ]; then res=\"-1\"; fi; "
             "echo \"$now $res\"; "
-            "sleep " + to_string(interval_sec) + "; "
+            "sleep "+to_string(interval_sec)+"; "
             "done > " + remote_log;
 
         const vector<string> ssh_command = {
             "sshpass", "-p", actor["ssh_password"],
-            "ssh", "-o", "StrictHostKeyChecking=no", actor["ssh_user"] + "@" + actor["whitebox_ip"], ping_cmd
+            "ssh", "-o", "StrictHostKeyChecking=no", actor["ssh_user"]+"@" + actor["whitebox_ip"], ping_cmd
         };
 
-        rs.process_manager.run(client_actor_name + "_ping", ssh_command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(client_actor_name + "_ping", [remote_log, local_log, actor]() {
-            hw_capabilities::run_cmd({"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"] + "@" + actor["whitebox_ip"] + ":" + remote_log, local_log});
+        rs.process_manager.run(client_actor_name+"_ping", ssh_command, get_observer_folder(rs, program_name));
+        rs.process_manager.on_stop(client_actor_name+"_ping", [remote_log, local_log, actor]() {
+            hw_capabilities::run_cmd({"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"]+"@" + actor["whitebox_ip"]+":" + remote_log, local_log});
             actor->conn->exec("rm " + remote_log);
         });
     }*/
@@ -166,14 +166,14 @@ namespace wpa3_tester::observer::resource_checker{
         string gnuplot_cmd = "gnuplot -e \"";
         gnuplot_cmd += "set datafile separator ','; ";
         gnuplot_cmd += "set terminal pngcairo size 1000,600; ";
-        gnuplot_cmd += "set output '" + output_imagepath + "'; ";
+        gnuplot_cmd += "set output '" + output_imagepath+"'; ";
         gnuplot_cmd += "set title 'Resource Usage (pidstat)'; ";
         gnuplot_cmd += "set xdata time; ";
         gnuplot_cmd += "set timefmt '%Y-%m-%dT%H:%M:%S'; ";
         gnuplot_cmd += "set format x '%H:%M:%S'; ";
         gnuplot_cmd += "set xlabel 'Time'; ";
         gnuplot_cmd += "set ylabel '% Usage / MB'; ";
-        gnuplot_cmd += "plot '" + csv_filepath + "' using 1:2 with lines title '% CPU', ";
+        gnuplot_cmd += "plot '" + csv_filepath+"' using 1:2 with lines title '% CPU', ";
         gnuplot_cmd += "     '' using 1:4 with lines title '% MEM';\"";
 
         const int result = system(gnuplot_cmd.c_str());
@@ -240,12 +240,12 @@ namespace wpa3_tester::observer::resource_checker{
         // Build the plot command dynamically based on the number of cores
         string plot_cmd = "plot ";
         for (int i = 0; i < num_cores; ++i) {
-            plot_cmd += "'" + data_filepath + "' using 1:" + to_string(i + 2) +
-                        " with lines lw 2 title 'Core " + to_string(i) + " %' axes x1y1, ";
+            plot_cmd += "'" + data_filepath+"' using 1:" + to_string(i + 2) +
+                        " with lines lw 2 title 'Core " + to_string(i)+" %' axes x1y1, ";
         }
 
         // Append the RAM plot
-        plot_cmd += "'" + data_filepath + "' using 1:" + to_string(ram_col) +
+        plot_cmd += "'" + data_filepath+"' using 1:" + to_string(ram_col) +
                     " with lines lw 2 dt 2 title 'Free RAM' axes x1y2\n";
 
         fprintf(gnuplot, "%s", plot_cmd.c_str());
@@ -256,44 +256,5 @@ namespace wpa3_tester::observer::resource_checker{
         const auto log_path = get_observer_folder(rs, "resource_checker")/("access_point"+SUFFIX_res+".log");
         if(source == "external") create_resource_monitor_graph(log_path);
         if(source == "internal") create_resource_pid_graph(log_path);
-    }
-
-    // ------------------------ ACM monitoring ---------------------
-    vector<long long> parse_acm_log(const string& filepath) {
-        vector<long long> timestamps;
-        ifstream file(filepath);
-        string line;
-
-        while (getline(file, line)) {
-            if (line.empty()) continue;
-
-            istringstream iss(line);
-            long long ts;
-            if (iss >> ts) { timestamps.push_back(ts);}
-        }
-        return timestamps;
-    }
-
-    void start_acm_monitoring_remote(RunStatus &rs, const string &actor_name) {
-        const auto& actor = rs.get_actor(actor_name);
-        const string remote_log = "/tmp/" + actor_name + "_acm.log";
-        const string local_log = get_observer_folder(rs, program_name) / (actor_name + "_acm.log");
-
-
-        //TODO
-        const string cmd = R"(logread -f | awk '/anti-clogging/ { "date +%s" | getline ts; close("date +%s"); print ts " " $0; fflush(); }' > )" + remote_log;
-
-        const vector<string> ssh_command = {
-            "sshpass", "-p", actor["ssh_password"],
-            "ssh", "-o", "StrictHostKeyChecking=no",
-            actor["ssh_user"] + "@" + actor["whitebox_ip"],
-            cmd
-        };
-
-        rs.process_manager.run(actor_name + "_acm", ssh_command, get_observer_folder(rs, program_name));
-        rs.process_manager.after_stop(actor_name + "_acm", [remote_log, local_log, actor]() {
-            actor->conn->download_file(remote_log, local_log);
-            actor->conn->exec("rm " + remote_log);
-        });
     }
 }

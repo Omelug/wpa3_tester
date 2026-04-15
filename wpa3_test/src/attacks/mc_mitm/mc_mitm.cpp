@@ -136,9 +136,9 @@ namespace wpa3_tester{
         //    Make sure to use a recent backports driver package so we can capture
         //    and inject packets in monitor mode.
 
-        string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";
-        bpf += " or (wlan addr1 " + client_mac.to_string() + ") or (wlan addr2 " + client_mac.to_string() + ")";
-        bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
+        string bpf = "(wlan addr1 "+ap_mac.to_string()+") or (wlan addr2 "+ap_mac.to_string()+")";
+        bpf += " or (wlan addr1 "+client_mac.to_string()+") or (wlan addr2 "+client_mac.to_string()+")";
+        bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
 
         // Test monitor mode and get MAC address of the network
         attack_scan::ScanAP scan_ap{};

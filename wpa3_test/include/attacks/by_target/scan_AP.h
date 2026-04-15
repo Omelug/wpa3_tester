@@ -28,6 +28,7 @@ namespace wpa3_tester::attack_scan{
         static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
         std::string to_str() const;
     };
+
     std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string& interface, int timeout_sec, ScanAP &scan_ap,
         const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt);
 

@@ -240,7 +240,7 @@ namespace wpa3_tester{
             }
 
             if (logs.wait.matched) {
-                logs.history.clear(); //FIXME only until matched
+                logs.history.clear();
                 logs.wait.pattern = nullopt;
                 return true;
             }
@@ -357,7 +357,6 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "All processes stopped");
     }
 
-    //TODO add test
     void ProcessManager::before_stop(const string& process_name, const function<void()> &callback) {
         lock_guard lock(logger_mtx);
         const auto proc_iter = processes.find(process_name);

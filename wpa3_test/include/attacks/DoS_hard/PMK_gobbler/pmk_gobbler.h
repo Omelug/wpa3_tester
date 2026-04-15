@@ -4,6 +4,7 @@
 #include <mutex>
 #include <atomic>
 #include <tins/hw_address.h>
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::pmk_gobbler{
@@ -24,9 +25,9 @@ namespace wpa3_tester::pmk_gobbler{
                          const Tins::HWAddress<6> &ap_mac,
                          CookieStore &store);
 
-    ACMCookie trigger_acm(const std::string &iface,
-                          const Tins::HWAddress<6> &ap_mac,
-                          int trigger_count);
+    std::pair<ACMCookie, int> trigger_acm(const std::string &iface, const std::string &att_mac,
+                                          const Tins::HWAddress<6> &ap_mac, int trigger_count,
+                                          const dos_helpers::SAEPair &sae_params);
 
     void burst_with_cookies(const std::string &iface,
                             const Tins::HWAddress<6> &ap_mac,

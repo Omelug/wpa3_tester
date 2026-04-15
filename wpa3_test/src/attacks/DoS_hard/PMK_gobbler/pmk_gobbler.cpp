@@ -5,7 +5,9 @@
 #include <cerrno>
 #include <thread>
 #include <chrono>
-
+#include <utility>
+#include "inteprrupt.h"
+#include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
@@ -79,8 +81,9 @@ namespace wpa3_tester::pmk_gobbler {
         log(LogLevel::INFO, "Cookie capture stopped");
     }
 
-    ACMCookie trigger_acm(const string &iface, const string &att_mac,
-                      const HWAddress<6> &ap_mac, const int trigger_count, const dos_helpers::SAEPair& sae_params) {
+    pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac,
+                                     const HWAddress<6> &ap_mac, const int trigger_count,
+                                     const dos_helpers::SAEPair &sae_params) {
         PacketSender sender(iface);
 
         char errbuf[PCAP_ERRBUF_SIZE];
@@ -123,8 +126,8 @@ namespace wpa3_tester::pmk_gobbler {
                 if (pcap_next_ex(handle, &header, &packet) == 1) {
                     if (auto cookie = parse_acm_response(packet, header->caplen)) {
                         if(cookie->token.empty()) continue;
-                        log(LogLevel::INFO, "ACM confirmed active after "+to_string(i + 1) + " frames");
-                        return std::move(*cookie);
+                        log(LogLevel::INFO, "ACM confirmed active after "+to_string(i) + " frames");
+                        return {std::move(*cookie), i};
                     }
                 }
             }
@@ -203,7 +206,7 @@ namespace wpa3_tester::pmk_gobbler {
         attacker->up_iface();
 
         //  force AP into ACM mode
-        ACMCookie first = trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params.value());
+        trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params.value());
         rs.start_observers();
         CookieStore store;
         thread capture_thread([&]() {

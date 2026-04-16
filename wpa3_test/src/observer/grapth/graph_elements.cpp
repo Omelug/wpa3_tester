@@ -22,11 +22,15 @@ namespace wpa3_tester{
             } else {
                 t_str = to_string(chrono::system_clock::to_time_t(tp));
             }
-            double step = event_block_index * ( ymax / event_size);
-            double y = (event_block_index % 2 == 0) ? step : -step;
+
+            double y_center = (ymin + ymax) / 2.0;
+            double y = (event_block_index % 2 == 0)
+                ? ymax - (ymax - y_center) * event_block_index * (1.0 / event_size)
+                : ymin + (y_center - ymin) * event_block_index * (1.0 / event_size);
+
 
             fprintf(file, "%s %f %f \"%s\"\n",
-                t_str.c_str(), y, ymax/2, "");
+                t_str.c_str(), y, ymax/2, event_lines.label.c_str());
         }
         fprintf(file, "EOD\n");
 

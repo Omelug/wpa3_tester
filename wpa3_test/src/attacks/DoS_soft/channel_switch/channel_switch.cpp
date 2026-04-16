@@ -76,6 +76,7 @@ namespace wpa3_tester::CSA_attack{
                   << "SSID: " << ssid << endl;
     }
 
+    //TODO change to config
     void speed_observation_start(RunStatus& rs){
         observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
         observer::start_tshark(rs, "client", "udp port 5201");

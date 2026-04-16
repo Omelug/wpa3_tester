@@ -242,6 +242,10 @@ namespace wpa3_tester::observer{
             throw runtime_error("Invalid traffic data");
 
         auto graph = Graph();
+
+        graph.axis = TimeAxis::RELATIVE;
+        graph.start_time = start_time;
+
         graph.file = popen("gnuplot", "w");
         if (!graph.file) throw runtime_error("Failed to start gnuplot");
 
@@ -259,9 +263,6 @@ namespace wpa3_tester::observer{
 
         double pad = (graph.ymax - graph.ymin) * 0.5;
         if (pad == 0) pad = 1.0;
-        graph.ymin  -= pad;
-        graph.ymax  += pad;
-
         {
             ostringstream yr;
             gpcmd("set tmargin 5");

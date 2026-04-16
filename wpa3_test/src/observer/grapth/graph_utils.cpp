@@ -16,6 +16,9 @@ namespace wpa3_tester{
                 add_elements(*static_cast<EventLines*>(element.get()),
                     block_index, elements.size(), label_index);
             }
+            if(element->type == GraphElement_t::UNKNOWN){
+                throw runtime_error("Graph element type is unknown");
+            }
         }
     }
 }

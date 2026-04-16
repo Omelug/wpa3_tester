@@ -7,9 +7,9 @@ namespace wpa3_tester{
     enum class TimeAxis { RELATIVE, UNIX };
     enum class GraphElement_t { UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS };
     class GraphElements {
-        std::string label;
     public:
         GraphElement_t type = GraphElement_t::UNKNOWN;
+        std::string label;
         std::string color = "green";
 
         explicit GraphElements(std::string label, std::string color = "green")
@@ -30,7 +30,9 @@ namespace wpa3_tester{
                        std::string label,
                        std::string color = "green")
                 : GraphElements(std::move(label), std::move(color))
-                , event_times(std::move(event_times)) {}
+                , event_times(std::move(event_times)){
+                type = GraphElement_t::EVENT_LINES;
+            }
 
     };
 
@@ -43,7 +45,9 @@ namespace wpa3_tester{
             YAxis axis)
             : GraphElements(label, color),
               event_times(event_times),
-              axis(axis){}
+              axis(axis){
+            type = GraphElement_t::GRAPH_XY_POINTS;
+        }
     };
 
     class Graph{

@@ -45,7 +45,6 @@ namespace wpa3_tester::test_sae_commit_monitor{
     }
 
     void stats_attack(const RunStatus& rs){
-        vector<observer::graph_lines> events;
-        observer::tshark_graph(rs, "receiver", events);
+        observer::tshark_graph(rs, "receiver");
     }
 }

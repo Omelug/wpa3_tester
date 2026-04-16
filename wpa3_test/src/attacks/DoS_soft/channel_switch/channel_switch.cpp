@@ -49,7 +49,7 @@ namespace wpa3_tester::CSA_attack{
         radiotap.inner_pdu(beacon);
         radiotap.flags(RadioTap::FCS); // check FCS (can be invalid for some drivers)
 
-        // TODO not very efective?
+        // TODO not very effective?
         PacketSender sender;
         sender.send(radiotap, iface);
     }
@@ -142,15 +142,21 @@ namespace wpa3_tester::CSA_attack{
     void stats_chs_attack(const RunStatus &rs){
         log(LogLevel::INFO , "CSA attack stats");
 
-        vector<observer::graph_lines> events;
-        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
-        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
-        events.push_back({get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED"),"4Way","green"});
-        events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
-        events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
+        vector<unique_ptr<GraphElements>> events;
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "access_point", "EAPOL-4WAY-HS-COMPLETED"),"4Way","green"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@START"),"START","black"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@END"),"END","black"));
 
         if(rs.config.at("actors").contains("rogue_ap")){
-            events.push_back({get_time_logs(rs,"rogue_ap","Captured a WPA"),"MANA","black"});
+            events.push_back(make_unique<EventLines>(
+                get_time_logs(rs,"rogue_ap","Captured a WPA"),"MANA","black"));
         }
 
         const string STA_graph_path = observer::tshark_graph(rs, "client", events);

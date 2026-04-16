@@ -216,25 +216,28 @@ namespace wpa3_tester::bl0ck_attack{
     void stats_bl0ck_attack(const RunStatus& rs){
         log(LogLevel::INFO , "Bl0ck attack stats");
 
-        vector<observer::graph_lines> events;
-        events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"), "DISCONN", "red"});
-        events.push_back({get_time_logs(rs, "client", "@START"), "START", "black"});
-        events.push_back({get_time_logs(rs, "client", "@END"), "END", "black"});
+        vector<unique_ptr<GraphElements>> events;
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"), "DISCONN", "red"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@START"), "START", "black"));
+        events.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@END"), "END", "black"));
 
-        events.push_back({
+        events.push_back(make_unique<EventLines>(
             observer::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA"),
-            "ADDBA", "blue"});
-        events.push_back({
+            "ADDBA", "blue"));
+        events.push_back(make_unique<EventLines>(
             observer::get_tshark_events(rs, "attacker", "wlan.fixed.action_code == 0x02", "DELBA"),
-           "DELBA", "blue"});
-        events.push_back({
+           "DELBA", "blue"));
+        events.push_back(make_unique<EventLines>(
             observer::get_tshark_events(rs, "attacker",
                 "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BAR_fn4"),
-            "BAR_fn4", "cyan"});
-        events.push_back({
+            "BAR_fn4", "cyan"));
+        events.push_back(make_unique<EventLines>(
           observer::get_tshark_events(rs, "attacker",
               "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
-          ,"BA_fn4","purple"});
+          ,"BA_fn4","purple"));
 
         observer::tshark_graph(rs, "attacker", events);
         observer::tshark_graph(rs, "client", events);

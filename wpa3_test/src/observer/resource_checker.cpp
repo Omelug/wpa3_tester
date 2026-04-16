@@ -5,6 +5,7 @@
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "observer/observers.h"
+#include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer::resource_checker{
@@ -97,37 +98,11 @@ namespace wpa3_tester::observer::resource_checker{
         return records;
     }
 
-    /* TODO void start_ping_monitoring_remote(RunStatus &rs, const string &client_actor_name, const string &target_ip, int interval_sec) {
-        const auto& actor = rs.get_actor(client_actor_name);
-        const string remote_log = "/tmp/"+client_actor_name+"_ping.log";
-        const string local_log = get_observer_folder(rs, program_name) / (client_actor_name+"_ping.log");
-
-        const string ping_cmd =
-            "while true; do "
-            "now=$(date +%s); "
-            "res=$(ping -c 1 -W 1 "+target_ip+" | awk -F'time=' '/time=/ {print $2}' | awk '{print $1}'); "
-            "if [ -z \"$res\" ]; then res=\"-1\"; fi; "
-            "echo \"$now $res\"; "
-            "sleep "+to_string(interval_sec)+"; "
-            "done > " + remote_log;
-
-        const vector<string> ssh_command = {
-            "sshpass", "-p", actor["ssh_password"],
-            "ssh", "-o", "StrictHostKeyChecking=no", actor["ssh_user"]+"@" + actor["whitebox_ip"], ping_cmd
-        };
-
-        rs.process_manager.run(client_actor_name+"_ping", ssh_command, get_observer_folder(rs, program_name));
-        rs.process_manager.on_stop(client_actor_name+"_ping", [remote_log, local_log, actor]() {
-            hw_capabilities::run_cmd({"sshpass", "-p", actor["ssh_password"], "scp", "-O", actor["ssh_user"]+"@" + actor["whitebox_ip"]+":" + remote_log, local_log});
-            actor->conn->exec("rm " + remote_log);
-        });
-    }*/
-
     void create_resource_monitor_graph(const string& data_filepath){
         const string output_imagepath = path(data_filepath).replace_extension(".png").string();
         vector<ResourceRecord> resources = parse_resource_log(data_filepath);
         remove(output_imagepath);
-        generate_resource_graph(data_filepath, output_imagepath, {}); //TODO ACM events
+        generate_resource_graph(data_filepath, output_imagepath); //TODO ACM events
     }
 
     //*-------------  ONLY ONE PID ----------------
@@ -178,7 +153,7 @@ namespace wpa3_tester::observer::resource_checker{
 
         const int result = system(gnuplot_cmd.c_str());
         if (result != 0){
-            throw stats_err(" Pid graph gnuplot failed");
+            throw stats_err("Pid graph gnuplot failed");
         }
     }
 
@@ -189,53 +164,43 @@ namespace wpa3_tester::observer::resource_checker{
         generate_pid_graph(csv_file, output_imagepath);
     }
 
-    void generate_resource_graph(const string& data_filepath,
-                             const string& output_imagepath,
-                             const vector<long long>& acm_timestamps) {
-
-        // Skip header line — read second line for column count
+    void generate_resource_graph(const std::string &data_filepath, const std::string &output_imagepath,
+        const vector<unique_ptr<GraphElements>>& elements)
+    {
         ifstream file(data_filepath);
-        string first_line;
-        getline(file, first_line); // skip '#' header
-        string second_line;
+        string first_line, second_line;
+        getline(file, first_line);
         getline(file, second_line);
         file.close();
 
         int num_columns = 0;
-        istringstream iss(second_line);
-        string token;
-        while (iss >> token) num_columns++;
-
-        // Columns: Timestamp(1) + Cores(N) + RAM(1) + Airtime(1) + Drops(1) = N + 4
+        { istringstream iss(second_line); string t; while (iss >> t) num_columns++; }
         int num_cores = max(1, num_columns - 4);
+        int ram_col   = num_cores + 2;
 
-        // RAM is located right after the core columns
-        int ram_col = num_cores + 2;
+        auto graph = Graph();
+        graph.ymin = 0.0;
+        graph.ymax = 0.0;
+        //graph.start_time = ;
 
-        FILE* gnuplot = popen("gnuplot", "w");
-        if (!gnuplot) return;
-        fprintf(gnuplot, "set datafile commentschars '#'\n"); // skip # lines
-        fprintf(gnuplot, "set terminal pngcairo size 1600,600\n");
-        fprintf(gnuplot, "set output '%s'\n", output_imagepath.c_str());
-        fprintf(gnuplot, "set xdata time\n");
-        fprintf(gnuplot, "set timefmt '%%s'\n");
-        fprintf(gnuplot, "set format x '%%M:%%S'\n");
-        fprintf(gnuplot, "set xtics rotate by -45\n");
-        fprintf(gnuplot, "set ytics nomirror\n");
-        fprintf(gnuplot, "set y2tics\n");
-        fprintf(gnuplot, "set ylabel 'CPU Usage (%%)'\n");
-        fprintf(gnuplot, "set yrange [0:100]\n");
-        fprintf(gnuplot, "set y2label 'Free Memory (KB)'\n");
-        fprintf(gnuplot, "set y2range [0:*]\n");
-        fprintf(gnuplot, "set grid\n");
-        fprintf(gnuplot, "set key outside\n");
+        graph.file = popen("gnuplot", "w");
+        if (!graph.file) throw runtime_error("Failed to start gnuplot");
 
-        // Draw vertical red lines for ACM events
-        int arrow_idx = 1;
-        for (long long ts : acm_timestamps) {
-            fprintf(gnuplot, "set arrow %d from '%lld', graph 0 to '%lld', graph 1 nohead lc rgb 'red' lw 2\n",
-                    arrow_idx++, ts, ts);
-        }
+        fprintf(graph.file, "set datafile commentschars '#'\n");
+        fprintf(graph.file, "set terminal pngcairo size 1600,600\n");
+        fprintf(graph.file, "set output '%s'\n", output_imagepath.c_str());
+        fprintf(graph.file, "set xdata time\n");
+        fprintf(graph.file, "set timefmt '%%s'\n");
+        fprintf(graph.file, "set format x '%%M:%%S'\n");
+        fprintf(graph.file, "set xtics rotate by -45\n");
+        fprintf(graph.file, "set ytics nomirror\n");
+        fprintf(graph.file, "set y2tics\n");
+        fprintf(graph.file, "set ylabel 'CPU Usage (%%)' \n");
+        fprintf(graph.file, "set yrange [0:100]\n");
+        fprintf(graph.file, "set y2label 'Free Memory (KB)'\n");
+        fprintf(graph.file, "set y2range [0:*]\n");
+        fprintf(graph.file, "set grid\n");
+        fprintf(graph.file, "set key outside\n");
 
         // Build the plot command dynamically based on the number of cores
         string plot_cmd = "plot ";
@@ -248,8 +213,10 @@ namespace wpa3_tester::observer::resource_checker{
         plot_cmd += "'" + data_filepath+"' using 1:" + to_string(ram_col) +
                     " with lines lw 2 dt 2 title 'Free RAM' axes x1y2\n";
 
-        fprintf(gnuplot, "%s", plot_cmd.c_str());
-        pclose(gnuplot);
+        graph.add_graph_elements(elements);
+
+        fprintf(graph.file, "%s", plot_cmd.c_str());
+        pclose(graph.file);
     }
 
     void create_graph(const RunStatus &rs, const string& source){

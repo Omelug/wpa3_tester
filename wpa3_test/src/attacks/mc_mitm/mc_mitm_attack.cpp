@@ -77,7 +77,7 @@ namespace wpa3_tester::mc_mitm{
 
     void stats(const RunStatus& rs){
         //TODO
-        /*vector<observer::graph_lines> events;
+        /*vector<GraphElement> events;
         events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
         events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
         events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "logger/log.h"
+#include "../../include/observer/grapth/graph_utils.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer{
@@ -223,7 +224,7 @@ namespace wpa3_tester::observer{
 
     string tshark_graph(const RunStatus &rs,
                     const string &actor_name,
-                    vector<graph_lines>& events,
+                    const vector<unique_ptr<GraphElements>>& elements,
                     const path &folder){
         const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
         create_directories(real_folder);
@@ -240,10 +241,11 @@ namespace wpa3_tester::observer{
         if (times.empty() || sizes.empty() || times.size() != sizes.size())
             throw runtime_error("Invalid traffic data");
 
-        FILE* gp = popen("gnuplot", "w");
-        if (!gp) throw runtime_error("Failed to start gnuplot");
+        auto graph = Graph();
+        graph.file = popen("gnuplot", "w");
+        if (!graph.file) throw runtime_error("Failed to start gnuplot");
 
-        auto gpcmd = [&](const string& cmd) { fprintf(gp, "%s\n", cmd.c_str());};
+        auto gpcmd = [&](const string& cmd) { fprintf(graph.file, "%s\n", cmd.c_str());};
 
         gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
         gpcmd("set output '"+output_path.string() +"'");
@@ -252,19 +254,19 @@ namespace wpa3_tester::observer{
         gpcmd("set ylabel 'Packet Size'");
 
         auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
-        double ymin = *min_it;
-        double ymax = *max_it;
-        double y_center = (ymin + ymax) / 2.0;
-        double pad = (ymax - ymin) * 0.5;
+        graph.ymin = *min_it;
+        graph.ymax = *max_it;
+
+        double pad = (graph.ymax - graph.ymin) * 0.5;
         if (pad == 0) pad = 1.0;
-        ymin -= pad;
-        ymax += pad;
+        graph.ymin  -= pad;
+        graph.ymax  += pad;
 
         {
             ostringstream yr;
             gpcmd("set tmargin 5");
             gpcmd("set bmargin 5");
-            gpcmd("set yrange ["+to_string(ymin - pad) +":"+to_string(ymax + pad) +"]");
+            gpcmd("set yrange ["+to_string( graph.ymin - pad) +":"+to_string(graph.ymax + pad) +"]");
             gpcmd(yr.str());
         }
 
@@ -279,63 +281,22 @@ namespace wpa3_tester::observer{
         gpcmd("EOD");
 
         // events
-        vector<string> plot_parts;
-        plot_parts.emplace_back("$traffic using 1:2 with points pt 7 ps 0.7 lc rgb '#1f77b4' title 'Traffic'");
+        graph.plot_parts.emplace_back("$traffic using 1:2 with points pt 7 ps 0.7 lc rgb '#1f77b4' title 'Traffic'");
+        graph.add_graph_elements(elements);
 
-        size_t event_block_index = 0;
-        size_t label_index = 0;
-
-        for (auto& ev : events) {
-            if (ev.highlight_times.empty()) continue;
-            string block_name = "$ev"+to_string(event_block_index++);
-            gpcmd(block_name +" << EOD");
-            for (const auto& tp : ev.highlight_times) {
-
-                //transform
-                auto rel_dur = tp - start_time;
-                double t = chrono::duration<double>(rel_dur).count();
-
-                double y = (event_block_index % 2 == 0) ?
-                    ymax - (ymax-y_center)*event_block_index*(1/static_cast<double>(events.size())):
-                    ymin + (y_center-ymin)*event_block_index*(1/static_cast<double>(events.size()));
-
-                ostringstream row;
-                row << fixed << setprecision(6)
-                    << t << " "          // time
-                    << y << " "          // label position
-                    << y_center << " "
-                    << "\"" << ev.event_des << "\"";
-                gpcmd(row.str());
-                label_index++;
-            }
-            gpcmd("EOD");
-
-            ostringstream part;
-            part
-                // line from event point to y center
-                // using x : y : (0) : (y_target - y)
-                << block_name << " using 1:2:(0):($3-$2) with vectors nohead lc rgb '" << ev.color << "' dt 2 notitle, "
-                // event point
-                << block_name << " using 1:2 with points pt 7 ps 1.2 lc rgb '" << ev.color << "' notitle, "
-                // event
-                << block_name << " using 1:2:4 with labels tc rgb '" << ev.color << "' "
-                << (label_index % 2 == 0 ? "offset 0,1" : "offset 0,-1") << " rotate by 45 notitle";
-
-            plot_parts.push_back(part.str());
-        }
         gpcmd(escape_tex("set title 'Network Traffic - "+actor_name +"'"));
 
         //plot
         ostringstream plotcmd;
         plotcmd << "plot ";
-        for (size_t i = 0; i < plot_parts.size(); ++i) {
-            plotcmd << plot_parts[i];
-            if (i + 1 < plot_parts.size()) plotcmd << ", ";
+        for (size_t i = 0; i < graph.plot_parts.size(); ++i) {
+            plotcmd << graph.plot_parts[i];
+            if (i + 1 < graph.plot_parts.size()) plotcmd << ", ";
         }
         gpcmd(plotcmd.str());
-        fflush(gp);
+        fflush(graph.file);
 
-        int rc = pclose(gp);
+        int rc = pclose(graph.file);
         if (rc != 0) throw runtime_error("Gnuplot failed");
         return output_path.string();
     }
@@ -354,6 +315,7 @@ namespace wpa3_tester::observer{
                     // " -Y \"wlan.addr == " + mac+"\" " +
                      " -T fields -e frame.time_relative -e wlan.fc.retry";
 
+        // parse tshark
         FILE* pipe = popen(cmd.c_str(), "r");
         if (!pipe) return;
 
@@ -375,28 +337,30 @@ namespace wpa3_tester::observer{
         }
         pclose(pipe);
 
-        FILE* gp = popen("gnuplot", "w");
-        fprintf(gp, "set terminal pngcairo size 1200,600\n");
-        fprintf(gp, "set output '%s'\n", output_path.c_str());
-        fprintf(gp, "set title 'Retransmit Rate over Time '\n");
-        fprintf(gp, "set xlabel 'Time (s)'\n");
-        fprintf(gp, "set ylabel 'Retry Percentage (%%)'\n");
-        fprintf(gp, "set yrange [0:110]\n");
-        fprintf(gp, "set grid\n");
-        fprintf(gp, "set style fill transparent solid 0.5 noborder\n");
+        //create graph
+        auto graph = Graph();
+        graph.file = popen("gnuplot", "w");
+        fprintf(graph.file, "set terminal pngcairo size 1200,600\n");
+        fprintf(graph.file, "set output '%s'\n", output_path.c_str());
+        fprintf(graph.file, "set title 'Retransmit Rate over Time '\n");
+        fprintf(graph.file, "set xlabel 'Time (s)'\n");
+        fprintf(graph.file, "set ylabel 'Retry Percentage (%%)'\n");
+        fprintf(graph.file, "set yrange [0:110]\n");
+        fprintf(graph.file, "set grid\n");
+        fprintf(graph.file, "set style fill transparent solid 0.5 noborder\n");
 
-        fprintf(gp, "$MyData << EOD\n");
+        fprintf(graph.file, "$MyData << EOD\n");
         for (auto const& [time, counts] : stats_map) {
             double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
-            fprintf(gp, "%f %f\n", time, percent);
+            fprintf(graph.file, "%f %f\n", time, percent);
         }
-        fprintf(gp, "EOD\n");
+        fprintf(graph.file, "EOD\n");
 
-        fprintf(gp, "plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
+        fprintf(graph.file, "plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
                     "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle \n");
 
-        fflush(gp);
-        pclose(gp);
+        fflush(graph.file);
+        pclose(graph.file);
     }
 }
 

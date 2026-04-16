@@ -12,6 +12,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
 #include "observer/resource_checker.h"
+#include "observer/station_counter.h"
 #include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
 
@@ -164,7 +165,7 @@ namespace wpa3_tester::pmk_gobbler {
             new_sae_params.token = entry.token;
             auto frame = make_sae_commit(ap_mac, entry.sta_mac, new_sae_params);
 
-            constexpr size_t BURST_SIZE = 64;
+            constexpr size_t BURST_SIZE = 128;
             for (size_t i = 0; i < BURST_SIZE; ++i) {
                 sender.send(frame);
                 this_thread::sleep_for(nanoseconds(100));
@@ -233,6 +234,7 @@ namespace wpa3_tester::pmk_gobbler {
     void stats_attack(const RunStatus &rs) {
         const auto ap = rs.config.at("actors").at("access_point");
         observer::resource_checker::create_graph(rs, ap["source"]);
+        observer::station_counter::create_station_graph(rs, "access_point");
     }
 
 }

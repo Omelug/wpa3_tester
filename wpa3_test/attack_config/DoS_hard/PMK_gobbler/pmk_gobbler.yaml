@@ -66,6 +66,11 @@ observers:
     program: resource_checker
     program_config:
       interval: 1
+  ap_stations:
+    actor: access_point
+    program: station_counter
+    program_config:
+      interval: 1
 attack_config:
   attack_time_sec: 200
   acm_trigger_count: 2560

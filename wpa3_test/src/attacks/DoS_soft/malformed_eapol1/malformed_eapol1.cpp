@@ -103,15 +103,15 @@ namespace wpa3_tester::eapol_logoff{
     }
 
     void stats(const RunStatus &rs){
-        vector<observer::graph_lines> events;
-        events.push_back({
-            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
-        events.push_back({
-            get_time_logs(rs, "client", "@START"),"START","black"});
-        events.push_back({
-            get_time_logs(rs, "client", "@END"),"END","black"});
+        vector<unique_ptr<GraphElements>> elements;
+        elements.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"));
+        elements.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@START"),"START","black"));
+        elements.push_back(make_unique<EventLines>(
+            get_time_logs(rs, "client", "@END"),"END","black"));
 
-        const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-        const string AP_graph_path = observer::tshark_graph(rs, "access_point", events);
+        const string STA_graph_path = observer::tshark_graph(rs, "client", elements);
+        const string AP_graph_path = observer::tshark_graph(rs, "access_point", elements);
     }
 }

@@ -1,0 +1,12 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: monitor of actor program_config (process in internal, whole system external)
+type: object
+
+properties:
+  validator:
+    type: string
+  interval:
+    type: integer
+    description: interval between samples
+    default: 1
+additionalProperties: false

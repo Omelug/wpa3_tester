@@ -3,6 +3,8 @@
 +: new featere, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
++: observer for connected station on openwrt
++: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 r: small TODO
 r: sniffer loops
 r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
@@ -13,6 +15,7 @@ rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
 rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
 f: BA/BAR blck aattck work only on one mediatek
+
 ----------------------------- TBD -----------------------------------
 Scan:
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync

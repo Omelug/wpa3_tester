@@ -7,6 +7,7 @@
 #include "ActorPtr.h"
 #include "Actor_config.h"
 #include "ObserverPtr.h"
+#include "observer/grapth/graph_elements.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -15,6 +16,8 @@ namespace wpa3_tester{
 
     class Actor_config;
     class ExternalConn;
+    class GraphElements;
+
     using ActorMap = std::unordered_map<std::string, ActorPtr>;
     using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
@@ -61,6 +64,9 @@ namespace wpa3_tester{
             const std::string &iface, size_t timeout_sec, const std::vector<int> &channels
         );
 
+        void log_events(std::vector<std::unique_ptr<GraphElements>>& elements,
+            // { actor_name, pattern, label, color }
+            std::initializer_list<std::tuple<std::string, std::string, std::string, std::string>> event_d) const;
 
     private:
 
@@ -71,7 +77,6 @@ namespace wpa3_tester{
         std::vector<int> get_external_BB_channels();
         std::vector<ActorPtr> external_bb_options();
         //static std::vector<ActorPtr> create_simulation();
-
 
     public:
         void parse_requirements();

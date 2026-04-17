@@ -3,6 +3,8 @@
 
 #include "logger/log.h"
 
+using LogTimePoint = std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>;
+
 namespace wpa3_tester{
     enum class TimeAxis { RELATIVE, UNIX };
     enum class GraphElement_t { UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS };

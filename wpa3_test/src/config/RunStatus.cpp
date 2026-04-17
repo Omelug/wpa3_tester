@@ -174,26 +174,6 @@ namespace wpa3_tester{
         }
     }
 
-    void RunStatus::save_actor_interface_mapping() const {
-        if (run_folder.empty()) {log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");return;}
-
-        const string path = run_folder +"/mapping.csv";
-        ofstream ofs(path, ios::out | ios::trunc);
-        if (!ofs) {log(LogLevel::ERROR, "Failed to open "+path+" for writing CSV mapping");return;}
-
-        ofs << "Type,ActorName,Interface,MAC,Driver,channel" << endl;
-
-        write_actors_csv(actors, ofs);
-
-        ofs.close();
-        log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+path);
-    }
-
-    ActorPtr &RunStatus::get_actor(const string &actor_name){
-        if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
-        throw config_err("Actor "+actor_name+" not found in actors map");
-    }
-
     unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {
         unordered_map<string, string> t_map;
         const path attack_config_dir = path(PROJECT_ROOT_DIR)/ "attack_config";
@@ -210,7 +190,7 @@ namespace wpa3_tester{
                 if(!config_json.contains("name")){ throw config_err("Path "+path.string()+" has no valid name"); }
                 auto name = config["name"].as<string>();
                 if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite"
-                    && ct == TEST_SUITE){
+                   && ct == TEST_SUITE){
                     t_map[name] = path.string();
                 }else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")){
                     if (t_map.contains(name)) {
@@ -223,10 +203,9 @@ namespace wpa3_tester{
         return t_map;
     }
 
-    string RunStatus::findConfigByTestName(const string &name){
-        auto tests = scan_attack_configs();
-        if (tests.contains(name)) {return tests[name];}
-        throw config_err("Unknown test name: "+name);
+    ActorPtr &RunStatus::get_actor(const string &actor_name){
+        if (const auto it = actors.find(actor_name); it != actors.end()){return it->second;}
+        throw config_err("Actor "+actor_name+" not found in actors map");
     }
 
     void RunStatus::print_test_list() {
@@ -241,5 +220,34 @@ namespace wpa3_tester{
         for (const auto &observer: observers | views::values) {
             observer->start(*this);
         }
+    }
+
+    string RunStatus::findConfigByTestName(const string &name){
+        auto tests = scan_attack_configs();
+        if (tests.contains(name)) {return tests[name];}
+        throw config_err("Unknown test name: "+name);
+    }
+
+    void RunStatus::log_events(vector<unique_ptr<GraphElements>>& elements,
+                               // { actor_name, pattern, label, color }
+                               initializer_list<tuple<string, string, string, string>> event_d) const{
+        for (auto& [actor, pattern, label, color] : event_d) {
+            elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern), label, color));
+        }
+    }
+    
+    void RunStatus::save_actor_interface_mapping() const {
+        if (run_folder.empty()) {log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");return;}
+
+        const string path = run_folder +"/mapping.csv";
+        ofstream ofs(path, ios::out | ios::trunc);
+        if (!ofs) {log(LogLevel::ERROR, "Failed to open "+path+" for writing CSV mapping");return;}
+
+        ofs << "Type,ActorName,Interface,MAC,Driver,channel" << endl;
+
+        write_actors_csv(actors, ofs);
+
+        ofs.close();
+        log(LogLevel::INFO, "Actor/interface mapping written to CSV: "+path);
     }
 }

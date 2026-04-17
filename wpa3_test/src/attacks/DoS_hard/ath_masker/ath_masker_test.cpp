@@ -53,6 +53,6 @@ namespace wpa3_tester::ath_masker_test{
     }
 
     void stats(const RunStatus &rs){
-        observer::generate_time_series_retry_graph(rs, "attacker");
+        observer::tshark::generate_time_series_retry_graph(rs, "attacker");
     }
 }

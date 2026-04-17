@@ -16,7 +16,7 @@ namespace wpa3_tester::observer{
 
         if(program == "tshark"){
             const string filter = program_config.value("filter", "");
-            start_tshark(rs, actor_name, filter);
+            tshark::start_tshark(rs, actor_name, filter);
             return;
         }
         if(program == "tcpdump"){

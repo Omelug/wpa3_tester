@@ -32,8 +32,8 @@ namespace wpa3_tester::mc_mitm{
         const string mac_filter =
         "(wlan host "+ ap_mac +" or wlan host "+client_mac+")";
 
-        observer::start_tshark(rs, "rogue_ap", mac_filter);
-        observer::start_tshark(rs, "rogue_client", mac_filter);
+        observer::tshark::start_tshark(rs, "rogue_ap", mac_filter);
+        observer::tshark::start_tshark(rs, "rogue_client", mac_filter);
     }
 
 

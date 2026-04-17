@@ -11,7 +11,7 @@
 #include "observer/grapth/graph_utils.h"
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester::observer{
+namespace wpa3_tester::observer::tshark{
     using namespace std;
     using namespace filesystem;
 
@@ -220,6 +220,18 @@ namespace wpa3_tester::observer{
 
         log(LogLevel::INFO, "Extracted %zu timestamps matching filter '%s'", timestamps.size(), tshark_filter.c_str());
         return timestamps;
+    }
+
+    void pcap_events(
+        const RunStatus& rs,
+        vector<unique_ptr<GraphElements>>& elements,
+        // { actor, filter, label, color }
+        initializer_list<tuple<string, string, string, string>> event_def)
+    {
+        for (auto& [actor, filter, label, color] : event_def) {
+            elements.push_back(make_unique<EventLines>(
+                get_tshark_events(rs, actor, filter, label), label, color));
+        }
     }
 
     string tshark_graph(const RunStatus &rs,

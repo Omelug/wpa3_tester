@@ -150,7 +150,7 @@ namespace wpa3_tester::bl0ck_attack{
     static string bpf_mac_at(const int offset, const string &mac) {
         // BPF cant filter 6 bytes at one filters
         unsigned int b[6];
-        sscanf(mac.c_str(), "%x:%x:%x:%x:%x:%x", &b[0],&b[1],&b[2],&b[3],&b[4],&b[5]);
+         sscanf(mac.c_str(), "%x:%x:%x:%x:%x:%x", &b[0],&b[1],&b[2],&b[3],&b[4],&b[5]);
 
         char buf[128];
         snprintf(buf, sizeof(buf),
@@ -185,8 +185,8 @@ namespace wpa3_tester::bl0ck_attack{
         bpf_mac_ra_or_ta(a_mac) +" or " +
         bpf_mac_ra_or_ta(ap_mac) +"))";
 
-        observer::start_tshark(rs, "attacker", mac_filter);
-        observer::start_tshark(rs, "client",   mac_filter);
+        observer::tshark::start_tshark(rs, "attacker", mac_filter);
+        observer::tshark::start_tshark(rs, "client",   mac_filter);
         rs.start_observers();
     }
 
@@ -216,31 +216,22 @@ namespace wpa3_tester::bl0ck_attack{
     void stats_bl0ck_attack(const RunStatus& rs){
         log(LogLevel::INFO , "Bl0ck attack stats");
 
-        vector<unique_ptr<GraphElements>> events;
-        events.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"), "DISCONN", "red"));
-        events.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "@START"), "START", "black"));
-        events.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "@END"), "END", "black"));
+        vector<unique_ptr<GraphElements>> elements;
+        rs.log_events(elements, {
+            {"client",   "CTRL-EVENT-DISCONNECTED", "DISCONN",  "red"   },
+            {"client",   "@START",                  "START",    "black" },
+            {"client",   "@END",                    "END",      "black" },
+        });
 
-        events.push_back(make_unique<EventLines>(
-            observer::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA"),
-            "ADDBA", "blue"));
-        events.push_back(make_unique<EventLines>(
-            observer::get_tshark_events(rs, "attacker", "wlan.fixed.action_code == 0x02", "DELBA"),
-           "DELBA", "blue"));
-        events.push_back(make_unique<EventLines>(
-            observer::get_tshark_events(rs, "attacker",
-                "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)","BAR_fn4"),
-            "BAR_fn4", "cyan"));
-        events.push_back(make_unique<EventLines>(
-          observer::get_tshark_events(rs, "attacker",
-              "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)","BA_fn4")
-          ,"BA_fn4","purple"));
+        observer::tshark::pcap_events(rs, elements, {
+            {"attacker", "wlan.fc.type_subtype == 0x000d",                                     "ADDBA",   "blue"  },
+            {"attacker", "wlan.fixed.action_code == 0x02",                                     "DELBA",   "blue"  },
+            {"attacker", "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan"  },
+            {"attacker", "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4",  "purple"},
+        });
 
-        observer::tshark_graph(rs, "attacker", events);
-        observer::tshark_graph(rs, "client", events);
+        observer::tshark::tshark_graph(rs, "attacker", elements);
+        observer::tshark::tshark_graph(rs, "client", elements);
         //observer::tshark_graph(rs, "access_point", events);
 
         log(LogLevel::INFO, "Bl0ck attack stop");

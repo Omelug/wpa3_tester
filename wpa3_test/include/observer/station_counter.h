@@ -18,7 +18,7 @@ namespace wpa3_tester::observer::station_counter {
     void start_station_monitoring(RunStatus& rs, const std::string& actor_name, int interval_sec);
     void generate_station_graph(const std::string& data_filepath,
                            const std::string& output_imagepath,
-                           std::vector<std::unique_ptr<GraphElements>>& elements);
+                           G_el elements);
     void create_station_graph(const RunStatus& rs,
                             const std::string& actor_name,
                             const std::vector<std::unique_ptr<GraphElements>>& elements = {});

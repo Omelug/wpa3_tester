@@ -79,8 +79,8 @@ namespace wpa3_tester::eapol_logoff{
 
     void speed_observation_start(RunStatus& rs){
         observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
-        observer::start_tshark(rs, "client", "udp port 5201");
-        observer::start_tshark(rs, "access_point", "udp port 5201");
+        observer::tshark::start_tshark(rs, "client", "udp port 5201");
+        observer::tshark::start_tshark(rs, "access_point", "udp port 5201");
     }
 
     void run_attack(RunStatus& rs){
@@ -104,14 +104,14 @@ namespace wpa3_tester::eapol_logoff{
 
     void stats(const RunStatus &rs){
         vector<unique_ptr<GraphElements>> elements;
-        elements.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"));
-        elements.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "@START"),"START","black"));
-        elements.push_back(make_unique<EventLines>(
-            get_time_logs(rs, "client", "@END"),"END","black"));
 
-        const string STA_graph_path = observer::tshark_graph(rs, "client", elements);
-        const string AP_graph_path = observer::tshark_graph(rs, "access_point", elements);
+        rs.log_events(elements, {
+            {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN",  "red"},
+            {"client", "@START",                  "START",     "black"},
+            {"client", "@END",                    "END",       "black"},
+        });
+
+        const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
+        const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
     }
 }

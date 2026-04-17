@@ -19,8 +19,8 @@ namespace wpa3_tester::test_sae_commit_monitor{
 
         const string mac_filter = "(wlan host "+rx_mac.to_string()+" or wlan host "+tx_mac.to_string()+")";
 
-        observer::start_tshark(rs, "receiver", mac_filter);
-        observer::start_tshark(rs, "transceiver",  mac_filter);
+        observer::tshark::start_tshark(rs, "receiver", mac_filter);
+        observer::tshark::start_tshark(rs, "transceiver",  mac_filter);
     }
 
     void run_attack(RunStatus& rs){
@@ -45,6 +45,6 @@ namespace wpa3_tester::test_sae_commit_monitor{
     }
 
     void stats_attack(const RunStatus& rs){
-        observer::tshark_graph(rs, "receiver");
+        observer::tshark::tshark_graph(rs, "receiver");
     }
 }

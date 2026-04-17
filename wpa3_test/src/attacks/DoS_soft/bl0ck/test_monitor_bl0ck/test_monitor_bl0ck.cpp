@@ -21,8 +21,8 @@ namespace wpa3_tester::test_monitor_bl0ck{
         "(wlan host "+rx_mac.to_string()+" or wlan host "+tx_mac.to_string()+")"
        " or (wlan[0] & 0xfc == 0x84 or wlan[0] & 0xfc == 0x94)";
 
-        observer::start_tshark(rs, "receiver", mac_filter);
-        observer::start_tshark(rs, "transceiver", mac_filter);
+        observer::tshark::start_tshark(rs, "receiver", mac_filter);
+        observer::tshark::start_tshark(rs, "transceiver", mac_filter);
     }
 
     void run_attack(RunStatus& rs){
@@ -41,6 +41,6 @@ namespace wpa3_tester::test_monitor_bl0ck{
     }
 
     void stats_attack(const RunStatus& rs){
-        observer::tshark_graph(rs, "receiver");
+        observer::tshark::tshark_graph(rs, "receiver");
     }
 }

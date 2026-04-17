@@ -21,7 +21,6 @@ namespace wpa3_tester{
     // Graph elements //TODO
     typedef std::vector<std::unique_ptr<GraphElements>>& G_el;
 
-
     class EventLines : public GraphElements{
         public:
             std::vector<LogTimePoint> event_times;
@@ -38,16 +37,19 @@ namespace wpa3_tester{
 
     enum class YAxis { Y1, Y2 };
     class GraphXYPoints : public GraphElements{
-        std::vector<LogTimePoint> event_times;
         YAxis axis = YAxis::Y1;
+
     public:
-        GraphXYPoints(const std::string &label, const std::string &color, const std::vector<LogTimePoint> &event_times,
-            YAxis axis)
+        std::vector<LogTimePoint> x_times;
+        std::vector<double> y_values;
+
+        GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
+            const std::string &label, const std::string &color = "green")
             : GraphElements(label, color),
-              event_times(event_times),
-              axis(axis){
+              x_times(x_times), y_values(y_values){
             type = GraphElement_t::GRAPH_XY_POINTS;
         }
+
     };
 
     class Graph{
@@ -58,8 +60,12 @@ namespace wpa3_tester{
         LogTimePoint start_time;
         TimeAxis axis = TimeAxis::RELATIVE;
         std::vector<std::string> plot_parts;
+
         void add_graph_elements(const std::vector<std::unique_ptr<GraphElements>> &elements);
+        void gpcmd(const std::string &cmd) const;
+        void add_XY_points(const GraphXYPoints &xy_points);
         void add_elements(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index);
+        void render();
     };
 
 }

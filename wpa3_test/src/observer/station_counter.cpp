@@ -142,17 +142,7 @@ namespace wpa3_tester::observer::station_counter {
             " with steps lw 2 lc rgb '#1f77b4' title 'Stations'");
 
         graph.add_graph_elements(elements);
-
-        ostringstream plotcmd;
-        plotcmd << "plot ";
-        for (size_t i = 0; i < graph.plot_parts.size(); ++i) {
-            plotcmd << graph.plot_parts[i];
-            if (i + 1 < graph.plot_parts.size()) plotcmd << ", ";
-        }
-        gpcmd(plotcmd.str());
-        fflush(graph.file);
-
-        if (pclose(graph.file) != 0) throw runtime_error("Gnuplot failed for station graph");
+        graph.render();
     }
 
     void create_station_graph(const RunStatus& rs,

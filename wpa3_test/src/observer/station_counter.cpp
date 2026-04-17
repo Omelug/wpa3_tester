@@ -4,7 +4,6 @@
 #include <vector>
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
-#include "../../include/observer/grapth/graph_utils.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 
@@ -99,8 +98,9 @@ namespace wpa3_tester::observer::station_counter {
                                 const string& output_imagepath,
                                 const std::vector<std::unique_ptr<GraphElements>>& elements)
     {
-        // ymax (station count)
-        double ymax = 1.0;
+        vector<LogTimePoint> times;
+        vector<double> sta_count;
+        double max_stations = 1.0;
         {
             ifstream f(data_filepath);
             string line;
@@ -108,41 +108,36 @@ namespace wpa3_tester::observer::station_counter {
                 if (line.empty()) continue;
                 istringstream iss(line);
                 long long ts; double count;
-                if (iss >> ts >> count) ymax = max(ymax, count);
+                if (iss >> ts >> count) max_stations = max(max_stations, count);
+                times.push_back(LogTimePoint(chrono::seconds(ts)));
+                sta_count.push_back(count);
             }
         }
-        auto graph = Graph();
-        graph.ymin = 0.0;
-        graph.ymin = 0.0;
+        auto g = Graph();
+        g.ymin = 0.0;
+        g.ymax = max_stations;
 
+        g.file = popen("gnuplot", "w");
+        if (!g.file) throw runtime_error("Failed to start gnuplot");
 
-        graph.file = popen("gnuplot", "w");
-        if (!graph.file) throw runtime_error("Failed to start gnuplot");
+        g.gpcmd("set terminal pngcairo size 1600,600 enhanced font 'Arial,10'");
+        g.gpcmd("set output '"  + output_imagepath + "'");
+        g.gpcmd("set datafile commentschars '#'");
+        g.gpcmd("set xdata time");
+        g.gpcmd("set timefmt '%s'");
+        g.gpcmd("set format x '%M:%S'");
+        g.gpcmd("set xtics rotate by -45");
+        g.gpcmd("set ylabel 'Connected Stationg.s'");
+        g.gpcmd("set ytics 1");
+        g.gpcmd("set grid");
+        g.gpcmd("set key outside");
+        g.gpcmd("set tmargin 5");
+        g.gpcmd("set bmargin 5");
+        g.gpcmd(escape_tex("set title 'Station Count'"));
 
-        auto gpcmd = [&](const string& cmd) { fprintf(graph.file, "%s\n", cmd.c_str()); };
-
-        gpcmd("set terminal pngcairo size 1600,600 enhanced font 'Arial,10'");
-        gpcmd("set output '"  + output_imagepath + "'");
-        gpcmd("set datafile commentschars '#'");
-        gpcmd("set xdata time");
-        gpcmd("set timefmt '%s'");
-        gpcmd("set format x '%M:%S'");
-        gpcmd("set xtics rotate by -45");
-        gpcmd("set ylabel 'Connected Stations'");
-        gpcmd("set yrange [0:" + to_string(static_cast<int>(ymax) + 1) + "]");
-        gpcmd("set ytics 1");
-        gpcmd("set grid");
-        gpcmd("set key outside");
-        gpcmd("set tmargin 5");
-        gpcmd("set bmargin 5");
-        gpcmd(escape_tex("set title 'Station Count'"));
-
-        graph.plot_parts.push_back(
-            "'" + data_filepath + "' using 1:2"
-            " with steps lw 2 lc rgb '#1f77b4' title 'Stations'");
-
-        graph.add_graph_elements(elements);
-        graph.render();
+        g.add_XY_points(*make_unique<GraphXYPoints>(times, sta_count, "stations", "blue"));
+        g.add_graph_elements(elements);
+        g.render();
     }
 
     void create_station_graph(const RunStatus& rs,

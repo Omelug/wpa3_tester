@@ -13,7 +13,7 @@ namespace wpa3_tester{
 
         for (auto& element : elements){
             if(element->type == GraphElement_t::EVENT_LINES){
-                add_elements(*static_cast<EventLines*>(element.get()),
+                add_event_lines(*static_cast<EventLines*>(element.get()),
                     block_index, elements.size(), label_index);
             }
             if(element->type == GraphElement_t::UNKNOWN){

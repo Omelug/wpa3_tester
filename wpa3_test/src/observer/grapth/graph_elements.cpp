@@ -26,7 +26,7 @@ namespace wpa3_tester{
         gpcmd("EOD");
     }
 
-    void Graph::add_elements(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index){
+    void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index){
         if (event_lines.event_times.empty()) return;
 
         const string block_name = "$ev" + to_string(event_block_index++);

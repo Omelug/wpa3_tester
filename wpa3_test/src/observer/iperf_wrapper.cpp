@@ -45,7 +45,7 @@ namespace wpa3_tester::observer{
         FILE* gp = popen("gnuplot", "w");
         if (!gp) {throw runtime_error("Could not open pipe to gnuplot. Is it installed?");}
 
-        string ext = output_path.extension().string();
+        const string ext = output_path.extension().string();
         if (ext == ".png") {fprintf(gp, "set terminal pngcairo size 800,600\n");
         } else if (ext == ".svg") {fprintf(gp, "set terminal svg size 800,600\n");
         } else {

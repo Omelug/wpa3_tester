@@ -43,7 +43,7 @@ namespace wpa3_tester::observer::tshark{
             string addr1 = "(link[4:4] == 0x"+pre.substr(0, 8) +
                            " and link[8:1] == 0x"+pre.substr(8, 2)+")";
 
-            // addr2 (traceiver)
+            // addr2 (transceiver)
             string addr2 = "(link[10:4] == 0x"+pre.substr(0, 8) +
                            " and link[14:1] == 0x"+pre.substr(8, 2)+")";
 
@@ -327,27 +327,26 @@ namespace wpa3_tester::observer::tshark{
         //create graph
         auto g = Graph();
         g.file = popen("gnuplot", "w");
-        fprintf(g.file, "set terminal pngcairo size 1200,600\n");
-        fprintf(g.file, "set output '%s'\n", output_path.c_str());
-        fprintf(g.file, "set title 'Retransmit Rate over Time '\n");
-        fprintf(g.file, "set xlabel 'Time (s)'\n");
-        fprintf(g.file, "set ylabel 'Retry Percentage (%%)'\n");
-        fprintf(g.file, "set yrange [0:110]\n");
-        fprintf(g.file, "set grid\n");
-        fprintf(g.file, "set style fill transparent solid 0.5 noborder\n");
+        g.gpcmd("set terminal pngcairo size 1200,600");
+        g.gpcmd("set output '"+output_path.string()+"'");
+        g.gpcmd("set title 'Retransmit Rate over Time '");
+        g.gpcmd("set xlabel 'Time (s)'\n");
+        g.gpcmd("set ylabel 'Retry Percentage (%%)'");
+        g.gpcmd("set yrange [0:110]");
+        g.gpcmd("set grid");
+        g.gpcmd("set style fill transparent solid 0.5 noborder");
 
-        fprintf(g.file, "$MyData << EOD\n");
+        g.gpcmd("$MyData << EOD");
         for (auto const& [time, counts] : stats_map) {
             double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
             fprintf(g.file, "%f %f\n", time, percent);
         }
-        fprintf(g.file, "EOD\n");
+        g.gpcmd("EOD");
 
-        fprintf(g.file, "plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
-                    "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle \n");
+        g.gpcmd("plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
+                    "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle");
 
-        fflush(g.file);
-        pclose(g.file);
+        g.render();
     }
 }
 

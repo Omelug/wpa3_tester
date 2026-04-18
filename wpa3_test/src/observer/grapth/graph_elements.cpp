@@ -30,7 +30,7 @@ namespace wpa3_tester{
         if (event_lines.event_times.empty()) return;
 
         const string block_name = "$ev" + to_string(event_block_index++);
-        fprintf(file, "%s << EOD\n", block_name.c_str());
+        gpcmd(block_name+" << EOD");
 
         for (const auto& tp : event_lines.event_times) {
             string t_str;
@@ -57,7 +57,7 @@ namespace wpa3_tester{
             fprintf(file, "%s %f %f \"%s\"\n",
                 t_str.c_str(), y, (ymax+ymin)/2, event_lines.label.c_str());
         }
-        fprintf(file, "EOD\n");
+        gpcmd("EOD");
 
         ostringstream part;
         part

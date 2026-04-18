@@ -155,7 +155,6 @@ namespace wpa3_tester{
                     try {
                         solve_new_pdu(pdu, seen);
                     } catch (...) {}
-
                     return chrono::steady_clock::now() < channel_end_time;
                 }, 1); // solve only one packet
             }

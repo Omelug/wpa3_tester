@@ -150,7 +150,7 @@ namespace wpa3_tester::pmk_gobbler {
             {
                 lock_guard lock(store.mtx);
                 if (store.queue.empty()) {
-                    this_thread::sleep_for(milliseconds(10));
+                    this_thread::sleep_for(milliseconds(50));
                     //FIXME mají se doplňovat?
                     auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)), sae_params);
                     sender.send(frame);
@@ -168,7 +168,7 @@ namespace wpa3_tester::pmk_gobbler {
             constexpr size_t BURST_SIZE = 128;
             for (size_t i = 0; i < BURST_SIZE; ++i) {
                 sender.send(frame);
-                this_thread::sleep_for(nanoseconds(100));
+                this_thread::sleep_for(milliseconds(2));
             }
             sent += BURST_SIZE;
 
@@ -220,7 +220,7 @@ namespace wpa3_tester::pmk_gobbler {
         });
 
         try {
-            burst_with_cookies(sniff_iface, attacker["mac"] , ap_mac, store, attack_time, sae_params.value());
+            burst_with_cookies(iface, attacker["mac"] , ap_mac, store, attack_time, sae_params.value());
         } catch (...) {
             store.stop.store(true);
             if (capture_thread.joinable()) capture_thread.join();
@@ -234,7 +234,18 @@ namespace wpa3_tester::pmk_gobbler {
     void stats_attack(const RunStatus &rs) {
         const auto ap = rs.config.at("actors").at("access_point");
         observer::resource_checker::create_graph(rs, ap["source"]);
-        observer::station_counter::create_station_graph(rs, "access_point");
+        vector<unique_ptr<GraphElements>> elements;
+
+        rs.log_events(elements, {
+           {"access_point", "did not acknowledge authentication response", "ACK fail", "red"},
+           {"client", "@START",                  "START",     "black"},
+           {"client", "@END",                    "END",       "black"},
+       });
+
+        //elements.push_back(make_unique<EventLines>(
+        //    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));
+        observer::station_counter::create_station_graph(rs, "access_point", elements);
+        //observer::tshark::generate_time_series_retry_graph(rs, "attacker");
     }
 
 }

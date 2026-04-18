@@ -39,6 +39,8 @@ actors:
     sniff_iface: client
   attacker:
     source: internal
+    setup:
+      requirements: [ ath_masker ]
     selection:
       driver: ath9k_htc
       condition: [monitor, injection]
@@ -72,5 +74,5 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 200
+  attack_time_sec: 30
   acm_trigger_count: 2560

@@ -108,9 +108,11 @@ namespace wpa3_tester::observer::station_counter {
                 if (line.empty()) continue;
                 istringstream iss(line);
                 long long ts; double count;
-                if (iss >> ts >> count) max_stations = max(max_stations, count);
-                times.push_back(LogTimePoint(chrono::seconds(ts)));
-                sta_count.push_back(count);
+                if (iss >> ts >> count) {
+                    max_stations = max(max_stations, count);
+                    times.push_back(LogTimePoint(chrono::seconds(ts)));
+                    sta_count.push_back(count);
+                }
             }
         }
         auto g = Graph();
@@ -137,6 +139,11 @@ namespace wpa3_tester::observer::station_counter {
 
         g.add_XY_points(*make_unique<GraphXYPoints>(times, sta_count, "stations", "blue"));
         g.add_graph_elements(elements);
+        if (!times.empty()) {
+            const long long x_min = chrono::system_clock::to_time_t(times.front());
+            const long long x_max = chrono::system_clock::to_time_t(times.back());
+            g.gpcmd("set xrange ['" + to_string(x_min) + "':'" + to_string(x_max + 10) + "']");
+        }
         g.render();
     }
 

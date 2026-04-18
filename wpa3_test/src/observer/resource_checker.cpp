@@ -98,11 +98,11 @@ namespace wpa3_tester::observer::resource_checker{
         return records;
     }
 
-    void create_resource_monitor_graph(const string& data_filepath){
+    void create_resource_monitor_graph(const string& data_filepath, const vector<unique_ptr<GraphElements>>& elements){
         const string output_imagepath = path(data_filepath).replace_extension(".png").string();
         vector<ResourceRecord> resources = parse_resource_log(data_filepath);
         remove(output_imagepath);
-        generate_resource_graph(data_filepath, output_imagepath); //TODO ACM events
+        generate_resource_graph(data_filepath, output_imagepath, elements); //TODO ACM events
     }
 
     //*-------------  ONLY ONE PID ----------------
@@ -178,50 +178,48 @@ namespace wpa3_tester::observer::resource_checker{
         int num_cores = max(1, num_columns - 4);
         int ram_col   = num_cores + 2;
 
-        auto graph = Graph();
-        graph.ymin = 0.0;
-        graph.ymax = 0.0;
+        auto g = Graph();
+        g.ymin = 0.0;
+        g.ymax = 100.0;
         //graph.start_time = ;
 
-        graph.file = popen("gnuplot", "w");
-        if (!graph.file) throw runtime_error("Failed to start gnuplot");
+        g.file = popen("gnuplot", "w");
+        if (!g.file) throw runtime_error("Failed to start gnuplot");
 
-        fprintf(graph.file, "set datafile commentschars '#'\n");
-        fprintf(graph.file, "set terminal pngcairo size 1600,600\n");
-        fprintf(graph.file, "set output '%s'\n", output_imagepath.c_str());
-        fprintf(graph.file, "set xdata time\n");
-        fprintf(graph.file, "set timefmt '%%s'\n");
-        fprintf(graph.file, "set format x '%%M:%%S'\n");
-        fprintf(graph.file, "set xtics rotate by -45\n");
-        fprintf(graph.file, "set ytics nomirror\n");
-        fprintf(graph.file, "set y2tics\n");
-        fprintf(graph.file, "set ylabel 'CPU Usage (%%)' \n");
-        fprintf(graph.file, "set yrange [0:100]\n");
-        fprintf(graph.file, "set y2label 'Free Memory (KB)'\n");
-        fprintf(graph.file, "set y2range [0:*]\n");
-        fprintf(graph.file, "set grid\n");
-        fprintf(graph.file, "set key outside\n");
+        g.gpcmd("set datafile commentschars '#'");
+        g.gpcmd("set terminal pngcairo size 1600,600");
+        g.gpcmd("set output '"+output_imagepath+"'");
+        g.gpcmd("set xdata time");
+        g.gpcmd("set timefmt '%s'");
+        g.gpcmd("set format x '%M:%S'");
+        g.gpcmd("set xtics rotate by -45");
+        g.gpcmd("set ytics nomirror");
+        g.gpcmd("set y2tics");
+        g.gpcmd("set ylabel 'CPU Usage (%%)' ");
+        g.gpcmd("set yrange [0:100]");
+        g.gpcmd("set y2label 'Free Memory (KB)'");
+        g.gpcmd("set y2range [0:*]");
+        g.gpcmd("set grid");
+        g.gpcmd("set key outside");
 
-        // Build the plot command dynamically based on the number of cores
-        string plot_cmd = "plot ";
         for (int i = 0; i < num_cores; ++i) {
-            plot_cmd += "'" + data_filepath+"' using 1:" + to_string(i + 2) +
-                        " with lines lw 2 title 'Core " + to_string(i)+" %' axes x1y1, ";
+            g.plot_parts.push_back(
+                "'" + data_filepath + "' using 1:" + to_string(i + 2)
+                + " with lines lw 2 title 'Core " + to_string(i) + " %' axes x1y1");
         }
 
-        // Append the RAM plot
-        plot_cmd += "'" + data_filepath+"' using 1:" + to_string(ram_col) +
-                    " with lines lw 2 dt 2 title 'Free RAM' axes x1y2\n";
+        g.plot_parts.push_back(
+            "'" + data_filepath + "' using 1:" + to_string(ram_col)
+            + " with lines lw 2 dt 2 title 'Free RAM' axes x1y2");
 
-        graph.add_graph_elements(elements);
-
-        fprintf(graph.file, "%s", plot_cmd.c_str());
-        pclose(graph.file);
+        g.add_graph_elements(elements);
+        g.render();
     }
 
-    void create_graph(const RunStatus &rs, const string& source){
+    void create_graph(const RunStatus &rs, const string& source,
+        const std::vector<std::unique_ptr<GraphElements>>& elements){
         const auto log_path = get_observer_folder(rs, "resource_checker")/("access_point"+SUFFIX_res+".log");
-        if(source == "external") create_resource_monitor_graph(log_path);
+        if(source == "external") create_resource_monitor_graph(log_path, elements);
         if(source == "internal") create_resource_pid_graph(log_path);
     }
 }

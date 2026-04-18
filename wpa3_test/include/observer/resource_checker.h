@@ -19,7 +19,10 @@ namespace wpa3_tester::observer::resource_checker{
     void generate_resource_graph(const std::string& data_filepath,
                          const std::string& output_imagepath,
                          const std::vector<std::unique_ptr<GraphElements>>& elements = {});
-    void create_resource_monitor_graph(const std::string& data_filepath);
-    void create_resource_pid_graph(const std::string& data_filepath);
-    void create_graph(const RunStatus &rs, const std::string &source);
+    void create_resource_monitor_graph(const std::string& data_filepath,
+        const std::vector<std::unique_ptr<GraphElements>>& elements);
+    void create_resource_pid_graph(const std::string& data_filepath,
+        const std::vector<std::unique_ptr<GraphElements>>& elements);
+    void create_graph(const RunStatus &rs, const std::string &source,
+        const std::vector<std::unique_ptr<GraphElements>>& elements = {});
 }

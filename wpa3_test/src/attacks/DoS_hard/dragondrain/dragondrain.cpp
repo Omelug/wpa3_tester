@@ -61,13 +61,21 @@ namespace wpa3_tester::dragondrain{
         start_dragondrain(rs, "attacker", attacker["iface"], target_mac, channel, att_cfg);
         this_thread::sleep_for(seconds(att_cfg.at("timeout_sec").get<int>()));
         rs.process_manager.stop("attacker");
-        this_thread::sleep_for(seconds(30));
+        this_thread::sleep_for(seconds(10));
         ap->conn->disconnect();
     }
 
     void stats_attack(const RunStatus &rs){
+
+        vector<unique_ptr<GraphElements>> elements;
+        rs.log_events(elements, {
+          {"access_point", "did not acknowledge authentication response", "ACK fail", "red"},
+          {"client", "@START",                  "START",     "black"},
+          {"client", "@END",                    "END",       "black"},
+        });
+
         // generate graph with ob
         const auto ap = rs.config.at("actors").at("access_point");
-        observer::resource_checker::create_graph(rs, ap.at("source").get<string>());
+        observer::resource_checker::create_graph(rs, ap.at("source").get<string>(), elements);
     }
 }

@@ -111,7 +111,7 @@ namespace wpa3_tester::cookie_guzzler{
     }
 
     void stats_attack(const RunStatus &rs){
-        vector<unique_ptr<GraphElements>> events;
+        vector<unique_ptr<GraphElements>> elements;
         //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
         //const string AP_graph_path =
         //    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));

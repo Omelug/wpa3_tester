@@ -1,5 +1,6 @@
 #include "attacks/by_target/scan_AP.h"
 #include "attacks/components/setup_connections.h"
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/RunStatus.h"
 #include "observer/tshark_wrapper.h"
@@ -14,15 +15,22 @@ namespace wpa3_tester::mc_mitm{
 
     void setup_attack(RunStatus& rs){
         components::client_ap_attacker_setup(rs);
+        //components::client_ap_attacker_setup(rs);
 
-        const auto ap        = rs.get_actor("access_point");
-        const auto rogue_client = rs.get_actor("rogue_client");
-        const auto rogue_ap = rs.get_actor("rogue_ap");
+        //TODO components::setup_STA(rs, "client");
+        //rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 
+
+        //const auto ap        = rs.get_actor("access_point");
+        //const auto rogue_client = rs.get_actor("rogue_client");
+        //const auto rogue_ap = rs.get_actor("rogue_ap");
+
+        /*
         //TODO only for  2.4 GHz
         rogue_client->str_con["channel"] = ap["channel"];
         // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
         rogue_ap->str_con["channel"] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
+        */
     }
 
     void start_strict_tsharks(RunStatus& rs){
@@ -43,27 +51,27 @@ namespace wpa3_tester::mc_mitm{
         //const auto ap = rs.get_actor("access_point");
         //const auto client = rs.get_actor("client");
 
-        auto ap_ssid = rs.config.at("attack_config").at("ssid").get<string>();
-        auto ap_mac = rs.config.at("attack_config").at("target_ap_mac").get<string>();
-        auto client_mac = rs.config.at("attack_config").at("target_client_mac").get<string>();
+        const auto ap_ssid = rs.config.at("attack_config").at("ssid").get<string>();
+        const auto ap_mac = rs.config.at("attack_config").at("target_ap_mac").get<string>();
+        const auto client_mac = rs.config.at("attack_config").at("target_client_mac").get<string>();
+
+        const HWAddress<6> ap_csa_mac(rs.get_actor("access_point")["mac"]);
+        const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
+
+        rs.start_observers();
 
         McMitm attack(
             rogue_client["iface"], rogue_ap["iface"],
             ap_ssid,
             ap_mac, client_mac);
 
-        //rogue_client->setup_mac_addr(ap_mac);
-        //rogue_ap->setup_mac_addr(client_mac);
+
         rogue_client->up_iface();
         rogue_ap->up_iface();
 
-        //TODO start_strict_tsharks(rs);
+        //FIXME
+        //start_strict_tsharks(rs);
         //rs.start_observers();
-
-        attack_scan::ScanAP scan_ap{};
-        scan_ap.bssid = ap_mac;
-        attack.beacon = RSN_scan(rogue_client["iface"], 10, scan_ap, path("/tmp/beacon.pcap"));
-        if(attack.beacon == nullptr) throw runtime_error("beacon not found");
 
         //log(LogLevel::INFO, "Giving rogue AP one second to initialize ...");
         //this_thread::sleep_for(seconds(1));
@@ -72,7 +80,13 @@ namespace wpa3_tester::mc_mitm{
         attack.netconfig.real_channel = stoi(rogue_client["channel"]);
         attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
         attack.netconfig.ssid = ap_ssid;
-        attack.run(rs.config.at("attack_config").at("attack_time").get<int>());
+
+        /*CSA_attack::check_vulnerable(
+            ap_mac, client_mac,
+             rogue_client["iface"], ap_ssid,
+            attack.netconfig.real_channel,  attack.netconfig.rogue_channel, 100, 7);
+        */
+        attack.run(rs, rs.config.at("attack_config").at("attack_time").get<int>());
     }
 
     void stats(const RunStatus& rs){

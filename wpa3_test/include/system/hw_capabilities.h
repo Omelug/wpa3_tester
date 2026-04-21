@@ -16,7 +16,8 @@ namespace wpa3_tester{
         DockerBridge,
         VirtualVeth,
         VPN,
-        WifiVirtualMon
+        WifiVirtualMon,
+        WifiVirtualAP
     };
 
     struct InterfaceInfo {
@@ -119,7 +120,7 @@ namespace wpa3_tester{
         static void set_macaddress(const std::string & iface, const std::string & new_mac_str);
         static void supports_active_monitor(const std::string &iface, Actor_config &cfg);
         static void set_channel(const std::string &iface, int channel);
-        static bool set_monitor_active(const std::string& iface);
+        static bool set_monitor_active(const std::string& iface, int channel = 0);
         static void set_monitor_mode(const std::string& iface, int mtu);
     };
 }

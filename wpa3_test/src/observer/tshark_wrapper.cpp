@@ -69,13 +69,13 @@ namespace wpa3_tester::observer::tshark{
     }
 
     // include broadcast
-    string all_actors_mac_filter(const RunStatus &rs) {
+    string all_actors_mac_filter(const RunStatus &rs, bool broadcast = false) {
         vector<string> mac_filters;
 
         for (const auto &actor: rs.actors | views::values) {
             mac_filters.push_back("ether host "+actor["mac"]);
         }
-        mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
+        if(broadcast) mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
         return or_filter(mac_filters);
     }
     
@@ -99,7 +99,9 @@ namespace wpa3_tester::observer::tshark{
         if (!filter.empty()){
             command.emplace_back("-f");
             if(filter == "special_filter:actors"){
-                command.push_back(all_actors_mac_filter(rs));
+                command.push_back(all_actors_mac_filter(rs, false));
+            }else if(filter == "special_filter:actors_with_broadcast"){
+                command.push_back(all_actors_mac_filter(rs, true));
             } else if(filter == "special_filter:actors_5_bytes"){
                 command.push_back(masked_mac_filter_5(rs));
             }else{

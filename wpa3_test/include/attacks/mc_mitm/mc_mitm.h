@@ -30,7 +30,7 @@ namespace wpa3_tester{
         bool should_check_rogue_beacons() const;
         void configure_interfaces();
 
-        void run(int timeout_sec);
+        void run(RunStatus& rs, int timeout_sec);
         void stop();
 
         //static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);

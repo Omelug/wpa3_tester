@@ -2,62 +2,61 @@ $schema: http://json-schema.org/draft-07/schema#
 name: mc_mitm_test
 attacker_module: mc_mitm
 actors:
-#  access_point:
-#    source: internal
-#    selection:
-#      condition: [AP]
-#      channel: 11
-#    setup:
-#      program: hostapd
-#      program_config:
-#        version: 2_10
-#        driver: nl80211
-#        ssid: mc_mitm_test
-#        hw_mode: g
-#        auth_algs: 1
-#        wpa: 2
-#        ieee80211n: 1
-#        ieee80211w: 2
-#        wpa_key_mgmt: SAE
-#        rsn_pairwise: CCMP
-#        wpa_passphrase: password123
-#        sae_password: password123
-#        channel: 11
-#    netns: ap
-#
-#  client:
-#    source: internal
-#    selection:
-#      channel: 11
-#    setup:
-#      program: wpa_supplicant
-#      program_config:
-#        version: 2_10
-#        other_options: "-dd"
-#        ssid: mc_mitm_test
-#        sae_password: password123
-#        ieee80211w: 2
-#        proto: RSN
-#        key_mgmt: SAE
-#        pairwise: CCMP
-#        group: CCMP
-#    netns: sta
-#    sniff_iface: "client"
+  access_point:
+    source: external
+    selection:
+      channel: 6
+      whitebox_host: OpenWrt
+      condition: [AP, 2_4GHz]
+    setup:
+      program: openwrt
+      program_config:
+        ssid: OpenWrt_2_4GHz
+        channel: 6
+        key: password123
+        proto: RSN
+        encryption: sae-mixed
+        mode: ap
+        htmode: HT20
+        ieee80211w: 2
+      req_programs: [ tcpdump ]
+    ip_addr: "10.0.0.1"
+    #
+  client:
+    source: internal
+    selection:
+      driver: rtw_8821cu
+      channel: 6
+    setup:
+      program: wpa_supplicant
+      program_config:
+        group: CCMP
+        ieee80211w: 2
+        key_mgmt: SAE
+        pairwise: CCMP
+        proto: RSN
+        sae_password: password123
+        ssid: OpenWrt_2_4GHz
+        version: 2_10
+    netns: sta
+    ip_addr: "10.0.0.2"
+
   rogue_client:
     source: internal
     selection:
+      #FIXME rozdíl mezi původní a možnou mac
+      #mac: "00:c0:ca:b7:69:2a" #FIXME I cant change channel on second mt76 adapter
       driver: mt76x2u
-      #condition: [ managed ]
-      condition: [ monitor, injection] #active_monitor
-      channel: 11
+      condition: [monitor] #active_monitor
+      channel: 6
   rogue_ap:
     source: internal
     selection:
-      #driver: mt76x2u
-      driver: ath9k_htc
+      driver: mt76x2u
+      #driver: ath9k_htc
       #condition: [ monitor, injection] # active_monitor
       channel: 1
-#observers: (allow start_observers if uesd )
+observers: #(allow start_observers if uesd )
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn
@@ -65,24 +64,26 @@ actors:
   #    target_actor: access_point
 
   #client_tshark:
-  #  actor: rogue_client
+  #  actor: client
   #  program: tshark
   #  program_config:
-  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or (type data and ether proto 0x888e)"
+  #    filter: ""
 
-  # MOVED TO CODE start_strict_tsharks
-  #channel1_tshark:
-  #  actor: rogue_ap
-  #  program: tshark
-  #  program_config:
-  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
-  #channel6_tshark:
-  #  actor: rogue_client
-  #  program: tshark
-  #  program_config:
-  #    filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
+  channel1_tshark:
+    actor: rogue_ap
+    program: tshark
+    program_config:
+      filter: ""
+
+  channel6_tshark:
+    actor: rogue_client
+    program: tshark
+    program_config:
+      filter: ""
+      #filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
+
 attack_config:
-  attack_time: 20
-  target_ap_mac: 78:98:E8:55:3E:8D
-  target_client_mac: 30:ab:6a:39:88:46
-  ssid: test_channel_switch
+  attack_time: 15
+  target_ap_mac: 78:98:e8:55:3e:8d
+  target_client_mac: a0:d7:68:10:25:6d
+  ssid: OpenWrt_2_4GHz

@@ -1,0 +1,42 @@
+Frame 11: Packet, 90 bytes on wire (720 bits), 90 bytes captured (720 bits) on interface wlan3, id 0
+Radiotap Header v0, Length 26
+    Header revision: 0
+    Header pad: 0
+    Header length: 26
+    Present flags
+    MAC timestamp: 0
+    Flags: 0x10
+    Channel frequency: 2437 [2.4 GHz 6]
+    Channel flags: 0x0040, Orthogonal Frequency-Division Multiplexing (OFDM)
+    Antenna signal: -50 dBm
+    Antenna: 0
+    RX flags: 0x0000
+802.11 radio information
+IEEE 802.11 Beacon frame, Flags: ........C
+    Type/Subtype: Beacon frame (0x0008)
+    Frame Control Field: 0x8000
+    .000 0000 0000 0000 = Duration: 0 microseconds
+    Receiver address: Broadcast (ff:ff:ff:ff:ff:ff)
+    Destination address: Broadcast (ff:ff:ff:ff:ff:ff)
+    Transmitter address: DLinkInterna_55:3e:8d (78:98:e8:55:3e:8d)
+    Source address: DLinkInterna_55:3e:8d (78:98:e8:55:3e:8d)
+    BSS Id: DLinkInterna_55:3e:8d (78:98:e8:55:3e:8d)
+    .... .... .... 0000 = Fragment number: 0
+    0000 0000 0000 .... = Sequence number: 0
+    Frame check sequence: 0x0b706908 [unverified]
+    [FCS Status: Unverified]
+    [WLAN Flags: ........C]
+IEEE 802.11 Wireless Management
+    Fixed parameters (12 bytes)
+        Timestamp: 0
+        Beacon Interval: 0.000000 [Seconds]
+        Capabilities Information: 0x0000
+    Tagged parameters (24 bytes)
+        Tag: SSID parameter set: "OpenWrt_2_4GHz"
+        Tag: DS Parameter set: Current Channel: 6
+        Tag: Channel Switch Announcement Mode: 1, Number: 1 , Count: 3
+            Tag Number: Channel Switch Announcement (37)
+            Tag length: 3
+            Channel Switch Mode: 1
+            New Channel Number: 1
+            Channel Switch Count: 3

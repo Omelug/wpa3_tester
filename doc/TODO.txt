@@ -41,6 +41,7 @@ ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
 
 New features:
+r: fix whitebox scanners to get more data fir blackboc external
 +: create config wizard after first install
 +: add option to add actor without interface
 f: add network manager off option for actors
@@ -70,3 +71,7 @@ PDF:
 - Every ahysical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation
 --------------------------------------------------------------------------------------------
+TODO
+- v exec jsou 2 vteřiny, funguje sudo micro ./ap_debug_test.txt
+- maccchanger musí být až potom / při tom
+send_csa_beacon pak nic nedělá

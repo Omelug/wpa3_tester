@@ -187,13 +187,10 @@ namespace wpa3_tester{
         log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str());
 
         string monitor_flags;
-        if (bool_conditions.at("active_monitor")) monitor_flags += " active";
-        if (bool_conditions.at("control_monitor")) monitor_flags += " control";
         vector<string> cmd =
             {"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor","flags", "fcsfail", "otherbss"};
-        if (!monitor_flags.empty()) {
-            cmd.push_back(monitor_flags);
-        }
+        if (bool_conditions.at("active_monitor")) cmd.emplace_back("active");
+        if (bool_conditions.at("control_monitor")) cmd.emplace_back("control");
         run(cmd);
         up_iface();
     }

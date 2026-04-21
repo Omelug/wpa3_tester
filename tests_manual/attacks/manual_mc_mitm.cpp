@@ -29,7 +29,8 @@ int main() {
     attack.netconfig.rogue_channel = rogue_channel;
     attack.netconfig.ssid          = ap_ssid;
 
-    attack.run(attack_time);
+    RunStatus rs;
+    attack.run(rs, attack_time);
 
     return 0;
 }

@@ -8,6 +8,8 @@
 
 namespace wpa3_tester{
     inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
+    inline auto AP_IFACE_PREFIX = std::string("ap_");
+
     class RunStatus;
     class ExternalConn;
     class Actor_config : public std::enable_shared_from_this<Actor_config>{

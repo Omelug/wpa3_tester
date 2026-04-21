@@ -32,7 +32,7 @@ namespace wpa3_tester::attack_module_maps{
         {"reflection_attack", reflection::setup_attack},
         {"invalid_curve", invalid_curve::setup_attack},
         {"dragondrain", dragondrain::setup_attack},
-        //{"mc_mitm", mc_mitm::setup_attack},
+        {"mc_mitm", mc_mitm::setup_attack},
         {"ssid_confusion", mc_mitm::setup_attack},
         {"ath_masker_test", ath_masker_test::setup_attack},
     };

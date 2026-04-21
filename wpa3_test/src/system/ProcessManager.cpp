@@ -147,6 +147,12 @@ namespace wpa3_tester{
                          const path &working_dir,
                          const path &logging_dir)
     {
+
+        const auto proc_iter = processes.find(process_name);
+        if (proc_iter != processes.end()) {
+            throw runtime_error("This process already exists: "+process_name);
+        }
+
         //log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
         auto mp = make_shared<ManagedProcess>();
         mp->proc = make_shared<reproc::process>();
@@ -166,9 +172,9 @@ namespace wpa3_tester{
         if (!logging_dir.empty()) {log_dir= logging_dir;}
         path log_path = log_dir / (process_name+".log");
 
-        string cmd_debug;
-        for (const auto& s : cmd) cmd_debug += "[" + s+"] ";
-        log(LogLevel::DEBUG, "Full command: %s", cmd_debug.c_str());
+        // string cmd_debug;
+        // for (const auto& s : cmd) cmd_debug += "[" + s+"] ";
+        // log(LogLevel::DEBUG, "Full command: %s", cmd_debug.c_str());
 
         // Log command line FIRST for debugging
         string cmd_line;

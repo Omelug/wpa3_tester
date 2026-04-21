@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <tins/tins.h>
+#include "config/RunStatus.h"
 
 void exec(const std::vector<std::string>& cmd, bool check = true);
 int  get_channel(const std::string& iface);
@@ -20,8 +21,8 @@ Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon& beacon, uint8_t channel, u
 int  get_eapol_msg_num(const Tins::Dot11Data& pkt);
 uint64_t get_eapol_replay_num(const Tins::Dot11Data& pkt);
 
-void start_ap(const std::string& iface, const std::string& base_iface, int channel,
-              const std::optional<Tins::Dot11Beacon>& beacon = std::nullopt,
+void start_ap(wpa3_tester::RunStatus& rs, const std::string& ap_iface, const std::string& base_iface, int channel,
+              const Tins::Dot11Beacon& beacon,
               const std::optional<std::string>& ssid = std::nullopt,
               int interval = 100, int dtim_period = 1);
 void stop_ap(const std::string& iface);

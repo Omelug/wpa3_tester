@@ -77,7 +77,9 @@ namespace wpa3_tester{
             if(iface == "lo"){
                 type = InterfaceType::Loopback;  // Loopback ('lo')
             }else if(exists(entry.path() / "wireless") || exists(entry.path() / "phy80211")){
-                if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0) { // start with prefix, not good fix
+                if(iface.rfind(AP_IFACE_PREFIX, 0) == 0){
+                    type = InterfaceType::WifiVirtualAP;
+                }else if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0) { // start with prefix, not good fix
                     type = InterfaceType::WifiVirtualMon;  // Virtual wireless Wi-Fi (for monitor mode)
                 }else{
                     type = InterfaceType::Wifi;   // wireless Wi-Fi
@@ -126,7 +128,7 @@ namespace wpa3_tester{
 
     void hw_capabilities::set_macaddress(const string& iface, const string& new_mac_str) {
         if (get_macaddress(iface) == new_mac_str) return;
-        run_cmd({"ifconfig",iface,"down"});
+        run_cmd({"ip", "link", "set",iface,"down"});
         run_cmd({"macchanger", "-m", new_mac_str, iface});
     }
 
@@ -179,23 +181,33 @@ namespace wpa3_tester{
         return match[1].str();
     }
     
-    bool hw_capabilities::set_monitor_active(const string& iface){
-        run_cmd({"ifconfig", iface, "down"});
-        if (run_cmd({"iw", iface, "set", "monitor", "active"}) != 0) {
-            log(LogLevel::WARNING, format("Interface {} doesn't support active monitor mode", iface));
+    bool hw_capabilities::set_monitor_active(const string& iface, int channel) {
+        run_cmd({"ip", "link", "set", iface, "down"});
+
+        if (run_cmd({"iw", "dev", iface, "set", "monitor", "active"}) != 0) {
+            log(LogLevel::WARNING, format("Interface {} failed to enter monitor mode", iface));
             return false;
         }
+        run_cmd({"ip", "link", "set", iface, "up"});
+
+        if (channel > 0) {
+            if (run_cmd({"iw", "dev", iface, "set", "channel", std::to_string(channel)}) != 0) {
+                log(LogLevel::WARNING, format("Failed to set channel {} on {}", channel, iface));
+                return false;
+            }
+        }
+
         return true;
     }
 
     void hw_capabilities::set_monitor_mode(const string& iface, const int mtu){
         if (get_iface_type(iface) != "monitor") {
-            run_cmd({"ifconfig", iface, "down"});
-            run_cmd({"iw", iface, "set", "monitor", "none"});
+            run_cmd({"ip", "link", "set", iface, "down"});
+            run_cmd({"iw", "dev", iface, "set", "monitor", "none"});
             this_thread::sleep_for(chrono::milliseconds(500));
-            run_cmd({"iw", iface, "set", "monitor", "none"});
+            run_cmd({"iw", "dev", iface, "set", "monitor", "none"});
         }
-        run_cmd({"ifconfig", iface, "up"});
-        run_cmd({"ifconfig", iface, "mtu", to_string(mtu)});
+        run_cmd({"ip", "link", "set", iface, "up"});
+        run_cmd({"ip", "link", "set", iface, "mtu", to_string(mtu)});
     }
 }

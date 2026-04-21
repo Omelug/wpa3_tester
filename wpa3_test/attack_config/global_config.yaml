@@ -18,4 +18,4 @@ paths:
   ath_masker: /home/kali/Documents/WPA3/Tools/ath_masker
 actors:
   conn_table: ./example_whitebox_table.csv
-  ignore_interfaces: [wlan0]
+  ignore_interfaces: [wlan0] #, wlan3] #FIXME

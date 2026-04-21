@@ -1,3 +1,18 @@
+find_package(PkgConfig REQUIRED)
+set(REQUIRED_PACKAGES
+        "libpcap"
+        "openssl"
+        "libnl-3.0"
+        "libnl-genl-3.0"
+        "yaml-cpp"
+        "libtins"
+)
+
+foreach(pkg ${REQUIRED_PACKAGES})
+    pkg_check_modules(${pkg}_PKG REQUIRED ${pkg})
+endforeach()
+find_package(nlohmann_json 3.10 REQUIRED)
+
 macro(glob_src VAR DIR)
     file(GLOB_RECURSE ${VAR} CONFIGURE_DEPENDS "${DIR}/*.cpp")
 endmacro()
@@ -20,7 +35,7 @@ glob_src(MC_MITM_SRC    "src/attacks/mc_mitm")
 
 macro(wpa3_library NAME)
     add_library(${NAME} STATIC ${ARGN})
-    target_link_libraries(${NAME} PUBLIC wpa3_deps)
+    target_link_libraries(${NAME} PUBLIC wpa3_deps),
 endmacro()
 
 wpa3_library(wpa3_system     ${SYSTEM_SRC})

@@ -35,7 +35,7 @@ glob_src(MC_MITM_SRC    "src/attacks/mc_mitm")
 
 macro(wpa3_library NAME)
     add_library(${NAME} STATIC ${ARGN})
-    target_link_libraries(${NAME} PUBLIC wpa3_deps),
+    target_link_libraries(${NAME} PUBLIC wpa3_deps)
 endmacro()
 
 wpa3_library(wpa3_system     ${SYSTEM_SRC})

@@ -9,6 +9,7 @@ target_include_directories(wpa3_deps INTERFACE
 target_include_directories(wpa3_deps INTERFACE
         ${CMAKE_CURRENT_BINARY_DIR}/awk_scripts
         include
+        ${libtins_SOURCE_DIR}/include
         ${linux_headers_wifi_SOURCE_DIR}
         ${doctest_SOURCE_DIR}
         ${argparse_SOURCE_DIR}/include

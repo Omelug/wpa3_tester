@@ -11,7 +11,6 @@ set(REQUIRED_PACKAGES
 foreach(pkg ${REQUIRED_PACKAGES})
     pkg_check_modules(${pkg}_PKG REQUIRED ${pkg})
 endforeach()
-find_package(nlohmann_json 3.10 REQUIRED)
 
 macro(glob_src VAR DIR)
     file(GLOB_RECURSE ${VAR} CONFIGURE_DEPENDS "${DIR}/*.cpp")

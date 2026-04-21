@@ -58,10 +58,10 @@ FetchContent_Declare(doctest
 )
 FetchContent_Declare(libtins
         GIT_REPOSITORY https://github.com/mfontanini/libtins.git
-        GIT_TAG       master
+        GIT_TAG       v4.5
         GIT_SHALLOW    TRUE
         GIT_SUBMODULES ""
-        PATCH_COMMAND sed -i "s/#pragma once/#pragma once\\n#include <cstdint>/"
+        #PATCH_COMMAND sed -i "s/#pragma once/#pragma once\\n#include <cstdint>/"
         ${CMAKE_BINARY_DIR}/_deps/libtins-src/include/tins/ip_address.h
         OVERRIDE_FIND_PACKAGE
 )

@@ -18,7 +18,7 @@ namespace wpa3_tester{
         Tins::HWAddress<6> client_mac;
     public:
         // AP <-> rogue_client <-> rogue AP <-> client
-        McMitm(const std::string &r_client_iface, const std::string &r_ap_iface, const std::string &ssid,
+        McMitm(const std::string &r_client_iface, const std::string &r_ap_iface, std::string ssid,
                const std::string &ap_mac, const std::string &client_mac);
         ~McMitm();
 

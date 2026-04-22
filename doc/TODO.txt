@@ -1,6 +1,6 @@
 //TODO
 
-+: new featere, f: fix, r: refactoring, t: test, ch: change, ?: what?
++: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
@@ -39,6 +39,8 @@ ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
 ?: test hostapd debugging logs, if are same
 ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
+ch: + docuemnt what exactly are validators/ref/extedns (arent extends and $ref same?)
++: dát  [[nodiscard]] tam, kde je to potřeba
 
 New features:
 r: fix whitebox scanners to get more data fir blackboc external
@@ -48,6 +50,7 @@ f: add network manager off option for actors
 +: VIF rozhraní (nejde současně odesílat a příjimat)
 +: add sniff_face mon interfaces option in OpennWrtConn
 +: extends check for arguemnts
+d: SA query
 
 Fixes:
 f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)
@@ -57,10 +60,12 @@ Test cases:
 f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně pomocí macchanger, zkontrolovat hlavn RTL
+t: lcov easy tests
 
 // new attacks?
 State Poisoning (2025_SACRED)
 Ghost Attack (badtoken pdf)
+DPP attacks
 
 Optimalization:
 ?: https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
@@ -71,7 +76,8 @@ PDF:
 - Every ahysical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation
 --------------------------------------------------------------------------------------------
+
 TODO
-- v exec jsou 2 vteřiny, funguje sudo micro ./ap_debug_test.txt
+- v exec jsou 2 vteřiny, funguje sudo micro ./ap_debug_test.txt -> inotify
 - maccchanger musí být až potom / při tom
 send_csa_beacon pak nic nedělá

@@ -21,7 +21,7 @@ namespace wpa3_tester{
                   NL80211_IFTYPE_MAX,
                   static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
                   nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]),nullptr);
-        if (iftypes[NL80211_IFTYPE_MONITOR]) {caps->monitor = true;}
+        if (iftypes[NL80211_IFTYPE_MONITOR]) caps->monitor = true;
     }
 
     void check_type(nlattr **attrs, NlCaps *caps) {

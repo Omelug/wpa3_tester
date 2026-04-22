@@ -20,14 +20,14 @@ namespace wpa3_tester{
 
     McMitm::McMitm(const string &r_client_iface,
                    const string &r_ap_iface,
-                   const string &ssid,
+                   string ssid,
                    const string &ap_mac,
                    const string &client_mac)
         : nic_real_mon(r_client_iface),
           nic_real_ap(AP_IFACE_PREFIX+r_client_iface),
           nic_rogue_mon(r_ap_iface),
           nic_rogue_ap(AP_IFACE_PREFIX+r_ap_iface),
-          ssid(ssid),
+          ssid(std::move(ssid)),
           ap_mac(ap_mac),
           client_mac(client_mac){
     }

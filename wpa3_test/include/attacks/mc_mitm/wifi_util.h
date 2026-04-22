@@ -23,6 +23,5 @@ uint64_t get_eapol_replay_num(const Tins::Dot11Data& pkt);
 
 void start_ap(wpa3_tester::RunStatus& rs, const std::string& ap_iface, const std::string& base_iface, int channel,
               const Tins::Dot11Beacon& beacon,
-              const std::optional<std::string>& ssid = std::nullopt,
               int interval = 100, int dtim_period = 1);
 void stop_ap(const std::string& iface);

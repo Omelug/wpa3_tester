@@ -20,3 +20,10 @@ target_link_libraries(test_manual_mc_mitm PRIVATE manual_test_core)
 set_target_properties(test_manual_mc_mitm PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/manual_tests/attacks"
 )
+
+# Manual start_ap test
+add_executable(test_manual_start_ap "manual_start_ap.cpp")
+target_link_libraries(test_manual_start_ap PRIVATE manual_test_core test_helpers)
+set_target_properties(test_manual_start_ap PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/manual_tests/attacks"
+)

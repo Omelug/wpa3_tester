@@ -183,7 +183,7 @@ namespace wpa3_tester{
 
         return match[1].str();
     }
-    
+
     bool hw_capabilities::set_monitor_active(const string& iface, int channel) {
         run_cmd({"ip", "link", "set", iface, "down"});
 
@@ -202,7 +202,7 @@ namespace wpa3_tester{
 
         return true;
     }
-
+    //TDOO depreacated, use set_wifi_type
     void hw_capabilities::set_monitor_mode(const string& iface, const int mtu){
         if (get_iface_type(iface) != "monitor") {
             run_cmd({"ip", "link", "set", iface, "down"});
@@ -215,7 +215,6 @@ namespace wpa3_tester{
     }
 
     void hw_capabilities::set_iface_down(const string& iface) {
-        if (netlink_helper::iface_is_down(iface)) return;
         exec({"ip", "link", "set", iface, "down"});
         if (const auto res = netlink_helper::wait_for_link_flags(iface, false); !res)
             throw runtime_error(
@@ -223,10 +222,31 @@ namespace wpa3_tester{
     }
 
     void hw_capabilities::set_iface_up(const string& iface) {
-        if (netlink_helper::iface_is_up(iface)) return;
         exec({"ip", "link", "set", iface, "up"});
         if (const auto res = netlink_helper::wait_for_link_flags(iface, true); !res)
             throw runtime_error(
                 format("Timeout waiting for '{}' to go UP: {}", iface, res.error().message()));
+    }
+
+    //TODO add monitor flags
+    void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type) {
+
+        if (netlink_helper::query_wifi_iftype(iface) == type) return;
+
+        const auto *type_str = [&]() -> const char * {
+            switch (type) {
+                case NL80211_IFTYPE_MONITOR: return "monitor";
+                case NL80211_IFTYPE_STATION: return "managed";
+                case NL80211_IFTYPE_AP:      return "__ap";
+                default: throw runtime_error(format("Unsupported nl80211 iftype: {}", static_cast<int>(type)));
+            }
+        }();
+
+        if (const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}); ret != 0)
+            throw runtime_error(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
+
+        if (const auto res = netlink_helper::wait_for_wifi_iftype(iface, type); !res)
+            throw runtime_error(format("Timeout waiting for '{}' to reach type '{}': {}",
+                                       iface, type_str, res.error().message()));
     }
 }

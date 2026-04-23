@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <linux/nl80211.h>
+
 #include "../config/RunStatus.h"
 
 namespace wpa3_tester{
@@ -126,5 +128,6 @@ namespace wpa3_tester{
 
         static void set_iface_down(const std::string & iface);
         static void set_iface_up(const std::string &iface);
+        static void set_wifi_type(std::string_view iface, nl80211_iftype type);
     };
 }

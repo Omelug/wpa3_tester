@@ -147,8 +147,9 @@ namespace wpa3_tester{
         attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap_mac.to_string();
 
-        exec({"ip", "link", "set", nic_real_mon, "up"});
-        exec({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
+        hw_capabilities::set_iface_up(nic_real_mon);
+        //TODO
+        hw_capabilities::exec({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
 
         beacon = attack_scan::RSN_scan(nic_real_mon, 20, scan_ap); //TODO hardcoded tscan_timeout
         if (!beacon) {
@@ -179,21 +180,20 @@ namespace wpa3_tester{
 
         // Now that we know the AP channel, put the monitor interface in active ACK mode
         if (start_nic_real_ap) {
-            exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "managed"});
+            hw_capabilities::exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "managed"});
             // raději postupně exec({"iw", "dev", nic_real_mon, "interface", "add", nic_real_ap, "type", "__ap", "addr"i, client_mac.to_string()});
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_ap.c_str(), client_mac.to_string().c_str());
             hw_capabilities::set_macaddress(nic_real_ap, client_mac.to_string());
             hw_capabilities::set_macaddress(nic_real_mon, client_mac.to_string());
             start_ap(rs, nic_real_ap, nic_real_mon,  netconfig.real_channel, *beacon);
-        } else {
+        } else{
             log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_mon.c_str(), client_mac.to_string().c_str());
-            exec({"ip", "link", "set", nic_real_ap,  "down"});
+            hw_capabilities::set_iface_down(nic_real_ap);
             hw_capabilities::set_macaddress(nic_real_mon, client_mac.to_string());
             hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
-            exec({"ip", "link", "set", nic_real_mon, "up"});
         }
-
-        exec({"ip", "link", "set", nic_real_mon, "up"});
+        hw_capabilities::set_iface_up(nic_real_mon);
+        //TODO
         hw_capabilities::run_cmd({"iw", "dev", nic_real_mon, "set", "channel", to_string(netconfig.real_channel)});
 
         string bpf = "(wlan addr1 "+ap_mac.to_string()+") or (wlan addr2 "+ap_mac.to_string()+")";
@@ -205,7 +205,7 @@ namespace wpa3_tester{
 
         // 3. Set up the rogue AP and interfaces
         log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_rogue_ap.c_str(), ap_mac.to_string().c_str());
-        exec({"ip", "link", "set", nic_rogue_mon, "down"});
+        hw_capabilities::set_iface_up(nic_rogue_mon);
         hw_capabilities::set_macaddress(nic_rogue_ap, ap_mac.to_string());
         hw_capabilities::set_macaddress(nic_rogue_mon, ap_mac.to_string());
 

@@ -58,6 +58,7 @@ namespace wpa3_tester::netlink_helper {
             return fd;
         }
     };
+    nl80211_iftype query_wifi_iftype(std::string_view iface_name);
 
     [[nodiscard]] bool iface_is_up(std::string_view iface_name);
     [[nodiscard]] bool iface_is_down(std::string_view iface_name);

@@ -1,6 +1,4 @@
 #include "system/netlink_helper.h"
-
-#include <algorithm>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <expected>
@@ -46,7 +44,7 @@ namespace wpa3_tester::netlink_helper {
         return NL_OK;
     }
 
-    nl80211_iftype query_wifi_iftype(const char *iface_name) {
+    nl80211_iftype query_wifi_iftype(const string_view iface_name) {
         nl_sock *sock = nl_socket_alloc();
         if (!sock) return NL80211_IFTYPE_UNSPECIFIED;
 
@@ -55,7 +53,9 @@ namespace wpa3_tester::netlink_helper {
         if (genl_connect(sock) < 0)                        { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
         const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
         if (nl80211_id < 0)                                { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-        const unsigned int ifindex = if_nametoindex(iface_name);
+        char name[IF_NAMESIZE]{};
+        iface_name.copy(name, IF_NAMESIZE - 1);
+        const unsigned int ifindex = if_nametoindex(name);
         if (ifindex == 0)                                  { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
 
         nl_msg *msg = nlmsg_alloc();
@@ -79,10 +79,10 @@ namespace wpa3_tester::netlink_helper {
         // Temporary debug — remove after diagnosis
         if (result.found)
             fprintf(stderr, "DEBUG query_wifi_iftype(%s): iftype=%d (AP=%d MONITOR=%d MANAGED=%d)\n",
-                    iface_name, result.iftype,
+                    iface_name.data(), result.iftype,
                     NL80211_IFTYPE_AP, NL80211_IFTYPE_MONITOR, NL80211_IFTYPE_STATION);
         else
-            fprintf(stderr, "DEBUG query_wifi_iftype(%s): no result\n", iface_name);
+            fprintf(stderr, "DEBUG query_wifi_iftype(%s): no result\n", iface_name.data());
 
 
         return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
@@ -113,22 +113,15 @@ namespace wpa3_tester::netlink_helper {
     // down correctly
     [[nodiscard]] bool iface_is_down(const string_view iface_name) {
         return get_iface_flags(iface_name).transform([](const short f) {
-            return (f & (IFF_UP | IFF_RUNNING)) == 0;
+            return (f & (IFF_UP)) == 0;
         }).value_or(false);
     }
 
     Result wait_for_link_flags(const string_view iface_name, const bool want_up, const int timeout_ms) {
-        // For DOWN: only IFF_UP matters — IFF_RUNNING is carrier, not admin state
-        // For UP:   require both IFF_UP and IFF_RUNNING
-        const auto is_desired = [&](const short flags) -> bool {
-            if (want_up)  return (flags & IFF_UP) && (flags & IFF_RUNNING);
-            return (flags & IFF_UP) == 0;
-            // only IFF_UP must be cleared
-        };
 
-        // Fast path
-        if (const auto flags = get_iface_flags(iface_name); flags.has_value())
-            if (is_desired(flags.value())) return {};
+        //already in correct state
+        if (want_up  &&  iface_is_up(iface_name))   return {};
+        if (!want_up &&  iface_is_down(iface_name))  return {};
 
         const timeval tv{ .tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000 };
         setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -154,7 +147,12 @@ namespace wpa3_tester::netlink_helper {
                 if (!if_indextoname(ifi->ifi_index, name)) continue;
                 if (string_view{name} != iface_name) continue;
 
-                if (is_desired(static_cast<short>(ifi->ifi_flags))) return Result{};
+                const auto f = static_cast<unsigned int>(ifi->ifi_flags);
+                const bool is_up   = (f & IFF_UP) && (f & IFF_RUNNING);
+                const bool is_down = (f & IFF_UP) == 0;
+
+                if (want_up  && is_up)   return Result{};
+                if (!want_up && is_down) return Result{};
             }
         }
     }
@@ -162,7 +160,9 @@ namespace wpa3_tester::netlink_helper {
     // netlink_helper.cpp
     Result wait_for_iface_disappear(const string_view iface_name){
         // Fast path: interface already gone
-        if (if_nametoindex(iface_name.data()) == 0) return Result{};
+        char name[IF_NAMESIZE]{};
+        iface_name.copy(name, IF_NAMESIZE - 1);
+        if (if_nametoindex(name) != 0) return Result{};
 
         char buf[8192];
         while (true) {
@@ -191,7 +191,9 @@ namespace wpa3_tester::netlink_helper {
 
     Result wait_for_iface_appear(const string_view iface_name,  const int timeout_ms) {
         // Fast path: interface already exists
-        if (if_nametoindex(iface_name.data()) != 0) return Result{};
+        char name[IF_NAMESIZE]{};
+        iface_name.copy(name, IF_NAMESIZE - 1);
+        if (if_nametoindex(name) != 0) return Result{};
 
         const timeval tv{ .tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000 };
         setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -204,7 +206,6 @@ namespace wpa3_tester::netlink_helper {
                     return unexpected(make_error_code(errc::timed_out));
                 return unexpected(make_error_code(errc::io_error));
             }
-
 
             for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
                  NLMSG_OK(nh, static_cast<size_t>(n));

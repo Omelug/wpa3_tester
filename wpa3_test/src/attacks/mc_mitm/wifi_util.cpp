@@ -169,42 +169,24 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
 
     (void)wpa3_tester::netlink_helper::NetlinkManager::get_fd();
     wpa3_tester::hw_capabilities::set_iface_down(base_iface);
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
     check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface),
       std::format("'{}' did not disappear", ap_iface));
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    // ── step 1: monitor mode ──────────────────────────────────────────────────
-    exec({"iw", "dev", base_iface, "set", "type", "monitor"});
-    check(wpa3_tester::netlink_helper::wait_for_wifi_iftype(base_iface, NL80211_IFTYPE_MONITOR),
-          std::format("'{}' did not reach monitor mode", base_iface));
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
+    wpa3_tester::hw_capabilities::set_wifi_type(base_iface, NL80211_IFTYPE_MONITOR);
 
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
-    exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
+    wpa3_tester::hw_capabilities::exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
     check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface),
           std::format("'{}' did not appear", ap_iface));
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
-
+    this_thread::sleep_for(200ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
 
     wpa3_tester::hw_capabilities::set_iface_down(ap_iface);
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
-
-
-    // ── step 4: switch to AP type ─────────────────────────────────────────────
-    exec({"iw", "dev", ap_iface, "set", "type", "__ap"});
-    check(wpa3_tester::netlink_helper::wait_for_wifi_iftype(ap_iface, NL80211_IFTYPE_AP),
-          std::format("'{}' did not reach AP mode", ap_iface));
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
-
+    wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP);
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
-
     wpa3_tester::hw_capabilities::set_iface_up(base_iface);
-    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
     // start ap command
     vector<string> cmd = {

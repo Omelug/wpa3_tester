@@ -5,6 +5,7 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "logger/log.h"
 #include "logger/error_log.h"
+
 using namespace std;
 using namespace wpa3_tester;
 using namespace Tins;

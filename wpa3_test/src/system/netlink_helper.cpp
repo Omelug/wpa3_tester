@@ -106,7 +106,7 @@ namespace wpa3_tester::netlink_helper {
     // up correctly
     [[nodiscard]] bool iface_is_up(const string_view iface_name) {
         return get_iface_flags(iface_name).transform([](const short f) {
-            return (f  & IFF_UP) != 0 && (f & IFF_RUNNING) != 0;
+            return (f  & IFF_UP) != 0 /*&& (f & IFF_RUNNING) != 0*/;
         }).value_or(false);
     }
 
@@ -162,7 +162,7 @@ namespace wpa3_tester::netlink_helper {
         // Fast path: interface already gone
         char name[IF_NAMESIZE]{};
         iface_name.copy(name, IF_NAMESIZE - 1);
-        if (if_nametoindex(name) != 0) return Result{};
+        if (if_nametoindex(name) == 0) return Result{};
 
         char buf[8192];
         while (true) {

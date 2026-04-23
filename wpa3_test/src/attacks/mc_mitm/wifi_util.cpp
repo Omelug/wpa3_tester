@@ -120,9 +120,9 @@ Dot11Beacon append_csa(const Dot11Beacon& beacon, const uint8_t channel, const u
     return copy;
 }
 
-static void check(wpa3_tester::netlink_helper::Result res, std::string_view context){
+static void check(wpa3_tester::netlink_helper::Result res, string_view context){
     if (!res)
-        throw std::system_error(res.error(), std::string{context});
+        throw system_error(res.error(), string{context});
 }
 
 void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& base_iface, int channel,
@@ -164,7 +164,7 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
     for (const auto b : head_bytes)
         head_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
 
-    //TODO some drivers drop kernel if  const std::optional<std::string>& ssid = std::nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
+    //TODO some drivers drop kernel if  const optional<string>& ssid = nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
 
     (void)wpa3_tester::netlink_helper::NetlinkManager::get_fd();
@@ -172,17 +172,16 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
     check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface),
-      std::format("'{}' did not disappear", ap_iface));
-
+      format("'{}' did not disappear", ap_iface));
+    
     wpa3_tester::hw_capabilities::set_wifi_type(base_iface, NL80211_IFTYPE_MONITOR);
 
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
     wpa3_tester::hw_capabilities::exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
     check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface),
-          std::format("'{}' did not appear", ap_iface));
+          format("'{}' did not appear", ap_iface));
     this_thread::sleep_for(200ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
-
     wpa3_tester::hw_capabilities::set_iface_down(ap_iface);
     wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP);
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
@@ -205,23 +204,15 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
         cmd.emplace_back("tail");
         cmd.push_back(tail_hex.str());
     }
-
-    string cmd_str;
-    for (const auto& arg : cmd) cmd_str += arg+" ";
-    //log(wpa3_tester::LogLevel::INFO, "Starting AP using: "+cmd_str);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // firmware need som e time to up ?
+    
+    this_thread::sleep_for(chrono::milliseconds(200)); // firmware need som e time to up ?
     rs.process_manager.run(ap_iface+"_fake", cmd);
-
-    //wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)});
-    //wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
 
     // With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
     // acknowledge received frames and send ACKs
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", base_iface, "up"});
-    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", ap_iface, "up"});
-
+    //this_thread::sleep_for(chrono::milliseconds(100));
+    wpa3_tester::hw_capabilities::set_iface_up(base_iface);
+    wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
 }
 
 void stop_ap(const string& iface){

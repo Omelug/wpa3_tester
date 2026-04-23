@@ -16,36 +16,35 @@
 using namespace std;
 using namespace filesystem;
 
-namespace {
-
-struct TsharkGuard {
-    TsharkGuard() {
-        if (system("tshark --version > /dev/null 2>&1") != 0) {
+namespace{
+struct TsharkGuard{
+    TsharkGuard(){
+        if(system("tshark --version > /dev/null 2>&1") != 0){
             log(wpa3_tester::LogLevel::ERROR, "[skip] tshark not found, skipping observer tests");
             exit(0);
         }
     }
 };
+
 [[maybe_unused]] const TsharkGuard tshark_guard;
 
-struct TempRunFolder {
+struct TempRunFolder{
     path run_folder;
     string actor;
 
-    TempRunFolder(const string& actor_name, const path& src_pcap)
-        : actor(actor_name)
-    {
-        run_folder = temp_directory_path() / ("wpa3_tshark_"+to_string(chrono::system_clock::now().time_since_epoch().count()));
+    TempRunFolder(const string &actor_name, const path &src_pcap)
+        : actor(actor_name){
+        run_folder = temp_directory_path() / ("wpa3_tshark_" + to_string(
+            chrono::system_clock::now().time_since_epoch().count()));
         const path obs_dir = run_folder / "observer" / "tshark";
         create_directories(obs_dir);
 
         // copy so the test is self-contained
-        copy_file(src_pcap, obs_dir / (actor_name+"_capture.pcap"));
+        copy_file(src_pcap, obs_dir / (actor_name + "_capture.pcap"));
     }
 
-    ~TempRunFolder() { remove_all(run_folder); }
+    ~TempRunFolder(){ remove_all(run_folder); }
 };
-
 }
 
 path this_file = source_location::current().file_name();
@@ -85,7 +84,10 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
     }
 }*/
 
-TEST_CASE("transform_to_relative - converts absolute timestamps to relative") {
+TEST_CASE (
+"transform_to_relative - converts absolute timestamps to relative"
+)
+ {
     using namespace wpa3_tester;
     using namespace chrono;
 
@@ -107,4 +109,3 @@ TEST_CASE("transform_to_relative - converts absolute timestamps to relative") {
     observer::transform_to_relative(empty_times, start_tp);
     CHECK(empty_times.empty());
 }
-

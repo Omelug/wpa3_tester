@@ -14,22 +14,24 @@
 using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
-using namespace  manual_tests;
+using namespace manual_tests;
 
-static pair<shared_ptr<OpenWrtConn>, ActorPtr>& get_conn_actor() {
-    static pair<shared_ptr<OpenWrtConn>, ActorPtr> conn_actor = []() {
+static pair<shared_ptr<OpenWrtConn>,ActorPtr> &get_conn_actor(){
+    static pair<shared_ptr<OpenWrtConn>,ActorPtr> conn_actor = [](){
         const ActorPtr actor = wb_actor_selection();
         auto conn = make_shared<OpenWrtConn>();
         actor->conn = conn;
         actor->str_con["actor_name"] = "test_actor";
-        if (!conn->connect(actor))
-            throw manual_test_err("Failed to connect");
+        if(!conn->connect(actor)) throw manual_test_err("Failed to connect");
         return make_pair(conn, actor);
     }();
     return conn_actor;
 }
 
-TEST_CASE("Info OpenWrt"){
+TEST_CASE (
+"Info OpenWrt"
+)
+{
     cli_section("Info from OpenWrt actor");
     auto& [conn, actor] = get_conn_actor();
 
@@ -86,7 +88,10 @@ TEST_CASE("Info OpenWrt"){
     }
 }
 
-TEST_CASE("Logger OpenWrt") {
+TEST_CASE (
+"Logger OpenWrt"
+)
+ {
     auto& [conn, actor] = get_conn_actor();
 
     SUBCASE("Logger") {
@@ -107,7 +112,10 @@ TEST_CASE("Logger OpenWrt") {
 }
 
 
-TEST_CASE("Tcpdump OpenWrt") {
+TEST_CASE (
+"Tcpdump OpenWrt"
+)
+ {
     auto& [conn, actor] = get_conn_actor();
 
     SUBCASE("Tcpdump Remote") {

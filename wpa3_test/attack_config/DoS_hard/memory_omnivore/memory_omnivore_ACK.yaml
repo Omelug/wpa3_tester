@@ -41,7 +41,7 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [monitor, injection]
+      condition: [ monitor, injection ]
       channel: 6
     sniff_iface: att
 observers:

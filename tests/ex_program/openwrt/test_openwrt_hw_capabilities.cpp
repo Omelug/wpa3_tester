@@ -13,17 +13,21 @@ using namespace wpa3_tester;
 using namespace filesystem;
 path this_file = source_location::current().file_name();
 
-class MockOpenWrtConn : public OpenWrtConn {
+class MockOpenWrtConn: public OpenWrtConn{
 public:
     mutable int mock_ret = 0;
     mutable string mock_output;
-    string exec(const string &cmd, bool kill_on_exit, int *ret_err ) const override{
-        if (ret_err) *ret_err = mock_ret;
+
+    string exec(const string &cmd, bool kill_on_exit, int *ret_err) const override{
+        if(ret_err) *ret_err = mock_ret;
         return mock_output;
     }
 };
 
-TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info") {
+TEST_CASE (
+"parse_hw_capabilities - OpenWrt phy0 info"
+)
+ {
     Actor_config cfg;
 
     ifstream file("iw_phy_output.txt");
@@ -48,7 +52,10 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info") {
     CHECK_EQ(cfg.bool_conditions["80211ax"], false);
 }
 
-TEST_CASE("parse_hw_capabilities - empty output") {
+TEST_CASE (
+"parse_hw_capabilities - empty output"
+)
+ {
     Actor_config cfg;
     const string output;
     OpenWrtConn::parse_hw_capabilities(cfg, output);
@@ -58,7 +65,10 @@ TEST_CASE("parse_hw_capabilities - empty output") {
     CHECK_EQ(cfg.bool_conditions["80211n"], false);
 }
 
-TEST_CASE("get_hw_capabilities - exec failure") {
+TEST_CASE (
+"get_hw_capabilities - exec failure"
+)
+ {
     Actor_config cfg;
     MockOpenWrtConn conn;
     conn.mock_ret = 1;
@@ -67,7 +77,10 @@ TEST_CASE("get_hw_capabilities - exec failure") {
     CHECK_THROWS_AS(conn.get_hw_capabilities(cfg, "radio0"), ex_conn_err);
 }
 
-TEST_CASE("get_radio_list - mock wifi status") {
+TEST_CASE (
+"get_radio_list - mock wifi status"
+)
+ {
     MockOpenWrtConn conn;
 
     // Mock output for Wi-Fi status
@@ -95,4 +108,3 @@ TEST_CASE("get_radio_list - mock wifi status") {
     CHECK_EQ(radios[0], "radio0");
     CHECK_EQ(radios[1], "radio1");
 }
-

@@ -8,9 +8,12 @@
 
 using namespace std;
 using namespace wpa3_tester;
-using namespace  filesystem;
+using namespace filesystem;
 
-TEST_CASE("RunStatus::setup_test - directory management") {
+TEST_CASE (
+"RunStatus::setup_test - directory management"
+)
+ {
     const path test_run_folder = temp_directory_path() / "test_setup_run";
     
     SUBCASE("Creates and cleans run folder") {
@@ -46,7 +49,10 @@ TEST_CASE("RunStatus::setup_test - directory management") {
     }
 }
 
-TEST_CASE("get_actors_conn_table - basic parsing") {
+TEST_CASE (
+"get_actors_conn_table - basic parsing"
+)
+ {
     const path test_file = temp_directory_path() / "test_conn_table.csv";
 
     SUBCASE("Valid file with required columns") {
@@ -86,7 +92,10 @@ TEST_CASE("get_actors_conn_table - basic parsing") {
     }
 }
 
-TEST_CASE("get_actors_conn_table - error cases") {
+TEST_CASE (
+"get_actors_conn_table - error cases"
+)
+ {
     const path test_file = temp_directory_path() / "test_conn_table_err.csv";
 
     SUBCASE("Non-existent file returns empty vector") {
@@ -121,7 +130,10 @@ TEST_CASE("get_actors_conn_table - error cases") {
     }
 }
 
-TEST_CASE("get_actors_conn_table - edge cases") {
+TEST_CASE (
+"get_actors_conn_table - edge cases"
+)
+ {
     const path test_file = temp_directory_path() / "test_conn_table_edge.csv";
 
     SUBCASE("Different column order") {
@@ -155,4 +167,3 @@ TEST_CASE("get_actors_conn_table - edge cases") {
         remove(test_file);
     }
 }
-

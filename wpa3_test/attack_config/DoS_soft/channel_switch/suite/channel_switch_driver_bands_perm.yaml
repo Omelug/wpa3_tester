@@ -13,7 +13,7 @@ tests:
         access_point:
           selection:
             driver: var_driver_0
-            condition: ["2_4GHz"]
+            condition: [ "2_4GHz" ]
         client:
           selection:
             driver: var_driver_1

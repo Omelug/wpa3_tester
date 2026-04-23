@@ -14,38 +14,37 @@ using namespace wpa3_tester;
 using namespace std;
 using namespace filesystem;
 
-
-void parse_arguments(argparse::ArgumentParser & program, const int argc, char *argv[]){
+void parse_arguments(argparse::ArgumentParser &program, const int argc, char *argv[]){
     // test
     program.add_argument("--test")
-          .help("Find name by test")
-          .metavar("NAME");
+           .help("Find name by test")
+           .metavar("NAME");
 
     program.add_argument("--test_list")
            .help("List all named tests")
-            .implicit_value(true)
-            .default_value(false);
+           .implicit_value(true)
+           .default_value(false);
 
     // test suites
     program.add_argument("--test_suite")
-          .help("Find name by test suite")
-          .metavar("NAME");
+           .help("Find name by test suite")
+           .metavar("NAME");
 
     program.add_argument("--test_suite_list")
            .help("List all named test suites")
-            .implicit_value(true)
-            .default_value(false);
+           .implicit_value(true)
+           .default_value(false);
 
     // direct config
     program.add_argument("--config")
-            .help("Path to config file of test run")
-            .metavar("PATH");
+           .help("Path to config file of test run")
+           .metavar("PATH");
 
     // only stats flag
     program.add_argument("--only_stats")
            .help("Generate statistics only without running tests")
-            .implicit_value(true)
-            .default_value(false);
+           .implicit_value(true)
+           .default_value(false);
 
     try{
         program.parse_args(argc, argv);
@@ -53,35 +52,39 @@ void parse_arguments(argparse::ArgumentParser & program, const int argc, char *a
         throw config_err(err.what());
     }
 
-    if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
-        throw config_err("Cant use both lists");
+    if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list")) throw config_err(
+        "Cant use both lists");
     if(2 <= (program.present<string>("--test").has_value() +
-            program.present<string>("--test_suite").has_value() +
-            program.present<string>("--config").has_value()))
+        program.present<string>("--test_suite").has_value() +
+        program.present<string>("--config").has_value()))
         throw config_err("Can't combinate  test/test_suite/config");
-
 }
 
 static void solve_arguments(const argparse::ArgumentParser &program){
-
     // prints
     if(program.get<bool>("--test_list")){
         if(const auto testName = program.present<string>("--test")){
             const auto tests = RunStatus::scan_attack_configs(TEST);
-            if (tests.empty()) {cout << "In program are not any tests" << endl; return;}
+            if(tests.empty()){
+                cout << "In program are not any tests" << endl;
+                return;
+            }
             cout << "Test: " << testName.value() << " -> " << tests.at(testName.value()) << endl;
-        }else if(const auto testSuiteName = program.present<string>("--test_suite")){
+        } else if(const auto testSuiteName = program.present<string>("--test_suite")){
             RunSuiteStatus::print_tests_in_suite(testSuiteName.value());
-        }else{
+        } else{
             RunStatus::print_test_list();
         }
     }
     if(program.get<bool>("--test_suite_list")){
         if(const auto testSuiteName = program.present<string>("--test_suite")){
             const auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
-            if (tests.empty()) {cout << "In program are not any tests" << endl; return;}
+            if(tests.empty()){
+                cout << "In program are not any tests" << endl;
+                return;
+            }
             cout << "Test-suite: " << testSuiteName.value() << " -> " << tests.at(testSuiteName.value()) << endl;
-        }else{
+        } else{
             RunSuiteStatus::print_test_suite_list();
         }
     }
@@ -94,7 +97,7 @@ static void solve_arguments(const argparse::ArgumentParser &program){
             RunSuiteStatus rss(config_path.value());
             rss.only_stats = only_stats;
             rss.execute();
-        }else{
+        } else{
             RunStatus rs(config_path.value());
             rs.only_stats = only_stats;
             rs.execute();
@@ -118,9 +121,9 @@ static void solve_arguments(const argparse::ArgumentParser &program){
     }
 }
 
-int main(const int argc, char *argv[])  {
+int main(const int argc, char *argv[]){
     setup_signals();
-    if (geteuid() != 0) {
+    if(geteuid() != 0){
         cerr << "Error: must be run as root (sudo)" << endl;
         return 1;
     }

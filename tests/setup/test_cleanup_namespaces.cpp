@@ -13,34 +13,41 @@
 #include <sys/wait.h>
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester { void cleanup_all_namespaces(); }
+namespace wpa3_tester{
+void cleanup_all_namespaces();
+}
+
 using namespace std;
 using namespace filesystem;
 
-namespace {
-    struct RootGuard {
-        RootGuard() {
-            if (geteuid() != 0) {
-                cerr << "[skip] test_cleanup_namespaces requires root (sudo). Skipping.\n";
-                exit(0);
-            }
+namespace{
+struct RootGuard{
+    RootGuard(){
+        if(geteuid() != 0){
+            cerr << "[skip] test_cleanup_namespaces requires root (sudo). Skipping.\n";
+            exit(0);
         }
-    };
-    [[maybe_unused]] const RootGuard root_guard;
+    }
+};
+
+[[maybe_unused]] const RootGuard root_guard;
 }
 
-static bool netns_exists(const string& name) {
-    return exists("/var/run/netns/"+name);
+static bool netns_exists(const string &name){
+    return exists("/var/run/netns/" + name);
 }
 
-static pid_t start_process_in_netns(const string& ns, const string& prog) {
-    const string ns_path = "/var/run/netns/"+ns;
+static pid_t start_process_in_netns(const string &ns, const string &prog){
+    const string ns_path = "/var/run/netns/" + ns;
     const pid_t pid = fork();
-    if (pid == 0) {
+    if(pid == 0){
         // Enter the network namespace directly (no sudo wrapper)
         const int fd = open(ns_path.c_str(), O_RDONLY | O_CLOEXEC);
-        if (fd < 0) { _exit(1); }
-        if (setns(fd, CLONE_NEWNET) < 0) { close(fd); _exit(2); }
+        if(fd < 0){ _exit(1); }
+        if(setns(fd, CLONE_NEWNET) < 0){
+            close(fd);
+            _exit(2);
+        }
         close(fd);
         execlp(prog.c_str(), prog.c_str(), "infinity", nullptr);
         _exit(127);
@@ -52,17 +59,20 @@ static pid_t start_process_in_netns(const string& ns, const string& prog) {
 }
 
 // Check whether a PID is still alive (visible in /proc).
-static bool pid_alive(const pid_t pid) {
-    return exists("/proc/"+to_string(pid));
+static bool pid_alive(const pid_t pid){
+    return exists("/proc/" + to_string(pid));
 }
 
-struct NsGuard {
+struct NsGuard{
     string name;
-    explicit NsGuard(string  n) : name(std::move(n)) {}
+    explicit NsGuard(string n): name(std::move(n)){}
     ~NsGuard() = default;
 };
 
-TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces") {
+TEST_CASE (
+"cleanup_all_namespaces - removes multiple empty namespaces"
+)
+ {
     const vector<string> names = {"wpa3_test_ns1", "wpa3_test_ns2", "wpa3_test_ns3"};
     vector<NsGuard> guards;
     for (const auto& n : names) {
@@ -79,7 +89,10 @@ TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces") {
     }
 }
 
-TEST_CASE("cleanup_all_namespaces - kills processes and removes namespace") {
+TEST_CASE (
+"cleanup_all_namespaces - kills processes and removes namespace"
+)
+ {
     const string ns = "wpa3_test_ns4";
     NsGuard guard(ns);
 
@@ -100,4 +113,3 @@ TEST_CASE("cleanup_all_namespaces - kills processes and removes namespace") {
     CHECK_FALSE(pid_alive(child));
     waitpid(child, nullptr, WNOHANG);
 }
-

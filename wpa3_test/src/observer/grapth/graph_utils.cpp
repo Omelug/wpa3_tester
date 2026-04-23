@@ -6,19 +6,18 @@
 using namespace std;
 
 namespace wpa3_tester{
-    void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>>& elements){
+void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements){
+    size_t label_index = 0;
+    size_t block_index = 0;
 
-        size_t label_index = 0;
-        size_t block_index = 0;
-
-        for (auto& element : elements){
-            if(element->type == GraphElement_t::EVENT_LINES){
-                add_event_lines(*static_cast<EventLines*>(element.get()),
-                    block_index, elements.size(), label_index);
-            }
-            if(element->type == GraphElement_t::UNKNOWN){
-                throw runtime_error("Graph element type is unknown");
-            }
+    for(auto &element: elements){
+        if(element->type == GraphElement_t::EVENT_LINES){
+            add_event_lines(*static_cast<EventLines *>(element.get()),
+                            block_index, elements.size(), label_index);
+        }
+        if(element->type == GraphElement_t::UNKNOWN){
+            throw runtime_error("Graph element type is unknown");
         }
     }
+}
 }

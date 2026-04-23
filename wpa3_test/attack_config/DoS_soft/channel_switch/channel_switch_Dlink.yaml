@@ -7,7 +7,7 @@ actors:
     selection:
       channel: 6
       whitebox_host: OpenWrt
-      condition: [AP, 2_4GHz]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: openwrt
       program_config:
@@ -43,7 +43,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [monitor]
+      condition: [ monitor ]
       channel: 6
 
 attack_config:

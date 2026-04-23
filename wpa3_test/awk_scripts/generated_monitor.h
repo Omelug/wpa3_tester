@@ -1,6 +1,6 @@
 #pragma once
 
-static const char* AWK_SCRIPT_monitor = R"awk(
+static const char *AWK_SCRIPT_monitor = R"awk(
 BEGIN {
     # Print header so parser knows column layout
     "cat /proc/cpuinfo | grep -c processor" | getline ncores

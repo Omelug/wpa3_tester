@@ -8,9 +8,11 @@ using namespace std;
 using namespace Tins;
 using namespace wpa3_tester::pmk_gobbler;
 
-namespace wpa3_tester {
-
-    TEST_CASE("parse_acm_response - valid ACM commit packet from pcap") {
+namespace wpa3_tester{
+TEST_CASE (
+"parse_acm_response - valid ACM commit packet from pcap"
+)
+ {
         auto frame = test_helpers::read_pcap_file("ACM_commit_test.pcapng");
         auto result = parse_acm_response(frame.data(), frame.size());
         

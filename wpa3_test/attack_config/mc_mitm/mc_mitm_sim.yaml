@@ -25,15 +25,15 @@ actors:
   rogue_client:
     source: simulation
     selection:
-      condition: [ monitor, injection] #active_monitor
+      condition: [ monitor, injection ] #active_monitor
       channel: 11
   rogue_ap:
     source: simulation
     selection:
-      condition: [ monitor, injection] # active_monitor
+      condition: [ monitor, injection ] # active_monitor
       channel: 1
 
-#observers: (allow start_observers if uesd )
+  #observers: (allow start_observers if uesd )
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn

@@ -10,7 +10,7 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: [monitor, injection]
+      condition: [ monitor, injection ]
       driver: ath9k_htc
       channel: 6
 observers:

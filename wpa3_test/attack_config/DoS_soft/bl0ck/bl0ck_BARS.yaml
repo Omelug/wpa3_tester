@@ -12,7 +12,7 @@ actors:
     source: internal
     selection:
       driver: rtw_8821au
-      condition: [ AP, 80211ac, 5GHz]
+      condition: [ AP, 80211ac, 5GHz ]
     setup:
       program: hostapd
       program_config:
@@ -51,7 +51,7 @@ actors:
       mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
       channel: 36
-      condition: [ monitor, 80211ac, 5GHz]
+      condition: [ monitor, 80211ac, 5GHz ]
     netns: sta
     ip_addr: "10.0.0.2"
     sniff_iface: client_mon
@@ -60,7 +60,7 @@ actors:
     selection:
       channel: 36
       #ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
-      condition: [ monitor, injection, 5GHz]
+      condition: [ monitor, injection, 5GHz ]
       #driver: rtw_8821cu
 observers:
   client_mausezahn:

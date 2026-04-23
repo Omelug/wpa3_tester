@@ -15,7 +15,7 @@ properties:
     minimum: 1
   attack_variant:
     type: string
-    enum: ["BAR", "BA", "BARS"]
+    enum: [ "BAR", "BA", "BARS" ]
     description: typeof bl0ck attack
   random:
     type: boolean

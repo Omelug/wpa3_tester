@@ -9,6 +9,6 @@ properties:
     description: path to this schema
   target_type:
     type: string
-    enum: ["ap", "sta"]
+    enum: [ "ap", "sta" ]
     description: type of target (ap -> starting dragonslayer sta, sta -> starting dragonslayer ap)
 additionalProperties: false

@@ -11,23 +11,25 @@
 #include "config/ObserverPtr.h"
 
 using namespace wpa3_tester;
-using namespace  std;
-using namespace  filesystem;
-struct ConfigTestCase {
+using namespace std;
+using namespace filesystem;
+
+struct ConfigTestCase{
     string description;
     string input_yaml;
     string expected_yaml;
     bool should_pass = true;
 };
 
-void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
-    for (const auto& t : tests) {
-        SUBCASE(t.description.c_str()) {
+void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
+    for(const auto &t: tests){
+        SUBCASE(t.description.c_str())
+        {
             path input_path = test_base / t.input_yaml;
             RunStatus rs;
             rs.config_path = input_path.string();
 
-            if (t.should_pass) {
+            if(t.should_pass){
                 REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.config_path));
 
                 path expected_path = test_base / t.expected_yaml;
@@ -37,7 +39,7 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
                 INFO("Diff (expected vs actual): " << diff.dump(4));
                 INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
                 CHECK_EQ(rs.config, expected_json);
-            } else {
+            } else{
                 CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_err);
             }
         }
@@ -45,7 +47,10 @@ void test_case_loop(const path& test_base, const vector<ConfigTestCase>& tests){
 }
 
 path this_file = source_location::current().file_name();
-TEST_CASE("RunStatus Config Validation - Test configuration") {
+TEST_CASE (
+"RunStatus Config Validation - Test configuration"
+)
+ {
     const path test_base = this_file.parent_path() / "config_validation"/"test";
 
     const vector<ConfigTestCase> tests = {
@@ -64,7 +69,10 @@ TEST_CASE("RunStatus Config Validation - Test configuration") {
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE("RunStatus Config Validation - Validator configuration"){
+TEST_CASE (
+"RunStatus Config Validation - Validator configuration"
+)
+{
     const path test_base = this_file.parent_path() / "config_validation"/"validator";
     const vector<ConfigTestCase> tests = {
         {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
@@ -74,7 +82,10 @@ TEST_CASE("RunStatus Config Validation - Validator configuration"){
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE("RunStatus Config Validation - Observer configuration"){
+TEST_CASE (
+"RunStatus Config Validation - Observer configuration"
+)
+{
     const path test_base = this_file.parent_path() / "config_validation"/"observer";
     const vector<ConfigTestCase> tests = {
         {"1. observer tcpdump valid", "01_test_observer_tcpdump_valid.yaml",    "01_result_observer_tcpdump_valid.yaml", true},
@@ -87,7 +98,10 @@ TEST_CASE("RunStatus Config Validation - Observer configuration"){
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE("RunStatus Config Validation - Test suite configuration"){
+TEST_CASE (
+"RunStatus Config Validation - Test suite configuration"
+)
+{
     const path test_base = this_file.parent_path() / "config_validation"/"test_suite";
     const vector<ConfigTestCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
@@ -97,18 +111,18 @@ TEST_CASE("RunStatus Config Validation - Test suite configuration"){
     // TODO change to suite validation test_case_loop(test_base, tests);
 }
 
-struct ConfigSuiteCase {
+struct ConfigSuiteCase{
     string description;
     string input_ts_yaml;
     string folder_name;
 };
 
-void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
+void check_recursive_yaml(const path &expected_dir, const path &actual_dir){
     REQUIRE(exists(expected_dir));
     REQUIRE(exists(actual_dir));
 
-    for (const auto& entry : recursive_directory_iterator(expected_dir)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".yaml") {
+    for(const auto &entry: recursive_directory_iterator(expected_dir)){
+        if(entry.is_regular_file() && entry.path().extension() == ".yaml"){
             path rel = relative(entry.path(), expected_dir);
             path actual_file = actual_dir / rel;
 
@@ -129,10 +143,10 @@ void check_recursive_yaml(const path& expected_dir, const path& actual_dir) {
     }
 }
 
-void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) {
-    auto get_tree_structure = [](const path& base_path) {
+void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
+    auto get_tree_structure = [](const path &base_path){
         set<string> structure;
-        for (const auto& entry : recursive_directory_iterator(base_path)) {
+        for(const auto &entry: recursive_directory_iterator(base_path)){
             structure.insert(relative(entry.path(), base_path).string());
         }
         return structure;
@@ -141,14 +155,14 @@ void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) 
     set<string> expected_tree = get_tree_structure(expected_dir);
     set<string> actual_tree = get_tree_structure(actual_dir);
 
-    if (expected_tree != actual_tree) {
-        for (const auto& path : expected_tree) {
-            if (!actual_tree.contains(path)) {
+    if(expected_tree != actual_tree){
+        for(const auto &path: expected_tree){
+            if(!actual_tree.contains(path)){
                 INFO("Missing in actual: " << path);
             }
         }
-        for (const auto& path : actual_tree) {
-            if (!expected_tree.contains(path)) {
+        for(const auto &path: actual_tree){
+            if(!expected_tree.contains(path)){
                 INFO("Extra in actual: " << path);
             }
         }
@@ -157,7 +171,10 @@ void check_dir_tree_structure(const path& expected_dir, const path& actual_dir) 
     CHECK_EQ(expected_tree, actual_tree);
 }
 
-TEST_CASE("RunStatus - parse_requirements()"){
+TEST_CASE (
+"RunStatus - parse_requirements()"
+)
+{
     const path test_base = this_file.parent_path() / "config_validation"/"test";
     
     SUBCASE("Parse actors and observers from config") {
@@ -216,7 +233,10 @@ TEST_CASE("RunStatus - parse_requirements()"){
     }
 }
 
-TEST_CASE("RunStatus - Test suite test generation") {
+TEST_CASE (
+"RunStatus - Test suite test generation"
+)
+ {
     const path test_base = absolute(this_file.parent_path() / "config_validation" / "test_suite");
 
     const vector<ConfigSuiteCase> tests = {

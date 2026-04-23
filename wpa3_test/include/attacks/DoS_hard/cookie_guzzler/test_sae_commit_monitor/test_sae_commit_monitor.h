@@ -8,12 +8,12 @@
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::test_sae_commit_monitor{
-    using namespace std;
-    using namespace filesystem;
-    using namespace Tins;
-    using namespace chrono;
+using namespace std;
+using namespace filesystem;
+using namespace Tins;
+using namespace chrono;
 
-    void speed_observation_start(RunStatus &rs);
-    void run_attack(RunStatus& rs);
-    void stats_attack(const RunStatus& rs);
+void speed_observation_start(RunStatus & rs);
+void run_attack(RunStatus & rs);
+void stats_attack(const RunStatus &rs);
 }

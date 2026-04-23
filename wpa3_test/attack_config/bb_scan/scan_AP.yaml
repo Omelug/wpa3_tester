@@ -12,7 +12,7 @@ actors:
   scanner:
     source: internal
     selection:
-      condition: [monitor]
+      condition: [ monitor ]
       channel: 6
     sniff_iface: scanner
 

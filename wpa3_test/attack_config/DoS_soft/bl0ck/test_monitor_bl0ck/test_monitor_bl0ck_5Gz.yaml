@@ -6,11 +6,11 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [5GHz, monitor]
+      condition: [ 5GHz, monitor ]
     netns: rx
   transceiver:
     source: internal
     selection:
       driver: rtw_8821cu
-      condition: [5GHz, monitor, injection]
+      condition: [ 5GHz, monitor, injection ]
       channel: 36

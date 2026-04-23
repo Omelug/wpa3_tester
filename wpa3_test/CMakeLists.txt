@@ -6,35 +6,35 @@ project(wpa3_tester VERSION 0.1.0 LANGUAGES C CXX)
 
 # --- VALGRIND / CTEST CONFIGURATION ---
 find_program(MEMORYCHECK_COMMAND valgrind)
-if(MEMORYCHECK_COMMAND)
+if (MEMORYCHECK_COMMAND)
     set(MEMORYCHECK_COMMAND_OPTIONS "--track-fds=yes --leak-check=full --error-exitcode=1 --show-leak-kinds=all")
     message(STATUS "Valgrind found: tracking FDs enabled for memcheck")
-endif()
+endif ()
 
 # optimization for compiling/ linking
 execute_process(COMMAND lld --version RESULT_VARIABLE LLD_FOUND OUTPUT_QUIET ERROR_QUIET)
-if(LLD_FOUND EQUAL 0)
+if (LLD_FOUND EQUAL 0)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
     message(STATUS "Using LLD linker")
-endif()
+endif ()
 
 find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
+if (CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
     message(STATUS "ccache found")
-else()
+else ()
     message(STATUS "ccache not found")
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 23)
 
 option(ENABLE_COVERAGE "Enable coverage" OFF)
 
-if(ENABLE_COVERAGE)
+if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)
     add_link_options(--coverage)
-endif()
+endif ()
 
 include(cmake/awk_files.cmake)
 include(cmake/external_libs.cmake)

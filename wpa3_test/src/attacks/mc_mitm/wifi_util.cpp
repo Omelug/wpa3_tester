@@ -7,13 +7,13 @@
 using namespace std;
 using namespace Tins;
 
-string get_ssid(const Dot11Beacon& beacon) {
+string get_ssid(const Dot11Beacon &beacon){
     const auto opt = beacon.search_option(Dot11::SSID);
-    if (!opt) return "";
+    if(!opt) return "";
     return string(opt->data_ptr(), opt->data_ptr() + opt->data_size());
 }
 
-Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rogue_channel) {
+Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rogue_channel){
     auto resp = Dot11ProbeResponse();
     resp.addr2(beacon.addr2());
     resp.addr3(beacon.addr3());
@@ -21,15 +21,15 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rog
     resp.interval(beacon.interval());
     resp.capabilities() = beacon.capabilities();
 
-    for (const auto& opt : beacon.options()) {
-        if (opt.option() == Dot11::TIM ) continue; // remove, not in probe responses
-        if (opt.option() == Dot11::DS_SET) {
+    for(const auto &opt: beacon.options()){
+        if(opt.option() == Dot11::TIM) continue; // remove, not in probe responses
+        if(opt.option() == Dot11::DS_SET){
             uint8_t ch = rogue_channel;
             resp.add_option({Dot11::DS_SET, 1, &ch});
             continue;
         }
         //FIXME in python is HT_OPRAITon unchanged
-        if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+        if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1){
             vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
             ht_data[0] = rogue_channel;
             resp.add_option({Dot11::HT_OPERATION, ht_data.size(), ht_data.data()});
@@ -42,8 +42,8 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rog
 }
 
 //TODO move
-Dot11Beacon* beacon_channel_patch(const Dot11Beacon& beacon, const int rogue_channel) {
-    auto* resp = new Dot11Beacon();
+Dot11Beacon *beacon_channel_patch(const Dot11Beacon &beacon, const int rogue_channel){
+    auto *resp = new Dot11Beacon();
     resp->addr1(Dot11::BROADCAST);
     resp->addr2(beacon.addr2());
     resp->addr3(beacon.addr3());
@@ -51,14 +51,13 @@ Dot11Beacon* beacon_channel_patch(const Dot11Beacon& beacon, const int rogue_cha
     resp->interval(beacon.interval());
     resp->capabilities() = beacon.capabilities();
 
-
-    for (const auto& opt : beacon.options()) {
-        if (opt.option() == Dot11::DS_SET) {
+    for(const auto &opt: beacon.options()){
+        if(opt.option() == Dot11::DS_SET){
             uint8_t ch = rogue_channel;
             resp->add_option({Dot11::DS_SET, 1, &ch});
             continue;
         }
-        if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+        if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1){
             vector ht(opt.data_ptr(), opt.data_ptr() + opt.data_size());
             ht[0] = rogue_channel;
             resp->add_option({Dot11::HT_OPERATION, ht.size(), ht.data()});
@@ -69,8 +68,8 @@ Dot11Beacon* beacon_channel_patch(const Dot11Beacon& beacon, const int rogue_cha
     return resp;
 }
 
-Dot11AssocResponse* assoc_resp_channel_patch(const Dot11AssocResponse& assoc, const int rogue_channel) {
-    auto* resp = new Dot11AssocResponse();
+Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, const int rogue_channel){
+    auto *resp = new Dot11AssocResponse();
     resp->addr1(assoc.addr1());
     resp->addr2(assoc.addr2());
     resp->addr3(assoc.addr3());
@@ -79,8 +78,8 @@ Dot11AssocResponse* assoc_resp_channel_patch(const Dot11AssocResponse& assoc, co
     resp->aid(assoc.aid());
     resp->seq_num(assoc.seq_num());
 
-    for (const auto& opt : assoc.options()) {
-        if (opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
+    for(const auto &opt: assoc.options()){
+        if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1){
             vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
             ht_data[0] = rogue_channel;
             resp->add_option({Dot11::HT_OPERATION, ht_data.size(), ht_data.data()});
@@ -92,17 +91,17 @@ Dot11AssocResponse* assoc_resp_channel_patch(const Dot11AssocResponse& assoc, co
     return resp;
 }
 
-int get_eapol_msg_num(const RSNEAPOL* rsneapol) {
-    if (!rsneapol) return 0;
+int get_eapol_msg_num(const RSNEAPOL *rsneapol){
+    if(!rsneapol) return 0;
     const uint8_t key_ack = rsneapol->key_ack();
     const uint8_t key_mic = rsneapol->key_mic();
     const uint8_t install = rsneapol->install();
     const uint8_t secure = rsneapol->secure();
 
-    if (key_mic && !key_ack && !install && !secure) return 2; // M2
-    if (key_mic && key_ack && install && secure) return 3;    // M3
-    if (key_mic && !key_ack && !install && secure) return 4;  // M4
-    if (!key_mic && key_ack && !install && !secure) return 1; // M1
+    if(key_mic && !key_ack && !install && !secure) return 2; // M2
+    if(key_mic && key_ack && install && secure) return 3;    // M3
+    if(key_mic && !key_ack && !install && secure) return 4;  // M4
+    if(!key_mic && key_ack && !install && !secure) return 1; // M1
 
     return 0;
 }
@@ -111,27 +110,28 @@ Dot11ManagementFrame::channel_switch_type construct_csa(const uint8_t new_channe
     return {
         1, //type
         new_channel,
-        count};
+        count
+    };
 }
 
-Dot11Beacon append_csa(const Dot11Beacon& beacon, const uint8_t channel, const uint8_t count){
+Dot11Beacon append_csa(const Dot11Beacon &beacon, const uint8_t channel, const uint8_t count){
     Dot11Beacon copy = beacon;
     copy.channel_switch(construct_csa(channel, count));
     return copy;
 }
 
 static void check(wpa3_tester::netlink_helper::Result res, string_view context){
-    if (!res)
-        throw system_error(res.error(), string{context});
+    if(!res) throw system_error(res.error(), string{context});
 }
 
-void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& base_iface, int channel,
+void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const string &base_iface, int channel,
               const Dot11Beacon &beacon,
-              int interval, int dtim_period){
+              int interval, int dtim_period
+){
     // In order of priority: provided ssid, ssid from beacon, or default
-    const auto* ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
-    if (!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
-    auto ap_ssid = string(reinterpret_cast<const char*>(ssid_ie->data_ptr()), ssid_ie->data_size());
+    const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
+    if(!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
+    auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
 
     // Split beacon into head (before TIM) and tail (after TIM)
     Dot11Beacon head;
@@ -143,14 +143,14 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
     vector<uint8_t> tail_bytes;
     bool past_tim = false;
 
-    for (const auto& opt : beacon.options()) {
-        if (opt.option() == Dot11ManagementFrame::TIM) {
+    for(const auto &opt: beacon.options()){
+        if(opt.option() == Dot11ManagementFrame::TIM){
             past_tim = true;
             continue;
         }
-        if (!past_tim) {
+        if(!past_tim){
             head.add_option(opt);
-        } else {
+        } else{
             // Serialize tail IEs manually
             tail_bytes.push_back(opt.option());
             tail_bytes.push_back(static_cast<uint8_t>(opt.data_size()));
@@ -161,8 +161,7 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
     // Serialize head to hex
     const auto head_bytes = head.serialize();
     ostringstream head_hex;
-    for (const auto b : head_bytes)
-        head_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
+    for(const auto b: head_bytes) head_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
 
     //TODO some drivers drop kernel if  const optional<string>& ssid = nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
@@ -172,10 +171,9 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
     check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface),
-      format("'{}' did not disappear", ap_iface));
-    
-    wpa3_tester::hw_capabilities::set_wifi_type(base_iface, NL80211_IFTYPE_MONITOR);
+          format("'{}' did not disappear", ap_iface));
 
+    wpa3_tester::hw_capabilities::set_wifi_type(base_iface, NL80211_IFTYPE_MONITOR);
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
     wpa3_tester::hw_capabilities::exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
@@ -197,16 +195,15 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
         "head", head_hex.str()
     };
 
-    if (!tail_bytes.empty()) {
+    if(!tail_bytes.empty()){
         ostringstream tail_hex;
-        for (const auto b : tail_bytes)
-            tail_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
+        for(const auto b: tail_bytes) tail_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
         cmd.emplace_back("tail");
         cmd.push_back(tail_hex.str());
     }
-    
+
     this_thread::sleep_for(chrono::milliseconds(200)); // firmware need som e time to up ?
-    rs.process_manager.run(ap_iface+"_fake", cmd);
+    rs.process_manager.run(ap_iface + "_fake", cmd);
 
     // With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
     // acknowledge received frames and send ACKs
@@ -215,9 +212,9 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
 }
 
-void stop_ap(const string& iface){
+void stop_ap(const string &iface){
     const vector<string> cmd = {"iw", "dev", iface, "ap", "stop"};
-    log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev "+iface+" ap stop");
+    log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev " + iface + " ap stop");
     wpa3_tester::hw_capabilities::run_cmd(cmd);
 }
 

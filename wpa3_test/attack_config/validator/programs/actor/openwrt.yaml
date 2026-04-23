@@ -4,7 +4,7 @@ type: object
 # TODO vygenerovane, zkontrolovat v dokumentaci openwrt
 properties:
   validator:
-      type: string
+    type: string
   # --- basic ---
   ssid:
     type: string
@@ -13,7 +13,7 @@ properties:
     default: OpenWrt
   mode:
     type: string
-    enum: [ap, sta, monitor, adhoc, mesh]
+    enum: [ ap, sta, monitor, adhoc, mesh ]
     default: ap
   hidden:
     type: boolean
@@ -30,10 +30,10 @@ properties:
         minimum: 1
         maximum: 196
       - type: string
-        enum: [auto]
+        enum: [ auto ]
   htmode:
     type: string
-    enum: [HT20, HT40, HT40+, HT40-, VHT20, VHT40, VHT80, VHT160, HE20, HE40, HE80, HE160, EHT20, EHT40, EHT80, EHT160, EHT320]
+    enum: [ HT20, HT40, HT40+, HT40-, VHT20, VHT40, VHT80, VHT160, HE20, HE40, HE80, HE160, EHT20, EHT40, EHT80, EHT160, EHT320 ]
   txpower:
     type: integer
     minimum: 0
@@ -52,10 +52,10 @@ properties:
   # --- security ---
   proto:
     type: string
-    enum: [RSN, WPA, WPA2, WPA3, none]
+    enum: [ RSN, WPA, WPA2, WPA3, none ]
   encryption:
     type: string
-    enum: [none, psk, psk2, psk-mixed, sae, sae-mixed, owe, wep, ccmp, tkip]
+    enum: [ none, psk, psk2, psk-mixed, sae, sae-mixed, owe, wep, ccmp, tkip ]
     default: none
   key:
     type: string
@@ -65,13 +65,13 @@ properties:
   # --- PMF (Protected Management Frames) ---
   ieee80211w:
     type: integer
-    enum: [0, 1, 2]
+    enum: [ 0, 1, 2 ]
     description: "0=disabled, 1=optional, 2=required (WPA3)"
     default: 1
   # --- WPA3 SAE ---
   sae_pwe:
     type: integer
-    enum: [0, 1, 2, 3]
+    enum: [ 0, 1, 2, 3 ]
     description: "0=hunt-and-peck, 1=H2E, 2=H2E required, 3=both"
   sae_password:
     type: string
@@ -149,12 +149,12 @@ properties:
   network:
     type: string
     default: lan
-required: [ssid, mode]
+required: [ ssid, mode ]
 if:
   properties:
     encryption:
-      enum: [psk, psk2, psk-mixed, sae, sae-mixed]
+      enum: [ psk, psk2, psk-mixed, sae, sae-mixed ]
 then:
-  required: [key]
+  required: [ key ]
 
 additionalProperties: false

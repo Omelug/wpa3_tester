@@ -4,8 +4,8 @@ tests:
   driver_perm:
     type: permutation
     vars:
-      driver: ["driver1", "driver2", "driver3"]
-      mode: ["2_4GHz", "5GHz"]
+      driver: [ "driver1", "driver2", "driver3" ]
+      mode: [ "2_4GHz", "5GHz" ]
     config:
       extends: 03_test.yaml
       actors:
@@ -17,4 +17,4 @@ tests:
             driver: var_driver_1
         attacker:
           selection:
-            condition: [var_mode_0]
+            condition: [ var_mode_0 ]

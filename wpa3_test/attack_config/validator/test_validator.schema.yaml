@@ -36,22 +36,22 @@ properties:
     type: string
     description: Interface to scan when source is external
   #FIXME, tohle v draft-07, kterou json kniihovna podporuje asi nejde,
-#  if:
-#    properties:
-#      actors:
-#        type: object
-#        additionalProperties:
-#          properties:
-#            source:
-#              enum: [ external ]
-#          required: [ source ]
-#          not:
-#            anyOf:
-#              - required: [ whitebox_ip ]
-#              - required: [ whitebox_host ]
-#    required: [ actors ]
-#  then:
-#    required: [ scan_iface ]
+  #  if:
+  #    properties:
+  #      actors:
+  #        type: object
+  #        additionalProperties:
+  #          properties:
+  #            source:
+  #              enum: [ external ]
+  #          required: [ source ]
+  #          not:
+  #            anyOf:
+  #              - required: [ whitebox_ip ]
+  #              - required: [ whitebox_host ]
+  #    required: [ actors ]
+  #  then:
+  #    required: [ scan_iface ]
 
   attack_config:
     type: object
@@ -76,7 +76,7 @@ definitions:
     properties:
       source:
         type: string
-        enum: ["simulation","internal", "external"]
+        enum: [ "simulation","internal", "external" ]
         description: mac_hwsim, internal, external
       netns:
         type: string
@@ -92,7 +92,7 @@ definitions:
         properties:
           program:
             type: string
-            enum: [ "hostapd", "wpa_supplicant", "openwrt", "hostapd-mana"]
+            enum: [ "hostapd", "wpa_supplicant", "openwrt", "hostapd-mana" ]
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
@@ -174,7 +174,7 @@ definitions:
             type: array
             items:
               type: string
-              enum: ["AP", "injection", "managed", "monitor", "control_monitor", "active_monitor" ,"2_4GHz", "5GHz", "WPA-PSK", "WPA3-SAE", "80211n","80211ac", "80211ax"]
+              enum: [ "AP", "injection", "managed", "monitor", "control_monitor", "active_monitor" ,"2_4GHz", "5GHz", "WPA-PSK", "WPA3-SAE", "80211n","80211ac", "80211ax" ]
             minItems: 1
             description: Condition for selection
         minProperties: 1
@@ -231,7 +231,7 @@ definitions:
         description: Actor to observe
       program:
         type: string
-        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter"]
+        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter" ]
         description: Program to use for observation
       program_config:
         type: object

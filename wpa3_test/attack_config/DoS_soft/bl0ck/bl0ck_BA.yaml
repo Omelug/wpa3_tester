@@ -12,7 +12,7 @@ actors:
     source: internal
     selection:
       driver: rtw_8821au
-      condition: [ AP, 80211ac, 5GHz]
+      condition: [ AP, 80211ac, 5GHz ]
     setup:
       program: hostapd
       program_config:
@@ -50,7 +50,7 @@ actors:
       mac: "00:c0:ca:b7:69:2a" # je tam stejný driver i firmware, ale funguje jen na ALFA mediatek
       driver: mt76x2u
       channel: 36
-      condition: [ monitor, 80211ac, 5GHz]
+      condition: [ monitor, 80211ac, 5GHz ]
     netns: sta
     ip_addr: "10.0.0.2"
     sniff_iface: client_mon
@@ -58,7 +58,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ monitor, injection, 5GHz]
+      condition: [ monitor, injection, 5GHz ]
       #driver: rtw_8821cu
 observers:
   ap_mausezahn:

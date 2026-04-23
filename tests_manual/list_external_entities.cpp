@@ -3,11 +3,10 @@
 #include "config/RunStatus.h"
 #include "manual_test_core/manual_test_wizards.h"
 
-
 using namespace std;
 using namespace wpa3_tester;
 
-int main() {
+int main(){
     manual_tests::cli_section("External Entity Scanner - Manual Test");
 
     const auto selected_iface = manual_tests::get_iface_wizard();
@@ -17,14 +16,14 @@ int main() {
     getline(cin, timeout_input);
 
     int timeout = 30;
-    if (!timeout_input.empty()) {
-        try {
+    if(!timeout_input.empty()){
+        try{
             timeout = stoi(timeout_input);
-            if (timeout < 1 || timeout > 300) {
+            if(timeout < 1 || timeout > 300){
                 cout << "Timeout must be between 1 and 300 seconds. Using default (30).\n";
                 timeout = 30;
             }
-        } catch (...) {
+        } catch(...){
             cout << "Invalid timeout value. Using default (30).\n";
             timeout = 30;
         }
@@ -38,9 +37,9 @@ int main() {
     cout << "Please wait...\n";
 
     vector<ActorPtr> entities;
-    try {
+    try{
         entities = RunStatus::list_external_entities(actor["iface"], timeout, {6, 13});
-    } catch (const exception& e) {
+    } catch(const exception &e){
         cout << "Error during scanning: " << e.what() << "\n";
         cout << "\nPossible issues:\n";
         cout << "  - Interface may not be in monitor mode\n";
@@ -54,4 +53,3 @@ int main() {
 
     return 0;
 }
-

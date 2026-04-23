@@ -5,7 +5,7 @@ actors:
   multi_role_actor:
     source: internal
     selection:
-      condition: ["AP", "monitor", "injection"]
+      condition: [ "AP", "monitor", "injection" ]
     setup:
       program: hostapd
 

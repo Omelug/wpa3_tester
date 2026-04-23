@@ -8,5 +8,5 @@ properties:
     type: string
   program_config:
     $ref: "./07_recursive.schema.yaml"
-required: [program]
+required: [ program ]
 additionalProperties: false

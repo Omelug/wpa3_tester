@@ -9,7 +9,7 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: ["monitor", "injection"]
+      condition: [ "monitor", "injection" ]
     setup:
       program: wpa_supplicant
 

@@ -4,9 +4,9 @@ tests:
   driver_perm:
     type: generator
     vars:
-      driver1: ["driver1", "driver2", "driver3"]
-      driver2: ["driver2", "driver3", "driver1"]
-      driver3: ["driver3", "driver1", "driver2"]
+      driver1: [ "driver1", "driver2", "driver3" ]
+      driver2: [ "driver2", "driver3", "driver1" ]
+      driver3: [ "driver3", "driver1", "driver2" ]
     config:
       extends: 03_test.yaml
       actors:

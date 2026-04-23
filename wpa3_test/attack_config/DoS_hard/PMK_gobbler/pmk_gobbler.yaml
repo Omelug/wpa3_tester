@@ -23,7 +23,7 @@ actors:
   client:
     source: internal
     #selection:
-      #driver: mt76x2u
+    #driver: mt76x2u
     setup:
       program: wpa_supplicant
       program_config:
@@ -43,7 +43,7 @@ actors:
       requirements: [ ath_masker ]
     selection:
       driver: ath9k_htc
-      condition: [monitor, injection]
+      condition: [ monitor, injection ]
       #TODO add firmware: [ath_masker]
       channel: 6
     sniff_iface: att

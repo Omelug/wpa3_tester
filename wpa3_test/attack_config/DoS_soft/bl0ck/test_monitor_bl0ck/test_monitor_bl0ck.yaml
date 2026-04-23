@@ -6,13 +6,13 @@ actors:
     source: internal
     selection:
       channel: 1
-      condition: [monitor]
+      condition: [ monitor ]
       driver: mt76x2u
     netns: rx
   transceiver:
     source: internal
     selection:
-      condition: [monitor, injection]
+      condition: [ monitor, injection ]
 
       #driver: rtl8xxxu
       #driver: ath9k_htc

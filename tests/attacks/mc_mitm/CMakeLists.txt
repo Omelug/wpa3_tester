@@ -14,7 +14,7 @@ set(TEST_DATA_FILES
 )
 
 # TODO better than configure_file
-foreach(data_file ${TEST_DATA_FILES})
+foreach (data_file ${TEST_DATA_FILES})
     add_custom_command(
             TARGET run_mc_mitm_tests POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -22,6 +22,6 @@ foreach(data_file ${TEST_DATA_FILES})
             ${CMAKE_CURRENT_BINARY_DIR}/${data_file}
             COMMENT "Copying ${data_file} to build directory"
     )
-endforeach()
+endforeach ()
 
 add_test(NAME McMitmTests COMMAND run_mc_mitm_tests)

@@ -5,7 +5,7 @@ actors:
   access_point:
     source: internal
     selection:
-      condition: [AP]
+      condition: [ AP ]
       channel: 6
     setup:
       program: hostapd
@@ -43,7 +43,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [monitor]
+      condition: [ monitor ]
       channel: 6
 attack_config:
   validator: ./channel_switch.schema.yaml

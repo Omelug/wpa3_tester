@@ -6,53 +6,52 @@
 using namespace std;
 
 namespace wpa3_tester::components{
-    void setup_AP(RunStatus& rs,const string& actor_name){
-        program::start(rs, actor_name);
+void setup_AP(RunStatus &rs, const string &actor_name){
+    program::start(rs, actor_name);
 
-        //FIXME this dont work with external logread  (some issue with buffering?)
-        // rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
+    //FIXME this dont work with external logread  (some issue with buffering?)
+    // rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
-        log(LogLevel::INFO, actor_name+" is running");
-        if(rs.get_actor(actor_name)->str_con["ip_addr"]){
-            ip::set_ip(rs, actor_name);
-        }
+    log(LogLevel::INFO, actor_name + " is running");
+    if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+        ip::set_ip(rs, actor_name);
+    }
+}
+
+void setup_STA(RunStatus &rs, const string &actor_name){
+    program::start(rs, actor_name);
+    rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", chrono::seconds(10));
+    if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+        ip::set_ip(rs, actor_name);
+    }
+}
+
+void client_ap_attacker_setup(RunStatus &rs){
+    // check if contains rs.get_actor("attacker")["source"] != "internal"
+    if(rs.get_actor("client")["source"] != "internal"){
+        throw runtime_error("only internal actors are supported");
     }
 
-    void setup_STA(RunStatus& rs,const string& actor_name){
-        program::start(rs, actor_name);
-        rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", chrono::seconds(10));
-        if(rs.get_actor(actor_name)->str_con["ip_addr"]){
-            ip::set_ip(rs, actor_name);
-        }
+    setup_AP(rs, "access_point");
+    setup_STA(rs, "client");
+
+    rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
+    rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", chrono::seconds(40));
+    log(LogLevel::INFO, "client is connected");
+}
+
+void client_ap_attacker_setup_enterprise(RunStatus &rs){
+    if(rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal"){
+        throw runtime_error("only internal actors are supported");
     }
 
-    void client_ap_attacker_setup(RunStatus& rs){
-        // check if contains rs.get_actor("attacker")["source"] != "internal"
-        if (rs.get_actor("client")["source"] != "internal") {
-            throw runtime_error("only internal actors are supported");
-        }
+    if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
+    setup_STA(rs, "client");
 
-        setup_AP(rs, "access_point");
-        setup_STA(rs, "client");
-
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
-        rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", chrono::seconds(40));
-        log(LogLevel::INFO, "client is connected");
-    }
-
-    void client_ap_attacker_setup_enterprise(RunStatus& rs){
-
-        if (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal") {
-            throw runtime_error("only internal actors are supported");
-        }
-
-        if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
-        setup_STA(rs, "client");
-
-        rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
-        //if(rs.get_actor("access_point")->is_WB()){
-        //    rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
-        //} // ony check, not
-        log(LogLevel::INFO, "client is connected");
-    }
+    rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(40));
+    //if(rs.get_actor("access_point")->is_WB()){
+    //    rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
+    //} // ony check, not
+    log(LogLevel::INFO, "client is connected");
+}
 }

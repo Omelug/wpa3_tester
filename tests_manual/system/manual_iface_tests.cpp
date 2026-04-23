@@ -14,19 +14,25 @@ using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-struct TestConfig {
+struct TestConfig{
     static inline string base_iface = "wlan1";
     static inline int channel = 4;
 };
 
-TEST_CASE("iface up down"){
+TEST_CASE (
+"iface up down"
+)
+{
     REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface));
 }
 
-TEST_CASE("set wifi type"){
+TEST_CASE (
+"set wifi type"
+)
+{
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
 
     REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_MONITOR));
@@ -39,7 +45,10 @@ TEST_CASE("set wifi type"){
     REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_STATION);
 }
 
-TEST_CASE("start ap test") {
+TEST_CASE (
+"start ap test"
+)
+ {
     const string base_iface = TestConfig::base_iface;
     const string ap_iface   = "ap_" + base_iface;
     const string pcap_path  = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";

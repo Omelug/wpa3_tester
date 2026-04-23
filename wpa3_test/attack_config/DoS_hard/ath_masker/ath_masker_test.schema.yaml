@@ -15,21 +15,21 @@ properties:
     properties:
       access_point:
         type: object
-        required: [source, setup]
+        required: [ source, setup ]
         properties:
           setup:
             type: object
-            required: [program]
+            required: [ program ]
             properties:
               program: { const: hostapd }
 
       attacker:
         type: object
-        required: [source, setup]
+        required: [ source, setup ]
         properties:
           setup:
             type: object
-            required: [requirements]
+            required: [ requirements ]
             properties:
               requirements:
                 type: array
@@ -39,7 +39,7 @@ properties:
 
   attack_config:
     type: object
-    required: [test_mac_count]
+    required: [ test_mac_count ]
     properties:
       test_mac_count:
         type: integer

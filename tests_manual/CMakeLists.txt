@@ -15,7 +15,7 @@ add_executable(test_list_external_entities "./list_external_entities.cpp")
 target_link_libraries(test_list_external_entities PRIVATE manual_test_core)
 
 set_target_properties(test_list_external_entities PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests"
 )
 
 # Test2: Get info from OpenWrt actor
@@ -23,7 +23,7 @@ add_executable(test_info_openwrt "ex_program/openwrt/info_openwrt.cpp")
 target_link_libraries(test_info_openwrt PRIVATE manual_test_core)
 
 set_target_properties(test_info_openwrt PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests"
 )
 
 add_subdirectory(attacks)

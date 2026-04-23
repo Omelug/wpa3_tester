@@ -8,177 +8,182 @@
 #include "system/firmware/ath9k_htc.h"
 
 namespace wpa3_tester{
-    using namespace std;
-    using json = nlohmann::json;
-    using YNode = YAML::Node;
-    using namespace filesystem;
+using namespace std;
+using json = nlohmann::json;
+using YNode = YAML::Node;
+using namespace filesystem;
 
-    json yaml_to_json(const YNode& node) {
-        if (node.IsScalar()) {
-            if (node.Tag() == "!") { // if ""
-                return node.as<string>();
-            }
-            try { return node.as<bool>(); } catch (...) {}
-            try { return node.as<int64_t>(); } catch (...) {}
-            try { return node.as<double>(); } catch (...) {}
+json yaml_to_json(const YNode &node){
+    if(node.IsScalar()){
+        if(node.Tag() == "!"){
+            // if ""
             return node.as<string>();
         }
-        if (node.IsSequence()) {
-            auto j = json::array();
-            for (auto const& item : node) j.push_back(yaml_to_json(item));
-            return j;
-        }
-        if (node.IsMap()) {
-            auto j = json::object();
-            for (auto it = node.begin(); it != node.end(); ++it) {
-                j[it->first.as<string>()] = yaml_to_json(it->second);
-            }
-            return j;
-        }
-        return {};
+        try{ return node.as<bool>(); } catch(...){}
+        try{ return node.as<int64_t>(); } catch(...){}
+        try{ return node.as<double>(); } catch(...){}
+        return node.as<string>();
     }
-
-    void deep_merge(json& base, const json& patch) {
-        for (auto it = patch.begin(); it != patch.end(); ++it) {
-            if (it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()) {
-                deep_merge(base[it.key()], it.value());
-            } else {
-                base[it.key()] = it.value();
-            }
-        }
+    if(node.IsSequence()){
+        auto j = json::array();
+        for(auto const &item: node) j.push_back(yaml_to_json(item));
+        return j;
     }
-
-    json resolve_extends(json current_node, const path& base_dir, vector<string>& hierarchy) {
-        if (!current_node.is_object()){
-            return current_node;
+    if(node.IsMap()){
+        auto j = json::object();
+        for(auto it = node.begin(); it != node.end(); ++it){
+            j[it->first.as<string>()] = yaml_to_json(it->second);
         }
-
-        // resolve validator paths to be absolute
-        if (current_node.contains("validator") && current_node["validator"].is_string()) {
-            const path schema_rel_path = current_node["validator"].get<string>();
-            const path schema_abs_path = absolute(base_dir / schema_rel_path);
-            current_node["validator"] = schema_abs_path.string();
-        }
-
-        if(!current_node.contains("extends")){
-            for (auto& [key, value] : current_node.items()) {
-                value = resolve_extends(value, base_dir, hierarchy);
-            }
-            return current_node;
-        }
-
-        // extends
-        const path parent_path = absolute(base_dir / current_node["extends"].get<string>());
-        const string parent_path_str = parent_path.string();
-
-        if (ranges::find(hierarchy, parent_path_str) != hierarchy.end()) {
-            throw config_err("Circular inheritance detected! File already in hierarchy: "+parent_path_str);
-        }
-
-        hierarchy.push_back(parent_path_str);
-        current_node.erase("extends");
-
-        const YNode parent_yaml = YAML::LoadFile(parent_path.string());
-        json parent_json = yaml_to_json(parent_yaml);
-        deep_merge(parent_json, current_node);
-        parent_json = resolve_extends(parent_json, parent_path.parent_path(), hierarchy);
-
-        // remove from hierarchy
-        hierarchy.pop_back();
-        return parent_json;
+        return j;
     }
+    return {};
+}
 
-    json RunStatus::extends_recursive(const nlohmann::json& config_json, const string &config_path){
-        const path config_dir = path(config_path).parent_path();
-        vector<string> hierarchy;
-        return resolve_extends(config_json, config_dir, hierarchy);
-    }
-
-    void RunStatus::validate_recursive(nlohmann::json& current_node, const path& base_dir) {
-        if (current_node.is_object()) {
-            if (current_node.contains("validator") && current_node.at("validator").is_string()) {
-                const auto schema_file = current_node.at("validator").get<string>();
-                const path schema_path = base_dir / schema_file;
-
-                const YAMLValidator validator(schema_path);
-                const YNode node = YAML::LoadFile(schema_path.string());
-                validator.validate(current_node);
-                current_node.erase("validator");
-            }
-
-            for (auto& [key, value] : current_node.items()) {
-                validate_recursive(value, base_dir);
-            }
-        }
-        else if (current_node.is_array()) {
-            for (auto& element : current_node) {
-                validate_recursive(element, base_dir);
-            }
+void deep_merge(json &base, const json &patch){
+    for(auto it = patch.begin(); it != patch.end(); ++it){
+        if(it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()){
+            deep_merge(base[it.key()], it.value());
+        } else{
+            base[it.key()] = it.value();
         }
     }
+}
 
-    json RunStatus::config_validation(const string &config_path){
-        try {
-            const YNode config_node = YAML::LoadFile(config_path);
-            json config_json = yaml_to_json(config_node);
+json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy){
+    if(!current_node.is_object()){
+        return current_node;
+    }
 
-            // extends, validators
-            config_json = extends_recursive(config_json, config_path);
-            validate_recursive(config_json,  path(config_path).parent_path());
+    // resolve validator paths to be absolute
+    if(current_node.contains("validator") && current_node["validator"].is_string()){
+        const path schema_rel_path = current_node["validator"].get<string>();
+        const path schema_abs_path = absolute(base_dir / schema_rel_path);
+        current_node["validator"] = schema_abs_path.string();
+    }
 
-            //global validation
-            const path global_schema_path = path(PROJECT_ROOT_DIR)/"attack_config"/"validator"/"test_validator.schema.yaml";
-            const YAMLValidator validator(global_schema_path);
-            validator.validate(config_json);
-            return config_json;
-        } catch (const domain_error &e) {
-            throw config_err(string("Schema error: ") + e.what());
-        } catch (const invalid_argument &e) {
-            throw config_err(string("Error in config: ") + e.what());
-        } catch (const exception& e) {
-            throw config_err(string("Config validation error: ") + e.what());
+    if(!current_node.contains("extends")){
+        for(auto &[key, value]: current_node.items()){
+            value = resolve_extends(value, base_dir, hierarchy);
+        }
+        return current_node;
+    }
+
+    // extends
+    const path parent_path = absolute(base_dir / current_node["extends"].get<string>());
+    const string parent_path_str = parent_path.string();
+
+    if(ranges::find(hierarchy, parent_path_str) != hierarchy.end()){
+        throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
+    }
+
+    hierarchy.push_back(parent_path_str);
+    current_node.erase("extends");
+
+    const YNode parent_yaml = YAML::LoadFile(parent_path.string());
+    json parent_json = yaml_to_json(parent_yaml);
+    deep_merge(parent_json, current_node);
+    parent_json = resolve_extends(parent_json, parent_path.parent_path(), hierarchy);
+
+    // remove from hierarchy
+    hierarchy.pop_back();
+    return parent_json;
+}
+
+json RunStatus::extends_recursive(const nlohmann::json &config_json, const string &config_path){
+    const path config_dir = path(config_path).parent_path();
+    vector<string> hierarchy;
+    return resolve_extends(config_json, config_dir, hierarchy);
+}
+
+void RunStatus::validate_recursive(nlohmann::json &current_node, const path &base_dir){
+    if(current_node.is_object()){
+        if(current_node.contains("validator") && current_node.at("validator").is_string()){
+            const auto schema_file = current_node.at("validator").get<string>();
+            const path schema_path = base_dir / schema_file;
+
+            const YAMLValidator validator(schema_path);
+            const YNode node = YAML::LoadFile(schema_path.string());
+            validator.validate(current_node);
+            current_node.erase("validator");
+        }
+
+        for(auto &[key, value]: current_node.items()){
+            validate_recursive(value, base_dir);
+        }
+    } else if(current_node.is_array()){
+        for(auto &element: current_node){
+            validate_recursive(element, base_dir);
         }
     }
-    void RunStatus::ensure_requirement(const string &req){
-        if(req == "ath_masker"){ firmware::load_ath_masker(); return; }
-        throw not_implemented_err("Requirement"+req+" was not implemented");
-    }
+}
 
-    void RunStatus::check_local_requirements() {
-        std::set<std::string> all_requirements;
-        // get all requirements (actor doesnt matter)
-        for (auto& [actor_name, actor_data] : config.at("actors").items()) {
-            if (actor_data.contains("setup") && actor_data.at("setup").contains("requirements")){
-                for (auto& req : actor_data.at("setup").at("requirements")) {
-                    if (req.is_string()) {
-                        all_requirements.insert(req.get<std::string>());
-                    }
+json RunStatus::config_validation(const string &config_path){
+    try{
+        const YNode config_node = YAML::LoadFile(config_path);
+        json config_json = yaml_to_json(config_node);
+
+        // extends, validators
+        config_json = extends_recursive(config_json, config_path);
+        validate_recursive(config_json, path(config_path).parent_path());
+
+        //global validation
+        const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
+                "test_validator.schema.yaml";
+        const YAMLValidator validator(global_schema_path);
+        validator.validate(config_json);
+        return config_json;
+    } catch(const domain_error &e){
+        throw config_err(string("Schema error: ") + e.what());
+    } catch(const invalid_argument &e){
+        throw config_err(string("Error in config: ") + e.what());
+    } catch(const exception &e){
+        throw config_err(string("Config validation error: ") + e.what());
+    }
+}
+
+void RunStatus::ensure_requirement(const string &req){
+    if(req == "ath_masker"){
+        firmware::load_ath_masker();
+        return;
+    }
+    throw not_implemented_err("Requirement" + req + " was not implemented");
+}
+
+void RunStatus::check_local_requirements(){
+    std::set<std::string> all_requirements;
+    // get all requirements (actor doesnt matter)
+    for(auto &[actor_name, actor_data]: config.at("actors").items()){
+        if(actor_data.contains("setup") && actor_data.at("setup").contains("requirements")){
+            for(auto &req: actor_data.at("setup").at("requirements")){
+                if(req.is_string()){
+                    all_requirements.insert(req.get<std::string>());
                 }
             }
         }
-
-        for (const auto& req : all_requirements) {
-            log(LogLevel::WARNING, "Found requirement: " +req);
-            ensure_requirement(req);
-        }
     }
 
-    void save_yaml(const json& json_obj, const path& out_path) {
-        const YAML::Node node = YAML::Load(json_obj.dump());
-        auto force_block_style = [](auto& self, YAML::Node yaml_node) -> void {
-            if (yaml_node.IsMap() || yaml_node.IsSequence()) {
-                yaml_node.SetStyle(YAML::EmitterStyle::Block);
-                for (auto it = yaml_node.begin(); it != yaml_node.end(); ++it) {
-                    if (yaml_node.IsMap()) self(self, it->second);
-                    else self(self, *it);
-                }
+    for(const auto &req: all_requirements){
+        log(LogLevel::WARNING, "Found requirement: " + req);
+        ensure_requirement(req);
+    }
+}
+
+void save_yaml(const json &json_obj, const path &out_path){
+    const YAML::Node node = YAML::Load(json_obj.dump());
+    auto force_block_style = [](auto &self, YAML::Node yaml_node) ->void{
+        if(yaml_node.IsMap() || yaml_node.IsSequence()){
+            yaml_node.SetStyle(YAML::EmitterStyle::Block);
+            for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
+                if(yaml_node.IsMap()) self(self, it->second);
+                else self(self, *it);
             }
-        };
-        force_block_style(force_block_style, node);
-        ofstream out(out_path);
-        if (!out) throw runtime_error("Failed to open "+out_path.string() +" for writing");
-        out << node << endl;
-        out.close();
-        log(LogLevel::DEBUG, "Config saved to "+out_path.string());
-    }
+        }
+    };
+    force_block_style(force_block_style, node);
+    ofstream out(out_path);
+    if(!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
+    out << node << endl;
+    out.close();
+    log(LogLevel::DEBUG, "Config saved to " + out_path.string());
+}
 }

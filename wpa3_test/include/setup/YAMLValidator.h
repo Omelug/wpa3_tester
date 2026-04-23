@@ -1,8 +1,7 @@
 #pragma once
 #include <nlohmann/json-schema.hpp>
 
-
-class YAMLValidator : public nlohmann::json_schema::json_validator{
+class YAMLValidator: public nlohmann::json_schema::json_validator{
     nlohmann::json r_schema;
     json_validator validator;
     static void apply_defaults(nlohmann::json &config, const nlohmann::json &schema, const nlohmann::json &root_schema);

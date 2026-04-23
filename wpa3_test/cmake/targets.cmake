@@ -1,10 +1,10 @@
-target_link_libraries(wpa3_config     PUBLIC wpa3_logger wpa3_ex_program wpa3_observer)
-target_link_libraries(wpa3_observer   PUBLIC wpa3_config)
-target_link_libraries(wpa3_scan       PUBLIC wpa3_config)
+target_link_libraries(wpa3_config PUBLIC wpa3_logger wpa3_ex_program wpa3_observer)
+target_link_libraries(wpa3_observer PUBLIC wpa3_config)
+target_link_libraries(wpa3_scan PUBLIC wpa3_config)
 target_link_libraries(wpa3_ex_program PUBLIC wpa3_config)
-target_link_libraries(wpa3_setup      PUBLIC wpa3_config wpa3_ex_program wpa3_scan)
-target_link_libraries(wpa3_suite      PUBLIC wpa3_config wpa3_logger)
-target_link_libraries(wpa3_system     PUBLIC wpa3_config)
+target_link_libraries(wpa3_setup PUBLIC wpa3_config wpa3_ex_program wpa3_scan)
+target_link_libraries(wpa3_suite PUBLIC wpa3_config wpa3_logger)
+target_link_libraries(wpa3_system PUBLIC wpa3_config)
 
 target_link_libraries(wpa3_core INTERFACE
         -Wl,--start-group

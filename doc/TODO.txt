@@ -5,8 +5,6 @@
 Version v 0.0.0.0:
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 r: small TODO
-r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
-
 
 //DONE
 +: observer for connected station on openwrt
@@ -15,6 +13,7 @@ rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
 rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
 f: BA/BAR blck aattck work only on one mediatek
+r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
 
 ----------------------------- TBD -----------------------------------
 Scan:

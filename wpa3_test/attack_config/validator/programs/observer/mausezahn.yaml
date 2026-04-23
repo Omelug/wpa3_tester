@@ -7,5 +7,5 @@ properties:
   target_actor:
     type: string
     description: Target actor to observe
-required: [target_actor]
+required: [ target_actor ]
 additionalProperties: false

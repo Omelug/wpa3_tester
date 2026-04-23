@@ -5,8 +5,8 @@ required:
   - hostapd-mana_path
 properties:
   validator:
-      type: string
+    type: string
   hostapd-mana_path:
-      type: string
-      description: relative path from final config to config
+    type: string
+    description: relative path from final config to config
 additionalProperties: true

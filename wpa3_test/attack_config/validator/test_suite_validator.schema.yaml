@@ -2,7 +2,7 @@ $schema: "http://json-schema.org/draft-07/schema#"
 title: Validator pro WPA3 Test Suite
 type: object
 
-required: [name, config_type, tests]
+required: [ name, config_type, tests ]
 
 properties:
   name:
@@ -20,7 +20,7 @@ properties:
       oneOf:
         - title: Path source
           type: object
-          required: [type, path]
+          required: [ type, path ]
           properties:
             type:
               const: path
@@ -29,16 +29,16 @@ properties:
 
         - title: Generator source #include permutation
           type: object
-          required: [type, vars, config]
+          required: [ type, vars, config ]
           properties:
             type:
-              enum: ["generator", "permutation"]
+              enum: [ "generator", "permutation" ]
             vars:
               type: object
               additionalProperties:
                 type: array
                 items:
-                  type: [string, number, boolean]
+                  type: [ string, number, boolean ]
             config:
               type: object
               description: "Structure of configuration with var_ prefix"
@@ -54,7 +54,7 @@ properties:
       - type: boolean
         const: false
       - type: string
-        enum: [errors, all]
+        enum: [ errors, all ]
 
   compile_external:
     type: boolean

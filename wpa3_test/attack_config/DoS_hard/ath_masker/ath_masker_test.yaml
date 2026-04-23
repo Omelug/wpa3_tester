@@ -17,10 +17,10 @@ actors:
   attacker:
     source: internal
     setup:
-      requirements: [ath_masker]
+      requirements: [ ath_masker ]
     selection:
       driver: ath9k_htc
-      condition: [monitor, control_monitor]
+      condition: [ monitor, control_monitor ]
       channel: 6
 observers:
   tshark_client:

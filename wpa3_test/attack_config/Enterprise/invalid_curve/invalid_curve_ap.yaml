@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [AP]
+      condition: [ AP ]
     setup:
       program: hostapd
       program_config:
@@ -28,7 +28,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [monitor]
+      condition: [ monitor ]
       channel: 6
 attack_config:
   validator: ../dragonslayer.schema.yaml

@@ -13,12 +13,18 @@ using namespace filesystem;
 using json = nlohmann::json;
 using namespace wpa3_tester;
 
-TEST_CASE("get_hostapd - empty version returns system default") {
+TEST_CASE (
+"get_hostapd - empty version returns system default"
+)
+ {
     string result = hostapd::get_hostapd("");
     CHECK_EQ(result, "hostapd");
 }
 
-TEST_CASE("get_hostapd - returns existing binary if found") {
+TEST_CASE (
+"get_hostapd - returns existing binary if found"
+)
+ {
     path test_folder = temp_directory_path() / "hostapd_test_existing";
     remove_all(test_folder);
     create_directories(test_folder);
@@ -34,8 +40,14 @@ TEST_CASE("get_hostapd - returns existing binary if found") {
     remove_all(test_folder);
 }
 
-TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available"
-    * doctest::skip(true)) {
+TEST_CASE (
+"get_hostapd - throws when binary doesn't exist and repo not available"
+*
+doctest::skip (
+true
+)
+)
+ {
     path test_folder = temp_directory_path() / "hostapd_test_nonexistent";
     remove_all(test_folder);
 
@@ -53,4 +65,3 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
 
     remove_all(test_folder);
 }
-

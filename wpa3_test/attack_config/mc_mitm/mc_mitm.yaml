@@ -7,7 +7,7 @@ actors:
     selection:
       channel: 6
       whitebox_host: OpenWrt
-      condition: [AP, 2_4GHz]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: openwrt
       program_config:
@@ -47,7 +47,7 @@ actors:
       #FIXME rozdíl mezi původní a možnou mac
       #mac: "00:c0:ca:b7:69:2a" #FIXME I cant change channel on second mt76 adapter
       driver: mt76x2u
-      condition: [monitor] #active_monitor
+      condition: [ monitor ] #active_monitor
       channel: 6
   rogue_ap:
     source: internal

@@ -5,7 +5,7 @@ actors:
   access_point:
     source: internal
     selection:
-      condition: [AP]
+      condition: [ AP ]
       channel: 6
     setup:
       program: hostapd
@@ -45,13 +45,13 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [monitor, injection]
+      condition: [ monitor, injection ]
       channel: 6
     sniff_iface: "att_real"
   rogue_ap:
     source: internal
     selection:
-      condition: [AP, monitor, injection]
+      condition: [ AP, monitor, injection ]
       channel: 1
     sniff_iface: "att_rogue"
 attack_config:

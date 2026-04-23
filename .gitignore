@@ -1,5 +1,6 @@
 .idea/*
-!.idea/runConfigurations/
+!.idea/runConfig/
+!.idea/codeStyles/
 lib/external
 build
 cmake-build-debug

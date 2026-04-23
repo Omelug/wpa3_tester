@@ -45,45 +45,22 @@ namespace wpa3_tester::netlink_helper {
     }
 
     nl80211_iftype query_wifi_iftype(const string_view iface_name) {
-        nl_sock *sock = nl_socket_alloc();
-        if (!sock) return NL80211_IFTYPE_UNSPECIFIED;
+        const unique_ptr<nl_sock, void(*)(nl_sock*)> sock(nl_socket_alloc(), nl_socket_free);
+        if (!sock || genl_connect(sock.get()) < 0) return NL80211_IFTYPE_UNSPECIFIED;
 
-        auto cleanup = [&] { nl_socket_free(sock); };
+        const int nl80211_id = genl_ctrl_resolve(sock.get(), "nl80211");
+        const unsigned int ifindex = if_nametoindex(iface_name.data());
+        if (nl80211_id < 0 || ifindex == 0) return NL80211_IFTYPE_UNSPECIFIED;
 
-        if (genl_connect(sock) < 0)                        { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-        const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
-        if (nl80211_id < 0)                                { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-        char name[IF_NAMESIZE]{};
-        iface_name.copy(name, IF_NAMESIZE - 1);
-        const unsigned int ifindex = if_nametoindex(name);
-        if (ifindex == 0)                                  { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
+        const unique_ptr<nl_msg, void(*)(nl_msg*)> msg(nlmsg_alloc(), nlmsg_free);
+        if (!msg) return NL80211_IFTYPE_UNSPECIFIED;
 
-        nl_msg *msg = nlmsg_alloc();
-        if (!msg)                                          { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-
-        genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
-        nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
+        genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
+        nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
 
         IftypeResult result{};
-        nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, parse_iftype_cb, &result);
-
-        if (nl_send_auto(sock, msg) < 0) {
-            nlmsg_free(msg);
-            cleanup();
-            return NL80211_IFTYPE_UNSPECIFIED;
-        }
-        nlmsg_free(msg);
-        nl_recvmsgs_default(sock);
-        cleanup();
-
-        // Temporary debug — remove after diagnosis
-        if (result.found)
-            fprintf(stderr, "DEBUG query_wifi_iftype(%s): iftype=%d (AP=%d MONITOR=%d MANAGED=%d)\n",
-                    iface_name.data(), result.iftype,
-                    NL80211_IFTYPE_AP, NL80211_IFTYPE_MONITOR, NL80211_IFTYPE_STATION);
-        else
-            fprintf(stderr, "DEBUG query_wifi_iftype(%s): no result\n", iface_name.data());
-
+        nl_socket_modify_cb(sock.get(), NL_CB_VALID, NL_CB_CUSTOM, parse_iftype_cb, &result);
+        if (nl_send_auto(sock.get(), msg.get()) >= 0) nl_recvmsgs_default(sock.get());
 
         return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
     }

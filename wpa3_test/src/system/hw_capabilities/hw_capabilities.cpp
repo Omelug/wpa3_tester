@@ -199,7 +199,6 @@ namespace wpa3_tester{
                 return false;
             }
         }
-
         return true;
     }
     //TDOO depreacated, use set_wifi_type
@@ -210,10 +209,12 @@ namespace wpa3_tester{
             this_thread::sleep_for(chrono::milliseconds(500));
             run_cmd({"iw", "dev", iface, "set", "monitor", "none"});
         }
+        set_iface_up(iface);
         run_cmd({"ip", "link", "set", iface, "up"});
         run_cmd({"ip", "link", "set", iface, "mtu", to_string(mtu)});
     }
 
+    //TODO add  netns
     void hw_capabilities::set_iface_down(const string& iface) {
         exec({"ip", "link", "set", iface, "down"});
         if (const auto res = netlink_helper::wait_for_link_flags(iface, false); !res)

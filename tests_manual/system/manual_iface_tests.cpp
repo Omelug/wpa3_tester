@@ -8,6 +8,7 @@
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_helper.h"
 
 using namespace std;
 using namespace Tins;
@@ -23,6 +24,19 @@ TEST_CASE("iface up down"){
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface));
+}
+
+TEST_CASE("set wifi type"){
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
+
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_MONITOR));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_MONITOR);
+
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_AP));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_AP);
+
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_STATION));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_STATION);
 }
 
 TEST_CASE("start ap test") {

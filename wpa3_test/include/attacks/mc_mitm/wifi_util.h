@@ -5,7 +5,6 @@
 #include <tins/tins.h>
 #include "config/RunStatus.h"
 
-void exec(const std::vector<std::string>& cmd, bool check = true);
 int  get_channel(const std::string& iface);
 
 int chan2freq(int channel);

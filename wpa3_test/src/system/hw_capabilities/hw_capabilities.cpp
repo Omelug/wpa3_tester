@@ -9,13 +9,16 @@
 #include <sys/wait.h>
 #include <random>
 #include <reproc++/drain.hpp>
-#include <reproc++/reproc.hpp>
-
 #include "system/hw_capabilities.h"
+
+#include <net/if.h>
+#include <sys/ioctl.h>
+
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "system/netlink_helper.h"
 
 namespace wpa3_tester{
     using namespace std;
@@ -191,7 +194,7 @@ namespace wpa3_tester{
         run_cmd({"ip", "link", "set", iface, "up"});
 
         if (channel > 0) {
-            if (run_cmd({"iw", "dev", iface, "set", "channel", std::to_string(channel)}) != 0) {
+            if (run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)}) != 0) {
                 log(LogLevel::WARNING, format("Failed to set channel {} on {}", channel, iface));
                 return false;
             }
@@ -209,5 +212,21 @@ namespace wpa3_tester{
         }
         run_cmd({"ip", "link", "set", iface, "up"});
         run_cmd({"ip", "link", "set", iface, "mtu", to_string(mtu)});
+    }
+
+    void hw_capabilities::set_iface_down(const string& iface) {
+        if (netlink_helper::iface_is_down(iface)) return;
+        exec({"ip", "link", "set", iface, "down"});
+        if (const auto res = netlink_helper::wait_for_link_flags(iface, false); !res)
+            throw runtime_error(
+                format("Timeout waiting for '{}' to go DOWN: {}", iface, res.error().message()));
+    }
+
+    void hw_capabilities::set_iface_up(const string& iface) {
+        if (netlink_helper::iface_is_up(iface)) return;
+        exec({"ip", "link", "set", iface, "up"});
+        if (const auto res = netlink_helper::wait_for_link_flags(iface, true); !res)
+            throw runtime_error(
+                format("Timeout waiting for '{}' to go UP: {}", iface, res.error().message()));
     }
 }

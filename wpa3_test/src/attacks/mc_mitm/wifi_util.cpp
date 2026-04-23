@@ -7,18 +7,6 @@
 using namespace std;
 using namespace Tins;
 
-//TODO uklidit do hwcapabilities
-void exec(const vector<string>& cmd, const bool check) {
-    //FIXME
-    //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    string full;
-    for (auto& s : cmd) full += s+" ";
-    const int ret = system(full.c_str());
-    if (check && ret != 0)
-        throw runtime_error("Command failed: "+full);
-}
-
-
 string get_ssid(const Dot11Beacon& beacon) {
     const auto opt = beacon.search_option(Dot11::SSID);
     if (!opt) return "";
@@ -132,10 +120,14 @@ Dot11Beacon append_csa(const Dot11Beacon& beacon, const uint8_t channel, const u
     return copy;
 }
 
+static void check(wpa3_tester::netlink_helper::Result res, std::string_view context){
+    if (!res)
+        throw std::system_error(res.error(), std::string{context});
+}
+
 void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& base_iface, int channel,
               const Dot11Beacon &beacon,
               int interval, int dtim_period){
-
     // In order of priority: provided ssid, ssid from beacon, or default
     const auto* ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
     if (!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
@@ -175,41 +167,44 @@ void start_ap(wpa3_tester::RunStatus& rs, const string& ap_iface, const string& 
     //TODO some drivers drop kernel if  const std::optional<std::string>& ssid = std::nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
 
-    //exec({"ip", "link", "set", ap_iface, "down"});
-    exec({"ip", "link", "set", base_iface, "down"});
+    (void)wpa3_tester::netlink_helper::NetlinkManager::get_fd();
+    wpa3_tester::hw_capabilities::set_iface_down(base_iface);
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
+
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
+    check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface),
+      std::format("'{}' did not disappear", ap_iface));
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    int nl = wpa3_tester::netlink_helper::open_rtnetlink();
-
-    // Krok 1: set type monitor
+    // ── step 1: monitor mode ──────────────────────────────────────────────────
     exec({"iw", "dev", base_iface, "set", "type", "monitor"});
-    // Monitor mode změna se projeví jako NEWLINK na base_iface
-    // Ověř přes sysfs (nl80211 typ zde není v RTNETLINK):
-    wpa3_tester::netlink_helper::wait_for_wifi_iftype(base_iface, NL80211_IFTYPE_MONITOR);
+    check(wpa3_tester::netlink_helper::wait_for_wifi_iftype(base_iface, NL80211_IFTYPE_MONITOR),
+          std::format("'{}' did not reach monitor mode", base_iface));
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    // Krok 2: interface add
-    exec({"iw","dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
-    wpa3_tester::netlink_helper::wait_for_iface_appear(nl, ap_iface);
 
-    // Krok 3: ip link set down
-    exec({"ip", "link", "set", ap_iface, "down"});
-    wpa3_tester::netlink_helper::wait_for_link_flags(nl, ap_iface, 0);
+    // ── step 2: add AP virtual interface ─────────────────────────────────────
+    exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
+    check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface),
+          std::format("'{}' did not appear", ap_iface));
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    // Krok 4: set type __ap
+
+    wpa3_tester::hw_capabilities::set_iface_down(ap_iface);
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
+
+
+    // ── step 4: switch to AP type ─────────────────────────────────────────────
     exec({"iw", "dev", ap_iface, "set", "type", "__ap"});
-    if (auto res = wpa3_tester::netlink_helper::wait_for_wifi_iftype(ap_iface, NL80211_IFTYPE_AP); !res) {
-        throw std::system_error(res.error(),
-            std::format("Interface '{}' did not reach AP mode", ap_iface));
-    }
+    check(wpa3_tester::netlink_helper::wait_for_wifi_iftype(ap_iface, NL80211_IFTYPE_AP),
+          std::format("'{}' did not reach AP mode", ap_iface));
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    //exec({"iw", "dev", ap_iface, "set", "channel", to_string(channel)});
-    //exec({"iw", "dev", base_iface, "set", "channel", to_string(channel)});
+    wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
-    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", ap_iface, "up"});
-    wpa3_tester::netlink_helper::wait_for_link_flags(nl, ap_iface, true);
-    wpa3_tester::hw_capabilities::run_cmd({"ip", "link", "set", base_iface, "up"});
-    wpa3_tester::netlink_helper::wait_for_link_flags(nl, base_iface, true);
-    close(nl);
+    wpa3_tester::hw_capabilities::set_iface_up(base_iface);
+    wpa3_tester::netlink_helper::log_iface_info(ap_iface);
 
     // start ap command
     vector<string> cmd = {

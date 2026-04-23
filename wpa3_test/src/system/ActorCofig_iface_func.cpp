@@ -27,8 +27,8 @@ namespace wpa3_tester{
         run(cmd);
     }
 
-    void Actor_config::down_iface() const {
-        run({"ip", "link", "set", str_con.at("iface").value(), "down"});
+    void Actor_config::down_iface() const{
+        hw_capabilities::set_iface_down(str_con.at("iface").value());
     }
 
     bool is_interface_up(const string& iface) {

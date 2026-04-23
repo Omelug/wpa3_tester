@@ -1,8 +1,10 @@
 #include "system/netlink_helper.h"
+
+#include <algorithm>
 #include <sys/ioctl.h>
 #include <net/if.h>
-#include <cstring>
 #include <expected>
+#include <fstream>
 #include <nl80211.h>
 #include <system_error>
 #include <linux/netlink.h>
@@ -14,166 +16,271 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
 
+using namespace std;
+
 namespace wpa3_tester::netlink_helper {
 
-using Result = std::expected<void, std::error_code>;
+    using Result = expected<void, error_code>;
 
-namespace {
+    struct IftypeResult {
+        nl80211_iftype iftype = NL80211_IFTYPE_UNSPECIFIED;
+        bool           found  = false;
+    };
 
-struct IftypeResult {
-    nl80211_iftype iftype = NL80211_IFTYPE_UNSPECIFIED;
-    bool           found  = false;
-};
+    int parse_iftype_cb(nl_msg *msg, void *arg) {
+        auto *result = static_cast<IftypeResult *>(arg);
 
-int parse_iftype_cb(nl_msg *msg, void *arg) {
-    auto *result = static_cast<IftypeResult *>(arg);
+        const auto *hdr = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
+        nlattr *tb[NL80211_ATTR_MAX + 1]{};
 
-    const auto *hdr = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
-    nlattr *tb[NL80211_ATTR_MAX + 1]{};
+        if (nla_parse(tb, NL80211_ATTR_MAX,
+                      genlmsg_attrdata(hdr, 0),
+                      genlmsg_attrlen(hdr, 0),
+                      nullptr) < 0)
+            return NL_SKIP;
 
-    if (nla_parse(tb, NL80211_ATTR_MAX,
-                  genlmsg_attrdata(hdr, 0),
-                  genlmsg_attrlen(hdr, 0),
-                  nullptr) < 0)
-        return NL_SKIP;
+        if (!tb[NL80211_ATTR_IFTYPE]) return NL_SKIP;
 
-    if (!tb[NL80211_ATTR_IFTYPE]) return NL_SKIP;
-
-    result->iftype = static_cast<nl80211_iftype>(nla_get_u32(tb[NL80211_ATTR_IFTYPE]));
-    result->found  = true;
-    return NL_OK;
-}
-
-nl80211_iftype query_wifi_iftype(const char *iface_name) {
-    nl_sock *sock = nl_socket_alloc();
-    if (!sock) return NL80211_IFTYPE_UNSPECIFIED;
-
-    auto cleanup = [&] { nl_socket_free(sock); };
-
-    if (genl_connect(sock) < 0)                        { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-    const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
-    if (nl80211_id < 0)                                { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-    const unsigned int ifindex = if_nametoindex(iface_name);
-    if (ifindex == 0)                                  { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-
-    nl_msg *msg = nlmsg_alloc();
-    if (!msg)                                          { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
-
-    genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
-    nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
-
-    IftypeResult result{};
-    nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, parse_iftype_cb, &result);
-
-    if (nl_send_auto(sock, msg) < 0) {
-        nlmsg_free(msg);
-        cleanup();
-        return NL80211_IFTYPE_UNSPECIFIED;
+        result->iftype = static_cast<nl80211_iftype>(nla_get_u32(tb[NL80211_ATTR_IFTYPE]));
+        result->found  = true;
+        return NL_OK;
     }
-    nlmsg_free(msg);
-    nl_recvmsgs_default(sock);
-    cleanup();
 
-    return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
-}
+    nl80211_iftype query_wifi_iftype(const char *iface_name) {
+        nl_sock *sock = nl_socket_alloc();
+        if (!sock) return NL80211_IFTYPE_UNSPECIFIED;
 
-[[nodiscard]] bool iface_is_up(const std::string_view iface_name) {
-    ifreq ifr{};
-    iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
+        auto cleanup = [&] { nl_socket_free(sock); };
 
-    const int fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) return false;
+        if (genl_connect(sock) < 0)                        { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
+        const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
+        if (nl80211_id < 0)                                { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
+        const unsigned int ifindex = if_nametoindex(iface_name);
+        if (ifindex == 0)                                  { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
 
-    const bool up = (ioctl(fd, SIOCGIFFLAGS, &ifr) == 0) && ((ifr.ifr_flags & IFF_UP) != 0);
-    close(fd);
-    return up;
-}
+        nl_msg *msg = nlmsg_alloc();
+        if (!msg)                                          { cleanup(); return NL80211_IFTYPE_UNSPECIFIED; }
 
-} // anonymous namespace
+        genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
+        nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
 
-int open_rtnetlink() {
-    const int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-    if (fd < 0) return -1;
+        IftypeResult result{};
+        nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, parse_iftype_cb, &result);
 
-    sockaddr_nl sa{};
-    sa.nl_family = AF_NETLINK;
-    sa.nl_groups = RTMGRP_LINK;
-
-    if (bind(fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) < 0) {
-        close(fd);
-        return -1;
-    }
-    return fd;
-}
-
-Result wait_for_link_flags(const int nl_fd, const std::string_view iface_name, const bool want_up) {
-    // Fast path: already in the desired state
-    if (iface_is_up(iface_name) == want_up) return Result{};
-
-    char buf[8192];
-    while (true) {
-        ssize_t n = recv(nl_fd, buf, sizeof(buf), 0);
-        if (n < 0)
-            return std::unexpected(std::make_error_code(std::errc::io_error));
-
-        for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
-             NLMSG_OK(nh, static_cast<size_t>(n));
-             nh = NLMSG_NEXT(nh, n))
-        {
-            if (nh->nlmsg_type != RTM_NEWLINK) continue;
-
-            const auto *ifi = reinterpret_cast<ifinfomsg *>(NLMSG_DATA(nh));
-
-            char name[IF_NAMESIZE];
-            if (!if_indextoname(ifi->ifi_index, name)) continue;
-            if (std::string_view{name} != iface_name) continue;
-
-            const bool is_up = (ifi->ifi_flags & IFF_UP) != 0;
-            if (want_up == is_up) return Result{};
+        if (nl_send_auto(sock, msg) < 0) {
+            nlmsg_free(msg);
+            cleanup();
+            return NL80211_IFTYPE_UNSPECIFIED;
         }
+        nlmsg_free(msg);
+        nl_recvmsgs_default(sock);
+        cleanup();
+
+        // Temporary debug — remove after diagnosis
+        if (result.found)
+            fprintf(stderr, "DEBUG query_wifi_iftype(%s): iftype=%d (AP=%d MONITOR=%d MANAGED=%d)\n",
+                    iface_name, result.iftype,
+                    NL80211_IFTYPE_AP, NL80211_IFTYPE_MONITOR, NL80211_IFTYPE_STATION);
+        else
+            fprintf(stderr, "DEBUG query_wifi_iftype(%s): no result\n", iface_name);
+
+
+        return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
     }
-}
 
-Result wait_for_iface_appear(const int nl_fd, const std::string_view iface_name) {
-    // Fast path: interface already exists
-    if (if_nametoindex(iface_name.data()) != 0) return Result{};
+    [[nodiscard]] static expected<uint32_t, error_code> get_iface_flags(string_view iface_name) {
+        const auto path = format("/sys/class/net/{}/flags", iface_name);
+        ifstream f(path);
+        if (!f)
+            return unexpected(error_code(errno, system_category()));
 
-    char buf[8192];
-    while (true) {
-        ssize_t n = recv(nl_fd, buf, sizeof(buf), 0);
-        if (n < 0)
-            return std::unexpected(std::make_error_code(std::errc::io_error));
+        uint32_t flags = 0;
+        f >> hex >> flags;
+        if (f.fail())
+            return unexpected(make_error_code(errc::io_error));
 
-        for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
-             NLMSG_OK(nh, static_cast<size_t>(n));
-             nh = NLMSG_NEXT(nh, n))
-        {
-            if (nh->nlmsg_type != RTM_NEWLINK) continue;
+        return flags;
+    }
 
-            const auto *ifi = reinterpret_cast<ifinfomsg *>(NLMSG_DATA(nh));
-            auto       *rta = IFLA_RTA(ifi);
-            int        rlen = static_cast<int>(IFLA_PAYLOAD(nh));
 
-            for (; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)) {
-                if (rta->rta_type != IFLA_IFNAME) continue;
-                if (std::string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name)
-                    return Result{};
+    // up correctly
+    [[nodiscard]] bool iface_is_up(const string_view iface_name) {
+        return get_iface_flags(iface_name).transform([](const short f) {
+            return (f  & IFF_UP) != 0 && (f & IFF_RUNNING) != 0;
+        }).value_or(false);
+    }
+
+    // down correctly
+    [[nodiscard]] bool iface_is_down(const string_view iface_name) {
+        return get_iface_flags(iface_name).transform([](const short f) {
+            return (f & (IFF_UP | IFF_RUNNING)) == 0;
+        }).value_or(false);
+    }
+
+    Result wait_for_link_flags(const string_view iface_name, const bool want_up, const int timeout_ms) {
+        // For DOWN: only IFF_UP matters — IFF_RUNNING is carrier, not admin state
+        // For UP:   require both IFF_UP and IFF_RUNNING
+        const auto is_desired = [&](const short flags) -> bool {
+            if (want_up)  return (flags & IFF_UP) && (flags & IFF_RUNNING);
+            return (flags & IFF_UP) == 0;
+            // only IFF_UP must be cleared
+        };
+
+        // Fast path
+        if (const auto flags = get_iface_flags(iface_name); flags.has_value())
+            if (is_desired(flags.value())) return {};
+
+        const timeval tv{ .tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000 };
+        setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+        char buf[8192];
+        while (true) {
+            ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+            if (n < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    return unexpected(make_error_code(errc::timed_out));
+                return unexpected(make_error_code(errc::io_error));
+            }
+
+            for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
+                 NLMSG_OK(nh, static_cast<size_t>(n));
+                 nh = NLMSG_NEXT(nh, n))
+            {
+                if (nh->nlmsg_type != RTM_NEWLINK) continue;
+
+                const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
+
+                char name[IF_NAMESIZE];
+                if (!if_indextoname(ifi->ifi_index, name)) continue;
+                if (string_view{name} != iface_name) continue;
+
+                if (is_desired(static_cast<short>(ifi->ifi_flags))) return Result{};
             }
         }
     }
-}
 
-Result wait_for_wifi_iftype(const std::string_view iface_name,
-                            const nl80211_iftype expected_type,
-                            const int max_retries,
-                            const int retry_ms)
-{
-    for (int i = 0; i < max_retries; ++i) {
-        if (query_wifi_iftype(iface_name.data()) == expected_type)
-            return Result{};
-        usleep(static_cast<useconds_t>(retry_ms) * 1000u);
+    // netlink_helper.cpp
+    Result wait_for_iface_disappear(const string_view iface_name){
+        // Fast path: interface already gone
+        if (if_nametoindex(iface_name.data()) == 0) return Result{};
+
+        char buf[8192];
+        while (true) {
+            ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+            if (n < 0)
+                return unexpected(make_error_code(errc::io_error));
+
+            for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
+                 NLMSG_OK(nh, static_cast<size_t>(n));
+                 nh = NLMSG_NEXT(nh, n))
+            {
+                if (nh->nlmsg_type != RTM_DELLINK) continue;
+
+                const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
+                auto       *rta = IFLA_RTA(ifi);
+                int        rlen = static_cast<int>(IFLA_PAYLOAD(nh));
+
+                for (; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)) {
+                    if (rta->rta_type != IFLA_IFNAME) continue;
+                    if (string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name)
+                        return Result{};
+                }
+            }
+        }
     }
-    return std::unexpected(std::make_error_code(std::errc::timed_out));
-}
 
-} // namespace wpa3_tester::netlink_helper
+    Result wait_for_iface_appear(const string_view iface_name,  const int timeout_ms) {
+        // Fast path: interface already exists
+        if (if_nametoindex(iface_name.data()) != 0) return Result{};
+
+        const timeval tv{ .tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000 };
+        setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+        char buf[8192];
+        while (true) {
+            ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+            if (n < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    return unexpected(make_error_code(errc::timed_out));
+                return unexpected(make_error_code(errc::io_error));
+            }
+
+
+            for (auto *nh = reinterpret_cast<nlmsghdr *>(buf);
+                 NLMSG_OK(nh, static_cast<size_t>(n));
+                 nh = NLMSG_NEXT(nh, n))
+            {
+                if (nh->nlmsg_type != RTM_NEWLINK) continue;
+
+                const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
+                auto       *rta = IFLA_RTA(ifi);
+                int        rlen = static_cast<int>(IFLA_PAYLOAD(nh));
+
+                for (; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)) {
+                    if (rta->rta_type != IFLA_IFNAME) continue;
+                    if (string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name)
+                        return Result{};
+                }
+            }
+        }
+    }
+
+    Result wait_for_wifi_iftype(const string_view iface_name,
+                                const nl80211_iftype expected_type,
+                                const int max_retries,
+                                const int retry_ms)
+    {
+        for (int i = 0; i < max_retries; ++i) {
+            if (query_wifi_iftype(iface_name.data()) == expected_type)
+                return Result{};
+            usleep(static_cast<useconds_t>(retry_ms) * 1000u);
+        }
+        return unexpected(make_error_code(errc::timed_out));
+    }
+
+
+    void log_iface_info(const string_view iface_name) {
+        ifreq ifr{};
+        iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
+
+        const int fd = socket(AF_INET, SOCK_DGRAM, 0);
+        if (fd < 0) {
+            fprintf(stderr, "DEBUG iface_info(%.*s): failed to open socket\n",
+                    static_cast<int>(iface_name.size()), iface_name.data());
+            return;
+        }
+        const bool ok = ioctl(fd, SIOCGIFFLAGS, &ifr) == 0;
+        close(fd);
+
+        if (!ok) {
+            fprintf(stderr, "DEBUG iface_info(%.*s): ioctl failed — interface may not exist\n",
+                    static_cast<int>(iface_name.size()), iface_name.data());
+            return;
+        }
+
+        const short f = ifr.ifr_flags;
+        fprintf(stderr,
+                "DEBUG iface_info(%.*s): UP=%d RUNNING=%d BROADCAST=%d MULTICAST=%d flags=0x%04x\n",
+                static_cast<int>(iface_name.size()), iface_name.data(),
+                !!(f & IFF_UP),
+                !!(f & IFF_RUNNING),
+                !!(f & IFF_BROADCAST),
+                !!(f & IFF_MULTICAST),
+                static_cast<unsigned short>(f));
+
+        const auto iftype = query_wifi_iftype(iface_name.data());
+        const auto *type_str = [&]() -> const char * {
+            switch (iftype) {
+                case NL80211_IFTYPE_STATION: return "managed";
+                case NL80211_IFTYPE_MONITOR: return "monitor";
+                case NL80211_IFTYPE_AP:      return "AP";
+                case NL80211_IFTYPE_ADHOC:   return "IBSS";
+                default:                     return "unknown";
+            }
+        }();
+        fprintf(stderr, "DEBUG iface_info(%.*s): wifi type=%s (%d)\n",
+                static_cast<int>(iface_name.size()), iface_name.data(),
+                type_str, static_cast<int>(iftype));
+    }
+
+}

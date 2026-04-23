@@ -98,6 +98,7 @@ namespace wpa3_tester{
         static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
         static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
         static std::string run_cmd_output(const std::vector<std::string> &argv);
+        static void exec(const std::vector<std::string> &cmd, bool check = false);
 
         // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
         static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
@@ -122,5 +123,8 @@ namespace wpa3_tester{
         static void set_channel(const std::string &iface, int channel);
         static bool set_monitor_active(const std::string& iface, int channel = 0);
         static void set_monitor_mode(const std::string& iface, int mtu);
+
+        static void set_iface_down(const std::string & iface);
+        static void set_iface_up(const std::string &iface);
     };
 }

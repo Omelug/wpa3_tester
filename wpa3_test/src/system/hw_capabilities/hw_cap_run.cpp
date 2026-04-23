@@ -96,4 +96,16 @@ namespace wpa3_tester{
         if (wait_ec) {return {};}
         return output_str;
     }
+
+    // ---------------- exec -. errors
+
+    void hw_capabilities::exec(const vector<string>& cmd, const bool check) {
+       string full;
+        for (auto& s : cmd) full += s+" ";
+        const int ret = system(full.c_str());
+        if (check && ret != 0)
+            throw runtime_error("Command failed: "+full);
+    }
+
 }
+

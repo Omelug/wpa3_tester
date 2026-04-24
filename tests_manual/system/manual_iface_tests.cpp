@@ -57,8 +57,8 @@ TEST_CASE("start ap test"){
 
     SUBCASE("AP Start and Stop"){
         RunStatus rs;
-        ActorPtr base_actor;
-        base_actor["iface"] = base_iface;
+        auto base_actor = ActorPtr(std::make_shared<Actor_config>());
+        base_actor->str_con["iface"] = base_iface;
         REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, TestConfig::channel, beacon));
 
         stop_ap(ap_iface);

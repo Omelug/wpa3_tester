@@ -34,28 +34,21 @@ TEST_CASE("get_hostapd - returns existing binary if found"){
     remove_all(test_folder);
 }
 
-TEST_CASE (
-"get_hostapd - throws when binary doesn't exist and repo not available"
-*
-doctest::skip (
-true
-)
-)
- {
+TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available"*doctest::skip (true)){
     path test_folder = temp_directory_path() / "hostapd_test_nonexistent";
     remove_all(test_folder);
 
     get_global_config()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
 
     string result2_10 = hostapd::get_hostapd("2.10");
-    CHECK_EQ( (test_folder/ "hostapd_2_10").string(), result2_10);
+    CHECK_EQ((test_folder/ "hostapd_2_10").string(), result2_10);
     CHECK(exists(result2_10));
 
     string result2_9 = hostapd::get_hostapd("2.9");
     CHECK_EQ((test_folder/ "hostapd_2_9").string(), result2_9);
     CHECK(exists(result2_9));
 
-    MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()},TODO));
+    MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()}, nullopt));
 
     remove_all(test_folder);
 }

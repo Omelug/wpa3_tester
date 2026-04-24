@@ -12,17 +12,21 @@ using namespace Tins;
 using namespace wpa3_tester;
 
 int main(){
-    const string r_client_iface = "wlan1";
-    const string r_ap_iface = "wlan2";
+    const auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
+    const auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
+
+    r_sta_actor->str_con["iface"] = "wlan1";
+    r_sta_actor->str_con["iface"] = "wlan2";
+
     const string ap_ssid = "test_mc_mitm";
     const string ap_mac = "02:00:00:00:03:00";
     //const string client_mac     = "30:ab:6a:39:88:46";
     const string client_mac = "02:00:00:00:02:00";
-    const int real_channel = 11;
-    const int rogue_channel = 1;
-    const int attack_time = 20;
+    constexpr int real_channel = 11;
+    constexpr int rogue_channel = 1;
+    constexpr int attack_time = 20;
 
-    McMitm attack(r_client_iface, r_ap_iface, ap_ssid, ap_mac, client_mac);
+    McMitm attack(r_sta_actor, r_ap_actor, ap_ssid, ap_mac, client_mac);
 
     attack.netconfig.real_channel = real_channel;
     attack.netconfig.rogue_channel = rogue_channel;

@@ -12,7 +12,7 @@ public:
     template<typename...Args>
     tester_error(const LogLevel level, const char *fmt, Args...args)
         : std::runtime_error(vprintf_format(fmt, args...)){
-        log(level, "%s", std::runtime_error::what());
+        log(level, "{}", std::runtime_error::what());
     }
 protected:
     static std::string vprintf_format(const char *fmt, ...);
@@ -23,7 +23,7 @@ class typed_error: public tester_error{
 public:
     explicit typed_error(const std::string &msg)
         : tester_error(msg){
-        log(Level, "%s", std::runtime_error::what());
+        log(Level, "{}", std::runtime_error::what());
     }
 
     template<typename...Args>

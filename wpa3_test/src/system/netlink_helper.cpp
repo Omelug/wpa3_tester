@@ -13,11 +13,12 @@
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
+#include "system/netlink_guards.h"
 
 using namespace std;
 
 namespace wpa3_tester::netlink_helper{
-using Result = expected<void,error_code>;
+using Result = std::expected<void,std::error_code>;
 
 struct IftypeResult{
     nl80211_iftype iftype = NL80211_IFTYPE_UNSPECIFIED;
@@ -101,11 +102,11 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string>&
     NetNSContext ns_guard(netns);
 
     const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
-    setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     char buf[8192];
     while(true){
-        ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+        ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
         if(n < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK) return unexpected(make_error_code(errc::timed_out));
             return unexpected(make_error_code(errc::io_error));
@@ -142,7 +143,7 @@ Result wait_for_iface_disappear(const string_view iface_name, const optional<str
 
     char buf[8192];
     while(true){
-        ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+        ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
         if(n < 0) return unexpected(make_error_code(errc::io_error));
 
         for(auto *nh = reinterpret_cast<nlmsghdr *>(buf);
@@ -170,11 +171,11 @@ Result wait_for_iface_appear(const string_view iface_name,  const optional<strin
     if(if_nametoindex(name) != 0) return Result{};
 
     const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
-    setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     char buf[8192];
     while(true){
-        ssize_t n = recv(NetlinkManager::get_fd(), buf, sizeof(buf), 0);
+        ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
         if(n < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK) return unexpected(make_error_code(errc::timed_out));
             return unexpected(make_error_code(errc::io_error));

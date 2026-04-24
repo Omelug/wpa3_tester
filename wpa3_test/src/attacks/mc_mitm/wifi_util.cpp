@@ -3,6 +3,7 @@
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
+#include "system/netlink_guards.h"
 
 using namespace std;
 using namespace Tins;
@@ -168,7 +169,6 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     //TODO some drivers drop kernel if  const optional<string>& ssid = nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
 
-    (void)wpa3_tester::netlink_helper::NetlinkManager::get_fd();
     base_actor->set_iface_down();
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});

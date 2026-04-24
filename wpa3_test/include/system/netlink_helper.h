@@ -1,5 +1,5 @@
 #pragma once
-
+#include <fcntl.h>
 #include <expected>
 #include <mutex>
 #include <string_view>
@@ -57,15 +57,46 @@ private:
     }
 };
 
-nl80211_iftype query_wifi_iftype(std::string_view iface_name);
+struct NetNSContext {
+    int old_ns_fd = -1;
+    bool switched = false;
 
-[[nodiscard]] bool iface_is_up(std::string_view iface_name);
-[[nodiscard]] bool iface_is_down(std::string_view iface_name);
+    explicit NetNSContext(const std::optional<std::string>& netns) {
+        if (!netns) return;
 
-[[nodiscard]] Result wait_for_link_flags(std::string_view iface_name, bool want_up, int timeout_ms = 5000);
-[[nodiscard]] Result wait_for_iface_disappear(std::string_view iface_name);
-[[nodiscard]] Result wait_for_iface_appear(std::string_view iface_name, int timeout_ms = 5000);
+        old_ns_fd = open("/proc/self/ns/net", O_RDONLY | O_CLOEXEC);
+        const std::string ns_path = "/var/run/netns/" + *netns;
+        const int new_ns_fd = open(ns_path.c_str(), O_RDONLY | O_CLOEXEC);
+
+        if (new_ns_fd >= 0) {
+            if (setns(new_ns_fd, CLONE_NEWNET) == 0) {
+                switched = true;
+            }
+            close(new_ns_fd);
+        }
+    }
+
+    ~NetNSContext() {
+        if (switched && old_ns_fd >= 0) {
+            setns(old_ns_fd, CLONE_NEWNET);
+        }
+        if (old_ns_fd >= 0) close(old_ns_fd);
+    }
+};
+
+nl80211_iftype query_wifi_iftype(std::string_view iface_name, const std::optional<std::string> &netns);
+
+[[nodiscard]] bool iface_is_up(std::string_view iface_name, const std::optional<std::string>& netns);
+[[nodiscard]] bool iface_is_down(std::string_view iface_name, const std::optional<std::string>& netns);
+
+[[nodiscard]] Result wait_for_link_flags(std::string_view iface_name, const std::optional<std::string>& netns,
+    bool want_up, int timeout_ms = 5000);
+[[nodiscard]] Result wait_for_iface_disappear(std::string_view iface_name,
+     const std::optional<std::string>& netns);
+[[nodiscard]] Result wait_for_iface_appear(std::string_view iface_name, const std::optional<std::string>& netns,
+    int timeout_ms = 5000);
 [[nodiscard]] Result wait_for_wifi_iftype(std::string_view iface_name,
+                                          const std::optional<std::string>& netns,
                                           nl80211_iftype expected_type,
                                           int max_retries = 50,
                                           int retry_ms = 100

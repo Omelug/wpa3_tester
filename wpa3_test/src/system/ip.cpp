@@ -107,7 +107,8 @@ bool ping(const string &ip, const int timeout_sec){
 string get_mac_by_ip(const string &ip){
     // trigger ARP
     ping(ip);
-    const string out = hw_capabilities::run_cmd_output({"arp", "-n", ip});
+    // default netns
+    const string out = hw_capabilities::run_cmd_output({"arp", "-n", ip}, nullopt);
     smatch match;
     if(!regex_search(out, match, regex(R"(([0-9a-f]{2}(?::[0-9a-f]{2}){5}))"))) throw scan_err(
         "Cannot get MAC for IP: " + ip);

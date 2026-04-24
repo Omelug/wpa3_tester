@@ -16,27 +16,28 @@ using namespace wpa3_tester;
 
 struct TestConfig{
     static inline string base_iface = "wlan1";
+    static inline optional<string> netns = nullopt;
     static inline int channel = 4;
 };
 
 TEST_CASE("iface up down"){
-    REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface));
-    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
-    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
-    REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface));
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface, TestConfig::netns));
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface, TestConfig::netns));
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface, TestConfig::netns));
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface, TestConfig::netns));
 }
 
 TEST_CASE("set wifi type"){
-    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface));
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface, TestConfig::netns));
 
-    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_MONITOR));
-    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_MONITOR);
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_MONITOR, TestConfig::netns));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface, TestConfig::netns), NL80211_IFTYPE_MONITOR);
 
-    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_AP));
-    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_AP);
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_AP, TestConfig::netns));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface, TestConfig::netns), NL80211_IFTYPE_AP);
 
-    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_STATION));
-    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface), NL80211_IFTYPE_STATION);
+    REQUIRE_NOTHROW(hw_capabilities::set_wifi_type(TestConfig::base_iface, NL80211_IFTYPE_STATION, TestConfig::netns));
+    REQUIRE_EQ(netlink_helper::query_wifi_iftype(TestConfig::base_iface, TestConfig::netns), NL80211_IFTYPE_STATION);
 }
 
 TEST_CASE("start ap test"){
@@ -44,7 +45,7 @@ TEST_CASE("start ap test"){
     const string ap_iface = "ap_" + base_iface;
     const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
 
-    log(LogLevel::INFO, "Running test on iface: " + base_iface);
+    log(LogLevel::INFO, "Running test on iface: "+base_iface);
 
     const auto raw = test_helpers::read_pcap_file(pcap_path);
     RadioTap rt(raw.data(), raw.size());
@@ -52,11 +53,13 @@ TEST_CASE("start ap test"){
     REQUIRE_NOTHROW(rt.rfind_pdu<Dot11Beacon>());
     const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();
 
-    log(LogLevel::INFO, "Beacon loaded, SSID: " + get_ssid(beacon));
+    log(LogLevel::INFO, "Beacon loaded, SSID: "+get_ssid(beacon));
 
     SUBCASE("AP Start and Stop"){
         RunStatus rs;
-        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_iface, TestConfig::channel, beacon));
+        ActorPtr base_actor;
+        base_actor["iface"] = base_iface;
+        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, TestConfig::channel, beacon));
 
         stop_ap(ap_iface);
         log(LogLevel::INFO, "AP stopped");

@@ -99,7 +99,9 @@ public:
     // run helpers
     static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
     static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
-    static std::string run_cmd_output(const std::vector<std::string> &argv);
+    static std::string run_cmd_output(const std::vector<std::string> &argv,
+                                      const std::optional<std::string> &netns = std::nullopt
+    );
     static void exec(const std::vector<std::string> &cmd, bool check = false);
 
     // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
@@ -118,16 +120,16 @@ public:
     static std::string rand_mac();
 
     // working with interfaces
-    static std::string get_iface(const std::string &ip_address);
+    static std::string get_iface(const std::string &ip_address, const std::optional<std::string> &netns);
     static std::string get_macaddress(const std::string &iface);
-    static void set_macaddress(const std::string &iface, const std::string &new_mac_str);
-    static void supports_active_monitor(const std::string &iface, Actor_config &cfg);
-    static void set_channel(const std::string &iface, int channel);
-    static bool set_monitor_active(const std::string &iface, int channel = 0);
-    static void set_monitor_mode(const std::string &iface, int mtu);
+    static void set_mac_address(const std::string &iface, const std::string &new_mac_str, const std::optional<std::string> &netns);
+    static void supports_active_monitor(const std::string &iface, Actor_config &cfg, const std::optional<std::string> &netns);
+    static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);
+    static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, int channel = 0);
+    //static void set_monitor_mode(const std::string &iface, int mtu);
 
-    static void set_iface_down(const std::string &iface);
-    static void set_iface_up(const std::string &iface);
-    static void set_wifi_type(std::string_view iface, nl80211_iftype type);
+    static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
+    static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
+    static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns);
 };
 }

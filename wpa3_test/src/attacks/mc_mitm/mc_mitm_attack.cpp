@@ -52,18 +52,18 @@ void run_attack(RunStatus &rs){
     const auto ap_mac = rs.config.at("attack_config").at("target_ap_mac").get<string>();
     const auto client_mac = rs.config.at("attack_config").at("target_client_mac").get<string>();
 
-    const HWAddress<6> ap_csa_mac(rs.get_actor("access_point")["mac"]);
-    const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
+    //const HWAddress<6> ap_csa_mac(rs.get_actor("access_point")["mac"]);
+    //const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 
     rs.start_observers();
 
     McMitm attack(
-        rogue_client["iface"], rogue_ap["iface"],
+        rogue_client, rogue_ap,
         ap_ssid,
         ap_mac, client_mac);
 
-    rogue_client->up_iface();
-    rogue_ap->up_iface();
+    rogue_client->set_iface_up();
+    rogue_ap->set_iface_up();
 
     //FIXME
     //start_strict_tsharks(rs);

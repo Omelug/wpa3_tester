@@ -11,14 +11,16 @@
 namespace wpa3_tester{
 class McMitm{
 private:
-    std::string nic_real_mon, nic_real_ap, nic_rogue_mon, nic_rogue_ap;
+    ActorPtr rogue_sta, rogue_ap;
+    //std::string nic_real_mon,nic_rogue_mon
+    std::string nic_real_ap, nic_rogue_ap;
     std::string ssid;
     Tins::HWAddress<6> ap_mac;
     Tins::HWAddress<6> client_mac;
 public:
-    // AP <-> rogue_client <-> rogue AP <-> client
-    McMitm(const std::string &r_client_iface, const std::string &r_ap_iface, std::string ssid,
-           const std::string &ap_mac, const std::string &client_mac
+    // AP <-> rogue_sta <-> rogue AP <-> client
+    McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
+           const std::string &client_mac
     );
     ~McMitm();
 

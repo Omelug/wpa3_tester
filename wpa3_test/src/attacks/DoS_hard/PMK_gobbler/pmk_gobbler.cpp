@@ -207,7 +207,7 @@ void run_attack(RunStatus &rs){
     const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
         rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
     attacker->set_monitor_mode();
-    attacker->up_iface();
+    attacker->set_iface_up();
 
     //  force AP into ACM mode
     trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params.value());

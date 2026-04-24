@@ -43,7 +43,9 @@ int parse_iftype_cb(nl_msg *msg, void *arg){
     return NL_OK;
 }
 
-nl80211_iftype query_wifi_iftype(const string_view iface_name){
+nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<string>& netns){
+    NetNSContext ns_guard(netns);
+
     const unique_ptr<nl_sock,void(*)(nl_sock *)> sock(nl_socket_alloc(), nl_socket_free);
     if(!sock || genl_connect(sock.get()) < 0) return NL80211_IFTYPE_UNSPECIFIED;
 
@@ -64,7 +66,8 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name){
     return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
 }
 
-[[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(string_view iface_name){
+[[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(string_view iface_name, const optional<string>& netns){
+    NetNSContext ns_guard(netns);
     const auto path = format("/sys/class/net/{}/flags", iface_name);
     ifstream f(path);
     if(!f) return unexpected(error_code(errno, system_category()));
@@ -77,23 +80,25 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name){
 }
 
 // up correctly
-[[nodiscard]] bool iface_is_up(const string_view iface_name){
-    return get_iface_flags(iface_name).transform([](const short f){
+[[nodiscard]] bool iface_is_up(const string_view iface_name, const optional<string>& netns){
+    return get_iface_flags(iface_name, netns).transform([](const short f){
         return (f & IFF_UP) != 0 /*&& (f & IFF_RUNNING) != 0*/;
     }).value_or(false);
 }
 
 // down correctly
-[[nodiscard]] bool iface_is_down(const string_view iface_name){
-    return get_iface_flags(iface_name).transform([](const short f){
+[[nodiscard]] bool iface_is_down(const string_view iface_name, const optional<string>& netns){
+    return get_iface_flags(iface_name, netns).transform([](const short f){
         return (f & (IFF_UP)) == 0;
     }).value_or(false);
 }
 
-Result wait_for_link_flags(const string_view iface_name, const bool want_up, const int timeout_ms){
+Result wait_for_link_flags(const string_view iface_name, const optional<string>& netns, const bool want_up,
+                           const int timeout_ms){
     //already in correct state
-    if(want_up && iface_is_up(iface_name)) return {};
-    if(!want_up && iface_is_down(iface_name)) return {};
+    if(want_up && iface_is_up(iface_name, netns)) return {};
+    if(!want_up && iface_is_down(iface_name, netns)) return {};
+    NetNSContext ns_guard(netns);
 
     const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
     setsockopt(NetlinkManager::get_fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -128,7 +133,8 @@ Result wait_for_link_flags(const string_view iface_name, const bool want_up, con
 }
 
 // netlink_helper.cpp
-Result wait_for_iface_disappear(const string_view iface_name){
+Result wait_for_iface_disappear(const string_view iface_name, const optional<string>& netns){
+    NetNSContext ns_guard(netns);
     // Fast path: interface already gone
     char name[IF_NAMESIZE]{};
     iface_name.copy(name, IF_NAMESIZE - 1);
@@ -156,7 +162,8 @@ Result wait_for_iface_disappear(const string_view iface_name){
     }
 }
 
-Result wait_for_iface_appear(const string_view iface_name, const int timeout_ms){
+Result wait_for_iface_appear(const string_view iface_name,  const optional<string>& netns, const int timeout_ms) {
+    NetNSContext ns_guard(netns);
     // Fast path: interface already exists
     char name[IF_NAMESIZE]{};
     iface_name.copy(name, IF_NAMESIZE - 1);
@@ -191,18 +198,19 @@ Result wait_for_iface_appear(const string_view iface_name, const int timeout_ms)
 }
 
 Result wait_for_wifi_iftype(const string_view iface_name,
+                            const optional<string>& netns,
                             const nl80211_iftype expected_type,
                             const int max_retries,
-                            const int retry_ms
-){
+                            const int retry_ms) {
     for(int i = 0; i < max_retries; ++i){
-        if(query_wifi_iftype(iface_name.data()) == expected_type) return Result{};
+        if(query_wifi_iftype(iface_name.data(), netns) == expected_type) return Result{};
         usleep(static_cast<useconds_t>(retry_ms) * 1000u);
     }
     return unexpected(make_error_code(errc::timed_out));
 }
 
-void log_iface_info(const string_view iface_name){
+void log_iface_info(const string_view iface_name, const optional<string>& netns){
+    NetNSContext ns_guard(netns);
     ifreq ifr{};
     iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
 
@@ -231,7 +239,7 @@ void log_iface_info(const string_view iface_name){
             !!(f & IFF_MULTICAST),
             static_cast<unsigned short>(f));
 
-    const auto iftype = query_wifi_iftype(iface_name.data());
+    const auto iftype = query_wifi_iftype(iface_name.data(), netns);
     const auto *type_str = [&]() ->const char *{
         switch(iftype){
             case NL80211_IFTYPE_STATION: return "managed";

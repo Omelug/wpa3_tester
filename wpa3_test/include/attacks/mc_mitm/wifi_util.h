@@ -20,7 +20,7 @@ Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, uint8_t channel, u
 int get_eapol_msg_num(const Tins::Dot11Data &pkt);
 uint64_t get_eapol_replay_num(const Tins::Dot11Data &pkt);
 
-void start_ap(wpa3_tester::RunStatus &rs, const std::string &ap_iface, const std::string &base_iface, int channel,
+void start_ap(wpa3_tester::RunStatus &rs, const std::string &ap_iface, const wpa3_tester::ActorPtr &base_actor, int channel,
               const Tins::Dot11Beacon &beacon,
               int interval = 100, int dtim_period = 1
 );

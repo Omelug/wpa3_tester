@@ -28,11 +28,7 @@ static pair<shared_ptr<OpenWrtConn>,ActorPtr> &get_conn_actor(){
     return conn_actor;
 }
 
-TEST_CASE (
-
-"Info OpenWrt"
-)
-{
+TEST_CASE ("Info OpenWrt"){
     cli_section("Info from OpenWrt actor");
     auto& [conn, actor] = get_conn_actor();
 
@@ -89,11 +85,7 @@ TEST_CASE (
     }
 }
 
-TEST_CASE (
-
-"Logger OpenWrt"
-)
- {
+TEST_CASE ("Logger OpenWrt"){
     auto& [conn, actor] = get_conn_actor();
 
     SUBCASE("Logger") {
@@ -114,11 +106,7 @@ TEST_CASE (
 }
 
 
-TEST_CASE (
-
-"Tcpdump OpenWrt"
-)
- {
+TEST_CASE ("Tcpdump OpenWrt"){
     auto& [conn, actor] = get_conn_actor();
 
     SUBCASE("Tcpdump Remote") {

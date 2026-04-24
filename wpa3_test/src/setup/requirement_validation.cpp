@@ -79,16 +79,13 @@ void kill_process_in_ns_name(const string &ns_name){
 }
 
 static vector<string> psy_if_in_ns(const string &ns_name){
-    const string out = hw_capabilities::run_cmd_output(
-        {"ip", "netns", "exec", ns_name, "ls", "/sys/class/net"});
+    const string out = hw_capabilities::run_cmd_output({"ls", "/sys/class/net"}, ns_name);
 
     vector<string> result;
     istringstream ss(out);
     string iface;
     while(ss >> iface){
-        const int rc = hw_capabilities::run_cmd(
-            {"ip", "netns", "exec", ns_name, "test", "-e", "/sys/class/net/" + iface + "/device"},
-            nullopt);
+        const int rc = hw_capabilities::run_cmd({"test", "-e", "/sys/class/net/" + iface + "/device"}, ns_name);
         if(rc == 0){
             result.push_back(iface);
             log(LogLevel::DEBUG, "iface in ns " + ns_name + ": " + iface);

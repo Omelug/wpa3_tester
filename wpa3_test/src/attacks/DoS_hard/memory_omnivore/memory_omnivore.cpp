@@ -83,7 +83,7 @@ void run_attack(RunStatus &rs){
     if(!sae_params.has_value()) throw runtime_error("Failed to capture SAE commit values");
 
     attacker->set_monitor_mode();
-    attacker->up_iface();
+    attacker->set_iface_up();
 
     log(LogLevel::INFO, "Setup done, group_id=%u, scalar size=%zu",
         sae_params->group_id, sae_params->scalar.size());

@@ -24,21 +24,26 @@ void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()
     }
 }
 
+std::vector<std::string> wrap_with_netns(const std::vector<std::string>& argv,
+                                        const std::optional<std::string>& netns) {
+    if (!netns.has_value()) {
+        return argv;
+    }
+
+    std::vector<std::string> full_argv;
+    // Pre-allocate space: 4 for "ip netns exec [name]" + the original command size
+    full_argv.reserve(argv.size() + 4);
+
+    full_argv.insert(full_argv.end(), {"ip", "netns", "exec", *netns});
+    full_argv.insert(full_argv.end(), argv.begin(), argv.end());
+
+    return full_argv;
+}
+
 int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns){
     if(argv.empty()) return -1;
 
-    // prepend ip netns exec if netns is set
-    vector<string> full_argv;
-    if(netns.has_value()){
-        full_argv.reserve(argv.size() + 4);
-        full_argv.emplace_back("ip");
-        full_argv.emplace_back("netns");
-        full_argv.emplace_back("exec");
-        full_argv.push_back(*netns);
-        full_argv.insert(full_argv.end(), argv.begin(), argv.end());
-    } else{
-        full_argv = argv;
-    }
+    const auto full_argv = wrap_with_netns(argv, netns);
 
     vector<char *> args;
     args.reserve(full_argv.size() + 1);
@@ -75,8 +80,10 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
     return status;
 }
 
-string hw_capabilities::run_cmd_output(const vector<string> &argv){
+string hw_capabilities::run_cmd_output(const vector<string> &argv, const optional<string> &netns){
     if(argv.empty()) return {};
+
+    const auto full_argv = wrap_with_netns(argv, netns);
 
     reproc::process proc;
     reproc::options options;

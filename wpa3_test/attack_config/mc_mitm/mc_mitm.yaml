@@ -1,6 +1,8 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: mc_mitm_test
 attacker_module: mc_mitm
+
+# TODO validator -> no sNIFF IFACES -> ap/MONITOR/MANGED ISSUES
 actors:
   access_point:
     source: external

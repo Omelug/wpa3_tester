@@ -8,7 +8,7 @@ bool check_injection_runtime(const string &iface_name){
     Actor_config actor{};
     actor.str_con["iface"] = iface_name;
     actor.set_monitor_mode();
-    actor.up_iface();
+    actor.set_iface_up();
 
     this_thread::sleep_for(chrono::seconds(5));
 

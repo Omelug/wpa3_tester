@@ -16,7 +16,16 @@ enum class LogLevel{
     CRITICAL
 };
 
-void log(LogLevel level, const char *fmt, ...);
+const char *levelToString(LogLevel level);
+
+template <typename... Args>
+void log(const LogLevel level, std::format_string<Args...> fmt, Args&&... args) {
+    const std::string msg = std::format(fmt, std::forward<Args>(args)...);
+    std::cerr << levelToString(level) << ": " << msg << std::endl;
+}
+
+//__attribute__((format(printf, 2, 3)))
+//void log(LogLevel level, const char *fmt, ...);
 void log(LogLevel level, const std::string &msg);
 void log_actor_map(const std::string &name, const ActorCMap &m);
 void log_actor_configs(const ActorCMap &m, std::ofstream &ofs);
@@ -28,7 +37,7 @@ inline void debug_step(){
     std::cout << "ok" << std::endl;
 }
 
-using LogTimePoint = std::chrono::time_point<std::chrono::system_clock,std::chrono::nanoseconds>;
+using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);

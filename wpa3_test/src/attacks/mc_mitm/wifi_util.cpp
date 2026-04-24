@@ -120,11 +120,12 @@ Dot11Beacon append_csa(const Dot11Beacon &beacon, const uint8_t channel, const u
     return copy;
 }
 
-static void check(wpa3_tester::netlink_helper::Result res, string_view context){
+static void check(wpa3_tester::netlink_helper::Result res, const string_view context){
     if(!res) throw system_error(res.error(), string{context});
 }
 
-void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const string &base_iface, int channel,
+void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tester::ActorPtr &base_actor,
+              int channel,
               const Dot11Beacon &beacon,
               int interval, int dtim_period
 ){
@@ -132,6 +133,7 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const string &
     const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
     if(!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
     auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
+    optional<string> netns = base_actor->str_con.at("netns");
 
     // Split beacon into head (before TIM) and tail (after TIM)
     Dot11Beacon head;
@@ -167,23 +169,23 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const string &
     //(weird af but I will not debug it if I need restart notebook for run)
 
     (void)wpa3_tester::netlink_helper::NetlinkManager::get_fd();
-    wpa3_tester::hw_capabilities::set_iface_down(base_iface);
+    base_actor->set_iface_down();
 
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
-    check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface),
+    check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface, netns),
           format("'{}' did not disappear", ap_iface));
 
-    wpa3_tester::hw_capabilities::set_wifi_type(base_iface, NL80211_IFTYPE_MONITOR);
+    base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR);
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
-    wpa3_tester::hw_capabilities::exec({"iw", "dev", base_iface, "interface", "add", ap_iface, "type", "managed"});
-    check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface),
+    wpa3_tester::hw_capabilities::exec({"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"});
+    check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface, netns),
           format("'{}' did not appear", ap_iface));
     this_thread::sleep_for(200ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
-    wpa3_tester::hw_capabilities::set_iface_down(ap_iface);
-    wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP);
-    wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
-    wpa3_tester::hw_capabilities::set_iface_up(base_iface);
+    wpa3_tester::hw_capabilities::set_iface_down(ap_iface, netns);
+    wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
+    wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
+    base_actor->set_iface_up();
 
     // start ap command
     vector<string> cmd = {
@@ -208,8 +210,8 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const string &
     // With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
     // acknowledge received frames and send ACKs
     //this_thread::sleep_for(chrono::milliseconds(100));
-    wpa3_tester::hw_capabilities::set_iface_up(base_iface);
-    wpa3_tester::hw_capabilities::set_iface_up(ap_iface);
+    base_actor->set_iface_up();
+    wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
 }
 
 void stop_ap(const string &iface){

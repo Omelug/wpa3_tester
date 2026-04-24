@@ -21,14 +21,8 @@ void Actor_config::set_channel(const int channel, const string &ht_mode) const{
     log(LogLevel::INFO, "Setting interface " + iface + " to channel " + chan_str + " " + ht_mode);
 
     vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
-    if(!ht_mode.empty()){
-        cmd.push_back(ht_mode);
-    }
+    if(!ht_mode.empty()) cmd.push_back(ht_mode);
     run(cmd);
-}
-
-void Actor_config::down_iface() const{
-    hw_capabilities::set_iface_down(str_con.at("iface").value());
 }
 
 bool is_interface_up(const string &iface){
@@ -36,92 +30,6 @@ bool is_interface_up(const string &iface){
     string status;
     if(status_file >> status){ return (status == "up"); }
     return false;
-}
-
-void Actor_config::up_iface() const{
-    const string &iface = str_con.at("iface").value();
-
-    if(is_interface_up(iface)){
-        log(LogLevel::DEBUG, iface + " is already UP.");
-        return;
-    }
-    log(LogLevel::INFO, "Bringing " + iface + " UP ...");
-    run({"ip", "link", "set", iface, "up"});
-
-    int i = 0;
-    for(; i < 20; i++){
-        if(is_interface_up(iface)) break;
-        usleep(100000); // 100ms
-    }
-    if(i >= 20){
-        log(LogLevel::ERROR, "Failed to bring " + iface + " UP.");
-    }
-}
-
-void Actor_config::up_sniff_iface() const{
-    if(!str_con.at("sniff_iface").has_value()) return;
-    const string &sniff_iface = str_con.at("sniff_iface").value();
-
-    if(is_interface_up(sniff_iface)){
-        log(LogLevel::DEBUG, sniff_iface + " is already UP, skipping.");
-        return;
-    }
-    log(LogLevel::INFO, "Bringing " + sniff_iface + " UP...");
-    run({"ip", "link", "set", sniff_iface, "up"});
-}
-
-void Actor_config::set_ap_mode() const{
-    const string &iface = str_con.at("iface").value();
-    log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
-
-    down_iface();
-    run({"iw", "dev", iface, "set", "type", "__ap"});
-    //run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
-}
-
-void Actor_config::set_managed_mode() const{
-    const string &iface = str_con.at("iface").value();
-    if(conn != nullptr){
-        conn->set_managed_mode(iface);
-        return;
-    }
-    const optional<string> netns = str_con.at("netns");
-
-    log(LogLevel::INFO, "Preparing interface" + iface + " for managed mode");
-
-    down_iface();
-    run({"iw", "dev", iface, "set", "type", "managed"});
-}
-
-void Actor_config::setup_mac_addr(const string &mac) const{
-    const string &iface = str_con.at("iface").value();
-    if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
-    hw_capabilities::set_macaddress(iface, mac);
-
-    if(str_con.contains("sniff_iface") && str_con.at("sniff_iface").has_value()){
-        hw_capabilities::set_macaddress(str_con.at("sniff_iface").value(), mac);
-    }
-}
-
-//TODO nejdřív napsat pořádné testy, apk optimalizavat
-void Actor_config::set_monitor_mode(const string &monitor_flags) const{
-    const string &iface = str_con.at("iface").value();
-    if(conn != nullptr){
-        conn->set_monitor_mode(iface);
-        return;
-    }
-    const optional<string> netns = str_con.at("netns");
-
-    log(LogLevel::INFO, "Setting interface " + iface + " to monitor mode+" + monitor_flags);
-
-    down_iface();
-
-    run({"iw", "dev", iface, "set", "type", "monitor"});
-    vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
-    if(!monitor_flags.empty()){
-        flags.push_back(monitor_flags);
-    }
-    run(flags);
 }
 
 void Actor_config::cleanup() const{
@@ -164,11 +72,11 @@ void Actor_config::cleanup() const{
         run({"pkill", "-f", "wpa_supplicant.*-i" + iface});
         run({"pkill", "-f", "hostapd.*" + iface});
 
-        down_iface();
+        set_iface_down();
         run({"rfkill", "unblock", "wifi"});
     }
     run({"ip", "addr", "flush", "dev", iface});
-    up_iface();
+    set_iface_up();
 }
 
 void Actor_config::create_sniff_iface() const{
@@ -181,7 +89,7 @@ void Actor_config::create_sniff_iface() const{
 
     if(run({"ip", "link", "show", sniff_iface}) == 0){
         log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
-        up_iface();
+        set_iface_up();
         return;
     }
 
@@ -196,10 +104,95 @@ void Actor_config::create_sniff_iface() const{
     if(bool_conditions.at("active_monitor")) cmd.emplace_back("active");
     if(bool_conditions.at("control_monitor")) cmd.emplace_back("control");
     run(cmd);
-    up_iface();
+    set_iface_up();
 }
+
+//------------------ get status info functions
+
+void Actor_config::set_ap_mode() const{
+    const string &iface = str_con.at("iface").value();
+    log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
+
+    set_iface_down();
+    run({"iw", "dev", iface, "set", "type", "__ap"});
+    //run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
+}
+
+void Actor_config::up_sniff_iface() const{
+    if(!str_con.at("sniff_iface").has_value()) return;
+    const string &sniff_iface = str_con.at("sniff_iface").value();
+
+    if(is_interface_up(sniff_iface)){
+        log(LogLevel::DEBUG, sniff_iface + " is already UP, skipping.");
+        return;
+    }
+    log(LogLevel::INFO, "Bringing " + sniff_iface + " UP...");
+    run({"ip", "link", "set", sniff_iface, "up"});
+}
+
+void Actor_config::set_managed_mode() const{
+    const string &iface = str_con.at("iface").value();
+    if(conn != nullptr){
+        conn->set_managed_mode(iface);
+        return;
+    }
+    const optional<string> netns = str_con.at("netns");
+
+    log(LogLevel::INFO, "Preparing interface" + iface + " for managed mode");
+    set_iface_down();
+    run({"iw", "dev", iface, "set", "type", "managed"});
+}
+
+void Actor_config::set_mac_address(const string &mac) const{
+    const string &iface = str_con.at("iface").value();
+    if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
+    hw_capabilities::set_mac_address(iface, mac, str_con.at("netns"));
+
+    if(str_con.contains("sniff_iface") && str_con.at("sniff_iface").has_value()){
+        hw_capabilities::set_mac_address(str_con.at("sniff_iface").value(), mac, str_con.at("netns"));
+    }
+}
+
+//TODO nejdřív napsat pořádné testy, apk optimalizavat
+void Actor_config::set_monitor_mode(const string &monitor_flags) const{
+    const string &iface = str_con.at("iface").value();
+    if(conn != nullptr){
+        conn->set_monitor_mode(iface);
+        return;
+    }
+
+    log(LogLevel::INFO, "Setting interface " + iface + " to monitor mode+" + monitor_flags);
+    set_iface_down();
+
+    run({"iw", "dev", iface, "set", "type", "monitor"});
+    vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
+    if(!monitor_flags.empty()){
+        flags.push_back(monitor_flags);
+    }
+    run(flags);
+}
+
+// -------- hw_capabilities wrappers
 
 int Actor_config::run(const vector<string> &argv) const{
     return hw_capabilities::run_cmd(argv, str_con.at("netns"));
 }
+
+string Actor_config::get_driver_name() const{
+    return hw_capabilities::get_driver_name(str_con.at("iface").value());
+}
+
+void Actor_config::set_iface_down() const{
+    hw_capabilities::set_iface_down(str_con.at("iface").value(), str_con.at("netns"));
+}
+
+void Actor_config::set_iface_up() const{
+    hw_capabilities::set_iface_up(str_con.at("iface").value(), str_con.at("netns"));
+}
+
+void Actor_config::set_wifi_type(const nl80211_iftype type) const{
+    hw_capabilities::set_wifi_type(str_con.at("iface").value(), type, str_con.at("netns"));
+}
+
+
 }

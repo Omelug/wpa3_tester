@@ -28,12 +28,7 @@ string find_matching_tag(const path &repo_dir, const string &version){
     const string target_tag = "hostap_" + version_normalized;
 
     // Parse tags into vector
-    const string tags_output = hw_capabilities::run_cmd_output({
-        "git",
-        "-C",
-        repo_dir.string(),
-        "tag"
-    });
+    const string tags_output = hw_capabilities::run_cmd_output({"git", "-C", repo_dir.string(), "tag"});
 
     vector<string> tags;
     stringstream ss(tags_output);

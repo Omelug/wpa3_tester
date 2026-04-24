@@ -51,7 +51,8 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 void OpenWrtConn::forward_internet(const string &remote_ip) const{
     hw_capabilities::run_cmd({"bash", "-c", "echo 1 | tee /proc/sys/net/ipv4/ip_forward"});
     auto internet_iface = get_global_config().at("internet_interface").get<string>();
-    const string local_iface = hw_capabilities::get_iface(remote_ip);
+    // default netns
+    const string local_iface = hw_capabilities::get_iface(remote_ip, nullopt);
     hw_capabilities::run_cmd(
         {"iptables", "-A", "FORWARD", "-i", local_iface, "-o", internet_iface, "-j", "ACCEPT"});
     hw_capabilities::run_cmd({

@@ -55,7 +55,7 @@ true
     CHECK_EQ((test_folder/ "hostapd_2_9").string(), result2_9);
     CHECK(exists(result2_9));
 
-    MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()}));
+    MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()},TODO));
 
     remove_all(test_folder);
 }

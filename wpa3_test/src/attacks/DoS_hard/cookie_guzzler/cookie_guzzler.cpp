@@ -100,12 +100,12 @@ void run_attack(RunStatus &rs){
         const int duration = att_cfg.at("attack_time_sec").get<int>();
         // change to monitor mode
         attacker->set_monitor_mode();
-        attacker->up_iface();
+        attacker->set_iface_up();
         check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"]);
     } else{
         throw runtime_error("SAE Commit capture failed");
     }
-    this_thread::sleep_for(seconds(30)); //TODO attack attack
+    this_thread::sleep_for(seconds(30)); //TODO attack time
     ap->conn->disconnect();
 }
 

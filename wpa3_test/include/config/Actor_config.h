@@ -1,7 +1,9 @@
 #pragma once
 #include <map>
+#include <nl80211.h>
 #include <optional>
 #include <string>
+#include <bits/unordered_set.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include "ActorPtr.h"
@@ -76,15 +78,19 @@ public:
     void cleanup() const;
     void create_sniff_iface() const;
 
+    // get status info
+    std::string get_driver_name() const;
+
     // change interface status
     void set_channel(int channel, const std::string &ht_mode = "") const;
     void set_ap_mode() const;
-    void down_iface() const;
-    void up_iface() const;
+    void set_iface_down() const;
+    void set_iface_up() const;
     void up_sniff_iface() const;
     void set_managed_mode() const;
-    void setup_mac_addr(const std::string &mac) const;
+    void set_mac_address(const std::string &mac) const;
     void set_monitor_mode(const std::string &monitor_flags = "") const;
+    void set_wifi_type(nl80211_iftype type) const;
     void set_mac(const std::string &mac_address);
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
 private:

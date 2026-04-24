@@ -3,6 +3,7 @@
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
++: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 r: small TODO
 
@@ -22,9 +23,8 @@ AP_MAX_INACTIVITY (stejné jako v 2022_)
 +: ACM activation time (external, internal in hostapd)
 f: scan EAP dont work?
 
-
 Documentation:
-+: README.md -> rozcestník pro /doc
++: get LateX from english (or link it form altex git )
 
 Better code:
 prerequisities tested versions

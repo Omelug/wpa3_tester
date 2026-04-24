@@ -26,7 +26,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
         if(!str_con["mac"].has_value()){
             set_mac(real_actor["mac"]);
         } else{
-            setup_mac_addr(real_actor["mac"]);
+            set_mac_address(real_actor["mac"]);
         }
     }
     if(external_WB){
@@ -72,7 +72,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
             set_ap_mode();
         }
         if(bool_conditions.at("managed").value_or(false)){ set_managed_mode(); }
-        up_iface();
+        set_iface_up();
         up_sniff_iface();
     }
 }

@@ -228,7 +228,7 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
         result.emplace_back(cfg);
     }
 
-    log(LogLevel::INFO, "Loaded %zu whitebox actors from connection table", result.size());
+    log(LogLevel::INFO, "Loaded {} whitebox actors from connection table", result.size());
     return result;
 }
 
@@ -245,7 +245,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
             const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
             cfg->str_con["whitebox_ip"] = ip_str;
             cfg->str_con["source"] = "external";
-            log(LogLevel::DEBUG, "Resolved %s -> %s", cfg["whitebox_host"].c_str(), ip_str.c_str());
+            log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
         }
         const string ip = cfg["whitebox_ip"];
         if(!ip::ping(ip)){

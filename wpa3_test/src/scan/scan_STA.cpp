@@ -37,7 +37,7 @@ bool parse_data_frame(const Dot11Data *data, attack_scan::ScanAP &scan_ap){
         const string potential_sta = (src == scan_ap.bssid) ? dst : src;
         if(potential_sta != "ff:ff:ff:ff:ff:ff" && potential_sta != scan_ap.bssid){
             if(scan_ap.stations.emplace(attack_scan::Scan_STA(potential_sta)).second){
-                log(LogLevel::DEBUG, "Station found : %s", potential_sta.c_str());
+                log(LogLevel::DEBUG, "Station found : {}", potential_sta);
                 return true;
             }
         }
@@ -50,13 +50,13 @@ bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, attack_scan::ScanAP &sca
     if(mgmt->subtype() == 4){
         const string sta_mac = mgmt->addr2().to_string(); // Transmitter
         if(scan_ap.stations.insert(attack_scan::Scan_STA(sta_mac)).second){
-            log(LogLevel::DEBUG, "Station found via Probe Request: %s", sta_mac.c_str());
+            log(LogLevel::DEBUG, "Station found via Probe Request: {}", sta_mac);
             return true;
         }
     } else if(mgmt->subtype() == 0 || mgmt->subtype() == 11){
         // Assoc Req / Auth
         if(scan_ap.stations.emplace(mgmt->addr2().to_string()).second){
-            log(LogLevel::DEBUG, "Station found : %s", mgmt->addr2().to_string().c_str());
+            log(LogLevel::DEBUG, "Station found : {}", mgmt->addr2().to_string());
             return true;
         }
     }
@@ -102,7 +102,7 @@ void station_scan(attack_scan::ScanAP &scan_ap, const string &interface, const i
     set<string> found_stations;
     const auto start_time = steady_clock::now();
 
-    log(LogLevel::INFO, "Starting station scan for AP %s (timeout: %ds)", scan_ap.bssid.c_str(), timeout_sec);
+    log(LogLevel::INFO, "Starting station scan for AP {} (timeout: {}s)", scan_ap.bssid, timeout_sec);
 
     while(true){
         auto now = steady_clock::now();
@@ -113,6 +113,6 @@ void station_scan(attack_scan::ScanAP &scan_ap, const string &interface, const i
         station_frame_parse(pdu, scan_ap);
         writer.write(*pdu);
     }
-    log(LogLevel::INFO, "Station scan finished. Found %zu stations.", scan_ap.stations.size());
+    log(LogLevel::INFO, "Station scan finished. Found {} stations.", scan_ap.stations.size());
 }
 }

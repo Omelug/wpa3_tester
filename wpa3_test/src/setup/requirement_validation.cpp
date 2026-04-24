@@ -74,7 +74,7 @@ void kill_process_in_ns_name(const string &ns_name){
             this_thread::sleep_for(chrono::milliseconds(10));
         }
         waitpid(p, nullptr, WNOHANG);
-        log(LogLevel::DEBUG, "Killed process %d from namespace %s", p, ns_name.c_str());
+        log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
     }
 }
 
@@ -124,7 +124,7 @@ void kill_processes_in_all_non_default_ns(){
 
     for(const auto &entry: directory_iterator(netns_dir)){
         string ns_name = entry.path().filename().string();
-        log(LogLevel::INFO, "Cleaning up processes in namespace: %s", ns_name.c_str());
+        log(LogLevel::INFO, "Cleaning up processes in namespace: {}", ns_name);
         //hw_capabilities::run_cmd({"ip", "netns", "exec", ns_name, "pkill", "-9", "-f", ".*"});
 
         const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
@@ -206,7 +206,7 @@ void RunStatus::config_requirement(){
     // SETUP ACTORS
     for(auto &[actor_name, actor]: internal_actors){
         auto &opt_actor = internal_mapping.at(actor_name);
-        log(LogLevel::DEBUG, "Setup attempt for actor, current map size: %zu", actors.size());
+        log(LogLevel::DEBUG, "Setup attempt for actor, current map size: {}", actors.size());
         actor->setup_actor(config, opt_actor);
     }
 

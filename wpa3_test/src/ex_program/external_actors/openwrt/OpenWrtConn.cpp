@@ -37,12 +37,12 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
             exec("ls /sys/class/net/" + ifname + " >/dev/null 2>&1", false, &ret);
 
             if(ret == 0){
-                log(LogLevel::DEBUG, "Found ifname: %s for section %s", ifname.c_str(), section.c_str());
+                log(LogLevel::DEBUG, "Found ifname: {} for section {}", ifname, section.c_str());
                 return ifname;
             }
         }
 
-        log(LogLevel::DEBUG, "Waiting for ifname of %s (%d/%d)", section.c_str(), i + 1, retries);
+        log(LogLevel::DEBUG, "Waiting for ifname of {} ({}/{})", section, i + 1, retries);
         this_thread::sleep_for(chrono::seconds(1));
     }
     throw ex_conn_err("ifname not available for section: " + section);

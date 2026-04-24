@@ -74,7 +74,7 @@ void log_actor_configs(const ActorCMap &m, ofstream &ofs){
                 ", essid=" + actor->str_con.at("ssid").value_or("<none>") +
                 ", driver=" + actor->str_con.at("driver").value_or("<none>");
 
-        //log(LogLevel::DEBUG, "%s", line.c_str());
+        //log(LogLevel::DEBUG, "{}", line);
 
         if(ofs.is_open()){ ofs << line << endl; }
 

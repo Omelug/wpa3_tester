@@ -120,9 +120,9 @@ void RunStatus::execute(){
                 print_exception_tree(e, error_log);
                 error_log << endl;
                 error_log.close();
-                log(LogLevel::ERROR, "Error written to %s", error_file.string().c_str());
+                log(LogLevel::ERROR, "Error written to {}", error_file.string());
             } else {
-                log(LogLevel::ERROR, "Failed to open error log file: %s", error_file.string().c_str());
+                log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
             }
             log(LogLevel::INFO, "Cleaning up resources before exit...");
             clean();

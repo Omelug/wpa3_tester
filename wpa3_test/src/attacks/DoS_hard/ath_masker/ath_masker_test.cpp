@@ -42,9 +42,9 @@ void run_attack(RunStatus &rs){
         try{
             sender.send(radiotap, iface);
         } catch(const pcap_error &e){
-            log(LogLevel::ERROR, "PCAP Error: %s", e.what());
+            log(LogLevel::ERROR, "PCAP Error: {}", e.what());
         } catch(const std::exception &e){
-            log(LogLevel::ERROR, "General Error: %s", e.what());
+            log(LogLevel::ERROR, "General Error: {}", e.what());
         }
 
         this_thread::sleep_for(chrono::milliseconds(10));

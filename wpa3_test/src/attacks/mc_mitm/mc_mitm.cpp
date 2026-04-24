@@ -55,7 +55,7 @@ void McMitm::send_csa_beacon(const int numpairs, const std::optional<HWAddress<6
         auto csa1 = append_csa(*beacon_copy, new_channel, 1);
         sock_real->send(csa1, netconfig.real_channel);*/
     }
-    log(LogLevel::INFO, "Injected %d CSA beacon pairs (moving stations to channel %d)", numpairs, new_channel);
+    log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, new_channel);
 }
 
 void McMitm::send_disas(const HWAddress<6> &macaddr) const{
@@ -182,12 +182,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     if(start_nic_real_ap){
         //hw_capabilities::exec({"iw", "dev", rogue_sta["iface"], "interface", "add", nic_real_ap, "type", "managed"});
         // raději postupně exec({"iw", "dev", rogue_sta["iface"], "interface", "add", nic_real_ap, "type", "__ap", "addr"i, client_mac.to_string()});
-        log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_real_ap.c_str(), client_mac.to_string().c_str());
+        log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_real_ap, client_mac.to_string().c_str());
         hw_capabilities::set_mac_address(nic_real_ap, client_mac.to_string(), rogue_ap->str_con.at("netns"));
         rogue_sta->set_mac_address(client_mac.to_string());
         start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon);
     } else{
-        log(LogLevel::INFO, "Setting MAC address of %s to %s", rogue_sta["iface"].c_str(),
+        log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_sta["iface"],
             client_mac.to_string().c_str());
         hw_capabilities::set_iface_down(nic_real_ap, rogue_sta->str_con.at("netns"));
         rogue_sta->set_mac_address(client_mac.to_string());
@@ -204,7 +204,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     sock_real->set_filter(bpf);
 
     // 3. Set up the rogue AP and interfaces
-    log(LogLevel::INFO, "Setting MAC address of %s to %s", nic_rogue_ap.c_str(), ap_mac.to_string().c_str());
+    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string().c_str());
     rogue_ap->set_iface_up();
     hw_capabilities::set_mac_address(nic_rogue_ap, ap_mac.to_string(), rogue_ap->str_con.at("netns"));
     rogue_ap->set_mac_address(ap_mac.to_string());
@@ -406,7 +406,7 @@ void McMitm::handle_rx_real_chan(){
             if(clients.contains(addr2.to_string())){
                 const auto &client = clients.at(addr2.to_string());
                 if(client->state < ClientState::Attack_Done){
-                    log(LogLevel::WARNING, "Client %s is going to sleep while on real channel. "
+                    log(LogLevel::WARNING, "Client {} is going to sleep while on real channel. "
                         "Injecting Null frame.", addr2.to_string().c_str());
 
                     Dot11Data null_frame{};
@@ -525,8 +525,7 @@ void McMitm::handle_rx_rogue_chan(){
 
             if(power_mgmt && clients.contains(addr2.to_string()) &&
                 clients.at(addr2.to_string())->state < ClientState::Attack_Done){
-                log(LogLevel::WARNING, "Client %s is going to sleep on rogue channel. Removing sleep bit.",
-                    addr2.to_string().c_str());
+                log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2.to_string());
             }
             sock_real->send(*pdu, netconfig.real_channel);
         }

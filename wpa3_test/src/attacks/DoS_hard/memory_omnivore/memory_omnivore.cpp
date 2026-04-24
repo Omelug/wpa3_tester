@@ -40,7 +40,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
             result.emplace_back(mac_str);
         } catch(...){}
     }
-    log(LogLevel::INFO, " Found %zu connected STAs", result.size());
+    log(LogLevel::INFO, " Found {} connected STAs", result.size());
     return result;
 }
 
@@ -53,18 +53,18 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size,
         pool.resize(min(static_cast<int>(pool.size()), pool_size));
 
         if(static_cast<int>(pool.size()) < pool_size){
-            log(LogLevel::WARNING, "Only %zu connected STAs available (need %d), padding with random MACs",
+            log(LogLevel::WARNING, "Only {} connected STAs available (need {}), padding with random MACs",
                 pool.size(), pool_size);
             while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(hw_capabilities::rand_mac());
         } else{
-            log(LogLevel::INFO, "Using %d connected STA MACs", pool_size);
+            log(LogLevel::INFO, "Using {} connected STA MACs", pool_size);
         }
         return pool;
     }
 
     pool.reserve(pool_size);
     for(int i = 0; i < pool_size; ++i) pool.emplace_back(hw_capabilities::rand_mac());
-    log(LogLevel::INFO, "Using %d random MACs", pool_size);
+    log(LogLevel::INFO, "Using {} random MACs", pool_size);
     return pool;
 }
 
@@ -85,7 +85,7 @@ void run_attack(RunStatus &rs){
     attacker->set_monitor_mode();
     attacker->set_iface_up();
 
-    log(LogLevel::INFO, "Setup done, group_id=%u, scalar size=%zu",
+    log(LogLevel::INFO, "Setup done, group_id=%u, scalar size={}",
         sae_params->group_id, sae_params->scalar.size());
 
     const HWAddress<6> ap_mac(ap["mac"]);

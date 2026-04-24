@@ -39,7 +39,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const string &iface, const HWA
             dumper,
             [](pcap_dumper_t* d) { if(d) pcap_dump_close(d); }
         );
-        if (!dumper) log(LogLevel::DEBUG, "pcap_dump_open failed: %s", pcap_geterr(handle));
+        if (!dumper) log(LogLevel::DEBUG, "pcap_dump_open failed: {}", pcap_geterr(handle));
         */
 
     const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
@@ -80,7 +80,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const string &iface, const HWA
             //if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
             if(const auto frame = dos_helpers::parse_sae_commit(packet, header->caplen)){
                 result = frame.value();
-                log(LogLevel::DEBUG, "Captured SAE commit, scalar size: %zu", result.scalar.size());
+                log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", result.scalar.size());
                 return result;
             }
         }

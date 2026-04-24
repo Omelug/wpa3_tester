@@ -61,7 +61,7 @@ optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, const uint32_t len){
     if(len < sae_offset + 2) return nullopt;
 
     /*fprintf(stderr, "DEBUG radiotap_len=%u\n", radiotap_len);
-        fprintf(stderr, "DEBUG auth_offset=%zu\n", auth_offset);
+        fprintf(stderr, "DEBUG auth_offset={}\n", auth_offset);
         fprintf(stderr, "DEBUG bytes at auth_offset: %02x %02x %02x %02x %02x %02x\n",
                 frame_rt[auth_offset],   frame_rt[auth_offset+1],
                 frame_rt[auth_offset+2], frame_rt[auth_offset+3],

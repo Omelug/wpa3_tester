@@ -88,15 +88,15 @@ void Actor_config::create_sniff_iface() const{
     }
 
     if(run({"ip", "link", "show", sniff_iface}) == 0){
-        log(LogLevel::INFO, "Sniff interface %s already exists. Setting UP.", sniff_iface.c_str());
+        log(LogLevel::INFO, "Sniff interface {} already exists. Setting UP.", sniff_iface);
         set_iface_up();
         return;
     }
 
-    log(LogLevel::DEBUG, "Interface %s not found, creating new one.", sniff_iface.c_str());
+    log(LogLevel::DEBUG, "Interface {} not found, creating new one.", sniff_iface);
     const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"),
                                    filesystem::directory_iterator{});
-    log(LogLevel::DEBUG, "Current open FDs: %ld %s %s", fd_count, iface.c_str(), sniff_iface.c_str());
+    log(LogLevel::DEBUG, "Current open FDs: %ld {} {}", fd_count, iface, sniff_iface.c_str());
 
     string monitor_flags;
     vector<string> cmd =

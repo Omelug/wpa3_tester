@@ -73,8 +73,7 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
             command_str += arg + " ";
         }
 
-        log(LogLevel::ERROR, "Command failed! Status: %d | Full command: %s",
-            status, command_str.c_str());
+        log(LogLevel::ERROR, "Command failed! Status: {} | Full command: {}", status, command_str);
         return -1;
     }
     return status;

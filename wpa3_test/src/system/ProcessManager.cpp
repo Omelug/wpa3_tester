@@ -97,8 +97,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
                     log(LogLevel::DEBUG,
                         "Drain thread for " + process_name + " finished (normal exit): " + ec.message());
                 } else{
-                    log(LogLevel::ERROR, "Drain thread for %s error: %s (code: %d)",
-                        process_name.c_str(), ec.message().c_str(), ec.value());
+                    log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message().c_str(), ec.value());
                 }
                 break;
             }
@@ -177,7 +176,7 @@ void ProcessManager::run(const string &process_name,
 
     // string cmd_debug;
     // for (const auto& s : cmd) cmd_debug += "[" + s+"] ";
-    // log(LogLevel::DEBUG, "Full command: %s", cmd_debug.c_str());
+    // log(LogLevel::DEBUG, "Full command: {}", cmd_debug);
 
     // Log command line FIRST for debugging
     string cmd_line;

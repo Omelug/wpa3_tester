@@ -248,7 +248,7 @@ void ExternalConn::download_file(const string &remote_path, const string &local_
     ssh_scp_free(scp);
     local_file.close();
 
-    log(LogLevel::DEBUG, "Successfully downloaded %zu bytes via SCP to %s", size, local_path.c_str());
+    log(LogLevel::DEBUG, "Successfully downloaded {} bytes via SCP to {}", size, local_path);
 }
 
 void ExternalConn::on_disconnect(DisconnectCallback cb){
@@ -263,7 +263,7 @@ void ExternalConn::disconnect(){
         try{
             if(*it) (*it)();
         } catch(const exception &e){
-            log(LogLevel::ERROR, "Error in disconnect callback: %s", e.what());
+            log(LogLevel::ERROR, "Error in disconnect callback: {}", e.what());
         }
     }
 

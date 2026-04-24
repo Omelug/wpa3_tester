@@ -228,7 +228,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
         } catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '" + line + "':" + e.what()); }
     }
 
-    log(LogLevel::INFO, "Extracted %zu timestamps matching filter '%s'", timestamps.size(), tshark_filter.c_str());
+    log(LogLevel::INFO, "Extracted {} timestamps matching filter '{}'", timestamps.size(), tshark_filter);
     return timestamps;
 }
 

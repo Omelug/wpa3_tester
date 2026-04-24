@@ -13,15 +13,15 @@ namespace wpa3_tester{
         // Set the interface name to test (change this to your actual interface)
         const string TEST_INTERFACE = "wlan1";  // CHANGE THIS to your monitor mode interface
 
-        log(LogLevel::INFO, "Testing injection capability on interface: %s", TEST_INTERFACE.c_str());
+        log(LogLevel::INFO, "Testing injection capability on interface: {}", TEST_INTERFACE);
 
         const bool injection_supported = check_injection_runtime(TEST_INTERFACE);
 
         if (injection_supported) {
-            log(LogLevel::INFO, "Interface %s SUPPORTS injection", TEST_INTERFACE.c_str());
+            log(LogLevel::INFO, "Interface {} SUPPORTS injection", TEST_INTERFACE);
         } else {
-            log(LogLevel::WARNING, "Interface %s does NOT support injection (or test failed)",
-                TEST_INTERFACE.c_str());
+            log(LogLevel::WARNING, "Interface {} does NOT support injection (or test failed)",
+                TEST_INTERFACE);
         }
 
         // Log the result - test will pass regardless, this is for manual verification
@@ -33,7 +33,7 @@ namespace wpa3_tester{
 
 /*TEST_CASE("Runtime injection check - test with non-existent interface") {
         const string FAKE_INTERFACE = "fake_wlan999";
-        log(LogLevel::INFO, "Testing injection with non-existent interface: %s", FAKE_INTERFACE.c_str());
+        log(LogLevel::INFO, "Testing injection with non-existent interface: {}", FAKE_INTERFACE);
 
         const bool result = check_injection_runtime(FAKE_INTERFACE);
         CHECK_FALSE(result); // Should return false for non-existent interface

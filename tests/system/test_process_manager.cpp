@@ -12,10 +12,7 @@ using namespace wpa3_tester;
 using namespace chrono_literals;
 
 namespace wpa3_tester{
-TEST_CASE (
-"ProcessManager run and stop simple process"
-)
-{
+TEST_CASE("ProcessManager run and stop simple process"){
         {
             ProcessManager pm;
             vector<string> cmd = {"sleep","150"};
@@ -34,10 +31,7 @@ TEST_CASE (
         CHECK(true);
     }
 
-TEST_CASE (
-"ProcessManager - stop_all handles multiple processes"
-)
- {
+TEST_CASE("ProcessManager - stop_all handles multiple processes"){
 
         ProcessManager pm;
 
@@ -68,10 +62,7 @@ TEST_CASE (
         //remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - stop_all handles empty process list"
-)
- {
+TEST_CASE("ProcessManager - stop_all handles empty process list"){
         ProcessManager pm;
 
         const auto test_dir = temp_directory_path() / "pm_test_empty";
@@ -85,10 +76,7 @@ TEST_CASE (
         remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - stop individual process"
-)
-{
+TEST_CASE("ProcessManager - stop individual process"){
         const auto test_dir = temp_directory_path() / "pm_test_stop_one";
         ProcessManager pm;
         create_directories(test_dir);
@@ -116,10 +104,7 @@ TEST_CASE (
         remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - stop nonexistent process"
-)
- {
+TEST_CASE("ProcessManager - stop nonexistent process"){
         ProcessManager pm;
 
         const auto test_dir = temp_directory_path() / "pm_test_nonexistent";
@@ -132,10 +117,7 @@ TEST_CASE (
         remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - process logging"
-)
- {
+TEST_CASE("ProcessManager - process logging"){
         ProcessManager pm;
 
         const auto test_dir = temp_directory_path() / "pm_test_logging";
@@ -158,10 +140,7 @@ TEST_CASE (
         //remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - wait_for with timeout"
-)
- {
+TEST_CASE("ProcessManager - wait_for with timeout"){
         ProcessManager pm;
 
         const auto test_dir = temp_directory_path() / "pm_test_wait_timeout";
@@ -228,10 +207,7 @@ TEST_CASE (
         remove_all(test_dir);
     }
 
-TEST_CASE (
-"ProcessManager - on_stop callback"
-)
- {
+TEST_CASE("ProcessManager - on_stop callback"){
         ProcessManager pm;
 
         const auto test_dir = temp_directory_path() / "pm_test_on_stop";

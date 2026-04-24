@@ -10,10 +10,7 @@ using namespace wpa3_tester;
 
 namespace wpa3_tester{
 // TODO change to FCS a
-TEST_CASE (
-"patch_channel_raw - beacon frame"
-)
- {
+TEST_CASE("patch_channel_raw - beacon frame"){
         vector<uint8_t> beacon_data = test_helpers::read_pcap_file("beacon_test.pcapng");
         vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
@@ -29,10 +26,7 @@ TEST_CASE (
         INFO("Beacon frame size after: " << beacon_data.size());
     }
 
-TEST_CASE (
-"patch_channel_raw - probe response frame"
-)
- {
+TEST_CASE("patch_channel_raw - probe response frame"){
         vector<uint8_t> probe_data = test_helpers::read_pcap_file("probe_res.pcapng");
         vector<uint8_t> original_data = probe_data;
         McMitm::patch_channel_raw(probe_data, 11);
@@ -66,10 +60,7 @@ TEST_CASE (
         INFO("Probe response frame size after: " << probe_data.size());
     }
 
-TEST_CASE (
-"patch_channel_raw - edge cases"
-)
- {
+TEST_CASE("patch_channel_raw - edge cases"){
         // empty data
         vector<uint8_t> empty_data;
         McMitm::patch_channel_raw(empty_data, 6);
@@ -82,10 +73,7 @@ TEST_CASE (
         CHECK_EQ(small_data, original_small);
     }
 
-TEST_CASE (
-"beacon_to_probe_resp"
-)
- {
+TEST_CASE("beacon_to_probe_resp"){
         Dot11Beacon beacon;
         beacon.addr2("aa:bb:cc:dd:ee:ff");
         beacon.addr3("aa:bb:cc:dd:ee:ff");

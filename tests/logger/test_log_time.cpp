@@ -13,10 +13,7 @@
 using namespace std;
 using wpa3_tester::LogTimePoint;
 
-TEST_CASE (
-"log_time_to_epoch_ns - basic UTC+1 timestamp"
-)
- {
+TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
     // 2026-02-20T14:38:08.000000000+0100  →  UTC 13:38:08
     const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100");
     REQUIRE_NE(tp, LogTimePoint{});
@@ -36,10 +33,7 @@ TEST_CASE (
     CHECK_EQ(frac, chrono::nanoseconds{0});
 }
 
-TEST_CASE (
-"log_time_to_epoch_ns - negative offset UTC-5"
-)
- {
+TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5"){
     // 2026-02-20T08:38:08-0500  →  UTC 13:38:08
     const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T08:38:08.000000000-0500");
     const time_t t = chrono::system_clock::to_time_t(tp);
@@ -48,10 +42,7 @@ TEST_CASE (
     CHECK_EQ(utc.tm_hour, 13);
 }
 
-TEST_CASE (
-"log_time_to_epoch_ns - invalid string returns epoch"
-)
- {
+TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch"){
     CHECK_EQ(wpa3_tester::log_time_to_epoch_ns("not-a-timestamp"), LogTimePoint{});
     CHECK_EQ(wpa3_tester::log_time_to_epoch_ns(""), LogTimePoint{});
 }
@@ -82,10 +73,7 @@ struct TempLog{
 };
 }
 
-TEST_CASE (
-"get_time_logs - finds matching lines"
-)
- {
+TEST_CASE("get_time_logs - finds matching lines"){
     const string log_content =
         "2026-02-20T14:38:08.310201504+0100 [access_point] [stdout] wlan2: AP-ENABLED\n"
         "2026-02-20T14:38:09.000000000+0100 [access_point] [stdout] some other line\n"
@@ -102,10 +90,7 @@ TEST_CASE (
     CHECK_EQ((times[1] - times[0]), chrono::nanoseconds{2189798496ns});
 }
 
-TEST_CASE (
-"get_time_logs - no match returns empty"
-)
- {
+TEST_CASE("get_time_logs - no match returns empty"){
     const string log_content =
         "2026-02-20T14:38:08.000000000+0100 [ap] [stdout] some line\n";
 
@@ -117,10 +102,7 @@ TEST_CASE (
     CHECK(times.empty());
 }
 
-TEST_CASE (
-"get_time_logs - missing log file returns empty"
-)
- {
+TEST_CASE("get_time_logs - missing log file returns empty"){
     wpa3_tester::RunStatus rs;
     rs.run_folder = "/tmp/wpa3_nonexistent_run_folder";
 

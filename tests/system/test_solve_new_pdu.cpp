@@ -10,10 +10,7 @@ using namespace wpa3_tester;
 using namespace Tins;
 
 namespace wpa3_tester{
-TEST_CASE (
-"RunStatus::solve_new_pdu - Beacon frame"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
         ActorMap seen;
         auto beacon = make_shared<Dot11Beacon>();
         beacon->addr2("00:11:22:33:44:55");  // AP MAC
@@ -39,10 +36,7 @@ TEST_CASE (
         CHECK(actor->bool_conditions["2_4GHz"]);
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - Probe Response"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
         ActorMap seen;
         
         auto probe_resp = make_shared<Dot11ProbeResponse>();
@@ -70,10 +64,7 @@ TEST_CASE (
         CHECK(actor->bool_conditions["5GHz"]);
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - Probe Request"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
         ActorMap seen;
         
         auto probe_req = make_shared<Dot11ProbeRequest>();
@@ -98,10 +89,7 @@ TEST_CASE (
         CHECK(actor->bool_conditions["2_4GHz"]);
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - Data frame STA->AP"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
         ActorMap seen;
 
         // Create data frame from STA to AP
@@ -134,10 +122,7 @@ TEST_CASE (
         CHECK_EQ(ap->str_con["channel"], "36");
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - Data frame AP->STA"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
         ActorMap seen;
 
         // Create data frame from AP to STA
@@ -165,10 +150,7 @@ TEST_CASE (
         CHECK(ap->bool_conditions["5GHz"]);
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - Update existing entity"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
         ActorMap seen;
 
         // First add an entity with basic info
@@ -197,10 +179,7 @@ TEST_CASE (
         CHECK_EQ(updated_actor->str_con["signal"], "-50");
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - No RadioTap"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
         ActorMap seen;
 
         // Create beacon without RadioTap
@@ -215,10 +194,7 @@ TEST_CASE (
         CHECK_EQ(actor->str_con["ssid"], "NoRadioTap");
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - 6 GHz band"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
         ActorMap seen;
 
         // Create beacon on 6 GHz
@@ -240,10 +216,7 @@ TEST_CASE (
         CHECK(actor->bool_conditions["6GHz"]);
     }
 
-TEST_CASE (
-"RunStatus::solve_new_pdu - WDS/IBSS frames ignored"
-)
- {
+TEST_CASE("RunStatus::solve_new_pdu - WDS/IBSS frames ignored"){
         ActorMap seen;
 
         // Create WDS frame (to_ds && from_ds)

@@ -7,10 +7,7 @@ using namespace std;
 using namespace wpa3_tester;
 
 namespace wpa3_tester{
-TEST_CASE (
-"hw_capabilities::freq_to_channel"
-)
- {
+TEST_CASE("hw_capabilities::freq_to_channel"){
         SUBCASE("2.4 GHz band") {
             CHECK_EQ(hw_capabilities::freq_to_channel(2412), 1);
             CHECK_EQ(hw_capabilities::freq_to_channel(2437), 6);
@@ -37,10 +34,7 @@ TEST_CASE (
         }
     }
 
-TEST_CASE (
-"hw_capabilities::channel_to_freq"
-)
- {
+TEST_CASE("hw_capabilities::channel_to_freq"){
         SUBCASE("2.4 GHz band") {
             CHECK_EQ(hw_capabilities::channel_to_freq(1), 2412);
             CHECK_EQ(hw_capabilities::channel_to_freq(6), 2437);
@@ -67,10 +61,7 @@ TEST_CASE (
         }
     }
 
-TEST_CASE (
-"freq_to_channel and channel_to_freq roundtrip"
-)
- {
+TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
         SUBCASE("Roundtrip consistency") {
             vector<tuple<int, int, WifiBand>> test_cases = {
                 {2412, 1, WifiBand::BAND_2_4}, {2437, 6, WifiBand::BAND_2_4_or_5}, {2472, 13, WifiBand::BAND_2_4},  // 2.4 GHz

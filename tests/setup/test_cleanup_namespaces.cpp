@@ -69,10 +69,7 @@ struct NsGuard{
     ~NsGuard() = default;
 };
 
-TEST_CASE (
-"cleanup_all_namespaces - removes multiple empty namespaces"
-)
- {
+TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces"){
     const vector<string> names = {"wpa3_test_ns1", "wpa3_test_ns2", "wpa3_test_ns3"};
     vector<NsGuard> guards;
     for (const auto& n : names) {
@@ -89,10 +86,7 @@ TEST_CASE (
     }
 }
 
-TEST_CASE (
-"cleanup_all_namespaces - kills processes and removes namespace"
-)
- {
+TEST_CASE("cleanup_all_namespaces - kills processes and removes namespace"){
     const string ns = "wpa3_test_ns4";
     NsGuard guard(ns);
 

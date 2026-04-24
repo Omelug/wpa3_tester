@@ -47,10 +47,7 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
 }
 
 path this_file = source_location::current().file_name();
-TEST_CASE (
-"RunStatus Config Validation - Test configuration"
-)
- {
+TEST_CASE("RunStatus Config Validation - Test configuration"){
     const path test_base = this_file.parent_path() / "config_validation"/"test";
 
     const vector<ConfigTestCase> tests = {
@@ -69,10 +66,7 @@ TEST_CASE (
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE (
-"RunStatus Config Validation - Validator configuration"
-)
-{
+TEST_CASE ("RunStatus Config Validation - Validator configuration"){
     const path test_base = this_file.parent_path() / "config_validation"/"validator";
     const vector<ConfigTestCase> tests = {
         {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
@@ -82,10 +76,7 @@ TEST_CASE (
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE (
-"RunStatus Config Validation - Observer configuration"
-)
-{
+TEST_CASE ("RunStatus Config Validation - Observer configuration"){
     const path test_base = this_file.parent_path() / "config_validation"/"observer";
     const vector<ConfigTestCase> tests = {
         {"1. observer tcpdump valid", "01_test_observer_tcpdump_valid.yaml",    "01_result_observer_tcpdump_valid.yaml", true},
@@ -98,10 +89,7 @@ TEST_CASE (
     test_case_loop(test_base, tests);
 }
 
-TEST_CASE (
-"RunStatus Config Validation - Test suite configuration"
-)
-{
+TEST_CASE("RunStatus Config Validation - Test suite configuration"){
     const path test_base = this_file.parent_path() / "config_validation"/"test_suite";
     const vector<ConfigTestCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
@@ -171,10 +159,7 @@ void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
     CHECK_EQ(expected_tree, actual_tree);
 }
 
-TEST_CASE (
-"RunStatus - parse_requirements()"
-)
-{
+TEST_CASE("RunStatus - parse_requirements()"){
     const path test_base = this_file.parent_path() / "config_validation"/"test";
     
     SUBCASE("Parse actors and observers from config") {
@@ -233,10 +218,7 @@ TEST_CASE (
     }
 }
 
-TEST_CASE (
-"RunStatus - Test suite test generation"
-)
- {
+TEST_CASE("RunStatus - Test suite test generation"){
     const path test_base = absolute(this_file.parent_path() / "config_validation" / "test_suite");
 
     const vector<ConfigSuiteCase> tests = {

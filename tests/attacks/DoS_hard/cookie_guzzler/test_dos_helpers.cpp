@@ -21,10 +21,7 @@ const vector<uint8_t> expected_element =
     0x51, 0x9a, 0xa3, 0x8f, 0xa7, 0x64, 0xc5, 0xae, 0xe4, 0xa2, 0xf4, 0x5f, 0xb5, 0xe7, 0x21, 0x32
 };
 
-TEST_CASE (
-"ParsesCommitFromPcap"
-)
- {
+TEST_CASE("ParsesCommitFromPcap"){
     // Use the real pcap file
     filesystem::path pcap_path = filesystem::path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
@@ -43,10 +40,7 @@ TEST_CASE (
 // Add test for packet with/without FCS
 
 // ------------ make_sae_commit test ------------------
-TEST_CASE (
-"make_sae_commit - base"
-)
-{
+TEST_CASE("make_sae_commit - base"){
     RadioTap rt;
     {
         wpa3_tester::dos_helpers::SAEPair sae_params;

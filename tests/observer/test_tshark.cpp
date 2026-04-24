@@ -84,10 +84,7 @@ TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
     }
 }*/
 
-TEST_CASE (
-"transform_to_relative - converts absolute timestamps to relative"
-)
- {
+TEST_CASE("transform_to_relative - converts absolute timestamps to relative"){
     using namespace wpa3_tester;
     using namespace chrono;
 

@@ -12,10 +12,7 @@ using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
 
-TEST_CASE (
-"current_time_string - format validation"
-)
- {
+TEST_CASE("current_time_string - format validation"){
     string time_str = current_time_string();
 
     regex time_pattern(R"(^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$)");
@@ -32,10 +29,7 @@ TEST_CASE (
     CHECK_EQ(time_str[16], ':');
 }
 
-TEST_CASE (
-"current_time_string - reasonable values"
-)
- {
+TEST_CASE("current_time_string - reasonable values"){
     string time_str = current_time_string();
 
     //  year, month, day, hour, minute, second
@@ -54,10 +48,7 @@ TEST_CASE (
     CHECK((second >= 0 && second <= 59));
 }
 
-TEST_CASE (
-"current_time_string - consistency"
-)
- {
+TEST_CASE("current_time_string - consistency"){
     string time1 = current_time_string();
     // small delay to ensure different timestamps
     this_thread::sleep_for(chrono::milliseconds(100));
@@ -67,10 +58,7 @@ TEST_CASE (
     CHECK((time2 >= time1));
 }
 
-TEST_CASE (
-"relative_from - basic functionality"
-)
- {
+TEST_CASE("relative_from - basic functionality"){
     path test_base = current_path() / "test_relative_base";
     path attack_config = test_base / "attack_config" / "subdir" / "nested" / "test_config.yaml";
     create_directories(attack_config.parent_path());
@@ -81,10 +69,7 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"relative_from - direct child"
-)
- {
+TEST_CASE("relative_from - direct child"){
     path test_base = current_path() / "test_relative_direct";
     path attack_config = test_base / "attack_config" / "direct_config.yaml";
     
@@ -95,10 +80,7 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"relative_from - base not found"
-)
- {
+TEST_CASE("relative_from - base not found"){
     path test_base = current_path() / "test_relative_notfound";
     path other_dir = test_base / "other_directory" / "config.yaml";
     
@@ -109,10 +91,7 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"relative_from - complex nested structure"
-)
- {
+TEST_CASE("relative_from - complex nested structure"){
     path test_base = current_path() / "test_relative_complex";
     path attack_config = test_base / "project" / "attack_config" / "Enterprise" / "reflection_attack" / "test.yaml";
     create_directories(attack_config.parent_path());
@@ -123,10 +102,7 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"relative_from - absolute path handling"
-)
- {
+TEST_CASE("relative_from - absolute path handling"){
     path test_base = current_path() / "test_relative_absolute";
     path attack_config = test_base / "attack_config" / "absolute_test.yaml";
     
@@ -139,10 +115,7 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"relative_from - single level nesting"
-)
- {
+TEST_CASE("relative_from - single level nesting"){
     path test_base = current_path() / "test_relative_single";
     path attack_config = test_base / "attack_config" / "single" / "config.yaml";
     create_directories(attack_config.parent_path());
@@ -153,18 +126,12 @@ TEST_CASE (
     remove_all(test_base);
 }
 
-TEST_CASE (
-"RunStatus constructor - config file not found"
-)
- {
+TEST_CASE("RunStatus constructor - config file not found"){
     string non_existent_config = "/path/to/non/existent/config.yaml";
     CHECK_THROWS_AS(RunStatus rs(non_existent_config), wpa3_tester::config_err);
 }
 
-TEST_CASE (
-"RunStatus constructor - missing name field"
-)
- {
+TEST_CASE("RunStatus constructor - missing name field"){
     path test_dir = temp_directory_path() / "attack_config" / "test_runstatus_missing_name";
     path config_file = test_dir / "test_config.yaml";
     create_directories(test_dir);
@@ -184,10 +151,7 @@ actors:
     remove_all(test_dir);
 }
 
-TEST_CASE (
-"RunStatus constructor - with explicit test name"
-)
- {
+TEST_CASE("RunStatus constructor - with explicit test name"){
     path test_dir = temp_directory_path() / "attack_config" / "test_runstatus_explicit_name";
     path config_file = test_dir / "test_config.yaml";
     create_directories(test_dir);
@@ -212,10 +176,7 @@ actors:
     remove_all(test_dir);
 }
 
-TEST_CASE (
-"RunStatus constructor - config validation"
-)
- {
+TEST_CASE("RunStatus constructor - config validation"){
     path test_dir = temp_directory_path() / "attack_config"/ "test_runstatus_validation";
     path config_file = test_dir / "test_config.yaml";
     create_directories(test_dir);

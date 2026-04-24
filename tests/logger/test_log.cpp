@@ -13,10 +13,7 @@
 using namespace std;
 using wpa3_tester::LogTimePoint;
 
-TEST_CASE (
-"log - debug message with actor name"
-)
- {
+TEST_CASE("log - debug message with actor name"){
     const string actor_name = "test_actor";
     const string expected_message = "DEBUG: Created and registered ExternalConn for actor: "+actor_name;
 

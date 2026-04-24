@@ -24,10 +24,7 @@ public:
     }
 };
 
-TEST_CASE (
-"parse_hw_capabilities - OpenWrt phy0 info"
-)
- {
+TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
     Actor_config cfg;
 
     ifstream file("iw_phy_output.txt");
@@ -52,10 +49,7 @@ TEST_CASE (
     CHECK_EQ(cfg.bool_conditions["80211ax"], false);
 }
 
-TEST_CASE (
-"parse_hw_capabilities - empty output"
-)
- {
+TEST_CASE("parse_hw_capabilities - empty output"){
     Actor_config cfg;
     const string output;
     OpenWrtConn::parse_hw_capabilities(cfg, output);
@@ -65,10 +59,7 @@ TEST_CASE (
     CHECK_EQ(cfg.bool_conditions["80211n"], false);
 }
 
-TEST_CASE (
-"get_hw_capabilities - exec failure"
-)
- {
+TEST_CASE("get_hw_capabilities - exec failure"){
     Actor_config cfg;
     MockOpenWrtConn conn;
     conn.mock_ret = 1;
@@ -77,10 +68,7 @@ TEST_CASE (
     CHECK_THROWS_AS(conn.get_hw_capabilities(cfg, "radio0"), ex_conn_err);
 }
 
-TEST_CASE (
-"get_radio_list - mock wifi status"
-)
- {
+TEST_CASE("get_radio_list - mock wifi status"){
     MockOpenWrtConn conn;
 
     // Mock output for Wi-Fi status

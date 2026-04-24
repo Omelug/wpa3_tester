@@ -24,10 +24,7 @@ struct ConfigFixture{
     ~ConfigFixture(){ remove_all(dir); }
 };
 
-TEST_CASE (
-"get_global_config - normal loading"
-)
- {
+TEST_CASE("get_global_config - normal loading"){
     ConfigFixture f("test_config");
     f.write(R"(
 paths:
@@ -46,19 +43,13 @@ actors:
     CHECK_EQ(config["actors"]["ignore_interfaces"].size(), 2);
 }
 
-TEST_CASE (
-"get_global_config - file not found"
-)
- {
+TEST_CASE("get_global_config - file not found"){
     ConfigFixture f("non_existent_config");
     remove_all(f.dir);
     CHECK_THROWS_AS(get_global_config(f.dir, true), config_err);
 }
 
-TEST_CASE (
-"get_global_config - invalid YAML"
-)
- {
+TEST_CASE("get_global_config - invalid YAML"){
     ConfigFixture f("invalid_yaml_config");
     f.write(R"(
 paths:
@@ -67,10 +58,7 @@ paths:
     CHECK_THROWS_AS(get_global_config(f.dir, true), config_err);
 }
 
-TEST_CASE (
-"get_global_config - static cache"
-)
- {
+TEST_CASE("get_global_config - static cache"){
     ConfigFixture f("cache_test_config");
     f.write(R"(test_value: "original")");
 
@@ -84,10 +72,7 @@ TEST_CASE (
     CHECK_EQ(&config1, &config2);
 }
 
-TEST_CASE (
-"get_global_config - empty file"
-)
- {
+TEST_CASE("get_global_config - empty file"){
     ConfigFixture f("empty_config");
     f.write("");
     nlohmann::json& config = get_global_config(f.dir, true);

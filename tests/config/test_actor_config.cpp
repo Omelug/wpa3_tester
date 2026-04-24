@@ -8,10 +8,7 @@ using namespace std;
 using namespace wpa3_tester;
 using json = nlohmann::json;
 
-TEST_CASE (
-"Actor_config - json constructor with selection"
-)
- {
+TEST_CASE("Actor_config - json constructor with selection"){
     json j = {
         {
             "selection", {
@@ -36,10 +33,7 @@ TEST_CASE (
     CHECK_FALSE((actor.bool_conditions.at("AP").has_value()));
 }
 
-TEST_CASE (
-"Actor_config - json constructor without selection"
-)
- {
+TEST_CASE("Actor_config - json constructor without selection"){
     json j = {{"type", "STA"}};
 
     Actor_config actor(j);
@@ -49,10 +43,7 @@ TEST_CASE (
     CHECK_FALSE(actor.bool_conditions.at("monitor").has_value());
 }
 
-TEST_CASE (
-"Actor_config - matches method"
-)
- {
+TEST_CASE("Actor_config - matches method"){
     SUBCASE("Exact match") {
         Actor_config required;
         required.str_con["iface"] = "wlan0";
@@ -110,10 +101,7 @@ TEST_CASE (
     }
 }
 
-TEST_CASE (
-"Actor_config - operator+= merge"
-)
- {
+TEST_CASE("Actor_config - operator+= merge"){
     SUBCASE("Merge non-conflicting configs") {
         Actor_config base;
         base.str_con["iface"] = "wlan0";
@@ -153,10 +141,7 @@ TEST_CASE (
     }
 }
 
-TEST_CASE (
-"Actor_config - operator[] accessor"
-)
- {
+TEST_CASE("Actor_config - operator[] accessor"){
     Actor_config actor;
     actor.str_con["iface"] = "wlan0";
 
@@ -169,10 +154,7 @@ TEST_CASE (
     CHECK_THROWS_AS(actor["mac"], config_err);
 }
 
-TEST_CASE (
-"Actor_config - operator+=complex"
-)
- {
+TEST_CASE("Actor_config - operator+=complex"){
     json j = {
         {
             "selection", {

@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="openwrt" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_core" version="1" RUN_PATH="$PROJECT_DIR$/build/tests_manual/bin/manual_tests/test_info_openwrt">
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_model_test_build" />
+    </method>
+  </configuration>
+</component>

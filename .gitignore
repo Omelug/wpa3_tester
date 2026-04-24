@@ -1,5 +1,6 @@
 .idea/*
-!.idea/runConfig/
+!.idea/dictionaries/
+!.idea/runConfigurations/
 !.idea/codeStyles/
 lib/external
 build

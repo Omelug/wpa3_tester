@@ -34,29 +34,14 @@ bool is_interface_up(const string &iface){
 
 void Actor_config::cleanup() const{
     string iface = str_con.at("iface").value();
-    optional<string> netns = str_con.at("netns");
+    const optional<string> netns = str_con.at("netns");
     if(iface.empty()){
         log(LogLevel::ERROR, "cleanup() called with empty interface name");
         return;
     }
 
     if(netns.has_value()){
-        log(LogLevel::INFO, "Cleaning up interface " + iface + " in netns " + *netns);
-
-        const string phy_find_cmd = "iw dev " + iface + " info 2>/dev/null | grep wiphy | awk '{print \"phy\"$2}'";
-        char buffer[128];
-        string phy_name;
-        FILE *pipe = popen(phy_find_cmd.c_str(), "r");
-        if(pipe && fgets(buffer, sizeof(buffer), pipe)){
-            phy_name = string(buffer);
-            phy_name.erase(phy_name.find_last_not_of(" \n\r\t") + 1); // trim
-        }
-        if(pipe) pclose(pipe);
-
-        if(!phy_name.empty()){
-            log(LogLevel::DEBUG, "Moving " + iface + " (" + phy_name + ") to netns " + *netns);
-            hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns.value()}, nullopt);
-        }
+        hw_capabilities::move_to_netns(iface, netns.value());
     } else{
         log(LogLevel::INFO, "Cleaning up interface " + iface);
     }

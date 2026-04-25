@@ -106,22 +106,26 @@ public:
 
     // Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
     static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
-    static std::vector<InterfaceInfo> list_interfaces(std::optional<InterfaceType> filter = std::nullopt);
+    static std::vector<InterfaceInfo> list_interfaces(std::optional<InterfaceType> filter = std::nullopt,
+                                                  const std::optional<std::string> &netns = std::nullopt
+    );
 
     // check availability
     static std::string read_sysfs(const std::string &iface, const std::string &file);
     static std::string get_driver_name(const std::string &iface);
-    static std::string get_phy(const std::string &iface);
+    static std::string get_phy(const std::string &iface, const std::optional<std::string> &netns);
 
     //format
     static int freq_to_channel(int freq);
     static int channel_to_freq(int channel, WifiBand band = WifiBand::BAND_2_4_or_5);
+
     static void create_ns(const std::string &ns_name);
+    static void move_to_netns(const std::string &iface, const std::string &netns);
     static std::string rand_mac();
 
     // working with interfaces
     static std::string get_iface(const std::string &ip_address, const std::optional<std::string> &netns);
-    static std::string get_macaddress(const std::string &iface);
+    static std::string get_macaddress(const std::string &iface, const std::optional<std::string> &netns);
     static void set_mac_address(const std::string &iface, const std::string &new_mac_str, const std::optional<std::string> &netns);
     static void supports_active_monitor(const std::string &iface, Actor_config &cfg, const std::optional<std::string> &netns);
     static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);

@@ -53,11 +53,9 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
         int channel = -1;
         if(const auto d = str_con["channel"]) channel = stoi(d.value());
         else if(const auto c = real_actor->str_con["channel"]) channel = stoi(c.value());
-        if(channel != -1){
-            set_channel(channel, str_con["ht_mode"].value_or(""));
-        }
+        if(channel != -1) set_channel(channel, str_con["ht_mode"].value_or(""));
 
-        if((monitor || injection) && str_con["sniff_iface"] == nullopt){ set_monitor_mode(monitor_flags); }
+        if((monitor || injection) && str_con["sniff_iface"] == nullopt) set_monitor_mode(monitor_flags);
         if(actor_json.contains("sniff_iface")){
             str_con["sniff_iface"] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
             create_sniff_iface();

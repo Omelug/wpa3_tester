@@ -69,15 +69,18 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 
 [[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(string_view iface_name, const optional<string>& netns){
     NetNSContext ns_guard(netns);
-    const auto path = format("/sys/class/net/{}/flags", iface_name);
-    ifstream f(path);
-    if(!f) return unexpected(error_code(errno, system_category()));
+    const int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock < 0) return unexpected(error_code(errno, system_category()));
 
-    uint32_t flags = 0;
-    f >> hex >> flags;
-    if(f.fail()) return unexpected(make_error_code(errc::io_error));
+    ifreq ifr{};
+    iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
 
-    return flags;
+    if(ioctl(sock, SIOCGIFFLAGS, &ifr) < 0){
+        close(sock);
+        return unexpected(error_code(errno, system_category()));
+    }
+    close(sock);
+    return static_cast<uint32_t>(ifr.ifr_flags);
 }
 
 // up correctly
@@ -124,7 +127,7 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string>&
             if(string_view{name} != iface_name) continue;
 
             const auto f = static_cast<unsigned int>(ifi->ifi_flags);
-            const bool is_up = (f & IFF_UP) && (f & IFF_RUNNING);
+            const bool is_up = (f & IFF_UP) /*&& (f & IFF_RUNNING)*/;
             const bool is_down = (f & IFF_UP) == 0;
 
             if(want_up && is_up) return Result{};

@@ -20,6 +20,40 @@ struct TestConfig{
     static inline int channel = 4;
 };
 
+TEST_CASE("iface mac address change") {
+    string target_mac = "00:11:22:33:44:55";
+    string original_mac = hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns);
+
+    REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, target_mac, TestConfig::netns));
+    CHECK_EQ(hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns),target_mac);
+
+    REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, original_mac, TestConfig::netns));
+    CHECK_EQ(hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns), original_mac);
+    hw_capabilities::set_iface_up(TestConfig::base_iface, TestConfig::netns);
+}
+
+TEST_CASE("Cross-namespace interface lifecycle") {
+    const string test_ns = "temp_test_ns";
+    const string iface = TestConfig::base_iface;
+
+    hw_capabilities::run_cmd({"ip", "netns", "del", test_ns});
+    REQUIRE_NOTHROW(hw_capabilities::create_ns(test_ns));
+    REQUIRE_NOTHROW(hw_capabilities::move_to_netns(iface, test_ns));
+
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_up(iface, test_ns));
+    CHECK(netlink_helper::iface_is_up(iface, test_ns));
+
+    REQUIRE_NOTHROW(hw_capabilities::set_iface_down(iface, test_ns));
+    CHECK(netlink_helper::iface_is_down(iface, test_ns));
+
+    const string phy_name = hw_capabilities::get_phy(iface, test_ns);
+    if(!phy_name.empty()) {
+        hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "1"}, test_ns);
+    }
+
+    hw_capabilities::run_cmd({"ip", "netns", "del", test_ns});
+}
+
 TEST_CASE("iface up down"){
     REQUIRE_NOTHROW(hw_capabilities::set_iface_up(TestConfig::base_iface, TestConfig::netns));
     REQUIRE_NOTHROW(hw_capabilities::set_iface_down(TestConfig::base_iface, TestConfig::netns));
@@ -52,7 +86,6 @@ TEST_CASE("start ap test"){
 
     REQUIRE_NOTHROW(rt.rfind_pdu<Dot11Beacon>());
     const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();
-
     log(LogLevel::INFO, "Beacon loaded, SSID: "+get_ssid(beacon));
 
     SUBCASE("AP Start and Stop"){

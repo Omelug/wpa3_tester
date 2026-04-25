@@ -20,7 +20,8 @@ using namespace filesystem;
 // return <string iface; internal_actor >
 vector<ActorPtr> RunStatus::internal_options(){
     vector<ActorPtr> options;
-    for(const auto &[iface_name, radio_name, iface_type]: hw_capabilities::list_interfaces(InterfaceType::Wifi)){
+    for(const auto &[iface_name, radio_name, iface_type]:
+            hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
         auto cfg = make_shared<Actor_config>();
         cfg->str_con["iface"] = iface_name;
         cfg->str_con["source"] = "internal";

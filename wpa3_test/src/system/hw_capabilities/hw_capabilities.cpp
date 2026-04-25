@@ -14,6 +14,7 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "system/netlink_guards.h"
 #include "system/netlink_helper.h"
 
 namespace wpa3_tester{
@@ -44,7 +45,8 @@ string hw_capabilities::get_driver_name(const string &iface){
     throw config_err("Driver check error: not found valid symlink");;
 }
 
-string hw_capabilities::get_phy(const string &iface){
+string hw_capabilities::get_phy(const string &iface, const optional<string> &netns){
+    netlink_helper::NetNSContext ns_guard(netns);
     const path link = "/sys/class/net/" + iface + "/phy80211";
     if(!exists(link)) return "";
     return read_symlink(link).filename().string();
@@ -57,7 +59,8 @@ int get_interface_arphrd_type(const path &iface_path){
     return 0;
 }
 
-vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceType> filter){
+vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceType> filter,
+                                                       const optional<string> &netns){
     vector<InterfaceInfo> result;
     const path net_path = "/sys/class/net";
 
@@ -93,7 +96,7 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
         } else if(exists(entry.path() / "device")){
             type = InterfaceType::Ethernet; // Wire ethernet
         }
-        const string radio = get_phy(iface);
+        const string radio = get_phy(iface, netns);
         if(filter.has_value()){
             if(filter.value() == type){ result.push_back({iface, radio, type}); }
         } else{
@@ -108,6 +111,22 @@ void hw_capabilities::create_ns(const string &ns_name){
     run_cmd({"ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
 }
 
+void hw_capabilities::move_to_netns(const string &iface, const string &netns) {
+    log(LogLevel::INFO, "Moving interface " + iface + " to netns " + netns);
+
+    string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
+    string phy_name = run_cmd_output({"/bin/sh", "-c", phy_cmd});
+    std::erase(phy_name, '\n');
+
+    if (phy_name.empty()){
+        log(LogLevel::WARNING, "Could not find physical device for interface " + iface);
+        //throw std::runtime_error("Could not find physical device for interface " + iface);
+        return;
+    }
+    log(LogLevel::DEBUG, "Moving " + iface + " (" + phy_name + ") to netns " + netns);
+    run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, std::nullopt);
+}
+
 string hw_capabilities::get_iface(const string &ip_address, const optional<string> &netns){
     const string output = run_cmd_output({"ip", "route", "get", ip_address}, netns);
     if(output.empty()) throw runtime_error("Failed to get route for IP: " + ip_address);
@@ -120,7 +139,8 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
     return match[1].str();
 }
 
-string hw_capabilities::get_macaddress(const string &iface){
+string hw_capabilities::get_macaddress(const string &iface, const optional<string> &netns){
+    netlink_helper::NetNSContext ns_guard(netns);
     ifstream f("/sys/class/net/" + iface + "/address");
     string mac;
     getline(f, mac);
@@ -128,7 +148,7 @@ string hw_capabilities::get_macaddress(const string &iface){
 }
 
 void hw_capabilities::set_mac_address(const string &iface, const string &new_mac_str, const optional<string> &netns){
-    if(get_macaddress(iface) == new_mac_str) return;
+    if(get_macaddress(iface, netns) == new_mac_str) return;
     set_iface_down(iface, netns);
     run_cmd({"macchanger", "-m", new_mac_str, iface}, netns);
 }
@@ -177,7 +197,7 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 
     return match[1].str();
 }
-//TODo netns
+
 bool hw_capabilities::set_monitor_active(const string &iface, const optional<string> &netns, int channel){
     set_iface_down(iface, netns);
 
@@ -194,19 +214,6 @@ bool hw_capabilities::set_monitor_active(const string &iface, const optional<str
     }
     return true;
 }
-
-//TDOO depreacated, use set_wifi_type
-/*void hw_capabilities::set_monitor_mode(const string &iface, const int mtu){
-    if(get_iface_type(iface) != "monitor"){
-        run_cmd({"ip", "link", "set", iface, "down"});
-        run_cmd({"iw", "dev", iface, "set", "monitor", "none"});
-        this_thread::sleep_for(chrono::milliseconds(500));
-        run_cmd({"iw", "dev", iface, "set", "monitor", "none"});
-    }
-    set_iface_up(iface, TODO);
-    run_cmd({"ip", "link", "set", iface, "up"});
-    run_cmd({"ip", "link", "set", iface, "mtu", to_string(mtu)});
-}*/
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){
     run_cmd({"ip", "link", "set", iface, "down"}, netns);
@@ -233,8 +240,8 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
         }
     }();
 
-    if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}); ret != 0) throw runtime_error(
-        format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
+    if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}); ret != 0)
+        throw runtime_error(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
 
     if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)
         throw runtime_error(format("Timeout waiting for '{}' to reach type '{}': {}",

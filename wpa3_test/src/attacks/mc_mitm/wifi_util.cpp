@@ -128,6 +128,7 @@ static void check(wpa3_tester::netlink_helper::Result res, const string_view con
 void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tester::ActorPtr &base_actor,
               int channel,
               const Dot11Beacon &beacon,
+              optional<string> mac,
               int interval, int dtim_period
 ){
     // In order of priority: provided ssid, ssid from beacon, or default
@@ -135,7 +136,6 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     if(!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
     auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
     optional<string> netns = base_actor->str_con.at("netns");
-
     // Split beacon into head (before TIM) and tail (after TIM)
     Dot11Beacon head;
     head.addr1(beacon.addr1());
@@ -169,19 +169,19 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     //TODO some drivers drop kernel if  const optional<string>& ssid = nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
     //(weird af but I will not debug it if I need restart notebook for run)
 
+    wpa3_tester::netlink_helper::NetlinkRegistry::get_fd(netns);
     base_actor->set_iface_down();
-
-    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"});
+    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, false);
     check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface, netns),
           format("'{}' did not disappear", ap_iface));
 
     base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR);
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
-    wpa3_tester::hw_capabilities::exec({"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"});
+    wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"}, netns);
     check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface, netns),
           format("'{}' did not appear", ap_iface));
-    this_thread::sleep_for(200ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
+    this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
     wpa3_tester::hw_capabilities::set_iface_down(ap_iface, netns);
     wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
@@ -214,9 +214,9 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
 }
 
-void stop_ap(const string &iface){
+void stop_ap(const string &iface, const optional<string> &netns){
     const vector<string> cmd = {"iw", "dev", iface, "ap", "stop"};
     log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev " + iface + " ap stop");
-    wpa3_tester::hw_capabilities::run_cmd(cmd);
+    wpa3_tester::hw_capabilities::run_cmd(cmd, netns);
 }
 

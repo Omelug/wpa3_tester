@@ -174,18 +174,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
                 netconfig.rogue_channel;
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 
-    log(LogLevel::INFO, "Target network " + ap_mac.to_string() +
-        " detected on channel " + to_string(netconfig.real_channel));
-    log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, to_string(netconfig.rogue_channel));
+    log(LogLevel::INFO, "Target network {} detected on channel ", ap_mac.to_string(), netconfig.real_channel);
+    log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, netconfig.rogue_channel);
 
     // Now that we know the AP channel, put the monitor interface in active ACK mode
     if(start_nic_real_ap){
-        //hw_capabilities::exec({"iw", "dev", rogue_sta["iface"], "interface", "add", nic_real_ap, "type", "managed"});
-        // raději postupně exec({"iw", "dev", rogue_sta["iface"], "interface", "add", nic_real_ap, "type", "__ap", "addr"i, client_mac.to_string()});
-        log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_real_ap, client_mac.to_string().c_str());
-        hw_capabilities::set_mac_address(nic_real_ap, client_mac.to_string(), rogue_ap->str_con.at("netns"));
         rogue_sta->set_mac_address(client_mac.to_string());
-        start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon);
+        start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_mac.to_string());
     } else{
         log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_sta["iface"],
             client_mac.to_string().c_str());
@@ -204,13 +199,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     sock_real->set_filter(bpf);
 
     // 3. Set up the rogue AP and interfaces
-    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string().c_str());
+    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
     rogue_ap->set_iface_up();
-    hw_capabilities::set_mac_address(nic_rogue_ap, ap_mac.to_string(), rogue_ap->str_con.at("netns"));
     rogue_ap->set_mac_address(ap_mac.to_string());
-
     // Set up a rogue AP that clones the target network
-    start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon);
+    start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac.to_string());
 
     sock_rogue = make_unique<MonitorSocket>(rogue_ap["iface"]);
     sock_rogue->set_filter(bpf);

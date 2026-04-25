@@ -85,7 +85,7 @@ static vector<string> psy_if_in_ns(const string &ns_name){
     istringstream ss(out);
     string iface;
     while(ss >> iface){
-        const int rc = hw_capabilities::run_cmd({"test", "-e", "/sys/class/net/" + iface + "/device"}, ns_name);
+        const int rc = hw_capabilities::run_cmd({"test", "-e", "/sys/class/net/" + iface + "/device"}, ns_name, false);
         if(rc == 0){
             result.push_back(iface);
             log(LogLevel::DEBUG, "iface in ns " + ns_name + ": " + iface);

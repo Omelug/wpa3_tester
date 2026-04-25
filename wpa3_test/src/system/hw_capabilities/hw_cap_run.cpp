@@ -25,7 +25,7 @@ void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()
 }
 
 std::vector<std::string> wrap_with_netns(const std::vector<std::string>& argv,
-                                        const std::optional<std::string>& netns) {
+                                         const std::optional<std::string>& netns) {
     if (!netns.has_value()) {
         return argv;
     }
@@ -40,7 +40,7 @@ std::vector<std::string> wrap_with_netns(const std::vector<std::string>& argv,
     return full_argv;
 }
 
-int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns){
+int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns, bool print){
     if(argv.empty()) return -1;
 
     const auto full_argv = wrap_with_netns(argv, netns);
@@ -52,28 +52,30 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
 
     reproc::process proc;
     reproc::options options;
-    options.redirect.parent = true;
-    options.redirect.out.type = reproc::redirect::parent;
-    options.redirect.err.type = reproc::redirect::parent;
-
+    if(print){
+        options.redirect.parent = true;
+        options.redirect.out.type = reproc::redirect::parent;
+        options.redirect.err.type = reproc::redirect::parent;
+    }
     if(const error_code ec = proc.start(full_argv, options)){
-        log(LogLevel::ERROR, "Failed to start " + full_argv[0] + " " + ec.message());
+        if(print) log(LogLevel::ERROR, "Failed to start " + full_argv[0] + " " + ec.message());
         return -1;
     }
 
     auto [status, wait_ec] = proc.wait(reproc::infinite);
     this_thread::sleep_for(chrono::milliseconds(100)); //FIXME
     if(wait_ec){
-        log(LogLevel::ERROR, "Wait failed: " + wait_ec.message());
+        if(print) log(LogLevel::ERROR, "Wait failed: " + wait_ec.message());
         return -1;
     }
     if(status != 0){
-        string command_str;
-        for(const auto &arg: full_argv){
-            command_str += arg + " ";
+        if(print){
+            string command_str;
+            for(const auto &arg: full_argv){
+                command_str += arg + " ";
+            }
+            log(LogLevel::ERROR, "Command failed! Status: {} | Full command: {}", status, command_str);
         }
-
-        log(LogLevel::ERROR, "Command failed! Status: {} | Full command: {}", status, command_str);
         return -1;
     }
     return status;

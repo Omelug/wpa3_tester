@@ -18,10 +18,11 @@ struct TestConfig{
     static inline string base_iface = "wlan1";
     static inline optional<string> netns = nullopt;
     static inline int channel = 4;
+    static inline string mac_addr = "00:11:22:33:44:55";
 };
 
 TEST_CASE("iface mac address change") {
-    string target_mac = "00:11:22:33:44:55";
+    string target_mac = TestConfig::mac_addr;
     string original_mac = hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns);
 
     REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, target_mac, TestConfig::netns));
@@ -92,9 +93,39 @@ TEST_CASE("start ap test"){
         RunStatus rs;
         auto base_actor = ActorPtr(std::make_shared<Actor_config>());
         base_actor->str_con["iface"] = base_iface;
-        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, TestConfig::channel, beacon));
+        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, TestConfig::channel, beacon, TestConfig::mac_addr));
 
-        stop_ap(ap_iface);
+        stop_ap(ap_iface, nullopt);
         log(LogLevel::INFO, "AP stopped");
     }
 }
+
+TEST_CASE("STA connected to AP in different namespaces") {
+    const string ap_ns = "ap_ns";
+
+    const string ap_phys_iface = "wlan1";
+    const string ap_vif = "ap_vif";
+
+    REQUIRE_NOTHROW(hw_capabilities::create_ns(ap_ns));
+    REQUIRE_NOTHROW(hw_capabilities::move_to_netns(ap_phys_iface, ap_ns));
+
+    const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
+    const auto raw = test_helpers::read_pcap_file(pcap_path);
+    RadioTap rt(raw.data(), raw.size());
+    const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();
+
+    SUBCASE("Full Connection Flow") {
+        RunStatus rs;
+
+        auto ap_actor = ActorPtr(std::make_shared<Actor_config>());
+        ap_actor->str_con["iface"] = ap_phys_iface;
+        ap_actor->str_con["netns"] = ap_ns;
+
+        start_ap(rs, ap_vif, ap_actor, TestConfig::channel, beacon,  TestConfig::netns);
+        log(LogLevel::INFO, "AP started in namespace: {}", ap_ns);
+
+        stop_ap(ap_vif, ap_ns);
+    }
+    hw_capabilities::run_cmd({"ip", "netns", "del", ap_ns});
+}
+

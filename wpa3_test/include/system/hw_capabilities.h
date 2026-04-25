@@ -98,7 +98,7 @@ public:
 
     // run helpers
     static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
-    static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
+    static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt, const bool print = true);
     static std::string run_cmd_output(const std::vector<std::string> &argv,
                                       const std::optional<std::string> &netns = std::nullopt
     );
@@ -130,7 +130,6 @@ public:
     static void supports_active_monitor(const std::string &iface, Actor_config &cfg, const std::optional<std::string> &netns);
     static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);
     static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, int channel = 0);
-    //static void set_monitor_mode(const std::string &iface, int mtu);
 
     static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
     static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);

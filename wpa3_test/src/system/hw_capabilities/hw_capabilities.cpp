@@ -240,7 +240,7 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
         }
     }();
 
-    if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}); ret != 0)
+    if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0)
         throw runtime_error(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
 
     if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)

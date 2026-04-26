@@ -12,11 +12,11 @@ void RunStatus::setup_test(){
     error_code ec;
     if(exists(run_folder, ec)){
         remove_all(run_folder, ec);
-        if(ec){ throw runtime_error("Failed to clean last_run directory: " + run_folder + ":" + ec.message()); }
+        if(ec) throw runtime_error("Failed to clean last_run directory: " + run_folder + ":" + ec.message());
     }
 
     create_directories(run_folder, ec);
-    if(ec){ throw runtime_error("Failed to create last_run directory: " + run_folder + ":" + ec.message()); }
+    if(ec) throw runtime_error("Failed to create last_run directory: " + run_folder + ":" + ec.message());
 
     save_actor_interface_mapping();
     process_manager.init_logging(run_folder);

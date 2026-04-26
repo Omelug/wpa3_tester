@@ -18,9 +18,20 @@ public:
 
     explicit GraphElements(std::string label, std::string color = "green")
         : label(std::move(label)), color(std::move(color)){}
-
     virtual ~GraphElements() = default;
+    virtual std::unique_ptr<GraphElements> clone() const {
+        return std::make_unique<GraphElements>(*this);
+    }
 };
+
+inline std::vector<std::unique_ptr<GraphElements>> clone_elements(const std::vector<std::unique_ptr<GraphElements>>& src) {
+    std::vector<std::unique_ptr<GraphElements>> result;
+    result.reserve(src.size());
+    for (const auto& e : src)
+        result.push_back(e->clone());
+    return result;
+}
+
 
 // Graph elements //TODO
 typedef std::vector<std::unique_ptr<GraphElements>> &G_el;
@@ -35,6 +46,9 @@ public:
     )
         : GraphElements(std::move(label), std::move(color)), event_times(std::move(event_times)){
         type = GraphElement_t::EVENT_LINES;
+    }
+    std::unique_ptr<GraphElements> clone() const override {
+        return std::make_unique<EventLines>(*this);
     }
 };
 
@@ -53,6 +67,9 @@ public:
           x_times(x_times),
           y_values(y_values){
         type = GraphElement_t::GRAPH_XY_POINTS;
+    }
+    std::unique_ptr<GraphElements> clone() const override {
+        return std::make_unique<GraphXYPoints>(*this);
     }
 };
 

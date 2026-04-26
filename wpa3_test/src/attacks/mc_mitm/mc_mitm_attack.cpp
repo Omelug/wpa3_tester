@@ -77,23 +77,36 @@ void run_attack(RunStatus &rs){
     attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
     attack.netconfig.ssid = ap_ssid;
 
-    /*CSA_attack::check_vulnerable(
-        ap_mac, client_mac,
-         rogue_client["iface"], ap_ssid,
-        attack.netconfig.real_channel,  attack.netconfig.rogue_channel, 100, 7);
-    */
     attack.run(rs, rs.config.at("attack_config").at("attack_time").get<int>());
 }
 
 void stats(const RunStatus &rs){
     //TODO
-    /*vector<GraphElement> events;
-    events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH"),"SWITCH","blue"});
-    events.push_back({get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"),"DISCONN","red"});
-    events.push_back({get_time_logs(rs, "client", "@START"),"START","black"});
-    events.push_back({get_time_logs(rs, "client", "@END"),"END","black"});
 
-    //observer::tshark_graph(rs, "client", events);
-    observer::tshark_graph(rs, "rogue_ap", events);*/
+    vector<unique_ptr<GraphElements>> elements;
+    rs.log_events(elements,{
+        {"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "cyan"},
+        {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+        {"client", "@START", "START", "black"},
+        {"client", "@END", "END", "black"},
+    });
+
+    vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);;
+    observer::tshark::pcap_events(rs, elements_ap,{
+        //{"rogue_ap", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
+        {"rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
+        {"rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},
+    });
+    observer::tshark::tshark_graph(rs, "rogue_ap", elements_ap);
+
+    vector<unique_ptr<GraphElements>> elements_client = clone_elements(elements);;
+    observer::tshark::pcap_events(rs, elements_client,{
+        //{"rogue_client", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
+        {"rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_packet", "pink"},
+        {"rogue_client", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
+        {"rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},
+    });
+    observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
 }
+
 }

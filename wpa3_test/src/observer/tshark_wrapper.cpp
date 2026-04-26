@@ -232,18 +232,6 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
     return timestamps;
 }
 
-void pcap_events(
-    const RunStatus &rs,
-    vector<unique_ptr<GraphElements>> &elements,
-    // { actor, filter, label, color }
-    initializer_list<tuple<string,string,string,string>> event_def
-){
-    for(auto &[actor, filter, label, color]: event_def){
-        elements.push_back(make_unique<EventLines>(
-            get_tshark_events(rs, actor, filter, label), label, color));
-    }
-}
-
 string tshark_graph(const RunStatus &rs,
                     const string &actor_name,
                     const vector<unique_ptr<GraphElements>> &elements,
@@ -358,5 +346,17 @@ void generate_time_series_retry_graph(const RunStatus &rs,
         "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle");
 
     g.render();
+}
+
+void pcap_events(
+    const RunStatus &rs,
+    vector<unique_ptr<GraphElements>> &elements,
+    // { actor, filter, label, color }
+    initializer_list<tuple<string,string,string,string>> event_def
+){
+    for(auto &[actor, filter, label, color]: event_def){
+        elements.push_back(make_unique<EventLines>(
+            get_tshark_events(rs, actor, filter, label), label, color));
+    }
 }
 }

@@ -121,7 +121,7 @@ TEST_CASE("STA connected to AP in different namespaces") {
         ap_actor->str_con["iface"] = ap_phys_iface;
         ap_actor->str_con["netns"] = ap_ns;
 
-        start_ap(rs, ap_vif, ap_actor, TestConfig::channel, beacon,  TestConfig::netns);
+        start_ap(rs, ap_vif, ap_actor, TestConfig::channel, beacon,  TestConfig::mac_addr);
         log(LogLevel::INFO, "AP started in namespace: {}", ap_ns);
 
         stop_ap(ap_vif, ap_ns);

@@ -23,7 +23,7 @@ actors:
         ieee80211w: 2
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
-    #
+
   client:
     source: internal
     selection:
@@ -32,6 +32,8 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        version: 2_10
+        other_options: -dd
         group: CCMP
         ieee80211w: 2
         key_mgmt: SAE
@@ -39,7 +41,7 @@ actors:
         proto: RSN
         sae_password: password123
         ssid: OpenWrt_2_4GHz
-        version: 2_10
+
     netns: sta
     ip_addr: "10.0.0.2"
 
@@ -75,17 +77,17 @@ observers: #(allow start_observers if uesd )
     actor: rogue_ap
     program: tshark
     program_config:
-      filter: ""
+      filter: "special_filter:actors"
 
   channel6_tshark:
     actor: rogue_client
     program: tshark
     program_config:
-      filter: ""
+      filter: "special_filter:actors"
       #filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
 
 attack_config:
-  attack_time: 15
+  attack_time: 30
   target_ap_mac: 78:98:e8:55:3e:8d
   target_client_mac: a0:d7:68:10:25:6d
   ssid: OpenWrt_2_4GHz

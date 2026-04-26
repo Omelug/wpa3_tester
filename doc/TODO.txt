@@ -1,5 +1,4 @@
 //TODO
-
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
@@ -50,6 +49,7 @@ f: add network manager off option for actors
 +: add sniff_face mon interfaces option in OpennWrtConn
 +: extends check for arguemnts
 d: SA query
++: get data from mapping/config for --only_stats
 
 Fixes:
 f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)

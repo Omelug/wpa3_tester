@@ -137,6 +137,7 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
     optional<string> netns = base_actor->str_con.at("netns");
     // Split beacon into head (before TIM) and tail (after TIM)
+
     Dot11Beacon head;
     head.addr1(beacon.addr1());
     head.addr2(beacon.addr2());
@@ -183,6 +184,7 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
           format("'{}' did not appear", ap_iface));
     this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
     wpa3_tester::hw_capabilities::set_iface_down(ap_iface, netns);
+    if(mac.has_value()) wpa3_tester::hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
     wpa3_tester::hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
     base_actor->set_iface_up();
@@ -212,6 +214,7 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     //this_thread::sleep_for(chrono::milliseconds(100));
     base_actor->set_iface_up();
     wpa3_tester::hw_capabilities::set_iface_up(ap_iface, netns);
+    //wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns);
 }
 
 void stop_ap(const string &iface, const optional<string> &netns){

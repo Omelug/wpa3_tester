@@ -150,7 +150,7 @@ string hw_capabilities::get_macaddress(const string &iface, const optional<strin
 void hw_capabilities::set_mac_address(const string &iface, const string &new_mac_str, const optional<string> &netns){
     if(get_macaddress(iface, netns) == new_mac_str) return;
     set_iface_down(iface, netns);
-    run_cmd({"macchanger", "-m", new_mac_str, iface}, netns);
+    run_cmd({"ip", "link", "set", iface, "address", new_mac_str}, netns);
 }
 
 void hw_capabilities::supports_active_monitor(const string &iface, Actor_config &cfg, const optional<string> &netns){

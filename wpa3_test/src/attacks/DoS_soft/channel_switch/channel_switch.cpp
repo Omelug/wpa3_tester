@@ -7,7 +7,6 @@
 #include <chrono>
 #include "system/hw_capabilities.h"
 #include <filesystem>
-
 #include "attacks/components/setup_connections.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
@@ -47,7 +46,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
     const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
     radiotap.channel(freq_mhz, RadioTap::OFDM);
     radiotap.inner_pdu(beacon);
-    radiotap.flags(RadioTap::FCS); // check FCS (can be invalid for some drivers)
+    radiotap.flags(RadioTap::FCS); // tell driver to check FCS (can be invalid for some drivers)
 
     // TODO not very effective?
     PacketSender sender;
@@ -74,13 +73,6 @@ auto check_vulnerable(
             << "Interface: " << iface_name << "\n"
             << "Channel: " << ap_channel << "\n"
             << "SSID: " << ssid << endl;
-}
-
-//TODO change to config
-void speed_observation_start(RunStatus &rs){
-    observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
-    observer::tshark::start_tshark(rs, "client", "udp port 5201");
-    observer::start_tcpdump(rs, "access_point", "udp port 5201");
 }
 
 // ----------------- MODULE functions ------------------
@@ -116,6 +108,13 @@ void run_chs_attack(RunStatus &rs){
     check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
     log(LogLevel::INFO, "Attack END");
     this_thread::sleep_for(seconds(10));
+}
+
+//TODO change to config
+void speed_observation_start(RunStatus &rs){
+    observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
+    observer::tshark::start_tshark(rs, "client", "udp port 5201");
+    observer::start_tcpdump(rs, "access_point", "udp port 5201");
 }
 
 // ---------- STATS ----------------

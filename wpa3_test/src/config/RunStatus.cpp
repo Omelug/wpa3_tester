@@ -100,6 +100,7 @@ void RunStatus::execute(){
 
     //try {
     if(this->only_stats){
+        //TODO get data from mapping/config
         stats_test();
         return;
     }

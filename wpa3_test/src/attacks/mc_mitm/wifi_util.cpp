@@ -223,3 +223,8 @@ void stop_ap(const string &iface, const optional<string> &netns){
     wpa3_tester::hw_capabilities::run_cmd(cmd, netns);
 }
 
+bool power_mgmt(const Dot11 &dot11){
+    if(const auto *mgmt = dot11.find_pdu<Dot11ManagementFrame>()) return mgmt->power_mgmt();
+    if(const auto *data = dot11.find_pdu<Dot11Data>()) return data->power_mgmt();
+    return false;
+}

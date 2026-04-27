@@ -105,6 +105,8 @@ void stats(const RunStatus &rs){
         {"rogue_ap", "wlan.tag.number == 37", "CSA", "black"},
         {"rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
         {"rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},
+        {"rogue_ap", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green"},
+        {"rogue_ap", "eapol", "EAPOL", "dark-green"},
     });
     observer::tshark::tshark_graph(rs, "rogue_ap", elements_ap);
 
@@ -115,6 +117,8 @@ void stats(const RunStatus &rs){
         {"rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_packet", "pink"},
         {"rogue_client", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
         {"rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},
+        {"rogue_client", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green"},
+        {"rogue_client", "eapol", "EAPOL", "dark-green"},
     });
     observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
 }

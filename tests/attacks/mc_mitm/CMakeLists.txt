@@ -9,6 +9,7 @@ target_link_libraries(run_mc_mitm_tests PRIVATE
 )
 
 set(TEST_DATA_FILES
+        rogue_client_capture.pcap
         beacon_test.pcapng
         probe_res.pcapng
 )

@@ -10,6 +10,7 @@ int get_channel(const std::string &iface);
 int chan2freq(int channel);
 
 std::string get_ssid(const Tins::Dot11Beacon &beacon);
+bool power_mgmt(const Tins::Dot11 &dot11);
 
 Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, int rogue_channel);
 Tins::Dot11Beacon *beacon_channel_patch(const Tins::Dot11Beacon &beacon, int rogue_channel);

@@ -13,7 +13,10 @@ MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
     : iface_(iface),
       detect_injected_(detect_injected),
       sender_(iface),
-      sniffer_(iface, make_sniff_cfg()){}
+      sniffer_(iface, make_sniff_cfg()){
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf);
+}
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
 void MonitorSocket::send(Tins::PDU &pdu, const int channel){
@@ -27,7 +30,7 @@ void MonitorSocket::send(Tins::PDU &pdu, const int channel){
         Tins::RadioTap rt{};
         const int freq_mhz = hw_capabilities::channel_to_freq(channel);
         rt.channel(freq_mhz, Tins::RadioTap::OFDM);
-        rt.inner_pdu(pdu.clone());
+        //rt.inner_pdu(pdu.clone());
         // TXFlags = NOSEQ+ORDER (0x28) — matches Python RadioTap(present="TXFlags", TXFlags="NOSEQ+ORDER")
         rt.inner_pdu(pdu.clone());
 
@@ -40,32 +43,33 @@ void MonitorSocket::send(Tins::PDU &pdu, const int channel){
 unique_ptr<Tins::PDU> MonitorSocket::recv(){
     pcap_pkthdr *header;
     const u_char *frame;
-    const int fd = pcap_get_selectable_fd(sniffer_.get_pcap_handle());
-
-    pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
-    if(poll(&pfd, 1, 1) <= 0) return nullptr;
-    if(!(pfd.revents & POLLIN)) return nullptr;
-
-    if(pcap_next_ex(sniffer_.get_pcap_handle(), &header, &frame) != 1) return nullptr;
+    const int ret = pcap_next_ex(sniffer_.get_pcap_handle(), &header, &frame);
+    if(ret == 0) return nullptr;  // timeout
+    if(ret < 0) {
+        log(LogLevel::DEBUG, "pcap_next_ex error: {}", pcap_geterr(sniffer_.get_pcap_handle()));
+        return nullptr;
+    }
 
     try{
         auto rt = make_unique<Tins::RadioTap>(frame, header->caplen);
         strip_fcs(*rt);
         return rt;
     } catch(...){
+        log(LogLevel::DEBUG, "MonitorSocket::recv unknown parse error");
         return nullptr;
     }
+}
+
+void MonitorSocket::set_filter(const string &bpf){
+    sniffer_.set_filter(bpf);
 }
 
 Tins::SnifferConfiguration MonitorSocket::make_sniff_cfg(){
     Tins::SnifferConfiguration cfg;
     cfg.set_immediate_mode(true);
-    cfg.set_timeout(0);
+    cfg.set_timeout(1); //FIXME prej bug, neblokující nastaveno v pcap_setnonblock
+    //cfg.set_promisc_mode(true);
     return cfg;
-}
-
-void MonitorSocket::set_filter(const string &bpf){
-    sniffer_.set_filter(bpf);
 }
 
 // Strip FCS if RadioTap FLAGS field indicates it's present

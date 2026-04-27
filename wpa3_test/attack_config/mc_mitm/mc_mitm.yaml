@@ -7,14 +7,14 @@ actors:
   access_point:
     source: external
     selection:
-      channel: 6
+      channel: 11
       whitebox_host: OpenWrt
       condition: [ AP, 2_4GHz ]
     setup:
       program: openwrt
       program_config:
         ssid: OpenWrt_2_4GHz
-        channel: 6
+        channel: 11
         key: password123
         proto: RSN
         encryption: sae-mixed
@@ -27,8 +27,9 @@ actors:
   client:
     source: internal
     selection:
-      driver: rtw_8821cu
-      channel: 6
+      #TODO driver: rtw_8821cu save bssid in formware -> not rereset on test start
+      driver: ath9k_htc
+      channel: 11
     setup:
       program: wpa_supplicant
       program_config:
@@ -52,11 +53,12 @@ actors:
       #mac: "00:c0:ca:b7:69:2a" #FIXME I cant change channel on second mt76 adapter
       driver: mt76x2u
       condition: [ monitor ] #active_monitor
-      channel: 6
+      channel: 11
   rogue_ap:
     source: internal
     selection:
       driver: mt76x2u
+      iface: wlan1
       #driver: ath9k_htc
       #condition: [ monitor, injection] # active_monitor
       channel: 1
@@ -88,6 +90,6 @@ observers: #(allow start_observers if uesd )
 
 attack_config:
   attack_time: 30
-  target_ap_mac: 78:98:e8:55:3e:8d
-  target_client_mac: a0:d7:68:10:25:6d
+  #target_ap_mac: 78:98:e8:55:3e:8d
+  #target_client_mac: a0:d7:68:10:25:6d
   ssid: OpenWrt_2_4GHz

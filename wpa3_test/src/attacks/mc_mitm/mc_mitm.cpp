@@ -179,6 +179,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     // Now that we know the AP channel, put the monitor interface in active ACK mode
     if(start_nic_real_ap){
         rogue_sta->set_mac_address(client_mac.to_string());
+        // for ACK back to AP
         start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_mac.to_string());
     } else{
         hw_capabilities::set_iface_down(nic_real_ap, rogue_sta->str_con.at("netns"));
@@ -236,6 +237,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
         // Wait up to 100ms for data on either socket — mirrors Python select(..., 0.1)
         const int fd_real  = pcap_get_selectable_fd(sock_real->get_pcap_handle());
         const int fd_rogue = pcap_get_selectable_fd(sock_rogue->get_pcap_handle());
+
+        //log(LogLevel::DEBUG, "fd_real={} fd_rogue={}", fd_real, fd_rogue);
+        if(fd_real < 0 || fd_rogue < 0)
+            log(LogLevel::ERROR, "pcap_get_selectable_fd failed: fd_real={} fd_rogue={}", fd_real, fd_rogue);
+
         const int max_fd   = std::max(fd_real, fd_rogue) + 1;
 
         fd_set read_fds;
@@ -273,6 +279,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 void McMitm::stop(){
     log(LogLevel::INFO, "Cleaning up ...");
+    stop_ap(nic_real_ap, nullopt);
+    stop_ap(nic_rogue_ap, nullopt);
     sock_real.reset();
     sock_rogue.reset();
 }
@@ -420,6 +428,7 @@ void McMitm::handle_rx_real_chan(){
                 last_real_beacon =
                         steady_clock::now();
         }
+
 
         const bool might_forward = clients.contains(addr1.to_string()) &&
                 clients.at(addr1.to_string())->should_forward(*pdu);

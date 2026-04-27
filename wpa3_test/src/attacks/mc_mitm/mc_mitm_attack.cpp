@@ -49,8 +49,15 @@ void run_attack(RunStatus &rs){
     //const auto client = rs.get_actor("client");
 
     const auto ap_ssid = rs.config.at("attack_config").at("ssid").get<string>();
-    const auto ap_mac = rs.config.at("attack_config").at("target_ap_mac").get<string>();
-    const auto client_mac = rs.config.at("attack_config").at("target_client_mac").get<string>();
+
+    auto get_mac = [&](const string& actor_key, const string& config_key) -> string {
+        if(rs.config.at("actors").contains(actor_key))
+            return rs.get_actor(actor_key)["mac"];
+        return rs.config.at("attack_config").at(config_key).get<string>();
+    };
+
+    const auto ap_mac     = get_mac("access_point", "target_ap_mac");
+    const auto client_mac = get_mac("client", "target_client_mac");
 
     //const HWAddress<6> ap_csa_mac(rs.get_actor("access_point")["mac"]);
     //const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
@@ -85,6 +92,7 @@ void stats(const RunStatus &rs){
 
     vector<unique_ptr<GraphElements>> elements;
     rs.log_events(elements,{
+        {"access_point", "did not acknowledge authentication response", "ACK fail", "red"},
         {"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "cyan"},
         {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
         {"client", "@START", "START", "black"},
@@ -94,6 +102,7 @@ void stats(const RunStatus &rs){
     vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);;
     observer::tshark::pcap_events(rs, elements_ap,{
         //{"rogue_ap", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
+        {"rogue_ap", "wlan.tag.number == 37", "CSA", "black"},
         {"rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
         {"rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},
     });
@@ -102,6 +111,7 @@ void stats(const RunStatus &rs){
     vector<unique_ptr<GraphElements>> elements_client = clone_elements(elements);;
     observer::tshark::pcap_events(rs, elements_client,{
         //{"rogue_client", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
+        {"rogue_client", "wlan.tag.number == 37", "CSA", "black"},
         {"rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_packet", "pink"},
         {"rogue_client", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan"},
         {"rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange"},

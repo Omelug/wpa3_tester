@@ -20,7 +20,7 @@ using namespace Tins;
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
                                  const HWAddress<6> &addr1) {
-    // Beacon — aktualizuj timestamp
+    // Beacon — update timestamp
     if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
         const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
         if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel)
@@ -54,7 +54,6 @@ bool McMitm::is_eapol(const PDU &pdu){
     const auto snap = pdu.find_pdu<SNAP>();
     if (snap && snap->eth_type() == 0x888e) return true;
 
-    // Nebo je tam přímo třída EAPOL, pokud ji Libtins detekuje
     return pdu.find_pdu<EAPOL>() != nullptr;
 }
 

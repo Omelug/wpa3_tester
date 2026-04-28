@@ -32,6 +32,7 @@ public:
     bool should_check_rogue_beacons() const;
     void configure_interfaces();
 
+    void setup_real_AP_RSN_frames();
     void run(RunStatus &rs, int timeout_sec);
     void stop();
 

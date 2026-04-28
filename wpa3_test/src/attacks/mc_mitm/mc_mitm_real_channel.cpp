@@ -104,10 +104,9 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
             print_rx(LogLevel::INFO, "Real channel", *dot11);
             del_client(addr2.to_string());
         } else if(clients.contains(addr2.to_string())){
-            clients.at(addr2.to_string())->last_real =
-                    display_client_traffic(*dot11, "Real channel", clients.at(addr2.to_string())->last_real);
+            display_client_traffic(*dot11, "Real channel");
         } else if(addr2 == client_mac){
-            last_print_real_chan = display_client_traffic(*dot11, "Real channel", last_print_real_chan);
+            display_client_traffic(*dot11, "Real channel");
         }
 
         // Sleep mode detection

@@ -64,7 +64,7 @@ private:
     void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
         const Tins::HWAddress<6> &addr1);
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
-    bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU *pdu, Tins::Dot11 &dot11) const;
+    bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
     bool handle_probe_request(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
 
     static bool is_eapol(const Tins::PDU& pdu);

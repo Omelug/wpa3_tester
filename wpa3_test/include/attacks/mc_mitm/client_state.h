@@ -17,7 +17,7 @@ public:
         Initializing = 0,
         Connecting,
         GotMitm,
-        Attack_Started,
+        Attack_Started, // start attack -> filter/change
         Attack_Done
     };
 

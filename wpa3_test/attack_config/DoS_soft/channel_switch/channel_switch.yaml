@@ -46,6 +46,7 @@ actors:
       condition: [ monitor ]
       channel: 6
 attack_config:
+  #TODO try same channel like currect
   validator: ./channel_switch.schema.yaml
   attack_time: 30
   ms_interval: 100

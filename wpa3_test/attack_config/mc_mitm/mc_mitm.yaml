@@ -34,7 +34,7 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        #other_options: -dd
+        other_options: -dd
         group: CCMP
         ieee80211w: 2
         key_mgmt: SAE
@@ -58,7 +58,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      iface: wlan1
+      #iface: wlan1
       #driver: ath9k_htc
       #condition: [ monitor, injection] # active_monitor
       channel: 1

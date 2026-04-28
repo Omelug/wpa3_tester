@@ -104,14 +104,12 @@ void McMitm::print_rx(const LogLevel level, const string &prefix,
     log(level, msg);
 }
 
-steady_clock::time_point McMitm::display_client_traffic(
+void McMitm::display_client_traffic(
     const PDU &pdu,
     const std::string &prefix,
-    const steady_clock::time_point prevtime,
     const std::string &suffix
 ){
     const auto *dot11 = pdu.find_pdu<Dot11>();
-
     if(pdu.find_pdu<EAPOL>()){
         // EAPOL
         print_rx(LogLevel::INFO, prefix, *dot11, suffix);
@@ -124,7 +122,5 @@ steady_clock::time_point McMitm::display_client_traffic(
     } else if(dot11){
         print_rx(LogLevel::DEBUG, prefix, *dot11, suffix);
     }
-
-    return prevtime;
 }
 }

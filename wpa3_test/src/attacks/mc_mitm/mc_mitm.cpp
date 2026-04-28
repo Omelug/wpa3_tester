@@ -284,7 +284,6 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
     if(beacon_raw.size() < 4) return;
 
     const uint16_t old_rt_len = beacon_raw[2] | (beacon_raw[3] << 8);
-
     const long header_fixed = old_rt_len + 24 + 12;
     vector new_raw(beacon_raw.begin(), beacon_raw.begin() + header_fixed);
 
@@ -305,7 +304,6 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
         } else if(id == Dot11::HT_OPERATION && len >= 1){
             beacon_raw[pos + 2] = channel;
         }
-
         pos += 2 + len;
     }
 

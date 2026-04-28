@@ -34,8 +34,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>())
         print_rx(LogLevel::INFO, "Real channel", dot11, might_forward ? " -- MitM'ing" : "");
     else if(dot11.addr1() == client_mac)
-        last_print_real_chan = display_client_traffic(dot11, "Real channel", last_print_real_chan,
-                                                      might_forward ? " -- MitM'ing" : "");
+        display_client_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
     else if(might_forward)
         print_rx(LogLevel::INFO, "Real channel", dot11, " -- MitM");
 
@@ -50,10 +49,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 }
 
 bool McMitm::is_eapol(const PDU &pdu){
-    // EAPOL je v IEEE 802.11 zapouzdřen v SNAP (Subnetwork Access Protocol)
     const auto snap = pdu.find_pdu<SNAP>();
     if (snap && snap->eth_type() == 0x888e) return true;
-
     return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
@@ -63,7 +60,7 @@ void McMitm::handle_probe_request_real(const Dot11 &dot11) const{
     RadioTap rt;
     rt.inner_pdu(probe_resp->clone());
     sock_real->send(rt, netconfig.real_channel);
-    display_client_traffic(dot11, "Real channel", last_print_real_chan, " -- Replied");
+    display_client_traffic(dot11, "Real channel", " -- Replied");
 }
 
 void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
@@ -136,7 +133,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
             sock_rogue->send(*pdu, netconfig.rogue_channel);
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
-        last_print_real_chan = display_client_traffic(*dot11, "Real channel", last_print_real_chan);
+        display_client_traffic(*dot11, "Real channel");
     }
 }
 }

@@ -64,8 +64,9 @@ private:
     void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
         const Tins::HWAddress<6> &addr1);
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
-    bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
-    void handle_from_client_rogue(const std::unique_ptr<Tins::PDU> &pdu, Tins::Dot11 &dot11, const Tins::HWAddress<6> &addr2);
+    bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU *pdu, Tins::Dot11 &dot11) const;
+    bool handle_probe_request(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
+
     static bool is_eapol(const Tins::PDU& pdu);
     void handle_probe_request_real(const Tins::Dot11 &dot11) const;
     void handle_auth_from_client_real(const Tins::Dot11Authentication &auth);
@@ -88,10 +89,10 @@ public:
                          const std::string &suffix = ""
     );
 
-    static time_point display_client_traffic(
+    static void display_client_traffic(
         const Tins::PDU &pdu,
         const std::string &prefix,
-        time_point prevtime, const std::string &suffix = ""
+        const std::string &suffix = ""
     );
 };
 }

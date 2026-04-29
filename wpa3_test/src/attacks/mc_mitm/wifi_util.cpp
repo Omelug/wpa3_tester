@@ -2,8 +2,8 @@
 #include <stdexcept>
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include "system/netlink_helper.h"
 #include "system/netlink_guards.h"
+#include "system/netlink_helper.h"
 
 using namespace std;
 using namespace Tins;
@@ -92,8 +92,9 @@ Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, co
     return resp;
 }
 
-int get_eapol_msg_num(const RSNEAPOL *rsneapol){
-    if(!rsneapol) return 0;
+int get_eapol_msg_num(const PDU& pdu) {
+    const auto* rsneapol = pdu.find_pdu<RSNEAPOL>();
+    if (!rsneapol) return -1;
     const uint8_t key_ack = rsneapol->key_ack();
     const uint8_t key_mic = rsneapol->key_mic();
     const uint8_t install = rsneapol->install();
@@ -104,7 +105,7 @@ int get_eapol_msg_num(const RSNEAPOL *rsneapol){
     if(key_mic && !key_ack && !install && secure) return 4;  // M4
     if(!key_mic && key_ack && !install && !secure) return 1; // M1
 
-    return 0;
+    return -1;
 }
 
 Dot11ManagementFrame::channel_switch_type construct_csa(const uint8_t new_channel, const uint8_t count = 1){

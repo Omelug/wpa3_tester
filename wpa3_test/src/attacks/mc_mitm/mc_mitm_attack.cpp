@@ -86,7 +86,6 @@ void run_attack(RunStatus &rs){
 }
 
 void stats(const RunStatus &rs){
-    //TODO
 
     vector<unique_ptr<GraphElements>> elements;
     rs.log_events(elements,{

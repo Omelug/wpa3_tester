@@ -62,7 +62,7 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, PDU &pdu, Dot11 &do
     return false;
 }
 
-bool McMitm::handle_probe_request(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) const{
+bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) const{
     if(dot11.find_pdu<Dot11ProbeRequest>()){
         if(ap_mac != dot11.addr1()) return true;
         probe_resp->addr1(addr2);
@@ -91,7 +91,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
     //FIXME
     if(handle_open_auth(addr2, *dot11)) return;
     if(handle_assoc_request(addr2, *pdu, *dot11)) return;;
-    if(handle_probe_request(addr2, pdu.get(), *dot11)) return;;
+    if(handle_probe(addr2, pdu.get(), *dot11)) return;;
 
     if(addr2 == ap_mac){ //transmitter
         if(const auto *b = dot11->find_pdu<Dot11Beacon>()){
@@ -114,7 +114,6 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
                 client->state <= ClientState::Connecting){
                 print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
                 client->mark_got_mitm();
-                if(only_to_mitm) stop_mitm = true;
             } else{
                 display_client_traffic(*pdu, "Rogue channel", " -- MitM'ing");
             }
@@ -127,19 +126,20 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
             print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
             auto new_client = ClientState(addr2.to_string());
             new_client.mark_got_mitm();
-            if(only_to_mitm) stop_mitm = true;
             add_client(new_client);
             client = clients.at(addr2.to_string()).get();
             will_forward = true;
+
         } else if(addr2 == client_mac){
             display_client_traffic(*pdu, "Rogue channel");
         }
 
-        // sleep detection
+        // remove sleep option
         if(client != nullptr && will_forward){
             if( power_mgmt(*dot11) && clients.contains(addr2.to_string()) &&
                 clients.at(addr2.to_string())->state < ClientState::Attack_Done){
                 log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2.to_string());
+                //dot11->power_mgmt(0);
             }
             sock_real->send(*pdu, netconfig.real_channel);
         }

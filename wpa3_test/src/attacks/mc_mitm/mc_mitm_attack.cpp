@@ -59,15 +59,13 @@ void run_attack(RunStatus &rs){
     const auto ap_mac     = get_mac("access_point", "target_ap_mac");
     const auto client_mac = get_mac("client", "target_client_mac");
 
-    //const HWAddress<6> ap_csa_mac(rs.get_actor("access_point")["mac"]);
-    //const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
-
     rs.start_observers();
 
     McMitm attack(
         rogue_client, rogue_ap,
         ap_ssid,
-        ap_mac, client_mac);
+        ap_mac, client_mac,
+        rs.config.at("attack_config").at("only_to_mitm").get<bool>());
 
     rogue_client->set_iface_up();
     rogue_ap->set_iface_up();

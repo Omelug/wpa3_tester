@@ -17,10 +17,12 @@ private:
     std::string ssid;
     Tins::HWAddress<6> ap_mac;
     Tins::HWAddress<6> client_mac;
+    bool only_to_mitm = false;
+    bool stop_mitm = false;
 public:
     // AP <-> rogue_sta <-> rogue AP <-> client
     McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
-           const std::string &client_mac
+           const std::string &client_mac, bool only_to_mitm = false
     );
     ~McMitm();
 

@@ -61,6 +61,9 @@ properties:
     type: string
     minLength: 8
     maxLength: 63
+  log_level:
+    type: integer
+    enum: [ 0, 1, 2 ]
 
   # --- PMF (Protected Management Frames) ---
   ieee80211w:

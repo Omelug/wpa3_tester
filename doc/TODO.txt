@@ -50,6 +50,7 @@ f: add network manager off option for actors
 +: extends check for arguemnts
 d: SA query
 +: get data from mapping/config for --only_stats
++: add SAE forwarding to mitm
 
 Fixes:
 f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)
@@ -71,6 +72,7 @@ Optimalization:
 
 PDF:
 // použít NIC a WNIC k vysvětlení interface
++: PMKSA
 
 - Every ahysical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation

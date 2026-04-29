@@ -54,13 +54,16 @@ bool McMitm::is_eapol(const PDU &pdu){
     return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
-
-void McMitm::handle_probe_request_real(const Dot11 &dot11) const{
-    probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
-    RadioTap rt;
-    rt.inner_pdu(probe_resp->clone());
-    sock_real->send(rt, netconfig.real_channel);
-    display_client_traffic(dot11, "Real channel", " -- Replied");
+bool McMitm::handle_probe_request_real(const Dot11 &dot11) const{
+    if(dot11.find_pdu<Dot11ProbeRequest>()){
+        probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
+        RadioTap rt;
+        rt.inner_pdu(probe_resp->clone());
+        sock_real->send(rt, netconfig.real_channel);
+        display_client_traffic(dot11, "Real channel", " -- Replied");
+        return true;
+    }
+    return false;
 }
 
 void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {

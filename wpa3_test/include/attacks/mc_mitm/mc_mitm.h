@@ -60,7 +60,7 @@ public:
 
     static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
-private:
+private: // for handle function is return -> end pdu processing
     void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
         const Tins::HWAddress<6> &addr1);
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
@@ -68,7 +68,7 @@ private:
     bool handle_probe_request(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
 
     static bool is_eapol(const Tins::PDU& pdu);
-    void handle_probe_request_real(const Tins::Dot11 &dot11) const;
+    bool handle_probe_request_real(const Tins::Dot11 &dot11) const;
     void handle_auth_from_client_real(const Tins::Dot11Authentication &auth);
 public:
     void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu);

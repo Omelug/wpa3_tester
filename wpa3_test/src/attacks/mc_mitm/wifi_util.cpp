@@ -125,6 +125,12 @@ static void check(wpa3_tester::netlink_helper::Result res, const string_view con
     if(!res) throw system_error(res.error(), string{context});
 }
 
+bool power_mgmt(const Dot11 &dot11){
+    if(const auto *mgmt = dot11.find_pdu<Dot11ManagementFrame>()) return mgmt->power_mgmt();
+    if(const auto *data = dot11.find_pdu<Dot11Data>()) return data->power_mgmt();
+    return false;
+}
+
 void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tester::ActorPtr &base_actor,
               int channel,
               const Dot11Beacon &beacon,
@@ -221,10 +227,4 @@ void stop_ap(const string &iface, const optional<string> &netns){
     const vector<string> cmd = {"iw", "dev", iface, "ap", "stop"};
     log(wpa3_tester::LogLevel::INFO, "Stopping AP using: iw dev " + iface + " ap stop");
     wpa3_tester::hw_capabilities::run_cmd(cmd, netns);
-}
-
-bool power_mgmt(const Dot11 &dot11){
-    if(const auto *mgmt = dot11.find_pdu<Dot11ManagementFrame>()) return mgmt->power_mgmt();
-    if(const auto *data = dot11.find_pdu<Dot11Data>()) return data->power_mgmt();
-    return false;
 }

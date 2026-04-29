@@ -21,6 +21,7 @@ actors:
         mode: ap
         htmode: HT20
         ieee80211w: 2
+        log_level: 1
       req_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
 
@@ -34,7 +35,7 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        other_options: -dd
+        other_options: -d #d
         group: CCMP
         ieee80211w: 2
         key_mgmt: SAE

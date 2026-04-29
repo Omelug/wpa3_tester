@@ -206,7 +206,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, const ActorPtr &actor){
 
     // radio level keys
     static const set<string> radio_keys = {
-        "channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled"
+        "channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level"
     };
     const string wifi_iface = get_wifi_iface_section(actor["iface"]);
 

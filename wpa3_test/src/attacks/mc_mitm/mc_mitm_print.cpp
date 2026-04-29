@@ -70,8 +70,14 @@ void McMitm::print_rx(const LogLevel level, const string &prefix,
         addr2 = mgmt->addr2().to_string();
     } else if(const auto *data = frame.find_pdu<Dot11Data>()){
         addr2 = data->addr2().to_string();
+    }else if(frame.type() == Dot11::MANAGEMENT){
+        const auto raw = const_cast<Dot11&>(frame).serialize();
+        if(raw.size() >= 16)
+            addr2 = HWAddress<6>(raw.data() + 10).to_string();
     }
+
     string msg = prefix + ": " + addr2 + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
+
     if(!suffix.empty()) msg += suffix;
     log(level, msg);
 }

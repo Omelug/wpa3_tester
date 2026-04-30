@@ -29,7 +29,7 @@ TEST_CASE("beacon_to_probe_resp"){
 }
 
 TEST_CASE("patch_channel_raw - beacon frame"){
-    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/.pcapng");
+    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/beacon_test.pcapng");
     vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
     McMitm::patch_channel_raw(beacon_data, 11);

@@ -71,7 +71,7 @@ private: // for handle function is return -> end pdu processing
     bool handle_action_rogue(Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
     bool handle_action_real(Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 
-    bool handle_eapol(Tins::HWAddress<6> addr2, Tins::HWAddress<6> addr1, Tins::PDU &pdu);
+    bool handle_eapol_real(Tins::HWAddress<6> addr2, Tins::HWAddress<6> addr1, Tins::PDU &pdu);
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
     void handle_auth_from_client_real(const Tins::Dot11Authentication &auth);
 

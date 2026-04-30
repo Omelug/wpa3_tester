@@ -28,7 +28,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     const bool might_forward = clients.contains(addr1.to_string()) &&
             clients.at(addr1.to_string())->should_forward(*pdu);
 
-    // Print
+    //print
     if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>())
         print_rx(LogLevel::INFO, "Real channel", dot11, might_forward ? " -- MitM'ing" : "");
     else if(dot11.addr1() == client_mac)
@@ -80,11 +80,8 @@ bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
     return false;
 }
 
-bool McMitm::handle_eapol(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
-    const auto *dot11 = pdu.find_pdu<Dot11>();
-    if(dot11->addr1() == ap_mac){
-
-    }else if(addr2 == ap_mac){
+bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
+   if(addr2 == ap_mac){
         // EAPOL od AP → forward na rogue channel
         if(is_eapol(pdu) && clients.contains(addr1.to_string())){
             int eapol_msg = get_eapol_msg_num(pdu);

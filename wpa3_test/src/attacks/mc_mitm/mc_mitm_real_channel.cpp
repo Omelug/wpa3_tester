@@ -46,6 +46,40 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
 }
 
+bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
+    if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
+
+    if(dot11.wep()){
+        const HWAddress<6> src = const_cast<Dot11&>(dot11).serialize().size() >= 16
+                                 ? HWAddress<6>(const_cast<Dot11&>(dot11).serialize().data() + 10)
+                                 : HWAddress<6>();
+        if(src == ap_mac){
+            log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
+            sock_rogue->send(pdu, netconfig.rogue_channel);
+        }
+        return true;
+    }
+
+    const auto raw = const_cast<Dot11&>(dot11).serialize();
+    if(raw.size() < 25) return false;
+    const uint8_t category = raw[24];
+
+    if(category == 0){
+        log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
+        return true;
+    }
+
+    const HWAddress<6> src(raw.data() + 10);
+    const HWAddress<6> dst(raw.data() + 4);
+
+    if(src == ap_mac && clients.contains(dst.to_string())){
+        log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
+        sock_rogue->send(pdu, netconfig.rogue_channel);
+        return true;
+    }
+    return false;
+}
+
 bool McMitm::handle_eapol(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
     const auto *dot11 = pdu.find_pdu<Dot11>();
     if(dot11->addr1() == ap_mac){
@@ -94,40 +128,6 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
     ClientState client(client_addr.to_string());
     client.update_state(ClientState::Connecting);
     add_client(std::move(client));
-}
-
-bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
-    if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
-
-    if(dot11.wep()){
-        const HWAddress<6> src = const_cast<Dot11&>(dot11).serialize().size() >= 16
-            ? HWAddress<6>(const_cast<Dot11&>(dot11).serialize().data() + 10)
-            : HWAddress<6>();
-        if(src == ap_mac){
-            log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
-            sock_rogue->send(pdu, netconfig.rogue_channel);
-        }
-        return true;
-    }
-
-    const auto raw = const_cast<Dot11&>(dot11).serialize();
-    if(raw.size() < 25) return false;
-    const uint8_t category = raw[24];
-
-    if(category == 0){
-        log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
-        return true;
-    }
-
-    const HWAddress<6> src(raw.data() + 10);
-    const HWAddress<6> dst(raw.data() + 4);
-
-    if(src == ap_mac && clients.contains(dst.to_string())){
-        log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
-        sock_rogue->send(pdu, netconfig.rogue_channel);
-        return true;
-    }
-    return false;
 }
 
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){

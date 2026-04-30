@@ -18,7 +18,13 @@ public:
 
 protected:
     void send_to_real(Tins::PDU &) const override { ++real_send_count; }
+    void send_to_real(const std::vector<uint8_t> &) const override{
+        ++real_send_count;
+    }
     void send_to_rogue(Tins::PDU &) const override { ++rogue_send_count; }
+    void send_to_rogue(const std::vector<uint8_t> &) const override{
+        ++rogue_send_count;
+    }
 };
 
 

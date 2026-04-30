@@ -62,7 +62,7 @@ TEST_SUITE("MonitorSocket::parse_frame") {
     }
 }
 
-// ─── Sequence test: multiple frames from a single pcap file ──────────────────
+// -- Sequence test: multiple frames from a single pcap file ---
 
 TEST_SUITE("MonitorSocket::parse_frame sequence") {
 
@@ -71,8 +71,7 @@ TEST_SUITE("MonitorSocket::parse_frame sequence") {
         REQUIRE_UNARY_FALSE(frames.empty());
 
         for (const auto &raw : frames) {
-            auto result = MonitorSocket::parse_frame(raw.data(),
-                                                     static_cast<uint32_t>(raw.size()));
+            auto result = MonitorSocket::parse_frame(raw.data(), static_cast<uint32_t>(raw.size()));
             CHECK_NE(result.pdu, nullptr);
         }
     }

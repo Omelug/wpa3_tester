@@ -70,15 +70,19 @@ public: // for handle function is return -> end pdu processing
     bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
     bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
     bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-    bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 
+    bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu,
+        const std::vector<unsigned char> &raw,  const Tins::Dot11 &dot11) const;
     bool handle_eapol_real(Tins::HWAddress<6> addr2, Tins::HWAddress<6> addr1, Tins::PDU &pdu);
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
     void handle_auth_from_client_real(const Tins::Dot11Authentication &auth);
 
 protected:
     virtual void send_to_real(Tins::PDU &pdu) const;
+    virtual void send_to_real(const std::vector<uint8_t> &raw) const;
+    //virtual void send_to_real(const std::vector<uint8_t> &raw) const;
     virtual void send_to_rogue(Tins::PDU &pdu) const;
+    virtual void send_to_rogue(const std::vector<uint8_t> &raw) const;
 public:
     void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
     void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);

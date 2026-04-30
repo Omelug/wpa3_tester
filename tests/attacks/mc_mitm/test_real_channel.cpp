@@ -20,7 +20,7 @@ TEST_SUITE("handle_action_real") {
 
         auto m = make_fixture();
         auto ap_mac  = HWAddress<6>("24:ec:99:bf:b0:a1");
-        CHECK_FALSE(m->handle_action_real(ap_mac,rt, *dot11));
+        CHECK_FALSE(m->handle_action_real(ap_mac,rt, raw, *dot11));
         CHECK_EQ(m->rogue_send_count, 0);
         CHECK_EQ(m->real_send_count, 0);
     }
@@ -34,7 +34,7 @@ TEST_SUITE("handle_action_real") {
         auto m = make_fixture();
         auto frame_ap_mac  = HWAddress<6>("24:ec:99:bf:e0:cd");
         m->ap_mac = frame_ap_mac;
-        CHECK(m->handle_action_real(frame_ap_mac, rt, *dot11));
+        CHECK(m->handle_action_real(frame_ap_mac, rt, raw, *dot11));
         CHECK_EQ(m->rogue_send_count, 1);
         CHECK_EQ(m->real_send_count, 0);
     }
@@ -46,7 +46,7 @@ TEST_SUITE("handle_action_real") {
 
         auto m = make_fixture(true);
         auto ap_mac  = HWAddress<6>("24:ec:99:bf:b0:FF");
-        CHECK_FALSE(m->handle_action_real(ap_mac, rt, *dot11));
+        CHECK_FALSE(m->handle_action_real(ap_mac, rt, raw, *dot11));
         CHECK_EQ(m->rogue_send_count, 0);
         CHECK_EQ(m->real_send_count, 0);
     }

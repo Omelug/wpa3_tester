@@ -1,5 +1,7 @@
 #include "attacks/mc_mitm/wifi_util.h"
 #include <stdexcept>
+
+#include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
@@ -7,6 +9,34 @@
 
 using namespace std;
 using namespace Tins;
+
+
+//TODO test
+Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
+    const auto *dot11 = pdu.find_pdu<Dot11>();
+    if(!dot11) return {};
+
+    HWAddress<6> addr1 = dot11->addr1();
+    HWAddress<6> addr2;
+
+    if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
+        addr2 = mgmt->addr2();
+    } else if(const auto *data = pdu.find_pdu<Dot11Data>()){
+        addr2 = data->addr2();
+    }
+
+    // fallback addresses from raw
+    if(addr2 == HWAddress<6>() && raw.size() >= 16){
+        // skip RadioTap header
+        const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
+        if(raw.size() >= static_cast<size_t>(rt_len) + 16){
+            addr1 = HWAddress<6>(raw.data() + rt_len + 4);
+            addr2 = HWAddress<6>(raw.data() + rt_len + 10);
+        }
+    }
+
+    return {addr1, addr2};
+}
 
 string get_ssid(const Dot11Beacon &beacon){
     const auto opt = beacon.search_option(Dot11::SSID);
@@ -39,33 +69,6 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rog
         resp.add_option(opt);
     }
 
-    return resp;
-}
-
-//TODO move
-Dot11Beacon *beacon_channel_patch(const Dot11Beacon &beacon, const int rogue_channel){
-    auto *resp = new Dot11Beacon();
-    resp->addr1(Dot11::BROADCAST);
-    resp->addr2(beacon.addr2());
-    resp->addr3(beacon.addr3());
-    //resp->timestamp(0xAAAAAAAAAAAAAAAAULL);
-    resp->interval(beacon.interval());
-    resp->capabilities() = beacon.capabilities();
-
-    for(const auto &opt: beacon.options()){
-        if(opt.option() == Dot11::DS_SET){
-            uint8_t ch = rogue_channel;
-            resp->add_option({Dot11::DS_SET, 1, &ch});
-            continue;
-        }
-        if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1){
-            vector ht(opt.data_ptr(), opt.data_ptr() + opt.data_size());
-            ht[0] = rogue_channel;
-            resp->add_option({Dot11::HT_OPERATION, ht.size(), ht.data()});
-            continue;
-        }
-        resp->add_option(opt);
-    }
     return resp;
 }
 
@@ -108,28 +111,14 @@ int get_eapol_msg_num(const PDU& pdu) {
     return -1;
 }
 
-Dot11ManagementFrame::channel_switch_type construct_csa(const uint8_t new_channel, const uint8_t count = 1){
-    return {
+Dot11Beacon append_csa(const Dot11Beacon &beacon, const uint8_t new_channel, const uint8_t count){
+    Dot11Beacon copy = beacon;
+    copy.channel_switch({
         1, //type
         new_channel,
         count
-    };
-}
-
-Dot11Beacon append_csa(const Dot11Beacon &beacon, const uint8_t channel, const uint8_t count){
-    Dot11Beacon copy = beacon;
-    copy.channel_switch(construct_csa(channel, count));
+    });
     return copy;
-}
-
-static void check(wpa3_tester::netlink_helper::Result res, const string_view context){
-    if(!res) throw system_error(res.error(), string{context});
-}
-
-bool power_mgmt(const Dot11 &dot11){
-    if(const auto *mgmt = dot11.find_pdu<Dot11ManagementFrame>()) return mgmt->power_mgmt();
-    if(const auto *data = dot11.find_pdu<Dot11Data>()) return data->power_mgmt();
-    return false;
 }
 
 void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tester::ActorPtr &base_actor,
@@ -180,15 +169,15 @@ void start_ap(wpa3_tester::RunStatus &rs, const string &ap_iface, const wpa3_tes
     wpa3_tester::netlink_helper::NetlinkRegistry::get_fd(netns);
     base_actor->set_iface_down();
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, false);
-    check(wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface, netns),
-          format("'{}' did not disappear", ap_iface));
+    if(!wpa3_tester::netlink_helper::wait_for_iface_disappear(ap_iface, netns))
+        throw wpa3_tester::setup_err("'{}' did not disappear", ap_iface);
 
     base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR);
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
     wpa3_tester::hw_capabilities::run_cmd({"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"}, netns);
-    check(wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface, netns),
-          format("'{}' did not appear", ap_iface));
+    if(!wpa3_tester::netlink_helper::wait_for_iface_appear(ap_iface, netns))
+          throw wpa3_tester::setup_err("'{}' did not appear", ap_iface);
     this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
     wpa3_tester::hw_capabilities::set_iface_down(ap_iface, netns);
     if(mac.has_value()) wpa3_tester::hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);

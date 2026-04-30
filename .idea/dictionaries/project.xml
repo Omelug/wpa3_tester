@@ -105,6 +105,7 @@
       <w>rtmgrp</w>
       <w>rtnetlink</w>
       <w>setcap</w>
+      <w>setnonblock</w>
       <w>setsid</w>
       <w>siocgifflags</w>
       <w>siocsifflags</w>

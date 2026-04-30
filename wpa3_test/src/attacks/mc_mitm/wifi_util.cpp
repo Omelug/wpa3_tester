@@ -11,6 +11,12 @@ using namespace std;
 using namespace Tins;
 
 namespace wpa3_tester{
+string get_ssid(const Dot11Beacon &beacon){
+    const auto opt = beacon.search_option(Dot11::SSID);
+    if(!opt) return "";
+    return string(opt->data_ptr(), opt->data_ptr() + opt->data_size());
+}
+
 //TODO test
 Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
     const auto *dot11 = pdu.find_pdu<Dot11>();
@@ -36,12 +42,6 @@ Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
     }
 
     return {addr1, addr2};
-}
-
-string get_ssid(const Dot11Beacon &beacon){
-    const auto opt = beacon.search_option(Dot11::SSID);
-    if(!opt) return "";
-    return string(opt->data_ptr(), opt->data_ptr() + opt->data_size());
 }
 
 Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const int rogue_channel){

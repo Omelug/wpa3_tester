@@ -48,9 +48,7 @@ TEST_CASE("Cross-namespace interface lifecycle") {
     CHECK(netlink_helper::iface_is_down(iface, test_ns));
 
     const string phy_name = hw_capabilities::get_phy(iface, test_ns);
-    if(!phy_name.empty()) {
-        hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "1"}, test_ns);
-    }
+    if(!phy_name.empty()) hw_capabilities::run_cmd({"iw", "phy", phy_name, "set", "netns", "1"}, test_ns);
 
     hw_capabilities::run_cmd({"ip", "netns", "del", test_ns});
 }

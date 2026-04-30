@@ -9,12 +9,13 @@ using namespace Tins;
 
 namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
-    : iface_(iface),
-      detect_injected_(detect_injected),
+    : detect_injected_(detect_injected),
       sender_(iface),
       sniffer_(iface, make_sniff_cfg()){
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf);
+    if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
+        throw runtime_error("pcap_setnonblock failed: " + string(errbuf));
 }
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
@@ -38,26 +39,25 @@ void MonitorSocket::send(PDU &pdu, const int channel){
     }
 }
 
-MonitorSocket::RecvResult MonitorSocket::recv(){
+MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, uint32_t caplen) {
+    try {
+        const RadioTap rt(frame, caplen);
+        uint32_t strip = 0;
+        if (rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS))
+            strip = 4;
+        auto pdu = make_unique<RadioTap>(frame, caplen - strip);
+        return { std::move(pdu), vector(frame, frame + caplen - strip) };
+    } catch (...) {
+        return {};
+    }
+}
+
+MonitorSocket::RecvResult MonitorSocket::recv() {
     pcap_pkthdr *header;
     const u_char *frame;
     const int ret = pcap_next_ex(sniffer_.get_pcap_handle(), &header, &frame);
-    if(ret == 0) return {};
-    if(ret < 0) return {};
-
-    const uint32_t caplen = header->caplen;
-    try{
-        const RadioTap rt(frame, caplen);
-        // strip FCS before save to raw
-        uint32_t strip = 0;
-        if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS))
-            strip = 4;
-
-        auto pdu = make_unique<RadioTap>(frame, caplen - strip);
-        return { std::move(pdu), vector(frame, frame + caplen - strip) };
-    } catch(...){
-        return {};
-    }
+    if (ret <= 0) return {};
+    return parse_frame(frame, header->caplen);
 }
 
 void MonitorSocket::set_filter(const string &bpf){ sniffer_.set_filter(bpf);}
@@ -69,26 +69,4 @@ SnifferConfiguration MonitorSocket::make_sniff_cfg(){
     //cfg.set_promisc_mode(true);
     return cfg;
 }
-
-// Strip FCS if RadioTap FLAGS field indicates it's present
-// Mirrors Python _detect_and_strip_fcs
-/*void MonitorSocket::strip_fcs(RadioTap &rt){
-    if(!((rt.present() & RadioTap::FLAGS) &&
-        (rt.flags() & RadioTap::FCS)))
-        return;
-
-    // Reserialize without FCS — libtins handles this internally
-    // when FCS flag is set it includes 4 extra bytes at the end
-    auto *dot11 = rt.find_pdu<Dot11>();
-    if(!dot11) return;
-
-    const auto raw = dot11->serialize();
-    if(raw.size() < 4) return;
-
-    // Rebuild Dot11 without last 4 bytes (FCS)
-    try{
-        Dot11 *stripped = Dot11::from_bytes(raw.data(), raw.size() - 4);
-        rt.inner_pdu(stripped);
-    } catch(...){}
-}*/
 }

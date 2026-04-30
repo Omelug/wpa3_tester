@@ -19,7 +19,20 @@ target_link_libraries(run_mc_mitm_tests PRIVATE
 add_dependencies(run_mc_mitm_tests copy_pcap_files)
 add_test(NAME McMitmTests COMMAND run_mc_mitm_tests)
 
-# mc_mitm attack tests
+# MonitorSocket
+add_executable(run_monitor_socket_tests test_MonitorSocket.cpp)
+
+target_link_libraries(run_monitor_socket_tests PRIVATE
+        test_helpers
+        wpa3_core
+        doctest_headers
+        tins
+)
+
+add_dependencies(run_monitor_socket_tests copy_pcap_files)
+add_test(NAME RunMonitorSocketTests COMMAND run_monitor_socket_tests)
+
+# wifi utils
 add_executable(run_wifi_utils test_wifi_utils.cpp)
 
 target_link_libraries(run_wifi_utils PRIVATE

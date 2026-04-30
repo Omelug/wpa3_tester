@@ -45,7 +45,7 @@ MonitorSocket::RecvResult MonitorSocket::recv(){
     if(ret == 0) return {};
     if(ret < 0) return {};
 
-    uint32_t caplen = header->caplen;
+    const uint32_t caplen = header->caplen;
     try{
         const RadioTap rt(frame, caplen);
         // strip FCS before save to raw

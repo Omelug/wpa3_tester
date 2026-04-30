@@ -65,6 +65,7 @@ void McMitm::print_rx(const LogLevel level, const string &prefix,
 ){
     if(frame.type() == Dot11::CONTROL) return;
 
+
     string addr2;
     if(const auto *mgmt = frame.find_pdu<Dot11ManagementFrame>()){
         addr2 = mgmt->addr2().to_string();

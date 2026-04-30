@@ -250,8 +250,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
         }
 
         if (next_beacon <= steady_clock::now()) {
-            const bool client_associated = clients.contains(client_mac.to_string()) &&
-                    clients.at(client_mac.to_string())->state >= ClientState::GotMitm;
+            const bool client_associated = clients.contains(client_mac) &&
+                    clients.at(client_mac)->state >= ClientState::GotMitm;
             if(!client_associated)
                 send_csa_beacon(1);
             next_beacon += milliseconds(100);

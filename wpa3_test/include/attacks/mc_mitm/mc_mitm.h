@@ -49,7 +49,8 @@ public:
     using DisasEntry = std::pair<std::chrono::steady_clock::time_point,Tins::HWAddress<6>>;
     std::vector<DisasEntry> disas_queue;
 
-    std::unordered_map<std::string,std::unique_ptr<ClientState>> clients;
+    // move to private and add exists_client ?
+    std::unordered_map<Tins::HWAddress<6>,std::unique_ptr<ClientState>> clients;
 
     std::unique_ptr<MonitorSocket> sock_real;
     std::unique_ptr<MonitorSocket> sock_rogue;
@@ -68,8 +69,8 @@ private: // for handle function is return -> end pdu processing
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
     bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
     bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
-    bool handle_action_rogue(Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-    bool handle_action_real(Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
+    bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
+    bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 
     bool handle_eapol_real(Tins::HWAddress<6> addr2, Tins::HWAddress<6> addr1, Tins::PDU &pdu);
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
@@ -82,10 +83,12 @@ public:
     ClientState *find_client(const std::string &mac);
 
     void add_client(ClientState client){
-        clients[client.macaddr] = std::make_unique<ClientState>(std::move(client));
+        clients[Tins::HWAddress<6>(client.macaddr)] = std::make_unique<ClientState>(std::move(client));
     }
 
-    void del_client(const Tins::HWAddress<6> &macaddr){ clients.erase(macaddr.to_string()); }
+    void del_client(const Tins::HWAddress<6> &macaddr){
+        clients.erase(macaddr);
+    }
 
     // print helpers
     static std::string frame_to_str(const Tins::Dot11 &pkt);

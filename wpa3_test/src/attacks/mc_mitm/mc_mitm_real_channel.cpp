@@ -37,7 +37,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(might_forward){
         const auto &client = clients.at(addr1);
         client->modify_packet(*pdu);
-        sock_rogue->send(*pdu, netconfig.rogue_channel);
+        send_to_rogue(*pdu);
     }
 
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
@@ -48,9 +48,9 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11
     if(dot11.wep()){
         if(addr2 == ap_mac){
             log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
-            sock_rogue->send(pdu, netconfig.rogue_channel);
+            send_to_rogue(pdu);
+            return true;
         }
-        return true;
     }
 
     const auto raw = const_cast<Dot11&>(dot11).serialize();
@@ -67,7 +67,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11
 
     if(src == ap_mac && clients.contains(dst)){
         log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
-        sock_rogue->send(pdu, netconfig.rogue_channel);
+        send_to_rogue(pdu);
         return true;
     }
     return false;
@@ -79,7 +79,7 @@ bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr
         if(is_eapol(pdu) && clients.contains(addr1)){
             int eapol_msg = get_eapol_msg_num(pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-            sock_rogue->send(pdu, netconfig.rogue_channel);
+            send_to_rogue(pdu);
             if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
             return true;
         }
@@ -92,7 +92,7 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
         probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
         RadioTap rt;
         rt.inner_pdu(probe_resp->clone());
-        sock_real->send(rt, netconfig.real_channel);
+        send_to_real(rt);
         display_client_traffic(dot11, "Real channel", " -- Replied");
         return true;
     }
@@ -120,6 +120,9 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
     add_client(client);
 }
 
+void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
+void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
+
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     auto *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
@@ -129,7 +132,6 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         return;
     }
 
-
     if (handle_probe_real(addr2, *dot11)) return;
     if(handle_action_real(addr2, *pdu, *dot11)) return;
     //if(handle_eapol(addr2, addr1, *dot11)) return;
@@ -138,7 +140,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         // STA -> AP
         if(const auto *auth = dot11->find_pdu<Dot11Authentication>()){
             handle_auth_from_client_real(*auth);
-        }else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
+        } else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
             print_rx(LogLevel::INFO, "Real channel", *dot11);
             del_client(addr2);
         } else if(clients.contains(addr2)){
@@ -168,7 +170,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         if(is_eapol(*pdu) && clients.contains(addr1)){
             int eapol_msg = get_eapol_msg_num(*pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-            if(eapol_msg == 1 || eapol_msg == 3) sock_rogue->send(*pdu, netconfig.rogue_channel);
+            if(eapol_msg == 1 || eapol_msg == 3) send_to_rogue(*pdu);
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
         display_client_traffic(*dot11, "Real channel", "_");

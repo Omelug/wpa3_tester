@@ -5,6 +5,8 @@ using namespace std;
 using namespace Tins;
 
 namespace wpa3_tester::test_helpers{
+
+
 // All frames from a pcap -> vector of raw byte vector
 vector<vector<uint8_t>> read_all_frames(const string &path){
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -51,5 +53,12 @@ vector<uint8_t> read_pcap_file(const string &filename){
     vector frame_data(packet, packet + header->caplen);
     pcap_close(handle);
     return frame_data;
+}
+
+// Helper: load a pcap frame and deserialize as RadioTap
+pair<RadioTap, vector<uint8_t>> load_frame(const char *path) {
+    auto [hdr, raw] = read_one_frame(path);
+    RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
+    return {rt, raw};
 }
 }

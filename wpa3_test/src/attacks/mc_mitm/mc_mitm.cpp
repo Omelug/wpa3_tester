@@ -30,6 +30,7 @@ McMitm::McMitm(const ActorPtr &rogue_sta,
       nic_real_ap(AP_IFACE_PREFIX + rogue_sta["iface"]),
       nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap["iface"]),
       ssid(std::move(ssid)),
+        // TODO fallback to info from actors
       ap_mac(ap_mac),
       client_mac(client_mac),
       only_to_mitm(only_to_mitm){}
@@ -50,10 +51,10 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
         // followed by one with a value of 1. When starting with 1 it errors out.
         //TODO proč to nejde takhle? (asi jedno, ale bylo bylep39 vycházet z beacon_copy)
         /*auto csa2 = append_csa(*beacon_copy, netconfig.rogue_channel, 2);
-        sock_real->send(csa2, netconfig.real_channel);
+        send_to_real(csa2);
 
         auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
-        sock_real->send(csa1, netconfig.real_channel);*/
+        send_to_real(csa1);*/
 
         this_thread::sleep_for(milliseconds(100)); //TODO from config
     }
@@ -66,7 +67,7 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
     disas.addr2(ap_mac);
     disas.addr3(ap_mac);
     disas.reason_code(0);
-    sock_rogue->send(disas, netconfig.rogue_channel);
+    send_to_rogue(disas);
     log(LogLevel::INFO, "Rogue channel: injected Disassociation to " + macaddr.to_string());
 }
 
@@ -94,7 +95,7 @@ void McMitm::send_deauth_as_ap() const{
 
     RadioTap rt;
     rt.inner_pdu(deauth);
-    sock_real->send(rt, netconfig.real_channel);
+    send_to_real(rt);
 }
 
 bool McMitm::should_check_rogue_beacons() const{
@@ -206,7 +207,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     deauth.addr2(ap_mac);
     deauth.addr3(ap_mac);
     deauth.reason_code(3);
-    sock_real->send(deauth, netconfig.real_channel);*/
+    send_to_real(deauth);*/
 
     // monitoring both channels and performing needed actions
     last_real_beacon  = steady_clock::now();

@@ -57,16 +57,9 @@ static constexpr auto PCAP_CTRL_ACTION_PROTECTED  = "pcap/wifi_util/action_prote
 static constexpr auto ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
 static constexpr auto ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
 
-// Helper: load a pcap frame and deserialize as RadioTap
-static pair<RadioTap, vector<uint8_t>> load_frame(const char *path) {
-    auto [hdr, raw] = test_helpers::read_one_frame(path);
-    RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
-    return {rt, raw};
-}
-
 TEST_SUITE("get_addrs") {
     TEST_CASE("management frame: addr2 resolved via Dot11ManagementFrame") {
-        auto [rt, raw] = load_frame(PCAP_BEACON);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
         const auto addrs = get_addrs(rt, raw);
 
         CHECK_EQ(addrs.addr1.to_string(), BEACON_ADDR1);
@@ -74,7 +67,7 @@ TEST_SUITE("get_addrs") {
     }
 
     TEST_CASE("data frame: addr2 resolved via Dot11Data") {
-        auto [rt, raw] = load_frame(PCAP_DATA_QOS);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_DATA_QOS);
         const auto addrs = get_addrs(rt, raw);
 
         CHECK_EQ(addrs.addr1.to_string(), DATA_ADDR1);
@@ -84,7 +77,7 @@ TEST_SUITE("get_addrs") {
     TEST_CASE("control frame: addr2 resolved from raw bytes fallback") {
         // RTS frame: libtins exposes no Dot11ManagementFrame/Dot11Data,
         // so addr2 falls back to raw[rt_len + 10]
-        auto [rt, raw] = load_frame(PCAP_CTRL_ACTION_PROTECTED);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_CTRL_ACTION_PROTECTED);
         const auto addrs = get_addrs(rt, raw);
 
         CHECK_EQ(addrs.addr1.to_string(), ACTION_ADDR1);
@@ -111,32 +104,32 @@ static constexpr auto PCAP_EAPOL_M4  = "pcap/wifi_util/eapol_m4.pcapng";
 TEST_SUITE("get_eapol_msg_num") {
 
     TEST_CASE("M1: key_ack=1 key_mic=0 install=0 secure=0") {
-        auto [rt, raw] = load_frame(PCAP_EAPOL_M1);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M1);
         REQUIRE(is_eapol(rt));
         CHECK_EQ(get_eapol_msg_num(rt), 1);
     }
 
     TEST_CASE("M2: key_mic=1 key_ack=0 install=0 secure=0") {
-        auto [rt, raw] = load_frame(PCAP_EAPOL_M2);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M2);
         REQUIRE(is_eapol(rt));
         CHECK_EQ(get_eapol_msg_num(rt), 2);
     }
 
     TEST_CASE("M3: key_mic=1 key_ack=1 install=1 secure=1") {
-        auto [rt, raw] = load_frame(PCAP_EAPOL_M3);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M3);
         REQUIRE(is_eapol(rt));
         CHECK_EQ(get_eapol_msg_num(rt), 3);
     }
 
     TEST_CASE("M4: key_mic=1 key_ack=0 install=0 secure=1") {
-        auto [rt, raw] = load_frame(PCAP_EAPOL_M4);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M4);
         REQUIRE(is_eapol(rt));
         CHECK_EQ(get_eapol_msg_num(rt), 4);
     }
 
     TEST_CASE("non-EAPOL frame returns -1") {
         // Beacon has no RSNEAPOL layer
-        auto [rt, raw] = load_frame(PCAP_BEACON);
+        auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
         CHECK_EQ(get_eapol_msg_num(rt), -1);
     }
 

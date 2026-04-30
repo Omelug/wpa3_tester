@@ -107,7 +107,7 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
         return true;
     }
     if(dot11.find_pdu<Dot11ProbeResponse>()){
-        //if(addr2 == ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
+        if(addr2 == ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
         return true;
     }
     return false;
@@ -127,11 +127,11 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
 
     ClientState client(client_addr.to_string());
     client.update_state(ClientState::Connecting);
-    add_client(std::move(client));
+    add_client(client);
 }
 
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
-    Dot11 *dot11 = pdu->find_pdu<Dot11>();
+    auto *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
     const auto [addr1, addr2] = get_addrs(*pdu, raw);
     if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){

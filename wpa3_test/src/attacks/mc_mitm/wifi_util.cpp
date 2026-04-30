@@ -14,7 +14,7 @@ namespace wpa3_tester{
 string get_ssid(const Dot11Beacon &beacon){
     const auto opt = beacon.search_option(Dot11::SSID);
     if(!opt) return "";
-    return string(opt->data_ptr(), opt->data_ptr() + opt->data_size());
+    return {opt->data_ptr(), opt->data_ptr() + opt->data_size()};
 }
 
 //TODO test
@@ -176,14 +176,14 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
     base_actor->set_iface_down();
     hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, false);
     if(!netlink_helper::wait_for_iface_disappear(ap_iface, netns))
-        throw setup_err("'{}' did not disappear", ap_iface);
+        throw setup_err("Interface "+ap_iface+" did not disappear");
 
     base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR);
 
     // ── step 2: add AP virtual interface ─────────────────────────────────────
     hw_capabilities::run_cmd({"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"}, netns);
     if(!netlink_helper::wait_for_iface_appear(ap_iface, netns))
-        throw setup_err("'{}' did not appear", ap_iface);
+        throw setup_err("Interface "+ap_iface+" did not appear");
     this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
     hw_capabilities::set_iface_down(ap_iface, netns);
     if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
@@ -208,7 +208,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
         cmd.push_back(tail_hex.str());
     }
 
-    this_thread::sleep_for(chrono::milliseconds(200)); // firmware need som e time to up ?
+    this_thread::sleep_for(chrono::milliseconds(200)); // firmware need some time to up ?
     rs.process_manager.run(ap_iface + "_fake", cmd);
 
     // With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet

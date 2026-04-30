@@ -46,12 +46,6 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
 }
 
-bool McMitm::is_eapol(const PDU &pdu){
-    const auto snap = pdu.find_pdu<SNAP>();
-    if (snap && snap->eth_type() == 0x888e) return true;
-    return pdu.find_pdu<EAPOL>() != nullptr;
-}
-
 bool McMitm::handle_eapol(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
     const auto *dot11 = pdu.find_pdu<Dot11>();
     if(dot11->addr1() == ap_mac){

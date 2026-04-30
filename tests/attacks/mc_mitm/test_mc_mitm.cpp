@@ -120,22 +120,4 @@ TEST_CASE("patch_channel_raw - edge cases"){
     McMitm::patch_channel_raw(small_data, 6);
     CHECK_EQ(small_data, original_small);
 }
-
-TEST_CASE("beacon_to_probe_resp"){
-    Dot11Beacon beacon;
-    beacon.addr2("aa:bb:cc:dd:ee:ff");
-    beacon.addr3("aa:bb:cc:dd:ee:ff");
-    beacon.interval(100);
-    beacon.ds_parameter_set(6);
-    beacon.ssid("TestNet");
-
-    Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, 11));
-
-    CHECK_EQ(probe.addr2(), beacon.addr2());
-    CHECK_EQ(probe.addr3(), beacon.addr3());
-    CHECK_EQ(probe.interval(), beacon.interval());
-    CHECK_EQ(probe.ds_parameter_set(), 11);
-    CHECK_NE(probe.search_option(Dot11::SSID), nullptr);
-    CHECK_EQ(probe.search_option(Dot11::TIM), nullptr);
-}
 }

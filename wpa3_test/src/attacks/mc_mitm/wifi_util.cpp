@@ -31,7 +31,7 @@ Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
         addr2 = data->addr2();
     }
 
-    // fallback addresses from raw
+    // fallback addresses from raw (libtins cant parse some encrypted frames)
     if(addr2 == HWAddress<6>() && raw.size() >= 16){
         // skip RadioTap header
         const uint16_t rt_len = *reinterpret_cast<const uint16_t*>(raw.data() + 2);
@@ -93,6 +93,12 @@ Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, co
     }
 
     return resp;
+}
+
+bool is_eapol(const PDU &pdu){
+    const auto snap = pdu.find_pdu<SNAP>();
+    if (snap && snap->eth_type() == 0x888e) return true;
+    return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
 int get_eapol_msg_num(const PDU& pdu) {

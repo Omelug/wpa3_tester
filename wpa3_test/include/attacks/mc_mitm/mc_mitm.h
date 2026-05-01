@@ -69,9 +69,7 @@ public: // for handle function is return -> end pdu processing
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
     bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
     bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-    //bool handle_eapol_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu);
-    void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
-        const Tins::HWAddress<6> &addr1);
+    bool handle_eapol_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
     bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
@@ -80,6 +78,8 @@ public: // for handle function is return -> end pdu processing
     bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu,
         const std::vector<unsigned char> &raw,  const Tins::Dot11 &dot11) const;
     bool handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
+    void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
+        const Tins::HWAddress<6> &addr1);
 
 protected:
     void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;

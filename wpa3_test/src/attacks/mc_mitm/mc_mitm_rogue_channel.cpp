@@ -98,6 +98,20 @@ bool McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11
     return false;
 }
 
+bool McMitm::handle_eapol_rogue(const HWAddress<6> addr2, PDU &pdu){
+    // EAPOL od AP -> forward na rogue channel
+    if(addr2 == client_mac){
+        if(is_eapol(pdu) /*&& clients.contains(addr2)*/){
+            int eapol_msg = get_eapol_msg_num(pdu);
+            log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
+            if(eapol_msg == 2 || eapol_msg == 4) send_to_real(pdu);
+            if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
+            return true;
+        }
+    }
+    return false;
+}
+
 void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     auto *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
@@ -111,19 +125,9 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
     if(handle_probe(addr2, pdu.get(), *dot11)) return;
     if(handle_open_auth(addr2, *dot11)) return;
     handle_assoc_request(addr2, *pdu, *dot11);
+    if(handle_eapol_rogue(addr2, *pdu)) return;
 
     //TODO if(handle_action_rogue(addr2, *pdu, *dot11)) return;
-
-    // EAPOL od AP → forward na rogue channel
-    if(addr2 == client_mac){
-        if(is_eapol(*pdu) /*&& clients.contains(addr2)*/){
-            int eapol_msg = get_eapol_msg_num(*pdu);
-            log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
-            if(eapol_msg == 2 || eapol_msg == 4) send_to_real(*pdu);
-            if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
-            return;
-        }
-    }
     if(addr2 == ap_mac){ // AP ->
         if(const auto *b = dot11->find_pdu<Dot11Beacon>()){
             const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);

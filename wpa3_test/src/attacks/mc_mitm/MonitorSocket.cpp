@@ -47,17 +47,39 @@ vector<uint8_t> MonitorSocket::build_inject_frame(
     const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
     if (raw.size() < rt_len) return {};
 
-    RadioTap rt{};
-    rt.channel(hw_capabilities::channel_to_freq(channel), RadioTap::OFDM);
-    const auto rt_bytes = rt.serialize();
+    vector out(raw); // copy entire frame, RT header untouched
 
-    vector<uint8_t> out;
-    out.reserve(rt_bytes.size() + raw.size() - rt_len);
-    out.insert(out.end(), rt_bytes.begin(), rt_bytes.end());
-    out.insert(out.end(), raw.begin() + rt_len, raw.end());
+    // Patch channel frequency in-place inside the existing RT header
+    const int freq_mhz = hw_capabilities::channel_to_freq(channel);
+    const uint8_t freq_lo = freq_mhz & 0xFF;
+    const uint8_t freq_hi = (freq_mhz >> 8) & 0xFF;
 
-    if (detect_injected && out.size() > rt_bytes.size() + 1)
-        out[rt_bytes.size() + 1] |= 0x20;
+    // Walk RT present fields to find channel field offset
+    // Present flags start at byte 4, each 4 bytes, bit 3 = Channel
+    size_t pos = 8; // skip revision(1) + pad(1) + length(2) + present(4)
+    uint32_t present = raw[4] | (raw[5] << 8) | (raw[6] << 16) | (raw[7] << 24);
+
+    // Skip extended present words (bit 31 = another present word follows)
+    while (present & (1u << 31)) {
+        present = raw[pos] | (raw[pos+1] << 8) | (raw[pos+2] << 16) | (raw[pos+3] << 24);
+        pos += 4;
+    }
+
+    // Walk fields in order until Channel (bit 3)
+    if (present & (1u << 0)) pos += 8; // TSFT: 8 bytes
+    if (present & (1u << 1)) pos += 1; // Flags: 1 byte
+    if (present & (1u << 2)) pos += 1; // Rate: 1 byte
+    if (present & (1u << 3)) {         // Channel: freq(2) + flags(2)
+        // Align to 2 bytes
+        if (pos % 2 != 0) pos++;
+        if (pos + 2 <= rt_len) {
+            out[pos]     = freq_lo;
+            out[pos + 1] = freq_hi;
+        }
+    }
+
+    if (detect_injected && out.size() > static_cast<size_t>(rt_len) + 1)
+        out[rt_len + 1] |= 0x20;
 
     return out;
 }

@@ -102,7 +102,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
     if(handle_open_auth(addr2, *dot11)) return;
     if(handle_assoc_request(addr2, *pdu, *dot11)) return;
     if(handle_probe(addr2, pdu.get(), *dot11)) return;
-    if(handle_action_rogue(addr2, *pdu, *dot11)) return;
+    //TODO if(handle_action_rogue(addr2, *pdu, *dot11)) return;
 
     // EAPOL od AP → forward na rogue channel
     if(addr2 == client_mac){

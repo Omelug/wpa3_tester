@@ -92,20 +92,15 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("payload after old RadioTap is preserved byte-for-byte") {
         auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-        const uint16_t old_rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
+        const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
 
         const auto out = MonitorSocket::build_inject_frame(raw, 6);
         REQUIRE_UNARY_FALSE(out.empty());
 
-        // Use actual size of new RT header, not the length field —
-        // libtins length field may not include alignment padding
-        RadioTap rt{};
-        rt.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
-        const auto new_rt_len = rt.serialize().size();
+        const std::vector old_payload(raw.begin() + rt_len, raw.end());
+        const std::vector new_payload(out.begin() + rt_len, out.end());
 
-        const std::vector old_payload(raw.begin() + old_rt_len, raw.end());
-        const std::vector new_payload(out.begin() + new_rt_len, out.end());
-
+        //payload is unmodified
         REQUIRE_EQ(old_payload.size(), new_payload.size());
         CHECK_EQ(old_payload, new_payload);
     }

@@ -248,7 +248,10 @@ string tshark_graph(const RunStatus &rs,
     const auto start_time = get_pcap_start_time(pcap_path);
     transform_to_relative(times, start_time);
 
-    if(times.empty() || sizes.empty() || times.size() != sizes.size()) log(LogLevel::ERROR, "Invalid traffic data");
+    if(times.empty() || sizes.empty() || times.size() != sizes.size()){
+        log(LogLevel::ERROR, "Invalid traffic data");
+        return "";
+    }
 
     auto g = Graph();
     g.axis = TimeAxis::RELATIVE;

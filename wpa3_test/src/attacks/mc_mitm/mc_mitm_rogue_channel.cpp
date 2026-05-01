@@ -18,12 +18,12 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) const{
         if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1){
             // Open System Auth seq=1 →  seq=2 success
             Dot11Authentication resp;
-            resp.addr1(addr2);        // client
-            resp.addr2(ap_mac);       // rogue AP
+            resp.addr1(addr2);  // client
+            resp.addr2(ap_mac); // rogue AP
             resp.addr3(ap_mac);
             resp.auth_seq_number(2);
-            resp.auth_algorithm(0);   // Open System
-            resp.status_code(0);      // Success
+            resp.auth_algorithm(0); // Open System
+            resp.status_code(0);    // Success
             send_to_rogue(resp);
             display_traffic(dot11, "Rogue channel", " -- Replied");
             return true;

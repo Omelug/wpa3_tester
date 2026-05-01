@@ -101,6 +101,7 @@
       <w>promisc</w>
       <w>psk</w>
       <w>readlink</w>
+      <w>reassoc</w>
       <w>rlen</w>
       <w>rsneapol</w>
       <w>rtmgrp</w>

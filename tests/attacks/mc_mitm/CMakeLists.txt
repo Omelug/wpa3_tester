@@ -3,7 +3,7 @@ add_custom_target(copy_pcap_files
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/pcap
         ${CMAKE_CURRENT_BINARY_DIR}/pcap
-        COMMENT "Copying pcaps to build directory"
+        COMMENT "Copying pcap to build directory"
 )
 
 # mc_mitm attack tests

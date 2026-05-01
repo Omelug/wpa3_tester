@@ -52,4 +52,11 @@ vector<uint8_t> read_pcap_file(const string &filename){
     pcap_close(handle);
     return frame_data;
 }
+
+// Helper: load a pcap frame and deserialize as RadioTap
+pair<RadioTap, vector<uint8_t>> load_frame(const char *path) {
+    auto [hdr, raw] = read_one_frame(path);
+    RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
+    return {rt, raw};
+}
 }

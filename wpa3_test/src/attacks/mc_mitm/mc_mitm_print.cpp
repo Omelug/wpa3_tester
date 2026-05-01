@@ -51,20 +51,18 @@ string McMitm::frame_to_str(const Dot11 &pkt) {
         if(const auto it = names->find(sub); it != names->end()) {
             auto s = it->second;
             if(type != Dot11::CONTROL)
-                s += "(seq=" + to_string(get_seq_num(pkt)) + ")";
+                s += "(seq="+to_string(get_seq_num(pkt))+")";
             return s;
         }
     }
 
-    return "Frame(type=" + to_string(type) +
-           ",sub=" + to_string(sub) + ")";
+    return "Frame(type="+to_string(type)+",sub="+to_string(sub)+")";
 }
 
 void McMitm::print_rx(const LogLevel level, const string &prefix,
                       const Dot11 &frame, const string &suffix
 ){
     if(frame.type() == Dot11::CONTROL) return;
-
 
     string addr2;
     if(const auto *mgmt = frame.find_pdu<Dot11ManagementFrame>()){
@@ -77,13 +75,13 @@ void McMitm::print_rx(const LogLevel level, const string &prefix,
             addr2 = HWAddress<6>(raw.data() + 10).to_string();
     }
 
-    string msg = prefix + ": " + addr2 + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
+    string msg = prefix+": "+addr2+" -> "+frame.addr1().to_string()+": "+frame_to_str(frame);
 
     if(!suffix.empty()) msg += suffix;
     log(level, msg);
 }
 
-void McMitm::display_client_traffic(
+void McMitm::display_traffic(
     const PDU &pdu,
     const std::string &prefix,
     const std::string &suffix

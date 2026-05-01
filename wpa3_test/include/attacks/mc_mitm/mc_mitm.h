@@ -10,7 +10,7 @@
 
 namespace wpa3_tester{
 class McMitm{
-private:
+protected:
     ActorPtr rogue_sta, rogue_ap;
     //std::string nic_real_mon,nic_rogue_mon
     std::string nic_real_ap, nic_rogue_ap;
@@ -24,7 +24,7 @@ public:
     McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
            const std::string &client_mac, bool only_to_mitm = false
     );
-    ~McMitm();
+    virtual ~McMitm();
 
     void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt) const;
     void send_disas(const Tins::HWAddress<6> &macaddr) const;
@@ -43,7 +43,6 @@ public:
     // ---- state ----
     NetworkConfig netconfig;
 
-    std::unique_ptr<Tins::Dot11Beacon> beacon_old;
     std::unique_ptr<Tins::Dot11Beacon> beacon;
     std::unique_ptr<Tins::Dot11ProbeResponse> probe_resp;
     using DisasEntry = std::pair<std::chrono::steady_clock::time_point,Tins::HWAddress<6>>;
@@ -63,19 +62,31 @@ public:
 
     static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
-private: // for handle function is return -> end pdu processing
-    void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
-        const Tins::HWAddress<6> &addr1);
+    //TODO protected + fixture
+public: // for handle function is return -> end pdu processing
+    //bool handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
+    bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
     bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) const;
     bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, Tins::Dot11 &dot11) const;
-    bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU * pdu, const Tins::Dot11 & dot11) const;
     bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-    bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
+    //bool handle_eapol_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu);
+    void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
+        const Tins::HWAddress<6> &addr1);
 
-    bool handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-    void handle_auth_from_client_real(const Tins::Dot11Authentication &auth);
+    void handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11Authentication &auth);
+    //bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
+    //bool handle_power_save(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
+    bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu,
+        const std::vector<unsigned char> &raw,  const Tins::Dot11 &dot11) const;
+    bool handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
+protected:
+    virtual void send_to_real(Tins::PDU &pdu) const;
+    virtual void send_to_real(const std::vector<uint8_t> &raw) const;
+    //virtual void send_to_real(const std::vector<uint8_t> &raw) const;
+    virtual void send_to_rogue(Tins::PDU &pdu) const;
+    virtual void send_to_rogue(const std::vector<uint8_t> &raw) const;
 public:
     void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
     void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
@@ -92,12 +103,13 @@ public:
 
     // print helpers
     static std::string frame_to_str(const Tins::Dot11 &pkt);
+private:
     static void print_rx(LogLevel level, const std::string &prefix,
                          const Tins::Dot11 &frame,
                          const std::string &suffix = ""
     );
-
-    static void display_client_traffic(
+public:
+    static void display_traffic(
         const Tins::PDU &pdu,
         const std::string &prefix,
         const std::string &suffix = ""

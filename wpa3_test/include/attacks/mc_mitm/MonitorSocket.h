@@ -14,6 +14,10 @@ public:
     };
 
     void send(Tins::PDU &pdu, int channel);
+    static std::vector<uint8_t> build_inject_frame(const std::vector<uint8_t> &raw, int channel,
+                                                         bool detect_injected = false
+    );
+    void send(const std::vector<unsigned char> & raw, int channel);
     static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
     RecvResult recv();
     pcap_t *get_pcap_handle(){ return sniffer_.get_pcap_handle(); }

@@ -74,7 +74,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::
     return false;
 }
 
-bool McMitm::handle_eapol_real(const HWAddress<6> addr2, const HWAddress<6> addr1, PDU &pdu){
+bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu){
    if(addr2 == ap_mac){
         // EAPOL od AP → forward na rogue channel
         if(is_eapol(pdu) /*&& clients.contains(addr1)*/){
@@ -142,8 +142,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
     }
 
     if (handle_probe_real(addr2, *dot11)) return;
-    //TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
-    if(handle_eapol_real(addr2, addr1, *dot11)) return;
+    if(handle_eapol_real(addr1, addr2, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
         // STA -> AP

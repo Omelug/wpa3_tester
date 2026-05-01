@@ -123,13 +123,13 @@ void McMitm::handle_auth_from_client_real(const Dot11Authentication &auth) {
 
 void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
 void McMitm::send_to_real(const std::vector<uint8_t> &raw) const{
-    sock_rogue->send(raw, netconfig.rogue_channel);
+    sock_real->send(raw, netconfig.real_channel);
 }
 
 //void McMitm::send_to_real(const std::vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
 void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
 void McMitm::send_to_rogue(const std::vector<uint8_t> &raw) const{
-    sock_real->send(raw, netconfig.real_channel);
+    sock_rogue->send(raw, netconfig.rogue_channel);
 }
 
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){

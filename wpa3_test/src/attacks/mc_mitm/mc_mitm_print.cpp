@@ -83,7 +83,7 @@ void McMitm::print_rx(const LogLevel level, const string &prefix,
     log(level, msg);
 }
 
-void McMitm::display_client_traffic(
+void McMitm::display_traffic(
     const PDU &pdu,
     const std::string &prefix,
     const std::string &suffix

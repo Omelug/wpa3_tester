@@ -39,36 +39,35 @@ void MonitorSocket::send(PDU &pdu, const int channel){
     }
 }
 
-void MonitorSocket::send(const std::vector<unsigned char> &raw, const int channel) {
-    if (raw.size() < 4) return; // too short to be valid RadioTap
+vector<uint8_t> MonitorSocket::build_inject_frame(
+    const vector<uint8_t> &raw, const int channel, const bool detect_injected) {
 
-    // Read existing RadioTap header length from bytes 2-3 (little-endian)
+    if (raw.size() < 4) return {};
+
     const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
-    if (raw.size() < rt_len) return;
+    if (raw.size() < rt_len) return {};
 
-    // Build a minimal RadioTap header with correct channel
-    //TODO only for 2_4/5
     RadioTap rt{};
-    const int freq_mhz = hw_capabilities::channel_to_freq(channel);
-    rt.channel(freq_mhz, RadioTap::OFDM);
+    rt.channel(hw_capabilities::channel_to_freq(channel), RadioTap::OFDM);
     const auto rt_bytes = rt.serialize();
 
-    // Splice: new RadioTap header + original payload (everything after old RadioTap)
-    std::vector<unsigned char> out;
+    vector<uint8_t> out;
     out.reserve(rt_bytes.size() + raw.size() - rt_len);
     out.insert(out.end(), rt_bytes.begin(), rt_bytes.end());
-    out.insert(out.end(), raw.begin() + rt_len, raw.end()); // dot11 + encrypted payload untouched
+    out.insert(out.end(), raw.begin() + rt_len, raw.end());
 
-    /*if (detect_injected_) {
-        // Set More Data bit (byte 1 of Dot11 FC field, bit 5) directly in the buffer
-        // FC is at out[rt_bytes.size()] and out[rt_bytes.size() + 1]
-        if (out.size() > rt_bytes.size() + 1)
-            out[rt_bytes.size() + 1] |= 0x20; // bit 5 = More Data
-    }*/
+    if (detect_injected && out.size() > rt_bytes.size() + 1)
+        out[rt_bytes.size() + 1] |= 0x20;
 
-    pcap_t *handle = sniffer_.get_pcap_handle();
-    pcap_inject(handle, out.data(), out.size());
+    return out;
 }
+
+void MonitorSocket::send(const vector<unsigned char> &raw, const int channel) {
+    const auto out = build_inject_frame(raw, channel, detect_injected_);
+    if (out.empty()) return;
+    pcap_inject(sniffer_.get_pcap_handle(), out.data(), out.size());
+}
+
 
 MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, uint32_t caplen) {
     try {

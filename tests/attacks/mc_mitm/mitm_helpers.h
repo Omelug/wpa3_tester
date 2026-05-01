@@ -27,7 +27,6 @@ protected:
     }
 };
 
-
 static std::unique_ptr<McMitmTestable> make_fixture(const bool with_client = false) {
     const auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
     const auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());

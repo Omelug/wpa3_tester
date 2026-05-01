@@ -2,6 +2,7 @@
 #include <doctest.h>
 #include "pcap_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;
@@ -59,6 +60,85 @@ TEST_SUITE("MonitorSocket::parse_frame") {
         const std::vector<uint8_t> raw = {0x00};
         auto result = MonitorSocket::parse_frame(raw.data(), 0);
         CHECK_UNARY_FALSE(static_cast<bool>(result));
+    }
+}
+
+TEST_SUITE("MonitorSocket::build_inject_frame") {
+
+    TEST_CASE("too short input returns empty") {
+        const std::vector<uint8_t> short_buf = {0x00, 0x00};
+        const auto out = MonitorSocket::build_inject_frame(short_buf, 6);
+        CHECK_UNARY(out.empty());
+    }
+
+    TEST_CASE("rt_len larger than buffer returns empty") {
+        // bytes 2-3 claim rt_len = 0xFFFF
+        const std::vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
+        const auto out = MonitorSocket::build_inject_frame(bad, 6);
+        CHECK_UNARY(out.empty());
+    }
+
+    /*TEST_CASE("output starts with valid RadioTap header") {
+        auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+        const auto out = MonitorSocket::build_inject_frame({raw.begin(), raw.end()}, 6);
+
+        REQUIRE_UNARY_FALSE(out.empty());
+        // RadioTap revision byte must be 0
+        CHECK_EQ(out[0], 0x00);
+        // Deserialize and verify channel
+        RadioTap rt(out.data(), out.size());
+        CHECK_EQ(rt.channel_freq(), hw_capabilities::channel_to_freq(6));
+    }*/
+
+    TEST_CASE("payload after old RadioTap is preserved byte-for-byte") {
+        auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+        const uint16_t old_rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
+
+        const auto out = MonitorSocket::build_inject_frame(raw, 6);
+        REQUIRE_UNARY_FALSE(out.empty());
+
+        // Use actual size of new RT header, not the length field —
+        // libtins length field may not include alignment padding
+        RadioTap rt{};
+        rt.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
+        const auto new_rt_len = rt.serialize().size();
+
+        const std::vector old_payload(raw.begin() + old_rt_len, raw.end());
+        const std::vector new_payload(out.begin() + new_rt_len, out.end());
+
+        REQUIRE_EQ(old_payload.size(), new_payload.size());
+        CHECK_EQ(old_payload, new_payload);
+    }
+
+    TEST_CASE("detect_injected sets More Data bit in FC field") {
+        auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+        const auto out = MonitorSocket::build_inject_frame(
+            {raw.begin(), raw.end()}, 6, /*detect_injected=*/true);
+
+        REQUIRE_UNARY_FALSE(out.empty());
+
+        RadioTap rt_check{};
+        rt_check.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
+        const auto new_rt_len = rt_check.serialize().size();
+        REQUIRE_GT(out.size(), new_rt_len + 1u);
+
+        CHECK_EQ(out[new_rt_len + 1] & 0x20, 0x20); // More Data bit
+    }
+
+    TEST_CASE("detect_injected=false leaves More Data bit untouched") {
+        auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+        const auto out = MonitorSocket::build_inject_frame(
+            {raw.begin(), raw.end()}, 6, /*detect_injected=*/false);
+
+        REQUIRE_UNARY_FALSE(out.empty());
+
+        RadioTap rt_check{};
+        rt_check.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
+        const auto new_rt_len = rt_check.serialize().size();;
+        const auto old_rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
+
+        // FC byte 1 must match original
+        CHECK_EQ(out[new_rt_len + 1], raw[old_rt_len + 1]);
     }
 }
 

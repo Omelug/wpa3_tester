@@ -104,21 +104,26 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
     return false;
 }
 
-void McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11Authentication &auth) {
-    const auto client_addr = auth.addr2();
-    display_traffic(auth, "Real channel");
+bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11) {
+    if(addr1 != ap_mac) return false;
+    if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
+        const auto client_addr = auth->addr2();
+        display_traffic(dot11, "Real channel");
 
-    if(client_addr == client_mac)
-        log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
-            client_addr.to_string());
+        if(client_addr == client_mac)
+            log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
+                client_addr.to_string());
 
-    if(clients.contains(client_addr)) del_client(client_addr);
-    send_csa_beacon(1, client_addr);
-    send_csa_beacon();
+        if(clients.contains(client_addr)) del_client(client_addr);
+        send_csa_beacon(1, client_addr);
+        send_csa_beacon();
 
-    ClientState client(client_addr.to_string());
-    client.update_state(ClientState::Connecting);
-    add_client(client);
+        ClientState client(client_addr.to_string());
+        client.update_state(ClientState::Connecting);
+        add_client(client);
+        return true;
+    }
+   return false;
 }
 
 void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
@@ -144,17 +149,14 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
     if (handle_probe_real(addr2, *dot11)) return;
     //TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
     if(handle_eapol_real(addr2, addr1, *dot11)) return;
+    if(handle_auth_from_client_real(addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
         // STA -> AP
-        if(const auto *auth = dot11->find_pdu<Dot11Authentication>()){
-            handle_auth_from_client_real(addr1, *auth);
-        } else if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
+       if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
             display_traffic(*dot11, "Real channel");
             del_client(addr2);
-        } else if(clients.contains(addr2)){
-            display_traffic(*dot11, "Real channel");
-        } else if(addr2 == client_mac){
+        } else if(clients.contains(addr2) || addr2 == client_mac){
             display_traffic(*dot11, "Real channel");
         }
 

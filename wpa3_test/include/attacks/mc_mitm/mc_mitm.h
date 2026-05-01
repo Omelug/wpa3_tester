@@ -74,7 +74,7 @@ public: // for handle function is return -> end pdu processing
         const Tins::HWAddress<6> &addr1);
 
     bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-    void handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11Authentication &auth);
+    bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
     //bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
     //bool handle_power_save(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
     bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu,

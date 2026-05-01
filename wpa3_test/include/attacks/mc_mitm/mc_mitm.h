@@ -82,6 +82,7 @@ public: // for handle function is return -> end pdu processing
     bool handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
 protected:
+    void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
     virtual void send_to_real(Tins::PDU &pdu) const;
     virtual void send_to_real(const std::vector<uint8_t> &raw) const;
     //virtual void send_to_real(const std::vector<uint8_t> &raw) const;

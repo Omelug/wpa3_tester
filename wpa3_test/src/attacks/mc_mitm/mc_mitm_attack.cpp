@@ -87,7 +87,7 @@ void stats(const RunStatus &rs){
 
     vector<unique_ptr<GraphElements>> elements;
     rs.log_events(elements,{
-        {"access_point", "did not acknowledge", "ACK fail", "red"},
+        {"access_point", "did not acknowledge", "ACK_fail", "red"},
         {"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "cyan"},
         {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
         {"client", "@START", "START", "black"},

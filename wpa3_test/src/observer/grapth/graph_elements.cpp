@@ -72,6 +72,61 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
     label_index++;
 }
 
+template<typename Enum>
+void Graph::add_stairs(const GraphStairs<Enum> &stairs) {
+    if(stairs.steps.empty()) return;
+
+    gpcmd("$" + stairs.label + " << EOD");
+
+    auto it = stairs.steps.begin();
+    while(it != stairs.steps.end()) {
+        const double t_start = chrono::duration<double>(it->first.time_since_epoch()).count();
+        const double y       = stairs.y_pos(it->second);
+
+        auto next = std::next(it);
+        const double t_end = (next != stairs.steps.end())
+            ? chrono::duration<double>(next->first.time_since_epoch()).count()
+            : t_start + 1.0; // extend last step by 1s
+
+        // Two points per step — horizontal hold
+        ostringstream a, b;
+        a << fixed << setprecision(9) << t_start << " " << y;
+        b << fixed << setprecision(9) << t_end   << " " << y;
+        gpcmd(a.str());
+        gpcmd(b.str());
+
+        it = next;
+    }
+    gpcmd("EOD");
+
+    // Y axis tic labels from enum_labels
+    ostringstream tics;
+    const std::string ytics_cmd = (stairs.axis == YAxis::Y2) ? "set y2tics" : "set ytics";
+    tics << ytics_cmd << " (";
+    for(size_t i = 0; i < stairs.enum_labels.size(); ++i) {
+        if(i > 0) tics << ", ";
+        tics << "'" << stairs.enum_labels[i].second << "' " << i;
+    }
+    tics << ")";
+    gpcmd(tics.str());
+
+    // Y range with margin
+    const std::string yrange_cmd = (stairs.axis == YAxis::Y2) ? "set y2range" : "set yrange";
+    ostringstream yrange;
+    yrange << yrange_cmd << " [" << fixed << setprecision(2)
+           << stairs.y_min() << ":" << stairs.y_max() << "]";
+    gpcmd(yrange.str());
+
+    // Plot part
+    ostringstream part;
+    part << "$" << stairs.label << " using 1:2"
+         << " with lines lw 2"
+         << " lc rgb '" << stairs.color << "'"
+         << (stairs.axis == YAxis::Y2 ? " axes x1y2" : " axes x1y1")
+         << " title '" << stairs.label << "'";
+    plot_parts.push_back(part.str());
+}
+
 void Graph::render(){
     gpcmd("set yrange [" + to_string(ymin) + ":" + to_string(ymax) + "]");
 

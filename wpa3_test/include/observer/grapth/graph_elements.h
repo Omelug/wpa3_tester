@@ -3,12 +3,12 @@
 
 #include "logger/log.h"
 
-using LogTimePoint = std::chrono::time_point<std::chrono::system_clock,std::chrono::nanoseconds>;
+using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 namespace wpa3_tester{
 enum class TimeAxis{ RELATIVE, UNIX };
 
-enum class GraphElement_t{ UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS };
+enum class GraphElement_t{ UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS };
 
 class GraphElements{
 public:
@@ -73,6 +73,47 @@ public:
     }
 };
 
+template<typename Enum>
+class GraphStairs : public GraphElements {
+public:
+    YAxis axis = YAxis::Y1;
+    double margin = 0.1; // top/bottom margin
+
+    std::vector<std::pair<Enum, std::string>> enum_labels;
+    std::map<LogTimePoint, Enum> steps;
+
+    GraphStairs(
+        const std::map<LogTimePoint, Enum> &steps,
+        const std::vector<std::pair<Enum, std::string>> &enum_labels,
+        const std::string &label,
+        const std::string &color = "blue",
+        const YAxis axis = YAxis::Y1,
+        const double margin = 0.1
+    )
+        : GraphElements(label, color),
+          axis(axis),
+          margin(margin),
+          steps(steps),
+          enum_labels(enum_labels) {
+        type = GraphElement_t::GRAPH_STAIRS;
+    }
+
+    // index in enum_labels -> y pos
+    double y_pos(const Enum val) const {
+        for(size_t i = 0; i < enum_labels.size(); ++i)
+            if(enum_labels[i].first == val)
+                return static_cast<double>(i);
+        return 0.0;
+    }
+
+    double y_min() const { return 0.0 - margin; }
+    double y_max() const { return static_cast<double>(enum_labels.size() - 1) + margin; }
+
+    std::unique_ptr<GraphElements> clone() const override {
+        return std::make_unique<GraphStairs>(*this);
+    }
+};
+
 class Graph{
 public:
     FILE *file;
@@ -86,6 +127,8 @@ public:
     void gpcmd(const std::string &cmd) const;
     void add_XY_points(const GraphXYPoints &xy_points);
     void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index);
+    template<class Enum>
+    void add_stairs(const GraphStairs<Enum> &stairs);
     void render();
 };
 }

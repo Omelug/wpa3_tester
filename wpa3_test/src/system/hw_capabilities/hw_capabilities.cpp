@@ -139,18 +139,18 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
     return match[1].str();
 }
 
-string hw_capabilities::get_macaddress(const string &iface, const optional<string> &netns){
+Tins::HWAddress<6> hw_capabilities::get_macaddress(const string &iface, const optional<string> &netns){
     netlink_helper::NetNSContext ns_guard(netns);
     ifstream f("/sys/class/net/" + iface + "/address");
     string mac;
     getline(f, mac);
-    return mac;
+    return Tins::HWAddress<6>(mac);
 }
 
-void hw_capabilities::set_mac_address(const string &iface, const string &new_mac_str, const optional<string> &netns){
-    if(get_macaddress(iface, netns) == new_mac_str) return;
+void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress<6> &new_mac, const optional<string> &netns){
+    if(get_macaddress(iface, netns) == new_mac) return;
     set_iface_down(iface, netns);
-    run_cmd({"ip", "link", "set", iface, "address", new_mac_str}, netns);
+    run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }
 
 void hw_capabilities::supports_active_monitor(const string &iface, Actor_config &cfg, const optional<string> &netns){

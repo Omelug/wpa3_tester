@@ -128,7 +128,7 @@ void Actor_config::set_managed_mode() const{
     run({"iw", "dev", iface, "set", "type", "managed"});
 }
 
-void Actor_config::set_mac_address(const string &mac) const{
+void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
     const string &iface = str_con.at("iface").value();
     if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
     hw_capabilities::set_mac_address(iface, mac, str_con.at("netns"));

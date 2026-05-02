@@ -130,7 +130,7 @@ Dot11Beacon append_csa(const Dot11Beacon &beacon, const uint8_t new_channel, con
 void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
               int channel,
               const Dot11Beacon &beacon,
-              optional<string> mac,
+              optional<HWAddress<6>> mac,
               int interval, int dtim_period
 ){
     // In order of priority: provided ssid, ssid from beacon, or default

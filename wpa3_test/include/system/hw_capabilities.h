@@ -125,8 +125,8 @@ public:
 
     // working with interfaces
     static std::string get_iface(const std::string &ip_address, const std::optional<std::string> &netns);
-    static std::string get_macaddress(const std::string &iface, const std::optional<std::string> &netns);
-    static void set_mac_address(const std::string &iface, const std::string &new_mac_str, const std::optional<std::string> &netns);
+    static Tins::HWAddress<6> get_macaddress(const std::string &iface, const std::optional<std::string> &netns);
+    static void set_mac_address(const std::string &iface, const Tins::HWAddress<6> &new_mac, const std::optional<std::string> &netns);
     static void supports_active_monitor(const std::string &iface, Actor_config &cfg, const std::optional<std::string> &netns);
     static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);
     static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, int channel = 0);

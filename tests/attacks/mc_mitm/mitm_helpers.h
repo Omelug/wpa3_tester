@@ -72,7 +72,7 @@ inline void McMitmTestable::append_to_pcap(const std::string &path, const std::v
     pcap_close(dead);
 }
 
-static std::unique_ptr<McMitmTestable> make_fixture(const bool with_client = false) {
+static std::unique_ptr<McMitmTestable> make_fixture() {
     const auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
     const auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
 
@@ -81,11 +81,8 @@ static std::unique_ptr<McMitmTestable> make_fixture(const bool with_client = fal
 
     const std::string ap_ssid = "test_mc_mitm";
     auto m = std::make_unique<McMitmTestable>(r_sta_actor, r_ap_actor, ap_ssid, AP_MAC, CLIENT_MAC);
-    if(with_client) {
-        ClientState cs(CLIENT_MAC);
-        cs.update_state(ClientState::GotMitm);
-        m->add_client(cs);
-    }
+    m->client_state.update_state(ClientState::GotMitm);
     return m;
+
 }
 }

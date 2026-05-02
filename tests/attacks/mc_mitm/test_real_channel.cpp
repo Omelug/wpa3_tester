@@ -44,7 +44,7 @@ TEST_SUITE("handle_action_real") {
         auto *dot11 = rt.find_pdu<Dot11>();
         REQUIRE_NE(dot11, nullptr);
 
-        auto m = make_fixture(true);
+        auto m = make_fixture();
         auto ap_mac  = HWAddress<6>("24:ec:99:bf:b0:FF");
         CHECK_FALSE(m->handle_action_real(ap_mac, rt, raw, *dot11));
         CHECK_EQ(m->rogue_send_count, 0);

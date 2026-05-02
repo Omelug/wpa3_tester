@@ -88,7 +88,7 @@ public:
     void set_iface_up() const;
     void up_sniff_iface() const;
     void set_managed_mode() const;
-    void set_mac_address(const std::string &mac) const;
+    void set_mac_address(const Tins::HWAddress<6> &mac) const;
     void set_monitor_mode(const std::string &monitor_flags = "") const;
     void set_wifi_type(nl80211_iftype type) const;
     void set_mac(const std::string &mac_address);

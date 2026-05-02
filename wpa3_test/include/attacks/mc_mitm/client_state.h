@@ -14,61 +14,49 @@ struct NetworkConfig{
 class ClientState{
 public:
     enum State{
-        Initializing = 0,
-        Connecting,
-        GotMitm,
-        Attack_Started, // start attack -> filter/change
-        Attack_Done
+        Unknown = -1,
+        Target = 0,
+        Sent_to_rogue,
+        Finding,
+        Authenticated,
+        Associated,
+        GotMitm
     };
 
-    State state = Initializing;
-    std::string macaddr;
-
+protected:
+    State state = Unknown;
+    Tins::HWAddress<6> macaddr;
     using time_point = std::chrono::steady_clock::time_point;
     time_point last_real = std::chrono::steady_clock::now();
     time_point last_rogue = std::chrono::steady_clock::now();
+
 public:
     virtual ~ClientState() = default;
 
-    explicit ClientState(const std::string &mac): macaddr(mac){}
+    Tins::HWAddress<6> get_mac() const{ return macaddr;}
+    State get_state() const{ return state; }
 
-    void reset(){
-        state = Initializing;
-        last_real = std::chrono::steady_clock::now();
-        last_rogue = std::chrono::steady_clock::now();
-    }
+    explicit ClientState(const Tins::HWAddress<6> &mac): macaddr(mac){}
+    explicit ClientState(const Tins::HWAddress<6> mac, const State state): state(state), macaddr(mac){}
 
     void update_state(const State s){
-        log(LogLevel::DEBUG, "Client " + macaddr + " moved to state " + state2str(s));
+        log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr.to_string(), state2str(s));
         state = s;
     }
 
-    bool is_state(const State s) const{
-        return this->state == s;
-    }
-
-    // Returns true if this call actually advanced to GotMitm for the first time.
-    bool mark_got_mitm(){
-        if(state <= Connecting){
-            update_state(GotMitm);
-            log(LogLevel::INFO, "Established MitM position against client " + macaddr);
-            return true;
-        }
-        return false;
-    }
+    bool is_state(const State s) const{ return this->state == s;}
 
     // By default, everything is forwarded.
     virtual bool should_forward(const Tins::PDU & /*pkt*/) const{ return true; }
     // By default, frames are not modified.
-    virtual void modify_packet(Tins::PDU &pkt) const{}
+    virtual void modify_packet(Tins::PDU &/*pkt*/) const{}
 
-    void attack_start(){ update_state(Attack_Started); }
-private:
+protected:
     static std::string state2str(const State state){
         static const char *names[] = {
-            "Initializing", "Connecting", "GotMitm", "Attack_Started", "Attack_Done"
+            "Unknown", "Target", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"
         };
-        return (state < 5) ? names[state] : "Unknown";
+        return names[state];
     }
 };
 }

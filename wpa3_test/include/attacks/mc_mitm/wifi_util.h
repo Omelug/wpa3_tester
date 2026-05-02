@@ -26,7 +26,7 @@ Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, uint8_t channel, u
 uint64_t get_eapol_replay_num(const Tins::Dot11Data &pkt);
 
 void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor, int channel,
-              const Tins::Dot11Beacon &beacon, std::optional<std::string> mac = std::nullopt,
+              const Tins::Dot11Beacon &beacon, std::optional<Tins::HWAddress<6>> mac = std::nullopt,
               int interval = 100, int dtim_period = 1
 );
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);

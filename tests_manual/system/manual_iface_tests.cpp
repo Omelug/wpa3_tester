@@ -18,12 +18,12 @@ struct TestConfig{
     static inline string base_iface = "wlan1";
     static inline optional<string> netns = nullopt;
     static inline int channel = 4;
-    static inline string mac_addr = "00:11:22:33:44:55";
+    static inline HWAddress<6> mac_addr = HWAddress<6>("00:11:22:33:44:55");
 };
 
 TEST_CASE("iface mac address change") {
-    string target_mac = TestConfig::mac_addr;
-    string original_mac = hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns);
+    HWAddress<6> target_mac = TestConfig::mac_addr;
+    HWAddress<6> original_mac = hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns);
 
     REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, target_mac, TestConfig::netns));
     CHECK_EQ(hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns),target_mac);

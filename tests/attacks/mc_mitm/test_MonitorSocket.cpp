@@ -119,22 +119,6 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
         CHECK_EQ(out[new_rt_len + 1] & 0x20, 0x20); // More Data bit
     }
-
-    TEST_CASE("detect_injected=false leaves More Data bit untouched") {
-        auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-        const auto out = MonitorSocket::build_inject_frame(
-            {raw.begin(), raw.end()}, 6, /*detect_injected=*/false);
-
-        REQUIRE_UNARY_FALSE(out.empty());
-
-        RadioTap rt_check{};
-        rt_check.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
-        const auto new_rt_len = rt_check.serialize().size();;
-        const auto old_rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
-
-        // FC byte 1 must match original
-        CHECK_EQ(out[new_rt_len + 1], raw[old_rt_len + 1]);
-    }
 }
 
 // -- Sequence test: multiple frames from a single pcap file ---

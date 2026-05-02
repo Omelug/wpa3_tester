@@ -1,0 +1,35 @@
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 101
+  }
+ }
+direction: down
+
+Target
+rogue channel:{
+  Sent_to_rogue
+  Finding
+  Authenticated
+  Associated
+  GotMitm
+
+  Sent_to_rogue -> Finding: probe_req / probe_res
+  Finding->Authenticated: auth /auth
+  Authenticated -> Associated: assoc_req /assoc_res (both)
+  Associated -> GOtMitM: EAPOL 4
+}
+
+# easy path
+Target -> rogue channel.Sent_to_rogue: auth/CSA beacon
+
+# constant
+Target->Target: CSA_timeout/CSA beacon
+rogue channel -> rogue channel: beacon_timeout/beacon
+
+#errors
+rogue channel -> Target: \
+  diassoc / diassoc (rogue) \n\
+  deauth / deauth (rogue) \n\
+  diassoc (rogue)/ diassoc \n\
+  deauth  (rogue) / deauth

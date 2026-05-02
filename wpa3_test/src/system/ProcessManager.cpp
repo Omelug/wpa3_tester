@@ -37,7 +37,7 @@ void ProcessManager::handle_chunk(
         lock_guard lock(logger_mtx);
         const auto it = processes.find(process_name);
         if(it == processes.end() || !it->second){
-            log(LogLevel::WARNING, "handle_chunk: process not found: " + process_name);
+            log(LogLevel::WARNING, "handle_chunk: process not found: {}", process_name);
             return;
         }
         const auto mp = it->second;
@@ -59,7 +59,7 @@ void ProcessManager::handle_chunk(
             if(mp->logs.history_enabled) mp->logs.history += line + "\n";
 
             if(mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)){
-                log(LogLevel::DEBUG, "MATCH " + process_name + " " + line);
+                log(LogLevel::DEBUG, "MATCH {} {}", process_name, line);
                 mp->logs.wait.matched = true;
                 should_notify = true;
             }
@@ -94,10 +94,10 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
             if(ec == errc::timed_out) continue;
             if(ec){
                 if(ec == errc::broken_pipe || ec == errc::no_such_process){
-                    log(LogLevel::DEBUG,
-                        "Drain thread for " + process_name + " finished (normal exit): " + ec.message());
+                    log(LogLevel::DEBUG, "Drain thread for {} finished (normal exit): {}", process_name, ec.message());
                 } else{
-                    log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message().c_str(), ec.value());
+                    log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})",
+                    process_name, ec.message(), ec.value());
                 }
                 break;
             }
@@ -134,8 +134,8 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
             }
         }
 
-        log(LogLevel::DEBUG, "flush done " + process_name);
-        log(LogLevel::DEBUG, "Drain thread exited for " + process_name);
+        log(LogLevel::DEBUG, "flush done {}", process_name);
+        log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
     });
 }
 
@@ -152,7 +152,7 @@ void ProcessManager::run(const string &process_name,
 ){
     const auto proc_iter = processes.find(process_name);
     if(proc_iter != processes.end()){
-        throw runtime_error("This process already exists: " + process_name);
+        throw runtime_error("This process already exists:"+ process_name);
     }
 
     //log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
@@ -184,7 +184,7 @@ void ProcessManager::run(const string &process_name,
         if(i) cmd_line += ' ';
         cmd_line += cmd[i];
     }
-    log(LogLevel::DEBUG, "Starting process '" + process_name + "': " + cmd_line);
+    log(LogLevel::DEBUG, "Starting process {}:{}'", process_name, cmd_line);
 
     // Initialize logs BEFORE starting process
     auto &logs = mp->logs;
@@ -240,7 +240,7 @@ bool ProcessManager::wait_for(const string &actor_name,
         string line;
         while(getline(ss, line)){
             if(regex_search(line, *logs.wait.pattern)){
-                log(LogLevel::DEBUG, "MATCH without history " + actor_name + " " + line);
+                log(LogLevel::DEBUG, "MATCH without history {} {}", actor_name, line);
                 logs.wait.matched = true;
                 break;
             }
@@ -268,7 +268,7 @@ bool ProcessManager::wait_for(const string &actor_name,
             lock_guard data_lock(logger_mtx);
             logs.wait.pattern = nullopt;
             logs.history_enabled = false;
-            log(LogLevel::DEBUG, "wait_for for '" + actor_name + "' interrupted: process stopped");
+            log(LogLevel::DEBUG, "wait_for for '{}' interrupted: process stopped", actor_name);
             return false; // wait for ot matched if stop
         }
 
@@ -300,13 +300,13 @@ void ProcessManager::stop(const string &process_name){
         if(proc_iter == processes.end()) return;
 
         mp = proc_iter->second;
+        write_log_line(mp->logs.log, "@END_STOP");
 
         // Clean up wait state and notify any waiting threads
         mp->logs.history_enabled = false;
         mp->shutting_down = true;
         processes.erase(proc_iter);
     }
-    //log(LogLevel::DEBUG, "shutting_down set for "+process_name);
     wait_cv.notify_all();
 
     reproc::stop_actions operations{};
@@ -314,22 +314,18 @@ void ProcessManager::stop(const string &process_name){
     operations.second = {reproc::stop::kill, reproc::milliseconds(500)};
 
     if(mp->proc){
-        //log(LogLevel::DEBUG, "terminate() calling");
         mp->proc->terminate();
-        //log(LogLevel::DEBUG, "terminate() done");
         mp->proc->kill();
-        //log(LogLevel::DEBUG, "kill() done");
     }
-    //log(LogLevel::DEBUG, "joining...");
+
     if(mp->drain_thread.joinable()) mp->drain_thread.join();
-    //log(LogLevel::DEBUG, "join done");
 
     // Call on_stop callback if registered
     if(mp->before_stop_callback){
         try{
             mp->before_stop_callback();
         } catch(const exception &e){
-            log(LogLevel::WARNING, "Error in on_stop callback for " + process_name + ":" + e.what());
+            log(LogLevel::WARNING, "Error in on_stop callback for  {}:{}", process_name, e.what());
         }
     }
 
@@ -341,7 +337,7 @@ void ProcessManager::stop(const string &process_name){
         try{
             mp->after_stop_callback();
         } catch(const exception &e){
-            log(LogLevel::WARNING, "Error in on_stop callback for " + process_name + ":" + e.what());
+            log(LogLevel::WARNING, "Error in on_stop callback for {}:{}", process_name, e.what());
         }
     }
 }
@@ -354,11 +350,11 @@ void ProcessManager::stop_all(){
         for(const auto &name: processes | views::keys){ process_names.push_back(name); }
     }
 
-    for(const auto &name: process_names){
+    for(const auto &process_name: process_names){
         try{
-            stop(name);
+            stop(process_name);
         } catch(const exception &e){
-            log(LogLevel::WARNING, "Error stopping process " + name + ": " + e.what());
+            log(LogLevel::WARNING, "Error stopping process {}:{}", process_name, e.what());
         }
     }
     log(LogLevel::DEBUG, "All processes stopped");

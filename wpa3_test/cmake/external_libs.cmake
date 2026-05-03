@@ -83,10 +83,16 @@ FetchContent_Declare(
         GIT_TAG master # nebo konkrétní commit/verze
 )
 
+FetchContent_Declare(
+        magic_enum
+        GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
+        GIT_TAG        v0.9.5
+)
+
 # FIXMe json broken with paralell donwlonding
 FetchContent_MakeAvailable(reproc libtins doctest argparse)
 FetchContent_MakeAvailable(json)
-FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
+FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap magic_enum)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
 target_include_directories(radiotap_lib PUBLIC ${radiotap_SOURCE_DIR})

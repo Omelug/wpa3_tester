@@ -3,193 +3,213 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using json = nlohmann::json;
 
-Actor_config::Actor_config(const Actor_config &other){
-	this->str_con = other.str_con;
-	this->bool_conditions = other.bool_conditions;
-	this->conn = other.conn;
+static constexpr string_view sk_str(Actor_config::SK k){ return magic_enum::enum_name(k); }
+static constexpr string_view bk_str(Actor_config::BK k){ return magic_enum::enum_name(k); }
+
+string Actor_config::get(SK key) const {
+	const auto &v = (*this)[key];
+	if(!v.has_value())
+		throw config_err("Actor_config: key '" + string(sk_str(key)) + "' has no value");
+	return *v;
+}
+bool Actor_config::get(BK key) const {
+	const auto &v = (*this)[key];
+	if(!v.has_value())
+		throw config_err("Actor_config: bool key '" + string(bk_str(key)) + "' has no value");
+	return *v;
 }
 
-Actor_config::Actor_config(const json &j){
+string Actor_config::operator[](const string &key) const {
+	if(auto k = magic_enum::enum_cast<SK>(key); k.has_value()){
+		const auto &v = (*this)[*k];
+		if(!v.has_value())
+			throw config_err("Actor_config: key '" + key + "' has no value");
+		return *v;
+	}
+	throw config_err("Actor_config: unknown string key '" + key + "'");
+}
+Actor_config::Actor_config(const json &j) {
 	if(j.contains("selection") && j.at("selection").is_object()){
 		const auto &sel = j.at("selection");
-		for(auto &[key, val]: str_con){
-			if(sel.contains(key)){
-				if(sel[key].is_string()){
-					if(key == "mac"){
-						set_mac(sel[key].get<string>());
-						continue;
-					}
-					val = sel[key].get<string>();
-				} else if(sel[key].is_number()){
-					// number saved like string
-					val = to_string(sel[key].get<int>());
-				}
+
+		for(auto k : magic_enum::enum_values<SK>()){
+			auto name = string(sk_str(k));
+			if(!sel.contains(name)) continue;
+			if(k == SK::mac){
+				set_mac(sel[name].get<string>());
+				continue;
 			}
+			if(sel[name].is_string())
+				(*this)[k] = sel[name].get<string>();
+			else if(sel[name].is_number())
+				(*this)[k] = to_string(sel[name].get<int>());
 		}
 
 		if(sel.contains("condition") && sel.at("condition").is_array()){
-			for(const auto &cond_name: sel.at("condition")){
-				if(auto key = cond_name.get<string>(); bool_conditions.contains(key)){
-					bool_conditions[key] = true;
-				}
+			for(const auto &cond : sel.at("condition")){
+				auto raw     = cond.get<string>();
+				const bool negated = raw.starts_with('!');
+				const auto name    = negated ? raw.substr(1) : raw;
+				if(auto k = magic_enum::enum_cast<BK>(name); k.has_value())
+					(*this)[*k] = !negated;
 			}
 		}
 	}
 
-	if(j.contains("netns")){ str_con["netns"] = j.at("netns"); }
-	if(j.contains("source")){ str_con["source"] = j.at("source"); }
+	if(j.contains("netns"))  (*this)[SK::netns]  = j.at("netns").get<string>();
+	if(j.contains("source")) (*this)[SK::source] = j.at("source").get<string>();
 }
 
-Actor_config::~Actor_config(){
-	if(conn && conn.use_count() == 1){
+Actor_config::~Actor_config() {
+	if(conn && conn.use_count() == 1)
 		conn->disconnect();
-	}
 }
 
-bool Actor_config::matches(const Actor_config &offer){
-	for(auto const &[key, required_val]: str_con){
-		if(!required_val.has_value()) continue;
-		if(!offer.str_con.at(key).has_value()) continue;
-		if(auto it = offer.str_con.find(key); it == offer.str_con.end() || it->second != required_val){
-			return false;
-		}
+bool Actor_config::matches(const Actor_config &offer) {
+	for(auto k : magic_enum::enum_values<SK>()){
+		const auto &required = (*this)[k];
+		if(!required.has_value()) continue;
+		const auto &offered  = offer[k];
+		if(!offered.has_value()) continue;
+		if(required != offered) return false;
 	}
 
-	// Check boolean conditions
-	for(auto const &[key, required_val]: bool_conditions){
-		if(!required_val.has_value()) continue;
-		if(!offer.bool_conditions.at(key).has_value()) continue;
-		if(auto it = offer.bool_conditions.find(key); it == offer.bool_conditions.end() || it->second != required_val){
-			return false;
-		}
+	for(auto k : magic_enum::enum_values<BK>()){
+		const auto &required = (*this)[k];
+		if(!required.has_value()) continue;
+		const auto &offered  = offer[k];
+		if(!offered.has_value()) continue;
+		if(required != offered) return false;
 	}
 	return true;
 }
 
-Actor_config &Actor_config::operator+=(const Actor_config &other){
-	for(auto const &[key, val]: other.str_con){
+Actor_config &Actor_config::operator+=(const Actor_config &other) {
+	for(auto k : magic_enum::enum_values<SK>()){
+		const auto &val = other[k];
 		if(!val.has_value()) continue;
-		auto &mine = str_con[key];
-		if(!mine.has_value()){
-			mine = val; // fill missing
-		} else if(mine != val){
-			throw runtime_error(
-				"Actor_config conflict on key '" + key + "': '" + mine.value() + "' vs '" + val.value() + "'");
-		}
-	}
-
-	for(auto const &[key, val]: other.bool_conditions){
-		if(!val.has_value()) continue;
-		auto &mine = bool_conditions[key];
+		auto &mine = (*this)[k];
 		if(!mine.has_value()){
 			mine = val;
 		} else if(mine != val){
-			throw runtime_error("Actor_config conflict on bool key '" + key + "'");
+			throw runtime_error(
+				"Actor_config conflict on key '" + string(sk_str(k)) +
+				"': '" + *mine + "' vs '" + *val + "'");
+		}
+	}
+
+	for(auto k : magic_enum::enum_values<BK>()){
+		const auto &val = other[k];
+		if(!val.has_value()) continue;
+		auto &mine = (*this)[k];
+		if(!mine.has_value()){
+			mine = val;
+		} else if(mine != val){
+			throw runtime_error(
+				"Actor_config conflict on bool key '" + string(bk_str(k)) + "'");
 		}
 	}
 	return *this;
 }
 
-string Actor_config::operator[](const string &key) const{
-	const auto it = str_con.find(key);
-	if(it == str_con.end()){
-		throw config_err("Actor_config: missing required string condition '" + key + "'");
-	}
-	if(!it->second.has_value()){
-		throw config_err("Actor_config: string condition '" + key + "' has no value");
-	}
-	return *(it->second);
-}
+optional<string> &Actor_config::operator[](SK key){ return str_vals[static_cast<size_t>(key)]; }
 
-bool Actor_config::get_bool(const string &key) const{
-	const auto it = bool_conditions.find(key);
-	if(it == bool_conditions.end()){
-		throw config_err("Actor_config: missing required bool condition '" + key + "'");
-	}
-	if(!it->second.has_value()){
-		throw config_err("Actor_config: bool condition '" + key + "' has no value");
-	}
-	return *(it->second);
-}
+const optional<string>& Actor_config::operator[](SK key) const { return str_vals[static_cast<size_t>(key)]; }
 
-string Actor_config::to_str() const{
+optional<bool>& Actor_config::operator[](BK key) { return bool_vals[static_cast<size_t>(key)]; }
+
+const optional<bool>& Actor_config::operator[](BK key) const { return bool_vals[static_cast<size_t>(key)]; }
+
+string Actor_config::to_str() const {
 	string result;
 
-	// string params
-	bool first_str = true;
-	for(const auto &[key, val]: str_con){
-		if(val.has_value()){
-			if(!first_str) result += ", ";
-			result += key + "=" + val.value();
-			first_str = false;
-		}
+	bool first = true;
+	for(auto k : magic_enum::enum_values<SK>()){
+		const auto &v = (*this)[k];
+		if(!v.has_value()) continue;
+		if(!first) result += ", ";
+		result += string(sk_str(k)) + "=" + *v;
+		first = false;
 	}
 
-	vector<string> true_conds;
-	vector<string> false_conds;
-
-	for(const auto &[key, val]: bool_conditions){
-		if(val.has_value()){
-			if(val.value()){
-				true_conds.push_back(key);
-			} else{
-				false_conds.push_back(key);
-			}
-		}
+	vector<string> conds;
+	for(auto k : magic_enum::enum_values<BK>()){
+		const auto &v = (*this)[k];
+		if(!v.has_value()) continue;
+		conds.push_back(*v ? string(bk_str(k)) : "!" + string(bk_str(k)));
 	}
 
-	// True list
-	if(!true_conds.empty()){
-		result += " True: [";
-		for(size_t i = 0; i < true_conds.size(); ++i){
+	if(!conds.empty()){
+		result += " [";
+		for(size_t i = 0; i < conds.size(); ++i){
 			if(i > 0) result += ", ";
-			result += true_conds[i];
+			result += conds[i];
 		}
 		result += "]";
 	}
 
-	// False list
-	if(!false_conds.empty()){
-		result += " False: [";
-		for(size_t i = 0; i < false_conds.size(); ++i){
-			if(i > 0) result += ", ";
-			result += false_conds[i];
-		}
-		result += "]";
-	}
 	return result;
 }
 
-void Actor_config::print_ActorCMap(const string &title, const vector<ActorPtr> &actors){
-	cout << title << ":\n";
-	for(size_t i = 0; i < actors.size(); ++i){
-		cout << "[" << i << "] " << actors[i]->to_str() << "\n";
+json Actor_config::to_json() const {
+	json sel = json::object();
+
+	for(auto k : magic_enum::enum_values<SK>()){
+		if(k == SK::netns || k == SK::source) continue;
+		const auto &v = (*this)[k];
+		if(v.has_value())
+			sel[string(sk_str(k))] = *v;
 	}
+
+	json conditions = json::array();
+	for(auto k : magic_enum::enum_values<BK>()){
+		const auto &v = (*this)[k];
+		if(!v.has_value()) continue;
+		auto name = string(bk_str(k));
+		conditions.push_back(*v ? name : "!" + name);
+	}
+	if(!conditions.empty())
+		sel["condition"] = conditions;
+
+	json result = json::object();
+	result["selection"] = sel;
+
+	if((*this)[SK::netns].has_value())  result["netns"]  = *(*this)[SK::netns];
+	if((*this)[SK::source].has_value()) result["source"] = *(*this)[SK::source];
+
+	return result;
+}
+
+void Actor_config::print_ActorCMap(const string &title, const vector<ActorPtr> &actors) {
+	cout << title << ":\n";
+	for(size_t i = 0; i < actors.size(); ++i)
+		cout << "[" << i << "] " << actors[i]->to_str() << "\n";
 	cout << flush;
 }
 
-void Actor_config::print_ActorCMap(const string &title, ActorCMap actors){
+void Actor_config::print_ActorCMap(const string &title, ActorCMap actors) {
 	cout << title << ":\n";
 	for(const auto &[key, actor_ptr]: actors){
 		const ActorPtr actor = actor_ptr;
-		auto it = actor->str_con.find("whitebox_host");
-		cout << "[" << key << "] " << (it != actor->str_con.end() && it->second.has_value()
-										? it->second.value()
-										: "Actor_" + key) << " " << actor->to_str() << "\n";
+		const auto &host = actor->(*this)[SK::whitebox_host];
+		cout << "[" << key << "] "
+				<< (host.has_value() ? *host : "Actor_" + key)
+				<< " " << actor->to_str() << "\n";
 	}
 	cout << flush;
 }
 
-bool Actor_config::is_WB() const{
-	return (str_con.at("source").value() == "internal") || is_external_WB();
+bool Actor_config::is_WB() const {
+	return (*this)[SK::source].value() == "internal" || is_external_WB();
 }
 
-bool Actor_config::is_external_WB() const{
-	return str_con.at("source").value() == "external" && (str_con.at("whitebox_host").has_value() || str_con.
-		at("whitebox_ip").has_value());
+bool Actor_config::is_external_WB() const {
+	return (*this)[SK::source].value() == "external" &&
+			((*this)[SK::whitebox_host].has_value() || (*this)[SK::whitebox_ip].has_value());
 }
+
 }

@@ -247,7 +247,7 @@ void OpenWrtConn::get_hw_capabilities(Actor_config &cfg, const string &radio){
 
 void OpenWrtConn::parse_hw_capabilities(Actor_config &cfg, const string &output){
 	// supported bands
-	cfg.bool_conditions["2_4GHz"] = (output.find("Band 1:") != string::npos);
+	cfg[Actor_config::BK::_2_4GHz] = (output.find("Band 1:") != string::npos);
 	cfg.bool_conditions["5GHz"] = (output.find("Band 2:") != string::npos);
 	cfg.bool_conditions["6GHz"] = (output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
 

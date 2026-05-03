@@ -235,18 +235,19 @@ void run_attack(RunStatus &rs){
 
 void stats_attack(const RunStatus &rs){
     const auto ap = rs.config.at("actors").at("access_point");
-    observer::resource_checker::create_graph(rs, ap["source"]);
-    vector<unique_ptr<GraphElements>> elements;
 
-    rs.log_events(elements, {
-                      {"access_point", "did not acknowledge authentication response", "ACK fail", "red"},
-                      {"client", "@START", "START", "black"},
-                      {"client", "@END", "END", "black"},
-                  });
+    vector<unique_ptr<GraphElements>> elements;
+	rs.log_events(elements, {
+			{"access_point", "did not acknowledge", "ACK_fail", "red"},
+			{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+			{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
+			{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
+		});
 
     //elements.push_back(make_unique<EventLines>(
     //    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));
     observer::station_counter::create_station_graph(rs, "access_point", elements);
+	observer::resource_checker::create_graph(rs, ap["source"], elements);
     //observer::tshark::generate_time_series_retry_graph(rs, "attacker");
 }
 }

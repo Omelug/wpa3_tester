@@ -111,11 +111,18 @@ void run_attack(RunStatus &rs){
 
 void stats_attack(const RunStatus &rs){
     vector<unique_ptr<GraphElements>> elements;
-    //const string STA_graph_path = observer::tshark_graph(rs, "client", events);
+	rs.log_events(elements, {
+					{"access_point", "did not acknowledge", "ACK_fail", "red"},
+					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
+					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
+				});
+
+	//const string STA_graph_path = observer::tshark_graph(rs, "client", events);
     //const string AP_graph_path =
     //    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
 
     const auto ap = rs.config.at("actors").at("access_point");
-    observer::resource_checker::create_graph(rs, ap["source"]);
+    observer::resource_checker::create_graph(rs, ap["source"], elements);
 }
 }

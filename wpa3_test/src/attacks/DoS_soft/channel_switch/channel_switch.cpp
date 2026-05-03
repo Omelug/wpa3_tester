@@ -150,6 +150,7 @@ void stats_chs_attack(const RunStatus &rs){
 
     vector<unique_ptr<GraphElements>> elements;
     rs.log_events(elements, {
+                      {"access_point", "did not acknowledge", "ACK_fail", "red"},
                       {"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"},
                       {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
                       {"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},

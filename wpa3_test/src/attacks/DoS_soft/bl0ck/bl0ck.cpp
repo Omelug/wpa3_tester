@@ -220,6 +220,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
     vector<unique_ptr<GraphElements>> elements;
     rs.log_events(elements, {
+                      {"access_point", "did not acknowledge", "ACK_fail", "red"},
                       {"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
                       {"client", "@START", "START", "black"},
                       {"client", "@END", "END", "black"},

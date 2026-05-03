@@ -9,19 +9,19 @@
 
 namespace wpa3_tester{
 enum class LogLevel{
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR,
-    CRITICAL
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+	CRITICAL
 };
 
 const char *levelToString(LogLevel level);
 
-template <typename... Args>
-void log(const LogLevel level, std::format_string<Args...> fmt, Args&&... args) {
-    const std::string msg = std::format(fmt, std::forward<Args>(args)...);
-    std::cerr << levelToString(level) << ": " << msg << std::endl;
+template<typename...Args>
+void log(const LogLevel level, std::format_string<Args...> fmt, Args &&...args){
+	const std::string msg = std::format(fmt, std::forward<Args>(args)...);
+	std::cerr << levelToString(level) << ": " << msg << std::endl;
 }
 
 //__attribute__((format(printf, 2, 3)))
@@ -31,10 +31,10 @@ void log_actor_map(const std::string &name, const ActorCMap &m);
 void log_actor_configs(const ActorCMap &m, std::ofstream &ofs);
 
 inline void debug_step(){
-    std::cout << "Wait for enter..." << std::flush;
-    std::cin.clear();
-    std::cin.get();
-    std::cout << "ok" << std::endl;
+	std::cout << "Wait for enter..." << std::flush;
+	std::cin.clear();
+	std::cin.get();
+	std::cout << "ok" << std::endl;
 }
 
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;

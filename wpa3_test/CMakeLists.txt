@@ -31,9 +31,9 @@ set(CMAKE_CXX_STANDARD 23)
 option(ENABLE_COVERAGE "Enable coverage" OFF)
 
 # compile with nice
-if(UNIX)
+if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
-endif()
+endif ()
 
 
 if (ENABLE_COVERAGE)

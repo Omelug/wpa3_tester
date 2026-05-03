@@ -9,20 +9,18 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ssid_confusion{
-static unique_ptr<Dot11Beacon> make_confused_beacon(
-    const Dot11Beacon &real,
-    const string &confused_ssid,
-    const bool strip_rsn
+static unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid,
+													const bool strip_rsn
 ){
-    auto b = make_unique<Dot11Beacon>();
-    b->addr1(real.addr1()); // broadcast
-    b->addr2(real.addr2()); // BSSID (kept identical to real AP — key to the attack)
-    b->addr3(real.addr3());
-    b->timestamp(real.timestamp());
-    b->interval(real.interval());
-    b->capabilities() = real.capabilities();
+	auto b = make_unique<Dot11Beacon>();
+	b->addr1(real.addr1()); // broadcast
+	b->addr2(real.addr2()); // BSSID (kept identical to real AP — key to the attack)
+	b->addr3(real.addr3());
+	b->timestamp(real.timestamp());
+	b->interval(real.interval());
+	b->capabilities() = real.capabilities();
 
-    /*FIXME for (const auto& opt : real.options()) {
+	/*FIXME for (const auto& opt : real.options()) {
             if (opt.option() == IEEE_TLV_TYPE_SSID) {
                 // Advertise a different SSID than the real AP
                 b->add_option(Dot11::option(
@@ -35,11 +33,11 @@ static unique_ptr<Dot11Beacon> make_confused_beacon(
                 b->add_option(opt);
             }
         }*/
-    return b;
+	return b;
 }
 
 void run_attack(RunStatus &rs){
-    /*const auto att_real  = rs.get_actor("rogue_client");
+	/*const auto att_real  = rs.get_actor("rogue_client");
         const auto att_rogue = rs.get_actor("rogue_ap");
         const auto ap        = rs.get_actor("access_point");
         const auto client       = rs.get_actor("client");

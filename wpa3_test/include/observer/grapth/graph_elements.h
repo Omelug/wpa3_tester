@@ -12,123 +12,112 @@ enum class GraphElement_t{ UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS }
 
 class GraphElements{
 public:
-    GraphElement_t type = GraphElement_t::UNKNOWN;
-    std::string label;
-    std::string color = "green";
+	GraphElement_t type = GraphElement_t::UNKNOWN;
+	std::string label;
+	std::string color = "green";
 
-    explicit GraphElements(std::string label, std::string color = "green")
-        : label(std::move(label)), color(std::move(color)){}
-    virtual ~GraphElements() = default;
-    virtual std::unique_ptr<GraphElements> clone() const {
-        return std::make_unique<GraphElements>(*this);
-    }
+	explicit GraphElements(std::string label, std::string color = "green")
+	: label(std::move(label)), color(std::move(color)){}
+
+	virtual ~GraphElements() = default;
+
+	virtual std::unique_ptr<GraphElements> clone() const{
+		return std::make_unique<GraphElements>(*this);
+	}
 };
 
-inline std::vector<std::unique_ptr<GraphElements>> clone_elements(const std::vector<std::unique_ptr<GraphElements>>& src) {
-    std::vector<std::unique_ptr<GraphElements>> result;
-    result.reserve(src.size());
-    for (const auto& e : src)
-        result.push_back(e->clone());
-    return result;
+inline std::vector<std::unique_ptr<GraphElements>> clone_elements(const std::vector<std::unique_ptr<GraphElements>> &src
+){
+	std::vector<std::unique_ptr<GraphElements>> result;
+	result.reserve(src.size());
+	for(const auto &e: src) result.push_back(e->clone());
+	return result;
 }
-
 
 // Graph elements //TODO
 typedef std::vector<std::unique_ptr<GraphElements>> &G_el;
 
 class EventLines: public GraphElements{
 public:
-    std::vector<LogTimePoint> event_times;
+	std::vector<LogTimePoint> event_times;
 
-    EventLines(std::vector<LogTimePoint> event_times,
-               std::string label,
-               std::string color = "green"
-    )
-        : GraphElements(std::move(label), std::move(color)), event_times(std::move(event_times)){
-        type = GraphElement_t::EVENT_LINES;
-    }
-    std::unique_ptr<GraphElements> clone() const override {
-        return std::make_unique<EventLines>(*this);
-    }
+	EventLines(std::vector<LogTimePoint> event_times, std::string label, std::string color = "green")
+	: GraphElements(std::move(label), std::move(color)), event_times(std::move(event_times)){
+		type = GraphElement_t::EVENT_LINES;
+	}
+
+	std::unique_ptr<GraphElements> clone() const override{
+		return std::make_unique<EventLines>(*this);
+	}
 };
 
 enum class YAxis{ Y1, Y2 };
 
 class GraphXYPoints: public GraphElements{
-    YAxis axis = YAxis::Y1;
+	YAxis axis = YAxis::Y1;
 public:
-    std::vector<LogTimePoint> x_times;
-    std::vector<double> y_values;
+	std::vector<LogTimePoint> x_times;
+	std::vector<double> y_values;
 
-    GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
-                  const std::string &label, const std::string &color = "green"
-    )
-        : GraphElements(label, color),
-          x_times(x_times),
-          y_values(y_values){
-        type = GraphElement_t::GRAPH_XY_POINTS;
-    }
-    std::unique_ptr<GraphElements> clone() const override {
-        return std::make_unique<GraphXYPoints>(*this);
-    }
+	GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
+				const std::string &label, const std::string &color = "green"
+	)
+	: GraphElements(label, color), x_times(x_times), y_values(y_values){
+		type = GraphElement_t::GRAPH_XY_POINTS;
+	}
+
+	std::unique_ptr<GraphElements> clone() const override{
+		return std::make_unique<GraphXYPoints>(*this);
+	}
 };
 
 template<typename Enum>
-class GraphStairs : public GraphElements {
+class GraphStairs: public GraphElements{
 public:
-    YAxis axis = YAxis::Y1;
-    double margin = 0.1; // top/bottom margin
+	YAxis axis = YAxis::Y1;
+	double margin = 0.1; // top/bottom margin
 
-    std::vector<std::pair<Enum, std::string>> enum_labels;
-    std::map<LogTimePoint, Enum> steps;
+	std::vector<std::pair<Enum,std::string>> enum_labels;
+	std::map<LogTimePoint,Enum> steps;
 
-    GraphStairs(
-        const std::map<LogTimePoint, Enum> &steps,
-        const std::vector<std::pair<Enum, std::string>> &enum_labels,
-        const std::string &label,
-        const std::string &color = "blue",
-        const YAxis axis = YAxis::Y1,
-        const double margin = 0.1
-    )
-        : GraphElements(label, color),
-          axis(axis),
-          margin(margin),
-          steps(steps),
-          enum_labels(enum_labels) {
-        type = GraphElement_t::GRAPH_STAIRS;
-    }
+	GraphStairs(const std::map<LogTimePoint,Enum> &steps, const std::vector<std::pair<Enum,std::string>> &enum_labels,
+				const std::string &label, const std::string &color = "blue", const YAxis axis = YAxis::Y1,
+				const double margin = 0.1
+	)
+	: GraphElements(label, color), axis(axis), margin(margin), steps(steps), enum_labels(enum_labels){
+		type = GraphElement_t::GRAPH_STAIRS;
+	}
 
-    // index in enum_labels -> y pos
-    double y_pos(const Enum val) const {
-        for(size_t i = 0; i < enum_labels.size(); ++i)
-            if(enum_labels[i].first == val)
-                return static_cast<double>(i);
-        return 0.0;
-    }
+	// index in enum_labels -> y pos
+	double y_pos(const Enum val) const{
+		for(size_t i = 0; i < enum_labels.size(); ++i)
+			if(enum_labels[i].first == val) return static_cast<double>(i);
+		return 0.0;
+	}
 
-    double y_min() const { return 0.0 - margin; }
-    double y_max() const { return static_cast<double>(enum_labels.size() - 1) + margin; }
+	double y_min() const{ return 0.0 - margin; }
+	double y_max() const{ return static_cast<double>(enum_labels.size() - 1) + margin; }
 
-    std::unique_ptr<GraphElements> clone() const override {
-        return std::make_unique<GraphStairs>(*this);
-    }
+	std::unique_ptr<GraphElements> clone() const override{
+		return std::make_unique<GraphStairs>(*this);
+	}
 };
 
 class Graph{
 public:
-    FILE *file;
-    double ymin = 0;
-    double ymax = 1;
-    LogTimePoint start_time;
-    TimeAxis axis = TimeAxis::RELATIVE;
-    std::vector<std::string> plot_parts;
+	FILE *file;
+	double ymin = 0;
+	double ymax = 1;
+	LogTimePoint start_time;
+	TimeAxis axis = TimeAxis::RELATIVE;
+	std::vector<std::string> plot_parts;
 
-    void add_graph_elements(const std::vector<std::unique_ptr<GraphElements>> &elements);
-    void gpcmd(const std::string &cmd) const;
-    void add_XY_points(const GraphXYPoints &xy_points);
-    void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index);
-    template<class Enum>
-    void add_stairs(const GraphStairs<Enum> &stairs);
-    void render();
+	void add_graph_elements(const std::vector<std::unique_ptr<GraphElements>> &elements);
+	void gpcmd(const std::string &cmd) const;
+	void add_XY_points(const GraphXYPoints &xy_points);
+	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index);
+	template<class Enum>
+	void add_stairs(const GraphStairs<Enum> &stairs);
+	void render();
 };
 }

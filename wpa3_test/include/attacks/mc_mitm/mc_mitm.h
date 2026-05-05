@@ -19,7 +19,7 @@ protected:
 public:
 	// AP <-> rogue_sta <-> rogue AP <-> client
 	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
-			const std::string &client_mac, bool only_to_mitm = false
+			const std::string &client_mac, std::optional<std::filesystem::path> log_folder = std::nullopt , bool only_to_mitm = false
 	);
 	virtual ~McMitm();
 

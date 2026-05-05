@@ -19,7 +19,7 @@ using namespace chrono;
 using namespace Tins;
 
 McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid, const string &ap_mac,
-				const string &client_mac, const bool only_to_mitm
+				const string &client_mac, optional<filesystem::path> log_folder, const bool only_to_mitm
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
@@ -29,7 +29,7 @@ ssid(std::move(ssid)),
 // TODO fallback to info from actors
 ap_mac(ap_mac),
 only_to_mitm(only_to_mitm),
-client_state(client_mac){}
+client_state(client_mac, log_folder){}
 
 McMitm::~McMitm(){ stop(); }
 

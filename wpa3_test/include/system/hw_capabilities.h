@@ -52,6 +52,7 @@ struct NlCaps{
 	bool ap = false;
 	bool sta = false;
 	bool monitor = false;
+	bool active_monitor = false;
 	bool injection = false;
 
 	bool band24 = false;
@@ -126,9 +127,6 @@ public:
 	static Tins::HWAddress<6> get_macaddress(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_mac_address(const std::string &iface, const Tins::HWAddress<6> &new_mac,
 								const std::optional<std::string> &netns
-	);
-	static void supports_active_monitor(const std::string &iface, Actor_config &cfg,
-										const std::optional<std::string> &netns
 	);
 	static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);
 	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, int channel = 0);

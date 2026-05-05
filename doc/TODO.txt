@@ -79,6 +79,6 @@ PDF:
 --------------------------------------------------------------------------------------------
 
 TODO
-- v exec jsou 2 vteřiny, funguje sudo micro ./ap_debug_test.txt -> inotify
+- funguje sudo micro ./ap_debug_test.txt -> inotify
 - maccchanger musí být až potom / při tom
 send_csa_beacon pak nic nedělá

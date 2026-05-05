@@ -155,36 +155,6 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 	set_iface_down(iface, netns);
 	run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }
-
-void hw_capabilities::supports_active_monitor(const string &iface, Actor_config &cfg, const optional<string> &netns){
-	const string result = run_cmd_output({"iw", "dev", iface, "info"}, netns);
-
-	// find "wiphy X"
-	int phy_idx = -1;
-	istringstream ss(result);
-	string line;
-	while(getline(ss, line)){
-		if(line.find("wiphy") != string::npos){
-			sscanf(line.c_str(), " wiphy %d", &phy_idx);
-			break;
-		}
-	}
-	if(phy_idx < 0){
-		cfg[BK::active_monitor] = false;
-		return;
-	}
-
-	const string phy_info = run_cmd_output({"iw", "phy", "phy" + to_string(phy_idx), "info"}, netns);
-	istringstream ss2(phy_info);
-	while(getline(ss2, line)){
-		if(line.find("active monitor") != string::npos){
-			cfg[BK::active_monitor] = true;
-			return;
-		}
-	}
-	cfg[BK::active_monitor] = false;
-}
-
 void hw_capabilities::set_channel(const string &iface, const int channel, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface " + iface + " to channel " + to_string(channel));
 	run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)}, netns);

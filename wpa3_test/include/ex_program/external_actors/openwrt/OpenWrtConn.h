@@ -14,7 +14,7 @@ public:
 	void forward_internet(const std::string &remote_ip) const;
 	void time_fix() const;
 
-	void setup_iface(const std::string &radio_name, const std::shared_ptr<Actor_config> &actor, nlohmann::json config
+	void setup_iface(const std::string &radio_name, ActorPtr &actor, nlohmann::json config
 	) override;
 
 	explicit OpenWrtConn() = default;
@@ -26,7 +26,7 @@ public:
 	void set_ip(const std::string &iface, const std::string &ip_addr) const override;
 	std::string get_radio(const std::string &iface) const;
 	std::string get_wifi_iface_section(const std::string &iface) const;
-	void setup_ap(const RunStatus &rs, const ActorPtr &actor) override;
+	void setup_ap(const RunStatus &rs, ActorPtr &actor) override;
 	void logger(RunStatus &rs, const std::string &actor_name) override;
 	void get_hw_capabilities(Actor_config &cfg, const std::string &radio) override;
 	static void parse_hw_capabilities(Actor_config &cfg, const std::string &output);

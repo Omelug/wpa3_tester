@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include "Actor_config.h"
 
 namespace wpa3_tester{
 class Actor_config;
@@ -13,26 +13,27 @@ public:
 	explicit ActorPtr(std::shared_ptr<Actor_config> p);
 
 	Actor_config *operator->() const;
-	Actor_config &operator*() const;
-	std::string operator[](const std::string &key) const;
-	Actor_config *get() const;
+	Actor_config &operator*()  const;
+	Actor_config *get()        const;
 	std::shared_ptr<Actor_config> shared() const;
 
-	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs);
+	std::string operator[](const std::string &key) const;
+	std::optional<std::string>&       operator[](SK key);
+	const std::optional<std::string>& operator[](SK key) const;
+	std::optional<bool>&              operator[](BK key);
+	const std::optional<bool>&        operator[](BK key) const;
 
-	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){
-		return lhs.ptr == rhs.ptr;
-	}
+	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr;}
+	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr;}
 };
 
-using ActorCMap = std::unordered_map<std::string,ActorPtr>; // <actor_name, ActorPtr>
-struct hash_ActorPtr{
+/*struct hash_ActorPtr{
 	size_t operator()(const ActorPtr &ap) const{
 		return std::hash<std::shared_ptr<Actor_config>>{}(ap.ptr);
 	}
-};
-
+};*/
+/*
 inline bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){
 	return lhs.ptr < rhs.ptr;
-}
+}*/
 }

@@ -75,7 +75,7 @@ void OpenWrtConn::time_fix() const{
 	exec("/etc/init.d/sysntpd start");
 }
 
-void OpenWrtConn::setup_iface(const string &radio_name, const shared_ptr<Actor_config> &actor,
+void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 							const nlohmann::json config
 ){
 	const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
@@ -100,7 +100,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, const shared_ptr<Actor_c
 	exec("uci set wireless." + section + "=wifi-iface");
 	exec("uci set wireless." + section + ".device=" + radio_name);
 
-	const auto program_config = config.at("actors").at(actor->str_con["actor_name"].value()).at("setup").at(
+	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at(
 		"program_config");
 	for(auto &[key, value]: program_config.items()){
 		if(value.is_string()) exec("uci set wireless." + section + "." + key + "='" + value.get<string>() + "'");
@@ -111,9 +111,9 @@ void OpenWrtConn::setup_iface(const string &radio_name, const shared_ptr<Actor_c
 	exec("wifi reload");
 
 	// wait for ifname and store in actor
-	actor->str_con["iface"] = wait_for_ifname(section);
-	actor->set_mac(get_mac_address(actor->str_con["iface"].value()));
-	actor->str_con["radio"] = radio_name;
+	actor[SK::iface] = wait_for_ifname(section);
+	actor->set_mac(get_mac_address(actor[SK::iface].value()));
+	actor[SK::radio] = radio_name;
 }
 
 bool OpenWrtConn::connect(const ActorPtr &actor){
@@ -197,11 +197,11 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 
 // -------------------------------------------
 
-void OpenWrtConn::setup_ap(const RunStatus &rs, const ActorPtr &actor){
+void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config.at("actors").at(actor["actor_name"]).at("setup").at("program_config");
 	cerr << program_config.dump() << endl;
-	actor->str_con["ssid"] = program_config.at("ssid").get<string>();
-	actor->str_con["channel"] = to_string(program_config.at("channel").get<int>());
+	actor[SK::ssid] = program_config.at("ssid").get<string>();
+	actor[SK::channel] = to_string(program_config.at("channel").get<int>());
 
 	// radio level keys
 	static const set<string> radio_keys = {
@@ -247,18 +247,18 @@ void OpenWrtConn::get_hw_capabilities(Actor_config &cfg, const string &radio){
 
 void OpenWrtConn::parse_hw_capabilities(Actor_config &cfg, const string &output){
 	// supported bands
-	cfg[Actor_config::BK::_2_4GHz] = (output.find("Band 1:") != string::npos);
-	cfg.bool_conditions["5GHz"] = (output.find("Band 2:") != string::npos);
-	cfg.bool_conditions["6GHz"] = (output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
+	cfg[BK::GHz2_4] = (output.find("Band 1:") != string::npos);
+	cfg[BK::GHz5] = (output.find("Band 2:") != string::npos);
+	cfg[BK::GHz6] = (output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
 
 	// supported modes
-	cfg.bool_conditions["AP"] = (output.find(" * AP") != string::npos);
-	cfg.bool_conditions["STA"] = (output.find(" * managed") != string::npos);
-	cfg.bool_conditions["monitor"] = (output.find(" * monitor") != string::npos);
+	cfg[BK::AP] = (output.find(" * AP") != string::npos);
+	cfg[BK::STA] = (output.find(" * managed") != string::npos);
+	cfg[BK::monitor] = (output.find(" * monitor") != string::npos);
 
 	// Supported standards
-	cfg.bool_conditions["80211n"] = (output.find("HT20") != string::npos || output.find("HT40") != string::npos);
-	cfg.bool_conditions["80211ac"] = (output.find("VHT") != string::npos);
-	cfg.bool_conditions["80211ax"] = (output.find("HE") != string::npos);
+	cfg[BK::w80211n] = (output.find("HT20") != string::npos || output.find("HT40") != string::npos);
+	cfg[BK::w80211ac] = (output.find("VHT") != string::npos);
+	cfg[BK::w80211ax] = (output.find("HE") != string::npos);
 }
 }

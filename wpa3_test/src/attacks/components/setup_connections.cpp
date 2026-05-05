@@ -13,7 +13,7 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
 	log(LogLevel::INFO, actor_name + " is running");
-	if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
 	}
 }
@@ -21,7 +21,7 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 void setup_STA(RunStatus &rs, const string &actor_name){
 	program::start(rs, actor_name);
 	rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", chrono::seconds(10));
-	if(rs.get_actor(actor_name)->str_con["ip_addr"]){
+	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
 	}
 }

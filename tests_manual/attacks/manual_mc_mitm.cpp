@@ -1,22 +1,17 @@
 #include "attacks/mc_mitm/mc_mitm.h"
-#include "attacks/by_target/scan_AP.h"
 #include "system/hw_capabilities.h"
-#include "logger/log.h"
-
 #include <tins/tins.h>
-#include <filesystem>
-#include <stdexcept>
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
 int main(){
-    const auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
-    const auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
+    auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
+    auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
 
-    r_sta_actor->str_con["iface"] = "wlan1";
-    r_sta_actor->str_con["iface"] = "wlan2";
+    r_sta_actor[SK::iface] = "wlan1";
+    r_sta_actor[SK::iface] = "wlan2";
 
     const string ap_ssid = "test_mc_mitm";
     const string ap_mac = "02:00:00:00:03:00";

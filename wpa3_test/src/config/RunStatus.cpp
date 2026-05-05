@@ -170,9 +170,12 @@ void RunStatus::stats_test(){
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 	for(const auto &[name, actor]: actors){
-		ofs << actor->str_con.at("source").value_or("<none>") << "," << name << "," << actor->str_con.at("iface").
-				value_or("<none>") << "," << actor->str_con.at("mac").value_or("<none>") << "," << actor->str_con.
-				at("driver").value_or("<none>") << "," << actor->str_con.at("channel").value_or("<none>") << endl;
+		ofs << actor[SK::source].value_or("<none>") << ","
+			<< name << "," << actor[SK::iface].value_or("<none>") << ","
+			<< actor[SK::mac].value_or("<none>") << ","
+			<< actor[SK::driver].value_or("<none>") << ","
+			<< actor[SK::channel].value_or("<none>") << ","
+			<< actor->to_json() <<endl;
 	}
 }
 
@@ -254,15 +257,15 @@ void RunStatus::save_actor_interface_mapping() const{
 	const string path = run_folder + "/mapping.csv";
 	ofstream ofs(path, ios::out | ios::trunc);
 	if(!ofs){
-		log(LogLevel::ERROR, "Failed to open " + path + " for writing CSV mapping");
+		log(LogLevel::ERROR, "Failed to open {} for writing CSV mapping", path);
 		return;
 	}
 
-	ofs << "Type,ActorName,Interface,MAC,Driver,channel" << endl;
+	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 
 	write_actors_csv(actors, ofs);
 
 	ofs.close();
-	log(LogLevel::INFO, "Actor/interface mapping written to CSV: " + path);
+	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
 }
 }

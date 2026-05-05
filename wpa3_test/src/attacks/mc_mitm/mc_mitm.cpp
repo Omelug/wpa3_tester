@@ -161,10 +161,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		rogue_sta->set_mac_address(client_state.get_mac());
 		start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac().to_string());
 	} else{
-		hw_capabilities::set_iface_down(nic_real_ap, rogue_sta->str_con.at("netns"));
+		hw_capabilities::set_iface_down(nic_real_ap, rogue_sta[SK::netns]);
 		rogue_sta->set_mac_address(client_state.get_mac());
-		hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"},
-								rogue_sta->str_con.at("netns"));
+		hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"}, rogue_sta[SK::netns]);
 		this_thread::sleep_for(seconds(15));
 		rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
 	}
@@ -186,7 +185,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	rogue_ap->set_mac_address(ap_mac);
 	// Set up a rogue AP that clones the target network -> ACK back to client
 	start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
-	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta->str_con.at("netns"), false);
+	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap["iface"]);
 	sock_rogue->set_filter(bpf);

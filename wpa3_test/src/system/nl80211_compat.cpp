@@ -169,9 +169,9 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 	return 0;
 }
 
-void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
-	cfg.set_mac(read_sysfs(iface, "address"));
-	cfg.str_con["driver"] = get_driver_name(iface);
+void hw_capabilities::get_nl80211_caps(const string &iface, ActorPtr &cfg){
+	cfg->set_mac(read_sysfs(iface, "address"));
+	cfg[SK::driver] = get_driver_name(iface);
 
 	/* ---------- nl80211 dynamic capabilities ---------- */
 	nl_sock *sock = nl_socket_alloc();
@@ -206,22 +206,22 @@ void hw_capabilities::get_nl80211_caps(const string &iface, Actor_config &cfg){
 	nl_send_auto(sock, msg);   // send message to kernel
 	nl_recvmsgs_default(sock); // get answer
 
-	cfg.bool_conditions["AP"] = caps.ap;
-	cfg.bool_conditions["STA"] = caps.sta;
-	cfg.bool_conditions["monitor"] = caps.monitor;
-	cfg.bool_conditions["2_4GHz"] = caps.band24;
-	cfg.bool_conditions["5GHz"] = caps.band5;
-	cfg.bool_conditions["6GHz"] = caps.band6;
+	cfg[BK::AP] = caps.ap;
+	cfg[BK::STA] = caps.sta;
+	cfg[BK::monitor] = caps.monitor;
+	cfg[BK::GHz2_4] = caps.band24;
+	cfg[BK::GHz5] = caps.band5;
+	cfg[BK::GHz6] = caps.band6;
 
-	cfg.bool_conditions["80211n"] = caps._80211n;
-	cfg.bool_conditions["80211ac"] = caps._80211ac;
-	cfg.bool_conditions["80211ax"] = caps._80211ax;
+	cfg[BK::w80211n] = caps._80211n;
+	cfg[BK::w80211ac] = caps._80211ac;
+	cfg[BK::w80211ax] = caps._80211ax;
 
-	cfg.bool_conditions["beacon_prot"] = caps._80211ax;
+	cfg[BK::beacon_prot] = caps._80211ax;
 
 	if(caps.monitor){
 		bool real_injection = check_injection_runtime(iface);
-		cfg.bool_conditions["injection"] = real_injection;
+		cfg[BK::injection] = real_injection;
 
 		if(!real_injection && caps.injection){
 			log(LogLevel::WARNING, "Driver claims injection support, but runtime test failed!");

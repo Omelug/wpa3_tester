@@ -30,7 +30,7 @@ int main(){
     }
 
     Actor_config actor{};
-    actor.str_con["iface"] = *selected_iface;
+    actor[SK::iface] = *selected_iface;
 
     actor.set_monitor_mode();
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";

@@ -62,45 +62,6 @@ void log_actor_map(const string &name, const ActorCMap &m){
 	log(LogLevel::DEBUG, name + ":" + keys);
 }
 
-void log_actor_configs(const ActorCMap &m, ofstream &ofs){
-	for(const auto &[name, actor]: m){
-		ofs << "\t" << name << " -> " << actor["iface"] << endl;
-	}
-	for(const auto &[name, actor]: m){
-		// Build a human-readable line
-		const string line = "Actor '" + name + "': iface=" + actor->str_con.at("iface").value_or("<none>") + ", mac=" +
-				actor->str_con.at("mac").value_or("<none>") + ", essid=" + actor->str_con.at("ssid").value_or("<none>")
-				+ ", driver=" + actor->str_con.at("driver").value_or("<none>");
-
-		//log(LogLevel::DEBUG, "{}", line);
-
-		if(ofs.is_open()){ ofs << line << endl; }
-
-		string cond_str;
-		bool first = true;
-		for(const auto &[cond_name, bool_v]: actor->bool_conditions){
-			string val_repr = "None";
-			if(bool_v.has_value()){ val_repr = (*bool_v ? "true" : "false"); }
-			if(!first){ cond_str += ", "; }
-			cond_str += cond_name + "=" + val_repr;
-			first = false;
-		}
-		if(cond_str.empty()){ cond_str = "<no conditions>"; }
-
-		log(LogLevel::DEBUG, "Actor '" + name + "' conditions: " + cond_str);
-		if(ofs.is_open()){
-			ofs << "  conditions: " << cond_str << endl;
-		}
-	}
-
-	if(m.empty()){
-		log(LogLevel::DEBUG, "Actor map is empty");
-		if(ofs.is_open()){
-			ofs << "<empty actor map>" << endl;
-		}
-	}
-}
-
 // Returns a nanosecond-precision time_point (epoch == error sentinel)
 LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	tm t = {};

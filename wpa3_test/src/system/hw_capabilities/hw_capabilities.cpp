@@ -170,7 +170,7 @@ void hw_capabilities::supports_active_monitor(const string &iface, Actor_config 
 		}
 	}
 	if(phy_idx < 0){
-		cfg.bool_conditions["active_monitor"] = false;
+		cfg[BK::active_monitor] = false;
 		return;
 	}
 
@@ -178,11 +178,11 @@ void hw_capabilities::supports_active_monitor(const string &iface, Actor_config 
 	istringstream ss2(phy_info);
 	while(getline(ss2, line)){
 		if(line.find("active monitor") != string::npos){
-			cfg.bool_conditions["active_monitor"] = true;
+			cfg[BK::active_monitor] = true;
 			return;
 		}
 	}
-	cfg.bool_conditions["active_monitor"] = false;
+	cfg[BK::active_monitor] = false;
 }
 
 void hw_capabilities::set_channel(const string &iface, const int channel, const optional<string> &netns){

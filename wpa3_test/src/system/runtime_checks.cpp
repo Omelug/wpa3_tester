@@ -6,7 +6,7 @@ using namespace Tins;
 namespace wpa3_tester{
 bool check_injection_runtime(const string &iface_name){
 	Actor_config actor{};
-	actor.str_con["iface"] = iface_name;
+	actor[SK::iface] = iface_name;
 	actor.set_monitor_mode();
 	actor.set_iface_up();
 

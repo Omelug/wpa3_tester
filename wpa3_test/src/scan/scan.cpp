@@ -22,11 +22,11 @@ vector<ActorPtr> RunStatus::internal_options(){
 	vector<ActorPtr> options;
 	for(const auto &[iface_name, radio_name, iface_type]:
 		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
-		auto cfg = make_shared<Actor_config>();
-		cfg->str_con["iface"] = iface_name;
-		cfg->str_con["source"] = "internal";
-		cfg->str_con["radio"] = radio_name;
-		hw_capabilities::get_nl80211_caps(iface_name, *cfg);
+		auto cfg = ActorPtr(make_shared<Actor_config>());
+		cfg[SK::iface] = iface_name;
+		cfg[SK::source] = "internal";
+		cfg[SK::radio] = radio_name;
+		hw_capabilities::get_nl80211_caps(iface_name, cfg);
 		options.emplace_back(cfg);
 	}
 	return options;
@@ -36,9 +36,9 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	//cfg->conn->ensure_wifi_ifaces();
 	const vector<string> radios = cfg->conn->get_radio_list();
 	for(const string &radio_name: radios){
-		const auto actor_cfg = make_shared<Actor_config>(*cfg);
-		actor_cfg->str_con["driver"] = cfg->conn->get_driver(radio_name);
-		actor_cfg->str_con["radio"] = radio_name;
+		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
+		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
+		actor_cfg[SK::radio] = radio_name;
 		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
 		options.emplace_back(actor_cfg);
 	}
@@ -63,23 +63,23 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 			seen.emplace(mac, actor_config);
 		}
 		actor_config->set_mac(mac);
-		actor_config->str_con["source"] = "external";
-		actor_config->str_con["ssid"] = ssid;
-		actor_config->bool_conditions["AP"] = is_ap;
+		actor_config[SK::source] = "external";
+		actor_config[SK::ssid] = ssid;
+		actor_config[BK::AP] = is_ap;
 
 		if(channel_freq > 0){
 			if(channel_freq >= 2412 && channel_freq <= 2484){
-				actor_config->bool_conditions["2_4GHz"] = true;
+				actor_config[BK::GHz2_4] = true;
 			} else if(channel_freq >= 5170 && channel_freq <= 5885){
-				actor_config->bool_conditions["5GHz"] = true;
+				actor_config[BK::GHz5] = true;
 			} else if(channel_freq >= 5945 && channel_freq <= 7125){
-				actor_config->bool_conditions["6GHz"] = true;
+				actor_config[BK::GHz6] = true;
 			}
 			const int channel_num = hw_capabilities::freq_to_channel(channel_freq);
-			actor_config->str_con["channel"] = to_string(channel_num);
+			actor_config[SK::channel] = to_string(channel_num);
 		}
 
-		if(signal != -1){ actor_config->str_con["signal"] = to_string(signal); }
+		if(signal != -1){ actor_config[SK::signal] = to_string(signal); }
 	};
 
 	// AP: Beacon
@@ -207,14 +207,14 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 		vector<string> fields = parse_csv_line(line);
 		if(fields.empty()) continue;
 
-		auto cfg = make_shared<Actor_config>();
+		auto cfg = ActorPtr(make_shared<Actor_config>());
 
 		// Set fields if column exists and has data
 		auto set_field = [&](const string &col_name, const string &cfg_key){
 			if(col_idx.contains(col_name) && col_idx[col_name] < fields.size()){
 				const string &value = fields[col_idx[col_name]];
 				if(!value.empty()){
-					cfg->str_con[cfg_key] = value;
+					cfg[cfg_key] = value;
 				}
 			}
 		};
@@ -242,10 +242,10 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 		path(PROJECT_ROOT_DIR) / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
 
 	for(auto &cfg: scan::get_actors_conn_table(conn_table)){
-		if(!cfg->str_con.at("whitebox_ip").has_value()){
+		if(!cfg[SK::whitebox_ip].has_value()){
 			const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
-			cfg->str_con["whitebox_ip"] = ip_str;
-			cfg->str_con["source"] = "external";
+			cfg[SK::whitebox_ip] = ip_str;
+			cfg[SK::source] = "external";
 			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
 		}
 		const string ip = cfg["whitebox_ip"];

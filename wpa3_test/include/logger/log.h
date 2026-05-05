@@ -28,7 +28,6 @@ void log(const LogLevel level, std::format_string<Args...> fmt, Args &&...args){
 //void log(LogLevel level, const char *fmt, ...);
 void log(LogLevel level, const std::string &msg);
 void log_actor_map(const std::string &name, const ActorCMap &m);
-void log_actor_configs(const ActorCMap &m, std::ofstream &ofs);
 
 inline void debug_step(){
 	std::cout << "Wait for enter..." << std::flush;

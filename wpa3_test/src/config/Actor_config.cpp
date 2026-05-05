@@ -1,5 +1,6 @@
 #include "config/Actor_config.h"
 #include "config/ActorPtr.h"
+#include "config/actor_keys.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 
@@ -7,24 +8,8 @@ namespace wpa3_tester {
 using namespace std;
 using json = nlohmann::json;
 
-static constexpr string_view sk_str(Actor_config::SK k){ return magic_enum::enum_name(k); }
-static constexpr string_view bk_str(Actor_config::BK k){ return magic_enum::enum_name(k); }
-
-string Actor_config::get(SK key) const {
-	const auto &v = (*this)[key];
-	if(!v.has_value())
-		throw config_err("Actor_config: key '" + string(sk_str(key)) + "' has no value");
-	return *v;
-}
-bool Actor_config::get(BK key) const {
-	const auto &v = (*this)[key];
-	if(!v.has_value())
-		throw config_err("Actor_config: bool key '" + string(bk_str(key)) + "' has no value");
-	return *v;
-}
-
 string Actor_config::operator[](const string &key) const {
-	if(auto k = magic_enum::enum_cast<SK>(key); k.has_value()){
+	if(const auto k = sk_cast(key); k.has_value()){
 		const auto &v = (*this)[*k];
 		if(!v.has_value())
 			throw config_err("Actor_config: key '" + key + "' has no value");
@@ -32,12 +17,13 @@ string Actor_config::operator[](const string &key) const {
 	}
 	throw config_err("Actor_config: unknown string key '" + key + "'");
 }
+
 Actor_config::Actor_config(const json &j) {
 	if(j.contains("selection") && j.at("selection").is_object()){
 		const auto &sel = j.at("selection");
 
-		for(auto k : magic_enum::enum_values<SK>()){
-			auto name = string(sk_str(k));
+		for(const auto k : sk_values()){
+			const auto name = string(sk_name(k));
 			if(!sel.contains(name)) continue;
 			if(k == SK::mac){
 				set_mac(sel[name].get<string>());
@@ -51,10 +37,10 @@ Actor_config::Actor_config(const json &j) {
 
 		if(sel.contains("condition") && sel.at("condition").is_array()){
 			for(const auto &cond : sel.at("condition")){
-				auto raw     = cond.get<string>();
+				auto raw = cond.get<string>();
 				const bool negated = raw.starts_with('!');
 				const auto name    = negated ? raw.substr(1) : raw;
-				if(auto k = magic_enum::enum_cast<BK>(name); k.has_value())
+				if(const auto k = bk_cast(name); k.has_value())
 					(*this)[*k] = !negated;
 			}
 		}
@@ -70,7 +56,7 @@ Actor_config::~Actor_config() {
 }
 
 bool Actor_config::matches(const Actor_config &offer) {
-	for(auto k : magic_enum::enum_values<SK>()){
+	for(const auto k : sk_values()){
 		const auto &required = (*this)[k];
 		if(!required.has_value()) continue;
 		const auto &offered  = offer[k];
@@ -78,7 +64,7 @@ bool Actor_config::matches(const Actor_config &offer) {
 		if(required != offered) return false;
 	}
 
-	for(auto k : magic_enum::enum_values<BK>()){
+	for(const auto k : bk_values()){
 		const auto &required = (*this)[k];
 		if(!required.has_value()) continue;
 		const auto &offered  = offer[k];
@@ -89,7 +75,7 @@ bool Actor_config::matches(const Actor_config &offer) {
 }
 
 Actor_config &Actor_config::operator+=(const Actor_config &other) {
-	for(auto k : magic_enum::enum_values<SK>()){
+	for(const auto k : sk_values()){
 		const auto &val = other[k];
 		if(!val.has_value()) continue;
 		auto &mine = (*this)[k];
@@ -97,12 +83,12 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 			mine = val;
 		} else if(mine != val){
 			throw runtime_error(
-				"Actor_config conflict on key '" + string(sk_str(k)) +
+				"Actor_config conflict on key '" + string(sk_name(k)) +
 				"': '" + *mine + "' vs '" + *val + "'");
 		}
 	}
 
-	for(auto k : magic_enum::enum_values<BK>()){
+	for(const auto k : bk_values()){
 		const auto &val = other[k];
 		if(!val.has_value()) continue;
 		auto &mine = (*this)[k];
@@ -110,37 +96,59 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 			mine = val;
 		} else if(mine != val){
 			throw runtime_error(
-				"Actor_config conflict on bool key '" + string(bk_str(k)) + "'");
+				"Actor_config conflict on bool key '" + string(bk_name(k)) + "'");
 		}
 	}
 	return *this;
 }
 
-optional<string> &Actor_config::operator[](SK key){ return str_vals[static_cast<size_t>(key)]; }
+optional<string>& Actor_config::operator[](SK key) {
+	return str_vals[static_cast<size_t>(key)];
+}
 
-const optional<string>& Actor_config::operator[](SK key) const { return str_vals[static_cast<size_t>(key)]; }
+const optional<string>& Actor_config::operator[](SK key) const {
+	return str_vals[static_cast<size_t>(key)];
+}
 
-optional<bool>& Actor_config::operator[](BK key) { return bool_vals[static_cast<size_t>(key)]; }
+optional<bool>& Actor_config::operator[](BK key) {
+	return bool_vals[static_cast<size_t>(key)];
+}
 
-const optional<bool>& Actor_config::operator[](BK key) const { return bool_vals[static_cast<size_t>(key)]; }
+const optional<bool>& Actor_config::operator[](BK key) const {
+	return bool_vals[static_cast<size_t>(key)];
+}
+
+string Actor_config::get(SK key) const {
+	const auto &v = (*this)[key];
+	if(!v.has_value())
+		throw config_err("Actor_config: key '" + string(sk_name(key)) + "' has no value");
+	return *v;
+}
+
+bool Actor_config::get(BK key) const {
+	const auto &v = (*this)[key];
+	if(!v.has_value())
+		throw config_err("Actor_config: bool key '" + string(bk_name(key)) + "' has no value");
+	return *v;
+}
 
 string Actor_config::to_str() const {
 	string result;
 
 	bool first = true;
-	for(auto k : magic_enum::enum_values<SK>()){
+	for(const auto k : sk_values()){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) continue;
 		if(!first) result += ", ";
-		result += string(sk_str(k)) + "=" + *v;
+		result += string(sk_name(k)) + "=" + *v;
 		first = false;
 	}
 
 	vector<string> conds;
-	for(auto k : magic_enum::enum_values<BK>()){
+	for(const auto k : bk_values()){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) continue;
-		conds.push_back(*v ? string(bk_str(k)) : "!" + string(bk_str(k)));
+		conds.push_back(*v ? string(bk_name(k)) : "!" + string(bk_name(k)));
 	}
 
 	if(!conds.empty()){
@@ -158,18 +166,18 @@ string Actor_config::to_str() const {
 json Actor_config::to_json() const {
 	json sel = json::object();
 
-	for(auto k : magic_enum::enum_values<SK>()){
+	for(const auto k : sk_values()){
 		if(k == SK::netns || k == SK::source) continue;
 		const auto &v = (*this)[k];
 		if(v.has_value())
-			sel[string(sk_str(k))] = *v;
+			sel[string(sk_name(k))] = *v;
 	}
 
 	json conditions = json::array();
-	for(auto k : magic_enum::enum_values<BK>()){
+	for(const auto k : bk_values()){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) continue;
-		auto name = string(bk_str(k));
+		auto name = string(bk_name(k));
 		conditions.push_back(*v ? name : "!" + name);
 	}
 	if(!conditions.empty())
@@ -195,7 +203,7 @@ void Actor_config::print_ActorCMap(const string &title, ActorCMap actors) {
 	cout << title << ":\n";
 	for(const auto &[key, actor_ptr]: actors){
 		const ActorPtr actor = actor_ptr;
-		const auto &host = actor->(*this)[SK::whitebox_host];
+		const auto &host = actor[SK::whitebox_host];
 		cout << "[" << key << "] "
 				<< (host.has_value() ? *host : "Actor_" + key)
 				<< " " << actor->to_str() << "\n";

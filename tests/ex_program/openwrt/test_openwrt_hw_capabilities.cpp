@@ -18,7 +18,7 @@ public:
     mutable int mock_ret = 0;
     mutable string mock_output;
 
-    string exec(const string &cmd, bool kill_on_exit, int *ret_err) const override{
+    string exec(const string &, bool, int *ret_err) const override{
         if(ret_err) *ret_err = mock_ret;
         return mock_output;
     }
@@ -36,17 +36,17 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
 
     OpenWrtConn::parse_hw_capabilities(cfg, output);
 
-    CHECK(cfg.bool_conditions["2_4GHz"]);
-    CHECK_EQ(cfg.bool_conditions["5GHz"], false);
-    CHECK_EQ(cfg.bool_conditions["6GHz"], false);
+    CHECK(cfg[BK::GHz2_4]);
+    CHECK_EQ(cfg[BK::GHz5], false);
+    CHECK_EQ(cfg[BK::GHz6], false);
 
-    CHECK(cfg.bool_conditions["AP"]);
-    CHECK(cfg.bool_conditions["STA"]);
-    CHECK(cfg.bool_conditions["monitor"]);
+    CHECK(cfg[BK::AP]);
+    CHECK(cfg[BK::STA]);
+    CHECK(cfg[BK::monitor]);
 
-    CHECK(cfg.bool_conditions["80211n"]);
-    CHECK_EQ(cfg.bool_conditions["80211ac"], false);
-    CHECK_EQ(cfg.bool_conditions["80211ax"], false);
+    CHECK(cfg[BK::w80211n]);
+    CHECK_EQ(cfg[BK::w80211ac], false);
+    CHECK_EQ(cfg[BK::w80211ax], false);
 }
 
 TEST_CASE("parse_hw_capabilities - empty output"){
@@ -54,9 +54,9 @@ TEST_CASE("parse_hw_capabilities - empty output"){
     const string output;
     OpenWrtConn::parse_hw_capabilities(cfg, output);
 
-    CHECK_EQ(cfg.bool_conditions["2_4GHz"], false);
-    CHECK_EQ(cfg.bool_conditions["AP"], false);
-    CHECK_EQ(cfg.bool_conditions["80211n"], false);
+    CHECK_EQ(cfg[BK::GHz2_4], false);
+    CHECK_EQ(cfg[BK::AP], false);
+    CHECK_EQ(cfg[BK::w80211n], false);
 }
 
 TEST_CASE("get_hw_capabilities - exec failure"){

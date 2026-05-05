@@ -23,7 +23,7 @@ using namespace observer;
 void RunStatus::parse_requirements(){
 	for(const auto &[actor_name, actor]: config.at("actors").items()){
 		auto [it, inserted] = actors.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor)));
-		it->second->str_con["actor_name"] = actor_name;
+		it->second[SK::actor_name] = actor_name;
 	}
 	if(!config.contains("observers")) return;
 	for(const auto &[observer_name, observer]: config.at("observers").items()){
@@ -40,7 +40,7 @@ static vector<pid_t> pids_in_ns(const string &ns_name){
 	const ino_t target_inode = ns_stat.st_ino;
 
 	vector<pid_t> result;
-	for(const auto &entry: filesystem::directory_iterator("/proc")){
+	for(const auto &entry: directory_iterator("/proc")){
 		const string filename = entry.path().filename().string();
 		// only numeric entries (PIDs)
 		if(filename.find_first_not_of("0123456789") != string::npos) continue;
@@ -82,7 +82,7 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 		const int rc = hw_capabilities::run_cmd({"test", "-e", "/sys/class/net/" + iface + "/device"}, ns_name, false);
 		if(rc == 0){
 			result.push_back(iface);
-			log(LogLevel::DEBUG, "iface in ns " + ns_name + ": " + iface);
+			log(LogLevel::DEBUG, "iface in ns {}:{}", ns_name, iface);
 		}
 	}
 	return result;
@@ -148,8 +148,8 @@ void cleanup_all_namespaces(){
 ActorCMap get_actors(const ActorCMap &actors, const string &source){
 	unordered_map<string,ActorPtr> result;
 	for(auto &[name, cfg]: actors){
-		auto it = cfg->str_con.find("source");
-		if(it != cfg->str_con.end() && it->second == source){
+		auto it = cfg[SK::source];
+		if(cfg[SK::source].has_value() && cfg[SK::source].value() == source){
 			result.emplace(name, cfg);
 		}
 	}

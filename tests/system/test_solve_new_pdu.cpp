@@ -27,13 +27,13 @@ TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
         CHECK(seen.contains("00:11:22:33:44:55"));
         
         auto actor = seen.at("00:11:22:33:44:55");
-        CHECK_EQ(actor->str_con["mac"], "00:11:22:33:44:55");
-        CHECK_EQ(actor->str_con["source"], "external");
-        CHECK_EQ(actor->str_con["ssid"], "TestNetwork");
-        CHECK_EQ(actor->str_con["channel"], "6");
-        CHECK_EQ(actor->str_con["signal"], "-45");
-        CHECK(actor->bool_conditions["AP"]);
-        CHECK(actor->bool_conditions["2_4GHz"]);
+        CHECK_EQ(actor[SK::mac], "00:11:22:33:44:55");
+        CHECK_EQ(actor[SK::source], "external");
+        CHECK_EQ(actor[SK::ssid], "TestNetwork");
+        CHECK_EQ(actor[SK::channel], "6");
+        CHECK_EQ(actor[SK::signal], "-45");
+        CHECK(actor[BK::AP]);
+        CHECK(actor[BK::GHz2_4]);
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
@@ -56,12 +56,12 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
         CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));
         
         auto actor = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK_EQ(actor->str_con["mac"], "aa:bb:cc:dd:ee:ff");
-        CHECK_EQ(actor->str_con["ssid"], "HiddenNetwork");
-        CHECK_EQ(actor->str_con["channel"], "100");
-        CHECK_EQ(actor->str_con["signal"], "-60");
-        CHECK(actor->bool_conditions["AP"]);
-        CHECK(actor->bool_conditions["5GHz"]);
+        CHECK_EQ(actor[SK::mac], "aa:bb:cc:dd:ee:ff");
+        CHECK_EQ(actor[SK::ssid], "HiddenNetwork");
+        CHECK_EQ(actor[SK::channel], "100");
+        CHECK_EQ(actor[SK::signal], "-60");
+        CHECK(actor[BK::AP]);
+        CHECK(actor[BK::GHz5]);
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
@@ -83,10 +83,10 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
         CHECK((seen.contains("11:22:33:44:55:66")));
         
         auto actor = seen.at("11:22:33:44:55:66");
-        CHECK_EQ(actor->str_con["mac"], "11:22:33:44:55:66");
-        CHECK_EQ(actor->str_con["ssid"], "MyNetwork");
-        CHECK_EQ(actor->bool_conditions["AP"], false);
-        CHECK(actor->bool_conditions["2_4GHz"]);
+        CHECK_EQ(actor[SK::mac], "11:22:33:44:55:66");
+        CHECK_EQ(actor[SK::ssid], "MyNetwork");
+        CHECK_EQ(actor[BK::AP], false);
+        CHECK(actor[BK::GHz2_4]);
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
@@ -113,13 +113,13 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
 
         // Check STA
         auto sta = seen.at("22:33:44:55:66:77");
-        CHECK_EQ(sta->bool_conditions["AP"], false);
-        CHECK_EQ(sta->str_con["channel"], "36");
+        CHECK_EQ(sta[BK::AP], false);
+        CHECK_EQ(sta[SK::channel], "36");
 
         // Check AP
         auto ap = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK(ap->bool_conditions["AP"]);
-        CHECK_EQ(ap->str_con["channel"], "36");
+        CHECK(ap[BK::AP]);
+        CHECK_EQ(ap[SK::channel], "36");
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
@@ -145,18 +145,18 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
         CHECK(seen.contains("22:33:44:55:66:77"));  // STA
 
         auto ap = seen.at("aa:bb:cc:dd:ee:ff");
-        CHECK(ap->bool_conditions["AP"]);
-        CHECK_EQ(ap->str_con["channel"], "177");
-        CHECK(ap->bool_conditions["5GHz"]);
+        CHECK(ap[BK::AP]);
+        CHECK_EQ(ap[SK::channel], "177");
+        CHECK(ap[BK::GHz5]);
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
         ActorMap seen;
 
         // First add an entity with basic info
-        auto actor = make_shared<Actor_config>();
-        actor->str_con["mac"] = "00:11:22:33:44:55";
-        actor->str_con["source"] = "external";
+        auto actor = ActorPtr(make_shared<Actor_config>());
+        actor[SK::mac] = "00:11:22:33:44:55";
+        actor[SK::source] = "external";
         seen.emplace("00:11:22:33:44:55", ActorPtr(actor));
 
         // Create beacon with more info
@@ -174,9 +174,9 @@ TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
         
         CHECK_EQ(seen.size(), 1);
         auto updated_actor = seen.at("00:11:22:33:44:55");
-        CHECK_EQ(updated_actor->str_con["ssid"], "UpdatedSSID");
-        CHECK_EQ(updated_actor->str_con["channel"], "13");
-        CHECK_EQ(updated_actor->str_con["signal"], "-50");
+        CHECK_EQ(updated_actor[SK::ssid], "UpdatedSSID");
+        CHECK_EQ(updated_actor[SK::channel], "13");
+        CHECK_EQ(updated_actor[SK::signal], "-50");
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
@@ -191,7 +191,7 @@ TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
         
         CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("00:11:22:33:44:55");
-        CHECK_EQ(actor->str_con["ssid"], "NoRadioTap");
+        CHECK_EQ(actor[SK::ssid], "NoRadioTap");
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
@@ -212,8 +212,8 @@ TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
         
         CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("66:77:88:99:aa:bb");
-        CHECK_EQ(actor->str_con["channel"], "101");
-        CHECK(actor->bool_conditions["6GHz"]);
+        CHECK_EQ(actor[SK::channel], "101");
+        CHECK(actor[BK::GHz6]);
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - WDS/IBSS frames ignored"){

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <netlink/netlink.h>
 #include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
 #include <linux/nl80211.h>
+#include <netlink/netlink.h>
 
 #include "../config/RunStatus.h"
 
@@ -103,7 +103,7 @@ public:
 	static void exec(const std::vector<std::string> &cmd, bool check = false);
 
 	// Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
-	static void get_nl80211_caps(const std::string &iface, Actor_config &cfg);
+	static void get_nl80211_caps(const std::string &iface, ActorPtr &cfg);
 	static std::vector<InterfaceInfo> list_interfaces(std::optional<InterfaceType> filter = std::nullopt,
 													const std::optional<std::string> &netns = std::nullopt
 	);

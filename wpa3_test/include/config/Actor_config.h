@@ -5,8 +5,8 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
-#include <magic_enum.hpp>
-#include "ActorPtr.h"
+#include "actor_keys.h"
+#include <tins/tins.h>
 
 namespace wpa3_tester{
 
@@ -18,24 +18,7 @@ class ExternalConn;
 
 class Actor_config : public std::enable_shared_from_this<Actor_config> {
 public:
-	enum class SK { // String keys
-		actor_name, source, iface, mac, ssid, channel,
-		signal, ht_mode, driver, netns, sniff_iface,
-		radio, whitebox_host, whitebox_ip,
-		ssh_user, ssh_port, ssh_password, external_OS
-	};
-
-	enum class BK { // Bool condition keys
-		AP, STA, injection, monitor, managed,
-		_2_4GHz, _5GHz, _6GHz,
-		_80211n, _80211ac, _80211ax, beacon_prot
-	};
-protected:
-	[[nodiscard]] std::string get(SK key) const;
-	[[nodiscard]] bool        get(BK key) const;
 	[[nodiscard]] std::string operator[](const std::string &key) const;
-
-public:
     explicit Actor_config() = default;
     Actor_config(const Actor_config &other) = default;
     explicit Actor_config(const nlohmann::json &j);
@@ -51,6 +34,9 @@ public:
     [[nodiscard]] const std::optional<std::string>& operator[](SK key) const;
     [[nodiscard]] std::optional<bool>&              operator[](BK key);
     [[nodiscard]] const std::optional<bool>&        operator[](BK key) const;
+
+	[[nodiscard]] std::string get(SK key) const;
+	[[nodiscard]] bool        get(BK key) const;
 
     std::string        to_str()  const;
     nlohmann::json     to_json() const;
@@ -81,14 +67,12 @@ public:
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
 
 private:
-    std::array<std::optional<std::string>, magic_enum::enum_count<SK>()> str_vals{};
-    std::array<std::optional<bool>,        magic_enum::enum_count<BK>()> bool_vals{};
+	std::array<std::optional<std::string>, static_cast<std::size_t>(SK::COUNT_)> str_vals{};
+	std::array<std::optional<bool>,static_cast<std::size_t>(BK::COUNT_)> bool_vals{};
+
 
     void setup_actor_internal(const nlohmann::json &config);
     void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor);
 };
-
-typedef Actor_config::SK SK;
-typedef Actor_config::BK BK;
 
 }

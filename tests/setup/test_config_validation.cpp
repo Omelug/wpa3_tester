@@ -213,7 +213,7 @@ TEST_CASE("RunStatus - parse_requirements()"){
         REQUIRE((rs.actors.size() >= 1));
 
         for (const auto& [actor_name, actor] : rs.actors) {
-            CHECK_EQ(actor->str_con["actor_name"], actor_name);
+            CHECK_EQ(actor[SK::actor_name], actor_name);
         }
     }
 }

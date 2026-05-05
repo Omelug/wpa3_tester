@@ -8,7 +8,6 @@
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "observer/observers.h"
-#include "scan/scan.h"
 #include "observer/tcpdump_wrapper.h"
 
 using namespace std;
@@ -18,10 +17,10 @@ using namespace manual_tests;
 
 static pair<shared_ptr<OpenWrtConn>,ActorPtr> &get_conn_actor(){
     static pair<shared_ptr<OpenWrtConn>,ActorPtr> conn_actor = [](){
-        const ActorPtr actor = wb_actor_selection();
+        ActorPtr actor = wb_actor_selection();
         auto conn = make_shared<OpenWrtConn>();
         actor->conn = conn;
-        actor->str_con["actor_name"] = "test_actor";
+        actor[SK::actor_name] = "test_actor";
         if(!conn->connect(actor)) throw manual_test_err("Failed to connect");
         return make_pair(conn, actor);
     }();
@@ -124,7 +123,7 @@ TEST_CASE ("Tcpdump OpenWrt"){
         rs.process_manager.init_logging(path(test_dir / "logger"));
 
         rs.actors.emplace(actor["actor_name"], actor);
-        actor->str_con["iface"] = chosen_iface;
+        actor[SK::iface] = chosen_iface;
 
         observer::start_tcpdump_remote(rs, actor["actor_name"], "");
         this_thread::sleep_for(chrono::seconds(1));

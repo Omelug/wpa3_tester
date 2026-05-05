@@ -34,7 +34,6 @@ target_link_libraries(wpa3_deps INTERFACE
         nl-3 nl-genl-3
         ${LIBNL_LIBRARIES}
         ${LIBSSH_LIBRARIES}
-        magic_enum::magic_enum
 )
 
 target_compile_definitions(wpa3_deps INTERFACE

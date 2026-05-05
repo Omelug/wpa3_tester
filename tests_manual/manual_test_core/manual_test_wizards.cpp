@@ -96,7 +96,7 @@ void print_external_entities(const vector<ActorPtr> &entities){
     vector<ActorPtr> stas;
 
     for(const auto &entity: entities){
-        if(entity->get_bool("AP")){
+        if(entity[BK::AP].value()){
             aps.push_back(entity);
         } else{ stas.push_back(entity); }
     }
@@ -134,8 +134,8 @@ ActorPtr wb_actor_selection(){
     for(size_t i = 0; i < actors.size(); ++i){
         const auto &actor = actors[i];
         cout << "  [" << i << "] ";
-        if(actor->str_con["whitebox_host"].has_value()){
-            cout << actor->str_con["whitebox_host"].value();
+        if(actor[SK::whitebox_host].has_value()){
+            cout << actor[SK::whitebox_host].value();
         } else{
             cout << "Actor_" << i;
         }

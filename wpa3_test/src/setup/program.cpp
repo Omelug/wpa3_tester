@@ -10,7 +10,7 @@ namespace wpa3_tester{
 void program::start(RunStatus &rs, const string &actor_name){
 	auto setup = rs.config.at("actors").at(actor_name).at("setup");
 	const auto program = setup.at("program").get<string>();
-	const auto actor = rs.get_actor(actor_name);
+	auto actor = rs.get_actor(actor_name);
 	if(program == "hostapd"){
 		if(actor["source"] != "internal") throw setup_err(program + " can be only internal");
 		hostapd::run_hostapd(rs, actor_name);

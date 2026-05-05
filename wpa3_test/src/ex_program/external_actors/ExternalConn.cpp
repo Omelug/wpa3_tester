@@ -19,8 +19,7 @@ ExternalConn::~ExternalConn(){
 
 bool ExternalConn::connect(const ActorPtr &actor){
 	// Check if actor has needed SSH params
-	if(!actor->str_con["whitebox_ip"].has_value() || !actor->str_con["ssh_user"].has_value() || !actor->str_con[
-		"ssh_password"].has_value()){
+	if(!actor[SK::whitebox_ip].has_value() || !actor[SK::ssh_user].has_value() || !actor[SK::ssh_password].has_value()){
 		throw ex_conn_err("ExternalConn: actor missing whitebox_ip");
 	}
 
@@ -32,7 +31,7 @@ bool ExternalConn::connect(const ActorPtr &actor){
 	const string &host = actor["whitebox_ip"];
 	ssh_options_set(session, SSH_OPTIONS_HOST, host.c_str());
 	ssh_options_set(session, SSH_OPTIONS_USER, actor["ssh_user"].c_str());
-	const int port = stoi(actor->str_con["ssh_port"].value_or("22"));
+	const int port = stoi(actor[SK::ssh_port].value_or("22"));
 	ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 
 	// connect to host

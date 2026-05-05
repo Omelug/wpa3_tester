@@ -133,7 +133,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
 	if(!ssid_ie || ssid_ie->data_size() <= 0) throw runtime_error("invalid beacon for start ap");
 	auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
-	optional<string> netns = base_actor->str_con.at("netns");
+	optional<string> netns = base_actor[SK::netns];
 	// Split beacon into head (before TIM) and tail (after TIM)
 
 	Dot11Beacon head;

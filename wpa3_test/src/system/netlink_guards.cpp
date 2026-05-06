@@ -56,7 +56,9 @@ int NetlinkRegistry::get_fd(const optional<string> &netns){
 	int new_fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if(new_fd < 0) return -1;
 
-	sockaddr_nl sa{.nl_family = AF_NETLINK, .nl_groups = RTMGRP_LINK};
+	sockaddr_nl sa;
+	sa.nl_family = AF_NETLINK;
+	sa.nl_groups = RTMGRP_LINK;
 	if(bind(new_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) < 0){
 		close(new_fd);
 		return -1;

@@ -2,8 +2,8 @@
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
++: ClientState obeserver
 r: small TODO
-+p: // TODO zkrášlit a vyzkoušet poll , udělat, nějak je generalizavat a zkrášlit , vše pomocí sniffer helepre
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests 
 +: README.md -> rozcestník pro /doc
@@ -11,7 +11,7 @@ r: small TODO
 
 //DONE
 +: observer for connected station on openwrt
-r: sniffer loops
+r: sniffer loops -> sniffer_helper
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
 rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
@@ -38,7 +38,7 @@ ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
 +: simulation interfaces
     // https://github.com/bcopeland/wmediumd
 +: add possibility to add different ieee file to hostapd
-?: test hostapd debugging logs, if are same
+t?: test with hostapd debugging logs, if are same
 ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
 ch: + docuemnt what exactly are validators/ref/extedns (arent extends and $ref same?)
@@ -75,10 +75,9 @@ Optimalization:
 ?: https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
 
 PDF:
-// použít NIC a WNIC k vysvětlení interface
 +: PMKSA
 
-- Every ahysical radio can have only one interface in these tests
+- Every physical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation
 --------------------------------------------------------------------------------------------
 

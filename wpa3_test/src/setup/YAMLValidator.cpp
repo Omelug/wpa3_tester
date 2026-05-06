@@ -10,45 +10,6 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-YAMLValidator::YAMLValidator(const path &schema_path){
-	const auto schema_dir = schema_path.parent_path();
-	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
-	size_t depth = 0;
-	constexpr size_t MAX_RECURSION_DEPTH = 20;
-	const json_schema::schema_loader loader = [&depth, schema_dir](const json_uri &uri, json &schema){
-		if(++depth > MAX_RECURSION_DEPTH){
-			throw runtime_error("Max recursion depth reached at: " + uri.to_string());
-		}
-		const string &p = uri.path();
-		path ref_path;
-
-		const string clean_p = (!p.empty() && p[0] == '/') ? p.substr(1) : p;
-
-		if(clean_p.compare(0, 2, "./") == 0 || clean_p.compare(0, 3, "../") == 0){
-			ref_path = schema_dir / clean_p;
-		} else if(!p.empty() && p[0] == '/'){
-			ref_path = p;
-		} else{
-			ref_path = schema_dir / clean_p;
-		}
-
-		ref_path = weakly_canonical(ref_path);
-
-		if(exists(ref_path)){
-			schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
-		} else{
-			throw runtime_error("Schema not found: " + ref_path.string());
-		}
-	};
-	validator = json_validator(r_schema, loader);
-	validator.set_root_schema(r_schema);
-}
-
-void YAMLValidator::validate(json &current_node) const{
-	apply_defaults(current_node, r_schema, r_schema);
-	validator.validate(current_node);
-}
-
 void YAMLValidator::apply_defaults(json &config, const json &schema, const json &root_schema){
 	if(!schema.is_object() || !config.is_object()) return;
 
@@ -100,4 +61,43 @@ void YAMLValidator::apply_defaults(json &config, const json &schema, const json 
 			apply_defaults(item, schema["items"], root_schema);
 		}
 	}
+}
+
+YAMLValidator::YAMLValidator(const path &schema_path){
+	const auto schema_dir = schema_path.parent_path();
+	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
+	size_t depth = 0;
+	constexpr size_t MAX_RECURSION_DEPTH = 20;
+	const json_schema::schema_loader loader = [&depth, schema_dir](const json_uri &uri, json &schema){
+		if(++depth > MAX_RECURSION_DEPTH){
+			throw runtime_error("Max recursion depth reached at: " + uri.to_string());
+		}
+		const string &p = uri.path();
+		path ref_path;
+
+		const string clean_p = (!p.empty() && p[0] == '/') ? p.substr(1) : p;
+
+		if(clean_p.compare(0, 2, "./") == 0 || clean_p.compare(0, 3, "../") == 0){
+			ref_path = schema_dir / clean_p;
+		} else if(!p.empty() && p[0] == '/'){
+			ref_path = p;
+		} else{
+			ref_path = schema_dir / clean_p;
+		}
+
+		ref_path = weakly_canonical(ref_path);
+
+		if(exists(ref_path)){
+			schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
+		} else{
+			throw runtime_error("Schema not found: " + ref_path.string());
+		}
+	};
+	validator = json_validator(r_schema, loader);
+	validator.set_root_schema(r_schema);
+}
+
+void YAMLValidator::validate(json &current_node) const{
+	apply_defaults(current_node, r_schema, r_schema);
+	validator.validate(current_node);
 }

@@ -2,7 +2,7 @@ $schema: http://json-schema.org/draft-07/schema#
 name: mc_mitm_test
 attacker_module: mc_mitm
 
-# TODO validator -> no sNIFF IFACES -> ap/MONITOR/MANGED ISSUES
+# TODO validator -> no SNIFF IFACES -> ap/MONITOR/MANGED ISSUES
 actors:
   access_point:
     source: external
@@ -28,7 +28,7 @@ actors:
   client:
     source: internal
     selection:
-      #TODO driver: rtw_8821cu save bssid in formware -> not rereset on test start
+      #TODO driver: rtw_8821cu save BSSID in formware -> not reset on test start
       driver: ath9k_htc
       channel: 11
     setup:

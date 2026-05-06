@@ -36,6 +36,6 @@ std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int ti
 void run_attack(RunStatus & rs);
 
 //TODO scan
-// check ACm threashold
+// check ACm threshold
 // check SAE GROUPS
 }

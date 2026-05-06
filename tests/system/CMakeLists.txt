@@ -54,8 +54,3 @@ target_link_libraries(run_injection_check_test PRIVATE
 #endif()
 
 add_test(NAME InjectionCheckTest COMMAND ${CMAKE_BINARY_DIR}/tests/system/run_injection_check_test)
-
-#get_target_property(TEST_PATH run_injection_check_test LOCATION)
-#message(STATUS "Cesta k testu (LOCATION): ${TEST_PATH}")
-
-#add_test(NAME InjectionCheckTest COMMAND sudo $<TARGET_FILE:run_injection_check_test>)

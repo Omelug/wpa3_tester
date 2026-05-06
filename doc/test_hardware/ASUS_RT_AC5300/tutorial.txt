@@ -11,7 +11,7 @@ OpenWrt:
 https://forum.openwrt.org/t/call-for-testing-openwrt-support-for-asus-rt-ac3200-rt-ac5300/238045
 nebo https://toh.openwrt.org/?view=normal
 
-// pozor, nevysnoušeno
+// not tested!
 sudo nmcli connection modify "eth0_switch" \
   ipv4.method auto \
   ipv4.never-default yes \

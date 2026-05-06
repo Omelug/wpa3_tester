@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
+#include <string>
 #include <string_view>
 #include <unordered_map>
-#include <string>
 
 namespace wpa3_tester {
 
@@ -49,13 +49,13 @@ constexpr std::string_view bk_name(BK k) {
     return BK_NAMES[static_cast<size_t>(k)];
 }
 
-constexpr std::optional<SK> sk_cast(std::string_view name) {
+constexpr std::optional<SK> sk_cast(const std::string_view name) {
     for(size_t i = 0; i < SK_NAMES.size(); ++i)
         if(SK_NAMES[i] == name) return static_cast<SK>(i);
     return std::nullopt;
 }
 
-constexpr std::optional<BK> bk_cast(std::string_view name) {
+constexpr std::optional<BK> bk_cast(const std::string_view name) {
     for(size_t i = 0; i < BK_NAMES.size(); ++i)
         if(BK_NAMES[i] == name) return static_cast<BK>(i);
     return std::nullopt;
@@ -68,7 +68,7 @@ constexpr auto sk_values() {
     return arr;
 }
 
-inline constexpr auto bk_values() {
+constexpr auto bk_values() {
     std::array<BK, static_cast<size_t>(BK::COUNT_)> arr{};
     for(size_t i = 0; i < arr.size(); ++i) arr[i] = static_cast<BK>(i);
     return arr;

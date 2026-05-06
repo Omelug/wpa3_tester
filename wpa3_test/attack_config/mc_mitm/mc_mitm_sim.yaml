@@ -33,7 +33,7 @@ actors:
       condition: [ monitor, injection ] # active_monitor
       channel: 1
 
-  #observers: (allow start_observers if uesd )
+  #observers: (allow start_observers if used )
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn

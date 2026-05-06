@@ -21,4 +21,4 @@ actors:
 
 attack_config:
   att_opt: 42
-#TODO ještě rozšířit
+#TODO extends

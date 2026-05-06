@@ -35,7 +35,7 @@ properties:
   scan_iface:
     type: string
     description: Interface to scan when source is external
-  #FIXME, tohle v draft-07, kterou json kniihovna podporuje asi nejde,
+  #FIXME invalid in  draft-07
   #  if:
   #    properties:
   #      actors:

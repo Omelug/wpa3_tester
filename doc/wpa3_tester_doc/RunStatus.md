@@ -2,7 +2,7 @@
 RunStatus is object for status for test.
 Its created by config. is executed with `execute()` function.
 
--- TODO add image from pdf 
+-- TODO add image from PDF 
 
 ### Test suites
 

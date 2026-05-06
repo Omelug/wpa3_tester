@@ -220,7 +220,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 
 	rs.process_manager.run(actor_name, command, rs.run_folder);
 
-	const string log_path = (path(rs.run_folder) / "logger" / "rogue_ap.log").string();
+	const string log_path = (path(rs.run_folder) / "logger" / (actor_name+".log")).string();
 	ifstream log_file(log_path);
 	if(!log_file.is_open()) return;
 

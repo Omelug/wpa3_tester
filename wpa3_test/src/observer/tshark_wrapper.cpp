@@ -1,13 +1,14 @@
-#include <filesystem>
-#include "config/RunStatus.h"
-#include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+
+#include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include <sstream>
 #include <stdexcept>
-#include <algorithm>
 
+#include "config/RunStatus.h"
 #include "logger/log.h"
+#include "observer/observers.h"
 #include "observer/grapth/graph_utils.h"
 #include "system/hw_capabilities.h"
 
@@ -68,7 +69,7 @@ string masked_mac_filter_5(const RunStatus &rs){
 }
 
 // include broadcast
-string all_actors_mac_filter(const RunStatus &rs, bool broadcast = false){
+string all_actors_mac_filter(const RunStatus &rs, const bool broadcast = false){
 	vector<string> mac_filters;
 
 	for(const auto &actor: rs.actors | views::values){
@@ -315,7 +316,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 
 	g.gpcmd("$MyData << EOD");
 	for(auto const &[time, counts]: stats_map){
-		double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
+		const double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
 		fprintf(g.file, "%f %f\n", time, percent);
 	}
 	g.gpcmd("EOD");

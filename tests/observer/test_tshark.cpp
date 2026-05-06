@@ -1,17 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-
-#include <filesystem>
-#include <fstream>
-#include <string>
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <cstdlib>
+#include <doctest.h>
+#include <filesystem>
 #include <source_location>
+#include <string>
+
 #include "config/RunStatus.h"
-#include "observer/tshark_wrapper.h"
 #include "logger/log.h"
 #include "observer/observers.h"
+#include "observer/tshark_wrapper.h"
 
 using namespace std;
 using namespace filesystem;

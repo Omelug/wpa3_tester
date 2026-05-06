@@ -83,7 +83,6 @@ FetchContent_Declare(
         GIT_TAG master
 )
 
-# FIXMe json broken with paralell donwlonding
 FetchContent_MakeAvailable(reproc libtins doctest argparse)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)

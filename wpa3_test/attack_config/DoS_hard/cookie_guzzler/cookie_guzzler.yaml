@@ -81,4 +81,5 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 180
+  attack_time_sec: 40
+  regeneration_time_sec: 30

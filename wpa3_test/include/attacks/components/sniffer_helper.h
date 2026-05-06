@@ -9,10 +9,9 @@
 
 enum class StopReason{ Timeout, HandlerDone, Interrupted };
 
-// -1 = no limit
 namespace wpa3_tester::components{
 template<typename T, typename Handler>
-std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const int timeout_sec, Handler &&on_packet){
+std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout, Handler &&on_packet){
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_setnonblock(handle, 1, errbuf);
 	const int pcap_fd = pcap_get_selectable_fd(handle);
@@ -23,8 +22,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const int timeout_sec, H
 		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
 	};
 
-	const auto deadline = (timeout_sec >= 0)
-						? std::optional{std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec)}
+	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()}
 						: std::nullopt;
 
 	while(true){
@@ -55,7 +53,8 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const int timeout_sec, H
 
 template<typename T, typename Handler>
 std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::string &interface,
-											const std::string &filter = "", const int timeout_sec = -1
+											const std::string &filter = "",
+											const std::optional<std::chrono::milliseconds> timeout = std::nullopt
 ){
 	Tins::SnifferConfiguration sniff_config;
 	sniff_config.set_timeout(100);
@@ -73,15 +72,14 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
 	};
 
-	const auto deadline = (timeout_sec >= 0)
-						? std::optional{std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec)}
+	const auto deadline = timeout
+						? std::optional{std::chrono::steady_clock::now() + timeout.value()}
 						: std::nullopt;
 
 	while(true){
 		int remaining_ms = -1;
 		if(deadline){
-			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
-				*deadline - std::chrono::steady_clock::now()).count());
+			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now()).count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 

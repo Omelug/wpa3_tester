@@ -19,7 +19,7 @@ struct CookieStore{
 	std::atomic<bool> stop{false};
 };
 
-std::optional<ACMCookie> parse_acm_response(const uint8_t *packet, uint32_t len);
+std::optional<ACMCookie> parse_acm_response(const std::vector<uint8_t> &packet);
 
 void capture_cookies(const std::string &sniff_iface, const Tins::HWAddress<6> &ap_mac, CookieStore &store);
 

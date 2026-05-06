@@ -210,7 +210,7 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 		auto cfg = ActorPtr(make_shared<Actor_config>());
 
 		// Set fields if column exists and has data
-		auto set_field = [&](const string &col_name, const string &cfg_key){
+		auto set_field = [&](const string &col_name, const SK &cfg_key){
 			if(col_idx.contains(col_name) && col_idx[col_name] < fields.size()){
 				const string &value = fields[col_idx[col_name]];
 				if(!value.empty()){
@@ -219,12 +219,12 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 			}
 		};
 
-		set_field("whitebox_host", "whitebox_host");
-		set_field("whitebox_ip", "whitebox_ip");
-		set_field("external_OS", "external_OS");
-		set_field("ssh_user", "ssh_user");
-		set_field("ssh_port", "ssh_port");
-		set_field("ssh_password", "ssh_password");
+		set_field("whitebox_host", SK::whitebox_host);
+		set_field("whitebox_ip", SK::whitebox_ip);
+		set_field("external_OS", SK::external_OS);
+		set_field("ssh_user", SK::ssh_user);
+		set_field("ssh_port", SK::ssh_port);
+		set_field("ssh_password", SK::ssh_password);
 
 		result.emplace_back(cfg);
 	}

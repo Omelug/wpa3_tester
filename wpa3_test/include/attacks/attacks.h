@@ -28,8 +28,8 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"cookie_guzzler", components::client_ap_attacker_setup}, {"pmk_gobbler", components::client_ap_attacker_setup},
 	{"memory_omnivore", components::client_ap_attacker_setup}, {"reflection_attack", reflection::setup_attack},
 	{"invalid_curve", invalid_curve::setup_attack}, {"dragondrain", dragondrain::setup_attack},
-	{"mc_mitm", mc_mitm::setup_attack}, {"ssid_confusion", mc_mitm::setup_attack},
-	{"ath_masker_test", ath_masker_test::setup_attack},
+	{"dragondrain", dragondrain::setup_attack}, {"mc_mitm", mc_mitm::setup_attack},
+	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
 };
 
 /* map of attacker_module->attack run function*/

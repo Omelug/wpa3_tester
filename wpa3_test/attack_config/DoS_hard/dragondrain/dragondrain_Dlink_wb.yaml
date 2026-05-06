@@ -9,6 +9,8 @@ actors:
     extends: ../../target/Dlink/mixed_client_2_4.yaml
   attacker:
     source: internal
+    setup:
+      requirements: [ ath_masker ]
     selection:
       condition: [ monitor, injection ]
       driver: ath9k_htc

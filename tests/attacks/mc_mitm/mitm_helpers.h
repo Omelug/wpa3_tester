@@ -19,7 +19,7 @@ public:
     mutable std::vector<std::vector<uint8_t>> real_sent_frames;
     mutable std::vector<std::vector<uint8_t>> rogue_sent_frames;
 
-    std::string real_pcap_path = "/tmp/mc_mitm_test_real.pcap";
+    std::string real_pcap_path = "/tmp/mc_mitm_.pcap";
     std::string rogue_pcap_path = "/tmp/mc_mitm_test_rogue.pcap";
 
 protected:
@@ -27,32 +27,31 @@ protected:
         ++real_send_count;
         const auto raw = pdu.serialize();
         real_sent_frames.emplace_back(raw.begin(), raw.end());
-        append_to_pcap(real_pcap_path, real_sent_frames.back());
+        append_to_pcap(real_pcap_path);
     }
     void send_to_real(const std::vector<uint8_t> &raw) const override{
         ++real_send_count;
         real_sent_frames.push_back(raw);
-        append_to_pcap(real_pcap_path, raw);
+        append_to_pcap(real_pcap_path);
     }
     void send_to_rogue(Tins::PDU &pdu) const override{
         ++rogue_send_count;
         const auto raw = pdu.serialize();
         rogue_sent_frames.emplace_back(raw.begin(), raw.end());
-        append_to_pcap(rogue_pcap_path, rogue_sent_frames.back());
+        append_to_pcap(rogue_pcap_path);
     }
     void send_to_rogue(const std::vector<uint8_t> &raw) const override{
         ++rogue_send_count;
         rogue_sent_frames.push_back(raw);
-        append_to_pcap(rogue_pcap_path, raw);
+        append_to_pcap(rogue_pcap_path);
     }
 
 private:
     // Rewrites the entire file each time — guarantees no stale data across test cases
-    void append_to_pcap(const std::string &path,
-                        const std::vector<uint8_t> &frame) const;
+    void append_to_pcap(const std::string &path) const;
 };
 
-inline void McMitmTestable::append_to_pcap(const std::string &path, const std::vector<uint8_t> &frame) const{
+inline void McMitmTestable::append_to_pcap(const std::string &path) const{
     // Collect the right frame list for this path
     const auto &frames = (path == real_pcap_path) ? real_sent_frames
                          : rogue_sent_frames;

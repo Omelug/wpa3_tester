@@ -51,7 +51,8 @@ constexpr std::string_view bk_name(BK k) {
 
 constexpr std::optional<SK> sk_cast(const std::string_view name) {
     for(size_t i = 0; i < SK_NAMES.size(); ++i)
-        if(SK_NAMES[i] == name) return static_cast<SK>(i);
+        if(SK_NAMES[i] == name)
+        	return static_cast<SK>(i);
     return std::nullopt;
 }
 

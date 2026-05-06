@@ -14,13 +14,9 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-//TODO setup
-//check ath_masker
-// check dragondrain_folder
-
-auto start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
+void  start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
 						const string &channel, const nlohmann::json &att_cfg
-)->void{
+){
 	const int bitrate = att_cfg.at("bitrate").get<int>();
 	const int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
 	const int r = att_cfg.at("r").get<int>();
@@ -36,11 +32,10 @@ auto start_dragondrain(RunStatus &rs, const string &actor_name, const string &if
 }
 
 void setup_attack(RunStatus &rs){
+	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
+	if(!exists(dragondrain_folder))
+		throw setup_err("dragondrain not found at: " + dragondrain_folder);
 	components::client_ap_attacker_setup(rs);
-
-	//check ath_maker module
-	const string ath_folder = get_global_config().at("paths").at("ath_masker");
-	hw_capabilities::run_in("bash ./load.sh", ath_folder);
 }
 
 void run_attack(RunStatus &rs){

@@ -2,7 +2,6 @@
 #include <map>
 #include <set>
 #include <tins/rawpdu.h>
-#include <tins/sniffer.h>
 #include <sys/poll.h>
 
 #include "attacks/components/sniffer_helper.h"
@@ -159,6 +158,6 @@ void active_eap_identity_scan(const string &iface, const string &target_ap_mac, 
 	map<string,EAP_Session> sessions;
 	const string filter = "";
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu){ return handle_eap_pdu(pdu, target_ap_mac, sessions); },
-											iface, filter, timeout_sec);
+											iface, filter, seconds(timeout_sec));
 }
 }

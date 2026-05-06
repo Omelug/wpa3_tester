@@ -107,7 +107,7 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid;
 
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
-		[&](PDU &pdu){ return handle_beacon(pdu, scan_ap, beacon_pcap); }, interface, filter, timeout_sec);
+		[&](PDU &pdu){ return handle_beacon(pdu, scan_ap, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
 	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;

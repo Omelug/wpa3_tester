@@ -280,7 +280,7 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
 	vector new_raw(beacon_raw.begin(), beacon_raw.begin() + header_fixed);
 
 	size_t effective_size = beacon_raw.size();
-	if(dos_helpers::check_fcs_present(beacon_raw.data(), beacon_raw.size())){
+	if(dos_helpers::check_fcs_present(beacon_raw)){
 		effective_size -= 4;
 	}
 

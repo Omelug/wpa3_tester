@@ -13,7 +13,7 @@ using namespace filesystem;
 
 const string program_name = "station_counter";
 
-static void start_remote(RunStatus &rs, const string &actor_name, const int interval_sec, const string &local_log){
+void start_remote(RunStatus &rs, const string &actor_name, const int interval_sec, const string &local_log){
 	const auto &actor = rs.get_actor(actor_name);
 	const string iface = rs.get_actor(actor_name)["iface"];
 
@@ -33,7 +33,7 @@ static void start_remote(RunStatus &rs, const string &actor_name, const int inte
 	});
 }
 
-static void start_local(RunStatus &rs, const string &actor_name, const string &iface, const int interval_sec){
+void start_local(RunStatus &rs, const string &actor_name, const string &iface, const int interval_sec){
 	const string check_cmd = "iw dev " + iface + " station dump 2>&1";
 	FILE *pipe = popen(check_cmd.c_str(), "r");
 	if(!pipe){

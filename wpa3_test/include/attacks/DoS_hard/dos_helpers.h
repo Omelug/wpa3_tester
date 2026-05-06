@@ -31,8 +31,8 @@ struct SAEPair{
 	}
 };
 
-bool check_fcs_present(const uint8_t *packet, uint32_t len);
-std::optional<SAEPair> parse_sae_commit(const uint8_t *frame_rt, uint32_t len);
+bool check_fcs_present(const std::vector<uint8_t> &packet);
+std::optional<SAEPair> parse_sae_commit(const std::vector<uint8_t> &frame_rt);
 Tins::RadioTap make_sae_commit(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,
 								const SAEPair &sae_params
 );

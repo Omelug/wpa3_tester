@@ -2,10 +2,12 @@
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
+r: small TODO
++p: // TODO zkrášlit a vyzkoušet poll , udělat, nějak je generalizavat a zkrášlit , vše pomocí sniffer helepre
 +: rozdíl mezi původní a možnou mac
++: interface scan, která ukáře důležité vlastnosti, injection tests 
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
-r: small TODO
 
 //DONE
 +: observer for connected station on openwrt
@@ -13,8 +15,8 @@ r: sniffer loops
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
 rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
-f: BA/BAR blck aattck work only on one mediatek
-r: nastavit v clionu styl stringu aatd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
+f: BA/BAR bl0ck attack work only on one mediatek
+r: nastavit v clionu styl stringu atd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
 
 ----------------------------- TBD -----------------------------------
 Scan:

@@ -27,7 +27,7 @@ TEST_CASE("ParsesCommitFromPcap"){
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path.string());
     optional<wpa3_tester::dos_helpers::SAEPair> result
-        = wpa3_tester::dos_helpers::parse_sae_commit(probe_data.data(), probe_data.size());
+        = wpa3_tester::dos_helpers::parse_sae_commit(probe_data);
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);
@@ -62,7 +62,7 @@ TEST_CASE("make_sae_commit - base"){
     CHECK_EQ(auth.subtype(), Dot11::AUTH);
 
     auto raw = rt.serialize();
-    auto result = wpa3_tester::dos_helpers::parse_sae_commit(raw.data(), raw.size());
+    auto result = wpa3_tester::dos_helpers::parse_sae_commit(raw);
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);

@@ -2,8 +2,13 @@
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
+ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
+    r: sjednotit while loop s logy  Dos útoky
+    +: poté postupně přepsat do C++
 +: ClientState obeserver
+
 r: small TODO
+r: extends/ref - sjednotiti nebo popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests 
 +: README.md -> rozcestník pro /doc
@@ -58,7 +63,7 @@ d: SA query
 
 Fixes:
 f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)
-
+f: openwrt.yaml vygenerovane, zkontrolovat v dokumentaci openwrt
 Test cases:
 +: test, který by prošel všechny configy testů a vypsal jaké jsou validní
 f: all process have to killed before test

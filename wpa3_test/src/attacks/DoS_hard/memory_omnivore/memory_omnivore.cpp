@@ -111,9 +111,10 @@ void run_attack(RunStatus &rs){
 	long long next_log = 0;
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
+	// TODO same
 	while(steady_clock::now() < end_time){
 		for(const auto &sta_mac: mac_pool){
-			if(steady_clock::now() >= end_time) break;
+			//if(steady_clock::now() >= end_time) break;
 
 			sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
 

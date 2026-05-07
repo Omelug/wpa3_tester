@@ -9,7 +9,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ssid_confusion{
-static unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid,
+unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid,
 													const bool strip_rsn
 ){
 	auto b = make_unique<Dot11Beacon>();

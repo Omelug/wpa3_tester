@@ -61,7 +61,6 @@ TEST_CASE("RunStatus Config Validation - Test configuration"){
         {"8. netns with internal (valid)", "08_test_netns_internal_valid.yaml", "08_test_netns_internal_valid.yaml", true},
         {"9. netns with external (invalid)", "09_error_netns_external.yaml", "", false},
         {"10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false},
-        // TODO valid extends multiple folders
     };
     test_case_loop(test_base, tests);
 }

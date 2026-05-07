@@ -1,7 +1,6 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 title: OpenWrt AP program_config
 type: object
-# TODO vygenerovane, zkontrolovat v dokumentaci openwrt
 properties:
   validator:
     type: string

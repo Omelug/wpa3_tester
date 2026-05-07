@@ -25,7 +25,7 @@ string get_random_ath_masker_mac(const string &attacker_mac){
 
 	random_device rd;
 	mt19937 gen(rd());
-	uniform_int_distribution<> dis(1, 255);
+	uniform_int_distribution<> dis(0, 255);
 	int random_byte = dis(gen);
 
 	stringstream hex_ss;

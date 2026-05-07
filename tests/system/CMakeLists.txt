@@ -37,6 +37,14 @@ target_link_libraries(run_callback_tests PRIVATE
 )
 add_test(NAME PMCallbackTests COMMAND run_callback_tests)
 
+# ath9k_htc firmware tests
+add_executable(run_ath9k_htc_tests test_ath9k_htc.cpp)
+target_link_libraries(run_ath9k_htc_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME Ath9kHtcTests COMMAND run_ath9k_htc_tests)
+
 # injection check manual test
 add_executable(run_injection_check_test test_injection_check.cpp)
 target_link_libraries(run_injection_check_test PRIVATE

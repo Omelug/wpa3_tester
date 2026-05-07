@@ -114,8 +114,10 @@ public:
 
 	void add_graph_elements(const std::vector<std::unique_ptr<GraphElements>> &elements);
 	void gpcmd(const std::string &cmd) const;
+protected:
 	void add_XY_points(const GraphXYPoints &xy_points);
 	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index);
+public:
 	template<class Enum>
 	void add_stairs(const GraphStairs<Enum> &stairs);
 	void render();

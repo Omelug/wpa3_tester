@@ -14,6 +14,9 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 		if(element->type == GraphElement_t::EVENT_LINES){
 			add_event_lines(*static_cast<EventLines *>(element.get()), block_index, elements.size(), label_index);
 		}
+		if(element->type == GraphElement_t::GRAPH_XY_POINTS){
+			add_XY_points(*static_cast<GraphXYPoints *>(element.get()));
+		}
 		if(element->type == GraphElement_t::UNKNOWN){
 			throw runtime_error("Graph element type is unknown");
 		}

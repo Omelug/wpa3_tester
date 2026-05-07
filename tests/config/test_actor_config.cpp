@@ -188,7 +188,7 @@ TEST_CASE("Actor_config::to_str - string keys only"){
     actor[SK::driver] = "ath9k";
 
     const auto s = actor.to_str();
-    CHECK_EQ(s.find("iface=wlan0"), string::npos);
+    CHECK_NE(s.find("iface=wlan0"), string::npos);
     CHECK_NE(s.find("driver=ath9k"), string::npos);
     // no bracket section when no bool keys set
     CHECK_EQ(s.find('['), string::npos);

@@ -112,8 +112,9 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 	g.gpcmd("set bmargin 5");
 	g.gpcmd(escape_tex("set title 'Station Count'"));
 
-	g.add_XY_points(*make_unique<GraphXYPoints>(times, sta_count, "stations", "blue"));
-	g.add_graph_elements(elements);
+	auto all_elements = clone_elements(elements);
+	all_elements.push_back(make_unique<GraphXYPoints>(times, sta_count, "stations", "blue"));
+	g.add_graph_elements(all_elements);
 	if(!times.empty()){
 		const long long x_min = chrono::system_clock::to_time_t(times.front());
 		const long long x_max = chrono::system_clock::to_time_t(times.back());

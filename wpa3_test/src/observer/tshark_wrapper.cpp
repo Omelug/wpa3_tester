@@ -161,7 +161,6 @@ LogTimePoint get_pcap_start_time(const string &pcap_path){
 	start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
 	start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
 
-	//debug if (start_str.empty()){throw runtime_error("Failed to get ISO start time from PCAP: "+pcap_path);}
 	return log_time_to_epoch_ns(start_str);
 }
 
@@ -257,12 +256,11 @@ string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<
 	g.gpcmd("set tmargin 5");
 	g.gpcmd("set bmargin 5");
 
-	// traffic
-	g.add_XY_points(*make_unique<GraphXYPoints>(times, sizes, "traffic"));
+	auto all_elements = clone_elements(elements);
+	all_elements.push_back(make_unique<GraphXYPoints>(times, sizes, "traffic"));
 	g.gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));
 
-	// events
-	g.add_graph_elements(elements);
+	g.add_graph_elements(all_elements);
 
 	g.render();
 	return output_path.string();

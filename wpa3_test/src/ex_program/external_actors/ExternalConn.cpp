@@ -192,6 +192,8 @@ void ExternalConn::upload_script_raw(const string &local_path, const string &rem
 	exec("cat << 'EOF' > " + remote_path + "\n" + content + "\nEOF\n");
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void ExternalConn::download_file(const string &remote_path, const string &local_path) const{
 	if(!session) throw ex_conn_err("SSH session not connected");
 
@@ -245,6 +247,7 @@ void ExternalConn::download_file(const string &remote_path, const string &local_
 
 	log(LogLevel::DEBUG, "Successfully downloaded {} bytes via SCP to {}", size, local_path);
 }
+#pragma GCC diagnostic pop
 
 void ExternalConn::on_disconnect(DisconnectCallback cb){
 	disconnect_callbacks.push_back(std::move(cb));

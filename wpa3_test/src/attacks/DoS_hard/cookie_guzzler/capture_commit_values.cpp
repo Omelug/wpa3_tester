@@ -15,8 +15,25 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle){
+optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
+												const int timeout_sec, pcap_t *handle, const string &iface
+){
+	char errbuf[PCAP_ERRBUF_SIZE];
+
+	const bool owns = (handle == nullptr);
+	if(owns){
+		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
+		if(!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+		pcap_setnonblock(handle, 1, errbuf);
+	}
+	auto guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(owns ? handle : nullptr,
+		[](pcap_t *h){ if(h) pcap_close(h); });
+
 	const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
+	bpf_program fp{};
+	if(pcap_compile(handle, &fp, filter_str.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0)
+		pcap_setfilter(handle, &fp);
+	pcap_freecode(&fp);
 
 	auto result = components::poll_sniffer<dos_helpers::SAEPair>(
 		handle, milliseconds(timeout_sec * 1000),
@@ -34,7 +51,8 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac, co
 				return frame;
 			}
 			return nullopt;
-		}
+		},
+		iface
 	);
 
 	if(holds_alternative<dos_helpers::SAEPair>(result))
@@ -94,7 +112,7 @@ optional<dos_helpers::SAEPair> get_commit_values(RunStatus &rs, const string &if
 	const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
 	const string conf_path = create_wpa_supplicant_config(ssid);
 	start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
-	optional<dos_helpers::SAEPair> sae_params = capture_sae_commit(ap_mac, timeout, handler);
+	optional<dos_helpers::SAEPair> sae_params = capture_sae_commit(ap_mac, timeout, handler, sniff_iface);
 	if(handler != nullptr) pcap_close(handler);
 	stop_wpa_supplicant(pid_file);
 	filesystem::remove(conf_path);

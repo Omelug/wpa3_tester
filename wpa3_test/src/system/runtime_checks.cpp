@@ -7,6 +7,7 @@ using namespace Tins;
 
 namespace wpa3_tester{
 bool check_injection_runtime(const string &iface){
+	hw_capabilities::set_iface_down(iface, nullopt);
 	hw_capabilities::set_wifi_type(iface, NL80211_IFTYPE_MONITOR, nullopt);
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, nullopt, NL80211_IFTYPE_MONITOR); !res)
 		throw req_err("Injection wait_for_wifi_iftype failed");

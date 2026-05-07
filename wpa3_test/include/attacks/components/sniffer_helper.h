@@ -5,14 +5,22 @@
 #include "inteprrupt.h"
 #include <sys/poll.h>
 #include <tins/pdu.h>
+
+#include "logger/error_log.h"
 #include "logger/log.h"
 
 enum class StopReason{ Timeout, HandlerDone, Interrupted };
 
 namespace wpa3_tester::components{
 template<typename T, typename Handler>
-std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout, Handler &&on_packet){
+std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout, Handler &&on_packet, const std::string &iface = ""){
+
 	char errbuf[PCAP_ERRBUF_SIZE];
+	const bool owns = (handle == nullptr);
+	if(owns){
+		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
+		if(!handle) throw run_err("pcap_open_live failed: " + std::string(errbuf));
+	}
 	pcap_setnonblock(handle, 1, errbuf);
 	const int pcap_fd = pcap_get_selectable_fd(handle);
 	if(pcap_fd == -1) throw std::runtime_error("pcap fd not selectable");

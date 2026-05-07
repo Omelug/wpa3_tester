@@ -77,9 +77,9 @@ coverage_build:
 	@if [ ! -f $(BUILD_DIR_COVERAGE)/build.ninja ] && [ ! -f $(BUILD_DIR_COVERAGE)/Makefile ]; then \
         cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_COVERAGE) -G Ninja -DENABLE_COVERAGE=ON; \
     fi
-	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc --ignore=2)
+	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc)
 
-IGNORE_ERRORS = inconsistent,inconsistent,range
+IGNORE_ERRORS = inconsistent,inconsistent,range,negative
 coverage: coverage_build
 	lcov --directory $(BUILD_DIR_COVERAGE) --zerocounters
 	sudo ctest --test-dir $(BUILD_DIR_COVERAGE) --output-on-failure

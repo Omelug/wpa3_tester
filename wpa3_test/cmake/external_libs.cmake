@@ -89,7 +89,10 @@ FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
 target_include_directories(radiotap_lib PUBLIC ${radiotap_SOURCE_DIR})
-set_source_files_properties("${radiotap_SOURCE_DIR}/radiotap.c" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+set_source_files_properties("${radiotap_SOURCE_DIR}/radiotap.c" PROPERTIES
+        SKIP_PRECOMPILE_HEADERS ON
+        COMPILE_OPTIONS "-Wno-address-of-packed-member"
+)
 
 add_library(doctest_headers INTERFACE)
 target_include_directories(doctest_headers INTERFACE

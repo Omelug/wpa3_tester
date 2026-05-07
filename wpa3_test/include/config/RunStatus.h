@@ -7,7 +7,7 @@
 #include "ActorPtr.h"
 #include "Actor_config.h"
 #include "ObserverPtr.h"
-#include "observer/grapth/graph_elements.h"
+#include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{

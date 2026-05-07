@@ -245,8 +245,8 @@ TEST_CASE("Actor_config::to_json - bool conditions"){
     const auto j = actor.to_json();
     REQUIRE(j["selection"].contains("condition"));
     const auto &cond = j["selection"]["condition"];
-    CHECK_NE(cond.end(), std::find(cond.begin(), cond.end(), "monitor"));
-    CHECK_NE(cond.end(), std::find(cond.begin(), cond.end(), "!injection"));
+    CHECK_NE(cond.end(), ranges::find(cond, "monitor"));
+    CHECK_NE(cond.end(), ranges::find(cond, "!injection"));
 }
 
 TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){
@@ -332,5 +332,5 @@ TEST_CASE("ActorPtr - equality and ordering"){
     CHECK_EQ(a, b);
     CHECK_NE(a, c);
     // strict weak ordering: exactly one of a<c or c<a must hold
-    CHECK_NE((a < c),(c < a));
+	CHECK_NE(a < c, c < a);
 }

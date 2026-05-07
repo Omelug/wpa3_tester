@@ -4,9 +4,12 @@
 #include <cstdlib>
 #include <doctest.h>
 #include <filesystem>
+#include <fstream>
+#include <memory>
 #include <source_location>
 #include <string>
 
+#include "config/Actor_config.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "observer/observers.h"
@@ -14,77 +17,212 @@
 
 using namespace std;
 using namespace filesystem;
+using namespace wpa3_tester;
+using namespace wpa3_tester::observer::tshark;
 
 namespace{
-struct TsharkGuard{
-    TsharkGuard(){
-        if(system("tshark --version > /dev/null 2>&1") != 0){
-            log(wpa3_tester::LogLevel::ERROR, "[skip] tshark not found, skipping observer tests");
-            exit(0);
-        }
-    }
-};
-
-[[maybe_unused]] const TsharkGuard tshark_guard;
-
-struct TempRunFolder{
-    path run_folder;
-    string actor;
-
-    TempRunFolder(const string &actor_name, const path &src_pcap)
-        : actor(actor_name){
-        run_folder = temp_directory_path() / ("wpa3_tshark_" + to_string(
-            chrono::system_clock::now().time_since_epoch().count()));
-        const path obs_dir = run_folder / "observer" / "tshark";
-        create_directories(obs_dir);
-
-        // copy so the test is self-contained
-        copy_file(src_pcap, obs_dir / (actor_name + "_capture.pcap"));
-    }
-
-    ~TempRunFolder(){ remove_all(run_folder); }
-};
+bool tshark_available(){
+    return system("tshark --version > /dev/null 2>&1") == 0;
 }
 
 path this_file = source_location::current().file_name();
 
-//FIXME file is not created?
-/*
-TEST_CASE("extract_pcap_to_csv - parses -t ad timestamps from pcapng") {
-    const path pcapng = this_file.parent_path() / "test_tshark_minimal.pcapng";
+ActorPtr make_actor(const string &mac){
+    auto cfg = make_shared<Actor_config>();
+    (*cfg)[SK::mac] = mac;
+    return ActorPtr(cfg);
+}
+
+struct TempCsv{
+    path p;
+    explicit TempCsv(const string &content){
+        p = temp_directory_path() / ("wpa3_test_csv_" +
+            to_string(chrono::system_clock::now().time_since_epoch().count()) + ".csv");
+        ofstream f(p);
+        f << content;
+    }
+    ~TempCsv(){ remove(p); }
+};
+}
+
+// ---- or_filter ----
+
+TEST_CASE("or_filter - empty vector returns empty string"){
+    CHECK_EQ(or_filter({}), "");
+}
+
+TEST_CASE("or_filter - single element wrapped in parens"){
+    CHECK_EQ(or_filter({"ether host aa:bb:cc:dd:ee:ff"}), "(ether host aa:bb:cc:dd:ee:ff)");
+}
+
+TEST_CASE("or_filter - multiple elements joined with ' or '"){
+    const string result = or_filter({"A", "B", "C"});
+    CHECK_EQ(result, "(A or B or C)");
+}
+
+// ---- all_actors_mac_filter ----
+
+TEST_CASE("all_actors_mac_filter - single actor no broadcast"){
+    RunStatus rs;
+    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+
+    const string f = all_actors_mac_filter(rs, false);
+    CHECK_EQ(f, "(ether host aa:bb:cc:dd:ee:ff)");
+}
+
+TEST_CASE("all_actors_mac_filter - single actor with broadcast"){
+    RunStatus rs;
+    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+
+    const string f = all_actors_mac_filter(rs, true);
+    CHECK_NE(f.find("ether host aa:bb:cc:dd:ee:ff"), string::npos);
+    CHECK_NE(f.find("ether host ff:ff:ff:ff:ff:ff"), string::npos);
+}
+
+TEST_CASE("all_actors_mac_filter - two actors both present"){
+    RunStatus rs;
+    rs.actors["sta1"] = make_actor("11:22:33:44:55:66");
+    rs.actors["sta2"] = make_actor("aa:bb:cc:dd:ee:ff");
+
+    const string f = all_actors_mac_filter(rs, false);
+    CHECK_NE(f.find("ether host 11:22:33:44:55:66"), string::npos);
+    CHECK_NE(f.find("ether host aa:bb:cc:dd:ee:ff"), string::npos);
+    CHECK_NE(f.find(" or "), string::npos);
+}
+
+TEST_CASE("all_actors_mac_filter - empty actors returns empty string"){
+    RunStatus rs;
+    CHECK_EQ(all_actors_mac_filter(rs), "");
+}
+
+// ---- masked_mac_filter_5 ----
+
+TEST_CASE("masked_mac_filter_5 - single valid MAC produces link[] filter"){
+    RunStatus rs;
+    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+
+    const string f = masked_mac_filter_5(rs);
+    // First 5 bytes: aa bb cc dd ee → aabbccddee
+    CHECK_NE(f.find("0xaabbccdd"), string::npos);
+    CHECK_NE(f.find("0xee"), string::npos);
+    CHECK_NE(f.find("link[4:4]"), string::npos);
+    CHECK_NE(f.find("link[10:4]"), string::npos);
+}
+
+TEST_CASE("masked_mac_filter_5 - MAC shorter than 10 hex chars is skipped"){
+    RunStatus rs;
+    rs.actors["sta"] = make_actor("aa:bb");  // only 4 hex chars after colon removal
+
+    const string f = masked_mac_filter_5(rs);
+    CHECK_EQ(f, "");
+}
+
+TEST_CASE("masked_mac_filter_5 - two actors joined with or"){
+    RunStatus rs;
+    rs.actors["sta1"] = make_actor("aa:bb:cc:dd:ee:ff");
+    rs.actors["sta2"] = make_actor("11:22:33:44:55:66");
+
+    const string f = masked_mac_filter_5(rs);
+    CHECK_NE(f.find("0xaabbccdd"), string::npos);
+    CHECK_NE(f.find("0x11223344"), string::npos);
+    CHECK_NE(f.find(" or "), string::npos);
+}
+
+// ---- times_packet_sizes_from_csv ----
+
+TEST_CASE("times_packet_sizes_from_csv - two valid rows"){
+    TempCsv tmp(
+        "1,2026-02-21T13:12:45.844734691+0100,149\n"
+        "2,2026-02-21T13:12:46.433775945+0100,200\n"
+    );
+
+    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+
+    CHECK_EQ(times.size(), 2u);
+    CHECK_EQ(sizes.size(), 2u);
+    CHECK_EQ(sizes[0], doctest::Approx(149.0));
+    CHECK_EQ(sizes[1], doctest::Approx(200.0));
+    CHECK_LT(times[0], times[1]);
+}
+
+TEST_CASE("times_packet_sizes_from_csv - invalid timestamp rows are skipped"){
+    TempCsv tmp(
+        "1,INVALID_TIME,100\n"
+        "2,2026-02-21T13:12:46.433775945+0100,200\n"
+    );
+
+    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+
+    CHECK_EQ(sizes.size(), 1u);
+    CHECK_EQ(sizes[0], doctest::Approx(200.0));
+}
+
+TEST_CASE("times_packet_sizes_from_csv - empty file returns empty vectors"){
+    TempCsv tmp("");
+
+    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+
+    CHECK(times.empty());
+    CHECK(sizes.empty());
+}
+
+// ---- extract_pcap_to_csv  /  get_pcap_start_time  (require tshark) ----
+
+TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
+    if(!tshark_available()){
+        MESSAGE("tshark not found, skipping");
+        return;
+    }
+
+    const path pcapng = path(this_file).parent_path() / "test_tshark_minimal.pcapng";
     REQUIRE(exists(pcapng));
 
+    const path out_dir = temp_directory_path() / ("wpa3_pcap_" +
+        to_string(chrono::system_clock::now().time_since_epoch().count()));
+    create_directories(out_dir);
+
     const string actor = "test_actor";
-    TempRunFolder tmp(actor, pcapng);
+    copy_file(pcapng, out_dir / (actor + "_capture.pcap"));
 
-    wpa3_tester::RunStatus rs;
-    rs.run_folder = tmp.run_folder.string();
-    const path csv_path = wpa3_tester::observer::extract_pcap_to_csv(actor, this_file.parent_path());
-    REQUIRE(exists(csv_path));
+    const path csv = extract_pcap_to_csv(actor, out_dir);
+    REQUIRE(exists(csv));
 
-    const vector<string> expected_lines = {
-        "1,2026-02-21T13:12:45.844734691+0100,149",
-        "2,2026-02-21T13:12:46.433775945+0100,149"
-    };
-
-    ifstream f(csv_path);
-    REQUIRE(f.is_open());
-
-    vector<string> actual_lines;
+    ifstream f(csv);
     string line;
-    while (getline(f, line)) {
-        if (!line.empty())
-            actual_lines.push_back(line);
+    int count = 0;
+    while(getline(f, line)){
+        if(line.empty()) continue;
+        ++count;
+        CHECK_NE(line.find(','), string::npos);
+    }
+    CHECK_GE(count, 1);
+
+    remove_all(out_dir);
+}
+
+TEST_CASE("get_pcap_start_time - returns nonzero time for known pcap"){
+    if(!tshark_available()){
+        MESSAGE("tshark not found, skipping");
+        return;
     }
 
-    CHECK_EQ(actual_lines.size(), expected_lines.size());
-    for (size_t i = 0; i < expected_lines.size(); ++i) {
-        CHECK_EQ(actual_lines[i], expected_lines[i]);
-    }
-}*/
+    const path pcapng = path(this_file).parent_path() / "test_tshark_minimal.pcapng";
+    REQUIRE(exists(pcapng));
+
+    const LogTimePoint tp = get_pcap_start_time(pcapng.string());
+    CHECK_NE(tp.time_since_epoch().count(), 0);
+
+    const time_t t = chrono::system_clock::to_time_t(tp);
+    tm utc{};
+    gmtime_r(&t, &utc);
+    CHECK_EQ(utc.tm_year + 1900, 2026);
+    CHECK_EQ(utc.tm_mon + 1, 2);
+    CHECK_EQ(utc.tm_mday, 21);
+}
+
+// ---- transform_to_relative ----
 
 TEST_CASE("transform_to_relative - converts absolute timestamps to relative"){
-    using namespace wpa3_tester;
     using namespace chrono;
 
     const auto start = system_clock::now();

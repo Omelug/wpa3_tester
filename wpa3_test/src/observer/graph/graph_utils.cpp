@@ -1,4 +1,4 @@
-#include "observer/grapth/graph_utils.h"
+#include "observer/graph/graph_utils.h"
 #include <cstdio>
 #include <vector>
 

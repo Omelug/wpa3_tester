@@ -1,5 +1,5 @@
-#include "observer/grapth/graph_elements.h"
-#include "observer/grapth/graph_utils.h"
+#include "observer/graph/graph_elements.h"
+#include "observer/graph/graph_utils.h"
 
 using namespace std;
 

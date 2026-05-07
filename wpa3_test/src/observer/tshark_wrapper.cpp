@@ -9,7 +9,7 @@
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "observer/observers.h"
-#include "observer/grapth/graph_utils.h"
+#include "observer/graph/graph_utils.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer::tshark{
@@ -48,28 +48,11 @@ string masked_mac_filter_5(const RunStatus &rs){
 		string addr2 = "(link[10:4] == 0x" + pre.substr(0, 8) + " and link[14:1] == 0x" + pre.substr(8, 2) + ")";
 
 		mac_filters.push_back("(" + addr1 + " or " + addr2 + ")");
-
-		/*erase(clean_mac, ':');
-            string prefix = actor["mac"].substr(0, 14); // "AA:BB:CC:DD:EE"
-            mac_filters.push_back("wlan host "+prefix+":00/40");
-
-            if (clean_mac.length() == 12) {
-                string prefix = clean_mac.substr(0, 10);
-
-                // BPF offset for 802.11:
-                // link[10:4] first 4 bytes SA (Source Address)
-                // link[14:1] 5. byte SA
-                //string f = "wlan host "+clean_mac;
-                string f = "(link[10:4] == 0x"+prefix.substr(0, 8) +
-                           " and link[14:1] == 0x"+prefix.substr(8, 2)+")";
-                mac_filters.push_back(f);
-            }*/
 	}
 	return or_filter(mac_filters);
 }
 
-// include broadcast
-string all_actors_mac_filter(const RunStatus &rs, const bool broadcast = false){
+string all_actors_mac_filter(const RunStatus &rs, const bool broadcast){
 	vector<string> mac_filters;
 
 	for(const auto &actor: rs.actors | views::values){

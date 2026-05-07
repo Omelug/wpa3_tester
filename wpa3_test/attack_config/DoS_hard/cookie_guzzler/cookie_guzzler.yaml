@@ -83,3 +83,4 @@ observers:
 attack_config:
   attack_time_sec: 40
   regeneration_time_sec: 30
+  burst_size: 64

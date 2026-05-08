@@ -100,11 +100,13 @@
       <w>postrouting</w>
       <w>potp</w>
       <w>ppid</w>
+      <w>pred</w>
       <w>prevtime</w>
       <w>promisc</w>
       <w>psk</w>
       <w>readlink</w>
       <w>reassoc</w>
+      <w>reuseaddr</w>
       <w>rlen</w>
       <w>rsneapol</w>
       <w>rtmgrp</w>

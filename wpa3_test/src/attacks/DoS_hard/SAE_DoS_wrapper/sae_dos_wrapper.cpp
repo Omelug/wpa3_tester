@@ -30,10 +30,6 @@ static string get_suite_path(){
 	return get_global_config().at("paths").at("WPA3_SAE_DoS_Research_Suite").get<string>();
 }
 
-static void run_local_cmd(const string &cmd){
-	if(system(cmd.c_str()) != 0) throw setup_err("Command failed: " + cmd);
-}
-
 void setup_attack(RunStatus &rs){
 	components::client_ap_attacker_setup(rs);
 
@@ -61,7 +57,7 @@ void setup_attack(RunStatus &rs){
 }
 
 static void write_run_config(const string &config_path, const dos_helpers::SAEPair &sae,
-							  const string &ap_mac, const string &channel,
+							  const string &ap_mac, const string &client_mac, const string &channel,
 							  const string &att_iface, const nlohmann::json &att_cfg){
 	const string scalar_hex  = dos_helpers::bytes_to_hex_plain(sae.scalar);
 	const string finite_hex  = dos_helpers::bytes_to_hex_plain(sae.element);
@@ -84,7 +80,7 @@ static void write_run_config(const string &config_path, const dos_helpers::SAEPa
 	  << "scanner_interface: \"\"\n"
 	  << "channel_2_4ghz: \"" << channel << "\"\n"
 	  << "channel_5ghz: \"" << ch_5 << "\"\n\n"
-	  << "target_sta_macs: []\n"
+	  << "target_sta_macs: [\"" << client_mac << "\"]\n"
 	  << "target_sta_macs_5ghz_special: []\n"
 	  << "target_sta_macs_2_4ghz_special: []\n\n"
 	  << "adapter_konfiguration:\n"
@@ -101,6 +97,7 @@ static void write_run_config(const string &config_path, const dos_helpers::SAEPa
 void run_attack(RunStatus &rs){
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap       = rs.get_actor("access_point");
+	const ActorPtr client   = rs.get_actor("client");
 
 	const auto ssid = rs.config.at("actors").at("access_point")
 		.at("setup").at("program_config").at("ssid").get<string>();
@@ -115,15 +112,15 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config.at("attack_config");
 	const string config_path = rs.run_folder + "/config.yaml";
-	write_run_config(config_path, sae.value(), ap["mac"], ap["channel"], attacker["iface"], att_cfg);
+	write_run_config(config_path, sae.value(), ap["mac"], client["mac"], ap["channel"], attacker["iface"], att_cfg);
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
 	rs.start_observers();
 	log(LogLevel::INFO, "Starting WPA3-SAE-DoS-Research-Suite orchestrator...");
 
 	rs.process_manager.run("attacker",
-		{"python3.10", get_suite_path() + "/orchestator_master_en.py"},
-		rs.run_folder
+							{/*"setsid", */"python3.10", get_suite_path() + "/orchestator_master_en.py"},
+							rs.run_folder
 	);
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();

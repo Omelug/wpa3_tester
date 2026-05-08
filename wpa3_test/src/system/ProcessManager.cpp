@@ -202,7 +202,11 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 		processes[process_name] = mp;
 	}
 
-	if(const auto ec = mp->proc->start(cmd, options)){
+	vector<string> cmd_with_setsid;
+	cmd_with_setsid.push_back("setsid");  // crate new group to kill all with subprocesses
+	cmd_with_setsid.insert(cmd_with_setsid.end(), cmd.begin(), cmd.end());
+
+	if(const auto ec = mp->proc->start(cmd_with_setsid, options)){
 		{
 			lock_guard lock(logger_mtx);
 			processes.erase(process_name);
@@ -226,72 +230,50 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 bool ProcessManager::wait_for(const string &actor_name, const string &pattern, const seconds timeout,
 							const bool throw_err
 ){
+	log(LogLevel::DEBUG, "WAIT pattern: {}", pattern);
 	shared_ptr<ManagedProcess> mp;
-	log(LogLevel::DEBUG, "WAIT pattern:" + pattern);
 	{
 		lock_guard lock(logger_mtx);
-		const auto proc_iter = processes.find(actor_name);
-		if(proc_iter == processes.end() || !proc_iter->second){
+		const auto it = processes.find(actor_name);
+		if(it == processes.end() || !it->second)
 			throw runtime_error("Unknown process in wait_for: " + actor_name);
-		}
-		mp = proc_iter->second;
+		mp = it->second;
 		auto &logs = mp->logs;
 
 		logs.wait.pattern = regex(pattern);
 		logs.wait.matched = false;
 
-		// first pass – search history
 		stringstream ss(logs.history);
 		string line;
 		while(getline(ss, line)){
 			if(regex_search(line, *logs.wait.pattern)){
-				log(LogLevel::DEBUG, "MATCH without history {} {}", actor_name, line);
-				logs.wait.matched = true;
-				break;
+				log(LogLevel::DEBUG, "MATCH in history {} {}", actor_name, line);
+				logs.history.clear();
+				logs.wait.pattern = nullopt;
+				return true;
 			}
-		}
-
-		if(logs.wait.matched){
-			logs.history.clear();
-			logs.wait.pattern = nullopt;
-			return true;
 		}
 	}
 
-	{
-		// wait for match from drain thread with timeout
-		unique_lock lock(wait_mutex);
-		auto &logs = mp->logs;
-		const bool matched = wait_cv.wait_for(lock, timeout, [&logs, mp, pattern]{
-			//log(LogLevel::DEBUG, "WAIT_CHECK pattern: "+ pattern);
-			// regex matched or shutting down -> continue
-			return logs.wait.matched || mp->shutting_down.load();
-		});
+	unique_lock cv_lock(wait_mutex);
+	auto &logs = mp->logs;
+	const bool pred_met = wait_cv.wait_for(cv_lock, timeout,
+		[&logs, &mp]{ return logs.wait.matched || mp->shutting_down.load(); });
 
-		// Check if process was stopped (shutting_down but not matched)
-		if(mp->shutting_down.load() && !logs.wait.matched){
-			lock_guard data_lock(logger_mtx);
-			logs.wait.pattern = nullopt;
-			logs.history_enabled = false;
-			log(LogLevel::DEBUG, "wait_for for '{}' interrupted: process stopped", actor_name);
-			return false; // wait for ot matched if stop
-		}
+	lock_guard data_lock(logger_mtx);
+	logs.wait.pattern = nullopt;
 
-		if(!matched){
-			// !matched = time interrupted
-			lock_guard data_lock(logger_mtx);
-			logs.wait.pattern = nullopt;
-			if(throw_err){
-				throw timeout_err("Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
-								pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
-			}
-			return false;
-		}
-
-		lock_guard data_lock(logger_mtx);
-		logs.history.clear();
-		logs.wait.pattern = nullopt;
+	if(mp->shutting_down.load() && !logs.wait.matched){
+		log(LogLevel::DEBUG, "wait_for for '{}' interrupted: process stopped", actor_name);
+		return false;
 	}
+	if(!pred_met){
+		if(throw_err)
+			throw timeout_err("Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
+							pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
+		return false;
+	}
+	logs.history.clear();
 	return true;
 }
 
@@ -317,15 +299,15 @@ void ProcessManager::stop(const string &process_name){
 	operations.second = {reproc::stop::kill, reproc::milliseconds(500)};
 
 	if(mp->pgid > 0){
-		killpg(mp->pgid, SIGTERM);
-		killpg(mp->pgid, SIGKILL);
+		(void)killpg(mp->pgid, SIGTERM);
+		(void)killpg(mp->pgid, SIGKILL);
 	} else if(mp->proc){
-		mp->proc->terminate();
-		mp->proc->kill();
+		(void)mp->proc->terminate();
+		(void)mp->proc->kill();
 	}
 
 	if(mp->proc){
-		mp->proc->close(reproc::stream::in);
+		//mp->proc->close(reproc::stream::in);
 		mp->proc->close(reproc::stream::out);
 		mp->proc->close(reproc::stream::err);
 	}

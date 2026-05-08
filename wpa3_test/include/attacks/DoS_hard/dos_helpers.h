@@ -39,6 +39,7 @@ void timed_burst(Tins::PacketSender &sender, const int attack_time_sec,
 
 
 std::string bytes_to_hex(const std::vector<uint8_t> &bytes);
+std::string bytes_to_hex_plain(const std::vector<uint8_t> &bytes);
 
 struct SAEPair{
 	uint16_t status = 0;

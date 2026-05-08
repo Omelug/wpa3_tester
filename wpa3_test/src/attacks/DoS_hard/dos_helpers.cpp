@@ -25,6 +25,17 @@ std::string bytes_to_hex(const std::vector<uint8_t> &bytes){
 	return result;
 }
 
+std::string bytes_to_hex_plain(const std::vector<uint8_t> &bytes){
+	std::string result;
+	result.reserve(bytes.size() * 2);
+	for(const uint8_t b : bytes){
+		char buf[3];
+		snprintf(buf, sizeof(buf), "%02x", b);
+		result += buf;
+	}
+	return result;
+}
+
 bool check_fcs_present(const vector<uint8_t> &packet){
 	ieee80211_radiotap_iterator it;
 

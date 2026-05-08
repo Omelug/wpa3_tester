@@ -43,7 +43,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 				return nullopt;
 			}
 
-			log(LogLevel::DEBUG, "Hex: %02x %02x %02x %02x", packet[0], packet[1], packet[2], packet[3]);
+			log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", packet[0], packet[1], packet[2], packet[3]);
 
 			//if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
 			if(auto frame = dos_helpers::parse_sae_commit({packet, packet + caplen})){
@@ -60,23 +60,9 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 	return nullopt;
 }
 
-void stop_wpa_supplicant(const string &pid_file){
-	ifstream file(pid_file);
-	if(file.is_open()){
-		pid_t pid;
-		file >> pid;
-		if(pid > 0){
-			log(LogLevel::INFO, "Stop wpa_supplicant (PID: " + to_string(pid) + ")");
-			kill(pid, SIGTERM);
-		}
-		file.close();
-		remove(pid_file.c_str());
-	}
-}
-
-// run_cmd for logging or useless:
 void start_wpa_supplicant(RunStatus &rs, const string &iface, const string &conf_path, const string &pid_file){
-	if(filesystem::exists(pid_file)){ stop_wpa_supplicant(pid_file); }
+	if(rs.process_manager.process_exists("get_commit")){ rs.process_manager.stop("get_commit"); }
+	if(filesystem::exists(pid_file)){ filesystem::remove(pid_file); }
 
 	// Clean up stale socket
 	const string socket = "/var/run/wpa_supplicant/" + iface;
@@ -114,7 +100,8 @@ optional<dos_helpers::SAEPair> get_commit_values(RunStatus &rs, const string &if
 	start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
 	optional<dos_helpers::SAEPair> sae_params = capture_sae_commit(ap_mac, timeout, handler, sniff_iface);
 	if(handler != nullptr) pcap_close(handler);
-	stop_wpa_supplicant(pid_file);
+	rs.process_manager.stop("get_commit");
+	filesystem::remove(pid_file);
 	filesystem::remove(conf_path);
 	return sae_params;
 }

@@ -19,6 +19,7 @@
 #include "attacks/Enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
+#include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
@@ -30,6 +31,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"invalid_curve", invalid_curve::setup_attack}, {"dragondrain", dragondrain::setup_attack},
 	{"dragondrain", dragondrain::setup_attack}, {"mc_mitm", mc_mitm::setup_attack},
 	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
+	{"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
 };
 
 /* map of attacker_module->attack run function*/
@@ -42,6 +44,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"invalid_curve", invalid_curve::run_attack}, {"scan_AP", attack_scan::run_attack},
 	{"dragondrain", dragondrain::run_attack}, {"mc_mitm", mc_mitm::run_attack},
 	{"ssid_confusion", ssid_confusion::run_attack}, {"ath_masker_test", ath_masker_test::run_attack},
+	{"sae_dos_wrapper", sae_dos_wrapper::run_attack},
 };
 
 /* map of attacker_module->stats run function*/
@@ -55,5 +58,6 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	//{"invalid_curve", invalid_curve::run_attack}
 	{"dragondrain", dragondrain::stats_attack}, {"mc_mitm", mc_mitm::stats},
 	{"ath_masker_test", ath_masker_test::stats},
+	{"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
 };
 }

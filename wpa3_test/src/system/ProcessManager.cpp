@@ -31,6 +31,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			{reproc::stream::out, "stdout", reproc::event::out}, {reproc::stream::err, "stderr", reproc::event::err}
 		};
 
+		bool natural_exit = false;
 		while(!mp->shutting_down.load()){
 			//log(LogLevel::DEBUG, "poll start "+process_name);
 			auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err | reproc::event::exit,
@@ -45,6 +46,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 					log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message(),
 						ec.value());
 				}
+				natural_exit = true;
 				break;
 			}
 			for(const auto &s: streams){
@@ -65,22 +67,25 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			}
 		}
 
-		// Flush anything left in the pipe after shutting_down is set
-		// Use a deadline so child processes keeping pipes open can't block join() forever.
-		log(LogLevel::DEBUG, "flush start " + process_name);
-		const auto flush_deadline = steady_clock::now() + milliseconds(500);
-		for(const auto &s: streams){
-			while(steady_clock::now() < flush_deadline){
-				auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
-				if(poll_ec || !(events & s.event)) break;
+		// Only flush pipe remainder when the process died naturally.
+		// When killed via killpg, surviving grandchildren may keep pipes open
+		// indefinitely, causing poll() to never reach EOF and blocking join().
+		if(natural_exit){
+			log(LogLevel::DEBUG, "flush start " + process_name);
+			const auto flush_deadline = steady_clock::now() + milliseconds(500);
+			for(const auto &s: streams){
+				while(steady_clock::now() < flush_deadline){
+					auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
+					if(poll_ec || !(events & s.event)) break;
 
-				auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-				if(read_ec || n == 0) break;
-				handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+					auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+					if(read_ec || n == 0) break;
+					handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+				}
 			}
+			log(LogLevel::DEBUG, "flush done {}", process_name);
 		}
 
-		log(LogLevel::DEBUG, "flush done {}", process_name);
 		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
 	});
 }

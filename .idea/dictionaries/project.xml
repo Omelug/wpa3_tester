@@ -9,6 +9,7 @@
       <w>addba</w>
       <w>addr</w>
       <w>addrs</w>
+      <w>angriff</w>
       <w>arphrd</w>
       <w>bigtk</w>
       <w>bmargin</w>
@@ -54,6 +55,7 @@
       <w>iwinfo</w>
       <w>jsonfilter</w>
       <w>keydatalen</w>
+      <w>konfiguration</w>
       <w>krack</w>
       <w>libgcc</w>
       <w>libssh</w>
@@ -85,6 +87,7 @@
       <w>ofdm</w>
       <w>openwrt</w>
       <w>operstate</w>
+      <w>orchestator</w>
       <w>otherbss</w>
       <w>outputpath</w>
       <w>peap</w>

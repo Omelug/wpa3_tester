@@ -1,7 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: cookie_guzzler
-validator: cookie_guzzler.schema.yaml
-attacker_module: cookie_guzzler
+name: sae_dos_wrapper
+attacker_module: sae_dos_wrapper
 actors:
   access_point:
     source: external
@@ -40,48 +39,32 @@ actors:
     sniff_iface: client
   attacker:
     source: internal
+    setup:
+      requirements: [ ath_masker ]
     selection:
       driver: ath9k_htc
       condition: [ monitor, injection ]
       channel: 6
     sniff_iface: att
-  #rogue_ap:
-  #
-  #  source: internal
-  #  selection:
-  #    driver: mt76x2u
-  #    condition: [ monitor ]
-  #    channel: 6
-  #  program: hostapd_mana
-  #  program_config:
 observers:
-  client_mausezahn:
-    actor: client
-    program: mausezahn
-    program_config:
-      target_actor: access_point
-  #tshark_client:
-  #  actor: client
-  #  program: tshark
-  #  program_config:
-  #    filter: "udp port 5201"
   tshark_attacker:
     actor: attacker
     program: tshark
     program_config:
       filter: ""
-  program_config_ap:
-    actor: access_point
-    program: tcpdump
-    program_config:
-      filter: "udp port 5201"
   ap_resources:
     actor: access_point
     program: resource_checker
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 40
-  regeneration_time_sec: 30
-  burst_size: 32
-  packets_per_second_limit: 500
+  attack_time_sec: 30
+  # Which band the attacker adapter is on
+  adapter_band: "2.4GHz"
+  # Attack from orchestator_master_en.py ADAPTER_KONFIGURATION angriff field
+  attack_type: "omnivore"
+  channel_5ghz: "104"
+  packets_per_second_limit: 100
+  burst_size_optimal: 64
+  inter_packet_gap: 0.0001
+  max_restarts: 100

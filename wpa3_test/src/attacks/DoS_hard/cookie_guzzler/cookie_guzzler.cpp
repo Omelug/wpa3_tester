@@ -86,7 +86,7 @@ void run_attack(RunStatus &rs){
 	} else{
 		throw runtime_error("SAE Commit capture failed");
 	}
-	rs.process_manager.write_log_all("@END_of_attack");
+	rs.process_manager.write_log_all("@ENDofAttack");
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	this_thread::sleep_for(seconds(regeneration_time_sec));
 	ap->conn->disconnect();
@@ -95,7 +95,7 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {
-		{"access_point", "@END_of_attack", "END_of_attack", "yellow"},
+		{"access_point", "@ENDofAttack", "ENDofAttack", "yellow"},
 		{"access_point", "did not acknowledge", "ACK_fail", "red"},
 		{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 		{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},

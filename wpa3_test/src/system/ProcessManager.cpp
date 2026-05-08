@@ -6,6 +6,8 @@
 #include <regex>
 #include <chrono>
 #include <sstream>
+#include <csignal>
+#include <unistd.h>
 #include "logger/error_log.h"
 #include <thread>
 
@@ -14,16 +16,79 @@ using namespace std;
 using namespace filesystem;
 using namespace chrono;
 
-void ProcessManager::run_dummy(const string &process_name){
-	const auto mp = make_shared<ManagedProcess>();
-	mp->proc = nullptr;
-	mp->logs.history_enabled = true;
+void ProcessManager::start_drain_for(const string &process_name, const shared_ptr<ManagedProcess> &mp){
+	if(!mp) return;
+	mp->shutting_down = false;
+	mp->drain_thread = thread([this, process_name, mp](){
+		uint8_t buffer[4096];
 
-	const path log_path = log_base_dir / (process_name + ".log");
-	mp->logs.log.open(log_path, ios::out | ios::trunc);
+		struct StreamInfo{
+			reproc::stream stream;
+			const char *label;
+			int event;
+		};
+		constexpr StreamInfo streams[] = {
+			{reproc::stream::out, "stdout", reproc::event::out}, {reproc::stream::err, "stderr", reproc::event::err}
+		};
 
+		while(!mp->shutting_down.load()){
+			//log(LogLevel::DEBUG, "poll start "+process_name);
+			auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err | reproc::event::exit,
+												reproc::milliseconds(100));
+			//log(LogLevel::DEBUG, "poll end "+process_name);
+			if(mp->shutting_down) break;
+			if(ec == errc::timed_out) continue;
+			if(ec){
+				if(ec == errc::broken_pipe || ec == errc::no_such_process){
+					log(LogLevel::DEBUG, "Drain thread for {} finished (normal exit): {}", process_name, ec.message());
+				} else{
+					log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message(),
+						ec.value());
+				}
+				break;
+			}
+			for(const auto &s: streams){
+				if(!(events & s.event)) continue;
+
+				while(true){
+					auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+
+					if(read_ec){
+						if(read_ec == errc::resource_unavailable_try_again || read_ec == errc::operation_would_block){
+							break;
+						}
+						break;
+					}
+					if(n == 0) break;
+					handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+				}
+			}
+		}
+
+		// Flush anything left in the pipe after shutting_down is set
+		// Use a deadline so child processes keeping pipes open can't block join() forever.
+		log(LogLevel::DEBUG, "flush start " + process_name);
+		const auto flush_deadline = steady_clock::now() + milliseconds(500);
+		for(const auto &s: streams){
+			while(steady_clock::now() < flush_deadline){
+				auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
+				if(poll_ec || !(events & s.event)) break;
+
+				auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+				if(read_ec || n == 0) break;
+				handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+			}
+		}
+
+		log(LogLevel::DEBUG, "flush done {}", process_name);
+		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
+	});
+}
+
+ProcessManager::~ProcessManager(){
+	stop_all();
 	lock_guard lock(logger_mtx);
-	processes[process_name] = mp;
+	if(combined_log.is_open()) combined_log.close();
 }
 
 void ProcessManager::handle_chunk(
@@ -67,78 +132,16 @@ void ProcessManager::handle_chunk(
 	if(should_notify) wait_cv.notify_all();
 }
 
-void ProcessManager::start_drain_for(const string &process_name, const shared_ptr<ManagedProcess> &mp){
-	if(!mp) return;
-	mp->shutting_down = false;
-	mp->drain_thread = thread([this, process_name, mp](){
-		uint8_t buffer[4096];
+void ProcessManager::run_dummy(const string &process_name){
+	const auto mp = make_shared<ManagedProcess>();
+	mp->proc = nullptr;
+	mp->logs.history_enabled = true;
 
-		struct StreamInfo{
-			reproc::stream stream;
-			const char *label;
-			int event;
-		};
-		constexpr StreamInfo streams[] = {
-			{reproc::stream::out, "stdout", reproc::event::out}, {reproc::stream::err, "stderr", reproc::event::err}
-		};
+	const path log_path = log_base_dir / (process_name + ".log");
+	mp->logs.log.open(log_path, ios::out | ios::trunc);
 
-		while(true){
-			//log(LogLevel::DEBUG, "poll start "+process_name);
-			auto [events, ec] = mp->proc->poll(reproc::event::out | reproc::event::err | reproc::event::exit,
-												reproc::milliseconds(100));
-			//log(LogLevel::DEBUG, "poll end "+process_name);
-			if(mp->shutting_down) break;
-			if(ec == errc::timed_out) continue;
-			if(ec){
-				if(ec == errc::broken_pipe || ec == errc::no_such_process){
-					log(LogLevel::DEBUG, "Drain thread for {} finished (normal exit): {}", process_name, ec.message());
-				} else{
-					log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message(),
-						ec.value());
-				}
-				break;
-			}
-			for(const auto &s: streams){
-				if(!(events & s.event)) continue;
-
-				while(true){
-					auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-
-					if(read_ec){
-						if(read_ec == errc::resource_unavailable_try_again || read_ec == errc::operation_would_block){
-							break;
-						}
-						break;
-					}
-					if(n == 0) break;
-					handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
-				}
-			}
-		}
-		mp->proc->close(reproc::stream::in);
-
-		// Flush anything left in the pipe after shutting_down is set
-		log(LogLevel::DEBUG, "flush start " + process_name);
-		for(const auto &s: streams){
-			while(true){
-				auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
-				if(poll_ec || !(events & s.event)) break; // no data or error
-
-				auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-				if(read_ec || n == 0) break;
-				handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
-			}
-		}
-
-		log(LogLevel::DEBUG, "flush done {}", process_name);
-		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
-	});
-}
-
-ProcessManager::~ProcessManager(){
-	stop_all();
 	lock_guard lock(logger_mtx);
-	if(combined_log.is_open()) combined_log.close();
+	processes[process_name] = mp;
 }
 
 void ProcessManager::run(const string &process_name, const vector<string> &cmd, const path &working_dir,
@@ -201,6 +204,11 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 		}
 		throw runtime_error("Failed to start " + process_name + ": " + ec.message());
 	}
+
+	// Put the child in its own process group so killpg kills the whole tree.
+	const pid_t child_pid = mp->proc->pid().first;
+	setpgid(child_pid, child_pid);
+	mp->pgid = child_pid;
 
 	start_drain_for(process_name, mp);
 
@@ -296,7 +304,6 @@ void ProcessManager::stop(const string &process_name){
 		// Clean up wait state and notify any waiting threads
 		mp->logs.history_enabled = false;
 		mp->shutting_down = true;
-		processes.erase(proc_iter);
 	}
 	wait_cv.notify_all();
 
@@ -304,12 +311,27 @@ void ProcessManager::stop(const string &process_name){
 	operations.first = {reproc::stop::terminate, reproc::milliseconds(500)};
 	operations.second = {reproc::stop::kill, reproc::milliseconds(500)};
 
-	if(mp->proc){
+	if(mp->pgid > 0){
+		killpg(mp->pgid, SIGTERM);
+		killpg(mp->pgid, SIGKILL);
+	} else if(mp->proc){
 		mp->proc->terminate();
 		mp->proc->kill();
 	}
 
+	if(mp->proc){
+		mp->proc->close(reproc::stream::in);
+		mp->proc->close(reproc::stream::out);
+		mp->proc->close(reproc::stream::err);
+	}
+
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();
+
+	// Erase after drain thread exits so flush-phase handle_chunk calls still find the process
+	{
+		lock_guard lock(logger_mtx);
+		processes.erase(process_name);
+	}
 
 	// Call on_stop callback if registered
 	if(mp->before_stop_callback){
@@ -333,6 +355,22 @@ void ProcessManager::stop(const string &process_name){
 	}
 }
 
+void ProcessManager::before_stop(const string &process_name, const function<void()> &callback){
+	lock_guard lock(logger_mtx);
+	const auto proc_iter = processes.find(process_name);
+	if(proc_iter != processes.end() && proc_iter->second){
+		proc_iter->second->before_stop_callback = callback;
+	}
+}
+
+void ProcessManager::after_stop(const string &process_name, const function<void()> &callback){
+	lock_guard lock(logger_mtx);
+	const auto proc_iter = processes.find(process_name);
+	if(proc_iter != processes.end() && proc_iter->second){
+		proc_iter->second->after_stop_callback = callback;
+	}
+}
+
 void ProcessManager::stop_all(){
 	vector<string> process_names;
 	{
@@ -349,21 +387,5 @@ void ProcessManager::stop_all(){
 		}
 	}
 	log(LogLevel::DEBUG, "All processes stopped");
-}
-
-void ProcessManager::before_stop(const string &process_name, const function<void()> &callback){
-	lock_guard lock(logger_mtx);
-	const auto proc_iter = processes.find(process_name);
-	if(proc_iter != processes.end() && proc_iter->second){
-		proc_iter->second->before_stop_callback = callback;
-	}
-}
-
-void ProcessManager::after_stop(const string &process_name, const function<void()> &callback){
-	lock_guard lock(logger_mtx);
-	const auto proc_iter = processes.find(process_name);
-	if(proc_iter != processes.end() && proc_iter->second){
-		proc_iter->second->after_stop_callback = callback;
-	}
 }
 }

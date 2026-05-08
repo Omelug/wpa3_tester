@@ -28,6 +28,7 @@ class ProcessManager{
 
 	struct ManagedProcess{
 		std::shared_ptr<reproc::process> proc;
+		pid_t pgid{-1};
 		std::thread drain_thread;
 		std::atomic<bool> shutting_down{false};
 		ProcessLogs logs;

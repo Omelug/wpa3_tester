@@ -23,6 +23,7 @@ set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+set(PCAP_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_SHARED_LIB OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_ACK_TRACKER OFF CACHE BOOL "" FORCE)
@@ -56,6 +57,27 @@ FetchContent_Declare(doctest
         GIT_SHALLOW TRUE
         OVERRIDE_FIND_PACKAGE
 )
+
+FetchContent_Declare( libpcap
+        GIT_REPOSITORY https://github.com/the-tcpdump-group/libpcap.git
+        GIT_TAG libpcap-1.10.6
+)
+FetchContent_MakeAvailable(libpcap)
+
+add_library(pcap_imported SHARED IMPORTED GLOBAL)
+set_target_properties(pcap_imported PROPERTIES
+        IMPORTED_LOCATION ${libpcap_BINARY_DIR}/libpcap.so
+        INTERFACE_INCLUDE_DIRECTORIES "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}"
+)
+
+set(PCAP_INCLUDE_DIR "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}" CACHE PATH "" FORCE)
+set(PCAP_LIBRARY ${libpcap_BINARY_DIR}/libpcap.so CACHE FILEPATH "" FORCE)
+set(PCAP_FOUND TRUE CACHE BOOL "" FORCE)
+set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
+
+include_directories(${libpcap_SOURCE_DIR} ${libpcap_BINARY_DIR})
+
+
 FetchContent_Declare(libtins
         GIT_REPOSITORY https://github.com/mfontanini/libtins.git
         GIT_TAG v4.5
@@ -65,6 +87,7 @@ FetchContent_Declare(libtins
         ${CMAKE_BINARY_DIR}/_deps/libtins-src/include/tins/ip_address.h
         OVERRIDE_FIND_PACKAGE
 )
+
 FetchContent_Declare(reproc
         GIT_REPOSITORY https://github.com/DaanDeMeyer/reproc
         GIT_TAG v14.2.5
@@ -83,7 +106,14 @@ FetchContent_Declare(
         GIT_TAG master
 )
 
-FetchContent_MakeAvailable(reproc libtins doctest argparse)
+FetchContent_Declare(yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG 0.8.0
+        GIT_SHALLOW TRUE
+)
+
+# FIXMe json broken with paralell donwlonding
+FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
 
@@ -100,11 +130,15 @@ target_include_directories(doctest_headers INTERFACE
         "${doctest_SOURCE_DIR}/doctest"
 )
 
-
-find_package(yaml-cpp REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
-pkg_check_modules(LIBSSH REQUIRED libssh)
-if (NOT LIBSSH_FOUND)
-    message(FATAL_ERROR "libssh not found. Run: sudo apt install libssh-dev")
-endif ()
+
+pkg_check_modules(LIBSSH libssh)
+if(NOT LIBSSH_FOUND)
+    FetchContent_Declare(libssh
+            GIT_REPOSITORY https://gitlab.com/libssh/libssh-mirror.git
+            GIT_TAG libssh-0.11.1
+            GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(libssh)
+endif()

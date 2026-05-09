@@ -1,0 +1,4 @@
+attacker_module: module1
+actors:
+  only_actor:
+    source: internal

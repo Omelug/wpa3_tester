@@ -60,6 +60,8 @@ TEST_CASE("RunStatus Config Validation - Test configuration"){
         {"8. netns with internal (valid)", "08_test_netns_internal_valid.yaml", "08_test_netns_internal_valid.yaml", true},
         {"9. netns with external (invalid)", "09_error_netns_external.yaml", "", false},
         {"10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false},
+        {"14. extends as list (two bases merged)", "14_test_extends_list.yaml", "01_test_happy_path_minimal.yaml", true},
+        {"15. extends as list (current overrides base)", "15_test_extends_list_override.yaml", "01_test_happy_path_minimal.yaml", true},
     };
     test_case_loop(test_base, tests);
 }
@@ -70,6 +72,9 @@ TEST_CASE ("RunStatus Config Validation - Validator configuration"){
         {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
         {"2. validator extends", "02_test_validator_extends.yaml",    "01_result_validator_minimal.yaml", true},
         {"3. validator extends", "03_error_validator_extends.yaml",    "", false},
+        {"4. validator as list (single)", "04_test_validator_list_single.yaml", "01_result_validator_minimal.yaml", true},
+        {"5. validator as list (multi, all pass)", "05_test_validator_list_multi.yaml", "01_result_validator_minimal.yaml", true},
+        {"6. validator as list (one fails)", "06_error_validator_list_fail.yaml", "", false},
     };
     test_case_loop(test_base, tests);
 }

@@ -54,11 +54,16 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 		return current_node;
 	}
 
-	// resolve validator paths to be absolute
-	if(current_node.contains("validator") && current_node["validator"].is_string()){
-		const path schema_rel_path = current_node["validator"].get<string>();
-		const path schema_abs_path = absolute(base_dir / schema_rel_path);
-		current_node["validator"] = schema_abs_path.string();
+	// resolve validator paths to be absolute (string or list)
+	if(current_node.contains("validator")){
+		if(current_node["validator"].is_string()){
+			current_node["validator"] = absolute(base_dir / current_node["validator"].get<string>()).string();
+		} else if(current_node["validator"].is_array()){
+			for(auto &v: current_node["validator"]){
+				if(v.is_string())
+					v = absolute(base_dir / v.get<string>()).string();
+			}
+		}
 	}
 
 	if(!current_node.contains("extends")){
@@ -68,25 +73,42 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 		return current_node;
 	}
 
-	// extends
-	const path parent_path = absolute(base_dir / current_node["extends"].get<string>());
-	const string parent_path_str = parent_path.string();
-
-	if(ranges::find(hierarchy, parent_path_str) != hierarchy.end()){
-		throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
+	// normalize extends to a list
+	json extends_list;
+	if(current_node["extends"].is_string()){
+		extends_list = json::array({current_node["extends"]});
+	} else if(current_node["extends"].is_array()){
+		extends_list = current_node["extends"];
+	} else{
+		throw config_err("'extends' must be a string or list of strings");
 	}
-
-	hierarchy.push_back(parent_path_str);
 	current_node.erase("extends");
 
-	const YNode parent_yaml = YAML::LoadFile(parent_path.string());
-	json parent_json = yaml_to_json(parent_yaml);
-	deep_merge(parent_json, current_node);
-	parent_json = resolve_extends(parent_json, parent_path.parent_path(), hierarchy);
+	// resolve current node's own children relative to its base_dir first
+	for(auto &[key, value]: current_node.items()){
+		value = resolve_extends(value, base_dir, hierarchy);
+	}
 
-	// remove from hierarchy
-	hierarchy.pop_back();
-	return parent_json;
+	// merge all parents in order (later entries override earlier)
+	json merged = json::object();
+	for(const auto &ext_item: extends_list){
+		const path parent_path = absolute(base_dir / ext_item.get<string>());
+		const string parent_path_str = parent_path.string();
+
+		if(ranges::find(hierarchy, parent_path_str) != hierarchy.end()){
+			throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
+		}
+
+		hierarchy.push_back(parent_path_str);
+		json parent_json = yaml_to_json(YAML::LoadFile(parent_path.string()));
+		parent_json = resolve_extends(parent_json, parent_path.parent_path(), hierarchy);
+		deep_merge(merged, parent_json);
+		hierarchy.pop_back();
+	}
+
+	// current node overrides all parents
+	deep_merge(merged, current_node);
+	return merged;
 }
 
 json RunStatus::extends_recursive(const nlohmann::json &config_json, const string &config_path){
@@ -97,13 +119,20 @@ json RunStatus::extends_recursive(const nlohmann::json &config_json, const strin
 
 void RunStatus::validate_recursive(nlohmann::json &current_node, const path &base_dir){
 	if(current_node.is_object()){
-		if(current_node.contains("validator") && current_node.at("validator").is_string()){
-			const auto schema_file = current_node.at("validator").get<string>();
-			const path schema_path = base_dir / schema_file;
-
-			const YAMLValidator validator(schema_path);
-			const YNode node = YAML::LoadFile(schema_path.string());
-			validator.validate(current_node);
+		if(current_node.contains("validator")){
+			auto apply_validator = [&](const string &schema_file){
+				const YAMLValidator validator(base_dir / schema_file);
+				validator.validate(current_node);
+			};
+			if(current_node.at("validator").is_string()){
+				apply_validator(current_node.at("validator").get<string>());
+			} else if(current_node.at("validator").is_array()){
+				// copy before the loop: validate() reassigns current_node, which invalidates iterators into it
+				const json validator_list = current_node.at("validator");
+				for(const auto &v: validator_list){
+					if(v.is_string()) apply_validator(v.get<string>());
+				}
+			}
 			current_node.erase("validator");
 		}
 

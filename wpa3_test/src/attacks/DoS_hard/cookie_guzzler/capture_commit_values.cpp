@@ -1,14 +1,13 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include <fstream>
 #include <unistd.h>
-#include <csignal>
 #include <attacks/components/sniffer_helper.h>
 #include <tins/hw_address.h>
 
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "logger/log.h"
-#include "system/hw_capabilities.h"
 #include "pcap/pcap.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;

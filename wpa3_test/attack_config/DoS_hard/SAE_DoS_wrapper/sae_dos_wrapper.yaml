@@ -58,11 +58,11 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 30
+  attack_time_sec: 60
   # Which band the attacker adapter is on
   adapter_band: "2.4GHz"
   # Attack from orchestator_master_en.py ADAPTER_KONFIGURATION angriff field
-  attack_type: "omnivore"
+  attack_type: "case12_bursty_auth"
   channel_5ghz: "104"
   packets_per_second_limit: 1000
   burst_size_optimal: 64

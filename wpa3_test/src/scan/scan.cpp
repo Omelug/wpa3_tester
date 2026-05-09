@@ -55,31 +55,31 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 	}
 
 	const auto add_entity = [&](const string &mac, bool is_ap, const string &ssid = ""){
-		ActorPtr actor_config;
+		ActorPtr actor;
 		if(seen.contains(mac)){
-			actor_config = seen.at(mac);
+			actor = seen.at(mac);
 		} else{
-			actor_config = ActorPtr(make_shared<Actor_config>());
-			seen.emplace(mac, actor_config);
+			actor = ActorPtr(make_shared<Actor_config>());
+			seen.emplace(mac, actor);
 		}
-		actor_config->set_mac(mac);
-		actor_config[SK::source] = "external";
-		actor_config[SK::ssid] = ssid;
-		actor_config[BK::AP] = is_ap;
+		actor->set_mac(mac);
+		actor[SK::source] = "external";
+		actor[SK::ssid] = ssid;
+		actor[BK::AP] = is_ap;
 
 		if(channel_freq > 0){
 			if(channel_freq >= 2412 && channel_freq <= 2484){
-				actor_config[BK::GHz2_4] = true;
+				actor[BK::GHz2_4] = true;
 			} else if(channel_freq >= 5170 && channel_freq <= 5885){
-				actor_config[BK::GHz5] = true;
+				actor[BK::GHz5] = true;
 			} else if(channel_freq >= 5945 && channel_freq <= 7125){
-				actor_config[BK::GHz6] = true;
+				actor[BK::GHz6] = true;
 			}
 			const int channel_num = hw_capabilities::freq_to_channel(channel_freq);
-			actor_config[SK::channel] = to_string(channel_num);
+			actor[SK::channel] = to_string(channel_num);
 		}
 
-		if(signal != -1){ actor_config[SK::signal] = to_string(signal); }
+		if(signal != -1){ actor[SK::signal] = to_string(signal); }
 	};
 
 	// AP: Beacon

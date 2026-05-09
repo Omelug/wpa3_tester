@@ -167,5 +167,4 @@ void ProcessManager::discard_history(const string &actor_name){
 	throw setup_err("Process " + actor_name + " not found for discard history");
 }
 
-// -----------------------
 }

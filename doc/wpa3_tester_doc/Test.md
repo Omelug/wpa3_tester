@@ -1,6 +1,6 @@
 # Test
 
-The test is defined by a YAML configuration file.
+- defined by a YAML configuration file.
 
 All tests must pass validation through the main [validator](../../wpa3_test/attack_config/validator/test_validator.schema.yaml).
 

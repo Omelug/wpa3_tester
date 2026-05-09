@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <thread>
-
+#include <sys/mount.h>
 #include "config/Observer_config.h"
 
 using namespace std;
@@ -56,17 +56,37 @@ static vector<pid_t> pids_in_ns(const string &ns_name){
 void kill_process_in_ns_name(const string &ns_name){
 	const vector<pid_t> pids = pids_in_ns(ns_name);
 	if(pids.empty()) return;
-	for(const pid_t p: pids){ kill(p, SIGTERM); }
+
+	for(const pid_t p : pids) kill(p, SIGTERM);
 
 	const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
-	for(const pid_t p: pids){
-		while(exists("/proc/" + to_string(static_cast<long>(p)))){
-			if(chrono::steady_clock::now() >= deadline){
-				kill(p, SIGKILL);
-				break;
-			}
-			this_thread::sleep_for(chrono::milliseconds(10));
+
+	// Wait for all pids together under one shared deadline
+	bool all_dead = false;
+	while(!all_dead && chrono::steady_clock::now() < deadline){
+		all_dead = true;
+		for(const pid_t p : pids){
+			if(exists("/proc/" + to_string(static_cast<long>(p))))
+				all_dead = false;
 		}
+		if(!all_dead) this_thread::sleep_for(chrono::milliseconds(10));
+	}
+
+	// SIGKILL survivors
+	for(const pid_t p : pids){
+		if(exists("/proc/" + to_string(static_cast<long>(p)))){
+			kill(p, SIGKILL);
+			log(LogLevel::DEBUG, "SIGKILL process {} from namespace {}", p, ns_name);
+		}
+	}
+
+	// Wait for SIGKILL to take effect — kernel needs a moment
+	for(const pid_t p : pids){
+		const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(200);
+		while(exists("/proc/" + to_string(static_cast<long>(p))) &&
+			  chrono::steady_clock::now() < kill_deadline)
+			this_thread::sleep_for(chrono::milliseconds(5));
+
 		waitpid(p, nullptr, WNOHANG);
 		log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
 	}
@@ -131,11 +151,18 @@ void kill_processes_in_all_non_default_ns(){
 static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 	const chrono::milliseconds timeout = chrono::milliseconds(3000)){
     // Delete netns via unlink — same as ip netns del
-    const string ns_path = "/var/run/netns/" + ns_name;
-    if(unlink(ns_path.c_str()) != 0){
-        log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
-        return;
-    }
+	const string ns_path = "/var/run/netns/" + ns_name;
+
+	// Must umount bind mount before unlink
+	if(::umount2(ns_path.c_str(), MNT_DETACH) != 0){
+		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
+		// Try unlink anyway — might work if it's not a bind mount
+	}
+
+	if(::unlink(ns_path.c_str()) != 0){
+		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+		return;
+	}
 
     if(ifaces.empty()) return;
 

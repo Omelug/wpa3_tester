@@ -11,7 +11,7 @@ constexpr string program_name = "mausezahn";
 
 void start_mausezahn(RunStatus &run_status, const string &actor_name, const string &src_name, const string &dst_name){
 	vector<string> command = {};
-	add_nets(run_status, command, src_name);
+	add_nets_header(run_status, command, src_name);
 
 	command.insert(command.end(), {
 						program_name, run_status.get_actor(src_name)["iface"], "-d", "10m", // 1 millisecond

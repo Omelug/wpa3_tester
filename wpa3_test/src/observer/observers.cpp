@@ -17,7 +17,7 @@ path get_observer_folder(const RunStatus &rs, const string &observer_name){
 	return obs_dir;
 }
 
-void add_nets(const RunStatus &run_status, vector<string> &command, const string &src_name){
+void add_nets_header(const RunStatus &run_status, vector<string> &command, const string &src_name){
 	if(!run_status.config.at("actors").at(src_name).contains("netns")){ return; }
 	const auto netns_node = run_status.config.at("actors").at(src_name).at("netns");
 	if(!netns_node.is_null()){

@@ -62,3 +62,11 @@ target_link_libraries(run_injection_check_test PRIVATE
 #endif()
 
 add_test(NAME InjectionCheckTest COMMAND ${CMAKE_BINARY_DIR}/tests/system/run_injection_check_test)
+
+# utils tests
+add_executable(run_utils_tests test_utils.cpp)
+target_link_libraries(run_utils_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME UtilsTests COMMAND run_utils_tests)

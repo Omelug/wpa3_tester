@@ -64,7 +64,7 @@ string all_actors_mac_filter(const RunStatus &rs, const bool broadcast){
 
 void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	vector<string> command = {};
-	add_nets(rs, command, node_name);
+	add_nets_header(rs, command, node_name);
 
 	string pcap_path = get_observer_folder(rs, program_name) / (node_name + "_capture.pcap");
 	const optional<string> iface = rs.get_actor(node_name)[SK::sniff_iface];

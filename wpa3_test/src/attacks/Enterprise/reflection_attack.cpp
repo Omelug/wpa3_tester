@@ -27,7 +27,7 @@ void setup_attack(RunStatus &rs){
 void start_dragonslayer(RunStatus &rs, const string &actor_name, const string &iface, const string &target_type){
 	assert(target_type == "ap" || target_type == "sta");
 	vector<string> command = {};
-	observer::add_nets(rs, command, actor_name);
+	observer::add_nets_header(rs, command, actor_name);
 	const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
 	// TODO compile dragonslayer, if not compiled
 

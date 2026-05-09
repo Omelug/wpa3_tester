@@ -51,7 +51,7 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 	const string iface = sniff ? MONITOR_IFACE_PREFIX + *sniff : actor["iface"];
 
 	vector<string> command;
-	add_nets(rs, command, actor_name);
+	add_nets_header(rs, command, actor_name);
 	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", obs_folder / (actor_name + "_capture.pcap")});
 	if(!filter.empty()) command.insert(command.end(), {"-f", filter});
 

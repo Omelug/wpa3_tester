@@ -91,7 +91,7 @@ constexpr string program_name = "iperf3";
 
 void start_iperf3(RunStatus &run_status, const string &actor_name, const string &src_name, const string &dst_name){
 	vector<string> command = {};
-	add_nets(run_status, command, src_name);
+	add_nets_header(run_status, command, src_name);
 	command.insert(command.end(), {
 						"stdbuf", "-oL", "-eL", // disable buffering for immediate output
 						program_name, "-B", run_status.config.at("actors").at(src_name).at("ip_addr"), "-c",
@@ -104,7 +104,7 @@ void start_iperf3(RunStatus &run_status, const string &actor_name, const string 
 
 void start_iperf3_server(RunStatus &run_status, const string &actor_name, const string &server_name){
 	vector<string> command = {};
-	add_nets(run_status, command, server_name);
+	add_nets_header(run_status, command, server_name);
 	command.insert(command.end(), {
 						"stdbuf", "-oL", "-eL", // disable buffering for immediate output
 						program_name, "-s",     // server

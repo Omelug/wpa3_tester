@@ -22,7 +22,7 @@ void  start_dragondrain(RunStatus &rs, const string &actor_name, const string &i
 	const int r = att_cfg.at("r").get<int>();
 
 	vector<string> command = {};
-	observer::add_nets(rs, command, actor_name);
+	observer::add_nets_header(rs, command, actor_name);
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
 	command.insert(command.end(), {
 						dragondrain_folder + "/src/dragondrain", "-d", iface, "-a", target_mac, "-c", channel, "-b",

@@ -105,7 +105,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	}
 
 	vector<string> command = {};
-	observer::add_nets(rs, command, actor_name);
+	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
 						get_hostapd(version), "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
@@ -179,7 +179,7 @@ void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
 															path(rs.config_path).parent_path());
 
 	vector<string> command = {};
-	observer::add_nets(rs, command, actor_name);
+	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
 						get_wpa_supplicant(version), "-i", rs.get_actor(actor_name)["iface"], "-c", wpa_supp_config_path
@@ -210,7 +210,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	}
 
 	vector<string> command = {};
-	observer::add_nets(rs, command, actor_name);
+	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
 						"hostapd-mana",

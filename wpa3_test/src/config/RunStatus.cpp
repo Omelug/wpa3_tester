@@ -16,7 +16,7 @@ using namespace std;
 using namespace filesystem;
 
 RunStatus::RunStatus(const string &config_path, string testName, const string &sub_folder){
-	this->config_path = config_path;
+	_config_path = config_path;
 	if(!exists(config_path)){ throw config_err("Config not found: " + config_path); }
 
 	if(testName.empty()){
@@ -30,11 +30,11 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 	// add subfolder from test default
 	string actual_sub_folder = ".";
 	if(sub_folder.empty()){
-		actual_sub_folder = relative_from("attack_config", this->config_path);
+		actual_sub_folder = relative_from("attack_config", config_path);
 	}
-	run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
-	log(LogLevel::INFO, "Used config " + this->config_path);
-	this->config = config_validation(this->config_path);
+	_run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
+	log(LogLevel::INFO, "Used config {}", config_path);
+	_config = config_validation(_config_path);
 }
 
 void RunStatus::clean(){
@@ -48,7 +48,7 @@ void RunStatus::execute(){
 
 	// Ensure parent directories exist
 	error_code ec;
-	create_directories(run_folder, ec);
+	create_directories(_run_folder, ec);
 	if(ec) throw runtime_error("Unable to create run base directory");
 
 	//try {
@@ -61,8 +61,8 @@ void RunStatus::execute(){
 
 	config_requirement(); //include req validation
 	setup_test();
-	const path out_path = path(run_folder) / "test_config.yaml";
-	save_yaml(config, out_path);
+	const path out_path = _run_folder / "test_config.yaml";
+	save_yaml(_config, out_path);
 	run_test();
 	stats_test();
 	/*} catch (const exception& e) {
@@ -101,10 +101,9 @@ void RunStatus::get_or_create_connection(const ActorPtr &actor){
 
 void RunStatus::run_test(){
 	process_manager.write_log_all("@START");
-	const auto module_name = config.at("attacker_module");
-	const auto run_it = attack_module_maps::run_map.find(module_name);
+	const auto module_name = config().at("attacker_module");
 
-	if(run_it != attack_module_maps::run_map.end()){
+	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()){
 		run_it->second(*this);
 	} else{ log(LogLevel::DEBUG, "run function not set"); }
 
@@ -112,11 +111,9 @@ void RunStatus::run_test(){
 	process_manager.stop_all();
 }
 
-void RunStatus::stats_test(){
-	const auto module_name = config.at("attacker_module");
-	const auto run_it = attack_module_maps::stats_map.find(module_name);
-
-	if(run_it != attack_module_maps::stats_map.end()){
+void RunStatus::stats_test() const{
+	const auto module_name = config().at("attacker_module");
+	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.end()){
 		run_it->second(*this);
 	} else{ log(LogLevel::DEBUG, "run function not set"); }
 }
@@ -202,12 +199,12 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 }
 
 void RunStatus::save_actor_interface_mapping() const{
-	if(run_folder.empty()){
+	if(_run_folder.empty()){
 		log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
 		return;
 	}
 
-	const string path = run_folder + "/mapping.csv";
+	const string path = _run_folder / "mapping.csv";
 	ofstream ofs(path, ios::out | ios::trunc);
 	if(!ofs){
 		log(LogLevel::ERROR, "Failed to open {} for writing CSV mapping", path);

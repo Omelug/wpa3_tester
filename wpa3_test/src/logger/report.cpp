@@ -7,7 +7,7 @@ using namespace std;
 using namespace filesystem;
 
 void attack_config_table(ofstream &report, const RunStatus &rs){
-	auto attack_cfg = rs.config.at("attack_config");
+	auto attack_cfg = rs.config().at("attack_config");
 	report << "## Attack Configuration\n\n";
 	for(auto &[key, value]: attack_cfg.items()){
 		report << "- **" << key << "**: " << value << "\n";
@@ -16,7 +16,7 @@ void attack_config_table(ofstream &report, const RunStatus &rs){
 }
 
 void attack_mapping_table(ofstream &report, const RunStatus &rs){
-	auto mapping = path(rs.run_folder) / "mapping.csv";
+	auto mapping = rs.run_folder()/ "mapping.csv";
 
 	if(!exists(mapping)){
 		log(LogLevel::WARNING, "Mapping file not found: " + mapping.string());

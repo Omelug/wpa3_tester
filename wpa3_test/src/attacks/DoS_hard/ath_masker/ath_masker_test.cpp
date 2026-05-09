@@ -17,7 +17,7 @@ void setup_attack(RunStatus &rs){
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
-	const int test_count = rs.config.at("attack_config").at("test_mac_count").get<int>();
+	const int test_count = rs.config().at("attack_config").at("test_mac_count").get<int>();
 	const auto att = rs.get_actor("attacker");
 	const auto ap = rs.get_actor("access_point");
 

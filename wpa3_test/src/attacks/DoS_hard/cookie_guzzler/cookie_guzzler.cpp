@@ -69,7 +69,7 @@ void run_attack(RunStatus &rs){
 	const ActorPtr ap = rs.get_actor("access_point");
 	const ActorPtr attacker = rs.get_actor("attacker");
 
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const optional<dos_helpers::SAEPair> sae_params = get_commit_values(
 		rs, attacker["iface"], attacker["sniff_iface"],rs.get_actor("access_point")->get(SK::ssid), ap["mac"], 30);
 
@@ -106,7 +106,7 @@ void stats_attack(const RunStatus &rs){
 	//const string AP_graph_path =
 	//    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
 
-	const auto ap = rs.config.at("actors").at("access_point");
+	const auto ap = rs.config().at("actors").at("access_point");
 	observer::resource_checker::create_graph(rs, ap["source"], elements);
 }
 }

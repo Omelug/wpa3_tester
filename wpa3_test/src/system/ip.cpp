@@ -15,14 +15,14 @@
 namespace wpa3_tester::ip{
 using namespace std;
 
-void set_ip(RunStatus &run_status, const string &actor_name){
-	const auto ip_addr = run_status.config.at("actors").at(actor_name).at("ip_addr").get<string>();
-	const auto actor = run_status.get_actor(actor_name);
+void set_ip(RunStatus &rs, const string &actor_name){
+	const auto ip_addr = rs.config().at("actors").at(actor_name).at("ip_addr").get<string>();
+	const auto actor = rs.get_actor(actor_name);
 	if(actor.get()->conn != nullptr){
-		run_status.get_actor(actor_name).get()->conn->set_ip(actor["iface"], ip_addr);
+		rs.get_actor(actor_name).get()->conn->set_ip(actor["iface"], ip_addr);
 	} else{
 		vector<string> command = {};
-		observer::add_nets_header(run_status, command, actor_name);
+		observer::add_nets_header(rs, command, actor_name);
 		command.insert(command.end(), {"ip", "addr", "add", ip_addr + "/24", "dev", actor["iface"]});
 		hw_capabilities::run_cmd(command);
 	}

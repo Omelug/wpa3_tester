@@ -23,24 +23,23 @@ struct ConfigTestCase{
 
 void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
     for(const auto &[description, input_yaml, expected_yaml, should_pass]: tests){
-        SUBCASE(description.c_str())
-        {
-            path input_path = test_base / input_yaml;
-            RunStatus rs;
-            rs.config_path = input_path.string();
+        SUBCASE(description.c_str()){
+	        path input_path = test_base / input_yaml;
+        	RunStatus rs;
+        	rs.config_path(input_path.string());
 
             if(should_pass){
-                REQUIRE_NOTHROW(rs.config = RunStatus::config_validation(rs.config_path));
+                REQUIRE_NOTHROW(rs.config(RunStatus::config_validation(rs.config_path())));
 
                 path expected_path = test_base / expected_yaml;
                 nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path.string()));
 
-                auto diff = nlohmann::json::diff(expected_json, rs.config);
+                auto diff = nlohmann::json::diff(expected_json, rs.config());
                 INFO("Diff (expected vs actual): " << diff.dump(4));
-                INFO("Actual JSON from RunStatus: " << rs.config.dump(4));
-                CHECK_EQ(rs.config, expected_json);
+                INFO("Actual JSON from RunStatus: " << rs.config().dump(4));
+                CHECK_EQ(rs.config(), expected_json);
             } else{
-                CHECK_THROWS_AS(rs.config = RunStatus::config_validation(rs.config_path), wpa3_tester::config_err);
+                CHECK_THROWS_AS(rs.config(RunStatus::config_validation(rs.config_path())), wpa3_tester::config_err);
             }
         }
     }
@@ -163,12 +162,9 @@ TEST_CASE("RunStatus - parse_requirements()"){
     const path test_base = this_file.parent_path() / "config_validation"/"test";
     
     SUBCASE("Parse actors and observers from config") {
-        path config_path = test_base / "01_test_happy_path_minimal.yaml";
-        RunStatus rs;
-        rs.config_path = config_path.string();
-        rs.config = RunStatus::config_validation(rs.config_path);
+        RunStatus rs(test_base / "01_test_happy_path_minimal.yaml", "", ".");
 
-        rs.config["observers"] = nlohmann::json{
+        rs.config()["observers"] = nlohmann::json{
             {"tcpdump_observer", {
                 {"program", "tcpdump"},
                 {"filter", "wlan.fc.type_subtype == 0x08"}
@@ -185,32 +181,24 @@ TEST_CASE("RunStatus - parse_requirements()"){
         REQUIRE(rs.actors.contains("only_actor"));
         CHECK_EQ(rs.get_actor("only_actor")["actor_name"], "only_actor");
         REQUIRE_EQ(rs.observers.size(), 2);
-        REQUIRE((rs.observers.contains("tcpdump_observer")));
-        REQUIRE((rs.observers.contains("tshark_observer")));
+		REQUIRE(rs.observers.contains("tcpdump_observer"));
+		REQUIRE(rs.observers.contains("tshark_observer"));
         CHECK_EQ(rs.observers.at("tcpdump_observer")->observer_name, "tcpdump_observer");
         CHECK_EQ(rs.observers.at("tshark_observer")->observer_name, "tshark_observer");
     }
     
     SUBCASE("Empty observers") {
-        path config_path = test_base / "01_test_happy_path_minimal.yaml";
-        RunStatus rs;
-        rs.config_path = config_path.string();
-        rs.config = RunStatus::config_validation(rs.config_path);
-
-        rs.config["observers"] = nlohmann::json::object();
+        RunStatus rs(test_base / "01_test_happy_path_minimal.yaml", "", ".");
+        rs.config()["observers"] = nlohmann::json::object();
         
         REQUIRE_NOTHROW(rs.parse_requirements());
         REQUIRE(rs.observers.empty());
     }
     
     SUBCASE("Multiple actors parsing - actor_names") {
-        path config_path = test_base / "02_test_happy_path_full.yaml";
-        RunStatus rs;
-        rs.config_path = config_path.string();
-        rs.config = RunStatus::config_validation(rs.config_path);
-
+        RunStatus rs(test_base/"02_test_happy_path_full.yaml", "", ".");
         REQUIRE_NOTHROW(rs.parse_requirements());
-        REQUIRE((rs.actors.size() >= 1));
+		REQUIRE_GT(rs.actors.size(), 1);
 
         for (const auto& [actor_name, actor] : rs.actors) {
             CHECK_EQ(actor[SK::actor_name], actor_name);

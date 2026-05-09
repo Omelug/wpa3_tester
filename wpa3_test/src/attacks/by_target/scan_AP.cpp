@@ -115,7 +115,7 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const auto target_ap = rs.get_actor("target");
 	const auto scanner = rs.get_actor("scanner");
 
@@ -125,9 +125,9 @@ void run_attack(RunStatus &rs){
 	if(att_cfg.value("beacon_scan", false)){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for " + to_string(timeout) + " seconds");
-		auto beacon_pcap = path(rs.run_folder) / (target_ap["actor_name"] + ".pcap");
+		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
 		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
-		ofstream ofs(path(rs.run_folder) / "beacon_scan.txt");
+		ofstream ofs(rs.run_folder()/ "beacon_scan.txt");
 		ofs << "Scan results for " << target_ap["mac"] << "\n";
 		ofs << scan_ap.to_str() << endl;
 		ofs.close();
@@ -135,7 +135,7 @@ void run_attack(RunStatus &rs){
 
 	if(att_cfg.value("stations_scan", false)){
 		const auto timeout = att_cfg.value("stations_timeout_sec", 10);
-		scan::station_scan(scan_ap, scanner["iface"], timeout, path(rs.run_folder));
+		scan::station_scan(scan_ap, scanner["iface"], timeout, path(rs.run_folder()));
 	}
 
 	if(att_cfg.value("EAP_scan", false)){
@@ -169,7 +169,7 @@ void run_attack(RunStatus &rs){
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
 
-		ofstream ofs(path(rs.run_folder) / "ACM_trigger.txt");
+		ofstream ofs(rs.run_folder()/ "ACM_trigger.txt");
 		ofs << "ACM trigger after " << count << " frames " << "\n";
 		ofs << scan_ap.to_str() << "\n";
 		ofs << dos_helpers::bytes_to_hex(cookie.token) << "\n";

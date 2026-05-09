@@ -35,6 +35,7 @@
       <w>disconn</w>
       <w>dlinkroot</w>
       <w>dragondrain</w>
+      <w>eapol</w>
       <w>endl</w>
       <w>eopnotsupp</w>
       <w>eperm</w>
@@ -64,6 +65,7 @@
       <w>logread</w>
       <w>m'ing</w>
       <w>macaddr</w>
+      <w>mausezahn</w>
       <w>meminfo</w>
       <w>memorycheck</w>
       <w>mfpc</w>
@@ -104,6 +106,7 @@
       <w>prevtime</w>
       <w>promisc</w>
       <w>psk</w>
+      <w>radiotap</w>
       <w>readlink</w>
       <w>reassoc</w>
       <w>reuseaddr</w>

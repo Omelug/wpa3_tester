@@ -42,7 +42,7 @@ void run_attack(RunStatus &rs){
         const auto ap        = rs.get_actor("access_point");
         const auto client       = rs.get_actor("client");
 
-        const auto& att_cfg    = rs.config.at("attack_config");
+        const auto& att_cfg    = rs.config().at("attack_config");
         const string real_ssid    = ap["ssid"];
         const string confused_ssid = att_cfg.value("confused_ssid", real_ssid);
         const bool   strip_rsn    = att_cfg.value("strip_rsn", false);

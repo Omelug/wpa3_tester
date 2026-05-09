@@ -1,7 +1,6 @@
 #include "config/RunStatus.h"
 #include "config/Actor_config.h"
 #include "system/hw_capabilities.h"
-#include "logger/error_log.h"
 #include "logger/log.h"
 #include <chrono>
 #include <filesystem>
@@ -21,12 +20,12 @@ namespace wpa3_tester{
 using namespace observer;
 
 void RunStatus::parse_requirements(){
-	for(const auto &[actor_name, actor]: config.at("actors").items()){
+	for(const auto &[actor_name, actor]: _config.at("actors").items()){
 		auto [it, inserted] = actors.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor)));
 		it->second[SK::actor_name] = actor_name;
 	}
-	if(!config.contains("observers")) return;
-	for(const auto &[observer_name, observer]: config.at("observers").items()){
+	if(!_config.contains("observers")) return;
+	for(const auto &[observer_name, observer]: _config.at("observers").items()){
 		auto [it, inserted] = observers.emplace(observer_name, ObserverPtr(make_shared<Observer_config>(observer)));
 		it->second->observer_name = observer_name;
 	}
@@ -300,17 +299,17 @@ void RunStatus::config_requirement(){
 	for(auto &[actor_name, actor]: internal_actors){
 		auto &opt_actor = internal_mapping.at(actor_name);
 		log(LogLevel::DEBUG, "Setup attempt for actor, current map size: {}", actors.size());
-		actor->setup_actor(config, opt_actor);
+		actor->setup_actor(_config, opt_actor);
 	}
 
 	for(auto &[actor_name, actor]: external_wb_actors){
 		auto &opt_actor = external_wb_mapping.at(actor_name);
-		actor->setup_actor(config, opt_actor);
+		actor->setup_actor(_config, opt_actor);
 	}
 
 	for(auto &[actor_name, actor]: external_bb_actors){
 		auto &opt_actor = external_bb_mapping.at(actor_name);
-		actor->setup_actor(config, opt_actor);
+		actor->setup_actor(_config, opt_actor);
 	}
 }
 }

@@ -34,8 +34,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 
 void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
 	//cfg->conn->ensure_wifi_ifaces();
-	const vector<string> radios = cfg->conn->get_radio_list();
-	for(const string &radio_name: radios){
+	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
 		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
 		actor_cfg[SK::radio] = radio_name;
@@ -262,7 +261,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 vector<int> RunStatus::get_external_BB_channels(){
 	//get channels from external actors
 	vector<int> all_channels;
-	for(const auto &[actor_name, actor_config]: config.at("actors").items()){
+	for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
 		if(actor_config.at("selection").contains("channel")){
 			int channel = actor_config.at("selection").at("channel");
 			all_channels.push_back(channel);
@@ -296,7 +295,7 @@ vector<ActorPtr> RunStatus::external_bb_options(){
 	const vector<int> all_channels = get_external_BB_channels();
 	if(all_channels.empty()){ return {}; }
 	const int timeout_external_bb_scan = get_global_config().at("timeout_external_bb_scan").get<int>();
-	return list_external_entities(config.at("scan_iface"), timeout_external_bb_scan, all_channels);
+	return list_external_entities(_config.at("scan_iface"), timeout_external_bb_scan, all_channels);
 }
 
 vector<ActorPtr> create_simulation(){

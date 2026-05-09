@@ -300,28 +300,28 @@ void RunSuiteStatus::execute(){
 	for(const auto &[name, test_path]: tests_paths){
 		RunStatus rs(test_path, name, ".");
 		rs.only_stats = this->only_stats;
-		path suite_name = rs.config.at("name").get<string>();
-		rs.run_folder = path(this->run_folder) / suite_name / "last_run" / name;
+		path suite_name = rs.config().at("name").get<string>();
+		rs.run_folder(run_folder/suite_name/"last_run"/name);
 
 		string rewrite_mode = "false";
 		if(config.contains("rewrite") && config.at("rewrite").is_string()){
 			rewrite_mode = config.at("rewrite").get<string>();
 		}
 
-		if(exists(rs.run_folder)){
+		if(exists(rs.run_folder())){
 			if(rewrite_mode == "false"){
 				log(LogLevel::DEBUG, "Skipping: " + name);
 				continue;
 			}
 
-			if(config.at("rewrite") == "errors" && !exists(path(rs.run_folder) / "errors.txt")){
+			if(config.at("rewrite") == "errors" && !exists(rs.run_folder() / "errors.txt")){
 				log(LogLevel::WARNING, "Skipping successful test : " + name);
 				continue;
 			}
 
 			if(config.value("delete_old", false)){
 				log(LogLevel::DEBUG, "Deleting old run folder: " + name);
-				remove_all(rs.run_folder);
+				remove_all(rs.run_folder());
 			}
 		}
 		rs.execute();

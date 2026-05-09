@@ -99,7 +99,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 
 vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern){
 	vector<LogTimePoint> timestamps;
-	const string actor_log = filesystem::path(rs.run_folder) / "logger" / (process_name + ".log");
+	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
 	if(!filesystem::exists(actor_log)){
 		log(LogLevel::ERROR, "Could not find file '" + actor_log + "'");
 		return {};

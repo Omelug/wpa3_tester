@@ -93,9 +93,9 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 }
 
 void run_hostapd(RunStatus &rs, const string &actor_name){
-	json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
-	const string hostapd_config_path = hostapd_config(rs.run_folder, actor_name, program_config,
-													path(rs.config_path).parent_path());
+	json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
+	const string hostapd_config_path = hostapd_config(rs.run_folder(), actor_name, program_config,
+													rs.config_path().parent_path());
 	rs.get_actor(actor_name)[SK::ssid] = get_ssid(program_config, hostapd_config_path);
 	rs.get_actor(actor_name)[SK::channel] = get_channel(program_config, hostapd_config_path);
 
@@ -115,7 +115,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 		string token;
 		while(ss >> token) command.push_back(token);
 	}
-	rs.process_manager.run(actor_name, command, rs.run_folder);
+	rs.process_manager.run(actor_name, command, rs.run_folder());
 }
 
 // --------- WPA_SUPPLICANT ---------------
@@ -168,15 +168,15 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 }
 
 void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
-	json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
+	json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
 
 	string version;
 	if(program_config.contains("version") && !program_config["version"].is_null()){
 		version = program_config["version"].get<string>();
 	}
 
-	const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder, actor_name, program_config,
-															path(rs.config_path).parent_path());
+	const string wpa_supp_config_path = wpa_supplicant_config(rs.run_folder(), actor_name, program_config,
+															rs.config_path().parent_path());
 
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
@@ -189,18 +189,18 @@ void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
 		string token;
 		while(ss >> token) command.push_back(token);
 	}
-	rs.process_manager.run(actor_name, command, rs.run_folder);
+	rs.process_manager.run(actor_name, command, rs.run_folder());
 }
 
 // --------- HOSTAPD_MANA ---------
 void run_hostapd_mana(RunStatus &rs, const string &actor_name){
-	const path hostapd_mana_config_path = path(rs.run_folder) / (actor_name + "_hostapd_mana.conf");
+	const path hostapd_mana_config_path = rs.run_folder()/ (actor_name + "_hostapd_mana.conf");
 
-	const json program_config = rs.config.at("actors").at(actor_name).at("setup").at("program_config");
-	auto rogue_ap_setup = rs.config.at("actors").at(actor_name).at("setup").at("program");
+	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
+	auto rogue_ap_setup = rs.config().at("actors").at(actor_name).at("setup").at("program");
 	if(rogue_ap_setup.contains("hostapd-mana_path")){
 		const path hostapd_path = rogue_ap_setup["hostapd-mana_path"].get<string>();
-		const path src = hostapd_path.is_absolute() ? hostapd_path : path(rs.config_path).parent_path() / hostapd_path;
+		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
 		copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
 	}
 
@@ -218,13 +218,13 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 						"-i", rs.get_actor(actor_name)["iface"], hostapd_mana_config_path,
 					});
 
-	rs.process_manager.run(actor_name, command, rs.run_folder);
+	rs.process_manager.run(actor_name, command, rs.run_folder());
 
-	const string log_path = (path(rs.run_folder) / "logger" / (actor_name+".log")).string();
+	const string log_path = (rs.run_folder() / "logger" / (actor_name+".log")).string();
 	ifstream log_file(log_path);
 	if(!log_file.is_open()) return;
 
-	const string output_path = (path(rs.run_folder) / "captured_hashes.txt").string();
+	const string output_path = (rs.run_folder() / "captured_hashes.txt").string();
 	ofstream out(output_path);
 
 	string line;

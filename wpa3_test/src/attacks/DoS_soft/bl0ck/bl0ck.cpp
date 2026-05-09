@@ -169,7 +169,7 @@ void speed_observation_start(RunStatus &rs){
 }
 
 void run_bl0ck_attack(RunStatus &rs){
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &attacker = rs.get_actor("attacker");
 	const string iface = attacker["iface"];
 

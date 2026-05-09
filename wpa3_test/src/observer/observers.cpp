@@ -7,7 +7,7 @@ using namespace std;
 using namespace filesystem;
 
 path get_observer_folder(const RunStatus &rs, const string &observer_name){
-	const path obs_dir = path(rs.run_folder) / "observer" / observer_name;
+	const path obs_dir = rs.run_folder()/"observer"/observer_name;
 	error_code ec;
 	create_directories(obs_dir, ec);
 	if(ec){
@@ -17,10 +17,9 @@ path get_observer_folder(const RunStatus &rs, const string &observer_name){
 	return obs_dir;
 }
 
-void add_nets_header(const RunStatus &run_status, vector<string> &command, const string &src_name){
-	if(!run_status.config.at("actors").at(src_name).contains("netns")){ return; }
-	const auto netns_node = run_status.config.at("actors").at(src_name).at("netns");
-	if(!netns_node.is_null()){
+void add_nets_header(const RunStatus &rs, vector<string> &command, const string &src_name){
+	if(!rs.config().at("actors").at(src_name).contains("netns")){ return; }
+	if(const auto netns_node = rs.config().at("actors").at(src_name).at("netns"); !netns_node.is_null()){
 		auto netns_client = netns_node.get<string>();
 		command.insert(command.end(), {"ip", "netns", "exec", netns_client});
 	}

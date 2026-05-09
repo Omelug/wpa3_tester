@@ -99,7 +99,7 @@ void run_attack(RunStatus &rs){
 	const ActorPtr ap       = rs.get_actor("access_point");
 	const ActorPtr client   = rs.get_actor("client");
 
-	const auto ssid = rs.config.at("actors").at("access_point")
+	const auto ssid = rs.config().at("actors").at("access_point")
 		.at("setup").at("program_config").at("ssid").get<string>();
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
@@ -110,8 +110,8 @@ void run_attack(RunStatus &rs){
 	attacker->set_monitor_mode();
 	attacker->set_iface_up();
 
-	const auto &att_cfg = rs.config.at("attack_config");
-	const string config_path = rs.run_folder + "/config.yaml";
+	const auto &att_cfg = rs.config().at("attack_config");
+	const string config_path = rs.run_folder()/"config.yaml";
 	write_run_config(config_path, sae.value(), ap["mac"], client["mac"], ap["channel"], attacker["iface"], att_cfg);
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
@@ -120,7 +120,7 @@ void run_attack(RunStatus &rs){
 
 	rs.process_manager.run("attacker",
 							{/*"setsid", */"python3.10", get_suite_path() + "/orchestator_master_en.py"},
-							rs.run_folder
+							rs.run_folder()
 	);
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
@@ -138,7 +138,7 @@ void stats_attack(const RunStatus &rs){
 		{"client", "@START", "START", "black"},
 		{"client", "@END", "END", "black"},
 	});
-	const auto ap = rs.config.at("actors").at("access_point");
+	const auto ap = rs.config().at("actors").at("access_point");
 	observer::resource_checker::create_graph(rs, ap["source"], elements);
 }
 }

@@ -50,7 +50,7 @@ TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch"){
 namespace{
 struct TempLog{
     filesystem::path run_folder;
-    string actor_name;
+    string actor_name{};
 
     TempLog(const string &name, const string &content)
         : run_folder(filesystem::temp_directory_path() / "wpa3_test_log"),
@@ -81,13 +81,13 @@ TEST_CASE("get_time_logs - finds matching lines"){
 
     TempLog tmp("access_point", log_content);
     wpa3_tester::RunStatus rs;
-    rs.run_folder = tmp.run_folder;
+    rs.run_folder(tmp.run_folder);
 
     const auto times = wpa3_tester::get_time_logs(rs, "access_point", "AP-ENABLED");
     REQUIRE_EQ(times.size(), 2);
 
-    INFO("%d",(times[1] - times[0]));
-    CHECK_EQ((times[1] - times[0]), chrono::nanoseconds{2189798496ns});
+	INFO("%d",times[1] - times[0]);
+    CHECK_EQ(times[1] - times[0], chrono::nanoseconds{2189798496ns});
 }
 
 TEST_CASE("get_time_logs - no match returns empty"){
@@ -96,7 +96,7 @@ TEST_CASE("get_time_logs - no match returns empty"){
 
     TempLog tmp("ap", log_content);
     wpa3_tester::RunStatus rs;
-    rs.run_folder = tmp.run_folder;
+    rs.run_folder(tmp.run_folder);
 
     const auto times = wpa3_tester::get_time_logs(rs, "ap", "DOES_NOT_EXIST");
     CHECK(times.empty());
@@ -104,7 +104,7 @@ TEST_CASE("get_time_logs - no match returns empty"){
 
 TEST_CASE("get_time_logs - missing log file returns empty"){
     wpa3_tester::RunStatus rs;
-    rs.run_folder = "/tmp/wpa3_nonexistent_run_folder";
+    rs.run_folder("/tmp/wpa3_nonexistent_run_folder");
 
     const auto times = wpa3_tester::get_time_logs(rs, "actor", "pattern");
     CHECK(times.empty());

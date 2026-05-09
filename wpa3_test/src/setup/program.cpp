@@ -8,7 +8,7 @@ using namespace std;
 
 namespace wpa3_tester{
 void program::start(RunStatus &rs, const string &actor_name){
-	auto setup = rs.config.at("actors").at(actor_name).at("setup");
+	auto setup = rs.config().at("actors").at(actor_name).at("setup");
 	const auto program = setup.at("program").get<string>();
 	auto actor = rs.get_actor(actor_name);
 	if(program == "hostapd"){

@@ -40,7 +40,7 @@ void setup_attack(RunStatus &rs){
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const auto attacker = rs.get_actor("attacker");
 
 	const auto ap = rs.get_actor("access_point");
@@ -65,7 +65,7 @@ void stats_attack(const RunStatus &rs){
 				});
 
 	// generate graph with ob
-	const auto ap = rs.config.at("actors").at("access_point");
+	const auto ap = rs.config().at("actors").at("access_point");
 	observer::resource_checker::create_graph(rs, ap.at("source").get<string>(), elements);
 }
 }

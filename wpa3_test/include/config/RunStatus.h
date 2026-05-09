@@ -26,24 +26,29 @@ class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
 
-public:
 	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
 
-	//public only for testing
-	ActorCMap actors{};
-	ObserverMap observers{};
-
-	bool only_stats = false;
-	nlohmann::json config{};
-	//TODo change to paths
-	std::string run_folder{};
-	std::string config_path{};
 protected:
+	nlohmann::json _config{};
+	std::filesystem::path _run_folder{};
+	std::filesystem::path _config_path{};
 	ActorCMap internal_mapping{};
 	ActorCMap external_wb_mapping{};
 	ActorCMap external_bb_mapping{};
 	//ActorCMap simulation_mapping;
 public:
+	[[nodiscard]] nlohmann::json& config() { return _config;}
+	[[nodiscard]] const nlohmann::json& config() const { return _config;}
+	void config(const nlohmann::json &new_config){ this->_config = new_config; }
+	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }
+	void run_folder(const std::filesystem::path &new_run_folder){ this->_run_folder = new_run_folder; }
+	[[nodiscard]] std::filesystem::path config_path() const{ return _config_path; }
+	void config_path(const std::filesystem::path &new_config_path){ this->_config_path = new_config_path; }
+
+	bool only_stats = false;
+	//public only for testing
+	ActorCMap actors{};
+	ObserverMap observers{};
 	ProcessManager process_manager{};
 
 	RunStatus() = default;
@@ -88,7 +93,7 @@ public:
 	void config_requirement();
 	void setup_test();
 	void run_test();
-	void stats_test();
+	void stats_test() const;
 	void save_actor_interface_mapping() const;
 };
 

@@ -71,7 +71,7 @@ void run_attack(RunStatus &rs){
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap = rs.get_actor("access_point");
 
-	const auto ssid = rs.config.at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
+	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
 
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
@@ -89,7 +89,7 @@ void run_attack(RunStatus &rs){
 	const HWAddress<6> ap_mac(ap["mac"]);
 	const string iface = attacker["iface"];
 
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	const int burst_size = att_cfg.at("burst_size").get<int>();
 	const int acm_threshold = att_cfg.at("acm_threshold").get<int>();
@@ -128,7 +128,7 @@ void stats_attack(const RunStatus &rs){
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
 				});
-	const auto ap = rs.config.at("actors").at("access_point");
+	const auto ap = rs.config().at("actors").at("access_point");
 	observer::resource_checker::create_graph(rs, ap["source"], elements);
 }
 }

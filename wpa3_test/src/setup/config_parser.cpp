@@ -152,7 +152,7 @@ void RunStatus::ensure_requirement(const string &req){
 void RunStatus::check_local_requirements(){
 	std::set<std::string> all_requirements;
 	// get all requirements (actor doesnt matter)
-	for(auto &[actor_name, actor_data]: config.at("actors").items()){
+	for(auto &[actor_name, actor_data]: _config.at("actors").items()){
 		if(actor_data.contains("setup") && actor_data.at("setup").contains("requirements")){
 			for(auto &req: actor_data.at("setup").at("requirements")){
 				if(req.is_string()){

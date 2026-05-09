@@ -89,22 +89,22 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 constexpr string program_name = "iperf3";
 
-void start_iperf3(RunStatus &run_status, const string &actor_name, const string &src_name, const string &dst_name){
+void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_name, const string &dst_name){
 	vector<string> command = {};
-	add_nets_header(run_status, command, src_name);
+	add_nets_header(rs, command, src_name);
 	command.insert(command.end(), {
 						"stdbuf", "-oL", "-eL", // disable buffering for immediate output
-						program_name, "-B", run_status.config.at("actors").at(src_name).at("ip_addr"), "-c",
-						run_status.config.at("actors").at(dst_name).at("ip_addr"),
+						program_name, "-B", rs.config().at("actors").at(src_name).at("ip_addr"), "-c",
+						rs.config().at("actors").at(dst_name).at("ip_addr"),
 						//"-u", //dát do observer config
 						"-b", "10M", "-t", "0" // infinity
 					});
-	run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, program_name));
+	rs.process_manager.run(actor_name, command, get_observer_folder(rs, program_name));
 }
 
-void start_iperf3_server(RunStatus &run_status, const string &actor_name, const string &server_name){
+void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &server_name){
 	vector<string> command = {};
-	add_nets_header(run_status, command, server_name);
+	add_nets_header(rs, command, server_name);
 	command.insert(command.end(), {
 						"stdbuf", "-oL", "-eL", // disable buffering for immediate output
 						program_name, "-s",     // server
@@ -112,6 +112,6 @@ void start_iperf3_server(RunStatus &run_status, const string &actor_name, const 
 						//"--one-off"
 					});
 
-	run_status.process_manager.run(actor_name, command, get_observer_folder(run_status, actor_name));
+	rs.process_manager.run(actor_name, command, get_observer_folder(rs, actor_name));
 }
 }

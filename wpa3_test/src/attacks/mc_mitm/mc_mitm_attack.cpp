@@ -45,11 +45,11 @@ void run_attack(RunStatus &rs){
 	//const auto ap = rs.get_actor("access_point");
 	//const auto client = rs.get_actor("client");
 
-	const auto ap_ssid = rs.config.at("attack_config").at("ssid").get<string>();
+	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
 
 	auto get_mac = [&](const string &actor_key, const string &config_key) ->string{
-		if(rs.config.at("actors").contains(actor_key)) return rs.get_actor(actor_key)["mac"];
-		return rs.config.at("attack_config").at(config_key).get<string>();
+		if(rs.config().at("actors").contains(actor_key)) return rs.get_actor(actor_key)["mac"];
+		return rs.config().at("attack_config").at(config_key).get<string>();
 	};
 
 	const auto ap_mac = get_mac("access_point", "target_ap_mac");
@@ -58,8 +58,8 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 
 	McMitm attack(rogue_client, rogue_ap, ap_ssid, ap_mac, client_mac,
-				path(rs.run_folder) / "logger" ,
-				rs.config.at("attack_config").at("only_to_mitm").get<bool>());
+				rs.run_folder()/ "logger" ,
+				rs.config().at("attack_config").at("only_to_mitm").get<bool>());
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();
@@ -76,7 +76,7 @@ void run_attack(RunStatus &rs){
 	attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
 	attack.netconfig.ssid = ap_ssid;
 
-	attack.run(rs, rs.config.at("attack_config").at("attack_time").get<int>());
+	attack.run(rs, rs.config().at("attack_config").at("attack_time").get<int>());
 }
 
 void stats(const RunStatus &rs){

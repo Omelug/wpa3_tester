@@ -52,8 +52,8 @@ actors:
 
     RunStatus rs(config_file.string(), "explicit_test_name");
 
-    CHECK_EQ(rs.config_path, config_file.string());
-    CHECK_EQ(rs.config["attacker_module"], "test_module");
+    CHECK_EQ(rs.config_path(), config_file.string());
+    CHECK_EQ(rs.config()["attacker_module"], "test_module");
 
     remove_all(test_dir);
 }
@@ -77,11 +77,11 @@ actors:
 
     RunStatus rs(config_file.string());
 
-    CHECK(rs.config.contains("name"));
-    CHECK_EQ(rs.config["name"], "test_validation");
-    CHECK(rs.config.contains("attacker_module"));
-    CHECK_EQ(rs.config["attacker_module"], "test_module");
-    CHECK(rs.config.contains("actors"));
+    CHECK(rs.config().contains("name"));
+    CHECK_EQ(rs.config()["name"], "test_validation");
+    CHECK(rs.config().contains("attacker_module"));
+    CHECK_EQ(rs.config()["attacker_module"], "test_module");
+    CHECK(rs.config().contains("actors"));
 
     remove_all(test_dir);
 }

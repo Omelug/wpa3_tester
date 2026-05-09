@@ -137,11 +137,11 @@ void run_attack(RunStatus &rs){
 	const string iface = attacker["iface"];
 	const string sniff_iface = attacker["sniff_iface"];
 
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const int trigger_count = att_cfg.at("acm_trigger_count").get<int>();
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 
-	const auto ssid = rs.config.at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
+	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
 	const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
@@ -174,7 +174,7 @@ void run_attack(RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs){
-	const auto ap = rs.config.at("actors").at("access_point");
+	const auto ap = rs.config().at("actors").at("access_point");
 
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {

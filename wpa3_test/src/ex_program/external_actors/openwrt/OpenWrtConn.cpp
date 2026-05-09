@@ -198,7 +198,7 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 // -------------------------------------------
 
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
-	nlohmann::json program_config = rs.config.at("actors").at(actor["actor_name"]).at("setup").at("program_config");
+	nlohmann::json program_config = rs.config().at("actors").at(actor["actor_name"]).at("setup").at("program_config");
 	cerr << program_config.dump() << endl;
 	actor[SK::ssid] = program_config.at("ssid").get<string>();
 	actor[SK::channel] = to_string(program_config.at("channel").get<int>());

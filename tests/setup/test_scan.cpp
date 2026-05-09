@@ -23,22 +23,22 @@ TEST_CASE("RunStatus::setup_test - directory management"){
         REQUIRE(exists(test_run_folder / "existing_file.txt"));
         
         RunStatus rs;
-        rs.run_folder = test_run_folder.string();
-        rs.config["attacker_module"] = "nonexistent_module";
-        
+        rs.run_folder(test_run_folder.string());
+        rs.config()["attacker_module"] = "nonexistent_module";
+
         REQUIRE_NOTHROW(rs.setup_test());
-        
+
         REQUIRE(exists(test_run_folder));
         REQUIRE_FALSE(exists(test_run_folder / "existing_file.txt"));
         remove_all(test_run_folder);
     }
-    
+
     SUBCASE("Handles non-existent directory") {
         REQUIRE_FALSE(exists(test_run_folder));
-        
+
         RunStatus rs;
-        rs.run_folder = test_run_folder.string();
-        rs.config["attacker_module"] = "nonexistent_module";
+        rs.run_folder(test_run_folder.string());
+        rs.config()["attacker_module"] = "nonexistent_module";
         
         REQUIRE_NOTHROW(rs.setup_test());
         REQUIRE(exists(test_run_folder));
@@ -150,8 +150,7 @@ TEST_CASE("get_actors_conn_table - edge cases"){
         CHECK_EQ(result.size(), 1);
         CHECK_EQ(result[0][SK::whitebox_host].value(), "router1");
         CHECK_EQ(result[0][SK::whitebox_ip].value(), "192.168.1.1");
-        CHECK_FALSE((result[0][SK::external_OS].has_value()));
-
+		CHECK_FALSE(result[0][SK::external_OS].has_value());
         remove(test_file);
     }
 }

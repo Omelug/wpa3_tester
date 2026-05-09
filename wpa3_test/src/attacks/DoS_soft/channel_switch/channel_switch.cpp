@@ -67,9 +67,9 @@ auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
-	if(rs.config.at("actors").contains("rogue_ap")){
-		copy_file(path(rs.config_path).parent_path() / "hostapd-mana.conf",
-				path(rs.run_folder) / "rogue_ap_hostapd_mana.conf");
+	if(rs.config().at("actors").contains("rogue_ap")){
+		copy_file(rs.config_path().parent_path() / "hostapd-mana.conf",
+				rs.run_folder()/ "rogue_ap_hostapd_mana.conf");
 		program::start(rs, "rogue_ap");
 		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
 		log(LogLevel::INFO, "Rogue AP up");
@@ -78,7 +78,7 @@ void setup_chs_attack(RunStatus &rs){
 }
 
 void run_chs_attack(RunStatus &rs){
-	const auto &att_cfg = rs.config.at("attack_config");
+	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &ap_actor = rs.get_actor("access_point");
 
 	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
@@ -107,7 +107,7 @@ void speed_observation_start(RunStatus &rs){
 
 // ---------- STATS ----------------
 void generate_report(const RunStatus &rs, const string &STA_graph_path, const string &AP_graph_path){
-	const path report_path = path(rs.run_folder) / "report.md";
+	const path report_path = rs.run_folder()/ "report.md";
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report file!");
@@ -123,12 +123,12 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	report <<
 			"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
-	report << "### STA (client, wpa_supplicant " << rs.config.at("actors").at("client").at("setup").at("program_config")
+	report << "### STA (client, wpa_supplicant " << rs.config().at("actors").at("client").at("setup").at("program_config")
 													.value("version", "default") << ")\n";
-	report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder).string() << ")\n\n";
-	report << "### AP (access_point, hostapd " << rs.config.at("actors").at("client").at("setup").at("program_config").
+	report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
+	report << "### AP (access_point, hostapd " << rs.config().at("actors").at("client").at("setup").at("program_config").
 													value("version", "default") << ")\n";
-	report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder).string() << ")\n\n";
+	report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
 	report << "---\n";
 	report.close();
 }
@@ -145,7 +145,7 @@ void stats_chs_attack(const RunStatus &rs){
 					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
 				});
 
-	if(rs.config.at("actors").contains("rogue_ap")){
+	if(rs.config().at("actors").contains("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 	}
 

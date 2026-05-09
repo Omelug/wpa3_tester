@@ -1,12 +1,12 @@
 #include "config/RunSuiteStatus.h"
 
 #include <string>
-#include <nlohmann/json-schema.hpp>
 #include <nlohmann/json.hpp>
 
 #include "config/Actor_config.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include "setup/YAMLValidator.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -42,8 +42,8 @@ json RunSuiteStatus::config_validation(const string &config_path){
 		//global validation
 		const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
 				"test_suite_validator.schema.yaml";
-		json_schema::json_validator global_validator;
-		global_validator.set_root_schema(yaml_to_json(YAML::LoadFile(global_schema_path.string())));
+		const YAMLValidator global_validator(global_schema_path.string());
+		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));
 		global_validator.validate(config_json);
 		return config_json;
 	} catch(const domain_error &e){

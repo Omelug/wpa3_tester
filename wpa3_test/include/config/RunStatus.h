@@ -27,22 +27,23 @@ class RunStatus{
 	// internal have key string iface, external MAC
 
 public:
+	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
+
 	//public only for testing
 	ActorCMap actors{};
 	ObserverMap observers{};
 
 	bool only_stats = false;
-	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
 	nlohmann::json config{};
 	//TODo change to paths
 	std::string run_folder{};
 	std::string config_path{};
-
+protected:
 	ActorCMap internal_mapping{};
 	ActorCMap external_wb_mapping{};
 	ActorCMap external_bb_mapping{};
 	//ActorCMap simulation_mapping;
-
+public:
 	ProcessManager process_manager{};
 
 	RunStatus() = default;

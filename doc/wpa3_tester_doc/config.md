@@ -1,10 +1,10 @@
 
-## Actor_config 
+### Actor_config 
 - object with one process, one interface
 - ActorPtr is wrapper (use this, except of tests)
 - some hardware capabilities links for change Actor_Config status are in [ActorCofig_iface_func.cpp](../../wpa3_test/src/system/ActorCofig_iface_func.cpp)
 
-## Observer
+### Observer
 - object for one process
 - ObserverPtr is wrapper (use this, except of tests)
 - observer static format functions are in file [observers.cpp](../../wpa3_test/src/observer/observers.cpp)
@@ -22,4 +22,5 @@
 ### RunSuiteStatus
 - status for test suites
 - generate test configs
-- creates RunStatus for every test
+- add paths to test_paths
+- in  `execute()` run tests linear in 

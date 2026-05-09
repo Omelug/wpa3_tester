@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+    <component name="CMakeSettings">
+        <configurations>
+            <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug"
+                           GENERATION_DIR="build"
+                           GENERATION_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+                           BUILD_OPTIONS="-j6"
+                           ENABLED="true" />
+        </configurations>
+    </component>
+</project>

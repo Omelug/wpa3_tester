@@ -2,6 +2,7 @@
 !.idea/dictionaries/
 !.idea/runConfigurations/
 !.idea/codeStyles/
+!.idea/cmake.xml
 lib/external
 build
 cmake-build-debug

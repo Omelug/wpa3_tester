@@ -180,7 +180,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
-	log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
+	log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string());
 	rogue_ap->set_iface_up();
 	rogue_ap->set_mac_address(ap_mac);
 	// Set up a rogue AP that clones the target network -> ACK back to client

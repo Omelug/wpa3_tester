@@ -125,7 +125,7 @@ void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.addr1() == ap_mac){
 		// Sleep mode detection
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
-			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
+			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2.to_string());
 			Dot11Data null_frame{};
 			null_frame.type(Dot11::DATA);
 			null_frame.subtype(Dot11::DATA_NULL);

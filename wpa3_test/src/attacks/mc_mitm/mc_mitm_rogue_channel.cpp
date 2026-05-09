@@ -175,7 +175,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 		// remove sleep option
 		if(will_forward){
 			if(dot11->power_mgmt()){
-				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
+				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2.to_string());
 				dot11->power_mgmt(0);
 			}
 			send_to_real(*pdu);

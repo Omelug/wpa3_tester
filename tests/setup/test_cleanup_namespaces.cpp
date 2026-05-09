@@ -15,6 +15,7 @@
 
 namespace wpa3_tester{
 void cleanup_all_namespaces();
+void kill_process_in_ns_name(const std::string &ns_name);
 }
 
 using namespace std;
@@ -106,4 +107,64 @@ TEST_CASE("cleanup_all_namespaces - kills processes and removes namespace"){
     INFO(child);
     CHECK_FALSE(pid_alive(child));
     waitpid(child, nullptr, WNOHANG);
+}
+
+TEST_CASE("kill_process_in_ns_name - nonexistent namespace does not crash"){
+    CHECK_NOTHROW(wpa3_tester::kill_process_in_ns_name("wpa3_test_nonexistent_ns"));
+}
+
+TEST_CASE("kill_process_in_ns_name - empty namespace does not crash"){
+    const string ns = "wpa3_test_kill_empty";
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "add", ns});
+    REQUIRE(netns_exists(ns));
+    CHECK_NOTHROW(wpa3_tester::kill_process_in_ns_name(ns));
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "del", ns});
+}
+
+TEST_CASE("kill_process_in_ns_name - terminates process via SIGTERM"){
+    const string ns = "wpa3_test_kill_term";
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "add", ns});
+    REQUIRE(netns_exists(ns));
+
+    const pid_t child = start_process_in_netns(ns, "sleep");
+    REQUIRE_GT(child, 0);
+    REQUIRE(pid_alive(child));
+
+    wpa3_tester::kill_process_in_ns_name(ns);
+
+    for(int i = 0; i < 50 && pid_alive(child); ++i){ usleep(20'000); }
+    CHECK_FALSE(pid_alive(child));
+    waitpid(child, nullptr, WNOHANG);
+
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "del", ns});
+}
+
+TEST_CASE("kill_process_in_ns_name - kills SIGTERM-ignoring process via SIGKILL"){
+    const string ns = "wpa3_test_kill_sigkill";
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "add", ns});
+    REQUIRE(netns_exists(ns));
+
+    // Fork a child that ignores SIGTERM and sleeps in the namespace
+    const string ns_path = "/var/run/netns/" + ns;
+    const pid_t child = fork();
+    REQUIRE_GE(child, 0);
+    if(child == 0){
+        const int fd = open(ns_path.c_str(), O_RDONLY | O_CLOEXEC);
+        if(fd < 0 || setns(fd, CLONE_NEWNET) < 0){ _exit(1); }
+        close(fd);
+        signal(SIGTERM, SIG_IGN);
+        pause();
+        _exit(0);
+    }
+    usleep(100'000);
+    REQUIRE(pid_alive(child));
+
+    wpa3_tester::kill_process_in_ns_name(ns);
+
+    // Function sends SIGKILL after 500 ms deadline; give a bit more time
+    for(int i = 0; i < 100 && pid_alive(child); ++i){ usleep(20'000); }
+    CHECK_FALSE(pid_alive(child));
+    waitpid(child, nullptr, WNOHANG);
+
+    wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "del", ns});
 }

@@ -60,7 +60,7 @@ void kill_process_in_ns_name(const string &ns_name){
 
 	const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
 	for(const pid_t p: pids){
-		while(filesystem::exists("/proc/" + to_string(static_cast<long>(p)))){
+		while(exists("/proc/" + to_string(static_cast<long>(p)))){
 			if(chrono::steady_clock::now() >= deadline){
 				kill(p, SIGKILL);
 				break;
@@ -87,7 +87,7 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 	}
 	return result;
 }
-
+//FIXMe , test first
 static void wait_to_default_ns(const vector<string> &ifaces,
 								const chrono::milliseconds timeout = chrono::milliseconds(2000)
 ){
@@ -128,21 +128,93 @@ void kill_processes_in_all_non_default_ns(){
 	}
 }
 
+static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
+	const chrono::milliseconds timeout = chrono::milliseconds(3000)){
+    // Delete netns via unlink — same as ip netns del
+    const string ns_path = "/var/run/netns/" + ns_name;
+    if(unlink(ns_path.c_str()) != 0){
+        log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+        return;
+    }
+
+    if(ifaces.empty()) return;
+
+    // Open RTNETLINK socket to watch RTM_NEWLINK events
+    const int nl_fd = socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
+    if(nl_fd < 0){
+        log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
+        return;
+    }
+
+    sockaddr_nl sa{};
+    sa.nl_family = AF_NETLINK;
+    sa.nl_groups = RTMGRP_LINK; // subscribe to link events
+    bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa));
+
+    // Track which interfaces are still missing from root ns
+    unordered_set waiting(ifaces.begin(), ifaces.end());
+    // Remove ones already back
+    for(auto it = waiting.begin(); it != waiting.end();)
+        exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
+
+    const auto deadline = chrono::steady_clock::now() + timeout;
+    char buf[8192];
+
+    while(!waiting.empty() && chrono::steady_clock::now() < deadline){
+        pollfd pfd{nl_fd, POLLIN, 0};
+        const int remaining_ms = static_cast<int>(
+            chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+        if(poll(&pfd, 1, remaining_ms) <= 0) break;
+
+        ssize_t len = recv(nl_fd, buf, sizeof(buf), 0);
+        if(len <= 0) continue;
+
+        for(auto *nh = reinterpret_cast<nlmsghdr *>(buf);
+            NLMSG_OK(nh, static_cast<uint32_t>(len));
+            nh = NLMSG_NEXT(nh, len)){
+
+            if(nh->nlmsg_type != RTM_NEWLINK) continue;
+
+            const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
+            int attr_len = nh->nlmsg_len - NLMSG_SPACE(sizeof(*ifi));
+            auto *attr = reinterpret_cast<rtattr *>(
+                static_cast<char *>(NLMSG_DATA(nh)) + NLMSG_ALIGN(sizeof(*ifi)));
+
+            while(RTA_OK(attr, attr_len)){
+                if(attr->rta_type == IFLA_IFNAME){
+                    const string name = static_cast<char *>(RTA_DATA(attr));
+                    if(waiting.contains(name) && exists("/sys/class/net/" + name)){
+                        log(LogLevel::DEBUG, "Interface {} returned to root ns", name);
+                        waiting.erase(name);
+                    }
+                }
+                attr = RTA_NEXT(attr, attr_len);
+            }
+        }
+    }
+	close(nl_fd);
+    for(const auto &name : waiting)
+        log(LogLevel::WARNING, "Interface {} did not return to root ns in time", name);
+}
+
 void cleanup_all_namespaces(){
-	log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
+    log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
 
-	kill_processes_in_all_non_default_ns();
+    const path netns_dir = "/var/run/netns";
+    if(!exists(netns_dir)){
+        log(LogLevel::INFO, "Cleanup complete.");
+        return;
+    }
 
-	const int res = hw_capabilities::run_cmd({"ip", "-all", "netns", "del"});
-	if(res == 0){
-		log(LogLevel::INFO, "All network namespaces cleared successfully.");
-	} else{
-		log(LogLevel::WARNING, "ip -all netns del failed, system might need a reboot.");
-	}
+    for(const auto &entry : directory_iterator(netns_dir)){
+        const auto ns_name = entry.path().filename().string();
+        log(LogLevel::INFO, "Cleaning up processes in namespace: {}", ns_name);
+        kill_process_in_ns_name(ns_name);
 
-	this_thread::sleep_for(chrono::milliseconds(500));
-
-	log(LogLevel::INFO, "Cleanup complete.");
+        const auto ifaces = psy_if_in_ns(ns_name);
+        delete_ns_and_wait(ns_name, ifaces);
+    }
+    log(LogLevel::INFO, "Cleanup complete.");
 }
 
 ActorCMap get_actors(const ActorCMap &actors, const string &source){

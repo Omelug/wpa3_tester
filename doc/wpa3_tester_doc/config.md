@@ -19,4 +19,4 @@
 ### RunSuiteStatus
 - status for test suites
 - generate test configs
-- creates RunStatus for every test 
+- creates RunStatus for every test

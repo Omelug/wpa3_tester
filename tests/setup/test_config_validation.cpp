@@ -134,6 +134,7 @@ void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
     auto get_tree_structure = [](const path &base_path){
         set<string> structure;
         for(const auto &entry: recursive_directory_iterator(base_path)){
+            if(entry.path().filename() == ".gitkeep") continue;
             structure.insert(relative(entry.path(), base_path).string());
         }
         return structure;

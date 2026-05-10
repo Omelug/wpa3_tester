@@ -35,7 +35,7 @@ if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
 endif ()
 
-
+add_link_options(-fuse-ld=mold) #faster linker than lld
 if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)
     add_link_options(--coverage)

@@ -1,15 +1,13 @@
+#include "system/hw_capabilities.h"
 #include <cstdio>
-#include <cstdlib>
 #include <fstream>
+#include <random>
 #include <set>
 #include <string>
-#include <unistd.h>
 #include <vector>
+#include <reproc++/drain.hpp>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <random>
-#include <reproc++/drain.hpp>
-#include "system/hw_capabilities.h"
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -54,8 +52,7 @@ string hw_capabilities::get_phy(const string &iface, const optional<string> &net
 
 int get_interface_arphrd_type(const path &iface_path){
 	ifstream file(iface_path / "type");
-	int type = 0;
-	if(file >> type) return type;
+	if(int type = 0; file >> type) return type;
 	return 0;
 }
 
@@ -69,7 +66,9 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 	for(const auto &entry: directory_iterator(net_path)){
 		string iface = entry.path().filename().string();
 
-		auto ignored_list = get_global_config().at("actors").value("ignore_interfaces", vector<string>{});
+		vector<string> ignored_list{};
+		if(auto g = get_global_config(); !g.empty())
+			ignored_list = g.at("actors").value("ignore_interfaces", vector<string>{});
 
 		if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
 			log(LogLevel::DEBUG, "Ignoring interface " + iface + " due to ignore_interfaces config");

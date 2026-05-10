@@ -35,7 +35,7 @@ protected:
 	ActorCMap internal_mapping{};
 	ActorCMap external_wb_mapping{};
 	ActorCMap external_bb_mapping{};
-	//ActorCMap simulation_mapping;
+	ActorCMap simulation_mapping{};
 public:
 	[[nodiscard]] nlohmann::json& config() { return _config;}
 	[[nodiscard]] const nlohmann::json& config() const { return _config;}
@@ -80,7 +80,7 @@ private:
 	static std::vector<ActorPtr> external_wb_options();
 	std::vector<int> get_external_BB_channels();
 	std::vector<ActorPtr> external_bb_options();
-	//static std::vector<ActorPtr> create_simulation();
+	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 
 public:
 	void parse_requirements();

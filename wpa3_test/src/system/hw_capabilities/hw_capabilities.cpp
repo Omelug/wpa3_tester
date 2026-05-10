@@ -85,6 +85,8 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 			} else if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0){
 				// start with prefix, not good fix
 				type = InterfaceType::WifiVirtualMon; // Virtual wireless Wi-Fi (for monitor mode)
+			} else if(iface.rfind(HWSIM_IFACE_PREFIX, 0) == 0){
+				type = InterfaceType::WifiVirtualHwsim; // mac80211_hwsim simulation interface
 			} else{
 				type = InterfaceType::Wifi; // wireless Wi-Fi
 			}

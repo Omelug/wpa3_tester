@@ -19,7 +19,8 @@ enum class InterfaceType{
 	VirtualVeth,
 	VPN,
 	WifiVirtualMon,
-	WifiVirtualAP
+	WifiVirtualAP,
+	WifiVirtualHwsim
 };
 
 struct InterfaceInfo{

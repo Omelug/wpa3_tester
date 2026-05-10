@@ -13,7 +13,8 @@ void Actor_config::set_mac(const string &mac_address){
 }
 
 void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
-	const bool internal = (*this)[SK::source].value() == "internal";
+	const bool internal = (*this)[SK::source].value() == "internal" ||
+	                      (*this)[SK::source].value() == "simulation";
 	const bool external_WB = is_external_WB();
 	conn = real_actor->conn;
 	if(internal || external_WB){
@@ -78,8 +79,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 void Actor_config::setup_actor_internal(const nlohmann::json &config){
 	const auto actor_name = (*this)[SK::actor_name].value();
-	auto actor_json = config.at("actors").at(actor_name);
-	if(actor_json.contains("netns")){
+	if(auto actor_json = config.at("actors").at(actor_name); actor_json.contains("netns")){
 		(*this)[SK::netns] = actor_json.at("netns").get<string>();
 		hw_capabilities::create_ns((*this)[SK::netns].value());
 	}

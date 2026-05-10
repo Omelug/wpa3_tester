@@ -298,7 +298,28 @@ vector<ActorPtr> RunStatus::external_bb_options(){
 	return list_external_entities(_config.at("scan_iface"), timeout_external_bb_scan, all_channels);
 }
 
-vector<ActorPtr> create_simulation(){
-	throw not_implemented_err("simulation hwsim not implemented");
+vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
+	log(LogLevel::INFO, "Loading mac80211_hwsim with {} radios", n_radios);
+	hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=" + to_string(n_radios)});
+	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
+
+	// Rename all new Wifi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
+	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
+	}
+	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
+
+	// Now enumerate by type — only hwsim_ prefixed interfaces are returned
+	vector<ActorPtr> options;
+	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
+		auto cfg = ActorPtr(make_shared<Actor_config>());
+		cfg[SK::iface] = name;
+		cfg[SK::source] = "simulation";
+		cfg[SK::radio] = radio;
+		hw_capabilities::get_nl80211_caps(name, cfg);
+		options.emplace_back(cfg);
+	}
+	log(LogLevel::INFO, "Created {} simulation interface(s)", options.size());
+	return options;
 }
 }

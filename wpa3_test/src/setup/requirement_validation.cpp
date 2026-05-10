@@ -155,7 +155,7 @@ static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifac
 	// Must umount bind mount before unlink
 	if(::umount2(ns_path.c_str(), MNT_DETACH) != 0){
 		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
-		// Try unlink anyway — might work if it's not a bind mount
+		// Try to unlink anyway — might work if it's not a bind mount
 	}
 
 	if(::unlink(ns_path.c_str()) != 0){
@@ -226,6 +226,9 @@ static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifac
 void cleanup_all_namespaces(){
     log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
 
+    // Remove mac80211_hwsim simulation interfaces first (no-op if not loaded)
+    hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+
     const path netns_dir = "/var/run/netns";
     if(!exists(netns_dir)){
         log(LogLevel::INFO, "Cleanup complete.");
@@ -290,10 +293,11 @@ void RunStatus::config_requirement(){
 	}
 
 	// ---------------- SIMULATIONS -------------------------
-	// simulation -> check hw compatibility
-	//ActorCMap options_simulation =  create_simulation();
-	// check if possible with simulation
-	// create simulation
+	auto simulation_actors = get_actors(actors, "simulation");
+	if(!simulation_actors.empty()){
+		const auto simulation_options = create_simulation(simulation_actors.size());
+		simulation_mapping = hw_capabilities::check_req_options(simulation_actors, simulation_options);
+	}
 
 	// SETUP ACTORS
 	for(auto &[actor_name, actor]: internal_actors){
@@ -309,6 +313,11 @@ void RunStatus::config_requirement(){
 
 	for(auto &[actor_name, actor]: external_bb_actors){
 		auto &opt_actor = external_bb_mapping.at(actor_name);
+		actor->setup_actor(_config, opt_actor);
+	}
+
+	for(auto &[actor_name, actor]: simulation_actors){
+		auto &opt_actor = simulation_mapping.at(actor_name);
 		actor->setup_actor(_config, opt_actor);
 	}
 }

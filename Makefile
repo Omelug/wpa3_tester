@@ -3,6 +3,7 @@ BUILD_DIR_COVERAGE := build/coverage
 TARGET := wpa3_tester
 GRC_CONF := ./debug/grc/wpa3_tester.grc
 SOURCE_DIR := wpa3_test
+NPROC :=  $(shell nproc --ignore=2)
 
 all: compile
 .PHONY: all compile run clean_build
@@ -18,7 +19,7 @@ compile:
 	@if [ ! -f $(BUILD_DIR)/build.ninja ] && [ ! -f $(BUILD_DIR)/Makefile ]; then \
 		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR) -G Ninja; \
 	fi
-	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(shell nproc --ignore=2)
+	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(NPROC)
 
 run: compile
 	mkdir -p data
@@ -67,7 +68,7 @@ test_manual_build:
 		test_manual_get_commit_values \
 		test_manual_mc_mitm \
 		test_manual_iface \
-		-j $(shell nproc --ignore=2)
+		-j $(NPROC)
 INFO_FILE = $(BUILD_DIR)/coverage.info
 CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info
 REPORT_DIR = $(BUILD_DIR)/coverage_report
@@ -75,14 +76,19 @@ REPORT_DIR = $(BUILD_DIR)/coverage_report
 coverage_build:
 	mkdir -p $(BUILD_DIR_COVERAGE)
 	@if [ ! -f $(BUILD_DIR_COVERAGE)/build.ninja ] && [ ! -f $(BUILD_DIR_COVERAGE)/Makefile ]; then \
-        cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_COVERAGE) -G Ninja -DENABLE_COVERAGE=ON; \
+        cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_COVERAGE) -G Ninja \
+        	-DENABLE_COVERAGE=ON \
+        	-DCMAKE_C_COMPILER_LAUNCHER=ccache \
+        	-DCMAKE_CXX_COMPILER_LAUNCHER=ccache; \
     fi
-	cmake --build $(BUILD_DIR_COVERAGE) -j $(shell nproc)
+	cmake --build $(BUILD_DIR_COVERAGE) -j $(NPROC)
 
-IGNORE_ERRORS = inconsistent,inconsistent,range,negative
+IGNORE_ERRORS = inconsistent,inconsistent,range,negative,unused
 coverage: coverage_build
 	lcov --directory $(BUILD_DIR_COVERAGE) --zerocounters
 	sudo ctest --test-dir $(BUILD_DIR_COVERAGE) --output-on-failure
-	lcov --directory $(BUILD_DIR_COVERAGE) --capture --output-file $(INFO_FILE) --ignore-errors $(IGNORE_ERRORS)
+	lcov --directory $(BUILD_DIR_COVERAGE) --capture --output-file $(INFO_FILE) --ignore-errors $(IGNORE_ERRORS) \
+		--parallel $(NPROC)
 	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors $(IGNORE_ERRORS)
-	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors  $(IGNORE_ERRORS)
+	genhtml $(CLEAN_INFO) --output-directory $(REPORT_DIR) --ignore-errors  $(IGNORE_ERRORS) \
+		--parallel $(NPROC)

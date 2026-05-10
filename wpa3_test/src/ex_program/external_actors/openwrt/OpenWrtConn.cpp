@@ -103,7 +103,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at(
 		"program_config");
 	for(auto &[key, value]: program_config.items()){
-		if(value.is_string()) exec("uci set wireless." + section + "." + key + "='" + value.get<string>() + "'");
+		if(value.is_string()) exec(string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>()).append("'"));
 	}
 	exec("uci set wireless." + section + ".network=lan");
 

@@ -14,9 +14,9 @@ void start_mausezahn(RunStatus &rs, const string &actor_name, const string &src_
 	add_nets_header(rs, command, src_name);
 
 	command.insert(command.end(), {
-						program_name, rs.get_actor(src_name)["iface"], "-d", "10m", // 1 millisecond
-						"-c", "0",                                                          // not time limited
-						"-p", "100",                                                        // 100 bytes packet
+						program_name, rs.get_actor(src_name)["iface"], "-d", "10m", // 10 millisecond
+						"-c", "0", // not time limited
+						"-p", "100", // 100 bytes packet
 						"-t", "udp", "sp=1234,dp=5201", "-a", rs.get_actor(src_name)["mac"], "-b",
 						rs.get_actor(dst_name)["mac"], "-P", "PAYLOAD"
 					});

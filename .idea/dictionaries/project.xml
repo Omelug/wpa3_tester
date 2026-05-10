@@ -52,6 +52,7 @@
       <w>iface</w>
       <w>ifaces</w>
       <w>ifla</w>
+      <w>ifname</w>
       <w>imagepath</w>
       <w>iwinfo</w>
       <w>jsonfilter</w>

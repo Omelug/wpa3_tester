@@ -3,10 +3,12 @@
 #include <libssh/sftp.h>
 #include <fcntl.h>
 
+#include <ranges>
+
 namespace wpa3_tester{
 using namespace std;
 
-ExternalConn::ExternalConn(){};
+ExternalConn::ExternalConn()= default;
 
 ExternalConn::~ExternalConn(){
 	if(session){
@@ -208,8 +210,7 @@ void ExternalConn::download_file(const string &remote_path, const string &local_
 		throw ex_conn_err("Error initializing SCP session: " + err);
 	}
 
-	int res = ssh_scp_pull_request(scp);
-	if(res != SSH_SCP_REQUEST_NEWFILE){
+	if(int res = ssh_scp_pull_request(scp); res != SSH_SCP_REQUEST_NEWFILE){
 		ssh_scp_free(scp);
 		throw ex_conn_err("SCP did not offer a new file (maybe path is wrong?): " + remote_path);
 	}
@@ -227,7 +228,7 @@ void ExternalConn::download_file(const string &remote_path, const string &local_
 	char buffer[4096];
 	size_t downloaded = 0;
 	while(downloaded < size){
-		int to_read = (size - downloaded > sizeof(buffer)) ? sizeof(buffer) : (size - downloaded);
+		int to_read = static_cast<int>((size - downloaded > sizeof(buffer)) ? sizeof(buffer) : (size - downloaded));
 		int nbytes = ssh_scp_read(scp, buffer, to_read);
 
 		if(nbytes == SSH_ERROR){
@@ -257,9 +258,9 @@ void ExternalConn::disconnect(){
 	if(!session) return;
 
 	//LIFO
-	for(auto it = disconnect_callbacks.rbegin(); it != disconnect_callbacks.rend(); ++it){
+	for(auto & disconnect_callback : std::ranges::reverse_view(disconnect_callbacks)){
 		try{
-			if(*it) (*it)();
+			if(disconnect_callback) disconnect_callback();
 		} catch(const exception &e){
 			log(LogLevel::ERROR, "Error in disconnect callback: {}", e.what());
 		}

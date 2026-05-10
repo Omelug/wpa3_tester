@@ -88,7 +88,6 @@ void Actor_config::setup_actor_internal(const nlohmann::json &config){
 
 void Actor_config::setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor){
 	auto actor_json = config.at("actors").at((*this)[SK::actor_name].value());
-	//this->cleanup();
 	real_actor->conn->check_req(config, (*this)[SK::actor_name].value());
 }
 }

@@ -152,8 +152,7 @@ void ProcessManager::run_dummy(const string &process_name){
 void ProcessManager::run(const string &process_name, const vector<string> &cmd, const path &working_dir,
 						const path &logging_dir
 ){
-	const auto proc_iter = processes.find(process_name);
-	if(proc_iter != processes.end()){
+	if(const auto proc_it = processes.find(process_name); proc_it != processes.end()){
 		throw runtime_error("This process already exists:" + process_name);
 	}
 
@@ -203,7 +202,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	}
 
 	vector<string> cmd_with_setsid;
-	cmd_with_setsid.push_back("setsid");  // crate new group to kill all with subprocesses
+	cmd_with_setsid.emplace_back("setsid");  // crate new group to kill all with subprocesses
 	cmd_with_setsid.insert(cmd_with_setsid.end(), cmd.begin(), cmd.end());
 
 	if(const auto ec = mp->proc->start(cmd_with_setsid, options)){

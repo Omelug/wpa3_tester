@@ -67,6 +67,7 @@ include(cmake/targets.cmake)
 
 add_executable(${PROJECT_NAME}
         "../wpa3_test/main.cpp"
+        include/config/Run_Config.h
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

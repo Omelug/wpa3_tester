@@ -5,14 +5,14 @@ are paths for external programs, link to path of external whitebox actors etc.
 
 ### Run_Config
 - test_suite_only
-  - deleted_old (false/true) - delete old tests before run 
+  - delete_old (false/true) - delete old tests before run 
   - test_report (false/true) - should tests in suite generate reports
 - test/test_suites (global false values are rewritten first by test_suite and by test config after)
   - rewrite (false/errors/all) - 
   - compile_external (false/true) - compilation of external programs
   - install_req (false/true)  - install external programs
 
-if not compile_external/install_req and something have to be compilated/oinstalled -> req_err
+if not compile_external/install_req and something have to be compilated/installed → req_err
 
 ### Test
 - defined by a YAML configuration file. 
@@ -34,7 +34,7 @@ The OpenWrt program has its own specific configuration for requirements, check [
 ### Test suites
 - have tbe in format [test_suite_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_suite_validator.schema.yaml)
 - config_type: test_suite
-- path/generatros
+- path/generatros/permutation
 #### generators 
 - var_ like prefix for placeholder
 - more described in schema

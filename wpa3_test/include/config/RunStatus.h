@@ -7,6 +7,8 @@
 #include "ActorPtr.h"
 #include "Actor_config.h"
 #include "ObserverPtr.h"
+#include "RunSuiteStatus.h"
+#include "Run_Config.h"
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 
@@ -32,11 +34,14 @@ protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};
 	std::filesystem::path _config_path{};
+	Run_Config _run_config{};
 	ActorCMap internal_mapping{};
 	ActorCMap external_wb_mapping{};
 	ActorCMap external_bb_mapping{};
 	ActorCMap simulation_mapping{};
 public:
+	[[nodiscard]] Run_Config run_config() const{ return _run_config; }
+	void run_config(const Run_Config &run_config){ _run_config = run_config; }
 	[[nodiscard]] nlohmann::json& config() { return _config;}
 	[[nodiscard]] const nlohmann::json& config() const { return _config;}
 	void config(const nlohmann::json &new_config){ this->_config = new_config; }
@@ -45,7 +50,7 @@ public:
 	[[nodiscard]] std::filesystem::path config_path() const{ return _config_path; }
 	void config_path(const std::filesystem::path &new_config_path){ this->_config_path = new_config_path; }
 
-	bool only_stats = false;
+	//bool only_stats = false;
 	//public only for testing
 	ActorCMap actors{};
 	ObserverMap observers{};

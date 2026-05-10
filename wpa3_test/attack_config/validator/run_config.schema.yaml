@@ -3,7 +3,7 @@ title: Shared test run configuration properties
 type: object
 
 properties:
-  deleted_old:
+  delete_old:
     type: boolean
 
   test_report:

@@ -3,13 +3,14 @@
 #include <nlohmann/json.hpp>
 
 #include "Actor_config.h"
+#include "Run_Config.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
 using config_paths = std::vector<std::pair<std::string,std::filesystem::path>>;
 
 class RunSuiteStatus{
-	static size_t check_vars_len_same(nlohmann::basic_json<> basic_json);
+	static size_t check_vars_len_same(nlohmann::basic_json<> source_info);
 protected:
 	nlohmann::json config;
 	std::string config_path;
@@ -20,6 +21,7 @@ public: // getters and setters
 	void set_run_folder(const std::string &new_run_folder){ this->run_folder = new_run_folder; }
 
 	bool only_stats = false;
+	Run_Config run_config{};
 	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_suites";
 
 	static void print_test_suite_list();

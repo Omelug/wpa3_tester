@@ -276,30 +276,37 @@ config_paths RunSuiteStatus::get_test_paths(){
 		throw config_err("invalid source type");
 	}
 
-	// test_suite level overrides to all test configs at the end
-	json suite_overrides = json::object();
-	if(config.contains("test_report")){ suite_overrides["test_report"] = config["test_report"]; }
-	if(config.contains("compile_external")){ suite_overrides["compile_external"] = config["compile_external"]; }
-	if(config.contains("install_req")){ suite_overrides["install_req"] = config["install_req"]; }
-	if(!suite_overrides.empty()){
+	// suite-level defaults applied to test configs — test config value wins if already set
+	/*static const vector<string> propagated_fields = {
+		"test_report", "rewrite", "compile_external", "install_req", "only_stats"
+	};
+	json suite_defaults = json::object();
+	for(const auto &field: propagated_fields){
+		if(config.contains(field)){ suite_defaults[field] = config[field]; }
+	}
+	if(!suite_defaults.empty()){
 		for(auto &test_path: test_map | views::values){
 			json test_config = yaml_to_json(YAML::LoadFile(test_path.string()));
-			for(auto &[key, value]: suite_overrides.items()){
-				test_config[key] = value;
+			bool changed = false;
+			for(auto &[key, value]: suite_defaults.items()){
+				if(!test_config.contains(key)){
+					test_config[key] = value;
+					changed = true;
+				}
 			}
-			save_yaml(test_config, test_path);
+			if(changed){ save_yaml(test_config, test_path); }
 		}
-	}
+	}*/
 
 	return test_map;
 }
 
 void RunSuiteStatus::execute(){
-	auto tests_paths = get_test_paths();
 	// run tests
-	for(const auto &[name, test_path]: tests_paths){
+	for(auto tests_paths = get_test_paths(); const auto &[name, test_path]: tests_paths){
 		RunStatus rs(test_path, name, ".");
-		rs.only_stats = this->only_stats;
+		rs.run_config(run_config);
+		//rs.only_stats = this->only_stats;
 		path suite_name = rs.config().at("name").get<string>();
 		rs.run_folder(run_folder/suite_name/"last_run"/name);
 

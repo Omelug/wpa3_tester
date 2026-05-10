@@ -5,16 +5,16 @@ Version v 0.0.0.0:
 ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
     r: sjednotit while loop s logy  Dos útoky
     +: poté postupně přepsat do C++
-+: ClientState obeserver
 
 r: small TODO
-r: extends/ref - sjednotiti nebo popsat rozdíl do nového souboru yaml_config.md
+r: extends/ref - popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests 
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 
 //DONE
++: ClientState obeserver
 +: observer for connected station on openwrt
 r: sniffer loops -> sniffer_helper
 rt: change == to CHECK_EQ/CHECK/CHECK_FALSE
@@ -81,6 +81,7 @@ Optimalization:
 
 PDF:
 +: PMKSA
+f: deleted_old -> delete_old
 
 - Every physical radio can have only one interface in these tests
 -> re to to roadmapor implementa and highlight in documentation

@@ -35,6 +35,19 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 	_run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
+
+	if(_config.contains("only_stats"))       _run_config.only_stats       = _config.at("only_stats").get<bool>();
+	if(_config.contains("delete_old"))       _run_config.delete_old       = _config.at("delete_old").get<bool>();
+	if(_config.contains("test_report"))      _run_config.test_report      = _config.at("test_report").get<bool>();
+	if(_config.contains("compile_external")) _run_config.compile_external = _config.at("compile_external").get<bool>();
+	if(_config.contains("install_req"))      _run_config.install_req      = _config.at("install_req").get<bool>();
+	if(_config.contains("rewrite") && _config.at("rewrite").is_string()){
+		if(const auto &rw = _config.at("rewrite").get<string>(); rw == "errors"){
+			_run_config.rewrite = RewriteMode::errors;
+		}else if(rw == "all"){
+			_run_config.rewrite = RewriteMode::all;
+		}
+	}
 }
 
 void RunStatus::clean(){
@@ -52,7 +65,7 @@ void RunStatus::execute(){
 	if(ec) throw runtime_error("Unable to create run base directory");
 
 	//try {
-	if(this->only_stats){
+	if(this->run_config().only_stats){
 		//TODO get data from mapping/config
 		// get maping
 		stats_test();
@@ -184,8 +197,7 @@ void RunStatus::start_observers(){
 }
 
 string RunStatus::findConfigByTestName(const string &name){
-	auto tests = scan_attack_configs();
-	if(tests.contains(name)){ return tests[name]; }
+	if(auto tests = scan_attack_configs(); tests.contains(name)){ return tests[name]; }
 	throw config_err("Unknown test name: " + name);
 }
 

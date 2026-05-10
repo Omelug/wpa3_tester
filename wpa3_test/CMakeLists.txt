@@ -4,6 +4,17 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES C CXX)
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+get_property(dirs DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
+foreach(dir ${dirs})
+    list(APPEND CMAKE_INSTALL_RPATH ${dir})
+endforeach()
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # --- VALGRIND / CTEST CONFIGURATION ---
 find_program(MEMORYCHECK_COMMAND valgrind)
 if (MEMORYCHECK_COMMAND)
@@ -11,13 +22,10 @@ if (MEMORYCHECK_COMMAND)
     message(STATUS "Valgrind found: tracking FDs enabled for memcheck")
 endif ()
 
-# optimization for compiling/ linking
+# linker detection — applied after FetchContent to avoid contaminating try_compile checks
+find_program(MOLD_EXE mold)
 execute_process(COMMAND lld --version RESULT_VARIABLE LLD_FOUND OUTPUT_QUIET ERROR_QUIET)
-if (LLD_FOUND EQUAL 0)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
-    message(STATUS "Using LLD linker")
-endif ()
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,$ENV{LD_LIBRARY_PATH}")
 
 find_program(CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
@@ -43,6 +51,16 @@ endif ()
 
 include(cmake/awk_files.cmake)
 include(cmake/external_libs.cmake)
+
+# Apply linker AFTER FetchContent — prevents try_compile checks in deps from being affected
+if (MOLD_EXE)
+    add_link_options("-fuse-ld=mold")
+    message(STATUS "Using mold linker: ${MOLD_EXE}")
+elseif (LLD_FOUND EQUAL 0)
+    add_link_options("-fuse-ld=lld")
+    message(STATUS "Using LLD linker")
+endif ()
+
 include(cmake/dependencies.cmake)
 include(cmake/libraries.cmake)
 include(cmake/targets.cmake)

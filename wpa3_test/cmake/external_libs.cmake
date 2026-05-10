@@ -132,6 +132,8 @@ target_include_directories(doctest_headers INTERFACE
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
+# Embed library dirs in RPATH so binaries find system libs at runtime (needed on NixOS)
+list(APPEND CMAKE_BUILD_RPATH ${LIBNL_LIBRARY_DIRS})
 
 pkg_check_modules(LIBSSH libssh)
 if(NOT LIBSSH_FOUND)
@@ -141,4 +143,6 @@ if(NOT LIBSSH_FOUND)
             GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(libssh)
+else()
+    list(APPEND CMAKE_BUILD_RPATH ${LIBSSH_LIBRARY_DIRS})
 endif()

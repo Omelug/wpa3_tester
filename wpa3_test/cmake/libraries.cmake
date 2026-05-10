@@ -1,4 +1,5 @@
 find_package(PkgConfig REQUIRED)
+set(YAML_CPP_BUILD_TESTS OFF)
 set(REQUIRED_PACKAGES
         "libpcap"
         "openssl"

@@ -58,7 +58,7 @@ test_build:
 	cmake --build build -j $(shell nproc --ignore=2)
 
 test: test_build
-	sudo ctest --test-dir build --output-on-failure
+	sudo -E ctest --test-dir build --output-on-failure
 
 test_manual_build:
 	cmake --build $(BUILD_DIR) --target \
@@ -86,7 +86,7 @@ coverage_build:
 IGNORE_ERRORS = inconsistent,inconsistent,range,negative,unused
 coverage: coverage_build
 	lcov --directory $(BUILD_DIR_COVERAGE) --zerocounters
-	sudo ctest --test-dir $(BUILD_DIR_COVERAGE) --output-on-failure
+	sudo -E ctest --test-dir $(BUILD_DIR_COVERAGE) --output-on-failure
 	lcov --directory $(BUILD_DIR_COVERAGE) --capture --output-file $(INFO_FILE) --ignore-errors $(IGNORE_ERRORS) \
 		--parallel $(NPROC)
 	lcov --remove $(INFO_FILE) '/usr/*' '*/_deps/*' '*/tests/*' --output-file $(CLEAN_INFO) --ignore-errors $(IGNORE_ERRORS)

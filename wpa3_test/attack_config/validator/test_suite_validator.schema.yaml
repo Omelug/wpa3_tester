@@ -43,21 +43,5 @@ properties:
               type: object
               description: "Structure of configuration with var_ prefix"
 
-  deleted_old:
-    type: boolean
-
-  test_report:
-    type: boolean
-
-  rewrite:
-    oneOf:
-      - type: boolean
-        const: false
-      - type: string
-        enum: [ errors, all ]
-
-  compile_external:
-    type: boolean
-
-  install_req:
-    type: boolean
+allOf:
+  - $ref: './run_config.schema.yaml'

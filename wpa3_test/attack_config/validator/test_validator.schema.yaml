@@ -61,11 +61,8 @@ properties:
         type: string
         description: validator
 
-  compile_external:
-    type: boolean
-
-  install_req:
-    type: boolean
+allOf:
+  - $ref: './run_config.schema.yaml'
 
 definitions:
   Actor:

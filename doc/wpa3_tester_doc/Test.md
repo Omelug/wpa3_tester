@@ -2,6 +2,9 @@
 
 ### Finding of test
 
+### Tester_Config
+- tester have config in [global_config.yaml](../../wpa3_test/attack_config/global_config.yaml)
+
 ### Test
 - defined by a YAML configuration file. 
 
@@ -21,3 +24,10 @@ External:
 The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml). 
 
 ### Test suites
+- have tbe in format [test_suite_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_suite_validator.schema.yaml)
+- config_type: test_suite
+- path/generatros
+#### generators 
+- var_ like prefix for placeholder
+- more described in schema
+- config generating to  {rss.run_folder}/test_config/<generator_name>

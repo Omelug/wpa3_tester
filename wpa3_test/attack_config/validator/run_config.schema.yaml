@@ -1,0 +1,23 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: Shared test run configuration properties
+type: object
+
+properties:
+  deleted_old:
+    type: boolean
+
+  test_report:
+    type: boolean
+
+  rewrite:
+    oneOf:
+      - type: boolean
+        const: false
+      - type: string
+        enum: [ errors, all ]
+
+  compile_external:
+    type: boolean
+
+  install_req:
+    type: boolean

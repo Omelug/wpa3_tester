@@ -1,9 +1,18 @@
 ## Test / Test suite
-
+- in [global_config.yaml](../../wpa3_test/attack_config/global_config.yaml) 
+are paths for external programs, link to path of external whitebox actors etc.
 ### Finding of test
 
-### Tester_Config
-- tester have config in [global_config.yaml](../../wpa3_test/attack_config/global_config.yaml)
+### Run_Config
+- test_suite_only
+  - deleted_old (false/true) - delete old tests before run 
+  - test_report (false/true) - should tests in suite generate reports
+- test/test_suites (global false values are rewritten first by test_suite and by test config after)
+  - rewrite (false/errors/all) - 
+  - compile_external (false/true) - compilation of external programs
+  - install_req (false/true)  - install external programs
+
+if not compile_external/install_req and something have to be compilated/oinstalled -> req_err
 
 ### Test
 - defined by a YAML configuration file. 
@@ -18,7 +27,6 @@ These requirements will be installed before execution if `install_req: true` is 
 For some programs `compile_external: true` is needed for auto install.
 Otherwise, the system will return a req_error if not already installed.
 Some programs need folder config in [global_config](../../wpa3_test/attack_config/global_config.yaml).
-
 
 External: 
 The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml). 

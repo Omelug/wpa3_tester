@@ -302,13 +302,7 @@ void ProcessManager::stop(const string &process_name){
 			(void)killpg(mp->pgid, SIGTERM);
 			(void)killpg(mp->pgid, SIGKILL);
 		} else if(mp->proc){
-			(void)mp->proc->terminate();
-			(void)mp->proc->kill();
-		}
-
-		if(mp->proc){
-			mp->proc->close(reproc::stream::out);
-			mp->proc->close(reproc::stream::err);
+			(void)mp->proc->terminate(); (void)mp->proc->kill();
 		}
 	}
 
@@ -329,7 +323,16 @@ void ProcessManager::stop(const string &process_name){
 		}
 	}
 
-	if(mp->proc && !mp->naturally_exited){ mp->proc->stop(operations); }
+	if(mp->proc){
+		if(mp->naturally_exited){
+			// Collect exit status so reproc destructor doesn't attempt a redundant stop/close.
+			reproc::stop_actions wait_only{};
+			wait_only.first = {reproc::stop::wait, reproc::milliseconds(100)};
+			(void)mp->proc->stop(wait_only);
+		} else{
+			(void)mp->proc->stop(operations);
+		}
+	}
 	log(LogLevel::DEBUG, "proc->stop done for " + process_name);
 
 	// Call on_stop callback if registered

@@ -86,6 +86,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			log(LogLevel::DEBUG, "flush done {}", process_name);
 		}
 
+		if(natural_exit) mp->naturally_exited = true;
 		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
 	});
 }
@@ -297,18 +298,19 @@ void ProcessManager::stop(const string &process_name){
 	operations.first = {reproc::stop::terminate, reproc::milliseconds(500)};
 	operations.second = {reproc::stop::kill, reproc::milliseconds(500)};
 
-	if(mp->pgid > 0){
-		(void)killpg(mp->pgid, SIGTERM);
-		(void)killpg(mp->pgid, SIGKILL);
-	} else if(mp->proc){
-		(void)mp->proc->terminate();
-		(void)mp->proc->kill();
-	}
+	if(!mp->naturally_exited){
+		if(mp->pgid > 0){
+			(void)killpg(mp->pgid, SIGTERM);
+			(void)killpg(mp->pgid, SIGKILL);
+		} else if(mp->proc){
+			(void)mp->proc->terminate();
+			(void)mp->proc->kill();
+		}
 
-	if(mp->proc){
-		//mp->proc->close(reproc::stream::in);
-		mp->proc->close(reproc::stream::out);
-		mp->proc->close(reproc::stream::err);
+		if(mp->proc){
+			mp->proc->close(reproc::stream::out);
+			mp->proc->close(reproc::stream::err);
+		}
 	}
 
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();
@@ -328,7 +330,7 @@ void ProcessManager::stop(const string &process_name){
 		}
 	}
 
-	if(mp->proc){ mp->proc->stop(operations); }
+	if(mp->proc && !mp->naturally_exited){ mp->proc->stop(operations); }
 	log(LogLevel::DEBUG, "proc->stop done for " + process_name);
 
 	// Call on_stop callback if registered

@@ -31,6 +31,7 @@ class ProcessManager{
 		pid_t pgid{-1};
 		std::thread drain_thread;
 		std::atomic<bool> shutting_down{false};
+		std::atomic<bool> naturally_exited{false};
 		ProcessLogs logs;
 		//std::mutex proc_mutex;
 		std::function<void()> before_stop_callback;

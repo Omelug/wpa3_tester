@@ -9,13 +9,12 @@
 #include <fcntl.h>
 #include <sched.h>
 #include <chrono>
-#include <doctest/doctest.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
-static void cleanup_all_namespaces();
+void cleanup_all_namespaces();
 void kill_process_in_ns_name(const std::string &ns_name);
 void delete_ns_and_wait(const std::string &ns_name, const std::vector<std::string> &ifaces,
     std::chrono::milliseconds timeout = std::chrono::milliseconds(3000));
@@ -177,7 +176,7 @@ TEST_CASE("delete_ns_and_wait - hwsim interface returns to root ns"){
     using namespace filesystem;
     using namespace chrono;
 
-    // Snapshot existing wifi interfaces to identify the new hwsim one
+    // Snapshot existing interfaces to identify the new hwsim one
     const auto before = hw_capabilities::list_interfaces(InterfaceType::Wifi);
 
     hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=1"});

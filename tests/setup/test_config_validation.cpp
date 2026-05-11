@@ -226,13 +226,13 @@ TEST_CASE("RunStatus - Test suite test generation"){
             path ts_config_path = test_base / t.input_ts_yaml;
 
             RunSuiteStatus rss(ts_config_path);
-            rss.set_run_folder(test_base / "run_out" / t.folder_name);
+            rss.run_folder(test_base / "run_out" / t.folder_name);
 
-            if (exists(rss.get_run_folder())) {remove_all(rss.get_run_folder());}
-            create_directories(rss.get_run_folder());
+            if (exists(rss.run_folder())) {remove_all(rss.run_folder());}
+            create_directories(rss.run_folder());
 
             auto tests_paths = rss.get_test_paths();
-            auto actual_dir = path(rss.get_run_folder());
+            auto actual_dir = path(rss.run_folder());
             path expected_dir = test_base / "expected" / t.folder_name;
 
             CAPTURE(actual_dir.string());

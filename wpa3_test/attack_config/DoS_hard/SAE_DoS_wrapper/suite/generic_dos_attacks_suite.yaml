@@ -1,5 +1,6 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 name: generic_dos_attacks_suite
+suite_report_function: access_point_res_list
 config_type: test_suite
 tests:
   dos_attacks_gen:

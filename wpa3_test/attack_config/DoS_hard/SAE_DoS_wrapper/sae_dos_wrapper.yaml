@@ -58,7 +58,7 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 60
+  attack_time_sec: 120
   # Which band the attacker adapter is on
   adapter_band: "2.4GHz"
   # Attack from orchestator_master_en.py ADAPTER_KONFIGURATION angriff field

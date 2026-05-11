@@ -13,12 +13,12 @@ class RunSuiteStatus{
 	static size_t check_vars_len_same(nlohmann::basic_json<> source_info);
 protected:
 	nlohmann::json config;
-	std::string config_path;
-	std::string run_folder;
+	std::filesystem::path _config_path;
+	std::filesystem::path _run_folder;
 
 public: // getters and setters
-	[[nodiscard]] std::string get_run_folder() const{ return run_folder; }
-	void set_run_folder(const std::string &new_run_folder){ this->run_folder = new_run_folder; }
+	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }
+	void run_folder(const std::filesystem::path &new_run_folder){ _run_folder = new_run_folder; }
 
 	bool only_stats = false;
 	Run_Config run_config{};
@@ -27,8 +27,8 @@ public: // getters and setters
 	static void print_test_suite_list();
 	static void print_tests_in_suite(const std::string &ts_name);
 
-	explicit RunSuiteStatus(const std::string &config_path, std::string suite_name = "");
-	static nlohmann::json config_validation(const std::string &config_path);
+	explicit RunSuiteStatus(const std::filesystem::path &config_path, std::string suite_name = "");
+	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
 	static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
 									const std::filesystem::path &test_config_folder, config_paths &test_map

@@ -7,6 +7,7 @@
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "setup/YAMLValidator.h"
+#include "suite/suite_report.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -15,31 +16,31 @@ using namespace filesystem;
 using namespace nlohmann;
 using YNode = YAML::Node;
 
-RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
-	this->config_path = config_path;
-	if(!exists(config_path)){ throw config_err("Config not found: " + config_path); }
+RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name){
+	_config_path = config_path;
+	if(!exists(config_path)){ throw config_err("Config not found: " + config_path.string()); }
 
 	if(suite_name.empty()){
-		const YNode node = YAML::LoadFile(config_path);
+		const YNode node = YAML::LoadFile(config_path.string());
 		if(!node["name"] || !node["name"].IsScalar())
-			throw config_err("Config missing required string field 'name': " + config_path);
+			throw config_err("Config missing required string field 'name': " + config_path.string());
 		suite_name = node["name"].as<string>();
 	}
 
-	run_folder = (BASE_FOLDER / suite_name / "last_run").string();
-	log(LogLevel::INFO, "Used test suite config " + this->config_path);
-	this->config = config_validation(this->config_path);
+	_run_folder = BASE_FOLDER / suite_name / "last_run";
+	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
+	this->config = config_validation(_config_path);
 
 	parse_run_config(config, run_config);
 }
 
-json RunSuiteStatus::config_validation(const string &config_path){
+json RunSuiteStatus::config_validation(const path &config_path){
 	try{
-		const YNode config_node = YAML::LoadFile(config_path);
+		const YNode config_node = YAML::LoadFile(config_path.string());
 		json config_json = yaml_to_json(config_node);
 
-		config_json = RunStatus::extends_recursive(config_json, config_path);
-		RunStatus::validate_recursive(config_json, path(config_path).parent_path());
+		config_json = RunStatus::extends_recursive(config_json, config_path.string());
+		RunStatus::validate_recursive(config_json, config_path.parent_path());
 
 		//global validation
 		const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
@@ -59,7 +60,7 @@ json RunSuiteStatus::config_validation(const string &config_path){
 
 void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source_name, config_paths &test_map) const{
 	const path rel_path = source_j.at("path").get<string>();
-	path abs_path = absolute(path(config_path).parent_path() / rel_path);
+	path abs_path = absolute(_config_path.parent_path() / rel_path);
 	test_map.emplace_back(source_name, abs_path);
 }
 
@@ -254,7 +255,7 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 }
 
 config_paths RunSuiteStatus::get_test_paths(){
-	const auto test_config_folder = path(this->run_folder) / "test_config";
+	const auto test_config_folder = _run_folder / "test_config";
 
 	error_code ec; //create test folder
 	create_directories(test_config_folder, ec);
@@ -307,9 +308,17 @@ void RunSuiteStatus::execute(){
 	for(auto tests_paths = get_test_paths(); const auto &[name, test_path]: tests_paths){
 		RunStatus rs(test_path, name, ".");
 		rs.run_config(run_config);
-		path suite_name = rs.config().at("name").get<string>();
-		rs.run_folder(run_folder / suite_name / "last_run" / name);
+		path test_name = rs.config().at("name").get<string>();
+		rs.run_folder(run_folder() / test_name);
 		rs.execute();
+	}
+
+	if(!config.contains("suite_report_function")) return;
+	const string module_name = config.at("suite_report_function").get<string>();
+	if(const auto report_it = suite::suite_report_map.find(module_name); report_it != suite::suite_report_map.end()){
+		report_it->second(*this);
+	} else{
+		log(LogLevel::WARNING, "suite_report_function '{}' not found in suite_report_map", module_name);
 	}
 }
 
@@ -322,8 +331,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	const auto &[name, test_path] = *it;
 	RunStatus rs(test_path, name, ".");
 	rs.run_config(run_config);
-	const path suite_name = rs.config().at("name").get<string>();
-	rs.run_folder(run_folder / suite_name / "last_run" / name);
+	rs.run_folder(run_folder() / rs.config().at("name").get<string>());
 	rs.execute();
 }
 

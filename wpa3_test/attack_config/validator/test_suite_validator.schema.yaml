@@ -8,7 +8,9 @@ properties:
   name:
     type: string
     description: "Name of test suite"
-
+  suite_report_function:
+    type: string
+    description: "report function for all test after tests"
   config_type:
     type: string
     const: test_suite

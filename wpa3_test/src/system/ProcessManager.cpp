@@ -71,6 +71,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 		// When killed via killpg, surviving grandchildren may keep pipes open
 		// indefinitely, causing poll() to never reach EOF and blocking join().
 		if(natural_exit){
+			mp->naturally_exited = true;
 			log(LogLevel::DEBUG, "flush start " + process_name);
 			const auto flush_deadline = steady_clock::now() + milliseconds(500);
 			for(const auto &s: streams){
@@ -85,8 +86,6 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			}
 			log(LogLevel::DEBUG, "flush done {}", process_name);
 		}
-
-		if(natural_exit) mp->naturally_exited = true;
 		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
 	});
 }

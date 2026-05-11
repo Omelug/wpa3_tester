@@ -41,8 +41,10 @@ void parse_arguments(argparse::ArgumentParser &program, const int argc, char *ar
 
 	if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
 		throw config_err("Cant use both lists");
-	if(2 <= (program.present<string>("--test").has_value() + program.present<string>("--test_suite").has_value() +
-		program.present<string>("--config").has_value())) throw config_err("Can't combinate  test/test_suite/config");
+	const bool has_config = program.present<string>("--config").has_value();
+	const bool has_test = program.present<string>("--test").has_value();
+	const bool has_suite = program.present<string>("--test_suite").has_value();
+	if(has_config && (has_test || has_suite)) throw config_err("Can't combine --config with --test/--test_suite");
 }
 
 static void solve_arguments(const argparse::ArgumentParser &program){
@@ -88,17 +90,23 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 	}
 
 	if(const auto testName = program.present<string>("--test")){
-		string test_config = RunStatus::findConfigByTestName(testName.value());
-		RunStatus rs(test_config, testName.value());
-		//rs.only_stats = program.get<bool>("--only_stats");
-		rs.execute();
+		if(!program.present<string>("--test_suite")){
+			string test_config = RunStatus::findConfigByTestName(testName.value());
+			RunStatus rs(test_config, testName.value());
+			//rs.only_stats = program.get<bool>("--only_stats");
+			rs.execute();
+		}
 	}
 
 	if(const auto testSuiteName = program.present<string>("--test_suite")){
 		string test_config = RunSuiteStatus::findConfigByTestSuiteName(testSuiteName.value());
 		RunSuiteStatus rss(test_config, testSuiteName.value());
 		//rss.only_stats = program.get<bool>("--only_stats");
-		rss.execute();
+		if(const auto testName = program.present<string>("--test")){
+			rss.execute(testName.value());
+		} else{
+			rss.execute();
+		}
 	}
 }
 

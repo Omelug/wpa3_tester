@@ -36,18 +36,7 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
 
-	if(_config.contains("only_stats"))       _run_config.only_stats       = _config.at("only_stats").get<bool>();
-	if(_config.contains("delete_old"))       _run_config.delete_old       = _config.at("delete_old").get<bool>();
-	if(_config.contains("test_report"))      _run_config.test_report      = _config.at("test_report").get<bool>();
-	if(_config.contains("compile_external")) _run_config.compile_external = _config.at("compile_external").get<bool>();
-	if(_config.contains("install_req"))      _run_config.install_req      = _config.at("install_req").get<bool>();
-	if(_config.contains("rewrite") && _config.at("rewrite").is_string()){
-		if(const auto &rw = _config.at("rewrite").get<string>(); rw == "errors"){
-			_run_config.rewrite = RewriteMode::errors;
-		}else if(rw == "all"){
-			_run_config.rewrite = RewriteMode::all;
-		}
-	}
+	parse_run_config(_config, _run_config);
 }
 
 void RunStatus::clean(){
@@ -59,13 +48,28 @@ void RunStatus::clean(){
 void RunStatus::execute(){
 	globalRunStatus = this;
 
+	if(exists(_run_folder)){
+		if(_run_config.rewrite.value_or(RewriteMode::none) == RewriteMode::none){
+			log(LogLevel::DEBUG, "Skipping: " + _run_folder.filename().string());
+			return;
+		}
+		if(_run_config.rewrite.value_or(RewriteMode::none) == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
+			log(LogLevel::WARNING, "Skipping successful test : " + _run_folder.filename().string());
+			return;
+		}
+		if(_run_config.delete_old.value_or(false)){
+			log(LogLevel::DEBUG, "Deleting old run folder: " + _run_folder.filename().string());
+			remove_all(_run_folder);
+		}
+	}
+
 	// Ensure parent directories exist
 	error_code ec;
 	create_directories(_run_folder, ec);
 	if(ec) throw runtime_error("Unable to create run base directory");
 
 	//try {
-	if(this->run_config().only_stats){
+	if(this->run_config().only_stats.value_or(false)){
 		//TODO get data from mapping/config
 		// get maping
 		stats_test();

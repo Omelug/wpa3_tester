@@ -42,6 +42,7 @@ public: // getters and setters
 	);
 	config_paths get_test_paths();
 	void execute();
+	void execute(const std::string &test_name);
 	static std::string findConfigByTestSuiteName(const std::string &name);
 
 };

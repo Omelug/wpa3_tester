@@ -29,6 +29,8 @@ RunSuiteStatus::RunSuiteStatus(const string &config_path, string suite_name){
 	run_folder = (BASE_FOLDER / suite_name / "last_run").string();
 	log(LogLevel::INFO, "Used test suite config " + this->config_path);
 	this->config = config_validation(this->config_path);
+
+	parse_run_config(config, run_config);
 }
 
 json RunSuiteStatus::config_validation(const string &config_path){
@@ -302,37 +304,27 @@ config_paths RunSuiteStatus::get_test_paths(){
 }
 
 void RunSuiteStatus::execute(){
-	// run tests
 	for(auto tests_paths = get_test_paths(); const auto &[name, test_path]: tests_paths){
 		RunStatus rs(test_path, name, ".");
 		rs.run_config(run_config);
-		//rs.only_stats = this->only_stats;
 		path suite_name = rs.config().at("name").get<string>();
-		rs.run_folder(run_folder/suite_name/"last_run"/name);
-
-		string rewrite_mode = "false";
-		if(config.contains("rewrite") && config.at("rewrite").is_string()){
-			rewrite_mode = config.at("rewrite").get<string>();
-		}
-
-		if(exists(rs.run_folder())){
-			if(rewrite_mode == "false"){
-				log(LogLevel::DEBUG, "Skipping: " + name);
-				continue;
-			}
-
-			if(config.at("rewrite") == "errors" && !exists(rs.run_folder() / "errors.txt")){
-				log(LogLevel::WARNING, "Skipping successful test : " + name);
-				continue;
-			}
-
-			if(config.value("delete_old", false)){
-				log(LogLevel::DEBUG, "Deleting old run folder: " + name);
-				remove_all(rs.run_folder());
-			}
-		}
+		rs.run_folder(run_folder / suite_name / "last_run" / name);
 		rs.execute();
 	}
+}
+
+void RunSuiteStatus::execute(const string &test_name){
+	auto tests_paths = get_test_paths();
+	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return p.first == test_name; });
+	if(it == tests_paths.end())
+		throw config_err("Test '" + test_name + "' not found in suite");
+
+	const auto &[name, test_path] = *it;
+	RunStatus rs(test_path, name, ".");
+	rs.run_config(run_config);
+	const path suite_name = rs.config().at("name").get<string>();
+	rs.run_folder(run_folder / suite_name / "last_run" / name);
+	rs.execute();
 }
 
 string RunSuiteStatus::findConfigByTestSuiteName(const string &name){

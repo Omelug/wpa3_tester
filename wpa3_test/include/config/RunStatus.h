@@ -41,7 +41,7 @@ protected:
 	ActorCMap simulation_mapping{};
 public:
 	[[nodiscard]] Run_Config run_config() const{ return _run_config; }
-	void run_config(const Run_Config &run_config){ _run_config = run_config; }
+	void run_config(const Run_Config &rc){ _run_config.merge_from(rc); }
 	[[nodiscard]] nlohmann::json& config() { return _config;}
 	[[nodiscard]] const nlohmann::json& config() const { return _config;}
 	void config(const nlohmann::json &new_config){ this->_config = new_config; }

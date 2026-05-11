@@ -15,6 +15,13 @@ struct Run_Config {
 	std::optional<bool>        compile_external;
 	std::optional<bool>        install_req;
 
+	[[nodiscard]] bool        get_delete_old()       const { return delete_old.value_or(false); }
+	[[nodiscard]] bool        get_test_report()      const { return test_report.value_or(false); }
+	[[nodiscard]] bool        get_only_stats()       const { return only_stats.value_or(false); }
+	[[nodiscard]] RewriteMode get_rewrite()          const { return rewrite.value_or(RewriteMode::none); }
+	[[nodiscard]] bool        get_compile_external() const { return compile_external.value_or(false); }
+	[[nodiscard]] bool        get_install_req()      const { return install_req.value_or(false); }
+
 	void merge_from(const Run_Config &other){
 		if(other.delete_old.has_value())       delete_old       = other.delete_old;
 		if(other.test_report.has_value())      test_report      = other.test_report;

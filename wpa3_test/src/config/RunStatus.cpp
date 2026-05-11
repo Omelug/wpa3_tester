@@ -49,15 +49,15 @@ void RunStatus::execute(){
 	globalRunStatus = this;
 
 	if(exists(_run_folder)){
-		if(_run_config.rewrite.value_or(RewriteMode::none) == RewriteMode::none){
+		if(_run_config.get_rewrite() == RewriteMode::none){
 			log(LogLevel::DEBUG, "Skipping: " + _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.rewrite.value_or(RewriteMode::none) == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
+		if(_run_config.get_rewrite() == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
 			log(LogLevel::WARNING, "Skipping successful test : " + _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.delete_old.value_or(false)){
+		if(_run_config.get_delete_old()){
 			log(LogLevel::DEBUG, "Deleting old run folder: " + _run_folder.filename().string());
 			remove_all(_run_folder);
 		}
@@ -69,7 +69,7 @@ void RunStatus::execute(){
 	if(ec) throw runtime_error("Unable to create run base directory");
 
 	//try {
-	if(this->run_config().only_stats.value_or(false)){
+	if(this->run_config().get_only_stats()){
 		//TODO get data from mapping/config
 		// get maping
 		stats_test();

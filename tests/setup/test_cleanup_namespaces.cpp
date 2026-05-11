@@ -8,14 +8,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sched.h>
+#include <chrono>
 #include <doctest/doctest.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
-void cleanup_all_namespaces();
+static void cleanup_all_namespaces();
 void kill_process_in_ns_name(const std::string &ns_name);
+void delete_ns_and_wait(const std::string &ns_name, const std::vector<std::string> &ifaces,
+    std::chrono::milliseconds timeout = std::chrono::milliseconds(3000));
 }
 
 using namespace std;
@@ -167,4 +170,49 @@ TEST_CASE("kill_process_in_ns_name - kills SIGTERM-ignoring process via SIGKILL"
     waitpid(child, nullptr, WNOHANG);
 
     wpa3_tester::hw_capabilities::run_cmd({"ip", "netns", "del", ns});
+}
+
+TEST_CASE("delete_ns_and_wait - hwsim interface returns to root ns"){
+    using namespace wpa3_tester;
+    using namespace filesystem;
+    using namespace chrono;
+
+    // Snapshot existing wifi interfaces to identify the new hwsim one
+    const auto before = hw_capabilities::list_interfaces(InterfaceType::Wifi);
+
+    hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=1"});
+    hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
+
+    const auto after = hw_capabilities::list_interfaces(InterfaceType::Wifi);
+
+    string hwsim_iface;
+    for(const auto &a : after){
+        bool existed = false;
+        for(const auto &b : before) if(b.name == a.name){ existed = true; break; }
+        if(!existed){ hwsim_iface = a.name; break; }
+    }
+
+    if(hwsim_iface.empty()){
+        MESSAGE("No new wifi interface appeared after loading mac80211_hwsim — skipping");
+        hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+        return;
+    }
+
+    const string ns = "wpa3_test_hwsim_del_ns";
+    hw_capabilities::run_cmd({"ip", "netns", "add", ns});
+    REQUIRE(netns_exists(ns));
+
+    hw_capabilities::move_to_netns(hwsim_iface, ns);
+    REQUIRE_FALSE(exists("/sys/class/net/" + hwsim_iface));
+
+    const auto t0 = steady_clock::now();
+    delete_ns_and_wait(ns, {hwsim_iface}, milliseconds(3000));
+    const auto elapsed = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+
+    CHECK_FALSE(netns_exists(ns));
+    CHECK(exists("/sys/class/net/" + hwsim_iface));
+    // Kernel moves the interface synchronously on ns deletion — should be well under 1 s
+    CHECK_LT(elapsed, 1000);
+
+    hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 }

@@ -6,12 +6,14 @@ ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
     r: sjednotit while loop s logy  Dos útoky
     +: poté postupně přepsat do C++
 
+ch: chenge errors.txt logic -> write something to done
 r: small TODO
 r: extends/ref - popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests 
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
++: ClientState obeserver use + add to mitm
 
 //DONE
 +: ClientState obeserver

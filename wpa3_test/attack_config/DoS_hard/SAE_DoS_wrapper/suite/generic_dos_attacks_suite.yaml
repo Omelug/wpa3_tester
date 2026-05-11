@@ -1,0 +1,14 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: generic_dos_attacks_suite
+config_type: test_suite
+tests:
+  dos_attacks_gen:
+    type: generator
+    vars:
+      dos_attack: [ cookie_guzzler, omnivore, muted, hasty, double_decker, bad_algo, bad_seq, bad_status_code, empty_frame_confirm]
+    config:
+      extends: ../sae_dos_wrapper.yaml
+      name: var_dos_attack
+      attack_config:
+        attack_type: var_dos_attack
+

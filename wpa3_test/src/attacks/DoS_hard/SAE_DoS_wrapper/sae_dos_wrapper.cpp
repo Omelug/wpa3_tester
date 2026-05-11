@@ -63,7 +63,7 @@ static void write_run_config(const string &config_path, const dos_helpers::SAEPa
 	const string finite_hex  = dos_helpers::bytes_to_hex_plain(sae.element);
 	const string band        = att_cfg.at("adapter_band").get<string>();
 	const string attack_type = att_cfg.at("attack_type").get<string>();
-	const string ch_5        = att_cfg.at("channel_5ghz").get<string>();
+	const int ch_5           = att_cfg.at("channel_5ghz").get<int>();
 	const int pps            = att_cfg.at("packets_per_second_limit").get<int>();
 	const int burst          = att_cfg.at("burst_size_optimal").get<int>();
 	const double gap         = att_cfg.at("inter_packet_gap").get<double>();
@@ -79,7 +79,7 @@ static void write_run_config(const string &config_path, const dos_helpers::SAEPa
 	  << "sae_finite_5_hex_list:\n  - \"" << finite_hex << "\"\n\n"
 	  << "scanner_interface: \"\"\n"
 	  << "channel_2_4ghz: \"" << channel << "\"\n"
-	  << "channel_5ghz: \"" << ch_5 << "\"\n\n"
+	  << "channel_5ghz: \"" << to_string(ch_5) << "\"\n\n"
 	  << "target_sta_macs: [\"" << client_mac << "\"]\n"
 	  << "target_sta_macs_5ghz_special: []\n"
 	  << "target_sta_macs_2_4ghz_special: []\n\n"

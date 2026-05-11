@@ -92,62 +92,24 @@ void kill_process_in_ns_name(const string &ns_name){
 }
 
 static vector<string> psy_if_in_ns(const string &ns_name){
-	const string out = hw_capabilities::run_cmd_output({"ls", "/sys/class/net"}, ns_name);
+	const string out = hw_capabilities::run_cmd_output({"iw", "dev"}, ns_name);
 
 	vector<string> result;
 	istringstream ss(out);
-	string iface;
-	while(ss >> iface){
-		const int rc = hw_capabilities::run_cmd({"test", "-e", "/sys/class/net/" + iface + "/device"}, ns_name, false);
-		if(rc == 0){
-			result.push_back(iface);
-			log(LogLevel::DEBUG, "iface in ns {}:{}", ns_name, iface);
+	string token;
+	while(ss >> token){
+		if(token == "Interface"){
+			string iface;
+			if(ss >> iface){
+				result.push_back(iface);
+				log(LogLevel::DEBUG, "iface in ns {}:{}", ns_name, iface);
+			}
 		}
 	}
 	return result;
 }
-//FIXMe , test first
-static void wait_to_default_ns(const vector<string> &ifaces,
-								const chrono::milliseconds timeout = chrono::milliseconds(2000)
-){
-	if(ifaces.empty()) return;
-	const auto start = chrono::steady_clock::now();
-	while(chrono::steady_clock::now() - start < timeout){
-		bool all_present = true;
-		for(const auto &name: ifaces){
-			if(!exists("/sys/class/net/" + name)){
-				all_present = false;
-				break;
-			}
-		}
-		if(all_present) return;
-		this_thread::sleep_for(chrono::milliseconds(20));
-	}
-	for(const auto &name: ifaces){
-		if(!exists("/sys/class/net/" + name)){
-			log(LogLevel::WARNING, "Interface " + name + " did not return to root ns in time!");
-		}
-	}
-}
 
-void kill_processes_in_all_non_default_ns(){
-	const path netns_dir = "/var/run/netns";
-
-	if(!exists(netns_dir)) return;
-
-	for(const auto &entry: directory_iterator(netns_dir)){
-		string ns_name = entry.path().filename().string();
-		log(LogLevel::INFO, "Cleaning up processes in namespace: {}", ns_name);
-		//hw_capabilities::run_cmd({"ip", "netns", "exec", ns_name, "pkill", "-9", "-f", ".*"});
-
-		const vector<string> physical_interfaces = psy_if_in_ns(ns_name);
-		kill_process_in_ns_name(ns_name);
-		hw_capabilities::run_cmd({"ip", "netns", "del", ns_name});
-		wait_to_default_ns(physical_interfaces);
-	}
-}
-
-static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
+void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 	const chrono::milliseconds timeout = chrono::milliseconds(3000)){
     // Delete netns via unlink — same as ip netns del
 	const string ns_path = "/var/run/netns/" + ns_name;
@@ -158,24 +120,38 @@ static void delete_ns_and_wait(const string &ns_name, const vector<string> &ifac
 		// Try to unlink anyway — might work if it's not a bind mount
 	}
 
-	if(::unlink(ns_path.c_str()) != 0){
-		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
-		return;
-	}
+    if(ifaces.empty()){
+        if(::unlink(ns_path.c_str()) != 0)
+            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+        return;
+    }
 
-    if(ifaces.empty()) return;
-
-    // Open RTNETLINK socket to watch RTM_NEWLINK events
+    // Open and bind netlink socket BEFORE deleting the namespace so we don't
+    // miss RTM_NEWLINK events that fire immediately upon deletion.
     const int nl_fd = socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
     if(nl_fd < 0){
         log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
+        if(::unlink(ns_path.c_str()) != 0)
+            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
         return;
     }
 
     sockaddr_nl sa{};
     sa.nl_family = AF_NETLINK;
-    sa.nl_groups = RTMGRP_LINK; // subscribe to link events
-    bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa));
+    sa.nl_groups = RTMGRP_LINK;
+    if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
+        log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
+        close(nl_fd);
+        if(::unlink(ns_path.c_str()) != 0)
+            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+        return;
+    }
+
+	if(::unlink(ns_path.c_str()) != 0){
+		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+		close(nl_fd);
+		return;
+	}
 
     // Track which interfaces are still missing from root ns
     unordered_set waiting(ifaces.begin(), ifaces.end());
@@ -243,6 +219,7 @@ void cleanup_all_namespaces(){
         const auto ifaces = psy_if_in_ns(ns_name);
         delete_ns_and_wait(ns_name, ifaces);
     }
+	this_thread::sleep_for(chrono::milliseconds(5000)); //FIXME add cleanup_all_namespaces at the end of test
     log(LogLevel::INFO, "Cleanup complete.");
 }
 

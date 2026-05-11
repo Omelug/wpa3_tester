@@ -78,6 +78,7 @@ void RunStatus::execute(){
 	save_yaml(_config, out_path);
 	run_test();
 	stats_test();
+	//cleanup_all_namespaces();
 	/*} catch (const exception& e) {
 			const path error_file = path(run_folder) / "errors.txt";
 			ofstream error_log(error_file, ios::out | ios::app);
@@ -224,7 +225,6 @@ void RunStatus::save_actor_interface_mapping() const{
 	}
 
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
-
 	write_actors_csv(actors, ofs);
 
 	ofs.close();

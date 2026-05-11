@@ -34,11 +34,7 @@ NetNSContext::NetNSContext(const optional<string> &netns){
 }
 
 NetNSContext::~NetNSContext(){
-	if(switched &&old_ns_fd 
-	>=
-	0
-	)
-	{
+	if(switched &&old_ns_fd >= 0){
 		setns(old_ns_fd, CLONE_NEWNET);
 	}
 	if(old_ns_fd >= 0) close(old_ns_fd);

@@ -3,8 +3,8 @@
 
 #include <cstdarg>
 #include <cstdio>
-#include <iostream>
 #include <ctime>
+#include <iostream>
 #include <regex>
 #include <vector>
 
@@ -38,12 +38,11 @@ void log(const LogLevel level, const char *fmt, ...){
 		throw runtime_error("vsnprintf failed");
 	}
 
-	vector<char> buf(size + 1);
-	vsnprintf(buf.data(), buf.size(), fmt, args);
+	vector<char> buf(static_cast<size_t>(size) + 1);
+	(void)vsnprintf(buf.data(), buf.size(), fmt, args);
 	va_end(args);
 
-	const string msg(buf.data());
-	cerr << levelToString(level) << ": " << msg << endl;
+	cerr << levelToString(level) << ": " << buf.data() << endl;
 }
 
 void log(const LogLevel level, const string &msg){
@@ -120,7 +119,7 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 
 string escape_tex(string text){
 	size_t pos = 0;
-	while((pos = text.find("_", pos)) != string::npos){
+	while((pos = text.find('_', pos)) != string::npos){
 		text.replace(pos, 1, "\\_");
 		pos += 2;
 	}

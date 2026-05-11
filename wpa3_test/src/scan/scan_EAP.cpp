@@ -1,8 +1,8 @@
 #include <chrono>
 #include <map>
 #include <set>
-#include <tins/rawpdu.h>
 #include <sys/poll.h>
+#include <tins/rawpdu.h>
 
 #include "attacks/components/sniffer_helper.h"
 #include "logger/log.h"

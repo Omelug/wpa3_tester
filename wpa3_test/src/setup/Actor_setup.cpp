@@ -66,7 +66,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	}
 
 	if(internal){
-		//FIXMe shouod be avaible for external_WB
+		//FIXMe should be available for external_WB
 		if((*this)[BK::AP].value_or(false)){
 			//set_managed_mode();
 			set_ap_mode();

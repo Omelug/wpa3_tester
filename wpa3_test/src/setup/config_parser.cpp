@@ -16,7 +16,6 @@ using namespace filesystem;
 json yaml_to_json(const YNode &node){
 	if(node.IsScalar()){
 		if(node.Tag() == "!"){
-			// if ""
 			return node.as<string>();
 		}
 		try{ return node.as<bool>(); } catch(...){}

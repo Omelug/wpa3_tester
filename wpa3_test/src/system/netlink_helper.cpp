@@ -1,18 +1,16 @@
 #include "system/netlink_helper.h"
-#include <sys/ioctl.h>
-#include <net/if.h>
 #include <expected>
-#include <fstream>
 #include <nl80211.h>
-#include <system_error>
+#include <unistd.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <net/if.h>
 #include <netlink/msg.h>
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #include "system/netlink_guards.h"
 
 using namespace std;
@@ -194,8 +192,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 }
 
 Result wait_for_wifi_iftype(const string_view iface_name, const optional<string> &netns,
-							const nl80211_iftype expected_type, const int max_retries, const int retry_ms
-){
+							const nl80211_iftype expected_type, const int max_retries, const int retry_ms){
 	for(int i = 0; i < max_retries; ++i){
 		if(query_wifi_iftype(iface_name.data(), netns) == expected_type) return Result{};
 		usleep(static_cast<useconds_t>(retry_ms) * 1000u);

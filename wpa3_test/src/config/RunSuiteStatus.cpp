@@ -238,7 +238,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const string &source_name,
 											const path &test_config_folder, config_paths &test_map
 ){
-	auto gen_folder = test_config_folder / source_name;
+	const auto gen_folder = test_config_folder / source_name;
 	create_directories(gen_folder);
 
 	const auto vars_node = source_info.at("vars");

@@ -46,7 +46,7 @@ void parse_arguments(argparse::ArgumentParser &program, const int argc, char *ar
 }
 
 static void solve_arguments(const argparse::ArgumentParser &program){
-	// prints
+	//-----------  prints
 	if(program.get<bool>("--test_list")){
 		if(const auto testName = program.present<string>("--test")){
 			const auto tests = RunStatus::scan_attack_configs(TEST);

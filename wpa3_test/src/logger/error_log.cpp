@@ -1,6 +1,6 @@
 #include "logger/error_log.h"
-#include <vector>
 #include <cstdio>
+#include <vector>
 
 namespace wpa3_tester{
 using namespace std;
@@ -19,8 +19,8 @@ string tester_error::vprintf_format(const char *fmt, ...){
 		return "printf format error";
 	}
 	vector<char> buf(static_cast<size_t>(len) + 1);
-	vsnprintf(buf.data(), buf.size(), fmt, ap);
+	(void)vsnprintf(buf.data(), buf.size(), fmt, ap);
 	va_end(ap);
-	return string(buf.data());
+	return buf.data();
 }
 }

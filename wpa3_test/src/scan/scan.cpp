@@ -16,33 +16,6 @@ using nlohmann::json;
 using namespace Tins;
 using namespace filesystem;
 
-// ---------------- INTERNAL
-// return <string iface; internal_actor >
-vector<ActorPtr> RunStatus::internal_options(){
-	vector<ActorPtr> options;
-	for(const auto &[iface_name, radio_name, iface_type]:
-		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
-		auto cfg = ActorPtr(make_shared<Actor_config>());
-		cfg[SK::iface] = iface_name;
-		cfg[SK::source] = "internal";
-		cfg[SK::radio] = radio_name;
-		hw_capabilities::get_nl80211_caps(iface_name, cfg);
-		options.emplace_back(cfg);
-	}
-	return options;
-}
-
-void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
-	//cfg->conn->ensure_wifi_ifaces();
-	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
-		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
-		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
-		actor_cfg[SK::radio] = radio_name;
-		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
-		options.emplace_back(actor_cfg);
-	}
-}
-
 // ------------- EXTERNAL
 void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 	int8_t signal = -1;
@@ -88,7 +61,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 		try{ ssid = beacon->ssid(); } catch(...){}
 		add_entity(mac, true, ssid);
 	}
-	// AP: Probe Response  
+	// AP: Probe Response
 	else if(const auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()){
 		const string mac = probe_resp->addr2().to_string();
 		string ssid;
@@ -162,6 +135,33 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 		}
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
+}
+
+// ---------------- INTERNAL
+// return <string iface; internal_actor >
+vector<ActorPtr> RunStatus::internal_options(){
+	vector<ActorPtr> options;
+	for(const auto &[iface_name, radio_name, iface_type]:
+		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+		auto cfg = ActorPtr(make_shared<Actor_config>());
+		cfg[SK::iface] = iface_name;
+		cfg[SK::source] = "internal";
+		cfg[SK::radio] = radio_name;
+		hw_capabilities::get_nl80211_caps(iface_name, cfg);
+		options.emplace_back(cfg);
+	}
+	return options;
+}
+
+void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
+	//cfg->conn->ensure_wifi_ifaces();
+	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
+		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
+		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
+		actor_cfg[SK::radio] = radio_name;
+		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
+		options.emplace_back(actor_cfg);
+	}
 }
 
 vector<string> scan::parse_csv_line(const string &line){
@@ -303,7 +303,7 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=" + to_string(n_radios)});
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// Rename all new Wifi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
+	// Rename all new Wi-fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
 	}

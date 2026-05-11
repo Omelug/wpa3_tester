@@ -16,36 +16,23 @@ void attack_config_table(ofstream &report, const RunStatus &rs){
 }
 
 void attack_mapping_table(ofstream &report, const RunStatus &rs){
-	auto mapping = rs.run_folder()/ "mapping.csv";
+	auto mapping = rs.run_folder() / "mapping.csv";
 
-	if(!exists(mapping)){
+	ifstream csv_file(mapping);
+	if(!csv_file.is_open()){
 		log(LogLevel::WARNING, "Mapping file not found: " + mapping.string());
 		return;
 	}
 
-	report << "## Actor/Interface Mapping\n\n";
-
-	ifstream csv_file(mapping);
-	if(!csv_file.is_open()){
-		log(LogLevel::ERROR, "Failed to open mapping file: " + mapping.string());
-		return;
-	}
+	report << "## Actor/Interface Mapping\n\n" << "| Type | Actor Name | Interface | MAC | Driver |\n" <<
+			"|------|------------|-----------|-----|--------|\n";
 
 	string line;
-	bool is_header = true;
+	getline(csv_file, line);
 
 	while(getline(csv_file, line)){
 		if(line.empty()) continue;
 
-		if(is_header){
-			// Convert CSV header to markdown table header
-			report << "| Type | Actor Name | Interface | MAC | Driver |\n";
-			report << "|------|------------|-----------|-----|--------|\n";
-			is_header = false;
-			continue;
-		}
-
-		// Parse CSV line and convert to markdown table row
 		stringstream ss(line);
 		string type, actor_name, interface, mac, driver;
 
@@ -60,6 +47,5 @@ void attack_mapping_table(ofstream &report, const RunStatus &rs){
 	}
 
 	report << "\n";
-	csv_file.close();
 }
 }

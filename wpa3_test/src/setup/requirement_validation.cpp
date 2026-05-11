@@ -115,13 +115,13 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 	const string ns_path = "/var/run/netns/" + ns_name;
 
 	// Must umount bind mount before unlink
-	if(::umount2(ns_path.c_str(), MNT_DETACH) != 0){
+	if(umount2(ns_path.c_str(), MNT_DETACH) != 0){
 		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
 		// Try to unlink anyway — might work if it's not a bind mount
 	}
 
     if(ifaces.empty()){
-        if(::unlink(ns_path.c_str()) != 0)
+        if(unlink(ns_path.c_str()) != 0)
             log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
         return;
     }
@@ -131,7 +131,7 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
     const int nl_fd = socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
     if(nl_fd < 0){
         log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
-        if(::unlink(ns_path.c_str()) != 0)
+        if(unlink(ns_path.c_str()) != 0)
             log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
         return;
     }
@@ -142,12 +142,12 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
     if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
         log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
         close(nl_fd);
-        if(::unlink(ns_path.c_str()) != 0)
+        if(unlink(ns_path.c_str()) != 0)
             log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
         return;
     }
 
-	if(::unlink(ns_path.c_str()) != 0){
+	if(unlink(ns_path.c_str()) != 0){
 		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
 		close(nl_fd);
 		return;

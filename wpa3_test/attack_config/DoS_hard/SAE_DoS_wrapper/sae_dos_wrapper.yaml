@@ -64,7 +64,7 @@ attack_config:
   # Attack from orchestator_master_en.py ADAPTER_KONFIGURATION angriff field
   attack_type: "case12_bursty_auth"
   channel_5ghz: "104"
-  packets_per_second_limit: 100
+  packets_per_second_limit: 1000
   burst_size_optimal: 64
   inter_packet_gap: 0.0001
   max_restarts: 100

@@ -11,7 +11,7 @@ using namespace wpa3_tester;
 namespace wpa3_tester{
 TEST_CASE("MonitorSocket receives all auth frames from pcap"){
     const string pcap_path = "./pcap/rogue_client_capture.pcap";
-l
+
 	const HWAddress<6> ap_mac = "78:98:e8:55:3e:8d";
     const HWAddress<6> client_mac = "24:ec:99:bf:c7:cf";
 

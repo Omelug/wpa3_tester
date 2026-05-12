@@ -25,7 +25,7 @@ static constexpr size_t N_DH_GROUPS = std::size(DH_GROUPS);
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
 	vector<HWAddress<6>> pool;
 	if(use_connected_stas){
-		pool = get_connected_stas(rs);
+		pool = dos_helpers::get_connected_stas(rs);
 		pool.resize(min(static_cast<int>(pool.size()), pool_size));
 
 		if(static_cast<int>(pool.size()) < pool_size){

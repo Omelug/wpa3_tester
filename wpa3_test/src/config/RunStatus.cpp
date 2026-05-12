@@ -50,15 +50,15 @@ void RunStatus::execute(){
 
 	if(exists(_run_folder)){
 		if(_run_config.get_rewrite() == RewriteMode::none){
-			log(LogLevel::DEBUG, "Skipping: " + _run_folder.filename().string());
+			log(LogLevel::DEBUG, "Skipping: {}", _run_folder.filename().string());
 			return;
 		}
 		if(_run_config.get_rewrite() == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
-			log(LogLevel::WARNING, "Skipping successful test : " + _run_folder.filename().string());
+			log(LogLevel::WARNING, "Skipping successful test : {}", _run_folder.filename().string());
 			return;
 		}
 		if(_run_config.get_delete_old()){
-			log(LogLevel::DEBUG, "Deleting old run folder: " + _run_folder.filename().string());
+			log(LogLevel::DEBUG, "Deleting old run folder: {}", _run_folder.filename().string());
 			remove_all(_run_folder);
 		}
 	}

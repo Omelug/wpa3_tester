@@ -58,7 +58,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	error_code ec;
 	create_directories(folder, ec);
 	if(ec){
-		log(LogLevel::ERROR, "hostapd_config: failed to ensure run folder: " + folder.string() + ":" + ec.message());
+		log(LogLevel::ERROR, "hostapd_config: failed to ensure run folder: {}:{}", folder.string(), ec.message());
 		throw runtime_error("hostapd_config: unable to create run folder");
 	}
 
@@ -71,7 +71,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 
 	ofstream hostapd_conf(cfg_path);
 	if(!hostapd_conf){
-		log(LogLevel::ERROR, "hostapd_config: failed to open config file: " + cfg_path.string());
+		log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
 		throw runtime_error("hostapd_config: unable to open config file");
 	}
 
@@ -88,7 +88,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 		hostapd_conf << "\n";
 	}
 	hostapd_conf.close();
-	log(LogLevel::INFO, "hostapd_config: written " + cfg_path.string());
+	log(LogLevel::INFO, "hostapd_config: written {}", cfg_path.string());
 	return cfg_path.string();
 }
 
@@ -128,7 +128,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	error_code ec;
 	create_directories(folder, ec);
 	if(ec){
-		log(LogLevel::ERROR, "wpa_supplicant_config: failed to ensure run folder: " + run_folder + ": " + ec.message());
+		log(LogLevel::ERROR, "wpa_supplicant_config: failed to ensure run folder: {}: {}", run_folder, ec.message());
 		throw runtime_error("wpa_supplicant_config: unable to create run folder");
 	}
 
@@ -141,7 +141,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 
 	ofstream out(cfg_path);
 	if(!out){
-		log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: " + cfg_path.string());
+		log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
 		throw runtime_error("wpa_supplicant_config: unable to open config file");
 	}
 
@@ -163,7 +163,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	out << "}\n";
 
 	out.close();
-	log(LogLevel::INFO, "wpa_supplicant_config: written " + cfg_path.string());
+	log(LogLevel::INFO, "wpa_supplicant_config: written {}", cfg_path.string());
 	return cfg_path.string();
 }
 
@@ -235,7 +235,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		const string hash = line.substr(pos + 20); // skip "MANA WPA2 HASHCAT | "
 		if(seen.insert(hash).second){
 			out << hash << "\n";
-			log(LogLevel::INFO, "Captured hash: " + hash.substr(0, 32) + "...");
+			log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
 		}
 	}
 }

@@ -1,8 +1,6 @@
 #include "logger/log.h"
 #include "logger/error_log.h"
 
-#include <cstdarg>
-#include <cstdio>
 #include <ctime>
 #include <iostream>
 #include <regex>
@@ -25,26 +23,6 @@ const char *levelToString(const LogLevel level){
 	return "UNKNOWN";
 }
 
-void log(const LogLevel level, const char *fmt, ...){
-	using namespace std;
-	va_list args;
-	va_start(args, fmt);
-	va_list args_copy;
-	va_copy(args_copy, args);
-	const int size = vsnprintf(nullptr, 0, fmt, args_copy);
-	va_end(args_copy);
-	if(size < 0){
-		va_end(args);
-		throw runtime_error("vsnprintf failed");
-	}
-
-	vector<char> buf(static_cast<size_t>(size) + 1);
-	(void)vsnprintf(buf.data(), buf.size(), fmt, args);
-	va_end(args);
-
-	cerr << levelToString(level) << ": " << buf.data() << endl;
-}
-
 void log(const LogLevel level, const string &msg){
 	cerr << levelToString(level) << ": " << msg << endl;
 }
@@ -58,7 +36,7 @@ void log_actor_map(const string &name, const ActorCMap &m){
 		first = false;
 	}
 	if(keys.empty()){ keys = "<empty>"; }
-	log(LogLevel::DEBUG, name + ":" + keys);
+	log(LogLevel::DEBUG, "{}:{}", name, keys);
 }
 
 // Returns a nanosecond-precision time_point (epoch == error sentinel)
@@ -100,7 +78,7 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	vector<LogTimePoint> timestamps;
 	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
 	if(!filesystem::exists(actor_log)){
-		log(LogLevel::ERROR, "Could not find file '" + actor_log + "'");
+		log(LogLevel::ERROR, "Could not find file '{}'", actor_log);
 		return {};
 	}
 	ifstream file(actor_log);

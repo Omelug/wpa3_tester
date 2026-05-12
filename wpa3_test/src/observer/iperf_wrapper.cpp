@@ -74,16 +74,16 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 	const IperfData data = parse_iperf_log(log_path, actor_tag);
 	if(data.bandwidths.empty()){
-		log(LogLevel::WARNING, "No samples parsed for: " + actor_tag);
+		log(LogLevel::WARNING, "No samples parsed for: {}", actor_tag);
 		return;
 	}
 
 	const path full_output_path = log_path.parent_path() / output_png;
 	try{
 		render_graph(data, actor_tag, full_output_path);
-		log(LogLevel::INFO, "Graph saved via " + full_output_path.string());
+		log(LogLevel::INFO, "Graph saved via {}", full_output_path.string());
 	} catch(const exception &e){
-		log(LogLevel::ERROR, "Rendering failed: " + string(e.what()));
+		log(LogLevel::ERROR, "Rendering failed: {}", e.what());
 	}
 }
 

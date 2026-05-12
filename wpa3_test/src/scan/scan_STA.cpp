@@ -20,7 +20,7 @@ bool parse_control_frame(const Dot11Control *ctrl, attack_scan::ScanAP &scan_ap)
 		const string src = d11rts->target_addr().to_string(); // Transmitter (Station)
 		if(d11rts->addr1().to_string() == scan_ap.bssid){
 			if(scan_ap.stations.emplace(attack_scan::Scan_STA(src)).second){
-				log(LogLevel::DEBUG, "Station found via RTS: " + scan_ap.bssid);
+				log(LogLevel::DEBUG, "Station found via RTS: {}", scan_ap.bssid);
 				return true;
 			}
 		}

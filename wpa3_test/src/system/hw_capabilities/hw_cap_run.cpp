@@ -57,14 +57,14 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
 		options.redirect.err.type = reproc::redirect::parent;
 	}
 	if(const error_code ec = proc.start(full_argv, options)){
-		if(print) log(LogLevel::ERROR, "Failed to start " + full_argv[0] + " " + ec.message());
+		if(print) log(LogLevel::ERROR, "Failed to start {} {}", full_argv[0], ec.message());
 		return -1;
 	}
 
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
 	//this_thread::sleep_for(chrono::milliseconds(100)); //FIXME
 	if(wait_ec){
-		if(print) log(LogLevel::ERROR, "Wait failed: " + wait_ec.message());
+		if(print) log(LogLevel::ERROR, "Wait failed: {}", wait_ec.message());
 		return -1;
 	}
 	if(status != 0){
@@ -102,6 +102,23 @@ string hw_capabilities::run_cmd_output(const vector<string> &argv, const optiona
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
 	if(wait_ec){ return {}; }
 	return output_str;
+}
+
+// ---------------- git helpers
+
+bool hw_capabilities::git_available(){
+	return run_cmd({"git", "--version"}, nullopt, false) == 0;
+}
+
+void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
+	if(!git_available()) throw req_err("git is not available");
+	if(!exists(dest)){
+		log(LogLevel::INFO, "Cloning {} to {}...", url, dest.string());
+		run_cmd({"git", "clone", url, dest.string()});
+	} else{
+		log(LogLevel::INFO, "Updating {}...", dest.string());
+		run_cmd({"git", "-C", dest.string(), "pull"});
+	}
 }
 
 // ---------------- exec -. errors

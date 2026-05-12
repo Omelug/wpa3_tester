@@ -21,7 +21,7 @@ TEST_CASE("log - debug message with actor name"){
     ostringstream captured_output;
     streambuf* original_cerr = cerr.rdbuf(captured_output.rdbuf());
 
-    wpa3_tester::log(wpa3_tester::LogLevel::DEBUG, "Created and registered ExternalConn for actor: "+actor_name);
+    wpa3_tester::log(wpa3_tester::LogLevel::DEBUG, "Created and registered ExternalConn for actor: {}", actor_name);
 
     // Restore original cerr
     cerr.rdbuf(original_cerr);

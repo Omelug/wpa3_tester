@@ -71,7 +71,7 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 			ignored_list = g.at("actors").value("ignore_interfaces", vector<string>{});
 
 		if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
-			log(LogLevel::DEBUG, "Ignoring interface " + iface + " due to ignore_interfaces config");
+			log(LogLevel::DEBUG, "Ignoring interface {} due to ignore_interfaces config", iface);
 			continue;
 		}
 
@@ -114,18 +114,18 @@ void hw_capabilities::create_ns(const string &ns_name){
 }
 
 void hw_capabilities::move_to_netns(const string &iface, const string &netns){
-	log(LogLevel::INFO, "Moving interface " + iface + " to netns " + netns);
+	log(LogLevel::INFO, "Moving interface {} to netns {}", iface, netns);
 
 	string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
 	string phy_name = run_cmd_output({"/bin/sh", "-c", phy_cmd});
 	std::erase(phy_name, '\n');
 
 	if(phy_name.empty()){
-		log(LogLevel::WARNING, "Could not find physical device for interface " + iface);
+		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);
 		//throw std::runtime_error("Could not find physical device for interface " + iface);
 		return;
 	}
-	log(LogLevel::DEBUG, "Moving " + iface + " (" + phy_name + ") to netns " + netns);
+	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);
 	run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, std::nullopt);
 }
 
@@ -157,7 +157,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 	run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }
 void hw_capabilities::set_channel(const string &iface, const int channel, const optional<string> &netns){
-	log(LogLevel::INFO, "Setting interface " + iface + " to channel " + to_string(channel));
+	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, channel);
 	run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)}, netns);
 }
 

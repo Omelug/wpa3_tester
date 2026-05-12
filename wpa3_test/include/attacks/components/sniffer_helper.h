@@ -69,7 +69,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 	sniff_config.set_immediate_mode(true);
 	sniff_config.set_filter(filter);
 
-	log(LogLevel::INFO, "Scanning with " + filter);
+	log(LogLevel::INFO, "Scanning with {}", filter);
 	Tins::Sniffer sniffer(interface, sniff_config);
 
 	const int pcap_fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());

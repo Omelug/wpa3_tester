@@ -41,7 +41,7 @@ void ProcessManager::init_logging(const string &run_folder){
 	combined_log.close();
 	combined_log.open(combined_path, ios::out | ios::trunc);
 	if(!combined_log.is_open()){
-		log(LogLevel::ERROR, "Failed to open combined log file: " + combined_path.string());
+		log(LogLevel::ERROR, "Failed to open combined log file: {}", combined_path.string());
 		throw runtime_error("Unable to open combined log file");
 	}
 
@@ -126,7 +126,7 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 		permissions(log_base_dir, perms::all, perm_options::add, ec);
 		remove_all(log_base_dir, ec);
 		if(ec){
-			log(LogLevel::ERROR, "Failed to clean logger directory: " + log_base_dir.string() + ":" + ec.message());
+			log(LogLevel::ERROR, "Failed to clean logger directory: {}:{}", log_base_dir.string(), ec.message());
 			throw runtime_error("Unable to clean logger directory");
 		}
 	}
@@ -134,7 +134,7 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 	// create log folder
 	create_directories(log_base_dir, ec);
 	if(ec){
-		log(LogLevel::ERROR, "Failed to create logger directory: " + log_base_dir.string() + ":" + ec.message());
+		log(LogLevel::ERROR, "Failed to create logger directory: {}:{}", log_base_dir.string(), ec.message());
 	}
 }
 

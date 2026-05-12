@@ -72,7 +72,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 		// indefinitely, causing poll() to never reach EOF and blocking join().
 		if(natural_exit){
 			mp->naturally_exited = true;
-			log(LogLevel::DEBUG, "flush start " + process_name);
+			log(LogLevel::DEBUG, "flush start {}", process_name);
 			const auto flush_deadline = steady_clock::now() + milliseconds(500);
 			for(const auto &s: streams){
 				while(steady_clock::now() < flush_deadline){
@@ -333,7 +333,7 @@ void ProcessManager::stop(const string &process_name){
 			(void)mp->proc->stop(operations);
 		}
 	}
-	log(LogLevel::DEBUG, "proc->stop done for " + process_name);
+	log(LogLevel::DEBUG, "proc->stop done for {}", process_name);
 
 	// Call on_stop callback if registered
 	if(mp->after_stop_callback){

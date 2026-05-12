@@ -13,3 +13,6 @@ tests:
       attack_config:
         attack_type: var_dos_attack
 
+rewrite: all
+
+

@@ -18,7 +18,7 @@ void Actor_config::set_channel(const int channel, const string &ht_mode) const{
 	}
 
 	const string chan_str = to_string(channel);
-	log(LogLevel::INFO, "Setting interface " + iface + " to channel " + chan_str + " " + ht_mode);
+	log(LogLevel::INFO, "Setting interface {} to channel {} {}", iface, chan_str, ht_mode);
 
 	vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
 	if(!ht_mode.empty()) cmd.push_back(ht_mode);
@@ -43,7 +43,7 @@ void Actor_config::cleanup() const{
 	if(netns.has_value()){
 		hw_capabilities::move_to_netns(iface, netns.value());
 	} else{
-		log(LogLevel::INFO, "Cleaning up interface " + iface);
+		log(LogLevel::INFO, "Cleaning up interface {}", iface);
 	}
 
 	// FIXME taohle by nemělo být potřeba po testu
@@ -96,7 +96,7 @@ void Actor_config::create_sniff_iface() const{
 
 void Actor_config::set_ap_mode() const{
 	const string &iface = (*this)[SK::iface].value();
-	log(LogLevel::INFO, "Preparing interface " + iface + " for AP mode");
+	log(LogLevel::INFO, "Preparing interface {} for AP mode", iface);
 
 	set_iface_down();
 	run({"iw", "dev", iface, "set", "type", "__ap"});
@@ -108,10 +108,10 @@ void Actor_config::up_sniff_iface() const{
 	const string &sniff_iface = (*this)[SK::sniff_iface].value();
 
 	if(is_interface_up(sniff_iface)){
-		log(LogLevel::DEBUG, sniff_iface + " is already UP, skipping.");
+		log(LogLevel::DEBUG, "{} is already UP, skipping.", sniff_iface);
 		return;
 	}
-	log(LogLevel::INFO, "Bringing " + sniff_iface + " UP...");
+	log(LogLevel::INFO, "Bringing {} UP...", sniff_iface);
 	run({"ip", "link", "set", sniff_iface, "up"});
 }
 
@@ -123,7 +123,7 @@ void Actor_config::set_managed_mode() const{
 	}
 	const optional<string> netns = (*this)[SK::netns];
 
-	log(LogLevel::INFO, "Preparing interface" + iface + " for managed mode");
+	log(LogLevel::INFO, "Preparing interface {} for managed mode", iface);
 	set_iface_down();
 	run({"iw", "dev", iface, "set", "type", "managed"});
 }
@@ -146,7 +146,7 @@ void Actor_config::set_monitor_mode(const string &monitor_flags) const{
 		return;
 	}
 
-	log(LogLevel::INFO, "Setting interface " + iface + " to monitor mode+" + monitor_flags);
+	log(LogLevel::INFO, "Setting interface {} to monitor mode+{}", iface, monitor_flags);
 	set_iface_down();
 
 	run({"iw", "dev", iface, "set", "type", "monitor"});

@@ -171,7 +171,7 @@ json RunStatus::config_validation(const string &config_path){
 
 void RunStatus::ensure_requirement(const string &req){
 	if(req == "ath_masker"){
-		firmware::load_ath_masker();
+		firmware::load_ath_masker(_run_config.get_install_req());
 		return;
 	}
 	throw not_implemented_err("Requirement" + req + " was not implemented");
@@ -191,7 +191,7 @@ void RunStatus::check_local_requirements(){
 	}
 
 	for(const auto &req: all_requirements){
-		log(LogLevel::WARNING, "Found requirement: " + req);
+		log(LogLevel::WARNING, "Found requirement: {}", req);
 		ensure_requirement(req);
 	}
 }
@@ -212,6 +212,6 @@ void save_yaml(const json &json_obj, const path &out_path){
 	if(!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
 	out << node << endl;
 	out.close();
-	log(LogLevel::DEBUG, "Config saved to " + out_path.string());
+	log(LogLevel::DEBUG, "Config saved to {}", out_path.string());
 }
 }

@@ -156,7 +156,7 @@ void run_attack(RunStatus &rs){
 		try{
 			capture_cookies(sniff_iface, ap_mac, store);
 		} catch(const exception &e){
-			log(LogLevel::ERROR, "Capture thread: " + string(e.what()));
+			log(LogLevel::ERROR, "Capture thread: {}", e.what());
 			store.stop.store(true);
 		}
 	});

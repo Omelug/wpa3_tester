@@ -64,7 +64,7 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 	disas.addr3(ap_mac);
 	disas.reason_code(0);
 	send_to_rogue(disas);
-	log(LogLevel::INFO, "Rogue channel: injected Disassociation to " + macaddr.to_string());
+	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr.to_string());
 }
 
 /*void McMitm::queue_disas(const HWAddress<6> &macaddr){

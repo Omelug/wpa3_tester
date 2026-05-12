@@ -95,7 +95,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 		}
 	}
 	if(section.empty()) section = "wpa3_tester_" + radio_name; // create new
-	log(LogLevel::DEBUG, "Setting up wifi-iface " + section + " for " + radio_name);
+	log(LogLevel::DEBUG, "Setting up wifi-iface {} for {}", section, radio_name);
 
 	exec("uci set wireless." + section + "=wifi-iface");
 	exec("uci set wireless." + section + ".device=" + radio_name);

@@ -34,13 +34,7 @@ void setup_attack(RunStatus &rs){
 	components::client_ap_attacker_setup(rs);
 
 	const string suite = get_suite_path();
-	if(!exists(suite)){
-		log(LogLevel::INFO, "Cloning WPA3-SAE-DoS-Research-Suite to {}...", suite);
-		hw_capabilities::run_cmd({"git","clone","https://github.com/Omelug/WPA3-SAE-DoS-Research-Suite " + suite});
-	} else {
-		log(LogLevel::INFO, "Updating WPA3-SAE-DoS-Research-Suite at {}...", suite);
-		hw_capabilities::run_cmd({"git -C " + suite + " pull"});
-	}
+	hw_capabilities::git_clone_or_pull("https://github.com/Omelug/WPA3-SAE-DoS-Research-Suite", suite);
 
 	if(system("python3.10 --version > /dev/null 2>&1") != 0){
 		log(LogLevel::INFO, "python3.10 not found, installing...");

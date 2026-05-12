@@ -78,14 +78,14 @@ TEST_CASE("start ap test"){
     const string ap_iface = "ap_" + base_iface;
     const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
 
-    log(LogLevel::INFO, "Running test on iface: "+base_iface);
+    log(LogLevel::INFO, "Running test on iface: {}", base_iface);
 
     const auto raw = test_helpers::read_pcap_file(pcap_path);
     RadioTap rt(raw.data(), raw.size());
 
     REQUIRE_NOTHROW(rt.rfind_pdu<Dot11Beacon>());
     const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();
-    log(LogLevel::INFO, "Beacon loaded, SSID: "+get_ssid(beacon));
+    log(LogLevel::INFO, "Beacon loaded, SSID: {}", get_ssid(beacon));
 
     SUBCASE("AP Start and Stop"){
         RunStatus rs;

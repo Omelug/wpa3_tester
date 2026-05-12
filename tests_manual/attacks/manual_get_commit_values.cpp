@@ -26,14 +26,14 @@ void manual_get_commit_values_test(){
     // Get channel selection
     const int channel = manual_tests::get_2_4_channel_wizard();
     iface_config.set_channel(channel);
-    log(LogLevel::INFO, "Interface set to channel " + to_string(channel));
+    log(LogLevel::INFO, "Interface set to channel {}", channel);
 
     // Get target selection
     const auto target = manual_tests::get_target_wizard(iface_name, channel);
     const string ssid = target.ssid;
     const string ap_mac_str = target.bssid;
 
-    log(LogLevel::INFO, "Selected target: " + ssid + " (" + ap_mac_str + ")");
+    log(LogLevel::INFO, "Selected target: {} ({})", ssid, ap_mac_str);
 
     cout << "Enter capture timeout in seconds (default: 30): ";
     string timeout_str;
@@ -41,10 +41,10 @@ void manual_get_commit_values_test(){
     const int timeout = timeout_str.empty() ? 30 : stoi(timeout_str);
 
     log(LogLevel::INFO, "Starting SAE commit capture...: ");
-    log(LogLevel::INFO, "Interface: " + iface_name);
-    log(LogLevel::INFO, "SSID: " + ssid);
-    log(LogLevel::INFO, "AP MAC: " + ap_mac_str);
-    log(LogLevel::INFO, "Timeout: " + to_string(timeout) + " seconds");
+    log(LogLevel::INFO, "Interface: {}", iface_name);
+    log(LogLevel::INFO, "SSID: {}", ssid);
+    log(LogLevel::INFO, "AP MAC: {}", ap_mac_str);
+    log(LogLevel::INFO, "Timeout: {} seconds", timeout);
 
     // Perform the capture
     const HWAddress<6> ap_mac(ap_mac_str);

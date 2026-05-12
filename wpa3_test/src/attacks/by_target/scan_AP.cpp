@@ -124,7 +124,7 @@ void run_attack(RunStatus &rs){
 	scan_ap.bssid = target_ap["mac"];
 	if(att_cfg.value("beacon_scan", false)){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
-		log(LogLevel::DEBUG, "Scanning beacon for " + to_string(timeout) + " seconds");
+		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
 		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
 		ofstream ofs(rs.run_folder()/ "beacon_scan.txt");
@@ -153,7 +153,7 @@ void run_attack(RunStatus &rs){
 		}
 		if(is_eap){
 			const auto timeout = att_cfg.value("EAP_timeout_sec", 10);
-			log(LogLevel::DEBUG, "AP supports EAP. Scanning identities for " + to_string(timeout) + " seconds");
+			log(LogLevel::DEBUG, "AP supports EAP. Scanning identities for {} seconds", timeout);
 			scan::active_eap_identity_scan(scanner["iface"], target_ap["mac"], timeout);
 		} else{
 			log(LogLevel::INFO, "Skipping EAP scan: Beacon RSN does not indicate 802.1X/EAP support.");

@@ -38,7 +38,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 		handle, milliseconds(timeout_sec * 1000),
 		[](const uint8_t *packet, uint32_t caplen) -> optional<dos_helpers::SAEPair> {
 			if(caplen < 10){
-				log(LogLevel::DEBUG, "Packet too short: %u", caplen);
+				log(LogLevel::DEBUG, "Packet too short: {}", caplen);
 				return nullopt;
 			}
 

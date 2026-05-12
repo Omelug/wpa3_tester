@@ -11,7 +11,7 @@ void ensure_repo_cloned(const path &hostapd_folder){
 	const path repo_path = hostapd_folder / "hostapd";
 	if(exists(repo_path)){ return; }
 
-	log(LogLevel::INFO, "Cloning hostapd repository into " + repo_path.string() + "...");
+	log(LogLevel::INFO, "Cloning hostapd repository into {}...", repo_path.string());
 
 	error_code ec;
 	create_directories(hostapd_folder, ec);
@@ -41,7 +41,7 @@ string find_matching_tag(const path &repo_dir, const string &version){
 
 	for(const auto &t: tags){
 		if(t == target_tag){
-			log(LogLevel::INFO, "Found tag match: " + t);
+			log(LogLevel::INFO, "Found tag match: {}", t);
 			return t;
 		}
 	}
@@ -73,7 +73,7 @@ void build_version(const string &version, const path &build_folder, path target)
 			"\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
 
-	log(LogLevel::INFO, "Compiling hostapd " + version + " ... ");
+	log(LogLevel::INFO, "Compiling hostapd {} ... ", version);
 	hw_capabilities::run_in("make clean", hostapd_dir);
 	hw_capabilities::run_in("make -j$(nproc)", hostapd_dir);
 
@@ -96,7 +96,7 @@ string get_hostapd(const string &version){
 
 	// return if exists
 	if(exists(hostapd_bin)){
-		log(LogLevel::INFO, "Using existing hostapd binary: " + hostapd_bin.string());
+		log(LogLevel::INFO, "Using existing hostapd binary: {}", hostapd_bin.string());
 		return hostapd_bin.string();
 	}
 
@@ -141,7 +141,7 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 			"\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
 
-	log(LogLevel::INFO, "Compiling wpa_supplicant " + version + " ... ");
+	log(LogLevel::INFO, "Compiling wpa_supplicant {} ... ", version);
 	hw_capabilities::run_in("make clean", wpa_supp_dir);
 	hw_capabilities::run_in("make -j$(nproc)", wpa_supp_dir);
 
@@ -164,7 +164,7 @@ string get_wpa_supplicant(const string &version){
 
 	// return if exists
 	if(exists(wpa_supp_bin)){
-		log(LogLevel::INFO, "Using existing wpa_supplicant binary: " + wpa_supp_bin.string());
+		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin.string());
 		return wpa_supp_bin.string();
 	}
 

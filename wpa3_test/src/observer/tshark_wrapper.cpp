@@ -153,7 +153,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	vector<LogTimePoint> timestamps;
 	const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
 	if(!exists(pcap_path)){
-		log(LogLevel::ERROR, "Could not find file '" + pcap_path.string() + "'");
+		log(LogLevel::ERROR, "Could not find file '{}'", pcap_path.string());
 		return {};
 	}
 
@@ -188,7 +188,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 					timestamps.push_back(tp);
 				}
 			}
-		} catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '" + line + "':" + e.what()); }
+		} catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '{}': {}", line, e.what()); }
 	}
 
 	log(LogLevel::INFO, "Extracted {} timestamps matching filter '{}'", timestamps.size(), tshark_filter);

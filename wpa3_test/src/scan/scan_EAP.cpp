@@ -126,10 +126,10 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 	session.last_type_code = info.type_code;
 
 	if(info.identity && session.identities.insert(*info.identity).second)
-		log(LogLevel::INFO, "[*] New Identity for " + client_mac + ": " + *info.identity);
+		log(LogLevel::INFO, "[*] New Identity for {}: {}", client_mac, *info.identity);
 
 	if(info.method && session.methods.insert(*info.method).second)
-		log(LogLevel::INFO, "[+] New Method for " + client_mac + ": " + *info.method);
+		log(LogLevel::INFO, "[+] New Method for {}: {}", client_mac, *info.method);
 
 	switch(info.code){
 	case 1: // Request
@@ -139,13 +139,13 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 	case 3: // SUCCESS
 		if(session.status != AuthStatus::SUCCESS){
 			session.status = AuthStatus::SUCCESS;
-			log(LogLevel::INFO, "[OK] Auth SUCCESS: Client " + client_mac + " is now CONNECTED.");
+			log(LogLevel::INFO, "[OK] Auth SUCCESS: Client {} is now CONNECTED.", client_mac);
 		}
 		break;
 	case 4: // FAILURE
 		if(session.status != AuthStatus::FAILED){
 			session.status = AuthStatus::FAILED;
-			log(LogLevel::INFO, "[!] Auth FAILURE: Client " + client_mac + " was REJECTED.");
+			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);
 		}
 		break;
 	default: throw runtime_error("Unknown EAP code: " + to_string(info.code));

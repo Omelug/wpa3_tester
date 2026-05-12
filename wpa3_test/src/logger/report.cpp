@@ -20,7 +20,7 @@ void attack_mapping_table(ofstream &report, const RunStatus &rs){
 
 	ifstream csv_file(mapping);
 	if(!csv_file.is_open()){
-		log(LogLevel::WARNING, "Mapping file not found: " + mapping.string());
+		log(LogLevel::WARNING, "Mapping file not found: {}", mapping.string());
 		return;
 	}
 

@@ -2,6 +2,8 @@
 #include <optional>
 #include <logger/error_log.h>
 
+#include "ex_program/external_actors/ExternalConn.h"
+
 extern "C"{
 #include "radiotap.h"
 #include "radiotap_iter.h"
@@ -13,6 +15,31 @@ using namespace std;
 using namespace Tins;
 
 namespace wpa3_tester::dos_helpers{
+
+
+// TODO make alternative external WB
+vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
+	const ActorPtr ap = rs.get_actor("access_point");
+	vector<HWAddress<6>> result;
+
+	const string out = ap->conn->exec(
+		"iw dev $(iw dev | awk '/Interface/{print $2}' | head -1) station dump 2>/dev/null");
+
+	istringstream ss(out);
+	string line;
+	while(getline(ss, line)){
+		if(line.rfind("Station", 0) != 0) continue;
+		istringstream ls(line);
+		string token, mac_str;
+		ls >> token >> mac_str; // "Station" "<mac>"
+		try{
+			result.emplace_back(mac_str);
+		} catch(...){}
+	}
+	log(LogLevel::INFO, " Found {} connected STAs", result.size());
+	return result;
+}
+
 std::string bytes_to_hex(const std::vector<uint8_t> &bytes){
 	if(bytes.empty()) return "(empty)";
 	std::string result;

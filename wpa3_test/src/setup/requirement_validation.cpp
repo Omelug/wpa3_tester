@@ -111,47 +111,37 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 
 void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 	const chrono::milliseconds timeout = chrono::milliseconds(3000)){
-    // Delete netns via unlink — same as ip netns del
 	const string ns_path = "/var/run/netns/" + ns_name;
 
-	// Must umount bind mount before unlink
-	if(umount2(ns_path.c_str(), MNT_DETACH) != 0){
+    // Open and bind netlink socket BEFORE touching the ns — umount2 alone can
+    // drop the last reference and immediately return interfaces to root ns,
+    // firing RTM_NEWLINK before we'd have a chance to subscribe.
+    const int nl_fd = ifaces.empty() ? -1 :
+        socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
+    if(!ifaces.empty()){
+        if(nl_fd < 0){
+            log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
+        } else {
+            sockaddr_nl sa{};
+            sa.nl_family = AF_NETLINK;
+            sa.nl_groups = RTMGRP_LINK;
+            if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
+                log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
+                close(nl_fd);
+            }
+        }
+    }
+
+	if(umount2(ns_path.c_str(), MNT_DETACH) != 0)
 		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
-		// Try to unlink anyway — might work if it's not a bind mount
-	}
 
-    if(ifaces.empty()){
-        if(unlink(ns_path.c_str()) != 0)
-            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+    if(unlink(ns_path.c_str()) != 0)
+        log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+
+    if(ifaces.empty() || nl_fd < 0){
+        if(nl_fd >= 0) close(nl_fd);
         return;
     }
-
-    // Open and bind netlink socket BEFORE deleting the namespace so we don't
-    // miss RTM_NEWLINK events that fire immediately upon deletion.
-    const int nl_fd = socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
-    if(nl_fd < 0){
-        log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
-        if(unlink(ns_path.c_str()) != 0)
-            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
-        return;
-    }
-
-    sockaddr_nl sa{};
-    sa.nl_family = AF_NETLINK;
-    sa.nl_groups = RTMGRP_LINK;
-    if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
-        log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
-        close(nl_fd);
-        if(unlink(ns_path.c_str()) != 0)
-            log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
-        return;
-    }
-
-	if(unlink(ns_path.c_str()) != 0){
-		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
-		close(nl_fd);
-		return;
-	}
 
     // Track which interfaces are still missing from root ns
     unordered_set waiting(ifaces.begin(), ifaces.end());
@@ -164,9 +154,9 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 
     while(!waiting.empty() && chrono::steady_clock::now() < deadline){
         pollfd pfd{nl_fd, POLLIN, 0};
-        const int remaining_ms = static_cast<int>(
-            chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
-        if(poll(&pfd, 1, remaining_ms) <= 0) break;
+        const auto remaining = chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now());
+        if(remaining.count() <= 0) break;
+        if(poll(&pfd, 1, static_cast<int>(remaining.count())) <= 0) break;
 
         ssize_t len = recv(nl_fd, buf, sizeof(buf), 0);
         if(len <= 0) continue;
@@ -219,7 +209,7 @@ void cleanup_all_namespaces(){
         const auto ifaces = psy_if_in_ns(ns_name);
         delete_ns_and_wait(ns_name, ifaces);
     }
-	log(LogLevel::INFO, "Cleanup complete.");
+    log(LogLevel::INFO, "Cleanup complete.");
 }
 
 ActorCMap get_actors(const ActorCMap &actors, const string &source){
@@ -232,7 +222,6 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 	}
 	return result;
 }
-
 
 void RunStatus::config_requirement(){
 	check_local_requirements();

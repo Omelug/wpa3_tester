@@ -16,6 +16,9 @@ properties:
   name:
     type: string
     description: Test name
+    not:
+      const: test_config
+      description: reserved name
 
   attacker_module:
     type: string

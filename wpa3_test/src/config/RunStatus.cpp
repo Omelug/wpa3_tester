@@ -53,11 +53,11 @@ void RunStatus::execute(){
 			log(LogLevel::DEBUG, "Skipping: {}", _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.get_rewrite() == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
-			log(LogLevel::WARNING, "Skipping successful test : {}", _run_folder.filename().string());
+		if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
+			log(LogLevel::WARNING, "Skipping already successfully run test : {}", _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.get_delete_old()){
+		if(_run_config.get_delete_old()){ // remove -> no rewrite, better for debugging
 			log(LogLevel::DEBUG, "Deleting old run folder: {}", _run_folder.filename().string());
 			remove_all(_run_folder);
 		}
@@ -68,37 +68,44 @@ void RunStatus::execute(){
 	create_directories(_run_folder, ec);
 	if(ec) throw runtime_error("Unable to create run base directory");
 
-	//try {
-	if(this->run_config().get_only_stats()){
-		load_actor_interface_mapping();
-		stats_test();
-		return;
-	}
+	try {
+		if(this->run_config().get_only_stats()){
+			load_actor_interface_mapping();
+			stats_test();
+			return;
+		}
 
-	config_requirement(); //include req validation
-	setup_test();
-	const path out_path = _run_folder / "test_config.yaml";
-	save_yaml(_config, out_path);
-	run_test();
-	stats_test();
-	//cleanup_all_namespaces();
-	/*} catch (const exception& e) {
-			const path error_file = path(run_folder) / "errors.txt";
-			ofstream error_log(error_file, ios::out | ios::app);
-			if (error_log.is_open()) {
-				error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
-				error_log << "Exception type: " << typeid(e).name() << endl;
-				error_log << "Message: " << e.what() << endl;
-				print_exception_tree(e, error_log);
-				error_log << endl;
-				error_log.close();
-				log(LogLevel::ERROR, "Error written to {}", error_file.string());
-			} else {
-				log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
-			}
-			log(LogLevel::INFO, "Cleaning up resources before exit...");
-			clean();
-		}*/
+		config_requirement(); //include req validation
+		setup_test();
+		const path out_path = _run_folder / "test_config.yaml";
+		save_yaml(_config, out_path);
+		run_test();
+		stats_test();
+		const path done_file = run_folder() / "done.txt";
+		ofstream done_log(done_file, ios::out | ios::trunc);
+		if(done_log.is_open()){
+			done_log << "commit: " << git_commit_hash() << endl;
+			done_log << "date:   " << current_time_string() << endl;
+			done_log << "kernel: " << kernel_version() << endl;
+			done_log.close();
+		}
+	} catch (const exception& e) {
+		const path error_file = run_folder() / "errors.txt";
+		ofstream error_log(error_file, ios::out | ios::app);
+		if (error_log.is_open()) {
+			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
+			error_log << "Exception type: " << typeid(e).name() << endl;
+			error_log << "Message: " << e.what() << endl;
+			print_exception_tree(e, error_log);
+			error_log << endl;
+			error_log.close();
+			log(LogLevel::ERROR, "Error written to {}", error_file.string());
+		} else {
+			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
+		}
+		log(LogLevel::INFO, "Cleaning up resources before exit...");
+		clean();
+	}
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){
@@ -232,51 +239,5 @@ void RunStatus::save_actor_interface_mapping() const{
 
 	ofs.close();
 	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
-}
-
-void RunStatus::load_actor_interface_mapping(){
-	const string csv_path = _run_folder / "mapping.csv";
-	if(!exists(csv_path)){
-		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
-		return;
-	}
-	ifstream ifs(csv_path);
-	if(!ifs){
-		log(LogLevel::ERROR, "load_actor_interface_mapping: failed to open {}", csv_path);
-		return;
-	}
-
-	string line;
-	getline(ifs, line); // skip header: Type,ActorName,Interface,MAC,Driver,channel,json_obj
-
-	while(getline(ifs, line)){
-		if(line.empty()) continue;
-		// Format: source,actor_name,iface,mac,driver,channel,json_obj
-		// json_obj may contain commas — split only on first 6 commas
-		size_t name_start = string::npos, name_end = string::npos, json_start = string::npos;
-		int commas = 0;
-		for(size_t i = 0; i < line.size(); ++i){
-			if(line[i] != ',') continue;
-			++commas;
-			if(commas == 1) name_start = i + 1;
-			else if(commas == 2) name_end = i;
-			else if(commas == 6){ json_start = i + 1; break; }
-		}
-		if(name_end == string::npos || json_start == string::npos){
-			log(LogLevel::WARNING, "load_actor_interface_mapping: malformed row, skipping");
-			continue;
-		}
-		const string actor_name = line.substr(name_start, name_end - name_start);
-		const string json_str   = line.substr(json_start);
-		const auto j = nlohmann::json::parse(json_str, nullptr, false);
-		if(j.is_discarded()){
-			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);
-			continue;
-		}
-		auto actor = make_shared<Actor_config>(j);
-		(*actor)[SK::actor_name] = actor_name;
-		actors.emplace(actor_name, ActorPtr(actor));
-	}
-	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
 }
 }

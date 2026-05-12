@@ -14,3 +14,4 @@ data
 *zip
 .cache
 debug
+.claude/

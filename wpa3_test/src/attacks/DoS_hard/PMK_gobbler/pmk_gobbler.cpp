@@ -184,10 +184,10 @@ void stats_attack(const RunStatus &rs){
 					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
 				});
 
-	//elements.push_back(make_unique<EventLines>(
+	//TODO test elements.push_back(make_unique<EventLines>(
 	//    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));
 	observer::station_counter::create_station_graph(rs, "access_point", elements);
 	observer::resource_checker::create_graph(rs, ap["source"], elements);
-	//observer::tshark::generate_time_series_retry_graph(rs, "attacker");
+	//TODO test observer::tshark::generate_time_series_retry_graph(rs, "attacker");
 }
 }

@@ -85,7 +85,7 @@ string hw_capabilities::run_cmd_output(const vector<string> &argv, const optiona
 
 	options.redirect.out.type = reproc::redirect::pipe;
 
-	error_code ec = proc.start(argv, options);
+	error_code ec = proc.start(full_argv, options);
 	if(ec){ return {}; }
 
 	string output_str;

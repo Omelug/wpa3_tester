@@ -2,11 +2,9 @@
 +: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
 
 Version v 0.0.0.0:
-ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
-    r: sjednotit while loop s logy  Dos útoky
-    +: poté postupně přepsat do C++
 
-ch: chenge errors.txt logic -> write something to done
+r: sjednotit while loop s logy  Dos útoky
++: postupně přepsat DoS wrappers do C++
 r: small TODO
 r: extends/ref - popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac
@@ -16,6 +14,8 @@ r: extends/ref - popsat rozdíl do nového souboru yaml_config.md
 +: ClientState obeserver use + add to mitm
 
 //DONE
+ch: change errors.txt logic -> write git hash and info to done.txt
+ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
 +: ClientState obeserver
 +: observer for connected station on openwrt
 r: sniffer loops -> sniffer_helper

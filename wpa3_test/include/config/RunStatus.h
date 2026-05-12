@@ -93,7 +93,7 @@ public:
 	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::string &config_path);
 	static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
 	static nlohmann::json config_validation(const std::string &config_path);
-	static void ensure_requirement(const std::string &req);
+	void ensure_requirement(const std::string &req);
 	void check_local_requirements();
 	void config_requirement();
 	void setup_test();

@@ -23,7 +23,7 @@ void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, c
 	const string pid_file = remote_log + ".pid";
 
 	actor->conn->upload_script_raw(local_script, remote_script);
-	const string stat_cmd = "awk -v delay=" + to_string(interval_sec) + " -v iface='" + iface + "' -f " + remote_script
+	const string stat_cmd = "awk -v delay=" + to_string(interval_sec) + " -v iface='" + iface + "' -f " + remote_script.string()
 			+ " > " + remote_log + " 2>&1 & echo $! > " + pid_file;
 	actor->conn->exec(stat_cmd, false);
 	actor->conn->on_disconnect([remote_log, local_log, actor, pid_file](){
@@ -97,7 +97,7 @@ void create_resource_monitor_graph(const string &data_filepath, const vector<uni
 	const string output_imagepath = path(data_filepath).replace_extension(".png").string();
 	vector<ResourceRecord> resources = parse_resource_log(data_filepath);
 	remove(output_imagepath);
-	generate_resource_graph(data_filepath, output_imagepath, elements); //TODO ACM events
+	generate_resource_graph(data_filepath, output_imagepath, elements);
 }
 
 //*-------------  ONLY ONE PID ----------------

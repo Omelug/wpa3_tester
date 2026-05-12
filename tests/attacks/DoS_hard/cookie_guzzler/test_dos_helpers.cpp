@@ -1,10 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
-#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
-#include "attacks/DoS_hard/dos_helpers.h"
 #include "pcap_helper.h"
+#include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 
 using namespace std;
+using namespace filesystem;
 using namespace Tins;
 using namespace wpa3_tester::cookie_guzzler;
 
@@ -24,7 +25,7 @@ const vector<uint8_t> expected_element =
 
 TEST_CASE("ParsesCommitFromPcap"){
     // Use the real pcap file
-    filesystem::path pcap_path = filesystem::path(PROJECT_ROOT_DIR) /
+    path pcap_path = path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path.string());
     optional<wpa3_tester::dos_helpers::SAEPair> result

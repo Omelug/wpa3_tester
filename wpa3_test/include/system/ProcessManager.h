@@ -66,7 +66,7 @@ public:
 	ProcessManager &operator=(const ProcessManager &) = delete;
 
 	static std::string current_timestamp();
-	void init_logging(const std::string &run_folder);
+	void init_logging(const std::filesystem::path &run_folder);
 
 	void run_dummy(const std::string &process_name);
 	// what can actors

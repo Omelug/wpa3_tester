@@ -31,9 +31,9 @@ string ProcessManager::current_timestamp(){
 	return out;
 }
 
-void ProcessManager::init_logging(const string &run_folder){
+void ProcessManager::init_logging(const path &run_folder){
 	lock_guard lock(logger_mtx);
-	log_base_dir = path(run_folder) / "logger";
+	log_base_dir = run_folder / "logger";
 	recreate_log_folder(log_base_dir);
 
 	// create combated log

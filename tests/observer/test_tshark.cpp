@@ -28,8 +28,8 @@ bool tshark_available(){
 path this_file = source_location::current().file_name();
 
 ActorPtr make_actor(const string &mac){
-    auto cfg = make_shared<Actor_config>();
-    (*cfg)[SK::mac] = mac;
+    auto cfg = ActorPtr(make_shared<Actor_config>());
+    cfg[SK::mac] = mac;
     return ActorPtr(cfg);
 }
 
@@ -174,7 +174,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
         return;
     }
 
-    const path pcapng = path(this_file).parent_path() / "test_tshark_minimal.pcapng";
+    const path pcapng = this_file.parent_path() / "test_tshark_minimal.pcapng";
     REQUIRE(exists(pcapng));
 
     const path out_dir = temp_directory_path() / ("wpa3_pcap_" +

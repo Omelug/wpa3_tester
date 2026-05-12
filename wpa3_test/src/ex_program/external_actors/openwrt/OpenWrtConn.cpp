@@ -228,7 +228,9 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 
 void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	constexpr int port = 5140;
-	const string kali_ip = "192.168.1.134"; //FIXME
+	const ActorPtr &ap_actor = rs.get_actor(actor_name);
+	const string remote_ip = ap_actor[SK::whitebox_ip].value();
+	const string kali_ip = ip::get_ip(hw_capabilities::get_iface(remote_ip, nullopt));
 	rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
 	exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name +
 		".pid");

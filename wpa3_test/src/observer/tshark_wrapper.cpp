@@ -11,6 +11,7 @@
 #include "observer/observers.h"
 #include "observer/graph/graph_utils.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::observer::tshark{
 using namespace std;
@@ -18,17 +19,9 @@ using namespace filesystem;
 
 constexpr string program_name = "tshark";
 
-//helper functino for join or filters
 string or_filter(const vector<string> &mac_filters){
 	if(mac_filters.empty()) return "";
-	ostringstream oss;
-	oss << "(";
-	for(size_t i = 0; i < mac_filters.size(); ++i){
-		oss << mac_filters[i];
-		if(i < mac_filters.size() - 1){ oss << " or "; }
-	}
-	oss << ")";
-	return oss.str();
+	return "(" + join(mac_filters, " or ") + ")";
 }
 
 string masked_mac_filter_5(const RunStatus &rs){

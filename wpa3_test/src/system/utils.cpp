@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 #include "logger/error_log.h"
 
 namespace wpa3_tester{
@@ -52,5 +53,14 @@ void print_exception_tree(const exception &e, ostream &os, int level){
 	} catch(const exception &nested){
 		print_exception_tree(nested, os, level + 1);
 	} catch(...){}
+}
+
+string join(const vector<string> &v, const string &sep){
+	string out;
+	for(size_t i = 0; i < v.size(); ++i){
+		if(i) out += sep;
+		out += v[i];
+	}
+	return out;
 }
 }

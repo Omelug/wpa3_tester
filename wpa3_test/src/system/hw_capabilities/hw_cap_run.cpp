@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <string>
-#include <unistd.h>
 #include <vector>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -12,6 +11,7 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -69,11 +69,7 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
 	}
 	if(status != 0){
 		if(print){
-			string command_str;
-			for(const auto &arg: full_argv){
-				command_str += arg + " ";
-			}
-			log(LogLevel::ERROR, "Command failed! Status: {} | Full command: {}", status, command_str);
+			log(LogLevel::ERROR, "Command failed! Status: {} | Full command: {}", status, join(full_argv, " "));
 		}
 		return -1;
 	}
@@ -124,9 +120,7 @@ void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
 // ---------------- exec -. errors
 
 void hw_capabilities::exec(const vector<string> &cmd, const bool check){
-	string full;
-	for(auto &s: cmd) full += s + " ";
-	const int ret = system(full.c_str());
-	if(check && ret != 0) throw runtime_error("Command failed: " + full);
+	const string full = join(cmd, " ");
+	if(const int ret = system(full.c_str()); check && ret != 0) throw runtime_error("Command failed: " + full);
 }
 }

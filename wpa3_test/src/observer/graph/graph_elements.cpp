@@ -1,5 +1,6 @@
 #include "observer/graph/graph_elements.h"
 #include "observer/graph/graph_utils.h"
+#include "system/utils.h"
 
 using namespace std;
 
@@ -117,13 +118,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 void Graph::render(){
 	gpcmd("set yrange [" + to_string(ymin) + ":" + to_string(ymax) + "]");
 
-	ostringstream plotcmd;
-	plotcmd << "plot ";
-	for(size_t i = 0; i < plot_parts.size(); ++i){
-		plotcmd << plot_parts[i];
-		if(i + 1 < plot_parts.size()) plotcmd << ", ";
-	}
-	gpcmd(plotcmd.str());
+	gpcmd("plot " + join(plot_parts, ", "));
 	fflush(file);
 
 	const int rc = pclose(file);

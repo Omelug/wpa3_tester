@@ -14,6 +14,7 @@
 #include "logger/log.h"
 #include "system/netlink_guards.h"
 #include "system/netlink_helper.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;

@@ -1,4 +1,4 @@
-For compilation #TODO version
+For compilation #TODO kernel, versions
 gcc
 cmake
 make

@@ -11,9 +11,9 @@ using namespace wpa3_tester;
 namespace wpa3_tester{
 TEST_CASE("MonitorSocket receives all auth frames from pcap"){
     const string pcap_path = "./pcap/rogue_client_capture.pcap";
-    //TODO HWAddReass
-    const string ap_mac = "78:98:e8:55:3e:8d";
-    const string client_mac = "24:ec:99:bf:c7:cf";
+l
+	const HWAddress<6> ap_mac = "78:98:e8:55:3e:8d";
+    const HWAddress<6> client_mac = "24:ec:99:bf:c7:cf";
 
     int expected_ap_to_client = 0;
     int expected_client_to_ap = 0;
@@ -24,8 +24,8 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
         if(!mgmt) return true;
         if(!pdu.find_pdu<Dot11Authentication>()) return true;
 
-        if(mgmt->addr2().to_string() == ap_mac && mgmt->addr1().to_string() == client_mac) expected_ap_to_client++;
-        else if(mgmt->addr2().to_string() == client_mac && mgmt->addr1().to_string() == ap_mac) expected_client_to_ap++;
+        if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac) expected_ap_to_client++;
+        else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac) expected_client_to_ap++;
         return true;
     });
 
@@ -48,8 +48,8 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
             if(!mgmt) continue;
             if(!rt.find_pdu<Dot11Authentication>()) continue;
 
-            if(mgmt->addr2().to_string() == ap_mac && mgmt->addr1().to_string() == client_mac) got_ap_to_client++;
-            else if(mgmt->addr2().to_string() == client_mac && mgmt->addr1().to_string() == ap_mac) got_client_to_ap++;
+            if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac) got_ap_to_client++;
+            else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac) got_client_to_ap++;
         } catch(...){}
     }
 
@@ -58,7 +58,6 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
     CHECK_EQ(got_client_to_ap, expected_client_to_ap);
 }
 
-// TODO change to FCS a
 TEST_CASE("patch_channel_raw - beacon frame"){
     vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/beacon_test.pcapng");
     vector<uint8_t> original_data = beacon_data; // Keep copy for comparison

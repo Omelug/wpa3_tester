@@ -34,5 +34,4 @@ observers:
     program_config:
       filter: "special_filter:actors_5_bytes"
 attack_config:
-  # TODO validator
   test_mac_count: 100

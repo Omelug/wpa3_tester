@@ -201,7 +201,6 @@ void hw_capabilities::set_iface_up(const string &iface, const optional<string> &
 		"Timeout waiting for '" + iface + "' to go UP:" + res.error().message());
 }
 
-//TODO add monitor flags
 void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns){
 	if(netlink_helper::query_wifi_iftype(iface, netns) == type) return;
 

@@ -50,6 +50,7 @@ ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
 ch: + docuemnt what exactly are validators/ref/extedns (arent extends and $ref same?)
 +: dát  [[nodiscard]] tam, kde je to potřeba
+r:  better open/cloose once, multiple ClientStates?
 
 New features:
 r: fix whitebox scanners to get more data fir blackboc external

@@ -96,7 +96,7 @@ definitions:
           requirements:
             type: array
             description: Program names what has to be installed (on local test PC)
-          req_programs: #TODO add condition only for External WB
+          req_programs:
             type: array
             description: Program names what has to be installed (on external)
         allOf:
@@ -189,6 +189,20 @@ definitions:
               const: internal
           required: [ source ]
           errorMessage: "netns can only be used with source: internal"
+      # req_programs only allowed for source: external
+      - if:
+          not:
+            properties:
+              source:
+                const: external
+            required: [ source ]
+        then:
+          properties:
+            setup:
+              properties:
+                req_programs:
+                  not: {}
+          errorMessage: "req_programs can only be used with source: external"
       # whitebox_ip/whitebox_host not allowed if not external
       - if:
           not:

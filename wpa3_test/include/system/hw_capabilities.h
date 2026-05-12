@@ -1,6 +1,5 @@
 #pragma once
 
-#include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -96,9 +95,8 @@ public:
 
 	// run helpers
 	static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
-	static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt,
-						const bool print = true
-	);
+	static int run_cmd(const std::vector<std::string> &argv,
+		const std::optional<std::string> &netns = std::nullopt, bool print = true);
 	static std::string run_cmd_output(const std::vector<std::string> &argv,
 									const std::optional<std::string> &netns = std::nullopt
 	);

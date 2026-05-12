@@ -16,6 +16,7 @@
       <w>bprot</w>
       <w>caplen</w>
       <w>cassert</w>
+      <w>ccmp</w>
       <w>cerr</w>
       <w>commentschars</w>
       <w>conds</w>
@@ -55,6 +56,7 @@
       <w>ifla</w>
       <w>ifname</w>
       <w>iftype</w>
+      <w>iftypes</w>
       <w>imagepath</w>
       <w>iwinfo</w>
       <w>jsonfilter</w>
@@ -113,6 +115,7 @@
       <w>radiotap</w>
       <w>readlink</w>
       <w>reassoc</w>
+      <w>reproc</w>
       <w>reuseaddr</w>
       <w>rlen</w>
       <w>rsneapol</w>

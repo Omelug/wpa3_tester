@@ -78,9 +78,8 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 	// Data frames
 	else if(const auto *data = pdu.find_pdu<Dot11Data>()){
 		const bool to_ds = data->to_ds();
-		const bool from_ds = data->from_ds();
 
-		if(to_ds && !from_ds){
+		if(const bool from_ds = data->from_ds(); to_ds && !from_ds){
 			// STA → AP
 			add_entity(data->addr2().to_string(), false); // STA
 			add_entity(data->addr1().to_string(), true);  // AP
@@ -303,7 +302,7 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=" + to_string(n_radios)});
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// Rename all new Wi-fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
+	// Rename all new Wi-Fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
 	}

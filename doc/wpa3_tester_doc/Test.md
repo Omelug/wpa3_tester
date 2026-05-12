@@ -35,7 +35,8 @@ The OpenWrt program has its own specific configuration for requirements, check [
 - have tbe in format [test_suite_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_suite_validator.schema.yaml)
 - config_type: test_suite
 - path/generatros/permutation
-#### generators 
+#### generator
 - var_ like prefix for placeholder
 - more described in schema
 - config generating to  {rss.run_folder}/test_config/<generator_name>
+#### permutation

@@ -1,15 +1,14 @@
 #include <cstdio>
 #include <cstdlib>
+#include <random>
 #include <string>
-#include <unistd.h>
 #include <vector>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <random>
-#include "system/hw_capabilities.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
 using namespace std;

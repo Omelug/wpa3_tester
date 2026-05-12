@@ -10,15 +10,17 @@ namespace wpa3_tester{
 using namespace std;
 
 void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
-	//TODO check config
-	//exec("opkg update");
 	const auto &setup_node = config.at("actors").at(actor_name).at("setup");
 	if(!setup_node.contains("req_programs")){ return; }
 	auto req_programs = setup_node.at("req_programs");
 	for(const auto &req_name: req_programs){
 		int ret = 0;
 		exec("opkg install " + req_name.get<string>(), false, &ret);
-		if(ret){ throw config_err("Cannot install " + req_name.get<string>() + ", try opkg update"); }
+		if(ret){
+			exec("opkg update", false, &ret);
+			exec("opkg install " + req_name.get<string>(), false, &ret);
+			if(ret){ throw config_err("Cannot install " + req_name.get<string>() + " after opkg update"); }
+		}
 	}
 }
 

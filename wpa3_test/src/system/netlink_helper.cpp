@@ -51,8 +51,8 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
 	if(!msg) return NL80211_IFTYPE_UNSPECIFIED;
 
-	genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
-	nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
+	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_GET_INTERFACE, 0);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
 
 	IftypeResult result{};
 	nl_socket_modify_cb(sock.get(), NL_CB_VALID, NL_CB_CUSTOM, parse_iftype_cb, &result);
@@ -61,8 +61,9 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 	return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
 }
 
-[[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(string_view iface_name, const optional<string> &netns
-){
+[[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(const string_view iface_name,
+	const optional<string> &netns){
+
 	NetNSContext ns_guard(netns);
 	const int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock < 0) return unexpected(error_code(errno, system_category()));
@@ -93,15 +94,14 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 }
 
 Result wait_for_link_flags(const string_view iface_name, const optional<string> &netns, const bool want_up,
-							const int timeout_ms
-){
+							const int timeout_ms){
 	//already in correct state
 	if(want_up && iface_is_up(iface_name, netns)) return {};
 	if(!want_up && iface_is_down(iface_name, netns)) return {};
 	NetNSContext ns_guard(netns);
 
 	const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
-	setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	(void)setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
 	char buf[8192];
 	while(true){
@@ -166,7 +166,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 	if(if_nametoindex(name) != 0) return Result{};
 
 	const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
-	setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	(void)setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
 	char buf[8192];
 	while(true){

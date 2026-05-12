@@ -14,11 +14,11 @@ using namespace filesystem;
 const string program_name = "resource_checker";
 
 void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, const string &iface,
-									const int interval_sec, const string &local_log
+									const int interval_sec, const path &local_log
 ){
 	const auto &actor = rs.get_actor(actor_name);
-	const string local_script = (path(PROJECT_ROOT_DIR) / "awk_scripts/monitor.awk").string();
-	const string remote_script = "/tmp/monitor_" + actor_name + ".awk";
+	const path local_script = path(PROJECT_ROOT_DIR) / "awk_scripts/monitor.awk";
+	const path remote_script = "/tmp/monitor_" + actor_name + ".awk";
 	string remote_log = "/tmp/" + actor_name + SUFFIX_res + ".log";
 	const string pid_file = remote_log + ".pid";
 
@@ -35,7 +35,7 @@ void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, c
 
 void start_resource_monitoring(RunStatus &rs, const string &actor_name, const int interval_sec){
 	const auto actor = rs.get_actor(actor_name);
-	const string local_log = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_res + ".log");
+	const path local_log = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_res + ".log");
 
 	if(actor->conn != nullptr){
 		start_resource_monitoring_remote(rs, actor_name, actor["iface"], interval_sec, local_log);

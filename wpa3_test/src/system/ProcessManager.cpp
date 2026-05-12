@@ -74,14 +74,14 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			mp->naturally_exited = true;
 			log(LogLevel::DEBUG, "flush start {}", process_name);
 			const auto flush_deadline = steady_clock::now() + milliseconds(500);
-			for(const auto &s: streams){
+			for(const auto &[stream, label, event]: streams){
 				while(steady_clock::now() < flush_deadline){
-					auto [events, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(50));
-					if(poll_ec || !(events & s.event)) break;
+					if(auto [events, poll_ec] = mp->proc->poll(event, reproc::milliseconds(50));
+						poll_ec || !(events & event)) break;
 
-					auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+					auto [n, read_ec] = mp->proc->read(stream, buffer, sizeof(buffer));
 					if(read_ec || n == 0) break;
-					handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+					handle_chunk(process_name, label, string(reinterpret_cast<char *>(buffer), n));
 				}
 			}
 			log(LogLevel::DEBUG, "flush done {}", process_name);
@@ -174,10 +174,6 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	}
 	if(!logging_dir.empty()){ log_dir = logging_dir; }
 	path log_path = log_dir / (process_name + ".log");
-
-	// string cmd_debug;
-	// for (const auto& s : cmd) cmd_debug += "[" + s+"] ";
-	// log(LogLevel::DEBUG, "Full command: {}", cmd_debug);
 
 	// Log command line FIRST for debugging
 	string cmd_line;
@@ -355,8 +351,7 @@ void ProcessManager::before_stop(const string &process_name, const function<void
 
 void ProcessManager::after_stop(const string &process_name, const function<void()> &callback){
 	lock_guard lock(logger_mtx);
-	const auto proc_iter = processes.find(process_name);
-	if(proc_iter != processes.end() && proc_iter->second){
+	if(const auto proc_iter = processes.find(process_name); proc_iter != processes.end() && proc_iter->second){
 		proc_iter->second->after_stop_callback = callback;
 	}
 }

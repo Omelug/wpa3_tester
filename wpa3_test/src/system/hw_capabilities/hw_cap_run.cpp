@@ -62,7 +62,6 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
 	}
 
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
-	//this_thread::sleep_for(chrono::milliseconds(100)); //FIXME
 	if(wait_ec){
 		if(print) log(LogLevel::ERROR, "Wait failed: {}", wait_ec.message());
 		return -1;

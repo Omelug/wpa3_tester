@@ -46,7 +46,6 @@ void Actor_config::cleanup() const{
 		log(LogLevel::INFO, "Cleaning up interface {}", iface);
 	}
 
-	// FIXME taohle by nemělo být potřeba po testu
 	run({"pkill", "-f", "tshark.*" + iface});
 	run({"pkill", "-f", "tcpdump.*" + iface});
 
@@ -138,7 +137,6 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	}
 }
 
-//TODO nejdřív napsat pořádné testy, apk optimalizavat
 void Actor_config::set_monitor_mode(const string &monitor_flags) const{
 	const string &iface = (*this)[SK::iface].value();
 	if(conn != nullptr){
@@ -150,11 +148,11 @@ void Actor_config::set_monitor_mode(const string &monitor_flags) const{
 	set_iface_down();
 
 	run({"iw", "dev", iface, "set", "type", "monitor"});
-	vector<string> flags = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
+	vector<string> set_monitor = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
 	if(!monitor_flags.empty()){
-		flags.push_back(monitor_flags);
+		set_monitor.push_back(monitor_flags);
 	}
-	run(flags);
+	run(set_monitor);
 }
 
 // -------- hw_capabilities wrappers

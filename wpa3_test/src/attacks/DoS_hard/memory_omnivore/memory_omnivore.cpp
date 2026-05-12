@@ -22,7 +22,6 @@ namespace wpa3_tester::memory_omnivore{
 static constexpr uint16_t DH_GROUPS[] = {19, 20, 21};
 static constexpr size_t N_DH_GROUPS = std::size(DH_GROUPS);
 
-// TODO make alternative external
 vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
 	const ActorPtr ap = rs.get_actor("access_point");
 	vector<HWAddress<6>> result;

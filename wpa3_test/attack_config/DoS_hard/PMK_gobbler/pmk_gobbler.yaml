@@ -76,3 +76,6 @@ observers:
 attack_config:
   attack_time_sec: 30
   acm_trigger_count: 2560
+  burst_size: 128
+  packets_per_second_limit: 500
+  cookie_wait_ms: 50

@@ -219,8 +219,7 @@ void cleanup_all_namespaces(){
         const auto ifaces = psy_if_in_ns(ns_name);
         delete_ns_and_wait(ns_name, ifaces);
     }
-	//this_thread::sleep_for(chrono::milliseconds(5000)); //FIXME add cleanup_all_namespaces at the end of test
-    log(LogLevel::INFO, "Cleanup complete.");
+	log(LogLevel::INFO, "Cleanup complete.");
 }
 
 ActorCMap get_actors(const ActorCMap &actors, const string &source){

@@ -1,19 +1,19 @@
 //TODO
-+: new feature, f: fix, r: refactoring, t: test, ch: change, ?: what?
++: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
 
 Version v 0.0.0.0:
 
-r: sjednotit while loop s logy  Dos útoky
-+: postupně přepsat DoS wrappers do C++
 r: small TODO
-r: extends/ref - popsat rozdíl do nového souboru yaml_config.md
+r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac
-+: interface scan, která ukáře důležité vlastnosti, injection tests 
++: interface scan, která ukáře důležité vlastnosti, injection tests
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 +: ClientState obeserver use + add to mitm
+l: create logging file
 
 //DONE
++: add test suite config to wait between tests (is seconds)
 ch: change errors.txt logic -> write git hash and info to done.txt
 ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite
 +: ClientState obeserver
@@ -24,6 +24,11 @@ rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
 f: BA/BAR bl0ck attack work only on one mediatek
 r: nastavit v clionu styl stringu atd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
+
+//TODO plan to th future
+Version v 0.0.0.1
+r: sjednotit while loop s logy  Dos útoky
+
 
 ----------------------------- TBD -----------------------------------
 Scan:
@@ -63,6 +68,7 @@ f: add network manager off option for actors
 d: SA query
 +: get data from mapping/config for --only_stats
 +: add SAE forwarding to mitm
++: postupně přepsat DoS wrappers do C++
 
 Fixes:
 f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)

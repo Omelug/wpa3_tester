@@ -13,6 +13,7 @@ tests:
       attack_config:
         attack_type: var_dos_attack
 
+wait_between_tests: 10
 rewrite: all
 
 

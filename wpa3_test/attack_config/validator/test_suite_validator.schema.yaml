@@ -11,6 +11,10 @@ properties:
   suite_report_function:
     type: string
     description: "report function for all test after tests"
+  wait_between_tests:
+    type: integer
+    minimum: 0
+    description: "Seconds to wait between tests in the suite, ex: wait for rescue after attacks"
   config_type:
     type: string
     const: test_suite

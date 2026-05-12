@@ -3,6 +3,9 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+#include <chrono>
+#include <thread>
+
 #include "config/Actor_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -33,6 +36,8 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name){
 	this->config = config_validation(_config_path);
 
 	parse_run_config(config, run_config);
+	if(config.contains("wait_between_tests"))
+		wait_between_tests = config.at("wait_between_tests").get<int>();
 }
 
 json RunSuiteStatus::config_validation(const path &config_path){
@@ -285,7 +290,9 @@ config_paths RunSuiteStatus::get_test_paths(){
 
 void RunSuiteStatus::execute(){
 	HwOptionCache hw_cache;
-	for(auto tests_paths = get_test_paths(); const auto &[name, test_path]: tests_paths){
+	auto tests_paths = get_test_paths();
+	for(size_t i = 0; i < tests_paths.size(); ++i){
+		const auto &[name, test_path] = tests_paths[i];
 		RunStatus rs(test_path, name, ".");
 		rs.hw_option_cache(hw_cache);
 		rs.run_config(run_config);
@@ -293,6 +300,8 @@ void RunSuiteStatus::execute(){
 		rs.run_folder(run_folder() / test_name);
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
+		if(wait_between_tests > 0 && i + 1 < tests_paths.size())
+			this_thread::sleep_for(chrono::seconds(wait_between_tests));
 	}
 
 	if(!config.contains("suite_report_function")) return;

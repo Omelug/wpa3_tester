@@ -26,6 +26,7 @@ public: // getters and setters
 	void run_folder(const std::filesystem::path &new_run_folder){ _run_folder = new_run_folder; }
 
 	bool only_stats = false;
+	int wait_between_tests = 0;
 	Run_Config run_config{};
 	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_suites";
 

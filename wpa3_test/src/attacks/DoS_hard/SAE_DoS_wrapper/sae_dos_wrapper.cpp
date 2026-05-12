@@ -41,7 +41,7 @@ void setup_attack(RunStatus &rs){
 		hw_capabilities::run_cmd({"apt-get", "install", "-y","python3.10"});
 	}
 
-	const string req = suite + "/requirements.txt";
+	const string req = suite + "/requirements.txt"; //TODO move requirement aadn python3.10  to fork
 	if(exists(req)){
 		log(LogLevel::INFO, "Installing python dependencies from {}...", req);
 		hw_capabilities::run_cmd({"python3.10","-m", "pip", "install", "-r" + req});

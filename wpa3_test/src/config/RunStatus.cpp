@@ -53,11 +53,11 @@ void RunStatus::execute(){
 			log(LogLevel::DEBUG, "Skipping: {}", _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.get_rewrite() == RewriteMode::errors && !exists(_run_folder / "errors.txt")){
-			log(LogLevel::WARNING, "Skipping successful test : {}", _run_folder.filename().string());
+		if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
+			log(LogLevel::WARNING, "Skipping already successfully run test : {}", _run_folder.filename().string());
 			return;
 		}
-		if(_run_config.get_delete_old()){
+		if(_run_config.get_delete_old()){ // remove -> no rewrite, better for debugging
 			log(LogLevel::DEBUG, "Deleting old run folder: {}", _run_folder.filename().string());
 			remove_all(_run_folder);
 		}
@@ -68,38 +68,45 @@ void RunStatus::execute(){
 	create_directories(_run_folder, ec);
 	if(ec) throw runtime_error("Unable to create run base directory");
 
-	//try {
-	if(this->run_config().get_only_stats()){
-		//TODO get data from mapping/config
-		// get maping
-		stats_test();
-		return;
-	}
+	try {
+		if(this->run_config().get_only_stats()){
+			//TODO get data from mapping/config
+			// get maping
+			stats_test();
+			return;
+		}
 
-	config_requirement(); //include req validation
-	setup_test();
-	const path out_path = _run_folder / "test_config.yaml";
-	save_yaml(_config, out_path);
-	run_test();
-	stats_test();
-	//cleanup_all_namespaces();
-	/*} catch (const exception& e) {
-			const path error_file = path(run_folder) / "errors.txt";
-			ofstream error_log(error_file, ios::out | ios::app);
-			if (error_log.is_open()) {
-				error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
-				error_log << "Exception type: " << typeid(e).name() << endl;
-				error_log << "Message: " << e.what() << endl;
-				print_exception_tree(e, error_log);
-				error_log << endl;
-				error_log.close();
-				log(LogLevel::ERROR, "Error written to {}", error_file.string());
-			} else {
-				log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
-			}
-			log(LogLevel::INFO, "Cleaning up resources before exit...");
-			clean();
-		}*/
+		config_requirement(); //include req validation
+		setup_test();
+		const path out_path = _run_folder / "test_config.yaml";
+		save_yaml(_config, out_path);
+		run_test();
+		stats_test();
+		const path done_file = run_folder() / "done.txt";
+		ofstream done_log(done_file, ios::out | ios::trunc);
+		if(done_log.is_open()){
+			done_log << "commit: " << git_commit_hash() << endl;
+			done_log << "date:   " << current_time_string() << endl;
+			done_log << "kernel: " << kernel_version() << endl;
+			done_log.close();
+		}
+	} catch (const exception& e) {
+		const path error_file = run_folder() / "errors.txt";
+		ofstream error_log(error_file, ios::out | ios::app);
+		if (error_log.is_open()) {
+			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
+			error_log << "Exception type: " << typeid(e).name() << endl;
+			error_log << "Message: " << e.what() << endl;
+			print_exception_tree(e, error_log);
+			error_log << endl;
+			error_log.close();
+			log(LogLevel::ERROR, "Error written to {}", error_file.string());
+		} else {
+			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
+		}
+		log(LogLevel::INFO, "Cleaning up resources before exit...");
+		clean();
+	}
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){

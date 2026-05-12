@@ -22,29 +22,6 @@ namespace wpa3_tester::memory_omnivore{
 static constexpr uint16_t DH_GROUPS[] = {19, 20, 21};
 static constexpr size_t N_DH_GROUPS = std::size(DH_GROUPS);
 
-// TODO make alternative external
-vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
-	const ActorPtr ap = rs.get_actor("access_point");
-	vector<HWAddress<6>> result;
-
-	const string out = ap->conn->exec(
-		"iw dev $(iw dev | awk '/Interface/{print $2}' | head -1) station dump 2>/dev/null");
-
-	istringstream ss(out);
-	string line;
-	while(getline(ss, line)){
-		if(line.rfind("Station", 0) != 0) continue;
-		istringstream ls(line);
-		string token, mac_str;
-		ls >> token >> mac_str; // "Station" "<mac>"
-		try{
-			result.emplace_back(mac_str);
-		} catch(...){}
-	}
-	log(LogLevel::INFO, " Found {} connected STAs", result.size());
-	return result;
-}
-
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
 	vector<HWAddress<6>> pool;
 	if(use_connected_stas){

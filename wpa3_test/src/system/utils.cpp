@@ -1,8 +1,10 @@
 #include "system/utils.h"
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <iomanip>
 #include <sstream>
+#include <sys/utsname.h>
 #include <vector>
 #include "logger/error_log.h"
 
@@ -20,6 +22,24 @@ string current_time_string(){
 	oss << put_time(&bt, "%Y-%m-%d %H:%M:%S");
 	return oss.str();
 }
+
+string git_commit_hash(){
+	FILE *pipe = popen("git rev-parse --short HEAD 2>/dev/null", "r");
+	if(!pipe){ return "unknown"; }
+	char buf[16]{};
+	if(fgets(buf, sizeof(buf), pipe) == nullptr){ pclose(pipe); return "unknown"; }
+	pclose(pipe);
+	string result(buf);
+	if(!result.empty() && result.back() == '\n'){ result.pop_back(); }
+	return result.empty() ? "unknown" : result;
+}
+
+string kernel_version(){
+	utsname uts{};
+	if(uname(&uts) != 0){ return "unknown"; }
+	return string(uts.sysname) + " " + uts.release + " " + uts.machine;
+}
+
 
 string relative_from(const string &base_dir_name, const string &config_path){
 	const path config_full_path = absolute(config_path);

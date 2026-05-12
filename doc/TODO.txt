@@ -77,7 +77,7 @@ Test cases:
 +: test, který by prošel všechny configy testů a vypsal jaké jsou validní
 f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
-t: některé čipy mohou prej přestat komunikovat po změně pomocí macchanger, zkontrolovat hlavn RTL
+t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
 t: lcov easy tests
 
 // new attacks?

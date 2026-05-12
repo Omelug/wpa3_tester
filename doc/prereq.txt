@@ -12,4 +12,5 @@ ip (iproute2)
 iw
 
 for mitm/fragattacks:
-ifconfig (net-tools)
+
+#FIXME in nishaell.nix

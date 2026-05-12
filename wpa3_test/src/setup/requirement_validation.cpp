@@ -234,6 +234,7 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 	return result;
 }
 
+
 void RunStatus::config_requirement(){
 	check_local_requirements();
 	cleanup_all_namespaces();
@@ -243,8 +244,9 @@ void RunStatus::config_requirement(){
 	// ------------------ INTERNAL ---------------------------
 	auto internal_actors = get_actors(actors, "internal");
 	if(!internal_actors.empty()){
-		//find interface mapping
-		internal_mapping = hw_capabilities::check_req_options(internal_actors, internal_options());
+		if(!_hw_option_cache.internal_opts.has_value())
+			_hw_option_cache.internal_opts = internal_options();
+		internal_mapping = hw_capabilities::check_req_options(internal_actors, *_hw_option_cache.internal_opts);
 	}
 
 	//  external wb/bb separation
@@ -261,7 +263,9 @@ void RunStatus::config_requirement(){
 	}
 	// ------------------ EXTERNAL WHITEBOX ----------------------
 	if(!external_wb_actors.empty()){
-		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, external_wb_options());
+		if(!_hw_option_cache.external_wb_opts.has_value())
+			_hw_option_cache.external_wb_opts = external_wb_options();
+		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 	}
 
 	// ------------------ EXTERNAL BLACKBOX ----------------------

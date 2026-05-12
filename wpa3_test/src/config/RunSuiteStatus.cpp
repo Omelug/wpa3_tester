@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include "config/Actor_config.h"
+#include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "setup/YAMLValidator.h"
@@ -279,38 +280,19 @@ config_paths RunSuiteStatus::get_test_paths(){
 		throw config_err("invalid source type");
 	}
 
-	// suite-level defaults applied to test configs — test config value wins if already set
-	/*static const vector<string> propagated_fields = {
-		"test_report", "rewrite", "compile_external", "install_req", "only_stats"
-	};
-	json suite_defaults = json::object();
-	for(const auto &field: propagated_fields){
-		if(config.contains(field)){ suite_defaults[field] = config[field]; }
-	}
-	if(!suite_defaults.empty()){
-		for(auto &test_path: test_map | views::values){
-			json test_config = yaml_to_json(YAML::LoadFile(test_path.string()));
-			bool changed = false;
-			for(auto &[key, value]: suite_defaults.items()){
-				if(!test_config.contains(key)){
-					test_config[key] = value;
-					changed = true;
-				}
-			}
-			if(changed){ save_yaml(test_config, test_path); }
-		}
-	}*/
-
 	return test_map;
 }
 
 void RunSuiteStatus::execute(){
+	HwOptionCache hw_cache;
 	for(auto tests_paths = get_test_paths(); const auto &[name, test_path]: tests_paths){
 		RunStatus rs(test_path, name, ".");
+		rs.hw_option_cache(hw_cache);
 		rs.run_config(run_config);
 		path test_name = rs.config().at("name").get<string>();
 		rs.run_folder(run_folder() / test_name);
 		rs.execute();
+		hw_cache = rs.hw_option_cache();
 	}
 
 	if(!config.contains("suite_report_function")) return;

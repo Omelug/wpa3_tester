@@ -70,8 +70,7 @@ void RunStatus::execute(){
 
 	//try {
 	if(this->run_config().get_only_stats()){
-		//TODO get data from mapping/config
-		// get maping
+		load_actor_interface_mapping();
 		stats_test();
 		return;
 	}
@@ -233,5 +232,51 @@ void RunStatus::save_actor_interface_mapping() const{
 
 	ofs.close();
 	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
+}
+
+void RunStatus::load_actor_interface_mapping(){
+	const string csv_path = _run_folder / "mapping.csv";
+	if(!exists(csv_path)){
+		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
+		return;
+	}
+	ifstream ifs(csv_path);
+	if(!ifs){
+		log(LogLevel::ERROR, "load_actor_interface_mapping: failed to open {}", csv_path);
+		return;
+	}
+
+	string line;
+	getline(ifs, line); // skip header: Type,ActorName,Interface,MAC,Driver,channel,json_obj
+
+	while(getline(ifs, line)){
+		if(line.empty()) continue;
+		// Format: source,actor_name,iface,mac,driver,channel,json_obj
+		// json_obj may contain commas — split only on first 6 commas
+		size_t name_start = string::npos, name_end = string::npos, json_start = string::npos;
+		int commas = 0;
+		for(size_t i = 0; i < line.size(); ++i){
+			if(line[i] != ',') continue;
+			++commas;
+			if(commas == 1) name_start = i + 1;
+			else if(commas == 2) name_end = i;
+			else if(commas == 6){ json_start = i + 1; break; }
+		}
+		if(name_end == string::npos || json_start == string::npos){
+			log(LogLevel::WARNING, "load_actor_interface_mapping: malformed row, skipping");
+			continue;
+		}
+		const string actor_name = line.substr(name_start, name_end - name_start);
+		const string json_str   = line.substr(json_start);
+		const auto j = nlohmann::json::parse(json_str, nullptr, false);
+		if(j.is_discarded()){
+			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);
+			continue;
+		}
+		auto actor = make_shared<Actor_config>(j);
+		(*actor)[SK::actor_name] = actor_name;
+		actors.emplace(actor_name, ActorPtr(actor));
+	}
+	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
 }
 }

@@ -39,7 +39,10 @@ protected:
 	ActorCMap external_wb_mapping{};
 	ActorCMap external_bb_mapping{};
 	ActorCMap simulation_mapping{};
+	HwOptionCache _hw_option_cache{};
 public:
+	[[nodiscard]] const HwOptionCache& hw_option_cache() const { return _hw_option_cache; }
+	void hw_option_cache(const HwOptionCache &c){ _hw_option_cache = c; }
 	[[nodiscard]] Run_Config run_config() const{ return _run_config; }
 	void run_config(const Run_Config &rc){ _run_config.merge_from(rc); }
 	[[nodiscard]] nlohmann::json& config() { return _config;}
@@ -95,11 +98,13 @@ public:
 	static nlohmann::json config_validation(const std::string &config_path);
 	void ensure_requirement(const std::string &req);
 	void check_local_requirements();
+	// use cache for options of actors
 	void config_requirement();
 	void setup_test();
 	void run_test();
 	void stats_test() const;
 	void save_actor_interface_mapping() const;
+	void load_actor_interface_mapping();
 };
 
 inline RunStatus *globalRunStatus = nullptr;

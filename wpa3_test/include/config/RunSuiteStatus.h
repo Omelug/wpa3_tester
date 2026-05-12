@@ -9,6 +9,11 @@
 namespace wpa3_tester{
 using config_paths = std::vector<std::pair<std::string,std::filesystem::path>>;
 
+struct HwOptionCache {
+	std::optional<std::vector<ActorPtr>> internal_opts;
+	std::optional<std::vector<ActorPtr>> external_wb_opts;
+};
+
 class RunSuiteStatus{
 	static size_t check_vars_len_same(nlohmann::basic_json<> source_info);
 protected:

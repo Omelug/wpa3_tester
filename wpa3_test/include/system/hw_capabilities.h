@@ -9,6 +9,7 @@
 #include "../config/RunStatus.h"
 
 namespace wpa3_tester{
+class MonitorSocket;
 enum class InterfaceType{
 	Unknown,
 	Loopback,
@@ -138,5 +139,15 @@ public:
 	static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns);
+
+	// injection testing
+	// Inject pdu on sout and capture frames containing the unique label on sin.
+	// count=0: capture until timeout; retries: number of re-inject attempts if nothing captured.
+	// Returns raw captured frames that contain the injected label.
+	static std::vector<std::vector<uint8_t>> inject_and_capture(
+		MonitorSocket &sout, MonitorSocket &sin,
+		Tins::PDU &pdu, int channel,
+		int count = 0, int retries = 1
+	);
 };
 }

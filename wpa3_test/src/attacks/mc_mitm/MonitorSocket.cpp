@@ -44,8 +44,7 @@ void MonitorSocket::send(PDU &pdu, const int channel){
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const int channel,
-												const bool detect_injected
-){
+												const bool detect_injected){
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);

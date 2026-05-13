@@ -29,5 +29,7 @@ private:
 	bool detect_injected_;
 	Tins::PacketSender sender_;
 	Tins::Sniffer sniffer_;
+public:
+	bool mf_workaround = false;
 };
 }

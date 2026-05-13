@@ -39,7 +39,7 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 
 	// Clone pdu and append label as Raw payload
 	auto frame = unique_ptr<PDU>(pdu.clone());
-	frame->innermost_pdu()->inner_pdu(new RawPDU(label.data(), label.size()));
+	frame->inner_pdu(new RawPDU(label.data(), label.size()));
 
 	const auto *d11 = pdu.find_pdu<Dot11>();
 	const bool has_mf = d11 && d11->more_frag();

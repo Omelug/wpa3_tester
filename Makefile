@@ -68,6 +68,7 @@ test_manual_build:
 		test_manual_get_commit_values \
 		test_manual_mc_mitm \
 		test_manual_iface \
+		test_manual_injection_two_iface \
 		-j $(NPROC)
 INFO_FILE = $(BUILD_DIR)/coverage.info
 CLEAN_INFO = $(BUILD_DIR)/coverage_cleaned.info

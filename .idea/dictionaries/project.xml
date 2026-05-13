@@ -33,6 +33,7 @@
       <w>defualt</w>
       <w>delba</w>
       <w>dellink</w>
+      <w>destmac</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
@@ -62,6 +63,7 @@
       <w>iftypes</w>
       <w>imagepath</w>
       <w>iwinfo</w>
+      <w>iwlwifi</w>
       <w>jsonfilter</w>
       <w>keydatalen</w>
       <w>killpg</w>
@@ -87,6 +89,7 @@
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>noborder</w>
+      <w>nocapture</w>
       <w>nohead</w>
       <w>nomirror</w>
       <w>nooutput</w>
@@ -102,7 +105,9 @@
       <w>orchestator</w>
       <w>otherbss</w>
       <w>outputpath</w>
+      <w>ownmac</w>
       <w>peap</w>
+      <w>peermac</w>
       <w>pfds</w>
       <w>pidstat</w>
       <w>pipefd</w>
@@ -137,6 +142,7 @@
       <w>sysntpd</w>
       <w>tdls</w>
       <w>teap</w>
+      <w>testack</w>
       <w>tftp</w>
       <w>tids</w>
       <w>tmargin</w>

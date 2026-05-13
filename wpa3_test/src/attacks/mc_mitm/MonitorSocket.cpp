@@ -23,21 +23,19 @@ void MonitorSocket::send(PDU &pdu, const int channel){
 		if(auto *dot11 = pdu.find_pdu<Dot11>()) dot11->more_data(1);
 	}
 
-	// Wrap in RadioTap if not already present
+	// Wrap in RadioTap if not already present.
+	// Keep the header minimal (only TXFlags) — matching Python behaviour.
+	// Adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
 	if(!pdu.find_pdu<RadioTap>()){
 		RadioTap rt{};
-		const int freq_mhz = hw_capabilities::channel_to_freq(channel);
-		rt.channel(freq_mhz, RadioTap::OFDM);
-		//rt.inner_pdu(pdu.clone());
-		// TXFlags = NOSEQ+ORDER (0x28)
-		//	- to dont change fragment order by drivers
-		//	- not every driver respect it
-		rt.tx_flags(0x28);
-		rt.inner_pdu(pdu.clone());
+		rt.tx_flags(0x28); // NOSEQ|ORDER
+
+		const vector<uint8_t> serialized = pdu.serialize();
+		rt.inner_pdu(RawPDU(serialized));
+
 		sender_.send(rt);
 	} else{
 		auto *rt = pdu.find_pdu<RadioTap>();
-		rt->channel(hw_capabilities::channel_to_freq(channel), RadioTap::OFDM);
 		rt->tx_flags(0x28);
 		sender_.send(pdu);
 	}

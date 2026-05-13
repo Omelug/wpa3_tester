@@ -1,9 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include "../manual_test_core/manual_test_wizards.h"
+#include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/ActorPtr.h"
 #include "config/Actor_config.h"
 #include "system/hw_capabilities.h"
+#include "system/injection_result.h"
 #include "system/netlink_helper.h"
 #include "system/ip.h"
 
@@ -98,7 +100,23 @@ static void write_report(const string &iface, const string &perm_mac){
     md << "## `iw dev " << iface << " info`\n\n";
     md << "```\n" << iw_info << "```\n";
 
-    // ----- write file -----
+	const int channel = get_2_4_channel_wizard();
+	// --------- injection tests
+	cout << "Setting up " << iface << " as monitor on channel " << channel << "...\n";
+	hw_capabilities::setup_injection_iface(iface, channel);
+
+	MonitorSocket sock(iface);
+	const auto suite = hw_capabilities::run_injection_tests(
+		sock, iface,
+		sock,        // same socket = self-test
+		channel,
+		/*peermac=*/Tins::HWAddress<6>("00:11:22:33:44:55"),
+		/*skip_mf=*/false,
+		/*testack=*/false   // retrans/txack require 2 interfaces
+	);
+	md << print_injection_result(suite);
+
+	// ----- write file -----
     string perm_mac_slug = perm_mac.empty() ? current_mac : perm_mac;
     ranges::replace(perm_mac_slug, ':', '_');
 

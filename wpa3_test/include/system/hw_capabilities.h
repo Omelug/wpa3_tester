@@ -9,24 +9,22 @@
 #include <netlink/netlink.h>
 
 #include "../config/RunStatus.h"
+#include "injection_result.h"
 
 namespace wpa3_tester{
 class MonitorSocket;
 
-// Flags returned by injection test functions (matching Python FLAG_FAIL, FLAG_NOCAPTURE = [2**i for i in range(2)])
-inline constexpr int FLAG_FAIL      = 1;
-inline constexpr int FLAG_NOCAPTURE = 2;
-
-// Minimal reference frame fields used to build injection test frames
-struct Dot11Ref {
-    Tins::HWAddress<6> addr1, addr2, addr3{};
-    bool from_ds = false, to_ds = false;
+// Reference frame addresses + DS flags used to build injection test frames
+struct Dot11Ref{
+	Tins::HWAddress<6> addr1, addr2, addr3{};
+	bool from_ds = false, to_ds = false;
 };
 
-struct ProbeCapture {
-    std::vector<std::vector<uint8_t>> rx_probes;
-    std::vector<std::vector<uint8_t>> tx_acks;
+struct ProbeCapture{
+	std::vector<std::vector<uint8_t>> rx_probes;
+	std::vector<std::vector<uint8_t>> tx_acks;
 };
+
 enum class InterfaceType{
 	Unknown,
 	Loopback,
@@ -157,7 +155,8 @@ public:
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns);
 
-	// injection testing utilities
+	// ----- injection utilities -----
+	// Inject pdu, capture frames containing the unique label. count=0 = no limit.
 	static std::vector<std::vector<uint8_t>> inject_and_capture(
 		MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, int channel,
@@ -165,24 +164,56 @@ public:
 	);
 	static void flush_socket(MonitorSocket &s);
 	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
-	static ProbeCapture capture_probe_response_ack(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, int channel, int retries = 1);
+	static ProbeCapture capture_probe_response_ack(
+		MonitorSocket &sout, MonitorSocket &sin,
+		Tins::PDU &probe_req, int channel, int retries = 1
+	);
 
-	// injection tests (return OR of FLAG_FAIL / FLAG_NOCAPTURE, 0 on success)
-	static int test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
-											const Dot11Ref &ref, const std::string &strtype, int channel);
-	static int test_packet_injection(MonitorSocket &sout, MonitorSocket &sin,
-									Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
-									const std::string &frametype, const std::string &msgfail, int channel);
-	static int test_injection_fields(MonitorSocket &sout, MonitorSocket &sin,
-									const Dot11Ref &ref, const std::string &strtype, int channel);
-	static int test_injection_order(MonitorSocket &sout, MonitorSocket &sin,
-									const Dot11Ref &ref, const std::string &strtype, int channel,
-									int retries = 1);
-	static void test_injection_retrans(MonitorSocket &sout, MonitorSocket &sin,
-										const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2,
-										int channel);
-	static int test_injection_txack(MonitorSocket &sout, MonitorSocket &sin,
-									const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac,
-									int channel);
+	// ----- injection tests — return result only, no printing -----
+	static InjectionTestResult test_injection_more_fragments(
+		MonitorSocket &sout, MonitorSocket &sin,
+		const Dot11Ref &ref, const std::string &strtype, int channel
+	);
+	// Generic field-preservation test; name identifies the sub-test in the result.
+	static InjectionTestResult test_packet_injection(
+		MonitorSocket &sout, MonitorSocket &sin,
+		Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
+		const std::string &name, const std::string &msgfail, int channel
+	);
+	static InjectionTestResult test_injection_fields(
+		MonitorSocket &sout, MonitorSocket &sin,
+		const Dot11Ref &ref, const std::string &strtype, int channel
+	);
+	static InjectionTestResult test_injection_order(
+		MonitorSocket &sout, MonitorSocket &sin,
+		const Dot11Ref &ref, const std::string &strtype, int channel,
+		int retries = 1
+	);
+	static InjectionTestResult test_injection_retrans(
+		MonitorSocket &sout, MonitorSocket &sin,
+		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, int channel
+	);
+	static InjectionTestResult test_injection_txack(
+		MonitorSocket &sout, MonitorSocket &sin,
+		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, int channel
+	);
+
+	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)
+	static void setup_injection_iface(
+		const std::string &iface, int channel,
+		const std::optional<std::string> &netns = std::nullopt
+	);
+
+	// Run the full injection test suite; returns structured results for printing.
+	// peermac: fallback peer used for retrans test when no nearby AP is found.
+	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
+	static InjectionSuiteResult run_injection_tests(
+		MonitorSocket &sout, const std::string &iface_out,
+		MonitorSocket &sin,
+		int channel,
+		const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"),
+		bool skip_mf = false,
+		bool testack = true
+	);
 };
 }

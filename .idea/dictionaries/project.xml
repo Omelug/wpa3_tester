@@ -7,6 +7,7 @@
       <w>Reasso</w>
       <w>aabbccddee</w>
       <w>acces</w>
+      <w>acks</w>
       <w>addba</w>
       <w>addr</w>
       <w>addrs</w>
@@ -45,6 +46,7 @@
       <w>fcsfail</w>
       <w>fflush</w>
       <w>fprintf</w>
+      <w>frametype</w>
       <w>genhtml</w>
       <w>gpcmd</w>
       <w>hostap</w>
@@ -79,6 +81,7 @@
       <w>mfpr</w>
       <w>mscha</w>
       <w>msdu</w>
+      <w>msgfail</w>
       <w>nbytes</w>
       <w>netns</w>
       <w>newlink</w>
@@ -117,6 +120,7 @@
       <w>readlink</w>
       <w>reassoc</w>
       <w>reproc</w>
+      <w>retrans</w>
       <w>reuseaddr</w>
       <w>rlen</w>
       <w>rsneapol</w>
@@ -129,12 +133,15 @@
       <w>siocsifflags</w>
       <w>ssid</w>
       <w>sstream</w>
+      <w>strtype</w>
       <w>sysntpd</w>
       <w>tdls</w>
       <w>teap</w>
       <w>tftp</w>
+      <w>tids</w>
       <w>tmargin</w>
       <w>tsharks</w>
+      <w>txack</w>
       <w>txpower</w>
       <w>udevadm</w>
       <w>vline</w>

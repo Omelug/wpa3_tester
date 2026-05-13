@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -10,6 +12,21 @@
 
 namespace wpa3_tester{
 class MonitorSocket;
+
+// Flags returned by injection test functions (matching Python FLAG_FAIL, FLAG_NOCAPTURE = [2**i for i in range(2)])
+inline constexpr int FLAG_FAIL      = 1;
+inline constexpr int FLAG_NOCAPTURE = 2;
+
+// Minimal reference frame fields used to build injection test frames
+struct Dot11Ref {
+    Tins::HWAddress<6> addr1, addr2, addr3{};
+    bool from_ds = false, to_ds = false;
+};
+
+struct ProbeCapture {
+    std::vector<std::vector<uint8_t>> rx_probes;
+    std::vector<std::vector<uint8_t>> tx_acks;
+};
 enum class InterfaceType{
 	Unknown,
 	Loopback,
@@ -140,14 +157,32 @@ public:
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns);
 
-	// injection testing
-	// Inject pdu on sout and capture frames containing the unique label on sin.
-	// count=0: capture until timeout; retries: number of re-inject attempts if nothing captured.
-	// Returns raw captured frames that contain the injected label.
+	// injection testing utilities
 	static std::vector<std::vector<uint8_t>> inject_and_capture(
 		MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, int channel,
 		int count = 0, int retries = 1
 	);
+	static void flush_socket(MonitorSocket &s);
+	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
+	static ProbeCapture capture_probe_response_ack(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, int channel, int retries = 1);
+
+	// injection tests (return OR of FLAG_FAIL / FLAG_NOCAPTURE, 0 on success)
+	static int test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
+											const Dot11Ref &ref, const std::string &strtype, int channel);
+	static int test_packet_injection(MonitorSocket &sout, MonitorSocket &sin,
+									Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
+									const std::string &frametype, const std::string &msgfail, int channel);
+	static int test_injection_fields(MonitorSocket &sout, MonitorSocket &sin,
+									const Dot11Ref &ref, const std::string &strtype, int channel);
+	static int test_injection_order(MonitorSocket &sout, MonitorSocket &sin,
+									const Dot11Ref &ref, const std::string &strtype, int channel,
+									int retries = 1);
+	static void test_injection_retrans(MonitorSocket &sout, MonitorSocket &sin,
+										const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2,
+										int channel);
+	static int test_injection_txack(MonitorSocket &sout, MonitorSocket &sin,
+									const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac,
+									int channel);
 };
 }

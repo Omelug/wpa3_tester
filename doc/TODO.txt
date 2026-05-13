@@ -3,6 +3,7 @@
 
 Version v 0.0.0.0:
 
++: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: rozdíl mezi původní a možnou mac

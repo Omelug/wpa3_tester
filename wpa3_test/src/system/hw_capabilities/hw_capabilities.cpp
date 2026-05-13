@@ -149,6 +149,21 @@ Tins::HWAddress<6> hw_capabilities::get_macaddress(const string &iface, const op
 	return Tins::HWAddress < 6 > (mac);
 }
 
+string hw_capabilities::get_permanent_mac(const string &iface, const optional<string> &netns){
+	const string output = run_cmd_output({"ip", "-j", "link", "show", iface}, netns);
+	if(output.empty()) return {};
+	try{
+		auto j = nlohmann::json::parse(output);
+		if(!j.empty()){
+			if(j[0].contains("permaddr"))
+				return j[0]["permaddr"].get<string>();
+			if(j[0].contains("address"))
+				return j[0]["address"].get<string>();
+		}
+	} catch(...){ }
+	return {};
+}
+
 void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress<6> &new_mac,
 									const optional<string> &netns
 ){

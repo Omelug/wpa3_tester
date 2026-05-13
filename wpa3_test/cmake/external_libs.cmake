@@ -12,6 +12,7 @@ set_property(GLOBAL PROPERTY JOB_POOLS link_job_pool=2)
 set(CMAKE_JOB_POOL_LINK link_job_pool)
 
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -48,7 +49,7 @@ FetchContent_Declare(json
 FetchContent_Declare(json_schema_validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
         GIT_TAG fb270d5a7dc570f60db50e2d5bced90ead7ba362
-        GIT_SHALLOW FALSE
+        GIT_SHALLOW TRUE
         OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(doctest
@@ -61,6 +62,7 @@ FetchContent_Declare(doctest
 FetchContent_Declare( libpcap
         GIT_REPOSITORY https://github.com/the-tcpdump-group/libpcap.git
         GIT_TAG libpcap-1.10.6
+        GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(libpcap)
 
@@ -104,6 +106,8 @@ FetchContent_Declare(
         radiotap
         GIT_REPOSITORY https://github.com/radiotap/radiotap-library.git
         GIT_TAG master
+        GIT_SHALLOW TRUE
+        UPDATE_COMMAND ""
 )
 
 FetchContent_Declare(yaml-cpp

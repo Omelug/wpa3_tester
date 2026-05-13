@@ -117,10 +117,10 @@ TEST_CASE ("Tcpdump OpenWrt"){
         RunStatus rs;
 
         rs.actors.emplace(actor["actor_name"], actor);
-        const auto test_dir = temp_directory_path() / "openwrt_logger_test";
+        const path test_dir = temp_directory_path() / "openwrt_logger_test";
         rs.run_folder(test_dir);
         create_directories(test_dir);
-        rs.process_manager.init_logging(path(test_dir / "logger"));
+        rs.process_manager.init_logging(test_dir / "logger");
 
         rs.actors.emplace(actor["actor_name"], actor);
         actor[SK::iface] = chosen_iface;

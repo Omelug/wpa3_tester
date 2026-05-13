@@ -29,10 +29,16 @@ void MonitorSocket::send(PDU &pdu, const int channel){
 		const int freq_mhz = hw_capabilities::channel_to_freq(channel);
 		rt.channel(freq_mhz, RadioTap::OFDM);
 		//rt.inner_pdu(pdu.clone());
-		// TXFlags = NOSEQ+ORDER (0x28) — matches Python RadioTap(present="TXFlags", TXFlags="NOSEQ+ORDER")
+		// TXFlags = NOSEQ+ORDER (0x28)
+		//	- to dont change fragment order by drivers
+		//	- not every driver respect it
+		rt.tx_flags(0x28);
 		rt.inner_pdu(pdu.clone());
 		sender_.send(rt);
 	} else{
+		auto *rt = pdu.find_pdu<RadioTap>();
+		rt->channel(hw_capabilities::channel_to_freq(channel), RadioTap::OFDM);
+		rt->tx_flags(0x28);
 		sender_.send(pdu);
 	}
 }

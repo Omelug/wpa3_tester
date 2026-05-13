@@ -46,32 +46,32 @@ TEST_CASE("patch_channel_raw - beacon frame"){
 
 // ------ get_addrs
 static constexpr auto PCAP_BEACON    = "pcap/wifi_util/beacon.pcapng";
-static constexpr auto BEACON_ADDR1   = "ff:ff:ff:ff:ff:ff"; // always broadcast
-static constexpr auto BEACON_ADDR2   = "24:ec:99:bf:b0:a1"; // AP BSSID from your capture
+static HWAddress<6> BEACON_ADDR1   = "ff:ff:ff:ff:ff:ff"; // always broadcast
+static HWAddress<6> BEACON_ADDR2   = "24:ec:99:bf:b0:a1"; // AP BSSID from your capture
 
 static constexpr auto PCAP_DATA_QOS  = "pcap/wifi_util/data_qos.pcapng";
-static constexpr auto DATA_ADDR1     = "78:98:e8:55:3e:8d"; // receiver MAC
-static constexpr auto DATA_ADDR2     = "24:ec:99:bf:e0:cd"; // transmitter MAC
+static HWAddress<6> DATA_ADDR1     = "78:98:e8:55:3e:8d"; // receiver MAC
+static HWAddress<6> DATA_ADDR2     = "24:ec:99:bf:e0:cd"; // transmitter MAC
 
 static constexpr auto PCAP_CTRL_ACTION_PROTECTED  = "pcap/wifi_util/action_protected.pcapng";
-static constexpr auto ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
-static constexpr auto ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
+static HWAddress<6> ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
+static HWAddress<6> ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
 
 TEST_SUITE("get_addrs") {
     TEST_CASE("management frame: addr2 resolved via Dot11ManagementFrame") {
         auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
-        const auto addrs = get_addrs(rt, raw);
+        const auto [addr1, addr2] = get_addrs(rt, raw);
 
-        CHECK_EQ(addrs.addr1.to_string(), BEACON_ADDR1);
-        CHECK_EQ(addrs.addr2.to_string(), BEACON_ADDR2);
+        CHECK_EQ(addr1, BEACON_ADDR1);
+        CHECK_EQ(addr2, BEACON_ADDR2);
     }
 
     TEST_CASE("data frame: addr2 resolved via Dot11Data") {
         auto [rt, raw] = test_helpers::load_frame(PCAP_DATA_QOS);
-        const auto addrs = get_addrs(rt, raw);
+        const auto [addr1, addr2] = get_addrs(rt, raw);
 
-        CHECK_EQ(addrs.addr1.to_string(), DATA_ADDR1);
-        CHECK_EQ(addrs.addr2.to_string(), DATA_ADDR2);
+        CHECK_EQ(addr1, DATA_ADDR1);
+        CHECK_EQ(addr2, DATA_ADDR2);
     }
 
     TEST_CASE("control frame: addr2 resolved from raw bytes fallback") {
@@ -80,8 +80,8 @@ TEST_SUITE("get_addrs") {
         auto [rt, raw] = test_helpers::load_frame(PCAP_CTRL_ACTION_PROTECTED);
         const auto addrs = get_addrs(rt, raw);
 
-        CHECK_EQ(addrs.addr1.to_string(), ACTION_ADDR1);
-        CHECK_EQ(addrs.addr2.to_string(), ACTION_ADDR2);
+        CHECK_EQ(addrs.addr1, ACTION_ADDR1);
+        CHECK_EQ(addrs.addr2, ACTION_ADDR2);
     }
 
     TEST_CASE("non-Dot11 PDU returns zero addresses") {

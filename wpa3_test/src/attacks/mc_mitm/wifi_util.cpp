@@ -17,7 +17,6 @@ string get_ssid(const Dot11Beacon &beacon){
 	return {opt->data_ptr(), opt->data_ptr() + opt->data_size()};
 }
 
-//TODO test
 Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
 	const auto *dot11 = pdu.find_pdu<Dot11>();
 	if(!dot11) return {};

@@ -17,8 +17,8 @@ int main(){
     const string ap_mac = "02:00:00:00:03:00";
     //const string client_mac     = "30:ab:6a:39:88:46";
     const string client_mac = "02:00:00:00:02:00";
-    constexpr int real_channel = 11;
-    constexpr int rogue_channel = 1;
+    constexpr Channel real_channel{11, WifiBand::BAND_2_4};
+    constexpr Channel rogue_channel{1, WifiBand::BAND_2_4};
     constexpr int attack_time = 20;
 
     McMitm attack(r_sta_actor, r_ap_actor, ap_ssid, ap_mac, client_mac);

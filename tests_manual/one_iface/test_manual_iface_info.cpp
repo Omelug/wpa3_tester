@@ -100,9 +100,9 @@ static void write_report(const string &iface, const string &perm_mac){
     md << "## `iw dev " << iface << " info`\n\n";
     md << "```\n" << iw_info << "```\n";
 
-	const int channel = get_2_4_channel_wizard();
+	const Channel channel{get_2_4_channel_wizard(), WifiBand::BAND_2_4};
 	// --------- injection tests
-	cout << "Setting up " << iface << " as monitor on channel " << channel << "...\n";
+	cout << "Setting up " << iface << " as monitor on channel " << channel.ch_num << "...\n";
 	hw_capabilities::setup_injection_iface(iface, channel);
 
 	MonitorSocket sock(iface);

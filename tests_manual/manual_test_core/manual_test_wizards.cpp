@@ -215,14 +215,14 @@ int get_2_4_channel_wizard(){
     return channel;
 }
 
-TargetInfo get_target_wizard(const string &iface, int channel){
+TargetInfo get_target_wizard(const string &iface, Channel channel){
     cli_section("Target Selection - Scanning for Networks");
 
-    cout << "Scanning for networks on channel " << channel << "...\n";
+    cout << "Scanning for networks on channel " << channel.ch_num << "...\n";
     cout << "Interface: " << iface << "\n\n";
 
     // Use list_external_entities function
-    vector channels = {channel};
+    vector channels = {channel.ch_num};
     RunStatus rs; // Create temporary RunStatus instance
     const vector<ActorPtr> entities = rs.list_external_entities(iface, 4, channels);
 
@@ -242,7 +242,7 @@ TargetInfo get_target_wizard(const string &iface, int channel){
         targets.push_back(target);
     }
 
-    if(targets.empty()){ throw manual_test_err("No networks found on channel " + to_string(channel)); }
+    if(targets.empty()){ throw manual_test_err("No networks found on channel " + to_string(channel.ch_num)); }
 
     // Sort by ssid
     ranges::sort(targets, [](const TargetInfo &a, const TargetInfo &b){ return a.ssid > b.ssid; });
@@ -256,7 +256,7 @@ TargetInfo get_target_wizard(const string &iface, int channel){
         cout << "  [" << setw(2) << i << "]  "
                 << t.bssid << "  "
                 << setw(16) << left << (t.ssid.length() > 16 ? t.ssid.substr(0, 13) + "..." : t.ssid) << "  "
-                << setw(2) << t.channel << "\n";
+                << setw(2) << t.channel.ch_num << "\n";
     }
 
     cout << "\nSelect target [0-" << (targets.size() - 1) << "]: " << flush;

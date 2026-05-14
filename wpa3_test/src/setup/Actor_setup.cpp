@@ -52,10 +52,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		if((*this)[BK::control_monitor]) monitor_flags += " control";
 		const bool injection = (*this)[BK::injection].value_or(false);
 
-		int channel = -1;
-		if(const auto d = (*this)[SK::channel]) channel = stoi(d.value());
-		else if(const auto c = real_actor[SK::channel]) channel = stoi(c.value());
-		if(channel != -1) set_channel(channel, (*this)[SK::ht_mode].value_or(""));
+		int channel_num = -1;
+		if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
+		else if(const auto c = real_actor[SK::channel]) channel_num = stoi(c.value());
+		if(channel_num != -1) set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
 
 		if((monitor || injection) && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode(monitor_flags);
 		if(actor_json.contains("sniff_iface")){

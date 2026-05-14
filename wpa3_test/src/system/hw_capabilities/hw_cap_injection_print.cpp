@@ -21,7 +21,7 @@ string print_injection_result(const InjectionSuiteResult &suite){
 	if(suite.iface_in != suite.iface_out)
 		md << "| Interface (monitor) | `" << suite.iface_in << "` |\n";
 	md << "| Driver | " << suite.driver << " |\n";
-	md << "| Channel | " << suite.channel << " |\n\n";
+	md << "| Channel | " << suite.channel.ch_num << " |\n\n";
 
 	md << "### Results\n\n";
 	md << "| Test | Status | Detail |\n";

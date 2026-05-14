@@ -16,7 +16,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 	// Beacon from real AP — update timestamp
 	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
 		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel) last_real_beacon =
+		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num) last_real_beacon =
 				steady_clock::now();
 		return;
 	}

@@ -127,9 +127,9 @@ void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_i
 	exec("ip link set " + sniff_iface + " up");
 }
 
-bool ExternalConn::set_channel(const string &iface, const int channel, const string &ht_mode) const{
+bool ExternalConn::set_channel(const string &iface, const Channel ch, const string &ht_mode) const{
 	int ret = 0;
-	string cmd = "iw dev " + iface + " set channel " + to_string(channel);
+	string cmd = "iw dev " + iface + " set channel " + to_string(ch.ch_num);
 	if(!ht_mode.empty()){ cmd += " " + ht_mode; }
 	cmd += " 2>&1";
 	exec(cmd, false, &ret);

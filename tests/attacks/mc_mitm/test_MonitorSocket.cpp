@@ -67,14 +67,16 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("too short input returns empty") {
         const std::vector<uint8_t> short_buf = {0x00, 0x00};
-        const auto out = MonitorSocket::build_inject_frame(short_buf, 6);
+    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+        const auto out = MonitorSocket::build_inject_frame(short_buf, ch);
         CHECK_UNARY(out.empty());
     }
 
     TEST_CASE("rt_len larger than buffer returns empty") {
         // bytes 2-3 claim rt_len = 0xFFFF
         const std::vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
-        const auto out = MonitorSocket::build_inject_frame(bad, 6);
+    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+        const auto out = MonitorSocket::build_inject_frame(bad, ch);
         CHECK_UNARY(out.empty());
     }
 
@@ -94,7 +96,8 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
         auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
         const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
 
-        const auto out = MonitorSocket::build_inject_frame(raw, 6);
+    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+        const auto out = MonitorSocket::build_inject_frame(raw, ch);
         REQUIRE_UNARY_FALSE(out.empty());
 
         const std::vector old_payload(raw.begin() + rt_len, raw.end());
@@ -107,13 +110,14 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("detect_injected sets More Data bit in FC field") {
         auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+        constexpr Channel ch6{6, WifiBand::BAND_2_4};
         const auto out = MonitorSocket::build_inject_frame(
-            {raw.begin(), raw.end()}, 6, /*detect_injected=*/true);
+            {raw.begin(), raw.end()}, ch6, /*detect_injected=*/true);
 
         REQUIRE_UNARY_FALSE(out.empty());
 
         RadioTap rt_check{};
-        rt_check.channel(hw_capabilities::channel_to_freq(6), RadioTap::OFDM);
+        rt_check.channel(hw_capabilities::channel_to_freq(ch6), RadioTap::OFDM);
         const auto new_rt_len = rt_check.serialize().size();
         REQUIRE_GT(out.size(), new_rt_len + 1u);
 

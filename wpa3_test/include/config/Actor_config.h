@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include "actor_keys.h"
+#include "system/wifi_channel.h"
 #include <tins/tins.h>
 
 namespace wpa3_tester{
@@ -55,7 +56,7 @@ public:
 
     std::string get_driver_name() const;
 
-    void set_channel(int channel, const std::string &ht_mode = "") const;
+    void set_channel(Channel ch, const std::string &ht_mode = "") const;
     void set_ap_mode()       const;
     void set_iface_down()    const;
     void set_iface_up()      const;

@@ -72,8 +72,8 @@ void run_attack(RunStatus &rs){
 	//this_thread::sleep_for(seconds(1));
 
 	//TODO move to constrcutor
-	attack.netconfig.real_channel = stoi(rogue_client["channel"]);
-	attack.netconfig.rogue_channel = stoi(rogue_ap["channel"]);
+	attack.netconfig.real_channel = Channel{stoi(rogue_client["channel"])};
+	attack.netconfig.rogue_channel = Channel{stoi(rogue_ap["channel"])};
 	attack.netconfig.ssid = ap_ssid;
 
 	attack.run(rs, rs.config().at("attack_config").at("attack_time").get<int>());

@@ -11,7 +11,7 @@ namespace wpa3_tester::eapol_logoff{
 using namespace std;
 using namespace Tins;
 
-RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, int ap_channel){
+RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, Channel ap_channel){
 	// 802.11 Data/QoS frame
 	Dot11Data dot11;
 	dot11.addr1(sta_mac);
@@ -85,7 +85,7 @@ void run_attack(RunStatus &rs){
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const NetworkInterface iface(iface_name);
-	const int channel = stoi(rs.get_actor("access_point")["channel"]);
+	const Channel channel{stoi(rs.get_actor("access_point")["channel"])};
 
 	RadioTap radiotap = get_malformed_eapol(ap_mac, sta_mac, channel);
 	PacketSender sender;

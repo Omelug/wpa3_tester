@@ -84,8 +84,8 @@ void run_attack(RunStatus &rs){
         log(LogLevel::INFO, "Rogue AP started, waiting 1 s to initialize ...");
         this_thread::sleep_for(seconds(1));
 
-        attack.netconfig.real_channel  = stoi(ap["channel"]);
-        attack.netconfig.rogue_channel = stoi(att_rogue["channel"]);
+        attack.netconfig.real_channel  = Channel{stoi(ap["channel"])};
+        attack.netconfig.rogue_channel = Channel{stoi(att_rogue["channel"])};
         attack.netconfig.ssid = real_ssid;
         attack.ap_mac         = ap["mac"];
         attack.client_mac     = client["mac"];

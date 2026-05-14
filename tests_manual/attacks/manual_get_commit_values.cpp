@@ -24,9 +24,9 @@ void manual_get_commit_values_test(){
     iface_config.create_sniff_iface();
 
     // Get channel selection
-    const int channel = manual_tests::get_2_4_channel_wizard();
+    const Channel channel{manual_tests::get_2_4_channel_wizard(), WifiBand::BAND_2_4};
     iface_config.set_channel(channel);
-    log(LogLevel::INFO, "Interface set to channel {}", channel);
+    log(LogLevel::INFO, "Interface set to channel {}", channel.ch_num);
 
     // Get target selection
     const auto target = manual_tests::get_target_wizard(iface_name, channel);

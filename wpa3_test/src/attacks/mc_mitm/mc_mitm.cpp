@@ -139,9 +139,9 @@ void McMitm::setup_real_AP_RSN_frames(){
 
 	// Get a probe response for fast replying
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET)) const_cast<uint8_t *>(ch_ie->data_ptr())[0] =
-			netconfig.rogue_channel;
+			static_cast<uint8_t>(netconfig.rogue_channel.ch_num);
 	probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
-	log(LogLevel::INFO, "Target network {} detected on channel ", ap_mac.to_string(), netconfig.real_channel);
+	log(LogLevel::INFO, "Target network {} detected on channel {}", ap_mac.to_string(), netconfig.real_channel.ch_num);
 }
 
 void McMitm::run(RunStatus &rs, const int timeout_sec){
@@ -149,7 +149,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 	configure_interfaces();
 	setup_real_AP_RSN_frames();
-	log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, netconfig.rogue_channel);
+	log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, netconfig.rogue_channel.ch_num);
 
 	// Now that we know the AP channel, put the monitor interface in active ACK mode
 	// for ACK back to AP
@@ -165,10 +165,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		rogue_sta->set_mac_address(client_state.get_mac());
 		hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"}, rogue_sta[SK::netns]);
 		this_thread::sleep_for(seconds(15));
-		rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
+		rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel.ch_num)});
 	}
 	rogue_sta->set_iface_up();
-	rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel)});
+	rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel.ch_num)});
 
 	//FIXME change to wlan host or add comment
 	string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";

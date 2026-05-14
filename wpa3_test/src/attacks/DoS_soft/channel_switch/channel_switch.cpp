@@ -23,18 +23,18 @@ using namespace Tins;
 using namespace chrono;
 
 void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid,
-					const int ap_channel, const int new_channel, const int switch_count
+					const Channel ap_channel, const Channel new_channel, const int switch_count
 ){
 	Dot11Beacon beacon;
 	beacon.addr1(Dot11::BROADCAST);
 	beacon.addr2(ap_mac);
 	beacon.addr3(ap_mac);
 	beacon.ssid(ssid);
-	beacon.ds_parameter_set(ap_channel);
+	beacon.ds_parameter_set(ap_channel.ch_num);
 
 	Dot11ManagementFrame::channel_switch_type cs;
 	cs.switch_mode = 1;
-	cs.new_channel = new_channel;
+	cs.new_channel = static_cast<uint8_t>(new_channel.ch_num);
 	cs.switch_count = switch_count;
 	beacon.channel_switch(cs);
 
@@ -50,7 +50,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, 
 }
 
 auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
-					const string &ssid, const int ap_channel, const int new_channel, const int ms_interval,
+					const string &ssid, const Channel ap_channel, const Channel new_channel, const int ms_interval,
 					const int attack_time
 )->void{
 	const NetworkInterface iface(iface_name);
@@ -62,7 +62,7 @@ auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	}
 
 	cout << "check_vulnerable called with:\n" << "AP MAC: " << ap_mac << "\n" << "STA MAC: " << sta_mac << "\n" <<
-			"Interface: " << iface_name << "\n" << "Channel: " << ap_channel << "\n" << "SSID: " << ssid << endl;
+			"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << endl;
 }
 
 // ----------------- MODULE functions ------------------
@@ -85,8 +85,8 @@ void run_chs_attack(RunStatus &rs){
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const string essid = ap_actor["ssid"];
-	const int old_channel = stoi(ap_actor["channel"]);
-	const int new_channel = att_cfg.at("new_channel");
+	const Channel old_channel{stoi(ap_actor["channel"])};
+	const Channel new_channel{att_cfg.at("new_channel").get<int>()};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 

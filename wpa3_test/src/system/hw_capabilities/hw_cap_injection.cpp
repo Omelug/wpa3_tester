@@ -28,7 +28,7 @@ static vector<uint8_t> make_label(){
 // -----------------
 vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-	const int channel, const int count, const int retries
+	const Channel ch, const int count, const int retries
 ){
 	const auto label = make_label();
 
@@ -41,16 +41,16 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	vector<vector<uint8_t>> captured;
 	int attempt = 0;
 	while(true){
-		sout.send(*frame, channel);
+		sout.send(*frame, ch);
 
 		if(sout.mf_workaround && has_mf){
 			if(const auto *qos = pdu.find_pdu<Dot11QoSData>()){
 				Dot11QoSData fix;
 				fix.qos_control(qos->qos_control() & 0x000F);
-				sout.send(fix, channel);
+				sout.send(fix, ch);
 			} else{
 				Dot11Data fix;
-				sout.send(fix, channel);
+				sout.send(fix, ch);
 			}
 		}
 
@@ -98,7 +98,7 @@ optional<pair<HWAddress<6>, string>> hw_capabilities::get_nearby_ap_addr(Monitor
 // -----------------
 ProbeCapture hw_capabilities::capture_probe_response_ack(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
-	const int channel, const int retries
+	const Channel ch, const int retries
 ){
 	const auto [addr1, addr2] = get_addrs(probe_req, {});
 	if(addr2 == HWAddress<6>()) return {};
@@ -109,7 +109,7 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 	int attempt = 0;
 	while(true){
 		flush_socket(sin);
-		sout.send(probe_req, channel);
+		sout.send(probe_req, ch);
 		const auto deadline = steady_clock::now() + seconds(1);
 		while(steady_clock::now() < deadline){
 			auto r = sin.recv();
@@ -136,9 +136,9 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 static InjectionTestResult test_packet_injection_impl(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
 	const function<bool(const vector<uint8_t> &)> &test_func,
-	const string &name, const string &msgfail, const int channel
+	const string &name, const string &msgfail, const Channel ch
 ){
-	const auto packets = hw_capabilities::inject_and_capture(sout, sin, pdu, channel, 1);
+	const auto packets = hw_capabilities::inject_and_capture(sout, sin, pdu, ch, 1);
 	if(packets.empty()) return {name, FLAG_NOCAPTURE, "no capture"};
 	if(!ranges::all_of(packets, test_func)) return {name, FLAG_FAIL, msgfail};
 	return {name, 0};
@@ -147,15 +147,15 @@ static InjectionTestResult test_packet_injection_impl(
 InjectionTestResult hw_capabilities::test_packet_injection(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
 	const function<bool(const vector<uint8_t> &)> &test_func,
-	const string &name, const string &msgfail, const int channel
+	const string &name, const string &msgfail, const Channel ch
 ){
-	return test_packet_injection_impl(sout, sin, pdu, test_func, name, msgfail, channel);
+	return test_packet_injection_impl(sout, sin, pdu, test_func, name, msgfail, ch);
 }
 
 // -----------------
 InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	MonitorSocket &sout, MonitorSocket &sin,
-	const Dot11Ref &ref, const string &strtype, const int channel
+	const Dot11Ref &ref, const string &strtype, const Channel ch
 ){
 	Dot11QoSData p;
 	p.addr1(ref.addr1); p.addr2(ref.addr2);
@@ -163,14 +163,14 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	if(ref.to_ds)   p.to_ds(1);
 	p.seq_num(33); p.qos_control(2); p.more_frag(1);
 
-	const auto captured = inject_and_capture(sout, sin, p, channel, 1);
+	const auto captured = inject_and_capture(sout, sin, p, ch, 1);
 	return {"mf/" + strtype, captured.empty() ? FLAG_FAIL : 0, ""};
 }
 
 // -----------------
 InjectionTestResult hw_capabilities::test_injection_fields(
 	MonitorSocket &sout, MonitorSocket &sin,
-	const Dot11Ref &ref, const string &strtype, const int channel
+	const Dot11Ref &ref, const string &strtype, const Channel ch
 ){
 	auto apply = [&](auto &frame){
 		frame.addr1(ref.addr1); frame.addr2(ref.addr2); frame.addr3(ref.addr3);
@@ -184,7 +184,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	auto run = [&](auto &pdu,
 	               const function<bool(const vector<uint8_t> &)> &fn,
 	               const string &name, const string &msg){
-		auto r = test_packet_injection_impl(sout, sin, pdu, fn, name, msg, channel);
+		auto r = test_packet_injection_impl(sout, sin, pdu, fn, name, msg, ch);
 		flags |= r.flags;
 		if(!r.passed()) failed += name + " ";
 	};
@@ -232,7 +232,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 // -----------------
 InjectionTestResult hw_capabilities::test_injection_order(
 	MonitorSocket &sout, MonitorSocket &sin,
-	const Dot11Ref &ref, const string &strtype, const int channel, const int retries
+	const Dot11Ref &ref, const string &strtype, const Channel ch, const int retries
 ){
 	// New label per retry round — frames from a previous round that arrive late
 	// (ath9k_htc retransmits until ACK, can take >2.5 s) won't match the new label
@@ -248,13 +248,13 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	};
 
 	vector<int> tids;
-	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
+	//1this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
 	for(int i = 0; i <= retries; i++){
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);
 
-		for(int j = 0; j < 4; j++) sout.send(p2, channel);
-		sout.send(p6, channel);
+		for(int j = 0; j < 4; j++) sout.send(p2, ch);
+		sout.send(p6, ch);
 		tids.clear();
 
 		const auto deadline = steady_clock::now() + milliseconds(2500);
@@ -286,10 +286,9 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	return {"order/" + strtype, 0, "tids=[" + tid_str + "]"};
 }
 
-// -----------------
 InjectionTestResult hw_capabilities::test_injection_retrans(
 	MonitorSocket &sout, MonitorSocket &sin,
-	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const int channel
+	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel ch
 ){
 	int flags = 0;
 	string detail;
@@ -300,7 +299,7 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 
 	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> int{
 		auto p = make_frame(a1, a2);
-		return static_cast<int>(inject_and_capture(sout, sin, p, channel, 0, 1).size());
+		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1).size());
 	};
 
 	const int n_dummy   = count({"00:11:00:00:02:01"}, {"00:11:00:00:02:01"});
@@ -329,13 +328,13 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 // -----------------
 InjectionTestResult hw_capabilities::test_injection_txack(
 	MonitorSocket &sout, MonitorSocket &sin,
-	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac, const int channel
+	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac, const Channel ch
 ){
 	Dot11ProbeRequest probe;
 	probe.addr1(dest_mac); probe.addr2(own_mac); probe.addr3(dest_mac);
 	probe.seq_num(33);
 
-	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, channel, 1);
+	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, ch, 1);
 
 	if(rx_probes.empty())
 		return {"txack", FLAG_NOCAPTURE, "no probe response"};

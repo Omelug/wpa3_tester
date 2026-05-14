@@ -3,12 +3,13 @@
 #include <tins/tins.h>
 #include "wifi_util.h"
 #include "logger/log.h"
+#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 struct NetworkConfig{
 	std::string ssid;
-	uint8_t real_channel = -1;
-	uint8_t rogue_channel = -1;
+	Channel real_channel = {};
+	Channel rogue_channel = {};
 };
 
 class ClientState{

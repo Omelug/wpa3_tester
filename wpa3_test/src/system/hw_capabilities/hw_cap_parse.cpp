@@ -32,27 +32,27 @@ int hw_capabilities::freq_to_channel(const int freq){
 	throw invalid_argument("Invalid frequency: " + to_string(freq) + " MHz");
 }
 
-int hw_capabilities::channel_to_freq(const int channel, const WifiBand band){
+int hw_capabilities::channel_to_freq(const Channel ch){
 	// 2.4 GHz
-	if(band == WifiBand::BAND_2_4 || band == WifiBand::BAND_2_4_or_5){
-		if(channel == 14) return 2484;
-		if(channel >= 1 && channel <= 13) return 2407 + channel * 5;
+	if(ch.band == WifiBand::BAND_2_4 || ch.band == WifiBand::BAND_2_4_or_5){
+		if(ch.ch_num == 14) return 2484;
+		if(ch.ch_num >= 1 && ch.ch_num <= 13) return 2407 + ch.ch_num * 5;
 	}
 	// 5 GHz
-	if(band == WifiBand::BAND_5 || band == WifiBand::BAND_2_4_or_5){
-		if(channel >= 36 && channel <= 177){
-			if((channel - 36) % 4 == 0 || channel == 177) return 5000 + channel * 5;
+	if(ch.band == WifiBand::BAND_5 || ch.band == WifiBand::BAND_2_4_or_5){
+		if(ch.ch_num >= 36 && ch.ch_num <= 177){
+			if((ch.ch_num - 36) % 4 == 0 || ch.ch_num == 177) return 5000 + ch.ch_num * 5;
 		}
 	}
 
 	// 6 GHz
-	if(band == WifiBand::BAND_6){
-		if(channel >= 1 && channel <= 233){
-			const int freq = 5950 + channel * 5;
+	if(ch.band == WifiBand::BAND_6){
+		if(ch.ch_num >= 1 && ch.ch_num <= 233){
+			const int freq = 5950 + ch.ch_num * 5;
 			if(freq >= 5955 && freq <= 7115) return freq;
 		}
 	}
-	throw invalid_argument("Invalid channel: " + to_string(channel));
+	throw invalid_argument("Invalid channel: " + to_string(ch.ch_num));
 }
 
 string hw_capabilities::rand_mac(){

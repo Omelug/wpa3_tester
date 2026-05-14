@@ -1,13 +1,14 @@
 #pragma once
 #include "config/RunStatus.h"
+#include "system/wifi_channel.h"
 
 namespace wpa3_tester::CSA_attack{
 void send_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const Tins::NetworkInterface &iface, const std::string &ssid,
-					int ap_channel, int new_channel, int switch_count = 3
+					Channel ap_channel, Channel new_channel, int switch_count = 3
 );
 
 void check_vulnerable(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,
-					const std::string &iface_name, const std::string &ssid, int ap_channel, int new_channel,
+					const std::string &iface_name, const std::string &ssid, Channel ap_channel, Channel new_channel,
 					int ms_interval, int attack_time
 );
 

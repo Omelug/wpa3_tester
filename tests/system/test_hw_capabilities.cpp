@@ -65,28 +65,28 @@ TEST_CASE("hw_capabilities::freq_to_channel"){
 
 TEST_CASE("hw_capabilities::channel_to_freq"){
 	SUBCASE("2.4 GHz band"){
-		CHECK_EQ(hw_capabilities::channel_to_freq(1), 2412);
-		CHECK_EQ(hw_capabilities::channel_to_freq(6), 2437);
-		CHECK_EQ(hw_capabilities::channel_to_freq(13), 2472);
-		CHECK_EQ(hw_capabilities::channel_to_freq(14), 2484);
+		CHECK_EQ(hw_capabilities::channel_to_freq({1, WifiBand::BAND_2_4}), 2412);
+		CHECK_EQ(hw_capabilities::channel_to_freq({6, WifiBand::BAND_2_4}), 2437);
+		CHECK_EQ(hw_capabilities::channel_to_freq({13, WifiBand::BAND_2_4}), 2472);
+		CHECK_EQ(hw_capabilities::channel_to_freq({14, WifiBand::BAND_2_4}), 2484);
 	}
 
 	SUBCASE("5 GHz band"){
-		CHECK_EQ(hw_capabilities::channel_to_freq(36), 5180);
-		CHECK_EQ(hw_capabilities::channel_to_freq(100), 5500);
-		CHECK_EQ(hw_capabilities::channel_to_freq(177), 5885);
+		CHECK_EQ(hw_capabilities::channel_to_freq({36, WifiBand::BAND_5}), 5180);
+		CHECK_EQ(hw_capabilities::channel_to_freq({100, WifiBand::BAND_5}), 5500);
+		CHECK_EQ(hw_capabilities::channel_to_freq({177, WifiBand::BAND_5}), 5885);
 	}
 
 	SUBCASE("6 GHz band"){
-		CHECK_EQ(hw_capabilities::channel_to_freq(1, WifiBand::BAND_6), 5955);
-		CHECK_EQ(hw_capabilities::channel_to_freq(101, WifiBand::BAND_6), 6455);
-		CHECK_EQ(hw_capabilities::channel_to_freq(233, WifiBand::BAND_6), 7115);
+		CHECK_EQ(hw_capabilities::channel_to_freq({1, WifiBand::BAND_6}), 5955);
+		CHECK_EQ(hw_capabilities::channel_to_freq({101, WifiBand::BAND_6}), 6455);
+		CHECK_EQ(hw_capabilities::channel_to_freq({233, WifiBand::BAND_6}), 7115);
 	}
 
 	SUBCASE("Invalid channels"){
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq(0), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq(15), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq(-1), invalid_argument);
+		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({0}), invalid_argument);
+		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({15}), invalid_argument);
+		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({-1}), invalid_argument);
 	}
 }
 
@@ -100,7 +100,7 @@ TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
 		};
 
 		for(auto [freq, channel, band]: test_cases){
-			CHECK_EQ(hw_capabilities::channel_to_freq(channel, band), freq);
+			CHECK_EQ(hw_capabilities::channel_to_freq({channel, band}), freq);
 			CHECK_EQ(hw_capabilities::freq_to_channel(freq), channel);
 		}
 	}

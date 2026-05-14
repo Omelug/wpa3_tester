@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 
@@ -21,7 +22,7 @@ struct InjectionSuiteResult{
 	std::string iface_out;
 	std::string iface_in; // == iface_out for self-test
 	std::string driver;
-	int channel = 0;
+	Channel channel = {};
 	std::vector<InjectionTestResult> tests;
 
 	int overall_flags() const{

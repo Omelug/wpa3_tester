@@ -1,8 +1,9 @@
 #pragma once
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "system/wifi_channel.h"
 
 namespace wpa3_tester::manual_tests{
 void cli_section(const std::string &section_title);
@@ -13,10 +14,10 @@ int get_2_4_channel_wizard();
 struct TargetInfo{
     std::string bssid;
     std::string ssid;
-    int channel;
+    Channel channel;
 };
 
-TargetInfo get_target_wizard(const std::string &iface, int channel);
+TargetInfo get_target_wizard(const std::string &iface, Channel channel);
 void print_external_entities(const std::vector<ActorPtr> &entities);
 bool ask_ok(const std::string &question);
 ActorPtr wb_actor_selection();

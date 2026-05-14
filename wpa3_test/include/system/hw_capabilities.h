@@ -44,12 +44,7 @@ struct InterfaceInfo{
 	InterfaceType type;
 };
 
-enum class WifiBand{
-	BAND_2_4_or_5,
-	BAND_2_4,
-	BAND_5,
-	BAND_6
-};
+#include "system/wifi_channel.h"
 
 inline std::string iface_to_string(const InterfaceType type){
 	switch(type){
@@ -135,7 +130,7 @@ public:
 
 	//format
 	static int freq_to_channel(int freq);
-	static int channel_to_freq(int channel, WifiBand band = WifiBand::BAND_2_4_or_5);
+	static int channel_to_freq(Channel ch);
 
 	static void create_ns(const std::string &ns_name);
 	static void move_to_netns(const std::string &iface, const std::string &netns);
@@ -148,8 +143,8 @@ public:
 	static void set_mac_address(const std::string &iface, const Tins::HWAddress<6> &new_mac,
 								const std::optional<std::string> &netns
 	);
-	static void set_channel(const std::string &iface, int channel, const std::optional<std::string> &netns);
-	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, int channel = 0);
+	static void set_channel(const std::string &iface, Channel ch, const std::optional<std::string> &netns);
+	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, Channel ch = {});
 
 	static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
@@ -159,48 +154,48 @@ public:
 	// Inject pdu, capture frames containing the unique label. count=0 = no limit.
 	static std::vector<std::vector<uint8_t>> inject_and_capture(
 		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &pdu, int channel,
+		Tins::PDU &pdu, Channel ch,
 		int count = 0, int retries = 1
 	);
 	static void flush_socket(MonitorSocket &s);
 	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
 	static ProbeCapture capture_probe_response_ack(
 		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &probe_req, int channel, int retries = 1
+		Tins::PDU &probe_req, Channel ch, int retries = 1
 	);
 
 	// ----- injection tests — return result only, no printing -----
 	static InjectionTestResult test_injection_more_fragments(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, int channel
+		const Dot11Ref &ref, const std::string &strtype, Channel ch
 	);
 	// Generic field-preservation test; name identifies the sub-test in the result.
 	static InjectionTestResult test_packet_injection(
 		MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
-		const std::string &name, const std::string &msgfail, int channel
+		const std::string &name, const std::string &msgfail, Channel ch
 	);
 	static InjectionTestResult test_injection_fields(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, int channel
+		const Dot11Ref &ref, const std::string &strtype, Channel ch
 	);
 	static InjectionTestResult test_injection_order(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, int channel,
+		const Dot11Ref &ref, const std::string &strtype, Channel ch,
 		int retries = 1
 	);
 	static InjectionTestResult test_injection_retrans(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, int channel
+		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, Channel ch
 	);
 	static InjectionTestResult test_injection_txack(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, int channel
+		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, Channel ch
 	);
 
 	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)
 	static void setup_injection_iface(
-		const std::string &iface, int channel,
+		const std::string &iface, Channel ch,
 		const std::optional<std::string> &netns = std::nullopt
 	);
 
@@ -210,7 +205,7 @@ public:
 	static InjectionSuiteResult run_injection_tests(
 		MonitorSocket &sout, const std::string &iface_out,
 		MonitorSocket &sin,
-		int channel,
+		Channel ch,
 		const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"),
 		bool skip_mf = false,
 		bool testack = true

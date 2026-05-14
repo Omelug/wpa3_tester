@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 class MonitorSocket{
@@ -13,11 +14,11 @@ public:
 		explicit operator bool() const{ return pdu != nullptr || !raw.empty(); }
 	};
 
-	void send(Tins::PDU &pdu, int channel);
-	static std::vector<uint8_t> build_inject_frame(const std::vector<uint8_t> &raw, int channel,
+	void send(Tins::PDU &pdu, Channel ch);
+	static std::vector<uint8_t> build_inject_frame(const std::vector<uint8_t> &raw, Channel ch,
 													bool detect_injected = false
 	);
-	void send(const std::vector<unsigned char> &raw, int channel);
+	void send(const std::vector<unsigned char> &raw, Channel ch);
 	static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
 	RecvResult recv();
 	pcap_t *get_pcap_handle(){ return sniffer_.get_pcap_handle(); }

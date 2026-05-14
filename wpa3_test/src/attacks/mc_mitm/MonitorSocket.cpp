@@ -17,7 +17,7 @@ MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 }
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
-void MonitorSocket::send(PDU &pdu, const int channel){
+void MonitorSocket::send(PDU &pdu, const Channel ch){
 	if(detect_injected_){
 		// Set More Data flag so we can detect injected frames
 		if(auto *dot11 = pdu.find_pdu<Dot11>()) dot11->more_data(1);
@@ -41,7 +41,7 @@ void MonitorSocket::send(PDU &pdu, const int channel){
 	}
 }
 
-vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const int channel,
+vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel ch,
 												const bool detect_injected){
 	if(raw.size() < 4) return {};
 
@@ -51,7 +51,7 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 	vector out(raw); // copy entire frame, RT header untouched
 
 	// Patch channel frequency in-place inside the existing RT header
-	const int freq_mhz = hw_capabilities::channel_to_freq(channel);
+	const int freq_mhz = hw_capabilities::channel_to_freq(ch);
 	const uint8_t freq_lo = freq_mhz & 0xFF;
 	const uint8_t freq_hi = (freq_mhz >> 8) & 0xFF;
 
@@ -84,8 +84,8 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 	return out;
 }
 
-void MonitorSocket::send(const vector<unsigned char> &raw, const int channel){
-	const auto out = build_inject_frame(raw, channel, detect_injected_);
+void MonitorSocket::send(const vector<unsigned char> &raw, const Channel ch){
+	const auto out = build_inject_frame(raw, ch, detect_injected_);
 	if(out.empty()) return;
 	pcap_inject(sniffer_.get_pcap_handle(), out.data(), out.size());
 }

@@ -9,20 +9,15 @@
 namespace wpa3_tester{
 using namespace std;
 
-void Actor_config::set_channel(const int channel, const string &ht_mode) const{
+void Actor_config::set_channel(const Channel ch, const string &ht_mode) const{
 	const string &iface = (*this)[SK::iface].value();
 
 	if(conn != nullptr){
-		conn->set_channel(iface, channel, ht_mode);
+		conn->set_channel(iface, ch, ht_mode);
 		return;
 	}
 
-	const string chan_str = to_string(channel);
-	log(LogLevel::INFO, "Setting interface {} to channel {} {}", iface, chan_str, ht_mode);
-
-	vector<string> cmd = {"iw", "dev", iface, "set", "channel", chan_str};
-	if(!ht_mode.empty()) cmd.push_back(ht_mode);
-	run(cmd);
+	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
 }
 
 bool is_interface_up(const string &iface){
@@ -137,6 +132,7 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	}
 }
 
+//FIXMe test test flags
 void Actor_config::set_monitor_mode(const string &monitor_flags) const{
 	const string &iface = (*this)[SK::iface].value();
 	if(conn != nullptr){

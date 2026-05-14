@@ -17,7 +17,7 @@ using namespace wpa3_tester::manual_tests;
 // Select a second interface (inject or monitor), different from the first.
 static string pick_second_iface(const string &first){
     cout << "\nSelect a second interface (for " << (first.empty() ? "capture" : "monitor") << "):\n";
-    auto iface_ptr = get_iface_wizard();
+    const auto iface_ptr = get_iface_wizard();
     if(!iface_ptr) throw manual_test_err("No second interface selected.");
     if(*iface_ptr == first) throw manual_test_err("Both interfaces are the same.");
     return *iface_ptr;
@@ -33,9 +33,8 @@ TEST_CASE("injection_test_two_iface"){
     cout << "\nSelect MONITOR (capture) interface:\n";
     const string iface_in = pick_second_iface(iface_out);
 
-    const int channel = get_2_4_channel_wizard();
-
-    cout << "Setting up interfaces on channel " << channel << "...\n";
+    const Channel channel{get_2_4_channel_wizard(), WifiBand::BAND_2_4};
+    cout << "Setting up interfaces on channel " << channel.ch_num << "...\n";
     hw_capabilities::setup_injection_iface(iface_out, channel);
     hw_capabilities::setup_injection_iface(iface_in,  channel);
 

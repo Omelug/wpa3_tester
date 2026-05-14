@@ -36,12 +36,15 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 
 /* map of attacker_module->attack run function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
+	// --------------- scans/ sanity checks
+	{"scan_AP", attack_scan::run_attack},
+	// --------------- actually attacks
 	{"channel_switch", CSA_attack::run_chs_attack}, {"bl0ck", bl0ck_attack::run_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},
 	{"sae_commit_monitor_test", test_sae_commit_monitor::run_attack}, {"malformed_eapol1", eapol_logoff::run_attack},
 	{"cookie_guzzler", cookie_guzzler::run_attack}, {"pmk_gobbler", pmk_gobbler::run_attack},
 	{"memory_omnivore", memory_omnivore::run_attack}, {"reflection_attack", reflection::run_attack},
-	{"invalid_curve", invalid_curve::run_attack}, {"scan_AP", attack_scan::run_attack},
+	{"invalid_curve", invalid_curve::run_attack},
 	{"dragondrain", dragondrain::run_attack}, {"mc_mitm", mc_mitm::run_attack},
 	{"ssid_confusion", ssid_confusion::run_attack}, {"ath_masker_test", ath_masker_test::run_attack},
 	{"sae_dos_wrapper", sae_dos_wrapper::run_attack},

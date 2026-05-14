@@ -57,7 +57,7 @@ unique_ptr<string> get_iface_wizard(){
     string selected_iface;
     try{
         // Try parsing as number
-        int selection = stoi(input);
+        const int selection = stoi(input);
         if(selection < 1 || selection > static_cast<int>(wifi_interfaces.size())){
             throw manual_test_err("Invalid selection!");
         }

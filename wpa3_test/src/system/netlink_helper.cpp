@@ -252,6 +252,49 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 	}
 	return unexpected(make_error_code(errc::timed_out));
 }
+//FIXME
+Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel ch){
+	NetNSContext ns_guard(netns);
+
+	const unique_ptr<nl_sock,void(*)(nl_sock *)> sock(nl_socket_alloc(), nl_socket_free);
+	if(!sock || genl_connect(sock.get()) < 0)
+		return unexpected(make_error_code(errc::io_error));
+
+	nl_socket_set_buffer_size(sock.get(), 8192, 8192);
+
+	const int nl80211_id = genl_ctrl_resolve(sock.get(), "nl80211");
+	if(nl80211_id < 0)
+		return unexpected(make_error_code(errc::no_such_device));
+
+	const unsigned int ifindex = if_nametoindex(iface.data());
+	if(ifindex == 0)
+		return unexpected(make_error_code(errc::no_such_device));
+
+	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
+	if(!msg)
+		return unexpected(make_error_code(errc::not_enough_memory));
+
+	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_CHANNEL, 0);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ,
+	                  static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch)));
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_CHANNEL_TYPE, NL80211_CHAN_NO_HT);
+
+	int err = 0;
+	nl_socket_modify_err_cb(sock.get(), NL_CB_CUSTOM, [](sockaddr_nl *, nlmsgerr *e, void *arg) -> int {
+		*static_cast<int *>(arg) = e->error;
+		return NL_STOP;
+	}, &err);
+
+	if(nl_send_auto(sock.get(), msg.get()) < 0)
+		return unexpected(make_error_code(errc::io_error));
+
+	nl_recvmsgs_default(sock.get());
+
+	if(err < 0)
+		return unexpected(error_code(-err, system_category()));
+	return Result{};
+}
 
 void log_iface_info(const string_view iface_name, const optional<string> &netns){
 	NetNSContext ns_guard(netns);

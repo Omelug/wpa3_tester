@@ -2,9 +2,11 @@
 +: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
 
 Version v 0.0.0.0:
-f: fix result ceheck in test_injection_order (correct result 2 tines?)
+r: monitor mode hw_capabilies
 r: simplify injection tests
-f: add band ooption (from BK?, get )
+f: add band option (from BK?, get )
++: .env for nix/deabian
+ch: one_iface, two_if test to actual , configable tests
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md

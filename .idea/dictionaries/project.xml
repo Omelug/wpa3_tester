@@ -108,6 +108,7 @@
       <w>ownmac</w>
       <w>peap</w>
       <w>peermac</w>
+      <w>permaddr</w>
       <w>pfds</w>
       <w>pidstat</w>
       <w>pipefd</w>

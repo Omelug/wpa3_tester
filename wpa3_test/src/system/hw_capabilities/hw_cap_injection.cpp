@@ -248,7 +248,7 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	};
 
 	vector<int> tids;
-	//1this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
+	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
 	for(int i = 0; i <= retries; i++){
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);

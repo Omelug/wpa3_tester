@@ -28,7 +28,7 @@ TEST_CASE("injection_test_two_iface"){
     cout << "Select INJECT interface:\n";
     auto iface_out_ptr = get_iface_wizard();
     REQUIRE_NE(iface_out_ptr, nullptr);
-    const string iface_out = *iface_out_ptr;
+    const string& iface_out = *iface_out_ptr;
 
     cout << "\nSelect MONITOR (capture) interface:\n";
     const string iface_in = pick_second_iface(iface_out);

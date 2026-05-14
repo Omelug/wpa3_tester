@@ -234,34 +234,40 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const Dot11Ref &ref, const string &strtype, const int channel, const int retries
 ){
-	const auto label = make_label();
-
-	auto make_qos = [&](const uint8_t tid) -> Dot11QoSData{
+	// New label per retry round — frames from a previous round that arrive late
+	// (ath9k_htc retransmits until ACK, can take >2.5 s) won't match the new label
+	// and won't pollute the ordering check.
+	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) -> Dot11QoSData{
 		Dot11QoSData p;
 		p.addr1(ref.addr1); p.addr2(ref.addr2);
 		if(ref.from_ds) p.from_ds(1);
 		if(ref.to_ds)   p.to_ds(1);
 		p.seq_num(33); p.qos_control(tid);
-		p.inner_pdu(new RawPDU(label.data(), label.size()));
+		p.inner_pdu(new RawPDU(lbl.data(), lbl.size()));
 		return p;
 	};
-	auto p2 = make_qos(2), p6 = make_qos(6);
 
 	vector<int> tids;
+	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
 	for(int i = 0; i <= retries; i++){
-		flush_socket(sin); // drain stale frames before each round
+		const auto label = make_label(); // fresh label isolates this round
+		auto p2 = make_qos(2, label), p6 = make_qos(6, label);
+
 		for(int j = 0; j < 4; j++) sout.send(p2, channel);
 		sout.send(p6, channel);
-
 		tids.clear();
+
 		const auto deadline = steady_clock::now() + milliseconds(2500);
 		while(steady_clock::now() < deadline){
 			auto r = sin.recv();
-			if(!r){ this_thread::sleep_for(milliseconds(1)); continue; }
+			if(!r){ this_thread::sleep_for(milliseconds(10)); continue; }
 			if(ranges::search(r.raw, label).empty()) continue;
 			try{
 				const RadioTap rt(r.raw.data(), r.raw.size());
-				if(const auto *q = rt.find_pdu<Dot11QoSData>()) tids.push_back(q->qos_control() & 0xF);
+				const auto *q = rt.find_pdu<Dot11QoSData>();
+				// Skip retransmissions (RETRY bit set); we only care about original TX order.
+				if(q && !q->retry())
+					tids.push_back(q->qos_control() & 0xF);
 			} catch(...){}
 		}
 		if(ranges::contains(tids, 2) && ranges::contains(tids, 6)) break;
@@ -273,15 +279,8 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6))
 		return {"order/" + strtype, FLAG_NOCAPTURE, "tids=[" + tid_str + "]"};
 
-	// Check that TID=6 never appears before TID=2, i.e. no 2 comes after the first 6.
-	// This is correct even when multiple rounds accumulate: each round is [2,2,2,2,6].
-	bool saw_6 = false, reordered = false;
-	for(const int t : tids){
-		if(t == 6) saw_6 = true;
-		else if(saw_6){ reordered = true; break; }
-	}
-
-	if(reordered)
+	auto sorted_tids = tids; ranges::sort(sorted_tids);
+	if(tids != sorted_tids)
 		return {"order/" + strtype, FLAG_FAIL, "reordered tids=[" + tid_str + "]"};
 
 	return {"order/" + strtype, 0, "tids=[" + tid_str + "]"};

@@ -146,7 +146,7 @@ Tins::HWAddress<6> hw_capabilities::get_macaddress(const string &iface, const op
 	ifstream f("/sys/class/net/" + iface + "/address");
 	string mac;
 	getline(f, mac);
-	return Tins::HWAddress < 6 > (mac);
+	return mac;
 }
 
 string hw_capabilities::get_permanent_mac(const string &iface, const optional<string> &netns){
@@ -174,6 +174,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 void hw_capabilities::set_channel(const string &iface, const int channel, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, channel);
 	run_cmd({"iw", "dev", iface, "set", "channel", to_string(channel)}, netns);
+	//FIXME wait for change, (maybe issue for injection test needs waiting )
 }
 
 string get_iface_type(const string &iface, const optional<string> &netns){

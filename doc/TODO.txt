@@ -2,6 +2,8 @@
 +: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
 
 Version v 0.0.0.0:
+f: fix result ceheck in test_injection_order (correct result 2 tines?)
+r: simplify injection tests
 
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO

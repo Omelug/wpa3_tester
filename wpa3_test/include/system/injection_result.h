@@ -12,9 +12,9 @@ struct InjectionTestResult{
 	int flags = 0;
 	std::string detail = ""; // describes what failed; empty on pass
 
-	bool passed()     const{ return flags == 0; }
-	bool failed()     const{ return (flags & FLAG_FAIL) != 0; }
-	bool no_capture() const{ return (flags & FLAG_NOCAPTURE) != 0; }
+	[[nodiscard]] bool passed()     const{ return flags == 0; }
+	[[nodiscard]] bool failed()     const{ return (flags & FLAG_FAIL) != 0; }
+	[[nodiscard]] bool no_capture() const{ return (flags & FLAG_NOCAPTURE) != 0; }
 };
 
 struct InjectionSuiteResult{

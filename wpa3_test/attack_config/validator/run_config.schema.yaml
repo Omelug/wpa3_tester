@@ -21,3 +21,7 @@ properties:
 
   install_req:
     type: boolean
+
+  save_log:
+    type: boolean
+    description: Save logs from log() function to run_folder/logger/tester.log

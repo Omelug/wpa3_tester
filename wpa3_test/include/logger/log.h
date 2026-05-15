@@ -18,10 +18,14 @@ enum class LogLevel{
 
 const char *levelToString(LogLevel level);
 
+// Set log file path (optional, nullptr to disable file logging)
+void set_log_file(const std::filesystem::path &path);
+void write_log_message(LogLevel level, const std::string &msg);
+
 template<typename...Args>
 void log(const LogLevel level, std::format_string<Args...> fmt, Args &&...args){
 	const std::string msg = std::format(fmt, std::forward<Args>(args)...);
-	std::cerr << levelToString(level) << ": " << msg << std::endl;
+	write_log_message(level, msg);
 }
 
 //__attribute__((format(printf, 2, 3)))

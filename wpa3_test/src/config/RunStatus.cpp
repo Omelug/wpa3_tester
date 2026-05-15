@@ -68,6 +68,12 @@ void RunStatus::execute(){
 	create_directories(_run_folder, ec);
 	if(ec) throw runtime_error("Unable to create run base directory");
 
+	// Initialize log file if save_log is enabled
+	if(_run_config.get_save_log()){
+		const path log_file = _run_folder / "logger" / "tester.log";
+		set_log_file(log_file);
+	}
+
 	try {
 		if(this->run_config().get_only_stats()){
 			load_actor_interface_mapping();

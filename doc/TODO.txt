@@ -11,9 +11,9 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 +: ClientState obeserver use + add to mitm
-l: create logging file
 
 //DONE
+l: create logging file
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests
 +: add test suite config to wait between tests (is seconds)

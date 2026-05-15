@@ -1,16 +1,20 @@
 #include "logger/log.h"
-#include "logger/error_log.h"
 
 #include <ctime>
 #include <iostream>
+#include <mutex>
 #include <regex>
 #include <vector>
-
 #include "config/RunStatus.h"
 
 namespace wpa3_tester{
 using namespace std;
 using namespace chrono;
+using namespace filesystem;
+
+// Global state for log file
+static mutex log_mutex;
+static ofstream *log_file_ptr = nullptr;
 
 const char *levelToString(const LogLevel level){
 	switch(level){
@@ -23,8 +27,47 @@ const char *levelToString(const LogLevel level){
 	return "UNKNOWN";
 }
 
+void set_log_file(path &log_path){
+	lock_guard lock(log_mutex);
+	if(log_file_ptr){
+		log_file_ptr->close();
+		delete log_file_ptr;
+		log_file_ptr = nullptr;
+	}
+
+	if(!log_path.empty()){
+		// Create parent directories if needed
+		const path log_dir = log_path.parent_path();
+		if(!log_dir.empty() && !exists(log_dir)){
+			create_directories(log_dir);
+		}
+
+		log_file_ptr = new ofstream(log_path, ios::app);
+		if(!log_file_ptr->is_open()){
+			delete log_file_ptr;
+			log_file_ptr = nullptr;
+		}
+	}
+}
+
+void write_log_message(const LogLevel level, const string &msg){
+	const string formatted = string(levelToString(level)) + ": " + msg;
+
+	// Write to stderr
+	cerr << formatted << endl;
+
+	// Write to log file if enabled
+	{
+		lock_guard lock(log_mutex);
+		if(log_file_ptr && log_file_ptr->is_open()){
+			*log_file_ptr << formatted << endl;
+			log_file_ptr->flush();
+		}
+	}
+}
+
 void log(const LogLevel level, const string &msg){
-	cerr << levelToString(level) << ": " << msg << endl;
+	write_log_message(level, msg);
 }
 
 void log_actor_map(const string &name, const ActorCMap &m){

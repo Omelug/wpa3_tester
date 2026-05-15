@@ -129,6 +129,7 @@
       <w>reproc</w>
       <w>retrans</w>
       <w>reuseaddr</w>
+      <w>rfkill</w>
       <w>rlen</w>
       <w>rsneapol</w>
       <w>rtmgrp</w>

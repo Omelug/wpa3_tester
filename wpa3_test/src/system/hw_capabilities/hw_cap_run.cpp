@@ -108,6 +108,11 @@ bool hw_capabilities::git_available(){
 void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
 	if(!git_available()) throw req_err("git is not available");
 	if(!exists(dest)){
+		// Create parent directories if needed
+		const path parent = dest.parent_path();
+		if(!parent.empty() && !exists(parent)){
+			create_directories(parent);
+		}
 		log(LogLevel::INFO, "Cloning {} to {}...", url, dest.string());
 		run_cmd({"git", "clone", url, dest.string()});
 	} else{

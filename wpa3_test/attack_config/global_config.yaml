@@ -9,14 +9,14 @@ paths:
   hostapd:
     # in this folder will be folder with cloned repository and binaries
     # (create empty folder if not sure, it will be build automatically)
-    hostapd_build_folder: /home/kali/Documents/WPA3/hostapd
+    hostapd_build_folder: ../../tools/hostapd
   dragonslayer:
     # dragonslayer folder (!dragonslayer has subfolder dragonslayer)
-    dragonslayer_folder: /home/kali/Documents/WPA3/Tools/dragonslayer
+    dragonslayer_folder: ../../tools/dragonslayer
   dragondrain:
-    dragondrain_folder: /home/kali/Documents/WPA3/Tools/dragondrain-and-time
-  ath_masker: /home/kali/Documents/WPA3/Tools/ath_masker
-  WPA3_SAE_DoS_Research_Suite: /home/kali/PycharmProjects/WPA3-SAE-DoS-Research-Suite
+    dragondrain_folder: ../../tools/dragondrain-and-time
+  ath_masker: ../../tool/ath_masker
+  WPA3_SAE_DoS_Research_Suite: ../../tools/WPA3-SAE-DoS-Research-Suite
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0 ] #, wlan3] #FIXME

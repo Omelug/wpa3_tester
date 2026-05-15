@@ -18,6 +18,49 @@ void Actor_config::set_permanent_mac(const string &mac_address){
 	(*this)[SK::permanent_mac] = mac_lower;
 }
 
+Channel Actor_config::get_channel() const {
+	if(!(*this)[SK::channel].has_value())
+		throw config_err("Actor_config: channel not set");
+
+	const int ch_num = stoi((*this)[SK::channel].value());
+
+	// Determine band from boolean keys
+	const bool has_2_4 = (*this)[BK::GHz2_4].value_or(false);
+	const bool has_5 = (*this)[BK::GHz5].value_or(false);
+	const bool has_6 = (*this)[BK::GHz6].value_or(false);
+
+	WifiBand band = WifiBand::BAND_2_4_or_5; // default
+	int count = 0;
+
+	if(has_2_4) { band = WifiBand::BAND_2_4; count++; }
+	if(has_5) { band = WifiBand::BAND_5; count++; }
+	if(has_6) { band = WifiBand::BAND_6; count++; }
+
+	if(count > 1)
+		throw config_err("Actor_config: Multiple bands set (2_4GHz, 5GHz, 6GHz). Only one allowed.");
+
+	// Validate channel number for band
+	const auto valid_2_4 = [](int c){ return c >= 1 && c <= 14; };
+	const auto valid_5 = [](int c){ return (c >= 36 && c <= 48) || (c >= 52 && c <= 144) || (c >= 149 && c <= 165); };
+	const auto valid_6 = [](int c){ return c >= 1 && c <= 233; };
+
+	if(band == WifiBand::BAND_2_4 && !valid_2_4(ch_num))
+		throw config_err("Actor_config: Invalid 2.4GHz channel " + to_string(ch_num));
+	if(band == WifiBand::BAND_5 && !valid_5(ch_num))
+		throw config_err("Actor_config: Invalid 5GHz channel " + to_string(ch_num));
+	if(band == WifiBand::BAND_6 && !valid_6(ch_num))
+		throw config_err("Actor_config: Invalid 6GHz channel " + to_string(ch_num));
+
+	// For BAND_2_4_or_5, try to infer
+	if(band == WifiBand::BAND_2_4_or_5){
+		if(valid_2_4(ch_num)) band = WifiBand::BAND_2_4;
+		else if(valid_5(ch_num)) band = WifiBand::BAND_5;
+		else throw config_err("Actor_config: Channel " + to_string(ch_num) + " invalid for 2.4GHz or 5GHz");
+	}
+
+	return Channel{ch_num, band};
+}
+
 void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
 	const bool internal = (*this)[SK::source].value() == "internal" ||
 	                      (*this)[SK::source].value() == "simulation";

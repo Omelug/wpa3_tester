@@ -36,6 +36,7 @@ void run_attack(RunStatus &rs){
 		RadioTap radiotap{};
 		Channel ch;
 		ch.ch_num = stoi(ap.get(SK::channel));//FIXME band fromconfig
+
 		const int freq_mhz = hw_capabilities::channel_to_freq(ch);
 		radiotap.channel(freq_mhz, RadioTap::OFDM);
 		radiotap.inner_pdu(probe);

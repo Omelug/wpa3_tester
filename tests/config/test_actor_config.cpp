@@ -178,6 +178,78 @@ TEST_CASE("Actor_config - permanent_mac from JSON selection"){
     CHECK_EQ(actor[SK::permanent_mac].value(), "11:22:33:44:55:66");
 }
 
+TEST_CASE("Actor_config - get_channel"){
+    SUBCASE("Missing channel throws") {
+        Actor_config actor;
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
+
+    SUBCASE("Multiple bands throw (2_4GHz + 6GHz)") {
+        Actor_config actor;
+        actor[SK::channel] = "6";
+        actor[BK::GHz2_4] = true;
+        actor[BK::GHz6] = true;
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
+
+    SUBCASE("Multiple bands throw (5GHz + 6GHz)") {
+        Actor_config actor;
+        actor[SK::channel] = "36";
+        actor[BK::GHz5] = true;
+        actor[BK::GHz6] = true;
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
+
+    SUBCASE("Valid 2.4GHz channel with explicit band") {
+        Actor_config actor;
+        actor[SK::channel] = "6";
+        actor[BK::GHz2_4] = true;
+        auto ch = actor.get_channel();
+        CHECK_EQ(ch.ch_num, 6);
+        CHECK_EQ(ch.band, WifiBand::BAND_2_4);
+    }
+
+    SUBCASE("Valid 5GHz channel with explicit band") {
+        Actor_config actor;
+        actor[SK::channel] = "36";
+        actor[BK::GHz5] = true;
+        auto ch = actor.get_channel();
+        CHECK_EQ(ch.ch_num, 36);
+        CHECK_EQ(ch.band, WifiBand::BAND_5);
+    }
+
+    SUBCASE("Valid 6GHz channel with explicit band") {
+        Actor_config actor;
+        actor[SK::channel] = "1";
+        actor[BK::GHz6] = true;
+        auto ch = actor.get_channel();
+        CHECK_EQ(ch.ch_num, 1);
+        CHECK_EQ(ch.band, WifiBand::BAND_6);
+    }
+
+    SUBCASE("Inferred 2.4GHz from channel number") {
+        Actor_config actor;
+        actor[SK::channel] = "11";
+        auto ch = actor.get_channel();
+        CHECK_EQ(ch.ch_num, 11);
+        CHECK_EQ(ch.band, WifiBand::BAND_2_4);
+    }
+
+    SUBCASE("Inferred 5GHz from channel number") {
+        Actor_config actor;
+        actor[SK::channel] = "100";
+        auto ch = actor.get_channel();
+        CHECK_EQ(ch.ch_num, 100);
+        CHECK_EQ(ch.band, WifiBand::BAND_5);
+    }
+
+    SUBCASE("Invalid channel throws") {
+        Actor_config actor;
+        actor[SK::channel] = "999";
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
+}
+
 TEST_CASE("Actor_config - operator+=complex"){
     json j = {
         {

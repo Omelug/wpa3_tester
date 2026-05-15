@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <set>
 #include <tins/pdu.h>
-#include "attacks/by_target/scan_AP.h"
+#include "attacks/scan/scan_AP.h"
 
 namespace wpa3_tester::scan{
 void station_scan(attack_scan::ScanAP &scan_ap, const std::string &interface, const int timeout_sec,

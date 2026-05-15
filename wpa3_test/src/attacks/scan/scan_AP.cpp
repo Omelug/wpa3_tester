@@ -1,4 +1,4 @@
-#include "attacks/by_target/scan_AP.h"
+#include "attacks/scan/scan_AP.h"
 #include <future>
 #include "config/RunStatus.h"
 #include "observer/observers.h"

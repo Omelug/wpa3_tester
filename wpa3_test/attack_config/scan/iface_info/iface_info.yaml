@@ -1,0 +1,17 @@
+name: iface_info
+attacker_module: iface_info
+actors:
+  scanner:
+    source: internal
+    selection:
+      condition: [ monitor ]
+
+observers:
+  tshark_scanner:
+    actor: scanner
+    program: tshark
+    program_config:
+      filter: ""
+
+attack_config:
+  channel: 6

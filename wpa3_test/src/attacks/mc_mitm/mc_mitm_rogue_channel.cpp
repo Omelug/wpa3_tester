@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <tins/tins.h>
-#include "attacks/by_target/scan_AP.h"
+#include "attacks/scan/scan_AP.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"

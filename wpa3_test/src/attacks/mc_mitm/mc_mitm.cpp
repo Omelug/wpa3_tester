@@ -5,7 +5,7 @@
 #include <utility>
 #include <tins/tins.h>
 
-#include "attacks/by_target/scan_AP.h"
+#include "attacks/scan/scan_AP.h"
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"

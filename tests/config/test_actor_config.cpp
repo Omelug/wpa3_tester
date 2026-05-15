@@ -152,6 +152,30 @@ TEST_CASE("Actor_config - operator[] accessor"){
 
     // Key exists but has no value should throw
 	 CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
+
+    // permanent_mac missing should throw
+	 CHECK_THROWS_AS(auto a = actor.get(SK::permanent_mac), config_err);
+}
+
+TEST_CASE("Actor_config - permanent_mac normalization"){
+    Actor_config actor;
+    actor.set_permanent_mac("AA:BB:CC:DD:EE:FF");
+    CHECK_EQ(actor[SK::permanent_mac].value(), "aa:bb:cc:dd:ee:ff");
+}
+
+TEST_CASE("Actor_config - permanent_mac from JSON selection"){
+    json j = {
+        {
+            "selection", {
+                {"iface", "wlan0"},
+                {"permanent_mac", "11:22:33:44:55:66"}
+            }
+        }
+    };
+
+    Actor_config actor(j);
+    CHECK(actor[SK::permanent_mac].has_value());
+    CHECK_EQ(actor[SK::permanent_mac].value(), "11:22:33:44:55:66");
 }
 
 TEST_CASE("Actor_config - operator+=complex"){

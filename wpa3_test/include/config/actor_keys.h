@@ -8,7 +8,7 @@ namespace wpa3_tester {
 
 // String keys
 enum class SK : uint8_t {
-    actor_name, source, iface, mac, ssid, channel,
+    actor_name, source, iface, mac, permanent_mac, ssid, channel,
     signal, ht_mode, driver, netns, sniff_iface,
     radio, whitebox_host, whitebox_ip, ip_addr,
     ssh_user, ssh_port, ssh_password, external_OS,
@@ -27,7 +27,7 @@ enum class BK : uint8_t {
 // Name arrays — must match enum order exactly, compile-time size verified by COUNT_
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> SK_NAMES = {
-    "actor_name", "source", "iface", "mac", "ssid", "channel",
+    "actor_name", "source", "iface", "mac", "permanent_mac", "ssid", "channel",
     "signal", "ht_mode", "driver", "netns", "sniff_iface",
     "radio", "whitebox_host", "whitebox_ip", "ip_addr",
     "ssh_user", "ssh_port", "ssh_password", "external_OS"

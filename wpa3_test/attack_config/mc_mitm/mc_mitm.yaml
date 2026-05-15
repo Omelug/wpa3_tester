@@ -50,8 +50,7 @@ actors:
   rogue_client:
     source: internal
     selection:
-      #FIXME rozdíl mezi původní a možnou mac
-      #mac: "00:c0:ca:b7:69:2a" #FIXME I cant change channel on second mt76 adapter
+      #permanent_mac: "00:c0:ca:b7:69:2a" #FIXME I cant change channel on second mt76 adapter
       driver: mt76x2u
       condition: [ monitor ] #active_monitor
       channel: 11

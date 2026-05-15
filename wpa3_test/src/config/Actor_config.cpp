@@ -29,6 +29,10 @@ Actor_config::Actor_config(const json &j) {
 				set_mac(sel[name].get<string>());
 				continue;
 			}
+			if(k == SK::permanent_mac){
+				set_permanent_mac(sel[name].get<string>());
+				continue;
+			}
 			if(sel[name].is_string())
 				(*this)[k] = sel[name].get<string>();
 			else if(sel[name].is_number())

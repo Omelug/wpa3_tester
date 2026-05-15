@@ -1,5 +1,5 @@
 //TODO
-+: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
+-: somthing is broken again, +: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
 
 Version v 0.0.0.0:
 r: monitor mode hw_capabilies
@@ -10,14 +10,14 @@ ch: one_iface, two_if test to actual , configable tests
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
-+: rozdíl mezi původní a možnou mac
-+: interface scan, která ukáře důležité vlastnosti, injection tests
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 +: ClientState obeserver use + add to mitm
 l: create logging file
 
 //DONE
++: rozdíl mezi původní a možnou mac
++: interface scan, která ukáře důležité vlastnosti, injection tests
 +: add test suite config to wait between tests (is seconds)
 ch: change errors.txt logic -> write git hash and info to done.txt
 ch: Dos útoky - wrapper pro WPA3-SAE-DoS-Research-Suite

@@ -12,6 +12,12 @@ void Actor_config::set_mac(const string &mac_address){
 	(*this)[SK::mac] = mac_lower;
 }
 
+void Actor_config::set_permanent_mac(const string &mac_address){
+	string mac_lower = mac_address;
+	ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
+	(*this)[SK::permanent_mac] = mac_lower;
+}
+
 void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
 	const bool internal = (*this)[SK::source].value() == "internal" ||
 	                      (*this)[SK::source].value() == "simulation";
@@ -28,6 +34,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 			set_mac(real_actor["mac"]);
 		} else{
 			set_mac_address(real_actor["mac"]);
+		}
+		if(!(*this)[SK::permanent_mac].has_value()){
+			const auto perm = hw_capabilities::get_permanent_mac((*this)[SK::iface].value(), (*this)[SK::netns]);
+			if(!perm.empty()) set_permanent_mac(perm);
 		}
 	}
 	if(external_WB){

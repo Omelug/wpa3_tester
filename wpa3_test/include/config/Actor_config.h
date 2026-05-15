@@ -66,6 +66,7 @@ public:
     void set_monitor_mode(const std::string &monitor_flags = "") const;
     void set_wifi_type(nl80211_iftype type) const;
     void set_mac(const std::string &mac_address);
+    void set_permanent_mac(const std::string &mac_address);
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
 
 private:

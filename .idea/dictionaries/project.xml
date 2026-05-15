@@ -44,6 +44,7 @@
       <w>eopnotsupp</w>
       <w>eperm</w>
       <w>errbuf</w>
+      <w>essid</w>
       <w>fcsfail</w>
       <w>fflush</w>
       <w>fprintf</w>

@@ -4,7 +4,6 @@
 Version v 0.0.0.0:
 r: monitor mode hw_capabilies
 r: simplify injection tests
-f: add band option (from BK?, get )
 +: .env for nix/deabian
 ch: one_iface, two_if test to actual , configable tests
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware

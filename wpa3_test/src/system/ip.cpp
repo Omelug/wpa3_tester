@@ -1,20 +1,17 @@
-#include "../../include/system/ip.h"
-
+#include "system/ip.h"
 #include <fcntl.h>
-#include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <regex>
 
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester::ip{
 using namespace std;
-
+namespace wpa3_tester::ip{
 void set_ip(RunStatus &rs, const string &actor_name){
 	const auto ip_addr = rs.config().at("actors").at(actor_name).at("ip_addr").get<string>();
 	const auto actor = rs.get_actor(actor_name);
@@ -64,42 +61,11 @@ string get_ip(const string &iface){
 	return ip_address;
 }
 
-auto is_port_open(const string &ip, int port, const int timeout_ms)->bool{
-	const int sock = socket(AF_INET, SOCK_STREAM, 0);
-	if(sock < 0) return false;
-
-	fcntl(sock, F_SETFL, O_NONBLOCK);
-
-	sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
-
-	connect(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
-
-	pollfd pfd;
-	pfd.fd = sock;
-	pfd.events = POLLOUT;
-
-	const int res = poll(&pfd, 1, timeout_ms);
-	bool connected = false;
-
-	if(res > 0){
-		int err;
-		socklen_t len = sizeof(err);
-		getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &len);
-		if(err == 0) connected = true;
-	}
-
-	close(sock);
-	return connected;
-}
-
 bool ping(const string &ip, const int timeout_sec){
 	return hw_capabilities::run_cmd({"ping", "-c", "1", "-n", "-W", to_string(timeout_sec), ip}, nullopt) == 0;
 }
 
-string get_mac_by_ip(const string &ip){
+/*string get_mac_by_ip(const string &ip){
 	// trigger ARP
 	ping(ip);
 	// default netns
@@ -108,5 +74,5 @@ string get_mac_by_ip(const string &ip){
 	if(!regex_search(out, match, regex(R"(([0-9a-f]{2}(?::[0-9a-f]{2}){5}))")))
 		throw scan_err("Cannot get MAC for IP: " + ip);
 	return match[1].str();
-}
+}*/
 }

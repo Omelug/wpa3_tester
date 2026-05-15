@@ -118,7 +118,7 @@ public:
 	static void git_clone_or_pull(const std::string &url, const std::filesystem::path &dest);
 
 	// Fill Actor_config caps for given iface (mac, driver, nl80211 capabilities)
-	static void get_nl80211_caps(const std::string &iface, ActorPtr &cfg);
+	static void get_nl80211_caps(ActorPtr &cfg);
 	static std::vector<InterfaceInfo> list_interfaces(std::optional<InterfaceType> filter = std::nullopt,
 													const std::optional<std::string> &netns = std::nullopt
 	);

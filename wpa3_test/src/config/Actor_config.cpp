@@ -3,6 +3,7 @@
 #include "config/actor_keys.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester {
 using namespace std;
@@ -167,6 +168,26 @@ string Actor_config::to_str() const {
 	return result;
 }
 
+json Actor_config::caps_to_flat_json() const {
+    json j = json::object();
+    for(const auto k : bk_values()){
+        if(!HwInfo::is_hw_info(k)) continue;
+        const auto &v = (*this)[k];
+        if(v.has_value())
+            j[string(bk_name(k))] = *v;
+    }
+    return j;
+}
+
+void Actor_config::caps_from_flat_json(const json &j) {
+    for(const auto k : bk_values()){
+        if(!HwInfo::is_hw_info(k)) continue;
+        const auto name = string(bk_name(k));
+        if(j.contains(name) && j.at(name).is_boolean())
+            (*this)[k] = j.at(name).get<bool>();
+    }
+}
+
 json Actor_config::to_json() const {
 	json sel = json::object();
 
@@ -223,5 +244,4 @@ bool Actor_config::is_external_WB() const {
 	return (*this)[SK::source].value() == "external" &&
 			((*this)[SK::whitebox_host].has_value() || (*this)[SK::whitebox_ip].has_value());
 }
-
 }

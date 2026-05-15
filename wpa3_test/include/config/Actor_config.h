@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include "actor_keys.h"
+#include "system/hw_info.h"
 #include "system/wifi_channel.h"
 #include <tins/tins.h>
 
@@ -21,7 +22,7 @@ class ExternalConn;
 class Actor_config : public std::enable_shared_from_this<Actor_config> {
 public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
-    explicit Actor_config() = default;
+	explicit Actor_config() = default;
     Actor_config(const Actor_config &other) = default;
     explicit Actor_config(const nlohmann::json &j);
     ~Actor_config();
@@ -43,6 +44,10 @@ public:
     std::string        to_str()  const;
     nlohmann::json     to_json() const;
 
+    // Serialize/deserialize BK bool fields as a flat {"ap": true, "monitor": false, ...} object
+    nlohmann::json caps_to_flat_json() const;
+    void           caps_from_flat_json(const nlohmann::json &j);
+
     static void print_ActorCMap(const std::string &title, const std::vector<ActorPtr> &actors);
     static void print_ActorCMap(const std::string &title, ActorCMap actors);
 
@@ -55,7 +60,7 @@ public:
     void create_sniff_iface() const;
 
     std::string get_driver_name() const;
-
+    void load_hw_info(const std::optional<std::filesystem::path> &cache = std::nullopt);
     void set_channel(Channel ch, const std::string &ht_mode = "") const;
     void set_ap_mode()       const;
     void set_iface_down()    const;
@@ -63,7 +68,7 @@ public:
     void up_sniff_iface()    const;
     void set_managed_mode()  const;
     void set_mac_address(const Tins::HWAddress<6> &mac) const;
-    void set_monitor_mode(const std::string &monitor_flags = "") const;
+    void set_monitor_mode() const;
     void set_wifi_type(nl80211_iftype type) const;
     void set_mac(const std::string &mac_address);
     void set_permanent_mac(const std::string &mac_address);

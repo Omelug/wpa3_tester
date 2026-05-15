@@ -19,7 +19,7 @@ enum class LogLevel{
 const char *levelToString(LogLevel level);
 
 // Set log file path (optional, nullptr to disable file logging)
-void set_log_file(const std::filesystem::path &path);
+void set_log_file(const std::filesystem::path &log_path);
 void write_log_message(LogLevel level, const std::string &msg);
 
 template<typename...Args>

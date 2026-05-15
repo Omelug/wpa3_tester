@@ -5,6 +5,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include "system/hw_info.h"
 #include <fstream>
 #include <sstream>
 #include "ex_program/external_actors/ExternalConn.h"
@@ -139,14 +140,15 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 // ---------------- INTERNAL
 // return <string iface; internal_actor >
 vector<ActorPtr> RunStatus::internal_options(){
+	const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "scan" / "internal_iface.json";
 	vector<ActorPtr> options;
 	for(const auto &[iface_name, radio_name, iface_type]:
 		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_config>());
-		cfg[SK::iface] = iface_name;
-		cfg[SK::source] = "internal";
-		cfg[SK::radio] = radio_name;
-		hw_capabilities::get_nl80211_caps(iface_name, cfg);
+		cfg[SK::iface]   = iface_name;
+		cfg[SK::source]  = "internal";
+		cfg[SK::radio]   = radio_name;
+		cfg->load_hw_info(hw_cache);
 		options.emplace_back(cfg);
 	}
 	return options;
@@ -315,7 +317,7 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 		cfg[SK::iface] = name;
 		cfg[SK::source] = "simulation";
 		cfg[SK::radio] = radio;
-		hw_capabilities::get_nl80211_caps(name, cfg);
+		hw_capabilities::get_nl80211_caps(cfg);
 		options.emplace_back(cfg);
 	}
 	log(LogLevel::INFO, "Created {} simulation interface(s)", options.size());

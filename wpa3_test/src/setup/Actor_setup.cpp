@@ -100,9 +100,6 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(internal || external_WB){
 		auto actor_json = config.at("actors").at((*this)[SK::actor_name].value());
 		const bool monitor = (*this)[BK::monitor].value_or(false);
-		string monitor_flags;
-		if((*this)[BK::active_monitor]) monitor_flags += " active";
-		if((*this)[BK::control_monitor]) monitor_flags += " control";
 		const bool injection = (*this)[BK::injection].value_or(false);
 
 		int channel_num = -1;
@@ -110,7 +107,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		else if(const auto c = real_actor[SK::channel]) channel_num = stoi(c.value());
 		if(channel_num != -1) set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
 
-		if((monitor || injection) && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode(monitor_flags);
+		if((monitor || injection) && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode();
 		if(actor_json.contains("sniff_iface")){
 			(*this)[SK::sniff_iface] = MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>();
 			create_sniff_iface();

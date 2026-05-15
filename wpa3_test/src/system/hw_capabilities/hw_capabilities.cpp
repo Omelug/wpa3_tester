@@ -155,12 +155,12 @@ string hw_capabilities::get_permanent_mac(const string &iface, const optional<st
 	try{
 		auto j = nlohmann::json::parse(output);
 		if(!j.empty()){
-			if(j[0].contains("permaddr"))
-				return j[0]["permaddr"].get<string>();
-			if(j[0].contains("address"))
-				return j[0]["address"].get<string>();
+			if(j[0].contains("permaddr")) return j[0]["permaddr"].get<string>();
+			if(j[0].contains("address")) return j[0]["address"].get<string>();
 		}
-	} catch(...){ }
+	} catch(const exception &e){
+		log(LogLevel::WARNING, "permanent mac error: {}, ignoring", e.what());
+	}
 	return {};
 }
 

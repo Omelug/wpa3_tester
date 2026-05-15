@@ -8,7 +8,6 @@
 #include <net/if.h>
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
-#include "system/runtime_checks.h"
 
 namespace wpa3_tester{
 using namespace wpa3_tester;
@@ -177,9 +176,9 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 	return 0;
 }
 
-void hw_capabilities::get_nl80211_caps(const string &iface, ActorPtr &cfg){
-	cfg->set_mac(read_sysfs(iface, "address"));
-	cfg[SK::driver] = get_driver_name(iface);
+void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
+	cfg->set_mac(read_sysfs(cfg->get(SK::iface), "address"));
+	cfg[SK::driver] = get_driver_name(cfg->get(SK::iface));
 
 	/* ---------- nl80211 dynamic capabilities ---------- */
 	nl_sock *sock = nl_socket_alloc();
@@ -206,7 +205,7 @@ void hw_capabilities::get_nl80211_caps(const string &iface, ActorPtr &cfg){
 	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, NLM_F_DUMP, NL80211_CMD_GET_WIPHY, 0);
 
 	// set interface id to check
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_nametoindex(iface.c_str()));
+	nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_nametoindex(cfg->get(SK::iface).c_str()));
 
 	NlCaps caps{};
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, &hw_capabilities::nl80211_cb, &caps);
@@ -227,14 +226,6 @@ void hw_capabilities::get_nl80211_caps(const string &iface, ActorPtr &cfg){
 
 	cfg[BK::beacon_prot] = caps._80211ax;
 
-	if(caps.monitor){
-		bool real_injection = check_injection_runtime(iface);
-		cfg[BK::injection] = real_injection;
-
-		if(!real_injection && caps.injection){
-			log(LogLevel::WARNING, "Driver claims injection support, but runtime test failed!");
-		}
-	}
 	nlmsg_free(msg);
 	nl_socket_free(sock);
 }

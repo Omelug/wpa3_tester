@@ -1,0 +1,150 @@
+#include "system/hw_info.h"
+
+#include <fstream>
+
+#include "attacks/mc_mitm/MonitorSocket.h"
+#include "config/Actor_config.h"
+#include "config/ActorPtr.h"
+#include "logger/log.h"
+#include "system/hw_capabilities.h"
+
+namespace wpa3_tester{
+using namespace std;
+using namespace filesystem;
+
+
+// Combine all tests whose name equals prefix or starts with prefix+"/"
+static optional<InjectionTestResult> extract_test(
+    const InjectionSuiteResult &suite, const string &prefix
+){
+    InjectionTestResult combined;
+    combined.test_name = prefix;
+    bool found = false;
+    for(const auto &[test_name, flags, detail] : suite.tests){
+        if(test_name == prefix || test_name.starts_with(prefix + "/")){
+            combined.flags |= flags;
+            if(!detail.empty()){
+                if(!combined.detail.empty()) combined.detail += "; ";
+                combined.detail += test_name + ": " + detail;
+            }
+            found = true;
+        }
+    }
+    return found ? optional{combined} : nullopt;
+}
+
+// -----------------  InjectionTestResult / InjectionSuiteResult member implementations
+
+nlohmann::json InjectionTestResult::to_json() const{
+    return {{"name", test_name}, {"flags", flags}, {"detail", detail}};
+}
+
+InjectionTestResult InjectionTestResult::from_json(const nlohmann::json &j){
+    return {j.value("name", ""), j.value("flags", 0), j.value("detail", "")};
+}
+
+nlohmann::json InjectionSuiteResult::to_json() const{
+    nlohmann::json arr = nlohmann::json::array();
+    for(const auto &t: tests) arr.push_back(t.to_json());
+    return {{"driver", driver}, {"channel", channel.ch_num}, {"tests", arr}};
+}
+
+
+// -----------------  HwInfo
+
+
+nlohmann::json HwInfo::to_json() const{
+    nlohmann::json j = {
+        {"driver",        actor->get(SK::driver)},
+        {"permanent_mac", actor->get(SK::permanent_mac)},
+    };
+    j.update(actor->caps_to_flat_json());
+    return j;
+}
+
+void HwInfo::from_json(const nlohmann::json &j){
+    if(!actor) actor = make_shared<Actor_config>();
+    (*actor)[SK::driver] = j.value("driver", "");
+    actor->set_permanent_mac(j.value("permanent_mac", ""));
+    actor->caps_from_flat_json(j);
+}
+
+// -----------------  Actor_config::get_hw_info
+
+void Actor_config::load_hw_info(const optional<path> &cache){
+    const string iface     = get(SK::iface);
+    const string perm_mac  = hw_capabilities::get_permanent_mac(iface, (*this)[SK::netns]);
+    const string cache_key = perm_mac.empty() ? iface : perm_mac;
+
+    // ----- try cache -----
+    if(cache.has_value() && exists(*cache)){
+        try{
+            ifstream f(*cache);
+            const auto json_cache = nlohmann::json::parse(f);
+            if(json_cache.contains(cache_key)){
+                HwInfo hw_cached; hw_cached.actor = shared_from_this();
+                hw_cached.from_json(json_cache.at(cache_key));
+                return;
+            }
+        } catch(const exception &e){
+            log(LogLevel::WARNING, "get_hw_info: cache read failed ({}): {}", cache->string(), e.what());
+        }
+    }
+
+    // ----- collect info -----
+    set_permanent_mac(perm_mac);
+    (*this)[SK::driver] = hw_capabilities::get_driver_name(iface);
+
+    ActorPtr self(shared_from_this());
+    hw_capabilities::get_nl80211_caps(self);
+
+    // ----- injection self-test -----
+    if((*this)[BK::monitor].value_or(false)){
+        constexpr Channel ch{11, WifiBand::BAND_2_4};
+        try{
+            hw_capabilities::setup_injection_iface(iface, ch, (*this)[SK::netns]);
+            MonitorSocket sock(iface);
+            const InjectionSuiteResult self_test = hw_capabilities::run_injection_tests(
+                sock, iface, sock, ch,
+                Tins::HWAddress<6>("00:11:22:33:44:55"),
+                /*skip_mf=*/false,
+                /*testack=*/false //FIXME no ack test?
+            );
+            //TODO store injection results
+            (void)extract_test(self_test, "mf");
+        } catch(const exception &e){
+            log(LogLevel::WARNING, "get_hw_info: injection test failed for {}: {}", iface, e.what());
+        }
+    }
+
+    // ----- write cache -----
+    if(cache.has_value()){
+    	//create cache
+    	if (!exists(*cache)) {
+    		ofstream create_file(*cache);
+    		create_file.close();
+
+    		permissions(*cache, perms::owner_read | perms::owner_write |
+								perms::group_read | perms::group_write |
+								perms::others_read | perms::others_write);
+    	}
+
+        try{
+            create_directories(cache->parent_path());
+            nlohmann::json json_cache = nlohmann::json::object();
+            if(exists(*cache)){
+                ifstream f(*cache);
+                auto parsed = nlohmann::json::parse(f, nullptr, false);
+                if(!parsed.is_discarded()) json_cache = parsed;
+            }
+            HwInfo hw_snapshot;
+        	hw_snapshot.actor = shared_from_this();
+            json_cache[cache_key] = hw_snapshot.to_json();
+            ofstream f(*cache);
+            f << json_cache.dump(2) << '\n';
+        } catch(const exception &e){
+            log(LogLevel::WARNING, "get_hw_info: cache write failed: {}", e.what());
+        }
+    }
+}
+}

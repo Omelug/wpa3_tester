@@ -27,7 +27,7 @@ const char *levelToString(const LogLevel level){
 	return "UNKNOWN";
 }
 
-void set_log_file(path &log_path){
+void set_log_file(const path &log_path){
 	lock_guard lock(log_mutex);
 	if(log_file_ptr){
 		log_file_ptr->close();
@@ -120,7 +120,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern){
 	vector<LogTimePoint> timestamps;
 	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
-	if(!filesystem::exists(actor_log)){
+	if(!exists(actor_log)){
 		log(LogLevel::ERROR, "Could not find file '{}'", actor_log);
 		return {};
 	}

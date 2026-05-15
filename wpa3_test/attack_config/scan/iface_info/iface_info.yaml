@@ -15,3 +15,5 @@ observers:
 
 attack_config:
   channel: 6
+
+rewrite: all

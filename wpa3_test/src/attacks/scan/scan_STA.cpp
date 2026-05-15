@@ -3,7 +3,7 @@
 #include <sys/poll.h>
 #include <tins/sniffer.h>
 
-#include "attacks/by_target/scan_AP.h"
+#include "attacks/scan/scan_AP.h"
 #include "logger/log.h"
 
 using namespace std;
@@ -65,7 +65,6 @@ bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, attack_scan::ScanAP &sca
 bool station_frame_parse(const unique_ptr<PDU> &pdu, attack_scan::ScanAP &scan_ap){
 	//const string& ap_mac, set<string>& found_stations) {
 	if(!pdu) return false;
-
 	const auto dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return false;
 

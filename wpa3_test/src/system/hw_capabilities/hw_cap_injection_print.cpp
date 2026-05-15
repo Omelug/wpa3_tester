@@ -4,7 +4,7 @@
 namespace wpa3_tester{
 using namespace std;
 
-static const char *md_badge(int flags){
+static const char *md_badge(const int flags){
 	if(flags & FLAG_NOCAPTURE) return "NO-CAPTURE";
 	if(flags & FLAG_FAIL)      return "FAIL";
 	return                            "PASS";
@@ -26,9 +26,9 @@ string print_injection_result(const InjectionSuiteResult &suite){
 	md << "### Results\n\n";
 	md << "| Test | Status | Detail |\n";
 	md << "|------|--------|--------|\n";
-	for(const auto &t : suite.tests){
-		md << "| `" << t.name << "` | **" << md_badge(t.flags) << "** | ";
-		md << (t.detail.empty() ? "" : t.detail) << " |\n";
+	for(const auto &[test_name, flags, detail] : suite.tests){
+		md << "| `" << test_name << "` | **" << md_badge(flags) << "** | ";
+		md << (detail.empty() ? "" : detail) << " |\n";
 	}
 	md << '\n';
 

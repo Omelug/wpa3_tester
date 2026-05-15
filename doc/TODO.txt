@@ -1,5 +1,7 @@
 //TODO
--: somthing is broken again, +: new feature, f: fix, r: refactoring, t: test, d: documentation,  l: logging, ch: change, ?: what?
+-: somthing is broken again, +: new feature, f: fix, r: refactoring,
+t: test, d: documentation,  l: logging, ch: change, ?: what?
+v: visualization
 
 Version v 0.0.0.0:
 r: monitor mode hw_capabilies
@@ -10,7 +12,7 @@ r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
-+: ClientState obeserver use + add to mitm
++: ClientState obeserver use in mitm
 
 //DONE
 l: create logging file
@@ -88,7 +90,7 @@ State Poisoning (2025_SACRED)
 Ghost Attack (badtoken pdf)
 DPP attacks
 
-Optimalization:
+Optimization:
 ?: https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
 
 PDF:
@@ -96,10 +98,10 @@ PDF:
 f: deleted_old -> delete_old
 
 - Every physical radio can have only one interface in these tests
--> re to to roadmapor implementa and highlight in documentation
+-> re to to roadmap implement and highlight in documentation
 --------------------------------------------------------------------------------------------
 
 TODO
 - funguje sudo micro ./ap_debug_test.txt -> inotify
-- maccchanger musí být až potom / při tom
+- macchanger musí být až potom / při tom
 send_csa_beacon pak nic nedělá

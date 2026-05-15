@@ -169,7 +169,7 @@ json RunStatus::config_validation(const string &config_path){
 	}
 }
 
-void RunStatus::ensure_requirement(const string &req){
+void RunStatus::ensure_requirement(const string &req) const{
 	if(req == "ath_masker"){
 		firmware::load_ath_masker(_run_config.get_install_req());
 		return;

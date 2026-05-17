@@ -191,15 +191,12 @@ void RunStatus::check_local_requirements(){
 		// two_iface block is handled post-backtracking in config_requirement()
 	}
 
-	// Per-actor requirements (array = old format, object.simple = new format)
+	// Per-actor requirements
 	for(auto &[actor_name, actor_data]: _config.at("actors").items()){
 		if(!actor_data.contains("setup") || !actor_data.at("setup").contains("requirements"))
 			continue;
 		const auto &reqs = actor_data.at("setup").at("requirements");
-		if(reqs.is_array()){
-			for(const auto &req: reqs)
-				if(req.is_string()) all_requirements.insert(req.get<std::string>());
-		} else if(reqs.is_object() && reqs.contains("simple")){
+		if(reqs.is_object() && reqs.contains("simple")){
 			for(const auto &req: reqs.at("simple"))
 				if(req.is_string()) all_requirements.insert(req.get<std::string>());
 		}

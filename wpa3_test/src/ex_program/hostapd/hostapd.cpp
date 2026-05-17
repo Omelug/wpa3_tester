@@ -96,8 +96,8 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
 	const string hostapd_config_path = hostapd_config(rs.run_folder(), actor_name, program_config,
 													rs.config_path().parent_path());
-	rs.get_actor(actor_name)[SK::ssid] = get_ssid(program_config, hostapd_config_path);
-	rs.get_actor(actor_name)[SK::channel] = get_channel(program_config, hostapd_config_path);
+	rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, hostapd_config_path));
+	rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_config_path));
 
 	string version;
 	if(program_config.contains("version") && !program_config["version"].is_null()){
@@ -205,8 +205,8 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	}
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){
-		rs.get_actor(actor_name)[SK::ssid] = get_ssid(program_config, hostapd_mana_config_path);
-		rs.get_actor(actor_name)[SK::channel] = get_channel(program_config, hostapd_mana_config_path);
+		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, hostapd_mana_config_path));
+		rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_mana_config_path));
 	}
 
 	vector<string> command = {};

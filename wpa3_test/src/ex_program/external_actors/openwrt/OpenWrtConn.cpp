@@ -113,9 +113,9 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 	exec("wifi reload");
 
 	// wait for ifname and store in actor
-	actor[SK::iface] = wait_for_ifname(section);
+	actor->set(SK::iface, wait_for_ifname(section));
 	actor->set_mac(get_mac_address(actor[SK::iface].value()));
-	actor[SK::radio] = radio_name;
+	actor->set(SK::radio, radio_name);
 }
 
 bool OpenWrtConn::connect(const ActorPtr &actor){
@@ -202,8 +202,8 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config().at("actors").at(actor["actor_name"]).at("setup").at("program_config");
 	cerr << program_config.dump() << endl;
-	actor[SK::ssid] = program_config.at("ssid").get<string>();
-	actor[SK::channel] = to_string(program_config.at("channel").get<int>());
+	actor->set(SK::ssid, program_config.at("ssid").get<string>());
+	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
 
 	// radio level keys
 	static const set<string> radio_keys = {
@@ -251,18 +251,18 @@ void OpenWrtConn::get_hw_capabilities(Actor_config &cfg, const string &radio){
 
 void OpenWrtConn::parse_hw_capabilities(Actor_config &cfg, const string &output){
 	// supported bands
-	cfg[BK::GHz2_4] = (output.find("Band 1:") != string::npos);
-	cfg[BK::GHz5] = (output.find("Band 2:") != string::npos);
-	cfg[BK::GHz6] = (output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
+	cfg.set(BK::GHz2_4, output.find("Band 1:") != string::npos);
+	cfg.set(BK::GHz5, output.find("Band 2:") != string::npos);
+	cfg.set(BK::GHz6, output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
 
 	// supported modes
-	cfg[BK::AP] = (output.find(" * AP") != string::npos);
-	cfg[BK::STA] = (output.find(" * managed") != string::npos);
-	cfg[BK::monitor] = (output.find(" * monitor") != string::npos);
+	cfg.set(BK::AP, output.find(" * AP") != string::npos);
+	cfg.set(BK::STA, output.find(" * managed") != string::npos);
+	cfg.set(BK::monitor, output.find(" * monitor") != string::npos);
 
 	// Supported standards
-	cfg[BK::w80211n] = (output.find("HT20") != string::npos || output.find("HT40") != string::npos);
-	cfg[BK::w80211ac] = (output.find("VHT") != string::npos);
-	cfg[BK::w80211ax] = (output.find("HE") != string::npos);
+	cfg.set(BK::w80211n, output.find("HT20") != string::npos || output.find("HT40") != string::npos);
+	cfg.set(BK::w80211ac,  output.find("VHT") != string::npos);
+	cfg.set(BK::w80211ax, output.find("HE") != string::npos);
 }
 }

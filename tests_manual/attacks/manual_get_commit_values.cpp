@@ -18,8 +18,8 @@ void manual_get_commit_values_test(){
     const string &iface_name = *iface_opt;
     // Create Actor_config to manage interface
     Actor_config iface_config;
-    iface_config[SK::iface] = iface_name;
-    iface_config[SK::sniff_iface] = MONITOR_IFACE_PREFIX + "test";
+    iface_config.set(SK::iface, iface_name);
+    iface_config.set(SK::sniff_iface, MONITOR_IFACE_PREFIX + "test");
     iface_config.set_monitor_mode();
     iface_config.create_sniff_iface();
 

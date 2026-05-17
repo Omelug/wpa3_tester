@@ -90,7 +90,7 @@ TEST_CASE("start ap test"){
     SUBCASE("AP Start and Stop"){
         RunStatus rs;
         auto base_actor = ActorPtr(std::make_shared<Actor_config>());
-        base_actor[SK::iface] = base_iface;
+        base_actor->set(SK::iface, base_iface);
         REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5}, beacon, TestConfig::mac_addr));
 
         stop_ap(ap_iface, nullopt);
@@ -116,8 +116,8 @@ TEST_CASE("STA connected to AP in different namespaces") {
         RunStatus rs;
 
         auto ap_actor = ActorPtr(std::make_shared<Actor_config>());
-        ap_actor[SK::iface] = ap_phys_iface;
-        ap_actor[SK::netns] = ap_ns;
+        ap_actor->set(SK::iface, ap_phys_iface);
+        ap_actor->set(SK::netns, ap_ns);
 
         start_ap(rs, ap_vif, ap_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5} , beacon,  TestConfig::mac_addr);
         log(LogLevel::INFO, "AP started in namespace: {}", ap_ns);

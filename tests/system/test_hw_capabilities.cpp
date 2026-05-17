@@ -6,7 +6,6 @@
 #include "logger/error_log.h"
 #include <stdexcept>
 #include <regex>
-#include <set>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -238,9 +237,9 @@ TEST_CASE("hw_capabilities::check_req_options - two rules one option throws"){
 }
 
 TEST_CASE("hw_capabilities::check_req_options - string key matching"){
-	ActorPtr rule = make_actor({}, {{SK::driver, "ath9k"}});
-	ActorPtr match = make_actor({}, {{SK::driver, "ath9k"}});
-	ActorPtr nomatch = make_actor({}, {{SK::driver, "iwlwifi"}});
+	ActorPtr rule = make_actor({}, {{SK::driver_name, "ath9k"}});
+	ActorPtr match = make_actor({}, {{SK::driver_name, "ath9k"}});
+	ActorPtr nomatch = make_actor({}, {{SK::driver_name, "iwlwifi"}});
 
 	ActorCMap rules{{"dev", rule}};
 	const auto result = hw_capabilities::check_req_options(rules, {match, nomatch});

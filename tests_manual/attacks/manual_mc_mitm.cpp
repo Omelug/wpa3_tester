@@ -10,8 +10,8 @@ int main(){
     auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
     auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
 
-    r_sta_actor[SK::iface] = "wlan1";
-    r_sta_actor[SK::iface] = "wlan2";
+    r_sta_actor->set(SK::iface, "wlan1");
+    r_sta_actor->set(SK::iface, "wlan2");
 
     const string ap_ssid = "test_mc_mitm";
     const string ap_mac = "02:00:00:00:03:00";

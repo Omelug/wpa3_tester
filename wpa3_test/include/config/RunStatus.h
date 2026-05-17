@@ -93,9 +93,9 @@ private:
 public:
 	void parse_requirements();
 
-	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::string &config_path);
+	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::filesystem::path &config_path);
 	static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
-	static nlohmann::json config_validation(const std::string &config_path);
+	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void ensure_requirement(const std::string &req) const;
 	void check_local_requirements();
 	// use cache for options of actors

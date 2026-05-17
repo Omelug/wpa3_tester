@@ -155,8 +155,8 @@ TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
 
         // First add an entity with basic info
         auto actor = ActorPtr(make_shared<Actor_config>());
-        actor[SK::mac] = "00:11:22:33:44:55";
-        actor[SK::source] = "external";
+        actor->set(SK::mac, "00:11:22:33:44:55");
+        actor->set(SK::source, "external");
         seen.emplace("00:11:22:33:44:55", ActorPtr(actor));
 
         // Create beacon with more info

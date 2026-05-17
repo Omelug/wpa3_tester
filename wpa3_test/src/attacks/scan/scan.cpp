@@ -36,9 +36,9 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 			seen.emplace(mac, actor);
 		}
 		actor->set_mac(mac);
-		actor[SK::source] = "external";
-		actor[SK::ssid] = ssid;
-		actor[BK::AP] = is_ap;
+		actor->set(SK::source, "external");
+		actor->set(SK::ssid, ssid);
+		actor->set(BK::AP, is_ap);
 
 		if(channel_freq > 0){
 			if(channel_freq >= 2412 && channel_freq <= 2484){
@@ -49,10 +49,10 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 				actor[BK::GHz6] = true;
 			}
 			const int channel_num = hw_capabilities::freq_to_channel(channel_freq);
-			actor[SK::channel] = to_string(channel_num);
+			actor->set(SK::channel, to_string(channel_num));
 		}
 
-		if(signal != -1){ actor[SK::signal] = to_string(signal); }
+		if(signal != -1){ actor->set(SK::signal, to_string(signal)); }
 	};
 
 	// AP: Beacon
@@ -145,9 +145,9 @@ vector<ActorPtr> RunStatus::internal_options(){
 	for(const auto &[iface_name, radio_name, iface_type]:
 		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_config>());
-		cfg[SK::iface]   = iface_name;
-		cfg[SK::source]  = "internal";
-		cfg[SK::radio]   = radio_name;
+		cfg->set(SK::iface, iface_name);
+		cfg->set(SK::source, "internal");
+		cfg->set(SK::radio, radio_name);
 		cfg->load_hw_info(hw_cache);
 		options.emplace_back(cfg);
 	}
@@ -158,8 +158,8 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
-		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
-		actor_cfg[SK::radio] = radio_name;
+		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
+		actor_cfg->set(SK::radio, radio_name);
 		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
 		options.emplace_back(actor_cfg);
 	}
@@ -244,8 +244,8 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 	for(auto &cfg: scan::get_actors_conn_table(conn_table)){
 		if(!cfg[SK::whitebox_ip].has_value()){
 			const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
-			cfg[SK::whitebox_ip] = ip_str;
-			cfg[SK::source] = "external";
+			cfg->set(SK::whitebox_ip, ip_str);
+			cfg->set(SK::source, "external");
 			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
 		}
 		const string ip = cfg["whitebox_ip"];
@@ -314,9 +314,9 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	vector<ActorPtr> options;
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_config>());
-		cfg[SK::iface] = name;
-		cfg[SK::source] = "simulation";
-		cfg[SK::radio] = radio;
+		cfg->set(SK::iface, name);
+		cfg->set(SK::source, "simulation");
+		cfg->set(SK::radio, radio);
 		hw_capabilities::get_nl80211_caps(cfg);
 		options.emplace_back(cfg);
 	}

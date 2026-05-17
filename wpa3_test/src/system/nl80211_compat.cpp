@@ -178,7 +178,7 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 
 void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set_mac(read_sysfs(cfg->get(SK::iface), "address"));
-	cfg[SK::driver] = get_driver_name(cfg->get(SK::iface));
+	cfg->set(SK::driver_name, get_driver_name(cfg->get(SK::iface)));
 
 	/* ---------- nl80211 dynamic capabilities ---------- */
 	nl_sock *sock = nl_socket_alloc();
@@ -213,9 +213,9 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	nl_send_auto(sock, msg);   // send message to kernel
 	nl_recvmsgs_default(sock); // get answer
 
-	cfg[BK::AP] = caps.ap;
-	cfg[BK::STA] = caps.sta;
-	cfg[BK::monitor] = caps.monitor;
+	cfg->set(BK::AP, caps.ap);
+	cfg->set(BK::STA, caps.sta);
+	cfg->set(BK::monitor, caps.monitor);
 	cfg[BK::GHz2_4] = caps.band24;
 	cfg[BK::GHz5] = caps.band5;
 	cfg[BK::GHz6] = caps.band6;
@@ -224,7 +224,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg[BK::w80211ac] = caps._80211ac;
 	cfg[BK::w80211ax] = caps._80211ax;
 
-	cfg[BK::beacon_prot] = caps._80211ax;
+	cfg->set(BK::beacon_prot, caps._80211ax);
 
 	nlmsg_free(msg);
 	nl_socket_free(sock);

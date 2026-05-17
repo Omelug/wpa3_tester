@@ -110,8 +110,8 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 	return merged;
 }
 
-json RunStatus::extends_recursive(const nlohmann::json &config_json, const string &config_path){
-	const path config_dir = path(config_path).parent_path();
+json RunStatus::extends_recursive(const nlohmann::json &config_json, const path &config_path){
+	const path config_dir = config_path.parent_path();
 	vector<string> hierarchy;
 	return resolve_extends(config_json, config_dir, hierarchy);
 }
@@ -145,14 +145,14 @@ void RunStatus::validate_recursive(nlohmann::json &current_node, const path &bas
 	}
 }
 
-json RunStatus::config_validation(const string &config_path){
+json RunStatus::config_validation(const path &config_path){
 	try{
 		const YNode config_node = YAML::LoadFile(config_path);
 		json config_json = yaml_to_json(config_node);
 
 		// extends, validators
 		config_json = extends_recursive(config_json, config_path);
-		validate_recursive(config_json, path(config_path).parent_path());
+		validate_recursive(config_json, config_path.parent_path());
 
 		//global validation
 		const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
@@ -202,8 +202,11 @@ void save_yaml(const json &json_obj, const path &out_path){
 		if(yaml_node.IsMap() || yaml_node.IsSequence()){
 			yaml_node.SetStyle(YAML::EmitterStyle::Block);
 			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
-				if(yaml_node.IsMap()) self(self, it->second);
-				else self(self, *it);
+				if(yaml_node.IsMap()){
+					self(self, it->second);
+				}else{
+					self(self, *it);
+				}
 			}
 		}
 	};

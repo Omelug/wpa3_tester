@@ -6,10 +6,15 @@
 
 namespace wpa3_tester {
 
+struct Driver {
+	std::optional<std::string> driver_name;
+	std::optional<std::string> driver_hash; // /sys/module/<name>/srcversion
+};
+
 // String keys
 enum class SK : uint8_t {
     actor_name, source, iface, mac, permanent_mac, ssid, channel,
-    signal, ht_mode, driver, netns, sniff_iface,
+    signal, ht_mode, driver_name, driver_hash, netns, sniff_iface,
     radio, whitebox_host, whitebox_ip, ip_addr,
     ssh_user, ssh_port, ssh_password, external_OS,
     COUNT_

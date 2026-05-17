@@ -23,9 +23,9 @@ void setup_attack(RunStatus &rs){
 
 	/*
     //TODO only for  2.4 GHz
-    rogue_client[SK::channel] = ap["channel"];
+    rogue_client->set(SK::channel, ap["channel"]);
     // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
-    rogue_ap[SK::channel] = to_string((stoi(ap["channel"]) >= 6) ? 1 : 11);
+    rogue_ap->set(SK::channel, to_string((stoi(ap["channel"]) >= 6) ? 1 : 11));
     */
 }
 

@@ -24,8 +24,8 @@ TEST_CASE("Actor_config - json constructor with selection"){
 
     CHECK(actor[SK::iface].has_value());
     CHECK_EQ(actor[SK::iface].value(), "wlan0");
-    CHECK(actor[SK::driver].has_value());
-    CHECK_EQ(actor[SK::driver].value(), "ath9k");
+    CHECK(actor[SK::driver_name_name].has_value());
+    CHECK_EQ(actor[SK::driver_name_name].value(), "ath9k");
     CHECK_EQ(actor[SK::netns].value(), "sta");
 
     CHECK(actor[BK::monitor].value_or(false));
@@ -51,7 +51,7 @@ TEST_CASE("Actor_config - matches method"){
 
         Actor_config offer;
         offer[SK::iface] = "wlan0";
-        offer[SK::driver] = "ath9k";
+        offer[SK::driver_name_name] = "ath9k";
         offer[BK::monitor] = true;
         offer[BK::injection] = true;
 
@@ -108,7 +108,7 @@ TEST_CASE("Actor_config - operator+= merge"){
         base[BK::monitor] = true;
 
         Actor_config other;
-        other[SK::driver] = "ath9k";
+        other[SK::driver_name_name] = "ath9k";
         other[BK::injection] = true;
 
         base += other;
@@ -148,7 +148,7 @@ TEST_CASE("Actor_config - operator[] accessor"){
     CHECK(actor["iface"] == "wlan0");
 
     // Missing key
-	CHECK_THROWS_AS(auto a = actor.get(SK::driver), config_err);
+	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name_name), config_err);
 
     // Key exists but has no value should throw
 	 CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
@@ -281,7 +281,7 @@ TEST_CASE("Actor_config::to_str - empty config"){
 TEST_CASE("Actor_config::to_str - string keys only"){
     Actor_config actor;
     actor[SK::iface]  = "wlan0";
-    actor[SK::driver] = "ath9k";
+    actor[SK::driver_name_name] = "ath9k";
 
     const auto s = actor.to_str();
     CHECK_NE(s.find("iface=wlan0"), string::npos);
@@ -325,7 +325,7 @@ TEST_CASE("Actor_config::to_json - empty config"){
 TEST_CASE("Actor_config::to_json - string keys in selection"){
     Actor_config actor;
     actor[SK::iface]  = "wlan0";
-    actor[SK::driver] = "ath9k";
+    actor[SK::driver_name_name] = "ath9k";
 
     const auto j = actor.to_json();
     REQUIRE(j.contains("selection"));
@@ -360,7 +360,7 @@ TEST_CASE("Actor_config::to_json - netns and source are top-level, not in select
 TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
     Actor_config orig;
     orig[SK::iface]    = "wlan0";
-    orig[SK::driver]   = "ath9k";
+    orig[SK::driver_name_name]   = "ath9k";
     orig[SK::netns]    = "sta";
     orig[BK::monitor]  = true;
     orig[BK::AP]       = false;
@@ -368,7 +368,7 @@ TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
     Actor_config restored(orig.to_json());
 
     CHECK_EQ(restored[SK::iface].value(),  "wlan0");
-    CHECK_EQ(restored[SK::driver].value(), "ath9k");
+    CHECK_EQ(restored[SK::driver_name_name].value(), "ath9k");
     CHECK_EQ(restored[SK::netns].value(),  "sta");
     CHECK(restored[BK::monitor].value());
     CHECK_FALSE(restored[BK::AP].value());

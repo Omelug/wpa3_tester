@@ -20,6 +20,10 @@ class RunStatus;
 class ExternalConn;
 
 class Actor_config : public std::enable_shared_from_this<Actor_config> {
+private:
+	Driver _driver{};
+	std::optional<Tins::HWAddress<6>> _mac;
+	std::optional<Tins::HWAddress<6>> _permanent_mac;
 public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
 	explicit Actor_config() = default;
@@ -29,11 +33,12 @@ public:
 
     bool matches(const Actor_config &offer);
     Actor_config &operator+=(const Actor_config &other);
+	void set(SK key, const std::optional<std::string> &new_value);
+	void set(BK key, const std::optional<bool> &new_value);
 
-    std::shared_ptr<ExternalConn> conn;
+	std::shared_ptr<ExternalConn> conn;
 
-
-    [[nodiscard]] std::optional<std::string>&       operator[](SK key);
+	[[nodiscard]] std::optional<std::string>&       operator[](SK key);
     [[nodiscard]] const std::optional<std::string>& operator[](SK key) const;
     [[nodiscard]] std::optional<bool>&              operator[](BK key);
     [[nodiscard]] const std::optional<bool>&        operator[](BK key) const;

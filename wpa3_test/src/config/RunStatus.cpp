@@ -153,7 +153,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 		ofs << actor[SK::source].value_or("<none>") << ","
 			<< name << "," << actor[SK::iface].value_or("<none>") << ","
 			<< actor[SK::mac].value_or("<none>") << ","
-			<< actor[SK::driver].value_or("<none>") << ","
+			<< actor[SK::driver_name_name].value_or("<none>") << ","
 			<< actor[SK::channel].value_or("<none>") << ","
 			<< actor->to_json() <<endl;
 	}

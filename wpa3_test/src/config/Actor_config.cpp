@@ -26,18 +26,11 @@ Actor_config::Actor_config(const json &j) {
 		for(const auto k : sk_values()){
 			const auto name = string(sk_name(k));
 			if(!sel.contains(name)) continue;
-			if(k == SK::mac){
-				set_mac(sel[name].get<string>());
-				continue;
+			if(sel[name].is_string()){
+				this->set(k, sel[name].get<string>());
+			}else if(sel[name].is_number()){
+				this->set(k, to_string(sel[name].get<int>()));
 			}
-			if(k == SK::permanent_mac){
-				set_permanent_mac(sel[name].get<string>());
-				continue;
-			}
-			if(sel[name].is_string())
-				(*this)[k] = sel[name].get<string>();
-			else if(sel[name].is_number())
-				(*this)[k] = to_string(sel[name].get<int>());
 		}
 
 		if(sel.contains("condition") && sel.at("condition").is_array()){
@@ -107,11 +100,34 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 	return *this;
 }
 
+//TODO use set where possible
+void Actor_config::set(const SK key, const optional<string> &new_value){
+	if((key == SK::mac || key == SK::permanent_mac) && new_value.has_value() ){
+		string mac_lower = new_value.value();
+		ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
+		(*this)[key] = mac_lower;
+		return;
+	}
+	(*this)[key] = new_value;
+}
+
+void Actor_config::set(const BK key, const optional<bool> &new_value){
+	(*this)[key] = new_value;
+}
+
 optional<string>& Actor_config::operator[](SK key) {
+	//driver
+	if(key == SK::driver_name) return _driver.driver_name;
+	if(key == SK::driver_hash) return _driver.driver_hash;
+
 	return str_vals[static_cast<size_t>(key)];
 }
 
 const optional<string>& Actor_config::operator[](SK key) const {
+	//driver
+	if(key == SK::driver_name) return _driver.driver_name;
+	if(key == SK::driver_hash) return _driver.driver_hash;
+
 	return str_vals[static_cast<size_t>(key)];
 }
 
@@ -123,14 +139,14 @@ const optional<bool>& Actor_config::operator[](BK key) const {
 	return bool_vals[static_cast<size_t>(key)];
 }
 
-string Actor_config::get(SK key) const {
+string Actor_config::get(const SK key) const {
 	const auto &v = (*this)[key];
 	if(!v.has_value())
 		throw config_err("Actor_config: key '" + string(sk_name(key)) + "' has no value");
 	return *v;
 }
 
-bool Actor_config::get(BK key) const {
+bool Actor_config::get(const BK key) const {
 	const auto &v = (*this)[key];
 	if(!v.has_value())
 		throw config_err("Actor_config: bool key '" + string(bk_name(key)) + "' has no value");

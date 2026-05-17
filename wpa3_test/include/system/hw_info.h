@@ -25,7 +25,7 @@ struct HwInfo{
     }
 
     static constexpr bool is_hw_info(const SK k){
-        return k == SK::permanent_mac || k == SK::driver;
+        return k == SK::permanent_mac || k == SK::driver_name_name;
     }
 
 private:

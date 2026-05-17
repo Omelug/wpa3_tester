@@ -158,7 +158,7 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
-		actor_cfg[SK::driver] = cfg->conn->get_driver(radio_name);
+		actor_cfg[SK::driver_name] = cfg->conn->get_driver(radio_name);
 		actor_cfg[SK::radio] = radio_name;
 		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
 		options.emplace_back(actor_cfg);

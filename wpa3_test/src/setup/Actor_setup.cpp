@@ -6,7 +6,7 @@
 namespace wpa3_tester{
 using namespace std;
 
-void Actor_config::set_mac(const string &mac_address){
+/*void Actor_config::set_mac(const string &mac_address){
 	string mac_lower = mac_address;
 	ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
 	(*this)[SK::mac] = mac_lower;
@@ -16,7 +16,7 @@ void Actor_config::set_permanent_mac(const string &mac_address){
 	string mac_lower = mac_address;
 	ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
 	(*this)[SK::permanent_mac] = mac_lower;
-}
+}*/
 
 Channel Actor_config::get_channel() const {
 	if(!(*this)[SK::channel].has_value())
@@ -68,7 +68,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	conn = real_actor->conn;
 	if(internal || external_WB){
 		// (same if set in config)
-		(*this)[SK::driver] = real_actor[SK::driver];
+		(*this)[SK::driver_name] = real_actor[SK::driver_name];
 	}
 	if(internal){
 		(*this)[SK::iface] = real_actor[SK::iface];

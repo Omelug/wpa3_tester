@@ -21,6 +21,7 @@ target_link_libraries(wpa3_core INTERFACE
         wpa3_dos_soft
         wpa3_enterprise
         wpa3_mc_mitm
+        wpa3_two_iface
         wpa3_logger
         -Wl,--end-group
 )

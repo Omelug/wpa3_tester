@@ -3,6 +3,7 @@
 #include <string>
 #include <tins/tins.h>
 #include "system/hw_capabilities.h"
+#include "system/netlink_guards.h"
 
 using namespace std;
 using namespace Tins;
@@ -12,6 +13,19 @@ MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 : detect_injected_(detect_injected), sender_(iface), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf);
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw runtime_error(
+		"pcap_setnonblock failed: " + string(errbuf));
+}
+
+MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
+: detect_injected_(detect_injected), sender_([&]() -> PacketSender {
+	netlink_helper::NetNSContext ns_guard(netns);
+	return PacketSender(iface);
+}()), sniffer_([&]() -> Sniffer {
+	netlink_helper::NetNSContext ns_guard(netns);
+	return Sniffer(iface, make_sniff_cfg());
+}()){
+	char errbuf[PCAP_ERRBUF_SIZE];
 	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw runtime_error(
 		"pcap_setnonblock failed: " + string(errbuf));
 }

@@ -99,7 +99,9 @@ public:
 	void ensure_requirement(const std::string &req) const;
 	void check_local_requirements();
 	// use cache for options of actors
-	void config_requirement();
+
+	//return if re-reload
+	bool config_requirement();
 	void setup_test();
 	void run_test();
 	void stats_test() const;

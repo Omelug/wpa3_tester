@@ -128,6 +128,7 @@
       <w>radiotap</w>
       <w>readlink</w>
       <w>reassoc</w>
+      <w>recv</w>
       <w>reproc</w>
       <w>retrans</w>
       <w>reuseaddr</w>

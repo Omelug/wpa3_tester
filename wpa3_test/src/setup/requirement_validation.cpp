@@ -11,6 +11,8 @@
 #include <thread>
 #include <sys/mount.h>
 #include "config/Observer_config.h"
+#include "logger/error_log.h"
+#include "attacks/two_iface/TwoIface.h"
 
 using namespace std;
 using namespace filesystem;
@@ -223,7 +225,7 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 	return result;
 }
 
-void RunStatus::config_requirement(){
+bool RunStatus::config_requirement(){
 	check_local_requirements();
 	cleanup_all_namespaces();
 	parse_requirements();
@@ -290,7 +292,25 @@ void RunStatus::config_requirement(){
 		auto &opt_actor = simulation_mapping.at(actor_name);
 		actor->setup_actor(_config, opt_actor);
 	}
-	//TODO post_bactracking_requirements
+	// --------------- POST-BACKTRACKING REQUIREMENTS
+	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")){
+		for(const auto &[key, actor_names]: _config.at("requirements").at("two_iface").items()){
+			if(!actor_names.is_array() || actor_names.size() < 2)
+				throw config_err("two_iface." + key + " must be an array of two actor names");
 
+			const ActorPtr &actor1 = get_actor(actor_names[0].get<string>());
+			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());
+
+			if(key == "active"){
+				if(TwoIfaceActive::run_check(actor1, actor2)) return true;
+			} else if(key == "inject"){
+				if(TwoIfaceInject::run_check(actor1, actor2)) return true;
+			} else{
+				throw not_implemented_err("two_iface test key not found: " + key);
+			}
+		}
+	}
+
+	return false;
 }
 }

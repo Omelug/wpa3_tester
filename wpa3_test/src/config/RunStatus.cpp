@@ -81,7 +81,10 @@ void RunStatus::execute(){
 			return;
 		}
 
-		config_requirement(); //include req validation
+		while(config_requirement()){
+			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
+		} //include req validation
+
 		setup_test();
 		const path out_path = _run_folder / "test_config.yaml";
 		save_yaml(_config, out_path);

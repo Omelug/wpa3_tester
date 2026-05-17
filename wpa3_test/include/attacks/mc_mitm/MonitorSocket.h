@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <optional>
 #include <string>
 #include "system/wifi_channel.h"
 
@@ -7,6 +8,7 @@ namespace wpa3_tester{
 class MonitorSocket{
 public:
 	explicit MonitorSocket(const std::string &iface, bool detect_injected = false);
+	MonitorSocket(const std::string &iface, const std::optional<std::string> &netns, bool detect_injected = false);
 
 	struct RecvResult{
 		std::unique_ptr<Tins::PDU> pdu;

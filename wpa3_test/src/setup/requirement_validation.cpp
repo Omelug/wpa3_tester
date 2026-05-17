@@ -22,7 +22,7 @@ using namespace observer;
 void RunStatus::parse_requirements(){
 	for(const auto &[actor_name, actor]: _config.at("actors").items()){
 		auto [it, inserted] = actors.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor)));
-		it->second[SK::actor_name] = actor_name;
+		it->second->set(SK::actor_name, actor_name);
 	}
 	if(!_config.contains("observers")) return;
 	for(const auto &[observer_name, observer]: _config.at("observers").items()){

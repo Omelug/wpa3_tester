@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <doctest.h>
 #include <nl80211.h>
 #include <optional>
 #include <string>
@@ -86,7 +87,7 @@ private:
 
 
     void setup_actor_internal(const nlohmann::json &config);
-    void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor);
+    void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor) const;
 };
 
 }

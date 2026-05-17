@@ -43,7 +43,7 @@ void run_attack(RunStatus &rs){
     const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "scan" / "internal_iface.json";
 	
 	auto scanner = rs.get_actor("scanner");
-	scanner[SK::iface] = iface;
+	scanner->set(SK::iface, iface);
     scanner->load_hw_info(hw_cache);
 
     // ----- injection tests -----
@@ -67,7 +67,7 @@ void run_attack(RunStatus &rs){
     md << "|----------|-------|\n";
     md << "| Name       | `" << iface << "` |\n";
     md << "| PHY        | " << (phy.empty() ? "n/a" : phy) << " |\n";
-    md << "| Driver     | " << scanner.get(SK::driver_name_name) << " |\n";
+    md << "| Driver     | " << scanner.get(SK::driver_name) << " |\n";
     md << "| State      | " << (is_up ? "UP" : "DOWN") << " |\n";
     md << "| IP Address | " << ip_addr << " |\n\n";
 
@@ -109,8 +109,8 @@ void run_attack(RunStatus &rs){
     md << "| Feature | Supported |\n";
     md << "|----------|-----------|\n";
 
-    if(scanner[SK::driver_name_name].has_value())
-        md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name_name].value() << "`\n";
+    if(scanner[SK::driver_name].has_value())
+        md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name].value() << "`\n";
     if(scanner[SK::mac].has_value())
         md << "- **MAC (nl80211)**: `" << scanner[SK::mac].value() << "`\n";
     md << "\n";

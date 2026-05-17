@@ -40,9 +40,9 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 }
 
 void RunStatus::clean(){
-	this->process_manager.stop_all();
-	this->actors.clear();
-	this->observers.clear();
+	process_manager.stop_all();
+	actors.clear();
+	observers.clear();
 }
 
 void RunStatus::execute(){
@@ -75,7 +75,7 @@ void RunStatus::execute(){
 	}
 
 	try {
-		if(this->run_config().get_only_stats()){
+		if(run_config().get_only_stats()){
 			load_actor_interface_mapping();
 			stats_test();
 			return;
@@ -153,7 +153,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 		ofs << actor[SK::source].value_or("<none>") << ","
 			<< name << "," << actor[SK::iface].value_or("<none>") << ","
 			<< actor[SK::mac].value_or("<none>") << ","
-			<< actor[SK::driver_name_name].value_or("<none>") << ","
+			<< actor[SK::driver_name].value_or("<none>") << ","
 			<< actor[SK::channel].value_or("<none>") << ","
 			<< actor->to_json() <<endl;
 	}
@@ -287,7 +287,7 @@ void RunStatus::load_actor_interface_mapping(){
 			continue;
 		}
 		auto actor = make_shared<Actor_config>(j);
-		(*actor)[SK::actor_name] = actor_name;
+		actor->set(SK::actor_name, actor_name);
 		actors.emplace(actor_name, ActorPtr(actor));
 	}
 	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());

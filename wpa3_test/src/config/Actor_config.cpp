@@ -44,8 +44,8 @@ Actor_config::Actor_config(const json &j) {
 		}
 	}
 
-	if(j.contains("netns"))  (*this)[SK::netns]  = j.at("netns").get<string>();
-	if(j.contains("source")) (*this)[SK::source] = j.at("source").get<string>();
+	if(j.contains("netns"))  this->set(SK::netns, j.at("netns").get<string>());
+	if(j.contains("source")) this->set(SK::source, j.at("source").get<string>());
 }
 
 Actor_config::~Actor_config() {
@@ -100,7 +100,6 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 	return *this;
 }
 
-//TODO use set where possible
 void Actor_config::set(const SK key, const optional<string> &new_value){
 	if((key == SK::mac || key == SK::permanent_mac) && new_value.has_value() ){
 		string mac_lower = new_value.value();
@@ -253,11 +252,11 @@ void Actor_config::print_ActorCMap(const string &title, ActorCMap actors) {
 }
 
 bool Actor_config::is_WB() const {
-	return (*this)[SK::source].value() == "internal" || is_external_WB();
+	return get(SK::source) == "internal" || is_external_WB();
 }
 
 bool Actor_config::is_external_WB() const {
-	return (*this)[SK::source].value() == "external" &&
+	return get(SK::source) == "external" &&
 			((*this)[SK::whitebox_host].has_value() || (*this)[SK::whitebox_ip].has_value());
 }
 }

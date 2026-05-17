@@ -24,8 +24,8 @@ TEST_CASE("Actor_config - json constructor with selection"){
 
     CHECK(actor[SK::iface].has_value());
     CHECK_EQ(actor[SK::iface].value(), "wlan0");
-    CHECK(actor[SK::driver_name_name].has_value());
-    CHECK_EQ(actor[SK::driver_name_name].value(), "ath9k");
+    CHECK(actor[SK::driver_name].has_value());
+    CHECK_EQ(actor[SK::driver_name].value(), "ath9k");
     CHECK_EQ(actor[SK::netns].value(), "sta");
 
     CHECK(actor[BK::monitor].value_or(false));
@@ -46,48 +46,48 @@ TEST_CASE("Actor_config - json constructor without selection"){
 TEST_CASE("Actor_config - matches method"){
     SUBCASE("Exact match") {
         Actor_config required;
-        required[SK::iface] = "wlan0";
-        required[BK::monitor] = true;
+        required.set(SK::iface, "wlan0");
+        required.set(BK::monitor, true);
 
         Actor_config offer;
-        offer[SK::iface] = "wlan0";
-        offer[SK::driver_name_name] = "ath9k";
-        offer[BK::monitor] = true;
-        offer[BK::injection] = true;
+        offer.set(SK::iface, "wlan0");
+        offer.set(SK::driver_name, "ath9k");
+        offer.set(BK::monitor, true);
+        offer.set(BK::injection, true);
 
         CHECK(required.matches(offer));
     }
 
     SUBCASE("String mismatch") {
         Actor_config required;
-        required[SK::iface] = "wlan0";
+        required.set(SK::iface, "wlan0");
 
         Actor_config offer;
-        offer[SK::iface] = "wlan1";
+        offer.set(SK::iface, "wlan1");
 
         CHECK_FALSE(required.matches(offer));
     }
 
     SUBCASE("Bool condition mismatch") {
         Actor_config required;
-        required[BK::monitor] = true;
+        required.set(BK::monitor, true);
 
         Actor_config offer;
-        offer[BK::monitor] = false;
+        offer.set(BK::monitor, false);
 
         CHECK_FALSE(required.matches(offer));
     }
 
     SUBCASE("Offer missing required string") {
         Actor_config required;
-        required[SK::iface] = "wlan0";
+        required.set(SK::iface, "wlan0");
         Actor_config offer;
         CHECK(required.matches(offer));
     }
 
     SUBCASE("Offer missing required bool") {
         Actor_config required;
-        required[BK::monitor] = true;
+        required.set(BK::monitor, true);
         Actor_config offer;
         CHECK(required.matches(offer));
     }
@@ -95,8 +95,8 @@ TEST_CASE("Actor_config - matches method"){
     SUBCASE("Required nullopt matches anything") {
         Actor_config required;
         Actor_config offer;
-        offer[SK::iface] = "wlan0";
-        offer[BK::monitor] = true;
+        offer.set(SK::iface, "wlan0");
+        offer.set(BK::monitor, true);
         CHECK(required.matches(offer));
     }
 }
@@ -104,12 +104,12 @@ TEST_CASE("Actor_config - matches method"){
 TEST_CASE("Actor_config - operator+= merge"){
     SUBCASE("Merge non-conflicting configs") {
         Actor_config base;
-        base[SK::iface] = "wlan0";
-        base[BK::monitor] = true;
+        base.set(SK::iface, "wlan0");
+        base.set(BK::monitor, true);
 
         Actor_config other;
-        other[SK::driver_name_name] = "ath9k";
-        other[BK::injection] = true;
+        other.set(SK::driver_name, "ath9k");
+        other.set(BK::injection, true);
 
         base += other;
 
@@ -121,10 +121,10 @@ TEST_CASE("Actor_config - operator+= merge"){
 
     SUBCASE("Merge with same values") {
         Actor_config base;
-        base[SK::iface] = "wlan0";
+        base.set(SK::iface, "wlan0");
 
         Actor_config other;
-        other[SK::iface] = "wlan0"; // same value
+        other.set(SK::iface, "wlan0"); // same value
 
         CHECK_NOTHROW(base += other);
         CHECK_EQ(base[SK::iface].value(), "wlan0");
@@ -132,10 +132,10 @@ TEST_CASE("Actor_config - operator+= merge"){
 
     SUBCASE("Merge with conflicting values throws") {
         Actor_config base;
-        base[SK::iface] = "wlan0";
+        base.set(SK::iface, "wlan0");
 
         Actor_config other;
-        other[SK::iface] = "wlan1"; // conflict
+        other.set(SK::iface, "wlan1"); // conflict
 
         CHECK_THROWS_AS(base += other, runtime_error);
     }
@@ -143,12 +143,12 @@ TEST_CASE("Actor_config - operator+= merge"){
 
 TEST_CASE("Actor_config - operator[] accessor"){
     Actor_config actor;
-    actor[SK::iface] = "wlan0";
+    actor.set(SK::iface, "wlan0");
 
     CHECK(actor["iface"] == "wlan0");
 
     // Missing key
-	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name_name), config_err);
+	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name), config_err);
 
     // Key exists but has no value should throw
 	 CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
@@ -186,7 +186,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Multiple bands throw (2_4GHz + 6GHz)") {
         Actor_config actor;
-        actor[SK::channel] = "6";
+        actor.set(SK::channel, "6");
         actor[BK::GHz2_4] = true;
         actor[BK::GHz6] = true;
         CHECK_THROWS_AS(actor.get_channel(), config_err);
@@ -194,7 +194,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Multiple bands throw (5GHz + 6GHz)") {
         Actor_config actor;
-        actor[SK::channel] = "36";
+        actor.set(SK::channel, "36");
         actor[BK::GHz5] = true;
         actor[BK::GHz6] = true;
         CHECK_THROWS_AS(actor.get_channel(), config_err);
@@ -202,7 +202,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Valid 2.4GHz channel with explicit band") {
         Actor_config actor;
-        actor[SK::channel] = "6";
+        actor.set(SK::channel, "6");
         actor[BK::GHz2_4] = true;
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 6);
@@ -211,7 +211,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Valid 5GHz channel with explicit band") {
         Actor_config actor;
-        actor[SK::channel] = "36";
+        actor.set(SK::channel, "36");
         actor[BK::GHz5] = true;
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 36);
@@ -220,7 +220,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Valid 6GHz channel with explicit band") {
         Actor_config actor;
-        actor[SK::channel] = "1";
+        actor.set(SK::channel, "1");
         actor[BK::GHz6] = true;
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 1);
@@ -229,7 +229,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Inferred 2.4GHz from channel number") {
         Actor_config actor;
-        actor[SK::channel] = "11";
+        actor.set(SK::channel, "11");
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 11);
         CHECK_EQ(ch.band, WifiBand::BAND_2_4);
@@ -237,7 +237,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Inferred 5GHz from channel number") {
         Actor_config actor;
-        actor[SK::channel] = "100";
+        actor.set(SK::channel, "100");
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 100);
         CHECK_EQ(ch.band, WifiBand::BAND_5);
@@ -245,7 +245,7 @@ TEST_CASE("Actor_config - get_channel"){
 
     SUBCASE("Invalid channel throws") {
         Actor_config actor;
-        actor[SK::channel] = "999";
+        actor.set(SK::channel, "999");
         CHECK_THROWS_AS(actor.get_channel(), config_err);
     }
 }
@@ -265,8 +265,8 @@ TEST_CASE("Actor_config - operator+=complex"){
     actor[BK::GHz5] = false;
     actor[BK::w80211ac] = false;
     actor[BK::w80211n] = true;
-    actor[BK::AP] = false;
-    actor[BK::STA] = true;
+    actor.set(BK::AP, false);
+    actor.set(BK::STA, true);
 
     CHECK_NOTHROW(actor += actor2);
 }
@@ -280,8 +280,8 @@ TEST_CASE("Actor_config::to_str - empty config"){
 
 TEST_CASE("Actor_config::to_str - string keys only"){
     Actor_config actor;
-    actor[SK::iface]  = "wlan0";
-    actor[SK::driver_name_name] = "ath9k";
+    actor.set(SK::iface, "wlan0");
+    actor.set(SK::driver_name, "ath9k");
 
     const auto s = actor.to_str();
     CHECK_NE(s.find("iface=wlan0"), string::npos);
@@ -292,8 +292,8 @@ TEST_CASE("Actor_config::to_str - string keys only"){
 
 TEST_CASE("Actor_config::to_str - bool keys true and false"){
     Actor_config actor;
-    actor[BK::AP]        = true;
-    actor[BK::injection] = false;
+    actor.set(BK::AP, true);
+    actor.set(BK::injection, false);
 
     const auto s = actor.to_str();
     CHECK_NE(s.find("["), string::npos);
@@ -303,8 +303,8 @@ TEST_CASE("Actor_config::to_str - bool keys true and false"){
 
 TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
     Actor_config actor;
-    actor[SK::iface] = "wlan1";
-    actor[BK::monitor] = true;
+    actor.set(SK::iface, "wlan1");
+    actor.set(BK::monitor, true);
 
     const auto s = actor.to_str();
     CHECK_NE(s.find("iface=wlan1"), string::npos);
@@ -324,8 +324,8 @@ TEST_CASE("Actor_config::to_json - empty config"){
 
 TEST_CASE("Actor_config::to_json - string keys in selection"){
     Actor_config actor;
-    actor[SK::iface]  = "wlan0";
-    actor[SK::driver_name_name] = "ath9k";
+    actor.set(SK::iface, "wlan0");
+    actor.set(SK::driver_name, "ath9k");
 
     const auto j = actor.to_json();
     REQUIRE(j.contains("selection"));
@@ -335,8 +335,8 @@ TEST_CASE("Actor_config::to_json - string keys in selection"){
 
 TEST_CASE("Actor_config::to_json - bool conditions"){
     Actor_config actor;
-    actor[BK::monitor]   = true;
-    actor[BK::injection] = false;
+    actor.set(BK::monitor, true);
+    actor.set(BK::injection, false);
 
     const auto j = actor.to_json();
     REQUIRE(j["selection"].contains("condition"));
@@ -347,8 +347,8 @@ TEST_CASE("Actor_config::to_json - bool conditions"){
 
 TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){
     Actor_config actor;
-    actor[SK::netns]  = "sta_ns";
-    actor[SK::source] = "hardware";
+    actor.set(SK::netns, "sta_ns");
+    actor.set(SK::source, "hardware");
 
     const auto j = actor.to_json();
     CHECK_EQ(j["netns"],  "sta_ns");
@@ -359,16 +359,16 @@ TEST_CASE("Actor_config::to_json - netns and source are top-level, not in select
 
 TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
     Actor_config orig;
-    orig[SK::iface]    = "wlan0";
-    orig[SK::driver_name_name]   = "ath9k";
-    orig[SK::netns]    = "sta";
-    orig[BK::monitor]  = true;
-    orig[BK::AP]       = false;
+    orig.set(SK::iface, "wlan0");
+    orig.set(SK::driver_name, "ath9k");
+    orig.set(SK::netns, "sta");
+    orig.set(BK::monitor, true);
+    orig.set(BK::AP, false);
 
     Actor_config restored(orig.to_json());
 
     CHECK_EQ(restored[SK::iface].value(),  "wlan0");
-    CHECK_EQ(restored[SK::driver_name_name].value(), "ath9k");
+    CHECK_EQ(restored[SK::driver_name].value(), "ath9k");
     CHECK_EQ(restored[SK::netns].value(),  "sta");
     CHECK(restored[BK::monitor].value());
     CHECK_FALSE(restored[BK::AP].value());
@@ -377,18 +377,18 @@ TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
 // ActorPtr
 
 TEST_CASE("ActorPtr - basic accessors"){
-    auto cfg = make_shared<Actor_config>();
-    (*cfg)[SK::iface]   = "wlan2";
-    (*cfg)[BK::monitor] = true;
+    auto cfg = ActorPtr(make_shared<Actor_config>());
+    cfg->set(SK::iface, "wlan2");
+    cfg->set(BK::monitor, true);
 
     ActorPtr ap(cfg);
 
     SUBCASE("operator->"){
-        CHECK_EQ(ap->operator[](SK::iface).value(), "wlan2");
+        CHECK_EQ(ap->get(SK::iface), "wlan2");
     }
 
     SUBCASE("operator*"){
-        CHECK_EQ((*ap)[SK::iface].value(), "wlan2");
+        CHECK_EQ(ap->get(SK::iface), "wlan2");
     }
 
     SUBCASE("get()"){
@@ -396,7 +396,7 @@ TEST_CASE("ActorPtr - basic accessors"){
     }
 
     SUBCASE("shared()"){
-        CHECK(ap.shared() == cfg);
+        CHECK(ap.shared() == cfg.shared());
     }
 
     SUBCASE("operator[](string)"){
@@ -409,7 +409,7 @@ TEST_CASE("ActorPtr - basic accessors"){
     }
 
     SUBCASE("operator[](BK) mutable"){
-        ap[BK::injection] = true;
+        ap->set(BK::injection, true);
         CHECK(ap[BK::injection].value());
     }
 

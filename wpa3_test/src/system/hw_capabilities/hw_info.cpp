@@ -64,7 +64,7 @@ nlohmann::json HwInfo::to_json() const{
 
 void HwInfo::from_json(const nlohmann::json &j){
     if(!actor) actor = make_shared<Actor_config>();
-    (*actor)[SK::driver_name] = j.value("driver", "");
+    actor->set(SK::driver_name, j.value("driver", ""));
     actor->set_permanent_mac(j.value("permanent_mac", ""));
     actor->caps_from_flat_json(j);
 }
@@ -93,7 +93,7 @@ void Actor_config::load_hw_info(const optional<path> &cache){
 
     // ----- collect info -----
     set_permanent_mac(perm_mac);
-    (*this)[SK::driver_name] = hw_capabilities::get_driver_name(iface);
+    this->set(SK::driver_name, hw_capabilities::get_driver_name(iface));
 
     ActorPtr self(shared_from_this());
     hw_capabilities::get_nl80211_caps(self);

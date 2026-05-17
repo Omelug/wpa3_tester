@@ -20,7 +20,7 @@ static pair<shared_ptr<OpenWrtConn>,ActorPtr> &get_conn_actor(){
         ActorPtr actor = wb_actor_selection();
         auto conn = make_shared<OpenWrtConn>();
         actor->conn = conn;
-        actor[SK::actor_name] = "test_actor";
+        actor->set(SK::actor_name, "test_actor");
         if(!conn->connect(actor)) throw manual_test_err("Failed to connect");
         return make_pair(conn, actor);
     }();
@@ -123,7 +123,7 @@ TEST_CASE ("Tcpdump OpenWrt"){
         rs.process_manager.init_logging(test_dir / "logger");
 
         rs.actors.emplace(actor["actor_name"], actor);
-        actor[SK::iface] = chosen_iface;
+        actor->set(SK::iface, chosen_iface);
 
         observer::start_tcpdump_remote(rs, actor["actor_name"], "");
         this_thread::sleep_for(chrono::seconds(1));

@@ -237,9 +237,9 @@ TEST_CASE("hw_capabilities::check_req_options - two rules one option throws"){
 }
 
 TEST_CASE("hw_capabilities::check_req_options - string key matching"){
-	ActorPtr rule = make_actor({}, {{SK::driver_name_name, "ath9k"}});
-	ActorPtr match = make_actor({}, {{SK::driver_name_name, "ath9k"}});
-	ActorPtr nomatch = make_actor({}, {{SK::driver_name_name, "iwlwifi"}});
+	ActorPtr rule = make_actor({}, {{SK::driver_name, "ath9k"}});
+	ActorPtr match = make_actor({}, {{SK::driver_name, "ath9k"}});
+	ActorPtr nomatch = make_actor({}, {{SK::driver_name, "iwlwifi"}});
 
 	ActorCMap rules{{"dev", rule}};
 	const auto result = hw_capabilities::check_req_options(rules, {match, nomatch});

@@ -75,8 +75,8 @@ static std::unique_ptr<McMitmTestable> make_fixture() {
     auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
     auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
 
-    r_sta_actor[SK::iface] = "wlan1";
-    r_ap_actor[SK::iface] = "wlan2";
+    r_sta_actor->set(SK::iface, "wlan1");
+    r_ap_actor->set(SK::iface, "wlan2");
 
     const std::string ap_ssid = "test_mc_mitm";
     auto m = std::make_unique<McMitmTestable>(r_sta_actor, r_ap_actor, ap_ssid, AP_MAC, CLIENT_MAC);

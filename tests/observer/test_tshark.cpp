@@ -29,7 +29,7 @@ path this_file = source_location::current().file_name();
 
 ActorPtr make_actor(const string &mac){
     auto cfg = ActorPtr(make_shared<Actor_config>());
-    cfg[SK::mac] = mac;
+    cfg->set(SK::mac, mac);
     return ActorPtr(cfg);
 }
 

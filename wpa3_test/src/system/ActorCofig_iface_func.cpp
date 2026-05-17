@@ -10,7 +10,7 @@ namespace wpa3_tester{
 using namespace std;
 
 void Actor_config::set_channel(const Channel ch, const string &ht_mode) const{
-	const string &iface = (*this)[SK::iface].value();
+	const string &iface = get(SK::iface);
 	if(conn != nullptr){ conn->set_channel(iface, ch, ht_mode); return; }
 	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
 }
@@ -23,7 +23,7 @@ bool is_interface_up(const string &iface){
 }
 
 void Actor_config::cleanup() const{
-	string iface = (*this)[SK::iface].value();
+	string iface = get(SK::iface);
 	const optional<string> netns = (*this)[SK::netns];
 	if(iface.empty()){
 		log(LogLevel::ERROR, "cleanup() called with empty interface name");
@@ -41,7 +41,7 @@ void Actor_config::cleanup() const{
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
 	if((*this)[SK::sniff_iface].has_value()){
-		run({"iw", "dev", (*this)[SK::sniff_iface].value(), "del"});
+		run({"iw", "dev", get(SK::sniff_iface), "del"});
 
 		run({"pkill", "-f", "wpa_supplicant.*-i" + iface});
 		run({"pkill", "-f", "hostapd.*" + iface});
@@ -54,8 +54,8 @@ void Actor_config::cleanup() const{
 }
 
 void Actor_config::create_sniff_iface() const{
-	const string &iface = (*this)[SK::iface].value();
-	const string &sniff_iface = (*this)[SK::sniff_iface].value();
+	const string &iface = get(SK::iface);
+	const string &sniff_iface = get(SK::sniff_iface);
 	if(conn != nullptr){
 		throw not_implemented_err("External cant have sniff_iface");
 		//conn->create_sniff_iface(iface, sniff_iface); return;
@@ -84,7 +84,7 @@ void Actor_config::create_sniff_iface() const{
 //------------------ get status info functions
 
 void Actor_config::set_ap_mode() const{
-	const string &iface = (*this)[SK::iface].value();
+	const string &iface = get(SK::iface);
 	log(LogLevel::INFO, "Preparing interface {} for AP mode", iface);
 
 	set_iface_down();
@@ -94,7 +94,7 @@ void Actor_config::set_ap_mode() const{
 
 void Actor_config::up_sniff_iface() const{
 	if(!(*this)[SK::sniff_iface].has_value()) return;
-	const string &sniff_iface = (*this)[SK::sniff_iface].value();
+	const string &sniff_iface = get(SK::sniff_iface);
 
 	if(is_interface_up(sniff_iface)){
 		log(LogLevel::DEBUG, "{} is already UP, skipping.", sniff_iface);
@@ -105,7 +105,7 @@ void Actor_config::up_sniff_iface() const{
 }
 
 void Actor_config::set_managed_mode() const{
-	const string &iface = (*this)[SK::iface].value();
+	const string &iface = get(SK::iface);
 	if(conn != nullptr){ conn->set_managed_mode(iface); return; }
 	const optional<string> netns = (*this)[SK::netns];
 
@@ -115,17 +115,17 @@ void Actor_config::set_managed_mode() const{
 }
 
 void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
-	const string &iface = (*this)[SK::iface].value();
+	const string &iface = get(SK::iface);
 	if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
 	hw_capabilities::set_mac_address(iface, mac, (*this)[SK::netns]);
 
 	if((*this)[SK::sniff_iface].has_value()){
-		hw_capabilities::set_mac_address((*this)[SK::sniff_iface].value(), mac, (*this)[SK::netns]);
+		hw_capabilities::set_mac_address(get(SK::sniff_iface), mac, (*this)[SK::netns]);
 	}
 }
 
 void Actor_config::set_monitor_mode() const{
-	const string &iface = (*this)[SK::iface].value();
+	const string &iface = get(SK::iface);
 	//FIXMe test test flags
 	if(conn != nullptr){ conn->set_monitor_mode(iface); return; }
 
@@ -150,18 +150,18 @@ int Actor_config::run(const vector<string> &argv) const{
 }
 
 string Actor_config::get_driver_name() const{
-	return hw_capabilities::get_driver_name((*this)[SK::iface].value());
+	return hw_capabilities::get_driver_name(get(SK::iface));
 }
 
 void Actor_config::set_iface_down() const{
-	hw_capabilities::set_iface_down((*this)[SK::iface].value(), (*this)[SK::netns]);
+	hw_capabilities::set_iface_down(get(SK::iface), (*this)[SK::netns]);
 }
 
 void Actor_config::set_iface_up() const{
-	hw_capabilities::set_iface_up((*this)[SK::iface].value(), (*this)[SK::netns]);
+	hw_capabilities::set_iface_up(get(SK::iface), (*this)[SK::netns]);
 }
 
 void Actor_config::set_wifi_type(const nl80211_iftype type) const{
-	hw_capabilities::set_wifi_type((*this)[SK::iface].value(), type, (*this)[SK::netns]);
+	hw_capabilities::set_wifi_type(get(SK::iface), type, (*this)[SK::netns]);
 }
 }

@@ -26,7 +26,7 @@ TEST_CASE("iface_info_report"){
     // ----- collect and cache hw_info -----
     const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "scan" / "internal_iface.json";
     ActorPtr scanner_cfg(make_shared<Actor_config>());
-    scanner_cfg[SK::iface] = iface;
+    scanner_cfg->set(SK::iface, iface);
     const HwInfo hw = scanner_cfg->get_hw_info(hw_cache);
 
     cout << "Interface    : " << iface << "\n";
@@ -38,9 +38,9 @@ TEST_CASE("iface_info_report"){
     RunStatus rs;
 
     ActorPtr scanner(make_shared<Actor_config>());
-    scanner[SK::iface]       = iface;
-    scanner[SK::sniff_iface] = iface;
-    if(!hw.permanent_mac.empty()) scanner[SK::mac] = hw.permanent_mac;
+    scanner->set(SK::iface, iface);
+    scanner->set(SK::sniff_iface, iface);
+    if(!hw.permanent_mac.empty()) scanner->set(SK::mac, hw.permanent_mac);
     rs.actors["scanner"] = scanner;
 
     // minimal config so tshark's add_nets_header and attack_config are accessible

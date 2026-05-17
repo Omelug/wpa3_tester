@@ -55,7 +55,8 @@ nlohmann::json InjectionSuiteResult::to_json() const{
 
 nlohmann::json HwInfo::to_json() const{
     nlohmann::json j = {
-        {"driver",        actor->get(SK::driver_name)},
+        {"driver_name",        actor->get(SK::driver_name)},
+		{"driver_hash",        actor->get(SK::driver_hash)},
         {"permanent_mac", actor->get(SK::permanent_mac)},
     };
     j.update(actor->caps_to_flat_json());
@@ -65,7 +66,8 @@ nlohmann::json HwInfo::to_json() const{
 void HwInfo::from_json(const nlohmann::json &j){
     if(!actor) actor = make_shared<Actor_config>();
     actor->set(SK::driver_name, j.value("driver", ""));
-    actor->set_permanent_mac(j.value("permanent_mac", ""));
+	actor->set(SK::driver_hash, j.value("driver_hash", ""));
+    actor->set(SK::permanent_mac, j.value("permanent_mac", ""));
     actor->caps_from_flat_json(j);
 }
 
@@ -92,8 +94,9 @@ void Actor_config::load_hw_info(const optional<path> &cache){
     }
 
     // ----- collect info -----
-    set_permanent_mac(perm_mac);
-    this->set(SK::driver_name, hw_capabilities::get_driver_name(iface));
+    set(SK::permanent_mac, perm_mac);
+    set(SK::driver_name, hw_capabilities::get_driver_name(iface));
+    set(SK::driver_hash, hw_capabilities::get_driver_hash(get(SK::driver_name)));
 
     ActorPtr self(shared_from_this());
     hw_capabilities::get_nl80211_caps(self);

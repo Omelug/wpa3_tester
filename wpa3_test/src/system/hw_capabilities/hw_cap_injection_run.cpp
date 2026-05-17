@@ -52,7 +52,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 
 	sout.mf_workaround = driver_needs_mf_workaround(suite.driver);
 
-	const auto ownmac  = get_macaddress(iface_out, nullopt);
+	const auto ownmac  = get_mac_address(iface_out, nullopt);
 	const auto spoofed = make_spoofed();
 	const auto valid   = make_valid(peermac, ownmac);
 

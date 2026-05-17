@@ -114,7 +114,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 
 	// wait for ifname and store in actor
 	actor->set(SK::iface, wait_for_ifname(section));
-	actor->set_mac(get_mac_address(actor[SK::iface].value()));
+	actor->set(SK::mac, get_mac_address(actor[SK::iface].value()));
 	actor->set(SK::radio, radio_name);
 }
 

@@ -23,13 +23,13 @@ struct TestConfig{
 
 TEST_CASE("iface mac address change") {
     HWAddress<6> target_mac = TestConfig::mac_addr;
-    HWAddress<6> original_mac = hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns);
+    HWAddress<6> original_mac = hw_capabilities::get_mac_address(TestConfig::base_iface, TestConfig::netns);
 
     REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, target_mac, TestConfig::netns));
-    CHECK_EQ(hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns),target_mac);
+    CHECK_EQ(hw_capabilities::get_mac_address(TestConfig::base_iface, TestConfig::netns),target_mac);
 
     REQUIRE_NOTHROW(hw_capabilities::set_mac_address(TestConfig::base_iface, original_mac, TestConfig::netns));
-    CHECK_EQ(hw_capabilities::get_macaddress(TestConfig::base_iface, TestConfig::netns), original_mac);
+    CHECK_EQ(hw_capabilities::get_mac_address(TestConfig::base_iface, TestConfig::netns), original_mac);
     hw_capabilities::set_iface_up(TestConfig::base_iface, TestConfig::netns);
 }
 

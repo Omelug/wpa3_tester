@@ -1,5 +1,4 @@
 #pragma once
-#include <doctest.h>
 #include <memory>
 #include <string>
 #include "Actor_config.h"
@@ -29,7 +28,6 @@ public:
 
 	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr;}
 	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr;}
-	bool operator==(const doctest::detail::Expression_lhs<std::shared_ptr<Actor_config>> & expression_lhs) const;
 };
 
 /*struct hash_ActorPtr{

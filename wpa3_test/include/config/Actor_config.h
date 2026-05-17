@@ -1,6 +1,5 @@
 #pragma once
 #include <array>
-#include <doctest.h>
 #include <nl80211.h>
 #include <optional>
 #include <string>
@@ -76,8 +75,6 @@ public:
     void set_mac_address(const Tins::HWAddress<6> &mac) const;
     void set_monitor_mode() const;
     void set_wifi_type(nl80211_iftype type) const;
-    void set_mac(const std::string &mac_address);
-    void set_permanent_mac(const std::string &mac_address);
     Channel get_channel() const;
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
 

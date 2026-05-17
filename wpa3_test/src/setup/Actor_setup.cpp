@@ -6,18 +6,6 @@
 namespace wpa3_tester{
 using namespace std;
 
-/*void Actor_config::set_mac(const string &mac_address){
-	string mac_lower = mac_address;
-	ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
-	set(SK::mac, mac_lower);
-}
-
-void Actor_config::set_permanent_mac(const string &mac_address){
-	string mac_lower = mac_address;
-	ranges::transform(mac_lower, mac_lower.begin(), [](const unsigned char c){ return tolower(c); });
-	set(SK::permanent_mac, mac_lower);
-}*/
-
 Channel Actor_config::get_channel() const {
 	if(!(*this)[SK::channel].has_value())
 		throw config_err("Actor_config: channel not set");
@@ -69,18 +57,20 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(internal || external_WB){
 		// (same if set in config)
 		set(SK::driver_name, real_actor[SK::driver_name]);
+		set(SK::driver_hash, real_actor[SK::driver_hash]);
 	}
 	if(internal){
 		set(SK::iface, real_actor[SK::iface]);
 		set(SK::radio, real_actor[SK::radio]);
+
 		if(!(*this)[SK::mac].has_value()){
-			set_mac(real_actor["mac"]);
-		} else{
-			set_mac_address(real_actor["mac"]);
+			set(SK::mac, real_actor[SK::mac]);
+		}else{
+			set(SK::mac, real_actor[SK::mac]);
 		}
 		if(!(*this)[SK::permanent_mac].has_value()){
 			const auto perm = hw_capabilities::get_permanent_mac(get(SK::iface), (*this)[SK::netns]);
-			if(!perm.empty()) set_permanent_mac(perm);
+			if(!perm.empty()) set(SK::permanent_mac, perm);
 		}
 	}
 	if(external_WB){

@@ -43,6 +43,15 @@ string hw_capabilities::get_driver_name(const string &iface){
 	throw config_err("Driver check error: not found valid symlink");;
 }
 
+string hw_capabilities::get_driver_hash(const string &driver_name){
+	const string path = "/sys/module/" + driver_name + "/srcversion";
+	ifstream ifs(path);
+	if(!ifs.is_open()) return {};
+	string content;
+	getline(ifs, content);
+	return content;
+}
+
 string hw_capabilities::get_phy(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
 	const path link = "/sys/class/net/" + iface + "/phy80211";
@@ -141,12 +150,9 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
 	return match[1].str();
 }
 
-Tins::HWAddress<6> hw_capabilities::get_macaddress(const string &iface, const optional<string> &netns){
+Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
-	ifstream f("/sys/class/net/" + iface + "/address");
-	string mac;
-	getline(f, mac);
-	return mac;
+	return read_sysfs(iface, "address");
 }
 
 string hw_capabilities::get_permanent_mac(const string &iface, const optional<string> &netns){
@@ -167,7 +173,7 @@ string hw_capabilities::get_permanent_mac(const string &iface, const optional<st
 void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress<6> &new_mac,
 									const optional<string> &netns
 ){
-	if(get_macaddress(iface, netns) == new_mac) return;
+	if(get_mac_address(iface, netns) == new_mac) return;
 	set_iface_down(iface, netns);
 	run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }

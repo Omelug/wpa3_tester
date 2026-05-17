@@ -31,7 +31,7 @@ void run_attack(RunStatus &rs){
     const Channel channel{ch_num, WifiBand::BAND_2_4};
 
     // ----- basic info -----
-    const string current_mac = hw_capabilities::get_macaddress(iface, nullopt).to_string();
+    const string current_mac = hw_capabilities::get_mac_address(iface, nullopt).to_string();
     const bool   is_up       = netlink_helper::iface_is_up(iface, nullopt);
     const string phy         = hw_capabilities::get_phy(iface, nullopt);
     const string ip_addr     = [&]() -> string {

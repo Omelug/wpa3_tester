@@ -39,7 +39,7 @@ TEST_CASE("injection_test_two_iface"){
     hw_capabilities::setup_injection_iface(iface_in,  channel);
 
     // peermac = MAC of the monitor interface (fallback for retrans test if no AP found)
-    const auto peermac = hw_capabilities::get_macaddress(iface_in, nullopt);
+    const auto peermac = hw_capabilities::get_mac_address(iface_in, nullopt);
 
     MonitorSocket sout(iface_out);
     MonitorSocket sin (iface_in);

@@ -141,6 +141,7 @@
       <w>setsid</w>
       <w>siocgifflags</w>
       <w>siocsifflags</w>
+      <w>sout</w>
       <w>srcversion</w>
       <w>ssid</w>
       <w>sstream</w>

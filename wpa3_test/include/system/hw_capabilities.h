@@ -126,6 +126,7 @@ public:
 	// check availability
 	static std::string read_sysfs(const std::string &iface, const std::string &file);
 	static std::string get_driver_name(const std::string &iface);
+	static std::string get_driver_hash(const std::string &driver_name);
 	static std::string get_phy(const std::string &iface, const std::optional<std::string> &netns);
 
 	//format
@@ -138,7 +139,7 @@ public:
 
 	// working with interfaces
 	static std::string get_iface(const std::string &ip_address, const std::optional<std::string> &netns);
-	static Tins::HWAddress<6> get_macaddress(const std::string &iface, const std::optional<std::string> &netns);
+	static Tins::HWAddress<6> get_mac_address(const std::string &iface, const std::optional<std::string> &netns);
 	static std::string get_permanent_mac(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_mac_address(const std::string &iface, const Tins::HWAddress<6> &new_mac,
 								const std::optional<std::string> &netns

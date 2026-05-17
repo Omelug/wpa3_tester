@@ -35,7 +35,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 			actor = ActorPtr(make_shared<Actor_config>());
 			seen.emplace(mac, actor);
 		}
-		actor->set_mac(mac);
+		actor->set(SK::mac, mac);
 		actor->set(SK::source, "external");
 		actor->set(SK::ssid, ssid);
 		actor->set(BK::AP, is_ap);

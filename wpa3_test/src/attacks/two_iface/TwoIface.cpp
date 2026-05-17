@@ -12,7 +12,6 @@ using namespace filesystem;
 using nlohmann::json;
 
 // ----- TwoIface base
-
 TwoIface::TwoIface(CacheId id, string name)
 : cache_id(std::move(id)), cache_name(std::move(name)){}
 

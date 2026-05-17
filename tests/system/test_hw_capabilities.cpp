@@ -6,7 +6,6 @@
 #include "logger/error_log.h"
 #include <stdexcept>
 #include <regex>
-#include <set>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>

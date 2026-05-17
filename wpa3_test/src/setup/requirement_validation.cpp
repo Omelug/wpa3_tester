@@ -275,6 +275,7 @@ void RunStatus::config_requirement(){
 		actor->setup_actor(_config, opt_actor);
 	}
 
+	//TODO simplify
 	for(auto &[actor_name, actor]: external_wb_actors){
 		auto &opt_actor = external_wb_mapping.at(actor_name);
 		actor->setup_actor(_config, opt_actor);
@@ -289,5 +290,7 @@ void RunStatus::config_requirement(){
 		auto &opt_actor = simulation_mapping.at(actor_name);
 		actor->setup_actor(_config, opt_actor);
 	}
+	//TODO post_bactracking_requirements
+
 }
 }

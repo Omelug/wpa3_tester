@@ -45,7 +45,7 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		const YNode config_node = YAML::LoadFile(config_path.string());
 		json config_json = yaml_to_json(config_node);
 
-		config_json = RunStatus::extends_recursive(config_json, config_path.string());
+		config_json = RunStatus::extends_recursive(config_json, config_path);
 		RunStatus::validate_recursive(config_json, config_path.parent_path());
 
 		//global validation

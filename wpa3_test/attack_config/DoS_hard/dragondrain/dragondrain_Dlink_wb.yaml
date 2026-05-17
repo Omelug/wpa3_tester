@@ -10,7 +10,8 @@ actors:
   attacker:
     source: internal
     setup:
-      requirements: [ ath_masker ]
+      requirements:
+        simple: [ ath_masker ]
     selection:
       condition: [ monitor, injection ]
       driver: ath9k_htc

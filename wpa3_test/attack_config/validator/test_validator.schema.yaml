@@ -97,8 +97,13 @@ definitions:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
           requirements:
-            type: array
-            description: Program names what has to be installed (on local test PC)
+            type: object
+            description: Requirements for the local test PC
+            additionalProperties: false
+            properties:
+              simple:
+                type: array
+                description: Program names what has to be installed (on local test PC)
           req_programs:
             type: array
             description: Program names what has to be installed (on external)

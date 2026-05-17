@@ -32,10 +32,14 @@ properties:
             required: [ requirements ]
             properties:
               requirements:
-                type: array
-                contains:
-                  const: ath_masker
-                minItems: 1
+                type: object
+                required: [ simple ]
+                properties:
+                  simple:
+                    type: array
+                    contains:
+                      const: ath_masker
+                    minItems: 1
 
   attack_config:
     type: object

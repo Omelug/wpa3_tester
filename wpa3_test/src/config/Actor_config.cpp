@@ -152,24 +152,28 @@ bool Actor_config::get(const BK key) const {
 	return *v;
 }
 
-string Actor_config::to_str() const {
+string Actor_config::to_str(const ParamFilter *filter) const {
 	string result;
 
 	bool first = true;
-	for(const auto k : sk_values()){
+	const auto visit_sk = [&](SK k){
 		const auto &v = (*this)[k];
-		if(!v.has_value()) continue;
+		if(!v.has_value()) return;
 		if(!first) result += ", ";
 		result += string(sk_name(k)) + "=" + *v;
 		first = false;
-	}
+	};
+	if(filter) for(SK k : filter->first)  visit_sk(k);
+	else       for(SK k : sk_values())    visit_sk(k);
 
 	vector<string> conds;
-	for(const auto k : bk_values()){
+	const auto visit_bk = [&](BK k){
 		const auto &v = (*this)[k];
-		if(!v.has_value()) continue;
+		if(!v.has_value()) return;
 		conds.push_back(*v ? string(bk_name(k)) : "!" + string(bk_name(k)));
-	}
+	};
+	if(filter) for(BK k : filter->second) visit_bk(k);
+	else       for(BK k : bk_values())    visit_bk(k);
 
 	if(!conds.empty()){
 		result += " [";
@@ -203,31 +207,37 @@ void Actor_config::caps_from_flat_json(const json &j) {
     }
 }
 
-json Actor_config::to_json() const {
+json Actor_config::to_json(const ParamFilter *filter) const {
 	json sel = json::object();
 
-	for(const auto k : sk_values()){
-		if(k == SK::netns || k == SK::source) continue;
+	const auto visit_sk = [&](SK k){
+		if(k == SK::netns || k == SK::source) return;
 		const auto &v = (*this)[k];
-		if(v.has_value())
-			sel[string(sk_name(k))] = *v;
-	}
+		if(v.has_value()) sel[string(sk_name(k))] = *v;
+	};
+	if(filter) for(SK k : filter->first)  visit_sk(k);
+	else       for(SK k : sk_values())    visit_sk(k);
 
 	json conditions = json::array();
-	for(const auto k : bk_values()){
+	const auto visit_bk = [&](BK k){
 		const auto &v = (*this)[k];
-		if(!v.has_value()) continue;
+		if(!v.has_value()) return;
 		auto name = string(bk_name(k));
 		conditions.push_back(*v ? name : "!" + name);
-	}
+	};
+	if(filter) for(BK k : filter->second) visit_bk(k);
+	else       for(BK k : bk_values())    visit_bk(k);
+
 	if(!conditions.empty())
 		sel["condition"] = conditions;
 
 	json result = json::object();
 	result["selection"] = sel;
 
-	if((*this)[SK::netns].has_value())  result["netns"]  = *(*this)[SK::netns];
-	if((*this)[SK::source].has_value()) result["source"] = *(*this)[SK::source];
+	if(!filter){
+		if((*this)[SK::netns].has_value())  result["netns"]  = *(*this)[SK::netns];
+		if((*this)[SK::source].has_value()) result["source"] = *(*this)[SK::source];
+	}
 
 	return result;
 }

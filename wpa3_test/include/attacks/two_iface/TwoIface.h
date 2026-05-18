@@ -15,16 +15,14 @@ struct CacheBehave {
     bool force_run     = false;
 };
 
-// Identifies which actor fields form the cache key for a two-iface test
-using CacheId = std::pair<std::vector<SK>, std::vector<BK>>;
 
 class TwoIface {
 public:
 
-	CacheId     cache_id;
+	ParamFilter     cache_id;
     std::string cache_name;
 
-    TwoIface(CacheId id, std::string name);
+    TwoIface(ParamFilter id, std::string name);
     virtual ~TwoIface() = default;
 
     // Run the test; returns json result for saving

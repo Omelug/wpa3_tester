@@ -2,7 +2,6 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include <fstream>
-#include <sstream>
 
 namespace wpa3_tester{
 using namespace std;
@@ -10,7 +9,7 @@ using namespace filesystem;
 using nlohmann::json;
 
 // ----- TwoIface base
-TwoIface::TwoIface(CacheId id, string name)
+TwoIface::TwoIface(ParamFilter id, string name)
 : cache_id(std::move(id)), cache_name(std::move(name)){}
 
 json TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
@@ -36,14 +35,7 @@ json TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehav
 }
 
 string TwoIface::make_cache_key(const ActorPtr &a1, const ActorPtr &a2) const{
-	ostringstream oss;
-	for(const SK sk: cache_id.first){
-		oss << a1[sk].value_or("") << "|" << a2[sk].value_or("") << "|";
-	}
-	for(const BK bk: cache_id.second){
-		oss << (a1[bk].value_or(false) ? "1" : "0") << (a2[bk].value_or(false) ? "1" : "0") << "|";
-	}
-	return oss.str();
+	return a1->to_str(&cache_id) + "|" + a2->to_str(&cache_id);
 }
 
 optional<json> TwoIface::lookup_cache(const string &key) const{
@@ -90,7 +82,8 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 }
 
 path TwoIface::cache_path() const{
-	return path("data") / (cache_name + ".csv");
+	//TODO create dir if not exists
+	return path("data") / "two_iface" /(cache_name + ".csv");
 }
 
 }

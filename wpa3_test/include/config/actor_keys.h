@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace wpa3_tester {
 
@@ -81,6 +83,8 @@ constexpr auto bk_values() {
     return arr;
 }
 
+
+using ParamFilter = std::pair<std::vector<SK>, std::vector<BK>>;
 
 class ActorPtr;
 using ActorCMap = std::unordered_map<std::string, ActorPtr>;

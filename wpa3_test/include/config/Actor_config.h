@@ -46,8 +46,8 @@ public:
 	[[nodiscard]] std::string get(SK key) const;
 	[[nodiscard]] bool        get(BK key) const;
 
-    std::string        to_str()  const;
-    nlohmann::json     to_json() const;
+    std::string        to_str(const ParamFilter *filter = nullptr)  const;
+    nlohmann::json     to_json(const ParamFilter *filter = nullptr) const;
 
     // Serialize/deserialize BK bool fields as a flat {"ap": true, "monitor": false, ...} object
     nlohmann::json caps_to_flat_json() const;

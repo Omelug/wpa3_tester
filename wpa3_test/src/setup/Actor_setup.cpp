@@ -64,9 +64,9 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		set(SK::radio, real_actor[SK::radio]);
 
 		if(!(*this)[SK::mac].has_value()){
-			set(SK::mac, real_actor[SK::mac]);
+			set(SK::mac, real_actor.get(SK::mac));
 		}else{
-			set(SK::mac, real_actor[SK::mac]);
+			set_mac_address(real_actor.get(SK::mac));
 		}
 		if(!(*this)[SK::permanent_mac].has_value()){
 			const auto perm = hw_capabilities::get_permanent_mac(get(SK::iface), (*this)[SK::netns]);

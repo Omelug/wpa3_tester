@@ -76,16 +76,15 @@ void HwInfo::from_json(const nlohmann::json &j){
 void Actor_config::load_hw_info(const optional<path> &cache){
     const string iface     = get(SK::iface);
     const string perm_mac  = hw_capabilities::get_permanent_mac(iface, (*this)[SK::netns]);
-    const string cache_key = perm_mac.empty() ? iface : perm_mac;
 
-    // ----- try cache -----
+	// ----- try cache -----
     if(cache.has_value() && exists(*cache)){
         try{
             ifstream f(*cache);
             const auto json_cache = nlohmann::json::parse(f);
-            if(json_cache.contains(cache_key)){
+            if(json_cache.contains(perm_mac)){ //perm_mac is cache key
                 HwInfo hw_cached; hw_cached.actor = shared_from_this();
-                hw_cached.from_json(json_cache.at(cache_key));
+                hw_cached.from_json(json_cache.at(perm_mac));
                 return;
             }
         } catch(const exception &e){
@@ -94,7 +93,7 @@ void Actor_config::load_hw_info(const optional<path> &cache){
     }
 
     // ----- collect info -----
-    set(SK::permanent_mac, perm_mac);
+	set(SK::permanent_mac, perm_mac);
     set(SK::driver_name, hw_capabilities::get_driver_name(iface));
     set(SK::driver_hash, hw_capabilities::get_driver_hash(get(SK::driver_name)));
 
@@ -142,7 +141,7 @@ void Actor_config::load_hw_info(const optional<path> &cache){
             }
             HwInfo hw_snapshot;
         	hw_snapshot.actor = shared_from_this();
-            json_cache[cache_key] = hw_snapshot.to_json();
+            json_cache[perm_mac] = hw_snapshot.to_json();
             ofstream f(*cache);
             f << json_cache.dump(2) << '\n';
         } catch(const exception &e){

@@ -178,8 +178,6 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 
 void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(SK::mac, read_sysfs(cfg->get(SK::iface), "address"));
-	cfg->set(SK::permanent_mac, read_sysfs(cfg->get(SK::iface), "perm_mac"));
-
 	cfg->set(SK::driver_name, get_driver_name(cfg->get(SK::iface)));
 
 	/* ---------- nl80211 dynamic capabilities ---------- */

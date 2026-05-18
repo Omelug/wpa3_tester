@@ -13,6 +13,7 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 +: ClientState obeserver use in mitm
+f: json_obj - save to mapping is broken, může zato json "," (A z json hlavně j, protože JavaScript je p*čovina)
 
 //DONE
 l: create logging file

@@ -1,0 +1,18 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: active_test_example
+attacker_module: active_test
+actors:
+  transceiver:
+    source: internal
+    selection:
+      condition: [ monitor ]
+      #driver: mt76x2u
+      channel: 1
+  receiver:
+    source: internal
+    selection:
+      condition: [ monitor, active_monitor ]
+      #driver: ath9k_htc
+      channel: 1
+delete_old: true
+rewrite: all

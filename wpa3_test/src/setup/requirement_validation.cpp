@@ -12,7 +12,8 @@
 #include <sys/mount.h>
 #include "config/Observer_config.h"
 #include "logger/error_log.h"
-#include "attacks/two_iface/TwoIface.h"
+#include "attacks/two_iface/TwoIfaceActive.h"
+#include "attacks/two_iface/TwoIfaceInject.h"
 
 using namespace std;
 using namespace filesystem;

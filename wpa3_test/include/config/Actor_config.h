@@ -58,6 +58,7 @@ public:
 
     [[nodiscard]] bool is_WB()          const;
     [[nodiscard]] bool is_external_WB() const;
+	[[nodiscard]] bool monitor_needed() const;
 
     // Interface control
     int  run(const std::vector<std::string> &argv) const;
@@ -74,14 +75,14 @@ public:
     void set_managed_mode()  const;
     void set_mac_address(const Tins::HWAddress<6> &mac) const;
     void set_monitor_mode() const;
-    void set_wifi_type(nl80211_iftype type) const;
+    void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
     Channel get_channel() const;
+
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
 
 private:
 	std::array<std::optional<std::string>, static_cast<std::size_t>(SK::COUNT_)> str_vals{};
 	std::array<std::optional<bool>,static_cast<std::size_t>(BK::COUNT_)> bool_vals{};
-
 
     void setup_actor_internal(const nlohmann::json &config);
     void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor) const;

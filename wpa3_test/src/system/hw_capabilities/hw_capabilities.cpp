@@ -177,6 +177,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 	set_iface_down(iface, netns);
 	run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }
+
 void hw_capabilities::set_channel(const string &iface, const Channel ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); !res)
@@ -222,8 +223,7 @@ void hw_capabilities::set_iface_up(const string &iface, const optional<string> &
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); !res) throw timeout_err(
 		"Timeout waiting for '" + iface + "' to go UP:" + res.error().message());
 }
-
-void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns){
+void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns, const vector<string> &monitor_flags){
 	if(netlink_helper::query_wifi_iftype(iface, netns) == type) return;
 
 	const auto *type_str = [&]() ->const char *{
@@ -241,5 +241,11 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)
 		throw runtime_error(format("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str,
 									res.error().message()));
+
+	if(type == NL80211_IFTYPE_MONITOR && !monitor_flags.empty()){
+		vector<string> cmd = {"iw", "dev", iface.data(), "set", "monitor"};
+		cmd.insert(cmd.end(), monitor_flags.begin(), monitor_flags.end());
+		run_cmd(cmd, netns);
+	}
 }
 }

@@ -126,21 +126,18 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 
 void Actor_config::set_monitor_mode() const{
 	const string &iface = get(SK::iface);
-	//FIXMe test test flags
 	if(conn != nullptr){ conn->set_monitor_mode(iface); return; }
 
-	string monitor_flags;
-	if((*this)[BK::active_monitor]) monitor_flags += " active";
-	if((*this)[BK::control_monitor]) monitor_flags += " control";
+	vector<string> monitor_flags = {"fcsfail", "otherbss"};
+	if((*this)[BK::active_monitor]) monitor_flags.push_back("active");
+	if((*this)[BK::control_monitor]) monitor_flags.push_back("control");
 
-	log(LogLevel::INFO, "Setting interface {} to monitor mode+{}", iface, monitor_flags);
+	string flags_str;
+	for(const auto &f : monitor_flags){ if(!flags_str.empty()) flags_str += ' '; flags_str += f; }
+	log(LogLevel::INFO, "Setting interface {} to monitor mode+{}", iface, flags_str);
+
 	set_iface_down();
-	run({"iw", "dev", iface, "set", "type", "monitor"});
-	vector<string> set_monitor = {"iw", "dev", iface, "set", "monitor", "fcsfail", "otherbss"};
-	if(!monitor_flags.empty()){
-		set_monitor.push_back(monitor_flags);
-	}
-	run(set_monitor);
+	set_wifi_type(NL80211_IFTYPE_MONITOR, monitor_flags);
 }
 
 // -------- hw_capabilities wrappers
@@ -161,7 +158,7 @@ void Actor_config::set_iface_up() const{
 	hw_capabilities::set_iface_up(get(SK::iface), (*this)[SK::netns]);
 }
 
-void Actor_config::set_wifi_type(const nl80211_iftype type) const{
-	hw_capabilities::set_wifi_type(get(SK::iface), type, (*this)[SK::netns]);
+void Actor_config::set_wifi_type(const nl80211_iftype type, const vector<string> &monitor_flags) const{
+	hw_capabilities::set_wifi_type(get(SK::iface), type, (*this)[SK::netns], monitor_flags);
 }
 }

@@ -269,4 +269,14 @@ bool Actor_config::is_external_WB() const {
 	return get(SK::source) == "external" &&
 			((*this)[SK::whitebox_host].has_value() || (*this)[SK::whitebox_ip].has_value());
 }
+
+bool Actor_config::monitor_needed() const{
+	return
+		(*this)[BK::monitor].value_or(false) ||
+		(*this)[BK::active_monitor].value_or(false) ||
+		(*this)[BK::control_monitor].value_or(false) ||
+		(*this)[BK::injection].value_or(false);
+	//TODO check injection
+}
+
 }

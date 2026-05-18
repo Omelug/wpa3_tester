@@ -173,7 +173,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	if(!netlink_helper::wait_for_iface_disappear(ap_iface, netns)) throw setup_err(
 		"Interface " + ap_iface + " did not disappear");
 
-	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR);
+	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
 
 	// ── step 2: add AP virtual interface ─────────────────────────────────────
 	hw_capabilities::run_cmd({

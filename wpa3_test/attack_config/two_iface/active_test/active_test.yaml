@@ -8,10 +8,11 @@ actors:
       condition: [ monitor ]
       #driver: mt76x2u
       channel: 1
+    netns: tx
   receiver:
     source: internal
     selection:
-      condition: [ monitor, active_monitor ]
+      condition: [ active_monitor ]
       #driver: ath9k_htc
       channel: 1
 delete_old: true

@@ -80,24 +80,26 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		set(SK::ssh_port, real_actor[SK::ssh_port]);
 		set(SK::ssh_password, real_actor[SK::ssh_password]);
 		set(SK::external_OS, real_actor[SK::external_OS]);
-		const auto radio = real_actor[SK::radio].value();
 		auto actor_ptr = ActorPtr(shared_from_this());
-		conn->setup_iface(radio, actor_ptr, config);
+		conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);
 	}
 
 	if(internal) setup_actor_internal(config);
 	if(external_WB){ setup_actor_external_whitebox(config, real_actor); }
 	if(internal || external_WB){
 		auto actor_json = config.at("actors").at(get(SK::actor_name));
-		const bool monitor = (*this)[BK::monitor].value_or(false);
-		const bool injection = (*this)[BK::injection].value_or(false);
+		const bool monitor = monitor_needed();
 
 		int channel_num = -1;
 		if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
 		else if(const auto c = real_actor[SK::channel]) channel_num = stoi(c.value());
-		if(channel_num != -1) set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
+		if(monitor && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode();
+		if(channel_num != -1){
+			set_iface_up();
+			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
+			set_iface_down();
+		}
 
-		if((monitor || injection) && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode();
 		if(actor_json.contains("sniff_iface")){
 			set(SK::sniff_iface, MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
 			create_sniff_iface();
@@ -111,6 +113,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 			set_ap_mode();
 		}
 		if((*this)[BK::managed].value_or(false)){ set_managed_mode(); }
+		//TODO mplement for external WB
 		set_iface_up();
 		up_sniff_iface();
 	}

@@ -1,13 +1,13 @@
 #include "attacks/two_iface/active_test.h"
-#include "config/RunStatus.h"
-#include "config/actor_keys.h"
-#include "system/hw_capabilities.h"
 #include <atomic>
 #include <chrono>
 #include <fstream>
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
+#include "config/actor_keys.h"
+#include "config/RunStatus.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::active_test {
 using namespace std;

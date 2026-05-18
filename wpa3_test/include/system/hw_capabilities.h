@@ -149,7 +149,7 @@ public:
 
 	static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
-	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns);
+	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns, const std::vector<std::string> &monitor_flags = {});
 
 	// ----- injection utilities -----
 	// Inject pdu, capture frames containing the unique label. count=0 = no limit.

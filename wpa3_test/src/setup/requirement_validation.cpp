@@ -304,7 +304,7 @@ bool RunStatus::config_requirement(){
 
 			if(key == "active"){
 				if(TwoIfaceActive::run_check(actor1, actor2)) return true;
-			} else if(key == "inject"){
+			} else if(key == "inject"){ //TODO inject_only separated tests
 				if(TwoIfaceInject::run_check(actor1, actor2)) return true;
 			} else{
 				throw not_implemented_err("two_iface test key not found: " + key);

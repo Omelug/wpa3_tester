@@ -12,15 +12,15 @@ using nlohmann::json;
 TwoIface::TwoIface(ParamFilter id, string name)
 : cache_id(std::move(id)), cache_name(std::move(name)){}
 
-json TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
+pair<json, bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
 	const string key = make_cache_key(a1, a2);
 
-	if(!behave.force_run){
+	if(behave != force_run){
 		const auto cached = lookup_cache(key);
-		if(cached.has_value()) return *cached;
+		if(cached.has_value()) return {*cached, true};
 
-		if(behave.throw_on_miss) throw req_err("ERROR not found in cache " + cache_name);
-		if(!behave.run_on_miss) return {};
+		if(behave == throw_on_miss) throw req_err("ERROR not found in cache " + cache_name);
+		if(behave ==run_on_miss) return {{}, false};
 	}
 
 	const json result = run(a1, a2);
@@ -31,7 +31,7 @@ json TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehav
 	}
 
 	write_cache(key, result);
-	return result;
+	return {result, false};
 }
 
 string TwoIface::make_cache_key(const ActorPtr &a1, const ActorPtr &a2) const{
@@ -82,8 +82,6 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 }
 
 path TwoIface::cache_path() const{
-	//TODO create dir if not exists
-	return path("data") / "two_iface" /(cache_name + ".csv");
+	return path("data") / "two_iface" / (cache_name + ".csv");
 }
-
 }

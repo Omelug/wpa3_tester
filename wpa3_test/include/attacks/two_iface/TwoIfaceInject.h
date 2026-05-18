@@ -7,7 +7,7 @@ class TwoIfaceInject : public TwoIface {
 public:
     TwoIfaceInject();
     nlohmann::json run(const ActorPtr &a1, const ActorPtr &a2) override;
-    // Returns true if actors need hardware re-assignment (test failed)
+    // Returns true if result was loaded from cache (actors may need re-assignment)
     static bool run_check(const ActorPtr &a1, const ActorPtr &a2);
 };
 

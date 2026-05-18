@@ -9,10 +9,10 @@
 
 namespace wpa3_tester {
 
-struct CacheBehave {
-    bool throw_on_miss = false;
-    bool run_on_miss   = true;
-    bool force_run     = false;
+enum CacheBehave {
+    throw_on_miss,
+    run_on_miss,
+    force_run,
 };
 
 
@@ -28,9 +28,9 @@ public:
     // Run the test; returns json result for saving
     virtual nlohmann::json run(const ActorPtr &a1, const ActorPtr &a2) = 0;
 
-    // Look up cache, run if needed per behave policy, log on result change
-    nlohmann::json validate(const ActorPtr &a1, const ActorPtr &a2,
-                            CacheBehave behave = {});
+    // Returns {result, from_cache} where from_cache=true means the result was loaded from cache.
+    std::pair<nlohmann::json, bool> validate(const ActorPtr &a1, const ActorPtr &a2,
+                                             CacheBehave behave = {});
 
 protected:
     [[nodiscard]] std::string make_cache_key(const ActorPtr &a1, const ActorPtr &a2) const;
@@ -39,5 +39,4 @@ protected:
     [[nodiscard]] std::filesystem::path cache_path() const;
 };
 
-
-} // namespace wpa3_tester
+}

@@ -8,6 +8,7 @@
 #include "config/actor_keys.h"
 #include "config/RunStatus.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_guards.h"
 
 namespace wpa3_tester::active_test {
 using namespace std;
@@ -18,17 +19,18 @@ using nlohmann::json;
 
 static constexpr int BURST = 50;
 
-void setup_attack(RunStatus &rs){}
+void setup_attack(RunStatus &){}
 
 void run_attack(RunStatus &rs) {
-	auto &actor1 = rs.get_actor("transceiver");
-	auto &actor2 = rs.get_actor("receiver");
+	auto &actor_tx = rs.get_actor("transceiver");
+	auto &actor_rx = rs.get_actor("receiver");
 
-	const string iface1 = actor1.get(SK::iface);
-	const string iface2 = actor2.get(SK::iface);
+	const string iface1 = actor_tx.get(SK::iface);
+	const string iface2 = actor_rx.get(SK::iface);
+	const auto netns1 = actor_tx[SK::netns];
 
-	const HWAddress<6> rx_mac(actor2.get(SK::mac));
-	const HWAddress<6> tx_mac(actor1.get(SK::mac));
+	const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
+	const HWAddress<6> tx_mac(actor_tx.get(SK::mac));
 
 	// Sniff ACK frames on the transceiver interface
 	atomic ack_count{0};
@@ -38,6 +40,8 @@ void run_attack(RunStatus &rs) {
 	sniff_cfg.set_promisc_mode(true);
 	sniff_cfg.set_immediate_mode(true);
 	sniff_cfg.set_filter("wlan addr1 " + tx_mac.to_string());
+
+	netlink_helper::NetNSContext ns(netns1);
 
 	Sniffer sniffer(iface1, sniff_cfg);
 	thread sniffer_thread([&] {
@@ -84,6 +88,6 @@ void run_attack(RunStatus &rs) {
 	ofs << result.dump(2);
 }
 
-void stats_attack(const RunStatus &rs) {}
+void stats_attack(const RunStatus &) {}
 
 }

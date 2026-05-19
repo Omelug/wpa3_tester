@@ -64,6 +64,7 @@ endif ()
 include(cmake/dependencies.cmake)
 include(cmake/libraries.cmake)
 include(cmake/targets.cmake)
+include(cmake/coverage.cmake)
 
 add_executable(${PROJECT_NAME}
         "../wpa3_test/main.cpp"

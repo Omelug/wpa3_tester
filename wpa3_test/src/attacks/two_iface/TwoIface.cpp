@@ -87,7 +87,7 @@ path TwoIface::cache_folder() const{
 }
 
 path TwoIface::cache_path() const{
-	return path(PROJECT_ROOT_DIR).parent_path() / "data" / "two_iface" / (cache_name + ".txt");
+	return cache_folder() /  "cache.txt";
 }
 
 json TwoIface::make_selection(const ActorPtr &a) const {

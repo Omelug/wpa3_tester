@@ -86,6 +86,7 @@ void Actor_config::load_hw_info(const optional<path> &cache){
             if(json_cache.contains(perm_mac)){ //perm_mac is cache key
                 HwInfo hw_cached; hw_cached.actor = shared_from_this();
                 hw_cached.from_json(json_cache.at(perm_mac));
+            	log(LogLevel::DEBUG, "HW Info from cache");
                 return;
             }
         } catch(const exception &e){

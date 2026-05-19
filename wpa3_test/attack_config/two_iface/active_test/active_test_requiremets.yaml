@@ -11,7 +11,7 @@ actors:
       driver: ath9k_htc
   receiver:
     source: internal
-    selection:
-      driver: mt76x2u
+    #selection:
+      #driver: mt76x2u
 delete_old: true
 rewrite: all

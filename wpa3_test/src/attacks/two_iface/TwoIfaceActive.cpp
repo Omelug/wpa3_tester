@@ -18,6 +18,7 @@ TwoIfaceActive::TwoIfaceActive()
 
 json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 
+	//TODO cant realod  config -> check by id
 	// Generate config to data/two_iface/active_test/config/<file>
 	const json config = {
 		{"name",            "active_test"},

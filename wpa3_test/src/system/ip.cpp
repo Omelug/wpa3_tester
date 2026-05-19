@@ -31,7 +31,7 @@ string resolve_host(const string &hostname){
 	hints.ai_socktype = SOCK_STREAM;
 
 	if(getaddrinfo(hostname.c_str(), nullptr, &hints, &res) != 0){
-		throw runtime_error("Cannot resolve: " + hostname);
+		throw run_err("Cannot resolve: " + hostname);
 	}
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in *>(res->ai_addr)->sin_addr, ip, sizeof(ip));
@@ -41,7 +41,7 @@ string resolve_host(const string &hostname){
 
 string get_ip(const string &iface){
 	ifaddrs *ifaddr = nullptr;
-	if(getifaddrs(&ifaddr) == -1){ throw runtime_error("Failed to get interface addresses"); }
+	if(getifaddrs(&ifaddr) == -1){ throw run_err("Failed to get interface addresses"); }
 
 	string ip_address;
 	for(const ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
@@ -57,7 +57,7 @@ string get_ip(const string &iface){
 	}
 
 	freeifaddrs(ifaddr);
-	if(ip_address.empty()){ throw runtime_error("No IP address found for interface: " + iface); }
+	if(ip_address.empty()){ throw run_err("No IP address found for interface: " + iface); }
 	return ip_address;
 }
 

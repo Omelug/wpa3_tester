@@ -3,6 +3,8 @@
 #include "attacks/attacks.h"
 #include <filesystem>
 
+#include "logger/error_log.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
@@ -12,11 +14,11 @@ void RunStatus::setup_test(){
 	error_code ec;
 	if(exists(_run_folder, ec)){
 		remove_all(_run_folder, ec);
-		if(ec) throw runtime_error("Failed to clean last_run directory: " + _run_folder.string() + ":" + ec.message());
+		if(ec) throw run_err("Failed to clean last_run directory: " + _run_folder.string() + ":" + ec.message());
 	}
 
 	create_directories(_run_folder, ec);
-	if(ec) throw runtime_error("Failed to create last_run directory: " + _run_folder.string() + ":" + ec.message());
+	if(ec) throw run_err("Failed to create last_run directory: " + _run_folder.string() + ":" + ec.message());
 
 	save_actor_interface_mapping();
 	process_manager.init_logging(_run_folder);

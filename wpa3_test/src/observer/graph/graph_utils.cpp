@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 
+#include "logger/error_log.h"
 #include "observer/tshark_wrapper.h"
 using namespace std;
 
@@ -18,7 +19,7 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 			add_XY_points(*static_cast<GraphXYPoints *>(element.get()));
 		}
 		if(element->type == GraphElement_t::UNKNOWN){
-			throw runtime_error("Graph element type is unknown");
+			throw run_err("Graph element type is unknown");
 		}
 	}
 }

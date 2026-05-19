@@ -1,6 +1,7 @@
 #include "config/Observer_config.h"
 
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
@@ -40,7 +41,7 @@ void Observer_config::start(RunStatus &rs) const{
 		station_counter::start_station_monitoring(rs, actor_name, interval);
 		return;
 	}
-	throw runtime_error("Invalid observer program: " + program);
+	throw run_err("Invalid observer program: " + program);
 }
 
 string Observer_config::to_str() const{

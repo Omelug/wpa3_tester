@@ -84,7 +84,7 @@ void run_attack(RunStatus &rs){
 		check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"],
 			att_cfg.at("burst_size").get<size_t>(), att_cfg.at("packets_per_second_limit").get<size_t>());
 	} else{
-		throw runtime_error("SAE Commit capture failed");
+		throw run_err("SAE Commit capture failed");
 	}
 	rs.process_manager.write_log_all("@ENDofAttack");
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();

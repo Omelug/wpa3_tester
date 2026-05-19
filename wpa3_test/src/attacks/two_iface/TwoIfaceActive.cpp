@@ -18,7 +18,6 @@ TwoIfaceActive::TwoIfaceActive()
 
 json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 
-	//TODO cant realod  config -> check by id
 	// Generate config to data/two_iface/active_test/config/<file>
 	const json config = {
 		{"name",            "active_test"},
@@ -26,24 +25,24 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 		{"actors", {
 			{"transceiver", {
 				{"source",    "internal"},
-				{"selection", {
-					{"permanent_mac", a1.get(SK::permanent_mac)},
-					{"condition", json::array({"monitor"})},
-				}},
+				{"selection", make_selection(a1))}, //from cache id
 			}},
 			{"receiver", {
 				{"source",    "internal"},
-				{"selection", {
-					{"permanent_mac", a2.get(SK::permanent_mac)},
-					{"condition", json::array({"active_monitor"})},
-				}},
+				{"selection", make_selection(a2, json::array({"active_monitor"}))}, //from cache id
 			}},
 		}},
 	};
 
 	const path config_dir = path("data") / "two_iface" / "active_test" / "config";
 	create_directories(config_dir);
-	const path config_path = config_dir / ("active_test_" + a1->to_str(&cache_id) + "_" + a2->to_str(&cache_id) + ".yaml");
+	auto safe_mac = [](string mac) {
+		ranges::replace(mac, ':', '-');
+		return mac;
+	};
+	const path config_path = config_dir / ("active_test_"
+		+ safe_mac(a1.get(SK::permanent_mac)) + "_"
+		+ safe_mac(a2.get(SK::permanent_mac)) + ".yaml");
 	save_yaml(config, config_path);
 
 	RunStatus rs(config_path.string(), "active_test", "two_iface/active_test");

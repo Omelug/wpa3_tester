@@ -9,8 +9,12 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
+      condition: [ monitor ]
+
   receiver:
     source: internal
+    selection:
+      condition: [ active_monitor ]
     #selection:
       #driver: mt76x2u
 delete_old: true

@@ -87,7 +87,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 
 	error_code ec;
 	create_directories(gen_folder, ec);
-	if(ec){ throw runtime_error("Unable to create generator directory"); }
+	if(ec){ throw run_err("Unable to create generator directory"); }
 
 	auto length = check_vars_len_same(source_info);
 	auto vars = source_info.at("vars");
@@ -99,7 +99,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		save_yaml(source_info.at("config"), tmp_path);
 
 		ifstream ifs(tmp_path);
-		if(!ifs.is_open()){ throw runtime_error("Could not open temp file for reading"); }
+		if(!ifs.is_open()){ throw run_err("Could not open temp file for reading"); }
 		string config_str((istreambuf_iterator(ifs)), istreambuf_iterator<char>());
 		ifs.close();
 
@@ -112,12 +112,12 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		// unresolved var_
 		if(config_str.find(var_PREFIX) != string::npos){
 			remove(tmp_path);
-			throw runtime_error("Unresolved " + var_PREFIX + " placeholders at index " + to_string(i));
+			throw run_err("Unresolved " + var_PREFIX + " placeholders at index " + to_string(i));
 		}
 
 		remove(tmp_path);
 		ofstream ofs(test_config_path);
-		if(!ofs.is_open()){ throw runtime_error("Could not open final config file for writing"); }
+		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
 		ofs << config_str;
 		ofs.close();
 
@@ -159,12 +159,12 @@ vector<pair<string,vector<vector<string>>>> prepare_variable_groups(const json &
 
 	for(auto const &[name, count]: required_counts){
 		if(!vars_node.contains(name)){
-			throw runtime_error("Variable '" + name + "' missing in 'vars' definition.");
+			throw run_err("Variable '" + name + "' missing in 'vars' definition.");
 		}
 
 		auto elements = vars_node.at(name).get<vector<string>>();
 		if(count > elements.size()){
-			throw runtime_error("Variable '" + name + "' needs " + to_string(count) + " values.");
+			throw run_err("Variable '" + name + "' needs " + to_string(count) + " values.");
 		}
 
 		// variations for one group
@@ -193,7 +193,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 	save_yaml(source_info.at("config"), tmp_template);
 
 	ifstream ifs(tmp_template);
-	if(!ifs.is_open()){ throw runtime_error("Could not open template file for reading"); }
+	if(!ifs.is_open()){ throw run_err("Could not open template file for reading"); }
 	string raw_yaml_template((istreambuf_iterator(ifs)), istreambuf_iterator<char>());
 	ifs.close();
 
@@ -214,7 +214,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 		}
 
 		if(current_config_str.find(var_PREFIX) != string::npos){
-			throw runtime_error("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
+			throw run_err("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
 		}
 
 		string test_id = to_string(test_counter);
@@ -222,7 +222,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 		// save result to file
 		ofstream ofs(test_path);
-		if(!ofs.is_open()){ throw runtime_error("Could not open final config file for writing"); }
+		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
 		ofs << current_config_str;
 		ofs.close();
 
@@ -265,7 +265,7 @@ config_paths RunSuiteStatus::get_test_paths(){
 
 	error_code ec; //create test folder
 	create_directories(test_config_folder, ec);
-	if(ec){ throw runtime_error("Unable to create directory"); }
+	if(ec){ throw run_err("Unable to create directory"); }
 
 	config_paths test_map;
 	for(auto &[source_name, source_info]: config.at("tests").items()){

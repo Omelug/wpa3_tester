@@ -80,7 +80,7 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 		if(!mine.has_value()){
 			mine = val;
 		} else if(mine != val){
-			throw runtime_error(
+			throw run_err(
 				"Actor_config conflict on key '" + string(sk_name(k)) +
 				"': '" + *mine + "' vs '" + *val + "'");
 		}
@@ -93,7 +93,7 @@ Actor_config &Actor_config::operator+=(const Actor_config &other) {
 		if(!mine.has_value()){
 			mine = val;
 		} else if(mine != val){
-			throw runtime_error(
+			throw run_err(
 				"Actor_config conflict on bool key '" + string(bk_name(k)) + "'");
 		}
 	}

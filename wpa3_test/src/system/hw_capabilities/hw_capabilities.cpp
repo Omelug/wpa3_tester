@@ -44,13 +44,25 @@ string hw_capabilities::get_driver_name(const string &iface){
 }
 
 optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
-	const string path = "/sys/module/" + driver_name + "/srcversion";
-	ifstream ifs(path);
-	if(!ifs.is_open()) return nullopt;
-	string content;
-	getline(ifs, content);
-	if(content.empty()) return nullopt;
-	return content;
+	// 1. try srcversion (fast, kernel-embedded)
+	{
+		ifstream ifs("/sys/module/" + driver_name + "/srcversion");
+		if(ifs.is_open()){
+			string s;
+			getline(ifs, s);
+			if(!s.empty()) return s;
+		}
+	}
+	// 2. fallback: hash the .ko file via modinfo + sha256sum
+	string ko_path = run_cmd_output({"modinfo", "-F", "filename", driver_name});
+	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' '))
+		ko_path.pop_back();
+	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
+
+	const string sha_out = run_cmd_output({"sha256sum", ko_path});
+	const auto space = sha_out.find(' ');
+	if(space == string::npos) return nullopt;
+	return sha_out.substr(0, min(space, size_t{16}));
 }
 
 string hw_capabilities::get_phy(const string &iface, const optional<string> &netns){
@@ -132,7 +144,7 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 
 	if(phy_name.empty()){
 		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);
-		//throw std::runtime_error("Could not find physical device for interface " + iface);
+		//throw run_err("Could not find physical device for interface " + iface);
 		return;
 	}
 	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);
@@ -141,11 +153,11 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 
 string hw_capabilities::get_iface(const string &ip_address, const optional<string> &netns){
 	const string output = run_cmd_output({"ip", "route", "get", ip_address}, netns);
-	if(output.empty()) throw runtime_error("Failed to get route for IP: " + ip_address);
+	if(output.empty()) throw run_err("Failed to get route for IP: " + ip_address);
 
 	smatch match;
 	if(!regex_search(output, match, regex(R"(dev (\S+))"))){
-		throw runtime_error("Could not find interface for IP: " + ip_address);
+		throw run_err("Could not find interface for IP: " + ip_address);
 	}
 
 	return match[1].str();
@@ -187,11 +199,11 @@ void hw_capabilities::set_channel(const string &iface, const Channel ch, const o
 
 string get_iface_type(const string &iface, const optional<string> &netns){
 	const string output = hw_capabilities::run_cmd_output({"iw", iface, "info"}, netns);
-	if(output.empty()) throw runtime_error("Failed to get interface info for: " + iface);
+	if(output.empty()) throw run_err("Failed to get interface info for: " + iface);
 
 	smatch match;
 	if(!regex_search(output, match, regex(R"(type (\w+))")))
-		throw runtime_error("Could not determine interface type for: " + iface);
+		throw run_err("Could not determine interface type for: " + iface);
 
 	return match[1].str();
 }
@@ -232,15 +244,15 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		case NL80211_IFTYPE_MONITOR: return "monitor";
 		case NL80211_IFTYPE_STATION: return "managed";
 		case NL80211_IFTYPE_AP: return "__ap";
-		default: throw runtime_error(format("Unsupported nl80211 iftype: {}", static_cast<int>(type)));
+		default: throw run_err(format("Unsupported nl80211 iftype: {}", static_cast<int>(type)));
 		}
 	}();
 
 	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0) throw
-			runtime_error(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
+			run_err(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
 
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)
-		throw runtime_error(format("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str,
+		throw run_err(format("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str,
 									res.error().message()));
 
 	if(type == NL80211_IFTYPE_MONITOR && !monitor_flags.empty()){

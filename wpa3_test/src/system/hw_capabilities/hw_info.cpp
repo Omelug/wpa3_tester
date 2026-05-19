@@ -55,8 +55,8 @@ nlohmann::json InjectionSuiteResult::to_json() const{
 
 nlohmann::json HwInfo::to_json() const{
     nlohmann::json j = {
-        {"driver_name",        actor->get(SK::driver_name)},
-		{"driver_hash",        actor->get(SK::driver_hash)},
+        {"driver_name",   actor->get(SK::driver_name)},
+		{"driver_hash",   actor->get(SK::driver_hash)},
         {"permanent_mac", actor->get(SK::permanent_mac)},
     };
     j.update(actor->caps_to_flat_json());

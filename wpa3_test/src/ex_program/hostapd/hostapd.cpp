@@ -59,7 +59,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	create_directories(folder, ec);
 	if(ec){
 		log(LogLevel::ERROR, "hostapd_config: failed to ensure run folder: {}:{}", folder.string(), ec.message());
-		throw runtime_error("hostapd_config: unable to create run folder");
+		throw run_err("hostapd_config: unable to create run folder");
 	}
 
 	if(ap_setup.contains("hostapd_path")){
@@ -72,7 +72,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	ofstream hostapd_conf(cfg_path);
 	if(!hostapd_conf){
 		log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
-		throw runtime_error("hostapd_config: unable to open config file");
+		throw run_err("hostapd_config: unable to open config file");
 	}
 
 	// write config
@@ -129,7 +129,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	create_directories(folder, ec);
 	if(ec){
 		log(LogLevel::ERROR, "wpa_supplicant_config: failed to ensure run folder: {}: {}", run_folder, ec.message());
-		throw runtime_error("wpa_supplicant_config: unable to create run folder");
+		throw run_err("wpa_supplicant_config: unable to create run folder");
 	}
 
 	if(client_setup.contains("wpa_supplicant_path")){
@@ -142,7 +142,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	ofstream out(cfg_path);
 	if(!out){
 		log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
-		throw runtime_error("wpa_supplicant_config: unable to open config file");
+		throw run_err("wpa_supplicant_config: unable to open config file");
 	}
 
 	// wpa_supplicant.conf

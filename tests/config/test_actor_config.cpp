@@ -137,7 +137,7 @@ TEST_CASE("Actor_config - operator+= merge"){
         Actor_config other;
         other.set(SK::iface, "wlan1"); // conflict
 
-        CHECK_THROWS_AS(base += other, runtime_error);
+        CHECK_THROWS_AS(base += other, run_err);
     }
 }
 

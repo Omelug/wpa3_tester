@@ -88,12 +88,12 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(external_WB){ setup_actor_external_whitebox(config, real_actor); }
 	if(internal || external_WB){
 		auto actor_json = config.at("actors").at(get(SK::actor_name));
-		const bool monitor = monitor_needed();
 
 		int channel_num = -1;
 		if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
 		else if(const auto c = real_actor[SK::channel]) channel_num = stoi(c.value());
-		if(monitor && (*this)[SK::sniff_iface] == nullopt) set_monitor_mode();
+		if(monitor_needed() && (*this)[SK::sniff_iface] == nullopt)
+			set_monitor_mode();
 		if(channel_num != -1){
 			set_iface_up();
 			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));

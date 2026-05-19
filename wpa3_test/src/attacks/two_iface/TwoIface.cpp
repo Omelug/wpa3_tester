@@ -82,4 +82,14 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 path TwoIface::cache_path() const{
 	return path("data") / "two_iface" / (cache_name + ".csv");
 }
+
+json TwoIface::make_selection(const ActorPtr &a, json condition) const {
+	json sel;
+	for (const SK sk : cache_id.first)
+		if (const auto &v = a[sk]; v.has_value())
+			sel[string(sk_name(sk))] = *v;
+	sel["condition"] = std::move(condition);
+	return sel;
+}
+
 }

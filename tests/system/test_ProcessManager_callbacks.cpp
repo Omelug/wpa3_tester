@@ -4,6 +4,8 @@
 #include <mutex>
 #include <vector>
 #include <string>
+
+#include "logger/error_log.h"
 #include "system/ProcessManager.h"
 
 using namespace wpa3_tester;
@@ -53,7 +55,7 @@ TEST_CASE("before_stop: throw exception in callback, stop() emds"){
     ProcessManager pm;
     pm.run_dummy("proc");
 
-    pm.before_stop("proc", [] { throw runtime_error("callback error"); });
+    pm.before_stop("proc", [] { throw run_err("callback error"); });
 
     CHECK_NOTHROW(pm.stop("proc"));
 }
@@ -93,7 +95,7 @@ TEST_CASE("after_stop: throw exception in callback, stop() emds"){
     ProcessManager pm;
     pm.run_dummy("proc");
 
-    pm.after_stop("proc", [] { throw runtime_error("callback error"); });
+    pm.after_stop("proc", [] { throw run_err("callback error"); });
 
     CHECK_NOTHROW(pm.stop("proc"));
 }

@@ -134,7 +134,7 @@ void Actor_config::set_monitor_mode() const{
 
 	string flags_str;
 	for(const auto &f : monitor_flags){ if(!flags_str.empty()) flags_str += ' '; flags_str += f; }
-	log(LogLevel::INFO, "Setting interface {} to monitor mode+{}", iface, flags_str);
+	log(LogLevel::INFO, "Setting interface {} to monitor mode with flags {}", iface, flags_str);
 
 	set_iface_down();
 	set_wifi_type(NL80211_IFTYPE_MONITOR, monitor_flags);

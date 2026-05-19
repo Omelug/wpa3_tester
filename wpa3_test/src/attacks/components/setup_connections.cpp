@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/program.h"
 #include "system/ip.h"
@@ -29,7 +30,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 void client_ap_attacker_setup(RunStatus &rs){
 	// check if contains rs.get_actor("attacker")["source"] != "internal"
 	if(rs.get_actor("client")["source"] != "internal"){
-		throw runtime_error("only internal actors are supported");
+		throw run_err("only internal actors are supported");
 	}
 
 	setup_AP(rs, "access_point");
@@ -42,7 +43,7 @@ void client_ap_attacker_setup(RunStatus &rs){
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs){
 	if(rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal"){
-		throw runtime_error("only internal actors are supported");
+		throw run_err("only internal actors are supported");
 	}
 
 	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");

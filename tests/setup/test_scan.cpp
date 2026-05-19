@@ -79,7 +79,7 @@ TEST_CASE("get_actors_conn_table - basic parsing"){
         auto result = scan::get_actors_conn_table(test_file);
 
         CHECK_EQ(result.size(), 1);
-        CHECK_EQ(result[0]SK::whitebox_host].value(), "router1");
+        CHECK_EQ(result[0].get(SK::whitebox_host), "router1");
         CHECK_EQ(result[0].get(SK::whitebox_ip), "192.168.1.1");
 
         remove(test_file);

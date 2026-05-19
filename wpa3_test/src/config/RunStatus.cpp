@@ -66,7 +66,7 @@ void RunStatus::execute(){
 	// Ensure parent directories exist
 	error_code ec;
 	create_directories(_run_folder, ec);
-	if(ec) throw runtime_error("Unable to create run base directory");
+	if(ec) throw run_err("Unable to create run base directory");
 
 	// Initialize log file if save_log is enabled
 	if(_run_config.get_save_log()){

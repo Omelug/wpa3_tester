@@ -7,6 +7,7 @@
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/ActorPtr.h"
 #include "config/Actor_config.h"
+#include "logger/error_log.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
@@ -127,7 +128,7 @@ void run_attack(RunStatus &rs){
     create_directories(rs.run_folder());
     const path out_path = rs.run_folder() / ("iface_report_" + mac_slug + ".md");
     ofstream f(out_path);
-    if(!f.is_open()) throw runtime_error("Cannot open output file: " + out_path.string());
+    if(!f.is_open()) throw run_err("Cannot open output file: " + out_path.string());
     f << md.str();
     f.close();
 

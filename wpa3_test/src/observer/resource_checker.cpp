@@ -181,7 +181,7 @@ void generate_resource_graph(const std::string &data_filepath, const std::string
 	//graph.start_time = ;
 
 	g.file = popen("gnuplot", "w");
-	if(!g.file) throw runtime_error("Failed to start gnuplot");
+	if(!g.file) throw run_err("Failed to start gnuplot");
 
 	g.gpcmd("set datafile commentschars '#'");
 	g.gpcmd("set terminal pngcairo size 1600,600");

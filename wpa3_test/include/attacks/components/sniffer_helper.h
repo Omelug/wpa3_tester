@@ -23,7 +23,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 	}
 	pcap_setnonblock(handle, 1, errbuf);
 	const int pcap_fd = pcap_get_selectable_fd(handle);
-	if(pcap_fd == -1) throw std::runtime_error("pcap fd not selectable");
+	if(pcap_fd == -1) throw run_err("pcap fd not selectable");
 
 	pollfd pfds[2] = {
 		{.fd = pcap_fd, .events = POLLIN, .revents = 0},
@@ -45,7 +45,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 
 		if(ret < 0){
 			if(errno == EINTR) continue;
-			throw std::runtime_error("poll error: " + std::to_string(errno));
+			throw run_err("poll error: " + std::to_string(errno));
 		}
 
 		if(pfds[1].revents & POLLIN) return StopReason::Interrupted;
@@ -73,7 +73,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 	Tins::Sniffer sniffer(interface, sniff_config);
 
 	const int pcap_fd = pcap_get_selectable_fd(sniffer.get_pcap_handle());
-	if(pcap_fd == -1) throw std::runtime_error("pcap fd not selectable");
+	if(pcap_fd == -1) throw run_err("pcap fd not selectable");
 
 	pollfd pfds[2] = {
 		{.fd = pcap_fd, .events = POLLIN, .revents = 0},
@@ -95,7 +95,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 
 		if(ret < 0){
 			if(errno == EINTR) continue;
-			throw std::runtime_error("poll error: " + std::to_string(errno));
+			throw run_err("poll error: " + std::to_string(errno));
 		}
 
 		if(pfds[1].revents & POLLIN) return StopReason::Interrupted;

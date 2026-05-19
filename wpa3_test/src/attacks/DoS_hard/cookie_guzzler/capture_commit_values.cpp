@@ -22,7 +22,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 	const bool owns = (handle == nullptr);
 	if(owns){
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
-		if(!handle) throw runtime_error("pcap_open_live failed: " + string(errbuf));
+		if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
 		pcap_setnonblock(handle, 1, errbuf);
 	}
 	auto guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(owns ? handle : nullptr,

@@ -37,6 +37,9 @@ protected:
     [[nodiscard]] std::optional<nlohmann::json> lookup_cache(const std::string &key) const;
     void write_cache(const std::string &key, const nlohmann::json &result) const;
     [[nodiscard]] std::filesystem::path cache_path() const;
+	nlohmann::json make_selection(const ActorPtr &a, nlohmann::json condition) const;
+	// Builds a selection object from cache_id SK keys + the given condition array.
+    [[nodiscard]] nlohmann::json make_selection(const ActorPtr &a, nlohmann::json condition) const;
 };
 
 }

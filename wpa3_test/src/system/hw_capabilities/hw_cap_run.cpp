@@ -20,7 +20,7 @@ using namespace filesystem;
 void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()){
 	const string full_cmd = "cd " + cwd.string() + " && " + cmd;
 	if(system(full_cmd.c_str()) != 0){
-		throw runtime_error("Command failed: " + cmd);
+		throw run_err("Command failed: " + cmd);
 	}
 }
 
@@ -125,6 +125,6 @@ void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
 
 void hw_capabilities::exec(const vector<string> &cmd, const bool check){
 	const string full = join(cmd, " ");
-	if(const int ret = system(full.c_str()); check && ret != 0) throw runtime_error("Command failed: " + full);
+	if(const int ret = system(full.c_str()); check && ret != 0) throw run_err("Command failed: " + full);
 }
 }

@@ -1,5 +1,7 @@
 #include "setup/YAMLValidator.h"
 #include <nlohmann/json-schema.hpp>
+
+#include "logger/error_log.h"
 #include "setup/config_parser.h"
 
 using namespace std;
@@ -16,7 +18,7 @@ YAMLValidator::YAMLValidator(const path &schema_path) {
 		const path ref_path = weakly_canonical(schema_dir / clean_p);
 
 		if (!exists(ref_path))
-			throw runtime_error("Schema not found: " + ref_path.string());
+			throw wpa3_tester::run_err("Schema not found: " + ref_path.string());
 
 		schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
 	};

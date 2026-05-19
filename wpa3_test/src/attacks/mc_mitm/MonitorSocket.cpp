@@ -2,6 +2,8 @@
 #include <memory>
 #include <string>
 #include <tins/tins.h>
+
+#include "logger/error_log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 
@@ -13,7 +15,7 @@ MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 : detect_injected_(detect_injected), sender_(iface), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf);
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw runtime_error(
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
 		"pcap_setnonblock failed: " + string(errbuf));
 }
 
@@ -26,7 +28,7 @@ MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns,
 	return Sniffer(iface, make_sniff_cfg());
 }()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw runtime_error(
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
 		"pcap_setnonblock failed: " + string(errbuf));
 }
 

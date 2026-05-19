@@ -31,7 +31,7 @@ void parse_arguments(argparse::ArgumentParser &program, const int argc, char *ar
 
 	try{
 		program.parse_args(argc, argv);
-	} catch(const runtime_error &err){
+	} catch(const run_err &err){
 		throw config_err(err.what());
 	}
 

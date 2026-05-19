@@ -224,7 +224,7 @@ void save_yaml(const json &json_obj, const path &out_path){
 	};
 	force_block_style(force_block_style, node);
 	ofstream out(out_path);
-	if(!out) throw runtime_error("Failed to open " + out_path.string() + " for writing");
+	if(!out) throw run_err("Failed to open " + out_path.string() + " for writing");
 	out << node << endl;
 	out.close();
 	log(LogLevel::DEBUG, "Config saved to {}", out_path.string());

@@ -37,14 +37,14 @@ void start_local(RunStatus &rs, const string &actor_name, const string &iface, c
 	const string check_cmd = "iw dev " + iface + " station dump 2>&1";
 	FILE *pipe = popen(check_cmd.c_str(), "r");
 	if(!pipe){
-		throw runtime_error("station_counter: popen failed for iw on iface " + iface);
+		throw run_err("station_counter: popen failed for iw on iface " + iface);
 	}
 	char buf[256] = {};
 	fgets(buf, sizeof(buf), pipe);
 	pclose(pipe);
 
 	if(string(buf).find("No such device") != string::npos || string(buf).find("command failed") != string::npos){
-		throw runtime_error("station_counter: interface '" + iface + "' not found or not an AP interface.");
+		throw run_err("station_counter: interface '" + iface + "' not found or not an AP interface.");
 	}
 
 	const string log_dir = get_observer_folder(rs, program_name);
@@ -95,7 +95,7 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 	g.ymax = max_stations;
 
 	g.file = popen("gnuplot", "w");
-	if(!g.file) throw runtime_error("Failed to start gnuplot");
+	if(!g.file) throw run_err("Failed to start gnuplot");
 
 	g.gpcmd("set terminal pngcairo size 1600,600 enhanced font 'Arial,10'");
 	g.gpcmd("set output '" + output_imagepath + "'");

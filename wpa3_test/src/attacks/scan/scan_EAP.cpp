@@ -148,7 +148,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);
 		}
 		break;
-	default: throw runtime_error("Unknown EAP code: " + to_string(info.code));
+	default: throw run_err("Unknown EAP code: " + to_string(info.code));
 	}
 
 	return nullopt; // until timeout

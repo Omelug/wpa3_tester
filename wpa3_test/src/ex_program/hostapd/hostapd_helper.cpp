@@ -15,7 +15,7 @@ void ensure_repo_cloned(const path &hostapd_folder){
 
 	error_code ec;
 	create_directories(hostapd_folder, ec);
-	if(ec){ throw runtime_error("Failed to create directory: " + hostapd_folder.string()); }
+	if(ec){ throw run_err("Failed to create directory: " + hostapd_folder.string()); }
 
 	const string clone_cmd = "git clone https://w1.fi/hostap.git hostapd";
 	hw_capabilities::run_in(clone_cmd, hostapd_folder);
@@ -46,7 +46,7 @@ string find_matching_tag(const path &repo_dir, const string &version){
 		}
 	}
 
-	throw runtime_error("No hostapd tag found for version: " + version);
+	throw run_err("No hostapd tag found for version: " + version);
 }
 
 void build_version(const string &version, const path &build_folder, path target){

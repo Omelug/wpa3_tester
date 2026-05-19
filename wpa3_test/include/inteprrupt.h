@@ -5,12 +5,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "logger/error_log.h"
+
 struct InterruptPipe{
 	int read_fd, write_fd;
 
 	InterruptPipe(){
 		int fds[2];
-		if(pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) throw std::runtime_error("pipe2 failed");
+		if(pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) throw wpa3_tester::run_err("pipe2 failed");
 		read_fd = fds[0];
 		write_fd = fds[1];
 	}

@@ -42,7 +42,7 @@ void ProcessManager::init_logging(const path &run_folder){
 	combined_log.open(combined_path, ios::out | ios::trunc);
 	if(!combined_log.is_open()){
 		log(LogLevel::ERROR, "Failed to open combined log file: {}", combined_path.string());
-		throw runtime_error("Unable to open combined log file");
+		throw run_err("Unable to open combined log file");
 	}
 
 	for(const auto &entry: processes | views::values){
@@ -127,7 +127,7 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 		remove_all(log_base_dir, ec);
 		if(ec){
 			log(LogLevel::ERROR, "Failed to clean logger directory: {}:{}", log_base_dir.string(), ec.message());
-			throw runtime_error("Unable to clean logger directory");
+			throw run_err("Unable to clean logger directory");
 		}
 	}
 

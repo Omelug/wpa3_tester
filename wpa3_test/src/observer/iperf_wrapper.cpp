@@ -41,7 +41,7 @@ static void render_graph(const IperfData &data, const string &label, const path 
 	if(data.bandwidths.empty() || data.intervals.empty()) return;
 
 	FILE *gp = popen("gnuplot", "w");
-	if(!gp){ throw runtime_error("Could not open pipe to gnuplot. Is it installed?"); }
+	if(!gp){ throw run_err("Could not open pipe to gnuplot. Is it installed?"); }
 
 	const string ext = output_path.extension().string();
 	if(ext == ".png"){

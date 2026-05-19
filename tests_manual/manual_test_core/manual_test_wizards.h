@@ -22,8 +22,8 @@ void print_external_entities(const std::vector<ActorPtr> &entities);
 bool ask_ok(const std::string &question);
 ActorPtr wb_actor_selection();
 
-class manual_test_err: public std::runtime_error{
+class manual_test_err: public run_err{
 public:
-    explicit manual_test_err(const std::string &message): std::runtime_error(message){}
+    explicit manual_test_err(const std::string &message): run_err(message){}
 };
 }

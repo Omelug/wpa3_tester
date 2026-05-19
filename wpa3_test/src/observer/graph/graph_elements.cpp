@@ -1,4 +1,6 @@
 #include "observer/graph/graph_elements.h"
+
+#include "logger/error_log.h"
 #include "observer/graph/graph_utils.h"
 #include "system/utils.h"
 
@@ -123,6 +125,6 @@ void Graph::render(){
 
 	const int rc = pclose(file);
 	file = nullptr;
-	if(rc != 0) throw runtime_error("Gnuplot failed");
+	if(rc != 0) throw run_err("Gnuplot failed");
 }
 }

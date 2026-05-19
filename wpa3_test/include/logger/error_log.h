@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdarg>
+#include <format>
 #include <source_location>
 #include <stacktrace>
 #include <stdexcept>
@@ -11,8 +12,7 @@ namespace wpa3_tester{
 class tester_error : public std::runtime_error, public std::nested_exception {
 public:
 	explicit tester_error(
-		const std::string &msg,
-		std::source_location loc = std::source_location::current()
+		const std::string &msg, const std::source_location loc = std::source_location::current()
 	)
 	: std::runtime_error(msg)
 	, std::nested_exception()
@@ -34,32 +34,45 @@ private:
 	std::source_location location_{};
 };
 
+// Wrapper for std::format-style ({}) error messages with source location capture.
+// Usage: throw scan_err(fmtloc{"failed: {}"}, path);
+struct fmtloc {
+	std::string_view fmt;
+	std::source_location loc;
+	explicit fmtloc(std::string_view fmt, std::source_location loc = std::source_location::current())
+	: fmt(fmt), loc(loc) {}
+};
+
 template<LogLevel Level>
 class typed_error : public tester_error {
 public:
 	explicit typed_error(
-		const std::string &msg,
-		std::source_location loc = std::source_location::current()
+		const std::string &msg, const std::source_location loc = std::source_location::current()
 	)
 	: tester_error(msg, loc)
 	{
 		log(Level, "{}", std::runtime_error::what());
 	}
 
-	// wrapper struct — zachytí loc na call site před Args...
 	struct format_with_location {
 		const char *fmt;
 		std::source_location loc;
 
-		format_with_location(
-			const char *fmt,
-			std::source_location loc = std::source_location::current()
+		format_with_location(  // intentionally non-explicit: allows implicit conversion from string literal
+			const char *fmt, const std::source_location loc = std::source_location::current()
 		) : fmt(fmt), loc(loc) {}
 	};
 
 	template<typename... Args>
 	explicit typed_error(format_with_location f, Args... args)
 	: tester_error(Level, f.fmt, f.loc, args...) {}
+
+	template<typename... Args>
+	explicit typed_error(fmtloc f, Args&&... args)
+	: tester_error(std::vformat(f.fmt, std::make_format_args(args...)), f.loc)
+	{
+		log(Level, "{}", std::runtime_error::what());
+	}
 };
 
 using config_err = typed_error<LogLevel::CRITICAL>;

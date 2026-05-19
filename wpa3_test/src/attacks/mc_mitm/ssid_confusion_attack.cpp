@@ -74,7 +74,7 @@ void run_attack(RunStatus &rs){
         scan_ap.bssid = ap["mac"];
         attack.beacon = RSN_scan(att_real["iface"], 10, scan_ap);
         if (!attack.beacon)
-            throw runtime_error("SSID Confusion: beacon of real AP not found");
+            throw run_err("SSID Confusion: beacon of real AP not found");
 
         // Build the rogue beacon with the confused SSID (and optionally no RSN)
         const auto confused_beacon = make_confused_beacon(*attack.beacon, confused_ssid, strip_rsn);

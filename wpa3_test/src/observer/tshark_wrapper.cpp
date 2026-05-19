@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
 #include "observer/graph/graph_utils.h"
@@ -98,7 +99,7 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder){
 
 	ofstream csv_file(csv_path);
 	if(!csv_file.is_open()){
-		throw runtime_error("Failed to write CSV: " + csv_path.string());
+		throw run_err("Failed to write CSV: " + csv_path.string());
 	}
 	csv_file << csv_output;
 	csv_file.close();
@@ -212,7 +213,7 @@ string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<
 	g.start_time = start_time;
 
 	g.file = popen("gnuplot", "w");
-	if(!g.file) throw runtime_error("Failed to start gnuplot");
+	if(!g.file) throw run_err("Failed to start gnuplot");
 
 	g.gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
 	g.gpcmd("set output '" + output_path.string() + "'");

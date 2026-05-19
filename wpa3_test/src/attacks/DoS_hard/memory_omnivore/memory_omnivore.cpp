@@ -56,7 +56,7 @@ void run_attack(RunStatus &rs){
 	const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
 
-	if(!sae_params.has_value()) throw runtime_error("Failed to capture SAE commit values");
+	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();
 	attacker->set_iface_up();

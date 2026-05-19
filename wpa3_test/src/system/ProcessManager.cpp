@@ -153,7 +153,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 						const path &logging_dir
 ){
 	if(const auto proc_it = processes.find(process_name); proc_it != processes.end()){
-		throw runtime_error("This process already exists:" + process_name);
+		throw run_err("This process already exists:" + process_name);
 	}
 
 	//log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
@@ -206,7 +206,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 			lock_guard lock(logger_mtx);
 			processes.erase(process_name);
 		}
-		throw runtime_error("Failed to start " + process_name + ": " + ec.message());
+		throw run_err("Failed to start " + process_name + ": " + ec.message());
 	}
 
 	// Put the child in its own process group so killpg kills the whole tree.
@@ -231,7 +231,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 		lock_guard lock(logger_mtx);
 		const auto it = processes.find(actor_name);
 		if(it == processes.end() || !it->second)
-			throw runtime_error("Unknown process in wait_for: " + actor_name);
+			throw run_err("Unknown process in wait_for: " + actor_name);
 		mp = it->second;
 		auto &logs = mp->logs;
 

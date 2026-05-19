@@ -160,6 +160,7 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
 		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
+		//TODO get driver_hash
 		actor_cfg->set(SK::radio, radio_name);
 		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
 		options.emplace_back(actor_cfg);
@@ -237,7 +238,6 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 // return <string radio_name; external_actor >
 vector<ActorPtr> RunStatus::external_wb_options(){
 	vector<ActorPtr> options;
-
 	//option1: whitebox_host -> whitebox_ip
 	const path conn_table = absolute(
 		path(PROJECT_ROOT_DIR) / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
@@ -254,6 +254,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 			log(LogLevel::WARNING, "Actor {} not reachable, skipping", ip);
 			continue;
 		}
+
 		get_or_create_connection(cfg);
 		add_actors_by_radio(options, cfg);
 	}

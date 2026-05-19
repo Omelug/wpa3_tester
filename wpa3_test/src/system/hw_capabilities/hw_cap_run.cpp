@@ -39,7 +39,7 @@ std::vector<std::string> wrap_with_netns(const std::vector<std::string> &argv, c
 	return full_argv;
 }
 
-int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns, bool print){
+int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> &netns, const bool print){
 	if(argv.empty()) return -1;
 
 	const auto full_argv = wrap_with_netns(argv, netns);

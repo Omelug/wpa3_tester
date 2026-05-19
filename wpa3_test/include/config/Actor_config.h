@@ -59,7 +59,7 @@ public:
 	[[nodiscard]] bool monitor_needed() const;
 
     // Interface control
-    int  run(const std::vector<std::string> &argv) const;
+    int  run(const std::vector<std::string> &argv, bool print = true) const;
     void cleanup()          const;
     void create_sniff_iface() const;
 

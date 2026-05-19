@@ -17,7 +17,10 @@ pair<json, bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, cons
 
 	if(behave != force_run){
 		const auto cached = lookup_cache(key);
-		if(cached.has_value()) return {*cached, true};
+		if(cached.has_value()){
+			log(LogLevel::WARNING, "Found in cache");
+			return {*cached, true};
+		}
 		if(behave == throw_on_miss) throw req_err("ERROR not found in cache " + cache_name);
 	}
 
@@ -83,13 +86,8 @@ path TwoIface::cache_path() const{
 	return path("data") / "two_iface" / (cache_name + ".csv");
 }
 
-json TwoIface::make_selection(const ActorPtr &a, json condition) const {
-	json sel;
-	for (const SK sk : cache_id.first)
-		if (const auto &v = a[sk]; v.has_value())
-			sel[string(sk_name(sk))] = *v;
-	sel["condition"] = std::move(condition);
-	return sel;
+json TwoIface::make_selection(const ActorPtr &a) const {
+	return a->to_json(&cache_id)["selection"];
 }
 
 }

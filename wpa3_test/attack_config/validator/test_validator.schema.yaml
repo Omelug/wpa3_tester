@@ -202,6 +202,9 @@ definitions:
           driver:
             type: string
             description: driver of wifi card
+          driver_hash:
+            type: string
+            description: srcversion or sha256 hash of the driver module
           condition:
             type: array
             items:

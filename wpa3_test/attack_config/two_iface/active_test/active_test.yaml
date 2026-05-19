@@ -1,19 +1,21 @@
-$schema: http://json-schema.org/draft-07/schema#
-name: active_test_example
-attacker_module: active_test
 actors:
-  transceiver:
-    source: internal
-    selection:
-      condition: [ monitor ]
-      #driver: mt76x2u
-      channel: 1
-    netns: tx
   receiver:
-    source: internal
     selection:
-      condition: [ active_monitor ]
-      #driver: ath9k_htc
-      channel: 1
-delete_old: true
+      condition:
+        - active_monitor
+      driver: mt76x2u
+      driver_hash: f8c2e1c72db087ae
+      permanent_mac: 00:c0:ca:b7:69:2a
+    source: internal
+  transceiver:
+    selection:
+      condition:
+        - monitor
+      driver: ath9k_htc
+      driver_hash: f0965ae257613d1ee80fbd90bc81ace23b3daf0e2214011f6da819c6b0c13d6a
+      permanent_mac: 24:ec:99:bf:b0:a1
+    source: internal
+attacker_module: active_test
+name: active_test_example
 rewrite: all
+delete_old: true

@@ -36,15 +36,15 @@ void Actor_config::cleanup() const{
 		log(LogLevel::INFO, "Cleaning up interface {}", iface);
 	}
 
-	run({"pkill", "-f", "tshark.*" + iface});
-	run({"pkill", "-f", "tcpdump.*" + iface});
+	run({"pkill", "-f", "tshark.*" + iface}, false);
+	run({"pkill", "-f", "tcpdump.*" + iface}, false);
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
 	if((*this)[SK::sniff_iface].has_value()){
 		run({"iw", "dev", get(SK::sniff_iface), "del"});
 
-		run({"pkill", "-f", "wpa_supplicant.*-i" + iface});
-		run({"pkill", "-f", "hostapd.*" + iface});
+		run({"pkill", "-f", "wpa_supplicant.*-i" + iface}, false);
+		run({"pkill", "-f", "hostapd.*" + iface}, false);
 
 		set_iface_down();
 		run({"rfkill", "unblock", "wifi"});
@@ -142,8 +142,8 @@ void Actor_config::set_monitor_mode() const{
 
 // -------- hw_capabilities wrappers
 
-int Actor_config::run(const vector<string> &argv) const{
-	return hw_capabilities::run_cmd(argv, (*this)[SK::netns]);
+int Actor_config::run(const vector<string> &argv, const bool print) const{
+	return hw_capabilities::run_cmd(argv, (*this)[SK::netns], print);
 }
 
 string Actor_config::get_driver_name() const{

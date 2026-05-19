@@ -210,13 +210,13 @@ void Actor_config::caps_from_flat_json(const json &j) {
 json Actor_config::to_json(const ParamFilter *filter) const {
 	json sel = json::object();
 
-	const auto visit_sk = [&](SK k){
+	const auto visit_sk = [&](const SK k){
 		if(k == SK::netns || k == SK::source) return;
 		const auto &v = (*this)[k];
 		if(v.has_value()) sel[string(sk_name(k))] = *v;
 	};
-	if(filter) for(SK k : filter->first)  visit_sk(k);
-	else       for(SK k : sk_values())    visit_sk(k);
+	if(filter) for(const SK k : filter->first)  visit_sk(k);
+	else       for(const SK k : sk_values())    visit_sk(k);
 
 	json conditions = json::array();
 	const auto visit_bk = [&](BK k){
@@ -225,8 +225,8 @@ json Actor_config::to_json(const ParamFilter *filter) const {
 		auto name = string(bk_name(k));
 		conditions.push_back(*v ? name : "!" + name);
 	};
-	if(filter) for(BK k : filter->second) visit_bk(k);
-	else       for(BK k : bk_values())    visit_bk(k);
+	if(filter) for(const BK k : filter->second) visit_bk(k);
+	else       for(const BK k : bk_values())    visit_bk(k);
 
 	if(!conditions.empty())
 		sel["condition"] = conditions;
@@ -249,7 +249,7 @@ void Actor_config::print_ActorCMap(const string &title, const vector<ActorPtr> &
 	cout << flush;
 }
 
-void Actor_config::print_ActorCMap(const string &title, ActorCMap actors) {
+void Actor_config::print_ActorCMap(const string &title, const ActorCMap& actors) {
 	cout << title << ":\n";
 	for(const auto &[key, actor_ptr]: actors){
 		const ActorPtr actor = actor_ptr;

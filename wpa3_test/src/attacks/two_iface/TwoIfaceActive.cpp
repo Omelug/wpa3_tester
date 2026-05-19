@@ -26,15 +26,15 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 			{"transceiver", {
 				{"source",    "internal"},
 				{"selection", {
-					{"permanent_mac",     a1.get(SK::permanent_mac)},
+					{"permanent_mac", a1.get(SK::permanent_mac)},
 					{"condition", json::array({"monitor"})},
 				}},
 			}},
 			{"receiver", {
 				{"source",    "internal"},
 				{"selection", {
-					{"permanent_mac",     a2.get(SK::permanent_mac)},
-					{"condition", json::array({"monitor", "active_monitor"})},
+					{"permanent_mac", a2.get(SK::permanent_mac)},
+					{"condition", json::array({"active_monitor"})},
 				}},
 			}},
 		}},
@@ -58,9 +58,9 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 	return result.is_discarded() ? json{{"err_msg", "result is discarded"}, {"success", false}} : result;
 }
 
-bool TwoIfaceActive::run_check(const ActorPtr &a1, const ActorPtr &a2) {
+bool TwoIfaceActive::run_check(const ActorPtr &a1, const ActorPtr &a2, CacheBehave behave) {
 	TwoIfaceActive t;
-	const auto [result, from_cache] = t.validate(a1, a2);
+	const auto [result, from_cache] = t.validate(a1, a2, behave);
 	if(!result.value("success", false))
 		log(LogLevel::WARNING,
 			"active_test: actors {}/{} failed active monitor check",

@@ -1,6 +1,8 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: ath_masker_test
 attacker_module: ath_masker_test
+requirements:
+  simple: [ ath_masker ]
 validator: ./ath_masker_test.schema.yaml
 actors:
   access_point:
@@ -16,9 +18,6 @@ actors:
     sniff_iface: ap
   attacker:
     source: internal
-    setup:
-      requirements:
-        simple: [ ath_masker ]
     selection:
       driver: ath9k_htc
       condition: [ monitor, control_monitor ]

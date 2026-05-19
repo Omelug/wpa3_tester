@@ -303,7 +303,7 @@ bool RunStatus::config_requirement(){
 			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());
 
 			if(key == "active"){
-				if(TwoIfaceActive::run_check(actor1, actor2)) return true;
+				if(TwoIfaceActive::run_check(actor1, actor2, run_on_miss)) return true;
 			} else if(key == "inject"){ //TODO inject_only separated tests
 				if(TwoIfaceInject::run_check(actor1, actor2)) return true;
 			} else{

@@ -66,15 +66,6 @@ string relative_from(const string &base_dir_name, const string &config_path){
 	throw config_err("folder name not found");
 }
 
-void print_exception_tree(const exception &e, ostream &os, int level){
-	os << string(level * 2, ' ') << "- " << e.what() << endl;
-	try{
-		rethrow_if_nested(e);
-	} catch(const exception &nested){
-		print_exception_tree(nested, os, level + 1);
-	} catch(...){}
-}
-
 string join(const vector<string> &v, const string &sep){
 	string out;
 	for(size_t i = 0; i < v.size(); ++i){

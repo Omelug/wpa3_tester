@@ -1,6 +1,8 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: sae_dos_wrapper
 attacker_module: sae_dos_wrapper
+requirements:
+  simple: [ ath_masker ]
 actors:
   access_point:
     source: external
@@ -39,9 +41,6 @@ actors:
     sniff_iface: client
   attacker:
     source: internal
-    setup:
-      requirements:
-        simple: [ ath_masker ]
     selection:
       driver: ath9k_htc
       condition: [ monitor, injection ]

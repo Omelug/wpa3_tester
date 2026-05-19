@@ -5,8 +5,6 @@
 namespace wpa3_tester{
 using namespace std;
 
-tester_error::tester_error(const string &msg): runtime_error(msg){}
-
 string tester_error::vprintf_format(const char *fmt, ...){
 	va_list ap;
 	va_start(ap, fmt);

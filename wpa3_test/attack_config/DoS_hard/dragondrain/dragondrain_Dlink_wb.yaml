@@ -2,6 +2,8 @@ $schema: http://json-schema.org/draft-07/schema#
 name: dragondrain_Dlink
 validator: "./dragondrain.schema.yaml"
 attacker_module: dragondrain
+requirements:
+  simple: [ ath_masker ]
 actors:
   access_point:
     extends: ../../target/Dlink/Dlink_wb.yaml
@@ -9,9 +11,6 @@ actors:
     extends: ../../target/Dlink/mixed_client_2_4.yaml
   attacker:
     source: internal
-    setup:
-      requirements:
-        simple: [ ath_masker ]
     selection:
       condition: [ monitor, injection ]
       driver: ath9k_htc

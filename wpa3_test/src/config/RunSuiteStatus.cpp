@@ -56,11 +56,11 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		global_validator.validate(config_json);
 		return config_json;
 	} catch(const domain_error &e){
-		throw config_err(string("Schema error: ") + e.what());
+		std::throw_with_nested(config_err("Schema error: " + config_path.string()));
 	} catch(const invalid_argument &e){
-		throw config_err(string("Error in config: ") + e.what());
+		std::throw_with_nested(config_err("Error in config: " + config_path.string()));
 	} catch(const exception &e){
-		throw config_err(string("Config validation error: ") + e.what());
+		std::throw_with_nested(config_err("Config validation error: " + config_path.string()));
 	}
 }
 

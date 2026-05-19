@@ -36,14 +36,14 @@ enum class BK : uint8_t {
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> SK_NAMES = {
     "actor_name", "source", "iface", "mac", "permanent_mac", "ssid", "channel",
-    "signal", "ht_mode", "driver", "netns", "sniff_iface",
+    "signal", "ht_mode", "driver", "driver_hash", "netns", "sniff_iface",
     "radio", "whitebox_host", "whitebox_ip", "ip_addr",
     "ssh_user", "ssh_port", "ssh_password", "external_OS"
 };
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(BK::COUNT_)> BK_NAMES = {
     "AP", "STA", "injection", "monitor", "managed",
-    "active_monitor", "control_monitor",
+    "active_monitor", "control_monitor" ,
     "2_4GHz", "5GHz", "6GHz",
     "80211n", "80211ac", "80211ax", "beacon_prot"
 };

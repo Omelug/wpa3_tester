@@ -105,7 +105,14 @@ void RunStatus::execute(){
 			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
 			error_log << "Exception type: " << typeid(e).name() << endl;
 			error_log << "Message: " << e.what() << endl;
-			print_exception_tree(e, error_log);
+
+			if (const auto *te = dynamic_cast<const tester_error*>(&e)) {
+				const auto &loc = te->where();
+				error_log << "Location: " << loc.file_name()
+						  << ":" << loc.line()
+						  << " in " << loc.function_name() << endl;
+			}
+
 			error_log << endl;
 			error_log.close();
 			log(LogLevel::ERROR, "Error written to {}", error_file.string());
@@ -159,7 +166,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 			<< actor[SK::driver_name].value_or("<none>") << ","
 			<< actor[SK::channel].value_or("<none>") << ",";
 		// CSV-quote the JSON field: wrap in '"', escape inner '"' as '""'
-		const string raw_json = actor->to_json();
+		const string raw_json = actor->to_json().dump();
 		ofs << '"';
 		for(const char c : raw_json){ if(c == '"') ofs << '"'; ofs << c; }
 		ofs << '"' << endl;

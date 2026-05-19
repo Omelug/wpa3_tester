@@ -159,6 +159,7 @@
       <w>txpower</w>
       <w>udevadm</w>
       <w>vline</w>
+      <w>vprintf</w>
       <w>vuln</w>
       <w>whitebox</w>
       <w>wiphy</w>

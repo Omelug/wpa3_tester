@@ -8,7 +8,7 @@ public:
     TwoIfaceActive();
     nlohmann::json run(const ActorPtr &a1, const ActorPtr &a2) override;
     // Returns true if result was loaded from cache (actors may need re-assignment)
-    static bool run_check(const ActorPtr &a1, const ActorPtr &a2);
+    static bool run_check(const ActorPtr &a1, const ActorPtr &a2, CacheBehave behave);
 };
 
 } // namespace wpa3_tester

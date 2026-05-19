@@ -131,8 +131,8 @@ void McMitm::setup_real_AP_RSN_frames(){
 		return;
 	}
 
-	log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.", rogue_sta["iface"],
-		rogue_ap["iface"]);
+	log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.",
+		rogue_sta["iface"], rogue_ap["iface"]);
 
 	//if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
 	//netconfig.find_rogue_channel(); //TODO

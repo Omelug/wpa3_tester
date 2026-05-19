@@ -22,8 +22,6 @@ class ExternalConn;
 class Actor_config : public std::enable_shared_from_this<Actor_config> {
 private:
 	Driver _driver{};
-	std::optional<Tins::HWAddress<6>> _mac;
-	std::optional<Tins::HWAddress<6>> _permanent_mac;
 public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
 	explicit Actor_config() = default;
@@ -54,7 +52,7 @@ public:
     void           caps_from_flat_json(const nlohmann::json &j);
 
     static void print_ActorCMap(const std::string &title, const std::vector<ActorPtr> &actors);
-    static void print_ActorCMap(const std::string &title, ActorCMap actors);
+    static void print_ActorCMap(const std::string &title, const ActorCMap &actors);
 
     [[nodiscard]] bool is_WB()          const;
     [[nodiscard]] bool is_external_WB() const;

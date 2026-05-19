@@ -3,9 +3,19 @@ type: object
 required:
   - actors
   - attack_config
+  - requirements
 additionalProperties: true
 
 properties:
+  requirements:
+    type: object
+    required: [ simple ]
+    properties:
+      simple:
+        type: array
+        contains:
+          const: ath_masker
+        minItems: 1
   actors:
     type: object
     required:
@@ -25,21 +35,7 @@ properties:
 
       attacker:
         type: object
-        required: [ source, setup ]
-        properties:
-          setup:
-            type: object
-            required: [ requirements ]
-            properties:
-              requirements:
-                type: object
-                required: [ simple ]
-                properties:
-                  simple:
-                    type: array
-                    contains:
-                      const: ath_masker
-                    minItems: 1
+        required: [ source]
 
   attack_config:
     type: object

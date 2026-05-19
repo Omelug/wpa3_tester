@@ -5,6 +5,14 @@ required:
   - name
   - attacker_module
   - actors
+requirements:
+  type: object
+  description: Requirements for the local test PC
+  additionalProperties: false
+  properties:
+    simple:
+      type: array
+      description: Program names what has to be installed (on local test PC)
 config_type:
   type: string
   const: test
@@ -63,6 +71,29 @@ properties:
       validator:
         type: string
         description: validator
+  requirements:
+    type: object
+    description: Hardware/interface requirements for this actor
+    properties:
+      two_iface:
+        type: object
+        description: Two-interface requirement
+        properties:
+          active:
+            type: array
+            items:
+              type: string
+            minItems: 2
+            description: two_iface
+          inject:
+            type: array
+            items:
+              type: string
+            minItems: 2
+            description: two_iface all injection test
+            #TODO add spacific
+        additionalProperties: false
+    additionalProperties: false
 
 allOf:
   - $ref: './run_config.schema.yaml'
@@ -96,14 +127,6 @@ definitions:
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
-          requirements:
-            type: object
-            description: Requirements for the local test PC
-            additionalProperties: false
-            properties:
-              simple:
-                type: array
-                description: Program names what has to be installed (on local test PC)
           req_programs:
             type: array
             description: Program names what has to be installed (on external)
@@ -166,6 +189,10 @@ definitions:
             type: string
             pattern: '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$'
             description: MAC address in format AA:BB:CC:DD:EE:FF
+          permanent_mac:
+            type: string
+            pattern: '^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$'
+            description: Permanent (hardware) MAC address in format AA:BB:CC:DD:EE:FF
           essid:
             type: string
             description: Name of AP
@@ -186,29 +213,6 @@ definitions:
       sniff_iface:
         type: string
         description: Name of interface for monitoring (will create like associated on iface in selection)
-      requirements:
-        type: object
-        description: Hardware/interface requirements for this actor
-        properties:
-          two_iface:
-            type: object
-            description: Two-interface requirement
-            properties:
-              active:
-                type: array
-                items:
-                  type: string
-                minItems: 2
-                description:  two_iface
-              inject:
-                type: array
-                items:
-                  type: string
-                minItems: 2
-                description: two_iface all injection test
-                #TODO add spacific
-            additionalProperties: false
-        additionalProperties: false
     # Validation rules
     allOf:
       # netns can only be used with source: internal

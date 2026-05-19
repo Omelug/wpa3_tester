@@ -18,9 +18,7 @@ pair<json, bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, cons
 	if(behave != force_run){
 		const auto cached = lookup_cache(key);
 		if(cached.has_value()) return {*cached, true};
-
 		if(behave == throw_on_miss) throw req_err("ERROR not found in cache " + cache_name);
-		if(behave ==run_on_miss) return {{}, false};
 	}
 
 	const json result = run(a1, a2);

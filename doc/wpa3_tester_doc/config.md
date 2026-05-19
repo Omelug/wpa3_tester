@@ -6,12 +6,12 @@
 
 #### add new param?
 - needs to be only convertable to string/bool (it needed for easy backtracking fuctions)
-- add param to SK/BK list
+- add param to SK/BK list 
+- edit SK_NAMES, BK_NAMES strings!
 - if should not be saved in str_vals/bool_vals:
   - add `private` param  
   - edit operator[](SK/BK key) (set param)
   - edit operator[](SK/BK key) const (get param)
-
 ### Observer
 - object for one process
 - ObserverPtr is wrapper (use this, except of tests)

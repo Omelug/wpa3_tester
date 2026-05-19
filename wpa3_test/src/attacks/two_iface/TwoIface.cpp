@@ -82,8 +82,12 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 	for(const auto &l: lines) ofs << l << "\n";
 }
 
+path TwoIface::cache_folder() const{
+	return path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" / "two_iface" / cache_name;
+}
+
 path TwoIface::cache_path() const{
-	return path("data") / "two_iface" / (cache_name + ".csv");
+	return path(PROJECT_ROOT_DIR).parent_path() / "data" / "two_iface" / (cache_name + ".txt");
 }
 
 json TwoIface::make_selection(const ActorPtr &a) const {

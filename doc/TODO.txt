@@ -4,9 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-r: monitor mode hw_capabilies
 r: simplify injection tests
-ch: one_iface, two_if test to actual , configable tests
+ch: one_iface, two_if test to actual tests, configable tests
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
@@ -16,6 +15,8 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 f: json_obj - save to mapping is broken, může zato json "," (A z json hlavně j, protože JavaScript je p*čovina)
 
 //DONE
++: driver_hash
+r: monitor mode hw_capabilies
 l: create logging file
 +: rozdíl mezi původní a možnou mac
 +: interface scan, která ukáře důležité vlastnosti, injection tests

@@ -35,9 +35,9 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 		}},
 	};
 
-	auto p = path("data") / "two_iface" / "active_test";
-	const path config_dir = p / "config";
-	const path lr_dir = p / "last_run";
+
+	const path config_dir = cache_folder() / "config";
+	const path lr_dir = cache_folder() / "last_run";
 	create_directories(config_dir);
 	const path config_path = config_dir / "last_run_config.yaml";
 	save_yaml(config, config_path);

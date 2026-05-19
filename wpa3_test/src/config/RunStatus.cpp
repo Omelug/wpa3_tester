@@ -157,8 +157,12 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 			<< name << "," << actor[SK::iface].value_or("<none>") << ","
 			<< actor[SK::mac].value_or("<none>") << ","
 			<< actor[SK::driver_name].value_or("<none>") << ","
-			<< actor[SK::channel].value_or("<none>") << ","
-			<< actor->to_json() <<endl;
+			<< actor[SK::channel].value_or("<none>") << ",";
+		// CSV-quote the JSON field: wrap in '"', escape inner '"' as '""'
+		const string raw_json = actor->to_json();
+		ofs << '"';
+		for(const char c : raw_json){ if(c == '"') ofs << '"'; ofs << c; }
+		ofs << '"' << endl;
 	}
 }
 
@@ -283,7 +287,18 @@ void RunStatus::load_actor_interface_mapping(){
 			continue;
 		}
 		const string actor_name = line.substr(name_start, name_end - name_start);
-		const string json_str   = line.substr(json_start);
+		string json_str = line.substr(json_start);
+		// Strip CSV quoting and unescape '""' -> '"'
+		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"'){
+			json_str = json_str.substr(1, json_str.size() - 2);
+			string unescaped;
+			unescaped.reserve(json_str.size());
+			for(size_t i = 0; i < json_str.size(); ++i){
+				if(json_str[i] == '"' && i + 1 < json_str.size() && json_str[i + 1] == '"') ++i;
+				unescaped += json_str[i];
+			}
+			json_str = move(unescaped);
+		}
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
 		if(j.is_discarded()){
 			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);

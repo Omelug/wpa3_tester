@@ -1,0 +1,18 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: active_test_example_req
+attacker_module: null_test # not module
+actors:
+  transceiver:
+    source: internal
+    requirements:
+      two_iface:
+        active: [transceiver, receiver]
+    selection:
+      channel: 1
+    netns: tx
+  receiver:
+    source: internal
+    selection:
+      channel: 1
+delete_old: true
+rewrite: all

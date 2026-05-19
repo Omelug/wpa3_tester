@@ -64,7 +64,7 @@ void run_attack(RunStatus &rs) {
 	PacketSender sender(iface1);
 	this_thread::sleep_for(milliseconds(200)); // let sniffer thread start
 
-	for (int i = 0; i < BURST; ++i) {
+	for(int i = 0; i < BURST; ++i) {
 		sender.send(rt);
 		this_thread::sleep_for(milliseconds(10));
 	}

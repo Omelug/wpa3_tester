@@ -10,7 +10,7 @@
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 
-namespace wpa3_tester::active_test {
+namespace wpa3_tester::active_test{
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
@@ -18,8 +18,6 @@ using namespace chrono;
 using nlohmann::json;
 
 static constexpr int BURST = 50;
-
-void setup_attack(RunStatus &){}
 
 void run_attack(RunStatus &rs) {
 	auto &actor_tx = rs.get_actor("transceiver");
@@ -87,7 +85,4 @@ void run_attack(RunStatus &rs) {
 	ofstream ofs(result_path);
 	ofs << result.dump(2);
 }
-
-void stats_attack(const RunStatus &) {}
-
 }

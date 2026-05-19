@@ -91,7 +91,47 @@ properties:
               type: string
             minItems: 2
             description: two_iface all injection test
-            #TODO add spacific
+          injectn_more_fragments_spoofed:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_more_fragments_valid:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_spoofed:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_valid:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_order_spoofed:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_order_valid:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_retrans_spoofed:
+            type: array
+            items:
+              type: string
+            minItems: 2
+          injectn_fields_retrans_valid:
+            type: array
+            items:
+              type: string
+            minItems: 2
+            #TODO simplify this
         additionalProperties: false
     additionalProperties: false
 

@@ -71,7 +71,7 @@ inline void McMitmTestable::append_to_pcap(const std::string &path) const{
     pcap_close(dead);
 }
 
-static std::unique_ptr<McMitmTestable> make_fixture() {
+inline std::unique_ptr<McMitmTestable> make_fixture() {
     auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
     auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
 

@@ -2,8 +2,8 @@
 #include <doctest.h>
 #include <tins/tins.h>
 #include "mitm_helpers.h"
-#include "attacks/mc_mitm/mc_mitm.h"
 #include "pcap_helper.h"
+#include "attacks/mc_mitm/mc_mitm.h"
 
 using namespace std;
 using namespace Tins;

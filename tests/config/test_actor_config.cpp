@@ -430,3 +430,134 @@ TEST_CASE("ActorPtr - equality and ordering"){
     // strict weak ordering: exactly one of a<c or c<a must hold
 	CHECK_NE(a < c, c < a);
 }
+
+// -----------------
+// to_str / to_json with ParamFilter via ActorPtr
+
+TEST_CASE("ActorPtr::to_str - filter restricts SK output"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface,       "wlan0");
+    ap->set(SK::driver_name, "ath9k");
+    ap->set(SK::ssid,        "MyNet");
+
+    ParamFilter filter{{SK::iface}, {}};
+    const auto s = ap->to_str(&filter);
+
+    CHECK_NE(s.find("iface=wlan0"),  string::npos);
+    CHECK_EQ(s.find("driver=ath9k"), string::npos);
+    CHECK_EQ(s.find("ssid=MyNet"),   string::npos);
+}
+
+TEST_CASE("ActorPtr::to_str - filter restricts BK output"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(BK::monitor,   true);
+    ap->set(BK::AP,        false);
+    ap->set(BK::injection, true);
+
+    ParamFilter filter{{}, {BK::monitor}};
+    const auto s = ap->to_str(&filter);
+
+    CHECK_NE(s.find("monitor"),   string::npos);
+    CHECK_EQ(s.find("AP"),        string::npos);
+    CHECK_EQ(s.find("injection"), string::npos);
+}
+
+TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface,       "wlan1");
+    ap->set(SK::driver_name, "mt76");
+    ap->set(BK::AP,          true);
+    ap->set(BK::monitor,     false);
+
+    ParamFilter filter{{SK::iface}, {BK::AP}};
+    const auto s = ap->to_str(&filter);
+
+    CHECK_NE(s.find("iface=wlan1"), string::npos);
+    CHECK_EQ(s.find("driver=mt76"), string::npos);
+    CHECK_NE(s.find("AP"),          string::npos);
+    CHECK_EQ(s.find("monitor"),     string::npos);
+}
+
+TEST_CASE("ActorPtr::to_str - empty filter produces empty string"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface, "wlan0");
+    ap->set(BK::monitor, true);
+
+    ParamFilter filter{{}, {}};
+    CHECK(ap->to_str(&filter).empty());
+}
+
+TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface,       "wlan0");
+    ap->set(SK::driver_name, "ath9k");
+    ap->set(SK::ssid,        "MyNet");
+
+    ParamFilter filter{{SK::iface}, {}};
+    const auto j = ap->to_json(&filter);
+
+    REQUIRE(j.contains("selection"));
+    CHECK(j["selection"].contains("iface"));
+    CHECK_FALSE(j["selection"].contains("driver"));
+    CHECK_FALSE(j["selection"].contains("ssid"));
+    CHECK_FALSE(j["selection"].contains("condition"));
+}
+
+TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(BK::monitor,   true);
+    ap->set(BK::injection, false);
+    ap->set(BK::AP,        true);
+
+    ParamFilter filter{{}, {BK::monitor}};
+    const auto j = ap->to_json(&filter);
+
+    REQUIRE(j["selection"].contains("condition"));
+    const auto &cond = j["selection"]["condition"];
+    CHECK_NE(cond.end(), ranges::find(cond, "monitor"));
+    CHECK_EQ(cond.end(), ranges::find(cond, "!injection"));
+    CHECK_EQ(cond.end(), ranges::find(cond, "AP"));
+}
+
+TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface,       "wlan1");
+    ap->set(SK::driver_name, "mt76");
+    ap->set(BK::AP,          true);
+    ap->set(BK::monitor,     false);
+
+    ParamFilter filter{{SK::iface}, {BK::AP}};
+    const auto j = ap->to_json(&filter);
+
+    REQUIRE(j.contains("selection"));
+    CHECK(j["selection"].contains("iface"));
+    CHECK_FALSE(j["selection"].contains("driver"));
+    REQUIRE(j["selection"].contains("condition"));
+    const auto &cond = j["selection"]["condition"];
+    CHECK_NE(cond.end(), ranges::find(cond, "AP"));
+    CHECK_EQ(cond.end(), ranges::find(cond, "!monitor"));
+}
+
+TEST_CASE("ActorPtr::to_json - filter suppresses netns/source top-level keys"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface, "wlan0");
+    ap->set(SK::netns, "sta_ns");
+
+    ParamFilter filter{{SK::iface}, {}};
+    const auto j = ap->to_json(&filter);
+
+    CHECK_FALSE(j.contains("netns"));
+    CHECK_FALSE(j.contains("source"));
+}
+
+TEST_CASE("ActorPtr::to_json - empty filter produces empty selection"){
+    ActorPtr ap(make_shared<Actor_config>());
+    ap->set(SK::iface, "wlan0");
+    ap->set(BK::monitor, true);
+
+    ParamFilter filter{{}, {}};
+    const auto j = ap->to_json(&filter);
+
+    REQUIRE(j.contains("selection"));
+    CHECK(j["selection"].empty());
+}

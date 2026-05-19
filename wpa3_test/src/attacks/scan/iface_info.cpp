@@ -41,7 +41,7 @@ void run_attack(RunStatus &rs){
     const string iw_info = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"});
 
     // ----- hw_info (modes, bands, injection self-test) via cache -----
-    const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "scan" / "internal_iface.json";
+    const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" /"scan" / "internal_iface.json";
 	
 	auto scanner = rs.get_actor("scanner");
 	scanner->set(SK::iface, iface);

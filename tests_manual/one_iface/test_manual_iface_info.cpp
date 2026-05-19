@@ -24,7 +24,7 @@ TEST_CASE("iface_info_report"){
     const int ch_num = get_2_4_channel_wizard();
 
     // ----- collect and cache hw_info -----
-    const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "scan" / "internal_iface.json";
+    const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" /"scan" / "internal_iface.json";
     ActorPtr scanner_cfg(make_shared<Actor_config>());
     scanner_cfg->set(SK::iface, iface);
     const HwInfo hw = scanner_cfg->get_hw_info(hw_cache);

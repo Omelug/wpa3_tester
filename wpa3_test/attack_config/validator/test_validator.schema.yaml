@@ -186,6 +186,29 @@ definitions:
       sniff_iface:
         type: string
         description: Name of interface for monitoring (will create like associated on iface in selection)
+      requirements:
+        type: object
+        description: Hardware/interface requirements for this actor
+        properties:
+          two_iface:
+            type: object
+            description: Two-interface requirement
+            properties:
+              active:
+                type: array
+                items:
+                  type: string
+                minItems: 2
+                description:  two_iface
+              inject:
+                type: array
+                items:
+                  type: string
+                minItems: 2
+                description: two_iface all injection test
+                #TODO add spacific
+            additionalProperties: false
+        additionalProperties: false
     # Validation rules
     allOf:
       # netns can only be used with source: internal

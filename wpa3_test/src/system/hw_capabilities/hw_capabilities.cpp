@@ -43,12 +43,13 @@ string hw_capabilities::get_driver_name(const string &iface){
 	throw config_err("Driver check error: not found valid symlink");;
 }
 
-string hw_capabilities::get_driver_hash(const string &driver_name){
+optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 	const string path = "/sys/module/" + driver_name + "/srcversion";
 	ifstream ifs(path);
-	if(!ifs.is_open()) return {};
+	if(!ifs.is_open()) return nullopt;
 	string content;
 	getline(ifs, content);
+	if(content.empty()) return nullopt;
 	return content;
 }
 

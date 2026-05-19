@@ -65,8 +65,9 @@ nlohmann::json HwInfo::to_json() const{
 
 void HwInfo::from_json(const nlohmann::json &j){
     if(!actor) actor = make_shared<Actor_config>();
-    actor->set(SK::driver_name, j.value("driver", ""));
-	actor->set(SK::driver_hash, j.value("driver_hash", ""));
+    actor->set(SK::driver_name, j.value("driver_name", ""));
+	if(j.contains("driver_hash") && j.at("driver_hash").is_string() && !j.at("driver_hash").get<string>().empty())
+		actor->set(SK::driver_hash, j.at("driver_hash").get<string>());
     actor->set(SK::permanent_mac, j.value("permanent_mac", ""));
     actor->caps_from_flat_json(j);
 }

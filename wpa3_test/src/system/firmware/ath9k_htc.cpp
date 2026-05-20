@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iomanip>
 #include <ios>
 #include <iosfwd>
@@ -36,16 +37,18 @@ string get_random_ath_masker_mac(const string &attacker_mac){
 
 void load_ath_masker(bool git_install){
 	const string ath_folder = get_global_config().at("paths").at("ath_masker");
-	if(ath_folder.empty()) throw req_err("Setup paths/ath_folder in global_config:" + global_config_path().string());
+	if(ath_folder.empty()) throw req_err("Setup paths/ath_masker in global_config:" + global_config_path().string());
 	if(git_install){
 		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/ath_masker", ath_folder);
+	} else if(!filesystem::exists(ath_folder)){
+		throw req_err("ath_masker folder not found: " + ath_folder + ". Enable git_install or clone it manually.");
 	}
 	hw_capabilities::run_in("bash ./load.sh", ath_folder);
 }
 
 void unload_ath_masker(){
 	const string ath_folder = get_global_config().at("paths").at("ath_masker");
-	if(ath_folder.empty()) return;
+	if(ath_folder.empty() || !filesystem::exists(ath_folder)) return;
 	hw_capabilities::run_in("bash ./unload.sh", ath_folder);
 }
 
@@ -54,13 +57,15 @@ void load_ath9k_noorder_change(bool git_install){
 	if(fw_folder.empty()) throw req_err("Setup paths/ath9k_firmware in global_config:" + global_config_path().string());
 	if(git_install){
 		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/fragattacks", fw_folder);
+	} else if(!filesystem::exists(fw_folder)){
+		throw req_err("ath9k_firmware folder not found: " + fw_folder + ". Enable git_install or clone it manually.");
 	}
 	hw_capabilities::run_in("bash ./load.sh", fw_folder + "/research/ath9k-firmware");
 }
 
 void unload_ath9k_noorder_change(){
 	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
-	if(fw_folder.empty()) return;
+	if(fw_folder.empty() || !filesystem::exists(fw_folder)) return;
 	hw_capabilities::run_in("bash ./unload.sh", fw_folder + "/research/ath9k-firmware");
 }
 

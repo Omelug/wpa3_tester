@@ -72,7 +72,6 @@ bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const Cac
 		if(it_test_result_from_string(result.at("tests").at(injection_key).at("result").get<std::string>()) != PASSED)
 			fail(injection_key);
 	}
-	return from_cache;
+	return !from_cache;
 }
-
 }

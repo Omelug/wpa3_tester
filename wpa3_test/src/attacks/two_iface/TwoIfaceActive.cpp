@@ -62,7 +62,7 @@ bool TwoIfaceActive::run_check(const ActorPtr &a1, const ActorPtr &a2, const Cac
 	if(!result.value("success", false)){
 		throw req_err("active_test: actors "+a1.get(SK::actor_name)+"/"+a2.get(SK::actor_name)+" failed active monitor check");
 	}
-	return from_cache;
+	return !from_cache;
 }
 
 }

@@ -15,7 +15,7 @@ paths:
     dragonslayer_folder: ../../tools/dragonslayer
   dragondrain:
     dragondrain_folder: ../../tools/dragondrain-and-time
-  ath_masker: ../../tool/ath_masker
+  ath_masker: ../../tools/ath_masker
   ath9k_firmware: ../../tools/fragattacks
   WPA3_SAE_DoS_Research_Suite: ../../tools/WPA3-SAE-DoS-Research-Suite
 actors:

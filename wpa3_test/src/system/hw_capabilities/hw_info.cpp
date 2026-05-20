@@ -18,14 +18,14 @@ static optional<InjectionTestResult> extract_test(
     const InjectionSuiteResult &suite, const string &prefix
 ){
     InjectionTestResult combined;
-    combined.test_name = prefix;
+    combined.test_name() = prefix;
     bool found = false;
-    for(const auto &[test_name, flags, detail] : suite.tests){
-        if(test_name == prefix || test_name.starts_with(prefix + "/")){
-            combined.flags |= flags;
-            if(!detail.empty()){
-                if(!combined.detail.empty()) combined.detail += "; ";
-                combined.detail += test_name + ": " + detail;
+    for(const auto &t : suite.tests){
+        if(t.test_name() == prefix || t.test_name().starts_with(prefix + "/")){
+            combined.result(t.result());
+            if(!t.detail().empty()){
+                if(!combined.detail().empty()) combined.detail() += "; ";
+                combined.detail() += t.test_name() + ": " + t.detail();
             }
             found = true;
         }
@@ -36,34 +36,39 @@ static optional<InjectionTestResult> extract_test(
 // -----------------  InjectionTestResult / InjectionSuiteResult member implementations
 
 nlohmann::json InjectionTestResult::to_json() const{
-    return {{"name", test_name}, {"flags", flags}, {"detail", detail}};
+	auto j = nlohmann::json();
+	j[_test_name] = {{"result", _result}, {"detail", _detail}};
+    return j;
 }
 
-InjectionTestResult InjectionTestResult::from_json(const nlohmann::json &j){
-    return {j.value("name", ""), j.value("flags", 0), j.value("detail", "")};
-}
+/*InjectionTestResult::InjectionTestResult(const nlohmann::json &j){
+	const auto it = j.begin();
+
+	_test_name = it.key();
+	_result = it.value().at("flags").get<int>();
+	_detail = it.value().at("detail").get<string>();
+}*/
 
 nlohmann::json InjectionSuiteResult::to_json() const{
     nlohmann::json arr = nlohmann::json::array();
     for(const auto &t: tests) arr.push_back(t.to_json());
-    return {{"driver", driver}, {"channel", channel.ch_num}, {"tests", arr}};
+    return {{"tests", arr}};
 }
-
 
 // -----------------  HwInfo
 
-
 nlohmann::json HwInfo::to_json() const{
-    nlohmann::json j = {
+    nlohmann::json j = { //FIXME, check with !HwInfo::is_hw_info(k)
         {"driver_name",   actor->get(SK::driver_name)},
 		{"driver_hash",   actor->get(SK::driver_hash)},
         {"permanent_mac", actor->get(SK::permanent_mac)},
     };
-    j.update(actor->caps_to_flat_json());
+    j.update(actor->hw_info_caps_to_flat_json());
     return j;
 }
 
 void HwInfo::from_json(const nlohmann::json &j){
+	//FIXME, check with !HwInfo::is_hw_info(k)
     if(!actor) actor = make_shared<Actor_config>();
     actor->set(SK::driver_name, j.value("driver_name", ""));
 	if(j.contains("driver_hash") && j.at("driver_hash").is_string() && !j.at("driver_hash").get<string>().empty())

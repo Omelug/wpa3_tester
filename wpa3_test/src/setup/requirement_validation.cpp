@@ -304,14 +304,13 @@ bool RunStatus::config_requirement(){
 
 			if(key == "active"){
 				if(TwoIfaceActive::run_check(actor1, actor2, run_on_miss)) return true;
-			} else if(key.starts_with("inject")){ //TODO inject_only separated tests
-				if(TwoIfaceInject::run_check(actor1, actor2)) return true;
+			} else if(key.starts_with("injection")){ //TODO inject_only separated tests
+				if(TwoIfaceInject::run_check(actor1, actor2, run_on_miss, key)) return true;
 			} else{
 				throw not_implemented_err("two_iface test key not found: " + key);
 			}
 		}
 	}
-
 	return false;
 }
 }

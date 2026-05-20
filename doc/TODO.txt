@@ -4,6 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+d: document cache
+t: add manual test to check if all configs in attack_cofigs are valid
+ch: change %s style to {} for al errors
 v?: cache visualization for documnetation?
 +: TwoIface for injection
 t: cache tests

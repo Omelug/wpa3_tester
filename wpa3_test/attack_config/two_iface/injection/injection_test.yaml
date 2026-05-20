@@ -1,19 +1,19 @@
 actors:
   receiver:
     selection:
-      condition: [active_monitor]
-      driver: mt76x2u
-      permanent_mac: 00:c0:ca:b7:69:2a
       channel: 11
+      condition: [monitor]
+      #driver: mt76x2u
+      #permanent_mac: 00:c0:ca:b7:69:2a
     source: internal
   transceiver:
     selection:
       channel: 11
       condition: [monitor]
       driver: ath9k_htc
-      permanent_mac: 24:ec:99:bf:b0:a1
+      #permanent_mac: 24:ec:99:bf:b0:a1
     source: internal
-attacker_module: active_test
-name: active_test_example
+attacker_module: injection_test
+name: injection_test_example
 rewrite: all
 delete_old: true

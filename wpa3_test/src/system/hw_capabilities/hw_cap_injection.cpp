@@ -14,7 +14,7 @@ using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-// -----------------
+//TODO simplifi test
 static vector<uint8_t> make_label(){
 	static mt19937 rng{random_device{}()};
 	uniform_int_distribution<uint32_t> dist;
@@ -139,9 +139,9 @@ static InjectionTestResult test_packet_injection_impl(
 	const string &name, const string &msgfail, const Channel ch
 ){
 	const auto packets = hw_capabilities::inject_and_capture(sout, sin, pdu, ch, 1);
-	if(packets.empty()) return {name, FLAG_NOCAPTURE, "no capture"};
-	if(!ranges::all_of(packets, test_func)) return {name, FLAG_FAIL, msgfail};
-	return {name, 0};
+	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
+	if(!ranges::all_of(packets, test_func)) return {name, FAIL, msgfail};
+	return {name, PASSED};
 }
 
 InjectionTestResult hw_capabilities::test_packet_injection(
@@ -164,7 +164,7 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	p.seq_num(33); p.qos_control(2); p.more_frag(1);
 
 	const auto captured = inject_and_capture(sout, sin, p, ch, 1);
-	return {"mf/" + strtype, captured.empty() ? FLAG_FAIL : 0, ""};
+	return {"injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED};
 }
 
 // -----------------
@@ -178,15 +178,15 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 		if(ref.to_ds)   frame.to_ds(1);
 	};
 
-	int flags = 0;
+	it_test_result result;
 	string failed;
 
 	auto run = [&](auto &pdu,
 	               const function<bool(const vector<uint8_t> &)> &fn,
 	               const string &name, const string &msg){
 		auto r = test_packet_injection_impl(sout, sin, pdu, fn, name, msg, ch);
-		flags |= r.flags;
-		if(!r.passed()) failed += name + " ";
+		result = r.result();
+		if(r.result() != PASSED) failed += name + " ";
 	};
 
 	// 1. Delivery
@@ -226,7 +226,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	      catch(...){ return false; }
 	  }, "a-msdu", "A-MSDU not properly injected"); }
 
-	return {"fields/" + strtype, flags, failed};
+	return {"injection_fields_order_" + strtype, result, failed};
 }
 
 // -----------------
@@ -248,7 +248,7 @@ InjectionTestResult hw_capabilities::test_injection_order(
 	};
 
 	vector<int> tids;
-	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass wohout this, bas setup ?, driver issues?
+	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass without this, bas setup ?, driver issues?
 	for(int i = 0; i <= retries; i++){
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);
@@ -275,22 +275,22 @@ InjectionTestResult hw_capabilities::test_injection_order(
 
 	string tid_str;
 	for(size_t k = 0; k < tids.size(); k++){ if(k) tid_str += ','; tid_str += to_string(tids[k]); }
-
+	auto test_name = "injection_fields_order_"+strtype;
 	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6))
-		return {"order/" + strtype, FLAG_NOCAPTURE, "tids=[" + tid_str + "]"};
+		return {test_name, NOCAPTURE, "tids=[" + tid_str + "]"};
 
 	auto sorted_tids = tids; ranges::sort(sorted_tids);
 	if(tids != sorted_tids)
-		return {"order/" + strtype, FLAG_FAIL, "reordered tids=[" + tid_str + "]"};
+		return {test_name, FAIL, "reordered tids=[" + tid_str + "]"};
 
-	return {"order/" + strtype, 0, "tids=[" + tid_str + "]"};
+	return {test_name, PASSED, "tids=[" + tid_str + "]"};
 }
 
 InjectionTestResult hw_capabilities::test_injection_retrans(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel ch
 ){
-	int flags = 0;
+	it_test_result result = PASSED;
 	string detail;
 
 	auto make_frame = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> Dot11Data{
@@ -307,22 +307,22 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 	const int n_real    = count(addr1, addr2);
 
 	if(n_dummy == 0 || n_spoofed == 0 || n_real == 0){
-		flags |= FLAG_NOCAPTURE;
+		result = NOCAPTURE;
 		detail += "no_capture ";
 	}
 	if(n_dummy == 1){
-		flags |= FLAG_FAIL;
+		result = FAIL;
 		detail += "no_retrans ";
 	}
 	if(n_real > 2){
-		flags |= FLAG_FAIL;
+		result = FAIL;
 		detail += "real_retrans_high ";
 	}
 
 	detail += "dummy=" + to_string(n_dummy)
 	        + " spoofed=" + to_string(n_spoofed)
 	        + " real=" + to_string(n_real);
-	return {"retrans", flags, detail};
+	return {"injection_fields_retrans", result, detail};
 }
 
 // -----------------
@@ -337,10 +337,10 @@ InjectionTestResult hw_capabilities::test_injection_txack(
 	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, ch, 1);
 
 	if(rx_probes.empty())
-		return {"txack", FLAG_NOCAPTURE, "no probe response"};
+		return {"test_injection_txack", NOCAPTURE, "no probe response"};
 	if(tx_acks.empty())
-		return {"txack", FLAG_FAIL, "no ACK generated"};
-	return {"txack", 0};
+		return {"test_injection_txack", FAIL, "no ACK generated"};
+	return {"test_injection_txack", PASSED};
 }
 
 }

@@ -187,7 +187,7 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 	return result;
 }
 
-json Actor_config::caps_to_flat_json() const {
+json Actor_config::hw_info_caps_to_flat_json() const {
     json j = json::object();
     for(const auto k : bk_values()){
         if(!HwInfo::is_hw_info(k)) continue;

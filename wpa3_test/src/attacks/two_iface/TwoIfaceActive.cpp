@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/config_parser.h"
 
@@ -59,10 +60,9 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 bool TwoIfaceActive::run_check(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave) {
 	TwoIfaceActive t;
 	const auto [result, from_cache] = t.validate(a1, a2, behave);
-	if(!result.value("success", false))
-		log(LogLevel::WARNING,
-			"active_test: actors {}/{} failed active monitor check",
-			a1.get(SK::actor_name), a2.get(SK::actor_name));
+	if(!result.value("success", false)){
+		throw req_err("active_test: actors "+a1.get(SK::actor_name)+"/"+a2.get(SK::actor_name)+" failed active monitor check");
+	}
 	return from_cache;
 }
 

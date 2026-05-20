@@ -1,8 +1,10 @@
 #include "attacks/two_iface/TwoIfaceInject.h"
+
 #include <filesystem>
 #include <fstream>
+
 #include "config/RunStatus.h"
-#include "logger/log.h"
+#include "logger/error_log.h"
 #include "setup/config_parser.h"
 
 namespace wpa3_tester {
@@ -43,19 +45,32 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 
 	const path result_path = rs.run_folder() / "result.json";
 	if(!exists(result_path))
-		return json{{"err_msg", "result_path dont exists"}, {"overall_flags", 1}};
+		return json{{"err_msg", "result_path dont exists"}};
 
 	ifstream ifs(result_path);
 	const auto result = json::parse(ifs, nullptr, false);
-	return result.is_discarded() ? json{{"err_msg", "result is discarded"}, {"overall_flags", 1}} : result;
+	return result.is_discarded() ? json{{"err_msg", "result is discarded"}} : result;
 }
 
-bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2){
+bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave, const string &injection_key){
 	TwoIfaceInject t;
-	const auto [result, from_cache] = t.validate(a1, a2);
-	if(result.value("overall_flags", 1) != 0)
-		log(LogLevel::WARNING, "inject_test: actors {}/{} failed injection check",
-			a1[SK::actor_name].value_or("?"), a2[SK::actor_name].value_or("?"));
+	const auto [result, from_cache] = t.validate(a1, a2, behave);
+
+	const auto fail = [&](const string &key){
+		throw req_err(
+			"inject_test " + key + ": "
+			+ a1[SK::actor_name].value_or("?")
+			+ "/" + a2[SK::actor_name].value_or("?")
+			+ " failed injection check");
+	};
+
+	if(injection_key == "injection"){
+		for(const auto &[key, val] : result.at("tests").items())
+			if(val.at("result").get<int>() != 0) fail(key);
+	} else {
+		if(result.at("tests").at(injection_key).at("result").get<int>() != 0)
+			fail(injection_key);
+	}
 	return from_cache;
 }
 

@@ -1,13 +1,10 @@
 #include "attacks/two_iface/injection_test.h"
-#include <fstream>
 #include <filesystem>
 #include <linux/nl80211.h>
 #include <tins/tins.h>
-#include "config/RunStatus.h"
-#include "config/actor_keys.h"
-#include "logger/log.h"
-#include "system/hw_capabilities.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
+#include "config/RunStatus.h"
+#include "system/hw_capabilities.h"
 #include "system/injection_result.h"
 
 namespace wpa3_tester {
@@ -76,6 +73,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 	add(test_injection_order(sout, sin, valid,   "valid",   ch));
 
 	// retrans + txack only make sense with two distinct interfaces
+	//FIXME add these test to result a zbavit se závislosti na okolním AP
 	const bool two_iface = (&sout != &sin);
 	if(two_iface && testack){
 		const auto nearby = get_nearby_ap_addr(sin);
@@ -103,9 +101,6 @@ void run_attack(RunStatus &rs) {
 	const string iface1 = actor_tx.get(SK::iface);
 	const string iface2 = actor_rx.get(SK::iface);
 	const Channel ch = actor_tx->get_channel();
-
-	hw_capabilities::setup_injection_iface(iface1, ch, actor_tx[SK::netns]);
-	hw_capabilities::setup_injection_iface(iface2, ch, actor_rx[SK::netns]);
 
 	MonitorSocket s_out(iface1, actor_tx[SK::netns]);
 	MonitorSocket s_in(iface2, actor_rx[SK::netns]);

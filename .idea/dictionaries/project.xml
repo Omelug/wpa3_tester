@@ -50,6 +50,7 @@
       <w>fflush</w>
       <w>fprintf</w>
       <w>frametype</w>
+      <w>gcmp</w>
       <w>genhtml</w>
       <w>gnlh</w>
       <w>gpcmd</w>

@@ -5,20 +5,32 @@
 
 namespace wpa3_tester{
 
-inline constexpr int FLAG_FAIL      = 1;
-inline constexpr int FLAG_NOCAPTURE = 2;
+enum it_test_result{
+	UNKNOWN,
+	PASSED,
+	FAIL,
+	NOCAPTURE
+};
 
 class InjectionTestResult{
+protected:
+	std::string _test_name;
+	it_test_result _result = UNKNOWN;
+	std::string _detail = ""; // describes what failed; empty on pass
 public:
-	std::string test_name;
-	int flags = 0;
-	std::string detail = ""; // describes what failed; empty on pass
+	[[nodiscard]] std::string test_name() const{ return _test_name; }
+	void test_name(const std::string &test_name) { _test_name = test_name; }
+	[[nodiscard]] it_test_result result() const{ return _result; }
+	void result(const it_test_result &result) { _result = result; }
+	[[nodiscard]] std::string detail()    const{ return _detail; }
+	void detail(const it_test_result &detail) { _detail = detail; }
 
-	[[nodiscard]] bool passed()     const{ return flags == 0; }
-	[[nodiscard]] bool failed()     const{ return (flags & FLAG_FAIL) != 0; }
-	[[nodiscard]] bool no_capture() const{ return (flags & FLAG_NOCAPTURE) != 0; }
 	nlohmann::json to_json() const;
-	static InjectionTestResult from_json(const nlohmann::json &j);
+	explicit InjectionTestResult() = default;
+	InjectionTestResult(const std::string &test_name, const it_test_result result, const std::string &detail = ""):
+	_test_name(test_name), _result(result), _detail(detail){};
+
+	//explicit InjectionTestResult(const nlohmann::json &j);
 };
 
 class InjectionSuiteResult{
@@ -29,10 +41,12 @@ public:
 	Channel channel = {};
 	std::vector<InjectionTestResult> tests;
 
-	int overall_flags() const{
-		int f = 0;
-		for(const auto &t : tests) f |= t.flags;
-		return f;
+	it_test_result inject_all() const{
+		for(const auto &t : tests){
+			if(t.result() != PASSED) return FAIL;
+		}
+		return PASSED;
+
 	}
 	nlohmann::json to_json() const;
 };

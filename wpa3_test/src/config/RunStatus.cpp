@@ -145,7 +145,7 @@ void RunStatus::run_test(){
 
 	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()){
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "run function not set"); }
+	} else{ log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>()); }
 
 	process_manager.write_log_all("@END");
 	process_manager.stop_all();
@@ -155,7 +155,7 @@ void RunStatus::stats_test() const{
 	const auto module_name = config().at("attacker_module");
 	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.end()){
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "run function not set"); }
+	} else{ log(LogLevel::DEBUG, "run function not set for {}",  module_name.get<string>()); }
 }
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
@@ -276,7 +276,7 @@ void RunStatus::load_actor_interface_mapping(){
 	string line;
 	getline(ifs, line); // skip header: Type,ActorName,Interface,MAC,Driver,channel,json_obj
 
-	while(getline(ifs, line)){
+	while(getline(ifs, line)){ //FIXME wtf, parse json somehow.... better? (or change format)
 		if(line.empty()) continue;
 		// Format: source,actor_name,iface,mac,driver,channel,json_obj
 		// json_obj may contain commas — split only on first 6 commas
@@ -304,7 +304,7 @@ void RunStatus::load_actor_interface_mapping(){
 				if(json_str[i] == '"' && i + 1 < json_str.size() && json_str[i + 1] == '"') ++i;
 				unescaped += json_str[i];
 			}
-			json_str = move(unescaped);
+			json_str = std::move(unescaped);
 		}
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
 		if(j.is_discarded()){

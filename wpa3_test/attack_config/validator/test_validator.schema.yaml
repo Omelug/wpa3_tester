@@ -85,48 +85,49 @@ properties:
               type: string
             minItems: 2
             description: two_iface
-          inject:
+          injection:
             type: array
             items:
               type: string
             minItems: 2
             description: two_iface all injection test
-          injectn_more_fragments_spoofed:
+          injection_more_fragments_spoofed:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_more_fragments_valid:
+          injection_more_fragments_valid:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_spoofed:
+          injection_fields_spoofed:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_valid:
+          injection_fields_valid:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_order_spoofed:
+          injection_fields_order_spoofed:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_order_valid:
+          injection_fields_order_valid:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_retrans_spoofed:
+          #TODO not done in code
+          injection_fields_retrans:
             type: array
             items:
               type: string
             minItems: 2
-          injectn_fields_retrans_valid:
+          test_injection_txack:
             type: array
             items:
               type: string

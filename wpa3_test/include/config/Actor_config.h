@@ -48,7 +48,7 @@ public:
     nlohmann::json     to_json(const ParamFilter *filter = nullptr) const;
 
     // Serialize/deserialize BK bool fields as a flat {"ap": true, "monitor": false, ...} object
-    nlohmann::json caps_to_flat_json() const;
+    nlohmann::json hw_info_caps_to_flat_json() const;
     void           caps_from_flat_json(const nlohmann::json &j);
 
     static void print_ActorCMap(const std::string &title, const std::vector<ActorPtr> &actors);

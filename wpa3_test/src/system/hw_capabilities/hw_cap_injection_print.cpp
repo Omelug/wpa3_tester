@@ -4,10 +4,11 @@
 namespace wpa3_tester{
 using namespace std;
 
-static const char *md_badge(const int flags){
-	if(flags & FLAG_NOCAPTURE) return "NO-CAPTURE";
-	if(flags & FLAG_FAIL)      return "FAIL";
-	return                            "PASS";
+static const char *md_badge(const it_test_result result){
+	//FIXME add UNKNOWN?
+	if(result == NOCAPTURE) return "NO-CAPTURE";
+	if(result ==  FAIL)      return "FAIL";
+	return                           "PASS";
 }
 
 string print_injection_result(const InjectionSuiteResult &suite){
@@ -26,19 +27,19 @@ string print_injection_result(const InjectionSuiteResult &suite){
 	md << "### Results\n\n";
 	md << "| Test | Status | Detail |\n";
 	md << "|------|--------|--------|\n";
-	for(const auto &[test_name, flags, detail] : suite.tests){
-		md << "| `" << test_name << "` | **" << md_badge(flags) << "** | ";
-		md << (detail.empty() ? "" : detail) << " |\n";
+	for(const auto &t : suite.tests){
+		md << "| `" << t.test_name() << "` | **" << md_badge(t.result()) << "** | ";
+		md << t.detail() << " |\n";
 	}
 	md << '\n';
 
-	const int f = suite.overall_flags();
-	if(f == 0){
+	it_test_result f = suite.inject_all();
+	if(f == PASSED){
 		md << "> **All tests passed.**\n";
 	} else{
-		if(f & FLAG_NOCAPTURE)
+		if(f == NOCAPTURE)
 			md << "> **WARNING:** Failed to capture some frames. Try another channel or a second monitoring interface.\n";
-		if(f & FLAG_FAIL)
+		if(f == FAIL)
 			md << "> **FAIL:** Some tests failed. Consider using patched drivers/firmware.\n";
 	}
 	md << '\n';

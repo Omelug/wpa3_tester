@@ -170,7 +170,7 @@ public:
 		MonitorSocket &sout, MonitorSocket &sin,
 		const Dot11Ref &ref, const std::string &strtype, Channel ch
 	);
-	// Generic field-preservation test; name identifies the sub-test in the result.
+	// Generic field-preservation test; name identifies the subtest in the result.
 	static InjectionTestResult test_packet_injection(
 		MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,

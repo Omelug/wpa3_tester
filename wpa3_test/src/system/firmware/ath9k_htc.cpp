@@ -42,4 +42,30 @@ void load_ath_masker(bool git_install){
 	}
 	hw_capabilities::run_in("bash ./load.sh", ath_folder);
 }
+
+void unload_ath_masker(){
+	const string ath_folder = get_global_config().at("paths").at("ath_masker");
+	if(ath_folder.empty()) return;
+	hw_capabilities::run_in("bash ./unload.sh", ath_folder);
+}
+
+void load_ath9k_noorder_change(bool git_install){
+	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
+	if(fw_folder.empty()) throw req_err("Setup paths/ath9k_firmware in global_config:" + global_config_path().string());
+	if(git_install){
+		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/fragattacks", fw_folder);
+	}
+	hw_capabilities::run_in("bash ./load.sh", fw_folder + "/research/ath9k-firmware");
+}
+
+void unload_ath9k_noorder_change(){
+	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
+	if(fw_folder.empty()) return;
+	hw_capabilities::run_in("bash ./unload.sh", fw_folder + "/research/ath9k-firmware");
+}
+
+void disable_custom_drivers(){
+	try{ unload_ath_masker(); } catch(...) {}
+	try{ unload_ath9k_noorder_change(); } catch(...) {}
+}
 }

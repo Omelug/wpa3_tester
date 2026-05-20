@@ -1,9 +1,9 @@
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
-#include <yaml-cpp/yaml.h>
-#include <nlohmann/json.hpp>
-#include <fstream>
 #include "setup/YAMLValidator.h"
 #include "system/firmware/ath9k_htc.h"
 
@@ -170,17 +170,14 @@ json RunStatus::config_validation(const path &config_path){
 }
 
 void RunStatus::ensure_requirement(const string &req) const{
-	if(req == "ath_masker"){
-		firmware::load_ath_masker(_run_config.get_install_req());
-		return;
-	}
-	throw not_implemented_err("Requirement" + req + " was not implemented");
+	assert(req ==  "ath_masker" or req ==  "ath9k_noorder_change");
+	if(req == "ath_masker")				firmware::load_ath_masker(_run_config.get_install_req());
+	if(req == "ath9k_noorder_change")	firmware::load_ath9k_noorder_change(_run_config.get_install_req());
 }
 
 void RunStatus::check_local_requirements(){
 	std::set<std::string> all_requirements;
 
-	// Top-level requirements block: {simple: [...], two_iface: {...}}
 	if(_config.contains("requirements")){
 		const auto &reqs = _config.at("requirements");
 		if(reqs.is_object() && reqs.contains("simple")){
@@ -188,7 +185,6 @@ void RunStatus::check_local_requirements(){
 				if(req.is_string()) all_requirements.insert(req.get<std::string>());
 			}
 		}
-		// two_iface block is handled post-backtracking in config_requirement()
 	}
 
 	// Per-actor requirements

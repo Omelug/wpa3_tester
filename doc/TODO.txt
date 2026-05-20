@@ -7,13 +7,14 @@ Version v 0.0.0.0:
 
 t: setup_actor()
 +: ClientState observer use in mitm
+t?: forgejo compatible github runners for push to main (i s config_validation)
+ch: move ath_masker to two_iface
 
 ?: works cache correctly with external WB?
 d: document cache
-+: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
-r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
+r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 
 //DONE
@@ -109,6 +110,7 @@ Optimization:
 PDF:
 +: PMKSA
 f: deleted_old -> delete_old
++: Donwgrade group https://github.com/Nuseo1/airgeddon_plugins
 
 - Every physical radio can have only one interface in these tests
 -> re to to roadmap implement and highlight in documentation

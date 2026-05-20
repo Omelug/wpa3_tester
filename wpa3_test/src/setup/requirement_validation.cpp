@@ -1,19 +1,20 @@
-#include "config/RunStatus.h"
-#include "config/Actor_config.h"
-#include "system/hw_capabilities.h"
-#include "logger/log.h"
 #include <chrono>
-#include <filesystem>
 #include <csignal>
+#include <filesystem>
 #include <sstream>
-#include <sys/stat.h>
-#include <sys/wait.h>
 #include <thread>
 #include <sys/mount.h>
-#include "config/Observer_config.h"
-#include "logger/error_log.h"
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include "attacks/two_iface/TwoIfaceActive.h"
 #include "attacks/two_iface/TwoIfaceInject.h"
+#include "config/Actor_config.h"
+#include "config/Observer_config.h"
+#include "config/RunStatus.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
+#include "system/hw_capabilities.h"
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace filesystem;
@@ -170,10 +171,9 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 
             if(nh->nlmsg_type != RTM_NEWLINK) continue;
 
-            const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
-            int attr_len = nh->nlmsg_len - NLMSG_SPACE(sizeof(*ifi));
+            int attr_len = static_cast<int>(nh->nlmsg_len - NLMSG_SPACE(sizeof(ifinfomsg)));
             auto *attr = reinterpret_cast<rtattr *>(
-                static_cast<char *>(NLMSG_DATA(nh)) + NLMSG_ALIGN(sizeof(*ifi)));
+                static_cast<char *>(NLMSG_DATA(nh)) + NLMSG_ALIGN(sizeof(ifinfomsg)));
 
             while(RTA_OK(attr, attr_len)){
                 if(attr->rta_type == IFLA_IFNAME){
@@ -228,6 +228,7 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 
 bool RunStatus::config_requirement(){
 	check_local_requirements();
+	firmware::disable_custom_drivers();
 	cleanup_all_namespaces();
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
@@ -304,7 +305,7 @@ bool RunStatus::config_requirement(){
 
 			if(key == "active"){
 				if(TwoIfaceActive::run_check(actor1, actor2, run_on_miss)) return true;
-			} else if(key.starts_with("injection")){ //TODO inject_only separated tests
+			} else if(key.starts_with("injection")){
 				if(TwoIfaceInject::run_check(actor1, actor2, run_on_miss, key)) return true;
 			} else{
 				throw not_implemented_err("two_iface test key not found: " + key);

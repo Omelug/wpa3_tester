@@ -70,3 +70,5 @@ target_link_libraries(run_utils_tests PRIVATE
         doctest_headers
 )
 add_test(NAME UtilsTests COMMAND run_utils_tests)
+
+add_subdirectory(hw_info)

@@ -1,0 +1,7 @@
+add_executable(run_hw_info_is_hw_info_tests test_is_hw_info.cpp)
+target_link_libraries(run_hw_info_is_hw_info_tests PRIVATE wpa3_core doctest_headers)
+add_test(NAME HwInfoIsHwInfoTests COMMAND run_hw_info_is_hw_info_tests)
+
+add_executable(run_hw_info_load_cache_tests test_load_hw_info_cache.cpp)
+target_link_libraries(run_hw_info_load_cache_tests PRIVATE wpa3_core doctest_headers)
+add_test(NAME HwInfoLoadCacheTests COMMAND run_hw_info_load_cache_tests)

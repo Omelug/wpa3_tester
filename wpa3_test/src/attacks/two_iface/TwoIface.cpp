@@ -47,7 +47,7 @@ optional<json> TwoIface::lookup_cache(const string &key) const{
 	string line;
 	while(getline(ifs, line)){
 		if(line.empty()) continue;
-		const auto sep = line.find(',');
+		const auto sep = line.find('\t');
 		if(sep == string::npos) continue;
 		if(line.substr(0, sep) != key) continue;
 		const auto j = json::parse(line.substr(sep + 1), nullptr, false);
@@ -67,16 +67,16 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 		string line;
 		while(getline(ifs, line)){
 			if(line.empty()) continue;
-			const auto sep = line.find(',');
+			const auto sep = line.find('\t');
 			if(sep != string::npos && line.substr(0, sep) == key){
-				lines.push_back(key + "," + result.dump());
+				lines.push_back(key + '\t' + result.dump());
 				found = true;
 			} else{
 				lines.push_back(line);
 			}
 		}
 	}
-	if(!found) lines.push_back(key + "," + result.dump());
+	if(!found) lines.push_back(key + '\t' + result.dump());
 
 	ofstream ofs(cp, ios::out | ios::trunc);
 	for(const auto &l: lines) ofs << l << "\n";

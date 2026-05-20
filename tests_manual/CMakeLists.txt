@@ -28,4 +28,3 @@ set_target_properties(test_info_openwrt PROPERTIES
 
 add_subdirectory(attacks)
 add_subdirectory(system)
-add_subdirectory(two_iface)

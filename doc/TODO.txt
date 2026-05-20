@@ -5,22 +5,19 @@ v: visualization
 
 Version v 0.0.0.0:
 ?: works cache correctly with external WB?
-+: add source by test_name
 t: setup_actor()
 d: document cache
 t: add manual test to check if all configs in attack_cofigs are valid
-v?: cache visualization for documnetation?
-r: simplify injection tests
-ch: one_iface, two_if test to actual tests, configable tests
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 +: ClientState observer use in mitm
-f: json_obj - save to mapping is broken, může zato json "," (A z json hlavně j, protože JavaScript je p*čovina)
 
 //DONE
+r: simplify injection tests
+ch: one_iface, two_if test to actual tests, configable tests
 ch: change %s style to {} for al errors
 t: cache tests
 +: TwoIface for injection
@@ -74,6 +71,7 @@ ch: + docuemnt what exactly are validators/ref/extedns (arent extends and $ref s
 r:  better open/cloose once, multiple ClientStates?
 
 New features:
+v?: cache visualization for documnetation?
 r: fix whitebox scanners to get more data fir blackboc external
 +: create config wizard after first install
 +: add option to add actor without interface
@@ -96,6 +94,7 @@ Test cases:
 f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
++: test_suite - source by test_name
 
 // new attacks?
 State Poisoning (2025_SACRED)

@@ -83,3 +83,6 @@ coverage_build:
 
 coverage: coverage_build
 	cmake --build $(BUILD_DIR_COVERAGE) --target coverage
+
+clear_cache:
+	rm -rf ./data/cache

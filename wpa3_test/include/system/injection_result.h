@@ -70,9 +70,10 @@ public:
 
 	}
 	nlohmann::json to_json() const{
-		nlohmann::json arr = nlohmann::json::array();
-		for(const auto &t: tests) arr.push_back(t.to_json());
-		return {{"tests", arr}};
+		nlohmann::json map = nlohmann::json::object();
+		for(const auto &t: tests)
+			map[t.test_name()] = {{"result", result_to_string(t.result())}, {"detail", t.detail()}};
+		return {{"tests", map}};
 	}
 };
 

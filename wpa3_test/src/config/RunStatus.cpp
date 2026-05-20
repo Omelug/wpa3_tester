@@ -74,7 +74,7 @@ void RunStatus::execute(){
 		set_log_file(log_file);
 	}
 
-	try {
+	//try {
 		if(run_config().get_only_stats()){
 			load_actor_interface_mapping();
 			stats_test();
@@ -98,7 +98,7 @@ void RunStatus::execute(){
 			done_log << "kernel: " << kernel_version() << endl;
 			done_log.close();
 		}
-	} catch (const exception& e) {
+	/*} catch (const exception& e) {
 		const path error_file = run_folder() / "errors.txt";
 		ofstream error_log(error_file, ios::out | ios::app);
 		if (error_log.is_open()) {
@@ -121,7 +121,7 @@ void RunStatus::execute(){
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}
+	}*/
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){

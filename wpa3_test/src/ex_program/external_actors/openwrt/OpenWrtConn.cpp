@@ -11,9 +11,9 @@ using namespace std;
 
 void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
 	const auto &setup_node = config.at("actors").at(actor_name).at("setup");
-	if(!setup_node.contains("req_programs")){ return; }
-	auto req_programs = setup_node.at("req_programs");
-	for(const auto &req_name: req_programs){
+	if(!setup_node.contains("ex_WB_programs")){ return; }
+	auto ex_WB_programs = setup_node.at("ex_WB_programs");
+	for(const auto &req_name: ex_WB_programs){
 		int ret = 0;
 		exec("opkg install " + req_name.get<string>(), false, &ret);
 		if(ret){

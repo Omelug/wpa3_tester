@@ -12,6 +12,7 @@ actors:
       program_config:
         version: 2_10
         hostapd_path: "./config/hostapd.conf"
+    ip_addr: "10.0.0.1"
   client:
     source: simulation
     setup:
@@ -22,6 +23,7 @@ actors:
     selection:
       channel: 6
     netns: sta
+    ip_addr: "10.0.0.2"
   rogue_client:
     source: simulation
     selection:
@@ -30,7 +32,7 @@ actors:
   rogue_ap:
     source: simulation
     selection:
-      condition: [ monitor, injection ] # active_monitor
+      condition: [ monitor, injection ]
       channel: 1
 
   #observers: (allow start_observers if used )

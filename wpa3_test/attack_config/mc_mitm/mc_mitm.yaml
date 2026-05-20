@@ -22,7 +22,7 @@ actors:
         htmode: HT20
         ieee80211w: 2
         log_level: 1
-      req_programs: [ tcpdump ]
+      ex_WB_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
 
   client:

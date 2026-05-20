@@ -10,7 +10,6 @@ t: setup_actor()
 
 ?: works cache correctly with external WB?
 d: document cache
-t: manual_test to check if all configs in attack_cofigs are valid
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
@@ -18,6 +17,7 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 
 //DONE
+t: manual_test to check if all configs in attack_cofigs are valid
 r: simplify injection tests
 ch: one_iface, two_if test to actual tests, configable tests
 ch: change %s style to {} for al errors

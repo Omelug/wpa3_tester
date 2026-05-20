@@ -14,9 +14,10 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
+    selection:
       channel: 36
   attacker:
-    setup:
+    selection:
       channel: 36
 
 attack_config:

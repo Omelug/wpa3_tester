@@ -3,9 +3,11 @@ name: channel_switch_rogueAP
 attacker_module: channel_switch
 actors:
   access_point:
-    source: internal
+    source: external
     selection:
       condition: [ AP ]
+      channel: 6
+      whitebox_host: OpenWrt
     setup:
       program: openwrt
       program_config:
@@ -16,9 +18,7 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-      channel: 6
-      req_programs: [ tcpdump ]
-    channel: 6
+      ex_WB_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
     source: internal

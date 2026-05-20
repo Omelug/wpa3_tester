@@ -7,16 +7,16 @@ tests:
   #  path: ./hostapd_2_9_fix.yaml
   hostapd_2_10_ocv:
     type: path
-    path: ./hostapd_2_10_ocv.yaml
+    path: ../hostapd_2_10_ocv.yaml
   hostapd_2_10_ocv_beacon_prot:
     type: path
-    path: ./hostapd_2_10_ocv_beacon_prot.yaml
+    path: ../hostapd_2_10_ocv_beacon_prot.yaml
   hostapd_gen:
     type: generator
     vars:
       hostapd: [ 2_10, 2_11 ]
     config:
-      extends: ./channel_switch.yaml
+      extends: ../channel_switch.yaml
       name: channel_switch_var_hostapd
       actors:
         access_point:

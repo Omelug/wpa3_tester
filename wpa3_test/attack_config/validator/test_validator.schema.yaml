@@ -174,8 +174,10 @@ definitions:
           program_config:
             type: object
             description: Configuration for the program (hostapd.conf, wpa_supplicant.conf, etc.)
-          req_programs:
+          ex_WB_programs:
             type: array
+            items:
+              type: string
             description: Program names what has to be installed (on external)
         allOf:
           - if:
@@ -274,10 +276,13 @@ definitions:
         then:
           properties:
             source:
-              const: internal
+              type: string
+              enum:
+                - internal
+                - simulation
           required: [ source ]
           errorMessage: "netns can only be used with source: internal"
-      # req_programs only allowed for source: external
+      # ex_WB_programs only allowed for source: external
       - if:
           not:
             properties:
@@ -288,9 +293,9 @@ definitions:
           properties:
             setup:
               properties:
-                req_programs:
+                ex_WB_programs:
                   not: {}
-          errorMessage: "req_programs can only be used with source: external"
+          errorMessage: "ex_WB_programs can only be used with source: external"
       # whitebox_ip/whitebox_host not allowed if not external
       - if:
           not:
@@ -307,15 +312,17 @@ definitions:
           errorMessage: "whitebox_ip/whitebox_host not allowed if not external"
       - if:
           properties:
-            source:
-              const: external
-          required: [ source ]
-        then:
-          properties:
             setup:
               properties:
                 program:
-                  enum: [ "openwrt" ]
+                  const: openwrt
+              required: [ program ]
+          required: [ setup ]
+        then:
+          properties:
+            source:
+              const: external
+          required: [ source ]
           errorMessage: "openwrt program can only be used with source: external"
   Observer:
     type: object

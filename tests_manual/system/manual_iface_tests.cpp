@@ -77,7 +77,6 @@ TEST_CASE("start ap test"){
     const string base_iface = TestConfig::base_iface;
     const string ap_iface = "ap_" + base_iface;
     const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
-
     log(LogLevel::INFO, "Running test on iface: {}", base_iface);
 
     const auto raw = test_helpers::read_pcap_file(pcap_path);

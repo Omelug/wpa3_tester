@@ -18,7 +18,7 @@ actors:
         encryption: sae-mixed
         mode: ap
         htmode: HT20
-      req_programs: [ tcpdump ]
+      ex_WB_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
     source: internal

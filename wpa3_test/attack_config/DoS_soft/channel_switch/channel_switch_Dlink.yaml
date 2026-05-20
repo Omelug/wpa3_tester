@@ -19,7 +19,7 @@ actors:
         mode: ap
         htmode: HT20
         ieee80211w: 2
-      req_programs: [ tcpdump ]
+      ex_WB_programs: [ tcpdump ]
     ip_addr: "10.0.0.1"
   client:
     source: internal

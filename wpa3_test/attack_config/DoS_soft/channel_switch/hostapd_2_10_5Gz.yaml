@@ -16,7 +16,8 @@ actors:
         version: 2_10
       channel: 36
   attacker:
-    channel: 36
+    setup:
+      channel: 36
 
 attack_config:
   validator: ./channel_switch.schema.yaml

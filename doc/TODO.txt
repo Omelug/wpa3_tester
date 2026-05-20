@@ -4,16 +4,18 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-?: works cache correctly with external WB?
+
 t: setup_actor()
++: ClientState observer use in mitm
+
+?: works cache correctly with external WB?
 d: document cache
-t: add manual test to check if all configs in attack_cofigs are valid
+t: manual_test to check if all configs in attack_cofigs are valid
 +: requirement to load driver to not change sequence norder, https://github.com/vanhoefm/fragattacks/tree/master/research/ath9k-firmware
 r: small TODO
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
-+: ClientState observer use in mitm
 
 //DONE
 r: simplify injection tests

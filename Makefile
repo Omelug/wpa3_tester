@@ -69,7 +69,12 @@ test_manual_build:
 		test_manual_mc_mitm \
 		test_manual_iface \
 		test_manual_injection_two_iface \
+		test_config_validation \
 		-j $(NPROC)
+
+config_validation:
+	cmake --build $(BUILD_DIR) --target test_config_validation -j $(NPROC)
+	$(BUILD_DIR)/bin/manual_tests/config/test_config_validation
 
 coverage_build:
 	mkdir -p $(BUILD_DIR_COVERAGE)

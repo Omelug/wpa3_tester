@@ -75,6 +75,12 @@ properties:
     type: object
     description: Hardware/interface requirements for this actor
     properties:
+      simple:
+        type: array
+        items:
+          type: string
+          enum:
+            - ath_masker
       two_iface:
         type: object
         description: Two-interface requirement

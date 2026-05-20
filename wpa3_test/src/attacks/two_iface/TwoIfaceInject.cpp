@@ -6,6 +6,7 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include "system/injection_result.h"
 
 namespace wpa3_tester {
 using namespace std;
@@ -13,7 +14,7 @@ using namespace filesystem;
 using nlohmann::json;
 
 TwoIfaceInject::TwoIfaceInject()
-: TwoIface({{SK::driver_name, SK::driver_hash, SK::permanent_mac}, {BK::injection, BK::monitor}}, "two_iface_inject"){}
+: TwoIface({{SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac}, {BK::injection, BK::monitor}}, "two_iface_inject"){}
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	const json config = {
@@ -66,9 +67,9 @@ bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const Cac
 
 	if(injection_key == "injection"){
 		for(const auto &[key, val] : result.at("tests").items())
-			if(val.at("result").get<int>() != 0) fail(key);
+			if(it_test_result_from_string(val.at("result").get<std::string>()) != PASSED) fail(key);
 	} else {
-		if(result.at("tests").at(injection_key).at("result").get<int>() != 0)
+		if(it_test_result_from_string(result.at("tests").at(injection_key).at("result").get<std::string>()) != PASSED)
 			fail(injection_key);
 	}
 	return from_cache;

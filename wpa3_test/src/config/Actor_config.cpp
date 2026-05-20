@@ -118,6 +118,7 @@ optional<string>& Actor_config::operator[](SK key) {
 	//driver
 	if(key == SK::driver_name) return _driver.driver_name;
 	if(key == SK::driver_hash) return _driver.driver_hash;
+	if(key == SK::module_hash) return _driver.module_hash;
 
 	return str_vals[static_cast<size_t>(key)];
 }
@@ -126,6 +127,7 @@ const optional<string>& Actor_config::operator[](SK key) const {
 	//driver
 	if(key == SK::driver_name) return _driver.driver_name;
 	if(key == SK::driver_hash) return _driver.driver_hash;
+	if(key == SK::module_hash) return _driver.module_hash;
 
 	return str_vals[static_cast<size_t>(key)];
 }
@@ -189,11 +191,17 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 
 json Actor_config::hw_info_caps_to_flat_json() const {
     json j = json::object();
-    for(const auto k : bk_values()){
-        if(!HwInfo::is_hw_info(k)) continue;
-        const auto &v = (*this)[k];
+	for(const auto sk : sk_values()){
+		if(!HwInfo::is_hw_info(sk)) continue;
+		const auto &v = (*this)[sk];
+		if(v.has_value())
+			j[string(sk_name(sk))] = *v;
+	}
+    for(const auto bk : bk_values()){
+        if(!HwInfo::is_hw_info(bk)) continue;
+        const auto &v = (*this)[bk];
         if(v.has_value())
-            j[string(bk_name(k))] = *v;
+            j[string(bk_name(bk))] = *v;
     }
     return j;
 }

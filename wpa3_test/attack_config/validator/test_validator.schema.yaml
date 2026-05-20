@@ -246,6 +246,9 @@ definitions:
           driver_hash:
             type: string
             description: srcversion or sha256 hash of the driver module
+          module_hash:
+            type: string
+            description: combined sha256 of driver + all depend modules srcversions
           condition:
             type: array
             items:

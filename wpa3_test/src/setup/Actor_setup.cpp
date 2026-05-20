@@ -58,6 +58,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		// (same if set in config)
 		set(SK::driver_name, real_actor[SK::driver_name]);
 		set(SK::driver_hash, real_actor[SK::driver_hash]);
+		set(SK::module_hash, real_actor[SK::module_hash]);
 	}
 	if(internal){
 		set(SK::iface, real_actor[SK::iface]);
@@ -91,7 +92,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 		int channel_num = -1;
 		if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
-		else if(const auto c = real_actor[SK::channel]) channel_num = stoi(c.value());
+		else if(const auto& c = real_actor[SK::channel]) channel_num = stoi(c.value());
 		if(monitor_needed() && (*this)[SK::sniff_iface] == nullopt)
 			set_monitor_mode();
 		if(channel_num != -1){

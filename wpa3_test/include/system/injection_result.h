@@ -12,6 +12,22 @@ enum it_test_result{
 	NOCAPTURE
 };
 
+inline std::string result_to_string(const it_test_result r){
+	switch(r){
+	case PASSED:    return "PASSED";
+	case FAIL:      return "FAIL";
+	case NOCAPTURE: return "NOCAPTURE";
+	default:        return "UNKNOWN";
+	}
+}
+
+inline it_test_result it_test_result_from_string(std::string_view s){
+	if(s == "PASSED")    return PASSED;
+	if(s == "FAIL")      return FAIL;
+	if(s == "NOCAPTURE") return NOCAPTURE;
+	return UNKNOWN;
+}
+
 class InjectionTestResult{
 protected:
 	std::string _test_name;
@@ -23,9 +39,14 @@ public:
 	[[nodiscard]] it_test_result result() const{ return _result; }
 	void result(const it_test_result &result) { _result = result; }
 	[[nodiscard]] std::string detail()    const{ return _detail; }
-	void detail(const it_test_result &detail) { _detail = detail; }
+	void detail(const std::string &detail) { _detail = detail; }
 
-	nlohmann::json to_json() const;
+	nlohmann::json to_json() const{
+		auto j = nlohmann::json();
+		j[_test_name] = {{"result", result_to_string(_result)}, {"detail", _detail}};
+		return j;
+	}
+
 	explicit InjectionTestResult() = default;
 	InjectionTestResult(const std::string &test_name, const it_test_result result, const std::string &detail = ""):
 	_test_name(test_name), _result(result), _detail(detail){};
@@ -48,7 +69,11 @@ public:
 		return PASSED;
 
 	}
-	nlohmann::json to_json() const;
+	nlohmann::json to_json() const{
+		nlohmann::json arr = nlohmann::json::array();
+		for(const auto &t: tests) arr.push_back(t.to_json());
+		return {{"tests", arr}};
+	}
 };
 
 std::string print_injection_result(const InjectionSuiteResult &suite);

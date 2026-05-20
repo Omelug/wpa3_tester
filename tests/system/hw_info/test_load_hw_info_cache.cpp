@@ -34,7 +34,7 @@ struct Fixture {
 // -----------------
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_name and permanent_mac") {
     const path cache_file = write_cache(tmp, string(LO_MAC), {
-        {"driver_name",   "stub_driver"},
+        {"driver",   "stub_driver"},
         {"permanent_mac", string(LO_MAC)},
     });
 
@@ -48,7 +48,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_name and pe
 
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_hash when present") {
     const path cache_file = write_cache(tmp, string(LO_MAC), {
-        {"driver_name",   "stub_driver"},
+        {"driver",   "stub_driver"},
         {"driver_hash",   "deadbeef"},
         {"permanent_mac", string(LO_MAC)},
     });
@@ -62,7 +62,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_hash when p
 
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty driver_hash in cache is not set") {
     const path cache_file = write_cache(tmp, string(LO_MAC), {
-        {"driver_name",   "stub_driver"},
+        {"driver",   "stub_driver"},
         {"driver_hash",   ""},
         {"permanent_mac", string(LO_MAC)},
     });
@@ -75,10 +75,39 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty driver_hash in cache is not set
     CHECK_FALSE((*actor)[SK::driver_hash].has_value());
 }
 
+TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores module_hash when present") {
+    const path cache_file = write_cache(tmp, string(LO_MAC), {
+        {"driver",   "stub_driver"},
+        {"module_hash",   "cafebabe12345678"},
+        {"permanent_mac", string(LO_MAC)},
+    });
+
+    const auto actor = make_shared<Actor_config>();
+    actor->set(SK::iface, "lo");
+    actor->load_hw_info(cache_file);
+
+    CHECK_EQ(actor->get(SK::module_hash), "cafebabe12345678");
+}
+
+TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty module_hash in cache is not set") {
+    const path cache_file = write_cache(tmp, string(LO_MAC), {
+        {"driver",   "stub_driver"},
+        {"module_hash",   ""},
+        {"permanent_mac", string(LO_MAC)},
+    });
+
+    const auto actor = make_shared<Actor_config>();
+    actor->set(SK::iface, "lo");
+    actor->load_hw_info(cache_file);
+
+    CHECK_FALSE((*actor)[SK::module_hash].has_value());
+}
+
+// -----------------
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - wrong perm_mac in cache does not pollute actor") {
     // Cache contains an unrelated MAC; lo's 00:00:00:00:00:00 won't match → cache miss
     const path cache_file = write_cache(tmp, "ff:ff:ff:ff:ff:ff", {
-        {"driver_name",   "should_not_load"},
+        {"driver",   "should_not_load"},
         {"permanent_mac", "ff:ff:ff:ff:ff:ff"},
     });
 

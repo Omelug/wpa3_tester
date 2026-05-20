@@ -10,13 +10,14 @@ namespace wpa3_tester {
 
 struct Driver {
 	std::optional<std::string> driver_name;
-	std::optional<std::string> driver_hash; // /sys/module/<name>/srcversion
+	std::optional<std::string> driver_hash;   // /sys/module/<name>/srcversion
+	std::optional<std::string> module_hash;   // combined hash of driver + all depends srcversions
 };
 
 // String keys
 enum class SK : uint8_t {
     actor_name, source, iface, mac, permanent_mac, ssid, channel,
-    signal, ht_mode, driver_name, driver_hash, netns, sniff_iface,
+    signal, ht_mode, driver_name, driver_hash, module_hash, netns, sniff_iface,
     radio, whitebox_host, whitebox_ip, ip_addr,
     ssh_user, ssh_port, ssh_password, external_OS,
     COUNT_
@@ -36,7 +37,7 @@ enum class BK : uint8_t {
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> SK_NAMES = {
     "actor_name", "source", "iface", "mac", "permanent_mac", "ssid", "channel",
-    "signal", "ht_mode", "driver", "driver_hash", "netns", "sniff_iface",
+    "signal", "ht_mode", "driver", "driver_hash", "module_hash", "netns", "sniff_iface",
     "radio", "whitebox_host", "whitebox_ip", "ip_addr",
     "ssh_user", "ssh_port", "ssh_password", "external_OS"
 };

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <fstream>
 #include <random>
+#include <sstream>
 #include <set>
 #include <string>
 #include <vector>
@@ -44,7 +45,7 @@ string hw_capabilities::get_driver_name(const string &iface){
 }
 
 optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
-	// 1. try srcversion (fast, kernel-embedded)
+	// try srcversion (fast, kernel-embedded)
 	{
 		ifstream ifs("/sys/module/" + driver_name + "/srcversion");
 		if(ifs.is_open()){
@@ -53,13 +54,58 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 			if(!s.empty()) return s;
 		}
 	}
-	// 2. fallback: hash the .ko file via modinfo + sha256sum
+	// fallback: hash the .ko file via modinfo + sha256sum
 	string ko_path = run_cmd_output({"modinfo", "-F", "filename", driver_name});
 	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' '))
 		ko_path.pop_back();
 	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
 
 	const string sha_out = run_cmd_output({"sha256sum", ko_path});
+	const auto space = sha_out.find(' ');
+	if(space == string::npos) return nullopt;
+	return sha_out.substr(0, min(space, size_t{16}));
+}
+
+optional<string> hw_capabilities::get_module_hash(const string &driver_name){
+	// module list: driver itself + comma-separated depends on from modinfo
+	vector<string> modules;
+	modules.push_back(driver_name);
+
+	string deps = run_cmd_output({"modinfo", "-F", "depends", driver_name});
+	while(!deps.empty() && (deps.back() == '\n' || deps.back() == '\r' || deps.back() == ' '))
+		deps.pop_back();
+	if(!deps.empty()){
+		stringstream ss(deps);
+		string tok;
+		while(getline(ss, tok, ',')){
+			while(!tok.empty() && (tok.back() == ' ' || tok.back() == '\r'))
+				tok.pop_back();
+			if(!tok.empty()) modules.push_back(tok);
+		}
+	}
+
+	// Collect "module:srcversion;" for each module that has a srcversion
+	string combined;
+	for(const auto &mod : modules){
+		ifstream ifs("/sys/module/" + mod + "/srcversion");
+		if(ifs.is_open()){
+			string sv;
+			if(getline(ifs, sv) && !sv.empty())
+				combined += mod + ":" + sv + ";";
+		}
+	}
+	if(combined.empty()) return nullopt;
+
+	// Write to tmp file and hash — avoids shell injection
+	const auto tmp = temp_directory_path() / ("wpa3_mod_hash_" + driver_name);
+	{
+		ofstream f(tmp);
+		if(!f.is_open()) return nullopt;
+		f << combined;
+	}
+	const string sha_out = run_cmd_output({"sha256sum", tmp.string()});
+	filesystem::remove(tmp);
+
 	const auto space = sha_out.find(' ');
 	if(space == string::npos) return nullopt;
 	return sha_out.substr(0, min(space, size_t{16}));
@@ -140,7 +186,7 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 
 	string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
 	string phy_name = run_cmd_output({"/bin/sh", "-c", phy_cmd});
-	std::erase(phy_name, '\n');
+	erase(phy_name, '\n');
 
 	if(phy_name.empty()){
 		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);

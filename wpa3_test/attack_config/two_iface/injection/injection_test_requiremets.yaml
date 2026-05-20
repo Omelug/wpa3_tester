@@ -3,7 +3,11 @@ name: injection_test_example_req
 attacker_module: null_test # not module
 requirements:
   two_iface:
-    injection: [transceiver, receiver]
+    injection_more_fragments_spoofed: [transceiver, receiver]
+    injection_more_fragments_valid: [transceiver, receiver]
+    injection_fields_order_spoofed: [transceiver, receiver]
+    injection_fields_order_valid: [transceiver, receiver]
+
 actors:
   transceiver:
     source: internal

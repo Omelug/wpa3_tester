@@ -24,6 +24,8 @@ TEST_CASE("HwInfo::is_hw_info(BK) - non-hardware keys return false") {
 TEST_CASE("HwInfo::is_hw_info(SK) - hardware string keys") {
     CHECK(HwInfo::is_hw_info(SK::permanent_mac));
     CHECK(HwInfo::is_hw_info(SK::driver_name));
+    CHECK(HwInfo::is_hw_info(SK::driver_hash));
+    CHECK(HwInfo::is_hw_info(SK::module_hash));
 }
 
 TEST_CASE("HwInfo::is_hw_info(SK) - non-hardware string keys return false") {

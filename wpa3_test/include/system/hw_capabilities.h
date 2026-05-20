@@ -127,6 +127,7 @@ public:
 	static std::string read_sysfs(const std::string &iface, const std::string &file);
 	static std::string get_driver_name(const std::string &iface);
 	static std::optional<std::string> get_driver_hash(const std::string &driver_name);
+	static std::optional<std::string> get_module_hash(const std::string &driver_name);
 	static std::string get_phy(const std::string &iface, const std::optional<std::string> &netns);
 
 	//format

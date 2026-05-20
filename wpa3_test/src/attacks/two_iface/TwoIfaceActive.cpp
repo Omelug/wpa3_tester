@@ -3,7 +3,6 @@
 #include <fstream>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
 #include "setup/config_parser.h"
 
 namespace wpa3_tester {
@@ -13,7 +12,7 @@ using nlohmann::json;
 
 TwoIfaceActive::TwoIfaceActive()
 : TwoIface({
-	{SK::driver_name, SK::driver_hash, SK::permanent_mac},
+	{SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac},
 	{BK::monitor, BK::active_monitor}}, "active_test"){}
 
 json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {

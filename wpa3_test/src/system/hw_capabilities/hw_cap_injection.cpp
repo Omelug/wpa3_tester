@@ -25,7 +25,7 @@ static vector<uint8_t> make_label(){
 	return label;
 }
 
-// -----------------
+
 vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
 	const Channel ch, const int count, const int retries
@@ -69,12 +69,10 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	return captured;
 }
 
-// -----------------
 void hw_capabilities::flush_socket(MonitorSocket &s){
-	for(int i = 0; i < 10000 && s.recv(); i++);
+	for(int i = 0; i < 10000 && s.recv(); i++); //FIXME 10000 hardcoded
 }
 
-// -----------------
 optional<pair<HWAddress<6>, string>> hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){
 	struct Entry{ int8_t rssi; HWAddress<6> mac; string ssid; };
 	vector<Entry> beacons;
@@ -95,7 +93,6 @@ optional<pair<HWAddress<6>, string>> hw_capabilities::get_nearby_ap_addr(Monitor
 	return pair{best->mac, best->ssid};
 }
 
-// -----------------
 ProbeCapture hw_capabilities::capture_probe_response_ack(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
 	const Channel ch, const int retries
@@ -130,7 +127,6 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 	return result;
 }
 
-// -----------------
 // Internal helper: inject pdu, check all captured frames pass test_func.
 // Returns InjectionTestResult{name, flags}.
 static InjectionTestResult test_packet_injection_impl(
@@ -152,7 +148,6 @@ InjectionTestResult hw_capabilities::test_packet_injection(
 	return test_packet_injection_impl(sout, sin, pdu, test_func, name, msgfail, ch);
 }
 
-// -----------------
 InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const Dot11Ref &ref, const string &strtype, const Channel ch
@@ -167,7 +162,6 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	return {"injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED};
 }
 
-// -----------------
 InjectionTestResult hw_capabilities::test_injection_fields(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const Dot11Ref &ref, const string &strtype, const Channel ch
@@ -229,7 +223,6 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	return {"injection_fields_order_" + strtype, result, failed};
 }
 
-// -----------------
 InjectionTestResult hw_capabilities::test_injection_order(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const Dot11Ref &ref, const string &strtype, const Channel ch, const int retries
@@ -325,7 +318,6 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 	return {"injection_fields_retrans", result, detail};
 }
 
-// -----------------
 InjectionTestResult hw_capabilities::test_injection_txack(
 	MonitorSocket &sout, MonitorSocket &sin,
 	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac, const Channel ch

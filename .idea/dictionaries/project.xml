@@ -17,6 +17,7 @@
       <w>bigtk</w>
       <w>bmargin</w>
       <w>bprot</w>
+      <w>capabilies</w>
       <w>caplen</w>
       <w>cassert</w>
       <w>ccmp</w>
@@ -57,6 +58,7 @@
       <w>hostap</w>
       <w>htmode</w>
       <w>hwhsim</w>
+      <w>hwinfo</w>
       <w>hwsim</w>
       <w>ibss</w>
       <w>iface</w>
@@ -86,6 +88,7 @@
       <w>memorycheck</w>
       <w>mfpc</w>
       <w>mfpr</w>
+      <w>modinfo</w>
       <w>mscha</w>
       <w>msdu</w>
       <w>msgfail</w>

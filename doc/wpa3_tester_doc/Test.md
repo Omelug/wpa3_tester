@@ -28,8 +28,16 @@ For some programs `compile_external: true` is needed for auto install.
 Otherwise, the system will return a req_error if not already installed.
 Some programs need folder config in [global_config](../../wpa3_test/attack_config/global_config.yaml).
 
-External: 
-The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml). 
+External:
+The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml).
+
+### Active and injection tests (TwoIface)
+- these test are needed to be run before with real (because some drivers lies about compatibility)
+- cache is used to not run before very test (for details check [cache.md](cache.md))
+- active and injection are children of [TwoIface](../../wpa3_test/src/attacks/two_iface/TwoIface.cpp) 
+( in cache id are important keys for finding in cache)
+- [two_iface](../../wpa3_test/src/attacks/two_iface) can be add to test config `requirements/two_iface: <two_iface_key>: [<actor_tx>, <actor_rx>]`
+  (check [test_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_validator.schema.yaml) for two_iface_key)
 
 ### Test suites
 - have tbe in format [test_suite_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_suite_validator.schema.yaml)

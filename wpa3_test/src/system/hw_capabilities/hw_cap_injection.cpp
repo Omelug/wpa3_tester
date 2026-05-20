@@ -127,25 +127,15 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 	return result;
 }
 
-// Internal helper: inject pdu, check all captured frames pass test_func.
-// Returns InjectionTestResult{name, flags}.
-static InjectionTestResult test_packet_injection_impl(
-	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-	const function<bool(const vector<uint8_t> &)> &test_func,
-	const string &name, const string &msgfail, const Channel ch
-){
-	const auto packets = hw_capabilities::inject_and_capture(sout, sin, pdu, ch, 1);
-	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
-	if(!ranges::all_of(packets, test_func)) return {name, FAIL, msgfail};
-	return {name, PASSED};
-}
-
 InjectionTestResult hw_capabilities::test_packet_injection(
 	MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
 	const function<bool(const vector<uint8_t> &)> &test_func,
 	const string &name, const string &msgfail, const Channel ch
 ){
-	return test_packet_injection_impl(sout, sin, pdu, test_func, name, msgfail, ch);
+	const auto packets = inject_and_capture(sout, sin, pdu, ch, 1);
+	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
+	if(!ranges::all_of(packets, test_func)) return {name, FAIL, msgfail};
+	return {name, PASSED};
 }
 
 InjectionTestResult hw_capabilities::test_injection_more_fragments(
@@ -172,53 +162,55 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 		if(ref.to_ds)   frame.to_ds(1);
 	};
 
-	it_test_result result;
+	it_test_result result = PASSED;
 	string failed;
 
 	auto run = [&](auto &pdu,
 	               const function<bool(const vector<uint8_t> &)> &fn,
 	               const string &name, const string &msg){
-		auto r = test_packet_injection_impl(sout, sin, pdu, fn, name, msg, ch);
-		result = r.result();
-		if(r.result() != PASSED) failed += name + " ";
+		const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch);
+		if(r.result() != PASSED){
+			if(result == PASSED) result = r.result();
+			failed += name + " ";
+		}
 	};
 
 	// 1. Delivery
-	{ Dot11Data p; apply(p); p.seq_num(30);
-	  run(p, [](const vector<uint8_t> &){ return true; }, "eapol", "not captured"); }
+	Dot11Data p1; apply(p1); p1.seq_num(30);
+	run(p1, [](const vector<uint8_t> &){ return true; }, "eapol", "not captured");
 
 	// 2. Seq num preserved
-	{ Dot11Data p; apply(p); p.seq_num(31);
-	  run(p, [](const vector<uint8_t> &raw){
-	      try{ const RadioTap rt(raw.data(), raw.size());
-	           const auto *d = rt.find_pdu<Dot11Data>();
-	           return d && d->seq_num() == 31; } catch(...){ return false; }
-	  }, "seq_num", "sequence number overwritten"); }
+	Dot11Data p2; apply(p2); p2.seq_num(31);
+	run(p2, [](const vector<uint8_t> &raw){
+		try{ const RadioTap rt(raw.data(), raw.size());
+		     const auto *d = rt.find_pdu<Dot11Data>();
+		     return d && d->seq_num() == 31; } catch(...){ return false; }
+	}, "seq_num", "sequence number overwritten");
 
 	// 3. Frag num preserved
-	{ Dot11Data p; apply(p); p.seq_num(32); p.frag_num(1);
-	  run(p, [](const vector<uint8_t> &raw){
-	      try{ const RadioTap rt(raw.data(), raw.size());
-	           const auto *d = rt.find_pdu<Dot11Data>();
-	           return d && d->frag_num() == 1; } catch(...){ return false; }
-	  }, "frag_num", "fragment number overwritten"); }
+	Dot11Data p3; apply(p3); p3.seq_num(32); p3.frag_num(1);
+	run(p3, [](const vector<uint8_t> &raw){
+		try{ const RadioTap rt(raw.data(), raw.size());
+		     const auto *d = rt.find_pdu<Dot11Data>();
+		     return d && d->frag_num() == 1; } catch(...){ return false; }
+	}, "frag_num", "fragment number overwritten");
 
 	// 4. QoS TID preserved
-	{ Dot11QoSData p; apply(p); p.seq_num(33); p.qos_control(2);
-	  run(p, [](const vector<uint8_t> &raw){
-	      try{ const RadioTap rt(raw.data(), raw.size());
-	           const auto *q = rt.find_pdu<Dot11QoSData>();
-	           return q && (q->qos_control() & 0xF) == 2; } catch(...){ return false; }
-	  }, "qos_tid", "QoS TID overwritten"); }
+	Dot11QoSData p4; apply(p4); p4.seq_num(33); p4.qos_control(2);
+	run(p4, [](const vector<uint8_t> &raw){
+		try{ const RadioTap rt(raw.data(), raw.size());
+		     const auto *q = rt.find_pdu<Dot11QoSData>();
+		     return q && (q->qos_control() & 0xF) == 2; } catch(...){ return false; }
+	}, "qos_tid", "QoS TID overwritten");
 
 	// 5. A-MSDU bit + TID preserved
-	{ Dot11QoSData p; apply(p); p.seq_num(33); p.qos_control(2 | 0x80);
-	  run(p, [](const vector<uint8_t> &raw){
-	      try{ const RadioTap rt(raw.data(), raw.size());
-	           const auto *q = rt.find_pdu<Dot11QoSData>();
-	           return q && (q->qos_control() & 0xF) == 2 && (q->qos_control() & 0x80); }
-	      catch(...){ return false; }
-	  }, "a-msdu", "A-MSDU not properly injected"); }
+	Dot11QoSData p5; apply(p5); p5.seq_num(33); p5.qos_control(2 | 0x80);
+	run(p5, [](const vector<uint8_t> &raw){
+		try{ const RadioTap rt(raw.data(), raw.size());
+		     const auto *q = rt.find_pdu<Dot11QoSData>();
+		     return q && (q->qos_control() & 0xF) == 2 && (q->qos_control() & 0x80); }
+		catch(...){ return false; }
+	}, "a-msdu", "A-MSDU not properly injected");
 
 	return {"injection_fields_order_" + strtype, result, failed};
 }

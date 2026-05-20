@@ -213,6 +213,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	const pid_t child_pid = mp->proc->pid().first;
 	setpgid(child_pid, child_pid);
 	mp->pgid = child_pid;
+	mp->start_pid = child_pid;
 
 	start_drain_for(process_name, mp);
 

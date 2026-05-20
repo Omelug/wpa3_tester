@@ -108,14 +108,11 @@ int get_target_pid(int current_pid){
 int ProcessManager::get_pid(const string &process_name){
 	lock_guard lock(logger_mtx);
 	const auto it = processes.find(process_name);
-
-	if(it == processes.end()){
+	if(it == processes.end())
 		throw setup_err("Process '" + process_name + "' not found in process map.");
-	}
-	if(it->second->proc == nullptr){
-		throw setup_err("Process '" + process_name + "' found, but its underlying proc object is null.");
-	}
-	return get_target_pid(it->second->proc->pid().first);
+	if(it->second->start_pid <= 0)
+		throw setup_err("Process '" + process_name + "' has no valid pid (not a real process).");
+	return get_target_pid(it->second->start_pid);
 }
 
 void ProcessManager::recreate_log_folder(const path &log_base_dir){

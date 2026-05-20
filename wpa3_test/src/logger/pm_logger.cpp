@@ -141,30 +141,27 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 // ----------------- history functions
 void ProcessManager::allow_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
-	if(const auto it = processes.find(actor_name); it != processes.end()){
-		it->second->logs.history_enabled = true;
-		return;
-	}
-	throw setup_err("Process " + actor_name + " not found to allow history");
+	const auto it = processes.find(actor_name);
+	if(it == processes.end())
+		throw setup_err("Process " + actor_name + " not found to allow history");
+	it->second->logs.history_enabled = true;
 }
 
 void ProcessManager::ignore_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
-	if(const auto it = processes.find(actor_name); it != processes.end()){
-		it->second->logs.history_enabled = false;
-		it->second->logs.history.clear();
-		return;
-	}
-	throw setup_err("Process " + actor_name + " not found to ignore history");
+	const auto it = processes.find(actor_name);
+	if(it == processes.end())
+		throw setup_err("Process " + actor_name + " not found to ignore history");
+	it->second->logs.history_enabled = false;
+	it->second->logs.history.clear();
 }
 
 void ProcessManager::discard_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
-	if(const auto it = processes.find(actor_name); it != processes.end()){
-		it->second->logs.history.clear();
-		return;
-	}
-	throw setup_err("Process " + actor_name + " not found for discard history");
+	const auto it = processes.find(actor_name);
+	if(it == processes.end())
+		throw setup_err("Process " + actor_name + " not found for discard history");
+	it->second->logs.history.clear();
 }
 
 }

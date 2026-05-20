@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <chrono>
 #include <doctest.h>
 #include <thread>
-#include <chrono>
-#include "logger/log.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
 #include "system/ProcessManager.h"
 
 using namespace std;
@@ -230,4 +230,90 @@ TEST_CASE("ProcessManager - on_stop callback"){
         log(LogLevel::INFO, "on_stop callback test completed successfully");
         remove_all(test_dir);
     }
+
+TEST_CASE("ProcessManager - write_log_all"){
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_write_log_all";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    SUBCASE("writes to combined log"){
+        pm.write_log_all("marker_combined");
+        ifstream f(pm.log_base_dir / "combined.log");
+        const string content((istreambuf_iterator(f)), {});
+        CHECK_NE(content.find("marker_combined"), string::npos);
+    }
+
+    SUBCASE("writes to process log when process exists"){
+        pm.run_dummy("proc_a");
+        pm.write_log_all("marker_proc");
+        {
+            ifstream f(pm.log_base_dir / "combined.log");
+            const string content((istreambuf_iterator(f)), {});
+            CHECK_NE(content.find("marker_proc"), string::npos);
+        }
+        {
+            ifstream f(pm.log_base_dir / "proc_a.log");
+            const string content((istreambuf_iterator(f)), {});
+            CHECK_NE(content.find("marker_proc"), string::npos);
+        }
+    }
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - get_pid"){
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_get_pid";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    SUBCASE("non-existent process throws"){
+        CHECK_THROWS_AS(pm.get_pid("ghost"), setup_err);
+    }
+    SUBCASE("dummy process (null proc) throws"){
+        pm.run_dummy("dummy");
+        CHECK_THROWS_AS(pm.get_pid("dummy"), setup_err);
+    }
+    SUBCASE("real process returns positive pid"){
+        pm.run("sleeper", {"sleep", "30"});
+        this_thread::sleep_for(100ms);
+        CHECK_GT(pm.get_pid("sleeper"), 0);
+        pm.stop("sleeper");
+    }
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - ignore_history"){
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_ignore_history";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    SUBCASE("non-existent process throws"){
+        CHECK_THROWS_AS(pm.ignore_history("ghost"), setup_err);
+    }
+    SUBCASE("existing process does not throw"){
+        pm.run_dummy("proc");
+        CHECK_NOTHROW(pm.ignore_history("proc"));
+    }
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - discard_history"){
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_discard_history";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    SUBCASE("non-existent process throws"){
+        CHECK_THROWS_AS(pm.discard_history("ghost"), setup_err);
+    }
+    SUBCASE("existing process does not throw"){
+        pm.run_dummy("proc");
+        CHECK_NOTHROW(pm.discard_history("proc"));
+    }
+    remove_all(test_dir);
+}
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdarg>
 #include <format>
 #include <source_location>
 #include <stacktrace>
@@ -20,8 +19,8 @@ public:
 	{}
 
 	template<typename... Args>
-	tester_error(LogLevel level, const char *fmt, const std::source_location loc, Args... args)
-	: std::runtime_error(vprintf_format(fmt, args...))
+	tester_error(LogLevel level, std::string_view fmt, const std::source_location loc, Args&&... args)
+	: std::runtime_error(std::vformat(fmt, std::make_format_args(args...)))
 	, std::nested_exception()
 	, location_(loc)
 	{
@@ -29,7 +28,6 @@ public:
 	}
 
 	[[nodiscard]] const std::source_location &where() const noexcept { return location_; }
-	static std::string vprintf_format(const char *fmt, ...);
 private:
 	std::source_location location_{};
 };

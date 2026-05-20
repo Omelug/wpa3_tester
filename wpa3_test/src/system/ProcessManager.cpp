@@ -264,8 +264,8 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	}
 	if(!pred_met){
 		if(throw_err)
-			throw timeout_err("Timeout waiting for pattern '%s' in process '%s' (timeout: %d seconds)",
-							pattern.c_str(), actor_name.c_str(), static_cast<int>(timeout.count()));
+			throw timeout_err("Timeout waiting for pattern '{}' in process '{}' (timeout: {} seconds)",
+							pattern, actor_name, static_cast<int>(timeout.count()));
 		return false;
 	}
 	logs.history.clear();

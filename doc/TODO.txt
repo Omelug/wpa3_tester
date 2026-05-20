@@ -6,7 +6,6 @@ v: visualization
 Version v 0.0.0.0:
 d: document cache
 t: add manual test to check if all configs in attack_cofigs are valid
-ch: change %s style to {} for al errors
 v?: cache visualization for documnetation?
 r: simplify injection tests
 ch: one_iface, two_if test to actual tests, configable tests
@@ -19,6 +18,7 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 f: json_obj - save to mapping is broken, může zato json "," (A z json hlavně j, protože JavaScript je p*čovina)
 
 //DONE
+ch: change %s style to {} for al errors
 t: cache tests
 +: TwoIface for injection
 +: driver_hash

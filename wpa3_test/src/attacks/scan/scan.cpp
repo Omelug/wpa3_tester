@@ -190,7 +190,7 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 	}
 
 	ifstream file(conn_table);
-	if(!file.is_open()){ throw scan_err("Failed to open connection table: %s", conn_table.string().c_str()); }
+	if(!file.is_open()){ throw scan_err("Failed to open connection table: {}", conn_table.string()); }
 	string line;
 	if(!getline(file, line)){ throw scan_err("Empty connection table: " + conn_table.string()); }
 
@@ -201,8 +201,8 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 
 	// required columns
 	if(!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")){
-		throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): %s",
-						conn_table.string().c_str());
+		throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): {}",
+						conn_table.string());
 	}
 
 	while(getline(file, line)){

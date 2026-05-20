@@ -19,7 +19,7 @@ TEST_CASE("config_err - simple string message"){
 
 TEST_CASE("config_err - formatted message with single argument"){
     try {
-        throw config_err("Config not found: %s", "/path/to/config.yaml");
+        throw config_err("Config not found: {}", "/path/to/config.yaml");
     } catch (const config_err& e) {
         CHECK(string(e.what()) == "Config not found: /path/to/config.yaml");
     }
@@ -27,7 +27,7 @@ TEST_CASE("config_err - formatted message with single argument"){
 
 TEST_CASE("config_err - formatted message with multiple arguments"){
     try {
-        throw config_err("Error at line %d in file %s: %s", 42, "config.yaml", "invalid syntax");
+        throw config_err("Error at line {} in file {}: {}", 42, "config.yaml", "invalid syntax");
     } catch (const config_err& e) {
         CHECK(string(e.what()) == "Error at line 42 in file config.yaml: invalid syntax");
     }

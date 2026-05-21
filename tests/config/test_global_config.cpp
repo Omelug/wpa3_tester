@@ -39,7 +39,7 @@ actors:
     REQUIRE(config.contains("actors"));
     INFO(config["paths"]["hostapd"].dump());
     CHECK_EQ(config["paths"]["hostapd"].at("hostapd_build_folder").get<string>(), "/test/hostapd");
-    CHECK_EQ(config["actors"]["conn_table"], "./test_table.csv");
+    CHECK_EQ(relative(config["actors"]["conn_table"]), "test_config/attack_config/test_table.csv");
     CHECK_EQ(config["actors"]["ignore_interfaces"].size(), 2);
 }
 

@@ -87,15 +87,15 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 	if(internal) setup_actor_internal(config);
 	if(external_WB){ setup_actor_external_whitebox(config, real_actor); }
+	int channel_num = -1;
 	if(internal || external_WB){
 		auto actor_json = config.at("actors").at(get(SK::actor_name));
 
-		int channel_num = -1;
 		if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
 		else if(const auto& c = real_actor[SK::channel]) channel_num = stoi(c.value());
 		if(monitor_needed() && (*this)[SK::sniff_iface] == nullopt)
 			set_monitor_mode();
-		if(channel_num != -1){
+		if(channel_num != -1 && external_WB){
 			set_iface_up();
 			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
 			set_iface_down();
@@ -116,6 +116,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		if((*this)[BK::managed].value_or(false)){ set_managed_mode(); }
 		//TODO mplement for external WB
 		set_iface_up();
+		// NL80211_CMD_SET_CHANNEL requires AP or monitor mode — set channel after mode is configured
+		if(channel_num != -1 && ((*this)[BK::AP].value_or(false) || (*this)[BK::monitor].value_or(false))){ //FIMME co set_cahnnel if sniff_iface?
+			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
+		}
 		up_sniff_iface();
 	}
 }

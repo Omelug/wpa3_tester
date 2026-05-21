@@ -4,7 +4,14 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+PDF:
+    f: deleted_old -> delete_old
+    +: cache description
+    +: info bout NixOS
+    + info about injection tests
 
+r: (*this)[BK::AP].value_or(false) to get_or()
+?: move driver after check if is needed
 t: setup_actor()
 +: ClientState observer use in mitm
 t?: forgejo compatible github runners for push to main (i s config_validation)
@@ -112,7 +119,6 @@ Optimization:
 
 PDF:
 +: PMKSA
-f: deleted_old -> delete_old
 +: Donwgrade group https://github.com/Nuseo1/airgeddon_plugins
 
 - Every physical radio can have only one interface in these tests

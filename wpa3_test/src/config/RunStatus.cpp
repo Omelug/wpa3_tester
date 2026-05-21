@@ -49,16 +49,16 @@ void RunStatus::execute(){
 	globalRunStatus = this;
 
 	if(exists(_run_folder)){
-		if(_run_config.get_rewrite() == RewriteMode::none){
-			log(LogLevel::DEBUG, "Skipping: {}", _run_folder.filename().string());
+		if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(_run_folder / "done.txt"))){
+			log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder).string());
 			return;
 		}
 		if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
-			log(LogLevel::WARNING, "Skipping already successfully run test : {}", _run_folder.filename().string());
+			log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder).string());
 			return;
 		}
 		if(_run_config.get_delete_old()){ // remove -> no rewrite, better for debugging
-			log(LogLevel::DEBUG, "Deleting old run folder: {}", _run_folder.filename().string());
+			log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder).string());
 			remove_all(_run_folder);
 		}
 	}

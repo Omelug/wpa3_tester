@@ -5,7 +5,11 @@
 
 namespace wpa3_tester{
 
-enum class RewriteMode { none, errors, all };
+enum class RewriteMode{
+	none, // WARNING: still rewrite if not done.txt/errors.txt  in run_folder
+	errors, // rewrite if /errors.txt in run_folder
+	all // rewrite every time
+};
 
 struct Run_Config {
 	std::optional<bool>        delete_old;

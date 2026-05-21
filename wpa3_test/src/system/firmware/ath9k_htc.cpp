@@ -60,13 +60,15 @@ void load_ath9k_noorder_change(bool git_install){
 	} else if(!filesystem::exists(fw_folder)){
 		throw req_err("ath9k_firmware folder not found: " + fw_folder + ". Enable git_install or clone it manually.");
 	}
-	hw_capabilities::run_in("bash ./load.sh", fw_folder + "/research/ath9k-firmware");
+	const string local_fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	hw_capabilities::run_in("bash ./install.sh", local_fw_dir);
 }
 
 void unload_ath9k_noorder_change(){
 	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
 	if(fw_folder.empty() || !filesystem::exists(fw_folder)) return;
-	hw_capabilities::run_in("bash ./unload.sh", fw_folder + "/research/ath9k-firmware");
+	const string local_fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	hw_capabilities::run_in("bash ./unload.sh", local_fw_dir);
 }
 
 void disable_custom_drivers(){

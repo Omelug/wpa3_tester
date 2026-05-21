@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <iomanip>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <sys/utsname.h>
 #include <vector>
@@ -73,5 +74,22 @@ string join(const vector<string> &v, const string &sep){
 		out += v[i];
 	}
 	return out;
+}
+
+void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
+	if(node.is_string()){
+		const string &s = node.get<string>();
+		if(s.size() >= 2 && s[0] == '.' && (s[1] == '/' || s[1] == '.')){
+			node = weakly_canonical(base_dir / path(s)).string();
+		}
+	} else if(node.is_object()){
+		for(auto &[key, val] : node.items()){
+			resolve_relative_paths(val, base_dir);
+		}
+	} else if(node.is_array()){
+		for(auto &elem : node){
+			resolve_relative_paths(elem, base_dir);
+		}
+	}
 }
 }

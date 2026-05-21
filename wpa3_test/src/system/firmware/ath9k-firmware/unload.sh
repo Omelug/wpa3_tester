@@ -33,7 +33,23 @@ fi
 echo "[+] Reloading driver (original firmware)..."
 sudo modprobe ath9k_htc
 
-# 5. Verification
+# 5. Wait for the ath9k_htc interface to appear in /sys/class/net
+echo "[+] Waiting for ath9k_htc interface..."
+TIMEOUT=10
+ELAPSED=0
+while [ $ELAPSED -lt $TIMEOUT ]; do
+    for iface in /sys/class/net/*/; do
+        drv=$(readlink "$iface/device/driver" 2>/dev/null)
+        if [[ "$drv" == *ath9k_htc* ]]; then
+            echo "[+] Interface $(basename "$iface") ready"
+            break 2
+        fi
+    done
+    sleep 0.5
+    ELAPSED=$((ELAPSED + 1))
+done
+
+# 6. Verification
 echo "[+] Verification:"
 # Check dmesg for the "Transferred FW" size of the original file
 dmesg | tail -n 20 | grep ath9k

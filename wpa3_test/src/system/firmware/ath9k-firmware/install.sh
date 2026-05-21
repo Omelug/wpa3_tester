@@ -48,4 +48,20 @@ apply_test_fw "$LOCAL_9271" "*9271*"
 echo "[+] Reloading driver..."
 sudo modprobe -r ath9k_htc && sudo modprobe ath9k_htc
 
+# 4. Wait for the ath9k_htc interface to appear in /sys/class/net
+echo "[+] Waiting for ath9k_htc interface..."
+TIMEOUT=10
+ELAPSED=0
+while [ $ELAPSED -lt $TIMEOUT ]; do
+    for iface in /sys/class/net/*/; do
+        drv=$(readlink "$iface/device/driver" 2>/dev/null)
+        if [[ "$drv" == *ath9k_htc* ]]; then
+            echo "[+] Interface $(basename "$iface") ready"
+            break 2
+        fi
+    done
+    sleep 0.5
+    ELAPSED=$((ELAPSED + 1))
+done
+
 echo "[+] Done. If no change appears in dmesg, please physically replug the USB device."

@@ -1,6 +1,7 @@
 #include "config/global_config.h"
 #include "setup/config_parser.h"
 #include "logger/error_log.h"
+#include "system/utils.h"
 #include <yaml-cpp/yaml.h>
 #include <filesystem>
 
@@ -26,6 +27,7 @@ nlohmann::json &get_global_config(const path &project_root_dir, const bool reset
 
 			const YAML::Node yaml_node = YAML::LoadFile(global_config_file.string());
 			global_config_cache = yaml_to_json(yaml_node);
+			resolve_relative_paths(global_config_cache, global_config_file.parent_path());
 			loaded = true;
 		} catch(const YAML::Exception &e){
 			throw config_err(string("Failed to parse global_config.yaml: ") + e.what());

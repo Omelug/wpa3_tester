@@ -5,14 +5,6 @@ required:
   - name
   - attacker_module
   - actors
-requirements:
-  type: object
-  description: Requirements for the local test PC
-  additionalProperties: false
-  properties:
-    simple:
-      type: array
-      description: Program names what has to be installed (on local test PC)
 config_type:
   type: string
   const: test
@@ -81,6 +73,7 @@ properties:
           type: string
           enum:
             - ath_masker
+            - ath9k_noorder_change
       two_iface:
         type: object
         description: Two-interface requirement

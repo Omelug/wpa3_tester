@@ -1,3 +1,5 @@
+requirements:
+  simple: [ath9k_noorder_change]
 actors:
   receiver:
     selection:
@@ -12,7 +14,9 @@ actors:
       driver: ath9k_htc
     netns: tx
     source: internal
+
 attacker_module: injection_test
 name: injection_test_example
 rewrite: all
 delete_old: true
+install_req: true

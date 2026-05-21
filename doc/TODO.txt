@@ -8,10 +8,9 @@ Version v 0.0.0.0:
 t: setup_actor()
 +: ClientState observer use in mitm
 t?: forgejo compatible github runners for push to main (i s config_validation)
-ch: move ath_masker to two_iface
 
 ?: works cache correctly with external WB?
-d: document cache
+v?: get some visualizations from caches
 r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 r: small TODO

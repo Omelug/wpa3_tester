@@ -12,18 +12,14 @@ using namespace Tins;
 
 namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
-: detect_injected_(detect_injected), sender_(iface), sniffer_(iface, make_sniff_cfg()){
+: detect_injected_(detect_injected), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf);
 	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
 		"pcap_setnonblock failed: " + string(errbuf));
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
-: detect_injected_(detect_injected), sender_([&]() -> PacketSender {
-	netlink_helper::NetNSContext ns_guard(netns);
-	return PacketSender(iface);
-}()), sniffer_([&]() -> Sniffer {
+: detect_injected_(detect_injected), sniffer_([&]() -> Sniffer {
 	netlink_helper::NetNSContext ns_guard(netns);
 	return Sniffer(iface, make_sniff_cfg());
 }()){
@@ -42,19 +38,17 @@ void MonitorSocket::send(PDU &pdu, const Channel ch){
 	// Wrap in RadioTap if not already present.
 	// Keep the header minimal (only TXFlags) — matching Python behaviour.
 	// Adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
+	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()){
 		RadioTap rt{};
 		rt.tx_flags(0x28); // NOSEQ|ORDER
-
-		const vector<uint8_t> serialized = pdu.serialize();
-		rt.inner_pdu(RawPDU(serialized));
-
-		sender_.send(rt);
+		rt.inner_pdu(RawPDU(pdu.serialize()));
+		bytes = rt.serialize();
 	} else{
-		auto *rt = pdu.find_pdu<RadioTap>();
-		rt->tx_flags(0x28);
-		sender_.send(pdu);
+		pdu.find_pdu<RadioTap>()->tx_flags(0x28);
+		bytes = pdu.serialize();
 	}
+	pcap_inject(sniffer_.get_pcap_handle(), bytes.data(), bytes.size());
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel ch,

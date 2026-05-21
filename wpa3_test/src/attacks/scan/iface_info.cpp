@@ -29,9 +29,8 @@ void run_attack(RunStatus &rs){
 
     const string iface  = rs.get_actor("scanner")["iface"];
     const int    ch_num = rs.config().at("attack_config").at("channel").get<int>();
-    const Channel channel{ch_num, WifiBand::BAND_2_4};
 
-    // ----- basic info -----
+	// ----- basic info -----
     const string current_mac = hw_capabilities::get_mac_address(iface, nullopt).to_string();
     const bool   is_up       = netlink_helper::iface_is_up(iface, nullopt);
     const string phy         = hw_capabilities::get_phy(iface, nullopt);
@@ -51,13 +50,10 @@ void run_attack(RunStatus &rs){
     cout << "Setting up " << iface << " as monitor on channel " << ch_num << "...\n";
     MonitorSocket sock(iface);
     const auto suite = hw_capabilities::run_injection_tests(
-        sock, iface,
-        sock,
-        channel,
-        Tins::HWAddress<6>("00:11:22:33:44:55"),
-        /*skip_mf=*/false,
-        /*testack=*/false
-    );
+		scanner, scanner,
+		Tins::HWAddress<6>("00:11:22:33:44:55"),
+		/*skip_mf=*/false,
+		/*testack=*/false);
 
 	//TODO scan to  Actor_coinfig
     // ----- build markdown -----

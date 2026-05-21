@@ -6,9 +6,11 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <reproc++/drain.hpp>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <unistd.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -32,19 +34,16 @@ string hw_capabilities::read_sysfs(const string &iface, const string &file){
 	return content;
 }
 
-string hw_capabilities::get_driver_name(const string &iface){
-	const string path = "/sys/class/net/" + iface + "/device/driver";
-	try{
-		if(exists(path) && is_symlink(path)){
-			return read_symlink(path).filename().string();
-		}
-	} catch(const filesystem_error &e){
-		throw config_err("Driver check error: " + string(e.what()));
-	}
-	throw config_err("Driver check error: not found valid symlink");;
+string hw_capabilities::get_driver_name(const string &iface, const optional<string> &netns){
+	//need new proces for netns change (read_syslm dont reflect it)
+	string target = run_cmd_output({"readlink", "/sys/class/net/" + iface + "/device/driver"}, netns);
+	while(!target.empty() && (target.back() == '\n' || target.back() == '\r'))
+		target.pop_back();
+	if(target.empty()) throw config_err("get_driver_name: no driver symlink for " + iface);
+	return path(target).filename().string();
 }
 
-optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
+optional<string> hw_capabilities::get_driver_hash(const string &driver_name, const optional<string> &netns){
 	// try srcversion (fast, kernel-embedded)
 	{
 		ifstream ifs("/sys/module/" + driver_name + "/srcversion");
@@ -66,7 +65,7 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 	return sha_out.substr(0, min(space, size_t{16}));
 }
 
-optional<string> hw_capabilities::get_module_hash(const string &driver_name){
+optional<string> hw_capabilities::get_module_hash(const string &driver_name, const optional<string> &netns){
 	// module list: driver itself + comma-separated depends on from modinfo
 	vector<string> modules;
 	modules.push_back(driver_name);
@@ -162,7 +161,7 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 		} else if(exists(entry.path() / "tun_flags")){
 			type = InterfaceType::VPN; // VPN / TUN (tun_flags)
 		} else if(iface.find("veth") == 0){
-			type = InterfaceType::VirtualVeth; // virtual veth docker container etc)
+			type = InterfaceType::VirtualVeth; // virtual veth docker container etc
 		} else if(exists(entry.path() / "device")){
 			type = InterfaceType::Ethernet; // Wire ethernet
 		}
@@ -211,7 +210,20 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
 
 Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
-	return read_sysfs(iface, "address");
+
+	ifreq ifr{};
+	iface.copy(ifr.ifr_name, IFNAMSIZ - 1);
+
+	const int sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if(sock < 0) throw config_err("get_mac_address: socket failed for " + iface);
+
+	if(ioctl(sock, SIOCGIFHWADDR, &ifr) < 0){
+		close(sock);
+		throw config_err("get_mac_address: ioctl failed for " + iface);
+	}
+	close(sock);
+
+	return {reinterpret_cast<const uint8_t *>(ifr.ifr_hwaddr.sa_data)};
 }
 
 string hw_capabilities::get_permanent_mac(const string &iface, const optional<string> &netns){

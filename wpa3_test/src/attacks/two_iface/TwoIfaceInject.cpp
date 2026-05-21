@@ -26,6 +26,7 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 			{"transceiver", {
 				{"source",    "internal"},
 				{"selection", make_selection(t)},
+				{"netns", "tx"}
 			}},
 			{"receiver", {
 				{"source",    "internal"},

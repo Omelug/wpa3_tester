@@ -178,11 +178,11 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 
 void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(SK::mac, read_sysfs(cfg->get(SK::iface), "address"));
-	cfg->set(SK::driver_name, get_driver_name(cfg->get(SK::iface)));
+	cfg->set(SK::driver_name, get_driver_name(cfg->get(SK::iface), cfg[SK::netns]));
 
 	/* ---------- nl80211 dynamic capabilities ---------- */
 	nl_sock *sock = nl_socket_alloc();
-	if(!sock){ return; }
+	if(!sock) return;
 
 	if(genl_connect(sock) != 0){
 		nl_socket_free(sock);

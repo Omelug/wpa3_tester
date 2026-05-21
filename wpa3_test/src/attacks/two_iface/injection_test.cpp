@@ -41,46 +41,52 @@ static Dot11Ref make_valid(const HWAddress<6> &peermac, const HWAddress<6> &ownm
 
 
 InjectionSuiteResult hw_capabilities::run_injection_tests(
-	MonitorSocket &sout, const string &iface_out,
-	MonitorSocket &sin,
-	const Channel ch,
+	ActorPtr actor_tx,
+	ActorPtr actor_rx,
 	const HWAddress<6> &peermac,
 	const bool skip_mf,
 	const bool testack
 ){
+
+	auto if_out = actor_tx.get(SK::iface);
+	auto if_in = actor_rx.get(SK::iface);
+	MonitorSocket s_out(if_out, actor_tx[SK::netns]);
+	MonitorSocket s_in(if_in, actor_rx[SK::netns]);
+	const Channel ch = actor_tx->get_channel();
+
 	InjectionSuiteResult suite;
-	suite.iface_out = iface_out;
-	suite.iface_in  = iface_out; // updated below for 2-iface case
+	suite.iface_out = if_out;
+	suite.iface_in  = if_in; // updated below for 2-iface case
 	suite.channel   = ch;
-	try{ suite.driver = get_driver_name(iface_out); } catch(...){}
+	try{ suite.driver = get_driver_name(if_out, actor_tx[SK::netns]); } catch(...){}
 
-	sout.mf_workaround = driver_needs_mf_workaround(suite.driver);
+	s_out.mf_workaround = driver_needs_mf_workaround(suite.driver);
 
-	const auto ownmac  = get_mac_address(iface_out, nullopt);
+	const auto ownmac  = get_mac_address(if_out, actor_tx[SK::netns]);
 	const auto spoofed = make_spoofed();
 	const auto valid   = make_valid(peermac, ownmac);
 
 	auto add = [&](InjectionTestResult r){suite.tests.push_back(std::move(r));};
 
 	if(!skip_mf){
-		add(test_injection_more_fragments(sout, sin, spoofed, "spoofed", ch));
-		add(test_injection_more_fragments(sout, sin, valid,   "valid",   ch));
+		add(test_injection_more_fragments(s_out, s_in, spoofed, "spoofed", ch));
+		add(test_injection_more_fragments(s_out, s_in, valid,   "valid",   ch));
 	}
 
-	add(test_injection_fields(sout, sin, spoofed, "spoofed", ch));
-	add(test_injection_fields(sout, sin, valid,   "valid",   ch));
-	add(test_injection_order(sout, sin, spoofed, "spoofed", ch));
-	add(test_injection_order(sout, sin, valid,   "valid",   ch));
+	add(test_injection_fields(s_out, s_in, spoofed, "spoofed", ch));
+	add(test_injection_fields(s_out, s_in, valid,   "valid",   ch));
+	add(test_injection_order(s_out, s_in, spoofed, "spoofed", ch));
+	add(test_injection_order(s_out, s_in, valid,   "valid",   ch));
 
 	// retrans + txack only make sense with two distinct interfaces
 	//FIXME add these test to result a zbavit se závislosti na okolním AP
-	const bool two_iface = (&sout != &sin);
+	bool two_iface = (if_in != if_out);
 	if(two_iface && testack){
-		const auto nearby = get_nearby_ap_addr(sin);
+		const auto nearby = get_nearby_ap_addr(s_in);
 		const auto destmac = nearby ? nearby->first : peermac;
-		add(test_injection_retrans(sout, sin, destmac, ownmac, ch));
+		add(test_injection_retrans(s_out, s_in, destmac, ownmac, ch));
 		if(nearby)
-			add(test_injection_txack(sout, sin, destmac, ownmac, ch));
+			add(test_injection_txack(s_out, s_in, destmac, ownmac, ch));
 	}
 
 	return suite;
@@ -98,14 +104,7 @@ void run_attack(RunStatus &rs) {
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
-	const string iface1 = actor_tx.get(SK::iface);
-	const string iface2 = actor_rx.get(SK::iface);
-	const Channel ch = actor_tx->get_channel();
-
-	MonitorSocket s_out(iface1, actor_tx[SK::netns]);
-	MonitorSocket s_in(iface2, actor_rx[SK::netns]);
-
-	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(s_out, iface1, s_in, ch);
+	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(actor_tx, actor_rx);
 
 	const path result_path = rs.run_folder() / "result.json";
 	ofstream ofs(result_path);

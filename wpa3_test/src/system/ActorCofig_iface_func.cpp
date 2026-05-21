@@ -147,7 +147,7 @@ int Actor_config::run(const vector<string> &argv, const bool print) const{
 }
 
 string Actor_config::get_driver_name() const{
-	return hw_capabilities::get_driver_name(get(SK::iface));
+	return hw_capabilities::get_driver_name(get(SK::iface), (*this)[SK::netns]);
 }
 
 void Actor_config::set_iface_down() const{

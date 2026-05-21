@@ -125,9 +125,9 @@ public:
 
 	// check availability
 	static std::string read_sysfs(const std::string &iface, const std::string &file);
-	static std::string get_driver_name(const std::string &iface);
-	static std::optional<std::string> get_driver_hash(const std::string &driver_name);
-	static std::optional<std::string> get_module_hash(const std::string &driver_name);
+	static std::string get_driver_name(const std::string &iface, const std::optional<std::string> &netns = std::nullopt);
+	static std::optional<std::string> get_driver_hash(const std::string &driver_name, const std::optional<std::string> &netns = std::nullopt);
+	static std::optional<std::string> get_module_hash(const std::string &driver_name, const std::optional<std::string> &netns = std::nullopt);
 	static std::string get_phy(const std::string &iface, const std::optional<std::string> &netns);
 
 	//format
@@ -204,13 +204,8 @@ public:
 	// Run the full injection test suite; returns structured results for printing.
 	// peermac: fallback peer used for retrans test when no nearby AP is found.
 	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
-	static InjectionSuiteResult run_injection_tests(
-		MonitorSocket &sout, const std::string &iface_out,
-		MonitorSocket &sin,
-		Channel ch,
-		const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"),
-		bool skip_mf = false,
-		bool testack = true
+	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx, const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"), bool
+													skip_mf = false, bool testack = true
 	);
 };
 }

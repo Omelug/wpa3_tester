@@ -30,7 +30,6 @@ public:
 private:
 	static Tins::SnifferConfiguration make_sniff_cfg();
 	bool detect_injected_;
-	Tins::PacketSender sender_;
 	Tins::Sniffer sniffer_;
 public:
 	bool mf_workaround = false;

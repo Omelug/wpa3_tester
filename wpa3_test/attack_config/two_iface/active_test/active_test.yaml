@@ -12,6 +12,7 @@ actors:
       condition: [monitor]
       driver: ath9k_htc
       permanent_mac: 24:ec:99:bf:b0:a1
+    netns: tx
     source: internal
 attacker_module: active_test
 name: active_test_example

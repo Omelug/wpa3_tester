@@ -27,6 +27,7 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 			{"transceiver", {
 				{"source",    "internal"},
 				{"selection", make_selection(a1)},
+				{"netns", "tx"}
 			}},
 			{"receiver", {
 				{"source",    "internal"},

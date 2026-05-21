@@ -69,7 +69,8 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 		iface_str = iface.value();
 	}
 
-	command.insert(command.end(), {program_name, "-i", iface_str, "-w", pcap_path,});
+	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
+	command.insert(command.end(), {program_name, "-i", iface_str, "root", "-w", temp_pcap_path});
 	if(!filter.empty()){
 		command.emplace_back("-f");
 		if(filter == "special_filter:actors"){
@@ -82,8 +83,18 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 			command.push_back(filter);
 		}
 	}
+
 	const auto tshark_dir = get_observer_folder(rs, program_name);
 	rs.process_manager.run(node_name + "_cap", command, tshark_dir, tshark_dir);
+	//TODO add external support?
+	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path]() {
+		try {
+			if (exists(temp_pcap_path)) { std::filesystem::rename(temp_pcap_path, pcap_path);}
+		} catch (const filesystem_error& e) {
+			std::filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
+			std::filesystem::remove(temp_pcap_path);
+		}
+	});
 }
 
 path extract_pcap_to_csv(const string &actor_name, const path &real_folder){

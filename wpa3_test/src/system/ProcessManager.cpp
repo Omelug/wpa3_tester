@@ -181,7 +181,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 		if(i) cmd_line += ' ';
 		cmd_line += cmd[i];
 	}
-	log(LogLevel::DEBUG, "Starting process {}:{}'", process_name, cmd_line);
+	log(LogLevel::DEBUG, "Starting process {}: {}'", process_name, cmd_line);
 
 	// Initialize logs BEFORE starting process
 	auto &logs = mp->logs;

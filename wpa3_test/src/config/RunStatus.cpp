@@ -49,17 +49,24 @@ void RunStatus::execute(){
 	globalRunStatus = this;
 
 	if(exists(_run_folder)){
-		if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(_run_folder / "done.txt"))){
-			log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder).string());
-			return;
-		}
-		if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
-			log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder).string());
-			return;
-		}
-		if(_run_config.get_delete_old()){ // remove -> no rewrite, better for debugging
-			log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder).string());
-			remove_all(_run_folder);
+		if(access(_run_folder.string().c_str(), W_OK) != 0){
+			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder).string());
+			error_code ec;
+			remove_all(_run_folder, ec);
+			if(ec) throw run_err("Run folder not writable and cannot remove: " + _run_folder.string() + ": " + ec.message());
+		} else {
+			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(_run_folder / "done.txt"))){
+				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder).string());
+				return;
+			}
+			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
+				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder).string());
+				return;
+			}
+			if(_run_config.get_delete_old()){
+				log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder).string());
+				remove_all(_run_folder);
+			}
 		}
 	}
 

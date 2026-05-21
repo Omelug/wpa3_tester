@@ -14,6 +14,7 @@ path get_observer_folder(const RunStatus &rs, const string &observer_name){
 		log(LogLevel::ERROR,
 			"Failed to create " + observer_name + " observer dir " + obs_dir.string() + ":" + ec.message());
 	}
+	permissions(obs_dir, perms::all, perm_options::add, ec);
 	return obs_dir;
 }
 

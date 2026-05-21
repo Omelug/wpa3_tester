@@ -34,6 +34,7 @@ void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string 
 		};
 		hw_capabilities::run_cmd(scp_cmd);
 	});
+
 	actor->conn->on_disconnect([remote_pcap, actor](){
 		actor->conn->exec("rm " + remote_pcap);
 	});

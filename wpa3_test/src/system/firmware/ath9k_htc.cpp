@@ -52,23 +52,14 @@ void unload_ath_masker(){
 	hw_capabilities::run_in("bash ./unload.sh", ath_folder);
 }
 
-void load_ath9k_noorder_change(bool git_install){
-	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
-	if(fw_folder.empty()) throw req_err("Setup paths/ath9k_firmware in global_config:" + global_config_path().string());
-	if(git_install){
-		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/fragattacks", fw_folder);
-	} else if(!filesystem::exists(fw_folder)){
-		throw req_err("ath9k_firmware folder not found: " + fw_folder + ". Enable git_install or clone it manually.");
-	}
-	const string local_fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
-	hw_capabilities::run_in("bash ./install.sh", local_fw_dir);
+void load_ath9k_noorder_change(){
+	const string fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	hw_capabilities::run_in("bash ./install.sh", fw_dir);
 }
 
 void unload_ath9k_noorder_change(){
-	const string fw_folder = get_global_config().at("paths").at("ath9k_firmware");
-	if(fw_folder.empty() || !filesystem::exists(fw_folder)) return;
-	const string local_fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
-	hw_capabilities::run_in("bash ./unload.sh", local_fw_dir);
+	const string fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	hw_capabilities::run_in("bash ./unload.sh", fw_dir);
 }
 
 void disable_custom_drivers(){

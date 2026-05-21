@@ -172,7 +172,7 @@ json RunStatus::config_validation(const path &config_path){
 void RunStatus::ensure_requirement(const string &req) const{
 	assert(req ==  "ath_masker" or req ==  "ath9k_noorder_change");
 	if(req == "ath_masker")				firmware::load_ath_masker(_run_config.get_install_req());
-	if(req == "ath9k_noorder_change")	firmware::load_ath9k_noorder_change(_run_config.get_install_req());
+	if(req == "ath9k_noorder_change")	firmware::load_ath9k_noorder_change();
 }
 
 void RunStatus::check_local_requirements(){

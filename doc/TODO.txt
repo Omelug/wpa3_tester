@@ -15,6 +15,10 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
+t: Stress tests
+    t: Management frame burst rate measurement (how many frames/sec actually arrive at the capture adapter when sending 100/500/1000 frames)
+    t: Simulate a SAE commit frame flood and measure throughput
+    l: log/cache  results per chipset/driver
 
 //DONE
 t: manual_test to check if all configs in attack_cofigs are valid

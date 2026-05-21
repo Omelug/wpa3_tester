@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iosfwd>
@@ -62,8 +63,21 @@ void unload_ath9k_noorder_change(){
 	hw_capabilities::run_in("bash ./unload.sh", fw_dir);
 }
 
+bool is_ath_masker_loaded(){
+	return filesystem::exists("/sys/module/ath_masker");
+}
+
+bool is_ath9k_noorder_loaded(){
+	ifstream mounts("/proc/mounts");
+	string line;
+	while(getline(mounts, line)){
+		if(line.find("ath9k_htc") != string::npos) return true;
+	}
+	return false;
+}
+
 void disable_custom_drivers(){
-	try{ unload_ath_masker(); } catch(...) {}
-	try{ unload_ath9k_noorder_change(); } catch(...) {}
+	if(is_ath_masker_loaded())    try{ unload_ath_masker(); } catch(...) {}
+	if(is_ath9k_noorder_loaded()) try{ unload_ath9k_noorder_change(); } catch(...) {}
 }
 }

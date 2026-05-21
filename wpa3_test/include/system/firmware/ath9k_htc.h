@@ -7,5 +7,7 @@ void load_ath_masker(bool git_install);
 void unload_ath_masker();
 void load_ath9k_noorder_change();
 void unload_ath9k_noorder_change();
+bool is_ath_masker_loaded();
+bool is_ath9k_noorder_loaded();
 void disable_custom_drivers();
 }

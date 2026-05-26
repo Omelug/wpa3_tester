@@ -27,5 +27,4 @@ jobs:
       # Run locally with: sudo -E ctest --test-dir build --output-on-failure
       - name: Run tests
         run: |
-          sudo -E ctest --test-dir build --output-on-failure \
-            -E "HWCapabilitiesTests|CleanupTests|ScanTests|InjectionCheckTest|Ath9kHtcTests|SystemTests|HostapdHelperTests|OpenWrtHwCapabilitiesTest|RealChannelTests|RogueChannelTests|RunMonitorSocketTests|WiFiUtilsTests"
+          sudo -E ctest --test-dir build --output-on-failure

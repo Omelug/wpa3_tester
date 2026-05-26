@@ -21,7 +21,8 @@ runs:
           libssh-dev \
           libyaml-cpp-dev \
           libtins-dev \
-          flex bison
+          flex bison \
+          gcc-14
 
     - name: Cache FetchContent deps
       uses: actions/cache@v4

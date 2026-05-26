@@ -104,14 +104,17 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	while((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0){ result.append(buf, n); }
 
 	if(ret_err){
-		// libssh (function get_exit_state added in libssh 0.10.0)
+		/*FIXME nepoplletl jsem si to uplně s jinpou knihovnou?
+		 libssh (function get_exit_state added in libssh 0.10.0)
 		#if (LIBSSH_VERSION_MAJOR > 0) || (LIBSSH_VERSION_MINOR >= 10)
-		uint32_t exit_status = 0; ssh_channel_get_exit_state(guard.ch, &exit_status, nullptr, nullptr); *ret_err =
-				static_cast<int>(exit_status);
+		uint32_t exit_status = 0;
+		ssh_channel_get_exit_state(guard.ch, &exit_status, nullptr, nullptr);
+		*ret_err = static_cast<int>(exit_status);
 		#else
 		// Fallback for old versions (Ubuntu 20.04 / libssh 0.9.x)
+		*/
 		*ret_err = ssh_channel_get_exit_status(guard.ch);
-		#endif
+		//#endif
 	}
 	return result;
 }

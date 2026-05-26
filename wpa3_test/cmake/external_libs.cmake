@@ -5,14 +5,25 @@ set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 set(CMAKE_ERROR_DEPRECATED OFF CACHE BOOL "" FORCE)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY JOB_POOLS link_job_pool=2)
 set(CMAKE_JOB_POOL_LINK link_job_pool)
+set(FETCHCONTENT_FULLY_DISCONNECTED OFF)
 
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE NEVER)
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+
+set(DISABLE_DBUS ON CACHE BOOL "" FORCE)
+set(DISABLE_RDMA ON CACHE BOOL "" FORCE)
+set(DISABLE_DAG ON CACHE BOOL "" FORCE)
+set(DISABLE_SEPTEL ON CACHE BOOL "" FORCE)
+set(DISABLE_SNF ON CACHE BOOL "" FORCE)
+set(DISABLE_TC ON CACHE BOOL "" FORCE)
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -25,7 +36,7 @@ set(LIBTINS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 set(PCAP_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
-set(LIBTINS_ENABLE_CXX11 ON CACHE BOOL "" FORCE)
+set(LIBTINS_ENABLE_CXX11 OFF CACHE BOOL "" FORCE)
 set(LIBTINS_BUILD_SHARED_LIB OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_ACK_TRACKER OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_WPA2 OFF CACHE BOOL "" FORCE)
@@ -64,7 +75,7 @@ FetchContent_Declare( libpcap
         GIT_TAG libpcap-1.10.6
         GIT_SHALLOW TRUE
 )
-FetchContent_MakeAvailable(libpcap)
+FetchContent_MakeAvailable(libpcap) # libtins need it before
 
 add_library(pcap_imported SHARED IMPORTED GLOBAL)
 set_target_properties(pcap_imported PROPERTIES
@@ -116,10 +127,10 @@ FetchContent_Declare(yaml-cpp
         GIT_SHALLOW TRUE
 )
 
-# FIXMe json broken with paralell donwlonding
-FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp)
-FetchContent_MakeAvailable(json)
-FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
+FetchContent_MakeAvailable(
+        reproc libtins doctest argparse yaml-cpp json
+        json_schema_validator linux_headers_wifi radiotap
+)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
 target_include_directories(radiotap_lib PUBLIC ${radiotap_SOURCE_DIR})

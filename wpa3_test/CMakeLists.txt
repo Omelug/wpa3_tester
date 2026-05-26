@@ -36,8 +36,12 @@ else ()
 endif ()
 
 set(CMAKE_CXX_STANDARD 23)
-option(ENABLE_COVERAGE "Enable coverage" OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -std=c++23")
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(ENABLE_COVERAGE "Enable coverage" OFF)
 # compile with nice
 if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")

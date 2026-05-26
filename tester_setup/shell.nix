@@ -4,12 +4,19 @@ pkgs.mkShell {
   name = "wpa3-tester-env";
 
   packages = with pkgs; [
-    cmake
-    git
-    gcc
-    gnumake
-    iproute2   # ip
-    iw
-    mold #can use ld/lld but its slower
+    cmake ninja ccache mold
+    git gcc gnumake pkg-config
+    iproute2 iw
+    # libraries required by libraries.cmake via pkg-config
+    libpcap openssl libnl libssh yaml-cpp libtins
   ];
+
+  shellHook = ''
+    export PKG_CONFIG_PATH="${pkgs.lib.makeSearchPathOutput "dev" "lib/pkgconfig" (with pkgs; [
+      libpcap openssl libnl libnl.dev libssh yaml-cpp libtins
+    ])}:$PKG_CONFIG_PATH"
+    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath (with pkgs; [
+      stdenv.cc.cc.lib libpcap openssl libnl libssh yaml-cpp libtins zlib
+    ])}:$LD_LIBRARY_PATH"
+  '';
 }

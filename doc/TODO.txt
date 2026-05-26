@@ -8,6 +8,8 @@ Version v 0.0.0.0:
 d: how run program
 +:
 
+r?: u tests asi nepotřebuju type (Dá se to vyvodit z test_name/path/)
+
 PDF:
     f: deleted_old -> delete_old
     +: cache description

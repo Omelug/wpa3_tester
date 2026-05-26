@@ -6,11 +6,11 @@ tests:
   #  type: path
   #  path: ./hostapd_2_9_fix.yaml
   hostapd_2_10_ocv:
-    type: path
-    path: ../hostapd_2_10_ocv.yaml
+    type: name
+    test_name: channel_switch_2_10_ocv
   hostapd_2_10_ocv_beacon_prot:
-    type: path
-    path: ../hostapd_2_10_ocv_beacon_prot.yaml
+    type: name
+    test_name: channel_switch_2_10_ocv_beacon_prot
   hostapd_gen:
     type: generator
     vars:
@@ -29,7 +29,6 @@ tests:
             program: wpa_supplicant
             program_config:
               version: var_hostapd
-
 
 delete_old: true
 rewrite: "errors"

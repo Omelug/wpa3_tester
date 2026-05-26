@@ -43,7 +43,7 @@ string hw_capabilities::get_driver_name(const string &iface, const optional<stri
 	return path(target).filename().string();
 }
 
-optional<string> hw_capabilities::get_driver_hash(const string &driver_name, const optional<string> &netns){
+optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 	// try srcversion (fast, kernel-embedded)
 	{
 		ifstream ifs("/sys/module/" + driver_name + "/srcversion");
@@ -65,7 +65,7 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name, con
 	return sha_out.substr(0, min(space, size_t{16}));
 }
 
-optional<string> hw_capabilities::get_module_hash(const string &driver_name, const optional<string> &netns){
+optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 	// module list: driver itself + comma-separated depends on from modinfo
 	vector<string> modules;
 	modules.push_back(driver_name);

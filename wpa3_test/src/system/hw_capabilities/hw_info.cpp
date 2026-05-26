@@ -57,8 +57,8 @@ void Actor_config::load_hw_info(const optional<path> &cache){
 	set(SK::permanent_mac, perm_mac);
     const auto netns = (*this)[SK::netns];
     set(SK::driver_name, hw_capabilities::get_driver_name(iface, netns));
-    set(SK::driver_hash, hw_capabilities::get_driver_hash(get(SK::driver_name), netns));
-    set(SK::module_hash, hw_capabilities::get_module_hash(get(SK::driver_name), netns));
+    set(SK::driver_hash, hw_capabilities::get_driver_hash(get(SK::driver_name)));
+    set(SK::module_hash, hw_capabilities::get_module_hash(get(SK::driver_name)));
 
     ActorPtr self(shared_from_this());
     hw_capabilities::get_nl80211_caps(self);

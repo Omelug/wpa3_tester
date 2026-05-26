@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y \
+            cmake ninja-build ccache mold \
+            pkg-config \
+            libnl-3-dev libnl-genl-3-dev \
+            libssl-dev \
+            libssh-dev \
+            flex bison
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-${{ runner.os }}-${{ hashFiles('wpa3_test/cmake/external_libs.cmake') }}
+          restore-keys: deps-${{ runner.os }}-
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-test-${{ github.sha }}
+          restore-keys: ccache-${{ runner.os }}-test-
+
+      - name: Configure
+        run: cmake -S wpa3_test -B build -G Ninja
+
+      - name: Build all tests
+        run: cmake --build build -j$(nproc)
+
+      # Tests requiring real WiFi hardware or kernel modules are excluded.
+      # To run hardware tests locally: sudo -E ctest --test-dir build --output-on-failure
+      - name: Run tests
+        run: |
+          sudo -E ctest --test-dir build --output-on-failure"

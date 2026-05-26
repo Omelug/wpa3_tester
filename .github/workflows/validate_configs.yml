@@ -1,0 +1,50 @@
+name: Validate attack configs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wpa3_test/attack_config/**'
+      - 'wpa3_test/src/setup/**'
+      - 'tests/setup/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y \
+            cmake ninja-build ccache mold \
+            pkg-config \
+            libnl-3-dev libnl-genl-3-dev \
+            libssl-dev \
+            libssh-dev \
+            flex bison
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-${{ runner.os }}-${{ hashFiles('wpa3_test/cmake/external_libs.cmake') }}
+          restore-keys: deps-${{ runner.os }}-
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-validate-${{ github.sha }}
+          restore-keys: ccache-${{ runner.os }}-validate-
+
+      - name: Configure
+        run: cmake -S wpa3_test -B build -G Ninja
+
+      - name: Build validation tests
+        run: cmake --build build --target run_validation_tests -j$(nproc)
+
+      - name: Run config validation
+        run: ctest --test-dir build -R ValidationTests --output-on-failure

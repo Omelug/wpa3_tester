@@ -2,6 +2,7 @@
 #include <chrono>
 #include <doctest.h>
 #include <thread>
+#include "inteprrupt.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/ProcessManager.h"
@@ -298,6 +299,34 @@ TEST_CASE("ProcessManager - ignore_history"){
         pm.run_dummy("proc");
         CHECK_NOTHROW(pm.ignore_history("proc"));
     }
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - wait_for returns false on Ctrl+C"){
+    g_interrupted.store(false);
+
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_ctrlc";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    pm.run("sleeper", {"sleep", "60"});
+    pm.allow_history("sleeper");
+
+    // set flag after 150 ms — simulates Ctrl+C mid-wait
+    thread interrupter([]{ this_thread::sleep_for(150ms); g_interrupted.store(true); });
+
+    const auto start = chrono::steady_clock::now();
+    const bool result = pm.wait_for("sleeper", "never_matches", 30s, false);
+    const auto elapsed = chrono::steady_clock::now() - start;
+
+    interrupter.join();
+    g_interrupted.store(false); // reset global for subsequent tests
+
+    CHECK_FALSE(result);
+    CHECK_LT(elapsed, 500ms); // must unblock within ~250 ms, not wait 30 s
+
+    pm.stop_all();
     remove_all(test_dir);
 }
 

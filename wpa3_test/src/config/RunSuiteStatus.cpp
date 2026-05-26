@@ -1,4 +1,5 @@
 #include "config/RunSuiteStatus.h"
+#include "inteprrupt.h"
 
 #include <string>
 #include <nlohmann/json.hpp>
@@ -296,6 +297,10 @@ void RunSuiteStatus::execute(){
 	HwOptionCache hw_cache;
 	auto tests_paths = get_test_paths();
 	for(size_t i = 0; i < tests_paths.size(); ++i){
+		if(g_interrupted.load()){
+			log(LogLevel::WARNING, "Suite interrupted by Ctrl+C, stopped after {} of {} tests", i, tests_paths.size());
+			break;
+		}
 		const auto &[name, test_path] = tests_paths[i];
 		RunStatus rs(test_path, name, ".");
 		rs.hw_option_cache(hw_cache);
@@ -304,8 +309,10 @@ void RunSuiteStatus::execute(){
 		rs.run_folder(run_folder() / test_name);
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
-		if(wait_between_tests > 0 && i + 1 < tests_paths.size())
-			this_thread::sleep_for(chrono::seconds(wait_between_tests));
+		if(wait_between_tests > 0 && i + 1 < tests_paths.size()){
+			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j)
+				this_thread::sleep_for(chrono::milliseconds(100));
+		}
 	}
 
 	if(!config.contains("suite_report_function")) return;
@@ -320,8 +327,12 @@ void RunSuiteStatus::execute(){
 void RunSuiteStatus::execute(const string &test_name){
 	auto tests_paths = get_test_paths();
 	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return p.first == test_name; });
-	if(it == tests_paths.end())
+	if(it == tests_paths.end()){
+		log(LogLevel::WARNING, "Test '{}' not found — run the full suite first to generate test configs", test_name);
+		for(const auto &[name, _]: tests_paths)
+			log(LogLevel::WARNING, "  available: {}", name);
 		throw config_err("Test '" + test_name + "' not found in suite");
+	}
 
 	const auto &[name, test_path] = *it;
 	RunStatus rs(test_path, name, ".");

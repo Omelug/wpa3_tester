@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "inteprrupt.h"
 #include "logger/error_log.h"
 #include <cassert>
 #include "ex_program/hostapd/hostapd.h"
@@ -8,7 +9,6 @@
 #include "system/hw_capabilities.h"
 #include <filesystem>
 #include "attacks/components/setup_connections.h"
-#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/report.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/observers.h"
@@ -56,7 +56,7 @@ auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	const NetworkInterface iface(iface_name);
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	while(steady_clock::now() < end_time){
+	while(steady_clock::now() < end_time && !g_interrupted.load()){
 		send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
@@ -91,11 +91,14 @@ void run_chs_attack(RunStatus &rs){
 	const int attack_time = att_cfg.at("attack_time");
 
 	speed_observation_start(rs);
-	this_thread::sleep_for(seconds(10));
+	for(int i = 0; i < 100 && !g_interrupted.load(); ++i)
+		this_thread::sleep_for(milliseconds(100));
+	if(g_interrupted.load()) return;
 	log(LogLevel::INFO, "Attack START");
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	log(LogLevel::INFO, "Attack END");
-	this_thread::sleep_for(seconds(10));
+	for(int i = 0; i < 100 && !g_interrupted.load(); ++i)
+		this_thread::sleep_for(milliseconds(100));
 }
 
 //TODO change to config

@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "inteprrupt.h"
 #include "system/utils.h"
 #include <filesystem>
 #include <optional>
@@ -93,9 +94,18 @@ void RunStatus::execute(){
 		} //include req validation
 
 		setup_test();
+		if(g_interrupted.load()){
+			log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+			clean();
+			return;
+		}
 		const path out_path = _run_folder / "test_config.yaml";
 		save_yaml(_config, out_path);
 		run_test();
+		if(g_interrupted.load()){
+			log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+			return;
+		}
 		stats_test();
 		const path done_file = run_folder() / "done.txt";
 		ofstream done_log(done_file, ios::out | ios::trunc);
@@ -106,6 +116,8 @@ void RunStatus::execute(){
 			done_log.close();
 		}
 	} catch (const exception& e) {
+		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+
 		const path error_file = run_folder() / "errors.txt";
 		ofstream error_log(error_file, ios::out | ios::app);
 		if (error_log.is_open()) {

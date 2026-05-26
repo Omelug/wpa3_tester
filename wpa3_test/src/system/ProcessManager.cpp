@@ -1,4 +1,5 @@
 #include "system/ProcessManager.h"
+#include "inteprrupt.h"
 #include <memory>
 #include <system_error>
 #include <map>
@@ -10,6 +11,7 @@
 #include <unistd.h>
 #include "logger/error_log.h"
 #include <thread>
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -175,13 +177,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	if(!logging_dir.empty()){ log_dir = logging_dir; }
 	path log_path = log_dir / (process_name + ".log");
 
-	// Log command line FIRST for debugging
-	string cmd_line;
-	for(size_t i = 0; i < cmd.size(); ++i){
-		if(i) cmd_line += ' ';
-		cmd_line += cmd[i];
-	}
-	log(LogLevel::DEBUG, "Starting process {}: {}'", process_name, cmd_line);
+	log(LogLevel::DEBUG, "Starting process {}: {}'", process_name, join(cmd," "));
 
 	// Initialize logs BEFORE starting process
 	auto &logs = mp->logs;
@@ -217,7 +213,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 
 	start_drain_for(process_name, mp);
 
-	const string line = current_timestamp() + " [" + process_name + "] [cmd] " + cmd_line;
+	const string line = current_timestamp() + " [" + process_name + "] [cmd] " + join(cmd," ");
 	lock_guard lock(logger_mtx);
 	if(combined_log.is_open()){ write_log_line(combined_log, line); }
 	if(logs.log.is_open()){ write_log_line(logs.log, line); }

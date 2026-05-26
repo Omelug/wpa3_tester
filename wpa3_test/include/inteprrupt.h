@@ -1,7 +1,6 @@
 #pragma once
-#pragma once
+#include <atomic>
 #include <csignal>
-#include <stdexcept>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -29,10 +28,14 @@ struct InterruptPipe{
 };
 
 inline InterruptPipe g_interrupt_pipe;
+inline std::atomic g_interrupted{false};
 
 inline void setup_signals(){
 	struct sigaction sa{};
-	sa.sa_handler = [](int){ g_interrupt_pipe.trigger(); };
+	sa.sa_handler = [](int){
+		g_interrupted.store(true, std::memory_order_relaxed);
+		g_interrupt_pipe.trigger();
+	};
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, nullptr);

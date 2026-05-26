@@ -5,7 +5,9 @@ tests:
   driver_perm:
     type: permutation
     vars:
-      driver: [ "rtw_8821cu", "rtw_8821au", "mt76x2u", "ath_htc"]
+      driver: [
+        #"rtw_8821cu",
+        "rtw_8821au", "mt76x2u", "ath_htc"]
     config:
       extends: ../channel_switch.yaml
       name: CSA_var_driver_0_var_driver_1_var_driver_2

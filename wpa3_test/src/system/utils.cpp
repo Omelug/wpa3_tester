@@ -81,22 +81,6 @@ static constexpr auto PUBLIC_FILE_PERMS =
     perms::group_read | perms::group_write |
     perms::others_read | perms::others_write;  // 0666
 
-void create_public_dirs(const path &p){
-    create_directories(p);
-    permissions(p, perms::all);
-}
-
-void create_public_dirs(const path &p, error_code &ec){
-    create_directories(p, ec);
-    if(!ec) permissions(p, perms::all, ec);
-}
-
-void set_public_perms(const path &p){
-    error_code ec;
-    const auto mode = is_directory(p, ec) ? perms::all : PUBLIC_FILE_PERMS;
-    permissions(p, mode, ec);
-}
-
 void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 	if(node.is_string()){
 		const string &s = node.get<string>();
@@ -112,5 +96,57 @@ void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 			resolve_relative_paths(elem, base_dir);
 		}
 	}
+}
+
+void create_public_dirs(const path &p){
+	// Track which directories don't exist yet
+	vector<path> to_chmod;
+	path current = p;
+	while(!current.empty()){
+		if(!exists(current)){
+			to_chmod.push_back(current);
+		} else {
+			break;  // stop at first existing directory
+		}
+		path parent = current.parent_path();
+		if(parent == current) break;  // reached root
+		current = parent;
+	}
+
+	create_directories(p);
+
+	// Set permissions only on newly created directories
+	for(const auto &dir : to_chmod){
+		permissions(dir, perms::all);
+	}
+}
+
+void create_public_dirs(const path &p, error_code &ec){
+	vector<path> to_chmod;
+	path current = p;
+	while(!current.empty()){
+		if(!exists(current)){
+			to_chmod.push_back(current);
+		} else {
+			break;
+		}
+		path parent = current.parent_path();
+		if(parent == current) break;
+		current = parent;
+	}
+
+	create_directories(p, ec);
+	if(ec) return;
+
+	for(const auto &dir : to_chmod){
+		permissions(dir, perms::all, ec);
+		if(ec) return;
+	}
+}
+
+void set_public_perms(const path &p){
+	error_code ec;
+	const auto mode = is_directory(p, ec) ? perms::all : PUBLIC_FILE_PERMS;
+	permissions(p, mode, ec);
 }
 }

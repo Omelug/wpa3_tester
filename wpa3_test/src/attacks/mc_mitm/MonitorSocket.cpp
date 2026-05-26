@@ -77,10 +77,10 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 	}
 
 	// Walk fields in order until Channel (bit 3)
-	if(present & (1u << 0)) pos += 8; // TSFT: 8 bytes
-	if(present & (1u << 1)) pos += 1; // Flags: 1 byte
-	if(present & (1u << 2)) pos += 1; // Rate: 1 byte
-	if(present & (1u << 3)){          // Channel: freq(2) + flags(2)
+	if(present & 1u << 0) pos += 8; // TSFT: 8 bytes
+	if(present & 1u << 1) pos += 1; // Flags: 1 byte
+	if(present & 1u << 2) pos += 1; // Rate: 1 byte
+	if(present & 1u << 3){          // Channel: freq(2) + flags(2)
 		// Align to 2 bytes
 		if(pos % 2 != 0) pos++;
 		if(pos + 2 <= rt_len){

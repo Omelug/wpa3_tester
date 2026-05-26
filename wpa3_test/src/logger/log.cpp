@@ -1,7 +1,6 @@
 #include "logger/log.h"
 #include "system/utils.h"
-
-#include <ctime>
+#include <memory>
 #include <iostream>
 #include <mutex>
 #include <regex>
@@ -74,15 +73,9 @@ void log(const LogLevel level, const string &msg){
 }
 
 void log_actor_map(const string &name, const ActorCMap &m){
-	string keys;
-	bool first = true;
-	for(const auto &k: m | views::keys){
-		if(!first) keys += ", ";
-		keys += k;
-		first = false;
-	}
-	if(keys.empty()){ keys = "<empty>"; }
-	log(LogLevel::DEBUG, "{}:{}", name, keys);
+	const vector keys(m | views::keys | ranges::to<vector<string>>());
+	const string keys_str = keys.empty() ? "<empty>" : join(keys, ", ");
+	log(LogLevel::DEBUG, "{}:{}", name, keys_str);
 }
 
 // Returns a nanosecond-precision time_point (epoch == error sentinel)

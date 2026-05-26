@@ -66,7 +66,7 @@ public:
 	: tester_error(Level, f.fmt, f.loc, args...) {}
 
 	template<typename... Args>
-	explicit typed_error(fmtloc f, Args&&... args)
+	explicit typed_error(const fmtloc f, Args&&... args)
 	: tester_error(std::vformat(f.fmt, std::make_format_args(args...)), f.loc)
 	{
 		log(Level, "{}", std::runtime_error::what());

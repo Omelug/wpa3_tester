@@ -1,4 +1,5 @@
 #include "logger/log.h"
+#include "system/utils.h"
 
 #include <ctime>
 #include <iostream>
@@ -39,13 +40,15 @@ void set_log_file(const path &log_path){
 		// Create parent directories if needed
 		const path log_dir = log_path.parent_path();
 		if(!log_dir.empty() && !exists(log_dir)){
-			create_directories(log_dir);
+			create_public_dirs(log_dir);
 		}
 
 		log_file_ptr = new ofstream(log_path, ios::app);
 		if(!log_file_ptr->is_open()){
 			delete log_file_ptr;
 			log_file_ptr = nullptr;
+		} else{
+			set_public_perms(log_path);
 		}
 	}
 }

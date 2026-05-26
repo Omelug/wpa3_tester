@@ -9,6 +9,7 @@
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
+#include "system/utils.h"
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
@@ -127,10 +128,14 @@ void run_attack(RunStatus &rs){
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
 		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
-		ofstream ofs(rs.run_folder()/ "beacon_scan.txt");
-		ofs << "Scan results for " << target_ap["mac"] << "\n";
-		ofs << scan_ap.to_str() << endl;
-		ofs.close();
+		{
+			const path beacon_txt = rs.run_folder()/ "beacon_scan.txt";
+			ofstream ofs(beacon_txt);
+			ofs << "Scan results for " << target_ap["mac"] << "\n";
+			ofs << scan_ap.to_str() << endl;
+			ofs.close();
+			set_public_perms(beacon_txt);
+		}
 	}
 
 	if(att_cfg.value("stations_scan", false)){
@@ -169,11 +174,16 @@ void run_attack(RunStatus &rs){
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
 
-		ofstream ofs(rs.run_folder()/ "ACM_trigger.txt");
-		ofs << "ACM trigger after " << count << " frames " << "\n";
-		ofs << scan_ap.to_str() << "\n";
-		ofs << dos_helpers::bytes_to_hex(cookie.token) << "\n";
-		ofs << cookie.sta_mac << "\n";
+		{
+			const path acm_txt = rs.run_folder()/ "ACM_trigger.txt";
+			ofstream ofs(acm_txt);
+			ofs << "ACM trigger after " << count << " frames " << "\n";
+			ofs << scan_ap.to_str() << "\n";
+			ofs << dos_helpers::bytes_to_hex(cookie.token) << "\n";
+			ofs << cookie.sta_mac << "\n";
+			ofs.close();
+			set_public_perms(acm_txt);
+		}
 	}
 }
 }

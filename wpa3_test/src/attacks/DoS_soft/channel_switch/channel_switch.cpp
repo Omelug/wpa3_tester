@@ -15,6 +15,7 @@
 #include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "setup/program.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::CSA_attack{
 using namespace std;
@@ -116,6 +117,7 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 		log(LogLevel::ERROR, "Failed to create report file!");
 		return;
 	}
+	set_public_perms(report_path);
 
 	report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
 	report << "## Attack Description\n";

@@ -14,6 +14,7 @@
 #include "system/injection_result.h"
 #include "system/ip.h"
 #include "system/netlink_helper.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::iface_info{
 using namespace std;
@@ -121,12 +122,13 @@ void run_attack(RunStatus &rs){
     string mac_slug = perm_mac.empty() ? current_mac : perm_mac;
     ranges::replace(mac_slug, ':', '_');
 
-    create_directories(rs.run_folder());
+    create_public_dirs(rs.run_folder());
     const path out_path = rs.run_folder() / ("iface_report_" + mac_slug + ".md");
     ofstream f(out_path);
     if(!f.is_open()) throw run_err("Cannot open output file: " + out_path.string());
     f << md.str();
     f.close();
+    set_public_perms(out_path);
 
     cout << "\nReport written to: " << out_path << "\n";
 }

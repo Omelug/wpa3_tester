@@ -4,6 +4,7 @@
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -53,6 +54,7 @@ void run_attack(RunStatus &rs){
 	attack_result << to_string(
 		rs.process_manager.wait_for("attacker", "server is vulnerable to reflection", chrono::seconds(40), false));
 	attack_result.close();
+	set_public_perms(rs.run_folder()/ "result.txt");
 }
 
 /*void stats(const RunStatus& rs){

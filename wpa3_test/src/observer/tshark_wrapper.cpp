@@ -114,6 +114,7 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder){
 	}
 	csv_file << csv_output;
 	csv_file.close();
+	set_public_perms(csv_path);
 
 	return csv_path;
 };
@@ -174,6 +175,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	if(csv_file.is_open()){
 		csv_file << csv_output;
 		csv_file.close();
+		set_public_perms(csv_path);
 	}
 
 	istringstream stream(csv_output);
@@ -204,7 +206,7 @@ string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<
 					const path &folder
 ){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
-	create_directories(real_folder);
+	create_public_dirs(real_folder);
 
 	const path output_path = real_folder / (actor_name + "_graph.png");
 	const path csv_path = extract_pcap_to_csv(actor_name, real_folder);
@@ -257,7 +259,7 @@ string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<
 // ------------ retransmission graph ---------------
 void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_name, const path &folder){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
-	create_directories(real_folder);
+	create_public_dirs(real_folder);
 	const path output_path = real_folder / (actor_name + "_g.png");
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 

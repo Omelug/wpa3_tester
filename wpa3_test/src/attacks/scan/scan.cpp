@@ -10,6 +10,7 @@
 #include <sstream>
 #include "ex_program/external_actors/ExternalConn.h"
 #include "system/ip.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -141,7 +142,7 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 // return <string iface; internal_actor >
 vector<ActorPtr> RunStatus::internal_options(){
 	const path hw_cache_dir = path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" /"scan";
-	create_directories(hw_cache_dir);
+	create_public_dirs(hw_cache_dir);
 	auto hw_cache = hw_cache_dir / "internal_iface.json";
 	vector<ActorPtr> options;
 	for(const auto &[iface_name, radio_name, iface_type]:

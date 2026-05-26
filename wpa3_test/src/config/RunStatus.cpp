@@ -73,7 +73,7 @@ void RunStatus::execute(){
 
 	// Ensure parent directories exist
 	error_code ec;
-	create_directories(_run_folder, ec);
+	create_public_dirs(_run_folder, ec);
 	if(ec) throw run_err("Unable to create run base directory");
 
 	// Initialize log file if save_log is enabled
@@ -114,6 +114,7 @@ void RunStatus::execute(){
 			done_log << "date:   " << current_time_string() << endl;
 			done_log << "kernel: " << kernel_version() << endl;
 			done_log.close();
+			set_public_perms(done_file);
 		}
 	} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
@@ -134,6 +135,7 @@ void RunStatus::execute(){
 
 			error_log << endl;
 			error_log.close();
+			set_public_perms(error_file);
 			log(LogLevel::ERROR, "Error written to {}", error_file.string());
 		} else {
 			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
@@ -184,7 +186,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 			<< actor[SK::mac].value_or("<none>") << ","
 			<< actor[SK::driver_name].value_or("<none>") << ","
 			<< actor[SK::channel].value_or("<none>") << ",";
-		// CSV-quote the JSON field: wrap in '"', escape inner '"' as '""'
+		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';
 		for(const char c : raw_json){ if(c == '"') ofs << '"'; ofs << c; }
@@ -277,6 +279,7 @@ void RunStatus::save_actor_interface_mapping() const{
 	write_actors_csv(actors, ofs);
 
 	ofs.close();
+	set_public_perms(path);
 	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
 }
 

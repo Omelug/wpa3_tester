@@ -66,18 +66,9 @@ void Actor_config::load_hw_info(const optional<path> &cache){
 
     // ----- write cache -----
     if(cache.has_value()){
-    	//create cache
-    	if (!exists(*cache)) {
-    		ofstream create_file(*cache);
-    		create_file.close();
-
-    		permissions(*cache, perms::owner_read | perms::owner_write |
-								perms::group_read | perms::group_write |
-								perms::others_read | perms::others_write);
-    	}
-
         try{
             create_directories(cache->parent_path());
+            permissions(cache->parent_path(), perms::all);
             nlohmann::json json_cache = nlohmann::json::object();
             if(exists(*cache)){
                 ifstream f(*cache);
@@ -87,8 +78,13 @@ void Actor_config::load_hw_info(const optional<path> &cache){
             HwInfo hw_snapshot;
         	hw_snapshot.actor = shared_from_this();
             json_cache[perm_mac] = hw_snapshot.to_json();
-            ofstream f(*cache);
-            f << json_cache.dump(2) << '\n';
+            {
+                ofstream f(*cache);
+                f << json_cache.dump(2) << '\n';
+            }
+            permissions(*cache, perms::owner_read | perms::owner_write |
+                                perms::group_read | perms::group_write |
+                                perms::others_read | perms::others_write);
         } catch(const exception &e){
             log(LogLevel::WARNING, "get_hw_info: cache write failed: {}", e.what());
         }

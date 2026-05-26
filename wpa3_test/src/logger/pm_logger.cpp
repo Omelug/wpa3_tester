@@ -1,6 +1,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/ProcessManager.h"
+#include "system/utils.h"
 #include <ranges>
 
 namespace wpa3_tester{
@@ -44,6 +45,7 @@ void ProcessManager::init_logging(const path &run_folder){
 		log(LogLevel::ERROR, "Failed to open combined log file: {}", combined_path.string());
 		throw run_err("Unable to open combined log file");
 	}
+	set_public_perms(combined_path);
 
 	for(const auto &entry: processes | views::values){
 		if(entry->logs.log.is_open()){ entry->logs.log.close(); }
@@ -129,7 +131,7 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 	}
 
 	// create log folder
-	create_directories(log_base_dir, ec);
+	create_public_dirs(log_base_dir, ec);
 	if(ec){
 		log(LogLevel::ERROR, "Failed to create logger directory: {}:{}", log_base_dir.string(), ec.message());
 	}

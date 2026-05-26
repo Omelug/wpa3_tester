@@ -76,6 +76,27 @@ string join(const vector<string> &v, const string &sep){
 	return out;
 }
 
+static constexpr auto PUBLIC_FILE_PERMS =
+    perms::owner_read | perms::owner_write |
+    perms::group_read | perms::group_write |
+    perms::others_read | perms::others_write;  // 0666
+
+void create_public_dirs(const path &p){
+    create_directories(p);
+    permissions(p, perms::all);
+}
+
+void create_public_dirs(const path &p, error_code &ec){
+    create_directories(p, ec);
+    if(!ec) permissions(p, perms::all, ec);
+}
+
+void set_public_perms(const path &p){
+    error_code ec;
+    const auto mode = is_directory(p, ec) ? perms::all : PUBLIC_FILE_PERMS;
+    permissions(p, mode, ec);
+}
+
 void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 	if(node.is_string()){
 		const string &s = node.get<string>();

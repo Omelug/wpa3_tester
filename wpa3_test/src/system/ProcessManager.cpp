@@ -146,6 +146,7 @@ void ProcessManager::run_dummy(const string &process_name){
 
 	const path log_path = log_base_dir / (process_name + ".log");
 	mp->logs.log.open(log_path, ios::out | ios::trunc);
+	set_public_perms(log_path);
 
 	lock_guard lock(logger_mtx);
 	processes[process_name] = mp;
@@ -187,6 +188,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	logs.history_enabled = true;
 
 	if(!logs.log.is_open()){ throw config_err("Failed to open log for " + process_name + ": " + log_path.string()); }
+	set_public_perms(log_path);
 
 	{
 		lock_guard lock(logger_mtx);

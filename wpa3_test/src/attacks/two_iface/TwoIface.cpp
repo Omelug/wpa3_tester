@@ -3,6 +3,8 @@
 #include "logger/log.h"
 #include <fstream>
 
+#include "system/utils.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
@@ -58,7 +60,7 @@ optional<json> TwoIface::lookup_cache(const string &key) const{
 
 void TwoIface::write_cache(const string &key, const json &result) const{
 	const path cp = cache_path();
-	create_directories(cp.parent_path());
+	create_public_dirs(cp.parent_path());
 
 	vector<string> lines;
 	bool found = false;
@@ -80,6 +82,8 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 
 	ofstream ofs(cp, ios::out | ios::trunc);
 	for(const auto &l: lines) ofs << l << "\n";
+	ofs.close();
+	set_public_perms(cp);
 }
 
 path TwoIface::cache_folder() const{

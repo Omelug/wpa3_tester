@@ -1,5 +1,6 @@
 #include "config/RunSuiteStatus.h"
 #include "inteprrupt.h"
+#include "system/utils.h"
 
 #include <string>
 #include <nlohmann/json.hpp>
@@ -92,7 +93,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 	auto gen_folder = test_config_folder / source_name;
 
 	error_code ec;
-	create_directories(gen_folder, ec);
+	create_public_dirs(gen_folder, ec);
 	if(ec){ throw run_err("Unable to create generator directory"); }
 
 	auto length = check_vars_len_same(source_info);
@@ -126,6 +127,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
 		ofs << config_str;
 		ofs.close();
+		set_public_perms(test_config_path);
 
 		RunStatus::config_validation(test_config_path);
 		const YNode saved_node = YAML::Load(config_str);
@@ -233,6 +235,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
 		ofs << current_config_str;
 		ofs.close();
+		set_public_perms(test_path);
 
 		// result test config validation
 		RunStatus::config_validation(test_path);
@@ -258,7 +261,7 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 											const path &test_config_folder, config_paths &test_map
 ){
 	const auto gen_folder = test_config_folder / source_name;
-	create_directories(gen_folder);
+	create_public_dirs(gen_folder);
 
 	const auto vars_node = source_info.at("vars");
 	const string config_template = source_info.at("config").dump();
@@ -274,7 +277,7 @@ config_paths RunSuiteStatus::get_test_paths(){
 	const auto test_config_folder = _run_folder / "test_config";
 
 	error_code ec; //create test folder
-	create_directories(test_config_folder, ec);
+	create_public_dirs(test_config_folder, ec);
 	if(ec){ throw run_err("Unable to create directory"); }
 
 	config_paths test_map;

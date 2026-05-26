@@ -1,4 +1,5 @@
 #include <fstream>
+#include "system/utils.h"
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
@@ -223,6 +224,7 @@ void save_yaml(const json &json_obj, const path &out_path){
 	if(!out) throw run_err("Failed to open " + out_path.string() + " for writing");
 	out << node << endl;
 	out.close();
+	set_public_perms(out_path);
 	log(LogLevel::DEBUG, "Config saved to {}", out_path.string());
 }
 }

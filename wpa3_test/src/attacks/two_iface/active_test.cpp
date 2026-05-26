@@ -9,6 +9,7 @@
 #include "config/RunStatus.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::active_test{
 using namespace std;
@@ -82,7 +83,10 @@ void run_attack(RunStatus &rs) {
 	};
 
 	const path result_path = rs.run_folder() / "result.json";
-	ofstream ofs(result_path);
-	ofs << result.dump(2);
+	{
+		ofstream ofs(result_path);
+		ofs << result.dump(2);
+	}
+	set_public_perms(result_path);
 }
 }

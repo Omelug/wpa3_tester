@@ -8,6 +8,7 @@
 #include "logger/log.h"
 #include "pcap/pcap.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace Tins;
@@ -85,6 +86,7 @@ string create_wpa_supplicant_config(const string &ssid){
 		conf << "    ieee80211w=2\n";
 		conf << "}\n";
 		conf.close();
+		set_public_perms(conf_path);
 	}
 	return conf_path;
 }

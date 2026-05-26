@@ -1,6 +1,7 @@
 #include "observer/observers.h"
 
 #include "logger/log.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::observer{
 using namespace std;
@@ -9,12 +10,11 @@ using namespace filesystem;
 path get_observer_folder(const RunStatus &rs, const string &observer_name){
 	const path obs_dir = rs.run_folder()/"observer"/observer_name;
 	error_code ec;
-	create_directories(obs_dir, ec);
+	create_public_dirs(obs_dir, ec);
 	if(ec){
 		log(LogLevel::ERROR,
 			"Failed to create " + observer_name + " observer dir " + obs_dir.string() + ":" + ec.message());
 	}
-	permissions(obs_dir, perms::all, perm_options::add, ec);
 	return obs_dir;
 }
 

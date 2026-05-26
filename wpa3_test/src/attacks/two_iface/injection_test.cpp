@@ -6,6 +6,7 @@
 #include "config/RunStatus.h"
 #include "system/hw_capabilities.h"
 #include "system/injection_result.h"
+#include "system/utils.h"
 
 namespace wpa3_tester {
 using namespace std;
@@ -107,8 +108,11 @@ void run_attack(RunStatus &rs) {
 	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(actor_tx, actor_rx);
 
 	const path result_path = rs.run_folder() / "result.json";
-	ofstream ofs(result_path);
-	ofs << suite.to_json().dump(2);
+	{
+		ofstream ofs(result_path);
+		ofs << suite.to_json().dump(2);
+	}
+	set_public_perms(result_path);
 }
 
 }

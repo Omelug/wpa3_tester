@@ -197,8 +197,8 @@ TEST_CASE("ProcessManager - wait_for with timeout"){
             CHECK_THROWS_AS(pm.wait_for("short_timeout", "not_found", 1s), timeout_err);
             auto duration = chrono::steady_clock::now() - start;
 
-            CHECK((duration >= 1s));
-            CHECK((duration < 2s));
+			CHECK_GE(duration, 1s);
+            CHECK_LT(duration, 2s);
 
             pm.stop("short_timeout");
         }

@@ -251,12 +251,22 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 
 	unique_lock cv_lock(wait_mutex);
 	auto &logs = mp->logs;
-	const bool pred_met = wait_cv.wait_for(cv_lock, timeout,
-		[&logs, &mp]{ return logs.wait.matched || mp->shutting_down.load(); });
+	bool pred_met = false;
+	const auto deadline = steady_clock::now() + timeout;
+	while (!pred_met && !g_interrupted.load()) {
+		const auto remaining = duration_cast<nanoseconds>(deadline - steady_clock::now());
+		if (remaining <= nanoseconds(0)) break;
+		pred_met = wait_cv.wait_for(cv_lock, min(remaining, nanoseconds(milliseconds(50))),
+			[&logs, &mp]{ return logs.wait.matched || mp->shutting_down.load(); });
+	}
 
 	lock_guard data_lock(logger_mtx);
 	logs.wait.pattern = nullopt;
 
+	if(g_interrupted.load() && !logs.wait.matched){
+		log(LogLevel::DEBUG, "wait_for for '{}' interrupted: Ctrl+C", actor_name);
+		return false;
+	}
 	if(mp->shutting_down.load() && !logs.wait.matched){
 		log(LogLevel::DEBUG, "wait_for for '{}' interrupted: process stopped", actor_name);
 		return false;

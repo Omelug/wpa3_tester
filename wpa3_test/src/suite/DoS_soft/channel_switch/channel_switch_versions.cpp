@@ -1,3 +1,5 @@
 #include "config/RunStatus.h"
 
-void generate_report(const wpa3_tester::RunStatus &){}
+void generate_report(const wpa3_tester::RunStatus &){
+
+}

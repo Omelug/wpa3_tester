@@ -4,11 +4,18 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: add git results repository
+d: how run program
+
 PDF:
     f: deleted_old -> delete_old
     +: cache description
     +: info bout NixOS
-    + info about injection tests
+    +: info about injection tests
+    +: PMKSA
+    +: SPP
+    +: testování testeru? (asi jen zímínit u výběru jazyka)
+    d: zmínit práci v README
 
 r: (*this)[BK::AP].value_or(false) to get_or()
 ?: move driver after check if is needed
@@ -110,16 +117,14 @@ t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontr
 +: test_suite - source by test_name
 
 // new attacks?
-State Poisoning (2025_SACRED)
-Ghost Attack (badtoken pdf)
-DPP attacks
++: State Poisoning (2025_SACRED)
++: Ghost Attack (badtoken pdf)
++: DPP attacks
++: Donwgrade group https://github.com/Nuseo1/airgeddon_plugins
+
 
 Optimization:
 ?: https://github.com/biojppm/rapidyaml nebo https://github.com/joanvallve/yaml-schema-cpp
-
-PDF:
-+: PMKSA
-+: Donwgrade group https://github.com/Nuseo1/airgeddon_plugins
 
 - Every physical radio can have only one interface in these tests
 -> re to to roadmap implement and highlight in documentation

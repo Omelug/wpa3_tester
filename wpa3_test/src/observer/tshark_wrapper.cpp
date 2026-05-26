@@ -89,10 +89,10 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	//TODO add external support?
 	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path]() {
 		try {
-			if (exists(temp_pcap_path)) { std::filesystem::rename(temp_pcap_path, pcap_path);}
+			if (exists(temp_pcap_path)) { rename(temp_pcap_path, pcap_path);}
 		} catch (const filesystem_error& e) {
-			std::filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
-			std::filesystem::remove(temp_pcap_path);
+			filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
+			remove(temp_pcap_path);
 		}
 	});
 }

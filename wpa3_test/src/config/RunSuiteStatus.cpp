@@ -55,11 +55,11 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));
 		global_validator.validate(config_json);
 		return config_json;
-	} catch(const domain_error &e){
+	} catch(const domain_error &){
 		std::throw_with_nested(config_err("Schema error: " + config_path.string()));
-	} catch(const invalid_argument &e){
+	} catch(const invalid_argument &){
 		std::throw_with_nested(config_err("Error in config: " + config_path.string()));
-	} catch(const exception &e){
+	} catch(const exception &){
 		std::throw_with_nested(config_err("Config validation error: " + config_path.string()));
 	}
 }
@@ -122,7 +122,9 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		ofs.close();
 
 		RunStatus::config_validation(test_config_path);
-		test_map.emplace_back(to_string(i) + "_test", test_config_path);
+		const YNode saved_node = YAML::Load(config_str);
+		const string config_name = saved_node["name"].as<string>();
+		test_map.emplace_back(config_name, test_config_path);
 	}
 }
 
@@ -228,7 +230,9 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 		// result test config validation
 		RunStatus::config_validation(test_path);
-		test_map.emplace_back(test_id + "_test", test_path);
+		const YNode saved_node = YAML::Load(current_config_str);
+		const string config_name = saved_node["name"].as<string>();
+		test_map.emplace_back(config_name, test_path);
 
 		// another index or stop
 		test_counter++;

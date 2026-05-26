@@ -144,6 +144,7 @@
       <w>rsneapol</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>
+      <w>rwxrwxrwx</w>
       <w>setcap</w>
       <w>setnonblock</w>
       <w>setsid</w>

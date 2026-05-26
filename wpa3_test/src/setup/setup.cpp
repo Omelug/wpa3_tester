@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "logger/error_log.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -17,7 +18,7 @@ void RunStatus::setup_test(){
 		if(ec) throw run_err("Failed to clean last_run directory: " + _run_folder.string() + ":" + ec.message());
 	}
 
-	create_directories(_run_folder, ec);
+	create_public_dirs(_run_folder, ec);
 	if(ec) throw run_err("Failed to create last_run directory: " + _run_folder.string() + ":" + ec.message());
 
 	save_actor_interface_mapping();

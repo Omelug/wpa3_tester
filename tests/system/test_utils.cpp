@@ -5,6 +5,7 @@
 #include <chrono>
 #include <regex>
 #include <thread>
+#include <fstream>
 
 #include "logger/error_log.h"
 #include "system/utils.h"
@@ -114,4 +115,30 @@ TEST_CASE("relative_from - single level nesting"){
     string result = relative_from("attack_config", attack_config.string());
     CHECK_EQ(result, "single");
     remove_all(test_base);
+}
+
+TEST_CASE("create_public_dirs - new directories and file are world-accessible"){
+    const path test1 = path("/tmp/test_create_public_dirs") / "test1";
+    const path test2 = test1 / "test2";
+    remove_all(test1);
+
+    create_public_dirs(test2);
+
+    // Write a file and set its permissions
+    const path test3 = test2 / "test3.txt";
+    { ofstream f(test3); f << "x"; }
+    set_public_perms(test3);
+
+    // All directories must have rwxrwxrwx (0777)
+	constexpr auto dir_expected = perms::all;
+    CHECK_EQ(status(test1).permissions() & dir_expected, dir_expected);
+    CHECK_EQ(status(test2).permissions() & dir_expected, dir_expected);
+
+    // File must have rw-rw-rw- (0666)
+	constexpr perms file_expected = perms::owner_read | perms::owner_write |
+                                perms::group_read | perms::group_write |
+                                perms::others_read | perms::others_write;
+    CHECK_EQ(status(test3).permissions() & file_expected, file_expected);
+
+    remove_all(test1);
 }

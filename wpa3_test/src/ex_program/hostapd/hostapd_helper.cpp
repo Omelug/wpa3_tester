@@ -8,7 +8,7 @@ using namespace std;
 using namespace filesystem;
 
 void ensure_repo_cloned(const path &hostapd_folder){
-	const path repo_path = hostapd_folder / "hostapd";
+	const path repo_path = hostapd_folder;
 	if(exists(repo_path)){ return; }
 
 	log(LogLevel::INFO, "Cloning hostapd repository into {}...", repo_path.string());

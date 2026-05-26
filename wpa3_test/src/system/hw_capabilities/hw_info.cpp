@@ -7,6 +7,8 @@
 #include "config/Actor_config.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -82,9 +84,7 @@ void Actor_config::load_hw_info(const optional<path> &cache){
                 ofstream f(*cache);
                 f << json_cache.dump(2) << '\n';
             }
-            permissions(*cache, perms::owner_read | perms::owner_write |
-                                perms::group_read | perms::group_write |
-                                perms::others_read | perms::others_write);
+			set_public_perms(cache.value());
         } catch(const exception &e){
             log(LogLevel::WARNING, "get_hw_info: cache write failed: {}", e.what());
         }

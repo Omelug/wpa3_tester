@@ -1,4 +1,4 @@
-extends: ./channel_switch.yaml
+extends: ../channel_switch.yaml
 name: channel_switch_2_10_ocv_beacon_prot
 actors:
   access_point:
@@ -15,3 +15,5 @@ actors:
         version: 2_10
         beacon_prot: 1
         ocv: 1
+
+rewrite: "errors"

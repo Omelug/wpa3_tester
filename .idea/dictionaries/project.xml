@@ -23,6 +23,7 @@
       <w>cassert</w>
       <w>ccmp</w>
       <w>cerr</w>
+      <w>cflags</w>
       <w>commentschars</w>
       <w>conds</w>
       <w>cout</w>

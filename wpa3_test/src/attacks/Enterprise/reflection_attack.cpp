@@ -21,7 +21,9 @@ void setup_attack(RunStatus &rs){
 		copy_file(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
 				rs.run_folder()/ "dragonslayer.conf");
 	}
+	set_public_perms(rs.run_folder()/ "dragonslayer.conf");
 	copy_file(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
+	set_public_perms(rs.run_folder()/ "hostapd.eap_user");
 	components::client_ap_attacker_setup_enterprise(rs);
 }
 

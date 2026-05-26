@@ -1,13 +1,12 @@
+#include "ex_program/hostapd/hostapd.h"
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
-#include "config/global_config.h"
 #include "ex_program/hostapd/hostapd_helper.h"
-#include "ex_program/hostapd/hostapd.h"
 
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::hostapd{
 using namespace std;
@@ -66,6 +65,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 		path hostapd_path = ap_setup["hostapd_path"].get<string>();
 		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
 		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		set_public_perms(cfg_path);
 		return cfg_path.string();
 	}
 
@@ -88,6 +88,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 		hostapd_conf << "\n";
 	}
 	hostapd_conf.close();
+	set_public_perms(cfg_path);
 	log(LogLevel::INFO, "hostapd_config: written {}", cfg_path.string());
 	return cfg_path.string();
 }
@@ -136,6 +137,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 		path hostapd_path = client_setup["wpa_supplicant_path"].get<string>();
 		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
 		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		set_public_perms(cfg_path);
 		return cfg_path.string();
 	}
 
@@ -163,6 +165,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	out << "}\n";
 
 	out.close();
+	set_public_perms(cfg_path);
 	log(LogLevel::INFO, "wpa_supplicant_config: written {}", cfg_path.string());
 	return cfg_path.string();
 }

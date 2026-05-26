@@ -66,6 +66,15 @@ include(cmake/libraries.cmake)
 include(cmake/targets.cmake)
 include(cmake/coverage.cmake)
 
+if(EXISTS "/etc/nixos")
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(OPENSSL REQUIRED openssl)
+    add_compile_definitions(HOSTAPD_EXTRA_CFLAGS="-I${OPENSSL_INCLUDE_DIRS}")
+    message(STATUS "NixOS:  OPENSSL_INCLUDE_DIRS = ${OPENSSL_INCLUDE_DIRS}")
+else()
+    message(STATUS "Standard Linux (Debian/Ubuntu). Not changes in include paths")
+endif()
+
 add_executable(${PROJECT_NAME}
         "../wpa3_test/main.cpp"
         include/config/Run_Config.h

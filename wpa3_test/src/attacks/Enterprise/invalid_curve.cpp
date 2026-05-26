@@ -4,6 +4,7 @@
 #include "setup/program.h"
 #include "system/hw_capabilities.h"
 #include "system/ip.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -40,8 +41,10 @@ void setup_attack(RunStatus &rs){
 		copy_file(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
 				rs.run_folder()/ "dragonslayer.conf");
 	}
+	set_public_perms(rs.run_folder()/ "dragonslayer.conf");
 
 	copy_file(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
+	set_public_perms(rs.run_folder()/ "hostapd.eap_user");
 
 	// -------- AP
 	program::start(rs, "access_point");

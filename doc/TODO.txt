@@ -60,6 +60,7 @@ rt: test helper function to separated file
 r: change == to in REQUIRE, check CHECK/REQUIRE
 f: BA/BAR bl0ck attack work only on one mediatek
 r: nastavit v clionu styl stringu atd a upravit vše do jednotného stylu - hlavně + ve stringu, namepace (nedosazovat)
+r: upravit shell.nix aby se mohl kompilovat hostapd
 
 //TODO plan to th future
 Version v 0.0.0.1

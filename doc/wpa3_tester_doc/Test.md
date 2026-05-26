@@ -36,7 +36,7 @@ The OpenWrt program has its own specific configuration for requirements, check [
 - cache is used to not run before very test (for details check [cache.md](cache.md))
 - active and injection are children of [TwoIface](../../wpa3_test/src/attacks/two_iface/TwoIface.cpp) 
 ( in cache id are important keys for finding in cache)
-- [two_iface](../../wpa3_test/src/attacks/two_iface) can be add to test config `requirements/two_iface: <two_iface_key>: [<actor_tx>, <actor_rx>]`
+- [two_iface](../../wpa3_test/src/attacks/two_iface) can be added to test config `requirements/two_iface: <two_iface_key>: [<actor_tx>, <actor_rx>]`
   (check [test_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_validator.schema.yaml) for two_iface_key)
 
 ### Test suites
@@ -44,7 +44,12 @@ The OpenWrt program has its own specific configuration for requirements, check [
 - config_type: test_suite
 - path/generatros/permutation
 #### generator
-- var_ like prefix for placeholder
-- more described in schema
+- var_{var_name} placeholders
+- for further description check schema
 - config generating to  {rss.run_folder}/test_config/<generator_name>
 #### permutation
+- generate all combinations
+- if var have more values than used, values are rotated
+- var_{var_name} placeholders
+### name
+- test if found from root with by test name

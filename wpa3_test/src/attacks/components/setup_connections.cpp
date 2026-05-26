@@ -29,7 +29,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 
 void client_ap_attacker_setup(RunStatus &rs){
 	// check if contains rs.get_actor("attacker")["source"] != "internal"
-	if(rs.get_actor("client")["source"] != "internal"){
+	if(rs.get_actor("client")["source"] != "internal" && (rs.get_actor("client")["source"] != "simulation")){
 		throw run_err("only internal actors are supported");
 	}
 
@@ -42,7 +42,8 @@ void client_ap_attacker_setup(RunStatus &rs){
 }
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs){
-	if(rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal"){
+	if( (rs.get_actor("attacker")["source"] != "simulation" || rs.get_actor("client")["source"] != "simulation")
+	 && (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal")){
 		throw run_err("only internal actors are supported");
 	}
 

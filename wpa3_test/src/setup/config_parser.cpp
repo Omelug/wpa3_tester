@@ -54,7 +54,7 @@ void deep_merge(json &base, const json &patch){
 	}
 }
 
-json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy){
+json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy, bool is_child = false){
 	if(!current_node.is_object()){
 		return current_node;
 	}
@@ -73,11 +73,12 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 
 	if(!current_node.contains("$extends")){
 		for(auto &[key, value]: current_node.items()){
-			value = resolve_extends(value, base_dir, hierarchy);
+			value = resolve_extends(value, base_dir, hierarchy, true);
 		}
-		// $DELETE without $extends: this node has no parent to merge into,
-		// strip it so it doesn't reach the validator
-		current_node.erase("$DELETE");
+		// Only strip $DELETE at file-root level (is_child=false).
+		// Nested $DELETE must survive so deep_merge can act on it when
+		// the enclosing file's $extends is processed.
+		if(!is_child) current_node.erase("$DELETE");
 		return current_node;
 	}
 
@@ -94,7 +95,7 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 
 	// resolve current node's own children relative to its base_dir first
 	for(auto &[key, value]: current_node.items()){
-		value = resolve_extends(value, base_dir, hierarchy);
+		value = resolve_extends(value, base_dir, hierarchy, true);
 	}
 
 	// merge all parents in order (later entries override earlier)

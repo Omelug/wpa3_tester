@@ -15,5 +15,6 @@ actors:
       program_config:
         version: 2_10
   attacker:
+    source: simulation
     selection:
       $DELETE: driver

@@ -50,6 +50,7 @@
       <w>errbuf</w>
       <w>essid</w>
       <w>fcsfail</w>
+      <w>fetchcontent</w>
       <w>fflush</w>
       <w>fprintf</w>
       <w>frametype</w>

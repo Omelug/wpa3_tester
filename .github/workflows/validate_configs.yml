@@ -17,9 +17,12 @@ jobs:
       - uses: ./.github/actions/setup-deps
         with:
           cache-suffix: validate
-
       - name: Configure
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: cmake -S wpa3_test -B build -G Ninja
+
 
       - name: Build validation tests
         run: cmake --build build --target run_validation_tests -j$(nproc)

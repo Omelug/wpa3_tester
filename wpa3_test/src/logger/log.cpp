@@ -73,7 +73,8 @@ void log(const LogLevel level, const string &msg){
 }
 
 void log_actor_map(const string &name, const ActorCMap &m){
-	const vector keys(m | views::keys | ranges::to<vector<string>>());
+	auto keys_view = m | std::views::keys;
+	const std::vector keys(keys_view.begin(), keys_view.end());
 	const string keys_str = keys.empty() ? "<empty>" : join(keys, ", ");
 	log(LogLevel::DEBUG, "{}:{}", name, keys_str);
 }

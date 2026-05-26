@@ -15,6 +15,9 @@ jobs:
           cache-suffix: test
 
       - name: Configure
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: cmake -S wpa3_test -B build -G Ninja
 
       - name: Build all tests

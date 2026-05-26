@@ -71,6 +71,11 @@ void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source
 	test_map.emplace_back(source_name, abs_path);
 }
 
+void RunSuiteStatus::defined_by_name(basic_json<> source_j, const string &source_name, config_paths &test_map){
+	const string name = source_j.at("test_name").get<string>();
+	test_map.emplace_back(source_name, RunStatus::findConfigByTestName(name));
+}
+
 void replace_all(string &str, const string &from, const string &to){
 	if(from.empty()) return;
 	size_t start_pos = 0;
@@ -279,6 +284,10 @@ config_paths RunSuiteStatus::get_test_paths(){
 			defined_by_path(source_info, source_name, test_map);
 			continue;
 		}
+		if(type == "name"){
+			defined_by_name(source_info, source_name, test_map);
+			continue;
+		}
 		if(type == "generator"){
 			defined_by_generator(source_info, source_name, test_config_folder, test_map);
 			continue;
@@ -329,7 +338,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return p.first == test_name; });
 	if(it == tests_paths.end()){
 		log(LogLevel::WARNING, "Test '{}' not found — run the full suite first to generate test configs", test_name);
-		for(const auto &[name, _]: tests_paths)
+		for(const auto &name: tests_paths | views::keys)
 			log(LogLevel::WARNING, "  available: {}", name);
 		throw config_err("Test '" + test_name + "' not found in suite");
 	}

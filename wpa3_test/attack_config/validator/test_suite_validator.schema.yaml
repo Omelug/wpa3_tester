@@ -33,6 +33,15 @@ properties:
             path:
               type: string
 
+        - title: Name source
+          type: object
+          required: [ type, test_name ]
+          properties:
+            type:
+              const: name
+            test_name:
+              type: string
+
         - title: Generator source #include permutation
           type: object
           required: [ type, vars, config ]

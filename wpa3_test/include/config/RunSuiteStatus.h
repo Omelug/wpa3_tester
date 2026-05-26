@@ -36,6 +36,7 @@ public: // getters and setters
 	explicit RunSuiteStatus(const std::filesystem::path &config_path, std::string suite_name = "");
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
+	static void defined_by_name(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map);
 	static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
 									const std::filesystem::path &test_config_folder, config_paths &test_map
 	);

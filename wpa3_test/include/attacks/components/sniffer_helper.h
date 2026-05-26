@@ -1,10 +1,10 @@
 #pragma once
-#include <pcap/pcap.h>
 #include <cerrno>
-#include "system/hw_capabilities.h"
-#include "inteprrupt.h"
+#include <pcap/pcap.h>
 #include <sys/poll.h>
 #include <tins/pdu.h>
+#include "inteprrupt.h"
+#include "system/hw_capabilities.h"
 
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -16,8 +16,7 @@ template<typename T, typename Handler>
 std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout, Handler &&on_packet, const std::string &iface = ""){
 
 	char errbuf[PCAP_ERRBUF_SIZE];
-	const bool owns = (handle == nullptr);
-	if(owns){
+	if(handle == nullptr){
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
 		if(!handle) throw run_err("pcap_open_live failed: " + std::string(errbuf));
 	}

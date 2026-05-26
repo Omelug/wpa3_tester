@@ -8,7 +8,7 @@ tests:
       driver2: [ "driver2", "driver3", "driver1" ]
       driver3: [ "driver3", "driver1", "driver2" ]
     config:
-      extends: 03_test.yaml
+      $extends: 03_test.yaml
       actors:
         acces_point:
           selection:

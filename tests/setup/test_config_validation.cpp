@@ -63,6 +63,7 @@ TEST_CASE("RunStatus Config Validation - Test configuration"){
         {"10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false},
         {"14. extends as list (two bases merged)", "14_test_extends_list.yaml", "01_test_happy_path_minimal.yaml", true},
         {"15. extends as list (current overrides base)", "15_test_extends_list_override.yaml", "01_test_happy_path_minimal.yaml", true},
+        {"16. $DELETE removes key from parent", "16_test_delete.yaml", "01_test_happy_path_minimal.yaml", true},
     };
     test_case_loop(test_base, tests);
 }

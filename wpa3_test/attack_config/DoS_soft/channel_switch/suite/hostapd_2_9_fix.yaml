@@ -1,4 +1,4 @@
-extends: ../channel_switch.yaml
+$extends: ../channel_switch.yaml
 name: channel_switch_2_9
 actors:
   access_point:

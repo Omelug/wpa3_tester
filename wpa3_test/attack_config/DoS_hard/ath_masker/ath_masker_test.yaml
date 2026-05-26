@@ -3,7 +3,7 @@ name: ath_masker_test
 attacker_module: ath_masker_test
 requirements:
   simple: [ ath_masker ]
-validator: ./ath_masker_test.schema.yaml
+$validator: ./ath_masker_test.schema.yaml
 actors:
   access_point:
     source: internal

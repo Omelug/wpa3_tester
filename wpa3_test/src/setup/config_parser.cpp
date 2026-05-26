@@ -41,7 +41,12 @@ json yaml_to_json(const YNode &node){
 
 void deep_merge(json &base, const json &patch){
 	for(auto it = patch.begin(); it != patch.end(); ++it){
-		if(it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()){
+		if(it.key() == "$DELETE"){
+			if(it.value().is_string()) base.erase(it.value().get<string>());
+			else if(it.value().is_array())
+				for(const auto &k: it.value())
+					if(k.is_string()) base.erase(k.get<string>());
+		} else if(it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()){
 			deep_merge(base[it.key()], it.value());
 		} else{
 			base[it.key()] = it.value();
@@ -54,35 +59,38 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 		return current_node;
 	}
 
-	// resolve validator paths to be absolute (string or list)
-	if(current_node.contains("validator")){
-		if(current_node["validator"].is_string()){
-			current_node["validator"] = absolute(base_dir / current_node["validator"].get<string>()).string();
-		} else if(current_node["validator"].is_array()){
-			for(auto &v: current_node["validator"]){
+	// resolve $validator paths to be absolute (string or list)
+	if(current_node.contains("$validator")){
+		if(current_node["$validator"].is_string()){
+			current_node["$validator"] = absolute(base_dir / current_node["$validator"].get<string>()).string();
+		} else if(current_node["$validator"].is_array()){
+			for(auto &v: current_node["$validator"]){
 				if(v.is_string())
 					v = absolute(base_dir / v.get<string>()).string();
 			}
 		}
 	}
 
-	if(!current_node.contains("extends")){
+	if(!current_node.contains("$extends")){
 		for(auto &[key, value]: current_node.items()){
 			value = resolve_extends(value, base_dir, hierarchy);
 		}
+		// $DELETE without $extends: this node has no parent to merge into,
+		// strip it so it doesn't reach the validator
+		current_node.erase("$DELETE");
 		return current_node;
 	}
 
-	// normalize extends to a list
+	// normalize $extends to a list
 	json extends_list;
-	if(current_node["extends"].is_string()){
-		extends_list = json::array({current_node["extends"]});
-	} else if(current_node["extends"].is_array()){
-		extends_list = current_node["extends"];
+	if(current_node["$extends"].is_string()){
+		extends_list = json::array({current_node["$extends"]});
+	} else if(current_node["$extends"].is_array()){
+		extends_list = current_node["$extends"];
 	} else{
-		throw config_err("'extends' must be a string or list of strings");
+		throw config_err("'$extends' must be a string or list of strings");
 	}
-	current_node.erase("extends");
+	current_node.erase("$extends");
 
 	// resolve current node's own children relative to its base_dir first
 	for(auto &[key, value]: current_node.items()){
@@ -106,7 +114,17 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 		hierarchy.pop_back();
 	}
 
-	// current node overrides all parents
+	// apply root-level $DELETE: remove keys from merged before current overrides
+	if(current_node.contains("$DELETE")){
+		const json del = current_node["$DELETE"];
+		current_node.erase("$DELETE");
+		if(del.is_string()) merged.erase(del.get<string>());
+		else if(del.is_array())
+			for(const auto &k: del)
+				if(k.is_string()) merged.erase(k.get<string>());
+	}
+
+	// current node overrides all parents (nested $DELETE in sub-objects handled by deep_merge)
 	deep_merge(merged, current_node);
 	return merged;
 }
@@ -119,21 +137,21 @@ json RunStatus::extends_recursive(const nlohmann::json &config_json, const path 
 
 void RunStatus::validate_recursive(nlohmann::json &current_node, const path &base_dir){
 	if(current_node.is_object()){
-		if(current_node.contains("validator")){
+		if(current_node.contains("$validator")){
 			auto apply_validator = [&](const string &schema_file){
 				const YAMLValidator validator(base_dir / schema_file);
 				validator.validate(current_node);
 			};
-			if(current_node.at("validator").is_string()){
-				apply_validator(current_node.at("validator").get<string>());
-			} else if(current_node.at("validator").is_array()){
+			if(current_node.at("$validator").is_string()){
+				apply_validator(current_node.at("$validator").get<string>());
+			} else if(current_node.at("$validator").is_array()){
 				// copy before the loop: validate() reassigns current_node, which invalidates iterators into it
-				const json validator_list = current_node.at("validator");
+				const json validator_list = current_node.at("$validator");
 				for(const auto &v: validator_list){
 					if(v.is_string()) apply_validator(v.get<string>());
 				}
 			}
-			current_node.erase("validator");
+			current_node.erase("$validator");
 		}
 
 		for(auto &[key, value]: current_node.items()){

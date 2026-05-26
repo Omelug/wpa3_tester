@@ -8,7 +8,7 @@ tests:
     vars:
       dos_attack: [ cookie_guzzler, omnivore, muted, hasty, double_decker, bad_algo, bad_seq, bad_status_code, empty_frame_confirm]
     config:
-      extends: ../sae_dos_wrapper.yaml
+      $extends: ../sae_dos_wrapper.yaml
       name: var_dos_attack
       attack_config:
         attack_type: var_dos_attack

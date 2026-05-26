@@ -1,5 +1,5 @@
 name: "WPA3-Test"
-extends: 05_cicle.yaml
+$extends: 05_cicle.yaml
 actors:
   only_actor:
     source: internal

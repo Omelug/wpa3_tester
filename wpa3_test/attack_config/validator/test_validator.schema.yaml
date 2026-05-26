@@ -10,7 +10,7 @@ config_type:
   const: test
   description: "Have to be test or not included"
 properties:
-  extends:
+  $extends:
     type: string
     description: Path to the parent YAML template
   name:
@@ -60,7 +60,7 @@ properties:
     type: object
     description: test/attack parameters
     properties:
-      validator:
+      $validator:
         type: string
         description: validator
   requirements:

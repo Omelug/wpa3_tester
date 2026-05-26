@@ -4,7 +4,7 @@ type: object
 required:
   - target_type
 properties:
-  validator:
+  $validator:
     type: string
     description: path to this schema
   target_type:

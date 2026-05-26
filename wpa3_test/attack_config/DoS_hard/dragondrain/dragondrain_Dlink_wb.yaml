@@ -1,14 +1,14 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: dragondrain_Dlink
-validator: "./dragondrain.schema.yaml"
+$validator: "./dragondrain.schema.yaml"
 attacker_module: dragondrain
 requirements:
   simple: [ ath_masker ]
 actors:
   access_point:
-    extends: ../../target/Dlink/Dlink_wb.yaml
+    $extends: ../../target/Dlink/Dlink_wb.yaml
   client:
-    extends: ../../target/Dlink/mixed_client_2_4.yaml
+    $extends: ../../target/Dlink/mixed_client_2_4.yaml
   attacker:
     source: internal
     selection:

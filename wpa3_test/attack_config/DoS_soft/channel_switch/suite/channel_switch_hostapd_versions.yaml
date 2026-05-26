@@ -16,7 +16,7 @@ tests:
     vars:
       hostapd: [ 2_10, 2_11 ]
     config:
-      extends: ../channel_switch.yaml
+      $extends: ../channel_switch.yaml
       name: channel_switch_var_hostapd
       actors:
         access_point:

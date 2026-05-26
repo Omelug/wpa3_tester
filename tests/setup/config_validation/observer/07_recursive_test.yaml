@@ -5,5 +5,5 @@ actors:
   program: tshark
   filter: ""
   program_config:
-    validator: "./07_recursive.schema.yaml"
+    $validator: "./07_recursive.schema.yaml"
 

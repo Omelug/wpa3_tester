@@ -6,7 +6,7 @@ tests:
     vars:
       hostapd: [ "2_9", "2_10", "2_11" ]
     config:
-      extends: 02_test.yaml
+      $extends: 02_test.yaml
       actors:
         acces_point:
           setup:

@@ -1,4 +1,4 @@
 name: "WPA3-Test"
 attacker_module: module1
 actors:
-  extends: 08_path/08_actor.yaml
+  $extends: 08_path/08_actor.yaml

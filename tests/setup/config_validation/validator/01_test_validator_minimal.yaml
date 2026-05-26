@@ -1,6 +1,6 @@
 name: "WPA3-Test"
 attacker_module: module1
 actors:
-  validator: 01_validator.schema.yaml
+  $validator: 01_validator.schema.yaml
   only_actor:
     source: internal

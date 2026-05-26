@@ -4,7 +4,7 @@ type: object
 required:
   - hostapd-mana_path
 properties:
-  validator:
+  $validator:
     type: string
   hostapd-mana_path:
     type: string

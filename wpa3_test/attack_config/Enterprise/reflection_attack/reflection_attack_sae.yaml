@@ -34,5 +34,5 @@ actors:
       condition: [ monitor ]
       channel: 6
 attack_config:
-  validator: ../dragonslayer.schema.yaml
+  $validator: ../dragonslayer.schema.yaml
   target_type: ap

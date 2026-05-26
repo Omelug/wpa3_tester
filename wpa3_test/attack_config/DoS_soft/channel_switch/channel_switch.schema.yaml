@@ -6,7 +6,7 @@ required:
   - ms_interval
   - new_channel
 properties:
-  validator:
+  $validator:
     type: string
     description: path to this schema
   attack_time:

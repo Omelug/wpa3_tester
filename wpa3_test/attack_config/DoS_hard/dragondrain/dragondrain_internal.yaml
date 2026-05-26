@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: dragondrain_internal
-validator: dragondrain.schema.yaml
+$validator: dragondrain.schema.yaml
 attacker_module: dragondrain
 actors:
   access_point:

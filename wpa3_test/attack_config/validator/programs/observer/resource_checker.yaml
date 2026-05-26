@@ -3,7 +3,7 @@ title: monitor of actor program_config (process in internal, whole system extern
 type: object
 
 properties:
-  validator:
+  $validator:
     type: string
   interval:
     type: integer

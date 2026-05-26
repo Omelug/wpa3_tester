@@ -6,7 +6,7 @@ required:
   - attack_variant
   - frame_in_batch
 properties:
-  validator:
+  $validator:
     type: string
     description: path to this schema
   attack_time_sec:

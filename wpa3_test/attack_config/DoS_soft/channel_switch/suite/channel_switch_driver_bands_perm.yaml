@@ -9,7 +9,7 @@ tests:
         #"rtw_8821cu",
         "rtw_8821au", "mt76x2u", "ath_htc"]
     config:
-      extends: ../channel_switch.yaml
+      $extends: ../channel_switch.yaml
       name: CSA_var_driver_0_var_driver_1_var_driver_2
       actors:
         access_point:

@@ -55,7 +55,7 @@ actors:
       program_config:
         hostapd-mana_path: ./hostapd-mana.conf
 attack_config:
-  validator: ../channel_switch.schema.yaml
+  $validator: ../channel_switch.schema.yaml
   attack_time: 180
   ms_interval: 100
   new_channel: 1

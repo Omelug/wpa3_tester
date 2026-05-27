@@ -34,7 +34,7 @@ bool ExternalConn::connect(const ActorPtr &actor){
 	const string &host = actor["whitebox_ip"];
 	ssh_options_set(session, SSH_OPTIONS_HOST, host.c_str());
 	ssh_options_set(session, SSH_OPTIONS_USER, actor["ssh_user"].c_str());
-	const int port = stoi(actor[SK::ssh_port].value_or("22"));
+	const int port = stoi(actor->get_or(SK::ssh_port, "22"));
 	ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 
 	// connect to host

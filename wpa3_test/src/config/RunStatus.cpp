@@ -181,11 +181,11 @@ void RunStatus::stats_test() const{
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 	for(const auto &[name, actor]: actors){
-		ofs << actor[SK::source].value_or("<none>") << ","
-			<< name << "," << actor[SK::iface].value_or("<none>") << ","
-			<< actor[SK::mac].value_or("<none>") << ","
-			<< actor[SK::driver_name].value_or("<none>") << ","
-			<< actor[SK::channel].value_or("<none>") << ",";
+		ofs << actor->get_or(SK::source, "<none>") << ","
+			<< name << "," << actor->get_or(SK::iface, "<none>") << ","
+			<< actor->get_or(SK::mac, "<none>") << ","
+			<< actor->get_or(SK::driver_name, "<none>") << ","
+			<< actor->get_or(SK::channel, "<none>") << ",";
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';

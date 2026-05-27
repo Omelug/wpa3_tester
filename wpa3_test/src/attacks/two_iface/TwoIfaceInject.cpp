@@ -61,8 +61,8 @@ bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const Cac
 	const auto fail = [&](const string &key){
 		throw req_err(
 			"inject_test " + key + ": "
-			+ a1[SK::actor_name].value_or("?")
-			+ "/" + a2[SK::actor_name].value_or("?")
+			+ a1->get_or(SK::actor_name, "?")
+			+ "/" + a2->get_or(SK::actor_name, "?")
 			+ " failed injection check");
 	};
 

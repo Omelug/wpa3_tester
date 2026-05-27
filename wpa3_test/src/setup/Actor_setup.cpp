@@ -13,9 +13,9 @@ Channel Actor_config::get_channel() const {
 	const int ch_num = stoi(get(SK::channel));
 
 	// Determine band from boolean keys
-	const bool has_2_4 = (*this)[BK::GHz2_4].value_or(false);
-	const bool has_5 = (*this)[BK::GHz5].value_or(false);
-	const bool has_6 = (*this)[BK::GHz6].value_or(false);
+	const bool has_2_4 = get_or(BK::GHz2_4, false);
+	const bool has_5 = get_or(BK::GHz5, false);
+	const bool has_6 = get_or(BK::GHz6, false);
 
 	WifiBand band = WifiBand::BAND_2_4_or_5; // default
 	int count = 0;
@@ -97,7 +97,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 			set_monitor_mode();
 		if(channel_num != -1 && external_WB){
 			set_iface_up();
-			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
+			set_channel(Channel{channel_num}, get_or(SK::ht_mode, ""));
 			set_iface_down();
 		}
 
@@ -110,13 +110,13 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 	if(internal){
 		//FIXMe should be available for external_WB
-		if((*this)[BK::AP].value_or(false)) set_ap_mode();
-		if((*this)[BK::managed].value_or(false)) set_managed_mode();
+		if(get_or(BK::AP, false)) set_ap_mode();
+		if(get_or(BK::managed, false)) set_managed_mode();
 		//TODO mplement for external WB
 		set_iface_up();
 		// NL80211_CMD_SET_CHANNEL requires monitor mode for pre-set; AP mode is handled by hostapd itself
-		if(channel_num != -1 && (*this)[BK::monitor].value_or(false)){
-			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
+		if(channel_num != -1 && get_or(BK::monitor, false)){
+			set_channel(Channel{channel_num}, get_or(SK::ht_mode, ""));
 		}
 		up_sniff_iface();
 	}

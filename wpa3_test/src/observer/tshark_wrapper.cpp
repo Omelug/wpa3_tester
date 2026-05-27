@@ -203,8 +203,8 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	return timestamps;
 }
 
-string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<unique_ptr<GraphElements>> &elements,
-					const path &folder
+path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<unique_ptr<GraphElements>> &elements,
+				const path &folder
 ){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
@@ -254,7 +254,8 @@ string tshark_graph(const RunStatus &rs, const string &actor_name, const vector<
 	g.add_graph_elements(all_elements);
 
 	g.render();
-	return output_path.string();
+	set_public_perms(output_path);
+	return output_path;
 }
 
 // ------------ retransmission graph ---------------

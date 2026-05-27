@@ -15,9 +15,9 @@ std::filesystem::path extract_pcap_to_csv(const std::string &actor_name, const s
 std::vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const std::string &process_name,
 											const std::string &tshark_filter, const std::string &event_name
 );
-std::string tshark_graph(const RunStatus &rs, const std::string &actor_name,
-						const std::vector<std::unique_ptr<GraphElements>> &elements = {},
-						const std::filesystem::path &folder = ""
+std::filesystem::path tshark_graph(const RunStatus &rs, const std::string &actor_name,
+									const std::vector<std::unique_ptr<GraphElements>> &elements = {},
+									const std::filesystem::path &folder = ""
 );
 void generate_time_series_retry_graph(const RunStatus &rs, const std::string &actor_name,
 									const std::filesystem::path &folder = ""

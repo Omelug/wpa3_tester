@@ -7,6 +7,7 @@
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::observer::resource_checker{
 using namespace std;
@@ -94,8 +95,8 @@ vector<ResourceRecord> parse_resource_log(const string &filepath){
 	return records;
 }
 
-void create_resource_monitor_graph(const string &data_filepath, const vector<unique_ptr<GraphElements>> &elements){
-	const string output_imagepath = path(data_filepath).replace_extension(".png").string();
+void create_resource_monitor_graph(const path &data_filepath, const vector<unique_ptr<GraphElements>> &elements){
+	const path output_imagepath = path(data_filepath).replace_extension(".png").string();
 	vector<ResourceRecord> resources = parse_resource_log(data_filepath);
 	remove(output_imagepath);
 	generate_resource_graph(data_filepath, output_imagepath, elements);
@@ -157,7 +158,7 @@ void create_resource_pid_graph(const string &data_filepath){
 	generate_pid_graph(csv_file, output_imagepath);
 }
 
-void generate_resource_graph(const std::string &data_filepath, const std::string &output_imagepath,
+void generate_resource_graph(const path &data_filepath, const path &output_imagepath,
 							const vector<unique_ptr<GraphElements>> &elements
 ){
 	ifstream file(data_filepath);
@@ -185,7 +186,7 @@ void generate_resource_graph(const std::string &data_filepath, const std::string
 
 	g.gpcmd("set datafile commentschars '#'");
 	g.gpcmd("set terminal pngcairo size 1600,600");
-	g.gpcmd("set output '" + output_imagepath + "'");
+	g.gpcmd("set output '" + output_imagepath.string() + "'");
 	g.gpcmd("set xdata time");
 	g.gpcmd("set timefmt '%s'");
 	g.gpcmd("set format x '%M:%S'");
@@ -201,15 +202,16 @@ void generate_resource_graph(const std::string &data_filepath, const std::string
 
 	for(int i = 0; i < num_cores; ++i){
 		g.plot_parts.push_back(
-			"'" + data_filepath + "' using 1:" + to_string(i + 2) + " with lines lw 2 title 'Core " + to_string(i) +
+			"'" + data_filepath.string() + "' using 1:" + to_string(i + 2) + " with lines lw 2 title 'Core " + to_string(i) +
 			" %' axes x1y1");
 	}
 
 	g.plot_parts.push_back(
-		"'" + data_filepath + "' using 1:" + to_string(ram_col) + " with lines lw 2 dt 2 title 'Free RAM' axes x1y2");
+		"'" + data_filepath.string() + "' using 1:" + to_string(ram_col) + " with lines lw 2 dt 2 title 'Free RAM' axes x1y2");
 
 	g.add_graph_elements(elements);
 	g.render();
+	set_public_perms(output_imagepath);
 }
 
 void create_graph(const RunStatus &rs, const string &source, const std::vector<std::unique_ptr<GraphElements>> &elements

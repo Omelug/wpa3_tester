@@ -1,6 +1,8 @@
 #pragma once
 #include <atomic>
+#include <chrono>
 #include <csignal>
+#include <poll.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -29,6 +31,12 @@ struct InterruptPipe{
 
 inline InterruptPipe g_interrupt_pipe;
 inline std::atomic g_interrupted{false};
+
+inline void interruptible_sleep(const std::chrono::milliseconds duration){
+	if(g_interrupted.load()) return;
+	pollfd pfd{g_interrupt_pipe.read_fd, POLLIN, 0};
+	poll(&pfd, 1, static_cast<int>(duration.count()));
+}
 
 inline void setup_signals(){
 	struct sigaction sa{};

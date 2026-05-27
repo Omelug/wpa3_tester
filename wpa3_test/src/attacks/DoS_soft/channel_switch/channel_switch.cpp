@@ -91,24 +91,14 @@ void run_chs_attack(RunStatus &rs){
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 
-	speed_observation_start(rs);
-	//rs.start_observers();
-	//FIXME tohle je hnusné čekání
-	for(int i = 0; i < 100 && !g_interrupted.load(); ++i)
-		this_thread::sleep_for(milliseconds(100));
+	rs.start_observers();
+
+	interruptible_sleep(seconds(10));
 	if(g_interrupted.load()) return;
 	log(LogLevel::INFO, "Attack START");
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	log(LogLevel::INFO, "Attack END");
-	for(int i = 0; i < 100 && !g_interrupted.load(); ++i)
-		this_thread::sleep_for(milliseconds(100));
-}
-
-//TODO change to config
-void speed_observation_start(RunStatus &rs){
-	observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
-	observer::tshark::start_tshark(rs, "client", "udp port 5201");
-	observer::start_tcpdump(rs, "access_point", "udp port 5201");
+	interruptible_sleep(seconds(10));
 }
 
 // ---------- STATS ----------------
@@ -122,7 +112,6 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	set_public_perms(report_path);
 
 	report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
-	report << "## Attack Description\n";
 	report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
 	report::attack_config_table(report, rs);
 	report::attack_mapping_table(report, rs);

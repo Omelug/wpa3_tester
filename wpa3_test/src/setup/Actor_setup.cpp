@@ -110,10 +110,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 	if(internal){
 		//FIXMe should be available for external_WB
-		if((*this)[BK::AP].value_or(false)){
-			set_ap_mode();
-		}
-		if((*this)[BK::managed].value_or(false)){ set_managed_mode(); }
+		if((*this)[BK::AP].value_or(false)) set_ap_mode();
+		if((*this)[BK::managed].value_or(false)) set_managed_mode();
 		//TODO mplement for external WB
 		set_iface_up();
 		// NL80211_CMD_SET_CHANNEL requires monitor mode for pre-set; AP mode is handled by hostapd itself

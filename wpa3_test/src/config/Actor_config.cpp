@@ -154,6 +154,16 @@ bool Actor_config::get(const BK key) const {
 	return *v;
 }
 
+string Actor_config::get_or(const SK key, string default_val) const {
+	const auto &v = (*this)[key];
+	return v.value_or(std::move(default_val));
+}
+
+bool Actor_config::get_or(const BK key, const bool default_val) const {
+	const auto &v = (*this)[key];
+	return v.value_or(default_val);
+}
+
 string Actor_config::to_str(const ParamFilter *filter) const {
 	string result;
 

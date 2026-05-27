@@ -43,6 +43,8 @@ public:
 
 	[[nodiscard]] std::string get(SK key) const;
 	[[nodiscard]] bool        get(BK key) const;
+	[[nodiscard]] std::string get_or(SK key, std::string default_val) const;
+	[[nodiscard]] bool        get_or(BK key, bool default_val) const;
 
     std::string        to_str(const ParamFilter *filter = nullptr)  const;
     nlohmann::json     to_json(const ParamFilter *filter = nullptr) const;

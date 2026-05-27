@@ -6,6 +6,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::observer::station_counter{
 using namespace std;
@@ -121,13 +122,14 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 		g.gpcmd("set xrange ['" + to_string(x_min) + "':'" + to_string(x_max + 10) + "']");
 	}
 	g.render();
+	set_public_perms(output_imagepath);
 }
 
 void create_station_graph(const RunStatus &rs, const string &actor_name,
 						const std::vector<std::unique_ptr<GraphElements>> &elements
 ){
 	const path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
-	const string output = path(log_path).replace_extension(".png").string();
+	const path output = path(log_path).replace_extension(".png");
 	remove(output);
 	generate_station_graph(log_path.string(), output, elements);
 }

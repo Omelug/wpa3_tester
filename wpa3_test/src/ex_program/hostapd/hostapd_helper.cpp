@@ -51,8 +51,12 @@ string find_matching_tag(const path &repo_dir, const string &version){
 }
 
 static string get_extra_cflags(){
+#ifdef HOSTAPD_EXTRA_CFLAGS
+	return HOSTAPD_EXTRA_CFLAGS;
+#else
 	const char *v = getenv("EXTRA_CFLAGS");
 	return v ? v : "";
+#endif
 }
 
 void build_version(const string &version, const path &build_folder, const path& target){
@@ -145,7 +149,10 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 			"\nCONFIG_INTERWORKING=y"                                 // 802.11u / Hotspot 2.0
 			"\nCONFIG_CTRL_IFACE=y"                                   // wpa_cli
 			"\nCONFIG_DEBUG_FILE=y"                                   // debug logging to file
-			"\nCONFIG_EAP_PWD=y" "\n";
+			"\nCONFIG_EAP_PWD=y"
+			"\nCONFIG_CTRL_IFACE_DBUS="
+			"\nCONFIG_CTRL_IFACE_DBUS_NEW="
+			"\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";
 	conf.close();
 
 	log(LogLevel::INFO, "Compiling wpa_supplicant {} ... ", version);

@@ -73,8 +73,16 @@ include(cmake/coverage.cmake)
 if(EXISTS "/etc/nixos")
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(OPENSSL REQUIRED openssl)
-    add_compile_definitions(EXTRA_CFLAGS="-I${OPENSSL_INCLUDE_DIRS}")
-    message(STATUS "NixOS:  OPENSSL_INCLUDE_DIRS = ${OPENSSL_INCLUDE_DIRS}")
+    pkg_check_modules(DBUS dbus-1)
+    set(EXTRA_CFLAGS_VAL "${OPENSSL_CFLAGS}")
+    if(DBUS_FOUND)
+        string(APPEND EXTRA_CFLAGS_VAL " ${DBUS_CFLAGS}")
+    endif()
+    # Bake include flags into the binary so they survive sudo dropping env vars.
+    # Double-escaped quotes make HOSTAPD_EXTRA_CFLAGS a C string literal.
+    add_compile_definitions("HOSTAPD_EXTRA_CFLAGS=\"${EXTRA_CFLAGS_VAL}\"")
+
+    message(STATUS "NixOS:  OPENSSL_CFLAGS = ${OPENSSL_CFLAGS}")
 else()
     message(STATUS "Standard Linux (Debian/Ubuntu). Not changes in include paths")
 endif()

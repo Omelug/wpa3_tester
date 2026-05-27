@@ -92,6 +92,8 @@ void run_chs_attack(RunStatus &rs){
 	const int attack_time = att_cfg.at("attack_time");
 
 	speed_observation_start(rs);
+	//rs.start_observers();
+	//FIXME tohle je hnusné čekání
 	for(int i = 0; i < 100 && !g_interrupted.load(); ++i)
 		this_thread::sleep_for(milliseconds(100));
 	if(g_interrupted.load()) return;

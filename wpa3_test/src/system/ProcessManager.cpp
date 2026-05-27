@@ -48,6 +48,15 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 					log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message(),
 						ec.value());
 				}
+				// Flush remaining data from pipes before exiting (catches output from short-lived processes)
+				for(const auto &s: streams){
+					while(true){
+						auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+						if(read_ec == errc::resource_unavailable_try_again || read_ec == errc::operation_would_block) break;
+						if(read_ec || n == 0) break;
+						handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
+					}
+				}
 				natural_exit = true;
 				break;
 			}
@@ -87,6 +96,24 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 				}
 			}
 			log(LogLevel::DEBUG, "flush done {}", process_name);
+		}
+		// Flush incomplete (no trailing newline) lines and emit error if process died unexpectedly
+		{
+			lock_guard lock(logger_mtx);
+			const string ts = current_timestamp();
+			for(auto &[label, buf]: mp->logs.buffers){
+				if(buf.empty()) continue;
+				const string full_line = ts + " [" + process_name + "] [" + label + "] " + buf;
+				buf.clear();
+				if(combined_log.is_open()) write_log_line(combined_log, full_line);
+				if(mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
+			}
+			if(natural_exit && !mp->shutting_down.load()){
+				const string err = ts + " [" + process_name + "] [manager] ERROR: process exited unexpectedly";
+				if(combined_log.is_open()) write_log_line(combined_log, err);
+				if(mp->logs.log.is_open()) write_log_line(mp->logs.log, err);
+				log(LogLevel::ERROR, "Process '{}' exited unexpectedly", process_name);
+			}
 		}
 		log(LogLevel::DEBUG, "Drain thread exited for {}", process_name);
 	});

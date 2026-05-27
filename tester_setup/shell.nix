@@ -7,8 +7,9 @@ pkgs.mkShell {
     cmake ninja ccache mold
     git gcc gnumake pkg-config
     iproute2 iw
+    netsniff-ng tcpdump wireshark-cli gnuplot
     # libraries required by libraries.cmake via pkg-config
-    libpcap openssl libnl libssh yaml-cpp libtins
+    libpcap openssl libnl libssh yaml-cpp libtins dbus
   ];
 
   shellHook = ''

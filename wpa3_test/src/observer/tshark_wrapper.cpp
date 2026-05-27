@@ -70,7 +70,7 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	}
 
 	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
-	command.insert(command.end(), {program_name, "-i", iface_str, "root", "-w", temp_pcap_path});
+	command.insert(command.end(), {program_name, "-i", iface_str, "-w", temp_pcap_path});
 	if(!filter.empty()){
 		command.emplace_back("-f");
 		if(filter == "special_filter:actors"){
@@ -94,6 +94,7 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 			filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
 			remove(temp_pcap_path);
 		}
+		if (exists(pcap_path)) set_public_perms(pcap_path);
 	});
 }
 

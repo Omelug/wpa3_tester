@@ -6,7 +6,8 @@ v: visualization
 Version v 0.0.0.0:
 +: add git results repository
 d: how run program
-+:
++: Network Manfager
++: NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION (maybe general NL80211_{} boolean conditions?>)
 
 r?: u tests asi nepotřebuju type (Dá se to vyvodit z test_name/path/)
 

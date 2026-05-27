@@ -26,11 +26,15 @@ void Graph::add_XY_points(const GraphXYPoints &xy_points){
 	gpcmd("EOD");
 }
 
-void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t event_size, size_t &label_index){
+void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots, size_t &label_index){
 	if(event_lines.event_times.empty()) return;
 
 	const string block_name = "$ev" + to_string(event_block_index++);
 	gpcmd(block_name + " << EOD");
+
+	const double y_center = (ymin + ymax) / 2.0;
+	const double step = 10.0 * static_cast<double>(label_slot) * (1.0 / static_cast<double>(num_label_slots));
+	const double y = (label_slot % 2 == 0) ? y_center - step : y_center + step;
 
 	for(const auto &tp: event_lines.event_times){
 		string t_str;
@@ -43,9 +47,6 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
 			t_str = to_string(chrono::system_clock::to_time_t(tp));
 		}
 
-		double y_center = (ymin + ymax) / 2.0;
-		double step = 10 * event_block_index * (1.0 / event_size);
-		double y = (event_block_index % 2 == 0) ? y_center - step : y_center + step;
 
 		//change ymax/ymin, if needed
 		int pad = (ymax - ymin) / 7;

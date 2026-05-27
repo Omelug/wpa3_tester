@@ -116,8 +116,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		if((*this)[BK::managed].value_or(false)){ set_managed_mode(); }
 		//TODO mplement for external WB
 		set_iface_up();
-		// NL80211_CMD_SET_CHANNEL requires AP or monitor mode — set channel after mode is configured
-		if(channel_num != -1 && ((*this)[BK::AP].value_or(false) || (*this)[BK::monitor].value_or(false))){ //FIMME co set_cahnnel if sniff_iface?
+		// NL80211_CMD_SET_CHANNEL requires monitor mode for pre-set; AP mode is handled by hostapd itself
+		if(channel_num != -1 && (*this)[BK::monitor].value_or(false)){
 			set_channel(Channel{channel_num}, (*this)[SK::ht_mode].value_or(""));
 		}
 		up_sniff_iface();

@@ -6,6 +6,7 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::observer{
 using namespace std;
@@ -53,9 +54,13 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 
 	vector<string> command;
 	add_nets_header(rs, command, actor_name);
-	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", obs_folder / (actor_name + "_capture.pcap")});
+	path pcap_path = obs_folder / (actor_name + "_capture.pcap");
+	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", pcap_path});
 	if(!filter.empty()) command.insert(command.end(), {"-f", filter});
 
 	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
+	rs.process_manager.after_stop(actor_name + "_cap", [pcap_path](){
+		if (exists(pcap_path)) set_public_perms(pcap_path);
+	});
 }
 }

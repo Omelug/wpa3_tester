@@ -51,3 +51,19 @@ attack_config:
   attack_time: 30
   ms_interval: 100
   new_channel: 1
+observers:
+  client_mausezahn:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: access_point
+  ap_tshark:
+    actor: access_point
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  sta_tshark:
+    actor: client
+    program: tcpdump
+    program_config:
+      filter: "udp port 5201"

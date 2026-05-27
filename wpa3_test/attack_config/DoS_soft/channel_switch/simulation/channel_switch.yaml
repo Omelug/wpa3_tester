@@ -7,13 +7,14 @@ actors:
       program: hostapd
       program_config:
         version: 2_10
-        ocv: 1
   client:
     source: simulation
+    $DELETE: netns
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_10
+        other_options: "-d"
   attacker:
     source: simulation
     selection:

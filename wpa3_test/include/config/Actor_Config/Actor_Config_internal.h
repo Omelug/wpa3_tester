@@ -5,7 +5,10 @@ namespace wpa3_tester{
 
 class Actor_Config_internal : public Actor_config{
 public:
-    using Actor_config::Actor_config;
+    Actor_Config_internal()                                  : Actor_config()  { set(SK::source, "internal"); }
+    explicit Actor_Config_internal(const nlohmann::json &j)  : Actor_config(j) { set(SK::source, "internal"); }
+    Actor_Config_internal(const Actor_config &o)             : Actor_config(o) { set(SK::source, "internal"); }
+
     void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor) override;
 };
 

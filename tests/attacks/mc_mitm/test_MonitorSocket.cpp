@@ -67,7 +67,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("too short input returns empty") {
         const std::vector<uint8_t> short_buf = {0x00, 0x00};
-    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+    	Channel ch{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(short_buf, ch);
         CHECK_UNARY(out.empty());
     }
@@ -75,7 +75,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
     TEST_CASE("rt_len larger than buffer returns empty") {
         // bytes 2-3 claim rt_len = 0xFFFF
         const std::vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
-    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+    	Channel ch{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(bad, ch);
         CHECK_UNARY(out.empty());
     }
@@ -96,7 +96,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
         auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
         const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
 
-    	Channel ch{.ch_num = 6, .band = WifiBand::BAND_2_4};
+    	Channel ch{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(raw, ch);
         REQUIRE_UNARY_FALSE(out.empty());
 
@@ -110,7 +110,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("detect_injected sets More Data bit in FC field") {
         auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-        constexpr Channel ch6{6, WifiBand::BAND_2_4};
+        constexpr Channel ch6{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(
             {raw.begin(), raw.end()}, ch6, /*detect_injected=*/true);
 

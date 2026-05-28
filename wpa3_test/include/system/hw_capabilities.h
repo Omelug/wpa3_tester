@@ -145,8 +145,8 @@ public:
 	static void set_mac_address(const std::string &iface, const Tins::HWAddress<6> &new_mac,
 								const std::optional<std::string> &netns
 	);
-	static void set_channel(const std::string &iface, Channel ch, const std::optional<std::string> &netns);
-	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, Channel ch);
+	static void set_channel(const std::string &iface, const Channel &ch, const std::optional<std::string> &netns);
+	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, const Channel &ch);
 
 	static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);

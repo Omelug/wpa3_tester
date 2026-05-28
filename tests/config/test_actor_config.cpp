@@ -2,7 +2,7 @@
 #include <doctest.h>
 #include <nlohmann/json.hpp>
 #include "config/Actor_Config/Actor_config.h"
-#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/error_log.h"
 
 using namespace std;
@@ -188,24 +188,24 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Multiple bands throw (2_4GHz + 6GHz)") {
         Actor_config actor;
         actor.set(SK::channel, "6");
-        actor[BK::GHz2_4] = true;
-        actor[BK::GHz6] = true;
+        actor.set(BK::GHz2_4, true);
+		actor.set(BK::GHz6, true);
         CHECK_THROWS_AS(actor.get_channel(), config_err);
     }
 
     SUBCASE("Multiple bands throw (5GHz + 6GHz)") {
         Actor_config actor;
         actor.set(SK::channel, "36");
-        actor[BK::GHz5] = true;
-        actor[BK::GHz6] = true;
+		actor.set(BK::GHz5, true);
+		actor.set(BK::GHz6, true);
         CHECK_THROWS_AS(actor.get_channel(), config_err);
     }
 
     SUBCASE("Valid 2.4GHz channel with explicit band") {
         Actor_config actor;
         actor.set(SK::channel, "6");
-        actor[BK::GHz2_4] = true;
-        auto [ch_num, band] = actor.get_channel();
+		actor.set(BK::GHz2_4, true);
+        auto [ch_num, band, ht_mode] = actor.get_channel();
         CHECK_EQ(ch_num, 6);
         CHECK_EQ(band, WifiBand::BAND_2_4);
     }
@@ -213,7 +213,7 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Valid 5GHz channel with explicit band") {
         Actor_config actor;
         actor.set(SK::channel, "36");
-        actor[BK::GHz5] = true;
+       actor.set(BK::GHz5, true);
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 36);
         CHECK_EQ(ch.band, WifiBand::BAND_5);
@@ -222,8 +222,8 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Valid 6GHz channel with explicit band") {
         Actor_config actor;
         actor.set(SK::channel, "1");
-        actor[BK::GHz6] = true;
-        auto [ch_num, band] = actor.get_channel();
+		actor.set(BK::GHz6, true);
+        auto [ch_num, band, ht_mode] = actor.get_channel();
         CHECK_EQ(ch_num, 1);
         CHECK_EQ(band, WifiBand::BAND_6);
     }
@@ -231,7 +231,7 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Inferred 2.4GHz from channel number") {
         Actor_config actor;
         actor.set(SK::channel, "11");
-        auto [ch_num, band] = actor.get_channel();
+    	auto [ch_num, band, ht_mode] = actor.get_channel();
         CHECK_EQ(ch_num, 11);
         CHECK_EQ(band, WifiBand::BAND_2_4);
     }
@@ -239,7 +239,7 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Inferred 5GHz from channel number") {
         Actor_config actor;
         actor.set(SK::channel, "100");
-        auto [ch_num, band] = actor.get_channel();
+    	auto [ch_num, band, ht_mode] = actor.get_channel();
         CHECK_EQ(ch_num, 100);
         CHECK_EQ(band, WifiBand::BAND_5);
     }
@@ -262,10 +262,10 @@ TEST_CASE("Actor_config - operator+=complex"){
     };
     Actor_config actor(j);
     Actor_config actor2(j);
-    actor[BK::GHz2_4] = false;
-    actor[BK::GHz5] = false;
-    actor[BK::w80211ac] = false;
-    actor[BK::w80211n] = true;
+	actor.set(BK::GHz2_4, false);
+	actor.set(BK::GHz5, false);
+	actor.set(BK::w80211ac, false);
+	actor.set(BK::w80211n, true);
     actor.set(BK::AP, false);
     actor.set(BK::STA, true);
 
@@ -349,11 +349,11 @@ TEST_CASE("Actor_config::to_json - bool conditions"){
 TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){
     Actor_config actor;
     actor.set(SK::netns, "sta_ns");
-    actor.set(SK::source, "hardware");
+    actor.set(SK::source, "internal");
 
     const auto j = actor.to_json();
     CHECK_EQ(j["netns"],  "sta_ns");
-    CHECK_EQ(j["source"], "hardware");
+    CHECK_EQ(j["source"], "internal");
     CHECK_FALSE(j["selection"].contains("netns"));
     CHECK_FALSE(j["selection"].contains("source"));
 }

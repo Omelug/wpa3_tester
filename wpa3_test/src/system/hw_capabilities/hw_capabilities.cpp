@@ -35,7 +35,7 @@ string hw_capabilities::read_sysfs(const string &iface, const string &file){
 }
 
 string hw_capabilities::get_driver_name(const string &iface, const optional<string> &netns){
-	//need new proces for netns change (read_syslm dont reflect it)
+	//need new proces for netns change (read_sys dont reflect it)
 	string target = run_cmd_output({"readlink", "/sys/class/net/" + iface + "/device/driver"}, netns);
 	while(!target.empty() && (target.back() == '\n' || target.back() == '\r'))
 		target.pop_back();
@@ -249,7 +249,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 	run_cmd({"ip", "link", "set", iface, "address", new_mac.to_string()}, netns);
 }
 
-void hw_capabilities::set_channel(const string &iface, const Channel ch, const optional<string> &netns){
+void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); !res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.error().message());
@@ -266,7 +266,7 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 	return match[1].str();
 }
 
-bool hw_capabilities::set_monitor_active(const string &iface, const optional<string> &netns, const Channel ch){
+bool hw_capabilities::set_monitor_active(const string &iface, const optional<string> &netns, const Channel &ch){
 	set_iface_down(iface, netns);
 
 	if(run_cmd({"iw", "dev", iface, "set", "monitor", "active"}) != 0){

@@ -61,32 +61,28 @@ public:
     [[nodiscard]] bool is_external_WB() const;
 	[[nodiscard]] bool monitor_needed() const;
 	[[nodiscard]] WifiBand get_band() const;
+	Channel get_channel() const;
 
     // Interface control
     int  run(const std::vector<std::string> &argv, bool print = true) const;
-    void cleanup()          const;
-    void create_sniff_iface() const;
+    virtual void cleanup()          const;
+    virtual void create_sniff_iface() const;
 
     std::string get_driver_name() const;
     void load_hw_info(const std::optional<std::filesystem::path> &cache = std::nullopt);
-    void set_channel(const Channel &ch) const;
-    void set_ap_mode()       const;
-    void set_iface_down()    const;
-    void set_iface_up()      const;
-    void up_sniff_iface()    const;
-    void set_managed_mode()  const;
-    void set_mac_address(const Tins::HWAddress<6> &mac) const;
-    void set_monitor_mode() const;
+    virtual void set_channel(const Channel &ch) const;
+    virtual void set_ap_mode()       const;
+    virtual void set_iface_down()    const;
+    virtual void set_iface_up()      const;
+    virtual void up_sniff_iface()    const;
+    virtual void set_managed_mode()  const;
+    virtual void set_mac_address(const Tins::HWAddress<6> &mac) const;
+    virtual void set_monitor_mode() const;
     void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
-	[[nodiscard]] Channel get_channel() const;
 
-    virtual void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor) = 0;
+	virtual void setup_actor(const nlohmann::json &, const ActorPtr &);
 
     static std::shared_ptr<Actor_config> create(const nlohmann::json &j);
-
-protected:
-    void setup_actor_internal(const nlohmann::json &config);
-    void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor) const;
 
 private:
 	std::array<std::optional<std::string>, static_cast<std::size_t>(SK::COUNT_)> str_vals{};

@@ -7,6 +7,7 @@
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
@@ -91,7 +92,7 @@ TEST_CASE("start ap test"){
         RunStatus rs;
         auto base_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
         base_actor->set(SK::iface, base_iface);
-        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5}, beacon, TestConfig::mac_addr));
+        REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5, nullopt}, beacon, TestConfig::mac_addr));
 
         stop_ap(ap_iface, nullopt);
         log(LogLevel::INFO, "AP stopped");

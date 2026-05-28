@@ -10,6 +10,7 @@
 
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/log.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"

@@ -300,10 +300,10 @@ bool Actor_config::monitor_needed() const{
 }
 
 WifiBand Actor_config::get_band() const{
-	if(get(BK::GHz2_4) && get(BK::GHz5)) return WifiBand::BAND_2_4_or_5;
-	if(get(BK::GHz2_4)) return WifiBand::BAND_2_4;
-	if(get(BK::GHz5)) return WifiBand::BAND_5;
-	if(get(BK::GHz6)) return WifiBand::BAND_6;
+	if(get_or(BK::GHz2_4, false) && get_or(BK::GHz5, false)) return WifiBand::BAND_2_4_or_5;
+	if(get_or(BK::GHz2_4, false)) return WifiBand::BAND_2_4;
+	if(get_or(BK::GHz5, false)) return WifiBand::BAND_5;
+	if(get_or(BK::GHz6, false)) return WifiBand::BAND_6;
 	throw setup_err("NOt valid band ");
 }
 

@@ -1,6 +1,7 @@
 #include <tins/tins.h>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;

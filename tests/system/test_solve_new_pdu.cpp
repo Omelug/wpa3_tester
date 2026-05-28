@@ -2,8 +2,10 @@
 #include <doctest.h>
 #include <memory>
 #include <tins/tins.h>
+
 #include "config/RunStatus.h"
-#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
@@ -155,9 +157,8 @@ TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
         ActorMap seen;
 
         // First add an entity with basic info
-        auto actor = ActorPtr(make_shared<Actor_Config_sim>());
+        auto actor = ActorPtr(make_shared<Actor_Config_external>());
         actor->set(SK::mac, "00:11:22:33:44:55");
-        actor->set(SK::source, "external");
         seen.emplace("00:11:22:33:44:55", ActorPtr(actor));
 
         // Create beacon with more info

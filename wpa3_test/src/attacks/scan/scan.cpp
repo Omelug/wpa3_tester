@@ -151,7 +151,6 @@ vector<ActorPtr> RunStatus::internal_options(){
 		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
 		cfg->set(SK::iface, iface_name);
-		cfg->set(SK::source, "internal");
 		cfg->set(SK::radio, radio_name);
 		cfg->set(SK::mac, hw_capabilities::get_mac_address(iface_name, nullopt).to_string());
 		cfg->load_hw_info(hw_cache);
@@ -215,7 +214,7 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 		vector<string> fields = parse_csv_line(line);
 		if(fields.empty()) continue;
 
-		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
+		auto cfg = ActorPtr(make_shared<Actor_Config_external>());
 
 		// Set fields if column exists and has data
 		auto set_field = [&](const string &col_name, const SK &cfg_key){
@@ -252,7 +251,6 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 		if(!cfg[SK::whitebox_ip].has_value()){
 			const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
 			cfg->set(SK::whitebox_ip, ip_str);
-			cfg->set(SK::source, "external");
 			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
 		}
 		const string ip = cfg["whitebox_ip"];
@@ -312,18 +310,17 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=" + to_string(n_radios)});
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// Rename all new Wi-Fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
+	// rename all new Wi-Fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
 	}
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// Now enumerate by type — only hwsim_ prefixed interfaces are returned
+	//only hwsim_ prefixed interfaces are returned
 	vector<ActorPtr> options;
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
 		cfg->set(SK::iface, name);
-		cfg->set(SK::source, "simulation");
 		cfg->set(SK::radio, radio);
 		hw_capabilities::get_nl80211_caps(cfg);
 		options.emplace_back(cfg);

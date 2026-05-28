@@ -11,6 +11,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "config/Actor_Config/Actor_Config_sim.h"
+
 using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
@@ -100,7 +102,7 @@ TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
 		};
 
 		for(auto [freq, channel, band]: test_cases){
-			CHECK_EQ(hw_capabilities::channel_to_freq({channel, band}), freq);
+			CHECK_EQ(hw_capabilities::channel_to_freq({channel, band, nullopt}), freq);
 			CHECK_EQ(hw_capabilities::freq_to_channel(freq), channel);
 		}
 	}

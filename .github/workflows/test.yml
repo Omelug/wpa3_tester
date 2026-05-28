@@ -23,8 +23,7 @@ jobs:
       - name: Build all tests
         run: cmake --build build -j$(nproc)
 
-      # Tests excluded from CI: require real WiFi hardware or kernel modules.
+      # Tests excluded from CI: require real WiFi hardware.
       # Run locally with: sudo -E ctest --test-dir build --output-on-failure
       - name: Run tests
-        run: |
-          sudo -E ctest --test-dir build --output-on-failure
+        run: sudo -E ctest --test-dir build --output-on-failure

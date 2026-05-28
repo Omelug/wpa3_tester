@@ -78,9 +78,11 @@ if(EXISTS "/etc/nixos")
     if(DBUS_FOUND)
         string(APPEND EXTRA_CFLAGS_VAL " ${DBUS_CFLAGS}")
     endif()
+    #FIXME move this to hostapd wrapper logic if possible
     # Bake include flags into the binary so they survive sudo dropping env vars.
     # Double-escaped quotes make HOSTAPD_EXTRA_CFLAGS a C string literal.
-    add_compile_definitions("HOSTAPD_EXTRA_CFLAGS=\"${EXTRA_CFLAGS_VAL}\"")
+    #string(REPLACE " " ";" EXTRA_CFLAGS_LIST "${EXTRA_CFLAGS_VAL}")
+    #add_compile_definitions(HOSTAPD_EXTRA_CFLAGS=\\"${EXTRA_CFLAGS_VAL}\\")
 
     message(STATUS "NixOS:  OPENSSL_CFLAGS = ${OPENSSL_CFLAGS}")
 else()

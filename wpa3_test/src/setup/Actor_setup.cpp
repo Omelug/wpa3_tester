@@ -51,16 +51,16 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set(SK::driver_hash, real_actor[SK::driver_hash]);
 	set(SK::module_hash, real_actor[SK::module_hash]);
 
-	set(SK::iface,       real_actor[SK::iface]);
-	set(SK::radio,       real_actor[SK::radio]);
+	set(SK::iface, real_actor[SK::iface]);
+	set(SK::radio, real_actor[SK::radio]);
 
-	set(SK::ht_mode,     real_actor[SK::ht_mode]);
+	set(SK::ht_mode, real_actor[SK::ht_mode]);
 	set(SK::ssid, real_actor[SK::ssid]);
 
 	if(!(*this)[SK::mac].has_value()){
 		set(SK::mac, real_actor.get(SK::mac));
 	}else{
-		set_mac_address(real_actor.get(SK::mac));
+		set_mac_address(get(SK::mac));
 	}
 
 	if(!(*this)[SK::permanent_mac].has_value()){

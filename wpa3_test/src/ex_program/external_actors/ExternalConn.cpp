@@ -104,13 +104,10 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	while((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0){ result.append(buf, n); }
 
 	if(ret_err){
-#if SSH_VERSION_INT(LIBSSH_VERSION_MAJOR, LIBSSH_VERSION_MINOR, 0) >= SSH_VERSION_INT(0, 10, 0)
-		uint32_t exit_code = 0;
-		ssh_channel_get_exit_state(guard.ch, &exit_code, nullptr, nullptr);
-		*ret_err = static_cast<int>(exit_code);
-#else
+		#  pragma GCC diagnostic push
+		#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*ret_err = ssh_channel_get_exit_status(guard.ch);
-#endif
+		#  pragma GCC diagnostic pop
 	}
 	return result;
 }

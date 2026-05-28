@@ -54,6 +54,6 @@ wpa3_library(wpa3_enterprise ${ENTERPRISE_SRC})
 wpa3_library(wpa3_mc_mitm ${MC_MITM_SRC})
 wpa3_library(wpa3_two_iface ${TWO_IFACE_SRC})
 
-add_library(wpa3_core INTERFACE)
+add_library(wpa3_core INTERFACE )
 #add_library(wpa3_core STATIC )
 #target_link_libraries(wpa3_core PUBLIC wpa3_deps)

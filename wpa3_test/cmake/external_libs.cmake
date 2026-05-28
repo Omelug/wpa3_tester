@@ -24,6 +24,7 @@ set(DISABLE_DAG ON CACHE BOOL "" FORCE)
 set(DISABLE_SEPTEL ON CACHE BOOL "" FORCE)
 set(DISABLE_SNF ON CACHE BOOL "" FORCE)
 set(DISABLE_TC ON CACHE BOOL "" FORCE)
+set(ENABLE_PROFILING OFF CACHE BOOL "" FORCE)
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -127,6 +128,9 @@ FetchContent_Declare(yaml-cpp
         GIT_SHALLOW TRUE
 )
 
+FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp)
+FetchContent_MakeAvailable(json)
+FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
 FetchContent_MakeAvailable(
         reproc libtins doctest argparse yaml-cpp json
         json_schema_validator linux_headers_wifi radiotap
@@ -161,3 +165,4 @@ if(NOT LIBSSH_FOUND)
 else()
     list(APPEND CMAKE_BUILD_RPATH ${LIBSSH_LIBRARY_DIRS})
 endif()
+

@@ -23,7 +23,8 @@ runs:
           libtins-dev \
           flex bison \
           gcc-14 \
-          iw
+          iw \
+          linux-modules-extra-$(uname -r)
 
     - name: Cache FetchContent deps
       uses: actions/cache@v4

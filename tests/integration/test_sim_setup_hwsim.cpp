@@ -19,45 +19,56 @@ static string iw_info(const string &iface){
     return out;
 }
 
-static void load_hwsim(){
-    static bool loaded = false;
-    if(loaded) return;
-    loaded = true;
+static bool g_hwsim_ok = false;
 
-    hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=2"}, nullopt, false);
+static void load_hwsim(){
+    static bool attempted = false;
+    if(attempted) return;
+    attempted = true;
+
+    if(hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=2"}, nullopt, false) != 0)
+        return;
+
     hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
     for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt))
         hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name}, nullopt, false);
     hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-    atexit([]{ hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false); });
+    g_hwsim_ok = !hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt).empty();
+    if(g_hwsim_ok)
+        atexit([]{ hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false); });
 }
 
 // -----------------
 
 struct HwsimFixture {
+    bool ok = false;
     string iface;
     ActorPtr base;
 
     HwsimFixture(){
         load_hwsim();
+        if(!g_hwsim_ok) return;
 
-        const auto found = hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt);
-        REQUIRE_MESSAGE(!found.empty(), "mac80211_hwsim loaded but no hwsim_ interfaces found");
-
-        const auto &[name, radio, type] = found[0];
+        const auto &[name, radio, type] = hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)[0];
         iface = name;
 
         auto a = make_shared<Actor_Config_sim>();
-    	a->set(SK::mac, "11:22:33:44:55:66");
+        a->set(SK::mac,  "11:22:33:44:55:66");
         a->set(SK::iface, name);
         a->set(SK::radio, radio);
         base = ActorPtr(a);
 
+        ok = true;
         reset();
     }
 
-    ~HwsimFixture(){ reset(); }
+    ~HwsimFixture(){ if(ok) reset(); }
+
+    bool skip() const {
+        if(!ok) MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
+        return !ok;
+    }
 
     void reset() const {
         hw_capabilities::run_cmd({"ip",  "link", "set", iface, "down"}, nullopt, false);
@@ -78,6 +89,7 @@ struct HwsimFixture {
 
 TEST_CASE("hwsim setup_actor - change mac address"){
     HwsimFixture f;
+    if(f.skip()) return;
 
     const string new_mac = "02:bb:cc:dd:ee:01";
     auto actor = f.make_actor();
@@ -90,6 +102,7 @@ TEST_CASE("hwsim setup_actor - change mac address"){
 
 TEST_CASE("hwsim setup_actor - set AP mode"){
     HwsimFixture f;
+    if(f.skip()) return;
 
     auto actor = f.make_actor();
     actor->set(BK::AP, true);
@@ -101,6 +114,7 @@ TEST_CASE("hwsim setup_actor - set AP mode"){
 
 TEST_CASE("hwsim setup_actor - set managed mode"){
     HwsimFixture f;
+    if(f.skip()) return;
     // start from monitor so the switch is meaningful
     hw_capabilities::run_cmd({"iw", "dev", f.iface, "set", "type", "monitor"}, nullopt, false);
 
@@ -114,6 +128,7 @@ TEST_CASE("hwsim setup_actor - set managed mode"){
 
 TEST_CASE("hwsim setup_actor - set monitor mode"){
     HwsimFixture f;
+    if(f.skip()) return;
 
     auto actor = f.make_actor();
     actor->set(BK::monitor, true);
@@ -126,6 +141,7 @@ TEST_CASE("hwsim setup_actor - set monitor mode"){
 
 TEST_CASE("hwsim setup_actor - set channel"){
     HwsimFixture f;
+    if(f.skip()) return;
 
     auto actor = f.make_actor();
     actor->set(BK::monitor, true);
@@ -139,6 +155,7 @@ TEST_CASE("hwsim setup_actor - set channel"){
 
 TEST_CASE("hwsim setup_actor - create sniff iface"){
     HwsimFixture f;
+    if(f.skip()) return;
 
     const string sniff = MONITOR_IFACE_PREFIX + f.iface;
     auto actor = f.make_actor();

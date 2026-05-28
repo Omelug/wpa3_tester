@@ -50,10 +50,11 @@ struct HwsimFixture {
         load_hwsim();
         if(!g_hwsim_ok) return;
 
-        const auto &[name, radio, type] = hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)[0];
+        const auto found = hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt);
+        const auto &[name, radio, type] = found[0];
         iface = name;
 
-        auto a = make_shared<Actor_Config_sim>();
+        const auto a = make_shared<Actor_Config_sim>();
         a->set(SK::mac,  "11:22:33:44:55:66");
         a->set(SK::iface, name);
         a->set(SK::radio, radio);

@@ -1,9 +1,9 @@
 name: Tests
 
 on:
-  push:
-    branches: [main]
-
+  workflow_dispatch: # TODO disabled — use test-nix.yml instead (but maybe for fragattacks ubuntu - different bracnch)
+  #push:
+  #  branches: [main]
 jobs:
   test:
     runs-on: ubuntu-24.04

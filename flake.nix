@@ -11,7 +11,7 @@
     depsDir   = builtins.getEnv "WPATESTER_DEPS_DIR";
 
   in {
-    checks.${system}.hwsim = pkgs.nixosTest {
+    checks.${system}.hwsim = pkgs.testers.nixosTest {
       name = "wpa3-hwsim";
 
       nodes.machine = { pkgs, ... }: {

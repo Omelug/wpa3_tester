@@ -26,7 +26,7 @@ public:
 
 	virtual std::string exec(const std::string &cmd, bool kill_on_exit = false, int *ret_err = nullptr) const;
 	void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;
-	bool set_channel(const std::string &iface, Channel ch, const std::string &ht_mode = "") const;
+	bool set_channel(const std::string &iface, const Channel &ch) const;
 	virtual void set_monitor_mode(const std::string &iface) const;
 	virtual void set_managed_mode(const std::string &iface) const;
 	virtual void set_ip(const std::string &iface, const std::string &ip_addr) const;

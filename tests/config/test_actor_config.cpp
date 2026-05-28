@@ -1,7 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include <nlohmann/json.hpp>
-#include "config/Actor_config.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/error_log.h"
 
 using namespace std;
@@ -377,7 +378,7 @@ TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
 // ActorPtr
 
 TEST_CASE("ActorPtr - basic accessors"){
-    auto cfg = ActorPtr(make_shared<Actor_config>());
+    auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
     cfg->set(SK::iface, "wlan2");
     cfg->set(BK::monitor, true);
 
@@ -420,8 +421,8 @@ TEST_CASE("ActorPtr - basic accessors"){
 }
 
 TEST_CASE("ActorPtr - equality and ordering"){
-    auto cfg1 = make_shared<Actor_config>();
-    auto cfg2 = make_shared<Actor_config>();
+    auto cfg1 = make_shared<Actor_Config_sim>();
+    auto cfg2 = make_shared<Actor_Config_sim>();
 
     ActorPtr a(cfg1), b(cfg1), c(cfg2);
 
@@ -435,7 +436,7 @@ TEST_CASE("ActorPtr - equality and ordering"){
 // to_str / to_json with ParamFilter via ActorPtr
 
 TEST_CASE("ActorPtr::to_str - filter restricts SK output"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface,       "wlan0");
     ap->set(SK::driver_name, "ath9k");
     ap->set(SK::ssid,        "MyNet");
@@ -449,7 +450,7 @@ TEST_CASE("ActorPtr::to_str - filter restricts SK output"){
 }
 
 TEST_CASE("ActorPtr::to_str - filter restricts BK output"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(BK::monitor,   true);
     ap->set(BK::AP,        false);
     ap->set(BK::injection, true);
@@ -463,7 +464,7 @@ TEST_CASE("ActorPtr::to_str - filter restricts BK output"){
 }
 
 TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface,       "wlan1");
     ap->set(SK::driver_name, "mt76");
     ap->set(BK::AP,          true);
@@ -479,7 +480,7 @@ TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
 }
 
 TEST_CASE("ActorPtr::to_str - empty filter produces empty string"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface, "wlan0");
     ap->set(BK::monitor, true);
 
@@ -488,7 +489,7 @@ TEST_CASE("ActorPtr::to_str - empty filter produces empty string"){
 }
 
 TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface,       "wlan0");
     ap->set(SK::driver_name, "ath9k");
     ap->set(SK::ssid,        "MyNet");
@@ -504,7 +505,7 @@ TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
 }
 
 TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(BK::monitor,   true);
     ap->set(BK::injection, false);
     ap->set(BK::AP,        true);
@@ -520,7 +521,7 @@ TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
 }
 
 TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface,       "wlan1");
     ap->set(SK::driver_name, "mt76");
     ap->set(BK::AP,          true);
@@ -539,7 +540,7 @@ TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK"){
 }
 
 TEST_CASE("ActorPtr::to_json - filter suppresses netns/source top-level keys"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface, "wlan0");
     ap->set(SK::netns, "sta_ns");
 
@@ -551,7 +552,7 @@ TEST_CASE("ActorPtr::to_json - filter suppresses netns/source top-level keys"){
 }
 
 TEST_CASE("ActorPtr::to_json - empty filter produces empty selection"){
-    ActorPtr ap(make_shared<Actor_config>());
+    ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(SK::iface, "wlan0");
     ap->set(BK::monitor, true);
 

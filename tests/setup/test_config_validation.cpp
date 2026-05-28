@@ -3,11 +3,11 @@
 #include <filesystem>
 #include <source_location>
 #include <yaml-cpp/node/parse.h>
-#include "config/ActorPtr.h"
 #include "config/ObserverPtr.h"
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 

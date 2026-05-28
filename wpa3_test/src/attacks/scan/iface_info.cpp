@@ -5,8 +5,8 @@
 #include <sstream>
 
 #include "attacks/mc_mitm/MonitorSocket.h"
-#include "config/ActorPtr.h"
-#include "config/Actor_config.h"
+#include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "logger/error_log.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
@@ -56,7 +56,7 @@ void run_attack(RunStatus &rs){
 		/*skip_mf=*/false,
 		/*testack=*/false);
 
-	//TODO scan to  Actor_coinfig
+	//TODO scan to  Actor_config
     // ----- build markdown -----
     ostringstream md;
     md << "# Interface Report: " << iface << "\n\n";

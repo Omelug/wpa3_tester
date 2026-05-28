@@ -5,12 +5,14 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
+#include <tins/tins.h>
 #include "actor_keys.h"
 #include "system/hw_info.h"
 #include "system/wifi_channel.h"
-#include <tins/tins.h>
 
 namespace wpa3_tester{
+
+enum class Source { SIMULATION, INTERNAL, EXTERNAL };
 
 inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
 inline auto AP_IFACE_PREFIX      = std::string("ap_");
@@ -20,14 +22,13 @@ class RunStatus;
 class ExternalConn;
 
 class Actor_config : public std::enable_shared_from_this<Actor_config> {
-private:
 	Driver _driver{};
 public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
 	explicit Actor_config() = default;
     Actor_config(const Actor_config &other) = default;
     explicit Actor_config(const nlohmann::json &j);
-    ~Actor_config();
+	virtual ~Actor_config();
 
     bool matches(const Actor_config &offer);
     Actor_config &operator+=(const Actor_config &other);
@@ -59,6 +60,7 @@ public:
     [[nodiscard]] bool is_WB()          const;
     [[nodiscard]] bool is_external_WB() const;
 	[[nodiscard]] bool monitor_needed() const;
+	[[nodiscard]] WifiBand get_band() const;
 
     // Interface control
     int  run(const std::vector<std::string> &argv, bool print = true) const;
@@ -67,7 +69,7 @@ public:
 
     std::string get_driver_name() const;
     void load_hw_info(const std::optional<std::filesystem::path> &cache = std::nullopt);
-    void set_channel(Channel ch, const std::string &ht_mode = "") const;
+    void set_channel(const Channel &ch) const;
     void set_ap_mode()       const;
     void set_iface_down()    const;
     void set_iface_up()      const;
@@ -76,16 +78,19 @@ public:
     void set_mac_address(const Tins::HWAddress<6> &mac) const;
     void set_monitor_mode() const;
     void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
-    Channel get_channel() const;
+	[[nodiscard]] Channel get_channel() const;
 
-    void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor);
+    virtual void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor) = 0;
+
+    static std::shared_ptr<Actor_config> create(const nlohmann::json &j);
+
+protected:
+    void setup_actor_internal(const nlohmann::json &config);
+    void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor) const;
 
 private:
 	std::array<std::optional<std::string>, static_cast<std::size_t>(SK::COUNT_)> str_vals{};
 	std::array<std::optional<bool>,static_cast<std::size_t>(BK::COUNT_)> bool_vals{};
-
-    void setup_actor_internal(const nlohmann::json &config);
-    void setup_actor_external_whitebox(const nlohmann::json &config, const ActorPtr &real_actor) const;
 };
 
 }

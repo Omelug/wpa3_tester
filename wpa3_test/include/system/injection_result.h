@@ -59,7 +59,7 @@ public:
 	std::string iface_out;
 	std::string iface_in; // == iface_out for self-test
 	std::string driver;
-	Channel channel = {};
+	Channel channel;
 	std::vector<InjectionTestResult> tests;
 
 	it_test_result inject_all() const{

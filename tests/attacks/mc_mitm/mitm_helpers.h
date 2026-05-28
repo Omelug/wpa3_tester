@@ -2,6 +2,7 @@
 
 #include "pcap_helper.h"
 #include "attacks/mc_mitm/mc_mitm.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 
 namespace wpa3_tester{
 
@@ -72,8 +73,8 @@ inline void McMitmTestable::append_to_pcap(const std::string &path) const{
 }
 
 inline std::unique_ptr<McMitmTestable> make_fixture() {
-    auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
-    auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
+    auto r_sta_actor = ActorPtr(std::make_shared<Actor_Config_internal>());
+    auto r_ap_actor = ActorPtr(std::make_shared<Actor_Config_internal>());
 
     r_sta_actor->set(SK::iface, "wlan1");
     r_ap_actor->set(SK::iface, "wlan2");

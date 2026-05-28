@@ -8,9 +8,9 @@
 #include <sys/wait.h>
 #include "attacks/two_iface/TwoIfaceActive.h"
 #include "attacks/two_iface/TwoIfaceInject.h"
-#include "config/Actor_config.h"
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -25,7 +25,7 @@ using namespace observer;
 
 void RunStatus::parse_requirements(){
 	for(const auto &[actor_name, actor]: _config.at("actors").items()){
-		auto [it, inserted] = actors.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor)));
+		auto [it, inserted] = actors.emplace(actor_name, ActorPtr(Actor_config::create(actor)));
 		it->second->set(SK::actor_name, actor_name);
 	}
 	if(!_config.contains("observers")) return;

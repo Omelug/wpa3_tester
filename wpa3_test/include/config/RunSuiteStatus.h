@@ -2,8 +2,8 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-#include "Actor_config.h"
 #include "Run_Config.h"
+#include "Actor_Config/Actor_config.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{

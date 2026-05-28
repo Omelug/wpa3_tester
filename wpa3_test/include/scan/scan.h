@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "config/Actor_config.h"
+#include "config/Actor_Config/Actor_config.h"
 
 namespace wpa3_tester::scan{
 std::vector<std::string> parse_csv_line(const std::string &line);

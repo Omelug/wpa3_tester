@@ -6,6 +6,7 @@
 #include "pcap_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
@@ -88,7 +89,7 @@ TEST_CASE("start ap test"){
 
     SUBCASE("AP Start and Stop"){
         RunStatus rs;
-        auto base_actor = ActorPtr(std::make_shared<Actor_config>());
+        auto base_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
         base_actor->set(SK::iface, base_iface);
         REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5}, beacon, TestConfig::mac_addr));
 
@@ -114,11 +115,11 @@ TEST_CASE("STA connected to AP in different namespaces") {
     SUBCASE("Full Connection Flow") {
         RunStatus rs;
 
-        auto ap_actor = ActorPtr(std::make_shared<Actor_config>());
+        auto ap_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
         ap_actor->set(SK::iface, ap_phys_iface);
         ap_actor->set(SK::netns, ap_ns);
 
-        start_ap(rs, ap_vif, ap_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5} , beacon,  TestConfig::mac_addr);
+        start_ap(rs, ap_vif, ap_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5, nullopt} , beacon,  TestConfig::mac_addr);
         log(LogLevel::INFO, "AP started in namespace: {}", ap_ns);
 
         stop_ap(ap_vif, ap_ns);

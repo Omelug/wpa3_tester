@@ -1,6 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <chrono>
-#include <cstdint>
 #include <cstdlib>
 #include <doctest.h>
 #include <filesystem>
@@ -9,8 +8,8 @@
 #include <source_location>
 #include <string>
 
-#include "config/Actor_config.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "logger/log.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
@@ -28,7 +27,7 @@ bool tshark_available(){
 path this_file = source_location::current().file_name();
 
 ActorPtr make_actor(const string &mac){
-    auto cfg = ActorPtr(make_shared<Actor_config>());
+    auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
     cfg->set(SK::mac, mac);
     return ActorPtr(cfg);
 }

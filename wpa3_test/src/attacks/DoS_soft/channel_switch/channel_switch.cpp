@@ -10,9 +10,7 @@
 #include <filesystem>
 #include "attacks/components/setup_connections.h"
 #include "logger/report.h"
-#include "observer/mausezahn_wrapper.h"
 #include "observer/observers.h"
-#include "observer/tcpdump_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "setup/program.h"
 #include "system/utils.h"
@@ -86,8 +84,8 @@ void run_chs_attack(RunStatus &rs){
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const string essid = ap_actor["ssid"];
-	const Channel old_channel{stoi(ap_actor["channel"])};
-	const Channel new_channel{att_cfg.at("new_channel").get<int>()};
+	const Channel old_channel = ap_actor->get_channel();
+	const Channel new_channel{att_cfg.at("new_channel").get<int>(), ap_actor->get_band(), ap_actor[SK::ht_mode]};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 

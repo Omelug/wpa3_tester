@@ -29,14 +29,4 @@ public:
 	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr;}
 	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr;}
 };
-
-/*struct hash_ActorPtr{
-	size_t operator()(const ActorPtr &ap) const{
-		return std::hash<std::shared_ptr<Actor_config>>{}(ap.ptr);
-	}
-};*/
-/*
-inline bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){
-	return lhs.ptr < rhs.ptr;
-}*/
 }

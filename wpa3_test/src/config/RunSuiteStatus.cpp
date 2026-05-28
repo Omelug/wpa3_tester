@@ -8,7 +8,7 @@
 #include <chrono>
 #include <thread>
 
-#include "config/Actor_config.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"

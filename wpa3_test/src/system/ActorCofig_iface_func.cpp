@@ -1,6 +1,6 @@
-#include <sys/wait.h>
-#include <vector>
 #include <random>
+#include <vector>
+#include <sys/wait.h>
 
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
@@ -9,9 +9,9 @@
 namespace wpa3_tester{
 using namespace std;
 
-void Actor_config::set_channel(const Channel ch, const string &ht_mode) const{
+void Actor_config::set_channel(const Channel &ch) const{
 	const string &iface = get(SK::iface);
-	if(conn != nullptr){ conn->set_channel(iface, ch, ht_mode); return; }
+	if(conn != nullptr){ conn->set_channel(iface, ch); return; }
 	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
 }
 

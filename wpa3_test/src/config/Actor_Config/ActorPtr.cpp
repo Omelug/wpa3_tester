@@ -1,5 +1,5 @@
-#include "config/ActorPtr.h"
-#include "config/Actor_config.h"
+#include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_config.h"
 
 #include <memory>
 using namespace std;

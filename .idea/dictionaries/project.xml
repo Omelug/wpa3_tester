@@ -104,6 +104,7 @@
       <w>noborder</w>
       <w>nocapture</w>
       <w>nohead</w>
+      <w>nomatch</w>
       <w>nomirror</w>
       <w>nooutput</w>
       <w>noscan</w>
@@ -155,8 +156,10 @@
       <w>siocsifflags</w>
       <w>sout</w>
       <w>srcversion</w>
+      <w>srcversions</w>
       <w>ssid</w>
       <w>sstream</w>
+      <w>stoi</w>
       <w>strtype</w>
       <w>sysntpd</w>
       <w>tdls</w>

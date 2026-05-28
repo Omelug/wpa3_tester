@@ -4,10 +4,8 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-
-#include "config/ActorPtr.h"
-#include "config/actor_keys.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/actor_keys.h"
 #include "logger/log.h"
 
 using namespace std;

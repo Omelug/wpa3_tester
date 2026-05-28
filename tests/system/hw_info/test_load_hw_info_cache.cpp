@@ -3,7 +3,9 @@
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "config/Actor_config.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "system/hw_info.h"
 
 using namespace std;
@@ -38,7 +40,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_name and pe
         {"permanent_mac", string(LO_MAC)},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_sim>();
     actor->set(SK::iface, "lo");
     actor->load_hw_info(cache_file);
 
@@ -53,7 +55,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_hash when p
         {"permanent_mac", string(LO_MAC)},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_sim>();
     actor->set(SK::iface, "lo");
     actor->load_hw_info(cache_file);
 
@@ -67,7 +69,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty driver_hash in cache is not set
         {"permanent_mac", string(LO_MAC)},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_sim>();
     actor->set(SK::iface, "lo");
     actor->load_hw_info(cache_file);
 
@@ -82,7 +84,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores module_hash when p
         {"permanent_mac", string(LO_MAC)},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_internal>();
     actor->set(SK::iface, "lo");
     actor->load_hw_info(cache_file);
 
@@ -96,7 +98,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty module_hash in cache is not set
         {"permanent_mac", string(LO_MAC)},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_internal>();
     actor->set(SK::iface, "lo");
     actor->load_hw_info(cache_file);
 
@@ -111,7 +113,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - wrong perm_mac in cache does not poll
         {"permanent_mac", "ff:ff:ff:ff:ff:ff"},
     });
 
-    const auto actor = make_shared<Actor_config>();
+    const auto actor = make_shared<Actor_Config_internal>();
     actor->set(SK::iface, "lo");
     // Cache miss → falls through to hw detection; loopback may throw — that's OK
     try { actor->load_hw_info(cache_file); } catch(...) {}

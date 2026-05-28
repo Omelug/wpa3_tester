@@ -104,17 +104,13 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	while((n = ssh_channel_read(guard.ch, buf, sizeof(buf), 0)) > 0){ result.append(buf, n); }
 
 	if(ret_err){
-		/*FIXME nepoplletl jsem si to uplně s jinpou knihovnou?
-		 libssh (function get_exit_state added in libssh 0.10.0)
-		#if (LIBSSH_VERSION_MAJOR > 0) || (LIBSSH_VERSION_MINOR >= 10)
-		uint32_t exit_status = 0;
-		ssh_channel_get_exit_state(guard.ch, &exit_status, nullptr, nullptr);
-		*ret_err = static_cast<int>(exit_status);
-		#else
-		// Fallback for old versions (Ubuntu 20.04 / libssh 0.9.x)
-		*/
+#if SSH_VERSION_INT(LIBSSH_VERSION_MAJOR, LIBSSH_VERSION_MINOR, 0) >= SSH_VERSION_INT(0, 10, 0)
+		uint32_t exit_code = 0;
+		ssh_channel_get_exit_state(guard.ch, &exit_code, nullptr, nullptr);
+		*ret_err = static_cast<int>(exit_code);
+#else
 		*ret_err = ssh_channel_get_exit_status(guard.ch);
-		//#endif
+#endif
 	}
 	return result;
 }
@@ -130,10 +126,10 @@ void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_i
 	exec("ip link set " + sniff_iface + " up");
 }
 
-bool ExternalConn::set_channel(const string &iface, const Channel ch, const string &ht_mode) const{
+bool ExternalConn::set_channel(const string &iface, const Channel &ch) const{
 	int ret = 0;
 	string cmd = "iw dev " + iface + " set channel " + to_string(ch.ch_num);
-	if(!ht_mode.empty()){ cmd += " " + ht_mode; }
+	if(ch.ht_mode.has_value()){ cmd += " " + ch.ht_mode.value(); }
 	cmd += " 2>&1";
 	exec(cmd, false, &ret);
 	return ret;

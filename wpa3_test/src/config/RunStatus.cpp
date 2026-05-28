@@ -333,7 +333,7 @@ void RunStatus::load_actor_interface_mapping(){
 			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);
 			continue;
 		}
-		auto actor = make_shared<Actor_config>(j);
+		auto actor = Actor_config::create(j);
 		actor->set(SK::actor_name, actor_name);
 		actors.emplace(actor_name, ActorPtr(actor));
 	}

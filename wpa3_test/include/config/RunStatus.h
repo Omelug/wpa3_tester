@@ -3,12 +3,11 @@
 #include <string>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
-
-#include "ActorPtr.h"
-#include "Actor_config.h"
 #include "ObserverPtr.h"
 #include "RunSuiteStatus.h"
 #include "Run_Config.h"
+#include "Actor_Config/ActorPtr.h"
+#include "Actor_Config/Actor_config.h"
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 

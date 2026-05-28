@@ -1,6 +1,8 @@
-#include "config/Actor_config.h"
-#include "config/ActorPtr.h"
-#include "config/actor_keys.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
+#include "config/Actor_Config/actor_keys.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
@@ -199,32 +201,6 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 	return result;
 }
 
-json Actor_config::hw_info_caps_to_flat_json() const {
-    json j = json::object();
-	for(const auto sk : sk_values()){
-		if(!HwInfo::is_hw_info(sk)) continue;
-		const auto &v = (*this)[sk];
-		if(v.has_value())
-			j[string(sk_name(sk))] = *v;
-	}
-    for(const auto bk : bk_values()){
-        if(!HwInfo::is_hw_info(bk)) continue;
-        const auto &v = (*this)[bk];
-        if(v.has_value())
-            j[string(bk_name(bk))] = *v;
-    }
-    return j;
-}
-
-void Actor_config::caps_from_flat_json(const json &j) {
-    for(const auto k : bk_values()){
-        if(!HwInfo::is_hw_info(k)) continue;
-        const auto name = string(bk_name(k));
-        if(j.contains(name) && j.at(name).is_boolean())
-            (*this)[k] = j.at(name).get<bool>();
-    }
-}
-
 json Actor_config::to_json(const ParamFilter *filter) const {
 	json sel = json::object();
 
@@ -260,6 +236,32 @@ json Actor_config::to_json(const ParamFilter *filter) const {
 	return result;
 }
 
+json Actor_config::hw_info_caps_to_flat_json() const {
+	json j = json::object();
+	for(const auto sk : sk_values()){
+		if(!HwInfo::is_hw_info(sk)) continue;
+		const auto &v = (*this)[sk];
+		if(v.has_value())
+			j[string(sk_name(sk))] = *v;
+	}
+	for(const auto bk : bk_values()){
+		if(!HwInfo::is_hw_info(bk)) continue;
+		const auto &v = (*this)[bk];
+		if(v.has_value())
+			j[string(bk_name(bk))] = *v;
+	}
+	return j;
+}
+
+void Actor_config::caps_from_flat_json(const json &j) {
+	for(const auto k : bk_values()){
+		if(!HwInfo::is_hw_info(k)) continue;
+		const auto name = string(bk_name(k));
+		if(j.contains(name) && j.at(name).is_boolean())
+			(*this)[k] = j.at(name).get<bool>();
+	}
+}
+
 void Actor_config::print_ActorCMap(const string &title, const vector<ActorPtr> &actors) {
 	cout << title << ":\n";
 	for(size_t i = 0; i < actors.size(); ++i)
@@ -290,11 +292,26 @@ bool Actor_config::is_external_WB() const {
 
 bool Actor_config::monitor_needed() const{
 	return
-		get_or(BK::monitor, false) ||
-		get_or(BK::active_monitor, false) ||
-		get_or(BK::control_monitor, false) ||
-		get_or(BK::injection, false);
+			get_or(BK::monitor, false) ||
+			get_or(BK::active_monitor, false) ||
+			get_or(BK::control_monitor, false) ||
+			get_or(BK::injection, false);
 	//TODO check injection
+}
+
+WifiBand Actor_config::get_band() const{
+	if(get(BK::GHz2_4) && get(BK::GHz5)) return WifiBand::BAND_2_4_or_5;
+	if(get(BK::GHz2_4)) return WifiBand::BAND_2_4;
+	if(get(BK::GHz5)) return WifiBand::BAND_5;
+	if(get(BK::GHz6)) return WifiBand::BAND_6;
+	throw setup_err("NOt valid band ");
+}
+
+shared_ptr<Actor_config> Actor_config::create(const json &j){
+	const auto source = j.at("source").get<string>();
+	if(source == "simulation") return make_shared<Actor_Config_sim>(j);
+	if(source == "external")   return make_shared<Actor_Config_external>(j);
+	return make_shared<Actor_Config_internal>(j);
 }
 
 }

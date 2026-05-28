@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include "attacks/two_iface/TwoIface.h"
-#include "config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/error_log.h"
 
 namespace wpa3_tester {
@@ -31,7 +31,7 @@ struct StubTwoIface : TwoIface {
 };
 
 inline ActorPtr make_stub_actor(const std::string &driver, const std::string &mac){
-    const auto ac = std::make_shared<Actor_config>();
+    const auto ac = std::make_shared<Actor_Config_sim>();
     ac->set(SK::driver_name, driver);
     ac->set(SK::permanent_mac, mac);
     return ActorPtr(ac);

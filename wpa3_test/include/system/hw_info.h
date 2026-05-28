@@ -2,7 +2,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
-#include "config/actor_keys.h"
+#include "config/Actor_Config/actor_keys.h"
 
 namespace wpa3_tester{
 
@@ -13,7 +13,7 @@ struct HwInfo{
 
     // returns true if the key represents persistent hardware capability
     // (suitable for caching and hw-capability filtering)
-    static constexpr bool is_hw_info(BK k){
+    static constexpr bool is_hw_info(const BK k){
         switch(k){
             case BK::AP: case BK::STA: case BK::monitor:
             case BK::GHz2_4: case BK::GHz5: case BK::GHz6:

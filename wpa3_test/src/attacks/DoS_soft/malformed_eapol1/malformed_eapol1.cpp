@@ -85,7 +85,7 @@ void run_attack(RunStatus &rs){
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const NetworkInterface iface(iface_name);
-	const Channel channel{stoi(rs.get_actor("access_point")["channel"])};
+	const Channel channel = rs.get_actor("access_point")->get_channel();
 
 	RadioTap radiotap = get_malformed_eapol(ap_mac, sta_mac, channel);
 	PacketSender sender;

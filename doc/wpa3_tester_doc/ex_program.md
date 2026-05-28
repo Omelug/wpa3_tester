@@ -1,4 +1,4 @@
-Connection to external actor can be part  of [Actor_config.cpp](../../wpa3_test/src/config/Actor_config.cpp) (ActorConfig\->conn)
+Connection to external actor can be part  of [Actor_config.cpp](../../wpa3_test/src/config/Actor_Config/Actor_config.cpp) (ActorConfig\->conn)
 
 - can be registered (needs to be disconnected manually, if needed )
 - have similar function like actor config 

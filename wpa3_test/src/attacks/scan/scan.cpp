@@ -2,6 +2,9 @@
 #include <tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -33,11 +36,10 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 		if(seen.contains(mac)){
 			actor = seen.at(mac);
 		} else{
-			actor = ActorPtr(make_shared<Actor_config>());
+			actor = ActorPtr(make_shared<Actor_Config_external>());
 			seen.emplace(mac, actor);
 		}
 		actor->set(SK::mac, mac);
-		actor->set(SK::source, "external");
 		actor->set(SK::ssid, ssid);
 		actor->set(BK::AP, is_ap);
 
@@ -147,7 +149,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 	vector<ActorPtr> options;
 	for(const auto &[iface_name, radio_name, iface_type]:
 		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
-		auto cfg = ActorPtr(make_shared<Actor_config>());
+		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
 		cfg->set(SK::iface, iface_name);
 		cfg->set(SK::source, "internal");
 		cfg->set(SK::radio, radio_name);
@@ -161,7 +163,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
 	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
-		auto actor_cfg = ActorPtr(make_shared<Actor_config>(*cfg));
+		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
 		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
 		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
 		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
@@ -213,7 +215,7 @@ vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
 		vector<string> fields = parse_csv_line(line);
 		if(fields.empty()) continue;
 
-		auto cfg = ActorPtr(make_shared<Actor_config>());
+		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
 
 		// Set fields if column exists and has data
 		auto set_field = [&](const string &col_name, const SK &cfg_key){
@@ -319,7 +321,7 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	// Now enumerate by type — only hwsim_ prefixed interfaces are returned
 	vector<ActorPtr> options;
 	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
-		auto cfg = ActorPtr(make_shared<Actor_config>());
+		auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
 		cfg->set(SK::iface, name);
 		cfg->set(SK::source, "simulation");
 		cfg->set(SK::radio, radio);

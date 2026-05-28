@@ -1,13 +1,12 @@
 #include "system/hw_info.h"
 
 #include <fstream>
-
 #include "attacks/mc_mitm/MonitorSocket.h"
-#include "config/ActorPtr.h"
-#include "config/Actor_config.h"
+#include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 #include "system/utils.h"
 
 namespace wpa3_tester{
@@ -24,7 +23,6 @@ nlohmann::json HwInfo::to_json() const{
 }
 
 void HwInfo::from_json(const nlohmann::json &j){
-    if(!actor) actor = make_shared<Actor_config>();
     for(const auto sk : sk_values()){
         if(!is_hw_info(sk)) continue;
         const auto name = string(sk_name(sk));

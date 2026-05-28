@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include "config/actor_keys.h"
-#include "config/ActorPtr.h"
+#include "config/Actor_Config/actor_keys.h"
 
 namespace wpa3_tester {
 

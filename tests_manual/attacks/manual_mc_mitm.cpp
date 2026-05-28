@@ -1,14 +1,15 @@
-#include "attacks/mc_mitm/mc_mitm.h"
-#include "system/hw_capabilities.h"
 #include <tins/tins.h>
+#include "attacks/mc_mitm/mc_mitm.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
 int main(){
-    auto r_sta_actor = ActorPtr(std::make_shared<Actor_config>());
-    auto r_ap_actor = ActorPtr(std::make_shared<Actor_config>());
+    const auto r_sta_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
+    const auto r_ap_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
 
     r_sta_actor->set(SK::iface, "wlan1");
     r_sta_actor->set(SK::iface, "wlan2");
@@ -17,8 +18,8 @@ int main(){
     const string ap_mac = "02:00:00:00:03:00";
     //const string client_mac     = "30:ab:6a:39:88:46";
     const string client_mac = "02:00:00:00:02:00";
-    constexpr Channel real_channel{11, WifiBand::BAND_2_4};
-    constexpr Channel rogue_channel{1, WifiBand::BAND_2_4};
+    constexpr Channel real_channel{11, WifiBand::BAND_2_4, nullopt};
+    constexpr Channel rogue_channel{1, WifiBand::BAND_2_4, nullopt};
     constexpr int attack_time = 20;
 
     McMitm attack(r_sta_actor, r_ap_actor, ap_ssid, ap_mac, client_mac);

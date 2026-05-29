@@ -34,6 +34,7 @@ void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string 
 			actor["ssh_user"] + "@" + actor["whitebox_ip"] + ":" + remote_pcap, local_pcap
 		};
 		hw_capabilities::run_cmd(scp_cmd);
+		if(filesystem::exists(local_pcap)) set_public_perms(local_pcap);
 	});
 
 	actor->conn->on_disconnect([remote_pcap, actor](){

@@ -332,7 +332,7 @@ definitions:
                     - properties: {condition: {contains: {const: "managed"}}}
                     - properties: {condition: {contains: {const: "monitor"}}}
         errorMessage: "condition can contain at most one interface mode: AP, managed, monitor"
-      # channel in selection requires monitor condition
+      # channel in selection requires a monitor-capable condition (mirrors monitor_needed())
       - if:
           properties:
             selection:
@@ -343,10 +343,13 @@ definitions:
             selection:
               properties:
                 condition:
-                  contains:
-                    const: "monitor"
+                  anyOf:
+                    - contains: {const: "monitor"}
+                    - contains: {const: "active_monitor"}
+                    - contains: {const: "control_monitor"}
+                    - contains: {const: "injection"}
               required: [ condition ]
-          errorMessage: "channel in selection requires monitor in condition"
+          errorMessage: "channel in selection requires monitor, active_monitor, control_monitor or injection in condition"
   Observer:
     type: object
     additionalProperties: false

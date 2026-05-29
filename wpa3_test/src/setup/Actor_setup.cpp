@@ -90,7 +90,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set_iface_up();
 
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
-	if(channel_num != -1 && get_or(BK::monitor, false))
+	if(channel_num != -1 && monitor_needed())
 		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 	up_sniff_iface();
 }

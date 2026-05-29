@@ -44,7 +44,6 @@ actors:
     selection:
       driver: ath9k_htc
       condition: [ monitor, injection ]
-      #TODO add firmware: [ath_masker]
       channel: 6
     sniff_iface: att
 observers:

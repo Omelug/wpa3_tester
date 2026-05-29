@@ -159,43 +159,43 @@ public:
 	// Inject pdu, capture frames containing the unique label. count=0 = no limit.
 	static std::vector<std::vector<uint8_t>> inject_and_capture(
 		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &pdu, Channel ch,
+		Tins::PDU &pdu, const Channel &ch,
 		int count = 0, int retries = 1
 	);
 	static void flush_socket(MonitorSocket &s);
 	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
 	static ProbeCapture capture_probe_response_ack(
 		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &probe_req, Channel ch, int retries = 1
+		Tins::PDU &probe_req, const Channel &ch, int retries = 1
 	);
 
 	// ----- injection tests — return result only, no printing -----
 	static InjectionTestResult test_injection_more_fragments(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, Channel ch
+		const Dot11Ref &ref, const std::string &strtype, const Channel &ch
 	);
 	// Generic field-preservation test; name identifies the subtest in the result.
 	static InjectionTestResult test_packet_injection(
 		MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
-		const std::string &name, const std::string &msgfail, Channel ch
+		const std::string &name, const std::string &msgfail, const Channel &ch
 	);
 	static InjectionTestResult test_injection_fields(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, Channel ch
+		const Dot11Ref &ref, const std::string &strtype, const Channel &ch
 	);
 	static InjectionTestResult test_injection_order(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, Channel ch,
+		const Dot11Ref &ref, const std::string &strtype, const Channel &ch,
 		int retries = 1
 	);
 	static InjectionTestResult test_injection_retrans(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, Channel ch
+		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, const Channel &ch
 	);
 	static InjectionTestResult test_injection_txack(
 		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, Channel ch
+		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, const Channel &ch
 	);
 
 	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)

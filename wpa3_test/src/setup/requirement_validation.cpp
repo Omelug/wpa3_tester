@@ -253,14 +253,14 @@ bool RunStatus::config_requirement(){
 			external_bb_actors.emplace(actor["actor_name"], actor);
 		}
 	}
-	// ------------------ EXTERNAL WHITEBOX ----------------------
+	// ------------------ EXTERNAL WHITEBOX -----------------
 	if(!external_wb_actors.empty()){
 		if(!_hw_option_cache.external_wb_opts.has_value())
 			_hw_option_cache.external_wb_opts = external_wb_options();
 		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 	}
 
-	// ------------------ EXTERNAL BLACKBOX ----------------------
+	// ------------------ EXTERNAL BLACKBOX -----------------
 	if(!external_bb_actors.empty()){
 		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_bb_options());
 	}

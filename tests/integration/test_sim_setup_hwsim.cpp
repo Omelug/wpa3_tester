@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
 #include <cstdio>
+#include <doctest.h>
 #include <filesystem>
 #include <unistd.h>
 #include "config/Actor_Config/Actor_Config_sim.h"
@@ -66,7 +66,7 @@ struct HwsimFixture {
 
     ~HwsimFixture(){ if(ok) reset(); }
 
-    bool skip() const {
+    [[nodiscard]] bool skip() const {
         if(!ok) MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
         return !ok;
     }
@@ -76,8 +76,8 @@ struct HwsimFixture {
         hw_capabilities::run_cmd({"iw",  "dev",  iface, "set", "type", "managed"}, nullopt, false);
     }
 
-    ActorPtr make_actor(const string &name = "test") const {
-        auto a = make_shared<Actor_Config_sim>(*base);
+    [[nodiscard]] ActorPtr make_actor(const string &name = "test") const {
+        const auto a = make_shared<Actor_Config_sim>(*base);
         a->set(SK::actor_name,    name);
         a->set(SK::permanent_mac, hw_capabilities::get_permanent_mac(iface, nullopt));
         return ActorPtr(a);
@@ -96,7 +96,7 @@ TEST_CASE("hwsim setup_actor - change mac address"){
     auto actor = f.make_actor();
     actor->set(SK::mac, new_mac);
 
-    actor->setup_actor(f.cfg(), f.base);
+    actor->setup_actor(HwsimFixture::cfg(), f.base);
 
     CHECK_EQ(hw_capabilities::get_mac_address(f.iface, nullopt).to_string(), new_mac);
 }
@@ -108,7 +108,7 @@ TEST_CASE("hwsim setup_actor - set AP mode"){
     auto actor = f.make_actor();
     actor->set(BK::AP, true);
 
-    actor->setup_actor(f.cfg(), f.base);
+    actor->setup_actor(HwsimFixture::cfg(), f.base);
 
     CHECK_NE(iw_info(f.iface).find("type AP"), string::npos);
 }
@@ -122,7 +122,7 @@ TEST_CASE("hwsim setup_actor - set managed mode"){
     auto actor = f.make_actor();
     actor->set(BK::managed, true);
 
-    actor->setup_actor(f.cfg(), f.base);
+    actor->setup_actor(HwsimFixture::cfg(), f.base);
 
     CHECK_NE(iw_info(f.iface).find("type managed"), string::npos);
 }
@@ -134,7 +134,7 @@ TEST_CASE("hwsim setup_actor - set monitor mode"){
     auto actor = f.make_actor();
     actor->set(BK::monitor, true);
 
-    actor->setup_actor(f.cfg(), f.base);
+    actor->setup_actor(HwsimFixture::cfg(), f.base);
 
     // sysfs type 803 = ARPHRD_IEEE80211_RADIOTAP
     CHECK_EQ(hw_capabilities::read_sysfs(f.iface, "type"), "803");
@@ -149,7 +149,7 @@ TEST_CASE("hwsim setup_actor - set channel"){
     actor->set(SK::channel,  "6");
     actor->set(BK::GHz2_4,   true);
 
-    actor->setup_actor(f.cfg(), f.base);
+    actor->setup_actor(HwsimFixture::cfg(), f.base);
 
     CHECK_NE(iw_info(f.iface).find("channel 6"), string::npos);
 }
@@ -161,7 +161,7 @@ TEST_CASE("hwsim setup_actor - create sniff iface"){
     const string sniff = MONITOR_IFACE_PREFIX + f.iface;
     auto actor = f.make_actor();
 
-    actor->setup_actor(f.cfg("test", {{"sniff_iface", f.iface}}), f.base);
+    actor->setup_actor(HwsimFixture::cfg("test", {{"sniff_iface", f.iface}}), f.base);
 
     CHECK(fs::exists("/sys/class/net/" + sniff));
 

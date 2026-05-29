@@ -1,8 +1,8 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 
-#include <tins/tins.h>
-#include <string>
 #include <random>
+#include <string>
+#include <tins/tins.h>
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"

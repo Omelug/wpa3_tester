@@ -1,18 +1,18 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
-#include "inteprrupt.h"
-#include "logger/error_log.h"
 #include <cassert>
-#include "ex_program/hostapd/hostapd.h"
-#include "logger/log.h"
-#include <thread>
 #include <chrono>
-#include "system/hw_capabilities.h"
 #include <filesystem>
+#include <thread>
+#include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
+#include "ex_program/hostapd/hostapd.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "setup/program.h"
+#include "system/hw_capabilities.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::CSA_attack{
@@ -22,7 +22,7 @@ using namespace Tins;
 using namespace chrono;
 
 void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid,
-					const Channel ap_channel, const Channel new_channel, const int switch_count
+					const Channel &ap_channel, const Channel &new_channel, const int switch_count
 ){
 	Dot11Beacon beacon;
 	beacon.addr1(Dot11::BROADCAST);
@@ -49,7 +49,7 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, 
 }
 
 auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
-					const string &ssid, const Channel ap_channel, const Channel new_channel, const int ms_interval,
+					const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
 					const int attack_time
 )->void{
 	const NetworkInterface iface(iface_name);

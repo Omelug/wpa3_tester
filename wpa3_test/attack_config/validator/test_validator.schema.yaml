@@ -317,6 +317,36 @@ definitions:
               const: external
           required: [ source ]
           errorMessage: "openwrt program can only be used with source: external"
+      # at most one of AP / managed / monitor in condition
+      - properties:
+          selection:
+            not:
+              anyOf:
+                - allOf:
+                    - properties: {condition: {contains: {const: "AP"}}}
+                    - properties: {condition: {contains: {const: "managed"}}}
+                - allOf:
+                    - properties: {condition: {contains: {const: "AP"}}}
+                    - properties: {condition: {contains: {const: "monitor"}}}
+                - allOf:
+                    - properties: {condition: {contains: {const: "managed"}}}
+                    - properties: {condition: {contains: {const: "monitor"}}}
+        errorMessage: "condition can contain at most one interface mode: AP, managed, monitor"
+      # channel in selection requires monitor condition
+      - if:
+          properties:
+            selection:
+              required: [ channel ]
+          required: [ selection ]
+        then:
+          properties:
+            selection:
+              properties:
+                condition:
+                  contains:
+                    const: "monitor"
+              required: [ condition ]
+          errorMessage: "channel in selection requires monitor in condition"
   Observer:
     type: object
     additionalProperties: false

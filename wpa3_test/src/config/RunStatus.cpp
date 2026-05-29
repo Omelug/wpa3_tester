@@ -285,49 +285,42 @@ void RunStatus::save_actor_interface_mapping() const{
 
 void RunStatus::load_actor_interface_mapping(){
 	const string csv_path = _run_folder / "mapping.csv";
-	if(!exists(csv_path)){
-		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
-		return;
-	}
 	ifstream ifs(csv_path);
 	if(!ifs){
-		log(LogLevel::ERROR, "load_actor_interface_mapping: failed to open {}", csv_path);
+		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
 		return;
 	}
 
 	string line;
-	getline(ifs, line); // skip header: Type,ActorName,Interface,MAC,Driver,channel,json_obj
+	getline(ifs, line); // skip header: source,actor_name,iface,mac,driver,channel,json_obj
 
-	while(getline(ifs, line)){ //FIXME wtf, parse json somehow.... better? (or change format)
+	while(getline(ifs, line)){
 		if(line.empty()) continue;
-		// Format: source,actor_name,iface,mac,driver,channel,json_obj
-		// json_obj may contain commas — split only on first 6 commas
-		size_t name_start = string::npos, name_end = string::npos, json_start = string::npos;
-		int commas = 0;
-		for(size_t i = 0; i < line.size(); ++i){
-			if(line[i] != ',') continue;
-			++commas;
-			if(commas == 1) name_start = i + 1;
-			else if(commas == 2) name_end = i;
-			else if(commas == 6){ json_start = i + 1; break; }
-		}
-		if(name_end == string::npos || json_start == string::npos){
+
+		// json_obj (field 7) may contain commas — locate only the first 6
+		auto npos = string::npos;
+		auto next = [&](const size_t from){ return line.find(',', from); };
+		size_t c1 = next(0);
+		size_t c2 = c1 != npos ? next(c1 + 1) : npos;
+		size_t c6 = c2;
+		for(int i = 0; i < 4 && c6 != npos; ++i) c6 = next(c6 + 1);
+
+		if(c2 == npos || c6 == npos){
 			log(LogLevel::WARNING, "load_actor_interface_mapping: malformed row, skipping");
 			continue;
 		}
-		const string actor_name = line.substr(name_start, name_end - name_start);
-		string json_str = line.substr(json_start);
-		// Strip CSV quoting and unescape '""' -> '"'
+
+		const string actor_name = line.substr(c1 + 1, c2 - c1 - 1);
+		string json_str = line.substr(c6 + 1);
+
+		// Strip CSV quoting and unescape "" -> "
 		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"'){
 			json_str = json_str.substr(1, json_str.size() - 2);
-			string unescaped;
-			unescaped.reserve(json_str.size());
-			for(size_t i = 0; i < json_str.size(); ++i){
-				if(json_str[i] == '"' && i + 1 < json_str.size() && json_str[i + 1] == '"') ++i;
-				unescaped += json_str[i];
-			}
-			json_str = std::move(unescaped);
+			for(size_t i = 0; i + 1 < json_str.size(); ++i)
+				if(json_str[i] == '"' && json_str[i + 1] == '"')
+					json_str.erase(i + 1, 1);
 		}
+
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
 		if(j.is_discarded()){
 			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);

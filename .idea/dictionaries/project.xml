@@ -112,6 +112,7 @@
       <w>noscan</w>
       <w>noseq</w>
       <w>notitle</w>
+      <w>npos</w>
       <w>nullopt</w>
       <w>numpairs</w>
       <w>octl</w>

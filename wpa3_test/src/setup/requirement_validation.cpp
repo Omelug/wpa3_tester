@@ -273,27 +273,17 @@ bool RunStatus::config_requirement(){
 	}
 
 	// SETUP ACTORS
-	for(auto &[actor_name, actor]: internal_actors){
-		auto &opt_actor = internal_mapping.at(actor_name);
-		log(LogLevel::DEBUG, "Setup attempt for actor, current map size: {}", actors.size());
-		actor->setup_actor(_config, opt_actor);
-	}
+	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
 
-	//TODO simplify
-	for(auto &[actor_name, actor]: external_wb_actors){
-		auto &opt_actor = external_wb_mapping.at(actor_name);
-		actor->setup_actor(_config, opt_actor);
-	}
+	auto setup_by_map = [&](ActorCMap &actor_map, const ActorMap &mapping){
+		for(auto &[actor_name, actor]: actor_map)
+			actor->setup_actor(_config, mapping.at(actor_name));
+	};
+	setup_by_map(internal_actors,    internal_mapping);
+	setup_by_map(external_wb_actors, external_wb_mapping);
+	setup_by_map(external_bb_actors, external_bb_mapping);
+	setup_by_map(simulation_actors,  simulation_mapping);
 
-	for(auto &[actor_name, actor]: external_bb_actors){
-		auto &opt_actor = external_bb_mapping.at(actor_name);
-		actor->setup_actor(_config, opt_actor);
-	}
-
-	for(auto &[actor_name, actor]: simulation_actors){
-		auto &opt_actor = simulation_mapping.at(actor_name);
-		actor->setup_actor(_config, opt_actor);
-	}
 	// --------------- POST-BACKTRACKING REQUIREMENTS
 	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")){
 		for(const auto &[key, actor_names]: _config.at("requirements").at("two_iface").items()){

@@ -29,7 +29,7 @@ enum class BK : uint8_t {
     active_monitor, control_monitor,
     GHz2_4, GHz5, GHz6,
     w80211n, w80211ac, w80211ax, beacon_prot,
-    CSA, OCV,
+    CSA, OCV, MFP,
     COUNT_
 };
 
@@ -48,7 +48,7 @@ inline constexpr std::array<std::string_view, static_cast<size_t>(BK::COUNT_)> B
     "active_monitor", "control_monitor" ,
     "2_4GHz", "5GHz", "6GHz",
     "80211n", "80211ac", "80211ax", "beacon_prot",
-    "CSA","OCV"
+    "CSA", "OCV", "MFP"
 };
 
 

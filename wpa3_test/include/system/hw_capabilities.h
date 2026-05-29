@@ -80,6 +80,7 @@ struct NlCaps{
 	bool beacon_prot = false;
 	bool csa = false;         // NL80211_CMD_CHANNEL_SWITCH supported
 	bool ocv = false;         // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
+	bool mfp = false;         // BIP cipher suite (hardware IGTK/BIGTK support)
 };
 
 struct CryptoCaps{

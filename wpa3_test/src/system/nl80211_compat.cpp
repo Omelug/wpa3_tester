@@ -68,7 +68,20 @@ void check_OCV(nlattr **attrs, NlCaps *caps){
 	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
 	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 	constexpr int feature = NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION;
+	log(LogLevel::DEBUG, "nl80211 OCV: ext_features len={}, need byte={}", len, feature / 8);
 	if(feature / 8 < len) caps->ocv = (ext[feature / 8] >> (feature % 8)) & 1;
+}
+
+void check_MFP(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_CIPHER_SUITES]) return;
+	const auto *ciphers = static_cast<uint32_t *>(nla_data(attrs[NL80211_ATTR_CIPHER_SUITES]));
+	const int num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
+	for(int i = 0; i < num; i++){
+		if(ciphers[i] == 0x000FAC06){ // BIP-CMAC-128 — hardware IGTK/BIGTK support
+			caps->mfp = true;
+			return;
+		}
+	}
 }
 
 void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
@@ -132,6 +145,7 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	check_beacon_prot(attrs, caps);
 	check_CSA(attrs, caps);
 	check_OCV(attrs, caps);
+	check_MFP(attrs, caps);
 
 	return NL_SKIP;
 }
@@ -226,8 +240,8 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	}
 	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, NLM_F_DUMP, NL80211_CMD_GET_WIPHY, 0);
 
-	// set interface id to check
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_nametoindex(cfg->get(SK::iface).c_str()));
+	// query by wiphy index — ensures full physical radio attributes (incl. ext_features) are returned
+	nla_put_u32(msg, NL80211_ATTR_WIPHY, get_wiphy_idx_by_ifname(cfg->get(SK::iface)));
 
 	NlCaps caps{};
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, &hw_capabilities::nl80211_cb, &caps);
@@ -249,6 +263,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(BK::beacon_prot, caps._80211ax);
 	cfg->set(BK::CSA, caps.csa);
 	cfg->set(BK::OCV, caps.ocv);
+	cfg->set(BK::MFP, caps.mfp);
 
 	nlmsg_free(msg);
 	nl_socket_free(sock);

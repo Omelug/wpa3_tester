@@ -21,6 +21,7 @@ struct HwInfo{
             case BK::beacon_prot:
             case BK::CSA:
             case BK::OCV:
+            case BK::MFP:
                 return true;
             default: return false;
         }

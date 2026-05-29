@@ -24,6 +24,7 @@
       <w>ccmp</w>
       <w>cerr</w>
       <w>cflags</w>
+      <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>
       <w>cout</w>
@@ -72,6 +73,7 @@
       <w>ifname</w>
       <w>iftype</w>
       <w>iftypes</w>
+      <w>igtk</w>
       <w>imagepath</w>
       <w>iperf</w>
       <w>iwinfo</w>

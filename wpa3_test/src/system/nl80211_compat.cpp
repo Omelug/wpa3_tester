@@ -1,11 +1,11 @@
 #include <fstream>
-#include <string>
 #include <nl80211.h>
+#include <string>
 #include <linux/nl80211.h>
+#include <net/if.h>
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
-#include <net/if.h>
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
 
@@ -40,6 +40,18 @@ void check_type(nlattr **attrs, NlCaps *caps){
 	if(iftypes[NL80211_IFTYPE_AP]){ caps->ap = true; }
 }
 
+void check_CSA(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
+	nlattr *cmd;
+	int rem;
+	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem){
+		if(nla_get_u32(cmd) == NL80211_CMD_CHANNEL_SWITCH){
+			caps->csa = true;
+			return;
+		}
+	}
+}
+
 void check_beacon_prot(nlattr * attrs[], NlCaps * caps){
 	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
 
@@ -49,6 +61,14 @@ void check_beacon_prot(nlattr * attrs[], NlCaps * caps){
 	// NL80211_EXT_FEATURE_BEACON_PROTECTION = 49
 	constexpr int feature = NL80211_EXT_FEATURE_BEACON_PROTECTION;
 	if(feature / 8 < len) caps->beacon_prot = (ext_features[feature / 8] >> (feature % 8)) & 1;
+}
+
+void check_OCV(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
+	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
+	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
+	constexpr int feature = NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION;
+	if(feature / 8 < len) caps->ocv = (ext[feature / 8] >> (feature % 8)) & 1;
 }
 
 void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
@@ -110,6 +130,8 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	check_features(attrs, caps);
 	check_band_caps(attrs, caps);
 	check_beacon_prot(attrs, caps);
+	check_CSA(attrs, caps);
+	check_OCV(attrs, caps);
 
 	return NL_SKIP;
 }
@@ -225,6 +247,8 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg[BK::w80211ax] = caps._80211ax;
 
 	cfg->set(BK::beacon_prot, caps._80211ax);
+	cfg->set(BK::CSA, caps.csa);
+	cfg->set(BK::OCV, caps.ocv);
 
 	nlmsg_free(msg);
 	nl_socket_free(sock);

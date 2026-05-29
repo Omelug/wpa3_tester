@@ -8,6 +8,8 @@ actors:
         version: 2_10
         ocv: 1
         beacon_prot: 1
+    selection:
+      condition: [ AP , OCV ]
   client:
     setup:
       program: wpa_supplicant
@@ -15,5 +17,6 @@ actors:
         version: 2_10
         beacon_prot: 1
         ocv: 1
-
+    selection:
+      condition: [ monitor, OCV ]
 rewrite: "errors"

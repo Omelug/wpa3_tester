@@ -19,6 +19,8 @@ struct HwInfo{
             case BK::GHz2_4: case BK::GHz5: case BK::GHz6:
             case BK::w80211n: case BK::w80211ac: case BK::w80211ax:
             case BK::beacon_prot:
+            case BK::CSA:
+            case BK::OCV:
                 return true;
             default: return false;
         }

@@ -63,7 +63,6 @@ void Actor_config::load_hw_info(const optional<path> &cache){
     ActorPtr self(shared_from_this());
     hw_capabilities::get_nl80211_caps(self);
 
-
     // ----- write cache -----
     if(cache.has_value()){
         try{

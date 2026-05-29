@@ -8,8 +8,8 @@
 #include <linux/nl80211.h>
 #include <netlink/netlink.h>
 
-#include "../config/RunStatus.h"
 #include "injection_result.h"
+#include "config/RunStatus.h"
 
 namespace wpa3_tester{
 class MonitorSocket;
@@ -78,6 +78,8 @@ struct NlCaps{
 	bool _80211ax = false; // 802.11ax
 
 	bool beacon_prot = false;
+	bool csa = false;         // NL80211_CMD_CHANNEL_SWITCH supported
+	bool ocv = false;         // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
 };
 
 struct CryptoCaps{

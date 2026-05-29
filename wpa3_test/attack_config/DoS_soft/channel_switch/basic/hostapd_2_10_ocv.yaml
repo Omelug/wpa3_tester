@@ -7,8 +7,12 @@ actors:
       program_config:
         version: 2_10
         ocv: 1
+    selection:
+      condition: [ AP , OCV ]
   client:
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_10
+    selection:
+      condition: [ monitor, OCV ]

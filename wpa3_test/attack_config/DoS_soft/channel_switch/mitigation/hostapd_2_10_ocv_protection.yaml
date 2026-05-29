@@ -1,0 +1,20 @@
+$extends: ../channel_switch.yaml
+name: channel_switch_2_10_ocv_protection
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_10
+        ocv: 1
+    selection:
+      condition: [ AP , OCV ]
+  client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        okc: 1
+        #ignore_assoc_disallowed: 1
+    selection:
+      condition: [ monitor, OCV ]

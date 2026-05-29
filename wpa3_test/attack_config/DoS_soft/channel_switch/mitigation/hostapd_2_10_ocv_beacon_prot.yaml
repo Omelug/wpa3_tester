@@ -16,7 +16,7 @@ actors:
       program_config:
         version: 2_10
         beacon_prot: 1
-        ocv: 1
+        okc: 1
     selection:
       condition: [ monitor, OCV ]
 rewrite: "errors"

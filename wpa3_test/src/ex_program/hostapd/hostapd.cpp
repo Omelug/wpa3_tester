@@ -149,11 +149,18 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 
 	// wpa_supplicant.conf
 	static const set<string> quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
+	static const set<string> global_keys = {"okc", "pmf", "ctrl_interface", "eapol_version"};
+
+	for(auto it = client_setup.begin(); it != client_setup.end(); ++it){
+		if(!global_keys.contains(it.key())) continue;
+		out << it.key() << "=" << it.value().dump() << "\n";
+	}
 
 	out << "network={\n";
 	for(auto it = client_setup.begin(); it != client_setup.end(); ++it){
 		if(it.key() == "version") continue;
 		if(it.key() == "other_options") continue;
+		if(global_keys.contains(it.key())) continue;
 		out << "\t" << it.key() << "=";
 		if(it.value().is_string() && !quoted_keys.contains(it.key())){
 			out << it.value().get<string>();

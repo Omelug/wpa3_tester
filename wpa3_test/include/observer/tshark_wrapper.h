@@ -16,13 +16,13 @@ std::vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const std::stri
 											const std::string &tshark_filter, const std::string &event_name
 );
 std::filesystem::path tshark_graph(const RunStatus &rs, const std::string &actor_name,
-									const std::vector<std::unique_ptr<GraphElements>> &elements = {},
+									const G_elms &elements = {},
 									const std::filesystem::path &folder = ""
 );
 void generate_time_series_retry_graph(const RunStatus &rs, const std::string &actor_name,
 									const std::filesystem::path &folder = ""
 );
-void pcap_events(const RunStatus &rs, G_el elements,
+void pcap_events(const RunStatus &rs, G_elms &elements,
 				// { actor, filter, label, color }
 				std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_def
 );

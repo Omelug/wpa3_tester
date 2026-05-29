@@ -19,4 +19,4 @@ paths:
   WPA3_SAE_DoS_Research_Suite: ../../tools/WPA3-SAE-DoS-Research-Suite
 actors:
   conn_table: ./example_whitebox_table.csv
-  ignore_interfaces: [ wlan0 ] #, wlan3] #FIXME
+  ignore_interfaces: [ wlan0 ]

@@ -76,7 +76,7 @@ public:
 														const std::vector<int> &channels
 	);
 
-	void log_events(std::vector<std::unique_ptr<GraphElements>> &elements,
+	void log_events(G_elms &elements,
 					// { actor_name, pattern, label, color }
 					std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_d
 	) const;

@@ -214,7 +214,7 @@ void generate_resource_graph(const path &data_filepath, const path &output_image
 	set_public_perms(output_imagepath);
 }
 
-void create_graph(const RunStatus &rs, const string &source, const std::vector<std::unique_ptr<GraphElements>> &elements
+void create_graph(const RunStatus &rs, const string &source, const G_elms &elements
 ){
 	const auto log_path = get_observer_folder(rs, "resource_checker") / ("access_point" + SUFFIX_res + ".log");
 	if(source == "external") create_resource_monitor_graph(log_path, elements);

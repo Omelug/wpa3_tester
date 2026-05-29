@@ -71,7 +71,7 @@ void start_station_monitoring(RunStatus &rs, const string &actor_name, const int
 }
 
 void generate_station_graph(const string &data_filepath, const string &output_imagepath,
-							const std::vector<std::unique_ptr<GraphElements>> &elements
+							const G_elms &elements
 ){
 	vector<LogTimePoint> times;
 	vector<double> sta_count;
@@ -105,7 +105,7 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 	g.gpcmd("set timefmt '%s'");
 	g.gpcmd("set format x '%M:%S'");
 	g.gpcmd("set xtics rotate by -45");
-	g.gpcmd("set ylabel 'Connected Stationg.s'");
+	g.gpcmd("set ylabel 'Connected Stations'");
 	g.gpcmd("set ytics 1");
 	g.gpcmd("set grid");
 	g.gpcmd("set key outside");
@@ -126,7 +126,7 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 }
 
 void create_station_graph(const RunStatus &rs, const string &actor_name,
-						const std::vector<std::unique_ptr<GraphElements>> &elements
+						const G_elms &elements
 ){
 	const path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
 	const path output = path(log_path).replace_extension(".png");

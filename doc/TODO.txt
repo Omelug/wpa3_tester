@@ -138,4 +138,4 @@ Optimization:
 TODO
 - funguje sudo micro ./ap_debug_test.txt -> inotify
 - macchanger musí být až potom / při tom
-send_csa_beacon pak nic nedělá
+get_CSA_beacon pak nic nedělá

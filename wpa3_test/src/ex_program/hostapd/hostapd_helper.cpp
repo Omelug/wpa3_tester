@@ -1,3 +1,4 @@
+#include "hostapd_cflags.h"
 #include "config/global_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"

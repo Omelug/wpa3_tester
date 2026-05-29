@@ -2,14 +2,11 @@ $schema: "http://json-schema.org/draft-07/schema#"
 name: hostapd_versions_ts
 config_type: test_suite
 tests:
-  #hostapd_SAE_PMF_fix:
-  #  type: path
-  #  path: ./hostapd_2_9_fix.yaml
+  hostapd_SAE_PMF_fix:
+    test_name: channel_switch_2_9
   hostapd_2_10_ocv:
-    type: name
     test_name: channel_switch_2_10_ocv
   hostapd_2_10_ocv_beacon_prot:
-    type: name
     test_name: channel_switch_2_10_ocv_beacon_prot
   hostapd_gen:
     type: generator

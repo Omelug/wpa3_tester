@@ -90,7 +90,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(get_or(BK::AP,false)) set_ap_mode();
 	if(get_or(BK::managed, false)) set_managed_mode();
 	set_iface_up();
-	if(channel_num != -1) set_channel(Channel{channel_num,get_band(),(*this)[SK::ht_mode]});
+	if(channel_num != -1 && get_or(BK::monitor, false)) set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 	up_sniff_iface();
 }
 }

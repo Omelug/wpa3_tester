@@ -70,24 +70,27 @@ include(cmake/libraries.cmake)
 include(cmake/targets.cmake)
 include(cmake/coverage.cmake)
 
+set(HOSTAPD_EXTRA_CFLAGS "")
 if(EXISTS "/etc/nixos")
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(OPENSSL REQUIRED openssl)
     pkg_check_modules(DBUS dbus-1)
-    set(EXTRA_CFLAGS_VAL "${OPENSSL_CFLAGS}")
+    set(HOSTAPD_EXTRA_CFLAGS "${OPENSSL_CFLAGS}")
     if(DBUS_FOUND)
-        string(APPEND EXTRA_CFLAGS_VAL " ${DBUS_CFLAGS}")
+        string(APPEND HOSTAPD_EXTRA_CFLAGS " ${DBUS_CFLAGS}")
     endif()
-    #FIXME move this to hostapd wrapper logic if possible
-    # Bake include flags into the binary so they survive sudo dropping env vars.
-    # Double-escaped quotes make HOSTAPD_EXTRA_CFLAGS a C string literal.
-    #string(REPLACE " " ";" EXTRA_CFLAGS_LIST "${EXTRA_CFLAGS_VAL}")
-    #add_compile_definitions(HOSTAPD_EXTRA_CFLAGS=\\"${EXTRA_CFLAGS_VAL}\\")
-
+    string(REPLACE ";" " " HOSTAPD_EXTRA_CFLAGS "${HOSTAPD_EXTRA_CFLAGS}")
     message(STATUS "NixOS:  OPENSSL_CFLAGS = ${OPENSSL_CFLAGS}")
 else()
     message(STATUS "Standard Linux (Debian/Ubuntu). Not changes in include paths")
 endif()
+
+# Bake include flags into a generated header so they survive sudo dropping env vars.
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hostapd_cflags.h.in"
+    "${CMAKE_BINARY_DIR}/generated/hostapd_cflags.h"
+)
+target_include_directories(wpa3_ex_program PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
 add_executable(${PROJECT_NAME}
         "../wpa3_test/main.cpp"

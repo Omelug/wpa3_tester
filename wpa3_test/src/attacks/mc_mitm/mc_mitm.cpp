@@ -1,7 +1,6 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 
 #include <chrono>
-#include <cstring>
 #include <utility>
 #include <tins/tins.h>
 
@@ -39,9 +38,8 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 	if(target.has_value()) beacon_copy->addr1(*target);
 
 	for(int i = 0; i < numpairs; ++i){
-		//FIXME
-		const NetworkInterface iface(rogue_sta["iface"]);
-		CSA_attack::send_CSA_beacon(ap_mac, iface, ssid, netconfig.real_channel, netconfig.rogue_channel);
+		RadioTap csa_rt = CSA_attack::get_CSA_beacon(ap_mac, ssid, netconfig.real_channel, netconfig.rogue_channel);
+		send_to_real(csa_rt);
 
 		// Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
 		// followed by one with a value of 1. When starting with 1 it errors out.

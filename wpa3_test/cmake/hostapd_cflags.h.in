@@ -1,0 +1,2 @@
+#pragma once
+#cmakedefine HOSTAPD_EXTRA_CFLAGS "@HOSTAPD_EXTRA_CFLAGS@"

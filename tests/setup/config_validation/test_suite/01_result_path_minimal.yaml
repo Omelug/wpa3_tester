@@ -2,5 +2,4 @@ name: Path minial test
 config_type: test_suite
 tests:
   test_minimal:
-    type: path
     path: ./test/invalid.yaml

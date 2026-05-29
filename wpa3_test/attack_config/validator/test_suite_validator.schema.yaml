@@ -26,21 +26,19 @@ properties:
       oneOf:
         - title: Path source
           type: object
-          required: [ type, path ]
+          required: [ path ]
           properties:
-            type:
-              const: path
             path:
               type: string
+          additionalProperties: false
 
         - title: Name source
           type: object
-          required: [ type, test_name ]
+          required: [ test_name ]
           properties:
-            type:
-              const: name
             test_name:
               type: string
+          additionalProperties: false
 
         - title: Generator source #include permutation
           type: object
@@ -57,6 +55,7 @@ properties:
             config:
               type: object
               description: "Structure of configuration with var_ prefix"
+          additionalProperties: false
 
 allOf:
   - $ref: './run_config.schema.yaml'

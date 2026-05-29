@@ -58,12 +58,13 @@ observers:
     program_config:
       target_actor: access_point
   ap_tshark:
-    actor: access_point
+    actor: client
     program: tshark
     program_config:
       filter: "udp port 5201"
   sta_tshark:
-    actor: client
+    actor: access_point
     program: tcpdump
     program_config:
       filter: "udp port 5201"
+rewrite: errors

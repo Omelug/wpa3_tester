@@ -299,14 +299,6 @@ bool Actor_config::monitor_needed() const{
 	//TODO check injection
 }
 
-WifiBand Actor_config::get_band() const{
-	if(get_or(BK::GHz2_4, false) && get_or(BK::GHz5, false)) return WifiBand::BAND_2_4_or_5;
-	if(get_or(BK::GHz2_4, false)) return WifiBand::BAND_2_4;
-	if(get_or(BK::GHz5, false)) return WifiBand::BAND_5;
-	if(get_or(BK::GHz6, false)) return WifiBand::BAND_6;
-	throw setup_err("NOt valid band ");
-}
-
 shared_ptr<Actor_config> Actor_config::create(const json &j){
 	const auto source = j.at("source").get<string>();
 	if(source == "simulation") return make_shared<Actor_Config_sim>(j);

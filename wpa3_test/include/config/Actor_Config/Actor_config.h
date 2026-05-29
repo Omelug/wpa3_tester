@@ -60,7 +60,6 @@ public:
     [[nodiscard]] bool is_WB()          const;
     [[nodiscard]] bool is_external_WB() const;
 	[[nodiscard]] bool monitor_needed() const;
-	[[nodiscard]] WifiBand get_band() const;
 	Channel get_channel() const;
 
     // Interface control

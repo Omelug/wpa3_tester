@@ -282,15 +282,16 @@ config_paths RunSuiteStatus::get_test_paths(){
 
 	config_paths test_map;
 	for(auto &[source_name, source_info]: config.at("tests").items()){
-		const string &type = source_info.at("type");
-		if(type == "path"){
+		if(source_info.contains("path")){
 			defined_by_path(source_info, source_name, test_map);
 			continue;
 		}
-		if(type == "name"){
+		if(source_info.contains("test_name")){
 			defined_by_name(source_info, source_name, test_map);
 			continue;
 		}
+		
+		const string &type = source_info.at("type");
 		if(type == "generator"){
 			defined_by_generator(source_info, source_name, test_config_folder, test_map);
 			continue;

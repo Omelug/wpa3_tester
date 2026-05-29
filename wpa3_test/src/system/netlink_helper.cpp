@@ -244,7 +244,7 @@ static uint32_t query_iface_freq(const string_view iface_name, const optional<st
 }
 
 Result wait_for_channel(const string_view iface_name, const optional<string> &netns,
-						const Channel ch, const int max_retries, const int retry_ms){
+						const Channel &ch, const int max_retries, const int retry_ms){
 	const auto expected_freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
 	for(int i = 0; i < max_retries; ++i){
 		if(query_iface_freq(iface_name, netns) == expected_freq) return Result{};
@@ -252,8 +252,8 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 	}
 	return unexpected(make_error_code(errc::timed_out));
 }
-//FIXME
-Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel ch){
+
+Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel &ch){
 	NetNSContext ns_guard(netns);
 
 	const unique_ptr<nl_sock,void(*)(nl_sock *)> sock(nl_socket_alloc(), nl_socket_free);

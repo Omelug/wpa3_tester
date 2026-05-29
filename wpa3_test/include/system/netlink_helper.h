@@ -23,9 +23,8 @@ nl80211_iftype query_wifi_iftype(std::string_view iface_name, const std::optiona
 [[nodiscard]] Result wait_for_wifi_iftype(std::string_view iface_name, const std::optional<std::string> &netns,
 										nl80211_iftype expected_type, int max_retries = 50, int retry_ms = 100
 );
-[[nodiscard]] Result wait_for_channel(std::string_view iface_name, const std::optional<std::string> &netns,
-									Channel ch, int max_retries = 50, int retry_ms = 100
+[[nodiscard]] Result wait_for_channel(std::string_view iface_name, const std::optional<std::string> &netns, const Channel &ch, int max_retries = 50, int retry_ms = 100
 );
-[[nodiscard]] Result set_channel_nl(std::string_view iface, const std::optional<std::string> &netns, Channel ch);
+[[nodiscard]] Result set_channel_nl(std::string_view iface, const std::optional<std::string> &netns, const Channel &ch);
 void log_iface_info(std::string_view iface_name);
 } // namespace wpa3_tester::netlink_helper

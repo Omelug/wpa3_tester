@@ -5,10 +5,10 @@ namespace wpa3_tester{
 using namespace std;
 
 static const char *md_badge(const it_test_result result){
-	//FIXME add UNKNOWN?
 	if(result == NOCAPTURE) return "NO-CAPTURE";
 	if(result ==  FAIL)      return "FAIL";
-	return                           "PASS";
+	if(result == PASSED)   return "PASSED";
+	return "UNKNOWN";
 }
 
 string print_injection_result(const InjectionSuiteResult &suite){
@@ -33,15 +33,9 @@ string print_injection_result(const InjectionSuiteResult &suite){
 	}
 	md << '\n';
 
-	it_test_result f = suite.inject_all();
-	if(f == PASSED){
-		md << "> **All tests passed.**\n";
-	} else{
-		if(f == NOCAPTURE)
-			md << "> **WARNING:** Failed to capture some frames. Try another channel or a second monitoring interface.\n";
-		if(f == FAIL)
-			md << "> **FAIL:** Some tests failed. Consider using patched drivers/firmware.\n";
-	}
+	const it_test_result f = suite.inject_all();
+	if(f == PASSED) md << "> **All tests passed.**\n";
+	if(f == FAIL) md << "> **FAIL:** Some tests failed. Consider using patched drivers/firmware.\n";
 	md << '\n';
 
 	return md.str();

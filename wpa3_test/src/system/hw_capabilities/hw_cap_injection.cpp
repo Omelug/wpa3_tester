@@ -70,7 +70,7 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 }
 
 void hw_capabilities::flush_socket(MonitorSocket &s){
-	for(int i = 0; i < 10000 && s.recv(); i++); //FIXME 10000 hardcoded
+	while(s.recv());
 }
 
 optional<pair<HWAddress<6>, string>> hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){

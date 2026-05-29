@@ -67,8 +67,8 @@ public:
 			if(t.result() != PASSED) return FAIL;
 		}
 		return PASSED;
-
 	}
+
 	nlohmann::json to_json() const{
 		nlohmann::json map = nlohmann::json::object();
 		for(const auto &t: tests)

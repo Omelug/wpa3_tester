@@ -109,14 +109,44 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 }
 
 string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){
-	if(version.empty()){
-		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
-		return cfg.repo_name;
-	}
-
 	const string folder_key = (cfg.repo_name == "hostapd-mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
+
+	if(version.empty()){
+		log(LogLevel::WARNING, "{} version not defined, attempting to find built binary in {}", cfg.repo_name, hostapd_folder.string());
+		// Try to find any existing binary with the expected prefix in the build folder
+		try {
+			if(exists(hostapd_folder) && is_directory(hostapd_folder)){
+				for(const auto &entry : directory_iterator(hostapd_folder)){
+					if(is_regular_file(entry.path())){
+						auto fname = entry.path().filename().string();
+						if(fname.rfind(bin_prefix, 0) == 0){
+							log(LogLevel::INFO, "Found existing {} binary: {}", cfg.repo_name, entry.path().string());
+							return entry.path().string();
+						}
+					}
+				}
+			}
+		} catch(const std::exception &e){
+			log(LogLevel::WARNING, "Error while searching for binaries: {}", e.what());
+		}
+
+		// No binary found - attempt to clone/build (hostapd-mana has no tags so building latest is acceptable)
+		log(LogLevel::INFO, "No built binary found for {}, cloning/building in {}", cfg.repo_name, hostapd_folder.string());
+		ensure_git_repo_cloned(hostapd_folder, cfg);
+		string bin_name = bin_prefix + "latest";
+		ranges::replace(bin_name, '.', '_');
+		const path binary_path = hostapd_folder / bin_name;
+		build_hostapd_like("latest", hostapd_folder, binary_path, cfg);
+		if(exists(binary_path)){
+			return binary_path.string();
+		}
+
+		// Fallback to system program name
+		log(LogLevel::WARNING, "Falling back to system program: {}", cfg.repo_name);
+		return cfg.repo_name;
+	}
 
 	string bin_name = bin_prefix + version;
 	ranges::replace(bin_name, '.', '_');

@@ -18,7 +18,7 @@ TEST_CASE("beacon_to_probe_resp"){
     beacon.ds_parameter_set(6);
     beacon.ssid("TestNet");
 
-	Channel ch{11, WifiBand::BAND_2_4_or_5};
+	Channel ch{11, WifiBand::BAND_2_4_or_5, nullopt};
     Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, ch));
 
     CHECK_EQ(probe.addr2(), beacon.addr2());

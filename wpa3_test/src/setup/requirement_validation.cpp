@@ -248,9 +248,9 @@ bool RunStatus::config_requirement(){
 
 	for(const auto &actor: external_actors | views::values){
 		if(actor->is_external_WB()){
-			external_wb_actors.emplace(actor["actor_name"], actor);
+			external_wb_actors.emplace(actor.get(SK::actor_name), actor);
 		} else{
-			external_bb_actors.emplace(actor["actor_name"], actor);
+			external_bb_actors.emplace(actor.get(SK::actor_name), actor);
 		}
 	}
 	// ------------------ EXTERNAL WHITEBOX -----------------

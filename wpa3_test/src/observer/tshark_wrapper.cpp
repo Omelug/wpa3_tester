@@ -4,9 +4,9 @@
 #include <cstdio>
 #include <filesystem>
 #include <sstream>
-#include <stdexcept>
 
 #include "config/RunStatus.h"
+#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
@@ -29,7 +29,7 @@ string masked_mac_filter_5(const RunStatus &rs){
 	vector<string> mac_filters;
 
 	for(const auto &actor: rs.actors | views::values){
-		string clean_mac = actor["mac"];
+		string clean_mac = actor.get(SK::mac);
 		if(clean_mac.length() < 10) continue;
 		erase(clean_mac, ':');
 		string
@@ -50,24 +50,53 @@ string all_actors_mac_filter(const RunStatus &rs, const bool broadcast){
 	vector<string> mac_filters;
 
 	for(const auto &actor: rs.actors | views::values){
-		mac_filters.push_back("ether host " + actor["mac"]);
+		mac_filters.push_back("ether host " + actor.get(SK::mac));
 	}
 	if(broadcast) mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
 
+void start_tshark_remote(RunStatus &rs, const string &actor_name, const string &filter){
+	auto &actor = rs.get_actor(actor_name);
+	const string remote_pcap = "/tmp/" + actor_name + "_capture.pcap";
+	const string iface_str = actor.get(SK::iface);
+
+	string tshark_cmd = "tshark -i " + iface_str + " -w " + remote_pcap;
+	if(!filter.empty()) tshark_cmd += " -f " + filter;
+
+	const vector<string> command = {
+		"sshpass", "-p", actor.get(SK::ssh_password), "ssh", "-o", "StrictHostKeyChecking=no",
+		actor.get(SK::ssh_user) + "@" + actor.get(SK::whitebox_ip), tshark_cmd
+	};
+	const string local_pcap = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
+	rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
+	rs.process_manager.after_stop(actor_name + "_cap", [remote_pcap, local_pcap, actor](){
+		const vector<string> scp_cmd = {
+			"sshpass", "-p", actor.get(SK::ssh_password), "scp", "-O",
+			actor.get(SK::ssh_user) + "@" + actor.get(SK::whitebox_ip) + ":" + remote_pcap, local_pcap
+		};
+		hw_capabilities::run_cmd(scp_cmd);
+		if(exists(local_pcap)) set_public_perms(local_pcap);
+	});
+
+	actor->conn->on_disconnect([remote_pcap, actor](){
+		actor->conn->exec("rm " + remote_pcap);
+	});
+}
+
 void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
+	const auto actor = rs.get_actor(node_name);
+	if(actor->conn != nullptr){
+		start_tshark_remote(rs, node_name, filter);
+		return;
+	}
+
 	vector<string> command = {};
 	add_nets_header(rs, command, node_name);
 
 	string pcap_path = get_observer_folder(rs, program_name) / (node_name + "_capture.pcap");
-	const optional<string> iface = rs.get_actor(node_name)[SK::sniff_iface];
-	string iface_str;
-	if(iface == nullopt){
-		iface_str = rs.get_actor(node_name)["iface"];
-	} else{
-		iface_str = iface.value();
-	}
+	const optional<string> iface = actor[SK::sniff_iface];
+	const string iface_str = iface ? iface.value() : actor.get(SK::iface);
 
 	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
 	command.insert(command.end(), {program_name, "-i", iface_str, "-w", temp_pcap_path});
@@ -86,11 +115,10 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 
 	const auto tshark_dir = get_observer_folder(rs, program_name);
 	rs.process_manager.run(node_name + "_cap", command, tshark_dir, tshark_dir);
-	//TODO add external support?
 	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path]() {
 		try {
 			if (exists(temp_pcap_path)) { rename(temp_pcap_path, pcap_path);}
-		} catch (const filesystem_error& e) {
+		} catch (const filesystem_error&) {
 			filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
 			remove(temp_pcap_path);
 		}

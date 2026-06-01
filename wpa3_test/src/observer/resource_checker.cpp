@@ -40,7 +40,7 @@ void start_resource_monitoring(RunStatus &rs, const string &actor_name, const in
 	const path local_log = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_res + ".log");
 
 	if(actor->conn != nullptr){
-		start_resource_monitoring_remote(rs, actor_name, actor["iface"], interval_sec, local_log);
+		start_resource_monitoring_remote(rs, actor_name, actor.get(SK::iface), interval_sec, local_log);
 		return;
 	}
 

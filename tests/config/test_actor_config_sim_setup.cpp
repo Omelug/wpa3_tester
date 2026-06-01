@@ -104,6 +104,7 @@ TEST_CASE("setup_actor sim - change channel"){
     actor.set(SK::permanent_mac, "aa:bb:cc:dd:ee:ff");
     actor.set(SK::channel,       "36");
     actor.set(BK::GHz5,          true);
+    actor.set(BK::monitor,       true);
 
     actor.setup_actor(make_cfg("sta"), make_real());
 

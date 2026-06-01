@@ -5,3 +5,4 @@ In new versions
 (not sure if possible fully automated, truy find already woking solution )
 
 +:create Clion plugin for runtests from config
++: change config to something like KCL

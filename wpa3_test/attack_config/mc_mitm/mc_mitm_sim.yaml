@@ -5,7 +5,6 @@ actors:
   access_point:
     source: simulation
     selection:
-      channel: 6
       condition: [ AP ]
     setup:
       program: hostapd

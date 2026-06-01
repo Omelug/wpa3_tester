@@ -121,7 +121,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 bool OpenWrtConn::connect(const ActorPtr &actor){
 	const bool success = ExternalConn::connect(actor);
 	if(success){
-		forward_internet(actor["whitebox_ip"]);
+		forward_internet(actor.get(SK::whitebox_ip));
 		time_fix();
 	}
 	return success;
@@ -200,7 +200,7 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 // -------------------------------------------
 
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
-	nlohmann::json program_config = rs.config().at("actors").at(actor["actor_name"]).at("setup").at("program_config");
+	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at("program_config");
 	cerr << program_config.dump() << endl;
 	actor->set(SK::ssid, program_config.at("ssid").get<string>());
 	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
@@ -209,15 +209,15 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	static const set<string> radio_keys = {
 		"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level"
 	};
-	const string wifi_iface = get_wifi_iface_section(actor["iface"]);
+	const string wifi_iface = get_wifi_iface_section(actor.get(SK::iface));
 
-	exec("uci set wireless." + actor["radio"] + ".disabled=0");
-	exec("uci set wireless." + wifi_iface + ".device=" + actor["radio"]);
+	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
+	exec("uci set wireless." + wifi_iface + ".device=" + actor.get(SK::radio));
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 
 		if(radio_keys.contains(key)){
-			exec(format("uci set wireless.{}.{}={}", actor["radio"], key, value));
+			exec(format("uci set wireless.{}.{}={}", actor.get(SK::radio), key, value));
 		} else{
 			exec(format("uci set wireless.{}.{}={}", wifi_iface, key, value));
 		}

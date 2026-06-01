@@ -1,5 +1,4 @@
 #include "system/netlink_helper.h"
-#include "system/hw_capabilities.h"
 #include <expected>
 #include <nl80211.h>
 #include <unistd.h>
@@ -12,6 +11,7 @@
 #include <netlink/genl/genl.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 
 using namespace std;

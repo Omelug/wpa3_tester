@@ -177,7 +177,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	// ── step 2: add AP virtual interface ─────────────────────────────────────
 	hw_capabilities::run_cmd({
-								"iw", "dev", base_actor["iface"], "interface", "add", ap_iface, "type", "managed"
+								"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"
 							}, netns);
 	if(!netlink_helper::wait_for_iface_appear(ap_iface, netns)) throw setup_err(
 		"Interface " + ap_iface + " did not appear");

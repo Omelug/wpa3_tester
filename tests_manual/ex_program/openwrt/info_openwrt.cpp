@@ -91,15 +91,15 @@ TEST_CASE ("Logger OpenWrt"){
         cout << "\n--- Logger Test ---" << endl;
 
         RunStatus rs;
-        rs.actors.emplace(actor["actor_name"], actor);
+        rs.actors.emplace(actor.get(SK::actor_name), actor);
         const auto test_dir = temp_directory_path() / "openwrt_logger_test";
         create_directories(test_dir);
         rs.process_manager.init_logging(test_dir);
 
-        conn->logger(rs, actor["actor_name"]);
+        conn->logger(rs, actor.get(SK::actor_name));
         this_thread::sleep_for(chrono::milliseconds(500));
         conn->exec("logger 'Test log message from wpa3_tester'");
-        rs.process_manager.wait_for(actor["actor_name"], "Test log message", chrono::seconds(5));
+        rs.process_manager.wait_for(actor.get(SK::actor_name), "Test log message", chrono::seconds(5));
     }
     cli_section("Test completed successfully");
 }
@@ -116,22 +116,22 @@ TEST_CASE ("Tcpdump OpenWrt"){
 
         RunStatus rs;
 
-        rs.actors.emplace(actor["actor_name"], actor);
+        rs.actors.emplace(actor.get(SK::actor_name), actor);
         const path test_dir = temp_directory_path() / "openwrt_logger_test";
         rs.run_folder(test_dir);
         create_directories(test_dir);
         rs.process_manager.init_logging(test_dir / "logger");
 
-        rs.actors.emplace(actor["actor_name"], actor);
+        rs.actors.emplace(actor.get(SK::actor_name), actor);
         actor->set(SK::iface, chosen_iface);
 
-        observer::start_tcpdump_remote(rs, actor["actor_name"], "");
+        observer::start_tcpdump_remote(rs, actor.get(SK::actor_name), "");
         this_thread::sleep_for(chrono::seconds(1));
 
         const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");
         CHECK(!ps_output.empty());
-        rs.process_manager.stop(actor["actor_name"]+"_cap");
-        const path pcap_path = observer::get_observer_folder(rs, "tcpdump") / (actor["actor_name"] +"_capture.pcap");
+        rs.process_manager.stop(actor.get(SK::actor_name)+"_cap");
+        const path pcap_path = observer::get_observer_folder(rs, "tcpdump") / (actor.get(SK::actor_name) +"_capture.pcap");
         CHECK(exists(pcap_path));
         cout << "Pcap file created: " << pcap_path << endl;
         cout << "Tcpdump remote process running: " << ps_output << endl;

@@ -34,10 +34,11 @@ Channel Actor_config::get_channel() const {
 	if(band == WifiBand::BAND_6 && !valid_6(ch_num))
 		throw config_err("Actor_config: Invalid 6GHz channel " + to_string(ch_num));
 
-	// For BAND_2_4_or_5, try to infer
+	// For BAND_2_4_or_5, infer from channel number
 	if(band == WifiBand::BAND_2_4_or_5){
-		if(!(valid_2_4(ch_num) || valid_5(ch_num)))
-			throw config_err("Actor_config: Channel " + to_string(ch_num) + " invalid for 2.4GHz or 5GHz");
+		if(valid_2_4(ch_num))      band = WifiBand::BAND_2_4;
+		else if(valid_5(ch_num))   band = WifiBand::BAND_5;
+		else throw config_err("Actor_config: Channel " + to_string(ch_num) + " invalid for 2.4GHz or 5GHz");
 	}
 
 	return Channel{ch_num, band, (*this)[SK::ht_mode]};

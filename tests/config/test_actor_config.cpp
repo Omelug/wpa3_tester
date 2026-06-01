@@ -146,7 +146,7 @@ TEST_CASE("Actor_config - operator[] accessor"){
     Actor_config actor;
     actor.set(SK::iface, "wlan0");
 
-    CHECK(actor["iface"] == "wlan0");
+    CHECK(actor.get(SK::iface) == "wlan0");
 
     // Missing key
 	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name), config_err);

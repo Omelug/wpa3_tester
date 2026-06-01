@@ -81,7 +81,7 @@ void run_chs_attack(RunStatus &rs){
 	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
-	const string essid = ap_actor["ssid"];
+	const string essid = ap_actor.get(SK::ssid);
 	const Channel old_channel = ap_actor->get_channel();
 	const Channel new_channel{att_cfg.at("new_channel").get<int>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]};
 	const int ms_interval = att_cfg.at("ms_interval");

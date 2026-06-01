@@ -5,7 +5,7 @@ actors:
   access_point:
     source: internal
     selection:
-      condition: [ AP, monitor, 2_4GHz, 5GHz, "WPA-PSK", WPA3-SAE ]
+      condition: [ AP, 2_4GHz, 5GHz, "WPA-PSK", WPA3-SAE ]
       iface: wlan4
       essid: SSID_select
       driver: ath
@@ -14,7 +14,6 @@ actors:
       program: "hostapd"
       program_config:
         program_config1: program
-        channel: 6
     ip_addr: 1.42.242.0
   client:
     source: internal

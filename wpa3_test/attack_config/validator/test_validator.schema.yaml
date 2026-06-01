@@ -323,16 +323,19 @@ definitions:
             not:
               anyOf:
                 - allOf:
+                    - required: [condition]
                     - properties: {condition: {contains: {const: "AP"}}}
                     - properties: {condition: {contains: {const: "managed"}}}
                 - allOf:
+                    - required: [condition]
                     - properties: {condition: {contains: {const: "AP"}}}
                     - properties: {condition: {contains: {const: "monitor"}}}
                 - allOf:
+                    - required: [condition]
                     - properties: {condition: {contains: {const: "managed"}}}
                     - properties: {condition: {contains: {const: "monitor"}}}
         errorMessage: "condition can contain at most one interface mode: AP, managed, monitor"
-      # channel in selection requires a monitor-capable condition (mirrors monitor_needed())
+      # channel in selection requires a monitor-capable or AP condition (mirrors monitor_needed())
       - if:
           properties:
             selection:
@@ -348,8 +351,9 @@ definitions:
                     - contains: {const: "active_monitor"}
                     - contains: {const: "control_monitor"}
                     - contains: {const: "injection"}
+                    - contains: {const: "AP"}
               required: [ condition ]
-          errorMessage: "channel in selection requires monitor, active_monitor, control_monitor or injection in condition"
+          errorMessage: "channel in selection requires monitor, active_monitor, control_monitor, injection or AP in condition"
   Observer:
     type: object
     additionalProperties: false

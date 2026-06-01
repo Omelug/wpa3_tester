@@ -6,7 +6,6 @@ actors:
     source: internal
     selection:
       condition: [ AP ]
-      channel: 6
     setup:
       program: hostapd
       program_config:
@@ -25,8 +24,6 @@ actors:
     ip_addr: "10.0.0.1"
   client:
     source: internal
-    selection:
-      channel: 6
     setup:
       program: wpa_supplicant
       program_config:

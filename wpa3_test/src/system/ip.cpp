@@ -16,11 +16,11 @@ void set_ip(RunStatus &rs, const string &actor_name){
 	const auto ip_addr = rs.config().at("actors").at(actor_name).at("ip_addr").get<string>();
 	const auto actor = rs.get_actor(actor_name);
 	if(actor.get()->conn != nullptr){
-		rs.get_actor(actor_name).get()->conn->set_ip(actor["iface"], ip_addr);
+		rs.get_actor(actor_name).get()->conn->set_ip(actor.get(SK::iface), ip_addr);
 	} else{
 		vector<string> command = {};
 		observer::add_nets_header(rs, command, actor_name);
-		command.insert(command.end(), {"ip", "addr", "add", ip_addr + "/24", "dev", actor["iface"]});
+		command.insert(command.end(), {"ip", "addr", "add", ip_addr + "/24", "dev", actor.get(SK::iface)});
 		hw_capabilities::run_cmd(command);
 	}
 }

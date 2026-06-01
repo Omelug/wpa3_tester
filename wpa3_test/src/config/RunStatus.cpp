@@ -148,10 +148,10 @@ void RunStatus::execute(){
 void RunStatus::get_or_create_connection(const ActorPtr &actor){
 	if(actor->conn){ return; }
 	shared_ptr<ExternalConn> conn;
-	if(actor["external_OS"] == "openwrt"){
+	if(actor.get(SK::external_OS) == "openwrt"){
 		conn = make_shared<OpenWrtConn>();
 	} else{
-		throw not_implemented_err("Not known external_OS: " + actor["external_OS"]);
+		throw not_implemented_err("Not known external_OS: " + actor.get(SK::external_OS));
 	}
 
 	if(!conn->connect(actor)){

@@ -1,0 +1,20 @@
+$schema: http://json-schema.org/draft-07/schema#
+$validator: ../bl0ck.schema.yaml
+$extends: ../bl0ck_BA.yaml
+name: bl0ck_BA_rogue_AP
+attacker_module: bl0ck
+actors:
+  rogue_ap:
+    source: internal
+    selection:
+      driver: mt76x2u
+      channel: 36
+      condition: [ monitor ]
+    setup:
+      program: hostapd-mana
+      program_config:
+        hostapd-mana_path: ./rogue_ap_hostapd_mana.conf
+attack_config:
+  attack_time_sec: 10
+  random: false
+  frame_in_batch: 50

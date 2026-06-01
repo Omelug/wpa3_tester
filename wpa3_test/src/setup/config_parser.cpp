@@ -133,6 +133,8 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 json RunStatus::extends_recursive(const nlohmann::json &config_json, const path &config_path){
 	const path config_dir = config_path.parent_path();
 	vector<string> hierarchy;
+	// prevent self-extension: include the current config file in the hierarchy
+	hierarchy.push_back(absolute(config_path).string());
 	return resolve_extends(config_json, config_dir, hierarchy);
 }
 

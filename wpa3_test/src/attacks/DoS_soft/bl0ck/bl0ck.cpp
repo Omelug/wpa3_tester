@@ -1,20 +1,23 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
-#include "config/RunStatus.h"
-#include "logger/log.h"
 
-#include <random>
 #include <chrono>
-#include <thread>
 #include <condition_variable>
+#include <fstream>
 #include <memory>
+#include <random>
+#include <thread>
+#include <nlohmann/json.hpp>
 
 #include "attacks/components/sniffer_helper.h"
-#include "ex_program/hostapd/hostapd.h"
+#include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
+#include "logger/report.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 // rewrite from python https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file
 namespace wpa3_tester::bl0ck_attack{
@@ -22,6 +25,7 @@ using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
+using json = nlohmann::json;
 
 RadioTap get_BAR_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw, const uint8_t fn, const uint16_t sn){
 	//for some reason is dst first
@@ -135,13 +139,17 @@ void iperf_conn(RunStatus &rs, const string &src_client, const string &dst_serve
 
 static string bpf_mac_at(const int offset, const string &mac){
 	// BPF cant filter 6 bytes at one filters
-	unsigned int b[6];
-	sscanf(mac.c_str(), "%x:%x:%x:%x:%x:%x", &b[0], &b[1], &b[2], &b[3], &b[4], &b[5]);
-
+	array<unsigned, 6> b{};
+	const char *p = mac.c_str();
+	for(auto &byte : b){
+		char *end;
+		byte = strtoul(p, &end, 16);
+		p = (*end == ':') ? end + 1 : end;
+	}
 	char buf[128];
 	snprintf(buf, sizeof(buf), "(wlan[%d:4] == 0x%02x%02x%02x%02x and wlan[%d:2] == 0x%02x%02x)", offset, b[0], b[1],
 			b[2], b[3], offset + 4, b[4], b[5]);
-	return string(buf);
+	return {buf};
 }
 
 static string bpf_mac_ra_or_ta(const string &mac){
@@ -168,6 +176,119 @@ void speed_observation_start(RunStatus &rs){
 	rs.start_observers();
 }
 
+struct Bl0ckResult{
+	bool passed = false;
+	int disconnect_count = 0;
+	vector<double> reconnect_times_ms;
+};
+
+static Bl0ckResult compute_result(const RunStatus &rs){
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+	const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
+
+	Bl0ckResult r;
+	r.disconnect_count = static_cast<int>(disc_times.size());
+	r.passed = r.disconnect_count > 0;
+
+	for(const auto &disc : disc_times){
+		for(const auto &conn : conn_times){
+			if(conn > disc){
+				r.reconnect_times_ms.push_back(
+					static_cast<double>(duration_cast<milliseconds>(conn - disc).count())
+				);
+				break;
+			}
+		}
+	}
+
+	const string pass_str = r.passed ? "PASSED" : "FAILED";
+	log(LogLevel::INFO, "Bl0ck result: {} — disconnects: {}", pass_str, r.disconnect_count);
+	for(size_t i = 0; i < r.reconnect_times_ms.size(); ++i)
+		log(LogLevel::INFO, "  reconnect[{}]: {:.0f} ms", i, r.reconnect_times_ms[i]);
+
+	return r;
+}
+
+static void save_result(const RunStatus &rs, const Bl0ckResult &r){
+	json j;
+	j["passed"]            = r.passed;
+	j["disconnect_count"]  = r.disconnect_count;
+	j["reconnect_times_ms"] = r.reconnect_times_ms;
+
+	const path p = rs.run_folder() / "result.json";
+	ofstream f(p);
+	if(!f.is_open()){ log(LogLevel::WARNING, "Cannot write result.json"); return; }
+	f << j.dump(2) << "\n";
+	f.close();
+	set_public_perms(p);
+}
+
+static Bl0ckResult load_result(const RunStatus &rs){
+	const path p = rs.run_folder() / "result.json";
+	ifstream f(p);
+	if(!f.is_open()){
+		log(LogLevel::WARNING, "result.json not found, recomputing");
+		return compute_result(rs);
+	}
+	const json j = json::parse(f);
+	Bl0ckResult r;
+	r.passed           = j.value("passed", false);
+	r.disconnect_count = j.value("disconnect_count", 0);
+	r.reconnect_times_ms = j.value("reconnect_times_ms", vector<double>{});
+	return r;
+}
+
+static void generate_report(const RunStatus &rs, const Bl0ckResult &result,
+							const string &attacker_graph, const string &client_graph){
+	const path report_path = rs.run_folder() / "report.md";
+	ofstream report(report_path);
+	if(!report.is_open()){
+		log(LogLevel::ERROR, "Failed to create report.md");
+		return;
+	}
+	set_public_perms(report_path);
+
+	const string variant = rs.config().at("attack_config").value("attack_variant", "?");
+	report << "# WPA3 Security Test Report: Bl0ck DoS Attack (" << variant << ")\n\n";
+	report << "Bl0ck sends malformed Block-Acknowledgement frames to force the AP/STA to drop the BA session, "
+			"causing the client to disconnect.\n\n";
+
+	report::attack_config_table(report, rs);
+	report::attack_mapping_table(report, rs);
+
+	// ----- result
+	report << "## Test Result\n\n";
+	report << "| Metric | Value |\n|--------|-------|\n";
+	report << "| **Result** | **" << (result.passed ? "PASSED" : "FAILED") << "** |\n";
+	report << "| Disconnections | " << result.disconnect_count << " |\n";
+
+	if(result.reconnect_times_ms.empty()){
+		report << "| Reconnect time | n/a |\n";
+	} else {
+		for(size_t i = 0; i < result.reconnect_times_ms.size(); ++i)
+			report << "| Reconnect time [" << i << "] | " << static_cast<int>(result.reconnect_times_ms[i]) << " ms |\n";
+		double avg = 0;
+		for(const double t : result.reconnect_times_ms) avg += t;
+		avg /= static_cast<double>(result.reconnect_times_ms.size());
+		report << "| Avg reconnect time | " << static_cast<int>(avg) << " ms |\n";
+	}
+	report << "\n";
+
+	// ----- graphs
+	report << "## Traffic Analysis\n\n";
+	report << "Graphs show BA/BAR frames and client disconnect events over time.\n\n";
+
+	report << "### Attacker capture\n";
+	report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
+	report << "### Client capture (wpa\\_supplicant "
+			<< rs.config().at("actors").at("client").at("setup").at("program_config").value("version", "default")
+			<< ")\n";
+	report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+
+	report << "---\n";
+	report.close();
+}
+
 void run_bl0ck_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &attacker = rs.get_actor("attacker");
@@ -188,6 +309,10 @@ void run_bl0ck_attack(RunStatus &rs){
 	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random);
 	this_thread::sleep_for(seconds(5));
 	log(LogLevel::INFO, "Block Attack END");
+
+	rs.process_manager.stop_all();
+	const Bl0ckResult result = compute_result(rs);
+	save_result(rs, result);
 }
 
 void stats_bl0ck_attack(const RunStatus &rs){
@@ -196,7 +321,9 @@ void stats_bl0ck_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {
 					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", "@START", "START", "black"},
+					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
+					{"client", "@START", "START", "black"},
 					{"client", "@END", "END", "black"},
 				});
 
@@ -215,10 +342,13 @@ void stats_bl0ck_attack(const RunStatus &rs){
 									},
 								});
 
-	observer::tshark::tshark_graph(rs, "attacker", elements);
-	observer::tshark::tshark_graph(rs, "client", elements);
-	//observer::tshark_graph(rs, "access_point", events);
+	const string attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
+	const string client_graph   = observer::tshark::tshark_graph(rs, "client", elements);
 
-	log(LogLevel::INFO, "Bl0ck attack stop");
+	const Bl0ckResult result = load_result(rs);
+	generate_report(rs, result, attacker_graph, client_graph);
+
+	log(LogLevel::INFO, "Bl0ck attack stats done");
 }
+
 }

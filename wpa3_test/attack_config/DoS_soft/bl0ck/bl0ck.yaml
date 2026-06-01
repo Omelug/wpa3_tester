@@ -1,6 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
-$validator: ./bl0ck.schema.yaml
-name: bl0ck_BA_rogue_AP
+name: bl0ck
 attacker_module: bl0ck
 attack_config:
   attack_time_sec: 30
@@ -11,7 +10,6 @@ actors:
   access_point:
     source: internal
     selection:
-      driver: rtw88_8821au
       condition: [ AP, 80211ac, 5GHz ]
     setup:
       program: hostapd
@@ -46,7 +44,6 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      driver: mt76x2u
       channel: 36
       condition: [ monitor, 80211ac, 5GHz ]
     netns: sta
@@ -57,13 +54,9 @@ actors:
     selection:
       channel: 36
       condition: [ injection, 5GHz ]
-  rogue_ap:
-    source: internal
-    selection:
-      driver: mt76x2u
-      channel: 36
-      condition: [ monitor ]
-    setup:
-      program: hostapd-mana
-      program_config:
-        hostapd-mana_path: ./rogue_ap_hostapd_mana.conf
+observers:
+  ap_mausezahn:
+    actor: access_point
+    program: mausezahn
+    program_config:
+      target_actor: client

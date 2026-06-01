@@ -11,7 +11,9 @@ void block(const std::string &STA_mac, const std::string &AP_mac, const std::str
 			const std::string &attack_type, int duration_sec, bool is_random
 );
 
+void setup_attack(RunStatus &rs);
 void run_bl0ck_attack(RunStatus & rs);
+void setup_rogue_ap(RunStatus &rs);
 void stats_bl0ck_attack(const RunStatus &rs);
 void speed_observation_start(RunStatus & rs);
 

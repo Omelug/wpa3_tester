@@ -219,11 +219,16 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_mana_config_path));
 	}
 
+	string version;
+	if(program_config.contains("version") && !program_config["version"].is_null()){
+		version = program_config["version"].get<string>();
+	}
+
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
-						"hostapd-mana",
+						get_hostapd_mana(version),
 						//"-P", pid_file, // write PID to file, dont work without -B (background)
 						"-i", rs.get_actor(actor_name)["iface"], hostapd_mana_config_path,
 					});

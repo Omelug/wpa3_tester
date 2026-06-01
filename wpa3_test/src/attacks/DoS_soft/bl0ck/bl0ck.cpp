@@ -1,5 +1,6 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 
+#include <cassert>
 #include <chrono>
 #include <condition_variable>
 #include <fstream>
@@ -8,6 +9,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
+#include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
@@ -16,6 +18,7 @@
 #include "logger/report.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/tshark_wrapper.h"
+#include "setup/program.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 
@@ -136,6 +139,16 @@ void iperf_conn(RunStatus &rs, const string &src_client, const string &dst_serve
 	rs.process_manager.wait_for("iperf_server", "Server listening on ", seconds(30));
 	observer::start_iperf3(rs, "iperf_client", src_client, dst_server);
 };
+
+void setup_rogue_ap(RunStatus &rs){
+	if(rs.config().at("actors").contains("rogue_ap")){
+		copy_file(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
+				rs.run_folder() / "rogue_ap_hostapd_mana.conf");
+		program::start(rs, "rogue_ap");
+		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
+		log(LogLevel::INFO, "Rogue AP up");
+	}
+}
 
 static string bpf_mac_at(const int offset, const string &mac){
 	// BPF cant filter 6 bytes at one filters
@@ -289,6 +302,11 @@ static void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	report.close();
 }
 
+void setup_attack(RunStatus &rs){
+	setup_rogue_ap(rs);
+	components::client_ap_attacker_setup(rs);
+}
+
 void run_bl0ck_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &attacker = rs.get_actor("attacker");
@@ -326,6 +344,10 @@ void stats_bl0ck_attack(const RunStatus &rs){
 					{"client", "@START", "START", "black"},
 					{"client", "@END", "END", "black"},
 				});
+
+	if(rs.config().at("actors").contains("rogue_ap")){
+		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+	}
 
 	observer::tshark::pcap_events(rs, elements, {
 									{"attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA", "blue"},

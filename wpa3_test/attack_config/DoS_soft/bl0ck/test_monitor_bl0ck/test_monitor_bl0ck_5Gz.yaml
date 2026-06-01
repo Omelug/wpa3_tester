@@ -11,6 +11,6 @@ actors:
   transceiver:
     source: internal
     selection:
-      driver: rtw_8821cu
+      driver: rtw88_8821cu
       condition: [ 5GHz, injection ]
       channel: 36

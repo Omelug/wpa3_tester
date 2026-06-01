@@ -11,7 +11,7 @@ actors:
   access_point:
     source: internal
     selection:
-      driver: rtw_8821au
+      driver: rtw88_8821au
       condition: [ AP, 80211ac, 5GHz ]
     setup:
       program: hostapd
@@ -58,7 +58,7 @@ actors:
     selection:
       channel: 36
       condition: [ monitor, injection, 5GHz ]
-      driver: rtw_8821cu
+      driver: rtw88_8821cu
 observers:
   #client_mausezahn:
   #  actor: client

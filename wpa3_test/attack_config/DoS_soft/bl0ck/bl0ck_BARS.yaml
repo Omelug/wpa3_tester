@@ -6,7 +6,7 @@ actors:
   access_point:
     source: internal
     selection:
-      driver: rtw_8821au
+      driver: rtw88_8821au
       condition: [ AP, 80211ac, 5GHz ]
     setup:
       program: hostapd

@@ -111,7 +111,7 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){
 	if(version.empty()){
 		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
-		return bin_prefix.empty() ? cfg.binary_name : bin_prefix;
+		return cfg.repo_name;
 	}
 
 	const string folder_key = (cfg.repo_name == "hostapd-mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";

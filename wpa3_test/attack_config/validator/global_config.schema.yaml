@@ -1,0 +1,21 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: Global configuration
+type: object
+
+allOf:
+  - $ref: './run_config.schema.yaml'
+
+properties:
+  regulatory_domain:
+    type: string
+    pattern: "^[A-Z]{2}$"
+    description: "ISO 3166-1 alpha-2 country code applied via 'iw reg set' before each test run (e.g. CZ, DE, US)"
+  internet_interface:
+    type: string
+  timeout_external_bb_scan:
+    type: integer
+    minimum: 1
+  paths:
+    type: object
+  actors:
+    type: object

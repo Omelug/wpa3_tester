@@ -1,5 +1,6 @@
 #include "config/RunStatus.h"
 #include "config/global_config.h"
+#include "system/hw_capabilities.h"
 #include "inteprrupt.h"
 #include "system/utils.h"
 #include <filesystem>
@@ -85,6 +86,18 @@ void RunStatus::execute(){
 	}
 
 	try {
+		try {
+			const auto &gcfg = get_global_config();
+			if(gcfg.contains("regulatory_domain")){
+				const string reg = gcfg.at("regulatory_domain").get<string>();
+				log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
+				if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+					log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
+			}
+		} catch(const exception &e){
+			log(LogLevel::DEBUG, "Regulatory domain not applied: {}", e.what());
+		}
+
 		if(run_config().get_only_stats()){
 			load_actor_interface_mapping();
 			stats_test();

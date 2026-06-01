@@ -19,7 +19,7 @@ MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
-: detect_injected_(detect_injected), sniffer_([&]() -> Sniffer {
+: detect_injected_(detect_injected), sniffer_([&]() {
 	netlink_helper::NetNSContext ns_guard(netns);
 	return Sniffer(iface, make_sniff_cfg());
 }()){
@@ -29,14 +29,14 @@ MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns,
 }
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
-void MonitorSocket::send(PDU &pdu, const Channel ch){
+void MonitorSocket::send(PDU &pdu, const Channel &){
 	if(detect_injected_){
 		// Set More Data flag so we can detect injected frames
 		if(auto *dot11 = pdu.find_pdu<Dot11>()) dot11->more_data(1);
 	}
 
 	// Wrap in RadioTap if not already present.
-	// Keep the header minimal (only TXFlags) — matching Python behaviour.
+	// Keep the header minimal (only TXFlags) — matching Python behavior.
 	// Adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()){
@@ -51,7 +51,7 @@ void MonitorSocket::send(PDU &pdu, const Channel ch){
 	pcap_inject(sniffer_.get_pcap_handle(), bytes.data(), bytes.size());
 }
 
-vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel ch,
+vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel &ch,
 												const bool detect_injected){
 	if(raw.size() < 4) return {};
 
@@ -94,7 +94,7 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 	return out;
 }
 
-void MonitorSocket::send(const vector<unsigned char> &raw, const Channel ch){
+void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch){
 	const auto out = build_inject_frame(raw, ch, detect_injected_);
 	if(out.empty()) return;
 	pcap_inject(sniffer_.get_pcap_handle(), out.data(), out.size());

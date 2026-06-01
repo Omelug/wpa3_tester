@@ -1,10 +1,10 @@
 # THIS IS ONLY EXAMPLE
 # change needed paths
-$validator: ./validator/run_config.schema.yaml
+$validator: ./validator/global_config.schema.yaml
 
+regulatory_domain: CZ
 internet_interface: wlan0
 timeout_external_bb_scan: 5
-#TODO add regulatory domain  sudo iw reg set CZ + error from this
 paths:
   # These config keys are not included in result config,
   hostapd:
@@ -22,3 +22,4 @@ actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0 ]
 
+rewrite: "errors"

@@ -170,11 +170,12 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
     const path test_base = this_file.parent_path() / "config_validation" / "global_config";
 
     SUBCASE("1. valid config with run_config fields") {
-        REQUIRE_NOTHROW(get_global_config(test_base / "01", true));
-        const nlohmann::json &cfg = get_global_config(test_base / "01");
+        const path root = test_base / "01";
+        REQUIRE_NOTHROW(get_global_config(root, true));
+        const nlohmann::json &cfg = get_global_config(root);
         CHECK_FALSE(cfg.contains("$validator"));
 
-        const Run_Config &rc = get_global_run_config(test_base / "01", true);
+        const Run_Config &rc = get_global_run_config(root, true);
         REQUIRE(rc.delete_old.has_value());
         CHECK_EQ(rc.delete_old.value(), true);
         REQUIRE(rc.test_report.has_value());
@@ -186,8 +187,9 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
     }
 
     SUBCASE("2. minimal config - no run_config fields") {
-        REQUIRE_NOTHROW(get_global_config(test_base / "02", true));
-        const Run_Config &rc = get_global_run_config(test_base / "02", true);
+        const path root = test_base / "02";
+        REQUIRE_NOTHROW(get_global_config(root, true));
+        const Run_Config &rc = get_global_run_config(root, true);
         CHECK_FALSE(rc.delete_old.has_value());
         CHECK_FALSE(rc.test_report.has_value());
         CHECK_FALSE(rc.rewrite.has_value());
@@ -195,7 +197,8 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
     }
 
     SUBCASE("3. error - invalid type for run_config field") {
-        CHECK_THROWS_AS(get_global_config(test_base / "03", true), config_err);
+        const path root = test_base / "03";
+        CHECK_THROWS_AS(get_global_config(root, true), config_err);
     }
 }
 

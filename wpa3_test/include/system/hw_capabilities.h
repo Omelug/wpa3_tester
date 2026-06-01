@@ -81,6 +81,10 @@ struct NlCaps{
 	bool csa = false;         // NL80211_CMD_CHANNEL_SWITCH supported
 	bool ocv = false;         // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
 	bool mfp = false;         // BIP cipher suite (hardware IGTK/BIGTK support)
+
+	int no_ir_24ghz = 0;  // channels skipped due to NO_IR
+	int no_ir_5ghz  = 0;
+	int no_ir_6ghz  = 0;
 };
 
 struct CryptoCaps{

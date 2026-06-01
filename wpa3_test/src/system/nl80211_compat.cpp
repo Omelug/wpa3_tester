@@ -195,8 +195,16 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 					nullptr);
 
 			if(!freq_attrs[NL80211_FREQUENCY_ATTR_FREQ]) continue;
+			if(freq_attrs[NL80211_FREQUENCY_ATTR_DISABLED]) continue;
 
 			const uint32_t mhz = nla_get_u32(freq_attrs[NL80211_FREQUENCY_ATTR_FREQ]);
+
+			if(freq_attrs[NL80211_FREQUENCY_ATTR_NO_IR]){
+				if(mhz >= 2412 && mhz <= 2484) caps->no_ir_24ghz++;
+				if(mhz >= 5180 && mhz <= 5885) caps->no_ir_5ghz++;
+				if(mhz >= 5925 && mhz <= 7125) caps->no_ir_6ghz++;
+				continue;
+			}
 
 			if(mhz >= 2412 && mhz <= 2484) caps->band24 = true;
 			if(mhz >= 5180 && mhz <= 5885) caps->band5 = true;
@@ -267,5 +275,12 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 
 	nlmsg_free(msg);
 	nl_socket_free(sock);
+
+	if(caps.no_ir_5ghz > 0 && !caps.band5)
+		log(LogLevel::WARNING, "{}: {} 5 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml", cfg->get(SK::iface), caps.no_ir_5ghz);
+	if(caps.no_ir_6ghz > 0 && !caps.band6)
+		log(LogLevel::WARNING, "{}: {} 6 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml", cfg->get(SK::iface), caps.no_ir_6ghz);
+	if(caps.no_ir_24ghz > 0 && !caps.band24)
+		log(LogLevel::DEBUG, "{}: {} 2.4 GHz channel(s) excluded by regulatory (NO_IR)", cfg->get(SK::iface), caps.no_ir_24ghz);
 }
 }

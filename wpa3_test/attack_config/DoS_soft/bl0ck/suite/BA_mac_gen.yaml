@@ -15,11 +15,12 @@ tests:
         "38:d5:47:0c:2d:99"
       ]
     config:
+      name: bl0ck_mac_var_perm_mac
       $extends: ../bl0ck.yaml
       actors:
-        acces_point:
+        access_point:
           selection:
-            permanent_mac: var_perm_mac_0
+            permanent_mac: var_perm_mac
         client:
           selection:
             driver: ath_htc

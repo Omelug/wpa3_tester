@@ -8,7 +8,7 @@ tests:
     config:
       $extends: 02_test.yaml
       actors:
-        acces_point:
+        access_point:
           setup:
             program: hostapd
             program_config:

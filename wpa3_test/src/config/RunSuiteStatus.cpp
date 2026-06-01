@@ -279,7 +279,6 @@ config_paths RunSuiteStatus::get_test_paths(){
 	const auto test_config_folder = _run_folder / "test_config";
 
 	error_code ec; //create test folder
-	create_public_dirs(test_config_folder, ec);
 	if(ec){ throw run_err("Unable to create directory"); }
 
 	config_paths test_map;
@@ -294,6 +293,7 @@ config_paths RunSuiteStatus::get_test_paths(){
 		}
 		
 		const string &type = source_info.at("type");
+		create_public_dirs(test_config_folder, ec);
 		if(type == "generator"){
 			defined_by_generator(source_info, source_name, test_config_folder, test_map);
 			continue;

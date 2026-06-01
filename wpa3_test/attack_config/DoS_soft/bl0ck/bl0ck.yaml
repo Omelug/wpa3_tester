@@ -1,11 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: bl0ck
 attacker_module: bl0ck
-attack_config:
-  attack_time_sec: 30
-  attack_variant: "BA"
-  random: false
-  frame_in_batch: 50
 actors:
   access_point:
     source: internal

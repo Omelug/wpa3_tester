@@ -339,7 +339,7 @@ definitions:
       - if:
           properties:
             selection:
-              required: [ channel ]
+              required: [ channel, condition ]
           required: [ selection ]
         then:
           properties:
@@ -352,8 +352,8 @@ definitions:
                     - contains: {const: "control_monitor"}
                     - contains: {const: "injection"}
                     - contains: {const: "AP"}
-              required: [ condition ]
-          errorMessage: "channel in selection requires monitor, active_monitor, control_monitor, injection or AP in condition"
+                    - contains: {const: "managed"}
+          errorMessage: "when channel is in selection, condition must contain monitor, active_monitor, control_monitor, injection, managed or AP"
   Observer:
     type: object
     additionalProperties: false

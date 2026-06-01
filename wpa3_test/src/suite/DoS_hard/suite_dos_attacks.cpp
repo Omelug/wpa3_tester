@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "config/RunSuiteStatus.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -56,6 +57,8 @@ void generate_suite_report(RunSuiteStatus &rss){
 		report << "### " << title << "\n\n";
 		report << "![" << title << "](" << rel.generic_string() << ")\n\n";
 	}
+	report.close();
+	set_public_perms(run_dir / "report.md");
 }
 }
 

@@ -1,7 +1,7 @@
 name: "Driver Permutation"
 attacker_module: module1
 actors:
-  acces_point:
+  access_point:
 
     source: internal
   client:

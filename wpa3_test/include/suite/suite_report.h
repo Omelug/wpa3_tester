@@ -1,15 +1,12 @@
 #pragma once
-#include <functional>
-#include <map>
+#include <filesystem>
 #include <string>
-#include <vector>
 
 #include "config/RunSuiteStatus.h"
-#include "DoS_hard/suite_dos_attacks.h"
 
 namespace wpa3_tester::suite{
-inline std::map<std::string,std::function<void(RunSuiteStatus &)>> suite_report_map = {
-	{"access_point_res_list", generate_suite_report},
-};
+
+std::string section_title(const std::filesystem::path &rel);
+void generate_suite_report(RunSuiteStatus &rss);
 
 }

@@ -1,0 +1,27 @@
+name: BA_mac_gen_ts
+config_type: test_suite
+tests:
+  driver_perm:
+    type: generator
+    vars:
+      perm_mac: [
+        "a0:d7:68:10:25:6d",
+        "00:c0:ca:b7:69:2a",
+        "90:de:80:6c:90:92",
+        "00:c0:ca:b5:e1:58",
+        "24:ec:99:bf:c7:cf",
+        "28:87:ba:a3:cf:16",
+        "38:d5:47:0c:2d:99"
+      ]
+    config:
+      $extends: ../bl0ck.yaml
+      actors:
+        acces_point:
+          selection:
+            permanent_mac: var_perm_mac_0
+        client:
+          selection:
+            driver: ath_htc
+        attacker:
+          selection:
+            driver: ath_htc

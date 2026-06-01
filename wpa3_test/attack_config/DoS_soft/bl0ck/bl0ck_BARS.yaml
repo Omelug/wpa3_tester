@@ -1,12 +1,7 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: bl0ck_BARS
 attacker_module: bl0ck
-attack_config:
-  $validator: ./bl0ck.schema.yaml
-  attack_time_sec: 15
-  attack_variant: "BARS"
-  random: false
-  frame_in_batch: 50
+$validator: ./bl0ck.schema.yaml
 actors:
   access_point:
     source: internal
@@ -60,8 +55,13 @@ actors:
     selection:
       channel: 36
       #ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
-      condition: [ monitor, injection, 5GHz ]
+      condition: [ injection, 5GHz ]
       #driver: rtw_8821cu
+attack_config:
+  attack_time_sec: 15
+  attack_variant: "BARS"
+  random: false
+  frame_in_batch: 50
 observers:
   client_mausezahn:
     actor: client

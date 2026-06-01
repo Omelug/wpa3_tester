@@ -12,5 +12,5 @@ actors:
     source: internal
     selection:
       driver: rtw_8821cu
-      condition: [ 5GHz, monitor, injection ]
+      condition: [ 5GHz, injection ]
       channel: 36

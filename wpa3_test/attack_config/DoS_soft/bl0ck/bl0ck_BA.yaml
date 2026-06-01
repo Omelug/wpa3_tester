@@ -1,8 +1,8 @@
 $schema: http://json-schema.org/draft-07/schema#
+$validator: ./bl0ck.schema.yaml
 name: bl0ck_BA
 attacker_module: bl0ck
 attack_config:
-  $validator: ./bl0ck.schema.yaml
   attack_time_sec: 30
   attack_variant: "BA"
   random: false
@@ -58,7 +58,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ monitor, injection, 5GHz ]
+      condition: [ injection, 5GHz ]
       #driver: rtw_8821cu
 observers:
   ap_mausezahn:

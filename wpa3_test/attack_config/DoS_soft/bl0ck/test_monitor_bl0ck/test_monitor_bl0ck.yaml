@@ -12,8 +12,7 @@ actors:
   transceiver:
     source: internal
     selection:
-      condition: [ monitor, injection ]
-
+      condition: [ injection ]
       #driver: rtl8xxxu
       #driver: ath9k_htc
       channel: 1

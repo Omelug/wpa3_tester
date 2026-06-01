@@ -2,28 +2,64 @@ $schema: http://json-schema.org/draft-07/schema#
 title: Bl0ck Attack Config
 type: object
 required:
-  - attack_time_sec
-  - attack_variant
-  - frame_in_batch
+  - actors
 properties:
-  $validator:
-    type: string
-    description: path to this schema
-  attack_time_sec:
-    type: integer
-    description: time of attack
-    minimum: 1
-  attack_variant:
-    type: string
-    enum: [ "BAR", "BA", "BARS" ]
-    description: typeof bl0ck attack
-  random:
-    type: boolean
-    default: false
-    description: is sender MAC address should be random
-  frame_in_batch:
-    type: integer
-    description: Number of concurrent frames to send
-    minimum: 1
-    maximum: 3000
-additionalProperties: false
+  actors:
+    required:
+      - access_point
+      - client
+      - attacker
+    properties:
+      rogue_ap:
+        description: "Optional rogue AP"
+      access_point:
+        properties:
+          selection:
+            properties:
+              condition:
+                allOf:
+                  - anyOf:
+                      - contains: {const: "5GHz"}
+                      - contains: {const: "6GHz"}
+                  - anyOf:
+                      - contains: {const: "80211ac"}
+                      - contains: {const: "80211ax"}
+      client:
+        properties:
+          selection:
+            properties:
+              condition:
+                allOf:
+                  - anyOf:
+                      - contains: {const: "5GHz"}
+                      - contains: {const: "6GHz"}
+                  - anyOf:
+                      - contains: {const: "80211ac"}
+                      - contains: {const: "80211ax"}
+  attack_config:
+    required:
+      - attack_time_sec
+      - attack_variant
+      - frame_in_batch
+    properties:
+      $validator:
+        type: string
+        description: path to this schema
+      attack_time_sec:
+        type: integer
+        description: time of attack
+        minimum: 1
+      attack_variant:
+        type: string
+        enum: [ "BAR", "BA", "BARS" ]
+        description: typeof bl0ck attack
+      random:
+        type: boolean
+        default: false
+        description: is sender MAC address should be random
+      frame_in_batch:
+        type: integer
+        description: Number of concurrent frames to send
+        minimum: 1
+        maximum: 3000
+    additionalProperties: false

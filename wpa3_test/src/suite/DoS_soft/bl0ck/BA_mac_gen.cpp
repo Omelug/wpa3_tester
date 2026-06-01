@@ -6,6 +6,7 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::suite::bl0ck_test_suites{
 using namespace std;
@@ -114,6 +115,7 @@ void generate_ba_mac_gen_report(RunSuiteStatus &rss){
 		   << (100.0 * passed_count / test_results.size()) << "%\n";
 	
 	report.close();
+	set_public_perms(run_dir / "report.md");
 	log(LogLevel::INFO, "BA_mac_gen report generated: {}", (run_dir / "report.md").string());
 }
 }

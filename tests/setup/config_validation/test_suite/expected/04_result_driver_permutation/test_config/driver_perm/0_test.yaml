@@ -1,5 +1,5 @@
 actors:
-  acces_point:
+  access_point:
     selection:
       driver: driver1
     source: internal

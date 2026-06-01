@@ -1,0 +1,2 @@
+$validator: ../../../../../../wpa3_test/attack_config/validator/run_config.schema.yaml
+internet_interface: wlan0

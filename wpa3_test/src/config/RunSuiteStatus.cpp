@@ -8,6 +8,7 @@
 #include <chrono>
 #include <thread>
 
+#include "config/global_config.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -38,6 +39,7 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name){
 	this->config = config_validation(_config_path);
 
 	parse_run_config(config, run_config);
+	run_config.merge_from(get_global_run_config());
 	if(config.contains("wait_between_tests"))
 		wait_between_tests = config.at("wait_between_tests").get<int>();
 }
@@ -131,7 +133,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 
 		RunStatus::config_validation(test_config_path);
 		const YNode saved_node = YAML::Load(config_str);
-		const string config_name = saved_node["name"].as<string>();
+		const auto config_name = saved_node["name"].as<string>();
 		test_map.emplace_back(config_name, test_config_path);
 	}
 }
@@ -240,7 +242,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 		// result test config validation
 		RunStatus::config_validation(test_path);
 		const YNode saved_node = YAML::Load(current_config_str);
-		const string config_name = saved_node["name"].as<string>();
+		const auto config_name = saved_node["name"].as<string>();
 		test_map.emplace_back(config_name, test_path);
 
 		// another index or stop
@@ -350,6 +352,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	const auto &[name, test_path] = *it;
 	RunStatus rs(test_path, name, ".");
 	rs.run_config(run_config);
+	rs.run_config(get_global_run_config());
 	rs.run_folder(run_folder() / rs.config().at("name").get<string>());
 	rs.execute();
 }

@@ -7,6 +7,7 @@
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "config/global_config.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
@@ -163,6 +164,39 @@ void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
     }
 
     CHECK_EQ(expected_tree, actual_tree);
+}
+
+TEST_CASE("Global Config - get_global_config / get_global_run_config"){
+    const path test_base = this_file.parent_path() / "config_validation" / "global_config";
+
+    SUBCASE("1. valid config with run_config fields") {
+        REQUIRE_NOTHROW(get_global_config(test_base / "01", true));
+        const nlohmann::json &cfg = get_global_config(test_base / "01");
+        CHECK_FALSE(cfg.contains("$validator"));
+
+        const Run_Config &rc = get_global_run_config(test_base / "01", true);
+        REQUIRE(rc.delete_old.has_value());
+        CHECK_EQ(rc.delete_old.value(), true);
+        REQUIRE(rc.test_report.has_value());
+        CHECK_EQ(rc.test_report.value(), false);
+        REQUIRE(rc.rewrite.has_value());
+        CHECK_EQ(rc.rewrite.value(), RewriteMode::errors);
+        REQUIRE(rc.save_log.has_value());
+        CHECK_EQ(rc.save_log.value(), true);
+    }
+
+    SUBCASE("2. minimal config - no run_config fields") {
+        REQUIRE_NOTHROW(get_global_config(test_base / "02", true));
+        const Run_Config &rc = get_global_run_config(test_base / "02", true);
+        CHECK_FALSE(rc.delete_old.has_value());
+        CHECK_FALSE(rc.test_report.has_value());
+        CHECK_FALSE(rc.rewrite.has_value());
+        CHECK_FALSE(rc.save_log.has_value());
+    }
+
+    SUBCASE("3. error - invalid type for run_config field") {
+        CHECK_THROWS_AS(get_global_config(test_base / "03", true), config_err);
+    }
 }
 
 TEST_CASE("RunStatus - parse_requirements()"){

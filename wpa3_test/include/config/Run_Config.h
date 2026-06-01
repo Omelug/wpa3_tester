@@ -28,6 +28,8 @@ struct Run_Config {
 	[[nodiscard]] bool        get_install_req()      const { return install_req.value_or(false); }
 	[[nodiscard]] bool        get_save_log()         const { return save_log.value_or(false); }
 
+	// used for rewrite
+	// RunStatus, overwrite by RunSuiteStatus, overwrite by GlobalConfig
 	void merge_from(const Run_Config &other){
 		if(other.delete_old.has_value())       delete_old       = other.delete_old;
 		if(other.test_report.has_value())      test_report      = other.test_report;

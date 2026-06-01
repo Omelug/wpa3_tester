@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "inteprrupt.h"
 #include "system/utils.h"
 #include <filesystem>
@@ -38,6 +39,7 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 	_config = config_validation(_config_path);
 
 	parse_run_config(_config, _run_config);
+	_run_config.merge_from(get_global_run_config());
 }
 
 void RunStatus::clean(){

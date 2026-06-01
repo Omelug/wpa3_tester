@@ -1,0 +1,6 @@
+$validator: ../../../../../../wpa3_test/attack_config/validator/run_config.schema.yaml
+delete_old: true
+test_report: false
+rewrite: "errors"
+save_log: true
+internet_interface: wlan0

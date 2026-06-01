@@ -1,5 +1,6 @@
 # THIS IS ONLY EXAMPLE
 # change needed paths
+$validator: ./validator/run_config.schema.yaml
 
 internet_interface: wlan0
 timeout_external_bb_scan: 5
@@ -20,3 +21,4 @@ paths:
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0 ]
+

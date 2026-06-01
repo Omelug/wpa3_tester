@@ -9,27 +9,43 @@ namespace wpa3_tester::hostapd{
 using namespace std;
 using namespace filesystem;
 
-void ensure_repo_cloned(const path &hostapd_folder){
-	const path repo_path = hostapd_folder / "hostapd";
+struct RepoConfig {
+	string repo_name;       // "hostapd", "hostapd-mana"
+	string git_url;         // https://git.w1.fi/hostap.git, etc.
+	string source_dir;      // "hostapd" for hostapd/hostapd-mana
+	string binary_name;     // "hostapd" for all
+	bool has_tags;          // hostapd has tags, hostapd-mana doesn't
+	string tag_prefix;      // "hostap_" for hostapd
+};
+
+static const RepoConfig HOSTAPD_CONFIG = {
+	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", "hostapd", true, "hostap_"
+};
+
+static const RepoConfig HOSTAPD_MANA_CONFIG = {
+	"hostapd-mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd", false, ""
+};
+
+void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
+	const path repo_path = base_folder / cfg.repo_name;
 	if(exists(repo_path)){ return; }
 
-	log(LogLevel::INFO, "Cloning hostapd repository into {}...", repo_path.string());
+	log(LogLevel::INFO, "Cloning {} repository into {}...", cfg.repo_name, repo_path.string());
 
 	error_code ec;
-	create_public_dirs(hostapd_folder, ec);
-	if(ec){ throw run_err("Failed to create directory: " + hostapd_folder.string()); }
+	create_public_dirs(base_folder, ec);
+	if(ec){ throw run_err("Failed to create directory: " + base_folder.string()); }
 
-	const string clone_cmd = "git clone https://git.w1.fi/hostap.git hostapd";
-	hw_capabilities::run_in(clone_cmd, hostapd_folder);
-	log(LogLevel::INFO, "Repository cloned successfully");
+	const string clone_cmd = "git clone " + cfg.git_url + " " + cfg.repo_name;
+	hw_capabilities::run_in(clone_cmd, base_folder);
+	log(LogLevel::INFO, "{} repository cloned successfully", cfg.repo_name);
 }
 
-string find_matching_tag(const path &repo_dir, const string &version){
+string find_matching_tag(const path &repo_dir, const string &version, const RepoConfig &cfg){
 	string version_normalized = version;
 	ranges::replace(version_normalized, '.', '_');
-	const string target_tag = "hostap_" + version_normalized;
+	const string target_tag = cfg.tag_prefix + version_normalized;
 
-	// Parse tags into vector
 	const string tags_output = hw_capabilities::run_cmd_output({"git", "-C", repo_dir.string(), "tag"});
 
 	vector<string> tags;
@@ -60,73 +76,77 @@ static string get_extra_cflags(){
 #endif
 }
 
-void build_version(const string &version, const path &build_folder, const path& target){
-	path repo_path = build_folder / "hostapd";
-	path hostapd_dir = repo_path / "hostapd";
-	string tag = "hostapd_" + version;
-	ranges::replace(tag, '.', '_');
+void build_hostapd_like(const string &version, const path &build_folder, const path& target, const RepoConfig &cfg){
+	path repo_path = build_folder / cfg.repo_name;
+	path source_dir = repo_path / cfg.source_dir;
 
-	path config_path = hostapd_dir / ".config";
-	if(!exists(config_path)){ copy(hostapd_dir / "defconfig", config_path); }
+	path config_path = source_dir / ".config";
+	if(!exists(config_path)){ copy(source_dir / "defconfig", config_path); }
 
 	ofstream conf(config_path, ios::app);
-	conf << "\n# --- Wi-Fi Framework Testing Extensions ---" "\nCONFIG_IEEE80211W=y" //PMF
-			"\nCONFIG_SAE=y" "\nCONFIG_WNM=y" // Wireless Network Management (needed in BSS Transition)
-			"\nCONFIG_OCV=y" // Operating Channel Validation
-			"\nCONFIG_IEEE80211N=y" // 802.11n
-			"\nCONFIG_IEEE80211AC=y" // 802.11ac (VHT)
-			"\nCONFIG_IEEE80211AX=y" // 802.11ax (HE / Wi-Fi 6)
-			"\nCONFIG_IEEE80211R=y" // Fast BSS Transition (FT)
-			"\nCONFIG_INTERWORKING=y" // 802.11u / Hotspot 2.0
-			"\nCONFIG_TESTING_OPTIONS=y" // extra cli commands, injection
-			"\nCONFIG_CTRL_IFACE=y" // hostapd_cli
-			"\nCONFIG_DEBUG_FILE=y" // debug logging to file
-			"\nCONFIG_EAP_PWD=y" "\n";
+	conf << "\n# --- Wi-Fi Framework Testing Extensions ---"
+		"\nCONFIG_IEEE80211W=y"
+		"\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
+		"\nCONFIG_OCV=y"
+		"\nCONFIG_IEEE80211N=y"
+		"\nCONFIG_IEEE80211AC=y"
+		"\nCONFIG_IEEE80211AX=y"
+		"\nCONFIG_IEEE80211R=y"
+		"\nCONFIG_INTERWORKING=y"
+		"\nCONFIG_TESTING_OPTIONS=y"
+		"\nCONFIG_CTRL_IFACE=y"
+		"\nCONFIG_DEBUG_FILE=y"
+		"\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
 
-	log(LogLevel::INFO, "Compiling hostapd {} ... ", version);
-	hw_capabilities::run_in("make clean", hostapd_dir);
+	log(LogLevel::INFO, "Compiling {} {} ... ", cfg.repo_name, version);
+	hw_capabilities::run_in("make clean", source_dir);
 	const string extra = get_extra_cflags();
-	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", hostapd_dir);
+	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
 
-	copy_file(hostapd_dir / "hostapd", target, copy_options::overwrite_existing);
-	set_public_perms(hostapd_dir);
+	copy_file(source_dir / cfg.binary_name, target, copy_options::overwrite_existing);
+	set_public_perms(source_dir);
 }
 
-string get_hostapd(const string &version){
+string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){
 	if(version.empty()){
-		log(LogLevel::WARNING, "hostapd version not defined, using system default");
-		return "hostapd";
+		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
+		return bin_prefix.empty() ? cfg.binary_name : bin_prefix;
 	}
 
-	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
+	const string folder_key = (cfg.repo_name == "hostapd-mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
+	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
 
-	string bin_name = "hostapd_" + version;
+	string bin_name = bin_prefix + version;
 	ranges::replace(bin_name, '.', '_');
-	const path hostapd_bin = hostapd_folder / bin_name;
+	const path binary_path = hostapd_folder / bin_name;
 
-	// return if exists
-	if(exists(hostapd_bin)){
-		log(LogLevel::INFO, "Using existing hostapd binary: {}", hostapd_bin.string());
-		return hostapd_bin.string();
+	if(exists(binary_path)){
+		log(LogLevel::INFO, "Using existing {} binary: {}", cfg.repo_name, binary_path.string());
+		return binary_path.string();
 	}
 
-	// preparation for build
-	ensure_repo_cloned(hostapd_folder);
-	const path repo_path = hostapd_folder / "hostapd";
-	const string tag = find_matching_tag(repo_path, version);
+	ensure_git_repo_cloned(hostapd_folder, cfg);
+	const path repo_path = hostapd_folder / cfg.repo_name;
 
-	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
-	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
-	hw_capabilities::run_in("git clean -fd", repo_path);
+	if(cfg.has_tags){
+		const string tag = find_matching_tag(repo_path, version, cfg);
+		try { hw_capabilities::run_in("git fetch --tags", repo_path); }
+		catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+		hw_capabilities::run_in("git clean -fd", repo_path);
+		hw_capabilities::run_in("git checkout " + tag, repo_path);
+	} else {
+		try { hw_capabilities::run_in("git fetch", repo_path); }
+		catch(const run_err &){ log(LogLevel::WARNING, "git fetch failed (offline?), using local version"); }
+		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+		hw_capabilities::run_in("git clean -fd", repo_path);
+	}
 
-	hw_capabilities::run_in("git checkout " + tag, repo_path);
-
-	build_version(version, hostapd_folder, hostapd_bin);
-	copy(repo_path / "hostapd" / "hostapd", hostapd_bin, copy_options::overwrite_existing);
-	return hostapd_bin;
+	build_hostapd_like(version, hostapd_folder, binary_path, cfg);
+	copy(repo_path / cfg.source_dir / cfg.binary_name, binary_path, copy_options::overwrite_existing);
+	return binary_path.string();
 }
 
 void build_wpa_supplicant_version(const string &version, const path &build_folder, const path& target){
@@ -139,21 +159,22 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	}
 
 	ofstream conf(config_path, ios::app);
-	conf << "\n# --- Configuration changes for the Wi-Fi Framework ---" "\nCONFIG_SAE=y" "\nCONFIG_TESTING_OPTIONS=y"
-			"\nCONFIG_FRAMEWORK_EXTENSIONS=y" "\nCONFIG_IEEE80211W=y" // PMF
-			"\nCONFIG_WNM=y"                                          // Wireless Network Management
-			"\nCONFIG_OCV=y"                                          // Operating Channel Validation
-			"\nCONFIG_IEEE80211N=y"                                   // 802.11n
-			"\nCONFIG_IEEE80211AC=y"                                  // 802.11ac (VHT)
-			"\nCONFIG_IEEE80211AX=y"                                  // 802.11ax (HE / Wi-Fi 6)
-			"\nCONFIG_IEEE80211R=y"                                   // Fast BSS Transition (FT)
-			"\nCONFIG_INTERWORKING=y"                                 // 802.11u / Hotspot 2.0
-			"\nCONFIG_CTRL_IFACE=y"                                   // wpa_cli
-			"\nCONFIG_DEBUG_FILE=y"                                   // debug logging to file
-			"\nCONFIG_EAP_PWD=y"
-			"\nCONFIG_CTRL_IFACE_DBUS="
-			"\nCONFIG_CTRL_IFACE_DBUS_NEW="
-			"\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";
+	conf << "\n# --- Configuration changes for the Wi-Fi Framework ---"
+		"\nCONFIG_SAE=y" "\nCONFIG_TESTING_OPTIONS=y"
+		"\nCONFIG_FRAMEWORK_EXTENSIONS=y" "\nCONFIG_IEEE80211W=y"
+		"\nCONFIG_WNM=y"
+		"\nCONFIG_OCV=y"
+		"\nCONFIG_IEEE80211N=y"
+		"\nCONFIG_IEEE80211AC=y"
+		"\nCONFIG_IEEE80211AX=y"
+		"\nCONFIG_IEEE80211R=y"
+		"\nCONFIG_INTERWORKING=y"
+		"\nCONFIG_CTRL_IFACE=y"
+		"\nCONFIG_DEBUG_FILE=y"
+		"\nCONFIG_EAP_PWD=y"
+		"\nCONFIG_CTRL_IFACE_DBUS="
+		"\nCONFIG_CTRL_IFACE_DBUS_NEW="
+		"\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";
 	conf.close();
 
 	log(LogLevel::INFO, "Compiling wpa_supplicant {} ... ", version);
@@ -162,6 +183,15 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", wpa_supp_dir);
 	copy_file(wpa_supp_dir / "wpa_supplicant", target, copy_options::overwrite_existing);
 	permissions(target, perms::owner_all | perms::group_exec);
+	}
+
+// --------- PUBLIC API ---------
+string get_hostapd(const string &version){
+	return get_binary("hostapd_", version, HOSTAPD_CONFIG);
+}
+
+string get_hostapd_mana(const string &version){
+	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
 string get_wpa_supplicant(const string &version){
@@ -177,16 +207,14 @@ string get_wpa_supplicant(const string &version){
 	ranges::replace(bin_name, '.', '_');
 	const path wpa_supp_bin = hostapd_folder / bin_name;
 
-	// return if exists
 	if(exists(wpa_supp_bin)){
 		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin.string());
 		return wpa_supp_bin.string();
 	}
 
-	// preparation for build
-	ensure_repo_cloned(hostapd_folder);
+	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
 	const path repo_path = hostapd_folder / "hostapd";
-	const string tag = find_matching_tag(repo_path, version);
+	const string tag = find_matching_tag(repo_path, version, HOSTAPD_CONFIG);
 	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
 	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
 	hw_capabilities::run_in("git checkout " + tag, repo_path);

@@ -15,6 +15,7 @@
 #include "setup/config_parser.h"
 #include "setup/YAMLValidator.h"
 #include "suite/suite_report.h"
+#include "suite/test_suites.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -197,6 +198,42 @@ vector<pair<string,vector<vector<string>>>> prepare_variable_groups(const json &
 	return groups;
 }
 
+// help config validation functions
+size_t RunSuiteStatus::check_vars_len_same(basic_json<> source_info){
+	// check len are same
+	auto vars = source_info.at("vars");
+	size_t length = 0;
+	bool first = true;
+	for(auto &[key, value]: vars.items()){
+		if(first){
+			length = value.size();
+			first = false;
+		} else if(value.size() != length){
+			throw config_err("All vars lists must have the same length (error in '" + key + "')");
+		}
+	}
+	return length;
+}
+
+void RunSuiteStatus::print_test_suite_list(){
+	auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
+	if(tests.empty()){
+		cout << "In program are not any test suites" << endl;
+		return;
+	}
+	for(const auto &[name, path]: tests){ cout << "Test-suite: " << name << " -> " << path << endl; }
+}
+
+void RunSuiteStatus::print_tests_in_suite(const string &ts_name){
+	RunSuiteStatus rss(findConfigByTestSuiteName(ts_name));
+	auto tests = rss.get_test_paths();
+	if(tests.empty()){
+		cout << "Not tests in this suite" << endl;
+		return;
+	}
+	for(const auto &[name, path]: tests){ cout << "Test: " << name << " -> " << path << endl; }
+}
+
 void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 										const vector<pair<string,vector<vector<string>>>> &groups,
 										const path &gen_folder, config_paths &test_map
@@ -277,10 +314,6 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 
 config_paths RunSuiteStatus::get_test_paths(){
 	const auto test_config_folder = _run_folder / "test_config";
-
-	error_code ec; //create test folder
-	if(ec){ throw run_err("Unable to create directory"); }
-
 	config_paths test_map;
 	for(auto &[source_name, source_info]: config.at("tests").items()){
 		if(source_info.contains("path")){
@@ -291,9 +324,13 @@ config_paths RunSuiteStatus::get_test_paths(){
 			defined_by_name(source_info, source_name, test_map);
 			continue;
 		}
-		
+
 		const string &type = source_info.at("type");
+
+		error_code ec;
 		create_public_dirs(test_config_folder, ec);
+		if(ec){ throw run_err("Unable to create directory"); }
+
 		if(type == "generator"){
 			defined_by_generator(source_info, source_name, test_config_folder, test_map);
 			continue;
@@ -332,10 +369,11 @@ void RunSuiteStatus::execute(){
 
 	if(!config.contains("suite_report_function")) return;
 	const string module_name = config.at("suite_report_function").get<string>();
-	if(const auto report_it = suite::suite_report_map.find(module_name); report_it != suite::suite_report_map.end()){
-		report_it->second(*this);
+	
+	if(const auto it = suite::test_suite_callback_map.find(module_name); it != suite::test_suite_callback_map.end()){
+		it->second(*this);
 	} else{
-		log(LogLevel::WARNING, "suite_report_function '{}' not found in suite_report_map", module_name);
+		log(LogLevel::WARNING, "suite_report_function '{}' not found in test_suite_callback_map", module_name);
 	}
 }
 
@@ -361,41 +399,5 @@ string RunSuiteStatus::findConfigByTestSuiteName(const string &name){
 	auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
 	if(tests.contains(name)){ return tests[name]; }
 	throw config_err("Unknown test suite name: " + name);
-}
-
-void RunSuiteStatus::print_test_suite_list(){
-	auto tests = RunStatus::scan_attack_configs(TEST_SUITE);
-	if(tests.empty()){
-		cout << "In program are not any test suites" << endl;
-		return;
-	}
-	for(const auto &[name, path]: tests){ cout << "Test-suite: " << name << " -> " << path << endl; }
-}
-
-void RunSuiteStatus::print_tests_in_suite(const string &ts_name){
-	RunSuiteStatus rss(findConfigByTestSuiteName(ts_name));
-	auto tests = rss.get_test_paths();
-	if(tests.empty()){
-		cout << "Not tests in this suite" << endl;
-		return;
-	}
-	for(const auto &[name, path]: tests){ cout << "Test: " << name << " -> " << path << endl; }
-}
-
-// help config validation functions
-size_t RunSuiteStatus::check_vars_len_same(basic_json<> source_info){
-	// check len are same
-	auto vars = source_info.at("vars");
-	size_t length = 0;
-	bool first = true;
-	for(auto &[key, value]: vars.items()){
-		if(first){
-			length = value.size();
-			first = false;
-		} else if(value.size() != length){
-			throw config_err("All vars lists must have the same length (error in '" + key + "')");
-		}
-	}
-	return length;
 }
 }

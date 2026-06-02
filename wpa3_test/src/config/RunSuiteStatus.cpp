@@ -103,9 +103,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 	auto vars = source_info.at("vars");
 
 	for(size_t i = 0; i < length; ++i){
-		auto test_config_path = gen_folder / (to_string(i) + "_test.yaml");
-
-		auto tmp_path = path(test_config_path.string() + ".tmp.yaml");
+		auto tmp_path = path(gen_folder / (to_string(i) + ".tmp.yaml"));
 		save_yaml(source_info.at("config"), tmp_path);
 
 		ifstream ifs(tmp_path);
@@ -125,6 +123,10 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 			throw run_err("Unresolved " + var_PREFIX + " placeholders at index " + to_string(i));
 		}
 
+		const YNode saved_node = YAML::Load(config_str);
+		const auto config_name = saved_node["name"].as<string>();
+		
+		auto test_config_path = gen_folder / (config_name + ".yaml");
 		remove(tmp_path);
 		ofstream ofs(test_config_path);
 		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
@@ -133,8 +135,6 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		set_public_perms(test_config_path);
 
 		RunStatus::config_validation(test_config_path);
-		const YNode saved_node = YAML::Load(config_str);
-		const auto config_name = saved_node["name"].as<string>();
 		test_map.emplace_back(config_name, test_config_path);
 	}
 }

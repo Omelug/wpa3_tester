@@ -33,3 +33,9 @@ In this file are only general info for whole project, for specific classes check
 #### Manual tests
 - in manual test are test what cant be run without user interaction or hardware connection (USB interfaces, routers)
 - 2
+
+
+### Weird things of the code
+- if are connected 2 mt76x2u interfaces (90:de:80:6c:90:92, ) kernel do in some tests weird thing, 
+it stop all network programs (NetworkManager) and I have to reboot for check even dmesg, so dont do that.
+maybe some too many open files bug, but its terrible for debugging

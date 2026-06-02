@@ -22,6 +22,7 @@ paths:
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0 ]
+nm_exclude_actors: false
 rewrite: "errors"
 install_req: true
 compile_external: true

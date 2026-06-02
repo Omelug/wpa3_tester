@@ -9,7 +9,7 @@ d: how run program
 d: clion setup
 d+: RunConfig description
 +: do cahce type suites (run only tif reuires allows it, other posibilities ignore)
-+: Network Manager option in global_config exclude_actros: <bool>
+
 r: change var_ to $var_
 r?: u tests asi nepotřebuju type (Dá se to vyvodit z test_name/path/)
 
@@ -40,6 +40,7 @@ t: Stress tests
     l: log/cache  results per chipset/driver
 
 //DONE
++: Network Manager option in global_config nm_exclude_actors (not tested)
 +: NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION (maybe general NL80211_{} boolean conditions?>)
 r: (*this)[BK::AP].value_or(false) to get_or()
 t: manual_test to check if all configs in attack_cofigs are valid

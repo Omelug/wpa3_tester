@@ -108,6 +108,22 @@ void RunStatus::execute(){
 			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 		} //include req validation
 
+		try {
+			const auto &gcfg = get_global_config();
+			if(gcfg.value("nm_exclude_actors", false)){
+				for(const auto &[name, actor]: actors){
+					if(!actor->get_or(SK::external_OS, "").empty()) continue;
+					const string iface = actor->get_or(SK::iface, "");
+					if(iface.empty()) continue;
+					log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+					if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
+						log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
+				}
+			}
+		} catch(const exception &e){
+			log(LogLevel::DEBUG, "nm_exclude_actors not applied: {}", e.what());
+		}
+
 		setup_test();
 		if(g_interrupted.load()){
 			log(LogLevel::WARNING, "Test stopped by Ctrl+C");

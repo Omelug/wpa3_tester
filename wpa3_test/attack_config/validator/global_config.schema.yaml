@@ -17,5 +17,8 @@ properties:
     minimum: 1
   paths:
     type: object
+  nm_exclude_actors:
+    type: boolean
+    description: "Run 'nmcli device set <iface> managed no' for each local actor interface before every test"
   actors:
     type: object

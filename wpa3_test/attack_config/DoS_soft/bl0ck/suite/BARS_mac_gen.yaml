@@ -1,4 +1,4 @@
-name: BA_mac_gen_ts
+name: BARS_mac_gen_ts
 config_type: test_suite
 suite_report_function: bl0ck_mac_gen
 tests:
@@ -17,17 +17,14 @@ tests:
        name: bl0ck_mac_var_perm_mac
        $extends: ../bl0ck.yaml
        actors:
-        access_point:
+        client:
           selection:
             permanent_mac: var_perm_mac
-        #client:
-        #  selection:
-        #    driver: ath9k_htc
         attacker:
           selection:
             driver: rtw88_8821cu
        attack_config:
         attack_time_sec: 15
-        attack_variant: "BA"
+        attack_variant: "BARS"
         random: false
         frame_in_batch: 50

@@ -7,7 +7,7 @@ tests:
     vars:
       driver: [
         #"rtw_8821cu",
-        "rtw_8821au", "mt76x2u", "ath_htc"]
+        "rtw_8821au", "mt76x2u", "ath9k_htc"]
     config:
       $extends: ../channel_switch.yaml
       name: CSA_var_driver_0_var_driver_1_var_driver_2

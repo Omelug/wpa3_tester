@@ -4,14 +4,13 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+: add git results repository
++: add git results repository to documentation
 d: how run program
 d: clion setup
-d+:RunConfig description
-
+d+: RunConfig description
++: do cahce type suites (run only tif reuires allows it, other posibilities ignore)
 +: Network Manager option in global_config exclude_actros: <bool>
-+: NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION (maybe general NL80211_{} boolean conditions?>)
-r: changel var_ to $var_
+r: change var_ to $var_
 r?: u tests asi nepotřebuju type (Dá se to vyvodit z test_name/path/)
 
 PDF:
@@ -24,11 +23,10 @@ PDF:
     +: testování testeru? (asi jen zímínit u výběru jazyka)
     d: zmínit práci v README
 
-r: (*this)[BK::AP].value_or(false) to get_or()
 ?: move driver after check if is needed
 t: setup_actor()
 +: ClientState observer use in mitm
-t?: forgejo compatible github runners for push to main (i s config_validation)
+t?: forgejo compatible github runners for push to main (is config_validation)
 
 ?: works cache correctly with external WB?
 v?: get some visualizations from caches
@@ -42,6 +40,8 @@ t: Stress tests
     l: log/cache  results per chipset/driver
 
 //DONE
++: NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION (maybe general NL80211_{} boolean conditions?>)
+r: (*this)[BK::AP].value_or(false) to get_or()
 t: manual_test to check if all configs in attack_cofigs are valid
 r: simplify injection tests
 ch: one_iface, two_if test to actual tests, configable tests

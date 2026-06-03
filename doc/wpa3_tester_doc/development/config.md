@@ -16,7 +16,7 @@
 - object for one process
 - ObserverPtr is wrapper (use this, except of tests)
 - observer static format functions are in file [observers.cpp](../../wpa3_test/src/observer/observers.cpp)
-- wrappers in folder are in [observer](../../wpa3_test/src/observer)
+- wrappers in folder are in [observer](../../../wpa3_test/src/observer)
 
 ### RunStatus
 - object for status of test

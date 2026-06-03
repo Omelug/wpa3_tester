@@ -140,6 +140,7 @@
       <w>promisc</w>
       <w>psk</w>
       <w>radiotap</w>
+      <w>rawpdu</w>
       <w>readlink</w>
       <w>reassoc</w>
       <w>recv</w>

@@ -22,4 +22,3 @@ immediately injecting a dummy frame without the MF flag.
 - (partly) valid MAC addresses
 - spoofed MAC addresses
 - (partly) valid MAC addresses
-- 

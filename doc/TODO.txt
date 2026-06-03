@@ -4,19 +4,16 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+
 +: add git results repository to documentation
 d: how run program
 d: clion setup
 d+: RunConfig description
-+: do cahce type suites (run only tif reuires allows it, other posibilities ignore)
-
-r: change var_ to $var_
-r?: u tests asi nepotřebuju type (Dá se to vyvodit z test_name/path/)
++: do cache type suites (run only tif requires allows it, other possibilities ignore)
 
 PDF:
-    f: deleted_old -> delete_old
+    +: vysvětlit co jsou var_ a indexy v permutacích
     +: cache description
-    +: info bout NixOS
     +: info about injection tests
     +: PMKSA
     +: SPP
@@ -24,9 +21,7 @@ PDF:
     d: zmínit práci v README
 
 ?: move driver after check if is needed
-t: setup_actor()
 +: ClientState observer use in mitm
-t?: forgejo compatible github runners for push to main (is config_validation)
 
 ?: works cache correctly with external WB?
 v?: get some visualizations from caches
@@ -34,12 +29,11 @@ r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
-t: Stress tests
-    t: Management frame burst rate measurement (how many frames/sec actually arrive at the capture adapter when sending 100/500/1000 frames)
-    t: Simulate a SAE commit frame flood and measure throughput
-    l: log/cache  results per chipset/driver
 
 //DONE
+t: base setup_actor()
++: test_suite - source by test_name
+t?: forgejo compatible github runners for push to main (is config_validation)
 +: Network Manager option in global_config nm_exclude_actors (not tested)
 +: NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION (maybe general NL80211_{} boolean conditions?>)
 r: (*this)[BK::AP].value_or(false) to get_or()
@@ -123,7 +117,10 @@ Test cases:
 f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
-+: test_suite - source by test_name
+t: Stress tests
+    t: Management frame burst rate measurement (how many frames/sec actually arrive at the capture adapter when sending 100/500/1000 frames)
+    t: Simulate a SAE commit frame flood and measure throughput
+    l: log/cache  results per chipset/driver
 
 // new attacks?
 +: State Poisoning (2025_SACRED)

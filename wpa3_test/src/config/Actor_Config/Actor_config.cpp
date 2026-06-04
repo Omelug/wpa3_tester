@@ -1,4 +1,5 @@
 #include "config/Actor_Config/Actor_config.h"
+#include <sstream>
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
@@ -32,6 +33,13 @@ Actor_config::Actor_config(const json &j) {
 				this->set(k, sel[name].get<string>());
 			}else if(sel[name].is_number()){
 				this->set(k, to_string(sel[name].get<int>()));
+			}else if(sel[name].is_array() && k == SK::driver_name){
+				string joined;
+				for(const auto &v : sel[name]){
+					if(!joined.empty()) joined += '|';
+					joined += v.get<string>();
+				}
+				this->set(k, joined);
 			}
 		}
 
@@ -61,7 +69,15 @@ bool Actor_config::matches(const Actor_config &offer) {
 		if(!required.has_value()) continue;
 		const auto &offered  = offer[k];
 		if(!offered.has_value()) continue;
-		if(required != offered) return false;
+		if(k == SK::driver_name && required->contains('|')){
+			bool any = false;
+			stringstream ss(*required);
+			string tok;
+			while(getline(ss, tok, '|')) if(tok == *offered){ any = true; break; }
+			if(!any) return false;
+		} else {
+			if(required != offered) return false;
+		}
 	}
 
 	for(const auto k : bk_values()){

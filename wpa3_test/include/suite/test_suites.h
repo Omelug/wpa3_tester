@@ -4,6 +4,7 @@
 #include <string>
 #include "config/RunSuiteStatus.h"
 #include "DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 
 namespace wpa3_tester::suite{
 
@@ -11,6 +12,7 @@ namespace wpa3_tester::suite{
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_callback_map = {
 	{"access_point_res_list", generate_suite_report},
 	{"bl0ck_mac_gen", bl0ck_test_suites::generate_bl0ck_mac_gen_report},
+	{"malformed_eapol1_filler", malformed_eapol1_filler::generate_report}
 };
 
 }

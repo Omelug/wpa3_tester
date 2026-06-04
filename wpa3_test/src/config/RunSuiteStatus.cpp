@@ -16,6 +16,7 @@
 #include "setup/YAMLValidator.h"
 #include "suite/suite_report.h"
 #include "suite/test_suites.h"
+#include "system/hw_capabilities.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -312,6 +313,53 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 	generate_test_files(source_info, groups, gen_folder, test_map);
 }
 
+void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const string &source_name,
+											const path &test_config_folder, config_paths &test_map
+){
+	const path rel = source_info.at("config").get<string>();
+	path src = absolute(_config_path.parent_path() / rel);
+	if(!exists(src)) throw config_err("actor_filler: config not found: " + src.string());
+
+	const json template_config = RunStatus::config_validation(src);
+
+	// get only internal actors
+	ActorCMap rules;
+	for(const auto &[actor_name, actor_j] : template_config.at("actors").items()){
+		if(!actor_j.contains("source") || actor_j.at("source").get<string>() != "internal") continue;
+		rules.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor_j)));
+	}
+	if(rules.empty()) throw config_err("actor_filler: no internal actors in " + src.string());
+
+	if(!_hw_option_cache.internal_opts.has_value())
+		_hw_option_cache.internal_opts = RunStatus::internal_options();
+
+	const auto solutions = hw_capabilities::check_all_req_options(rules, *_hw_option_cache.internal_opts);
+	if(solutions.empty()) throw req_err("actor_filler: no valid hardware assignments found");
+
+	const path gen_folder = test_config_folder / source_name;
+	error_code ec;
+	create_public_dirs(gen_folder, ec);
+	if(ec) throw run_err("actor_filler: unable to create directory");
+
+	const string base_name = template_config.at("name").get<string>();
+	for(size_t i = 0; i < solutions.size(); i++){
+		json cfg = template_config;
+		cfg["name"] = base_name + "_" + to_string(i);
+
+		for(const auto &[actor_name, hw] : solutions[i]){
+			const auto &perm_mac = (*hw)[SK::permanent_mac];
+			if(!perm_mac.has_value()) continue;
+			cfg["actors"][actor_name]["selection"]["permanent_mac"] = *perm_mac;
+		}
+
+		const path test_path = gen_folder / (to_string(i) + "_actor_filler.yaml");
+		save_yaml(cfg, test_path);
+		set_public_perms(test_path);
+		RunStatus::config_validation(test_path);
+		test_map.emplace_back(cfg.at("name").get<string>(), test_path);
+	}
+}
+
 config_paths RunSuiteStatus::get_test_paths(){
 	const auto test_config_folder = _run_folder / "test_config";
 	config_paths test_map;
@@ -337,6 +385,10 @@ config_paths RunSuiteStatus::get_test_paths(){
 		}
 		if(type == "permutation"){
 			defined_by_permutation(source_info, source_name, test_config_folder, test_map);
+			continue;
+		}
+		if(type == "actor_filler"){
+			defined_by_actor_filler(source_info, source_name, test_config_folder, test_map);
 			continue;
 		}
 		throw config_err("invalid source type");

@@ -1,0 +1,16 @@
+observers:
+  client_mausezahn:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: access_point
+  ap_tshark:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  sta_tcpdump:
+    actor: access_point
+    program: tcpdump
+    program_config:
+      filter: "udp port 5201"

@@ -57,7 +57,7 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 	add_nets_header(rs, command, actor_name);
 	path pcap_path = obs_folder / (actor_name + "_capture.pcap");
 	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", pcap_path});
-	if(!filter.empty()) command.insert(command.end(), {"-f", filter});
+	if(!filter.empty()) command.push_back(filter);
 
 	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
 	rs.process_manager.after_stop(actor_name + "_cap", [pcap_path](){

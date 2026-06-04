@@ -14,6 +14,7 @@
 namespace wpa3_tester{
 enum CONFIG_TYPE{ TEST, TEST_SUITE };
 
+static const std::filesystem::path ATTACK_CONFIG = std::filesystem::path(PROJECT_ROOT_DIR) / "attack_config";
 inline auto var_PREFIX = std::string("var_");
 
 class Actor_config;
@@ -63,6 +64,7 @@ public:
 	void clean();
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMap &seen);
+	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
 	ActorPtr &get_actor(const std::string &actor_name);

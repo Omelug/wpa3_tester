@@ -105,14 +105,14 @@ void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 
 	rs.log_events(elements, {
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", "@START", "START", "black"},
-					{"client", "@END", "END", "black"},
+					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", START_tag, "START", "black"},
+					{"client", END_tag, "END", "black"},
 				});
 
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
 
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"); //FIXME get only from START to END
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
 
 	nlohmann::json j;

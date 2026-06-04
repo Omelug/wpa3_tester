@@ -16,6 +16,8 @@ enum CONFIG_TYPE{ TEST, TEST_SUITE };
 
 static const std::filesystem::path ATTACK_CONFIG = std::filesystem::path(PROJECT_ROOT_DIR) / "attack_config";
 inline auto var_PREFIX = std::string("var_");
+inline auto START_tag = "@START";
+inline auto END_tag = "@END";
 
 class Actor_config;
 class ExternalConn;

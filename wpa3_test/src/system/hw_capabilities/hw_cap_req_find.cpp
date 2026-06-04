@@ -15,7 +15,7 @@ using namespace filesystem;
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
-bool hw_capabilities::findSolution(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorCMap &rules,
+bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorCMap &rules,
 									const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions,
 									ActorMap &currentAssignment
 ){
@@ -34,7 +34,7 @@ bool hw_capabilities::findSolution(const vector<string> &ruleKeys, const size_t 
 		usedOptions.insert(i);
 		currentAssignment.insert_or_assign(actor_name, options[i]);
 
-		if(findSolution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) return true;
+		if(find_solution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) return true;
 
 		usedOptions.erase(i);
 		currentAssignment.erase(actor_name);
@@ -47,7 +47,7 @@ ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
 	ActorMap result;
-	if(unordered_set<size_t> usedOptions; findSolution(ruleKeys, 0, rules, options, usedOptions, result)){
+	if(unordered_set<size_t> usedOptions; find_solution(ruleKeys, 0, rules, options, usedOptions, result)){
 		log(LogLevel::DEBUG, "Solved!");
 		for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
 		return result;

@@ -229,7 +229,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 
 	command.insert(command.end(), {
 						get_hostapd_mana(version),
-						//"-P", pid_file, // write PID to file, dont work without -B (background)
+						//"-P", pid_file, // write PID to file, don't work without -B (background)
 						"-i", rs.get_actor(actor_name)["iface"], hostapd_mana_config_path,
 					});
 
@@ -237,7 +237,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const path output_path = rs.run_folder() / "captured_hashes.txt";
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	// parsing hashes - bypass, but mana_wpaout dont works n NIxOS (some low level protection?)
+	// parsing hashes - bypass, but mana_wpaout don't works n NIxOS (some low level protection?)
 	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
 		ifstream log_file(log_path);
 		if(!log_file.is_open()) return;

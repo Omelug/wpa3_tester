@@ -42,7 +42,7 @@ actors:
         group: CCMP
     selection:
       channel: 6
-      driver: rtw88_8821au
+      driver: rtw_8821au
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:

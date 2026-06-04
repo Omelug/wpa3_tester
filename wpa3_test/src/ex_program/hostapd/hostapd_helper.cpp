@@ -1,3 +1,4 @@
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "hostapd_cflags.h"
 #include "config/global_config.h"
 #include "logger/error_log.h"
@@ -186,6 +187,30 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	}
 
 // --------- PUBLIC API ---------
+
+CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
+    if(!exists(creds_file)){
+        log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file.string());
+        return {0, 0};
+    }
+
+    ifstream f(creds_file);
+    int total = 0, cracked = 0;
+    string line;
+    while(getline(f, line)){
+        // Lines are either "WPA*02*..." or "[WPA2-EAPOL HASHCAT]\tWPA*02*..."
+        const auto tab_pos = line.find('\t');
+        const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
+        if(!hash.starts_with("WPA*")) continue;
+        total++;
+        // hcxpmktool exit 0 = confirmed, 2 = unconfirmed, 1 = error
+        if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0)
+            cracked++;
+    }
+    log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
+    return {total, cracked};
+}
+
 string get_hostapd(const string &version){
 	return get_binary("hostapd_", version, HOSTAPD_CONFIG);
 }

@@ -4,16 +4,26 @@ $extends: ../bl0ck_BA.yaml
 name: bl0ck_BA_rogue_AP
 attacker_module: bl0ck
 actors:
+  access_point:
+    selection:
+      driver: rtw_8821au
+  client:
+    selection:
+      permanent_mac: "00:c0:ca:b7:69:2a"
+      driver: mt76x2u
+  attacker:
+    selection:
+      driver: rtw_8821cu
   rogue_ap:
     source: internal
     selection:
-      driver: mt76x2u
+      #driver: rtw_8821cu
       channel: 36
       condition: [ monitor ]
     setup:
       program: hostapd-mana
       program_config:
-        hostapd-mana_path: ./rogue_ap_hostapd_mana.conf
+        hostapd-mana_path: ./config/hostapd-mana.conf
 attack_config:
   attack_time_sec: 10
   random: false

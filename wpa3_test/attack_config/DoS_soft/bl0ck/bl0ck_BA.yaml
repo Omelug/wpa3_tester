@@ -6,7 +6,7 @@ attacker_module: bl0ck
 actors:
   access_point:
     selection:
-      driver: rtw88_8821au
+      driver: rtw_8821au
   client:
     selection:
       # je tam stejný driver i firmware, ale funguje jen na ALFA mediatek

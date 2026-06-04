@@ -212,6 +212,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		const path hostapd_path = rogue_ap_setup["hostapd-mana_path"].get<string>();
 		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
 		copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
+		set_public_perms(hostapd_mana_config_path);
 	}
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){
@@ -239,7 +240,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	ifstream log_file(log_path);
 	if(!log_file.is_open()) return;
 
-	const string output_path = (rs.run_folder() / "captured_hashes.txt").string();
+	const path output_path = rs.run_folder() / "captured_hashes.txt";
 	ofstream out(output_path);
 
 	string line;
@@ -253,5 +254,6 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 			log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
 		}
 	}
+	set_public_perms(output_path);
 }
 }

@@ -10,6 +10,7 @@ Tins::RadioTap get_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const std::strin
 void check_vulnerable(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,
 					const std::string &iface_name, const std::string &ssid, const Channel &ap_channel,
 					const Channel &new_channel,   int ms_interval, int attack_time);
+void setup_chs_attack(RunStatus &rs);
 
 // registered functions in tester
 void setup_chs_attack(RunStatus & rs);

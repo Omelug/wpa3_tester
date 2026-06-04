@@ -42,6 +42,29 @@ bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t
 	return false;
 }
 
+void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
+										const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions,
+										ActorMap &current, vector<ActorMap> &results
+){
+	if(ruleIdx == ruleKeys.size()){
+		results.push_back(current);
+		return;
+	}
+	const string &actor_name = ruleKeys[ruleIdx];
+	const auto &ruleIt = rules.find(actor_name);
+	if(ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
+	Actor_config &req = *ruleIt->second;
+	for(size_t i = 0; i < options.size(); i++){
+		if(usedOptions.contains(i)) continue;
+		if(!req.matches(*options[i])) continue;
+		usedOptions.insert(i);
+		current.insert_or_assign(actor_name, options[i]);
+		find_all_solutions(ruleKeys, ruleIdx + 1, rules, options, usedOptions, current, results);
+		usedOptions.erase(i);
+		current.erase(actor_name);
+	}
+}
+
 ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
@@ -57,5 +80,15 @@ ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector
 	Actor_config::print_ActorCMap("Actor options", options);
 
 	throw req_err("Not found valid requirements");
+}
+
+vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){
+	vector<string> ruleKeys;
+	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
+	vector<ActorMap> results;
+	ActorMap current;
+	unordered_set<size_t> used;
+	find_all_solutions(ruleKeys, 0, rules, options, used, current, results);
+	return results;
 }
 }

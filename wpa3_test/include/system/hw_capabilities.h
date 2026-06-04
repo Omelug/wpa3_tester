@@ -103,13 +103,18 @@ constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
 class hw_capabilities{
 	static bool find_solution(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
 							const std::vector<ActorPtr> &options,
-							//only for recursive
 							std::unordered_set<size_t> &usedOptions, ActorMap &currentAssignment
+	);
+	static void find_all_solutions(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
+								const std::vector<ActorPtr> &options,
+								std::unordered_set<size_t> &usedOptions, ActorMap &current,
+								std::vector<ActorMap> &results
 	);
 	static int nl80211_cb(nl_msg *msg, void *arg);
 	static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 public:
 	static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
+	static std::vector<ActorMap> check_all_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 
 	// run helpers
 	static void run_in(const std::string &cmd, const std::filesystem::path &cwd);

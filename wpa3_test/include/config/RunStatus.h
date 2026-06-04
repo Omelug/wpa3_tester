@@ -84,7 +84,6 @@ public:
 	) const;
 private:
 	// to scan available interfaces
-	static std::vector<ActorPtr> internal_options();
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
 	std::vector<int> get_external_BB_channels();
@@ -92,6 +91,7 @@ private:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 
 public:
+	static std::vector<ActorPtr> internal_options();
 	void parse_requirements();
 
 	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::filesystem::path &config_path);

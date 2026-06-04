@@ -4,6 +4,7 @@
 
 #include "Run_Config.h"
 #include "Actor_Config/Actor_config.h"
+#include "Actor_Config/ActorPtr.h"
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
@@ -16,6 +17,7 @@ struct HwOptionCache {
 
 class RunSuiteStatus{
 	static size_t check_vars_len_same(nlohmann::basic_json<> source_info);
+	HwOptionCache _hw_option_cache{};
 protected:
 	nlohmann::json config;
 	std::filesystem::path _config_path;
@@ -46,6 +48,9 @@ public: // getters and setters
 	);
 	static void defined_by_permutation(nlohmann::basic_json<> source_info, const std::string &source_name,
 										const std::filesystem::path &test_config_folder, config_paths &test_map
+	);
+	void defined_by_actor_filler(nlohmann::basic_json<> source_info, const std::string &source_name,
+								const std::filesystem::path &test_config_folder, config_paths &test_map
 	);
 	config_paths get_test_paths();
 	void execute();

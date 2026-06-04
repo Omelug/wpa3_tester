@@ -112,11 +112,10 @@ void stats(const RunStatus &rs){
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
 
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED"); //FIXME get only from START to END
 	const bool disconnected = !disc_times.empty();
 
 	nlohmann::json j;
-	j["passed"]           = disconnected;
 	j["disconnected"]     = disconnected;
 	j["disconnect_count"] = static_cast<int>(disc_times.size());
 

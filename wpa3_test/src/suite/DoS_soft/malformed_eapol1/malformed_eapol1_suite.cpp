@@ -19,7 +19,6 @@ struct TestEntry {
 	string ap_driver;
 	string client_driver;
 	string attacker_driver;
-	bool   disconnected;
 	int    disconnect_count;
 	path   sta_graph;
 	path   ap_graph;
@@ -47,9 +46,8 @@ void generate_report(RunSuiteStatus &rss){
 		const json result = json::parse(rf);
 		rf.close();
 
-		TestEntry e;
+		TestEntry e; //FIXME passedis redundant
 		e.test_name       = test_folder.filename().string();
-		e.disconnected    = result.value("passed", false);
 		e.disconnect_count= result.value("disconnect_count", 0);
 		e.sta_graph       = test_folder / "observer" / "tshark" / "client_graph.png";
 		e.ap_graph        = test_folder / "observer" / "tshark" / "access_point_graph.png";
@@ -72,7 +70,7 @@ void generate_report(RunSuiteStatus &rss){
 				e.attacker_driver = it->second->get_or(SK::driver_name, "?");
 		}
 
-		entries.push_back(move(e));
+		entries.push_back(std::move(e));
 	}
 
 	sort(entries.begin(), entries.end(),
@@ -102,7 +100,7 @@ void generate_report(RunSuiteStatus &rss){
 
 	int passed_count = 0;
 	for(const auto &e: entries){
-		if(e.disconnected) ++passed_count;
+		if(e.disconnect_count > 0) ++passed_count;
 
 		string links;
 		if(exists(e.sta_graph))

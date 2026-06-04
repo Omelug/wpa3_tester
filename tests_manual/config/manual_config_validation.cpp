@@ -10,18 +10,6 @@ using namespace std;
 using namespace filesystem;
 using namespace wpa3_tester;
 
-static const path ATTACK_CONFIG = path(PROJECT_ROOT_DIR) / "attack_config";
-
-static bool should_skip(const path &p){
-    if(p.string().ends_with(".schema.yaml")) return true;
-    const auto rel = relative(p, ATTACK_CONFIG);
-    const auto first = *rel.begin();
-    if(first == "validator") return true;
-    if(first == "target")    return true;
-    if(rel == "global_config.yaml") return true;
-    return false;
-}
-
 static bool is_suite(const path &p){
     try{
         const auto node = YAML::LoadFile(p.string());
@@ -34,7 +22,7 @@ int main(){
 
     for(const auto &entry : recursive_directory_iterator(ATTACK_CONFIG)){
         if(!entry.is_regular_file() || entry.path().extension() != ".yaml") continue;
-        if(should_skip(entry.path())) continue;
+        if(RunStatus::should_skip(entry.path())) continue;
 
         const string rel = relative(entry.path(), ATTACK_CONFIG).string();
         try{

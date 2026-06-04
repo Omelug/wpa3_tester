@@ -207,9 +207,8 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const path hostapd_mana_config_path = rs.run_folder()/ (actor_name + "_hostapd_mana.conf");
 
 	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
-	auto rogue_ap_setup = rs.config().at("actors").at(actor_name).at("setup").at("program");
-	if(rogue_ap_setup.contains("hostapd-mana_path")){
-		const path hostapd_path = rogue_ap_setup["hostapd-mana_path"].get<string>();
+	if(program_config.contains("hostapd-mana_path")){
+		const path hostapd_path = program_config["hostapd-mana_path"].get<string>();
 		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
 		copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
 		set_public_perms(hostapd_mana_config_path);
@@ -234,26 +233,28 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 						"-i", rs.get_actor(actor_name)["iface"], hostapd_mana_config_path,
 					});
 
-	rs.process_manager.run(actor_name, command, rs.run_folder());
-
-	const string log_path = (rs.run_folder() / "logger" / (actor_name+".log")).string();
-	ifstream log_file(log_path);
-	if(!log_file.is_open()) return;
-
+	const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");
 	const path output_path = rs.run_folder() / "captured_hashes.txt";
-	ofstream out(output_path);
 
-	string line;
-	set<string> seen; // deduplicate
-	while(getline(log_file, line)){
-		const auto pos = line.find("MANA WPA2 HASHCAT | ");
-		if(pos == string::npos) continue;
-		const string hash = line.substr(pos + 20); // skip "MANA WPA2 HASHCAT | "
-		if(seen.insert(hash).second){
-			out << hash << "\n";
-			log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
+	rs.process_manager.run(actor_name, command, rs.run_folder());
+	// parsing hashes - bypass, but mana_wpaout dont works n NIxOS (some low level protection?)
+	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
+		ifstream log_file(log_path);
+		if(!log_file.is_open()) return;
+
+		ofstream out(output_path);
+		string line;
+		set<string> seen;
+		while(getline(log_file, line)){
+			const auto pos = line.find("MANA WPA2 HASHCAT | ");
+			if(pos == string::npos) continue;
+			const string hash = line.substr(pos + 20);
+			if(seen.insert(hash).second){
+				out << hash << "\n";
+				log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
+			}
 		}
-	}
-	set_public_perms(output_path);
+		if(exists(output_path)) set_public_perms(output_path);
+	});
 }
 }

@@ -8,10 +8,11 @@ actors:
     selection:
       condition: [ AP ]
       channel: 6
+      driver: ath9k_htc
     setup:
       program: hostapd
       program_config:
-        #version: 2_11
+        version: 2_11
         driver: nl80211
         ssid: test_channel_switch
         hw_mode: g
@@ -41,6 +42,7 @@ actors:
         group: CCMP
     selection:
       channel: 6
+      driver: rtw88_8821au
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:
@@ -48,6 +50,7 @@ actors:
     selection:
       channel: 6
       condition: [ monitor ]
+      driver: mt76x2u
   rogue_ap:
     source: internal
     selection:
@@ -56,7 +59,8 @@ actors:
     setup:
       program: hostapd-mana
       program_config:
-        hostapd-mana_path: ./hostapd-mana.conf
+        hostapd-mana_path: ./config/hostapd-mana.conf
+$extends: ../observers.comp.yaml
 attack_config:
   attack_time: 40
   ms_interval: 100

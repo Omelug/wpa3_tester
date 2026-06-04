@@ -40,12 +40,22 @@ properties:
               type: string
           additionalProperties: false
 
+        - title: Shuffle actor for get all data
+          type: object
+          required: [ type, config ]
+          properties:
+            type:
+              enum: [ "actor_filler" ]
+            config:
+              type: string
+              description: "path to config"
+
         - title: Generator source #include permutation
           type: object
           required: [ type, vars, config ]
           properties:
             type:
-              enum: [ "generator", "permutation" ]
+              enum: [ "generator", "permutation"]
             vars:
               type: object
               additionalProperties:

@@ -154,7 +154,7 @@ void stats_chs_attack(const RunStatus &rs){
 							? prog_cfg.at("sae_password").get<string>()
 							: prog_cfg.value("psk", "");
 		if(!psk.empty())
-			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "wpa.creds", psk);
+			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
 
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);

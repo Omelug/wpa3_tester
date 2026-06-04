@@ -87,7 +87,7 @@ void RunStatus::execute(){
 
 	try {
 		try {
-			const auto &gcfg = get_global_config();
+			auto &gcfg = get_global_config();
 			if(gcfg.contains("regulatory_domain")){
 				const string reg = gcfg.at("regulatory_domain").get<string>();
 				log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
@@ -109,7 +109,7 @@ void RunStatus::execute(){
 		} //include req validation
 
 		try {
-			const auto &gcfg = get_global_config();
+			auto &gcfg = get_global_config();
 			if(gcfg.value("nm_exclude_actors", false)){
 				for(const auto &[name, actor]: actors){
 					if(!actor->get_or(SK::external_OS, "").empty()) continue;

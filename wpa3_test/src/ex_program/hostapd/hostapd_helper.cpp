@@ -13,7 +13,7 @@ struct RepoConfig {
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
 	string source_dir;      // "hostapd" for hostapd/hostapd-mana
-	string binary_name;     // "hostapd" for all
+	string binary_name;     // "hostapd"/"hostapd-mana"
 	bool has_tags;          // hostapd has tags, hostapd-mana doesn't
 	string tag_prefix;      // "hostap_" for hostapd
 };
@@ -23,7 +23,7 @@ static const RepoConfig HOSTAPD_CONFIG = {
 };
 
 static const RepoConfig HOSTAPD_MANA_CONFIG = {
-	"hostapd-mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd", false, ""
+	"hostapd-mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd-mana", false, ""
 };
 
 void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){

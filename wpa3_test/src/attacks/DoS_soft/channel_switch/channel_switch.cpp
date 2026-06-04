@@ -64,14 +64,14 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
+	components::client_ap_attacker_setup(rs);
 	if(rs.config().at("actors").contains("rogue_ap")){
-		copy_file(rs.config_path().parent_path() / "hostapd-mana.conf",
-				rs.run_folder()/ "rogue_ap_hostapd_mana.conf");
+		copy_file(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
+				rs.run_folder() / "rogue_ap_hostapd_mana.conf");
 		program::start(rs, "rogue_ap");
 		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
 		log(LogLevel::INFO, "Rogue AP up");
 	}
-	components::client_ap_attacker_setup(rs);
 }
 
 void run_chs_attack(RunStatus &rs){

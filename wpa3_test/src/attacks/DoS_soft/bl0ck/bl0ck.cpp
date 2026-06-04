@@ -133,16 +133,6 @@ void block(const string &STA_mac, const string &AP_mac, const string &iface, con
 	log(LogLevel::INFO, "Block attack completed after {} iterations", iteration);
 }
 
-void setup_rogue_ap(RunStatus &rs){
-	if(rs.config().at("actors").contains("rogue_ap")){
-		copy_file(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
-				rs.run_folder() / "rogue_ap_hostapd_mana.conf");
-		program::start(rs, "rogue_ap");
-		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
-		log(LogLevel::INFO, "Rogue AP up");
-	}
-}
-
 static string bpf_mac_at(const int offset, const string &mac){
 	// BPF cant filter 6 bytes at one filters
 	array<unsigned, 6> b{};
@@ -239,8 +229,8 @@ static Bl0ckResult load_result(const RunStatus &rs){
 }
 
 void setup_attack(RunStatus &rs){
-	setup_rogue_ap(rs);
 	components::client_ap_attacker_setup(rs);
+	components::setup_rogue_ap(rs);
 }
 
 void run_bl0ck_attack(RunStatus &rs){

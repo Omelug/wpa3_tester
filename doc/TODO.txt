@@ -10,7 +10,7 @@ d: how run program
 d: clion setup
 d+: RunConfig description
 +: do cache type suites (run only tif requires allows it, other possibilities ignore)
-
++: channel switch na kanály mimo reg
 PDF:
     +: vysvětlit co jsou var_ a indexy v permutacích
     +: cache description

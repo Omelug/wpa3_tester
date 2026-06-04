@@ -3,8 +3,10 @@
 #include "logger/log.h"
 #include "setup/program.h"
 #include "system/ip.h"
+#include "system/utils.h"
 
 using namespace std;
+using namespace chrono;
 
 namespace wpa3_tester::components{
 void setup_AP(RunStatus &rs, const string &actor_name){
@@ -40,6 +42,17 @@ void client_ap_attacker_setup(RunStatus &rs){
 	rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", chrono::seconds(40));
 	log(LogLevel::INFO, "client is connected");
 }
+
+void setup_rogue_ap(RunStatus &rs){
+	if(rs.config().at("actors").contains("rogue_ap")){
+		copy_file(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
+				rs.run_folder() / "rogue_ap_hostapd_mana.conf");
+		set_public_perms(rs.run_folder() / "rogue_ap_hostapd_mana.conf");
+		program::start(rs, "rogue_ap");
+		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
+		log(LogLevel::INFO, "Rogue AP up");
+	}
+};
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs){
 	if( (rs.get_actor("attacker")["source"] != "simulation" || rs.get_actor("client")["source"] != "simulation")

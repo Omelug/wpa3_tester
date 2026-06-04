@@ -13,6 +13,7 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include "setup/requirement_validation.h"
 #include "setup/YAMLValidator.h"
 #include "suite/suite_report.h"
 #include "suite/test_suites.h"
@@ -316,6 +317,8 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const string &source_name,
 											const path &test_config_folder, config_paths &test_map
 ){
+
+	cleanup_all_namespaces();
 	const path rel = source_info.at("config").get<string>();
 	path src = absolute(_config_path.parent_path() / rel);
 	if(!exists(src)) throw config_err("actor_filler: config not found: " + src.string());

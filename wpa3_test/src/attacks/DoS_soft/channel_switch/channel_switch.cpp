@@ -141,7 +141,7 @@ void stats_chs_attack(const RunStatus &rs){
 					{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"},
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
+					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
 				});
 
 	optional<hostapd::CrackResult> crack_result;

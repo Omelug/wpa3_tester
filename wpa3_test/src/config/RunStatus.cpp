@@ -192,14 +192,14 @@ void RunStatus::get_or_create_connection(const ActorPtr &actor){
 }
 
 void RunStatus::run_test(){
-	process_manager.write_log_all("@START");
+	process_manager.write_log_all(START_tag);
 	const auto module_name = config().at("attacker_module");
 
 	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()){
 		run_it->second(*this);
 	} else{ log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>()); }
 
-	process_manager.write_log_all("@END");
+	process_manager.write_log_all(END_tag);
 	process_manager.stop_all();
 }
 

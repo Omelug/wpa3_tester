@@ -44,7 +44,7 @@ using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);
-std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &process_name, const std::string &pattern
-);
+std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &process_name, const std::string &pattern,
+                                        bool between_markers = false);
 std::string escape_tex(std::string text);
 }

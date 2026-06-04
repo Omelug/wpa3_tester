@@ -129,8 +129,8 @@ void stats_attack(const RunStatus &rs){
 		{"access_point", "did not acknowledge", "ACK_fail", "red"},
 		{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 		{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-		{"client", "@START", "START", "black"},
-		{"client", "@END", "END", "black"},
+		{"client", START_tag, "START", "black"},
+		{"client", END_tag, "END", "black"},
 	});
 	const auto ap = rs.config().at("actors").at("access_point");
 	observer::resource_checker::create_graph(rs, ap["source"], elements);

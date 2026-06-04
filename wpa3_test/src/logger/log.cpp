@@ -114,7 +114,8 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	return LogTimePoint{nanoseconds{total_ns}};
 }
 
-vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern){
+vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern,
+                                    bool between_markers){
 	vector<LogTimePoint> timestamps;
 	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
 	if(!exists(actor_log)){
@@ -126,7 +127,13 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)" + pattern);
 	smatch match;
 
+	bool in_window = !between_markers;
 	while(getline(file, line)){
+		if(between_markers){
+			if(line.find(START_tag) != string::npos){ in_window = true;  continue; }
+			if(line.find(END_tag)   != string::npos){ in_window = false; continue; }
+		}
+		if(!in_window) continue;
 		if(regex_search(line, match, re)){
 			const LogTimePoint tp = log_time_to_epoch_ns(match[1].str());
 			if(tp.time_since_epoch().count() != 0) timestamps.push_back(tp);

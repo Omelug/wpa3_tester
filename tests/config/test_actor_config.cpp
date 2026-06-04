@@ -44,6 +44,18 @@ TEST_CASE("Actor_config - json constructor without selection"){
     CHECK_FALSE(actor[BK::monitor]);
 }
 
+TEST_CASE("Actor_config - json constructor with driver list"){
+    json j = {
+        {"selection", {
+            {"driver", json::array({"ath9k_htc", "mt76x2u", "rt2800usb"})}
+        }}
+    };
+    Actor_config actor(j);
+
+    REQUIRE(actor[SK::driver_name].has_value());
+    CHECK_EQ(actor[SK::driver_name].value(), "ath9k_htc|mt76x2u|rt2800usb");
+}
+
 TEST_CASE("Actor_config - matches method"){
     SUBCASE("Exact match") {
         Actor_config required;
@@ -100,6 +112,47 @@ TEST_CASE("Actor_config - matches method"){
         offer.set(BK::monitor, true);
         CHECK(required.matches(offer));
     }
+
+    SUBCASE("Multi-driver: offered driver is in the list") {
+        Actor_config required;
+        required.set(SK::driver_name, "ath9k_htc|mt76x2u|rt2800usb");
+
+        Actor_config offer;
+        offer.set(SK::driver_name, "mt76x2u");
+
+        CHECK(required.matches(offer));
+    }
+
+    SUBCASE("Multi-driver: offered driver not in the list") {
+        Actor_config required;
+        required.set(SK::driver_name, "ath9k_htc|mt76x2u");
+
+        Actor_config offer;
+        offer.set(SK::driver_name, "iwlwifi");
+
+        CHECK_FALSE(required.matches(offer));
+    }
+
+    SUBCASE("Multi-driver: first driver matches") {
+        Actor_config required;
+        required.set(SK::driver_name, "ath9k_htc|mt76x2u");
+
+        Actor_config offer;
+        offer.set(SK::driver_name, "ath9k_htc");
+
+        CHECK(required.matches(offer));
+    }
+
+    SUBCASE("Multi-driver: last driver matches") {
+        Actor_config required;
+        required.set(SK::driver_name, "ath9k_htc|mt76x2u");
+
+        Actor_config offer;
+        offer.set(SK::driver_name, "mt76x2u");
+
+        CHECK(required.matches(offer));
+    }
+
 }
 
 TEST_CASE("Actor_config - operator+= merge"){

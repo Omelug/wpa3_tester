@@ -242,8 +242,13 @@ definitions:
             type: string
             description: Name of interface
           driver:
-            type: string
-            description: driver of wifi card
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                minItems: 1
+            description: driver of wifi card, or list of accepted drivers
           driver_hash:
             type: string
             description: srcversion or sha256 hash of the driver module

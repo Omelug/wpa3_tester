@@ -173,8 +173,8 @@ void speed_observation_start(RunStatus &rs){
 }
 
 static Bl0ckResult compute_result(const RunStatus &rs){
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
-	const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
+	const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", true);
 
 	Bl0ckResult r;
 	r.disconnect_count = static_cast<int>(disc_times.size());
@@ -267,8 +267,8 @@ void stats_bl0ck_attack(const RunStatus &rs){
 					{"access_point", "did not acknowledge", "ACK_fail", "red"},
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
-					{"client", "@START", "START", "black"},
-					{"client", "@END", "END", "black"},
+					{"client", START_tag, "START", "black"},
+					{"client", END_tag, "END", "black"},
 				});
 
 	if(rs.config().at("actors").contains("rogue_ap")){

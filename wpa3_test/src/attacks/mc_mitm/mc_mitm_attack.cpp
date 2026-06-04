@@ -84,8 +84,8 @@ void stats(const RunStatus &rs){
 	rs.log_events(elements, {
 					{"access_point", "did not acknowledge", "ACK_fail", "red"},
 					{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "cyan"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", "@START", "START", "black"},
-					{"client", "@END", "END", "black"},
+					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", START_tag, "START", "black"},
+					{"client", END_tag, "END", "black"},
 				});
 
 	vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);;

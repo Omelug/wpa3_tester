@@ -2,16 +2,17 @@
 #include <cassert>
 #include <chrono>
 #include <filesystem>
+#include <optional>
 #include <thread>
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
-#include "setup/program.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 
@@ -94,7 +95,8 @@ void run_chs_attack(RunStatus &rs){
 }
 
 // ---------- STATS ----------------
-void generate_report(const RunStatus &rs, const string &STA_graph_path, const string &AP_graph_path){
+void generate_report(const RunStatus &rs, const string &STA_graph_path, const string &AP_graph_path,
+					const optional<hostapd::CrackResult> &crack_result){
 	const path report_path = rs.run_folder()/ "report.md";
 	ofstream report(report_path);
 	if(!report.is_open()){
@@ -117,6 +119,15 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	report << "### AP (access_point, hostapd " << rs.config().at("actors").at("client").at("setup").at("program_config").
 													value("version", "default") << ")\n";
 	report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
+
+	if(crack_result.has_value()){
+		report << "## Credential Cracking (hcxpmktool)\n";
+		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
+		report << "| Metric | Value |\n|--------|-------|\n";
+		report << "| Captured handshakes | " << crack_result->total << " |\n";
+		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
+	}
+
 	report << "---\n";
 	report.close();
 }
@@ -133,13 +144,23 @@ void stats_chs_attack(const RunStatus &rs){
 					{"client", "@START", "START", "black"}, {"client", "@END", "END", "black"},
 				});
 
+	optional<hostapd::CrackResult> crack_result;
 	if(rs.config().at("actors").contains("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+
+		//FIXME nemusí být, když je definované cestou
+		const auto &prog_cfg = rs.config().at("actors").at("client").at("setup").at("program_config");
+		const string psk = prog_cfg.contains("sae_password")
+							? prog_cfg.at("sae_password").get<string>()
+							: prog_cfg.value("psk", "");
+		if(!psk.empty())
+			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "wpa.creds", psk);
 	}
+
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
 																observer::get_observer_folder(rs, "tcpdump"));
 
-	generate_report(rs, STA_graph_path, AP_graph_path);
+	generate_report(rs, STA_graph_path, AP_graph_path, crack_result);
 }
 }

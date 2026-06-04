@@ -225,6 +225,21 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 	}
 }
 
+bool RunStatus::should_skip(const path &p){
+	if(p.string().ends_with(".schema.yaml")) return true;
+	// components
+	if(p.string().ends_with(".comp.yaml")) return true; //TODO add to documentatio n
+	const auto rel = relative(p, ATTACK_CONFIG);
+	const auto first = *rel.begin();
+	if(first == "validator") return true;
+	if(first == "target")    return true;
+	if(rel == "global_config.yaml") return true;
+	if(p.extension() != ".yaml") return true;
+	if(rel.string().find("/validator/") != string::npos) return true;
+	if(rel.string().find("/target/") != string::npos) return true;
+	return false;
+}
+
 unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct){
 	unordered_map<string,string> t_map;
 	const path attack_config_dir = path(PROJECT_ROOT_DIR) / "attack_config";
@@ -234,10 +249,7 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 	for(const auto &entry: recursive_directory_iterator(attack_config_dir)){
 		const auto &path = entry.path();
 		string filename = path.filename().string();
-		if(filename == "global_config.yaml" || filename.ends_with(".schema.yaml") || path.extension() != ".yaml" || path
-			.string().find("/validator/") != string::npos || path.string().find("/target/") != string::npos){
-			continue;
-		}
+		if(should_skip(entry.path())) continue;
 		try{
 			YAML::Node config = YAML::LoadFile(path.string());
 			nlohmann::json config_json = yaml_to_json(config);

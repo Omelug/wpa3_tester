@@ -54,7 +54,8 @@ actors:
     setup:
       program: hostapd-mana
       program_config:
-        hostapd-mana_path: ./hostapd-mana.conf
+        hostapd-mana_path: ./config/hostapd-mana.conf
+$extends: ../observers.comp.yaml
 attack_config:
   attack_time: 40
   ms_interval: 100

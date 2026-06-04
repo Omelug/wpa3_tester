@@ -1,11 +1,15 @@
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <tins/hw_address.h>
 #include <tins/llc.h>
 #include <tins/packet_sender.h>
 #include <tins/rawpdu.h>
-#include <tins/hw_address.h>
 
+#include "logger/log.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::eapol_logoff{
 using namespace std;
@@ -107,5 +111,20 @@ void stats(const RunStatus &rs){
 
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
+
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+	const bool disconnected = !disc_times.empty();
+
+	nlohmann::json j;
+	j["passed"]           = disconnected;
+	j["disconnected"]     = disconnected;
+	j["disconnect_count"] = static_cast<int>(disc_times.size());
+
+	const auto result_path = rs.run_folder() / "result.json";
+	ofstream f(result_path);
+	if(!f.is_open()){ log(LogLevel::WARNING, "Cannot write result.json"); return; }
+	f << j.dump(2) << "\n";
+	f.close();
+	set_public_perms(result_path);
 }
 }

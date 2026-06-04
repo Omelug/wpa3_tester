@@ -101,7 +101,7 @@ public:
 	void check_local_requirements();
 	// use cache for options of actors
 
-	//return if re-reload
+	//return true if re-reload
 	bool config_requirement();
 	void setup_test();
 	void run_test();

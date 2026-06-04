@@ -1,6 +1,14 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: bl0ck
 attacker_module: bl0ck
+
+#requirements:
+#  two_iface:
+#    injection_more_fragments_spoofed: [transceiver, receiver]
+#    injection_more_fragments_valid: [transceiver, receiver]
+#    injection_fields_order_spoofed: [transceiver, receiver]
+#    injection_fields_order_valid: [transceiver, receiver]
+
 actors:
   access_point:
     source: internal
@@ -48,7 +56,9 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ injection, 5GHz ]
+      condition: [ #injection, #TODO má tu být injection?
+        monitor,
+        5GHz ]
 observers:
   ap_mausezahn:
     actor: access_point

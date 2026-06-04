@@ -101,7 +101,7 @@ constexpr uint32_t CIPHER_CCMP = 0x000FAC04;
 constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
 
 class hw_capabilities{
-	static bool findSolution(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
+	static bool find_solution(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
 							const std::vector<ActorPtr> &options,
 							//only for recursive
 							std::unordered_set<size_t> &usedOptions, ActorMap &currentAssignment

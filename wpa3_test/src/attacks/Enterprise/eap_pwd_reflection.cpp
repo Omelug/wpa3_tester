@@ -82,7 +82,7 @@ static vector<uint8_t> build_eapol_eap(const uint8_t code, uint8_t eap_id,
     return out;
 }
 
-vector<uint8_t> build_identity_response(uint8_t eap_id, string_view identity){
+vector<uint8_t> build_identity_response(const uint8_t eap_id, const string_view identity){
     vector<uint8_t> body;
     body.push_back(EAP_TYPE_IDENTITY);
     body.insert(body.end(), identity.begin(), identity.end());
@@ -133,35 +133,32 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 	auth.auth_seq_number(1);
 	auth.status_code(0);
 
-	pcap_t* handle = sock.get_pcap_handle();
-	const auto deadline = steady_clock::now() + timeout;
+	RadioTap rt{};
+	rt.inner_pdu(auth);
+	sock.send(rt, ch);
 
-	while(steady_clock::now() < deadline){
-		sock.send(auth, ch);
-
-		const auto wait = min(milliseconds{200},
-			duration_cast<milliseconds>(deadline - steady_clock::now()));
-
-		const auto r = components::poll_sniffer<bool>(handle, wait,
-			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
-				if(!pdu) return nullopt;
-				const auto* resp = pdu->find_pdu<Dot11Authentication>();
-				if(!resp || resp->addr1() != our_mac || resp->auth_seq_number() != 2) return nullopt;
-				if(resp->status_code() != 0){
-					log(LogLevel::WARNING, "Auth rejected, status={:d}", resp->status_code());
-					return false;
-				}
-				log(LogLevel::INFO, "802.11 Authentication OK");
+	bool ok = false;
+	(void)components::poll_sniffer<bool>(sock.get_pcap_handle(), timeout,
+		[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
+			auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
+			if(!pdu) return nullopt;
+			const auto* resp = pdu->find_pdu<Dot11Authentication>();
+			if(!resp) return nullopt;
+			log(LogLevel::DEBUG, "Auth frame: addr1={} addr2={} seq={} status={}",
+				resp->addr1().to_string(), resp->addr2().to_string(),
+				static_cast<int>(resp->auth_seq_number()),
+				static_cast<int>(resp->status_code()));
+			if(resp->addr1() != our_mac || resp->auth_seq_number() != 2) return nullopt;
+			if(resp->status_code() != 0){
+				log(LogLevel::WARNING, "Auth rejected, status={:d}", resp->status_code());
 				return true;
-			});
-
-		if(holds_alternative<bool>(r)) return get<bool>(r);
-		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
-		// StopReason::Timeout -> retransmit
-	}
-	log(LogLevel::WARNING, "Auth timeout");
-	return false;
+			}
+			ok = true;
+			log(LogLevel::INFO, "802.11 Authentication OK");
+			return true;
+		});
+	if(!ok) log(LogLevel::WARNING, "Auth timeout");
+	return ok;
 }
 
 bool do_assoc(MonitorSocket& sock, const Channel& ch,
@@ -192,35 +189,25 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 	assoc.add_option({Dot11::SUPPORTED_RATES, sizeof(rates), rates});
 	assoc.add_option({Dot11::RSN, static_cast<uint32_t>(rsn_ie.size()), rsn_ie.data()});
 
-	pcap_t* handle = sock.get_pcap_handle();
-	const auto deadline = steady_clock::now() + timeout;
+	sock.send(assoc, ch);
 
-	while(steady_clock::now() < deadline){
-		sock.send(assoc, ch);
-
-		const auto wait = min(milliseconds{200},
-			duration_cast<milliseconds>(deadline - steady_clock::now()));
-
-		const auto r = components::poll_sniffer<bool>(handle, wait,
-			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
-				if(!pdu) return nullopt;
-				const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
-				if(!resp || resp->addr1() != our_mac) return nullopt;
-				if(resp->status_code() != 0){
-					log(LogLevel::WARNING, "Assoc rejected, status={}", resp->status_code());
-					return false;
-				}
-				log(LogLevel::INFO, "802.11 Association OK");
+	bool ok = false;
+	(void)components::poll_sniffer<bool>(sock.get_pcap_handle(), timeout,
+		[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
+			auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
+			if(!pdu) return nullopt;
+			const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
+			if(!resp || resp->addr1() != our_mac) return nullopt;
+			if(resp->status_code() != 0){
+				log(LogLevel::WARNING, "Assoc rejected, status={}", resp->status_code());
 				return true;
-			});
-
-		if(holds_alternative<bool>(r)) return get<bool>(r);
-		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
-		// StopReason::Timeout -> retransmit
-	}
-	log(LogLevel::WARNING, "Assoc timeout");
-	return false;
+			}
+			ok = true;
+			log(LogLevel::INFO, "802.11 Association OK");
+			return true;
+		});
+	if(!ok) log(LogLevel::WARNING, "Assoc timeout");
+	return ok;
 }
 
 void send_eapol(MonitorSocket& sock, const Channel& ch,
@@ -280,18 +267,19 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 	// Poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
 	// Returns nullopt on timeout or interrupt.
 	auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
-		const auto r = components::poll_sniffer<vector<uint8_t>>(handle, remaining(),
-			[&](const u_char* p, const uint32_t caplen) -> optional<vector<uint8_t>> {
+		optional<vector<uint8_t>> result;
+		(void)components::poll_sniffer<bool>(handle, remaining(),
+			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
 				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
 				if(!pdu) return nullopt;
-				const auto eapol = extract_eapol(*pdu, our_mac);
+				auto eapol = extract_eapol(*pdu, our_mac);
 				if(eapol.empty()) return nullopt;
-				if(is_eap_success(eapol)) return vector<uint8_t>{};  // empty = EAP-Success sentinel
+				if(is_eap_success(eapol)){ result = vector<uint8_t>{}; return true; }
 				if(!pred(eapol)) return nullopt;
-				return eapol;
+				result = move(eapol);
+				return true;
 			});
-		if(holds_alternative<vector<uint8_t>>(r)) return get<vector<uint8_t>>(r);
-		return nullopt;
+		return result;
 	};
 
 	// IDENTITY
@@ -308,7 +296,7 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 	{
 		optional<EapPwdFrame> frame;
 		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){
-			auto f = parse_eap_pwd(e);
+			const auto f = parse_eap_pwd(e);
 			if(f && f->opcode == PWD_OPCODE_ID){ frame = f; return true; }
 			return false;
 		});
@@ -336,7 +324,7 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 	{
 		optional<EapPwdFrame> frame;
 		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){
-			auto f = parse_eap_pwd(e);
+			const auto f = parse_eap_pwd(e);
 			if(f && f->opcode == PWD_OPCODE_CONFIRM){ frame = f; return true; }
 			return false;
 		});

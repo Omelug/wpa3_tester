@@ -149,4 +149,10 @@ void set_public_perms(const path &p){
 	const auto mode = is_directory(p, ec) ? perms::all : PUBLIC_FILE_PERMS;
 	permissions(p, mode, ec);
 }
+
+void copy_f(const path &src, const path &dst){
+	copy_file(src, dst, copy_options::overwrite_existing);
+	set_public_perms(dst);
+}
+
 }

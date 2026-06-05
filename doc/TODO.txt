@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+rch: copy_file/set_public_persm -> copy_f (alredy in utils.cpp)
 r: vymazat githubcopilota z hstorie
 r: vymazat zbytečné větve z githubu
 d: save_log to documentation

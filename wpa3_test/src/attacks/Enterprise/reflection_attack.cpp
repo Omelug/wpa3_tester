@@ -25,11 +25,6 @@ void setup_attack(RunStatus &rs){
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
 
-	//const auto attacker = rs.get_actor("attacker");
-	//attacker->set_monitor_mode();
-	//attacker->set_iface_up();
-	//log(LogLevel::INFO, "attacker interface in monitor mode");
-
 }
 
 void run_attack(RunStatus &rs){

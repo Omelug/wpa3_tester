@@ -7,25 +7,29 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::suite::bl0ck_test_suites{
+namespace wpa3_tester::suite::reflection_attack_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
-	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
+void setup_suite(const RunSuiteStatus &rss){
+	const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
+	create_public_dirs(config_dir);
+
+	copy_f(rss.config_path().parent_path() / "config/hostapd.eap_user",
+			  config_dir/ "hostapd.eap_user");
+	copy_f(rss.config_path().parent_path() / "config/hostapd.conf",
+			  config_dir / "hostapd.conf");
+}
+
+void generate_report(RunSuiteStatus &rss){
 
 	const auto run_dir = rss.run_folder();
-	if(!exists(run_dir)){
-		log(LogLevel::ERROR, "Run folder not found: {}", run_dir.string());
-		return;
-	}
 
-	// test_name, ap_driver, client_driver, attacker_driver, attack_variant, passed
-	vector<tuple<string, string, string, string, string, bool>> test_results;
+	// test_name, ap_driver, attacker_driver, passed
+	vector<tuple<string, string, string, bool>> test_results;
 
 	for(const auto &entry: directory_iterator(run_dir)){
 		if(!entry.is_directory()) continue;
@@ -43,9 +47,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		string test_name = test_folder.filename().string();
 
 		string ap_driver = "?";
-		string client_driver = "?";
 		string attacker_driver = "?";
-		string attack_variant = "?";
 
 		const auto config_path = test_folder / "test_config.yaml";
 		if(exists(config_path)){
@@ -56,17 +58,11 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 			if(auto ap = rs.actors.find("access_point"); ap != rs.actors.end())
 				ap_driver = ap->second->get_or(SK::driver_name, "?");
-			if(auto cli = rs.actors.find("client"); cli != rs.actors.end())
-				client_driver = cli->second->get_or(SK::driver_name, "?");
 			if(auto att = rs.actors.find("attacker"); att != rs.actors.end())
 				attacker_driver = att->second->get_or(SK::driver_name, "?");
-
-			const auto cfg = YAML::LoadFile(config_path.string());
-			if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
-				attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 		}
 
-		test_results.emplace_back(test_name, ap_driver, client_driver, attacker_driver, attack_variant, passed);
+		test_results.emplace_back(test_name, ap_driver, attacker_driver, passed);
 	}
 
 	ofstream report(run_dir / "report.md");
@@ -86,16 +82,16 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	}
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Attacker Driver | Variant | Result |\n";
-	report << "|------|-----------|---------------|-----------------|---------|--------|\n";
+	report << "| Test | AP Driver | Attacker Driver | Result |\n";
+	report << "|------|-----------|-----------------|--------|\n";
 
-	for(const auto &[test_name, ap_drv, cli_drv, att_drv, variant, passed]: test_results){
-		report << "| " << test_name << " | " << ap_drv << " | " << cli_drv << " | "
-			   << att_drv << " | " << variant << " | " << (passed ? "PASSED" : "FAILED") << " |\n";
+	for(const auto &[test_name, ap_drv, att_drv, passed]: test_results){
+		report << "| " << test_name << " | " << ap_drv << " | "
+			   << att_drv << " | " << (passed ? "PASSED" : "FAILED") << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	size_t passed_count = ranges::count_if(test_results, [](const auto &r){ return get<5>(r); });
+	size_t passed_count = ranges::count_if(test_results, [](const auto &r){ return get<3>(r); });
 	report << "- **Total Tests:** " << test_results.size() << "\n";
 	report << "- **Passed:** " << passed_count << "\n";
 	report << "- **Failed:** " << (test_results.size() - passed_count) << "\n";
@@ -105,4 +101,5 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report.close();
 	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", (run_dir / "report.md").string());
 }
+
 }

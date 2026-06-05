@@ -4,6 +4,7 @@
       <w>Addrs</w>
       <w>Disassoc</w>
       <w>Dlink</w>
+      <w>Exch</w>
       <w>Mitm</w>
       <w>Reasso</w>
       <w>aabbccddee</w>
@@ -51,6 +52,7 @@
       <w>eperm</w>
       <w>errbuf</w>
       <w>essid</w>
+      <w>exch</w>
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>

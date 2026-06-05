@@ -1,6 +1,5 @@
 #pragma once
 #include "config/RunStatus.h"
-#include "logger/log.h"
 
 using namespace std;
 

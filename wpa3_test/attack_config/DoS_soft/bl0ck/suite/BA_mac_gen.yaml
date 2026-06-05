@@ -1,6 +1,6 @@
 name: BA_mac_gen_ts
 config_type: test_suite
-suite_report_function: bl0ck_mac_gen
+suite_functions: bl0ck_mac_gen
 tests:
   driver_perm:
     type: generator

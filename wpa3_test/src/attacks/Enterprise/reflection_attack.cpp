@@ -24,6 +24,12 @@ void setup_attack(RunStatus &rs){
 	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
+
+	//const auto attacker = rs.get_actor("attacker");
+	//attacker->set_monitor_mode();
+	//attacker->set_iface_up();
+	//log(LogLevel::INFO, "attacker interface in monitor mode");
+
 }
 
 void run_attack(RunStatus &rs){
@@ -45,9 +51,8 @@ void run_attack(RunStatus &rs){
 		sock, channel, our_mac, ap_mac, ssid, identity, chrono::seconds(30));
 
 	nlohmann::json j;
-	j["passed"]     = vulnerable;
+	j["passed"] = vulnerable;
 	rs.save_result(j);
-
 	log(LogLevel::INFO, "Reflection attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
 

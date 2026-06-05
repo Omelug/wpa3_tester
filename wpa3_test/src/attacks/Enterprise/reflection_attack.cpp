@@ -1,8 +1,5 @@
-#include <fstream>
 #include <nlohmann/json.hpp>
 #include <tins/hw_address.h>
-
-#include "attacks/components/setup_connections.h"
 #include "attacks/Enterprise/eap_pwd_reflection.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"

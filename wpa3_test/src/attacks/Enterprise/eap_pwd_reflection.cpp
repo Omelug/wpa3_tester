@@ -4,6 +4,7 @@
 #include <tins/llc.h>
 #include <tins/rawpdu.h>
 #include "attacks/components/sniffer_helper.h"
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "logger/log.h"
 
 namespace wpa3_tester::reflection {
@@ -133,32 +134,37 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 	auth.auth_seq_number(1);
 	auth.status_code(0);
 
-	RadioTap rt{};
-	rt.inner_pdu(auth);
-	sock.send(rt, ch);
+	pcap_t* handle = sock.get_pcap_handle();
+	const auto deadline = steady_clock::now() + timeout;
 
-	bool ok = false;
-	(void)components::poll_sniffer<bool>(sock.get_pcap_handle(), timeout,
-		[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-			auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
-			if(!pdu) return nullopt;
-			const auto* resp = pdu->find_pdu<Dot11Authentication>();
-			if(!resp) return nullopt;
-			log(LogLevel::DEBUG, "Auth frame: addr1={} addr2={} seq={} status={}",
-				resp->addr1().to_string(), resp->addr2().to_string(),
-				static_cast<int>(resp->auth_seq_number()),
-				static_cast<int>(resp->status_code()));
-			if(resp->addr1() != our_mac || resp->auth_seq_number() != 2) return nullopt;
-			if(resp->status_code() != 0){
-				log(LogLevel::WARNING, "Auth rejected, status={:d}", resp->status_code());
-				return true;
-			}
-			ok = true;
-			log(LogLevel::INFO, "802.11 Authentication OK");
-			return true;
-		});
-	if(!ok) log(LogLevel::WARNING, "Auth timeout");
-	return ok;
+	while(steady_clock::now() < deadline){
+		RadioTap rt{};
+		rt.inner_pdu(auth);
+		sock.send(rt, ch);
+
+		const auto wait = min(milliseconds{200},
+			duration_cast<milliseconds>(deadline - steady_clock::now()));
+
+		optional<bool> result;
+		(void)components::poll_sniffer<bool>(handle, wait,
+			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
+				const auto f = dos_helpers::parse_auth_frame(p, caplen);
+				if(!f || f->addr1 != our_mac || f->seq != 2) return nullopt;
+				log(LogLevel::DEBUG, "Auth response: algo={} seq={} status={}",
+					static_cast<int>(f->algorithm), static_cast<int>(f->seq), static_cast<int>(f->status));
+				if(f->status != 0){
+					log(LogLevel::WARNING, "Auth rejected, status={}", f->status);
+					result = false; return true;
+				}
+				log(LogLevel::INFO, "802.11 Authentication OK");
+				result = true; return true;
+			});
+
+		if(result.has_value()) return *result;
+		// poll_sniffer timed out → retransmit
+	}
+	log(LogLevel::WARNING, "Auth timeout");
+	return false;
 }
 
 bool do_assoc(MonitorSocket& sock, const Channel& ch,
@@ -189,25 +195,35 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 	assoc.add_option({Dot11::SUPPORTED_RATES, sizeof(rates), rates});
 	assoc.add_option({Dot11::RSN, static_cast<uint32_t>(rsn_ie.size()), rsn_ie.data()});
 
-	sock.send(assoc, ch);
+	pcap_t* handle = sock.get_pcap_handle();
+	const auto deadline = steady_clock::now() + timeout;
 
-	bool ok = false;
-	(void)components::poll_sniffer<bool>(sock.get_pcap_handle(), timeout,
-		[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-			auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
-			if(!pdu) return nullopt;
-			const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
-			if(!resp || resp->addr1() != our_mac) return nullopt;
-			if(resp->status_code() != 0){
-				log(LogLevel::WARNING, "Assoc rejected, status={}", resp->status_code());
-				return true;
-			}
-			ok = true;
-			log(LogLevel::INFO, "802.11 Association OK");
-			return true;
-		});
-	if(!ok) log(LogLevel::WARNING, "Assoc timeout");
-	return ok;
+	while(steady_clock::now() < deadline){
+		sock.send(assoc, ch);
+
+		const auto wait = min(milliseconds{200},
+			duration_cast<milliseconds>(deadline - steady_clock::now()));
+
+		optional<bool> result;
+		(void)components::poll_sniffer<bool>(handle, wait,
+			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
+				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
+				if(!pdu) return nullopt;
+				const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
+				if(!resp || resp->addr1() != our_mac) return nullopt;
+				if(resp->status_code() != 0){
+					log(LogLevel::WARNING, "Assoc rejected, status={}", resp->status_code());
+					result = false; return true;
+				}
+				log(LogLevel::INFO, "802.11 Association OK");
+				result = true; return true;
+			});
+
+		if(result.has_value()) return *result;
+		// poll_sniffer timed out → retransmit
+	}
+	log(LogLevel::WARNING, "Assoc timeout");
+	return false;
 }
 
 void send_eapol(MonitorSocket& sock, const Channel& ch,
@@ -276,7 +292,7 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 				if(eapol.empty()) return nullopt;
 				if(is_eap_success(eapol)){ result = vector<uint8_t>{}; return true; }
 				if(!pred(eapol)) return nullopt;
-				result = move(eapol);
+				result = std::move(eapol);
 				return true;
 			});
 		return result;

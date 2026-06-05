@@ -29,7 +29,6 @@ using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
-
 	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
 
 protected:
@@ -84,6 +83,7 @@ public:
 					// { actor_name, pattern, label, color }
 					std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_d
 	) const;
+
 private:
 	// to scan available interfaces
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
@@ -110,6 +110,8 @@ public:
 	void stats_test() const;
 	void save_actor_interface_mapping() const;
 	void load_actor_interface_mapping();
+	void save_result(const nlohmann::json& j) const;
+	nlohmann::json load_result() const;
 };
 
 inline RunStatus *globalRunStatus = nullptr;

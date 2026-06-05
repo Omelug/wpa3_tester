@@ -204,13 +204,7 @@ static void save_result(const RunStatus &rs, const Bl0ckResult &r){
 	j["passed"]            = r.passed;
 	j["disconnect_count"]  = r.disconnect_count;
 	j["reconnect_times_ms"] = r.reconnect_times_ms;
-
-	const path p = rs.run_folder() / "result.json";
-	ofstream f(p);
-	if(!f.is_open()){ log(LogLevel::WARNING, "Cannot write result.json"); return; }
-	f << j.dump(2) << "\n";
-	f.close();
-	set_public_perms(p);
+	rs.save_result(j);
 }
 
 static Bl0ckResult load_result(const RunStatus &rs){

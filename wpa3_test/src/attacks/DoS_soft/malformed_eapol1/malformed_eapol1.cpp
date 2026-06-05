@@ -5,6 +5,7 @@
 #include <tins/packet_sender.h>
 #include <tins/rawpdu.h>
 
+#include "attacks/components/setup_connections.h"
 #include "logger/log.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
@@ -74,6 +75,11 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 
 	radiotap.inner_pdu(dot11);
 	return radiotap;
+}
+
+void setup_attack(RunStatus &rs){
+	components::client_ap_attacker_setup(rs);
+	components::setup_rogue_ap(rs);
 }
 
 void run_attack(RunStatus &rs){

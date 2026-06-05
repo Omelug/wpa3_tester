@@ -45,6 +45,8 @@ option(ENABLE_COVERAGE "Enable coverage" OFF)
 # compile with nice
 if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "nice -n 19")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
 endif ()
 
 add_link_options(-fuse-ld=mold) #faster linker than lld

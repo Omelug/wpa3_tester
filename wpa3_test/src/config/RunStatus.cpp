@@ -228,7 +228,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 bool RunStatus::should_skip(const path &p){
 	if(p.string().ends_with(".schema.yaml")) return true;
 	// components
-	if(p.string().ends_with(".comp.yaml")) return true; //TODO add to documentatio n
+	if(p.string().ends_with(".comp.yaml")) return true; //TODO add to documentation
 	const auto rel = relative(p, ATTACK_CONFIG);
 	const auto first = *rel.begin();
 	if(first == "validator") return true;
@@ -375,4 +375,23 @@ void RunStatus::load_actor_interface_mapping(){
 	}
 	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
 }
+
+void RunStatus::save_result(const nlohmann::json& j) const{
+	const path p = run_folder() / "result.json";
+	ofstream f(p);
+	if(!f.is_open()){ log(LogLevel::ERROR, "Cannot write result.json"); return; }
+	f << j.dump(2) << "\n";
+	f.close();
+	set_public_perms(p);
+}
+
+nlohmann::json RunStatus::load_result() const{
+	const path p = run_folder() / "result.json";
+	ifstream f(p);
+	if(!f.is_open()){
+		throw stats_err("result.json not found");
+	}
+	return  nlohmann::json::parse(f);
+}
+
 }

@@ -22,11 +22,22 @@ const char *levelToString(LogLevel level);
 void set_log_file(const std::filesystem::path &log_path);
 void write_log_message(LogLevel level, const std::string &msg);
 
-template<typename...Args>
-void log(const LogLevel level, std::format_string<Args...> fmt, Args &&...args){
-	const std::string msg = std::format(fmt, std::forward<Args>(args)...);
+//for enum -> show number
+template <typename T>
+auto clean_arg(T&& arg) {
+	if constexpr (std::is_enum_v<std::decay_t<T>>) {
+		return static_cast<std::underlying_type_t<std::decay_t<T>>>(arg);
+	} else {
+		return std::forward<T>(arg);
+	}
+}
+
+template<typename... Args>
+void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> fmt, Args &&... args) {
+	const std::string msg = std::format(fmt, clean_arg(std::forward<Args>(args))...);
 	write_log_message(level, msg);
 }
+
 
 //__attribute__((format(printf, 2, 3)))
 //void log(LogLevel level, const char *fmt, ...);

@@ -33,6 +33,7 @@ void setup_attack(RunStatus &rs){
 }
 
 void run_attack(RunStatus &rs){
+	rs.start_observers();
 	const auto &att_cfg  = rs.config().at("attack_config");
 	const auto attacker  = rs.get_actor("attacker");
 	const auto ap_actor  = rs.get_actor("access_point");
@@ -44,7 +45,9 @@ void run_attack(RunStatus &rs){
 
 	const HWAddress<6> our_mac(attacker.get(SK::mac));
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
-
+    
+    //FIXME tohle by nemělo být nutné 
+	attacker->set_channel(channel);
 	MonitorSocket sock(iface);
 
 	const bool vulnerable = run_reflection_exchange(

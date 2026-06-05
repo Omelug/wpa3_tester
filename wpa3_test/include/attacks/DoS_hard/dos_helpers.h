@@ -67,7 +67,15 @@ struct SAEPair{
 	}
 };
 
+struct AuthFrame{
+	Tins::HWAddress<6> addr1;
+	uint16_t algorithm;
+	uint16_t seq;
+	uint16_t status;
+};
+
 bool check_fcs_present(const std::vector<uint8_t> &packet);
+std::optional<AuthFrame> parse_auth_frame(const uint8_t *p, uint32_t caplen);
 std::optional<SAEPair> parse_sae_commit(const std::vector<uint8_t> &frame_rt);
 Tins::RadioTap make_sae_commit(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,
 								const SAEPair &sae_params

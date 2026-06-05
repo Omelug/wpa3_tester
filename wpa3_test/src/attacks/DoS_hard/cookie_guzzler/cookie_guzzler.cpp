@@ -19,7 +19,7 @@ using namespace chrono;
 namespace wpa3_tester::cookie_guzzler{
 RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
 								const dos_helpers::SAEPair &sae_params
-){
+){ //TODO nejde přepsat pomocí dos_helper make_sae_commit?
 	// Build the 802.11 Auth frame
 	Dot11Authentication auth;
 	auth.addr1(ap_mac);  // destination (BSSID)

@@ -36,8 +36,8 @@ void run_attack(RunStatus &rs){
 	const string ssid       = ap_actor->get(SK::ssid);
 	const Channel channel   = ap_actor->get_channel();
 
-	const HWAddress<6> our_mac(attacker["mac"]);
-	const HWAddress<6> ap_mac(ap_actor["mac"]);
+	const HWAddress<6> our_mac(attacker.get(SK::mac));
+	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
 	MonitorSocket sock(iface);
 

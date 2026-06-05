@@ -8,6 +8,7 @@ properties:
   name:
     type: string
     description: "Name of test suite"
+    pattern: '^[^\x00/]+$'
   suite_report_function:
     type: string
     description: "report function for all test after tests"

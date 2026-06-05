@@ -109,3 +109,24 @@ TEST_CASE("get_time_logs - missing log file returns empty"){
     const auto times = wpa3_tester::get_time_logs(rs, "actor", "pattern");
     CHECK(times.empty());
 }
+
+TEST_CASE("get_time_logs between_markers - only events inside window are returned"){
+    const string log_content =
+        "2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
+        "2026-02-20T14:38:08.000000000+0100 [client] [write_log_all] @START\n"
+        "2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
+        "2026-02-20T14:38:10.000000000+0100 [client] [write_log_all] @END\n"
+        "2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
+
+    TempLog tmp("client", log_content);
+    wpa3_tester::RunStatus rs;
+    rs.run_folder(tmp.run_folder);
+
+    const auto times = wpa3_tester::get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
+    REQUIRE_EQ(times.size(), 1);
+
+    const time_t t = chrono::system_clock::to_time_t(times[0]);
+    tm utc{};
+    gmtime_r(&t, &utc);
+    CHECK_EQ(utc.tm_sec, 9);
+}

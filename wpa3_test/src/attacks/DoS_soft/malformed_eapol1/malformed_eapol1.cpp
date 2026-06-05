@@ -76,14 +76,8 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 	return radiotap;
 }
 
-void speed_observation_start(RunStatus &rs){
-	observer::start_mausezahn(rs, "mz_gen", "client", "access_point");
-	observer::tshark::start_tshark(rs, "client", "udp port 5201");
-	observer::tshark::start_tshark(rs, "access_point", "udp port 5201");
-}
-
 void run_attack(RunStatus &rs){
-	speed_observation_start(rs);
+	rs.start_observers();
 
 	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
 	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
@@ -95,9 +89,7 @@ void run_attack(RunStatus &rs){
 	PacketSender sender;
 
 	this_thread::sleep_for(chrono::seconds(5));
-	for(int i = 0; i < 5; ++i){
-		sender.send(radiotap, iface);
-	}
+	for(int i = 0; i < 5; ++i) sender.send(radiotap, iface);
 	this_thread::sleep_for(chrono::seconds(10));
 }
 

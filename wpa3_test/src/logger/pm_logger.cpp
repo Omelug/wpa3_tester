@@ -60,7 +60,8 @@ void ProcessManager::write_log_line(ofstream &os, const string &line){
 
 void ProcessManager::write_log_all(const string &line){
 	lock_guard lock(logger_mtx);
-	write_log_line(combined_log, line);
+	const string combined_prefix = current_timestamp() + "[write_log_all] ";
+	write_log_line(combined_log, combined_prefix+ line);
 	for(const auto &[name, proc]: processes){
 		const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
 		write_log_line(proc->logs.log, prefix + line);

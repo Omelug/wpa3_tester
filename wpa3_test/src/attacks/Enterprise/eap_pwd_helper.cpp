@@ -65,7 +65,7 @@ bool is_eap_success(const vector<uint8_t>& eapol){
     return eapol[EAPOL_HDR] == CODE_SUCCESS;
 }
 
-static vector<uint8_t> build_eapol_eap(const uint8_t code, uint8_t eap_id,
+static vector<uint8_t> build_eapol_eap(const uint8_t code, const uint8_t eap_id,
                                         const vector<uint8_t>& eap_body){
     // eap_body = everything after code/id/length (type byte onwards)
     const auto eap_len  = static_cast<uint16_t>(EAP_HDR + eap_body.size());
@@ -156,10 +156,12 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 					static_cast<int>(f->algorithm), static_cast<int>(f->seq), static_cast<int>(f->status));
 				if(f->status != 0){
 					log(LogLevel::WARNING, "Auth rejected, status={}", static_cast<int>(f->status));
-					result = false; return true;
+					result = false;
+					return true;
 				}
 				log(LogLevel::INFO, "802.11 Authentication OK");
-				result = true; return true;
+				result = true;
+				return true;
 			});
 
 		if(result.has_value()) return *result;

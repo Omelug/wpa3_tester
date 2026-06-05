@@ -46,3 +46,19 @@ actors:
       driver: mt76x2u
       condition: [ monitor ]
       channel: 6
+observers:
+  mz_gen:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: access_point
+  client_tshark:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  ap_tshark:
+    actor: access_point
+    program: tshark
+    program_config:
+      filter: "udp port 5201"

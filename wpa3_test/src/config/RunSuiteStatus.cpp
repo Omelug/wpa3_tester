@@ -127,8 +127,8 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 
 		const YNode saved_node = YAML::Load(config_str);
 		const auto config_name = saved_node["name"].as<string>();
-		
-		auto test_config_path = gen_folder / (config_name + ".yaml");
+
+		auto test_config_path = gen_folder / (config_name + "_" + to_string(i) + ".yaml");
 		remove(tmp_path);
 		ofstream ofs(test_config_path);
 		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
@@ -268,8 +268,9 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 			throw run_err("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
 		}
 
-		string test_id = to_string(test_counter);
-		path test_path = gen_folder / (test_id + "_test.yaml");
+		const YNode saved_node = YAML::Load(current_config_str);
+		const auto config_name = saved_node["name"].as<string>();
+		path test_path = gen_folder / (config_name + "_" + to_string(test_counter) + ".yaml");
 
 		// save result to file
 		ofstream ofs(test_path);
@@ -280,8 +281,6 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 		// result test config validation
 		RunStatus::config_validation(test_path);
-		const YNode saved_node = YAML::Load(current_config_str);
-		const auto config_name = saved_node["name"].as<string>();
 		test_map.emplace_back(config_name, test_path);
 
 		// another index or stop

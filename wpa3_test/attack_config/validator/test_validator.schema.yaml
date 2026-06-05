@@ -16,6 +16,7 @@ properties:
   name:
     type: string
     description: Test name
+    pattern: '^[^\x00/]+$'
     not:
       const: test_config
       description: reserved name

@@ -25,3 +25,4 @@ actors:
 nm_exclude_actors: false
 install_req: true
 compile_external: true
+save_log: true

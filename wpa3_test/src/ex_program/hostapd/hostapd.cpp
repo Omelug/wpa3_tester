@@ -48,6 +48,18 @@ string get_channel(const json &program_config, const string &config_path){
 }
 
 // --------------- HOSTAPD -----------------------
+
+static void write_hostapd_kv(ofstream &out, const json &setup){
+	static const set<string> skip = {"hostapd_path", "version", "other_options"};
+	for(auto it = setup.begin(); it != setup.end(); ++it){
+		if(skip.contains(it.key())) continue;
+		out << it.key() << "=";
+		if(it.value().is_string()) out << it.value().get<string>();
+		else out << it.value().dump();
+		out << "\n";
+	}
+}
+
 string hostapd_config(const string &run_folder, const string &actor_name, const json &ap_setup,
 					const path &config_folder
 ){
@@ -65,29 +77,17 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 		path hostapd_path = ap_setup["hostapd_path"].get<string>();
 		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
 		copy_file(src, cfg_path, copy_options::overwrite_existing);
-		set_public_perms(cfg_path);
-		return cfg_path.string();
-	}
-
-	ofstream hostapd_conf(cfg_path);
-	if(!hostapd_conf){
-		log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
-		throw run_err("hostapd_config: unable to open config file");
-	}
-
-	// write config
-	for(auto it = ap_setup.begin(); it != ap_setup.end(); ++it){
-		if(it.key() == "version") continue;
-		if(it.key() == "other_options") continue;
-		hostapd_conf << it.key() << "=";
-		if(it.value().is_string()){
-			hostapd_conf << it.value().get<string>();
-		} else{
-			hostapd_conf << it.value().dump();
+		ofstream out(cfg_path, ios::app);
+		write_hostapd_kv(out, ap_setup);
+	} else {
+		ofstream out(cfg_path);
+		if(!out){
+			log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
+			throw run_err("hostapd_config: unable to open config file");
 		}
-		hostapd_conf << "\n";
+		write_hostapd_kv(out, ap_setup);
 	}
-	hostapd_conf.close();
+
 	set_public_perms(cfg_path);
 	log(LogLevel::INFO, "hostapd_config: written {}", cfg_path.string());
 	return cfg_path.string();
@@ -120,6 +120,102 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 }
 
 // --------- WPA_SUPPLICANT ---------------
+
+static const set<string> wpa_global_keys = {"okc", "pmf", "ctrl_interface", "eapol_version"};
+static const set<string> wpa_quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
+static const set<string> wpa_skip_keys   = {"wpa_supplicant_path", "version", "other_options"};
+
+static string wpa_network_fmt(const string &key, const json &val){
+	if(val.is_string() && !wpa_quoted_keys.contains(key)) return val.get<string>();
+	return val.dump();
+}
+
+static void write_wpa_global_kv(ofstream &out, const json &setup){
+	for(auto it = setup.begin(); it != setup.end(); ++it){
+		if(!wpa_global_keys.contains(it.key())) continue;
+		out << it.key() << "=" << it.value().dump() << "\n";
+	}
+}
+
+static void write_wpa_network_block(ofstream &out, const json &setup){
+	out << "network={\n";
+	for(auto it = setup.begin(); it != setup.end(); ++it){
+		if(wpa_skip_keys.contains(it.key())) continue;
+		if(wpa_global_keys.contains(it.key())) continue;
+		out << "\t" << it.key() << "=" << wpa_network_fmt(it.key(), it.value()) << "\n";
+	}
+	out << "}\n";
+}
+
+// rewrites cfg in-place, replacing matched keys and injecting new ones.
+static void apply_wpa_overrides(const path &cfg, const json &overrides){
+	map<string, string> global_ov, network_ov;
+	for(auto it = overrides.begin(); it != overrides.end(); ++it){
+		if(wpa_skip_keys.contains(it.key())) continue;
+		if(wpa_global_keys.contains(it.key()))
+			global_ov[it.key()] = it.value().dump();
+		else
+			network_ov[it.key()] = wpa_network_fmt(it.key(), it.value());
+	}
+	if(global_ov.empty() && network_ov.empty()) return;
+
+	ifstream in(cfg);
+	vector<string> lines;
+	string line;
+	while(getline(in, line)) lines.push_back(line);
+	in.close();
+
+	bool in_block = false, block_seen = false;
+	set<string> w_global, w_network;
+
+	ofstream out(cfg);
+	for(auto &l : lines){
+		string s = l;
+		s.erase(0, s.find_first_not_of(" \t"));
+		if(auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
+		else s.clear();
+
+		if(s == "network={"){
+			block_seen = in_block = true;
+			for(auto &[k, v] : global_ov)
+				if(w_global.insert(k).second) out << k << "=" << v << "\n";
+			out << l << "\n";
+			continue;
+		}
+		if(in_block && s == "}"){
+			in_block = false;
+			for(auto &[k, v] : network_ov)
+				if(w_network.insert(k).second) out << "\t" << k << "=" << v << "\n";
+			out << l << "\n";
+			continue;
+		}
+
+		if(auto eq = s.find('='); eq != string::npos){
+			string key = s.substr(0, eq);
+			if(!in_block && global_ov.count(key)){
+				if(w_global.insert(key).second) out << key << "=" << global_ov.at(key) << "\n";
+				continue;
+			}
+			if(in_block && network_ov.count(key)){
+				if(w_network.insert(key).second) out << "\t" << key << "=" << network_ov.at(key) << "\n";
+				continue;
+			}
+		}
+		out << l << "\n";
+	}
+
+	// no network={} block in file: append globals then a new network block
+	if(!block_seen){
+		for(auto &[k, v] : global_ov)
+			if(!w_global.count(k)) out << k << "=" << v << "\n";
+		if(!network_ov.empty()){
+			out << "network={\n";
+			for(auto &[k, v] : network_ov) out << "\t" << k << "=" << v << "\n";
+			out << "}\n";
+		}
+	}
+}
+
 string wpa_supplicant_config(const string &run_folder, const string &actor_name, const json &client_setup,
 							const path &config_folder
 ){
@@ -134,44 +230,20 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	}
 
 	if(client_setup.contains("wpa_supplicant_path")){
-		path hostapd_path = client_setup["wpa_supplicant_path"].get<string>();
-		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
+		path src_path = client_setup["wpa_supplicant_path"].get<string>();
+		path src = src_path.is_absolute() ? src_path : config_folder / src_path;
 		copy_file(src, cfg_path, copy_options::overwrite_existing);
-		set_public_perms(cfg_path);
-		return cfg_path.string();
-	}
-
-	ofstream out(cfg_path);
-	if(!out){
-		log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
-		throw run_err("wpa_supplicant_config: unable to open config file");
-	}
-
-	// wpa_supplicant.conf
-	static const set<string> quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
-	static const set<string> global_keys = {"okc", "pmf", "ctrl_interface", "eapol_version"};
-
-	for(auto it = client_setup.begin(); it != client_setup.end(); ++it){
-		if(!global_keys.contains(it.key())) continue;
-		out << it.key() << "=" << it.value().dump() << "\n";
-	}
-
-	out << "network={\n";
-	for(auto it = client_setup.begin(); it != client_setup.end(); ++it){
-		if(it.key() == "version") continue;
-		if(it.key() == "other_options") continue;
-		if(global_keys.contains(it.key())) continue;
-		out << "\t" << it.key() << "=";
-		if(it.value().is_string() && !quoted_keys.contains(it.key())){
-			out << it.value().get<string>();
-		} else{
-			out << it.value().dump();
+		apply_wpa_overrides(cfg_path, client_setup);
+	} else {
+		ofstream out(cfg_path);
+		if(!out){
+			log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
+			throw run_err("wpa_supplicant_config: unable to open config file");
 		}
-		out << "\n";
+		write_wpa_global_kv(out, client_setup);
+		write_wpa_network_block(out, client_setup);
 	}
-	out << "}\n";
 
-	out.close();
 	set_public_perms(cfg_path);
 	log(LogLevel::INFO, "wpa_supplicant_config: written {}", cfg_path.string());
 	return cfg_path.string();

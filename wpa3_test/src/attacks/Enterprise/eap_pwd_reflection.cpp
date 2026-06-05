@@ -160,8 +160,6 @@ vector<uint8_t> extract_eapol(const PDU& pdu, const HWAddress<6>& our_mac){
     return {payload.begin() + 5, payload.end()};
 }
 
-// -----------------
-
 bool do_auth(MonitorSocket& sock, const Channel& ch,
              const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac,
              milliseconds timeout){

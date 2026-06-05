@@ -4,6 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+r: vymazat githubcopilota z hstorie
+r: vymazat zbytečné větve z githubu
 
 +: add git results repository to documentation
 d: how run program

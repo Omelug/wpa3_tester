@@ -46,8 +46,6 @@ void run_attack(RunStatus &rs){
 	const HWAddress<6> our_mac(attacker.get(SK::mac));
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
     
-    //FIXME tohle by nemělo být nutné 
-	attacker->set_channel(channel);
 	MonitorSocket sock(iface);
 
 	const bool vulnerable = run_reflection_exchange(

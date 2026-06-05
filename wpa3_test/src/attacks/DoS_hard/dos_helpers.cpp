@@ -80,6 +80,22 @@ bool check_fcs_present(const vector<uint8_t> &packet){
 	return false;
 }
 
+optional<AuthFrame> parse_auth_frame(const uint8_t *p, const uint32_t caplen){
+	if(caplen < 4) return nullopt;
+	const uint16_t rt_len = p[2] | (static_cast<uint16_t>(p[3]) << 8);
+	constexpr size_t dot11_hdr = 24;
+	constexpr size_t auth_fields = 6; // algorithm(2) + seq(2) + status(2)
+	if(caplen < rt_len + dot11_hdr + auth_fields) return nullopt;
+	if(p[rt_len] != 0xb0) return nullopt; // FC byte 0: mgmt + auth subtype
+	const size_t auth_off = rt_len + dot11_hdr;
+	return AuthFrame{
+		.addr1     = HWAddress<6>(p + rt_len + 4),
+		.algorithm = static_cast<uint16_t>(p[auth_off]   | (p[auth_off+1] << 8)),
+		.seq       = static_cast<uint16_t>(p[auth_off+2] | (p[auth_off+3] << 8)),
+		.status    = static_cast<uint16_t>(p[auth_off+4] | (p[auth_off+5] << 8)),
+	};
+}
+
 optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
     if(frame_rt.size() < 4) return nullopt;
 

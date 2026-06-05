@@ -46,7 +46,7 @@ void generate_report(RunSuiteStatus &rss){
 		const json result = json::parse(rf);
 		rf.close();
 
-		TestEntry e; //FIXME passedis redundant
+		TestEntry e;
 		e.test_name       = test_folder.filename().string();
 		e.disconnect_count= result.value("disconnect_count", 0);
 		e.sta_graph       = test_folder / "observer" / "tshark" / "client_graph.png";
@@ -93,7 +93,6 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	// -----------------
 	report << "## Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected | Disconnects | Reports |\n";
 	report << "|------|-----------|---------------|-----------------|:------------:|:-----------:|---------|\n";
@@ -112,16 +111,15 @@ void generate_report(RunSuiteStatus &rss){
 		if(links.empty()) links = "-";
 
 		report << "| " << e.test_name
+
 			   << " | " << e.ap_driver
 			   << " | " << e.client_driver
 			   << " | " << e.attacker_driver
-			   << " | " << (e.disconnected ? "YES" : "no")
 			   << " | " << e.disconnect_count
 			   << " | " << links
 			   << " |\n";
 	}
 
-	// -----------------
 	report << "\n## Summary\n\n";
 	report << "- **Total:** " << entries.size() << "\n";
 	report << "- **Disconnected (passed):** " << passed_count << "\n";

@@ -12,20 +12,6 @@
 
 namespace wpa3_tester::reflection {
 
-// EAP codes
-constexpr uint8_t EAP_REQUEST  = 1;
-constexpr uint8_t EAP_RESPONSE = 2;
-constexpr uint8_t EAP_SUCCESS  = 3;
-
-// EAP types
-constexpr uint8_t EAP_TYPE_IDENTITY = 1;
-constexpr uint8_t EAP_TYPE_PWD      = 52;
-
-// EAP-PWD opcodes (low 6 bits of the PWD-Exch byte)
-constexpr uint8_t PWD_OPCODE_ID      = 1;
-constexpr uint8_t PWD_OPCODE_COMMIT  = 2;
-constexpr uint8_t PWD_OPCODE_CONFIRM = 3;
-
 // Parsed EAP-PWD frame
 struct EapPwdFrame {
     uint8_t              eap_id{};
@@ -80,9 +66,9 @@ void send_eapol(MonitorSocket& sock, const Channel& ch,
                 const Tins::HWAddress<6>& ap_mac,
                 const std::vector<uint8_t>& eapol);
 
-// Extract raw EAPOL bytes from a received 802.11 Data PDU (strips LLC+SNAP).
+// Extract raw EAPOL bytes from a raw radiotap+802.11 frame (strips LLC+SNAP).
 // Returns empty vector when the frame is not an EAPOL Data frame addressed to our_mac.
-std::vector<uint8_t> extract_eapol(const Tins::PDU& pdu,
+std::vector<uint8_t> extract_eapol(const uint8_t* p, uint32_t caplen,
                                     const Tins::HWAddress<6>& our_mac);
 
 // ---------- top-level ----------

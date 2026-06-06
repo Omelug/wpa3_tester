@@ -44,6 +44,14 @@ std::vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, std::stri
 std::vector<uint8_t> reflect_commit(const EapPwdFrame& request);
 std::vector<uint8_t> reflect_confirm(const EapPwdFrame& request);
 
+// ---------  EAP-pwd connect ---------
+// handle and send another phase packet
+// return if continue
+bool send_eap_normal_EAP(EAP_Att &eap_att);
+bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att);
+// connected (only EAP, not fully connected)
+bool eap_pwd_wait_for_success(EAP_Att &eap_att);
+
 // ---------- 802.11 helpers ----------
 bool do_auth(EAP_Att& eap_att);
 bool do_assoc(EAP_Att& eap_att);
@@ -54,9 +62,9 @@ std::vector<uint8_t> extract_eapol(const uint8_t* p, uint32_t caplen,
 
 // Definition must be in the header: abbreviated function template, each lambda
 // instantiation needs the definition visible in the calling TU.
-std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att& eap_att, auto pred) {
-    const auto start_time = std::chrono::steady_clock::now();
-    std::optional<std::vector<uint8_t>> result;
+std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att& eap_att, auto pred){
+	const auto start_time = std::chrono::steady_clock::now();
+	std::optional<std::vector<uint8_t>> result = std::nullopt;
     (void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(), eap_att.timeout,
         [&](const uint8_t* p, const uint32_t caplen) -> std::optional<bool> {
             auto eapol = extract_eapol(p, caplen, eap_att.att_mac);

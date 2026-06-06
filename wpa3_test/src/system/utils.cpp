@@ -3,10 +3,10 @@
 #include <cstdio>
 #include <filesystem>
 #include <iomanip>
-#include <nlohmann/json.hpp>
 #include <sstream>
-#include <sys/utsname.h>
 #include <vector>
+#include <nlohmann/json.hpp>
+#include <sys/utsname.h>
 #include "logger/error_log.h"
 
 namespace wpa3_tester{

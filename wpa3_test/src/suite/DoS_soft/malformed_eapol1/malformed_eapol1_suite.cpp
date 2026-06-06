@@ -111,7 +111,6 @@ void generate_report(RunSuiteStatus &rss){
 		if(links.empty()) links = "-";
 
 		report << "| " << e.test_name
-
 			   << " | " << e.ap_driver
 			   << " | " << e.client_driver
 			   << " | " << e.attacker_driver

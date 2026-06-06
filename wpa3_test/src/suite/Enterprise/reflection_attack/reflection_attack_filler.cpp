@@ -70,9 +70,7 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
-	report << "Summary of Bl0ck attack tests across different driver combinations.\n\n";
-
+	report << "# Reflection MAC Generator Test Suite Report\n\n";
 	if(test_results.empty()){
 		report << "No test results found.\n";
 		report.close();

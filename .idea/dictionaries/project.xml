@@ -25,6 +25,7 @@
       <w>ccmp</w>
       <w>cerr</w>
       <w>cflags</w>
+      <w>ciphersuite</w>
       <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>

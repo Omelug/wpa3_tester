@@ -14,17 +14,6 @@ actors:
         #other_options: "-d"
         hostapd_path: "./config/hostapd.conf"
     ip_addr: "10.0.0.1"
-  #client:
-  #  source: internal
-  #  setup:
-  #    program: wpa_supplicant
-  #    program_config:
-  #      version: 2_10
-  #      wpa_supplicant_path: "./config/valid_client.conf"
-  #  selection:
-  #    channel: 6
-  #  netns: sta
-  #  ip_addr: "10.0.0.2"
   attacker:
     source: internal
     selection:

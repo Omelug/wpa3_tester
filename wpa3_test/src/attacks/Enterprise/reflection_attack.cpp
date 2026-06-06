@@ -80,8 +80,11 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 
 	// Wait for EAP-Success after confirm
 	{
-		const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t>&){ return false; });
-		if(eapol && eapol->empty()){
+		const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t>&){
+			return false;
+		});
+		if(!eapol.has_value()){ log(LogLevel::WARNING, "Reflection exchange ended without EAP-Success"); return false; }
+		if(eapol->empty()){
 			log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!");
 			return true;
 		}
@@ -96,7 +99,7 @@ void setup_attack(RunStatus &rs){
 			  rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
+	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
 

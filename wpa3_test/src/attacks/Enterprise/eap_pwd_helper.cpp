@@ -298,17 +298,12 @@ bool run_reflection_exchange(MonitorSocket& sock, const Channel& channel,
 	if(!do_assoc(sock, channel, our_mac, ap_mac, ssid, step_ms)) return false;
 
 	pcap_t* handle = sock.get_pcap_handle();
-	const auto deadline = steady_clock::now() + timeout;
-
-	auto remaining = [&]() -> milliseconds {
-		return duration_cast<milliseconds>(deadline - steady_clock::now());
-	};
 
 	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
 	// returns nullopt on timeout or interrupt.
 	auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
 		optional<vector<uint8_t>> result;
-		(void)components::poll_sniffer<bool>(handle, remaining(),
+		(void)components::poll_sniffer<bool>(handle, timeout,
 			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
 				auto eapol = extract_eapol(p, caplen, our_mac);
 				if(eapol.empty()) return nullopt;

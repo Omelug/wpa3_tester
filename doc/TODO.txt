@@ -15,6 +15,7 @@ d: clion setup
 +: do cache type suites (run only tif requires allows it, other possibilities ignore)
 +: channel switch na kanály mimo reg
 PDF:
+    +: reflection attack na EAP-pwd - útočník se nedkáže připojit na AP, pouze na EAP
     +: vysvětlit co jsou var_ a indexy v permutacích
     +: cache description
     +: info about injection tests

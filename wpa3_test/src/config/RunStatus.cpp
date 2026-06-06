@@ -85,7 +85,7 @@ void RunStatus::execute(){
 		set_log_file(log_file);
 	}
 
-	try {
+	//try {
 		try {
 			auto &gcfg = get_global_config();
 			if(gcfg.contains("regulatory_domain")){
@@ -147,7 +147,7 @@ void RunStatus::execute(){
 			done_log.close();
 			set_public_perms(done_file);
 		}
-	} catch (const exception& e) {
+	/*} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
 		const path error_file = run_folder() / "errors.txt";
@@ -173,7 +173,7 @@ void RunStatus::execute(){
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}
+	}*/
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){
@@ -207,7 +207,7 @@ void RunStatus::stats_test() const{
 	const auto module_name = config().at("attacker_module");
 	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.end()){
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "run function not set for {}",  module_name.get<string>()); }
+	} else{ log(LogLevel::DEBUG, "stats function not set for {}",  module_name.get<string>()); }
 }
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){

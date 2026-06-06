@@ -14,8 +14,8 @@ namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 : detect_injected_(detect_injected), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
-		"pcap_setnonblock failed: " + string(errbuf));
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
+		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)

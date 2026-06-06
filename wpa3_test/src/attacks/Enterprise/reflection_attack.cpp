@@ -115,8 +115,8 @@ void run_attack(RunStatus &rs){
 
 	const HWAddress<6> our_mac(attacker.get(SK::mac));
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
-    
-	MonitorSocket sock(iface);
+
+	MonitorSocket sock(iface, attacker.get(SK::netns)); // attacker need to be in netns
 	EAP_Att eap_att{
 		sock,
 		channel,
@@ -126,6 +126,7 @@ void run_attack(RunStatus &rs){
 		identity,
 		milliseconds{30000} // 30s
 	};
+	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 
 	rs.save_result({{"passed", vulnerable}});

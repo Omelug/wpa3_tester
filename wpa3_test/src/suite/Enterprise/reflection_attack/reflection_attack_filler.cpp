@@ -82,8 +82,9 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------------|--------|\n";
 
 	for(const auto &[test_name, ap_drv, att_drv, passed]: test_results){
+		const string result_link = "[" + string(passed ? "PASSED" : "FAILED") + "]("+ test_name + "/result.json)";
 		report << "| " << test_name << " | " << ap_drv << " | "
-			   << att_drv << " | " << (passed ? "PASSED" : "FAILED") << " |\n";
+			   << att_drv << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

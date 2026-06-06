@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: invalid_curve_attack
+name: invalid_curve_attack_dragonslayer
 attacker_module: invalid_curve
 actors:
   access_point:
@@ -28,7 +28,8 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor, active_monitor ]
+      condition: [ monitor ]
       channel: 6
 attack_config:
-  identity: "user"
+  $validator: ../dragonslayer.schema.yaml
+  target_type: ap

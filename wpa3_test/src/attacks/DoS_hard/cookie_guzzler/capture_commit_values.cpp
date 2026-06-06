@@ -15,7 +15,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
+optional<sae_helper::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 												const int timeout_sec, pcap_t *handle, const string &iface
 ){
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -35,9 +35,9 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 		pcap_setfilter(handle, &fp);
 	pcap_freecode(&fp);
 
-	auto result = components::poll_sniffer<dos_helpers::SAEPair>(
+	auto result = components::poll_sniffer<sae_helper::SAEPair>(
 		handle, milliseconds(timeout_sec * 1000),
-		[](const uint8_t *packet, uint32_t caplen) -> optional<dos_helpers::SAEPair> {
+		[](const uint8_t *packet, uint32_t caplen) -> optional<sae_helper::SAEPair> {
 			if(caplen < 10){
 				log(LogLevel::DEBUG, "Packet too short: {}", caplen);
 				return nullopt;
@@ -46,7 +46,7 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 			log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", packet[0], packet[1], packet[2], packet[3]);
 
 			//if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
-			if(auto frame = dos_helpers::parse_sae_commit({packet, packet + caplen})){
+			if(auto frame = sae_helper::parse_sae_commit({packet, packet + caplen})){
 				log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", frame->scalar.size());
 				return frame;
 			}
@@ -55,8 +55,8 @@ optional<dos_helpers::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 		iface
 	);
 
-	if(holds_alternative<dos_helpers::SAEPair>(result))
-		return get<dos_helpers::SAEPair>(std::move(result));
+	if(holds_alternative<sae_helper::SAEPair>(result))
+		return get<sae_helper::SAEPair>(std::move(result));
 	return nullopt;
 }
 
@@ -91,7 +91,7 @@ string create_wpa_supplicant_config(const string &ssid){
 	return conf_path;
 }
 
-optional<dos_helpers::SAEPair> get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface,
+optional<sae_helper::SAEPair> get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface,
 												const string &ssid, const HWAddress<6> &ap_mac, const int timeout,
 												pcap_t *handler
 ){
@@ -99,7 +99,7 @@ optional<dos_helpers::SAEPair> get_commit_values(RunStatus &rs, const string &if
 	const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
 	const string conf_path = create_wpa_supplicant_config(ssid);
 	start_wpa_supplicant(rs, iface, filesystem::absolute(conf_path), pid_file);
-	optional<dos_helpers::SAEPair> sae_params = capture_sae_commit(ap_mac, timeout, handler, sniff_iface);
+	optional<sae_helper::SAEPair> sae_params = capture_sae_commit(ap_mac, timeout, handler, sniff_iface);
 	if(handler != nullptr) pcap_close(handler);
 	rs.process_manager.stop("get_commit");
 	filesystem::remove(pid_file);

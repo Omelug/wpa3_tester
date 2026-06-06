@@ -55,5 +55,4 @@ bool check_fcs_present(const vector<uint8_t> &packet){
 
 	return false;
 }
-)
 }

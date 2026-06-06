@@ -76,7 +76,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	if(ap_setup.contains("hostapd_path")){
 		path hostapd_path = ap_setup["hostapd_path"].get<string>();
 		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
-		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		copy_f(src, cfg_path);
 		ofstream out(cfg_path, ios::app);
 		write_hostapd_kv(out, ap_setup);
 	} else {
@@ -232,7 +232,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	if(client_setup.contains("wpa_supplicant_path")){
 		path src_path = client_setup["wpa_supplicant_path"].get<string>();
 		path src = src_path.is_absolute() ? src_path : config_folder / src_path;
-		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		copy_f(src, cfg_path);
 		apply_wpa_overrides(cfg_path, client_setup);
 	} else {
 		ofstream out(cfg_path);
@@ -282,8 +282,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	if(program_config.contains("hostapd-mana_path")){
 		const path hostapd_path = program_config["hostapd-mana_path"].get<string>();
 		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
-		copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
-		set_public_perms(hostapd_mana_config_path);
+		copy_f(src, hostapd_mana_config_path);
 	}
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){

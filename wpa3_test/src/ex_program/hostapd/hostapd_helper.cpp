@@ -105,8 +105,7 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	const string extra = get_extra_cflags();
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
 
-	copy_file(source_dir / cfg.binary_name, target, copy_options::overwrite_existing);
-	set_public_perms(source_dir);
+	copy_f(source_dir / cfg.binary_name);
 }
 
 string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){
@@ -182,8 +181,7 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	hw_capabilities::run_in("make clean", wpa_supp_dir);
 	const string extra = get_extra_cflags();
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", wpa_supp_dir);
-	copy_file(wpa_supp_dir / "wpa_supplicant", target, copy_options::overwrite_existing);
-	permissions(target, perms::owner_all | perms::group_exec);
+	copy_f(wpa_supp_dir / "wpa_supplicant", target);
 	}
 
 // --------- PUBLIC API ---------

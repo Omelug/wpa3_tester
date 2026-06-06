@@ -105,7 +105,7 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	const string extra = get_extra_cflags();
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
 
-	copy_f(source_dir / cfg.binary_name);
+	copy_f(source_dir / cfg.binary_name, target);
 }
 
 string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){

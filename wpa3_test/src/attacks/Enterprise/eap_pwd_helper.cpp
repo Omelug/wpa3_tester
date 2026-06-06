@@ -4,6 +4,8 @@
 #include <chrono>
 #include <tins/llc.h>
 #include <tins/rawpdu.h>
+
+#include "attacks/sae_helper.h"
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "logger/log.h"
@@ -150,7 +152,7 @@ bool do_auth(MonitorSocket& sock, const Channel& ch,
 		optional<bool> result;
 		(void)components::poll_sniffer<bool>(handle, wait,
 			[&](const u_char* p, const uint32_t caplen) -> optional<bool> {
-				const auto f = dos_helpers::parse_auth_frame(p, caplen);
+				const auto f = sae_helper::parse_auth_frame(p, caplen);
 				if(!f || f->addr1 != our_mac || f->seq != 2) return nullopt;
 				log(LogLevel::DEBUG, "Auth response: algo={} seq={} status={}",
 					static_cast<int>(f->algorithm), static_cast<int>(f->seq), static_cast<int>(f->status));

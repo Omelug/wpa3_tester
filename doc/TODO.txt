@@ -4,7 +4,6 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-rch: copy_file/set_public_persm -> copy_f (alredy in utils.cpp)
 r: vymazat githubcopilota z hstorie
 r: vymazat zbytečné větve z githubu
 d: save_log to documentation
@@ -34,6 +33,7 @@ r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 
 //DONE
+rch: copy_file/set_public_persm -> copy_f (alredy in utils.cpp)
 t: base setup_actor()
 +: test_suite - source by test_name
 t?: forgejo compatible github runners for push to main (is config_validation)

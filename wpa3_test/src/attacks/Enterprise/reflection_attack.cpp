@@ -16,9 +16,8 @@ using namespace Tins;
 namespace wpa3_tester::reflection{
 
 void setup_attack(RunStatus &rs){
-	copy_file(rs.config_path().parent_path() / "config/hostapd.eap_user",
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user",
 			  rs.run_folder() / "hostapd.eap_user");
-	set_public_perms(rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "access_point");
 	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));

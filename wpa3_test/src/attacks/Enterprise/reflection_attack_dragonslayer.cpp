@@ -15,16 +15,14 @@ void setup_attack(RunStatus &rs){
 	const auto target_type = rs.config().at("attack_config").at("target_type").get<string>();
 	assert(target_type == "ap" || target_type == "sta");
 	if(target_type == "ap"){
-		copy_file(rs.config_path().parent_path() / "config/dragonslayer-wpa_supplicant.conf",
+		copy_f(rs.config_path().parent_path() / "config/dragonslayer-wpa_supplicant.conf",
 				rs.run_folder()/ "dragonslayer.conf");
 	}
 	if(target_type == "sta"){
-		copy_file(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
+		copy_f(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
 				rs.run_folder()/ "dragonslayer.conf");
 	}
-	set_public_perms(rs.run_folder()/ "dragonslayer.conf");
-	copy_file(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
-	set_public_perms(rs.run_folder()/ "hostapd.eap_user");
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
 	components::client_ap_attacker_setup_enterprise(rs);
 }
 

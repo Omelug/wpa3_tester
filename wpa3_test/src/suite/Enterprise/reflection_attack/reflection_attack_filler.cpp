@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iomanip>
 #include <nlohmann/json.hpp>
-#include <yaml-cpp/yaml.h>
 
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
@@ -66,7 +65,6 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	ofstream report(run_dir / "report.md");
-	set_public_perms(run_dir / "report.md");
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report.md");
 		return;
@@ -96,9 +94,10 @@ void generate_report(RunSuiteStatus &rss){
 	report << "- **Passed:** " << passed_count << "\n";
 	report << "- **Failed:** " << (test_results.size() - passed_count) << "\n";
 	report << "- **Success Rate:** " << fixed << setprecision(1)
-		   << (100.0 * passed_count / test_results.size()) << "%\n";
+		   << (100.0 * static_cast<double>(passed_count) / static_cast<double>(test_results.size())) << "%\n";
 
 	report.close();
+	set_public_perms(run_dir / "report.md");
 	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", (run_dir / "report.md").string());
 }
 

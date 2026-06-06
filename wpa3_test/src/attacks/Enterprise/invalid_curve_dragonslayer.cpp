@@ -9,7 +9,7 @@
 using namespace std;
 using namespace filesystem;
 
-namespace wpa3_tester::invalid_curve{
+namespace wpa3_tester::invalid_curve_dragonslayer{
 void start_dragonslayer(RunStatus &rs, const string &actor_name, const string &iface, const string &target_type){
 	assert(target_type == "ap" || target_type == "sta");
 	vector<string> command = {};

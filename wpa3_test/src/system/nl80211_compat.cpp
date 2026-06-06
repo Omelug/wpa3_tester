@@ -24,9 +24,8 @@ void check_monitor(nlattr **attrs, NlCaps *caps){
 
 void check_features(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_FEATURE_FLAGS]) return;
-	constexpr uint32_t ACTIVE_MONITOR_FLAG = 1u << 14;
 	const uint32_t features = nla_get_u32(attrs[NL80211_ATTR_FEATURE_FLAGS]);
-	caps->active_monitor = (features & ACTIVE_MONITOR_FLAG) != 0;
+	caps->active_monitor = (features & NL80211_FEATURE_ACTIVE_MONITOR) != 0;
 }
 
 void check_type(nlattr **attrs, NlCaps *caps){

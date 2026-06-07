@@ -17,8 +17,8 @@ actors:
   attacker:
     source: internal
     selection:
-      driver: ath9k_htc
-      condition: [ monitor, active_monitor ]
+      #driver: ath9k_htc
+      condition: [ monitor ] # , active_monitor ]
       channel: 6
     netns: att
 observers:

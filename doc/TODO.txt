@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+f: tshrk ufachá (alespoň u Enterprise nezobrazuje EAP rámce)
 +: add test for downgrade (WPA3-Only valid +client -> stop WP3Only -> chcek if client tr to connect)
 r: co jde v suite, sjednotit
 r: vymazat githubcopilota z hstorie

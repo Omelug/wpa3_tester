@@ -123,8 +123,10 @@ static optional<array<uint8_t, 32>> brute_force_k(
 
     EC_GROUP* grp = EC_GROUP_new_curve_GFp(p, a, b, ctx);
     EC_POINT* gen = EC_POINT_new(grp);
-    EC_POINT_set_affine_coordinates_GFp(grp, gen, gx, gy, ctx);
-    EC_GROUP_set_generator(grp, gen, n, BN_value_one());
+	if (EC_POINT_set_affine_coordinates_GFp(grp, gen, gx, gy, ctx) != 1) {
+		log(LogLevel::ERROR, "OpenSSL issue");
+	}
+	EC_GROUP_set_generator(grp, gen, n, BN_value_one());
 
     EC_POINT* pt  = EC_POINT_new(grp);
     BIGNUM*   k   = BN_new();
@@ -158,7 +160,7 @@ static optional<array<uint8_t, 32>> brute_force_k(
     return result;
 }
 
-bool run_invalid_curve_exchange(EAP_Att eap_att){
+bool run_invalid_curve_exchange(EAP_Att& eap_att){
 
 	if (!do_auth(eap_att)) return false;
     if (!do_assoc(eap_att)) return false;

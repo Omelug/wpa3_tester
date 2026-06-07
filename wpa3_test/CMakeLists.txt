@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
 project(wpa3_tester VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)

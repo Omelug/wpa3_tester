@@ -19,8 +19,8 @@ jobs:
           cache-suffix: validate
       - name: Configure
         env:
-          CC: gcc-14
-          CXX: g++-14
+          CC: clang
+          CXX: clang++
         run: cmake -S wpa3_test -B build -G Ninja
 
 

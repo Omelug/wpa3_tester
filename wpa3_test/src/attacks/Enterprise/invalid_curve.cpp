@@ -254,7 +254,7 @@ void run_attack(RunStatus& rs) {
     const HWAddress<6> our_mac(attacker.get(SK::mac));
     const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
-    MonitorSocket sock(iface, attacker.get(SK::netns));
+    MonitorSocket sock(iface, attacker[SK::netns]);
 	EAP_Att eap_att{
 		sock,
 		channel,

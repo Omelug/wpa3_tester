@@ -14,13 +14,13 @@ actors:
         other_options: "-d"
         hostapd_path: "./config/hostapd.conf"
     ip_addr: "10.0.0.1"
+    netns: ap
   attacker:
     source: internal
     selection:
       #driver: ath9k_htc
       condition: [ monitor ] # , active_monitor ]
       channel: 6
-    netns: att
 observers:
   attacker_tshark:
     actor: attacker
@@ -37,3 +37,4 @@ attack_config:
   identity: "bob"
 
 rewrite: errors
+save_log: true

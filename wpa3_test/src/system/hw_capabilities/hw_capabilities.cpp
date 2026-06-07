@@ -270,13 +270,13 @@ bool hw_capabilities::set_monitor_active(const string &iface, const optional<str
 	set_iface_down(iface, netns);
 
 	if(run_cmd({"iw", "dev", iface, "set", "monitor", "active"}) != 0){
-		log(LogLevel::WARNING, format("Interface {} failed to enter monitor mode", iface));
+		log(LogLevel::WARNING, "Interface {} failed to enter monitor mode", iface);
 		return false;
 	}
 	set_iface_up(iface, netns);
 	if(ch.ch_num > 0){
 		if(run_cmd({"iw", "dev", iface, "set", "channel", to_string(ch.ch_num)}) != 0){
-			log(LogLevel::WARNING, format("Failed to set channel {} on {}", ch.ch_num, iface));
+			log(LogLevel::WARNING, "Failed to set channel {} on {}", ch.ch_num, iface);
 			return false;
 		}
 	}
@@ -302,16 +302,15 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		case NL80211_IFTYPE_MONITOR: return "monitor";
 		case NL80211_IFTYPE_STATION: return "managed";
 		case NL80211_IFTYPE_AP: return "__ap";
-		default: throw run_err(format("Unsupported nl80211 iftype: {}", static_cast<int>(type)));
+		default: throw run_err("Unsupported nl80211 iftype: {}", static_cast<int>(type));
 		}
 	}();
 
 	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0) throw
-			run_err(format("iw set type {} on '{}' failed: {}", type_str, iface, ret));
+			run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
 
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)
-		throw run_err(format("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str,
-									res.error().message()));
+		throw run_err("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.error().message());
 
 	if(type == NL80211_IFTYPE_MONITOR && !monitor_flags.empty()){
 		vector<string> cmd = {"iw", "dev", iface.data(), "set", "monitor"};

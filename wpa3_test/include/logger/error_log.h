@@ -13,19 +13,8 @@ public:
 	explicit tester_error(
 		const std::string &msg, const std::source_location loc = std::source_location::current()
 	)
-	: std::runtime_error(msg)
-	, std::nested_exception()
-	, location_(loc)
+	: std::runtime_error(msg), location_(loc)
 	{}
-
-	template<typename... Args>
-	tester_error(LogLevel level, std::string_view fmt, const std::source_location loc, Args&&... args)
-	: std::runtime_error(std::vformat(fmt, std::make_format_args(args...)))
-	, std::nested_exception()
-	, location_(loc)
-	{
-		log(level, "{}", std::runtime_error::what());
-	}
 
 	[[nodiscard]] const std::source_location &where() const noexcept { return location_; }
 private:
@@ -37,12 +26,20 @@ private:
 struct fmtloc {
 	std::string_view fmt;
 	std::source_location loc;
-	explicit fmtloc(std::string_view fmt, std::source_location loc = std::source_location::current())
+	explicit fmtloc(const std::string_view fmt, const std::source_location loc = std::source_location::current())
 	: fmt(fmt), loc(loc) {}
 };
 
 template<LogLevel Level>
 class typed_error : public tester_error {
+	template<typename... Args>
+	static std::string fmt_msg(std::string_view fmt, Args &&... args) {
+		auto cleaned = std::make_tuple(clean_arg(std::forward<Args>(args))...);
+		return std::apply([&fmt](auto &... a) {
+			return std::vformat(fmt, std::make_format_args(a...));
+		}, cleaned);
+	}
+
 public:
 	explicit typed_error(
 		const std::string &msg, const std::source_location loc = std::source_location::current()
@@ -52,22 +49,25 @@ public:
 		log(Level, "{}", std::runtime_error::what());
 	}
 
-	struct format_with_location {
+	// Implicit conversion from string literal allows: throw some_err("format {}", arg);
+	struct fmtloc_implicit {
 		const char *fmt;
 		std::source_location loc;
-
-		format_with_location(  // intentionally non-explicit: allows implicit conversion from string literal
+		fmtloc_implicit(  // non-explicit: enables implicit construction from string literal
 			const char *fmt, const std::source_location loc = std::source_location::current()
 		) : fmt(fmt), loc(loc) {}
 	};
 
 	template<typename... Args>
-	explicit typed_error(format_with_location f, Args... args)
-	: tester_error(Level, f.fmt, f.loc, args...) {}
+	explicit typed_error(fmtloc_implicit f, Args &&... args)
+	: tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc)
+	{
+		log(Level, "{}", std::runtime_error::what());
+	}
 
 	template<typename... Args>
-	explicit typed_error(const fmtloc f, Args&&... args)
-	: tester_error(std::vformat(f.fmt, std::make_format_args(args...)), f.loc)
+	explicit typed_error(const fmtloc f, Args &&... args)
+	: tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc)
 	{
 		log(Level, "{}", std::runtime_error::what());
 	}

@@ -6,7 +6,6 @@
 #include <regex>
 #include <vector>
 #include <cstdio>
-#include <cstdarg>
 #include "config/RunStatus.h"
 
 namespace wpa3_tester{
@@ -69,18 +68,6 @@ void write_log_message(const LogLevel level, const string &msg){
 		}
 	}
 }
-
-/*void log(const LogLevel level, const char *fmt, ...){
-	va_list args;
-	va_start(args, fmt);
-	const int len = std::vsnprintf(nullptr, 0, fmt, args);
-	va_end(args);
-	std::string msg(len, '\0');
-	va_start(args, fmt);
-	std::vsnprintf(msg.data(), len + 1, fmt, args);
-	va_end(args);
-	write_log_message(level, msg);
-}*/
 
 void log(const LogLevel level, const string &msg){
 	write_log_message(level, msg);

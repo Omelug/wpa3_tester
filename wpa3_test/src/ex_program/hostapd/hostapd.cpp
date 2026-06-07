@@ -25,7 +25,7 @@ static string get_field_or_parse(const json &program_config, const string &key, 
 			return parse_from_file(config_path);
 		} catch(...){}
 	}
-	throw config_err("Field '" + key + "' not found in config or file: " + config_path);
+	throw config_err("Field '{}' not found in config or file: {}", key,  config_path);
 }
 
 static string parse_key_from_file(const string &config_path, const string &key){

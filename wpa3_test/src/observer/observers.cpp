@@ -12,8 +12,7 @@ path get_observer_folder(const RunStatus &rs, const string &observer_name){
 	error_code ec;
 	create_public_dirs(obs_dir, ec);
 	if(ec){
-		log(LogLevel::ERROR,
-			"Failed to create " + observer_name + " observer dir " + obs_dir.string() + ":" + ec.message());
+		log(LogLevel::ERROR, "Failed to create {} observer dir {}: {}", observer_name, obs_dir.string(), ec.message());
 	}
 	return obs_dir;
 }

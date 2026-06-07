@@ -57,6 +57,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>fmtloc</w>
       <w>fprintf</w>
       <w>frametype</w>
       <w>gcmp</w>

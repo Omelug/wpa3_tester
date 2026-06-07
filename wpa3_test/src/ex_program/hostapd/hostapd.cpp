@@ -50,7 +50,7 @@ string get_channel(const json &program_config, const string &config_path){
 // --------------- HOSTAPD -----------------------
 
 static void write_hostapd_kv(ofstream &out, const json &setup){
-	static const set<string> skip = {"hostapd_path", "version", "other_options"};
+	static const set<string> skip = {"hostapd_path", "version", "openssl", "other_options"};
 	for(auto it = setup.begin(); it != setup.end(); ++it){
 		if(skip.contains(it.key())) continue;
 		out << it.key() << "=";
@@ -108,8 +108,22 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
 
+	string hostapd_bin;
+	if(program_config.contains("openssl") && !program_config["openssl"].is_null()){
+		const string openssl_version = program_config["openssl"].get<string>();
+		const OpenSSLPaths ssl = get_openssl_paths(openssl_version);
+		command.insert(command.end(), {
+							"env",
+							"LD_LIBRARY_PATH=" + ssl.lib_dir.string(),
+							"LD_PRELOAD=" + ssl.libcrypto.string(),
+						});
+		hostapd_bin = get_hostapd_with_openssl(version, openssl_version);
+	} else {
+		hostapd_bin = get_hostapd(version);
+	}
+
 	command.insert(command.end(), {
-						get_hostapd(version), "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
+						hostapd_bin, "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
 					});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());

@@ -12,6 +12,9 @@ paths:
     # (create empty folder if not sure, it will be build automatically)
     hostapd_build_folder: ../../tools/hostapd
     hostapd_mana_build_folder: ../../tools/hostapd_mana
+  openssl:
+    # vulnerable OpenSSL builds for hostapd (e.g. openssl-1.0.2f)
+    openssl_vuln_build_folder: ../../tools/openssl_vuln
   dragonslayer:
     # dragonslayer folder (!dragonslayer has subfolder dragonslayer)
     dragonslayer_folder: ../../tools/dragonslayer

@@ -25,6 +25,7 @@
 #include "attacks/two_iface/injection_test.h"
 #include "config/RunStatus.h"
 #include "attacks/downgrade/owe_trans.h"
+#include "attacks/downgrade/wpa3_trans_downgrade.h"
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
@@ -40,6 +41,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
 	{"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
 	{"owe_trans", owe_trans::setup_attack},
+	{"wpa3_trans_downgrade", wpa3_trans_downgrade::setup_attack},
 };
 
 /* map of attacker_module->attack run function*/
@@ -61,6 +63,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"active_test", active_test::run_attack},
 	{"injection_test", injection_test::run_attack},
 	{"owe_trans", owe_trans::run_attack},
+	{"wpa3_trans_downgrade", wpa3_trans_downgrade::run_attack},
 };
 
 /* map of attacker_module->stats run function*/
@@ -76,5 +79,6 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	{"ath_masker_test", ath_masker_test::stats},
 	{"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
 	{"owe_trans", owe_trans::stats_attack},
+	{"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
 };
 }

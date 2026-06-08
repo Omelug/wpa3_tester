@@ -23,18 +23,20 @@
 #include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
 #include "attacks/two_iface/active_test.h"
 #include "attacks/two_iface/injection_test.h"
+#include "attacks/downgrade/owe_trans.h"
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"channel_switch", CSA_attack::setup_chs_attack}, {"bl0ck", bl0ck_attack::setup_attack},
 	{"malformed_eapol1", eapol_logoff::setup_attack},
-	{"cookie_guzzler", components::client_ap_attacker_setup}, {"pmk_gobbler", components::client_ap_attacker_setup},
-	{"memory_omnivore", components::client_ap_attacker_setup}, {"reflection_attack", reflection::setup_attack},
+	{"cookie_guzzler", components::client_ap_setup}, {"pmk_gobbler", components::client_ap_setup},
+	{"memory_omnivore", components::client_ap_setup}, {"reflection_attack", reflection::setup_attack},
 	{"invalid_curve", invalid_curve::setup_attack}, {"dragondrain", dragondrain::setup_attack},
 	{"dragondrain", dragondrain::setup_attack}, {"mc_mitm", mc_mitm::setup_attack},
 	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
 	{"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
+	{"owe_trans", owe_trans::setup_attack},
 };
 
 /* map of attacker_module->attack run function*/
@@ -54,6 +56,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"sae_dos_wrapper", sae_dos_wrapper::run_attack},
 	{"active_test", active_test::run_attack},
 	{"injection_test", injection_test::run_attack},
+	{"owe_trans", owe_trans::run_attack},
 };
 
 /* map of attacker_module->stats run function*/
@@ -68,5 +71,6 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	{"dragondrain", dragondrain::stats_attack}, {"mc_mitm", mc_mitm::stats},
 	{"ath_masker_test", ath_masker_test::stats},
 	{"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
+	{"owe_trans", owe_trans::stats_attack},
 };
 }

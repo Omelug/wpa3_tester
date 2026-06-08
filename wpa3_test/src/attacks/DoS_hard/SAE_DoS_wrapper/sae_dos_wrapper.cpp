@@ -31,7 +31,7 @@ static string get_suite_path(){
 }
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_attacker_setup(rs);
+	components::client_ap_setup(rs);
 
 	const string suite = get_suite_path();
 	hw_capabilities::git_clone_or_pull("https://github.com/Omelug/WPA3-SAE-DoS-Research-Suite", suite);

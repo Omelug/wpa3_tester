@@ -223,7 +223,7 @@ static Bl0ckResult load_result(const RunStatus &rs){
 }
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_attacker_setup(rs);
+	components::client_ap_setup(rs);
 	components::setup_rogue_ap(rs);
 }
 

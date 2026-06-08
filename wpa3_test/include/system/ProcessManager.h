@@ -79,6 +79,7 @@ public:
 	void ignore_history(const std::string &actor_name);
 	void discard_history(const std::string &actor_name);
 
+	//return  true if found
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
 				std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true
 	); // 60 minutes (practically infinity)

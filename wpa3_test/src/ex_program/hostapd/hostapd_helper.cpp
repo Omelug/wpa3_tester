@@ -13,18 +13,18 @@ using namespace filesystem;
 struct RepoConfig {
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
-	string source_dir;      // "hostapd" for hostapd/hostapd-mana
 	string binary_name;     // "hostapd"/"hostapd-mana"
 	bool has_tags;          // hostapd has tags, hostapd-mana doesn't
 	string tag_prefix;      // "hostap_" for hostapd
+	string no_version_name; // "hostapd"/"hostapd-mana" installed
 };
 
 static const RepoConfig HOSTAPD_CONFIG = {
-	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", "hostapd", true, "hostap_"
+	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", true, "hostap_", "hostapd",
 };
 
 static const RepoConfig HOSTAPD_MANA_CONFIG = {
-	"hostapd_mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd", false, ""
+	"hostapd_mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", false, "hostapd-mana_", "hostapd-mana"
 };
 
 void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
@@ -80,7 +80,7 @@ static string get_extra_cflags(){
 void build_hostapd_like(const string &version, const path &build_folder, const path &target,
 						const RepoConfig &cfg, const optional<OpenSSLPaths> &openssl = nullopt){
 	path repo_path = build_folder / cfg.repo_name;
-	path source_dir = repo_path / cfg.source_dir;
+	path source_dir = repo_path / "hostapd";
 
 	path config_path = source_dir / ".config";
 	if(!exists(config_path)){ copy(source_dir / "defconfig", config_path); }
@@ -91,7 +91,7 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 		"\nCONFIG_SAE=y"
 		"\nCONFIG_WNM=y"
 		"\nCONFIG_OCV=y"
-		"\nCONFIG_OWE=y" //FIXME invalid or inored in old versions?
+		"\nCONFIG_OWE=y" //FIXME invalid or in order in old versions?
 
 		"\nCONFIG_SUITEB192=y"
 		"\nCONFIG_DPP=y"
@@ -131,7 +131,7 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 
 	if(version.empty()){
 		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
-		return cfg.binary_name;
+		return cfg.no_version_name;
 	}
 
 	string bin_name = bin_prefix + version;
@@ -161,7 +161,7 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 	}
 
 	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);
-	copy(repo_path / cfg.source_dir / cfg.binary_name, binary_path, copy_options::overwrite_existing);
+	copy(repo_path / "hostapd" / cfg.binary_name, binary_path, copy_options::overwrite_existing);
 	return binary_path.string();
 }
 
@@ -327,7 +327,7 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
-	copy(repo_path / HOSTAPD_CONFIG.source_dir / HOSTAPD_CONFIG.binary_name, binary_path,
+	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path,
 		 copy_options::overwrite_existing);
 	return binary_path.string();
 }

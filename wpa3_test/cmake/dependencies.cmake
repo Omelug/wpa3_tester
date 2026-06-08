@@ -1,3 +1,5 @@
+find_package(OpenSSL REQUIRED)
+
 add_library(wpa3_deps INTERFACE)
 target_link_libraries(wpa3_deps INTERFACE radiotap_lib)
 
@@ -34,7 +36,7 @@ target_link_libraries(wpa3_deps INTERFACE
         nl-3 nl-genl-3
         ${LIBNL_LIBRARIES}
         ${LIBSSH_LIBRARIES}
-        ssl crypto
+        OpenSSL::SSL OpenSSL::Crypto
 )
 
 target_compile_definitions(wpa3_deps INTERFACE

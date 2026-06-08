@@ -5,8 +5,9 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
-#include "attacks/components/setup_connections.h"
 #include "inteprrupt.h"
+#include "attacks/components/setup_connections.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
@@ -32,10 +33,8 @@ void run_attack(RunStatus &rs) {
 
 	rs.start_observers();
 
-	interruptible_sleep(seconds(10));
-	if (g_interrupted.load()) return;
-
 	log(LogLevel::INFO, "Stopping AP - waiting for client probe requests");
+	components::setup_rogue_ap(rs);
 	rs.process_manager.stop("access_point");
 
 	atomic probe_count{0};
@@ -79,6 +78,17 @@ void stats_attack(const RunStatus &rs) {
 		{"attacker", "wlan.fc.type_subtype == 4", "ProbeReq", "blue"},
 	});
 
+	optional<hostapd::CrackResult> crack_result;
+	if (rs.config().at("actors").contains("rogue_ap")) {
+		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+		const auto &prog_cfg = rs.config().at("actors").at("client").at("setup").at("program_config");
+		const string psk = prog_cfg.contains("sae_password")
+							? prog_cfg.at("sae_password").get<string>()
+							: prog_cfg.value("psk", "");
+		if (!psk.empty())
+			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
+	}
+
 	const auto probe_times = observer::tshark::get_tshark_events(rs, "attacker",
 		"wlan.fc.type_subtype == 4", "ProbeReq");
 	const int probe_count = static_cast<int>(probe_times.size());
@@ -104,11 +114,23 @@ void stats_attack(const RunStatus &rs) {
 		report << "| Client disconnected | " << (disconnected ? "yes" : "no") << " |\n";
 		report << "| Probe requests detected | " << probe_count << " |\n";
 		report << "| Vulnerable (probes sent) | " << (probe_count > 0 ? "yes" : "no") << " |\n\n";
+		if (crack_result.has_value()) {
+			report << "## Credential Capture (hcxpmktool)\n";
+			report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
+			report << "| Metric | Value |\n|--------|-------|\n";
+			report << "| Captured handshakes | " << crack_result->total << " |\n";
+			report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
+		}
 		report << "## Traffic\n";
 		report << "### Client\n";
 		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
 		report << "### Attacker (probe capture)\n";
 		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
+		if (rs.config().at("actors").contains("rogue_ap")) {
+			const string rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements).string();
+			report << "### Rogue AP\n";
+			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+		}
 		report << "---\n";
 		report.close();
 		set_public_perms(report_path);

@@ -22,7 +22,8 @@ string Actor_config::operator[](const string &key) const {
 	throw config_err("Actor_config: unknown string key '" + key + "'");
 }
 
-Actor_config::Actor_config(const json &j) {
+Actor_config::Actor_config(const json &j, string source) {
+	if(!source.empty()) set(SK::source, source);
 	if(j.contains("selection") && j.at("selection").is_object()){
 		const auto &sel = j.at("selection");
 
@@ -30,6 +31,7 @@ Actor_config::Actor_config(const json &j) {
 			const auto name = string(sk_name(k));
 			if(!sel.contains(name)) continue;
 			if(sel[name].is_string()){
+				if(k == SK::mac) continue; //skip mac, for internal
 				this->set(k, sel[name].get<string>());
 			}else if(sel[name].is_number()){
 				this->set(k, to_string(sel[name].get<int>()));
@@ -52,10 +54,12 @@ Actor_config::Actor_config(const json &j) {
 					(*this)[*k] = !negated;
 			}
 		}
+		const auto name = string(sk_name(SK::mac));
+		if(!this->is_WB()) this->set(SK::mac, sel[name].get<string>());
 	}
 
-	if(j.contains("netns"))  this->set(SK::netns, j.at("netns").get<string>());
-	if(j.contains("source")) this->set(SK::source, j.at("source").get<string>());
+	if(j.contains("netns"))  set(SK::netns, j.at("netns").get<string>());
+	if(j.contains("source")) set(SK::source, j.at("source").get<string>());
 }
 
 Actor_config::~Actor_config() {

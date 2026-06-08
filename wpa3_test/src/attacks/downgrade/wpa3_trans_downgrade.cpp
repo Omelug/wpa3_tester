@@ -25,8 +25,6 @@ void run_attack(RunStatus &rs) {
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
 
 	rs.start_observers();
-	interruptible_sleep(seconds(3));
-	if (g_interrupted.load()) return;
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
 	rs.process_manager.stop("access_point");
@@ -89,17 +87,23 @@ void stats_attack(const RunStatus &rs) {
 		report << "## Results\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
 		report << "| Client disconnected from legitimate AP | " << (disconnected ? "yes" : "no") << " |\n";
-		report << "| Client connected to rogue AP | " << (rogue_connected ? "**yes**" : "no") << " |\n";
-		report << "| WPA2-PSK downgrade observed on client | " << (downgrade_seen ? "**yes**" : "no") << " |\n";
+		report << "| Client connected to rogue AP | " << (rogue_connected ? "yes" : "no") << " |\n";
+		report << "| WPA2-PSK downgrade observed on client | " << (downgrade_seen ? "yes" : "no") << " |\n";
 		report << "| Rogue AP 4-way handshakes completed | " << rogue_4way_times.size() << " |\n";
-		report << "| Vulnerable (downgrade to WPA2) | " << (rogue_connected ? "**yes**" : "no") << " |\n\n";
+		report << "| Vulnerable (downgrade to WPA2) | " << (rogue_connected ? "yes" : "no") << " |\n\n";
 		report << "## Traffic\n";
-		report << "### Client\n";
-		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
-		report << "### Rogue AP (WPA2-PSK)\n";
-		report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
-		report << "### Attacker (probe capture)\n";
-		report << "![Attacker graph](" << relative(att_graph, rs.run_folder()).string() << ")\n\n";
+		if(!client_graph.empty()){
+			report << "### Client\n";
+			report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+		}
+		if(!rogue_graph.empty()){
+			report << "### Rogue AP (WPA2-PSK)\n";
+			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+		}
+		if(!att_graph.empty()){
+			report << "### Attacker (probe capture)\n";
+			report << "![Attacker graph](" << relative(att_graph, rs.run_folder()).string() << ")\n\n";
+		}
 		report << "---\n";
 		report.close();
 		set_public_perms(report_path);

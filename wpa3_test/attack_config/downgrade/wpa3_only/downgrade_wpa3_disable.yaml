@@ -15,12 +15,13 @@ actors:
         hw_mode: g
         channel: 6
         ieee80211n: 1
-        ieee80211w: 1
+        ieee80211w: 2
         wpa: 2
-        wpa_key_mgmt: SAE WPA-PSK
+        wpa_key_mgmt: SAE #WPA-PSK
         rsn_pairwise: CCMP
         sae_password: password123
-        wpa_passphrase: password123
+        #wpa_passphrase: password123
+        transition_disable: "0x01"
     ip_addr: "10.0.0.1"
   client:
     source: internal
@@ -43,14 +44,12 @@ actors:
     source: internal
     selection:
       condition: [ AP ]
-      mac: "78:98:E8:55:3E:8D"
+      #mac: "78:98:E8:55:3E:8D"
     setup:
       program: hostapd-mana
       program_config:
         # custom conf overrides the default hostapd-mana.conf - WPA2-PSK only, no SAE
         hostapd-mana_path: config/hostapd-mana-wpa2psk.conf
-        ssid: TestNetwork
-        channel: 6
   attacker:
     source: internal
     selection:
@@ -62,16 +61,16 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-  client_tshark:
-    actor: client
-    program: tshark
-    program_config:
-      filter: "special_filter:actors"
-  rogue_ap_tshark:
-    actor: rogue_ap
-    program: tshark
-    program_config:
-      filter: "special_filter:actors"
+  #client_tshark:
+  #  actor: client
+  #  program: tshark
+  #  program_config:
+  #    filter: "special_filter:actors"
+  #rogue_ap_tshark:
+  #  actor: rogue_ap
+  #  program: tshark
+  #  program_config:
+  #    filter: "special_filter:actors"
 attack_config:
   # seconds to wait after legitimate AP is stopped for client to reconnect to rogue AP
   wait_after_stop: 30

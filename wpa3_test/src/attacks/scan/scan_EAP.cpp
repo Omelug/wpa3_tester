@@ -4,8 +4,8 @@
 #include <sys/poll.h>
 #include <tins/rawpdu.h>
 
-#include "attacks/Enterprise/eap_defs.h"
 #include "attacks/components/sniffer_helper.h"
+#include "attacks/Enterprise/eap_defs.h"
 #include "logger/log.h"
 
 using namespace std;

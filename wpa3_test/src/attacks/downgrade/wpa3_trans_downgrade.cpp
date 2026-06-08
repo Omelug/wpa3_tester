@@ -25,8 +25,7 @@ void run_attack(RunStatus &rs) {
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
 
 	rs.start_observers();
-
-	interruptible_sleep(seconds(5));
+	interruptible_sleep(seconds(3));
 	if (g_interrupted.load()) return;
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
@@ -108,7 +107,6 @@ void stats_attack(const RunStatus &rs) {
 
 	const json result = {
 		{"disconnected",        disconnected},
-		{"rogue_connected",     rogue_connected},
 		{"downgrade_seen",      downgrade_seen},
 		{"rogue_4way_count",    static_cast<int>(rogue_4way_times.size())},
 		{"vulnerable",          rogue_connected},

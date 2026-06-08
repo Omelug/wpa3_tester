@@ -65,6 +65,7 @@
       <w>genl</w>
       <w>gnlh</w>
       <w>gpcmd</w>
+      <w>hcxpmktool</w>
       <w>hostap</w>
       <w>htmode</w>
       <w>hwhsim</w>
@@ -171,6 +172,7 @@
       <w>sstream</w>
       <w>stoi</w>
       <w>strtype</w>
+      <w>suiteb</w>
       <w>sysntpd</w>
       <w>tdls</w>
       <w>teap</w>

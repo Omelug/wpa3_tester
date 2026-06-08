@@ -27,7 +27,7 @@ public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
 	explicit Actor_config() = default;
     Actor_config(const Actor_config &other) = default;
-    explicit Actor_config(const nlohmann::json &j);
+    explicit Actor_config(const nlohmann::json &j, std::string source = "");
 	virtual ~Actor_config();
 
     bool matches(const Actor_config &offer);

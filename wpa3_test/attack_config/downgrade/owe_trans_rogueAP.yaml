@@ -8,9 +8,17 @@ actors:
       condition: [ AP ]
       mac: "78:98:E8:55:3E:8D"
     setup:
-      program: hostapd-mana
+      program: hostapd
       program_config:
-        hostapd-mana_path: ./config/hostapd-mana.conf
+        driver: nl80211
+        ssid: test_owe
+        hw_mode: g
+        channel: 6
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa: 2
+        wpa_key_mgmt: OWE
+        rsn_pairwise: CCMP
 observers:
   rogue_ap_tshark:
     actor: rogue_ap

@@ -5,7 +5,7 @@ pkgs.mkShell {
 
   packages = with pkgs; [
     cmake ninja ccache mold
-    git gcc gnumake pkg-config flex bison
+    git clang gnumake pkg-config flex bison
     iproute2 iw hostapd-mana
     netsniff-ng tcpdump wireshark-cli gnuplot hcxtools
     # libraries required by libraries.cmake via pkg-config

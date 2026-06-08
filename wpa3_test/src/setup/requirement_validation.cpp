@@ -189,7 +189,7 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
     }
 	close(nl_fd);
     for(const auto &name : waiting)
-        log(LogLevel::WARNING, "Interface {} did not return to root ns in time", name);
+        log(LogLevel::WARNING, "Interface {} did not return to root netns in time", name);
 }
 
 void cleanup_all_namespaces(){

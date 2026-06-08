@@ -4,6 +4,8 @@
 #include <mutex>
 #include <atomic>
 #include <tins/hw_address.h>
+
+#include "attacks/sae_helper.h"
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 
@@ -25,7 +27,7 @@ void capture_cookies(const std::string &sniff_iface, const Tins::HWAddress<6> &a
 
 std::pair<ACMCookie,int> trigger_acm(const std::string &iface, const std::string &att_mac,
 									const Tins::HWAddress<6> &ap_mac, int trigger_count,
-									const dos_helpers::SAEPair &sae_params
+									const sae_helper::SAEPair &sae_params
 );
 
 void burst_with_cookies(const std::string &iface, const Tins::HWAddress<6> &ap_mac, CookieStore &store,

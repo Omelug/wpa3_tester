@@ -1,10 +1,7 @@
 #pragma once
+#include <functional>
 #include <map>
 #include <string>
-#include <functional>
-#include "config/RunStatus.h"
-#include "attacks/scan/iface_info.h"
-#include "attacks/scan/scan_AP.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/DoS_hard/ath_masker/ath_masker_test.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
@@ -12,17 +9,21 @@
 #include "attacks/DoS_hard/dragondrain/dragondrain.h"
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
-#include "attacks/DoS_soft/channel_switch/channel_switch.h"
-#include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
+#include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
 #include "attacks/Enterprise/invalid_curve.h"
 #include "attacks/Enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
+#include "attacks/Enterprise/invalid_curve_dragonslayer.h"
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
-#include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
+#include "attacks/scan/iface_info.h"
+#include "attacks/scan/scan_AP.h"
 #include "attacks/two_iface/active_test.h"
 #include "attacks/two_iface/injection_test.h"
+#include "config/RunStatus.h"
 #include "attacks/downgrade/owe_trans.h"
 
 namespace wpa3_tester::attack_module_maps{
@@ -32,7 +33,9 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"malformed_eapol1", eapol_logoff::setup_attack},
 	{"cookie_guzzler", components::client_ap_setup}, {"pmk_gobbler", components::client_ap_setup},
 	{"memory_omnivore", components::client_ap_setup}, {"reflection_attack", reflection::setup_attack},
-	{"invalid_curve", invalid_curve::setup_attack}, {"dragondrain", dragondrain::setup_attack},
+	{"invalid_curve", invalid_curve::setup_attack},
+	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::setup_attack},
+	{"dragondrain", dragondrain::setup_attack},
 	{"dragondrain", dragondrain::setup_attack}, {"mc_mitm", mc_mitm::setup_attack},
 	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
 	{"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
@@ -51,6 +54,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"cookie_guzzler", cookie_guzzler::run_attack}, {"pmk_gobbler", pmk_gobbler::run_attack},
 	{"memory_omnivore", memory_omnivore::run_attack}, {"reflection_attack", reflection::run_attack},
 	{"invalid_curve", invalid_curve::run_attack},
+	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::run_attack},
 	{"dragondrain", dragondrain::run_attack}, {"mc_mitm", mc_mitm::run_attack},
 	{"ssid_confusion", ssid_confusion::run_attack}, {"ath_masker_test", ath_masker_test::run_attack},
 	{"sae_dos_wrapper", sae_dos_wrapper::run_attack},

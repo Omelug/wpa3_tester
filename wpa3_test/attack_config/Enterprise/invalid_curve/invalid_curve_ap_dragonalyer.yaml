@@ -1,0 +1,35 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: invalid_curve_attack_dragonslayer
+attacker_module: invalid_curve
+actors:
+  access_point:
+    source: internal
+    selection:
+      channel: 6
+      condition: [ AP ]
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_7
+        hostapd_path: "./config/hostapd.conf"
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+        wpa_supplicant_path: "./config/valid_client.conf"
+    selection:
+      channel: 6
+    netns: sta
+    ip_addr: "10.0.0.2"
+  attacker:
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [ monitor ]
+      channel: 6
+attack_config:
+  $validator: ../dragonslayer.schema.yaml
+  target_type: ap

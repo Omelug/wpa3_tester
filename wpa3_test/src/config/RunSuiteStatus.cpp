@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <sstream>
 #include <thread>
 
 #include "config/global_config.h"
@@ -15,7 +16,6 @@
 #include "setup/config_parser.h"
 #include "setup/requirement_validation.h"
 #include "setup/YAMLValidator.h"
-#include "suite/suite_report.h"
 #include "suite/test_suites.h"
 #include "system/hw_capabilities.h"
 #include "system/ProcessManager.h"
@@ -127,8 +127,8 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 
 		const YNode saved_node = YAML::Load(config_str);
 		const auto config_name = saved_node["name"].as<string>();
-		
-		auto test_config_path = gen_folder / (config_name + ".yaml");
+
+		auto test_config_path = gen_folder / (config_name + "_" + to_string(i) + ".yaml");
 		remove(tmp_path);
 		ofstream ofs(test_config_path);
 		if(!ofs.is_open()){ throw run_err("Could not open final config file for writing"); }
@@ -268,8 +268,9 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 			throw run_err("Unresolved " + var_PREFIX + " placeholders in test " + to_string(test_counter));
 		}
 
-		string test_id = to_string(test_counter);
-		path test_path = gen_folder / (test_id + "_test.yaml");
+		const YNode saved_node = YAML::Load(current_config_str);
+		const auto config_name = saved_node["name"].as<string>();
+		path test_path = gen_folder / (config_name + "_" + to_string(test_counter) + ".yaml");
 
 		// save result to file
 		ofstream ofs(test_path);
@@ -280,8 +281,6 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 		// result test config validation
 		RunStatus::config_validation(test_path);
-		const YNode saved_node = YAML::Load(current_config_str);
-		const auto config_name = saved_node["name"].as<string>();
 		test_map.emplace_back(config_name, test_path);
 
 		// another index or stop
@@ -347,15 +346,25 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 	const string base_name = template_config.at("name").get<string>();
 	for(size_t i = 0; i < solutions.size(); i++){
 		json cfg = template_config;
-		cfg["name"] = base_name + "_" + to_string(i);
 
+		// build stable hash from sorted actor_name=perm_mac pairs
+		vector<string> mac_parts;
 		for(const auto &[actor_name, hw] : solutions[i]){
 			const auto &perm_mac = (*hw)[SK::permanent_mac];
 			if(!perm_mac.has_value()) continue;
+			mac_parts.push_back(actor_name + "=" + *perm_mac);
 			cfg["actors"][actor_name]["selection"]["permanent_mac"] = *perm_mac;
 		}
+		ranges::sort(mac_parts);
+		string mac_concat;
+		for(const auto &p : mac_parts) mac_concat += p;
+		ostringstream oss;
+		oss << hex << hash<string>{}(mac_concat);
+		const string hash_str = oss.str().substr(0, 8);
 
-		const path test_path = gen_folder / (to_string(i) + "_actor_filler.yaml");
+		cfg["name"] = base_name + "_" + hash_str;
+
+		const path test_path = gen_folder / (hash_str + "_actor_filler.yaml");
 		save_yaml(cfg, test_path);
 		set_public_perms(test_path);
 		RunStatus::config_validation(test_path);
@@ -403,6 +412,16 @@ config_paths RunSuiteStatus::get_test_paths(){
 void RunSuiteStatus::execute(){
 	HwOptionCache hw_cache;
 	auto tests_paths = get_test_paths();
+
+	if(config.contains("suite_functions")){
+		const string module_name = config.at("suite_functions").get<string>();
+		if(const auto it = suite::test_suite_setup_map.find(module_name); it != suite::test_suite_setup_map.end()){
+			it->second(*this);
+		} else{
+			log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_setup_map", module_name);
+		}
+	}
+
 	for(size_t i = 0; i < tests_paths.size(); ++i){
 		if(g_interrupted.load()){
 			log(LogLevel::WARNING, "Suite interrupted by Ctrl+C, stopped after {} of {} tests", i, tests_paths.size());
@@ -422,13 +441,11 @@ void RunSuiteStatus::execute(){
 		}
 	}
 
-	if(!config.contains("suite_report_function")) return;
-	const string module_name = config.at("suite_report_function").get<string>();
-	
-	if(const auto it = suite::test_suite_callback_map.find(module_name); it != suite::test_suite_callback_map.end()){
+	const string module_name = config.at("suite_functions").get<string>();
+	if(const auto it = suite::test_suite_report_map.find(module_name); it != suite::test_suite_report_map.end()){
 		it->second(*this);
 	} else{
-		log(LogLevel::WARNING, "suite_report_function '{}' not found in test_suite_callback_map", module_name);
+		log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_report_map", module_name);
 	}
 }
 

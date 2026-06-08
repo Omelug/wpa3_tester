@@ -249,8 +249,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Block Attack END");
 
 	rs.process_manager.stop_all();
-	const Bl0ckResult result = compute_result(rs);
-	save_result(rs, result);
+	save_result(rs, compute_result(rs));
 }
 
 void stats_bl0ck_attack(const RunStatus &rs){

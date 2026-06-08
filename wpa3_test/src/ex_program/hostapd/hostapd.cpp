@@ -25,7 +25,7 @@ static string get_field_or_parse(const json &program_config, const string &key, 
 			return parse_from_file(config_path);
 		} catch(...){}
 	}
-	throw config_err("Field '" + key + "' not found in config or file: " + config_path);
+	throw config_err("Field '{}' not found in config or file: {}", key,  config_path);
 }
 
 static string parse_key_from_file(const string &config_path, const string &key){
@@ -50,7 +50,7 @@ string get_channel(const json &program_config, const string &config_path){
 // --------------- HOSTAPD -----------------------
 
 static void write_hostapd_kv(ofstream &out, const json &setup){
-	static const set<string> skip = {"hostapd_path", "version", "other_options"};
+	static const set<string> skip = {"hostapd_path", "version", "openssl", "other_options"};
 	for(auto it = setup.begin(); it != setup.end(); ++it){
 		if(skip.contains(it.key())) continue;
 		out << it.key() << "=";
@@ -76,7 +76,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	if(ap_setup.contains("hostapd_path")){
 		path hostapd_path = ap_setup["hostapd_path"].get<string>();
 		path src = hostapd_path.is_absolute() ? hostapd_path : config_folder / hostapd_path;
-		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		copy_f(src, cfg_path);
 		ofstream out(cfg_path, ios::app);
 		write_hostapd_kv(out, ap_setup);
 	} else {
@@ -108,8 +108,22 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
 
+	string hostapd_bin;
+	if(program_config.contains("openssl") && !program_config["openssl"].is_null()){
+		const string openssl_version = program_config["openssl"].get<string>();
+		const OpenSSLPaths ssl = get_openssl_paths(openssl_version);
+		command.insert(command.end(), {
+							"env",
+							"LD_LIBRARY_PATH=" + ssl.lib_dir.string(),
+							"LD_PRELOAD=" + ssl.libcrypto.string(),
+						});
+		hostapd_bin = get_hostapd_with_openssl(version, openssl_version);
+	} else {
+		hostapd_bin = get_hostapd(version);
+	}
+
 	command.insert(command.end(), {
-						get_hostapd(version), "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
+						hostapd_bin, "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
 					});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
@@ -232,7 +246,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 	if(client_setup.contains("wpa_supplicant_path")){
 		path src_path = client_setup["wpa_supplicant_path"].get<string>();
 		path src = src_path.is_absolute() ? src_path : config_folder / src_path;
-		copy_file(src, cfg_path, copy_options::overwrite_existing);
+		copy_f(src, cfg_path);
 		apply_wpa_overrides(cfg_path, client_setup);
 	} else {
 		ofstream out(cfg_path);
@@ -282,8 +296,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	if(program_config.contains("hostapd-mana_path")){
 		const path hostapd_path = program_config["hostapd-mana_path"].get<string>();
 		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
-		copy_file(src, hostapd_mana_config_path, copy_options::overwrite_existing);
-		set_public_perms(hostapd_mana_config_path);
+		copy_f(src, hostapd_mana_config_path);
 	}
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){

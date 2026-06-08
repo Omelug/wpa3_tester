@@ -1,0 +1,10 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: invalid_curve_attack_openssl_1_0_2f
+attacker_module: invalid_curve
+$extends: ./invalid_curve_ap.yaml
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        openssl: openssl-1.0.2f

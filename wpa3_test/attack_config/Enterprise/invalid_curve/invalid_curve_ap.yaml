@@ -11,25 +11,30 @@ actors:
       program: hostapd
       program_config:
         version: 2_7
+        other_options: "-d"
         hostapd_path: "./config/hostapd.conf"
     ip_addr: "10.0.0.1"
-  client:
-    source: internal
-    setup:
-      program: wpa_supplicant
-      program_config:
-        version: 2_10
-        wpa_supplicant_path: "./config/valid_client.conf"
-    selection:
-      channel: 6
-    netns: sta
-    ip_addr: "10.0.0.2"
+    netns: ap
   attacker:
     source: internal
     selection:
-      driver: mt76x2u
-      condition: [ monitor ]
+      #driver: ath9k_htc
+      condition: [ monitor ] # , active_monitor ]
       channel: 6
+observers:
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+  ap_tshark:
+    actor: access_point
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+
 attack_config:
-  $validator: ../dragonslayer.schema.yaml
-  target_type: ap
+  identity: "bob"
+
+rewrite: errors
+save_log: true

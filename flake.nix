@@ -18,7 +18,7 @@
         boot.kernelModules = [ "mac80211_hwsim" ];
 
         environment.systemPackages = with pkgs; [
-          cmake ninja gcc pkg-config flex bison iw
+          cmake ninja clang pkg-config flex bison iw
           libnl libssh libtins openssl yaml-cpp
         ];
 

@@ -94,5 +94,6 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(channel_num != -1 && monitor_needed())
 		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 	up_sniff_iface();
+	set_iface_up();
 }
 }

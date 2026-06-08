@@ -45,9 +45,8 @@ void client_ap_setup(RunStatus &rs){
 
 void setup_rogue_ap(RunStatus &rs){
 	if(rs.config().at("actors").contains("rogue_ap")){
-		copy_file(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
+		copy_f(rs.config_path().parent_path() / "config" / "hostapd-mana.conf",
 				rs.run_folder() / "rogue_ap_hostapd_mana.conf");
-		set_public_perms(rs.run_folder() / "rogue_ap_hostapd_mana.conf");
 		program::start(rs, "rogue_ap");
 		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
 		log(LogLevel::INFO, "Rogue AP up");

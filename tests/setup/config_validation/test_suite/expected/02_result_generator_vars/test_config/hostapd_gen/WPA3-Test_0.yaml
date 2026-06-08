@@ -1,5 +1,3 @@
-name: WPA3-Test
-attacker_module: module1
 actors:
   access_point:
     setup:
@@ -7,3 +5,5 @@ actors:
       program_config:
         version: 2_9
     source: internal
+attacker_module: module1
+name: WPA3-Test

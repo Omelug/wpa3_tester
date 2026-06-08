@@ -24,9 +24,8 @@ void check_monitor(nlattr **attrs, NlCaps *caps){
 
 void check_features(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_FEATURE_FLAGS]) return;
-	constexpr uint32_t ACTIVE_MONITOR_FLAG = 1u << 14;
 	const uint32_t features = nla_get_u32(attrs[NL80211_ATTR_FEATURE_FLAGS]);
-	caps->active_monitor = (features & ACTIVE_MONITOR_FLAG) != 0;
+	caps->active_monitor = (features & NL80211_FEATURE_ACTIVE_MONITOR) != 0;
 }
 
 void check_type(nlattr **attrs, NlCaps *caps){
@@ -260,13 +259,15 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(BK::AP, caps.ap);
 	cfg->set(BK::STA, caps.sta);
 	cfg->set(BK::monitor, caps.monitor);
-	cfg[BK::GHz2_4] = caps.band24;
-	cfg[BK::GHz5] = caps.band5;
-	cfg[BK::GHz6] = caps.band6;
+	cfg->set(BK::active_monitor, caps.active_monitor);
 
-	cfg[BK::w80211n] = caps._80211n;
-	cfg[BK::w80211ac] = caps._80211ac;
-	cfg[BK::w80211ax] = caps._80211ax;
+	cfg->set(BK::GHz2_4, caps.band24);
+	cfg->set(BK::GHz5, caps.band5);
+	cfg->set(BK::GHz6, caps.band6);
+
+	cfg->set(BK::w80211n, caps._80211n);
+	cfg->set(BK::w80211ac, caps._80211ac);
+	cfg->set(BK::w80211ax, caps._80211ax);
 
 	cfg->set(BK::beacon_prot, caps._80211ax);
 	cfg->set(BK::CSA, caps.csa);

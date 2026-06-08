@@ -50,9 +50,9 @@ string all_actors_mac_filter(const RunStatus &rs, const bool broadcast){
 	vector<string> mac_filters;
 
 	for(const auto &actor: rs.actors | views::values){
-		mac_filters.push_back("ether host " + actor.get(SK::mac));
+		mac_filters.push_back("wlan host " + actor.get(SK::mac));
 	}
-	if(broadcast) mac_filters.push_back("ether host ff:ff:ff:ff:ff:ff");
+	if(broadcast) mac_filters.push_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
 

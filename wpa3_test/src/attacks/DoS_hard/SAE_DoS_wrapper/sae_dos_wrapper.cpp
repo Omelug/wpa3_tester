@@ -50,11 +50,11 @@ void setup_attack(RunStatus &rs){
 	log(LogLevel::INFO, "SAE DoS Research Suite ready at {}", suite);
 }
 
-static void write_run_config(const string &config_path, const dos_helpers::SAEPair &sae,
+static void write_run_config(const string &config_path, const sae_helper::SAEPair &sae,
 							  const string &ap_mac, const string &client_mac, const string &channel,
 							  const string &att_iface, const nlohmann::json &att_cfg){
-	const string scalar_hex  = dos_helpers::bytes_to_hex_plain(sae.scalar);
-	const string finite_hex  = dos_helpers::bytes_to_hex_plain(sae.element);
+	const string scalar_hex  = sae_helper::bytes_to_hex_plain(sae.scalar);
+	const string finite_hex  = sae_helper::bytes_to_hex_plain(sae.element);
 	const string band        = att_cfg.at("adapter_band").get<string>();
 	const string attack_type = att_cfg.at("attack_type").get<string>();
 	const int ch_5           = att_cfg.at("channel_5ghz").get<int>();

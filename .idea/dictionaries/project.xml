@@ -25,6 +25,7 @@
       <w>ccmp</w>
       <w>cerr</w>
       <w>cflags</w>
+      <w>ciphersuite</w>
       <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>
@@ -56,6 +57,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>fmtloc</w>
       <w>fprintf</w>
       <w>frametype</w>
       <w>gcmp</w>
@@ -120,6 +122,7 @@
       <w>numpairs</w>
       <w>octl</w>
       <w>ofdm</w>
+      <w>openssldir</w>
       <w>openwrt</w>
       <w>operstate</w>
       <w>orchestator</w>

@@ -21,7 +21,7 @@ using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler{
 optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet){
-	const auto sae = dos_helpers::parse_sae_commit(packet);
+	const auto sae = sae_helper::parse_sae_commit(packet);
 	if(!sae || sae->token.empty()) return nullopt;
 
 	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet.data() + 2);
@@ -60,7 +60,7 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 }
 
 pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
-								  const int trigger_count, const dos_helpers::SAEPair &sae_params){
+								  const int trigger_count, const sae_helper::SAEPair &sae_params){
 	PacketSender sender(iface);
 
 	SnifferConfiguration cfg;
@@ -94,7 +94,7 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, con
 }
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
-	const int attack_time_sec, const dos_helpers::SAEPair &sae_params,
+	const int attack_time_sec, const sae_helper::SAEPair &sae_params,
 	const size_t burst_size, const size_t packets_per_second_limit, const int cookie_wait_ms
 ){
 	PacketSender sender(iface);
@@ -142,7 +142,7 @@ void run_attack(RunStatus &rs){
 
 	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
-	const optional<dos_helpers::SAEPair> sae_params = cookie_guzzler::get_commit_values(
+	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
 	attacker->set_monitor_mode();
 	attacker->set_iface_up();

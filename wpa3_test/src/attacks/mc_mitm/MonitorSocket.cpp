@@ -14,8 +14,8 @@ namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 : detect_injected_(detect_injected), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
-		"pcap_setnonblock failed: " + string(errbuf));
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
+		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
@@ -41,11 +41,11 @@ void MonitorSocket::send(PDU &pdu, const Channel &){
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()){
 		RadioTap rt{};
-		rt.tx_flags(0x28); // NOSEQ|ORDER
+		rt.tx_flags(0x28); // NOSEQ|ORDER //FIXME NOSEQ a NO ACk se někdy asi mění,
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else{
-		pdu.find_pdu<RadioTap>()->tx_flags(0x28);
+		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO pročNOACK flag??????
 		bytes = pdu.serialize();
 	}
 	pcap_inject(sniffer_.get_pcap_handle(), bytes.data(), bytes.size());
@@ -100,7 +100,7 @@ void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch){
 	pcap_inject(sniffer_.get_pcap_handle(), out.data(), out.size());
 }
 
-MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, uint32_t caplen){
+MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, const uint32_t caplen){
 	try{
 		const RadioTap rt(frame, caplen);
 		uint32_t strip = 0;

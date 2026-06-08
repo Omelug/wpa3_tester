@@ -44,7 +44,7 @@ public:
 		if(log_folder){
 			const auto path = *log_folder / (macaddr.to_string() + "_state.log");
 			if(std::ofstream f(path, std::ios::app); f)
-				f << std::format("[STATE] {} : {} -> {}\n", macaddr.to_string(), state2str(state), state2str(s));
+				f << "[STATE] " << macaddr <<" : " << state2str(state) << " -> " << state2str(s) << std::endl;
 		}
 		state = s;
 	}

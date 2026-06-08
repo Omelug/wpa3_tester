@@ -5,6 +5,7 @@
 #include <mutex>
 #include <regex>
 #include <vector>
+#include <cstdio>
 #include "config/RunStatus.h"
 
 namespace wpa3_tester{

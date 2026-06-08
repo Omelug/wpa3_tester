@@ -2,7 +2,6 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <cstdint>
 #include <chrono>
 
 #include "config/RunStatus.h"
@@ -22,13 +21,29 @@ const char *levelToString(LogLevel level);
 void set_log_file(const std::filesystem::path &log_path);
 void write_log_message(LogLevel level, const std::string &msg);
 
-template<typename...Args>
-void log(const LogLevel level, std::format_string<Args...> fmt, Args &&...args){
-	const std::string msg = std::format(fmt, std::forward<Args>(args)...);
+// enum -> show number; two overloads avoid clangd "auto deduced as different types" error
+template <typename T>
+requires std::is_enum_v<std::decay_t<T>>
+auto clean_arg(T&& arg) {
+	return static_cast<std::underlying_type_t<std::decay_t<T>>>(arg);
+}
+
+template <typename T>
+requires (!std::is_enum_v<std::decay_t<T>>)
+std::decay_t<T> clean_arg(T&& arg) {
+	return std::forward<T>(arg);
+}
+
+template<typename... Args>
+void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> fmt, Args &&... args) {
+	auto cleaned = std::make_tuple(clean_arg(std::forward<Args>(args))...);
+	const std::string msg = std::apply([&fmt](auto &... a) {
+		return std::vformat(fmt.get(), std::make_format_args(a...));
+	}, cleaned);
 	write_log_message(level, msg);
 }
 
-//__attribute__((format(printf, 2, 3)))
+//[[gnu::format(printf, 2, 3)]]
 //void log(LogLevel level, const char *fmt, ...);
 void log(LogLevel level, const std::string &msg);
 void log_actor_map(const std::string &name, const ActorCMap &m);

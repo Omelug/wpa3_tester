@@ -35,10 +35,14 @@ else ()
     message(STATUS "ccache not found")
 endif ()
 
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -std=c++23")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ENABLE_COVERAGE "Enable coverage" OFF)
@@ -49,7 +53,6 @@ if (UNIX)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
 endif ()
 
-add_link_options(-fuse-ld=mold) #faster linker than lld
 if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)
     add_link_options(--coverage)

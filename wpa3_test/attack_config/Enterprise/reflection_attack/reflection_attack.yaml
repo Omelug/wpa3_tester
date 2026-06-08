@@ -30,7 +30,24 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: [ monitor ]
+      condition: [ monitor ] #, active_monitor ]
       channel: 6
+    netns: att
+observers:
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      #filter: ""
+      filter: "special_filter:actors"
+  ap_tshark:
+    actor: access_point
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+
 attack_config: # TODO validation
   identity: bob
+
+rewrite: all
+delete_old: true

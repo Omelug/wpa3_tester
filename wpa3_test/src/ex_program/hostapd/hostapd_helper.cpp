@@ -24,7 +24,7 @@ static const RepoConfig HOSTAPD_CONFIG = {
 };
 
 static const RepoConfig HOSTAPD_MANA_CONFIG = {
-	"hostapd-mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd-mana", false, ""
+	"hostapd-mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", "hostapd", false, ""
 };
 
 void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
@@ -90,6 +90,9 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 		"\nCONFIG_IEEE80211W=y"
 		"\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
 		"\nCONFIG_OCV=y"
+		"CONFIG_OWE=y" //FIXME invalid or inored in old versions?
+		"CONFIG_SUITEB192=y"
+		"CONFIG_DPP=y"
 		"\nCONFIG_IEEE80211N=y"
 		"\nCONFIG_IEEE80211AC=y"
 		"\nCONFIG_IEEE80211AX=y"

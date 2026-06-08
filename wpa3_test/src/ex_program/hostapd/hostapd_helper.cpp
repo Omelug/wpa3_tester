@@ -77,7 +77,8 @@ static string get_extra_cflags(){
 #endif
 }
 
-void build_hostapd_like(const string &version, const path &build_folder, const path& target, const RepoConfig &cfg){
+void build_hostapd_like(const string &version, const path &build_folder, const path &target,
+						const RepoConfig &cfg, const optional<OpenSSLPaths> &openssl = nullopt){
 	path repo_path = build_folder / cfg.repo_name;
 	path source_dir = repo_path / cfg.source_dir;
 
@@ -102,14 +103,23 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 
 	log(LogLevel::INFO, "Compiling {} {} ... ", cfg.repo_name, version);
 	hw_capabilities::run_in("make clean", source_dir);
-	const string extra = get_extra_cflags();
-	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
 
-	copy_file(source_dir / cfg.binary_name, target, copy_options::overwrite_existing);
-	set_public_perms(source_dir);
+	string extra = get_extra_cflags();
+	string env_prefix;
+	if(openssl){
+		extra += " -I" + openssl->include_dir.string();
+		// Set LDFLAGS env var so our -L precedes the system path injected by
+		// `pkg-config --libs openssl` inside the hostapd Makefile. EXTRA_LDFLAGS
+		// is appended too late and loses the search-order race against the system lib.
+		env_prefix = "LDFLAGS=\"-L" + openssl->lib_dir.string() + "\" ";
+	}
+	hw_capabilities::run_in(env_prefix + "make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
+
+	copy_f(source_dir / cfg.binary_name, target);
 }
 
-string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg){
+string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg,
+				  const optional<OpenSSLPaths> &openssl = nullopt){
 	const string folder_key = (cfg.repo_name == "hostapd-mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
@@ -145,7 +155,7 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 		hw_capabilities::run_in("git clean -fd", repo_path);
 	}
 
-	build_hostapd_like(version, hostapd_folder, binary_path, cfg);
+	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);
 	copy(repo_path / cfg.source_dir / cfg.binary_name, binary_path, copy_options::overwrite_existing);
 	return binary_path.string();
 }
@@ -182,9 +192,70 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	hw_capabilities::run_in("make clean", wpa_supp_dir);
 	const string extra = get_extra_cflags();
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", wpa_supp_dir);
-	copy_file(wpa_supp_dir / "wpa_supplicant", target, copy_options::overwrite_existing);
-	permissions(target, perms::owner_all | perms::group_exec);
+	copy_f(wpa_supp_dir / "wpa_supplicant", target);
 	}
+
+// --------- OPENSSL ---------
+
+static const string OPENSSL_GIT_URL = "https://github.com/openssl/openssl.git";
+static const string OPENSSL_REPO_NAME = "openssl";
+
+//FIXME not need this, change to tag directly (and add it to validator with tag description)
+// Maps "openssl-1.0.2e" -> "OpenSSL_1_0_2e"
+static string openssl_version_to_tag(const string &version){
+	string v = version;
+	if(v.starts_with("openssl-")) v = v.substr(8);
+	string tag = "OpenSSL_";
+	for(char c: v){ tag += (c == '.') ? '_' : c; }
+	return tag;
+}
+
+static path get_openssl_build_folder(){
+	return path(get_global_config().at("paths").at("openssl").at("openssl_vuln_build_folder").get<string>());
+}
+
+OpenSSLPaths get_openssl_paths(const string &version){
+	const path build_folder  = get_openssl_build_folder();
+	const path install_dir   = build_folder / version;
+	const path lib_dir       = install_dir / "lib";
+	const path libcrypto     = lib_dir / "libcrypto.so";
+	const path include_dir   = install_dir / "include";
+
+	if(exists(libcrypto)){
+		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", version, lib_dir.string());
+		return {lib_dir, libcrypto, include_dir};
+	}
+
+	const path repo_path = build_folder / OPENSSL_REPO_NAME;
+	if(!exists(repo_path)){
+		log(LogLevel::INFO, "Cloning OpenSSL repository into {}...", repo_path.string());
+		error_code ec;
+		create_public_dirs(build_folder, ec);
+		if(ec){ throw run_err("Failed to create directory: " + build_folder.string()); }
+		hw_capabilities::run_in("git clone " + OPENSSL_GIT_URL + " " + OPENSSL_REPO_NAME, build_folder);
+		log(LogLevel::INFO, "OpenSSL repository cloned successfully");
+	}
+
+	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
+	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+
+	const string tag = openssl_version_to_tag(version);
+	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+	hw_capabilities::run_in("git clean -fd", repo_path);
+	hw_capabilities::run_in("git checkout " + tag, repo_path);
+
+	log(LogLevel::INFO, "Compiling OpenSSL {} ...", version);
+	const string prefix = install_dir.string();
+	hw_capabilities::run_in("./config --prefix=" + prefix + " --openssldir=" + prefix + " shared no-asm", repo_path);
+	hw_capabilities::run_in("make -j$(nproc)", repo_path);
+	hw_capabilities::run_in("make install_sw", repo_path);
+
+	if(!exists(libcrypto)){
+		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: " + libcrypto.string());
+	}
+	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", version, install_dir.string());
+	return {lib_dir, libcrypto, include_dir};
+}
 
 // --------- PUBLIC API ---------
 
@@ -217,6 +288,43 @@ string get_hostapd(const string &version){
 
 string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
+}
+
+string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){
+	const OpenSSLPaths ssl = get_openssl_paths(openssl_version);
+
+	// binary name: hostapd_2_7_openssl_1_0_2e
+	string openssl_suffix = openssl_version;
+	ranges::replace(openssl_suffix, '-', '_');
+	ranges::replace(openssl_suffix, '.', '_');
+
+	const string folder_key = "hostapd_build_folder";
+	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
+	const path hostapd_folder(hostapd_folder_str);
+
+	string bin_name = "hostapd_" + hostapd_version + "_" + openssl_suffix;
+	ranges::replace(bin_name, '.', '_');
+	const path binary_path = hostapd_folder / bin_name;
+
+	if(exists(binary_path)){
+		log(LogLevel::INFO, "Using existing hostapd+OpenSSL binary: {}", binary_path.string());
+		return binary_path.string();
+	}
+
+	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
+	const path repo_path = hostapd_folder / HOSTAPD_CONFIG.repo_name;
+
+	const string tag = find_matching_tag(repo_path, hostapd_version, HOSTAPD_CONFIG);
+	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
+	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+	hw_capabilities::run_in("git clean -fd", repo_path);
+	hw_capabilities::run_in("git checkout " + tag, repo_path);
+
+	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
+	copy(repo_path / HOSTAPD_CONFIG.source_dir / HOSTAPD_CONFIG.binary_name, binary_path,
+		 copy_options::overwrite_existing);
+	return binary_path.string();
 }
 
 string get_wpa_supplicant(const string &version){

@@ -26,6 +26,7 @@ protected:
 public: // getters and setters
 	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }
 	void run_folder(const std::filesystem::path &new_run_folder){ _run_folder = new_run_folder; }
+	[[nodiscard]] std::filesystem::path config_path() const{ return _config_path; }
 
 	bool only_stats = false;
 	int wait_between_tests = 0;

@@ -4,6 +4,7 @@
 #include <sys/poll.h>
 #include <tins/rawpdu.h>
 
+#include "attacks/Enterprise/eap_defs.h"
 #include "attacks/components/sniffer_helper.h"
 #include "logger/log.h"
 
@@ -12,6 +13,7 @@ using namespace chrono;
 using namespace Tins;
 
 namespace wpa3_tester::scan{
+using namespace wpa3_tester::eap;
 struct EAP_Info{
 	uint8_t code = 0;
 	optional<string> identity;
@@ -58,51 +60,34 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 
 	info.code = payload[0];
 
-	// Success (3) a Failure (4) has no other info
-	if(info.code == 3 || info.code == 4){ return info; }
+	// Success/Failure has no other info
+	if(info.code == CODE_SUCCESS || info.code == CODE_FAILURE){ return info; }
 
 	const uint8_t type = payload[4];
 	info.type_code = type;
 
 	switch(type){
-	case 1: info.identity = extract_identity(payload);
+	case TYPE_IDENTITY: info.identity = extract_identity(payload);
 		break;
-	case 4: info.method = "EAP-MD5";
-		break;
-	case 6: info.method = "EAP-GTC";
-		break;
-	case 13: info.method = "EAP-TLS";
-		break;
-	case 17: info.method = "EAP-LEAP";
-		break;
-	case 18: info.method = "EAP-SIM";
-		break;
-	case 21: info.method = "EAP-TTLS";
-		break;
-	case 23: info.method = "EAP-AKA";
-		break;
-	case 25: info.method = "EAP-PEAP";
-		break;
-	case 26: info.method = "EAP-MSCHAPv2";
-		break;
-	case 29: info.method = "EAP-POTP";
-		break;
-	case 33: info.method = "EAP-FAST";
-		break;
-	case 40: info.method = "EAP-EKE";
-		break;
-	case 43: info.method = "EAP-TEAP";
-		break;
-	case 50: info.method = "EAP-AKA-PRIME";
-		break;
-	case 52: info.method = "EAP-PWD";
-		break;
-	case 254: info.method = "Expanded-Type";
-		break;
-	default: info.method = "Unknown-" + to_string(type);
-		break;
+	case TYPE_MD5:      info.method = "EAP-MD5";      break;
+	case TYPE_GTC:      info.method = "EAP-GTC";      break;
+	case TYPE_TLS:      info.method = "EAP-TLS";      break;
+	case TYPE_LEAP:     info.method = "EAP-LEAP";     break;
+	case TYPE_SIM:      info.method = "EAP-SIM";      break;
+	case TYPE_TTLS:     info.method = "EAP-TTLS";     break;
+	case TYPE_AKA:      info.method = "EAP-AKA";      break;
+	case TYPE_PEAP:     info.method = "EAP-PEAP";     break;
+	case TYPE_MSCHAPV2: info.method = "EAP-MSCHAPv2"; break;
+	case TYPE_POTP:     info.method = "EAP-POTP";     break;
+	case TYPE_FAST:     info.method = "EAP-FAST";     break;
+	case TYPE_EKE:      info.method = "EAP-EKE";      break;
+	case TYPE_TEAP:     info.method = "EAP-TEAP";     break;
+	case TYPE_AKA_PRIME:info.method = "EAP-AKA-PRIME";break;
+	case TYPE_PWD:      info.method = "EAP-PWD";      break;
+	case TYPE_EXPANDED: info.method = "Expanded-Type"; break;
+	default: info.method = "Unknown-" + to_string(type); break;
 	}
-	if(type == 254 && payload.size() >= 12){
+	if(type == TYPE_EXPANDED && payload.size() >= 12){
 		// bytes 5-7: Vendor-Id
 		// bytes 8-11: Vendor-Type
 		info.method = "Expanded-Method (Vendor: " + to_string(payload[5]) + ")";
@@ -132,17 +117,17 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 		log(LogLevel::INFO, "[+] New Method for {}: {}", client_mac, *info.method);
 
 	switch(info.code){
-	case 1: // Request
-	case 2: // Response
+	case CODE_REQUEST:
+	case CODE_RESPONSE:
 		if(session.status == AuthStatus::UNKNOWN) session.status = AuthStatus::IN_PROGRESS;
 		break;
-	case 3: // SUCCESS
+	case CODE_SUCCESS:
 		if(session.status != AuthStatus::SUCCESS){
 			session.status = AuthStatus::SUCCESS;
 			log(LogLevel::INFO, "[OK] Auth SUCCESS: Client {} is now CONNECTED.", client_mac);
 		}
 		break;
-	case 4: // FAILURE
+	case CODE_FAILURE:
 		if(session.status != AuthStatus::FAILED){
 			session.status = AuthStatus::FAILED;
 			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);

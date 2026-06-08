@@ -8,7 +8,8 @@ properties:
   name:
     type: string
     description: "Name of test suite"
-  suite_report_function:
+    pattern: '^[^\x00/]+$'
+  suite_functions:
     type: string
     description: "report function for all test after tests"
   wait_between_tests:

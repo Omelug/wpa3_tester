@@ -1,5 +1,5 @@
 For compilation #TODO kernel, versions
-gcc
+clang
 cmake
 make
 

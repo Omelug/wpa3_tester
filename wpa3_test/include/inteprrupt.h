@@ -41,6 +41,7 @@ inline void interruptible_sleep(const std::chrono::milliseconds duration){
 inline void setup_signals(){
 	struct sigaction sa{};
 	sa.sa_handler = [](int){
+		wpa3_tester::set_log_file("");
 		g_interrupted.store(true, std::memory_order_relaxed);
 		g_interrupt_pipe.trigger();
 	};

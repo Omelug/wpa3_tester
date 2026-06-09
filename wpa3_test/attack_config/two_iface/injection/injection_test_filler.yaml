@@ -1,0 +1,12 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: injection_test_filler
+suite_functions: injection_test_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./injection_test.yaml
+delete_old: true
+rewrite: "errors"
+compile_external: true
+install_req: true

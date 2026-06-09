@@ -3,10 +3,10 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
-#include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{
@@ -39,50 +39,32 @@ void generate_report(RunSuiteStatus &rss){
 		if(!entry.is_directory()) continue;
 
 		const auto test_folder = entry.path();
-		const auto result_json = test_folder / "result.json";
-		if(!exists(result_json)) continue;
+		const auto result = helper::load_result_json(test_folder);
+		if(!result) continue;
 
-		ifstream rf(result_json);
-		const json result = json::parse(rf);
-		rf.close();
+		const auto drv = helper::load_test_drivers(test_folder);
+		const auto dget = [&](const string &k) -> string {
+			const auto it = drv.find(k);
+			return it != drv.end() ? it->second : "?";
+		};
 
 		TestEntry e;
-		e.test_name       = test_folder.filename().string();
-		e.disconnect_count= result.value("disconnect_count", 0);
-		e.sta_graph       = test_folder / "observer" / "tshark" / "client_graph.png";
-		e.ap_graph        = test_folder / "observer" / "tshark" / "access_point_graph.png";
-		e.ap_driver       = "?";
-		e.client_driver   = "?";
-		e.attacker_driver = "?";
-
-		const auto config_path = test_folder / "test_config.yaml";
-		if(exists(config_path)){
-			RunStatus rs{};
-			rs.config_path(config_path);
-			rs.run_folder(test_folder);
-			rs.load_actor_interface_mapping();
-
-			if(auto it = rs.actors.find("access_point"); it != rs.actors.end())
-				e.ap_driver = it->second->get_or(SK::driver_name, "?");
-			if(auto it = rs.actors.find("client"); it != rs.actors.end())
-				e.client_driver = it->second->get_or(SK::driver_name, "?");
-			if(auto it = rs.actors.find("attacker"); it != rs.actors.end())
-				e.attacker_driver = it->second->get_or(SK::driver_name, "?");
-		}
-
+		e.test_name        = test_folder.filename().string();
+		e.disconnect_count = result->value("disconnect_count", 0);
+		e.sta_graph        = test_folder / "observer" / "tshark" / "client_graph.png";
+		e.ap_graph         = test_folder / "observer" / "tshark" / "access_point_graph.png";
+		e.ap_driver        = dget("access_point");
+		e.client_driver    = dget("client");
+		e.attacker_driver  = dget("attacker");
 		entries.push_back(std::move(e));
 	}
 
-	sort(entries.begin(), entries.end(),
-		 [](const TestEntry &a, const TestEntry &b){ return a.test_name < b.test_name; });
+	ranges::sort(entries,
+				[](const TestEntry &a, const TestEntry &b){ return a.test_name < b.test_name; });
 
 	const auto report_path = run_dir / "report.md";
-	ofstream report(report_path);
-	set_public_perms(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-		return;
-	}
+	auto report = helper::open_report(report_path);
+	if(!report.is_open()) return;
 
 	report << "# Malformed EAPOL-1 Test Suite Report\n\n";
 	report << "Tests whether a malformed EAPOL Key frame (invalid tag length) causes client disconnection.\n\n";
@@ -120,13 +102,14 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "\n## Summary\n\n";
-	report << "- **Total:** " << entries.size() << "\n";
-	report << "- **Disconnected (passed):** " << passed_count << "\n";
-	report << "- **Not disconnected:** " << (entries.size() - passed_count) << "\n";
-	report << "- **Success rate:** " << fixed << setprecision(1)
-		   << (100.0 * passed_count / static_cast<double>(entries.size())) << "%\n";
+	report << "- Total: " << entries.size() << "\n";
+	report << "- Disconnected (passed): " << passed_count << "\n";
+	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
+	report << "- Success rate: " << fixed << setprecision(1)
+		<< (100.0 * passed_count / static_cast<double>(entries.size())) << "%\n";
 
 	report.close();
+	set_public_perms(report_path);
 	log(LogLevel::INFO, "Report written: {}", report_path.string());
 }
 

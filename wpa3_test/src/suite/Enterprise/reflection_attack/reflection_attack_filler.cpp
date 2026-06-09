@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::suite::reflection_attack_filler{
@@ -24,7 +24,6 @@ void setup_suite(const RunSuiteStatus &rss){
 }
 
 void generate_report(RunSuiteStatus &rss){
-
 	const auto run_dir = rss.run_folder();
 
 	// test_name, ap_driver, attacker_driver, passed
@@ -33,42 +32,24 @@ void generate_report(RunSuiteStatus &rss){
 	for(const auto &entry: directory_iterator(run_dir)){
 		if(!entry.is_directory()) continue;
 
-		const auto& test_folder = entry.path();
-		const auto result_json = test_folder / "result.json";
+		const auto &test_folder = entry.path();
+		const auto result = helper::load_result_json(test_folder);
+		if(!result) continue;
 
-		if(!exists(result_json)) continue;
+		const bool passed    = result->value("passed", false);
+		const string test_name = test_folder.filename().string();
 
-		ifstream result_file(result_json);
-		json result_data = json::parse(result_file);
-		result_file.close();
+		const auto drv = helper::load_test_drivers(test_folder);
+		const auto dget = [&](const string &k) -> string {
+			const auto it = drv.find(k);
+			return it != drv.end() ? it->second : "?";
+		};
 
-		bool passed = result_data.value("passed", false);
-		string test_name = test_folder.filename().string();
-
-		string ap_driver = "?";
-		string attacker_driver = "?";
-
-		const auto config_path = test_folder / "test_config.yaml";
-		if(exists(config_path)){
-			RunStatus rs{};
-			rs.config_path(config_path);
-			rs.run_folder(test_folder);
-			rs.load_actor_interface_mapping();
-
-			if(auto ap = rs.actors.find("access_point"); ap != rs.actors.end())
-				ap_driver = ap->second->get_or(SK::driver_name, "?");
-			if(auto att = rs.actors.find("attacker"); att != rs.actors.end())
-				attacker_driver = att->second->get_or(SK::driver_name, "?");
-		}
-
-		test_results.emplace_back(test_name, ap_driver, attacker_driver, passed);
+		test_results.emplace_back(test_name, dget("access_point"), dget("attacker"), passed);
 	}
 
-	ofstream report(run_dir / "report.md");
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-		return;
-	}
+	auto report = helper::open_report(run_dir / "report.md");
+	if(!report.is_open()) return;
 
 	report << "# Reflection MAC Generator Test Suite Report\n\n";
 	if(test_results.empty()){
@@ -89,15 +70,15 @@ void generate_report(RunSuiteStatus &rss){
 
 	report << "\n## Summary\n\n";
 	size_t passed_count = ranges::count_if(test_results, [](const auto &r){ return get<3>(r); });
-	report << "- **Total Tests:** " << test_results.size() << "\n";
-	report << "- **Passed:** " << passed_count << "\n";
-	report << "- **Failed:** " << (test_results.size() - passed_count) << "\n";
-	report << "- **Success Rate:** " << fixed << setprecision(1)
+	report << "- Total Tests: " << test_results.size() << "\n";
+	report << "- Passed: " << passed_count << "\n";
+	report << "- Failed: " << (test_results.size() - passed_count) << "\n";
+	report << "- Success Rate: " << fixed << setprecision(1)
 		   << (100.0 * static_cast<double>(passed_count) / static_cast<double>(test_results.size())) << "%\n";
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "Reflection attack report generated: {}", (run_dir / "report.md").string());
 }
 
 }

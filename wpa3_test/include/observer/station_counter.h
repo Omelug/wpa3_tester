@@ -1,7 +1,5 @@
 #pragma once
 #include <string>
-
-#include "tshark_wrapper.h"
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::observer::station_counter{

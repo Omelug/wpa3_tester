@@ -1,10 +1,10 @@
 #include "observer/iperf_wrapper.h"
-#include "logger/error_log.h"
 #include <cassert>
-#include "logger/log.h"
-#include "system/hw_capabilities.h"
 #include <filesystem>
+#include "logger/error_log.h"
+#include "logger/log.h"
 #include "observer/observers.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::observer{
 using namespace std;

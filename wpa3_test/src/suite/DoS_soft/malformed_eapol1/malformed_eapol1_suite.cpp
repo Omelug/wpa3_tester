@@ -3,10 +3,10 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{

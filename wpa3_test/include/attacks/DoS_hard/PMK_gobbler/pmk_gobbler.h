@@ -1,8 +1,8 @@
 #pragma once
+#include <atomic>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
-#include <atomic>
 #include <tins/hw_address.h>
 
 #include "attacks/sae_helper.h"

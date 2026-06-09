@@ -1,16 +1,16 @@
 #include "system/ProcessManager.h"
-#include "inteprrupt.h"
-#include <memory>
-#include <system_error>
+#include <chrono>
+#include <csignal>
 #include <map>
+#include <memory>
 #include <ranges>
 #include <regex>
-#include <chrono>
 #include <sstream>
-#include <csignal>
-#include <unistd.h>
-#include "logger/error_log.h"
+#include <system_error>
 #include <thread>
+#include <unistd.h>
+#include "inteprrupt.h"
+#include "logger/error_log.h"
 #include "system/utils.h"
 
 namespace wpa3_tester{

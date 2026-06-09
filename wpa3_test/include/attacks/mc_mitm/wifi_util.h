@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include <cstdint>
+#include <string>
 #include <tins/tins.h>
 #include "config/RunStatus.h"
 #include "system/wifi_channel.h"
@@ -18,11 +18,11 @@ struct Dot11Addrs{
 };
 
 Dot11Addrs get_addrs(const Tins::PDU &pdu, const std::vector<uint8_t> &raw);
-Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, Channel rogue_channel);
-Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, Channel rogue_channel);
+Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, const Channel &rogue_channel);
+Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, const Channel &rogue_channel);
 bool is_eapol(const Tins::PDU &pdu);
 int get_eapol_msg_num(const Tins::PDU &pdu);
-Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, Channel channel, uint8_t count = 1);
+Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, const Channel &channel, uint8_t count = 1);
 
 // EAPOL helpers
 uint64_t get_eapol_replay_num(const Tins::Dot11Data &pkt);

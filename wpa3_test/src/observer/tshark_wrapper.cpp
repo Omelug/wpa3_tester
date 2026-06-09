@@ -10,7 +10,6 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
-#include "observer/graph/graph_utils.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 

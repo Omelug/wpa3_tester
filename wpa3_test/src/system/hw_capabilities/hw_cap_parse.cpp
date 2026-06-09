@@ -1,9 +1,9 @@
 #include <cstdio>
-#include <string>
 #include <random>
-#include "system/hw_capabilities.h"
+#include <string>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -32,7 +32,7 @@ int hw_capabilities::freq_to_channel(const int freq){
 	throw invalid_argument("Invalid frequency: " + to_string(freq) + " MHz");
 }
 
-int hw_capabilities::channel_to_freq(const Channel ch){
+int hw_capabilities::channel_to_freq(const Channel &ch){
 	// 2.4 GHz
 	if(ch.band == WifiBand::BAND_2_4 || ch.band == WifiBand::BAND_2_4_or_5){
 		if(ch.ch_num == 14) return 2484;

@@ -1,10 +1,10 @@
 #include <iostream>
-#include <string>
 #include <memory>
+#include <string>
 #include "../manual_test_core/manual_test_wizards.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
-#include "logger/log.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
 
 using namespace std;
 using namespace wpa3_tester;

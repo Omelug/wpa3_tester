@@ -1,17 +1,17 @@
 #include "scan/scan.h"
+#include <fstream>
+#include <sstream>
 #include <tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
-#include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
-#include <fstream>
-#include <sstream>
-#include "ex_program/external_actors/ExternalConn.h"
 #include "system/ip.h"
 #include "system/utils.h"
 
@@ -140,6 +140,19 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }
 
+void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
+	//cfg->conn->ensure_wifi_ifaces();
+	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
+		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
+		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
+		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
+		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
+		actor_cfg->set(SK::radio, radio_name);
+		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
+		options.emplace_back(actor_cfg);
+	}
+}
+
 // ---------------- INTERNAL
 // return <string iface; internal_actor >
 vector<ActorPtr> RunStatus::internal_options(){
@@ -158,19 +171,6 @@ vector<ActorPtr> RunStatus::internal_options(){
 		options.emplace_back(cfg);
 	}
 	return options;
-}
-
-void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
-	//cfg->conn->ensure_wifi_ifaces();
-	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
-		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
-		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
-		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
-		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
-		actor_cfg->set(SK::radio, radio_name);
-		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
-		options.emplace_back(actor_cfg);
-	}
 }
 
 vector<string> scan::parse_csv_line(const string &line){

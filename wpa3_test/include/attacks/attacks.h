@@ -14,18 +14,18 @@
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
+#include "attacks/downgrade/owe_trans.h"
+#include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include "attacks/Enterprise/invalid_curve.h"
+#include "attacks/Enterprise/invalid_curve_dragonslayer.h"
 #include "attacks/Enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
-#include "attacks/Enterprise/invalid_curve_dragonslayer.h"
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
 #include "attacks/scan/iface_info.h"
 #include "attacks/scan/scan_AP.h"
 #include "attacks/two_iface/active_test.h"
 #include "attacks/two_iface/injection_test.h"
 #include "config/RunStatus.h"
-#include "attacks/downgrade/owe_trans.h"
-#include "attacks/downgrade/wpa3_trans_downgrade.h"
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
@@ -81,4 +81,5 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	{"owe_trans", owe_trans::stats_attack},
 	{"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
 };
+
 }

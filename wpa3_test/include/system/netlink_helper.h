@@ -27,4 +27,4 @@ nl80211_iftype query_wifi_iftype(std::string_view iface_name, const std::optiona
 );
 [[nodiscard]] Result set_channel_nl(std::string_view iface, const std::optional<std::string> &netns, const Channel &ch);
 void log_iface_info(std::string_view iface_name);
-} // namespace wpa3_tester::netlink_helper
+}

@@ -264,27 +264,34 @@ OpenSSLPaths get_openssl_paths(const string &version){
 
 // --------- PUBLIC API ---------
 
-CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
-    if(!exists(creds_file)){
-        log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file.string());
-        return {0, 0};
-    }
+string get_wpa_supplicant(const string &version){
+	if(version.empty()){
+		log(LogLevel::WARNING, "wpa_supplicant version not defined, using system default");
+		return "wpa_supplicant";
+	}
 
-    ifstream f(creds_file);
-    int total = 0, cracked = 0;
-    string line;
-    while(getline(f, line)){
-        // Lines are either "WPA*02*..." or "[WPA2-EAPOL HASHCAT]\tWPA*02*..."
-        const auto tab_pos = line.find('\t');
-        const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
-        if(!hash.starts_with("WPA*")) continue;
-        total++;
-        // hcxpmktool exit 0 = confirmed, 2 = unconfirmed, 1 = error
-        if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0)
-            cracked++;
-    }
-    log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
-    return {total, cracked};
+	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
+	const path hostapd_folder(hostapd_folder_str);
+
+	string bin_name = "wpa_supplicant_" + version;
+	ranges::replace(bin_name, '.', '_');
+	const path wpa_supp_bin = hostapd_folder / bin_name;
+
+	if(exists(wpa_supp_bin)){
+		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin.string());
+		return wpa_supp_bin.string();
+	}
+
+	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
+	const path repo_path = hostapd_folder / "hostapd";
+	const string tag = find_matching_tag(repo_path, version, HOSTAPD_CONFIG);
+	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
+	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+	hw_capabilities::run_in("git checkout " + tag, repo_path);
+
+	build_wpa_supplicant_version(version, hostapd_folder, wpa_supp_bin);
+	copy(repo_path / "wpa_supplicant" / "wpa_supplicant", wpa_supp_bin, copy_options::overwrite_existing);
+	return wpa_supp_bin;
 }
 
 string get_hostapd(const string &version){
@@ -293,6 +300,29 @@ string get_hostapd(const string &version){
 
 string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
+}
+
+CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
+	if(!exists(creds_file)){
+		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file.string());
+		return {0, 0};
+	}
+
+	ifstream f(creds_file);
+	int total = 0, cracked = 0;
+	string line;
+	while(getline(f, line)){
+		// Lines are either "WPA*02*..." or "[WPA2-EAPOL HASHCAT]\tWPA*02*..."
+		const auto tab_pos = line.find('\t');
+		const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
+		if(!hash.starts_with("WPA*")) continue;
+		total++;
+		// hcxpmktool exit 0 = confirmed, 2 = unconfirmed, 1 = error
+		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0)
+			cracked++;
+	}
+	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
+	return {total, cracked};
 }
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){
@@ -328,37 +358,7 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
 	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path,
-		 copy_options::overwrite_existing);
+		copy_options::overwrite_existing);
 	return binary_path.string();
-}
-
-string get_wpa_supplicant(const string &version){
-	if(version.empty()){
-		log(LogLevel::WARNING, "wpa_supplicant version not defined, using system default");
-		return "wpa_supplicant";
-	}
-
-	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at("hostapd_build_folder");
-	const path hostapd_folder(hostapd_folder_str);
-
-	string bin_name = "wpa_supplicant_" + version;
-	ranges::replace(bin_name, '.', '_');
-	const path wpa_supp_bin = hostapd_folder / bin_name;
-
-	if(exists(wpa_supp_bin)){
-		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin.string());
-		return wpa_supp_bin.string();
-	}
-
-	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
-	const path repo_path = hostapd_folder / "hostapd";
-	const string tag = find_matching_tag(repo_path, version, HOSTAPD_CONFIG);
-	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
-	hw_capabilities::run_in("git checkout " + tag, repo_path);
-
-	build_wpa_supplicant_version(version, hostapd_folder, wpa_supp_bin);
-	copy(repo_path / "wpa_supplicant" / "wpa_supplicant", wpa_supp_bin, copy_options::overwrite_existing);
-	return wpa_supp_bin;
 }
 }

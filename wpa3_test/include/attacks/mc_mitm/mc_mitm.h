@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-#include <queue>
 #include <memory>
+#include <queue>
+#include <string>
 #include <tins/tins.h>
 #include "client_state.h"
 #include "MonitorSocket.h"
@@ -58,7 +58,7 @@ public:
 	static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
 	//TODO protected + fixture
-public: // for handle function is return -> end pdu processing
+ // for handle function is return -> end pdu processing
 	//bool handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
 	bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
 	bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);

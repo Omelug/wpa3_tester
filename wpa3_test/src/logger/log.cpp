@@ -1,12 +1,12 @@
 #include "logger/log.h"
-#include "system/utils.h"
-#include <memory>
+#include <cstdio>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <regex>
 #include <vector>
-#include <cstdio>
 #include "config/RunStatus.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;

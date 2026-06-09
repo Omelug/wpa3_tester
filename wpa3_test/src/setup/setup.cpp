@@ -1,7 +1,7 @@
+#include <filesystem>
+#include "attacks/attacks.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
-#include "attacks/attacks.h"
-#include <filesystem>
 
 #include "logger/error_log.h"
 #include "system/utils.h"

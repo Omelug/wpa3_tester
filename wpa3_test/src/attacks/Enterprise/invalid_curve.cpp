@@ -4,16 +4,16 @@
 #include <optional>
 #include <vector>
 
+#include <nlohmann/json.hpp>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-#include <nlohmann/json.hpp>
 #include <tins/hw_address.h>
 
+#include "attacks/components/sniffer_helper.h"
 #include "attacks/Enterprise/eap_defs.h"
 #include "attacks/Enterprise/eap_helper.h"
-#include "attacks/components/sniffer_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"

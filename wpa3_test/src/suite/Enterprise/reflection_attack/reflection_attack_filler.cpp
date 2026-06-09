@@ -40,12 +40,10 @@ void generate_report(RunSuiteStatus &rss){
 		const string test_name = test_folder.filename().string();
 
 		const auto drv = helper::load_test_drivers(test_folder);
-		const auto dget = [&](const string &k) -> string {
-			const auto it = drv.find(k);
-			return it != drv.end() ? it->second : "?";
-		};
-
-		test_results.emplace_back(test_name, dget("access_point"), dget("attacker"), passed);
+		test_results.emplace_back(test_name,
+			helper::get_driver(drv, "access_point"),
+			helper::get_driver(drv, "attacker"),
+			passed);
 	}
 
 	auto report = helper::open_report(run_dir / "report.md");

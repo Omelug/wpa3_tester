@@ -29,6 +29,11 @@ map<string, string> load_test_drivers(const path &test_folder) {
 	return drivers;
 }
 
+string get_driver(const map<string, string> &drivers, const string &actor) {
+	const auto it = drivers.find(actor);
+	return it != drivers.end() ? it->second : "?";
+}
+
 ofstream open_report(const path &report_path) {
 	ofstream report(report_path);
 	if(!report.is_open())

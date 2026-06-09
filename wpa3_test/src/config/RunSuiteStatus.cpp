@@ -12,6 +12,7 @@
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "setup/requirement_validation.h"
@@ -328,7 +329,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 	ActorCMap rules;
 	for(const auto &[actor_name, actor_j] : template_config.at("actors").items()){
 		if(!actor_j.contains("source") || actor_j.at("source").get<string>() != "internal") continue;
-		rules.emplace(actor_name, ActorPtr(make_shared<Actor_config>(actor_j)));
+		rules.emplace(actor_name, ActorPtr(make_shared<Actor_Config_internal>(actor_j)));
 	}
 	if(rules.empty()) throw config_err("actor_filler: no internal actors in " + src.string());
 

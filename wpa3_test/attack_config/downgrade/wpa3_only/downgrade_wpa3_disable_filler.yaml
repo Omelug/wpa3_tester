@@ -1,10 +1,11 @@
 $schema: "http://json-schema.org/draft-07/schema#"
-name: malformed_eapol1_filler
+name: wpa3_trans_downgrade_filler_wpa3_disable
+suite_functions: wpa3_trans_downgrade_filler
 config_type: test_suite
 tests:
   all_actors:
     type: actor_filler
-    config: ./malformed_eapol1.yaml
+    config: ./downgrade_wpa3_disable.yaml
 delete_old: true
 rewrite: "errors"
 compile_external: true

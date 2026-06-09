@@ -337,7 +337,13 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		_hw_option_cache.internal_opts = RunStatus::internal_options();
 
 	const auto solutions = hw_capabilities::check_all_req_options(rules, *_hw_option_cache.internal_opts);
-	if(solutions.empty()) throw req_err("actor_filler: no valid hardware assignments found");
+	if(solutions.empty()){
+
+		Actor_config::print_ActorCMap("Actor rules", rules);
+		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
+
+		throw req_err("actor_filler: no valid hardware assignments found");
+	}
 
 	const path gen_folder = test_config_folder / source_name;
 	error_code ec;
@@ -442,11 +448,13 @@ void RunSuiteStatus::execute(){
 		}
 	}
 
-	const string module_name = config.at("suite_functions").get<string>();
-	if(const auto it = suite::test_suite_report_map.find(module_name); it != suite::test_suite_report_map.end()){
-		it->second(*this);
-	} else{
-		log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_report_map", module_name);
+	if(config.contains("suite_functions")){
+		const string module_name = config.at("suite_functions").get<string>();
+		if(const auto it = suite::test_suite_report_map.find(module_name); it != suite::test_suite_report_map.end()){
+			it->second(*this);
+		} else{
+			log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_report_map", module_name);
+		}
 	}
 }
 

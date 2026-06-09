@@ -38,10 +38,6 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		const string test_name = test_folder.filename().string();
 
 		const auto drv = helper::load_test_drivers(test_folder);
-		const auto dget = [&](const string &k) -> string {
-			const auto it = drv.find(k);
-			return it != drv.end() ? it->second : "?";
-		};
 
 		string attack_variant = "?";
 		const auto config_path = test_folder / "test_config.yaml";
@@ -52,7 +48,9 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		}
 
 		test_results.emplace_back(test_name,
-			dget("access_point"), dget("client"), dget("attacker"),
+			helper::get_driver(drv, "access_point"),
+			helper::get_driver(drv, "client"),
+			helper::get_driver(drv, "attacker"),
 			attack_variant, passed);
 	}
 

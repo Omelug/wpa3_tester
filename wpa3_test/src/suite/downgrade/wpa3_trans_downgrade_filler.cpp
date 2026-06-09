@@ -17,8 +17,8 @@ using namespace nlohmann;
 void setup_suite(const RunSuiteStatus &rss){
 	const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
 	create_public_dirs(config_dir);
-	copy_f(rss.config_path().parent_path() / "config/hostapd-mana-wpa2psk.conf",
-		   config_dir / "hostapd-mana-wpa2psk.conf");
+	copy_f(rss.config_path().parent_path() / "config/hostapd-mana.conf",
+		   config_dir / "hostapd-mana.conf");
 }
 
 struct TestEntry {

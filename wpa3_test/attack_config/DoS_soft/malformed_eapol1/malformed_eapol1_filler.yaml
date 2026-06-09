@@ -1,0 +1,12 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: malformed_eapol1_filler
+suite_functions: malformed_eapol1_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./malformed_eapol1.yaml
+delete_old: true
+rewrite: "errors"
+compile_external: true
+install_req: true

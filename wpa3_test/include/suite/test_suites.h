@@ -11,6 +11,8 @@
 #include "Enterprise/enterprise_filler_helper.h"
 #include "downgrade/owe_trans_filler.h"
 #include "downgrade/wpa3_trans_downgrade_filler.h"
+#include "two_iface/active_test_filler.h"
+#include "two_iface/injection_test_filler.h"
 #include "Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "Enterprise/reflection_attack/reflection_attack_filler.h"
 
@@ -32,6 +34,8 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"invalid_curve_filler",          invalid_curve_filler::generate_report},
 	{"owe_trans_filler",              owe_trans_filler::generate_report},
 	{"wpa3_trans_downgrade_filler",   wpa3_trans_downgrade_filler::generate_report},
+	{"active_test_filler",            active_test_filler::generate_report},
+	{"injection_test_filler",         injection_test_filler::generate_report},
 };
 
 }

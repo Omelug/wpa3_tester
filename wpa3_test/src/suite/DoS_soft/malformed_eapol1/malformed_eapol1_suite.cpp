@@ -43,19 +43,15 @@ void generate_report(RunSuiteStatus &rss){
 		if(!result) continue;
 
 		const auto drv = helper::load_test_drivers(test_folder);
-		const auto dget = [&](const string &k) -> string {
-			const auto it = drv.find(k);
-			return it != drv.end() ? it->second : "?";
-		};
 
 		TestEntry e;
 		e.test_name        = test_folder.filename().string();
 		e.disconnect_count = result->value("disconnect_count", 0);
 		e.sta_graph        = test_folder / "observer" / "tshark" / "client_graph.png";
 		e.ap_graph         = test_folder / "observer" / "tshark" / "access_point_graph.png";
-		e.ap_driver        = dget("access_point");
-		e.client_driver    = dget("client");
-		e.attacker_driver  = dget("attacker");
+		e.ap_driver        = helper::get_driver(drv, "access_point");
+		e.client_driver    = helper::get_driver(drv, "client");
+		e.attacker_driver  = helper::get_driver(drv, "attacker");
 		entries.push_back(std::move(e));
 	}
 

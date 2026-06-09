@@ -1,5 +1,3 @@
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include <tins/hw_address.h>
 #include <tins/llc.h>
 #include <tins/packet_sender.h>
@@ -112,15 +110,9 @@ void stats(const RunStatus &rs){
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
 
-	nlohmann::json j;
-	j["disconnected"]     = disconnected;
-	j["disconnect_count"] = static_cast<int>(disc_times.size());
-
-	const auto result_path = rs.run_folder() / "result.json";
-	ofstream f(result_path);
-	if(!f.is_open()){ log(LogLevel::WARNING, "Cannot write result.json"); return; }
-	f << j.dump(2) << "\n";
-	f.close();
-	set_public_perms(result_path);
+	rs.save_result({
+		{"disconnected",     disconnected},
+		{"disconnect_count", static_cast<int>(disc_times.size())},
+	});
 }
 }

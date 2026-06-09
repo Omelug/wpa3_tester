@@ -49,7 +49,7 @@ actors:
       program: hostapd-mana
       program_config:
         # custom conf overrides the default hostapd-mana.conf - WPA2-PSK only, no SAE
-        hostapd-mana_path: config/hostapd-mana-wpa2psk.conf
+        hostapd-mana_path: config/hostapd-mana.conf
   attacker:
     source: internal
     selection:

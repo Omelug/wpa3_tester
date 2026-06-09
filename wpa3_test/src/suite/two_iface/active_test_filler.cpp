@@ -66,12 +66,15 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------|:-----:|:---------:|:------:|\n";
 
 	for(const auto &e: entries){
-		report << "| " << e.test_name
+		const string name_cell   = exists(run_dir / e.test_name / "report.md")
+			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
+		const string result_link = "[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/result.json)";
+		report << "| " << name_cell
 			   << " | " << e.tx_driver
 			   << " | " << e.rx_driver
 			   << " | " << e.acked
 			   << " | " << e.not_acked
-			   << " | " << (e.success ? "PASSED" : "FAILED")
+			   << " | " << result_link
 			   << " |\n";
 	}
 

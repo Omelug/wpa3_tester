@@ -77,13 +77,16 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------|:------:|:-----:|:----------:|\n";
 
 	for(const auto &e: entries){
-		const bool all_passed = (e.tests_passed == e.tests_total && e.tests_total > 0);
-		report << "| " << e.test_name
+		const bool all_passed  = (e.tests_passed == e.tests_total && e.tests_total > 0);
+		const string name_cell = exists(run_dir / e.test_name / "report.md")
+			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
+		const string pass_link = "[" + string(all_passed ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		report << "| " << name_cell
 			   << " | " << e.tx_driver
 			   << " | " << e.rx_driver
 			   << " | " << e.tests_passed
 			   << " | " << e.tests_total
-			   << " | " << (all_passed ? "yes" : "no")
+			   << " | " << pass_link
 			   << " |\n";
 	}
 

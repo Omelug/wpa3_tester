@@ -1,9 +1,6 @@
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 
-#include <chrono>
 #include <random>
-#include <stdexcept>
-#include <thread>
 #include <tins/tins.h>
 
 #include "attacks/DoS_hard/dos_helpers.h"

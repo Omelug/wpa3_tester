@@ -1,5 +1,5 @@
-#include "system/injection_result.h"
 #include <sstream>
+#include "system/injection_result.h"
 
 namespace wpa3_tester{
 using namespace std;

@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
 #include <algorithm>
+#include <doctest.h>
 #include <tins/hw_address.h>
-#include "config/Actor_Config/Actor_Config_sim.h"
 #include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 
 using namespace std;
 using namespace wpa3_tester;

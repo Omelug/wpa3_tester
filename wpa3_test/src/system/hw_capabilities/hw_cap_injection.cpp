@@ -1,4 +1,3 @@
-#include "system/hw_capabilities.h"
 #include <algorithm>
 #include <chrono>
 #include <random>
@@ -7,6 +6,7 @@
 #include <tins/tins.h>
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "system/hw_capabilities.h"
 #include "system/injection_result.h"
 
 namespace wpa3_tester{

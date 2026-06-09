@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <tins/tins.h>
-#include "wifi_util.h"
 #include "logger/log.h"
 #include "system/wifi_channel.h"
 
@@ -52,9 +51,9 @@ public:
 	bool is_state(const State s) const{ return this->state == s; }
 
 	// By default, everything is forwarded.
-	virtual bool should_forward(const Tins::PDU & /*pkt*/) const{ return true; }
+	virtual bool should_forward(const Tins::PDU &) const{ return true; }
 	// By default, frames are not modified.
-	virtual void modify_packet(Tins::PDU &/*pkt*/) const{}
+	virtual void modify_packet(Tins::PDU &) const{}
 protected:
 	static std::string state2str(const State state){
 		static const char *names[] = {

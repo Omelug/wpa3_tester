@@ -1,5 +1,4 @@
 #include "attacks/mc_mitm/wifi_util.h"
-#include <stdexcept>
 
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -43,7 +42,7 @@ Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw){
 	return {addr1, addr2};
 }
 
-Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel rogue_channel){
+Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel &rogue_channel){
 	auto resp = Dot11ProbeResponse();
 	resp.addr2(beacon.addr2());
 	resp.addr3(beacon.addr3());
@@ -71,7 +70,7 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel
 	return resp;
 }
 
-Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, const Channel rogue_channel){
+Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, const Channel &rogue_channel){
 	auto *resp = new Dot11AssocResponse();
 	resp->addr1(assoc.addr1());
 	resp->addr2(assoc.addr2());
@@ -116,7 +115,7 @@ int get_eapol_msg_num(const PDU &pdu){
 	return -1;
 }
 
-Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel new_channel, const uint8_t count){
+Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, const uint8_t count){
 	Dot11Beacon copy = beacon;
 	copy.channel_switch({
 		1, //type

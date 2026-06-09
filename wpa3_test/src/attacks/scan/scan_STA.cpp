@@ -16,10 +16,10 @@ bool parse_control_frame(const Dot11Control *ctrl, attack_scan::ScanAP &scan_ap)
 
 	// RTS addr1 and addr2
 	if(ctrl->subtype() == 11){
-		auto *d11rts = static_cast<const Dot11RTS *>(ctrl);
+		auto *d11rts = dynamic_cast<const Dot11RTS *>(ctrl);
 		const string src = d11rts->target_addr().to_string(); // Transmitter (Station)
 		if(d11rts->addr1().to_string() == scan_ap.bssid){
-			if(scan_ap.stations.emplace(attack_scan::Scan_STA(src)).second){
+			if(scan_ap.stations.emplace(src).second){
 				log(LogLevel::DEBUG, "Station found via RTS: {}", scan_ap.bssid);
 				return true;
 			}
@@ -35,7 +35,7 @@ bool parse_data_frame(const Dot11Data *data, attack_scan::ScanAP &scan_ap){
 	if(src == scan_ap.bssid || dst == scan_ap.bssid){
 		const string potential_sta = (src == scan_ap.bssid) ? dst : src;
 		if(potential_sta != "ff:ff:ff:ff:ff:ff" && potential_sta != scan_ap.bssid){
-			if(scan_ap.stations.emplace(attack_scan::Scan_STA(potential_sta)).second){
+			if(scan_ap.stations.emplace(potential_sta).second){
 				log(LogLevel::DEBUG, "Station found : {}", potential_sta);
 				return true;
 			}
@@ -63,7 +63,7 @@ bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, attack_scan::ScanAP &sca
 }
 
 bool station_frame_parse(const unique_ptr<PDU> &pdu, attack_scan::ScanAP &scan_ap){
-	//const string& ap_mac, set<string>& found_stations) {
+	//const string& ap_mac, set<string>& found_stations {
 	if(!pdu) return false;
 	const auto dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return false;

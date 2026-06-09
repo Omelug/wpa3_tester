@@ -281,6 +281,7 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_CHANNEL_TYPE, NL80211_CHAN_NO_HT);
 
 	int err = 0;
+	// ReSharper disable once CppParameterMayBeConstPtrOrRef
 	nl_socket_modify_err_cb(sock.get(), NL_CB_CUSTOM, [](sockaddr_nl *, nlmsgerr *e, void *arg) -> int {
 		*static_cast<int *>(arg) = e->error;
 		return NL_STOP;

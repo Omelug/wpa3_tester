@@ -17,9 +17,7 @@
 #include "logger/log.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/tshark_wrapper.h"
-#include "setup/program.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 // rewrite from python https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file
 namespace wpa3_tester::bl0ck_attack{

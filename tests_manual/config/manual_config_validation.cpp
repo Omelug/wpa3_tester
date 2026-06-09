@@ -1,10 +1,10 @@
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 #include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
-#include "setup/config_parser.h"
 #include "logger/error_log.h"
+#include "setup/config_parser.h"
 
 using namespace std;
 using namespace filesystem;

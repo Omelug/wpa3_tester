@@ -1,12 +1,11 @@
 #pragma once
 #include <chrono>
-#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <vector>
 #include <tins/hw_address.h>
-#include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/components/sniffer_helper.h"
+#include "attacks/mc_mitm/MonitorSocket.h"
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester::reflection {

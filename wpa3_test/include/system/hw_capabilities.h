@@ -144,7 +144,7 @@ public:
 
 	//format
 	static int freq_to_channel(int freq);
-	static int channel_to_freq(Channel ch);
+	static int channel_to_freq(const Channel &ch);
 
 	static void create_ns(const std::string &ns_name);
 	static void move_to_netns(const std::string &iface, const std::string &netns);
@@ -209,7 +209,7 @@ public:
 
 	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)
 	static void setup_injection_iface(
-		const std::string &iface, Channel ch,
+		const std::string &iface, const Channel &ch,
 		const std::optional<std::string> &netns = std::nullopt
 	);
 

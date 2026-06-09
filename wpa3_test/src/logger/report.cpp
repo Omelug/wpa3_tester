@@ -46,7 +46,6 @@ void attack_mapping_table(ofstream &report, const RunStatus &rs){
 		report << "| " << type << " | " << actor_name << " | " << interface << " | " << mac << " | " << driver <<
 				" |\n";
 	}
-
 	report << "\n";
 }
 }

@@ -1,5 +1,4 @@
 #include "attacks/DoS_hard/dos_helpers.h"
-#include <optional>
 #include <logger/error_log.h>
 
 #include "ex_program/external_actors/ExternalConn.h"

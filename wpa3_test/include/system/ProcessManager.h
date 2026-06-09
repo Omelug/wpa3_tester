@@ -1,14 +1,14 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
+#include <condition_variable>
 #include <filesystem>
 #include <fstream>
-#include <mutex>
-#include <condition_variable>
-#include <regex>
 #include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <string>
+#include <vector>
 #include <reproc++/reproc.hpp>
 
 namespace wpa3_tester{

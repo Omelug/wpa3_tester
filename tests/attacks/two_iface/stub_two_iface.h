@@ -48,4 +48,4 @@ struct TwoIfaceCacheFixture {
     ~TwoIfaceCacheFixture() { std::filesystem::remove_all(iface.cache_path().parent_path()); }
 };
 
-} // namespace wpa3_tester
+}

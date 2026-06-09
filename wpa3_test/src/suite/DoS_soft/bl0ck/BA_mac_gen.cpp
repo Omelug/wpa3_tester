@@ -71,8 +71,11 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report << "|------|-----------|---------------|-----------------|---------|--------|\n";
 
 	for(const auto &[test_name, ap_drv, cli_drv, att_drv, variant, passed]: test_results){
-		report << "| " << test_name << " | " << ap_drv << " | " << cli_drv << " | "
-			   << att_drv << " | " << variant << " | " << (passed ? "PASSED" : "FAILED") << " |\n";
+		const string name_cell   = exists(run_dir / test_name / "report.md")
+			? "[" + test_name + "](" + test_name + "/report.md)" : test_name;
+		const string result_link = "[" + string(passed ? "PASSED" : "FAILED") + "](" + test_name + "/result.json)";
+		report << "| " << name_cell << " | " << ap_drv << " | " << cli_drv << " | "
+			   << att_drv << " | " << variant << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

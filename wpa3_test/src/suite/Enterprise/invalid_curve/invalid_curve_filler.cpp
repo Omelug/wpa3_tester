@@ -63,8 +63,10 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------------|--------|\n";
 
 	for(const auto &[test_name, ap_drv, att_drv, passed]: test_results){
+		const string name_cell   = exists(run_dir / test_name / "report.md")
+			? "[" + test_name + "](" + test_name + "/report.md)" : test_name;
 		const string result_link = "[" + string(passed ? "PASSED" : "FAILED") + "](" + test_name + "/result.json)";
-		report << "| " << test_name << " | " << ap_drv << " | "
+		report << "| " << name_cell << " | " << ap_drv << " | "
 			   << att_drv << " | " << result_link << " |\n";
 	}
 

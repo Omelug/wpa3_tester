@@ -72,28 +72,32 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "## Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected | Disconnects | Reports |\n";
-	report << "|------|-----------|---------------|-----------------|:------------:|:-----------:|---------|\n";
+	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected | Disconnects | Graphs |\n";
+	report << "|------|-----------|---------------|-----------------|:------------:|:-----------:|--------|\n";
 
 	int passed_count = 0;
 	for(const auto &e: entries){
 		if(e.disconnect_count > 0) ++passed_count;
 
-		string links;
+		string graphs;
 		if(exists(e.sta_graph))
-			links += "[STA](" + e.sta_graph.string() + ")";
+			graphs += "[STA](" + e.sta_graph.string() + ")";
 		if(exists(e.ap_graph)){
-			if(!links.empty()) links += " ";
-			links += "[AP](" + e.ap_graph.string() + ")";
+			if(!graphs.empty()) graphs += " ";
+			graphs += "[AP](" + e.ap_graph.string() + ")";
 		}
-		if(links.empty()) links = "-";
+		if(graphs.empty()) graphs = "-";
 
-		report << "| " << e.test_name
+		const string name_cell   = exists(run_dir / e.test_name / "report.md")
+			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
+		const string disc_link   = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		report << "| " << name_cell
 			   << " | " << e.ap_driver
 			   << " | " << e.client_driver
 			   << " | " << e.attacker_driver
+			   << " | " << disc_link
 			   << " | " << e.disconnect_count
-			   << " | " << links
+			   << " | " << graphs
 			   << " |\n";
 	}
 

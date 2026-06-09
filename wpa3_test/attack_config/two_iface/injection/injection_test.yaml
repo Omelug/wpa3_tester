@@ -1,5 +1,5 @@
 requirements:
-  simple: [ath9k_noorder_change]
+  simple: [ath9k_noorder_change] #FIXME, only if ath_htc (slow af)
 actors:
   receiver:
     selection:
@@ -11,7 +11,7 @@ actors:
     selection:
       channel: 11
       condition: [monitor]
-      #driver: ath9k_htc
+      driver: ath9k_htc
     netns: tx
     source: internal
 

@@ -1,0 +1,94 @@
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <nlohmann/json.hpp>
+
+#include "config/RunSuiteStatus.h"
+#include "logger/log.h"
+#include "suite/downgrade/owe_trans_filler.h"
+#include "suite/suite_helper.h"
+#include "system/utils.h"
+
+namespace wpa3_tester::suite::owe_trans_filler{
+using namespace std;
+using namespace filesystem;
+using namespace nlohmann;
+
+struct TestEntry {
+	string test_name;
+	string ap_driver;
+	string client_driver;
+	string attacker_driver;
+	int    probe_count;
+	bool   disconnected;
+	bool   vulnerable;
+};
+
+void generate_report(RunSuiteStatus &rss){
+	const auto run_dir = rss.run_folder();
+
+	vector<TestEntry> entries;
+
+	for(const auto &entry: directory_iterator(run_dir)){
+		if(!entry.is_directory()) continue;
+
+		const auto &test_folder = entry.path();
+		const auto result = helper::load_result_json(test_folder);
+		if(!result) continue;
+
+		const auto drv = helper::load_test_drivers(test_folder);
+
+		TestEntry e;
+		e.test_name    = test_folder.filename().string();
+		e.probe_count  = result->value("probe_requests_detected", 0);
+		e.disconnected = result->value("disconnected", false);
+		e.vulnerable   = result->value("vulnerable", false);
+		e.ap_driver       = helper::get_driver(drv, "access_point");
+		e.client_driver   = helper::get_driver(drv, "client");
+		e.attacker_driver = helper::get_driver(drv, "attacker");
+		entries.push_back(std::move(e));
+	}
+
+	ranges::sort(entries, [](const auto &a, const auto &b){ return a.test_name < b.test_name; });
+
+	auto report = helper::open_report(run_dir / "report.md");
+	if(!report.is_open()) return;
+
+	report << "# OWE Transition Probe Leak Test Suite Report\n\n";
+	report << "Tests whether a client leaks probe requests after disconnection from an OWE AP.\n\n";
+
+	if(entries.empty()){
+		report << "No test results found.\n";
+		report.close();
+		return;
+	}
+
+	report << "## Test Results\n\n";
+	report << "| Test | AP Driver | Client Driver | Attacker Driver | Probes | Disconnected | Vulnerable |\n";
+	report << "|------|-----------|---------------|-----------------|:------:|:------------:|:----------:|\n";
+
+	for(const auto &e: entries){
+		report << "| " << e.test_name
+			   << " | " << e.ap_driver
+			   << " | " << e.client_driver
+			   << " | " << e.attacker_driver
+			   << " | " << e.probe_count
+			   << " | " << (e.disconnected ? "yes" : "no")
+			   << " | " << (e.vulnerable   ? "yes" : "no")
+			   << " |\n";
+	}
+
+	report << "\n## Summary\n\n";
+	const size_t vuln_count = ranges::count_if(entries, [](const auto &e){ return e.vulnerable; });
+	report << "- Total Tests: " << entries.size() << "\n";
+	report << "- Vulnerable: " << vuln_count << "\n";
+	report << "- Not vulnerable: " << (entries.size() - vuln_count) << "\n";
+	report << "- Vulnerability Rate: " << fixed << setprecision(1)
+		   << (100.0 * static_cast<double>(vuln_count) / static_cast<double>(entries.size())) << "%\n";
+
+	report.close();
+	set_public_perms(run_dir / "report.md");
+	log(LogLevel::INFO, "OWE trans report generated: {}", (run_dir / "report.md").string());
+}
+
+}

@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 

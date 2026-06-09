@@ -29,7 +29,7 @@ TEST_CASE("ParsesCommitFromPcap"){
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path.string());
     optional<wpa3_tester::sae_helper::SAEPair> result
-        = wpa3_tester::dos_helpers::parse_sae_commit(probe_data);
+        = wpa3_tester::sae_helper::parse_sae_commit(probe_data);
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);
@@ -52,7 +52,7 @@ TEST_CASE("make_sae_commit - base"){
 
         const auto ap_mac = HWAddress<6>("11:22:33:44:55:66");
         const auto sta_mac = HWAddress<6>("AA:BB:Cc:DD:EE:FF");
-        rt = wpa3_tester::dos_helpers::make_sae_commit(ap_mac, sta_mac, sae_params);
+        rt = wpa3_tester::sae_helper::make_sae_commit(ap_mac, sta_mac, sae_params);
     }
     CHECK_EQ(rt.pdu_type(), Dot11::RADIOTAP);
     Dot11Authentication auth;
@@ -64,7 +64,7 @@ TEST_CASE("make_sae_commit - base"){
     CHECK_EQ(auth.subtype(), Dot11::AUTH);
 
     auto raw = rt.serialize();
-    auto result = wpa3_tester::dos_helpers::parse_sae_commit(raw);
+    auto result = wpa3_tester::sae_helper::parse_sae_commit(raw);
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);
@@ -78,21 +78,21 @@ TEST_CASE("make_sae_commit - base"){
 
 // ------------ bytes_to_hex tests ------------------
 TEST_CASE("bytes_to_hex - empty vector"){
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({}), "(empty)");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({}), "(empty)");
 }
 
 TEST_CASE("bytes_to_hex - single byte"){
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({0x00}), "00");
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({0xff}), "ff");
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({0x0a}), "0a");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({0x00}), "00");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({0xff}), "ff");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({0x0a}), "0a");
 }
 
 TEST_CASE("bytes_to_hex - multiple bytes colon-separated"){
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({0xde, 0xad, 0xbe, 0xef}), "de:ad:be:ef");
-    CHECK_EQ(wpa3_tester::dos_helpers::bytes_to_hex({0x00, 0x01, 0x02}), "00:01:02");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({0xde, 0xad, 0xbe, 0xef}), "de:ad:be:ef");
+    CHECK_EQ(wpa3_tester::sae_helper::bytes_to_hex({0x00, 0x01, 0x02}), "00:01:02");
 }
 
 TEST_CASE("bytes_to_hex - no trailing colon"){
-    std::string result = wpa3_tester::dos_helpers::bytes_to_hex({0x01, 0x02});
+    std::string result = wpa3_tester::sae_helper::bytes_to_hex({0x01, 0x02});
     CHECK_FALSE(result.ends_with(":"));
 }

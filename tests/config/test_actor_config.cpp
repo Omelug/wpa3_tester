@@ -21,7 +21,7 @@ TEST_CASE("Actor_config - json constructor with selection"){
         {"netns", "sta"},
     };
 
-    Actor_config actor(j);
+    Actor_Config_sim actor(j);
 
     CHECK(actor[SK::iface].has_value());
     CHECK_EQ(actor[SK::iface].value(), "wlan0");
@@ -37,7 +37,7 @@ TEST_CASE("Actor_config - json constructor with selection"){
 TEST_CASE("Actor_config - json constructor without selection"){
     json j = {{"type", "STA"}};
 
-    Actor_config actor(j);
+    Actor_Config_sim actor(j);
 
     // Should remain empty/nullopt
     CHECK_FALSE(actor[SK::iface]);
@@ -50,7 +50,7 @@ TEST_CASE("Actor_config - json constructor with driver list"){
             {"driver", json::array({"ath9k_htc", "mt76x2u", "rt2800usb"})}
         }}
     };
-    Actor_config actor(j);
+    Actor_Config_sim actor(j);
 
     REQUIRE(actor[SK::driver_name].has_value());
     CHECK_EQ(actor[SK::driver_name].value(), "ath9k_htc|mt76x2u|rt2800usb");
@@ -220,14 +220,14 @@ TEST_CASE("Actor_config - permanent_mac normalization"){
 TEST_CASE("Actor_config - permanent_mac from JSON selection"){
     json j = {
         {
-            "selection", {
+        	"selection", {
                 {"iface", "wlan0"},
                 {"permanent_mac", "11:22:33:44:55:66"}
             }
         }
     };
 
-    Actor_config actor(j);
+    Actor_Config_sim actor(j);
 	CHECK(actor[SK::permanent_mac].has_value());
     CHECK_EQ(actor.get(SK::permanent_mac), "11:22:33:44:55:66");
 }
@@ -313,8 +313,8 @@ TEST_CASE("Actor_config - operator+=complex"){
             }
         }
     };
-    Actor_config actor(j);
-    Actor_config actor2(j);
+    Actor_Config_sim actor(j);
+    Actor_Config_sim actor2(j);
 	actor.set(BK::GHz2_4, false);
 	actor.set(BK::GHz5, false);
 	actor.set(BK::w80211ac, false);
@@ -412,14 +412,14 @@ TEST_CASE("Actor_config::to_json - netns and source are top-level, not in select
 }
 
 TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
-    Actor_config orig;
+    Actor_Config_sim orig;
     orig.set(SK::iface, "wlan0");
     orig.set(SK::driver_name, "ath9k");
     orig.set(SK::netns, "sta");
     orig.set(BK::monitor, true);
     orig.set(BK::AP, false);
 
-    Actor_config restored(orig.to_json());
+    Actor_Config_sim restored(orig.to_json());
 
     CHECK_EQ(restored[SK::iface].value(),  "wlan0");
     CHECK_EQ(restored[SK::driver_name].value(), "ath9k");

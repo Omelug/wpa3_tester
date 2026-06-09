@@ -68,7 +68,7 @@ TEST_CASE("all_actors_mac_filter - single actor no broadcast"){
     rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = all_actors_mac_filter(rs, false);
-    CHECK_EQ(f, "(ether host aa:bb:cc:dd:ee:ff)");
+    CHECK_EQ(f, "(wlan host aa:bb:cc:dd:ee:ff)");
 }
 
 TEST_CASE("all_actors_mac_filter - single actor with broadcast"){
@@ -76,8 +76,8 @@ TEST_CASE("all_actors_mac_filter - single actor with broadcast"){
     rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = all_actors_mac_filter(rs, true);
-    CHECK_NE(f.find("ether host aa:bb:cc:dd:ee:ff"), string::npos);
-    CHECK_NE(f.find("ether host ff:ff:ff:ff:ff:ff"), string::npos);
+    CHECK_NE(f.find("wlan host aa:bb:cc:dd:ee:ff"), string::npos);
+    CHECK_NE(f.find("wlan host ff:ff:ff:ff:ff:ff"), string::npos);
 }
 
 TEST_CASE("all_actors_mac_filter - two actors both present"){
@@ -86,8 +86,8 @@ TEST_CASE("all_actors_mac_filter - two actors both present"){
     rs.actors["sta2"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = all_actors_mac_filter(rs, false);
-    CHECK_NE(f.find("ether host 11:22:33:44:55:66"), string::npos);
-    CHECK_NE(f.find("ether host aa:bb:cc:dd:ee:ff"), string::npos);
+    CHECK_NE(f.find("wlan host 11:22:33:44:55:66"), string::npos);
+    CHECK_NE(f.find("wlan host aa:bb:cc:dd:ee:ff"), string::npos);
     CHECK_NE(f.find(" or "), string::npos);
 }
 
@@ -243,4 +243,5 @@ TEST_CASE("transform_to_relative - converts absolute timestamps to relative"){
     vector<LogTimePoint> empty_times;
     observer::transform_to_relative(empty_times, start_tp);
     CHECK(empty_times.empty());
+
 }

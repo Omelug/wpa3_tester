@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
 #include <atomic>
 #include <mutex>
-#include <vector>
 #include <string>
+#include <vector>
+#include <doctest/doctest.h>
 
 #include "logger/error_log.h"
 #include "system/ProcessManager.h"

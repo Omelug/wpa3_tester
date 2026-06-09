@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <chrono>
 #include <doctest.h>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <chrono>
-#include "config/RunStatus.h"
 #include "../../manual_test_core/manual_test_wizards.h"
+#include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "observer/observers.h"
 #include "observer/tcpdump_wrapper.h"

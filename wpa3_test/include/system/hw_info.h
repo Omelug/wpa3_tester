@@ -34,7 +34,7 @@ struct HwInfo{
 private:
 	std::shared_ptr<Actor_config> actor{};
 	nlohmann::json to_json() const;
-    void from_json(const nlohmann::json &j);
+    void from_json(const nlohmann::json &j) const;
 };
 
 }

@@ -2,9 +2,9 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
+#include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include "logger/error_log.h"
 

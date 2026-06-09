@@ -15,7 +15,7 @@ using namespace Tins;
 
 
 void hw_capabilities::setup_injection_iface(
-	const string &iface, const Channel ch, const optional<string> &netns
+	const string &iface, const Channel &ch, const optional<string> &netns
 ){
 	set_iface_down(iface, netns);
 	set_wifi_type(iface, NL80211_IFTYPE_MONITOR, netns);

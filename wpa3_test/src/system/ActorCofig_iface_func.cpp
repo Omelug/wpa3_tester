@@ -9,12 +9,6 @@
 namespace wpa3_tester{
 using namespace std;
 
-void Actor_config::set_channel(const Channel &ch) const{
-	const string &iface = get(SK::iface);
-	if(conn != nullptr){ conn->set_channel(iface, ch); return; }
-	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
-}
-
 bool is_interface_up(const string &iface){
 	ifstream status_file("/sys/class/net/" + iface + "/operstate");
 	string status;
@@ -53,6 +47,7 @@ void Actor_config::cleanup() const{
 	set_iface_up();
 }
 
+
 void Actor_config::create_sniff_iface() const{
 	const string &iface = get(SK::iface);
 	const string &sniff_iface = get(SK::sniff_iface);
@@ -79,6 +74,12 @@ void Actor_config::create_sniff_iface() const{
 	if((*this)[BK::control_monitor]) cmd.emplace_back("control");
 	run(cmd);
 	set_iface_up();
+}
+
+void Actor_config::set_channel(const Channel &ch) const{
+	const string &iface = get(SK::iface);
+	if(conn != nullptr){ conn->set_channel(iface, ch); return; }
+	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
 }
 
 //------------------ get status info functions

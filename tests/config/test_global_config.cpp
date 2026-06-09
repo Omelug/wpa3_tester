@@ -1,7 +1,7 @@
 #include <doctest.h>
-#include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include "config/global_config.h"
 #include "logger/error_log.h"
 

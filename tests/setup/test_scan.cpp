@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "scan/scan.h"

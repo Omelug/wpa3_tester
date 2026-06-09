@@ -2,8 +2,8 @@
 
 #include <chrono>
 #include <tins/tins.h>
-#include "attacks/scan/scan_AP.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "attacks/scan/scan_AP.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -12,6 +12,19 @@ namespace wpa3_tester{
 using namespace std;
 using namespace chrono;
 using namespace Tins;
+
+bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11){
+	if(dot11.find_pdu<Dot11ProbeRequest>()){
+		if(ap_mac != dot11.addr1()) return true;
+		client_state.update_state(ClientState::Finding);
+		probe_resp->addr1(addr2);
+		send_to_rogue(*probe_resp);
+		display_traffic(*pdu, "Rogue channel", " -- Replied");
+		return true;
+	}
+	if(dot11.find_pdu<Dot11ProbeResponse>()) return true;
+	return false;
+}
 
 bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
@@ -72,19 +85,6 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11){
 	display_traffic(dot11, "Rogue channel", " -- Replied");
 	client_state.update_state(ClientState::Associated);
 	//FIXME, proč nestačí send_to_real(pdu); ?
-	return false;
-}
-
-bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11){
-	if(dot11.find_pdu<Dot11ProbeRequest>()){
-		if(ap_mac != dot11.addr1()) return true;
-		client_state.update_state(ClientState::Finding);
-		probe_resp->addr1(addr2);
-		send_to_rogue(*probe_resp);
-		display_traffic(*pdu, "Rogue channel", " -- Replied");
-		return true;
-	}
-	if(dot11.find_pdu<Dot11ProbeResponse>()) return true;
 	return false;
 }
 

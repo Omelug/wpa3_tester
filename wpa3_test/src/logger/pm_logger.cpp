@@ -1,13 +1,37 @@
+#include <ranges>
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/ProcessManager.h"
 #include "system/utils.h"
-#include <ranges>
 
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 using namespace chrono;
+
+void ProcessManager::write_log_line(ofstream &os, const string &line){
+	os << line << endl;
+}
+
+void ProcessManager::write_log_all(const string &line){
+	lock_guard lock(logger_mtx);
+	const string combined_prefix = current_timestamp() + "[write_log_all] ";
+	write_log_line(combined_log, combined_prefix+ line);
+	for(const auto &[name, proc]: processes){
+		const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
+		write_log_line(proc->logs.log, prefix + line);
+	}
+}
+
+size_t ProcessManager::processes_size() const{
+	lock_guard lock(logger_mtx);
+	return processes.size();
+}
+
+bool ProcessManager::process_exists(const string &process_name) const{
+	lock_guard lock(logger_mtx);
+	return processes.contains(process_name);
+}
 
 // tshark like -t ad timestamp
 string ProcessManager::current_timestamp(){
@@ -52,30 +76,6 @@ void ProcessManager::init_logging(const path &run_folder){
 		entry->logs.history.clear();
 		entry->logs.history_enabled = false;
 	}
-}
-
-void ProcessManager::write_log_line(ofstream &os, const string &line){
-	os << line << endl;
-}
-
-void ProcessManager::write_log_all(const string &line){
-	lock_guard lock(logger_mtx);
-	const string combined_prefix = current_timestamp() + "[write_log_all] ";
-	write_log_line(combined_log, combined_prefix+ line);
-	for(const auto &[name, proc]: processes){
-		const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
-		write_log_line(proc->logs.log, prefix + line);
-	}
-}
-
-size_t ProcessManager::processes_size() const{
-	lock_guard lock(logger_mtx);
-	return processes.size();
-}
-
-bool ProcessManager::process_exists(const string &process_name) const{
-	lock_guard lock(logger_mtx);
-	return processes.contains(process_name);
 }
 
 int get_target_pid(int current_pid){

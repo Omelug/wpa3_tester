@@ -11,4 +11,4 @@ public:
     static bool run_check(const ActorPtr &a1, const ActorPtr &a2, CacheBehave behave, const std::string &injection_key);
 };
 
-} // namespace wpa3_tester
+}

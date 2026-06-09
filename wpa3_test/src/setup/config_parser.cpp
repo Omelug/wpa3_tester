@@ -1,11 +1,11 @@
 #include <fstream>
-#include "system/utils.h"
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/YAMLValidator.h"
+#include "system/utils.h"
 #include "system/firmware/ath9k_htc.h"
 
 namespace wpa3_tester{

@@ -3,8 +3,8 @@
 #include "config/global_config.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
-#include "system/ip.h"
 #include "system/hw_capabilities.h"
+#include "system/ip.h"
 
 namespace wpa3_tester{
 using namespace std;

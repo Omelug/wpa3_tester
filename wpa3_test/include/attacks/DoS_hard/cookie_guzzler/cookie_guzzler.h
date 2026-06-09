@@ -1,10 +1,8 @@
 #pragma once
-#include <tins/tins.h>
 #include <string>
-#include <random>
+#include <tins/tins.h>
 
 #include "attacks/sae_helper.h"
-#include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::cookie_guzzler{

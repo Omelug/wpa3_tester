@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-#include <string>
-#include <filesystem>
 #include <chrono>
-#include <regex>
-#include <thread>
+#include <filesystem>
 #include <fstream>
+#include <regex>
+#include <string>
+#include <thread>
+#include <doctest/doctest.h>
 
 #include "logger/error_log.h"
 #include "system/utils.h"

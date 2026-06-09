@@ -7,7 +7,6 @@
 
 #include "attacks/components/setup_connections.h"
 #include "logger/log.h"
-#include "observer/mausezahn_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"

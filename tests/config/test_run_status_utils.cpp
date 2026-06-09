@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-#include <string>
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <doctest/doctest.h>
 
-#include "logger/error_log.h"
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 
 using namespace std;
 using namespace wpa3_tester;

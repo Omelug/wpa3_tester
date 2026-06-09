@@ -4,10 +4,10 @@
 #include <utility>
 #include <tins/tins.h>
 
-#include "attacks/scan/scan_AP.h"
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "attacks/scan/scan_AP.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"

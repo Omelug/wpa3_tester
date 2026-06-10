@@ -197,8 +197,8 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 		result += string(sk_name(k)) + "=" + *v;
 		first = false;
 	};
-	if(filter) for(SK k : filter->first)  visit_sk(k);
-	else       for(SK k : sk_values())    visit_sk(k);
+	if(filter) for(const SK k : filter->first)  visit_sk(k);
+	else       for(const SK k : sk_values())    visit_sk(k);
 
 	vector<string> conds;
 	const auto visit_bk = [&](BK k){
@@ -206,8 +206,8 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 		if(!v.has_value()) return;
 		conds.push_back(*v ? string(bk_name(k)) : "!" + string(bk_name(k)));
 	};
-	if(filter) for(BK k : filter->second) visit_bk(k);
-	else       for(BK k : bk_values())    visit_bk(k);
+	if(filter) for(const BK k : filter->second) visit_bk(k);
+	else       for(const BK k : bk_values())    visit_bk(k);
 
 	if(!conds.empty()){
 		result += " [";

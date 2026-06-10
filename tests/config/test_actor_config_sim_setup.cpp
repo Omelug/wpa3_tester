@@ -39,7 +39,7 @@ public:
 // Minimal real_actor: provides iface + permanent_mac so setup_actor skips hw queries
 static ActorPtr make_real(const string &iface = "wlan0",
                            const string &mac   = "aa:bb:cc:dd:ee:ff"){
-    auto a = make_shared<Actor_Config_sim>();
+    const auto a = make_shared<Actor_Config_sim>();
     a->set(SK::iface,         iface);
     a->set(SK::mac,           mac);
     a->set(SK::permanent_mac, mac);

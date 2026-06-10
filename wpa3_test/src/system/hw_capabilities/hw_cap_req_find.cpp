@@ -42,7 +42,7 @@ bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t
 	return false;
 }
 
-void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
+void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorCMap &rules,
 										const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions,
 										ActorMap &current, vector<ActorMap> &results
 ){

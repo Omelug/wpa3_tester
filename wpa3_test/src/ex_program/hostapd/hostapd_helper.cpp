@@ -211,7 +211,7 @@ static string openssl_version_to_tag(const string &version){
 	string v = version;
 	if(v.starts_with("openssl-")) v = v.substr(8);
 	string tag = "OpenSSL_";
-	for(char c: v){ tag += (c == '.') ? '_' : c; }
+	for(const char c: v){ tag += (c == '.') ? '_' : c; }
 	return tag;
 }
 

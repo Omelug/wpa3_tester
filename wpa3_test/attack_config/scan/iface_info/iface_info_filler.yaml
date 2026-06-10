@@ -1,0 +1,8 @@
+name: iface_info_filler
+suite_functions: iface_info_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./iface_info.yaml
+delete_old: true

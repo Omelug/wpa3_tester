@@ -1,10 +1,6 @@
 name: Setup build dependencies
 description: Install apt packages and restore build caches
 
-inputs:
-  cache-suffix:
-    description: Suffix for ccache key to separate validate vs test caches
-    required: true
 
 runs:
   using: composite
@@ -37,5 +33,5 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/ccache
-        key: ccache-${{ runner.os }}-${{ inputs.cache-suffix }}-${{ github.sha }}
-        restore-keys: ccache-${{ runner.os }}-${{ inputs.cache-suffix }}-
+        key: ccache-${{ runner.os }}-${{ github.sha }}
+        restore-keys: ccache-${{ runner.os }}-

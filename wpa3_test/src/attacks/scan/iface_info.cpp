@@ -125,7 +125,7 @@ void run_attack(RunStatus &rs){
     create_public_dirs(rs.run_folder());
     const path out_path = rs.run_folder() / ("iface_report_" + mac_slug + ".md");
     ofstream f(out_path);
-    if(!f.is_open()) throw run_err("Cannot open output file: " + out_path.string());
+    if(!f.is_open()) throw run_err("Cannot open output file: {}", out_path.string());
     f << md.str();
     f.close();
     set_public_perms(out_path);

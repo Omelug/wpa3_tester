@@ -60,4 +60,7 @@ attack_config:
   attack_time: 20
   ssid: test_mc_mitm
   only_to_mitm: true #FIXME
-rewrite: errors
+
+delete_old: true
+rewrite: all
+save_log: true

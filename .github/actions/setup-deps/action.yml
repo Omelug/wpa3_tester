@@ -19,6 +19,7 @@ runs:
           libtins-dev \
           flex bison \
           clang-18 \
+          libstdc++-13-dev \
           iw \
           linux-modules-extra-$(uname -r)
 

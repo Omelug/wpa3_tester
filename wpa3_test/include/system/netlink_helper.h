@@ -1,12 +1,11 @@
 #pragma once
-#include <expected>
 #include <string_view>
 #include <system_error>
 #include <linux/nl80211.h>
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester::netlink_helper{
-using Result = std::expected<void,std::error_code>;
+using Result = std::error_code; // empty = success
 
 nl80211_iftype query_wifi_iftype(std::string_view iface_name, const std::optional<std::string> &netns);
 

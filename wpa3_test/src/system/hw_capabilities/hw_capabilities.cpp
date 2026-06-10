@@ -251,8 +251,8 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 
 void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
-	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); !res)
-		throw timeout_err("Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.error().message());
+	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
+		throw timeout_err("Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.message());
 }
 
 string get_iface_type(const string &iface, const optional<string> &netns){
@@ -285,14 +285,14 @@ bool hw_capabilities::set_monitor_active(const string &iface, const optional<str
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){
 	run_cmd({"ip", "link", "set", iface, "down"}, netns);
-	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); !res) throw timeout_err(
-		"Timeout waiting for '" + iface + "' to go DOWN:" + res.error().message());
+	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); res) throw timeout_err(
+		"Timeout waiting for '" + iface + "' to go DOWN:" + res.message());
 }
 
 void hw_capabilities::set_iface_up(const string &iface, const optional<string> &netns){
 	run_cmd({"ip", "link", "set", iface, "up"}, netns);
-	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); !res) throw timeout_err(
-		"Timeout waiting for '" + iface + "' to go UP:" + res.error().message());
+	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res) throw timeout_err(
+		"Timeout waiting for '" + iface + "' to go UP:" + res.message());
 }
 void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns, const vector<string> &monitor_flags){
 	if(netlink_helper::query_wifi_iftype(iface, netns) == type) return;
@@ -309,8 +309,8 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0) throw
 			run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
 
-	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); !res)
-		throw run_err("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.error().message());
+	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); res)
+		throw run_err("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.message());
 
 	if(type == NL80211_IFTYPE_MONITOR && !monitor_flags.empty()){
 		vector<string> cmd = {"iw", "dev", iface.data(), "set", "monitor"};

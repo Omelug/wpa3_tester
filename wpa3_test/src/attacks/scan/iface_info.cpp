@@ -48,14 +48,14 @@ void run_attack(RunStatus &rs){
     scanner->load_hw_info(hw_cache);
 
     // ----- injection tests -----
-    cout << "Setting up " << iface << " as monitor on channel " << ch_num << "...\n";
+    /* FIXME cout << "Setting up " << iface << " as monitor on channel " << ch_num << "...\n";
     MonitorSocket sock(iface);
     const auto suite = hw_capabilities::run_injection_tests(
 		scanner, scanner,
 		Tins::HWAddress<6>("00:11:22:33:44:55"),
-		/*skip_mf=*/false,
-		/*testack=*/false);
-
+		false,
+		false);
+	*/
 	//TODO scan to  Actor_config
     // ----- build markdown -----
     ostringstream md;
@@ -109,14 +109,12 @@ void run_attack(RunStatus &rs){
 
     if(scanner[SK::driver_name].has_value())
         md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name].value() << "`\n";
-    if(scanner[SK::mac].has_value())
-        md << "- **MAC (nl80211)**: `" << scanner[SK::mac].value() << "`\n";
     md << "\n";
 
     md << "## `iw dev " << iface << " info`\n\n";
     md << "```\n" << iw_info << "```\n";
 
-    md << print_injection_result(suite);
+    //FIXME md << print_injection_result(suite);
 
     // ----- write report -----
     string mac_slug = perm_mac.empty() ? current_mac : perm_mac;

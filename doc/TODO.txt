@@ -4,15 +4,12 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+: filter for channel_switch
-+: filler for downgrade
-+: filter for OWE leaks
-
-f: tshrk ufachá (alespoň u Enterprise nezobrazuje EAP rámce)
++: filler for channel_switch
+f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
 r: co jde v suite, sjednotit
-r: vymazat githubcopilota z hstorie
-r: vymazat zbytečné větve z githubu
-d: save_log to documentation
+r: vymazat github copilota z hstorie
+r: vymazat zbytečné větve z githubuho otestovat, funguje jen někdy
+fd: save_log to documentation a nějak
 +: add git results repository to documentation
 
 +: add git results repository
@@ -48,9 +45,11 @@ t: Stress tests
     l: log/cache  results per chipset/driver
 
 //DONE
++: filler for downgrade
++: filler for OWE leaks
 t: setup_actor()
-+: add test for downgrade (WPA3-Only valid +client -> stop WP3Only -> chcek if client tr to connect)
-rch: copy_file/set_public_persm -> copy_f (alredy in utils.cpp)
++: add test for downgrade (WPA3-Only valid +client -> stop WP3Only -> check if client tr to connect)
+rch: copy_file/set_public_persm -> copy_f (already in utils.cpp)
 t: base setup_actor()
 +: test_suite - source by test_name
 t?: forgejo compatible github runners for push to main (is config_validation)

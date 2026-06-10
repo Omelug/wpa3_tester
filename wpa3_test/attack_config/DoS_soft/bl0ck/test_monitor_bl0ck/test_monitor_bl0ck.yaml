@@ -12,7 +12,7 @@ actors:
   transceiver:
     source: internal
     selection:
-      condition: [ injection ]
+      condition: [ injection_selftest ]
       #driver: rtl8xxxu
       #driver: ath9k_htc
       channel: 1

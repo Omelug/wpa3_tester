@@ -13,7 +13,7 @@ actors:
   transceiver:
     source: internal
     selection:
-      condition: [ monitor, injection ]
+      condition: [ monitor, injection_selftest ]
       #driver: ath9k_htc TOD why this dont work neither with ath_masker?
       driver: mt76x2u
       channel: 1

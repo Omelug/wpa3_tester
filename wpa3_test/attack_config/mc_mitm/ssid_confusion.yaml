@@ -42,13 +42,13 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ injection ]
+      condition: [ injection_selftest ]
       channel: 6
     sniff_iface: "att_real"
   rogue_ap:
     source: internal
     selection:
-      condition: [ injection ]
+      condition: [ injection_selftest ]
       channel: 1
     sniff_iface: "att_rogue"
 attack_config:

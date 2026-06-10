@@ -311,12 +311,10 @@ bool Actor_config::is_external_WB() const {
 }
 
 bool Actor_config::monitor_needed() const{
-	return
-			get_or(BK::monitor, false) ||
+	return get_or(BK::monitor, false) ||
 			get_or(BK::active_monitor, false) ||
 			get_or(BK::control_monitor, false) ||
-			get_or(BK::injection, false);
-	//TODO check injection
+			get_or(BK::injection_selftest, false);
 }
 
 shared_ptr<Actor_config> Actor_config::create(const json &j){

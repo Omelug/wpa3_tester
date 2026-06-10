@@ -94,7 +94,6 @@ void run_chs_attack(RunStatus &rs){
 	rs.process_manager.stop_all();
 }
 
-// ---------- STATS ----------------
 void generate_report(const RunStatus &rs, const string &STA_graph_path, const string &AP_graph_path,
 					const optional<hostapd::CrackResult> &crack_result){
 	const path report_path = rs.run_folder()/ "report.md";
@@ -148,11 +147,7 @@ void stats_chs_attack(const RunStatus &rs){
 	if(rs.config().at("actors").contains("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 
-		//FIXME nemusí být, když je definované cestou
-		const auto &prog_cfg = rs.config().at("actors").at("client").at("setup").at("program_config");
-		const string psk = prog_cfg.contains("sae_password")
-							? prog_cfg.at("sae_password").get<string>()
-							: prog_cfg.value("psk", "");
+		const string psk = hostapd::get_password(rs, "client");
 		if(!psk.empty())
 			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}

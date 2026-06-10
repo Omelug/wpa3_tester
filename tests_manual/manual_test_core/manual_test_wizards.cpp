@@ -150,7 +150,7 @@ TargetInfo get_target_wizard(const string &iface, Channel channel){
 	cout << "Interface: " << iface << "\n\n";
 
 	// Use list_external_entities function
-	vector channels = {channel.ch_num};
+	const vector channels = {channel.ch_num};
 	RunStatus rs; // Create temporary RunStatus instance
 	const vector<ActorPtr> entities = rs.list_external_entities(iface, 4, channels);
 

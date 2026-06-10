@@ -45,24 +45,6 @@ target_link_libraries(run_ath9k_htc_tests PRIVATE
 )
 add_test(NAME Ath9kHtcTests COMMAND run_ath9k_htc_tests)
 
-# injection check manual test
-add_executable(run_injection_check_test test_injection_check.cpp)
-target_link_libraries(run_injection_check_test PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-#if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-#    find_program(SETCAP_EXE setcap)
-#    if(SETCAP_EXE)
-#        add_custom_command(TARGET run_injection_check_test POST_BUILD
-#                COMMAND sudo ${SETCAP_EXE} cap_net_raw,cap_net_admin=eip ${CMAKE_BINARY_DIR}/tests/system/run_injection_check_test
-#        )
-#    endif()
-#endif()
-
-add_test(NAME InjectionCheckTest COMMAND ${CMAKE_BINARY_DIR}/tests/system/run_injection_check_test)
-
 # utils tests
 add_executable(run_utils_tests test_utils.cpp)
 target_link_libraries(run_utils_tests PRIVATE

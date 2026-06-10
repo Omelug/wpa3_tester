@@ -27,6 +27,6 @@ YAMLValidator::YAMLValidator(const path &schema_path) {
 }
 
 void YAMLValidator::validate(json &current_node) const {
-	auto patch = validator.validate(current_node);
+	const auto patch = validator.validate(current_node);
 	current_node = current_node.patch(patch);
 }

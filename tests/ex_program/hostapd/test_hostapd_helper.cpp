@@ -34,7 +34,8 @@ TEST_CASE("get_hostapd - returns existing binary if found"){
     remove_all(test_folder);
 }
 
-TEST_CASE("openssl_version_to_tag - correctly maps version strings") {
+/* convert to install test (heavy)
+ *TEST_CASE("openssl_version_to_tag - correctly maps version strings") {
     path test_folder = temp_directory_path() / "openssl_tag_test";
     remove_all(test_folder);
 
@@ -42,7 +43,7 @@ TEST_CASE("openssl_version_to_tag - correctly maps version strings") {
 
     CHECK_THROWS(hostapd::get_openssl_paths("openssl-1.0.2e"));
     remove_all(test_folder);
-}
+}*/
 
 TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available"*doctest::skip (true)){
     path test_folder = temp_directory_path() / "hostapd_test_nonexistent";

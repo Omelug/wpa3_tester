@@ -35,7 +35,7 @@ RunStatus::RunStatus(const string &config_path, string testName, const string &s
 	if(sub_folder.empty()){
 		actual_sub_folder = relative_from("attack_config", config_path);
 	}
-	_run_folder = (BASE_FOLDER / actual_sub_folder / testName / "last_run").string();
+	_run_folder = BASE_FOLDER / actual_sub_folder / testName / "last_run";
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
 

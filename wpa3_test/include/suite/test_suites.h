@@ -15,6 +15,7 @@
 #include "Enterprise/reflection_attack/reflection_attack_filler.h"
 #include "two_iface/active_test_filler.h"
 #include "two_iface/injection_test_filler.h"
+#include "scan/iface_info_filler.h"
 
 namespace wpa3_tester::suite{
 
@@ -36,6 +37,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"wpa3_trans_downgrade_filler",   wpa3_trans_downgrade_filler::generate_report},
 	{"active_test_filler",            active_test_filler::generate_report},
 	{"injection_test_filler",         injection_test_filler::generate_report},
+	{"iface_info_filler",             iface_info_filler::generate_report},
 };
 
 }

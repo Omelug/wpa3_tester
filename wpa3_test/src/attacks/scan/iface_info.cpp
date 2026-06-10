@@ -29,7 +29,7 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 
     const string iface  = rs.get_actor("scanner")["iface"];
-    const int    ch_num = rs.config().at("attack_config").at("channel").get<int>();
+    //const int    ch_num = rs.config().at("attack_config").at("channel").get<int>();
 
 	// ----- basic info -----
     const string current_mac = hw_capabilities::get_mac_address(iface, nullopt).to_string();
@@ -129,5 +129,15 @@ void run_attack(RunStatus &rs){
     set_public_perms(out_path);
 
     cout << "\nReport written to: " << out_path << "\n";
+    rs.save_actor_interface_mapping(); //resave mapping for get to mapping
+}
+
+void stats_attack(const RunStatus &rs){
+    const auto it = rs.actors.find("scanner");
+    if(it == rs.actors.end()) return;
+    const string info = it->second->to_str();
+    const path out = rs.run_folder() / "result.txt";
+    ofstream f(out);
+    if(f.is_open()) f << info;
 }
 }

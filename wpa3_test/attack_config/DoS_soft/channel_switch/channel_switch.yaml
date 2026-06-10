@@ -9,14 +9,16 @@ actors:
     selection:
       condition: [ AP ]
     setup:
-      hostapd_path: "./config/hostapd.conf"
+      program: hostapd
+      program_config:
+        hostapd_path: "./config/hostapd.conf"
     ip_addr: "10.0.0.1"
   client:
     source: internal
     setup:
       program: wpa_supplicant
       program_config:
-        wpa_supplicant_path: "./config/valid_client.conf"
+        wpa_supplicant_path: "./config/client.conf"
     netns: sta
     ip_addr: "10.0.0.2"
   attacker:

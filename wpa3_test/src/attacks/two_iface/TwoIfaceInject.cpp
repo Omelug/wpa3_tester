@@ -14,7 +14,7 @@ using namespace filesystem;
 using nlohmann::json;
 
 TwoIfaceInject::TwoIfaceInject()
-: TwoIface({{SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac}, {BK::injection, BK::monitor}}, "two_iface_inject"){}
+: TwoIface({{SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac}, {BK::monitor}}, "two_iface_inject"){}
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	const json config = {

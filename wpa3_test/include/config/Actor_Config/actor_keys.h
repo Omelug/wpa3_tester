@@ -25,7 +25,7 @@ enum class SK : uint8_t {
 
 // Bool keys
 enum class BK : uint8_t {
-    AP, STA, injection, monitor, managed,
+    AP, STA, injection_selftest, monitor, managed,
     active_monitor, control_monitor,
     GHz2_4, GHz5, GHz6,
     w80211n, w80211ac, w80211ax, beacon_prot,

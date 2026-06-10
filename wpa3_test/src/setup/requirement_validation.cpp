@@ -286,7 +286,7 @@ bool RunStatus::config_requirement(){
 	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")){
 		for(const auto &[key, actor_names]: _config.at("requirements").at("two_iface").items()){
 			if(!actor_names.is_array() || actor_names.size() < 2)
-				throw config_err("two_iface." + key + " must be an array of two actor names");
+				throw config_err("two_iface." + key + " must be an array of two actors");
 
 			const ActorPtr &actor1 = get_actor(actor_names[0].get<string>());
 			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());

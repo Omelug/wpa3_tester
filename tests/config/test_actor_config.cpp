@@ -15,7 +15,7 @@ TEST_CASE("Actor_config - json constructor with selection"){
             "selection", {
                 {"iface", "wlan0"},
                 {"driver", "ath9k"},
-                {"condition", {"monitor", "injection"}}
+                {"condition", {"monitor", "injection_selftest"}}
             }
         },
         {"netns", "sta"},
@@ -30,7 +30,7 @@ TEST_CASE("Actor_config - json constructor with selection"){
     CHECK_EQ(actor[SK::netns].value(), "sta");
 
     CHECK(actor[BK::monitor].value_or(false));
-    CHECK(actor[BK::injection].value_or(false));
+    CHECK(actor[BK::injection_selftest].value_or(false));
     CHECK_FALSE((actor[BK::AP].has_value()));
 }
 
@@ -66,7 +66,7 @@ TEST_CASE("Actor_config - matches method"){
         offer.set(SK::iface, "wlan0");
         offer.set(SK::driver_name, "ath9k");
         offer.set(BK::monitor, true);
-        offer.set(BK::injection, true);
+        offer.set(BK::injection_selftest, true);
 
         CHECK(required.matches(offer));
     }
@@ -163,14 +163,14 @@ TEST_CASE("Actor_config - operator+= merge"){
 
         Actor_config other;
         other.set(SK::driver_name, "ath9k");
-        other.set(BK::injection, true);
+        other.set(BK::injection_selftest, true);
 
         base += other;
 
         CHECK_EQ(base["iface"], "wlan0");
         CHECK_EQ(base["driver"], "ath9k");
         CHECK(base.get(BK::monitor));
-        CHECK(base.get(BK::injection));
+        CHECK(base.get(BK::injection_selftest));
     }
 
     SUBCASE("Merge with same values") {
@@ -347,12 +347,12 @@ TEST_CASE("Actor_config::to_str - string keys only"){
 TEST_CASE("Actor_config::to_str - bool keys true and false"){
     Actor_config actor;
     actor.set(BK::AP, true);
-    actor.set(BK::injection, false);
+    actor.set(BK::injection_selftest, false);
 
     const auto s = actor.to_str();
     CHECK_NE(s.find("["), string::npos);
     CHECK_NE(s.find("AP"), string::npos);
-    CHECK_NE(s.find("!injection"), string::npos);
+    CHECK_NE(s.find("!injection_selftest"), string::npos);
 }
 
 TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
@@ -390,13 +390,13 @@ TEST_CASE("Actor_config::to_json - string keys in selection"){
 TEST_CASE("Actor_config::to_json - bool conditions"){
     Actor_config actor;
     actor.set(BK::monitor, true);
-    actor.set(BK::injection, false);
+    actor.set(BK::injection_selftest, false);
 
     const auto j = actor.to_json();
     REQUIRE(j["selection"].contains("condition"));
     const auto &cond = j["selection"]["condition"];
     CHECK_NE(cond.end(), ranges::find(cond, "monitor"));
-    CHECK_NE(cond.end(), ranges::find(cond, "!injection"));
+    CHECK_NE(cond.end(), ranges::find(cond, "!injection_selftest"));
 }
 
 TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){
@@ -463,8 +463,8 @@ TEST_CASE("ActorPtr - basic accessors"){
     }
 
     SUBCASE("operator[](BK) mutable"){
-        ap->set(BK::injection, true);
-        CHECK(ap[BK::injection].value());
+        ap->set(BK::injection_selftest, true);
+        CHECK(ap[BK::injection_selftest].value());
     }
 
     SUBCASE("operator[](BK) const"){
@@ -506,14 +506,14 @@ TEST_CASE("ActorPtr::to_str - filter restricts BK output"){
     ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(BK::monitor,   true);
     ap->set(BK::AP,        false);
-    ap->set(BK::injection, true);
+    ap->set(BK::injection_selftest, true);
 
     ParamFilter filter{{}, {BK::monitor}};
     const auto s = ap->to_str(&filter);
 
     CHECK_NE(s.find("monitor"),   string::npos);
     CHECK_EQ(s.find("AP"),        string::npos);
-    CHECK_EQ(s.find("injection"), string::npos);
+    CHECK_EQ(s.find("injection_selftest"), string::npos);
 }
 
 TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
@@ -560,7 +560,7 @@ TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
 TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
     ActorPtr ap(make_shared<Actor_Config_sim>());
     ap->set(BK::monitor,   true);
-    ap->set(BK::injection, false);
+    ap->set(BK::injection_selftest, false);
     ap->set(BK::AP,        true);
 
     ParamFilter filter{{}, {BK::monitor}};
@@ -569,7 +569,7 @@ TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
     REQUIRE(j["selection"].contains("condition"));
     const auto &cond = j["selection"]["condition"];
     CHECK_NE(cond.end(), ranges::find(cond, "monitor"));
-    CHECK_EQ(cond.end(), ranges::find(cond, "!injection"));
+    CHECK_EQ(cond.end(), ranges::find(cond, "!injection_selftest"));
     CHECK_EQ(cond.end(), ranges::find(cond, "AP"));
 }
 

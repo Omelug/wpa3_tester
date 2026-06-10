@@ -18,7 +18,7 @@ TEST_CASE("HwInfo::is_hw_info(BK) - hardware capability keys") {
 }
 
 TEST_CASE("HwInfo::is_hw_info(BK) - non-hardware keys return false") {
-    CHECK_FALSE(HwInfo::is_hw_info(BK::injection));
+    CHECK_FALSE(HwInfo::is_hw_info(BK::injection_selftest));
 }
 
 TEST_CASE("HwInfo::is_hw_info(SK) - hardware string keys") {

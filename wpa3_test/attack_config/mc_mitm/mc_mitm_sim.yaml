@@ -24,12 +24,12 @@ actors:
   rogue_client:
     source: simulation
     selection:
-      condition: [ injection ] #active_monitor
+      condition: [ injection_selftest ] #active_monitor
       channel: 11
   rogue_ap:
     source: simulation
     selection:
-      condition: [ injection ]
+      condition: [ injection_selftest ]
       channel: 1
 
   #observers: (allow start_observers if used )

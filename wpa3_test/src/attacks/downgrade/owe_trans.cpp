@@ -81,10 +81,8 @@ void stats_attack(const RunStatus &rs) {
 	optional<hostapd::CrackResult> crack_result;
 	if (rs.config().at("actors").contains("rogue_ap")) {
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
-		const auto &prog_cfg = rs.config().at("actors").at("client").at("setup").at("program_config");
-		const string psk = prog_cfg.contains("sae_password")
-							? prog_cfg.at("sae_password").get<string>()
-							: prog_cfg.value("psk", "");
+
+		const string psk = hostapd::get_password(rs, "client");
 		if (!psk.empty())
 			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}

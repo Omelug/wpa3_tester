@@ -168,7 +168,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);
 	base_actor->set_iface_down();
-	hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, false);
+	hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, true);
 	if(!netlink_helper::wait_for_iface_disappear(ap_iface, netns)) throw setup_err(
 		"Interface " + ap_iface + " did not disappear");
 

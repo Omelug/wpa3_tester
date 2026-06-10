@@ -59,16 +59,6 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-  #client_tshark:
-  #  actor: client
-  #  program: tshark
-  #  program_config:
-  #    filter: "special_filter:actors"
-  #rogue_ap_tshark:
-  #  actor: rogue_ap
-  #  program: tshark
-  #  program_config:
-  #    filter: "special_filter:actors"
 attack_config:
   # seconds to wait after legitimate AP is stopped for client to reconnect to rogue AP
   wait_after_stop: 30

@@ -195,9 +195,6 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 void cleanup_all_namespaces(){
     log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
 
-    // Remove mac80211_hwsim simulation interfaces first (no-op if not loaded)
-    hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
-
     const path netns_dir = "/var/run/netns";
     if(!exists(netns_dir)){
         log(LogLevel::INFO, "Cleanup complete.");

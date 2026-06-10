@@ -1,4 +1,5 @@
 #include "ex_program/hostapd/hostapd_helper.h"
+#include <fstream>
 #include "hostapd_cflags.h"
 #include "config/global_config.h"
 #include "logger/error_log.h"
@@ -323,6 +324,28 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 	}
 	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
 	return {total, cracked};
+}
+
+string get_password(const RunStatus &rs, const string &actor_name){
+	const string program = rs.config().at("actors").at(actor_name).at("setup").at("program").get<string>();
+	const path cfg = rs.run_folder() /
+		(actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
+
+	ifstream f(cfg);
+	string line;
+	for(const string &key : {"sae_password", "psk"}){
+		f.clear(); f.seekg(0);
+		while(getline(f, line)){
+			string s = line;
+			s.erase(0, s.find_first_not_of(" \t"));
+			if(!s.starts_with(key + "=")) continue;
+			string val = s.substr(key.size() + 1);
+			if(val.size() >= 2 && val.front() == '"' && val.back() == '"')
+				val = val.substr(1, val.size() - 2);
+			return val;
+		}
+	}
+	return {};
 }
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){

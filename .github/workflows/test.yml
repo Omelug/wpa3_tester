@@ -10,8 +10,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/setup-deps
-        with:
-          cache-suffix: test
 
       - name: Configure
         env:

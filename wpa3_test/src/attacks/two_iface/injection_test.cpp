@@ -80,9 +80,9 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 	add(test_injection_order(s_out, s_in, valid,   "valid",   ch));
 
 	// retrans + txack only make sense with two distinct interfaces
-	//FIXME add these test to result a zbavit se závislosti na okolním AP
 	bool two_iface = (if_in != if_out);
 	if(two_iface && testack){
+		//FIXME add these test to result a zbavit se závislosti na okolním AP
 		const auto nearby = get_nearby_ap_addr(s_in);
 		const auto destmac = nearby ? nearby->first : peermac;
 		add(test_injection_retrans(s_out, s_in, destmac, ownmac, ch));

@@ -1,0 +1,21 @@
+$extends: ../channel_switch.yaml
+name: CSA_same_channel
+$validator: ../channel_switch.schema.yaml
+actors:
+  access_point:
+    setup:
+      program: hostapd
+      program_config:
+        hostapd_path: "../config/hostapd.conf"
+
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        wpa_supplicant_path: "../config/client.conf"
+
+attack_config:
+  attack_time: 30
+  ms_interval: 100
+  new_channel: 6

@@ -1,5 +1,4 @@
 #include "system/netlink_helper.h"
-#include <expected>
 #include <nl80211.h>
 #include <unistd.h>
 #include <linux/netlink.h>
@@ -17,7 +16,6 @@
 using namespace std;
 
 namespace wpa3_tester::netlink_helper{
-using Result = std::expected<void,std::error_code>;
 
 struct IftypeResult{
 	nl80211_iftype iftype = NL80211_IFTYPE_UNSPECIFIED;
@@ -62,19 +60,19 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 	return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
 }
 
-[[nodiscard]] static expected<uint32_t,error_code> get_iface_flags(const string_view iface_name,
+[[nodiscard]] static optional<uint32_t> get_iface_flags(const string_view iface_name,
 	const optional<string> &netns){
 
 	NetNSContext ns_guard(netns);
 	const int sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sock < 0) return unexpected(error_code(errno, system_category()));
+	if(sock < 0) return nullopt;
 
 	ifreq ifr{};
 	iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
 
 	if(ioctl(sock, SIOCGIFFLAGS, &ifr) < 0){
 		close(sock);
-		return unexpected(error_code(errno, system_category()));
+		return nullopt;
 	}
 	close(sock);
 	return static_cast<uint32_t>(ifr.ifr_flags);
@@ -108,8 +106,8 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string> 
 	while(true){
 		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
 		if(n < 0){
-			if(errno == EAGAIN || errno == EWOULDBLOCK) return unexpected(make_error_code(errc::timed_out));
-			return unexpected(make_error_code(errc::io_error));
+			if(errno == EAGAIN || errno == EWOULDBLOCK) return make_error_code(errc::timed_out);
+			return make_error_code(errc::io_error);
 		}
 
 		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nh, static_cast<size_t>(n)); nh = NLMSG_NEXT(nh, n)){
@@ -125,8 +123,8 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string> 
 			const bool is_up = (f & IFF_UP) /*&& (f & IFF_RUNNING)*/;
 			const bool is_down = (f & IFF_UP) == 0;
 
-			if(want_up && is_up) return Result{};
-			if(!want_up && is_down) return Result{};
+			if(want_up && is_up) return {};
+			if(!want_up && is_down) return {};
 		}
 	}
 }
@@ -142,7 +140,7 @@ Result wait_for_iface_disappear(const string_view iface_name, const optional<str
 	char buf[8192];
 	while(true){
 		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
-		if(n < 0) return unexpected(make_error_code(errc::io_error));
+		if(n < 0) return make_error_code(errc::io_error);
 
 		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nh, static_cast<size_t>(n)); nh = NLMSG_NEXT(nh, n)){
 			if(nh->nlmsg_type != RTM_DELLINK) continue;
@@ -153,7 +151,7 @@ Result wait_for_iface_disappear(const string_view iface_name, const optional<str
 
 			for(; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)){
 				if(rta->rta_type != IFLA_IFNAME) continue;
-				if(string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name) return Result{};
+				if(string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name) return {};
 			}
 		}
 	}
@@ -173,8 +171,8 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 	while(true){
 		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
 		if(n < 0){
-			if(errno == EAGAIN || errno == EWOULDBLOCK) return unexpected(make_error_code(errc::timed_out));
-			return unexpected(make_error_code(errc::io_error));
+			if(errno == EAGAIN || errno == EWOULDBLOCK) return make_error_code(errc::timed_out);
+			return make_error_code(errc::io_error);
 		}
 
 		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nh, static_cast<size_t>(n)); nh = NLMSG_NEXT(nh, n)){
@@ -186,7 +184,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 
 			for(; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)){
 				if(rta->rta_type != IFLA_IFNAME) continue;
-				if(string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name) return Result{};
+				if(string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name) return {};
 			}
 		}
 	}
@@ -195,10 +193,10 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 Result wait_for_wifi_iftype(const string_view iface_name, const optional<string> &netns,
 							const nl80211_iftype expected_type, const int max_retries, const int retry_ms){
 	for(int i = 0; i < max_retries; ++i){
-		if(query_wifi_iftype(iface_name.data(), netns) == expected_type) return Result{};
+		if(query_wifi_iftype(iface_name.data(), netns) == expected_type) return {};
 		usleep(static_cast<useconds_t>(retry_ms) * 1000u);
 	}
-	return unexpected(make_error_code(errc::timed_out));
+	return make_error_code(errc::timed_out);
 }
 
 struct FreqResult{
@@ -247,10 +245,10 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 						const Channel &ch, const int max_retries, const int retry_ms){
 	const auto expected_freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
 	for(int i = 0; i < max_retries; ++i){
-		if(query_iface_freq(iface_name, netns) == expected_freq) return Result{};
+		if(query_iface_freq(iface_name, netns) == expected_freq) return {};
 		usleep(static_cast<useconds_t>(retry_ms) * 1000u);
 	}
-	return unexpected(make_error_code(errc::timed_out));
+	return make_error_code(errc::timed_out);
 }
 
 Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel &ch){
@@ -258,21 +256,21 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 
 	const unique_ptr<nl_sock,void(*)(nl_sock *)> sock(nl_socket_alloc(), nl_socket_free);
 	if(!sock || genl_connect(sock.get()) < 0)
-		return unexpected(make_error_code(errc::io_error));
+		return make_error_code(errc::io_error);
 
 	nl_socket_set_buffer_size(sock.get(), 8192, 8192);
 
 	const int nl80211_id = genl_ctrl_resolve(sock.get(), "nl80211");
 	if(nl80211_id < 0)
-		return unexpected(make_error_code(errc::no_such_device));
+		return make_error_code(errc::no_such_device);
 
 	const unsigned int ifindex = if_nametoindex(iface.data());
 	if(ifindex == 0)
-		return unexpected(make_error_code(errc::no_such_device));
+		return make_error_code(errc::no_such_device);
 
 	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
 	if(!msg)
-		return unexpected(make_error_code(errc::not_enough_memory));
+		return make_error_code(errc::not_enough_memory);
 
 	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_CHANNEL, 0);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
@@ -288,13 +286,13 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	}, &err);
 
 	if(nl_send_auto(sock.get(), msg.get()) < 0)
-		return unexpected(make_error_code(errc::io_error));
+		return make_error_code(errc::io_error);
 
 	nl_recvmsgs_default(sock.get());
 
 	if(err < 0)
-		return unexpected(error_code(-err, system_category()));
-	return Result{};
+		return error_code(-err, system_category());
+	return {};
 }
 
 void log_iface_info(const string_view iface_name, const optional<string> &netns){

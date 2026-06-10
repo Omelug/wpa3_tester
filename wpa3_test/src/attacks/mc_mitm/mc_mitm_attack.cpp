@@ -29,12 +29,8 @@ void setup_attack(RunStatus &rs){
     */
 }
 
-void start_strict_tsharks(RunStatus &rs){
-	const auto ap_mac = rs.get_actor("rogue_client")["mac"];
-	const auto client_mac = rs.get_actor("rogue_ap")["mac"];
-
+void start_strict_tsharks(RunStatus &rs, const string &ap_mac, const string &client_mac){
 	const string mac_filter = "(wlan host " + ap_mac + " or wlan host " + client_mac + ")";
-
 	observer::tshark::start_tshark(rs, "rogue_ap", mac_filter);
 	observer::tshark::start_tshark(rs, "rogue_client", mac_filter);
 }
@@ -42,31 +38,28 @@ void start_strict_tsharks(RunStatus &rs){
 void run_attack(RunStatus &rs){
 	const auto rogue_client = rs.get_actor("rogue_client");
 	const auto rogue_ap = rs.get_actor("rogue_ap");
-	//const auto ap = rs.get_actor("access_point");
-	//const auto client = rs.get_actor("client");
 
 	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
 
-	auto get_mac = [&](const string &actor_key, const string &config_key) ->string{
-		if(rs.config().at("actors").contains(actor_key)) return rs.get_actor(actor_key)["mac"];
-		return rs.config().at("attack_config").at(config_key).get<string>();
-	};
-
-	const auto ap_mac = get_mac("access_point", "target_ap_mac");
-	const auto client_mac = get_mac("client", "target_client_mac");
+	// get macs for faking
+	const auto ap_mac = rs.get_actor("access_point").get(SK::mac);
+	const auto client_mac = rs.get_actor("client").get(SK::mac);
 
 	rs.start_observers();
 
+	bool only_to_mitm = false;
+	if(rs.config().at("attack_config").contains("only_to_mitm")){
+		only_to_mitm = rs.config().at("attack_config").at("only_to_mitm").get<bool>();
+	}
+
 	McMitm attack(rogue_client, rogue_ap, ap_ssid, ap_mac, client_mac,
-				rs.run_folder()/ "logger" ,
-				rs.config().at("attack_config").at("only_to_mitm").get<bool>());
+				rs.run_folder() / "logger", only_to_mitm);
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();
 
-	//FIXME
-	//start_strict_tsharks(rs);
-	//rs.start_observers();
+	// FIXME tshark chenge results of attack?
+	//start_strict_tsharks(rs, ap_mac, client_mac);
 
 	//log(LogLevel::INFO, "Giving rogue AP one second to initialize ...");
 	//this_thread::sleep_for(seconds(1));
@@ -90,7 +83,6 @@ void stats(const RunStatus &rs){
 
 	vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);;
 	observer::tshark::pcap_events(rs, elements_ap, {
-									//{"rogue_ap", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
 									{"rogue_ap", "wlan.tag.number == 37", "CSA", "black"},
 									{"rogue_ap", "wlan.fc.type_subtype == 0x0d", "Action", "blue"},
 									{
@@ -108,7 +100,6 @@ void stats(const RunStatus &rs){
 
 	vector<unique_ptr<GraphElements>> elements_client = clone_elements(elements);;
 	observer::tshark::pcap_events(rs, elements_client, {
-									//{"rogue_client", "wlan.fc.type_subtype == 0x0008", "BEACON", "blue"},
 									{"rogue_client", "wlan.tag.number == 37", "CSA", "black"},
 									{"rogue_client", "wlan.fc.type_subtype == 0x0d", "Action", "blue"},
 									{"rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_packet", "pink"},

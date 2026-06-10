@@ -53,6 +53,15 @@ void set_log_file(const path &log_path){
 	}
 }
 
+void close_log_file(){
+	lock_guard lock(log_mutex);
+	if(log_file_ptr){
+		log_file_ptr->close();
+		delete log_file_ptr;
+		log_file_ptr = nullptr;
+	}
+}
+
 void write_log_message(const LogLevel level, const string &msg){
 	const string formatted = string(levelToString(level)) + ": " + msg;
 

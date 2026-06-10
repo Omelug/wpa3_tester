@@ -2,6 +2,7 @@
 #include <string>
 #include <tins/tins.h>
 #include "logger/log.h"
+#include "system/utils.h"
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester{
@@ -32,26 +33,29 @@ protected:
 public:
 	virtual ~ClientState() = default;
 
-	Tins::HWAddress<6> get_mac() const{ return macaddr; }
-	State get_state() const{ return state; }
+	[[nodiscard]] Tins::HWAddress<6> get_mac() const{ return macaddr; }
+	[[nodiscard]] State get_state() const{ return state; }
 
 	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt): macaddr(mac), log_folder(std::move(log_folder)){}
-	explicit ClientState(const Tins::HWAddress<6> mac, const State state, const std::optional<std::filesystem::path> &log_folder = std::nullopt): state(state), macaddr(mac), log_folder(std::move(log_folder)){}
+	explicit ClientState(const Tins::HWAddress<6> mac, const State state, const std::optional<std::filesystem::path> &log_folder = std::nullopt): state(state), macaddr(mac), log_folder(log_folder){}
 
 	void update_state(const State s){
 		log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr.to_string(), state2str(s));
 		if(log_folder){
 			const auto path = *log_folder / (macaddr.to_string() + "_state.log");
-			if(std::ofstream f(path, std::ios::app); f)
+			const bool is_new = !std::filesystem::exists(path);
+			if(std::ofstream f(path, std::ios::app); f){
+				if(is_new) set_public_perms(path);
 				f << "[STATE] " << macaddr <<" : " << state2str(state) << " -> " << state2str(s) << std::endl;
+			}
 		}
 		state = s;
 	}
 
-	bool is_state(const State s) const{ return this->state == s; }
+	[[nodiscard]] bool is_state(const State s) const{ return this->state == s; }
 
 	// By default, everything is forwarded.
-	virtual bool should_forward(const Tins::PDU &) const{ return true; }
+	[[nodiscard]] virtual bool should_forward(const Tins::PDU &) const{ return true; }
 	// By default, frames are not modified.
 	virtual void modify_packet(Tins::PDU &) const{}
 protected:
@@ -59,7 +63,9 @@ protected:
 		static const char *names[] = {
 			"Unknown", "Target", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"
 		};
-		return names[state];
+		const int idx = static_cast<int>(state) + 1; // Unknown=-1 maps to index 0
+		if(idx < 0 || idx >= static_cast<int>(std::size(names))) return "Invalid";
+		return names[idx];
 	}
 };
 }

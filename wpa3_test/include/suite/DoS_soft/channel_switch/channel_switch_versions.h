@@ -1,4 +1,8 @@
 #pragma once
-#include "config/RunStatus.h"
+#include "config/RunSuiteStatus.h"
 
-void generate_report(const wpa3_tester::RunStatus &rs);
+namespace wpa3_tester::suite::channel_switch_filler{
+
+void generate_report(RunSuiteStatus &rss);
+
+}

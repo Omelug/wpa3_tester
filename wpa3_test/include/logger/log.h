@@ -19,6 +19,7 @@ const char *levelToString(LogLevel level);
 
 // Set log file path (optional, nullptr to disable file logging)
 void set_log_file(const std::filesystem::path &log_path);
+void close_log_file();
 void write_log_message(LogLevel level, const std::string &msg);
 
 // enum -> show number; two overloads avoid clangd "auto deduced as different types" error

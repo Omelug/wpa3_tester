@@ -1,0 +1,35 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Cookie guzzler Config
+type: object
+required:
+  - actors
+  - attack_config
+properties:
+  actors:
+    required:
+      - access_point
+      - client
+      - attacker
+  attack_config:
+    type: object
+    required:
+      - attack_time_sec
+      - burst_size
+      - acm_threshold
+      - random_dh_groups
+      - use_connected_stas
+    properties:
+      attack_time_sec:
+        type: integer
+        minimum: 1
+      burst_size:
+        type: integer
+        minimum: 1
+      acm_threshold:
+        type: integer
+        minimum: 0
+      random_dh_groups:
+        type: boolean
+      use_connected_stas:
+        type: boolean
+    additionalProperties: false

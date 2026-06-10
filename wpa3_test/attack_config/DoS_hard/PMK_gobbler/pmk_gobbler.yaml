@@ -1,5 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: pmk_gobbler_Dlink
+$validator: pmk_gobbler.schema.yaml
 attacker_module: pmk_gobbler
 requirements:
   simple: [ ath_masker ]

@@ -1,6 +1,7 @@
 $schema: http://json-schema.org/draft-07/schema#
 name: memory_omnivore_Dlink_ACK
 attacker_module: memory_omnivore
+$validator: memory_omniverse.schema.yaml
 actors:
   access_point:
     source: external
@@ -66,4 +67,3 @@ attack_config:
   acm_threshold: 5 # defualt openwrt value
   random_dh_groups: true
   use_connected_stas: true
-# TODO validator

@@ -84,6 +84,7 @@ void RunStatus::execute(){
 		const path log_file = _run_folder / "logger" / "tester.log";
 		set_log_file(log_file);
 	}
+	struct LogGuard { ~LogGuard(){ close_log_file(); } } log_guard;
 
 	//try {
 		try {

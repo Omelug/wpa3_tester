@@ -1,6 +1,7 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 name: hostapd_versions_ts
 config_type: test_suite
+suite_functions: channel_switch_versions
 tests:
   hostapd_SAE_PMF_fix:
     test_name: channel_switch_2_9

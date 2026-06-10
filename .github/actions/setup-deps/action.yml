@@ -22,7 +22,7 @@ runs:
           libyaml-cpp-dev \
           libtins-dev \
           flex bison \
-          clang \
+          clang-18 \
           iw \
           linux-modules-extra-$(uname -r)
 

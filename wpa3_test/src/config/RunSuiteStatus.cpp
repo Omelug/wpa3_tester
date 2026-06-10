@@ -439,7 +439,9 @@ void RunSuiteStatus::execute(){
 		rs.hw_option_cache(hw_cache);
 		rs.run_config(run_config);
 		path test_name = rs.config().at("name").get<string>();
-		rs.run_folder(run_folder() / test_name);
+		const path test_folder = run_folder() / test_name;
+		if(exists(test_folder)) set_public_perms(test_folder);
+		rs.run_folder(test_folder);
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()){

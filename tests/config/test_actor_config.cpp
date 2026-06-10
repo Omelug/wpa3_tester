@@ -397,6 +397,7 @@ TEST_CASE("Actor_config::to_json - bool conditions"){
     const auto &cond = j["selection"]["condition"];
     CHECK_NE(cond.end(), ranges::find(cond, "monitor"));
     CHECK_NE(cond.end(), ranges::find(cond, "!injection_selftest"));
+	MESSAGE(cond.dump());
 }
 
 TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){

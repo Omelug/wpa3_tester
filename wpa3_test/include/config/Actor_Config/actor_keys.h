@@ -44,7 +44,7 @@ inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> S
 };
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(BK::COUNT_)> BK_NAMES = {
-    "AP", "STA", "injection", "monitor", "managed",
+    "AP", "STA", "injection_selftest", "monitor", "managed",
     "active_monitor", "control_monitor" ,
     "2_4GHz", "5GHz", "6GHz",
     "80211n", "80211ac", "80211ax", "beacon_prot",

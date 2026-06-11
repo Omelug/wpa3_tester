@@ -3,6 +3,7 @@
 
 namespace wpa3_tester::sta_info{
 
-//void run_attack(RunStatus & rs);
+void setup_attack(RunStatus &rs);
+void run_attack(RunStatus &rs);
 
 }

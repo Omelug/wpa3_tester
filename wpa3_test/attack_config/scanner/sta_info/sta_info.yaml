@@ -1,0 +1,24 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: sta_info
+attacker_module: sta_info
+scan_iface: wlan1
+actors:
+  scanner:
+    source: internal
+    selection:
+      condition: [ AP ]
+      #channel: 6
+    sniff_iface: scanner
+    setup:
+      program: hostapd
+      program_config:
+        hostapd_path: "./config/hostapd.conf"
+attack_config:
+  scan_timeout_sec: 50
+
+observers:
+  tshark_client:
+    actor: scanner
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"

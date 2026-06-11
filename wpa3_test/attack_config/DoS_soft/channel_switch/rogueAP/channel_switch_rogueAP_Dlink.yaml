@@ -27,11 +27,11 @@ actors:
       program_config:
         version: 2_11
         ssid: test_channel_switch
-        sae_password: password123
         ieee80211w: 1
         proto: RSN
         key_mgmt: SAE WPA-PSK
-        psk: password123
+        sae_passphrase: password123
+        wpa_passphrase: password123
         pairwise: CCMP
         group: CCMP
     netns: sta

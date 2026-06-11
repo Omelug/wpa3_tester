@@ -8,7 +8,7 @@ actors:
     source: external
     selection:
       #mac: "78:98:E8:55:3E:8D"
-      mac: "24:ec:99:bf:c7:cf"
+      permanent_mac: "24:ec:99:bf:c7:cf"
       channel: 6
   scanner:
     source: internal

@@ -274,6 +274,9 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(BK::OCV, caps.ocv);
 	cfg->set(BK::MFP, caps.mfp);
 
+	cfg->set(BK::WPA_PSK, caps.wpa2_psk);
+	cfg->set(BK::WPA3_SAE, caps.wpa3_sae);
+
 	nlmsg_free(msg);
 	nl_socket_free(sock);
 

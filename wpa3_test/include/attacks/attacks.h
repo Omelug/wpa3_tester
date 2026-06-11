@@ -25,6 +25,7 @@
 #include "attacks/two_iface/injection_test.h"
 #include "config/RunStatus.h"
 #include "scanner/ap_info.h"
+#include "scanner/external_info.h"
 #include "scanner/iface_info.h"
 #include "scanner/sta_info.h"
 
@@ -52,6 +53,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"iface_info", iface_info::run_attack},
 	{"ap_info",    ap_info::run_attack},
 	{"sta_info",   sta_info::run_attack},
+	{"external_info",   external_info::run_attack},
 	// --------------- actually attacks
 	{"channel_switch", CSA_attack::run_chs_attack}, {"bl0ck", bl0ck_attack::run_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},

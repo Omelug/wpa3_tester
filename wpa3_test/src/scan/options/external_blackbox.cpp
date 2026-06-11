@@ -15,14 +15,13 @@ namespace wpa3_tester{
 using namespace std;
 using namespace Tins;
 
-void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
-	RadioTap rt;
-	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; }
-
+void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 	int8_t signal = -1;
 	int channel_freq = -1;
-	try{ signal = rt.dbm_signal(); } catch(...){}
-	try{ channel_freq = rt.channel_freq(); } catch(...){}
+	if(const auto *rt = pdu.find_pdu<RadioTap>()){
+		try{ signal = rt->dbm_signal(); } catch(...){}
+		try{ channel_freq = rt->channel_freq(); } catch(...){}
+	}
 
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
 		ActorPtr actor;
@@ -48,19 +47,19 @@ void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
 		if(signal != -1) actor->set(SK::signal, to_string(signal));
 	};
 
-	if(const auto *beacon = rt.find_pdu<Dot11Beacon>()){
+	if(const auto *beacon = pdu.find_pdu<Dot11Beacon>()){
 		string ssid;
 		try{ ssid = beacon->ssid(); } catch(...){}
 		add_entity(beacon->addr2(), true, ssid);
-	} else if(const auto *probe_resp = rt.find_pdu<Dot11ProbeResponse>()){
+	} else if(const auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()){
 		string ssid;
 		try{ ssid = probe_resp->ssid(); } catch(...){}
 		add_entity(probe_resp->addr2(), true, ssid);
-	} else if(const auto *probe_req = rt.find_pdu<Dot11ProbeRequest>()){
+	} else if(const auto *probe_req = pdu.find_pdu<Dot11ProbeRequest>()){
 		string ssid;
 		try{ ssid = probe_req->ssid(); } catch(...){}
 		add_entity(probe_req->addr2(), false, ssid);
-	} else if(const auto *data = rt.find_pdu<Dot11Data>()){
+	} else if(const auto *data = pdu.find_pdu<Dot11Data>()){
 		const bool to_ds   = data->to_ds();
 		const bool from_ds = data->from_ds();
 		if(to_ds && !from_ds){
@@ -71,6 +70,12 @@ void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
 			add_entity(data->addr2(), true);
 		}
 	}
+}
+
+void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
+	RadioTap rt;
+	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; }
+	solve_new_pdu(rt, seen);
 }
 
 vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const size_t timeout_sec,

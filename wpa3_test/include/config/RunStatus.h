@@ -1,7 +1,9 @@
 #pragma once
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <nlohmann/json.hpp>
 #include "ObserverPtr.h"
 #include "RunSuiteStatus.h"
@@ -64,7 +66,7 @@ public:
 	explicit RunStatus(const std::string &config_path, std::string testName = "", const std::string &sub_folder = "");
 	void clean();
 	void execute();
-	static void solve_new_pdu(Tins::PDU &pdu, ActorMap &seen);
+	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMap &seen);
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 

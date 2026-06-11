@@ -4,7 +4,7 @@ $validator: ./validator/global_config.schema.yaml
 
 regulatory_domain: CZ
 internet_interface: wlan0
-timeout_external_bb_scan: 5
+timeout_external_bb_scan_sec: 5
 paths:
   # These config keys are not included in result config,
   hostapd:

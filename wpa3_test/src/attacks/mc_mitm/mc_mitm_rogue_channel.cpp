@@ -3,7 +3,6 @@
 #include <chrono>
 #include <tins/tins.h>
 #include "attacks/mc_mitm/wifi_util.h"
-#include "attacks/scan/scan_AP.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"

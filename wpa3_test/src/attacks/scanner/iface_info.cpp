@@ -1,5 +1,3 @@
-#include "attacks/scan/iface_info.h"
-
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -11,7 +9,6 @@
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
-#include "system/injection_result.h"
 #include "system/ip.h"
 #include "system/netlink_helper.h"
 #include "system/utils.h"

@@ -21,11 +21,11 @@
 #include "attacks/Enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
-#include "attacks/scan/iface_info.h"
-#include "attacks/scan/scan_AP.h"
 #include "attacks/two_iface/active_test.h"
 #include "attacks/two_iface/injection_test.h"
 #include "config/RunStatus.h"
+#include "scanner/ap_info.h"
+#include "scanner/iface_info.h"
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
@@ -48,7 +48,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	// --------------- scans/ sanity checks
 	{"iface_info", iface_info::run_attack},
-	{"scan_AP", attack_scan::run_attack},
+	{"ap_info", ap_info::run_attack},
 	// --------------- actually attacks
 	{"channel_switch", CSA_attack::run_chs_attack}, {"bl0ck", bl0ck_attack::run_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},

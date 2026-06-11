@@ -20,8 +20,6 @@ void run_attack(RunStatus &rs){
 
 	const string ssid = hostapd::get_ssid(rs, "scanner");
 	const string password = hostapd::get_password(rs, "scanner");
-
-	log(LogLevel::INFO, "");
 	log(LogLevel::INFO, "To test STA, connect to AP '{}' with password '{}'", ssid, password);
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");

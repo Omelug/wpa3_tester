@@ -326,19 +326,21 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 	return {total, cracked};
 }
 
-string get_password(const RunStatus &rs, const string &actor_name){
+static path actor_conf_path(const RunStatus &rs, const string &actor_name){
 	const string program = rs.config().at("actors").at(actor_name).at("setup").at("program").get<string>();
-	const path cfg = rs.run_folder() /
+	return rs.run_folder() /
 		(actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
+}
 
+static string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
 	string line;
-	for(const string &key : {"sae_password", "psk"}){
+	for(const string_view key : keys){
 		f.clear(); f.seekg(0);
 		while(getline(f, line)){
 			string s = line;
 			s.erase(0, s.find_first_not_of(" \t"));
-			if(!s.starts_with(key + "=")) continue;
+			if(!s.starts_with(string(key) + "=")) continue;
 			string val = s.substr(key.size() + 1);
 			if(val.size() >= 2 && val.front() == '"' && val.back() == '"')
 				val = val.substr(1, val.size() - 2);
@@ -346,6 +348,14 @@ string get_password(const RunStatus &rs, const string &actor_name){
 		}
 	}
 	return {};
+}
+
+string get_password(const RunStatus &rs, const string &actor_name){
+	return get_conf_value(actor_conf_path(rs, actor_name), {"sae_password", "psk"});
+}
+
+string get_ssid(const RunStatus &rs, const string &actor_name){
+	return get_conf_value(actor_conf_path(rs, actor_name), {"ssid"});
 }
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){

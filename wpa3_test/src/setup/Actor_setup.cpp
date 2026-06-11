@@ -1,6 +1,5 @@
 #include "attacks/two_iface/TwoIfaceInject.h"
 #include "config/Actor_Config/Actor_config.h"
-#include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -61,7 +60,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set(SK::ssid, real_actor[SK::ssid]);
 
 	if((*this)[SK::mac].has_value()){
-		// setup force set mac adress
+		// setup force set mac address
 		set_mac_address(get(SK::mac));
 	}else{
 		//just get mac from iface

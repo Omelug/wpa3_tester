@@ -4,6 +4,8 @@
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_Config_external.h"
+#include "scan/active/scan_active.h"
 #include "system/utils.h"
 using namespace std;
 using namespace filesystem;
@@ -91,6 +93,56 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 
 	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;
+}
+
+static void apply_rsn_caps(const Dot11Beacon &beacon, Actor_Config_external &cfg){
+	try{
+		const auto rsn = beacon.rsn_information();
+		const uint16_t caps = rsn.capabilities();
+		cfg.set(BK::MFP,         static_cast<bool>(caps & (1u << 7)));   // mfpc
+		cfg.set(BK::OCV,         static_cast<bool>(caps & (1u << 10)));
+		cfg.set(BK::beacon_prot, static_cast<bool>(caps & (1u << 11)));
+	} catch(...){}
+}
+
+void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
+	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
+	if(!beacon) return;
+
+	cfg.set(SK::mac, beacon->addr2().to_string());
+	try{ cfg.set(SK::ssid, beacon->ssid()); } catch(...){}
+
+	apply_radiotap(pdu, cfg);
+
+	// Channel fallback from DS Parameter Set if RadioTap had no frequency
+	if(!cfg[SK::channel].has_value()){
+		try{ cfg.set(SK::channel, to_string(beacon->ds_parameter_set())); } catch(...){}
+	}
+
+	apply_rsn_caps(*beacon, cfg);
+	apply_ht_vht_he(*beacon, cfg);
+
+	cfg.set(BK::AP,      true);
+	cfg.set(BK::STA,     false);
+	cfg.set(BK::managed, false);
+	cfg.set(BK::monitor, false);
+}
+
+Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, const int timeout_sec){
+	Actor_Config_external cfg;
+	cfg.set(SK::mac, bssid);
+
+	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + bssid;
+	components::poll_sniffer_pdu<monostate>(
+		[&](PDU &pdu) -> optional<monostate>{
+			fill_actor_caps_from_beacon(pdu, cfg);
+			return monostate{};
+		},
+		iface, filter, seconds(timeout_sec)
+	);
+
+	log(LogLevel::INFO, "scan_ap_actor {}: {}", bssid, cfg.to_str());
+	return cfg;
 }
 
 }

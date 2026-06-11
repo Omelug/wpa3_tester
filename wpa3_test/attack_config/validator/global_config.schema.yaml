@@ -12,7 +12,7 @@ properties:
     description: "ISO 3166-1 alpha-2 country code applied via 'iw reg set' before each test run (e.g. CZ, DE, US)"
   internet_interface:
     type: string
-  timeout_external_bb_scan:
+  timeout_external_bb_scan_sec:
     type: integer
     minimum: 1
   paths:

@@ -6,7 +6,7 @@
 
 #include "manual_test_wizards.h"
 #include "config/RunStatus.h"
-#include "attacks/scan/scan.h"
+#include "scan/scan.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::manual_tests{
@@ -143,7 +143,7 @@ int get_2_4_channel_wizard(){
 	return channel;
 }
 
-TargetInfo get_target_wizard(const string &iface, Channel channel){
+TargetInfo get_target_wizard(const string &iface, const Channel &channel){
 	cli_section("Target Selection - Scanning for Networks");
 
 	cout << "Scanning for networks on channel " << channel.ch_num << "...\n";

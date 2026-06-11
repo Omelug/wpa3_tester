@@ -5,6 +5,7 @@
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -74,8 +75,12 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 													const vector<int> &channels
 ){
 	if(channels.empty()) throw setup_err("No channels specified for scanning");
-	const ActorPtr scanner;
+
+	//setup scan iface
+	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);
+	scanner->set_monitor_mode();
+	scanner->set_iface_up();
 
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *handle = pcap_create(iface.c_str(), errbuf);

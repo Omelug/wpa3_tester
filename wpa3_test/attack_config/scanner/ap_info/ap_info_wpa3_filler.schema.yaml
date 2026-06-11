@@ -1,0 +1,30 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: External scan config
+type: object
+required:
+  - actors
+  - attack_config
+properties:
+  actors:
+    required:
+      - target
+      - scanner
+  attack_config:
+    type: object
+    additionalProperties: false
+    properties:
+      beacon_scan:
+        type: boolean
+      beacon_timeout_sec:
+        type: integer
+      EAP_scan:
+        type: boolean
+      EAP_timeout_sec:
+        type: integer
+      ACM_trigger:
+        type: boolean
+      acm_trigger_count:
+        type: integer
+      #actor_filter:
+      #  $ref: '../validator/test_validator.schema.yaml#/definitions/Actor'
+

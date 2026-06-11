@@ -2,24 +2,10 @@ $schema: http://json-schema.org/draft-07/schema#
 name: ap_info_wpa3_filler
 $validator: "./ap_info_wpa3_filler.schema.yaml"
 attacker_module: ap_info
-scan_iface: wlan1
-actors: #FIXME change to external compatible filler
-  target:
-    source: external
-    selection:
-      #mac: "24:ec:99:bf:c7:cf"
-      channel: 6
-      condition: [WPA3]
-  scanner:
-    source: internal
-    selection:
-      condition: [ monitor ]
-      channel: 6
-    sniff_iface: scanner
-
-attack_config:
-  beacon_scan: true
-  beacon_timeout_sec: 10
-  EAP_scan: true
-  ACM_trigger: true
-  acm_trigger_count: 2560
+suite_functions: ap_info_wpa3_filler
+config_type: test_suite
+tests:
+  all_APs:
+    type: actor_filler
+    config: ./ap_info.yaml
+rewrite: "errors"

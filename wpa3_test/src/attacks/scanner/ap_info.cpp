@@ -1,4 +1,5 @@
 #include <future>
+#include <sstream>
 #include <sys/poll.h>
 #include "config/RunStatus.h"
 
@@ -69,6 +70,7 @@ void run_attack(RunStatus &rs){
 		}
 	}
 
+	bool acm_triggered = false;
 	if(att_cfg.value("ACM_trigger", false)){
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
@@ -84,6 +86,30 @@ void run_attack(RunStatus &rs){
 		ofs << cookie.sta_mac << "\n";
 		ofs.close();
 		set_public_perms(acm_txt);
+		acm_triggered = true;
 	}
+
+	string mfp = "?";
+	string akm;
+	if(scan_ap.rsn.has_value()){
+		const uint16_t caps = scan_ap.rsn->capabilities();
+		const bool mfpr = caps & (1 << 6);
+		const bool mfpc = caps & (1 << 7);
+		mfp = mfpr ? "REQUIRED" : (mfpc ? "Capable" : "No");
+
+		stringstream akm_ss;
+		scan_ap.print_AKMs(akm_ss, scan_ap.rsn->akm_cyphers());
+		akm = akm_ss.str();
+	}
+
+	const nlohmann::json result = {
+		{"ssid",          scan_ap.ssid},
+		{"mac",           target_ap["mac"]},
+		{"beacon_found",  scan_ap.rsn.has_value()},
+		{"mfp",           mfp},
+		{"akm",           akm},
+		{"acm_triggered", acm_triggered},
+	};
+	rs.save_result(result);
 }
 }

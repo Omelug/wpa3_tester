@@ -34,8 +34,8 @@ actors:
         key_mgmt: SAE WPA-PSK
         pairwise: CCMP
         group: CCMP
-        sae_password: password123
-        psk: password123
+        sae_passphrase: password123
+        wpa_passphrase: password123
     netns: sta
     ip_addr: "10.0.0.2"
   rogue_ap:

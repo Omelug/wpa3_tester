@@ -33,6 +33,8 @@ void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
 			seen.emplace(mac.to_string(), actor);
 		}
 		actor->set(SK::mac, mac.to_string());
+		actor->set(SK::permanent_mac, mac.to_string());
+
 		actor->set(SK::ssid, ssid);
 		actor->set(BK::AP, is_ap); //TODO different possibilities?
 		actor->set(BK::STA, !is_ap);

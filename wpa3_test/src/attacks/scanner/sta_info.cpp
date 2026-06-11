@@ -1,17 +1,13 @@
 #include "attacks/scanner/sta_info.h"
 
-#include <fstream>
 #include "attacks/components/setup_connections.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_Config_external.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
-#include "scan/active/scan_AP.h"
 #include "scan/active/scan_STA.h"
-#include "setup/program.h"
-#include "system/utils.h"
 
 using namespace std;
-using namespace filesystem;
 
 namespace wpa3_tester::sta_info{
 
@@ -30,33 +26,14 @@ void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");
 
-	scan::ScanAP scan_ap{};
-	scan_ap.bssid = scanner.get(SK::mac);
 	const int timeout = att_cfg.at("scan_timeout_sec").get<int>();
-	const path stations_pcap = rs.run_folder() / "stations.pcap";
 
-	scan::station_scan(scan_ap, scanner.get(SK::sniff_iface), timeout, stations_pcap);
-	set_public_perms(stations_pcap);
-
-	{
-		const path stations_txt = rs.run_folder() / "station_scan.txt";
-		ofstream ofs(stations_txt);
-		ofs << "Stations for AP " << scanner.get(SK::mac) << "\n";
-		ofs << "Found: " << scan_ap.stations.size() << "\n";
-		for(const auto &sta : scan_ap.stations)
-			ofs << "  [STA] " << sta.mac << "\n";
-		ofs.close();
-		set_public_perms(stations_txt);
-	}
-
-	nlohmann::json sta_list = nlohmann::json::array();
-	for(const auto &sta : scan_ap.stations)
-		sta_list.push_back(sta.mac);
+	const Actor_Config_external sta = scan::scan_sta_actor(
+		scanner.get(SK::sniff_iface), scanner.get(SK::mac), timeout);
 
 	rs.save_result({
-		{"ap_mac",        scanner["mac"]},
-		{"station_count", static_cast<int>(scan_ap.stations.size())},
-		{"stations",      sta_list},
+		{"ap_mac",  scanner["mac"]},
+		{"station", sta.to_json()},
 	});
 }
 

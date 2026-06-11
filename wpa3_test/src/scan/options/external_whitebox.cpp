@@ -6,6 +6,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "scan/scan.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
 #include "system/ip.h"
@@ -16,18 +17,7 @@ using nlohmann::json;
 using namespace Tins;
 using namespace filesystem;
 
-void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
-	//cfg->conn->ensure_wifi_ifaces();
-	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
-		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
-		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
-		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
-		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
-		actor_cfg->set(SK::radio, radio_name);
-		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
-		options.emplace_back(actor_cfg);
-	}
-}
+namespace scan{
 
 vector<string> parse_csv_line(const string &line){
 	vector<string> fields;
@@ -73,7 +63,6 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 
 		auto cfg = ActorPtr(make_shared<Actor_Config_external>());
 
-		// Set fields if column exists and has data
 		auto set_field = [&](const string &col_name, const SK &cfg_key){
 			if(col_idx.contains(col_name) && col_idx[col_name] < fields.size()){
 				const string &value = fields[col_idx[col_name]];
@@ -97,6 +86,21 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 	return result;
 }
 
+}
+
+void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
+	//cfg->conn->ensure_wifi_ifaces();
+	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
+		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
+		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
+		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
+		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
+		actor_cfg->set(SK::radio, radio_name);
+		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
+		options.emplace_back(actor_cfg);
+	}
+}
+
 // return <string radio_name; external_actor >
 vector<ActorPtr> RunStatus::external_wb_options(){
 	vector<ActorPtr> options;
@@ -104,18 +108,17 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 	const path conn_table = absolute(
 		path(PROJECT_ROOT_DIR) / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
 
-	for(auto &cfg: get_actors_conn_table(conn_table)){
+	for(auto &cfg: scan::get_actors_conn_table(conn_table)){
 		if(!cfg[SK::whitebox_ip].has_value()){
-			const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
+			const string ip_str = ip::resolve_host(cfg.get(SK::whitebox_host));
 			cfg->set(SK::whitebox_ip, ip_str);
 			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
 		}
-		const string ip = cfg["whitebox_ip"];
+		const string ip = cfg.get(SK::whitebox_ip);
 		if(!ip::ping(ip)){
 			log(LogLevel::WARNING, "Actor {} not reachable, skipping", ip);
 			continue;
 		}
-
 		get_or_create_connection(cfg);
 		add_actors_by_radio(options, cfg);
 	}

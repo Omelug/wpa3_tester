@@ -7,6 +7,15 @@ using namespace std;
 void Actor_Config_external::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
 	set(SK::ssid, real_actor[SK::ssid]);
 
+	if((*this)[SK::mac].has_value()){
+		// setup force set mac address
+		set_mac_address(get(SK::mac));
+	}else{
+		//just get mac from iface
+		set(SK::mac, real_actor.get(SK::mac));
+	}
+
+	// other setup only for whitebox
 	if(!is_external_WB()) return;
 	conn = real_actor->conn;
 

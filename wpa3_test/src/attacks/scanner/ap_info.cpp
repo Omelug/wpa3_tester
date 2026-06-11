@@ -6,9 +6,10 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 #include "scan/active/scan_AP.h"
-#include "scan/active/scan_STA.h"
 #include "scan/active/scan_EAP.h"
+#include "scan/active/scan_STA.h"
 #include "system/utils.h"
+
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
@@ -29,6 +30,7 @@ void run_attack(RunStatus &rs){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
+		set_public_perms(beacon_pcap);
 		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
 		{
 			const path beacon_txt = rs.run_folder()/ "beacon_scan.txt";

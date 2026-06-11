@@ -21,7 +21,7 @@ string ScanAP::to_tshark_str(const path &beacon_path){
 			"-e wlan_mgt.rsn.capabilities.mfpc " "-e wlan_mgt.rsn.capabilities.mfpr " "-E header=y 2>/dev/null";
 
 	stringstream ss;
-	array < char, 256 > buffer;
+	array<char,256> buffer{};
 	const unique_ptr<FILE,int(*)(FILE *)> pipe(popen(command.c_str(), "r"), pclose);
 	if(!pipe) return "Error: popen failed";
 

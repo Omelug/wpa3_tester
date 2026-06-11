@@ -49,7 +49,7 @@ string EAP_Session::to_str() const{
 
 string extract_identity(const vector<uint8_t> &payload){
 	if(payload.size() <= 5) return "Empty"; // (Code, ID, LenH, LenL, Type, [Data...])
-	return string(payload.begin() + 5, payload.end());
+	return {payload.begin() + 5, payload.end()};
 }
 
 EAP_Info parse_eap_packet(const RawPDU &raw){
@@ -141,8 +141,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 
 void active_eap_identity_scan(const string &iface, const string &target_ap_mac, const int timeout_sec){
 	map<string,EAP_Session> sessions;
-	const string filter = "";
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu){ return handle_eap_pdu(pdu, target_ap_mac, sessions); },
-											iface, filter, seconds(timeout_sec));
+											iface, "", seconds(timeout_sec));
 }
 }

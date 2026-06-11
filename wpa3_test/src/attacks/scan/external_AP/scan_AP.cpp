@@ -1,10 +1,9 @@
 #include "attacks/scan/scan_AP.h"
 #include <future>
 #include <sys/poll.h>
+#include "attacks/scan/scan_EAP.h"
+#include "attacks/scan/scan_STA.h"
 #include "config/RunStatus.h"
-#include "observer/observers.h"
-#include "scan/scan_EAP.h"
-#include "scan/scan_STA.h"
 
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"

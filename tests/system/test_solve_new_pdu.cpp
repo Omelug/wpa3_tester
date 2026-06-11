@@ -5,7 +5,6 @@
 
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
-#include "config/Actor_Config/Actor_Config_sim.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;

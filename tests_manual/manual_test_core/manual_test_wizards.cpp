@@ -6,7 +6,7 @@
 
 #include "manual_test_wizards.h"
 #include "config/RunStatus.h"
-#include "scan/scan.h"
+#include "attacks/scan/scan.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::manual_tests{

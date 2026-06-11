@@ -1,4 +1,4 @@
-#include "scan/scan.h"
+#include "attacks/scan/scan.h"
 #include <fstream>
 #include <sstream>
 #include <tins/sniffer.h>

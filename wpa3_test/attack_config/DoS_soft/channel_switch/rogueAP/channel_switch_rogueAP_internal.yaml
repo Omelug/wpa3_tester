@@ -55,7 +55,7 @@ actors:
     source: internal
     selection:
       channel: 1
-      condition: [ monitor ]
+      condition: [ AP ]
     setup:
       program: hostapd-mana
       program_config:

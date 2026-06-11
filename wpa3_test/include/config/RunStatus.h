@@ -74,6 +74,7 @@ public:
 	void start_observers();
 	static std::string findConfigByTestName(const std::string &name);
 
+	// get external options
 	// For manual testing / wizards
 	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
 														const std::vector<int> &channels

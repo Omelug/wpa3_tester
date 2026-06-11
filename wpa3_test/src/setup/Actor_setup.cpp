@@ -1,5 +1,6 @@
 #include "attacks/two_iface/TwoIfaceInject.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -45,6 +46,7 @@ Channel Actor_config::get_channel() const {
 	return Channel{ch_num, band, (*this)[SK::ht_mode]};
 }
 
+// Only simulation/internal,external have specific
 void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
 	conn = real_actor->conn;
 
@@ -59,8 +61,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set(SK::ssid, real_actor[SK::ssid]);
 
 	if((*this)[SK::mac].has_value()){
+		// setup force set mac adress
 		set_mac_address(get(SK::mac));
 	}else{
+		//just get mac from iface
 		set(SK::mac, real_actor.get(SK::mac));
 	}
 

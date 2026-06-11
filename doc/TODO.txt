@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+f: špatně se resetuje scan_ip (ap_info)
 +: filler for channel_switch
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
 r: co jde v suite, sjednotit
@@ -108,7 +109,7 @@ ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
 t?: test with hostapd debugging logs, if are same
 ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
-ch: + docuemnt what exactly are validators/ref/extedns (arent extends and $ref same?)
+ch: + docuemnt what exactly are validator/ref ($ref dont works with extends)
 +: dát  [[nodiscard]] tam, kde je to potřeba
 r:  better open/cloose once, multiple ClientStates?
 

@@ -31,7 +31,6 @@ Actor_config::Actor_config(const json &j, string source) {
 			const auto name = string(sk_name(k));
 			if(!sel.contains(name)) continue;
 			if(sel[name].is_string()){
-				if(k == SK::mac) continue; //skip mac, for internal
 				this->set(k, sel[name].get<string>());
 			}else if(sel[name].is_number()){
 				this->set(k, to_string(sel[name].get<int>()));
@@ -54,8 +53,8 @@ Actor_config::Actor_config(const json &j, string source) {
 					(*this)[*k] = !negated;
 			}
 		}
-		const auto name = string(sk_name(SK::mac));
-		if(!this->is_WB()) this->set(SK::mac, sel[name].get<string>());
+		//const auto name = string(sk_name(SK::mac));
+		//if(!this->is_WB()) this->set(SK::mac, sel[name].get<string>());
 	}
 
 	if(j.contains("netns"))  set(SK::netns, j.at("netns").get<string>());

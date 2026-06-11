@@ -1,4 +1,3 @@
-#include "attacks/scan/scan.h"
 #include <fstream>
 #include <sstream>
 #include "config/global_config.h"
@@ -30,7 +29,7 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	}
 }
 
-vector<string> scan::parse_csv_line(const string &line){
+vector<string> parse_csv_line(const string &line){
 	vector<string> fields;
 	stringstream ss(line);
 	string field;
@@ -42,7 +41,7 @@ vector<string> scan::parse_csv_line(const string &line){
 	return fields;
 }
 
-vector<ActorPtr> scan::get_actors_conn_table(const path &conn_table){
+vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 	vector<ActorPtr> result;
 
 	if(!exists(conn_table)){
@@ -105,7 +104,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 	const path conn_table = absolute(
 		path(PROJECT_ROOT_DIR) / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
 
-	for(auto &cfg: scan::get_actors_conn_table(conn_table)){
+	for(auto &cfg: get_actors_conn_table(conn_table)){
 		if(!cfg[SK::whitebox_ip].has_value()){
 			const string ip_str = ip::resolve_host(cfg["whitebox_host"]);
 			cfg->set(SK::whitebox_ip, ip_str);

@@ -1,19 +1,11 @@
-#include "attacks/scan/scan.h"
-#include <fstream>
-#include <sstream>
 #include <tins/sniffer.h>
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
-#include "config/Actor_Config/Actor_Config_internal.h"
-#include "config/Actor_Config/Actor_Config_sim.h"
-#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
-#include "system/ip.h"
-#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;

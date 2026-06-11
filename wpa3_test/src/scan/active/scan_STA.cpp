@@ -3,12 +3,10 @@
 #include <variant>
 #include <sys/poll.h>
 #include <tins/sniffer.h>
-
-#include "attacks/scan/scan_AP.h"
-#include "attacks/scan/scan_STA.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/log.h"
+#include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
@@ -16,7 +14,7 @@ using namespace chrono;
 using namespace Tins;
 
 namespace wpa3_tester::scan{
-bool parse_control_frame(const Dot11Control *ctrl, attack_scan::ScanAP &scan_ap){
+bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
 	string addr1 = ctrl->addr1().to_string();
 
 	// RTS addr1 and addr2
@@ -33,7 +31,7 @@ bool parse_control_frame(const Dot11Control *ctrl, attack_scan::ScanAP &scan_ap)
 	return false;
 }
 
-bool parse_data_frame(const Dot11Data *data, attack_scan::ScanAP &scan_ap){
+bool parse_data_frame(const Dot11Data *data, ScanAP &scan_ap){
 	const string src = data->addr2().to_string();
 	const string dst = data->addr1().to_string();
 
@@ -49,11 +47,11 @@ bool parse_data_frame(const Dot11Data *data, attack_scan::ScanAP &scan_ap){
 	return false;
 }
 
-bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, attack_scan::ScanAP &scan_ap){
+bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, ScanAP &scan_ap){
 	// Subtype 4 = Probe Request
 	if(mgmt->subtype() == 4){
 		const string sta_mac = mgmt->addr2().to_string(); // Transmitter
-		if(scan_ap.stations.insert(attack_scan::Scan_STA(sta_mac)).second){
+		if(scan_ap.stations.insert(Scan_STA(sta_mac)).second){
 			log(LogLevel::DEBUG, "Station found via Probe Request: {}", sta_mac);
 			return true;
 		}
@@ -67,7 +65,7 @@ bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, attack_scan::ScanAP &sca
 	return false;
 }
 
-bool station_frame_parse(const unique_ptr<PDU> &pdu, attack_scan::ScanAP &scan_ap){
+bool station_frame_parse(const unique_ptr<PDU> &pdu, ScanAP &scan_ap){
 	if(!pdu) return false;
 	const auto dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return false;
@@ -86,7 +84,7 @@ bool station_frame_parse(const unique_ptr<PDU> &pdu, attack_scan::ScanAP &scan_a
 	return capture;
 }
 
-void station_scan(attack_scan::ScanAP &scan_ap, const string &interface, const int timeout_sec,
+void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_sec,
 				const filesystem::path &stations_pcap
 ){
 	SnifferConfiguration sniff_config;

@@ -1,7 +1,7 @@
 #pragma once
 #include "config/RunStatus.h"
 
-namespace wpa3_tester::attack_scan{
+namespace wpa3_tester::scan{
 class Scan_STA{
 public:
 	std::string mac;
@@ -24,7 +24,6 @@ public:
 	std::set<Scan_STA> stations;
 	std::string bssid;
 
-	static std::string to_tshark_str(const std::filesystem::path &beacon_path);
 	static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
 	std::string to_str() const;
 };
@@ -32,8 +31,6 @@ public:
 std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int timeout_sec, ScanAP &scan_ap,
 											const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt
 );
-
-void run_attack(RunStatus & rs);
 
 //TODO scan
 // check ACm threshold

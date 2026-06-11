@@ -12,36 +12,33 @@ using namespace chrono;
 
 namespace wpa3_tester::external_info{
 
-// returns true when a new AP is inserted (used for actor_limit check).
-// mirrors station_frame_parse in scan_STA.cpp but collects into ap_map/sta_macs
-// rather than a single ScanAP.
-static bool parse_frame(PDU &pdu,
-						map<string, Actor_Config_external> &ap_map,
-						set<string> &sta_macs)
-{
+struct ApEntry {
+	Actor_Config_external cfg;
+	set<string> stations;
+};
+
+static void try_add_sta(map<string, ApEntry> &ap_map, const string &bssid, const string &mac){
+	if(mac == "ff:ff:ff:ff:ff:ff" || mac == bssid) return;
+	ap_map[bssid].stations.insert(mac);
+}
+
+static bool parse_frame(PDU &pdu, map<string, ApEntry> &ap_map){
 	if(const auto *beacon = pdu.find_pdu<Dot11Beacon>()){
 		const string bssid = beacon->addr3().to_string();
 		if(!ap_map.contains(bssid)){
-			Actor_Config_external cfg;
-			scan::fill_actor_caps_from_beacon(pdu, cfg);
-			ap_map[bssid] = std::move(cfg);
+			scan::fill_actor_caps_from_beacon(pdu, ap_map[bssid].cfg);
 			log(LogLevel::DEBUG, "Found AP: {}", bssid);
 			return true;
 		}
 		return false;
 	}
 
-	// probe request (subtype 4) transmitter = STA
-	if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>(); mgmt && mgmt->subtype() == 4){
-		const string mac = mgmt->addr2().to_string();
-		if(mac != "ff:ff:ff:ff:ff:ff") sta_macs.insert(mac);
-		return false;
-	}
-
-	// data frame transmitter that is not a known AP = STA (mac only, like Scan_STA)
+	// data frames: addr2==BSSID → STA is addr1; addr1==BSSID → STA is addr2
 	if(const auto *data = pdu.find_pdu<Dot11Data>()){
-		const string mac = data->addr2().to_string();
-		if(mac != "ff:ff:ff:ff:ff:ff" && !ap_map.contains(mac)) sta_macs.insert(mac);
+		const string a1 = data->addr1().to_string();
+		const string a2 = data->addr2().to_string();
+		if(ap_map.contains(a2)) try_add_sta(ap_map, a2, a1);
+		else if(ap_map.contains(a1)) try_add_sta(ap_map, a1, a2);
 	}
 
 	return false;
@@ -53,38 +50,39 @@ void run_attack(RunStatus &rs){
 	const auto scanner  = rs.get_actor("scanner");
 
 	const int timeout_sec = att_cfg.at("timeout_sec").get<int>();
-	const int actor_limit = att_cfg.value("actor_limit", 0);   // 0 = unlimited
+	const int actor_limit = att_cfg.value("actor_limit", 0);
 
-	map<string, Actor_Config_external> ap_map;
-	set<string> sta_macs;
+	map<string, ApEntry> ap_map;
 
 	components::poll_sniffer_pdu<monostate>(
 		[&](PDU &pdu) -> optional<monostate> {
-			const bool new_ap = parse_frame(pdu, ap_map, sta_macs);
+			const bool new_ap = parse_frame(pdu, ap_map);
 			if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >= actor_limit)
 				return monostate{};
 			return nullopt;
 		},
 		scanner.get(SK::iface),
-		"type mgt subtype beacon or type mgt subtype probe-req or type data",
+		"type mgt subtype beacon or type data",
 		seconds(timeout_sec)
 	);
 
 	nlohmann::json aps = nlohmann::json::array();
-	for(const auto &cfg: ap_map | views::values) aps.push_back(cfg.to_json());
-
-	nlohmann::json stas = nlohmann::json::array();
-	for(const auto &mac: sta_macs) stas.push_back(mac);
+	int total_stas = 0;
+	for(const auto &[bssid, entry]: ap_map){
+		auto ap_json = entry.cfg.to_json();
+		nlohmann::json sta_list = nlohmann::json::array();
+		for(const auto &mac: entry.stations) sta_list.push_back(mac);
+		ap_json["sta_count"] = static_cast<int>(entry.stations.size());
+		ap_json["stations"]  = sta_list;
+		aps.push_back(ap_json);
+		total_stas += static_cast<int>(entry.stations.size());
+	}
 
 	rs.save_result({
-		{"ap_count",  static_cast<int>(ap_map.size())},
-		{"sta_count", static_cast<int>(sta_macs.size())},
-		{"aps",       aps},
-		{"stations",  stas},
+		{"ap_count",   static_cast<int>(ap_map.size())},
+		{"sta_count",  total_stas},
+		{"aps",        aps},
 	});
 }
-
-// TODO: save APs and STAs to database of known actors
-// stats funciton
 
 }

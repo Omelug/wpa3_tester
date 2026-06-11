@@ -1,0 +1,23 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: external_info
+$validator: "./external_info.schema.yaml"
+attacker_module: external_info
+
+actors:
+  scanner:
+    source: internal
+    selection:
+      condition: [ monitor ]
+      channel: 6
+    sniff_iface: scanner
+
+observers:
+  tshark_scanner:
+    actor: scanner
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+
+attack_config:
+  timeout_sec: 30
+  # actor_limit: 10   # stop after discovering this many APs (0 or omit = unlimited)

@@ -7,9 +7,9 @@
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
-#include "attacks/scan/scan_AP.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
@@ -115,14 +115,14 @@ void McMitm::configure_interfaces(){
 }
 
 void McMitm::setup_real_AP_RSN_frames(){
-	attack_scan::ScanAP scan_ap{};
+	scan::ScanAP scan_ap{};
 	scan_ap.bssid = ap_mac.to_string();
 
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
-	beacon = attack_scan::RSN_scan(rogue_sta["iface"], 20, scan_ap); //TODO hardcoded tscan_timeout
+	beacon = scan::RSN_scan(rogue_sta["iface"], 20, scan_ap); //TODO hardcoded tscan_timeout
 	if(!beacon){
 		log(LogLevel::ERROR,
 			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ssid);

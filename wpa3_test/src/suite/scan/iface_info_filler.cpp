@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "attacks/scan/iface_info.h"
+#include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"

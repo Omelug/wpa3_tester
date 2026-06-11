@@ -1,36 +1,16 @@
-#include "attacks/scan/scan_AP.h"
-#include <future>
-#include <sys/poll.h>
-#include "attacks/scan/scan_EAP.h"
-#include "attacks/scan/scan_STA.h"
-#include "config/RunStatus.h"
+#include "scan/active/scan_AP.h"
 
+#include <future>
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
-#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
+#include "config/RunStatus.h"
 #include "system/utils.h"
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::attack_scan{
-string ScanAP::to_tshark_str(const path &beacon_path){
-	if(!exists(beacon_path)) return "Error: File not found";
-	const string command = "tshark -r " + beacon_path.string() + " -T fields " "-e wlan.ssid " "-e wlan_mgt.rsn.akms "
-			"-e wlan_mgt.rsn.capabilities.mfpc " "-e wlan_mgt.rsn.capabilities.mfpr " "-E header=y 2>/dev/null";
-
-	stringstream ss;
-	array<char,256> buffer{};
-	const unique_ptr<FILE,int(*)(FILE *)> pipe(popen(command.c_str(), "r"), pclose);
-	if(!pipe) return "Error: popen failed";
-
-	while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr){
-		ss << buffer.data();
-	}
-
-	return ss.str();
-}
+namespace wpa3_tester::scan{
 
 void print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 	static const map<RSNInformation::AKMSuites,string> akm_map = {
@@ -113,72 +93,4 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 	return nullptr;
 }
 
-void run_attack(RunStatus &rs){
-	rs.start_observers();
-	const auto &att_cfg = rs.config().at("attack_config");
-	const auto target_ap = rs.get_actor("target");
-	const auto scanner = rs.get_actor("scanner");
-
-	log(LogLevel::DEBUG, "Scanning start");
-	ScanAP scan_ap{};
-	scan_ap.bssid = target_ap["mac"];
-	if(att_cfg.value("beacon_scan", false)){
-		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
-		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
-		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
-		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
-		{
-			const path beacon_txt = rs.run_folder()/ "beacon_scan.txt";
-			ofstream ofs(beacon_txt);
-			ofs << "Scan results for " << target_ap["mac"] << "\n";
-			ofs << scan_ap.to_str() << endl;
-			ofs.close();
-			set_public_perms(beacon_txt);
-		}
-	}
-
-	if(att_cfg.value("stations_scan", false)){
-		const auto timeout = att_cfg.value("stations_timeout_sec", 10);
-		scan::station_scan(scan_ap, scanner["iface"], timeout, path(rs.run_folder()));
-	}
-
-	if(att_cfg.value("EAP_scan", false)){
-		bool is_eap = false;
-		if(scan_ap.rsn){
-			for(const auto &suite: scan_ap.rsn.value().akm_cyphers()){
-				// Tins::RSNInformation::AKMSuites
-				if(suite == RSNInformation::EAP || suite == RSNInformation::EAP_FT || suite ==
-					RSNInformation::EAP_SHA256 || suite == RSNInformation::EAP_SHA256_FIPSB || suite ==
-					RSNInformation::EAP_SHA384){
-					is_eap = true;
-					break;
-				}
-			}
-		}
-		if(is_eap){
-			const auto timeout = att_cfg.value("EAP_timeout_sec", 10);
-			log(LogLevel::DEBUG, "AP supports EAP. Scanning identities for {} seconds", timeout);
-			scan::active_eap_identity_scan(scanner["iface"], target_ap["mac"], timeout);
-		} else{
-			log(LogLevel::INFO, "Skipping EAP scan: Beacon RSN does not indicate 802.1X/EAP support.");
-		}
-	}
-
-	if(att_cfg.value("ACM_trigger", false)){
-		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-			rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
-		const auto [cookie, count] = pmk_gobbler::trigger_acm(scanner["sniff_iface"], scanner["mac"],
-															HWAddress < 6 > (target_ap["mac"]),
-															att_cfg.at("acm_trigger_count").get<int>(),
-															sae_params.value());
-		const path acm_txt = rs.run_folder()/ "ACM_trigger.txt";
-		ofstream ofs(acm_txt);
-		ofs << "ACM trigger after " << count << " frames " << "\n";
-		ofs << scan_ap.to_str() << "\n";
-		ofs << sae_helper::bytes_to_hex(cookie.token) << "\n";
-		ofs << cookie.sta_mac << "\n";
-		ofs.close();
-		set_public_perms(acm_txt);
-	}
-}
 }

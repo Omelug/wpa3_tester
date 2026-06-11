@@ -10,6 +10,7 @@ std::string get_hostapd_mana(const std::string &version = "");
 
 // parses sae_password, fallback to psk from the generated <actor_name>_wpa_supplicant/hostapd.conf.
 std::string get_password(const RunStatus &rs, const std::string &actor_name);
+std::string get_ssid(const RunStatus &rs, const std::string &actor_name);
 
 struct CrackResult {
     int total;

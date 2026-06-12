@@ -13,16 +13,7 @@ static std::string html_page() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WPA3 Tester — Results Overview</title>
-    <style>
-        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
-        h1   { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; }
-        .card { background: white; border-radius: 6px; padding: 20px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
-        h2   { color: #34495e; margin-top: 0; }
-        ul   { padding-left: 20px; }
-        li   { margin: 6px 0; }
-        a    { color: #2980b9; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>WPA3 Tester — Results Overview</h1>
@@ -49,7 +40,7 @@ static std::string html_page() {
 }
 
 int main() {
-    const fs::path output_dir = "output";
+    const fs::path output_dir = "result_overview";
     wpa3_tester::create_public_dirs(output_dir);
 
     const fs::path index = output_dir / "index.html";

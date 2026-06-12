@@ -11,6 +11,7 @@ using namespace filesystem;
 using suite::channel_switch_filler::CsaTestEntry;
 using suite::channel_switch_filler::parse_test_folder;
 
+// TODO 
 static vector<CsaTestEntry> collect_results(const path &data_dir) {
     vector<CsaTestEntry> results;
     const path suites_dir = data_dir / "wpa3_suites";
@@ -53,14 +54,16 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSA DoS Attack — Results</title>
     <link rel="stylesheet" href="../../../style.css">
+    <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
     <h1>Channel Switch Announcement (CSA) DoS</h1>
 
     <div class="card">
         <h2>Attack Description</h2>
-        <p>The attacker sends forged CSA beacons causing a connected client to switch
-           Wi-Fi channels, disconnecting it from the legitimate AP.</p>
+        <p>The attacker sends CSA beacons causing a connected client to switch
+           Wi-Fi channels, disconnecting it from the legitimate AP.
+		   Optionally can attacker create rogue AP on new channel with WPA2 to downgrade and het WPA2 hash.</p>
         <img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:100%; margin-top:12px;">
     </div>
 )html";
@@ -70,7 +73,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     } else {
         f << R"html(    <div class="card">
         <h2>Test Results</h2>
-        <table>
+        <table id="resultsTable">
             <thead>
                 <tr>
                     <th>Test</th>

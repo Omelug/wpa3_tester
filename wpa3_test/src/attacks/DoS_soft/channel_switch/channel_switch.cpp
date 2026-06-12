@@ -104,14 +104,15 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	}
 	set_public_perms(report_path);
 
-	report << "# WPA3 Security Test Report: CSA DoS Attack\n\n";
-	report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
+	report << "# CSA DoS Attack\n\n";
+	//FIXME link to CSA attack
+	//report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
 	report::attack_config_table(report, rs);
 	report::attack_mapping_table(report, rs);
-	report << "## Traffic Analysis\n";
-	report << "Charts represent the network speed captured during the test. (STA->AP)\n";
-	report <<
-			"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
+	//report << "### Traffic Analysis\n";
+	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
+	//report <<
+	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
 	report << "### STA (client, wpa_supplicant " << rs.config().at("actors").at("client").at("setup").at("program_config")
 													.value("version", "default") << ")\n";
 	report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";

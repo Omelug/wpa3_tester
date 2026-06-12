@@ -8,7 +8,7 @@ using namespace filesystem;
 
 void attack_config_table(ofstream &report, const RunStatus &rs){
 	auto attack_cfg = rs.config().at("attack_config");
-	report << "### Attack Configuration\n\n";
+	//report << "#### Attack Configuration\n\n";
 	for(auto &[key, value]: attack_cfg.items()){
 		report << "- **" << key << "**: " << value << "\n";
 	}
@@ -24,9 +24,9 @@ void attack_mapping_table(ofstream &report, const RunStatus &rs){
 		return;
 	}
 
-	report << "### Actor/Interface Mapping\n\n"
-		<< "| Type | Actor Name | Interface | MAC | Driver |\n"
-		<< "|------|------------|-----------|-----|--------|\n";
+	//report << "#### Actor/Interface Mapping\n\n"
+	report << "| Type | Actor Name | Interface | MAC | Driver |\n"
+	       << "|------|------------|-----------|-----|--------|\n";
 
 	string line;
 	getline(csv_file, line);

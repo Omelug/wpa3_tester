@@ -15,15 +15,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
-	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
-
-	const auto run_dir = rss.run_folder();
-	if(!exists(run_dir)){
-		log(LogLevel::ERROR, "Run folder not found: {}", run_dir.string());
-		return;
-	}
-
+vector<tuple<string, string, string, string, string, bool>> test_data(const path &run_dir){
 	// test_name, ap_driver, client_driver, attacker_driver, attack_variant, passed
 	vector<tuple<string, string, string, string, string, bool>> test_results;
 
@@ -53,7 +45,19 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 			helper::get_driver(drv, "attacker"),
 			attack_variant, passed);
 	}
+	return test_results;
+}
 
+void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
+	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
+
+	const auto run_dir = rss.run_folder();
+	if(!exists(run_dir)){
+		log(LogLevel::ERROR, "Run folder not found: {}", run_dir);
+		return;
+	}
+
+	auto test_results = test_data(run_dir);
 	auto report = helper::open_report(run_dir / "report.md");
 	if(!report.is_open()) return;
 

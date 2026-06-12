@@ -1,10 +1,20 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <unistd.h>
 
+#include "attacks/DoS_soft/channel_switch.h"
 #include "system/utils.h"
 
-namespace fs = std::filesystem;
+using namespace std;
+using namespace filesystem;
+// binary is at <project_root>/build/bin/result_overview → root is 3 levels up
+static path project_root() {
+    char buf[4096]{};
+    const ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    if (len <= 0) return current_path();
+    return path(buf).parent_path().parent_path().parent_path();
+}
 
 static std::string html_page() {
     return R"html(<!DOCTYPE html>
@@ -21,7 +31,7 @@ static std::string html_page() {
     <div class="card">
         <h2>Attack Categories</h2>
         <ul>
-            <li><a href="attacks/dos_soft/index.html">DoS Soft</a></li>
+            <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
             <li><a href="attacks/dos_hard/index.html">DoS Hard</a></li>
             <li><a href="attacks/downgrade/index.html">Downgrade</a></li>
             <li><a href="attacks/mc_mitm/index.html">MC-MitM</a></li>
@@ -40,14 +50,19 @@ static std::string html_page() {
 }
 
 int main() {
-    const fs::path output_dir = "result_overview";
+    const path root       = project_root();
+    const path output_dir = root / "build" / "result_overview";
+    const path data_dir   = root / "data";
+
     wpa3_tester::create_public_dirs(output_dir);
 
-    const fs::path index = output_dir / "index.html";
+    const path index = output_dir / "index.html";
     std::ofstream f(index);
     f << html_page();
     f.close();
-	wpa3_tester::set_public_perms(index);
+    wpa3_tester::set_public_perms(index);
+
+    wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
 
     return 0;
 }

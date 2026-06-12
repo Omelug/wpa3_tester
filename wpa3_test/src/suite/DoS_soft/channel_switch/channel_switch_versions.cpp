@@ -4,18 +4,61 @@
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "suite/DoS_soft/channel_switch/channel_switch_versions.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/DoS_soft/channel_switch/channel_switch_versions.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::suite::channel_switch_filler{
 using namespace std;
 using namespace filesystem;
-using namespace nlohmann;
 
-void generate_report(RunSuiteStatus &rss){ //TODO get versions
+CsaTestEntry parse_test_folder(const path &test_folder){
+	CsaTestEntry e;
+	e.name = test_folder.filename().string();
+
+	if(const auto result = helper::load_result_json(test_folder))
+		e.passed = result->value("passed", false);
+
+	const auto drv    = helper::load_test_drivers(test_folder);
+	e.ap_driver       = helper::get_driver(drv, "access_point");
+	e.client_driver   = helper::get_driver(drv, "client");
+	e.attacker_driver = helper::get_driver(drv, "attacker");
+
+	const auto cfg_path = test_folder / "test_config.yaml";
+	if(exists(cfg_path)){
+		try{
+			const auto cfg = YAML::LoadFile(cfg_path.string());
+			if(cfg["name"])
+				e.name = cfg["name"].as<string>();
+			if(cfg["actors"] && cfg["actors"]["access_point"]
+				&& cfg["actors"]["access_point"]["setup"]
+				&& cfg["actors"]["access_point"]["setup"]["program_config"]
+				&& cfg["actors"]["access_point"]["setup"]["program_config"]["version"])
+				e.hostapd_version = cfg["actors"]["access_point"]["setup"]["program_config"]["version"].as<string>();
+			if(cfg["actors"] && cfg["actors"]["client"]
+				&& cfg["actors"]["client"]["setup"]
+				&& cfg["actors"]["client"]["setup"]["program_config"]
+				&& cfg["actors"]["client"]["setup"]["program_config"]["version"])
+				e.supplicant_version = cfg["actors"]["client"]["setup"]["program_config"]["version"].as<string>();
+			if(cfg["attack_config"]){
+				if(cfg["attack_config"]["new_channel"])
+					e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
+				if(cfg["attack_config"]["attack_time"])
+					e.attack_time = to_string(cfg["attack_config"]["attack_time"].as<int>());
+			}
+		} catch(...){}
+	}
+
+	const path tshark = test_folder / "observer" / "tshark";
+	if(const auto p = tshark / "client_graph.png";       exists(p)) e.client_graph = p;
+	if(const auto p = tshark / "access_point_graph.png"; exists(p)) e.ap_graph     = p;
+
+	return e;
+}
+
+void generate_report(RunSuiteStatus &rss){
 	log(LogLevel::INFO, "Generating channel_switch versions test suite report");
 
 	const auto run_dir = rss.run_folder();
@@ -24,37 +67,12 @@ void generate_report(RunSuiteStatus &rss){ //TODO get versions
 		return;
 	}
 
-	// test_name, ap_driver, client_driver, attacker_driver, hostapd_version, passed
-	vector<tuple<string, string, string, string, string, bool>> test_results;
-
+	vector<CsaTestEntry> test_results;
 	for(const auto &entry: directory_iterator(run_dir)){
 		if(!entry.is_directory()) continue;
-
-		const auto &test_folder = entry.path();
-		const auto result = helper::load_result_json(test_folder);
-		if(!result) continue;
-
-		const bool passed     = result->value("passed", false);
-		const string test_name = test_folder.filename().string();
-
-		const auto drv = helper::load_test_drivers(test_folder);
-
-		string hostapd_version = "?";
-		const auto config_path = test_folder / "test_config.yaml";
-		if(exists(config_path)){
-			const auto cfg = YAML::LoadFile(config_path.string());
-			if(cfg["actors"] && cfg["actors"]["access_point"]
-				&& cfg["actors"]["access_point"]["setup"]
-				&& cfg["actors"]["access_point"]["setup"]["program_config"]
-				&& cfg["actors"]["access_point"]["setup"]["program_config"]["version"])
-				hostapd_version = cfg["actors"]["access_point"]["setup"]["program_config"]["version"].as<string>();
-		}
-
-		test_results.emplace_back(test_name,
-			helper::get_driver(drv, "access_point"),
-			helper::get_driver(drv, "client"),
-			helper::get_driver(drv, "attacker"),
-			hostapd_version, passed);
+		auto e = parse_test_folder(entry.path());
+		if(!e.passed.has_value()) continue;
+		test_results.push_back(std::move(e));
 	}
 
 	auto report = helper::open_report(run_dir / "report.md");
@@ -73,16 +91,18 @@ void generate_report(RunSuiteStatus &rss){ //TODO get versions
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Hostapd Version | Result |\n";
 	report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
 
-	for(const auto &[test_name, ap_drv, cli_drv, att_drv, version, passed]: test_results){
-		const string name_cell   = exists(run_dir / test_name / "report.md")
-			? "[" + test_name + "](" + test_name + "/report.md)" : test_name;
-		const string result_link = "[" + string(passed ? "PASSED" : "FAILED") + "](" + test_name + "/result.json)";
-		report << "| " << name_cell << " | " << ap_drv << " | " << cli_drv << " | "
-			   << att_drv << " | " << version << " | " << result_link << " |\n";
+	for(const auto &e: test_results){
+		const string name_cell   = exists(run_dir / e.name / "report.md")
+			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
+		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED")
+			+ "](" + e.name + "/result.json)";
+		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver
+			   << " | " << e.attacker_driver << " | " << e.hostapd_version
+			   << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	size_t passed_count = ranges::count_if(test_results, [](const auto &r){ return get<5>(r); });
+	const size_t passed_count = ranges::count_if(test_results, [](const auto &e){ return e.passed.value_or(false); });
 	report << "- Total Tests: " << test_results.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (test_results.size() - passed_count) << "\n";

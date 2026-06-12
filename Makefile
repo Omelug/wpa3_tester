@@ -96,4 +96,4 @@ build_overview:
 	cmake --build $(BUILD_DIR) --target result_overview -j $(NPROC)
 
 make_overview: build_overview
-	cd $(BUILD_DIR) && ./bin/result_overview
+	./$(BUILD_DIR)/bin/result_overview

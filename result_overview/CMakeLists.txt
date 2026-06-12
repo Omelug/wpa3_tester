@@ -12,6 +12,7 @@ target_include_directories(result_overview PRIVATE
 target_link_libraries(result_overview PRIVATE
     -Wl,--whole-archive wpa3_core -Wl,--no-whole-archive
     wpa3_deps
+    yaml-cpp
 )
 
 set_target_properties(result_overview PROPERTIES

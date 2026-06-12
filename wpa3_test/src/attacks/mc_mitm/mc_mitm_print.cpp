@@ -59,17 +59,17 @@ string McMitm::frame_to_str(const Dot11 &pkt){
 void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &frame, const string &suffix){
 	if(frame.type() == Dot11::CONTROL) return;
 
-	string addr2;
+	HWAddress<6> addr2;
 	if(const auto *mgmt = frame.find_pdu<Dot11ManagementFrame>()){
-		addr2 = mgmt->addr2().to_string();
+		addr2 = mgmt->addr2();
 	} else if(const auto *data = frame.find_pdu<Dot11Data>()){
-		addr2 = data->addr2().to_string();
+		addr2 = data->addr2();
 	} else if(frame.type() == Dot11::MANAGEMENT){
 		const auto raw = const_cast<Dot11&>(frame).serialize();
-		if(raw.size() >= 16) addr2 = HWAddress < 6 > (raw.data() + 10).to_string();
+		if(raw.size() >= 16) addr2 = HWAddress <6>(raw.data() + 10);
 	}
 
-	string msg = prefix + ": " + addr2 + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
+	string msg = prefix + ": " + addr2.to_string() + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
 
 	if(!suffix.empty()) msg += suffix;
 	log(level, msg);

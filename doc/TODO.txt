@@ -45,6 +45,8 @@ t: Stress tests
     t: Simulate a SAE commit frame flood and measure throughput
     l: log/cache  results per chipset/driver
 
+r?: scan parsing is still messy (maybe do everything with libpcap)
+
 //DONE
 +: filler for downgrade
 +: filler for OWE leaks

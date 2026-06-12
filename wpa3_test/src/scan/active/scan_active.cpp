@@ -30,6 +30,26 @@ void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
 	}
 }
 
+void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
+	try{
+		const auto rsn = mgmt.rsn_information();
+		const uint16_t caps = rsn.capabilities();
+		cfg.set(BK::MFP,         static_cast<bool>(caps & (1u << 7)));
+		cfg.set(BK::OCV,         static_cast<bool>(caps & (1u << 10)));
+		cfg.set(BK::beacon_prot, static_cast<bool>(caps & (1u << 11)));
+
+		bool wpa2_psk = false, wpa3_sae = false;
+		for(const auto &akm: rsn.akm_cyphers()){
+			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm == RSNInformation::PSK_SHA256)
+				wpa2_psk = true;
+			if(akm == RSNInformation::SAE_SHA256 || akm == RSNInformation::SAE_FT)
+				wpa3_sae = true;
+		}
+		cfg.set(BK::WPA_PSK,  wpa2_psk);
+		cfg.set(BK::WPA3_SAE, wpa3_sae);
+	} catch(...){}
+}
+
 void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
 	using OT = Dot11ManagementFrame::OptionTypes;
 

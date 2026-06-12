@@ -3,6 +3,7 @@
 #include <variant>
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
+#include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
 
 using namespace std;
@@ -33,14 +34,41 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 		return false;
 	}
 
-	// assoc-req: fill STA caps independently of AP association
 	if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
-		if(mgmt->subtype() == 0){
-			const HWAddress<6> bssid = mgmt->addr1();
-			const HWAddress<6> sta   = mgmt->addr2();
-			scan::fill_actor_caps_from_assoc_req(pdu, sta_map[sta]);
-			if(ap_map.contains(bssid)) ap_map[bssid].stations.insert(sta);
-			log(LogLevel::DEBUG, "STA caps from assoc-req: {}", sta);
+		const HWAddress<6> sta = mgmt->addr2();
+		switch(mgmt->subtype()){
+			case 0:  // assoc-req
+			case 2:{ // re-assoc-req
+				const HWAddress<6> bssid = mgmt->addr1();
+				scan::fill_actor_caps_from_assoc_req(pdu, sta_map[sta]);
+				if(ap_map.contains(bssid)) ap_map[bssid].stations.insert(sta);
+				log(LogLevel::DEBUG, "STA caps from assoc/reassoc-req: {}", sta);
+				break;
+			}
+			case 4:{ // probe-req: HT/VHT/HE caps + signal, no RSN
+				auto &cfg = sta_map[sta];
+				cfg.set(SK::mac, sta.to_string());
+				scan::apply_radiotap(pdu, cfg);
+				scan::apply_ht_vht_he(*mgmt, cfg);
+				cfg.set(BK::STA, true);
+				cfg.set(BK::AP,  false);
+				log(LogLevel::DEBUG, "STA caps from probe-req: {}", sta);
+				break;
+			}
+			case 11:{ // auth: signal + SAE detection from algorithm field
+				auto &cfg = sta_map[sta];
+				cfg.set(SK::mac, sta.to_string());
+				scan::apply_radiotap(pdu, cfg);
+				if(const auto *auth = pdu.find_pdu<Dot11Authentication>()){
+					if(auth->auth_algorithm() == 3) // SAE
+						cfg.set(BK::WPA3_SAE, true);
+				}
+				cfg.set(BK::STA, true);
+				cfg.set(BK::AP,  false);
+				log(LogLevel::DEBUG, "STA caps from auth frame: {}", sta);
+				break;
+			}
+			default: break;
 		}
 		return false;
 	}
@@ -74,7 +102,8 @@ void run_attack(RunStatus &rs){
 			return nullopt;
 		},
 		scanner.get(SK::iface),
-		"type mgt subtype beacon or type mgt subtype assoc-req or type data",
+		"type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req"
+		" or type mgt subtype probe-req or type mgt subtype auth or type data",
 		seconds(timeout_sec)
 	);
 

@@ -111,7 +111,7 @@ void run_attack(RunStatus &rs){
 		seconds(timeout_sec)
 	);
 
-	auto passes_filter = [&](Actor_Config_external &cfg) -> bool {
+	auto passes_filter = [&](const Actor_Config_external &cfg) -> bool {
 		return !actor_filter || actor_filter->matches(cfg);
 	};
 

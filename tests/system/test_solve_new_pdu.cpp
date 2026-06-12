@@ -13,7 +13,7 @@ using namespace Tins;
 
 namespace wpa3_tester{
 TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
-        ActorMap seen;
+        ActorMACMap seen;
         auto beacon = make_shared<Dot11Beacon>();
         beacon->addr2("00:11:22:33:44:55");  // AP MAC
         beacon->ssid("TestNetwork");
@@ -39,7 +39,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
-        ActorMap seen;
+        ActorMACMap seen;
         
         auto probe_resp = make_shared<Dot11ProbeResponse>();
         probe_resp->addr2("AA:BB:CC:DD:EE:FF");  // AP MAC
@@ -67,7 +67,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
-        ActorMap seen;
+        ActorMACMap seen;
         
         auto probe_req = make_shared<Dot11ProbeRequest>();
         probe_req->addr2("11:22:33:44:55:66");  // STA MAC
@@ -92,7 +92,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // Create data frame from STA to AP
         auto data = make_shared<Dot11Data>();
@@ -125,7 +125,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // Create data frame from AP to STA
         auto data = make_shared<Dot11Data>();
@@ -153,7 +153,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // First add an entity with basic info
         auto actor = ActorPtr(make_shared<Actor_Config_external>());
@@ -181,7 +181,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // Create beacon without RadioTap
         auto beacon = make_shared<Dot11Beacon>();
@@ -196,7 +196,7 @@ TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // Create beacon on 6 GHz
         auto beacon = make_shared<Dot11Beacon>();
@@ -218,7 +218,7 @@ TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
     }
 
 TEST_CASE("RunStatus::solve_new_pdu - WDS/IBSS frames ignored"){
-        ActorMap seen;
+        ActorMACMap seen;
 
         // Create WDS frame (to_ds && from_ds)
         auto data = make_shared<Dot11Data>();

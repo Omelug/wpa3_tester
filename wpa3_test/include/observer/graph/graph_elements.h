@@ -53,7 +53,7 @@ public:
 enum class YAxis{ Y1, Y2 };
 
 class GraphXYPoints: public GraphElements{
-	YAxis axis = YAxis::Y1;
+	//YAxis axis = YAxis::Y1;
 public:
 	std::vector<LogTimePoint> x_times;
 	std::vector<double> y_values;

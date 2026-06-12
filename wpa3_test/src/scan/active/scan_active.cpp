@@ -1,5 +1,6 @@
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/Actor_Config/actor_keys.h"
+#include "logger/log.h"
 #include "system/hw_capabilities.h"
 
 using namespace std;
@@ -9,10 +10,13 @@ using namespace chrono;
 
 namespace wpa3_tester::scan{
 
+// ----------- Fill Actor_Config ------------------
 void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
 	const auto *rt = pdu.find_pdu<RadioTap>();
 	if(!rt) return;
-	try{ cfg.set(SK::signal, to_string(rt->dbm_signal())); } catch(...){}
+	try{ cfg.set(SK::signal, to_string(rt->dbm_signal())); } catch(...){
+		// signal option not found
+	}
 	try{
 		const int freq = rt->channel_freq();
 		if(freq > 0){
@@ -21,7 +25,9 @@ void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
 			else if(freq >= 5170 && freq <= 5885){ cfg.set(BK::GHz2_4, false); cfg.set(BK::GHz5, true);  cfg.set(BK::GHz6, false); }
 			else if(freq >= 5945 && freq <= 7125){ cfg.set(BK::GHz2_4, false); cfg.set(BK::GHz5, false); cfg.set(BK::GHz6, true);  }
 		}
-	} catch(...){}
+	} catch(...){
+		// channel option not foud
+	}
 }
 
 void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){

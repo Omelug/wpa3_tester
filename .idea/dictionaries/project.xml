@@ -35,6 +35,7 @@
       <w>cpuinfo</w>
       <w>credout</w>
       <w>csignal</w>
+      <w>csseof</w>
       <w>cstdint</w>
       <w>cstdlib</w>
       <w>cstring</w>
@@ -111,6 +112,7 @@
       <w>netns</w>
       <w>newlink</w>
       <w>nextbeacon</w>
+      <w>ninline</w>
       <w>noborder</w>
       <w>nocapture</w>
       <w>nohead</w>

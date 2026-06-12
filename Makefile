@@ -92,15 +92,8 @@ coverage: coverage_build
 clear_cache:
 	rm -rf ./data/cache
 
-OVERVIEW_DIR := result_overview
-OVERVIEW_BUILD := $(OVERVIEW_DIR)/build
-
 build_overview:
-	@mkdir -p $(OVERVIEW_BUILD)
-	@if [ ! -f $(OVERVIEW_BUILD)/build.ninja ] && [ ! -f $(OVERVIEW_BUILD)/Makefile ]; then \
-		cmake -S $(OVERVIEW_DIR) -B $(OVERVIEW_BUILD) -G Ninja; \
-	fi
-	cmake --build $(OVERVIEW_BUILD) -j $(NPROC)
+	cmake --build $(BUILD_DIR) --target result_overview -j $(NPROC)
 
 make_overview: build_overview
-	$(OVERVIEW_BUILD)/result_overview
+	cd $(BUILD_DIR) && ./bin/result_overview

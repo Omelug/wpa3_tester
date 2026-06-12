@@ -1,21 +1,29 @@
-cmake_minimum_required(VERSION 3.20)
-project(result_overview VERSION 0.1.0 LANGUAGES CXX)
-
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
-
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_SOURCE_DIR}/src/*.c
+file(GLOB_RECURSE RESULT_OVERVIEW_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(result_overview ${RESULT_OVERVIEW_SOURCES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(result_overview PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(result_overview PRIVATE
+    -Wl,--whole-archive wpa3_core -Wl,--no-whole-archive
+    wpa3_deps
+)
+
+set_target_properties(result_overview PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
+# Copy static assets to build/result_overview/ after build
+add_custom_command(
+    TARGET result_overview POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/result_overview"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/static"
+        "${CMAKE_BINARY_DIR}/result_overview"
+    COMMENT "Copying static assets -> build/result_overview/"
 )

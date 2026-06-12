@@ -3,8 +3,10 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <tins/hw_address.h>
 
 namespace wpa3_tester{
+
 std::string current_time_string();
 std::string git_commit_hash();
 std::string kernel_version();

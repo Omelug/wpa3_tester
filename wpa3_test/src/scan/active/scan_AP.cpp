@@ -66,7 +66,7 @@ string ScanAP::to_str() const{
 
 	ss << "Stations: " << stations.size() << "\n";
 	for(const auto &station: stations){
-		ss << "  [STATION] " << station.mac << "\n";
+		ss << "  [STATION] " << station.to_string() << "\n";
 	}
 	return ss.str();
 }

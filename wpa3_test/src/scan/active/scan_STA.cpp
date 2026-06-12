@@ -15,14 +15,14 @@ using namespace chrono;
 using namespace Tins;
 
 namespace wpa3_tester::scan{
-bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
-	string addr1 = ctrl->addr1().to_string();
 
+// --------SCAN stations for AP --------------
+bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
 	// RTS addr1 and addr2
 	if(ctrl->subtype() == 11){
 		auto *d11rts = dynamic_cast<const Dot11RTS *>(ctrl);
-		const string src = d11rts->target_addr().to_string(); // Transmitter (Station)
-		if(d11rts->addr1().to_string() == scan_ap.bssid){
+		const HWAddress<6> src = d11rts->target_addr(); // Transmitter (Station)
+		if(d11rts->addr1() == scan_ap.bssid){
 			if(scan_ap.stations.emplace(src).second){
 				log(LogLevel::DEBUG, "Station found via RTS: {}", scan_ap.bssid);
 				return true;
@@ -33,11 +33,11 @@ bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
 }
 
 bool parse_data_frame(const Dot11Data *data, ScanAP &scan_ap){
-	const string src = data->addr2().to_string();
-	const string dst = data->addr1().to_string();
+	const HWAddress<6> src = data->addr2();
+	const HWAddress<6> dst = data->addr1();
 
 	if(src == scan_ap.bssid || dst == scan_ap.bssid){
-		const string potential_sta = (src == scan_ap.bssid) ? dst : src;
+		const HWAddress<6> potential_sta = (src == scan_ap.bssid) ? dst : src;
 		if(potential_sta != "ff:ff:ff:ff:ff:ff" && potential_sta != scan_ap.bssid){
 			if(scan_ap.stations.emplace(potential_sta).second){
 				log(LogLevel::DEBUG, "Station found : {}", potential_sta);
@@ -51,15 +51,15 @@ bool parse_data_frame(const Dot11Data *data, ScanAP &scan_ap){
 bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, ScanAP &scan_ap){
 	// Subtype 4 = Probe Request
 	if(mgmt->subtype() == 4){
-		const string sta_mac = mgmt->addr2().to_string(); // Transmitter
-		if(scan_ap.stations.insert(Scan_STA(sta_mac)).second){
+		const HWAddress<6> sta_mac = mgmt->addr2(); // Transmitter
+		if(scan_ap.stations.insert(sta_mac).second){
 			log(LogLevel::DEBUG, "Station found via Probe Request: {}", sta_mac);
 			return true;
 		}
 	} else if(mgmt->subtype() == 0 || mgmt->subtype() == 11){
 		// Assoc Req / Auth
-		if(scan_ap.stations.emplace(mgmt->addr2().to_string()).second){
-			log(LogLevel::DEBUG, "Station found : {}", mgmt->addr2().to_string());
+		if(scan_ap.stations.emplace(mgmt->addr2()).second){
+			log(LogLevel::DEBUG, "Station found : {}", mgmt->addr2());
 			return true;
 		}
 	}
@@ -117,7 +117,7 @@ void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_se
 	log(LogLevel::INFO, "Station scan finished. Found {} stations.", scan_ap.stations.size());
 }
 
-// ---- scan_ap_actor helpers ----
+// ------------- FILL Actor_Config -------------
 static void apply_rsn_caps_mgmt(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
 	try{
 		const auto rsn = mgmt.rsn_information();

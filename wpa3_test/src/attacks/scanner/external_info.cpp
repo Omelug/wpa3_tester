@@ -18,7 +18,7 @@ static void try_add_sta(ApInfoMap &ap_map, StaInfoMap &sta_map,
 	ap_map[bssid].stations.insert(mac);
 	if(!sta_map.contains(mac)){
 		Actor_Config_external cfg;
-		cfg.set(SK::mac, mac.to_string());
+		cfg.set(SK::mac, mac);
 		sta_map.emplace(mac, std::move(cfg));
 	}
 }
@@ -47,7 +47,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 			}
 			case 4:{ // probe-req: HT/VHT/HE caps + signal, no RSN
 				auto &cfg = sta_map[sta];
-				cfg.set(SK::mac, sta.to_string());
+				cfg.set(SK::mac, sta);
 				scan::apply_radiotap(pdu, cfg);
 				scan::apply_ht_vht_he(*mgmt, cfg);
 				cfg.set(BK::STA, true);
@@ -57,7 +57,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 			}
 			case 11:{ // auth: signal + SAE detection from algorithm field
 				auto &cfg = sta_map[sta];
-				cfg.set(SK::mac, sta.to_string());
+				cfg.set(SK::mac, sta);
 				scan::apply_radiotap(pdu, cfg);
 				if(const auto *auth = pdu.find_pdu<Dot11Authentication>()){
 					if(auth->auth_algorithm() == 3) // SAE
@@ -91,6 +91,10 @@ void run_attack(RunStatus &rs){
 	const int timeout_sec = att_cfg.at("timeout_sec").get<int>();
 	const int actor_limit = att_cfg.value("actor_limit", 0);
 
+	optional<Actor_Config_external> actor_filter;
+	if(att_cfg.contains("actor_filter"))
+		actor_filter = Actor_Config_external(att_cfg.at("actor_filter"));
+
 	ApInfoMap ap_map;
 	StaInfoMap sta_map;
 
@@ -107,18 +111,26 @@ void run_attack(RunStatus &rs){
 		seconds(timeout_sec)
 	);
 
+	auto passes_filter = [&](Actor_Config_external &cfg) -> bool {
+		return !actor_filter || actor_filter->matches(cfg);
+	};
+
 	nlohmann::json aps = nlohmann::json::array();
-	for(const auto &entry: ap_map | views::values){
+	for(auto &entry: ap_map | views::values){
+		if(!passes_filter(entry.cfg)) continue;
 		auto ap_json = entry.cfg.to_json();
 		nlohmann::json sta_list = nlohmann::json::array();
-		for(const auto &mac: entry.stations) sta_list.push_back(mac.to_string());
+		for(const auto &mac: entry.stations) sta_list.push_back(mac);
 		ap_json["sta_count"] = static_cast<int>(entry.stations.size());
 		ap_json["stations"]  = sta_list;
 		aps.push_back(ap_json);
 	}
 
 	nlohmann::json stas = nlohmann::json::array();
-	for(const auto &sta_cfg: sta_map | views::values) stas.push_back(sta_cfg.to_json());
+	for(auto &sta_cfg: sta_map | views::values){
+		if(!passes_filter(sta_cfg)) continue;
+		stas.push_back(sta_cfg.to_json());
+	}
 
 	rs.save_result({
 		//{"ap_count",  static_cast<int>(ap_map.size())},

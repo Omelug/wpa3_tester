@@ -1,10 +1,19 @@
 #pragma once
 #include <chrono>
 #include <fstream>
+#include <format>
 #include <iostream>
 #include <string>
+#include <tins/tins.h>
 
 #include "config/RunStatus.h"
+
+template <int n>
+struct std::formatter<Tins::HWAddress<n>> : std::formatter<std::string> {
+	auto format(const Tins::HWAddress<n> &addr, auto &ctx) const {
+		return std::formatter<std::string>::format(addr.to_string(), ctx);
+	}
+};
 
 namespace wpa3_tester{
 enum class LogLevel{

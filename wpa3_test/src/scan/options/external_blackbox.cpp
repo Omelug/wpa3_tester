@@ -1,6 +1,4 @@
 #include <pcap/pcap.h>
-#include <tins/dot11.h>
-#include <tins/radiotap.h>
 #include "attacks/components/sniffer_helper.h"
 #include "config/global_config.h"
 #include "config/RunStatus.h"
@@ -15,7 +13,7 @@ namespace wpa3_tester{
 using namespace std;
 using namespace Tins;
 
-void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
+void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 	int8_t signal = -1;
 	int channel_freq = -1;
 	if(const auto *rt = pdu.find_pdu<RadioTap>()){
@@ -25,14 +23,14 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
 		ActorPtr actor;
-		if(seen.contains(mac.to_string())){
-			actor = seen.at(mac.to_string());
+		if(seen.contains(mac)){
+			actor = seen.at(mac);
 		} else{
 			actor = ActorPtr(make_shared<Actor_Config_external>());
-			seen.emplace(mac.to_string(), actor);
+			seen.emplace(mac, actor);
 		}
-		actor->set(SK::mac, mac.to_string());
-		actor->set(SK::permanent_mac, mac.to_string());
+		actor->set(SK::mac, mac);
+		actor->set(SK::permanent_mac, mac);
 
 		actor->set(SK::ssid, ssid);
 		actor->set(BK::AP, is_ap); //TODO different possibilities?
@@ -72,14 +70,14 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMap &seen){
 	}
 }
 
-void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMap &seen){
+void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMACMap &seen){
 	RadioTap rt;
 	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; }
 	solve_new_pdu(rt, seen);
 }
 
-vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const size_t timeout_sec,
-													const vector<int> &channels
+vector<ActorPtr> RunStatus::list_external_entities(
+	const string &iface, const size_t timeout_sec, const vector<int> &channels
 ){
 	if(channels.empty()) throw setup_err("No channels specified for scanning");
 
@@ -105,7 +103,7 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 	}
 	struct PcapGuard{ pcap_t *h; ~PcapGuard(){ pcap_close(h); } } _guard{handle};
 
-	ActorMap seen;
+	ActorMACMap seen;
 	constexpr size_t SEC_MINIMUM = 2;
 	const size_t channel_sec = max<size_t>(SEC_MINIMUM, timeout_sec / channels.size());
 	const auto total_end = chrono::steady_clock::now() + chrono::seconds(timeout_sec);

@@ -35,7 +35,7 @@ bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11
 
 		if(client_state.get_mac() == client_addr)
 			log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
-				client_addr.to_string());
+				client_addr);
 
 		send_csa_beacon(1, client_addr);
 		send_csa_beacon();
@@ -124,7 +124,7 @@ void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.addr1() == ap_mac){
 		// Sleep mode detection
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
-			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2.to_string());
+			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
 			Dot11Data null_frame{};
 			null_frame.type(Dot11::DATA);
 			null_frame.subtype(Dot11::DATA_NULL);

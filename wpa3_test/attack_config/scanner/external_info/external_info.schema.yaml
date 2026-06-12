@@ -18,3 +18,5 @@ properties:
       actor_limit:
         type: integer
         minimum: 0
+      actor_filter:
+        $ref: '../../validator/test_validator.schema.yaml#/definitions/Actor'

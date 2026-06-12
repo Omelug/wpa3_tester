@@ -22,7 +22,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 		cfg->set(SK::iface, iface_name);
 		cfg->set(SK::radio, radio_name);
 		//FIXME error if not change
-		cfg->set(SK::mac, hw_capabilities::get_mac_address(iface_name, nullopt).to_string());
+		cfg->set(SK::mac, hw_capabilities::get_mac_address(iface_name, nullopt));
 		cfg->load_hw_info(hw_cache);
 		options.emplace_back(cfg);
 		}

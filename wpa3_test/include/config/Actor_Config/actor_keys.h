@@ -33,7 +33,6 @@ enum class BK : uint8_t {
     COUNT_
 };
 
-
 // Name arrays — must match enum order exactly, compile-time size verified by COUNT_
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> SK_NAMES = {

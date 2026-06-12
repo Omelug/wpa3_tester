@@ -35,6 +35,23 @@ public:
 	void set(SK key, const std::optional<std::string> &new_value);
 	void set(BK key, const std::optional<bool> &new_value);
 
+	//to allow HWAddress -> simplify code
+	struct MacSK {
+		SK key;
+		// ReSharper disable once CppNonExplicitConvertingConstructor
+		consteval MacSK(const SK k) : key(k) {
+			if (k != SK::mac && k != SK::permanent_mac) {
+				throw "Only SK::mac or SK::permanent_mac!";
+			}
+		}
+	};
+
+	void set(const MacSK key, const Tins::HWAddress<6>& addr) {
+		set(key.key, addr.to_string());
+	}
+
+
+
 	std::shared_ptr<ExternalConn> conn;
 
 	[[nodiscard]] std::optional<std::string>&       operator[](SK key);

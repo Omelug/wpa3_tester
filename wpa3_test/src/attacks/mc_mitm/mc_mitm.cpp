@@ -62,7 +62,7 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 	disas.addr3(ap_mac);
 	disas.reason_code(0);
 	send_to_rogue(disas);
-	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr.to_string());
+	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr);
 }
 
 /*void McMitm::queue_disas(const HWAddress<6> &macaddr){
@@ -116,7 +116,7 @@ void McMitm::configure_interfaces(){
 
 void McMitm::setup_real_AP_RSN_frames(){
 	scan::ScanAP scan_ap{};
-	scan_ap.bssid = ap_mac.to_string();
+	scan_ap.bssid = ap_mac;
 
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);
@@ -139,7 +139,7 @@ void McMitm::setup_real_AP_RSN_frames(){
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET)) const_cast<uint8_t *>(ch_ie->data_ptr())[0] =
 			static_cast<uint8_t>(netconfig.rogue_channel.ch_num);
 	probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
-	log(LogLevel::INFO, "Target network {} detected on channel {}", ap_mac.to_string(), netconfig.real_channel.ch_num);
+	log(LogLevel::INFO, "Target network {} detected on channel {}", ap_mac, netconfig.real_channel.ch_num);
 }
 
 void McMitm::run(RunStatus &rs, const int timeout_sec){
@@ -157,7 +157,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	const bool start_nic_real_ap = true;
 	if(start_nic_real_ap){
 		rogue_sta->set_mac_address(client_state.get_mac());
-		start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac().to_string());
+		start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	} else{
 		hw_capabilities::set_iface_down(nic_real_ap, rogue_sta[SK::netns]);
 		rogue_sta->set_mac_address(client_state.get_mac());
@@ -178,7 +178,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
-	log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac.to_string());
+	log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
 	rogue_ap->set_iface_up();
 	rogue_ap->set_mac_address(ap_mac);
 	// Set up a rogue AP that clones the target network -> ACK back to client

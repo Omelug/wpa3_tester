@@ -162,7 +162,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
             dot11->type() == Dot11::DATA){
 
             print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-            auto new_client = ClientState(addr2.to_string());
+            auto new_client = ClientState(addr2);
             add_client(new_client);
             will_forward = true;
 
@@ -174,7 +174,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 		// remove sleep option
 		if(will_forward){
 			if(dot11->power_mgmt()){
-				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2.to_string());
+				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
 				dot11->power_mgmt(0);
 			}
 			send_to_real(*pdu);

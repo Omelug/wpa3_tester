@@ -117,26 +117,15 @@ void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_se
 	log(LogLevel::INFO, "Station scan finished. Found {} stations.", scan_ap.stations.size());
 }
 
-// ------------- FILL Actor_Config -------------
-static void apply_rsn_caps_mgmt(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
-	try{
-		const auto rsn = mgmt.rsn_information();
-		const uint16_t caps = rsn.capabilities();
-		cfg.set(BK::MFP,         static_cast<bool>(caps & (1u << 7)));
-		cfg.set(BK::OCV,         static_cast<bool>(caps & (1u << 10)));
-		cfg.set(BK::beacon_prot, static_cast<bool>(caps & (1u << 11)));
-	} catch(...){}
-}
-
 void fill_actor_caps_from_assoc_req(PDU &pdu, Actor_Config_external &cfg){
 	const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>();
-	if(!mgmt || mgmt->subtype() != 0) return;
+	if(!mgmt || (mgmt->subtype() != 0 && mgmt->subtype() != 2)) return;
 
 	cfg.set(SK::mac, mgmt->addr2().to_string());
 
 	apply_radiotap(pdu, cfg);
 	apply_ht_vht_he(*mgmt, cfg);
-	apply_rsn_caps_mgmt(*mgmt, cfg);
+	apply_rsn(*mgmt, cfg);
 
 	cfg.set(BK::AP,      false);
 	cfg.set(BK::STA,     true);

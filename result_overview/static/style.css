@@ -6,3 +6,7 @@ ul   { padding-left: 20px; }
 li   { margin: 6px 0; }
 a    { color: #2980b9; text-decoration: none; }
 a:hover { text-decoration: underline; }
+table  { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #cbd5e0; padding: 8px 12px; text-align: left; }
+th     { background: #edf2f7; font-weight: bold; }
+tr:nth-child(even) { background: #f7fafc; }

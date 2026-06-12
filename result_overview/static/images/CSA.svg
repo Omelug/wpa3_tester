@@ -1,0 +1,99 @@
+<svg viewBox="0 0 1000 660" xmlns="http://www.w3.org/2000/svg" style="background-color: white;">
+
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4A5568"/>
+        </marker>
+
+        <marker id="attackhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#E53E3E"/>
+        </marker>
+
+        <g id="icon-client">
+            <rect x="10" y="10" width="80" height="50" rx="4" fill="#4A5568" />
+            <rect x="15" y="15" width="70" height="40" fill="#EDF2F7" />
+            <polygon points="0 65, 100 65, 90 73, 10 73" fill="#718096" />
+        </g>
+
+        <g id="router-base">
+            <line x1="25" y1="40" x2="15" y2="10" stroke="#2D3748" stroke-width="4" stroke-linecap="round" />
+            <line x1="75" y1="40" x2="85" y2="10" stroke="#2D3748" stroke-width="4" stroke-linecap="round" />
+            <rect x="10" y="40" width="80" height="30" rx="6" />
+            <circle cx="25" cy="55" r="3" fill="#FFFFFF" opacity="0.8" />
+            <circle cx="40" cy="55" r="3" fill="#FFFFFF" opacity="0.8" />
+            <circle cx="55" cy="55" r="3" fill="#FFFFFF" opacity="0.8" />
+        </g>
+
+        <g id="phase-badge">
+            <circle cx="0" cy="0" r="25" />
+        </g>
+    </defs>
+
+    <line x1="500" y1="0" x2="500" y2="660" stroke="#1A202C" stroke-width="10" />
+
+    <text x="250" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36px" font-weight="bold" fill="#2D3748">CHANNEL A</text>
+    <text x="750" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36px" font-weight="bold" fill="#2D3748">CHANNEL B</text>
+
+    <!-- client (left) -->
+    <g transform="translate(50,280)">
+        <use href="#icon-client" />
+        <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">client</text>
+    </g>
+
+    <!-- access_point -->
+    <g transform="translate(250,130)">
+        <use href="#router-base" fill="#2F855A" />
+        <text x="50" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">access_point</text>
+    </g>
+
+    <!-- attacker -->
+    <g transform="translate(360,430)">
+        <circle cx="50" cy="70" r="6" fill="#E53E3E" />
+        <path d="M 35 55 A 22 22 0 0 1 65 55" fill="none" stroke="#E53E3E" stroke-width="3.5" stroke-linecap="round" />
+        <path d="M 23 43 A 38 38 0 0 1 77 43" fill="none" stroke="#E53E3E" stroke-width="4" stroke-linecap="round" />
+        <path d="M 10 30 A 55 55 0 0 1 90 30" fill="none" stroke="#E53E3E" stroke-width="4.5" stroke-linecap="round" />
+        <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#E53E3E">attacker</text>
+    </g>
+
+    <!-- client ↔ access_point association (dashed) -->
+    <path d="M 120 280 Q 180 250 230 215" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
+    <path d="M 230 215 Q 180 250 120 280" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
+
+    <!-- phase 1: attacker → client (CSA beacon) -->
+    <line x1="360" y1="455" x2="140" y2="340" stroke="#E53E3E" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#attackhead)" />
+
+    <g transform="translate(250, 390)">
+        <use href="#phase-badge" fill="#E53E3E" />
+        <text x="0" y="10" text-anchor="middle" font-family="Arial, sans-serif" font-size="28px" fill="white" font-weight="bold">1</text>
+        <text x="0" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" fill="#E53E3E" font-weight="bold">CSA beacon</text>
+    </g>
+
+    <!-- phase 2: client switches channel (left → right) -->
+    <path d="M 160 330 Q 400 340 670 450" stroke="#4A5568" stroke-width="4" stroke-dasharray="12,6" marker-end="url(#arrowhead)" fill="none" />
+
+    <g transform="translate(400, 310)">
+        <use href="#phase-badge" fill="#4A5568" />
+        <text x="0" y="10" text-anchor="middle" font-family="Arial, sans-serif" font-size="28px" fill="white" font-weight="bold">2</text>
+    </g>
+
+    <!-- rogue_ap -->
+    <g transform="translate(600,130)">
+        <use href="#router-base" fill="#C05621" />
+        <text x="50" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">rogue_ap</text>
+    </g>
+
+    <!-- client (right, channel B) -->
+    <g transform="translate(690,430)">
+        <use href="#icon-client" />
+        <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">client</text>
+    </g>
+
+    <!-- phase 3: rogue_ap → client (arrow pointing at client, solid) -->
+    <path d="M 755 430 Q 880 290 730 200" stroke="#E53E3E" stroke-width="3" marker-end="url(#attackhead)" fill="none" />
+
+    <g transform="translate(795, 305)">
+        <use href="#phase-badge" fill="#E53E3E" />
+        <text x="0" y="10" text-anchor="middle" font-family="Arial, sans-serif" font-size="28px" fill="white" font-weight="bold">3</text>
+    </g>
+
+</svg>

@@ -1,10 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <ctime>
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "config/RunStatus.h"
+#include <tins/tins.h>
 #include "config/Actor_Config/actor_keys.h"
 #include "logger/log.h"
 
@@ -56,6 +55,18 @@ TEST_CASE("log - log_actor_map prints name and keys"){
     CHECK_NE(out.find("my_map:"), string::npos);
     CHECK_NE(out.find("alpha"), string::npos);
     CHECK_NE(out.find("beta"), string::npos);
+}
+
+TEST_CASE("formatter - Tins::HWAddress formats as string"){
+    const Tins::HWAddress<6> addr("aa:bb:cc:dd:ee:ff");
+    CHECK_EQ(std::format("{}", addr), addr.to_string());
+    CHECK_EQ(std::format("mac={}", Tins::HWAddress<6>("00:11:22:33:44:55")), "mac=00:11:22:33:44:55");
+}
+
+TEST_CASE("formatter - std::filesystem::path formats as string"){
+    const filesystem::path p = "/tmp/some/path.txt";
+    CHECK_EQ(std::format("{}", p), p.string());
+    CHECK_EQ(std::format("prefix/{}", filesystem::path("foo/bar")), "prefix/foo/bar");
 }
 
 TEST_CASE("log - escape_tex replaces underscores"){

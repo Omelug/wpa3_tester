@@ -1,12 +1,20 @@
 #pragma once
 #include <chrono>
-#include <fstream>
+#include <filesystem>
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <tins/tins.h>
 
 #include "config/RunStatus.h"
+
+template <>
+struct std::formatter<std::filesystem::path> : std::formatter<std::string> {
+	auto format(const std::filesystem::path &p, auto &ctx) const {
+		return std::formatter<std::string>::format(p.string(), ctx);
+	}
+};
 
 template <int n>
 struct std::formatter<Tins::HWAddress<n>> : std::formatter<std::string> {

@@ -95,14 +95,14 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 	return info;
 }
 
-static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac, map<string,EAP_Session> &sessions){
+static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress<6>,EAP_Session> &sessions){
 	const auto *dot11_data = pdu.find_pdu<Dot11Data>();
 	const auto *raw = pdu.find_pdu<RawPDU>();
 	if(!dot11_data || !raw) return nullopt;
 
-	const string addr1 = dot11_data->addr1().to_string();
-	const string addr2 = dot11_data->addr2().to_string();
-	const string client_mac = (addr1 == target_ap_mac) ? addr2 : addr1;
+	const HWAddress<6> addr1 = dot11_data->addr1();
+	const HWAddress<6> addr2 = dot11_data->addr2();
+	const HWAddress<6> client_mac = (addr1 == target_ap_mac) ? addr2 : addr1;
 
 	const EAP_Info info = parse_eap_packet(*raw);
 
@@ -140,7 +140,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const string &target_ap_mac,
 }
 
 void active_eap_identity_scan(const string &iface, const string &target_ap_mac, const int timeout_sec){
-	map<string,EAP_Session> sessions;
+	map<HWAddress<6>,EAP_Session> sessions;
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu){ return handle_eap_pdu(pdu, target_ap_mac, sessions); },
 											iface, "", seconds(timeout_sec));
 }

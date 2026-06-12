@@ -14,6 +14,18 @@
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 
+//hash for ActorMACMap
+template<>
+struct std::hash<Tins::HWAddress<6>>{
+	size_t operator()(const Tins::HWAddress<6>& addr) const noexcept {
+		size_t result = 0;
+		for (uint8_t byte : addr) {
+			result ^= std::hash<uint8_t>{}(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
+		}
+		return result;
+	}
+};
+
 namespace wpa3_tester{
 enum CONFIG_TYPE{ TEST, TEST_SUITE };
 
@@ -27,6 +39,7 @@ class ExternalConn;
 class GraphElements;
 
 using ActorMap = std::unordered_map<std::string,ActorPtr>;
+using ActorMACMap = std::unordered_map<Tins::HWAddress<6>,ActorPtr>;
 using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 
 class RunStatus{
@@ -67,8 +80,8 @@ public:
 	explicit RunStatus(const std::string &config_path, std::string testName = "", const std::string &sub_folder = "");
 	void clean();
 	void execute();
-	static void solve_new_pdu(Tins::PDU &pdu, ActorMap &seen);
-	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMap &seen);
+	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen);
+	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen);
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
@@ -80,8 +93,8 @@ public:
 
 	// get external options
 	// For manual testing / wizards
-	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
-														const std::vector<int> &channels
+	static std::vector<ActorPtr> list_external_entities(
+		const std::string &iface, size_t timeout_sec, const std::vector<int> &channels
 	);
 
 	void log_events(G_elms &elements,

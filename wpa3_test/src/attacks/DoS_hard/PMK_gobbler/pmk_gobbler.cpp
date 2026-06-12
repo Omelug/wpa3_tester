@@ -46,10 +46,10 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 			if(auto entry = parse_acm_response(raw_pdu->payload())){
 				lock_guard lock(store.mtx);
 				const auto [it, inserted] = store.queue.insert_or_assign(
-					entry->sta_mac.to_string(), *entry);
+					entry->sta_mac, *entry);
 				if(inserted)
 					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}",
-						entry->sta_mac.to_string(), store.queue.size());
+						entry->sta_mac, store.queue.size());
 			}
 			return nullopt;
 		},

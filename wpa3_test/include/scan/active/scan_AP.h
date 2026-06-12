@@ -6,7 +6,7 @@ namespace wpa3_tester::scan{
 class ScanAP{
 public:
 	std::string ssid;
-	std::string bssid;
+	Tins::HWAddress<6> bssid;
 	Tins::Dot11Beacon beacon;
 	std::optional<Tins::RSNInformation> rsn;
 	std::set<Tins::HWAddress<6>> stations;

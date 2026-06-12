@@ -71,7 +71,7 @@ void run_attack(RunStatus &rs){
     md << "|------|---------|\n";
     md << "| Current (active) | `" << current_mac << "` |\n";
 
-	auto perm_mac = scanner->get(SK::permanent_mac);
+	string perm_mac = scanner->get(SK::permanent_mac);
     md << "| Permanent (static) | `" << perm_mac << "` |\n\n";
 
     if(!perm_mac.empty() && perm_mac != current_mac)

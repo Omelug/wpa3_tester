@@ -94,7 +94,7 @@ void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_se
 	sniff_config.set_rfmon(true);
 
 	// addr1 = receiver, addr2 = transmitter, addr3 = bssid
-	const string filter = "wlan addr1 " + scan_ap.bssid + " or wlan addr2 " + scan_ap.bssid;
+	const string filter = "wlan addr1 " + scan_ap.bssid.to_string() + " or wlan addr2 " + scan_ap.bssid.to_string();
 	sniff_config.set_filter(filter);
 
 	PacketWriter writer(stations_pcap, DataLinkType<RadioTap>());
@@ -121,7 +121,7 @@ void fill_actor_caps_from_assoc_req(PDU &pdu, Actor_Config_external &cfg){
 	const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>();
 	if(!mgmt || (mgmt->subtype() != 0 && mgmt->subtype() != 2)) return;
 
-	cfg.set(SK::mac, mgmt->addr2().to_string());
+	cfg.set(SK::mac, mgmt->addr2());
 
 	apply_radiotap(pdu, cfg);
 	apply_ht_vht_he(*mgmt, cfg);

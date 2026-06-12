@@ -102,7 +102,7 @@ void stats_attack(const RunStatus &rs) {
 	if (!report.is_open()) {
 		log(LogLevel::ERROR, "Failed to create report.md");
 	} else {
-		report << "# WPA3 Security Test Report: OWE Transition Probe Leak\n\n";
+		report << "# OWE Transition Probe Leak\n\n";
 		report << "After stopping the OWE AP, a client with autoconnect will emit probe requests "
 		          "to rediscover the network, potentially revealing its preferred SSID list.\n\n";
 		report::attack_config_table(report, rs);
@@ -119,7 +119,7 @@ void stats_attack(const RunStatus &rs) {
 			report << "| Captured handshakes | " << crack_result->total << " |\n";
 			report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
 		}
-		report << "## Traffic\n";
+		report << "### Traffic\n";
 		report << "### Client\n";
 		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
 		report << "### Attacker (probe capture)\n";

@@ -78,7 +78,7 @@ void stats_attack(const RunStatus &rs) {
 	if (!report.is_open()) {
 		log(LogLevel::ERROR, "Failed to create report.md");
 	} else {
-		report << "# WPA3 Security Test Report: WPA3 Transition Downgrade to WPA2-PSK\n\n";
+		report << "# WPA3 Transition Downgrade to WPA2-PSK\n\n";
 		report << "A client connected to a WPA3-Transition AP (SAE+PSK) is disconnected by stopping "
 		          "the legitimate AP. A rogue WPA2-PSK-only AP with the same SSID and credentials "
 		          "is running. A vulnerable client will automatically associate using WPA2-PSK.\n\n";
@@ -91,7 +91,7 @@ void stats_attack(const RunStatus &rs) {
 		report << "| WPA2-PSK downgrade observed on client | " << (downgrade_seen ? "yes" : "no") << " |\n";
 		report << "| Rogue AP 4-way handshakes completed | " << rogue_4way_times.size() << " |\n";
 		report << "| Vulnerable (downgrade to WPA2) | " << (rogue_connected ? "yes" : "no") << " |\n\n";
-		report << "## Traffic\n";
+		report << "### Traffic\n";
 		if(!client_graph.empty()){
 			report << "### Client\n";
 			report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";

@@ -29,7 +29,7 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	set_public_perms(report_path);
 
 	const string variant = rs.config().at("attack_config").value("attack_variant", "?");
-	report << "# WPA3 Security Test Report: Bl0ck DoS Attack (" << variant << ")\n\n";
+	report << "# Bl0ck DoS Attack (" << variant << ")\n\n";
 	report << "Bl0ck sends malformed Block-Acknowledgement frames to force the AP/STA to drop the BA session, "
 			"causing the client to disconnect.\n\n";
 	report << "Rewrite of python PoC: https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file\n";
@@ -56,8 +56,8 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	report << "\n";
 
 	// ----- graphs
-	report << "## Traffic Analysis\n\n";
-	report << "Graphs show BA/BAR frames and client disconnect events over time.\n\n";
+	//report << "### Traffic Analysis\n\n";
+	//report << "Graphs show BA/BAR frames and client disconnect events over time.\n\n";
 
 	report << "### Attacker capture\n";
 	report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";

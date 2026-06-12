@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include <tins/hw_address.h>
 
 namespace wpa3_tester{
 

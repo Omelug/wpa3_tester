@@ -6,9 +6,9 @@ v: visualization
 Version v 0.0.0.0:
 f: špatně se resetuje scan_ip (ap_info)
 +: filler for channel_switch
++: HT IE cahnnel switch (similiar to CSA attack)
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
 r: co jde v suite, sjednotit
-r: vymazat github copilota z hstorie
 r: vymazat zbytečné větve z githubuho otestovat, funguje jen někdy
 fd: save_log to documentation a nějak
 +: add git results repository to documentation
@@ -36,7 +36,6 @@ PDF:
 
 ?: works cache correctly with external WB?
 v?: get some visualizations from caches
-r: extends/$ref - popsat rozdíl do nového souboru yaml_config.md
 +: README.md -> rozcestník pro /doc
 r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
@@ -98,6 +97,7 @@ Documentation:
 +: get LateX from english (or link it form altex git )
 
 Better code:
+r: vymazat github copilota z hstorie
 ?: (maybe general NL80211_{} boolean conditions?>)
 f: FetchContent_MakeAvailable  paralel downlading should be improved
 prerequisities tested versions

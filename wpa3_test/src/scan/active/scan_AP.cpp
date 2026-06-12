@@ -95,25 +95,6 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 	return nullptr;
 }
 
-static void apply_rsn_caps(const Dot11Beacon &beacon, Actor_Config_external &cfg){
-	try{
-		const auto rsn = beacon.rsn_information();
-		const uint16_t caps = rsn.capabilities();
-		cfg.set(BK::MFP,         static_cast<bool>(caps & (1u << 7)));
-		cfg.set(BK::OCV,         static_cast<bool>(caps & (1u << 10)));
-		cfg.set(BK::beacon_prot, static_cast<bool>(caps & (1u << 11)));
-
-		bool wpa2_psk = false, wpa3_sae = false;
-		for(const auto &akm: rsn.akm_cyphers()){
-			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm == RSNInformation::PSK_SHA256)
-				wpa2_psk = true;
-			if(akm == RSNInformation::SAE_SHA256 || akm == RSNInformation::SAE_FT)
-				wpa3_sae = true;
-		}
-		cfg.set(BK::WPA_PSK,  wpa2_psk);
-		cfg.set(BK::WPA3_SAE, wpa3_sae);
-	} catch(...){}
-}
 
 void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
@@ -129,7 +110,7 @@ void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 		try{ cfg.set(SK::channel, to_string(beacon->ds_parameter_set())); } catch(...){}
 	}
 
-	apply_rsn_caps(*beacon, cfg);
+	apply_rsn(*beacon, cfg);
 	apply_ht_vht_he(*beacon, cfg);
 
 	cfg.set(BK::AP,      true);

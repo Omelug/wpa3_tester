@@ -14,9 +14,9 @@ actors:
       driver: mt76x2u
   attacker:
     source: internal
-    #selection:
+    selection:
       #ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
-      #driver: rtw_8821cu
+      driver: rtw_8821cu
 attack_config:
   attack_time_sec: 15
   attack_variant: "BARS"

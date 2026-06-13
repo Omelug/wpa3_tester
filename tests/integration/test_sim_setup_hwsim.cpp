@@ -55,7 +55,7 @@ struct HwsimFixture {
         iface = name;
 
         const auto a = make_shared<Actor_Config_sim>();
-        a->set(SK::mac,  "11:22:33:44:55:66");
+        a->set(SK::mac,  "02:bb:cc:dd:ee:01");
         a->set(SK::iface, name);
         a->set(SK::radio, radio);
         base = ActorPtr(a);

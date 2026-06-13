@@ -87,10 +87,8 @@ void Actor_config::set_channel(const Channel &ch) const{
 void Actor_config::set_ap_mode() const{
 	const string &iface = get(SK::iface);
 	log(LogLevel::INFO, "Preparing interface {} for AP mode", iface);
-
 	set_iface_down();
-	run({"iw", "dev", iface, "set", "type", "__ap"});
-	//run({"ip", "addr", "add", "192.168.1.1/24", "dev", iface});
+	set_wifi_type(NL80211_IFTYPE_AP, {});
 }
 
 void Actor_config::up_sniff_iface() const{

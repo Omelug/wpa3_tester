@@ -1,10 +1,13 @@
 #include "attacks/scanner/external_info.h"
+#include <fstream>
 #include <map>
 #include <variant>
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
+#include "logger/report.h"
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace Tins;
@@ -83,6 +86,8 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 	return false;
 }
 
+static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map);
+
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -138,6 +143,64 @@ void run_attack(RunStatus &rs){
 		{"aps",       aps},
 		{"stations",  stas},
 	});
+
+	generate_report(rs, ap_map, sta_map);
+}
+
+static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map){
+	const auto report_path = rs.run_folder() / "report.md";
+	ofstream report(report_path);
+	if(!report.is_open()){
+		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());
+		return;
+	}
+
+	report << "# External Info Scanner Report\n\n";
+	report::attack_config_table(report, rs);
+	report::attack_mapping_table(report, rs);
+
+	report << "## Access Points (" << ap_map.size() << ")\n\n";
+	if(ap_map.empty()){
+		report << "No access points found.\n\n";
+	} else {
+		report << "| MAC | SSID | Channel | Signal | MFP | OCV | WPA3 | Beacon prot | STAs |\n";
+		report << "|-----|------|---------|--------|-----|-----|------|-------------|------|\n";
+		for(const auto &[bssid, entry] : ap_map){
+			const auto &cfg = entry.cfg;
+			auto yn = [&](BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
+			report << "| " << bssid
+				   << " | " << cfg.get_or(SK::ssid,    "?")
+				   << " | " << cfg.get_or(SK::channel, "?")
+				   << " | " << cfg.get_or(SK::signal,  "?")
+				   << " | " << yn(BK::MFP)
+				   << " | " << yn(BK::OCV)
+				   << " | " << yn(BK::WPA3_SAE)
+				   << " | " << yn(BK::beacon_prot)
+				   << " | " << entry.stations.size() << " |\n";
+		}
+		report << "\n";
+	}
+
+	report << "## Stations (" << sta_map.size() << ")\n\n";
+	if(sta_map.empty()){
+		report << "No stations found.\n\n";
+	} else {
+		report << "| MAC | Signal | WPA3 | MFP | OCV |\n";
+		report << "|-----|--------|------|-----|-----|\n";
+		for(const auto &[mac, cfg] : sta_map){
+			auto yn = [&](BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
+			report << "| " << mac
+				   << " | " << cfg.get_or(SK::signal, "?")
+				   << " | " << yn(BK::WPA3_SAE)
+				   << " | " << yn(BK::MFP)
+				   << " | " << yn(BK::OCV) << " |\n";
+		}
+		report << "\n";
+	}
+
+	report.close();
+	set_public_perms(report_path);
+	log(LogLevel::INFO, "External info report generated: {}", report_path.string());
 }
 
 }

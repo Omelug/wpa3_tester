@@ -11,7 +11,10 @@ using namespace filesystem;
 using suite::channel_switch_filler::CsaTestEntry;
 using suite::channel_switch_filler::parse_test_folder;
 
-// TODO 
+// TODO get
+// filler info without OCV with rogue AP
+// get filler info with OCV
+//
 static vector<CsaTestEntry> collect_results(const path &data_dir) {
     vector<CsaTestEntry> results;
     const path suites_dir = data_dir / "wpa3_suites";
@@ -57,14 +60,20 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
+    <a href="../../../index.html" class="back-link">← Overview</a>
     <h1>Channel Switch Announcement (CSA) DoS</h1>
 
     <div class="card">
-        <h2>Attack Description</h2>
+        <h2>Description</h2>
+		<p><b>prerequisites:</b> Valid access_point connected to client</p>
         <p>The attacker sends CSA beacons causing a connected client to switch
            Wi-Fi channels, disconnecting it from the legitimate AP.
-		   Optionally can attacker create rogue AP on new channel with WPA2 to downgrade and het WPA2 hash.</p>
-        <img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:100%; margin-top:12px;">
+		   Optionally can attacker create rogue AP on new channel with WPA2 to downgrade and het WPA2 hash </p>
+		<p><b>variants:</b> optionally attack can have rogue AP to check downgrade and WPA2 password<p>
+		<p><b>success:</b> client disconnected from access_point, in second variant try to connect to rogue AP</p>
+
+
+<img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:100%; margin-top:12px;">
     </div>
 )html";
 

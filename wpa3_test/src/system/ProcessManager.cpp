@@ -214,7 +214,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	logs.history.clear();
 	logs.history_enabled = true;
 
-	if(!logs.log.is_open()){ throw config_err("Failed to open log for " + process_name + ": " + log_path.string()); }
+	if(!logs.log.is_open()){ throw config_err("Failed to open log for {}:{}", process_name, log_path.string()); }
 	set_public_perms(log_path);
 
 	{

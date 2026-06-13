@@ -91,7 +91,7 @@ void generate_report(RunSuiteStatus &rss){
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "iface_info suite report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "iface_info suite report generated: {}", (run_dir / "report.md"));
 }
 
 }

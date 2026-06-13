@@ -30,7 +30,7 @@ actors:
 )";
     config.close();
 
-    CHECK_THROWS_AS(RunStatus rs(config_file.string()), wpa3_tester::config_err);
+    CHECK_THROWS_AS(RunStatus rs(config_file), wpa3_tester::config_err);
 
     remove_all(test_dir);
 }
@@ -50,9 +50,9 @@ actors:
 )";
     config.close();
 
-    RunStatus rs(config_file.string(), "explicit_test_name");
+    RunStatus rs(config_file, "explicit_test_name");
 
-    CHECK_EQ(rs.config_path(), config_file.string());
+    CHECK_EQ(rs.config_path(), config_file);
     CHECK_EQ(rs.config()["attacker_module"], "test_module");
 
     remove_all(test_dir);
@@ -75,7 +75,7 @@ actors:
 )";
     config.close();
 
-    RunStatus rs(config_file.string());
+    RunStatus rs(config_file);
 
     CHECK(rs.config().contains("name"));
     CHECK_EQ(rs.config()["name"], "test_validation");

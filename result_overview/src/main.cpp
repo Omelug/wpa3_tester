@@ -1,14 +1,17 @@
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #include "attacks/DoS_soft/channel_switch.h"
 #include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
-// binary is at <project_root>/build/bin/result_overview → root is 3 levels up
+
 static path project_root() {
     char buf[4096]{};
     const ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
@@ -16,8 +19,43 @@ static path project_root() {
     return path(buf).parent_path().parent_path().parent_path();
 }
 
-static std::string html_page() {
-    return R"html(<!DOCTYPE html>
+static void tree_html(ostringstream &out, const path &dir, bool top_level) {
+    vector<directory_entry> entries;
+    error_code ec;
+    for (const auto &e : directory_iterator(dir, ec))
+        entries.push_back(e);
+
+    ranges::sort(entries, [](const auto &a, const auto &b) {
+        if (a.is_directory() != b.is_directory()) return a.is_directory() > b.is_directory();
+        return a.path().filename() < b.path().filename();
+    });
+
+    out << "<ul>\n";
+    for (const auto &e : entries) {
+        const auto name = e.path().filename().string();
+        if (e.is_directory()) {
+            out << "<li><details" << (top_level ? " open" : "") << "><summary>" << name << "</summary>\n";
+            tree_html(out, e.path(), false);
+            out << "</details></li>\n";
+        } else if (e.path().extension() == ".cpp") {
+            out << "<li>" << name << "</li>\n";
+        }
+    }
+    out << "</ul>\n";
+}
+
+static string build_attack_tree(const path &attacks_dir) {
+    if (!exists(attacks_dir)) return "<p>Attack sources not found.</p>\n";
+    ostringstream out;
+    out << "<div class=\"tree\">\n";
+    tree_html(out, attacks_dir, true);
+    out << "</div>\n";
+    return out.str();
+}
+
+static string html_page(const string &attack_tree) {
+    ostringstream out;
+    out << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -32,12 +70,14 @@ static std::string html_page() {
         <h2>Attack Categories</h2>
         <ul>
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
-            <li><a href="attacks/dos_hard/index.html">DoS Hard</a></li>
-            <li><a href="attacks/downgrade/index.html">Downgrade</a></li>
-            <li><a href="attacks/mc_mitm/index.html">MC-MitM</a></li>
-            <li><a href="attacks/enterprise/index.html">Enterprise</a></li>
         </ul>
     </div>
+
+    <div class="card">
+        <h2>Attack Sources</h2>
+)html";
+    out << attack_tree;
+    out << R"html(    </div>
 
     <div class="card">
         <h2>About</h2>
@@ -47,18 +87,20 @@ static std::string html_page() {
 </body>
 </html>
 )html";
+    return out.str();
 }
 
 int main() {
-    const path root       = project_root();
-    const path output_dir = root / "build" / "result_overview";
-    const path data_dir   = root / "data";
+    const path root        = project_root();
+    const path output_dir  = root / "build" / "result_overview";
+    const path data_dir    = root / "data";
+    const path attacks_dir = root / "wpa3_test" / "src" / "attacks";
 
     wpa3_tester::create_public_dirs(output_dir);
 
     const path index = output_dir / "index.html";
-    std::ofstream f(index);
-    f << html_page();
+    ofstream f(index);
+    f << html_page(build_attack_tree(attacks_dir));
     f.close();
     wpa3_tester::set_public_perms(index);
 

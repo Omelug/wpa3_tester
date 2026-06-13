@@ -10,3 +10,9 @@ table  { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid #cbd5e0; padding: 8px 12px; text-align: left; }
 th     { background: #edf2f7; font-weight: bold; }
 tr:nth-child(even) { background: #f7fafc; }
+.back-link { display: inline-block; margin-bottom: 12px; color: #2980b9; font-size: 14px; }
+.tree ul { list-style: none; padding-left: 18px; margin: 3px 0; }
+.tree > ul { padding-left: 0; }
+.tree li { padding: 1px 0; font-family: monospace; font-size: 13px; color: #2d3748; }
+.tree details > summary { cursor: pointer; font-weight: bold; color: #2d3748; user-select: none; }
+.tree details > summary:hover { color: #2980b9; }

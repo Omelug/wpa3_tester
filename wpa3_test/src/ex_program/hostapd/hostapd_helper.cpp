@@ -32,11 +32,11 @@ void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
 	const path repo_path = base_folder / cfg.repo_name;
 	if(exists(repo_path)){ return; }
 
-	log(LogLevel::INFO, "Cloning {} repository into {}...", cfg.repo_name, repo_path.string());
+	log(LogLevel::INFO, "Cloning {} repository into {}...", cfg.repo_name, repo_path);
 
 	error_code ec;
 	create_public_dirs(base_folder, ec);
-	if(ec){ throw run_err("Failed to create directory: " + base_folder.string()); }
+	if(ec){ throw run_err("Failed to create directory: {}", base_folder); }
 
 	const string clone_cmd = "git clone " + cfg.git_url + " " + cfg.repo_name;
 	hw_capabilities::run_in(clone_cmd, base_folder);
@@ -140,8 +140,8 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 	const path binary_path = hostapd_folder / bin_name;
 
 	if(exists(binary_path)){
-		log(LogLevel::INFO, "Using existing {} binary: {}", cfg.repo_name, binary_path.string());
-		return binary_path.string();
+		log(LogLevel::INFO, "Using existing {} binary: {}", cfg.repo_name, binary_path);
+		return binary_path;
 	}
 
 	ensure_git_repo_cloned(hostapd_folder, cfg);
@@ -163,7 +163,7 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 
 	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);
 	copy(repo_path / "hostapd" / cfg.binary_name, binary_path, copy_options::overwrite_existing);
-	return binary_path.string();
+	return binary_path;
 }
 
 void build_wpa_supplicant_version(const string &version, const path &build_folder, const path& target){
@@ -228,16 +228,16 @@ OpenSSLPaths get_openssl_paths(const string &version){
 	const path include_dir   = install_dir / "include";
 
 	if(exists(libcrypto)){
-		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", version, lib_dir.string());
+		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", version, lib_dir);
 		return {lib_dir, libcrypto, include_dir};
 	}
 
 	const path repo_path = build_folder / OPENSSL_REPO_NAME;
 	if(!exists(repo_path)){
-		log(LogLevel::INFO, "Cloning OpenSSL repository into {}...", repo_path.string());
+		log(LogLevel::INFO, "Cloning OpenSSL repository into {}...", repo_path);
 		error_code ec;
 		create_public_dirs(build_folder, ec);
-		if(ec){ throw run_err("Failed to create directory: " + build_folder.string()); }
+		if(ec){ throw run_err("Failed to create directory: {}", build_folder); }
 		hw_capabilities::run_in("git clone " + OPENSSL_GIT_URL + " " + OPENSSL_REPO_NAME, build_folder);
 		log(LogLevel::INFO, "OpenSSL repository cloned successfully");
 	}
@@ -259,7 +259,7 @@ OpenSSLPaths get_openssl_paths(const string &version){
 	if(!exists(libcrypto)){
 		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: " + libcrypto.string());
 	}
-	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", version, install_dir.string());
+	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", version, install_dir);
 	return {lib_dir, libcrypto, include_dir};
 }
 
@@ -279,7 +279,7 @@ string get_wpa_supplicant(const string &version){
 	const path wpa_supp_bin = hostapd_folder / bin_name;
 
 	if(exists(wpa_supp_bin)){
-		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin.string());
+		log(LogLevel::INFO, "Using existing wpa_supplicant binary: {}", wpa_supp_bin);
 		return wpa_supp_bin.string();
 	}
 
@@ -305,7 +305,7 @@ string get_hostapd_mana(const string &version){
 
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 	if(!exists(creds_file)){
-		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file.string());
+		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
 		return {0, 0};
 	}
 
@@ -375,8 +375,8 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	const path binary_path = hostapd_folder / bin_name;
 
 	if(exists(binary_path)){
-		log(LogLevel::INFO, "Using existing hostapd+OpenSSL binary: {}", binary_path.string());
-		return binary_path.string();
+		log(LogLevel::INFO, "Using existing hostapd+OpenSSL binary: {}", binary_path);
+		return binary_path;
 	}
 
 	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
@@ -392,6 +392,6 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
 	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path,
 		copy_options::overwrite_existing);
-	return binary_path.string();
+	return binary_path;
 }
 }

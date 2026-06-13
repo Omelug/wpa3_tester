@@ -162,7 +162,7 @@ void ExternalConn::upload_file(const path &local_path, const path &remote_path) 
 	ifstream local_f(local_path, ios::binary);
 	if(!local_f){
 		sftp_free(sftp);
-		throw ex_conn_err("Local file not found: " + local_path.string());
+		throw ex_conn_err("Local file not found: {}", local_path);
 	}
 
 	const sftp_file remote_f = sftp_open(sftp, remote_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0755);
@@ -209,7 +209,7 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 
 	if(int res = ssh_scp_pull_request(scp); res != SSH_SCP_REQUEST_NEWFILE){
 		ssh_scp_free(scp);
-		throw ex_conn_err("SCP did not offer a new file (maybe path is wrong?): " + remote_path.string());
+		throw ex_conn_err("SCP did not offer a new file (maybe path is wrong?): {}", remote_path);
 	}
 
 	size_t size = ssh_scp_request_get_size(scp);
@@ -217,7 +217,7 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 	if(!local_file.is_open()){
 		ssh_scp_deny_request(scp, "Cannot open local file");
 		ssh_scp_free(scp);
-		throw ex_conn_err("Error opening local file for writing: " + local_path.string());
+		throw ex_conn_err("Error opening local file for writing: {}", local_path);
 	}
 
 	ssh_scp_accept_request(scp);
@@ -243,7 +243,7 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 	ssh_scp_free(scp);
 	local_file.close();
 
-	log(LogLevel::DEBUG, "Successfully downloaded {} bytes via SCP to {}", size, local_path.string());
+	log(LogLevel::DEBUG, "Successfully downloaded {} bytes via SCP to {}", size, local_path);
 }
 #pragma GCC diagnostic pop
 

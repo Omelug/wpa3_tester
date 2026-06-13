@@ -210,7 +210,7 @@ TEST_CASE("get_pcap_start_time - returns nonzero time for known pcap"){
     const path pcapng = path(this_file).parent_path() / "test_tshark_minimal.pcapng";
     REQUIRE(exists(pcapng));
 
-    const LogTimePoint tp = get_pcap_start_time(pcapng.string());
+    const LogTimePoint tp = get_pcap_start_time(pcapng);
     CHECK_NE(tp.time_since_epoch().count(), 0);
 
     const time_t t = chrono::system_clock::to_time_t(tp);

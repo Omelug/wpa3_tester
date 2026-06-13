@@ -19,7 +19,7 @@ TEST_CASE("ProcessManager run and stop simple process"){
             vector<string> cmd = {"sleep","150"};
             const auto test_dir = temp_directory_path() / "pm_test_stop_all";
             create_directories(test_dir);
-            pm.init_logging(test_dir.string());
+            pm.init_logging(test_dir);
 
             pm.run("test_proc", cmd);
             this_thread::sleep_for(500ms);
@@ -39,7 +39,7 @@ TEST_CASE("ProcessManager - stop_all handles multiple processes"){
         const auto test_dir = temp_directory_path() / "pm_test_stop_all";
         create_directories(test_dir);
 
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         vector<string> sleep_cmd1 = {"sleep", "300"};
         vector<string> sleep_cmd2 = {"sleep", "300"};
@@ -68,7 +68,7 @@ TEST_CASE("ProcessManager - stop_all handles empty process list"){
 
         const auto test_dir = temp_directory_path() / "pm_test_empty";
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         CHECK_NOTHROW(pm.stop_all());
         CHECK_EQ(pm.processes_size(), 0);
@@ -81,7 +81,7 @@ TEST_CASE("ProcessManager - stop individual process"){
         const auto test_dir = temp_directory_path() / "pm_test_stop_one";
         ProcessManager pm;
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         vector<string> sleep_cmd1 = {"sleep", "300"};
         vector<string> sleep_cmd2 = {"sleep", "300"};
@@ -110,7 +110,7 @@ TEST_CASE("ProcessManager - stop nonexistent process"){
 
         const auto test_dir = temp_directory_path() / "pm_test_nonexistent";
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         CHECK_NOTHROW(pm.stop("nonexistent_process"));
 
@@ -123,7 +123,7 @@ TEST_CASE("ProcessManager - process logging"){
 
         const auto test_dir = temp_directory_path() / "pm_test_logging";
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         vector<string> echo_cmd = {"echo", "test output"};
         pm.run("echo_test", echo_cmd);
@@ -146,7 +146,7 @@ TEST_CASE("ProcessManager - wait_for with timeout"){
 
         const auto test_dir = temp_directory_path() / "pm_test_wait_timeout";
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         SUBCASE("Pattern found in history") {
             vector<string> echo_cmd = {"bash", "-c", "echo 'test pattern'; sleep 15"};
@@ -213,7 +213,7 @@ TEST_CASE("ProcessManager - on_stop callback"){
 
         const auto test_dir = temp_directory_path() / "pm_test_on_stop";
         create_directories(test_dir);
-        pm.init_logging(test_dir.string());
+        pm.init_logging(test_dir);
 
         vector<string> sleep_cmd = {"sleep", "300"};
         pm.run("test_proc", sleep_cmd);

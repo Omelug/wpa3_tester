@@ -54,21 +54,21 @@ void RunStatus::execute(){
 
 	if(exists(_run_folder)){
 		if(access(_run_folder.string().c_str(), W_OK) != 0){
-			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder).string());
+			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder));
 			error_code ec;
 			remove_all(_run_folder, ec);
-			if(ec) throw run_err("Run folder not writable and cannot remove: " + _run_folder.string() + ": " + ec.message());
+			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
 		} else {
 			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(_run_folder / "done.txt"))){
-				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder).string());
+				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
 			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
-				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder).string());
+				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}
 			if(_run_config.get_delete_old()){
-				log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder).string());
+				log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder));
 				remove_all(_run_folder);
 			}
 		}
@@ -254,7 +254,7 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 		try{
 			YAML::Node config = YAML::LoadFile(path.string());
 			nlohmann::json config_json = yaml_to_json(config);
-			if(!config_json.contains("name")){ throw config_err("Path " + path.string() + " has no valid name"); }
+			if(!config_json.contains("name")){ throw config_err("Path {} has no valid name", path); }
 			auto name = config["name"].as<string>();
 			if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite" && ct ==
 				TEST_SUITE){

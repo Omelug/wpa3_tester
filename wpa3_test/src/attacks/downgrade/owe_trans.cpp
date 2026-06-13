@@ -94,8 +94,8 @@ void stats_attack(const RunStatus &rs) {
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
 
-	const string client_graph  = observer::tshark::tshark_graph(rs, "client", elements).string();
-	const string attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements).string();
+	const string client_graph  = observer::tshark::tshark_graph(rs, "client", elements);
+	const string attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
 	const path report_path = rs.run_folder() / "report.md";
 	ofstream report(report_path);

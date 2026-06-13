@@ -52,6 +52,7 @@
       <w>dlinkroot</w>
       <w>dragondrain</w>
       <w>eapol</w>
+      <w>efchatz</w>
       <w>endl</w>
       <w>eopnotsupp</w>
       <w>eperm</w>
@@ -135,6 +136,7 @@
       <w>otherbss</w>
       <w>outputpath</w>
       <w>ownmac</w>
+      <w>pbac</w>
       <w>peap</w>
       <w>peermac</w>
       <w>permaddr</w>

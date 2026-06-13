@@ -16,7 +16,7 @@ struct std::formatter<std::filesystem::path> : std::formatter<std::string> {
 	}
 };
 
-template <int n>
+template <size_t n>
 struct std::formatter<Tins::HWAddress<n>> : std::formatter<std::string> {
 	auto format(const Tins::HWAddress<n> &addr, auto &ctx) const {
 		return std::formatter<std::string>::format(addr.to_string(), ctx);

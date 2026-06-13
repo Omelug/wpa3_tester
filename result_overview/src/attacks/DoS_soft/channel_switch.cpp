@@ -53,7 +53,14 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
 
 
 <img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:60%; margin-top:12px; display:block; margin-left:auto; margin-right:auto;">
-    </div>
+
+	</div>
+<div class="card">
+	   <h2>Mitigations</h2>
+<p>	OCV is protection, what add channel info (OCI) info into some frames, beacon protection is needed.
+Not very supported, mobile devices have better support (//TODO add source)</p>
+</div>
+
 )html";
 
     if (results.empty()) {
@@ -64,7 +71,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
         <table id="resultsTable">
             <thead>
                 <tr>
-                    <th>Test</th>
+                    <!-- <th>Test</th> -->
                     <th>AP MAC (source)</th>
                     <th>Client MAC (source)</th>
                     <th>Attacker MAC (driver)</th>
@@ -87,7 +94,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
             //copy_f(e.ap_graph,    img_dir / ai);
 
             f << "                <tr>\n";
-            f << "                    <td>" << e.name << "</td>\n";
+            //f << "                    <td>" << e.name << "</td>\n";
             f << "                    <td>" << e.ap_mac     << " (" << e.ap_source     << ")</td>\n";
             f << "                    <td>" << e.client_mac << " (" << e.client_source << ")</td>\n";
             f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";

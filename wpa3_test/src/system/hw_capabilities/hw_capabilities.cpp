@@ -306,8 +306,14 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		}
 	}();
 
-	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0) throw
-			run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
+	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0){
+		if(type != NL80211_IFTYPE_AP) throw run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
+		// hwsim (and some drivers) reject in-place type change to AP — del + recreate on the same phy
+		const string phy = get_phy(string(iface), netns);
+		run_cmd({"iw", "dev", iface.data(), "del"}, netns);
+		if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0)
+			throw run_err("iw phy {} interface add {} type __ap failed", phy, iface);
+	}
 
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); res)
 		throw run_err("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.message());

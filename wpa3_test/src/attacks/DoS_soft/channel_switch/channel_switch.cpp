@@ -2,6 +2,7 @@
 #include <cassert>
 #include <chrono>
 #include <filesystem>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <thread>
 #include "inteprrupt.h"
@@ -144,14 +145,26 @@ void stats_chs_attack(const RunStatus &rs){
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
 				});
 
+	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED").empty();
+
 	optional<hostapd::CrackResult> crack_result;
+	optional<bool> rogue_ap_connected;
 	if(rs.config().at("actors").contains("rogue_ap")){
-		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
+		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
+		rogue_ap_connected = !mana_events.empty();
 
 		const string psk = hostapd::get_password(rs, "client");
 		if(!psk.empty())
 			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
+
+	nlohmann::json result;
+	result["passed"]       = disconnected;
+	result["disconnected"] = disconnected;
+	if(rogue_ap_connected.has_value())
+		result["rogue_ap_connected"] = rogue_ap_connected.value();
+	rs.save_result(result);
 
 	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,

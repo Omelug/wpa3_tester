@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <vector>
 
+#include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"
 #include "system/utils.h"
 
@@ -36,6 +37,7 @@ static string html_page() {
         <h2>Attack Categories</h2>
         <ul>
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
+            <li><a href="attacks/dos_soft/bl0ck/index.html">DoS Soft — Block ACK (Bl0ck)</a></li>
         </ul>
     </div>
 
@@ -68,6 +70,7 @@ int main() {
     wpa3_tester::set_public_perms(index);
 
     wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
+    wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
 
     return 0;
 }

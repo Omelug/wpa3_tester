@@ -36,7 +36,7 @@ public: // getters and setters
 	static void print_test_suite_list();
 	static void print_tests_in_suite(const std::string &ts_name);
 
-	explicit RunSuiteStatus(const std::filesystem::path &config_path, std::string suite_name = "");
+	explicit RunSuiteStatus(const std::filesystem::path &config_path, std::string suite_name = "", const std::string &sub_folder = "");
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
 	static void defined_by_name(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map);

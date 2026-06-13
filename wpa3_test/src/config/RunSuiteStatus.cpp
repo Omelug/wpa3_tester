@@ -27,7 +27,7 @@ using namespace filesystem;
 using namespace nlohmann;
 using YNode = YAML::Node;
 
-RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name){
+RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const string &sub_folder){
 	_config_path = config_path;
 	if(!exists(config_path)){ throw config_err("Config not found: " + config_path.string()); }
 
@@ -37,8 +37,11 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name){
 			throw config_err("Config missing required string field 'name': " + config_path.string());
 		suite_name = node["name"].as<string>();
 	}
-
-	_run_folder = BASE_FOLDER / suite_name / "last_run";
+	string actual_sub_folder = ".";
+	if(sub_folder.empty()){
+		actual_sub_folder = relative_from("attack_config", config_path);
+	}
+	_run_folder = BASE_FOLDER / actual_sub_folder/ suite_name / "last_run";
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 

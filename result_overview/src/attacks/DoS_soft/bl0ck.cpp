@@ -12,7 +12,7 @@ using suite::bl0ck_test_suites::Bl0ckTestEntry;
 
 static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
     vector<Bl0ckTestEntry> results;
-    for (const string &suite : {"BA_filler", "BAR_filler", "BARS_filler"}) {
+    for (const string suite : {"BA_filler", "BAR_filler", "BARS_filler"}) {
         for (const auto &test_path : suite::helper::get_suite_test_folders(data_dir / "wpa3_suites" / suite)) {
             auto e = suite::bl0ck_test_suites::parse_test_folder(test_path);
             if (!e.passed.has_value()) continue;
@@ -43,17 +43,25 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
     <h1>Bl0ck — Block ACK (BA) DoS</h1>
 
     <div class="card">
-        <p><b>prerequisites:</b> client connected to access point</p>
-        <p>The attacker sends spoofed Block ACK (BA) frames with invalid sequence numbers,
-           causing the AP or client to discard legitimate frames and disconnect.</p>
-        <p><b>variants:</b> BA, BAR, BARS — differ in which frame type is spoofed</p>
+        <p><b>prerequisites:</b> client connected to access point, QoS data used 802.11ac or 802.11ax</p>
+        <p>Bl0ck exploits the Block ACK mechanism by injecting spoofed frames
+           that corrupt the receiver's sequence-number state, causing network issues (typycal disconnect)
+           subsequent legitimate frames and effectively disconnect.
+           Source/python implementation: <a href="https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file" target="_blank">efchatz/Bl0ck</a></p>
+        <p><b>variants:</b></p>
+        <ul>
+            <li><b>BA</b> — attacker sends BA frames spoofing connected STA's MAC with an invalid SSN; the AP stops sending QoS Data frames to all< connected STAs for the duration of the attack. After the attack ends the AP typically recovers.</li>
+            <li><b>BAR</b> — attacker sends BAR frames spoofing a connected STA's MAC with an invalid SSN; the AP stops responding with QoS Data to that specific spoofed MAC. The legitimate STA stays connected but cannot receive QoS Data even after the attack ends — requires manual reconnection to recover.</li>
+            <li><b>BARS</b> — special case of BAR using a valid SSN instead of an invalid one; the resulting AP behaviour is identical to BAR.</li>
+        </ul>
         <p><b>success:</b> client disconnected from access point</p>
     </div>
 
     <div class="card">
         <h2>Mitigations</h2>
         <p>MFP (Management Frame Protection / 802.11w) protects management frames but
-           not data-plane BA frames. No widely-deployed mitigation exists.</p>
+           not bl0ck frames.
+		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation</p>
     </div>
 
 )html";

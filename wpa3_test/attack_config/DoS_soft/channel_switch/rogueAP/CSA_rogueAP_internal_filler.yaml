@@ -1,0 +1,12 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: CSA_rogueAP_internal_filler
+suite_functions: CSA_rogueAP_internal_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./CSA_rogueAP_internal.yaml
+delete_old: true
+rewrite: "errors"
+compile_external: true
+install_req: true

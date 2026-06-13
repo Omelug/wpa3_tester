@@ -19,41 +19,7 @@ static path project_root() {
     return path(buf).parent_path().parent_path().parent_path();
 }
 
-static void tree_html(ostringstream &out, const path &dir, bool top_level) {
-    vector<directory_entry> entries;
-    error_code ec;
-    for (const auto &e : directory_iterator(dir, ec))
-        entries.push_back(e);
-
-    ranges::sort(entries, [](const auto &a, const auto &b) {
-        if (a.is_directory() != b.is_directory()) return a.is_directory() > b.is_directory();
-        return a.path().filename() < b.path().filename();
-    });
-
-    out << "<ul>\n";
-    for (const auto &e : entries) {
-        const auto name = e.path().filename().string();
-        if (e.is_directory()) {
-            out << "<li><details" << (top_level ? " open" : "") << "><summary>" << name << "</summary>\n";
-            tree_html(out, e.path(), false);
-            out << "</details></li>\n";
-        } else if (e.path().extension() == ".cpp") {
-            out << "<li>" << name << "</li>\n";
-        }
-    }
-    out << "</ul>\n";
-}
-
-static string build_attack_tree(const path &attacks_dir) {
-    if (!exists(attacks_dir)) return "<p>Attack sources not found.</p>\n";
-    ostringstream out;
-    out << "<div class=\"tree\">\n";
-    tree_html(out, attacks_dir, true);
-    out << "</div>\n";
-    return out.str();
-}
-
-static string html_page(const string &attack_tree) {
+static string html_page() {
     ostringstream out;
     out << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -73,10 +39,7 @@ static string html_page(const string &attack_tree) {
         </ul>
     </div>
 
-    <div class="card">
-        <h2>Attack Sources</h2>
 )html";
-    out << attack_tree;
     out << R"html(    </div>
 
     <div class="card">
@@ -100,7 +63,7 @@ int main() {
 
     const path index = output_dir / "index.html";
     ofstream f(index);
-    f << html_page(build_attack_tree(attacks_dir));
+    f << html_page();
     f.close();
     wpa3_tester::set_public_perms(index);
 

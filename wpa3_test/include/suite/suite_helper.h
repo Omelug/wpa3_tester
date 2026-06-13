@@ -19,4 +19,7 @@ std::string get_driver(const std::map<std::string, std::string> &drivers, const 
 // open report.md for write
 std::ofstream open_report(const std::filesystem::path &report_path);
 
+// Returns test subdirectories inside suite_dir/last_run, excluding test_config
+std::vector<std::filesystem::path> get_suite_test_folders(const std::filesystem::path &suite_dir);
+
 }

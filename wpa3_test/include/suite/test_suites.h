@@ -6,6 +6,7 @@
 #include "attacks/Enterprise/eap_helper.h"
 #include "config/RunSuiteStatus.h"
 #include "DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "DoS_soft/channel_switch/channel_switch_versions.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "downgrade/owe_trans_filler.h"
@@ -25,21 +26,23 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 	{"reflection_attack_filler",    enterprise_filler_helper::setup_suite},
 	{"invalid_curve_filler",        enterprise_filler_helper::setup_suite},
 	{"wpa3_trans_downgrade_filler", wpa3_trans_downgrade_filler::setup_suite},
+	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::setup_suite},
 };
 
 /* map of test_suite_name->post-run callback function */
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
-	{"bl0ck_mac_gen",              bl0ck_test_suites::generate_bl0ck_mac_gen_report},
-	{"channel_switch_versions",   channel_switch_filler::generate_report},
-	{"malformed_eapol1_filler", malformed_eapol1_filler::generate_report},
-	{"reflection_attack_filler", reflection_attack_filler::generate_report},
-	{"invalid_curve_filler",          invalid_curve_filler::generate_report},
-	{"owe_trans_filler",              owe_trans_filler::generate_report},
-	{"wpa3_trans_downgrade_filler",   wpa3_trans_downgrade_filler::generate_report},
-	{"active_test_filler",            active_test_filler::generate_report},
-	{"injection_test_filler",         injection_test_filler::generate_report},
-	{"iface_info_filler",             iface_info_filler::generate_report},
-	{"ap_info_wpa3_filler",           ap_info_wpa3_filler::generate_report},
+	{"bl0ck_mac_gen",				bl0ck_test_suites::generate_bl0ck_mac_gen_report},
+	{"channel_switch_versions",		channel_switch_filler::generate_report},
+	{"malformed_eapol1_filler",		malformed_eapol1_filler::generate_report},
+	{"reflection_attack_filler",	reflection_attack_filler::generate_report},
+	{"invalid_curve_filler",        invalid_curve_filler::generate_report},
+	{"owe_trans_filler",			owe_trans_filler::generate_report},
+	{"wpa3_trans_downgrade_filler",	wpa3_trans_downgrade_filler::generate_report},
+	{"active_test_filler",			active_test_filler::generate_report},
+	{"injection_test_filler",       injection_test_filler::generate_report},
+	{"iface_info_filler",           iface_info_filler::generate_report},
+	{"ap_info_wpa3_filler",         ap_info_wpa3_filler::generate_report},
+	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::generate_report},
 };
 
 }

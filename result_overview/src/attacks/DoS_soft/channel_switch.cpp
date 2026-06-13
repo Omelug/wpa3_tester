@@ -2,42 +2,22 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "suite/DoS_soft/channel_switch/channel_switch_versions.h"
+#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::channel_switch_filler::CsaTestEntry;
-using suite::channel_switch_filler::parse_test_folder;
+using suite::channel_switch_rogueAP::CsaTestEntry;
 
-// TODO get
-// filler info without OCV with rogue AP
-// get filler info with OCV
-//
 static vector<CsaTestEntry> collect_results(const path &data_dir) {
     vector<CsaTestEntry> results;
-    const path suites_dir = data_dir / "wpa3_suites";
-    if (!exists(suites_dir)) return results;
-
-    error_code ec;
-    for (const auto &suite : directory_iterator(suites_dir, ec)) {
-        if (!suite.is_directory()) continue;
-        const path last_run = suite.path() / "last_run";
-        if (!exists(last_run)) continue;
-
-        for (const auto &ts_entry : directory_iterator(last_run, ec)) {
-            if (!ts_entry.is_directory()) continue;
-            if (ts_entry.path().filename().string().find("channel_switch") == string::npos) continue;
-
-            const path inner = ts_entry.path() / "last_run";
-            if (!exists(inner)) continue;
-
-            for (const auto &run : directory_iterator(inner, ec)) {
-                if (run.is_directory())
-                    results.push_back(parse_test_folder(run.path()));
-            }
-        }
+    const path suite_dir = data_dir / "wpa3_suites" / "CSA_rogueAP_internal_filler";
+    for (const auto &test_path : suite::helper::get_suite_test_folders(suite_dir)) {
+        auto e = suite::channel_switch_rogueAP::parse_test_folder(test_path);
+        if (!e.passed.has_value()) continue;
+        results.push_back(std::move(e));
     }
     return results;
 }
@@ -64,8 +44,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     <h1>Channel Switch Announcement (CSA) DoS</h1>
 
     <div class="card">
-        <h2>Description</h2>
-		<p><b>prerequisites:</b> Valid access_point connected to client</p>
+		<p><b>prerequisites:</b> client connected to legit access_point </p>
         <p>The attacker sends CSA beacons causing a connected client to switch
            Wi-Fi channels, disconnecting it from the legitimate AP.
 		   Optionally can attacker create rogue AP on new channel with WPA2 to downgrade and het WPA2 hash </p>
@@ -73,44 +52,53 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
 		<p><b>success:</b> client disconnected from access_point, in second variant try to connect to rogue AP</p>
 
 
-<img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:100%; margin-top:12px;">
+<img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:60%; margin-top:12px; display:block; margin-left:auto; margin-right:auto;">
     </div>
 )html";
 
     if (results.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
     } else {
-        f << R"html(    <div class="card">
+        f << R"html(    <div class="card" style="overflow-x: auto;">
         <h2>Test Results</h2>
         <table id="resultsTable">
             <thead>
                 <tr>
                     <th>Test</th>
-                    <th>hostapd</th>
-                    <th>wpa_supplicant</th>
-                    <th>New ch.</th>
-                    <th>Time (s)</th>
-                    <th>Graphs</th>
+                    <th>AP MAC (source)</th>
+                    <th>Client MAC (source)</th>
+                    <th>Attacker MAC (driver)</th>
+                    <th>Disconnected?</th>
+                    <th>Rogue AP?</th>
+                    <th>AP OCV / Client OCV</th>
+                    <!-- <th>Graphs</th> -->
                 </tr>
             </thead>
             <tbody>
 )html";
+        auto opt_bool = [](const optional<bool> &v) -> string {
+            if (!v.has_value()) return "N/A";
+            return v.value() ? "yes" : "no";
+        };
         for (const auto &e : results) {
-            const string ci = e.name + "_client.png";
-            const string ai = e.name + "_ap.png";
-            copy_f(e.client_graph, img_dir/ ci);
-            copy_f(e.ap_graph,    img_dir /ai);
+            //const string ci = e.name + "_client.png";
+            //const string ai = e.name + "_ap.png";
+            //copy_f(e.client_graph, img_dir / ci);
+            //copy_f(e.ap_graph,    img_dir / ai);
 
             f << "                <tr>\n";
             f << "                    <td>" << e.name << "</td>\n";
-            f << "                    <td>" << (e.hostapd_version.empty()    ? "?" : e.hostapd_version)    << "</td>\n";
-            f << "                    <td>" << (e.supplicant_version.empty() ? "?" : e.supplicant_version) << "</td>\n";
-            f << "                    <td>" << (e.new_channel.empty()        ? "?" : e.new_channel)        << "</td>\n";
-            f << "                    <td>" << (e.attack_time.empty()        ? "?" : e.attack_time)        << "</td>\n";
-            f << "                    <td>";
-            if (exists(img_dir / ci)) f << "<a href=\"img/" << ci << "\">STA</a> ";
-            if (exists(img_dir / ai)) f << "<a href=\"img/" << ai << "\">AP</a>";
-            f << "</td>\n                </tr>\n";
+            f << "                    <td>" << e.ap_mac     << " (" << e.ap_source     << ")</td>\n";
+            f << "                    <td>" << e.client_mac << " (" << e.client_source << ")</td>\n";
+            f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
+            f << "                    <td>" << opt_bool(e.disconnected) << "</td>\n";
+            f << "                    <td>" << opt_bool(e.rogue_ap)     << "</td>\n";
+            f << "                    <td>" << opt_bool(e.ap_ocv) << " / " << opt_bool(e.client_ocv) << "</td>\n";
+            //f << "                    <td>";
+            //if (exists(img_dir / ci)) f << "<a href=\"img/" << ci << "\">STA</a> ";
+            //if (exists(img_dir / ai)) f << "<a href=\"img/" << ai << "\">AP</a>";
+            //f << "</td>"
+            f << "\n                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";
     }

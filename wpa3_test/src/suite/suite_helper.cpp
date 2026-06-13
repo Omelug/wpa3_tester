@@ -29,6 +29,7 @@ map<string, string> load_test_drivers(const path &test_folder) {
 	return drivers;
 }
 
+
 string get_driver(const map<string, string> &drivers, const string &actor) {
 	const auto it = drivers.find(actor);
 	return it != drivers.end() ? it->second : "?";
@@ -39,6 +40,19 @@ ofstream open_report(const path &report_path) {
 	if(!report.is_open())
 		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());
 	return report;
+}
+
+vector<path> get_suite_test_folders(const path &suite_dir) {
+	vector<path> folders;
+	const path last_run = suite_dir / "last_run";
+	if(!exists(last_run) || !is_directory(last_run)) return folders;
+	error_code ec;
+	for(const auto &entry : directory_iterator(last_run, ec)){
+		if(!entry.is_directory()) continue;
+		if(entry.path().filename() == "test_config") continue;
+		folders.push_back(entry.path());
+	}
+	return folders;
 }
 
 }

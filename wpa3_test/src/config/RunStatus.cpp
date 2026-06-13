@@ -294,7 +294,7 @@ void RunStatus::start_observers(){
 
 string RunStatus::findConfigByTestName(const string &name){
 	if(auto tests = scan_attack_configs(); tests.contains(name)){ return tests[name]; }
-	throw config_err("Unknown test name: " + name);
+	throw config_err("Unknown test name: " + name + "Isn't it test suite?");
 }
 
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,

@@ -14,17 +14,18 @@ namespace wpa3_tester::suite::channel_switch_filler{
 using namespace std;
 using namespace filesystem;
 
-CsaTestEntry parse_test_folder(const path &test_folder){
-	CsaTestEntry e;
+CsaVersionTestEntry parse_test_folder(const path &test_folder){
+	CsaVersionTestEntry e;
 	e.name = test_folder.filename().string();
 
 	if(const auto result = helper::load_result_json(test_folder))
 		e.passed = result->value("passed", false);
 
 	const auto drv    = helper::load_test_drivers(test_folder);
-	e.ap_driver       = helper::get_driver(drv, "access_point");
-	e.client_driver   = helper::get_driver(drv, "client");
-	e.attacker_driver = helper::get_driver(drv, "attacker");
+	e.ap_driver        = helper::get_driver(drv, "access_point");
+	e.client_driver    = helper::get_driver(drv, "client");
+	e.attacker_driver  = helper::get_driver(drv, "attacker");
+	e.rogue_ap_driver  = helper::get_driver(drv, "rogue_ap");
 
 	const auto cfg_path = test_folder / "test_config.yaml";
 	if(exists(cfg_path)){
@@ -67,7 +68,7 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	vector<CsaTestEntry> test_results;
+	vector<CsaVersionTestEntry> test_results;
 	for(const auto &entry: directory_iterator(run_dir)){
 		if(!entry.is_directory()) continue;
 		auto e = parse_test_folder(entry.path());

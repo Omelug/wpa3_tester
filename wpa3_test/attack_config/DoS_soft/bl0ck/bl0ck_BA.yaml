@@ -6,12 +6,12 @@ attacker_module: bl0ck
 actors:
   access_point:
     selection:
-      driver: rtw_8821au
-  client:
-    selection:
+      driver: [rtw_8821au, rtw88_8821au]
+  #client:
+    #selection:
       # je tam stejný driver i firmware, ale funguje jen na ALFA mediatek
-      permanent_mac: "00:c0:ca:b7:69:2a"
-      driver: mt76x2u
+      #permanent_mac: "00:c0:ca:b7:69:2a"
+      #driver: mt76x2u
 attack_config:
   attack_time_sec: 15
   attack_variant: "BA"

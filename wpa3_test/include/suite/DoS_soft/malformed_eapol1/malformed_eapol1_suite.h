@@ -1,7 +1,25 @@
 #pragma once
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <vector>
 #include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::suite::malformed_eapol1_filler{
+namespace wpa3_tester::suite::malformed_eapol1_filler {
+
+struct MalformedEapol1TestEntry {
+	std::string test_name;
+	std::string ap_driver;
+	std::string client_driver;
+	std::string attacker_driver;
+	int         disconnect_count;
+	std::optional<bool> passed;
+	std::filesystem::path sta_graph;
+	std::filesystem::path ap_graph;
+};
+
+MalformedEapol1TestEntry parse_test_folder(const std::filesystem::path &test_folder);
+std::vector<MalformedEapol1TestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);
 

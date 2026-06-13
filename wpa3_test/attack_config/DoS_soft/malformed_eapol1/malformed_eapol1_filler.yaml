@@ -6,7 +6,4 @@ tests:
   all_actors:
     type: actor_filler
     config: ./malformed_eapol1.yaml
-delete_old: true
 rewrite: "errors"
-compile_external: true
-install_req: true

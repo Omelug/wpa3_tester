@@ -3,44 +3,53 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::suite::reflection_attack_filler{
+namespace wpa3_tester::suite::reflection_attack_filler {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-void generate_report(RunSuiteStatus &rss){
-	const auto run_dir = rss.run_folder();
+ReflectionAttackTestEntry parse_test_folder(const path &test_folder) {
+	ReflectionAttackTestEntry e{};
+	e.test_name = test_folder.filename().string();
 
-	// test_name, ap_driver, attacker_driver, passed
-	vector<tuple<string, string, string, bool>> test_results;
+	const auto result = helper::load_result_json(test_folder);
+	if (!result) return e;
 
-	for(const auto &entry: directory_iterator(run_dir)){
-		if(!entry.is_directory()) continue;
+	const auto drv    = helper::load_test_drivers(test_folder);
+	e.passed          = result->value("passed", false);
+	e.ap_driver       = helper::get_driver(drv, "access_point");
+	e.attacker_driver = helper::get_driver(drv, "attacker");
+	return e;
+}
 
-		const auto &test_folder = entry.path();
-		const auto result = helper::load_result_json(test_folder);
-		if(!result) continue;
-
-		const bool passed    = result->value("passed", false);
-		const string test_name = test_folder.filename().string();
-
-		const auto drv = helper::load_test_drivers(test_folder);
-		test_results.emplace_back(test_name,
-			helper::get_driver(drv, "access_point"),
-			helper::get_driver(drv, "attacker"),
-			passed);
+vector<ReflectionAttackTestEntry> get_results(const path &run_dir) {
+	vector<ReflectionAttackTestEntry> entries;
+	for (const auto &entry : directory_iterator(run_dir)) {
+		if (!entry.is_directory()) continue;
+		auto e = parse_test_folder(entry.path());
+		if (!e.passed.has_value()) continue;
+		entries.push_back(std::move(e));
 	}
+	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
+	return entries;
+}
+
+void generate_report(RunSuiteStatus &rss) {
+	const auto run_dir = rss.run_folder();
+	const auto entries = get_results(run_dir);
 
 	auto report = helper::open_report(run_dir / "report.md");
-	if(!report.is_open()) return;
+	if (!report.is_open()) return;
 
 	report << "# Reflection MAC Generator Test Suite Report\n\n";
-	if(test_results.empty()){
+
+	if (entries.empty()) {
 		report << "No test results found.\n";
 		report.close();
 		return;
@@ -50,25 +59,24 @@ void generate_report(RunSuiteStatus &rss){
 	report << "| Test | AP Driver | Attacker Driver | Result |\n";
 	report << "|------|-----------|-----------------|--------|\n";
 
-	for(const auto &[test_name, ap_drv, att_drv, passed]: test_results){
-		const string name_cell   = exists(run_dir / test_name / "report.md")
-			? "[" + test_name + "](" + test_name + "/report.md)" : test_name;
-		const string result_link = "[" + string(passed ? "PASSED" : "FAILED") + "](" + test_name + "/result.json)";
-		report << "| " << name_cell << " | " << ap_drv << " | "
-			   << att_drv << " | " << result_link << " |\n";
+	for (const auto &e : entries) {
+		const string name_cell   = exists(run_dir / e.test_name / "report.md")
+			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
+		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/result.json)";
+		report << "| " << name_cell << " | " << e.ap_driver << " | "
+		       << e.attacker_driver << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	size_t passed_count = ranges::count_if(test_results, [](const auto &r){ return get<3>(r); });
-	report << "- Total Tests: " << test_results.size() << "\n";
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e) { return e.passed.value(); });
+	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
-	report << "- Failed: " << (test_results.size() - passed_count) << "\n";
+	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1)
-		   << (100.0 * static_cast<double>(passed_count) / static_cast<double>(test_results.size())) << "%\n";
+	       << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-
 	log(LogLevel::INFO, "Reflection attack report generated: {}", (run_dir / "report.md").string());
 }
 

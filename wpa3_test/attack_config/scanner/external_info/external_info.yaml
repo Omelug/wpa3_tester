@@ -21,3 +21,5 @@ observers:
 attack_config:
   timeout_sec: 30
   # actor_limit: 10   # stop after discovering this many APs (0 or omit = unlimited)
+
+rewrite: all

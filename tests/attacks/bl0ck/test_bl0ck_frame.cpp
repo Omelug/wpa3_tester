@@ -31,6 +31,6 @@ TEST_CASE("send_bl0ck_frame - creates and saves BAR frames to pcap"){
         CHECK_EQ(dot11->subtype(), 8);
         CHECK_EQ(dot11->addr1(), sta_mac);
 
-        log(LogLevel::INFO, "PCAP file preserved for inspection:{}", pcap_file.string());
+        log(LogLevel::INFO, "PCAP file preserved for inspection:{}", pcap_file);
     }
 }

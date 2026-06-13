@@ -28,13 +28,13 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
         SUBCASE(description.c_str()){
 	        path input_path = test_base / input_yaml;
         	RunStatus rs;
-        	rs.config_path(input_path.string());
+        	rs.config_path(input_path);
 
             if(should_pass){
                 REQUIRE_NOTHROW(rs.config(RunStatus::config_validation(rs.config_path())));
 
                 path expected_path = test_base / expected_yaml;
-                nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path.string()));
+                nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path));
 
                 auto diff = nlohmann::json::diff(expected_json, rs.config());
                 INFO("Diff (expected vs actual): " << diff.dump(4));

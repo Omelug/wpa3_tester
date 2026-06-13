@@ -35,14 +35,14 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 	vector<ActorPtr> result;
 
 	if(!exists(conn_table)){
-		log(LogLevel::DEBUG, "Connection table file does not exist: {}", conn_table.string());
+		log(LogLevel::DEBUG, "Connection table file does not exist: {}", conn_table);
 		return result;
 	}
 
 	ifstream file(conn_table);
-	if(!file.is_open()){ throw scan_err("Failed to open connection table: {}", conn_table.string()); }
+	if(!file.is_open()){ throw scan_err("Failed to open connection table: {}", conn_table); }
 	string line;
-	if(!getline(file, line)){ throw scan_err("Empty connection table: " + conn_table.string()); }
+	if(!getline(file, line)){ throw scan_err("Empty connection table: {}", conn_table); }
 
 	// Parse header
 	vector<string> headers = parse_csv_line(line);
@@ -52,7 +52,7 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 	// required columns
 	if(!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")){
 		throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): {}",
-						conn_table.string());
+						conn_table);
 	}
 
 	while(getline(file, line)){

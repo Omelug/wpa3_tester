@@ -41,7 +41,7 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	const path config_path = config_dir / "last_run_config.yaml";
 	save_yaml(config, config_path);
 
-	RunStatus rs(config_path.string(), "injection_test", "two_iface/injection_test");
+	RunStatus rs(config_path, "injection_test", "two_iface/injection_test");
 	rs.run_folder(lr_dir);
 	rs.execute();
 

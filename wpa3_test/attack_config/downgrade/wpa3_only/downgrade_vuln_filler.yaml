@@ -8,5 +8,3 @@ tests:
     config: ./downgrade_wpa3_vuln.yaml
 delete_old: true
 rewrite: "errors"
-compile_external: true
-install_req: true

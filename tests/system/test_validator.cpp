@@ -54,7 +54,7 @@ required: [channel]
     CHECK_THROWS(validator.validate(config));
 }
 
-TEST_CASE("YAMLValidator - apply_defaults fills missing fields"){
+TEST_CASE("YAMLValidator - defaults fills missing fields"){
     ValidatorFixture f("validator_defaults");
     f.write("schema.yaml", R"(
 type: object
@@ -74,7 +74,7 @@ properties:
     CHECK_EQ(config["channel"], 6);
 }
 
-TEST_CASE("YAMLValidator - apply_defaults does not overwrite existing values"){
+TEST_CASE("YAMLValidator - defaults does not overwrite existing values"){
     ValidatorFixture f("validator_no_overwrite");
     f.write("schema.yaml", R"(
 type: object
@@ -90,7 +90,7 @@ properties:
     CHECK_EQ(config["channel"], 11);
 }
 
-TEST_CASE("YAMLValidator - apply_defaults nested object"){
+TEST_CASE("YAMLValidator - defaults nested object"){
     ValidatorFixture f("validator_nested");
     f.write("schema.yaml", R"(
 type: object
@@ -109,7 +109,7 @@ properties:
     CHECK_EQ(config["setup"]["ieee80211w"], 2);
 }
 
-TEST_CASE("YAMLValidator - apply_defaults object default value"){
+TEST_CASE("YAMLValidator - defaults object default value"){
     ValidatorFixture f("validator_obj_default");
     f.write("schema.yaml", R"(
 type: object

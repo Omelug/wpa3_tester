@@ -11,7 +11,7 @@ actors:
       program: hostapd
       program_config:
         driver: nl80211
-        ssid: test_channel_switch
+        ssid: test_malformed_eapol1
         hw_mode: g
         auth_algs: 1
         wpa: 2
@@ -28,7 +28,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        ssid: test_channel_switch
+        ssid: test_malformed_eapol1
         sae_password: password123
         ieee80211w: 2
         proto: RSN

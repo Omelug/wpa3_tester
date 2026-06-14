@@ -18,6 +18,8 @@ target_link_libraries(result_overview PRIVATE
 
 set_target_properties(result_overview PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
 )
 
 # Copy static assets to build/result_overview/ after build

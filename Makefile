@@ -2,7 +2,7 @@ BUILD_DIR := build
 BUILD_DIR_COVERAGE := build/coverage
 TARGET := wpa3_tester
 GRC_CONF := ./debug/grc/wpa3_tester.grc
-SOURCE_DIR := wpa3_test
+SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile

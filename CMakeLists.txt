@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0167 NEW)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+project(wpa3_tester VERSION 0.1.0 LANGUAGES C CXX)
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+get_property(dirs DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
+foreach(dir ${dirs})
+    list(APPEND CMAKE_INSTALL_RPATH ${dir})
+endforeach()
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+find_program(MEMORYCHECK_COMMAND valgrind)
+if (MEMORYCHECK_COMMAND)
+    set(MEMORYCHECK_COMMAND_OPTIONS "--track-fds=yes --leak-check=full --error-exitcode=1 --show-leak-kinds=all")
+    message(STATUS "Valgrind found: tracking FDs enabled for memcheck")
+endif ()
+
+find_program(CCACHE_PROGRAM ccache)
+if (CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+    message(STATUS "ccache found")
+else ()
+    message(STATUS "ccache not found")
+endif ()
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(ENABLE_COVERAGE "Enable coverage" OFF)
+
+if (UNIX)
+    set(ENV{NINJA_STATUS} "[%f/%t %e] ")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "nice -n 19")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
+endif ()
+
+if (ENABLE_COVERAGE)
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif ()
+
+add_subdirectory(wpa3_test)

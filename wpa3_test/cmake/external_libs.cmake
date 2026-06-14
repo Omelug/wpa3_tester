@@ -143,6 +143,7 @@ FetchContent_Declare(yaml-cpp
         GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
         GIT_TAG 0.8.0
         GIT_SHALLOW TRUE
+        PATCH_COMMAND sed -i "/#include <algorithm>/a #include <cstdint>" src/emitterutils.cpp
 )
 
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp)

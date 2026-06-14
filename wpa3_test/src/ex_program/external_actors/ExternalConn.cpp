@@ -1,6 +1,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include <fcntl.h>
 #include <libssh/sftp.h>
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 
 #include <ranges>
@@ -72,6 +73,40 @@ string ExternalConn::get_driver(const string &radio) const{
 	const string phy = "phy" + radio.substr(5); // "radio0" → "phy0"
 	return exec("basename $(readlink /sys/class/ieee80211/" + phy + "/device/driver) 2>/dev/null | tr -d '\\n'");
 }
+
+optional<string> ExternalConn::get_driver_hash(const string &driver_name) const{
+	if(driver_name.empty()) return nullopt;
+	// try srcversion first (fast path)
+	string s = exec("cat /sys/module/" + driver_name + "/srcversion 2>/dev/null | tr -d '\\n'");
+	if(!s.empty()) return s;
+	// fallback: sha256 of the .ko file
+	string ko = exec("modinfo -F filename " + driver_name + " 2>/dev/null | tr -d '\\n\\r '");
+	if(ko.empty() || ko == "(builtin)") return nullopt;
+	string sha = exec("sha256sum " + ko + " 2>/dev/null | cut -c1-16 | tr -d '\\n'");
+	while(!sha.empty() && (sha.back() == '\n' || sha.back() == '\r' || sha.back() == ' ')) sha.pop_back();
+	if(sha.empty()) return nullopt;
+	return sha;
+}
+
+optional<string> ExternalConn::get_module_hash(const string &driver_name) const{
+	if(driver_name.empty()) return nullopt;
+	// try srcversion for driver + depends; fallback per-module to sha256 of .ko
+	const string cmd =
+		"(for m in " + driver_name + " $(modinfo -F depends " + driver_name +
+		" 2>/dev/null | grep -v '^modinfo:' | tr ',' ' '); do"
+		" sv=$(cat /sys/module/$m/srcversion 2>/dev/null);"
+		" if [ -z \"$sv\" ]; then"
+		"   ko=$(modinfo -F filename $m 2>/dev/null);"
+		"   [ -n \"$ko\" ] && sv=$(sha256sum $ko 2>/dev/null | cut -c1-16);"
+		" fi;"
+		" [ -n \"$sv\" ] && printf '%s:%s;' \"$m\" \"$sv\";"
+		" done) | sha256sum | cut -c1-16";
+	string s = exec(cmd);
+	while(!s.empty() && (s.back() == '\n' || s.back() == '\r' || s.back() == ' ')) s.pop_back();
+	if(s.empty() || s == "-") return nullopt;
+	return s;
+}
+
 
 string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_err) const{
 	std::lock_guard lock(session_mtx);

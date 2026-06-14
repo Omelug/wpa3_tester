@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(wpa3_test)
+project(wpa3_tester)
 
 include(cmake/awk_files.cmake)
 include(cmake/external_libs.cmake)

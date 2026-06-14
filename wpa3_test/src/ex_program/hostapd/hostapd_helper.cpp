@@ -257,7 +257,7 @@ OpenSSLPaths get_openssl_paths(const string &version){
 	hw_capabilities::run_in("make install_sw", repo_path);
 
 	if(!exists(libcrypto)){
-		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: " + libcrypto.string());
+		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: {}", libcrypto);
 	}
 	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", version, install_dir);
 	return {lib_dir, libcrypto, include_dir};

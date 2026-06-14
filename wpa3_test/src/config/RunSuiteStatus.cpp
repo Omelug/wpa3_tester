@@ -19,7 +19,6 @@
 #include "setup/YAMLValidator.h"
 #include "suite/test_suites.h"
 #include "system/hw_capabilities.h"
-#include "system/ProcessManager.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -39,7 +38,11 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 	}
 	string actual_sub_folder = ".";
 	if(sub_folder.empty()){
-		actual_sub_folder = relative_from("attack_config", config_path);
+		try{
+			actual_sub_folder = relative_from("attack_config", config_path);
+		}catch(const config_err &){
+			log(LogLevel::ERROR, "relative_from issue");
+		}
 	}
 	_run_folder = BASE_FOLDER / actual_sub_folder/ suite_name / "last_run";
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());

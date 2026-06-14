@@ -32,7 +32,7 @@ pair<pcap_pkthdr,vector<uint8_t>> read_one_frame(const string &path){
     const u_char *data;
     if(pcap_next_ex(handle, &hdr, &data) != 1){
         pcap_close(handle);
-        throw run_err("No packets in file: " + path);
+        throw run_err("No packets in file: {}", path);
     }
 
     vector bytes(data, data + hdr->caplen);

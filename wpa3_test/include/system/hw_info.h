@@ -22,6 +22,8 @@ struct HwInfo{
             case BK::CSA:
             case BK::OCV:
             case BK::MFP:
+            case BK::WPA_PSK:
+            case BK::WPA3_SAE:
                 return true;
             default: return false;
         }

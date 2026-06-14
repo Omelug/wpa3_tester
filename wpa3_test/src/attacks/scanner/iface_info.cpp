@@ -103,6 +103,11 @@ void run_attack(RunStatus &rs){
     md << "### Security & Features\n\n";
     md << "| Feature | Supported |\n";
     md << "|----------|-----------|\n";
+    md << "| WPA2-PSK (CCMP) | " << bool_cell(scanner[BK::WPA_PSK]) << " |\n";
+    md << "| WPA3-SAE | " << bool_cell(scanner[BK::WPA3_SAE]) << " |\n";
+    md << "| MFP (BIP-CMAC-128) | " << bool_cell(scanner[BK::MFP]) << " |\n";
+    md << "| OCV | " << bool_cell(scanner[BK::OCV]) << " |\n";
+    md << "| Beacon Protection | " << bool_cell(scanner[BK::beacon_prot]) << " |\n\n";
 
     if(scanner[SK::driver_name].has_value())
         md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name].value() << "`\n";
@@ -136,5 +141,7 @@ void stats_attack(const RunStatus &rs){
     const path out = rs.run_folder() / "result.txt";
     ofstream f(out);
     if(f.is_open()) f << info;
+	f.close();
+	set_public_perms(out);
 }
 }

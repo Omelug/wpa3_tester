@@ -92,11 +92,13 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
-		actor_cfg->set(SK::driver_name, cfg->conn->get_driver(radio_name));
-		actor_cfg->set(SK::driver_hash, hw_capabilities::get_driver_hash(actor_cfg->get(SK::driver_name)));
-		actor_cfg->set(SK::module_hash, hw_capabilities::get_module_hash(actor_cfg->get(SK::driver_name)));
+		auto driver = cfg->conn->get_driver(radio_name);
+		actor_cfg->set(SK::driver_name, driver);
+		actor_cfg->set(SK::driver_hash, cfg->conn->get_driver_hash(driver));
+		actor_cfg->set(SK::module_hash, cfg->conn->get_module_hash(driver));
 		actor_cfg->set(SK::radio, radio_name);
-		cfg->conn->get_hw_capabilities(*actor_cfg, radio_name);
+		cfg->conn->get_hw_capabilities(actor_cfg, radio_name);
+		cerr << actor_cfg->to_str() << endl;
 		options.emplace_back(actor_cfg);
 	}
 }

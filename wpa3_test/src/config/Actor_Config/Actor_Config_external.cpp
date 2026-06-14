@@ -42,9 +42,9 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
 
 	if(channel_num != -1){
-		set_iface_up();
+		//set_iface_up();
 		set_channel(get_channel());
-		set_iface_down();
+		//set_iface_down();
 	}
 	//FIXME before channel switch?>
 	if(actor_json.contains("sniff_iface")){

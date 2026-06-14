@@ -28,7 +28,7 @@ public:
 	std::string get_wifi_iface_section(const std::string &iface) const;
 	void setup_ap(const RunStatus &rs, ActorPtr &actor) override;
 	void logger(RunStatus &rs, const std::string &actor_name) override;
-	void get_hw_capabilities(Actor_config &cfg, const std::string &radio) override;
-	static void parse_hw_capabilities(Actor_config &cfg, const std::string &output);
+	void get_hw_capabilities(ActorPtr &actor, const std::string &radio) override;
+	static void parse_hw_capabilities(ActorPtr &actor, const std::string &output);
 };
 }

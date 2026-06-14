@@ -241,28 +241,34 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	});
 }
 
-void OpenWrtConn::get_hw_capabilities(Actor_config &cfg, const string &radio){
+void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 	const string phy = "phy" + radio.substr(5);
 	int ret = 0;
 	const string output = exec("iw phy " + phy + " info", false, &ret);
 	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);
-	parse_hw_capabilities(cfg, output);
+	parse_hw_capabilities(actor, output);
+
+	string mac = exec("cat /sys/class/ieee80211/" + phy + "/macaddress 2>/dev/null");
+	while(!mac.empty() && (mac.back() == '\n' || mac.back() == '\r')) mac.pop_back();
+	if(!mac.empty()){
+		actor->set(SK::mac, mac);
+		actor->set(SK::permanent_mac, mac);
+	}
 }
 
-void OpenWrtConn::parse_hw_capabilities(Actor_config &cfg, const string &output){
-	// supported bands
-	cfg.set(BK::GHz2_4, output.find("Band 1:") != string::npos);
-	cfg.set(BK::GHz5, output.find("Band 2:") != string::npos);
-	cfg.set(BK::GHz6, output.find("* 6.0 GHz") != string::npos || output.find("Band 3:") != string::npos);
+void OpenWrtConn::parse_hw_capabilities(ActorPtr &actor, const string &output){
+	auto has = [&](const string &tag){ return output.find(tag) != string::npos; };
 
-	// supported modes
-	cfg.set(BK::AP, output.find(" * AP") != string::npos);
-	cfg.set(BK::STA, output.find(" * managed") != string::npos);
-	cfg.set(BK::monitor, output.find(" * monitor") != string::npos);
+	actor->set(BK::GHz2_4,   has("Band 1:"));
+	actor->set(BK::GHz5,     has("Band 2:"));
+	actor->set(BK::GHz6,     has("* 6.0 GHz") || has("Band 3:"));
 
-	// Supported standards
-	cfg.set(BK::w80211n, output.find("HT20") != string::npos || output.find("HT40") != string::npos);
-	cfg.set(BK::w80211ac,  output.find("VHT") != string::npos);
-	cfg.set(BK::w80211ax, output.find("HE") != string::npos);
+	actor->set(BK::AP,       has(" * AP"));
+	actor->set(BK::STA,      has(" * managed"));
+	actor->set(BK::monitor,  has(" * monitor"));
+
+	actor->set(BK::w80211n,  has("HT20") || has("HT40"));
+	actor->set(BK::w80211ac, has("VHT"));
+	actor->set(BK::w80211ax, has("HE"));
 }
 }

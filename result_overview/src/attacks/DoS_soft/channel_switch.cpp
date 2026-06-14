@@ -1,9 +1,11 @@
 #include "attacks/DoS_soft/channel_switch.h"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include <tuple>
 #include "suite/suite_helper.h"
+#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -12,14 +14,28 @@ using namespace filesystem;
 using suite::channel_switch_rogueAP::CsaTestEntry;
 
 static vector<CsaTestEntry> collect_results(const path &data_dir) {
-    vector<CsaTestEntry> results;
-    const path suite_dir = data_dir / "wpa3_suites" / "CSA_rogueAP_internal_filler";
-    for (const auto &test_path : suite::helper::get_suite_test_folders(suite_dir)) {
-        auto e = suite::channel_switch_rogueAP::parse_test_folder(test_path);
-        if (!e.passed.has_value()) continue;
-        results.push_back(std::move(e));
-    }
-    return results;
+	const path suite_dir = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch" / "rogueAP" / "CSA_rogueAP_internal_filler";
+
+	auto parsed_entries = suite::helper::get_suite_test_folders(suite_dir)
+		| std::views::transform(suite::channel_switch_rogueAP::parse_test_folder)
+		| std::views::filter([](const auto& e) { return e.passed.has_value(); });
+
+	auto results = std::ranges::to<vector<CsaTestEntry>>(parsed_entries);
+
+	auto opt_rank = [](const optional<bool>& v) -> int {
+		return v.has_value() ? (*v ? 0 : 1) : 2;
+	};
+
+	std::ranges::sort(results, std::less{}, [&](const CsaTestEntry& e) {
+		int ocv_r = opt_rank(e.ap_ocv) + opt_rank(e.client_ocv);
+		return std::tuple{
+			ocv_r,
+			opt_rank(e.disconnected),
+			opt_rank(e.rogue_ap)
+		};
+	});
+
+	return results;
 }
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {

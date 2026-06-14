@@ -160,7 +160,6 @@ void stats_chs_attack(const RunStatus &rs){
 	}
 
 	nlohmann::json result;
-	result["passed"]       = disconnected;
 	result["disconnected"] = disconnected;
 	if(rogue_ap_connected.has_value())
 		result["rogue_ap_connected"] = rogue_ap_connected.value();

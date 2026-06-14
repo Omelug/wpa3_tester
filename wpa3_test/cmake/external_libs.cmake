@@ -27,6 +27,8 @@ set(DISABLE_SNF ON CACHE BOOL "" FORCE)
 set(DISABLE_TC ON CACHE BOOL "" FORCE)
 set(ENABLE_PROFILING OFF CACHE BOOL "" FORCE)
 
+find_package(PkgConfig REQUIRED)
+
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
@@ -71,25 +73,40 @@ FetchContent_Declare(doctest
         OVERRIDE_FIND_PACKAGE
 )
 
-FetchContent_Declare( libpcap
-        GIT_REPOSITORY https://github.com/the-tcpdump-group/libpcap.git
-        GIT_TAG libpcap-1.10.6
-        GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(libpcap) # libtins need it before
+pkg_check_modules(SYSTEM_PCAP libpcap)
+if(SYSTEM_PCAP_FOUND)
+    message(STATUS "Using system libpcap ${SYSTEM_PCAP_VERSION}")
+    add_library(pcap_imported SHARED IMPORTED GLOBAL)
+    set_target_properties(pcap_imported PROPERTIES
+            IMPORTED_LOCATION ${SYSTEM_PCAP_LINK_LIBRARIES}
+            INTERFACE_INCLUDE_DIRECTORIES "${SYSTEM_PCAP_INCLUDE_DIRS}"
+    )
+    set(PCAP_INCLUDE_DIR "${SYSTEM_PCAP_INCLUDE_DIRS}" CACHE PATH "" FORCE)
+    set(PCAP_LIBRARY "${SYSTEM_PCAP_LINK_LIBRARIES}" CACHE FILEPATH "" FORCE)
+    set(PCAP_FOUND TRUE CACHE BOOL "" FORCE)
+    set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
+    include_directories(${SYSTEM_PCAP_INCLUDE_DIRS})
+else()
+    FetchContent_Declare( libpcap
+            GIT_REPOSITORY https://github.com/the-tcpdump-group/libpcap.git
+            GIT_TAG libpcap-1.10.6
+            GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(libpcap) # libtins need it before
 
-add_library(pcap_imported SHARED IMPORTED GLOBAL)
-set_target_properties(pcap_imported PROPERTIES
-        IMPORTED_LOCATION ${libpcap_BINARY_DIR}/libpcap.so
-        INTERFACE_INCLUDE_DIRECTORIES "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}"
-)
+    add_library(pcap_imported SHARED IMPORTED GLOBAL)
+    set_target_properties(pcap_imported PROPERTIES
+            IMPORTED_LOCATION ${libpcap_BINARY_DIR}/libpcap.so
+            INTERFACE_INCLUDE_DIRECTORIES "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}"
+    )
 
-set(PCAP_INCLUDE_DIR "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}" CACHE PATH "" FORCE)
-set(PCAP_LIBRARY ${libpcap_BINARY_DIR}/libpcap.so CACHE FILEPATH "" FORCE)
-set(PCAP_FOUND TRUE CACHE BOOL "" FORCE)
-set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
+    set(PCAP_INCLUDE_DIR "${libpcap_SOURCE_DIR};${libpcap_BINARY_DIR}" CACHE PATH "" FORCE)
+    set(PCAP_LIBRARY ${libpcap_BINARY_DIR}/libpcap.so CACHE FILEPATH "" FORCE)
+    set(PCAP_FOUND TRUE CACHE BOOL "" FORCE)
+    set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
 
-include_directories(${libpcap_SOURCE_DIR} ${libpcap_BINARY_DIR})
+    include_directories(${libpcap_SOURCE_DIR} ${libpcap_BINARY_DIR})
+endif()
 
 
 FetchContent_Declare(libtins
@@ -149,7 +166,6 @@ target_include_directories(doctest_headers INTERFACE
         "${doctest_SOURCE_DIR}/doctest"
 )
 
-find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
 # Embed library dirs in RPATH so binaries find system libs at runtime (needed on NixOS)
 list(APPEND CMAKE_BUILD_RPATH ${LIBNL_LIBRARY_DIRS})

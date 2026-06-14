@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.20)
 file(GLOB_RECURSE RESULT_OVERVIEW_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
@@ -6,7 +7,7 @@ add_executable(result_overview ${RESULT_OVERVIEW_SOURCES})
 
 target_include_directories(result_overview PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../wpa3_test/include
 )
 
 target_link_libraries(result_overview PRIVATE

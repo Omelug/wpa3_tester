@@ -1,5 +1,4 @@
 #include "attacks/DoS_soft/channel_switch.h"
-#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -7,6 +6,10 @@
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
+#include <algorithm>
+#include <ranges>
+#include <tuple>
+#include <vector>
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -22,17 +25,20 @@ static vector<CsaTestEntry> collect_results(const path &data_dir) {
 
 	auto results = std::ranges::to<vector<CsaTestEntry>>(parsed_entries);
 
-	auto opt_rank = [](const optional<bool>& v) -> int {
-		return v.has_value() ? (*v ? 0 : 1) : 2;
-	};
-
-	std::ranges::sort(results, std::less{}, [&](const CsaTestEntry& e) {
-		int ocv_r = opt_rank(e.ap_ocv) + opt_rank(e.client_ocv);
-		return std::tuple{
-			ocv_r,
-			opt_rank(e.disconnected),
-			opt_rank(e.rogue_ap)
+	std::ranges::sort(results, [](const CsaTestEntry& a, const CsaTestEntry& b) {
+		auto opt_rank = [](const std::optional<bool>& v) -> int {
+		   return v.has_value() ? (*v ? 0 : 1) : 2;
 		};
+
+		const int ocv_a = opt_rank(a.ap_ocv) + opt_rank(a.client_ocv);
+		const int ocv_b = opt_rank(b.ap_ocv) + opt_rank(b.client_ocv);
+		if (ocv_a != ocv_b) return ocv_a < ocv_b;
+
+		const int disc_a = opt_rank(a.disconnected);
+		const int disc_b = opt_rank(b.disconnected);
+		if (disc_a != disc_b) return disc_a < disc_b;
+
+		return opt_rank(a.rogue_ap) < opt_rank(b.rogue_ap);
 	});
 
 	return results;

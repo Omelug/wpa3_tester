@@ -42,6 +42,7 @@ target_link_libraries(wpa3_deps INTERFACE
 target_compile_definitions(wpa3_deps INTERFACE
         PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
+target_compile_features(wpa3_deps INTERFACE cxx_std_23)
 target_precompile_headers(wpa3_deps INTERFACE
         <vector> <string> <map> <unordered_map> <set>
         <memory> <optional> <variant> <tuple> <functional>

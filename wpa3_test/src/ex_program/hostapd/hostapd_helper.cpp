@@ -1,5 +1,6 @@
 #include "ex_program/hostapd/hostapd_helper.h"
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include "hostapd_cflags.h"
 #include "config/global_config.h"
 #include "logger/error_log.h"
@@ -350,12 +351,35 @@ static string get_conf_value(const path &cfg, initializer_list<string_view> keys
 	return {};
 }
 
+string get_ssid(const nlohmann::json &program_config, const string &config_path){
+	if(program_config.contains("ssid")) return program_config["ssid"].get<string>();
+	if(!config_path.empty())
+		if(const auto v = get_conf_value(config_path, {"ssid"}); !v.empty()) return v;
+	throw config_err("'ssid' not found in program_config or file: {}", config_path);
+}
+
+string get_channel(const nlohmann::json &program_config, const string &config_path){
+	if(program_config.contains("channel")) return to_string(program_config["channel"].get<int>());
+	if(!config_path.empty())
+		if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;
+	throw config_err("'channel' not found in program_config or file: {}", config_path);
+}
+
 string get_password(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"sae_password", "psk"});
 }
 
 string get_ssid(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"ssid"});
+}
+
+string get_mfp_from_supplicant(const path &conf){
+	if(!exists(conf)) return {};
+	const string val = get_conf_value(conf, {"ieee80211w"});
+	if(val == "1") return "OPTIONAL";
+	if(val == "2") return "REQUIRED";
+	if(val == "0") return "OFF";
+	return {};
 }
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){

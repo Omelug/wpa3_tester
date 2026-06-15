@@ -8,7 +8,7 @@
 #include "system/ProcessManager.h"
 
 namespace wpa3_tester{
-using config_paths = std::vector<std::pair<std::string,std::filesystem::path>>;
+using config_paths = std::vector<std::tuple<std::string,std::string,std::filesystem::path>>;
 
 struct HwOptionCache {
 	std::optional<std::vector<ActorPtr>> internal_opts;
@@ -45,7 +45,8 @@ public: // getters and setters
 	);
 	static void generate_test_files(nlohmann::basic_json<> source_info,
 									const std::vector<std::pair<std::string,std::vector<std::vector<std::string>>>> &
-									groups, const std::filesystem::path &gen_folder, config_paths &test_map
+									groups, const std::filesystem::path &gen_folder,
+									const std::string &source_name, config_paths &test_map
 	);
 	static void defined_by_permutation(nlohmann::basic_json<> source_info, const std::string &source_name,
 										const std::filesystem::path &test_config_folder, config_paths &test_map

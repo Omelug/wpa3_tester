@@ -19,16 +19,7 @@ actors:
       channel: 6
       condition: [ monitor ]
       driver: mt76x2u
-  rogue_ap:
-    source: internal
-    selection:
-      channel: 1
-      condition: [ AP ]
-    setup:
-      program: hostapd-mana
-      program_config:
-        hostapd-mana_path: ./config/hostapd-mana.conf
-$extends: ../observers.comp.yaml
+$extends: [../observers.comp.yaml, ../rogue_ap.comp.yaml]
 attack_config:
   attack_time: 60
   ms_interval: 100

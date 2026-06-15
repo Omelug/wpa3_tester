@@ -8,6 +8,7 @@ actors:
     selection:
       condition: [ AP ]
       channel: 6
+      permanent_mac: "24:ec:99:bf:c7:cf"
       driver: ath9k_htc
     setup:
       program: hostapd
@@ -50,17 +51,8 @@ actors:
       channel: 6
       condition: [ monitor ]
       driver: mt76x2u
-  rogue_ap:
-    source: internal
-    selection:
-      channel: 1
-      condition: [ AP ]
-    setup:
-      program: hostapd-mana
-      program_config:
-        hostapd-mana_path: ./config/hostapd-mana.conf
-$extends: ../observers.comp.yaml
+$extends: [../observers.comp.yaml, ../rogue_ap.comp.yaml]
 attack_config:
-  attack_time: 60
+  attack_time: 30
   ms_interval: 100
   new_channel: 1

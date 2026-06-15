@@ -14,13 +14,17 @@ struct CsaTestEntry {
 	std::string client_source;
 	std::string attacker_mac;
 	std::string attacker_driver;
+	std::string rogue_ap_mac;
+	std::string rogue_ap_driver;
 	std::optional<bool> disconnected;
 	std::optional<bool> rogue_ap;
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;
+	std::string client_mfp;
 	std::optional<bool> passed;
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
+	std::filesystem::path rel_path;
 };
 
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);

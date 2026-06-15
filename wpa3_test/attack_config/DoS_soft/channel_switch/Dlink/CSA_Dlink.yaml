@@ -12,7 +12,7 @@ actors:
     setup:
       program: openwrt
       program_config:
-        ssid: OpenWrt_2_4GHz
+        ssid: test_channel_switch
         channel: 6
         key: password123
         proto: RSN
@@ -30,12 +30,12 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        version: 2_10
-        ssid: OpenWrt_2_4GHz
-        sae_password: password123
-        ieee80211w: 2
+        version: 2_11
+        ssid: test_channel_switch
+        psk: password123
+        ieee80211w: 1
         proto: RSN
-        key_mgmt: SAE
+        key_mgmt: SAE WPA-PSK
         pairwise: CCMP
         group: CCMP
     netns: sta
@@ -46,18 +46,9 @@ actors:
       driver: mt76x2u
       condition: [ monitor ]
       channel: 6
-  rogue_ap:
-    source: internal
-    selection:
-      channel: 1
-      condition: [ AP ]
-    setup:
-      program: hostapd-mana
-      program_config:
-        hostapd-mana_path: ./config/hostapd-mana.conf
+$extends: [../observers.comp.yaml, ../rogue_ap.comp.yaml]
 attack_config:
-  attack_time: 30
+  attack_time: 60
   ms_interval: 100
   new_channel: 1
-$extends: ../observers.comp.yaml
 install_req: true

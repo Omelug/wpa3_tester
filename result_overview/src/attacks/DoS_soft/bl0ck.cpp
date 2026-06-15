@@ -71,7 +71,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
     } else {
         f << R"html(    <div class="card" style="overflow-x: auto;">
         <h2>Test Results</h2>
-        <table id="resultsTable">
+        <table id="resultsTable" class="aggregate">
             <thead>
                 <tr>
                     <th>AP MAC (source)</th>

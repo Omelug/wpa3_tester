@@ -13,44 +13,10 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-static string get_field_or_parse(const json &program_config, const string &key, const string &config_path, bool is_int,
-								const function<string(const string &)> &parse_from_file
-){
-	if(program_config.contains(key)){
-		if(is_int) return to_string(program_config[key].get<int>());
-		return program_config[key].get<string>();
-	}
-	if(!config_path.empty()){
-		try{
-			return parse_from_file(config_path);
-		} catch(...){}
-	}
-	throw config_err("Field '{}' not found in config or file: {}", key,  config_path);
-}
-
-static string parse_key_from_file(const string &config_path, const string &key){
-	ifstream f(config_path);
-	string line;
-	while(getline(f, line)){
-		if(line.starts_with(key + "=")) return line.substr(key.size() + 1);
-	}
-	throw config_err("Key '" + key + "' not found in file: " + config_path);
-}
-
-string get_ssid(const json &program_config, const string &config_path){
-	return get_field_or_parse(program_config, "ssid", config_path, false,
-							[](const string &p){ return parse_key_from_file(p, "ssid"); });
-}
-
-string get_channel(const json &program_config, const string &config_path){
-	return get_field_or_parse(program_config, "channel", config_path, true,
-							[](const string &p){ return parse_key_from_file(p, "channel"); });
-}
-
 // --------------- HOSTAPD -----------------------
 
 static void write_hostapd_kv(ofstream &out, const json &setup){
-	static const set<string> skip = {"hostapd_path", "version", "openssl", "other_options"};
+	static const set<string> skip = {"hostapd_path", "hostapd-mana_path", "version", "openssl", "other_options"};
 	for(auto it = setup.begin(); it != setup.end(); ++it){
 		if(skip.contains(it.key())) continue;
 		out << it.key() << "=";
@@ -289,19 +255,42 @@ void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
 }
 
 // --------- HOSTAPD_MANA ---------
-void run_hostapd_mana(RunStatus &rs, const string &actor_name){
-	const path hostapd_mana_config_path = rs.run_folder()/ (actor_name + "_hostapd_mana.conf");
 
-	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
-	if(program_config.contains("hostapd-mana_path")){
-		const path hostapd_path = program_config["hostapd-mana_path"].get<string>();
-		const path src = hostapd_path.is_absolute() ? hostapd_path : rs.config_path().parent_path() / hostapd_path;
-		copy_f(src, hostapd_mana_config_path);
+static string hostapd_mana_config(const string &run_folder, const string &actor_name, const json &ap_setup,
+								   const path &config_folder
+){
+	path folder(run_folder);
+	path cfg_path = folder / (actor_name + "_hostapd_mana.conf");
+
+	error_code ec;
+	create_directories(folder, ec);
+	if(ec) throw run_err("hostapd_mana_config: unable to create run folder");
+
+	if(ap_setup.contains("hostapd-mana_path")){
+		path src_path = ap_setup["hostapd-mana_path"].get<string>();
+		path src = src_path.is_absolute() ? src_path : config_folder / src_path;
+		copy_f(src, cfg_path);
+		ofstream out(cfg_path, ios::app);
+		write_hostapd_kv(out, ap_setup);
+	} else {
+		ofstream out(cfg_path);
+		if(!out) throw run_err("hostapd_mana_config: unable to open config file");
+		write_hostapd_kv(out, ap_setup);
 	}
 
+	set_public_perms(cfg_path);
+	log(LogLevel::INFO, "hostapd_mana_config: written {}", cfg_path.string());
+	return cfg_path.string();
+}
+
+void run_hostapd_mana(RunStatus &rs, const string &actor_name){
+	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
+	const string mana_config_path = hostapd_mana_config(rs.run_folder(), actor_name, program_config,
+														 rs.config_path().parent_path());
+
 	if(rs.get_actor(actor_name)["source"] == "internal"){
-		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, hostapd_mana_config_path));
-		rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_mana_config_path));
+		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, mana_config_path));
+		rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, mana_config_path));
 	}
 
 	string version;
@@ -315,7 +304,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	command.insert(command.end(), {
 						get_hostapd_mana(version),
 						//"-P", pid_file, // write PID to file, don't work without -B (background)
-						"-i", rs.get_actor(actor_name)["iface"], hostapd_mana_config_path,
+						"-i", rs.get_actor(actor_name)["iface"], mana_config_path,
 					});
 
 	const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");

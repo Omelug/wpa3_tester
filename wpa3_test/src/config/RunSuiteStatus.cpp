@@ -81,12 +81,12 @@ json RunSuiteStatus::config_validation(const path &config_path){
 void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source_name, config_paths &test_map) const{
 	const path rel_path = source_j.at("path").get<string>();
 	path abs_path = absolute(_config_path.parent_path() / rel_path);
-	test_map.emplace_back(source_name, abs_path);
+	test_map.emplace_back(source_name, "", abs_path);
 }
 
 void RunSuiteStatus::defined_by_name(basic_json<> source_j, const string &source_name, config_paths &test_map){
 	const string name = source_j.at("test_name").get<string>();
-	test_map.emplace_back(source_name, RunStatus::findConfigByTestName(name));
+	test_map.emplace_back(source_name, "", RunStatus::findConfigByTestName(name));
 }
 
 void replace_all(string &str, const string &from, const string &to){
@@ -144,7 +144,7 @@ void RunSuiteStatus::defined_by_generator(basic_json<> source_info, const string
 		set_public_perms(test_config_path);
 
 		RunStatus::config_validation(test_config_path);
-		test_map.emplace_back(config_name, test_config_path);
+		test_map.emplace_back(source_name, config_name, test_config_path);
 	}
 }
 
@@ -240,12 +240,13 @@ void RunSuiteStatus::print_tests_in_suite(const string &ts_name){
 		cout << "Not tests in this suite" << endl;
 		return;
 	}
-	for(const auto &[name, path]: tests){ cout << "Test: " << name << " -> " << path << endl; }
+	for(const auto &[src, name, cfg_path]: tests){ cout << "Test: " << src << "/" << name << " -> " << cfg_path << endl; }
 }
 
 void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 										const vector<pair<string,vector<vector<string>>>> &groups,
-										const path &gen_folder, config_paths &test_map
+										const path &gen_folder,
+										const string &source_name, config_paths &test_map
 ){
 	path tmp_template = gen_folder / "template_base.tmp.yaml";
 	save_yaml(source_info.at("config"), tmp_template);
@@ -288,7 +289,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 		// result test config validation
 		RunStatus::config_validation(test_path);
-		test_map.emplace_back(config_name, test_path);
+		test_map.emplace_back(source_name, config_name, test_path);
 
 		// another index or stop
 		test_counter++;
@@ -317,7 +318,7 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 
 	// vector of (var_name, vector of var variations)
 	const auto groups = prepare_variable_groups(vars_node, required_counts);
-	generate_test_files(source_info, groups, gen_folder, test_map);
+	generate_test_files(source_info, groups, gen_folder, source_name, test_map);
 }
 
 void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const string &source_name,
@@ -381,7 +382,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		save_yaml(cfg, test_path);
 		set_public_perms(test_path);
 		RunStatus::config_validation(test_path);
-		test_map.emplace_back(cfg.at("name").get<string>(), test_path);
+		test_map.emplace_back(source_name, cfg.at("name").get<string>(), test_path);
 	}
 }
 
@@ -440,12 +441,12 @@ void RunSuiteStatus::execute(){
 			log(LogLevel::WARNING, "Suite interrupted by Ctrl+C, stopped after {} of {} tests", i, tests_paths.size());
 			break;
 		}
-		const auto &[name, test_path] = tests_paths[i];
+		const auto &[src_key, name, test_path] = tests_paths[i];
 		RunStatus rs(test_path, name, ".");
 		rs.hw_option_cache(hw_cache);
 		rs.run_config(run_config);
 		path test_name = rs.config().at("name").get<string>();
-		const path test_folder = run_folder() / test_name;
+		const path test_folder = run_folder() / src_key / test_name;
 		if(exists(test_folder)) set_public_perms(test_folder);
 		rs.run_folder(test_folder);
 		rs.execute();
@@ -468,19 +469,19 @@ void RunSuiteStatus::execute(){
 
 void RunSuiteStatus::execute(const string &test_name){
 	auto tests_paths = get_test_paths();
-	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return p.first == test_name; });
+	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return get<1>(p) == test_name; });
 	if(it == tests_paths.end()){
 		log(LogLevel::WARNING, "Test '{}' not found — run the full suite first to generate test configs", test_name);
-		for(const auto &name: tests_paths | views::keys)
-			log(LogLevel::WARNING, "  available: {}", name);
+		for(const auto &[src, name, cfg_path]: tests_paths)
+			log(LogLevel::WARNING, "  available: {}/{}", src, name);
 		throw config_err("Test '" + test_name + "' not found in suite");
 	}
 
-	const auto &[name, test_path] = *it;
+	const auto &[src_key, name, test_path] = *it;
 	RunStatus rs(test_path, name, ".");
 	rs.run_config(run_config);
 	rs.run_config(get_global_run_config());
-	rs.run_folder(run_folder() / rs.config().at("name").get<string>());
+	rs.run_folder(run_folder() / src_key / rs.config().at("name").get<string>());
 	rs.execute();
 }
 

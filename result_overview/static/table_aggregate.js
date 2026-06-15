@@ -1,15 +1,11 @@
-function autoAggregateTable(tableId) {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-
+function autoAggregateTable(table) {
     const tbody = table.tBodies[0];
     const rows = tbody.rows;
     if (rows.length <= 1) return;
 
     const colCount = rows[0].cells.length;
-    const columnsToAggregate = Array.from({ length: colCount }, (_, i) => i);
 
-    columnsToAggregate.forEach(colIdx => {
+    for (let colIdx = 0; colIdx < colCount; colIdx++) {
         let mainCell = null;
         let rowspan = 1;
 
@@ -28,9 +24,9 @@ function autoAggregateTable(tableId) {
         }
 
         if (rowspan > 1 && mainCell) mainCell.rowSpan = rowspan;
-    });
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    autoAggregateTable("resultsTable");
+    document.querySelectorAll("table.aggregate").forEach(autoAggregateTable);
 });

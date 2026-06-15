@@ -6,6 +6,7 @@
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -36,16 +37,21 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 		if(const auto it = rs.actors.find("access_point"); it != rs.actors.end()){
 			e.ap_mac    = it->second->get_or(SK::mac,    "");
 			e.ap_source = it->second->get_or(SK::source, "");
-			e.ap_ocv    = it->second->get_or(BK::OCV, false);
+			e.ap_ocv    = it->second[BK::OCV];
 		}
 		if(const auto it = rs.actors.find("client"); it != rs.actors.end()){
 			e.client_mac    = it->second->get_or(SK::mac,    "");
 			e.client_source = it->second->get_or(SK::source, "");
-			e.client_ocv    = it->second->get_or(BK::OCV, false);
+			e.client_ocv    = it->second[BK::OCV];
+			e.client_mfp    = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
 		}
 		if(const auto it = rs.actors.find("attacker"); it != rs.actors.end()){
 			e.attacker_mac    = it->second->get_or(SK::mac,         "");
 			e.attacker_driver = it->second->get_or(SK::driver_name, "");
+		}
+		if(const auto it = rs.actors.find("rogue_ap"); it != rs.actors.end()){
+			e.rogue_ap_mac    = it->second->get_or(SK::mac,         "");
+			e.rogue_ap_driver = it->second->get_or(SK::driver_name, "");
 		}
 	}
 
@@ -57,10 +63,15 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 }
 
 void setup_suite(const RunSuiteStatus &rss){
-	const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
+	/*const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
 	create_public_dirs(config_dir);
 	copy_f(rss.config_path().parent_path() / "config/hostapd-mana.conf",
 		   config_dir / "hostapd-mana.conf");
+
+	const auto config_dir_r = rss.run_folder() / "test_config" / "all_MFP_required" / "config";
+	create_public_dirs(config_dir_r);
+	copy_f(rss.config_path().parent_path() / "config/hostapd-mana.conf",
+		   config_dir_r / "hostapd-mana.conf");*/
 }
 
 static string opt_bool(const optional<bool> &v){
@@ -78,11 +89,15 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	vector<CsaTestEntry> test_results;
-	for(const auto &entry: directory_iterator(run_dir)){
-		if(!entry.is_directory()) continue;
-		auto e = parse_test_folder(entry.path());
-		if(!e.passed.has_value()) continue;
-		test_results.push_back(std::move(e));
+	for(const auto &src_dir: directory_iterator(run_dir)){
+		if(!src_dir.is_directory()) continue;
+		for(const auto &entry: directory_iterator(src_dir.path())){
+			if(!entry.is_directory()) continue;
+			auto e = parse_test_folder(entry.path());
+			if(!e.passed.has_value()) continue;
+			e.rel_path = relative(entry.path(), run_dir);
+			test_results.push_back(std::move(e));
+		}
 	}
 
 	auto report = helper::open_report(run_dir / "report.md");
@@ -98,17 +113,20 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? | Rogue AP? | AP OCV / Client OCV | Result |\n";
-	report << "|------|-----------------|---------------------|-----------------------|---------------|-----------|---------------------|--------|\n";
+	report << "| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
+	report << "|------|-----------------|---------------------|-----------------------|---------------|-----------|---------------------|------------|--------|\n";
 
 	for(const auto &e: test_results){
-		const string name_cell   = exists(run_dir / e.name / "report.md")
-			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
+		const string rel = e.rel_path.string();
+		const string name_cell   = exists(run_dir / e.rel_path / "report.md")
+			? "[" + e.name + "](" + rel + "/report.md)" : e.name;
 		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED")
-			+ "](" + e.name + "/result.json)";
+			+ "](" + rel + "/result.json)";
 		const string ap_cell       = e.ap_mac       + " (" + e.ap_source + ")";
 		const string client_cell   = e.client_mac   + " (" + e.client_source + ")";
-		const string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
+		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
+		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
+			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
 		const string ocv_cell      = opt_bool(e.ap_ocv) + " / " + opt_bool(e.client_ocv);
 		report << "| " << name_cell
 			   << " | " << ap_cell
@@ -117,6 +135,7 @@ void generate_report(RunSuiteStatus &rss){
 			   << " | " << opt_bool(e.disconnected)
 			   << " | " << opt_bool(e.rogue_ap)
 			   << " | " << ocv_cell
+			   << " | " << e.client_mfp
 			   << " | " << result_link << " |\n";
 	}
 

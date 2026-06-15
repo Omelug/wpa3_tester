@@ -1,4 +1,5 @@
 #include <pcap/pcap.h>
+#include <set>
 #include "attacks/components/sniffer_helper.h"
 #include "config/global_config.h"
 #include "config/RunStatus.h"
@@ -7,7 +8,6 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -22,6 +22,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 	}
 
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
+		if(mac[0] & 0x01) return; // skip broadcast / multicast
 		ActorPtr actor;
 		if(seen.contains(mac)){
 			actor = seen.at(mac);
@@ -76,31 +77,32 @@ void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMACMap &seen){
 	solve_new_pdu(rt, seen);
 }
 
-vector<ActorPtr> RunStatus::list_external_entities(
-	const string &iface, const size_t timeout_sec, const vector<int> &channels
-){
-	if(channels.empty()) throw setup_err("No channels specified for scanning");
-
-	//setup scan iface
-	const ActorPtr scanner(make_shared<Actor_Config_internal>());
-	scanner->set(SK::iface, iface);
+static pcap_t *open_scan_pcap(const string &iface, const ActorPtr &scanner){
 	scanner->set_monitor_mode();
 	scanner->set_iface_up();
 
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *handle = pcap_create(iface.c_str(), errbuf);
 	if(!handle) throw setup_err("pcap_create failed: " + string(errbuf));
-
 	pcap_set_snaplen(handle, 2000);
 	pcap_set_promisc(handle, 1);
-	pcap_set_rfmon(handle, 1);
 	pcap_set_timeout(handle, 100);
-
 	if(pcap_activate(handle) < 0){
 		const string msg = pcap_geterr(handle);
 		pcap_close(handle);
 		throw setup_err("pcap_activate failed: " + msg);
 	}
+	return handle;
+}
+
+vector<ActorPtr> RunStatus::list_external_entities(
+	const string &iface, const size_t timeout_sec, const vector<int> &channels
+){
+	if(channels.empty()) throw setup_err("No channels specified for scanning");
+
+	const ActorPtr scanner(make_shared<Actor_Config_internal>());
+	scanner->set(SK::iface, iface);
+	pcap_t *handle = open_scan_pcap(iface, scanner);
 	struct PcapGuard{ pcap_t *h; ~PcapGuard(){ pcap_close(h); } } _guard{handle};
 
 	ActorMACMap seen;
@@ -128,21 +130,25 @@ vector<ActorPtr> RunStatus::list_external_entities(
 
 vector<int> RunStatus::get_external_BB_channels(){
 	vector<int> all_channels;
-	for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
-		if(actor_config.at("selection").contains("channel")){
-			all_channels.push_back(actor_config.at("selection").at("channel").get<int>());
-		} else{
-			log(LogLevel::WARNING, "Actor {} missing channel configuration", actor_name);
+
+	if(_config.contains("scan_channels")){
+		all_channels = _config.at("scan_channels").get<vector<int>>();
+	} else {
+		for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
+			if(actor_config.at("selection").contains("channel")){
+				all_channels.push_back(actor_config.at("selection").at("channel").get<int>());
+			} else{
+				log(LogLevel::WARNING, "Actor {} missing channel configuration", actor_name);
+			}
 		}
+		ranges::sort(all_channels);
+		all_channels.erase(ranges::unique(all_channels).begin(), all_channels.end());
 	}
 
 	if(all_channels.empty()){
-		log(LogLevel::WARNING, "No channels found in external actor configurations");
+		log(LogLevel::WARNING, "No channels found for scanning");
 		return {};
 	}
-
-	ranges::sort(all_channels);
-	all_channels.erase(ranges::unique(all_channels).begin(), all_channels.end());
 
 	const auto s = all_channels | views::transform([](int c){ return to_string(c); })
 	                            | views::join_with(string(", "))
@@ -151,11 +157,68 @@ vector<int> RunStatus::get_external_BB_channels(){
 	return all_channels;
 }
 
-vector<ActorPtr> RunStatus::external_bb_options(){
-	const vector<int> scan_channels = get_external_BB_channels();
-	if(scan_channels.empty()) return {};
+vector<ActorPtr> RunStatus::scan_until_match(
+	const string &iface, const vector<int> &channels, const ActorCMap &actors
+){
+	const ActorPtr scanner(make_shared<Actor_Config_internal>());
+	scanner->set(SK::iface, iface);
+	scanner->set_monitor_mode();
+	pcap_t *handle = open_scan_pcap(iface, scanner);
+	struct PcapGuard{ pcap_t *h; ~PcapGuard(){ pcap_close(h); } } _guard{handle};
+
+	ActorMACMap seen;
+	set<HWAddress<6>> reported;
+	bool found = false;
+
+	const auto on_packet = [&](const uint8_t *pkt, const size_t len) -> optional<bool> {
+		const size_t before = seen.size();
+		try{ solve_new_pdu(vector(pkt, pkt + len), seen); } catch(...){}
+
+		if(seen.size() > before){
+			for(const auto &[mac, actor] : seen){
+				if(!reported.insert(mac).second) continue;
+				const bool is_ap = (*actor)[BK::AP].value_or(false);
+				log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm",
+					is_ap ? "AP " : "STA", mac,
+					actor->get_or(SK::ssid, ""),
+					actor->get_or(SK::channel, "?"),
+					actor->get_or(SK::signal, "?"));
+			}
+			auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
+			try{
+				hw_capabilities::check_req_options(actors, opts);
+				found = true;
+				return true;
+			} catch(const req_err &){}
+		}
+		return nullopt;
+	};
+
+	while(!found){
+		for(const int ch_num : channels){
+			if(found) break;
+			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
+			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
+			this_thread::sleep_for(chrono::milliseconds(200));
+
+			auto result = components::poll_sniffer<bool>(handle, chrono::milliseconds(20000), on_packet);
+			if(holds_alternative<StopReason>(result) &&
+			   get<StopReason>(result) == StopReason::Interrupted) break;
+		}
+	}
+	return seen | views::values | ranges::to<vector<ActorPtr>>();
+}
+
+vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &actors){
+	const vector<int> channels = get_external_BB_channels();
+	if(channels.empty()) return {};
+	const string iface = _config.at("scan_iface");
 	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();
-	return list_external_entities(_config.at("scan_iface"), timeout, scan_channels);
+
+	if(_config.value("scan_until_success", false) && !actors.empty())
+		return scan_until_match(iface, channels, actors);
+
+	return list_external_entities(iface, timeout, channels);
 }
 
 }

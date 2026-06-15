@@ -107,7 +107,8 @@ private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
 	std::vector<int> get_external_BB_channels();
-	std::vector<ActorPtr> external_bb_options();
+	std::vector<ActorPtr> external_bb_options(const ActorCMap &actors = {});
+	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels, const ActorCMap &actors);
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 
 public:

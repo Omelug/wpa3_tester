@@ -66,7 +66,25 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	if(rs.get_actor("client")->is_WB() && rs.get_actor("access_point")->is_WB()){
+		components::client_ap_setup(rs);
+	}
+
+	if(!rs.get_actor("client")->is_WB() && !rs.get_actor("access_point")->is_WB()){
+		string ssid;
+		const auto &ap_cfg = rs.config().at("actors").at("access_point");
+		if(ap_cfg.contains("setup") && ap_cfg.at("setup").contains("program_config")){
+			const auto &pc = ap_cfg.at("setup").at("program_config");
+			if(pc.contains("ssid")) ssid = pc.at("ssid").get<string>();
+		}
+
+		string answer;
+		cout << "Is device connected to '" << ssid << "'? Connect it and press enter." << flush;
+		getline(cin, answer);
+		//
+	}
+
+
 	components::setup_rogue_ap(rs);
 }
 
@@ -114,11 +132,16 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	//report <<
 	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
-	report << "### STA (client, wpa_supplicant " << rs.config().at("actors").at("client").at("setup").at("program_config")
-													.value("version", "default") << ")\n";
+	const auto get_version = [&](const string &actor) -> string {
+		const auto &a = rs.config().at("actors").at(actor);
+		if(!a.contains("setup")) return "default";
+		const auto &s = a.at("setup");
+		if(!s.contains("program_config")) return "default";
+		return s.at("program_config").value("version", "default");
+	};
+	report << "### STA (client, wpa_supplicant " << get_version("client") << ")\n";
 	report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
-	report << "### AP (access_point, hostapd " << rs.config().at("actors").at("client").at("setup").at("program_config").
-													value("version", "default") << ")\n";
+	report << "### AP (access_point, hostapd " << get_version("access_point") << ")\n";
 	report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
 
 	if(crack_result.has_value()){

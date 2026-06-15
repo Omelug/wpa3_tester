@@ -1,51 +1,62 @@
 #include "attacks/DoS_soft/channel_switch.h"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <tuple>
+#include <vector>
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
-#include <algorithm>
-#include <ranges>
-#include <tuple>
-#include <vector>
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
 using suite::channel_switch_rogueAP::CsaTestEntry;
 
-static vector<CsaTestEntry> collect_results(const path &data_dir) {
-	const path suite_dir = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch" / "rogueAP" / "CSA_rogueAP_internal_filler";
+using TaggedEntry = pair<string, CsaTestEntry>;
 
-	auto parsed_entries = suite::helper::get_suite_test_folders(suite_dir)
-		| std::views::transform(suite::channel_switch_rogueAP::parse_test_folder)
-		| std::views::filter([](const auto& e) { return e.passed.has_value(); });
+static vector<TaggedEntry> collect_results(const path &data_dir) {
+	const path base = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch";
 
-	auto results = std::ranges::to<vector<CsaTestEntry>>(parsed_entries);
+	const array<pair<string, path>, 2> sources = {{
+		{"internal", base / "rogueAP" / "CSA_rogueAP_internal_filler"},
+		{"Dlink",    base / "Dlink"   / "CSA_rogueAP_Dlink_filler"},
+	}};
 
-	std::ranges::sort(results, [](const CsaTestEntry& a, const CsaTestEntry& b) {
+	vector<TaggedEntry> results;
+	for (const auto &[variant, suite_dir] : sources) {
+		for (const auto &src_dir : suite::helper::get_suite_test_folders(suite_dir)) {
+			for (const auto &entry : directory_iterator(src_dir)) {
+				if (!entry.is_directory()) continue;
+				auto e = suite::channel_switch_rogueAP::parse_test_folder(entry.path());
+				if (e.passed.has_value())
+					results.emplace_back(variant, std::move(e));
+			}
+		}
+	}
+
+	std::ranges::sort(results, [](const TaggedEntry& a, const TaggedEntry& b) {
 		auto opt_rank = [](const std::optional<bool>& v) -> int {
 		   return v.has_value() ? (*v ? 0 : 1) : 2;
 		};
+		if (a.first != b.first) return a.first < b.first;
 
-		const int ocv_a = opt_rank(a.ap_ocv) + opt_rank(a.client_ocv);
-		const int ocv_b = opt_rank(b.ap_ocv) + opt_rank(b.client_ocv);
+		const int ocv_a = opt_rank(a.second.ap_ocv) + opt_rank(a.second.client_ocv);
+		const int ocv_b = opt_rank(b.second.ap_ocv) + opt_rank(b.second.client_ocv);
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
-		const int disc_a = opt_rank(a.disconnected);
-		const int disc_b = opt_rank(b.disconnected);
+		const int disc_a = opt_rank(a.second.disconnected);
+		const int disc_b = opt_rank(b.second.disconnected);
 		if (disc_a != disc_b) return disc_a < disc_b;
 
-		return opt_rank(a.rogue_ap) < opt_rank(b.rogue_ap);
+		return opt_rank(a.second.rogue_ap) < opt_rank(b.second.rogue_ap);
 	});
 
 	return results;
 }
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {
-    const auto results = collect_results(data_dir);
+    const auto results = collect_results(data_dir);  // vector<TaggedEntry>
 
     const path page_dir = output_dir / "attacks" / "dos_soft" / "channel_switch";
     create_public_dirs(page_dir);
@@ -85,51 +96,53 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 
 )html";
 
+    auto opt_bool = [](const optional<bool> &v) -> string {
+        if (!v.has_value()) return "N/A";
+        return v.value() ? "yes" : "no";
+    };
+
+    auto emit_table = [&](const string &title, const string &table_id, const string &variant_filter) {
+        vector<const CsaTestEntry*> rows;
+        for (const auto &[variant, e] : results)
+            if (variant == variant_filter) rows.push_back(&e);
+
+        if (rows.empty()) return;
+
+        f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
+          << "        <h2>" << title << "</h2>\n"
+          << "        <table id=\"" << table_id << "\" class=\"aggregate\">\n"
+          << "            <thead><tr>\n"
+          << "                <th>AP MAC (source)</th>\n"
+          << "                <th>Client MAC (source)</th>\n"
+          << "                <th>Attacker MAC (driver)</th>\n"
+          << "                <th>Disconnected?</th>\n"
+          << "                <th>Rogue AP?</th>\n"
+          << "                <th>AP OCV / Client OCV</th>\n"
+          << "                <th>Client MFP</th>\n"
+          << "            </tr></thead>\n"
+          << "            <tbody>\n";
+        for (const auto *e : rows) {
+            f << "                <tr>\n";
+            f << "                    <td>" << e->ap_mac     << " (" << e->ap_source     << ")</td>\n";
+            f << "                    <td>" << e->client_mac << " (" << e->client_source << ")</td>\n";
+            f << "                    <td>" << e->attacker_mac << " (" << e->attacker_driver << ")";
+            if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
+                f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
+            f << "</td>\n";
+            f << "                    <td>" << opt_bool(e->disconnected) << "</td>\n";
+            f << "                    <td>" << opt_bool(e->rogue_ap)     << "</td>\n";
+            f << "                    <td>" << opt_bool(e->ap_ocv) << " / " << opt_bool(e->client_ocv) << "</td>\n";
+            f << "                    <td>" << e->client_mfp << "</td>\n";
+            f << "                </tr>\n";
+        }
+        f << "            </tbody>\n        </table>\n    </div>\n";
+    };
+
     if (results.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
     } else {
-        f << R"html(    <div class="card" style="overflow-x: auto;">
-        <h2>Test Results</h2>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <!-- <th>Test</th> -->
-                    <th>AP MAC (source)</th>
-                    <th>Client MAC (source)</th>
-                    <th>Attacker MAC (driver)</th>
-                    <th>Disconnected?</th>
-                    <th>Rogue AP?</th>
-                    <th>AP OCV / Client OCV</th>
-                    <!-- <th>Graphs</th> -->
-                </tr>
-            </thead>
-            <tbody>
-)html";
-        auto opt_bool = [](const optional<bool> &v) -> string {
-            if (!v.has_value()) return "N/A";
-            return v.value() ? "yes" : "no";
-        };
-        for (const auto &e : results) {
-            //const string ci = e.name + "_client.png";
-            //const string ai = e.name + "_ap.png";
-            //copy_f(e.client_graph, img_dir / ci);
-            //copy_f(e.ap_graph,    img_dir / ai);
-
-            f << "                <tr>\n";
-            //f << "                    <td>" << e.name << "</td>\n";
-            f << "                    <td>" << e.ap_mac     << " (" << e.ap_source     << ")</td>\n";
-            f << "                    <td>" << e.client_mac << " (" << e.client_source << ")</td>\n";
-            f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
-            f << "                    <td>" << opt_bool(e.disconnected) << "</td>\n";
-            f << "                    <td>" << opt_bool(e.rogue_ap)     << "</td>\n";
-            f << "                    <td>" << opt_bool(e.ap_ocv) << " / " << opt_bool(e.client_ocv) << "</td>\n";
-            //f << "                    <td>";
-            //if (exists(img_dir / ci)) f << "<a href=\"img/" << ci << "\">STA</a> ";
-            //if (exists(img_dir / ai)) f << "<a href=\"img/" << ai << "\">AP</a>";
-            //f << "</td>"
-            f << "\n                </tr>\n";
-        }
-        f << "            </tbody>\n        </table>\n    </div>\n";
+        emit_table("Test Results", "resultsTable", "internal");
+        emit_table("Dlink", "resultsTableDlink", "Dlink");
     }
 
     f << "</body>\n</html>\n";

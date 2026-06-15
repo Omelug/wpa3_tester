@@ -6,5 +6,11 @@ tests:
   all_actors:
     type: actor_filler
     config: ./CSA_Dlink.yaml
+  all_MFP_required:
+    type: actor_filler
+    config: ./CSA_Dlink_client_MFP_req.yaml
+  all_MFP_disabled:
+    type: actor_filler
+    config: ./CSA_Dlink_client_MFP_disabled.yaml
 delete_old: true
 rewrite: "errors"

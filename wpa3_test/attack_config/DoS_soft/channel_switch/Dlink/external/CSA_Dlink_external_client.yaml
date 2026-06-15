@@ -1,0 +1,32 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: channel_switch_Dlink_external_client
+attacker_module: channel_switch
+$validator: ../../channel_switch.schema.yaml
+scan_iface: wlan1 #FIXME ath nechce přepínat kanály -> zasekne se u channel 1
+scan_channels: [6]
+scan_until_success: true
+actors:
+  access_point:
+    source: external
+    selection:
+      channel: 6
+      condition: [ AP ]
+  client:
+    source: external
+    selection:
+      channel: 6
+      permanent_mac: "00:03:7f:c2:00:43"
+  attacker:
+    source: internal
+    selection:
+      #driver: mt76x2u
+      condition: [ monitor ]
+      channel: 6
+$extends: [ #../../observers.comp.yaml,
+  ../../rogue_ap.comp.yaml]
+attack_config:
+  attack_time: 60
+  ms_interval: 100
+  new_channel: 1
+install_req: true
+rewrite: errors

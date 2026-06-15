@@ -260,7 +260,7 @@ bool RunStatus::config_requirement(){
 
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	if(!external_bb_actors.empty()){
-		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_bb_options());
+		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_bb_options(external_bb_actors));
 	}
 
 	// ---------------- SIMULATIONS -------------------------

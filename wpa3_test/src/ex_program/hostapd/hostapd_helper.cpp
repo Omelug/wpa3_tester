@@ -328,7 +328,9 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 }
 
 static path actor_conf_path(const RunStatus &rs, const string &actor_name){
-	const string program = rs.config().at("actors").at(actor_name).at("setup").at("program").get<string>();
+	const auto &actor = rs.config().at("actors").at(actor_name);
+	if(!actor.contains("setup")) return {};
+	const string program = actor.at("setup").at("program").get<string>();
 	return rs.run_folder() /
 		(actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
 }

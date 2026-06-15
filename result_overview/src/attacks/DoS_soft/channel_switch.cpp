@@ -114,7 +114,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "            <thead><tr>\n"
           << "                <th>AP MAC (source)</th>\n"
           << "                <th>Client MAC (source)</th>\n"
-          << "                <th>Attacker MAC (driver)</th>\n"
+          << "                <th>Attacker MAC (driver) <br> RogueAP MAC (driver)\n"
           << "                <th>Disconnected?</th>\n"
           << "                <th>Rogue AP?</th>\n"
           << "                <th>AP OCV / Client OCV</th>\n"

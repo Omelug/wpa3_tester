@@ -135,7 +135,7 @@ Result wait_for_iface_disappear(const string_view iface_name, const optional<str
 	// Fast path: interface already gone
 	char name[IF_NAMESIZE]{};
 	iface_name.copy(name, IF_NAMESIZE - 1);
-	if(if_nametoindex(name) == 0) return Result{};
+	if(if_nametoindex(name) == 0) return {};
 
 	char buf[8192];
 	while(true){
@@ -162,7 +162,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 	// Fast path: interface already exists
 	char name[IF_NAMESIZE]{};
 	iface_name.copy(name, IF_NAMESIZE - 1);
-	if(if_nametoindex(name) != 0) return Result{};
+	if(if_nametoindex(name) != 0) return {};
 
 	const timeval tv{.tv_sec = timeout_ms / 1000, .tv_usec = (timeout_ms % 1000) * 1000};
 	(void)setsockopt(NetlinkRegistry::get_fd(netns), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -293,44 +293,5 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	if(err < 0)
 		return error_code(-err, system_category());
 	return {};
-}
-
-void log_iface_info(const string_view iface_name, const optional<string> &netns){
-	NetNSContext ns_guard(netns);
-	ifreq ifr{};
-	iface_name.copy(ifr.ifr_name, IFNAMSIZ - 1);
-
-	const int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	if(fd < 0){
-		fprintf(stderr, "DEBUG iface_info(%.*s): failed to open socket\n", static_cast<int>(iface_name.size()),
-				iface_name.data());
-		return;
-	}
-	const bool ok = ioctl(fd, SIOCGIFFLAGS, &ifr) == 0;
-	close(fd);
-
-	if(!ok){
-		fprintf(stderr, "DEBUG iface_info(%.*s): ioctl failed — interface may not exist\n",
-				static_cast<int>(iface_name.size()), iface_name.data());
-		return;
-	}
-
-	const short f = ifr.ifr_flags;
-	fprintf(stderr, "DEBUG iface_info(%.*s): UP=%d RUNNING=%d BROADCAST=%d MULTICAST=%d flags=0x%04x\n",
-			static_cast<int>(iface_name.size()), iface_name.data(), !!(f & IFF_UP), !!(f & IFF_RUNNING),
-			!!(f & IFF_BROADCAST), !!(f & IFF_MULTICAST), static_cast<unsigned short>(f));
-
-	const auto iftype = query_wifi_iftype(iface_name.data(), netns);
-	const auto *type_str = [&]() ->const char *{
-		switch(iftype){
-		case NL80211_IFTYPE_STATION: return "managed";
-		case NL80211_IFTYPE_MONITOR: return "monitor";
-		case NL80211_IFTYPE_AP: return "AP";
-		case NL80211_IFTYPE_ADHOC: return "IBSS";
-		default: return "unknown";
-		}
-	}();
-	fprintf(stderr, "DEBUG iface_info(%.*s): wifi type=%s (%d)\n", static_cast<int>(iface_name.size()),
-			iface_name.data(), type_str, static_cast<int>(iftype));
 }
 }

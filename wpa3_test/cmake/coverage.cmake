@@ -37,7 +37,6 @@ add_custom_target(coverage
     COMMAND ${LCOV}
             --extract ${COVERAGE_INFO}
             "${CMAKE_SOURCE_DIR}/wpa3_test/*"
-            "${CMAKE_SOURCE_DIR}/tests/*"
             "${CMAKE_SOURCE_DIR}/result_overview/*"
             --output-file ${COVERAGE_CLEAN}
             --ignore-errors ${COVERAGE_IGNORE}

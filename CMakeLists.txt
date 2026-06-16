@@ -52,4 +52,5 @@ if (ENABLE_COVERAGE)
     add_link_options(--coverage)
 endif ()
 
+enable_testing()
 add_subdirectory(wpa3_test)

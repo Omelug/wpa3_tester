@@ -21,12 +21,12 @@ ActiveTestEntry parse_test_folder(const path &test_folder) {
 	const auto result = helper::load_result_json(test_folder);
 	if (!result) return e;
 
-	const auto drv = helper::load_test_drivers(test_folder);
+	const auto rs  = helper::load_test_rs(test_folder);
 	e.acked        = result->value("acked", 0);
 	e.not_acked    = result->value("not_acked", 0);
 	e.passed       = result->value("success", false);
-	e.tx_driver    = helper::get_driver(drv, "transceiver");
-	e.rx_driver    = helper::get_driver(drv, "receiver");
+	e.tx_driver    = rs->get_actor("transceiver").get(SK::driver_name);
+	e.rx_driver    = rs->get_actor("receiver").get(SK::driver_name);
 	return e;
 }
 

@@ -30,7 +30,6 @@ struct CsaTestEntry {
 
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 
-void setup_suite(const RunSuiteStatus &rss);
 void generate_report(RunSuiteStatus &rss);
 
 }

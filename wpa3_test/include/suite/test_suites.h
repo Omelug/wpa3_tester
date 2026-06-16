@@ -26,7 +26,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 	{"reflection_attack_filler",    enterprise_filler_helper::setup_suite},
 	{"invalid_curve_filler",        enterprise_filler_helper::setup_suite},
 	{"wpa3_trans_downgrade_filler", wpa3_trans_downgrade_filler::setup_suite},
-	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::setup_suite},
+	//{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::setup_suite},
 };
 
 /* map of test_suite_name->post-run callback function */

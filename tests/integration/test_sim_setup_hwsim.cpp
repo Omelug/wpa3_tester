@@ -105,6 +105,13 @@ TEST_CASE("hwsim setup_actor - set AP mode"){
     HwsimFixture f;
     if(f.skip()) return;
 
+    auto probe = f.make_actor();
+    hw_capabilities::get_nl80211_caps(probe);
+    if(!probe.get(BK::AP)){
+        MESSAGE("Skipping: AP mode not supported by mac80211_hwsim on this kernel");
+        return;
+    }
+
     auto actor = f.make_actor();
     actor->set(BK::AP, true);
 

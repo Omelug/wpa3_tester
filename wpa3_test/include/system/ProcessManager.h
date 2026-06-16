@@ -83,7 +83,7 @@ public:
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
 				std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true
 	); // 60 minutes (practically infinity)
-	void stop(const std::string &process_name);
+	void stop(const std::string &process_name) noexcept;
 	void before_stop(const std::string &process_name, const std::function<void()> &callback);
 	void after_stop(const std::string &process_name, const std::function<void()> &callback);
 

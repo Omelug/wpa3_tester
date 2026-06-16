@@ -48,7 +48,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 					log(LogLevel::ERROR, "Drain thread for {} error: {} (code: {})", process_name, ec.message(),
 						ec.value());
 				}
-				// Flush remaining data from pipes before exiting (catches output from short-lived processes)
+				// flush remaining buffered data from pipes before exiting
 				for(const auto &s: streams){
 					while(true){
 						auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
@@ -78,16 +78,14 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			}
 		}
 
-		// flush pipe if process died naturally.
-		// when killed via killpg, surviving grandchildren may keep pipes open
-		// indefinitely, causing poll() to never reach EOF and blocking join().
+		// flush subprocess pipe if process died naturally
 		if(natural_exit){
 			mp->naturally_exited = true;
 			log(LogLevel::DEBUG, "flush start {}", process_name);
 			for(const auto &[stream, label, event]: streams){
-				// per-stream deadline: each stream gets a fresh budget so a slow
+				if(mp->shutting_down.load()) break;
 				const auto deadline = steady_clock::now() + milliseconds(500);
-				while(steady_clock::now() < deadline){
+				while(!mp->shutting_down.load() && steady_clock::now() < deadline){
 					const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
 					if(auto [events, poll_ec] = mp->proc->poll(event, reproc::milliseconds(min(remaining.count(), milliseconds(50).count())));
 						poll_ec || !(events & event)) break;
@@ -112,7 +110,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 				if(mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
 			}
 			if(natural_exit && !mp->shutting_down.load()){
-				const string err = ts + " [" + process_name + "] [manager] ERROR: process exited unexpectedly";
+				const string err = format("{} [{}] [manager] ERROR: process exited unexpectedly", ts, process_name);
 				if(combined_log.is_open()) write_log_line(combined_log, err);
 				if(mp->logs.log.is_open()) write_log_line(mp->logs.log, err);
 				log(LogLevel::ERROR, "Process '{}' exited unexpectedly", process_name);
@@ -151,8 +149,7 @@ void ProcessManager::handle_chunk(
 
 			if(line.empty()) continue;
 
-			const string prefix = current_timestamp() + " [" + process_name + "] [" + label + "] ";
-			const string full_line = prefix + line;
+			const string full_line = format("{} [{}] [{}] {}", current_timestamp(), process_name, label, line);
 
 			if(combined_log.is_open()) write_log_line(combined_log, full_line);
 			if(mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);
@@ -200,9 +197,8 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 
 	path log_dir = log_base_dir;
 
-	string wd_string;
 	if(!working_dir.empty()){
-		wd_string = working_dir.string();
+		string wd_string = working_dir.string();
 		options.working_directory = wd_string.c_str();
 	}
 	if(!logging_dir.empty()){ log_dir = logging_dir; }
@@ -234,18 +230,18 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 			lock_guard lock(logger_mtx);
 			processes.erase(process_name);
 		}
-		throw run_err("Failed to start " + process_name + ": " + ec.message());
+		throw run_err(format("Failed to start {}: {}", process_name, ec.message()));
 	}
 
 	// Put the child in its own process group so killpg kills the whole tree.
 	const pid_t child_pid = mp->proc->pid().first;
-	setpgid(child_pid, child_pid);
+	(void)setpgid(child_pid, child_pid);
 	mp->pgid = child_pid;
 	mp->start_pid = child_pid;
 
 	start_drain_for(process_name, mp);
 
-	const string line = current_timestamp() + " [" + process_name + "] [cmd] " + join(cmd," ");
+	const string line = format("{} [{}] [cmd] {}", current_timestamp(), process_name, join(cmd, " "));
 	lock_guard lock(logger_mtx);
 	if(combined_log.is_open()){ write_log_line(combined_log, line); }
 	if(logs.log.is_open()){ write_log_line(logs.log, line); }
@@ -311,7 +307,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	return true;
 }
 
-void ProcessManager::stop(const string &process_name){
+void ProcessManager::stop(const string &process_name) noexcept{
 	//log(LogLevel::DEBUG, "stop() called for "+process_name);
 	shared_ptr<ManagedProcess> mp;
 	{
@@ -322,7 +318,7 @@ void ProcessManager::stop(const string &process_name){
 		mp = proc_iter->second;
 		write_log_line(mp->logs.log, "@END_STOP");
 
-		// Clean up wait state and notify any waiting threads
+		// clean up wait state and notify any waiting threads
 		mp->logs.history_enabled = false;
 		mp->shutting_down = true;
 	}
@@ -337,13 +333,14 @@ void ProcessManager::stop(const string &process_name){
 			(void)killpg(mp->pgid, SIGTERM);
 			(void)killpg(mp->pgid, SIGKILL);
 		} else if(mp->proc){
-			(void)mp->proc->terminate(); (void)mp->proc->kill();
+			[[maybe_unused]] const auto ec_t = mp->proc->terminate();
+			[[maybe_unused]] const auto ec_k = mp->proc->kill();
 		}
 	}
 
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();
 
-	// Erase after drain thread exits so flush-phase handle_chunk calls still find the process
+	// erase after drain thread exits so flush-phase handle_chunk calls still find the process
 	{
 		lock_guard lock(logger_mtx);
 		processes.erase(process_name);
@@ -403,13 +400,8 @@ void ProcessManager::stop_all(){
 		for(const auto &name: processes | views::keys){ process_names.push_back(name); }
 	}
 
-	for(const auto &process_name: process_names){
-		try{
-			stop(process_name);
-		} catch(const exception &e){
-			log(LogLevel::WARNING, "Error stopping process {}:{}", process_name, e.what());
-		}
-	}
+	for(const auto &process_name: process_names)
+		stop(process_name);
 	log(LogLevel::DEBUG, "All processes stopped");
 }
 }

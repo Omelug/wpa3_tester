@@ -15,13 +15,19 @@ actors:
     source: external
     selection:
       channel: 6
-      permanent_mac: "00:03:7f:c2:00:43"
+      permanent_mac: "28:87:ba:a3:cf:16"
+      #permanent_mac: "90:de:80:6c:90:92"
+      #permanent_mac: "00:03:7f:c2:00:43"
+      #Samsung dad
+      #permanent_mac: "6c:ac:c2:cb:69:2f"
   attacker:
     source: internal
     selection:
       #driver: mt76x2u
       condition: [ monitor ]
       channel: 6
+  rogue_ap:
+    sniff_iface: rogue
 $extends: [ #../../observers.comp.yaml,
   ../../rogue_ap.comp.yaml]
 observers:
@@ -42,3 +48,5 @@ attack_config:
   new_channel: 1
 install_req: true
 rewrite: errors
+#rewrite: all
+#only_stats: true

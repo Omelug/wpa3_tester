@@ -17,6 +17,7 @@ struct CsaTestEntry {
 	std::string rogue_ap_mac;
 	std::string rogue_ap_driver;
 	std::optional<bool> disconnected;
+	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap;
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;

@@ -31,13 +31,9 @@ Wpa3TransDowngradeTestEntry parse_test_folder(const path &test_folder) {
 }
 
 vector<Wpa3TransDowngradeTestEntry> get_results(const path &run_dir) {
-	vector<Wpa3TransDowngradeTestEntry> entries;
-	for (const auto &entry : directory_iterator(run_dir)) {
-		if (!entry.is_directory()) continue;
-		auto e = parse_test_folder(entry.path());
-		if (!e.passed.has_value()) continue;
-		entries.push_back(std::move(e));
-	}
+	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
+		return parse_test_folder(p);
+	});
 	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
 	return entries;
 }

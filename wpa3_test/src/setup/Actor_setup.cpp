@@ -83,16 +83,15 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
 	else if(const auto &c = real_actor[SK::channel]) channel_num = stoi(c.value());
 
+	// Set sniff_iface key early so monitor check below knows a VIF will handle capturing
+	if(actor_json.contains("sniff_iface"))
+		set(SK::sniff_iface, MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
+
 	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)){
 		const ActorPtr self(shared_from_this());
 		if(!TwoIfaceInject::run_check(self, self, run_on_miss, "injection"))
 			log(LogLevel::INFO, "Get from cache");
-	}
-
-	if(actor_json.contains("sniff_iface")){
-		set(SK::sniff_iface, MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
-		create_sniff_iface();
 	}
 
 	if(get_or(BK::AP,false)) set_ap_mode();
@@ -102,6 +101,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
 	if(channel_num != -1 && monitor_needed())
 		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
+
+	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();
 	up_sniff_iface();
 	set_iface_up();
 }

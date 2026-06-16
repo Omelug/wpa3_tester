@@ -32,11 +32,11 @@ TEST_CASE("before_stop: callback "){
 
     pm.before_stop("proc", [&] {
         lock_guard lk(mtx);
-        order.push_back("before");
+        order.emplace_back("before");
     });
     pm.after_stop("proc", [&] {
         lock_guard lk(mtx);
-        order.push_back("after");
+        order.emplace_back("after");
     });
 
     pm.stop("proc");

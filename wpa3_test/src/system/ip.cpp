@@ -1,6 +1,7 @@
 #include "system/ip.h"
 #include <fcntl.h>
 #include <ifaddrs.h>
+#include <memory>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -26,39 +27,31 @@ void set_ip(RunStatus &rs, const string &actor_name){
 }
 
 string resolve_host(const string &hostname){
-	addrinfo hints{}, *res;
+	addrinfo hints{}, *raw;
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if(getaddrinfo(hostname.c_str(), nullptr, &hints, &res) != 0){
+	if(getaddrinfo(hostname.c_str(), nullptr, &hints, &raw) != 0)
 		throw run_err("Cannot resolve: " + hostname);
-	}
+	const unique_ptr<addrinfo, decltype(&freeaddrinfo)> res(raw, freeaddrinfo);
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in *>(res->ai_addr)->sin_addr, ip, sizeof(ip));
-	freeaddrinfo(res);
-	return string(ip);
+	return ip;
 }
 
 string get_ip(const string &iface){
-	ifaddrs *ifaddr = nullptr;
-	if(getifaddrs(&ifaddr) == -1){ throw run_err("Failed to get interface addresses"); }
+	ifaddrs *raw = nullptr;
+	if(getifaddrs(&raw) == -1) throw run_err("Failed to get interface addresses");
+	const unique_ptr<ifaddrs, decltype(&freeifaddrs)> ifaddr(raw, freeifaddrs);
 
-	string ip_address;
-	for(const ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
-		if(ifa->ifa_addr == nullptr) continue;
-
-		if(string(ifa->ifa_name) == iface && ifa->ifa_addr->sa_family == AF_INET){
-			char ip[INET_ADDRSTRLEN];
-			const void *addr = &(reinterpret_cast<sockaddr_in *>(ifa->ifa_addr)->sin_addr);
-			inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN);
-			ip_address = string(ip);
-			break;
-		}
+	for(const ifaddrs *ifa = ifaddr.get(); ifa != nullptr; ifa = ifa->ifa_next){
+		if(!ifa->ifa_addr || ifa->ifa_addr->sa_family != AF_INET) continue;
+		if(string_view(ifa->ifa_name) != iface) continue;
+		char ip[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr)->sin_addr, ip, sizeof(ip));
+		return ip;
 	}
-
-	freeifaddrs(ifaddr);
-	if(ip_address.empty()){ throw run_err("No IP address found for interface: " + iface); }
-	return ip_address;
+	throw run_err("No IP address found for interface: " + iface);
 }
 
 bool ping(const string &ip, const int timeout_sec){

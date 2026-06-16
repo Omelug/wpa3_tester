@@ -60,7 +60,7 @@ TEST_CASE("relative_from - basic functionality"){
     path attack_config = test_base / "attack_config" / "subdir" / "nested" / "test_config.yaml";
     create_directories(attack_config.parent_path());
 
-    string result = relative_from("attack_config", attack_config.string());
+    string result = relative_from("attack_config", attack_config);
     CHECK_EQ(result, "subdir/nested");
 
     remove_all(test_base);
@@ -71,7 +71,7 @@ TEST_CASE("relative_from - direct child"){
     path attack_config = test_base / "attack_config" / "direct_config.yaml";
     create_directories(attack_config.parent_path());
 
-    string result = relative_from("attack_config", attack_config.string());
+    string result = relative_from("attack_config", attack_config);
     CHECK_EQ(result, ".");
     remove_all(test_base);
 }
@@ -81,7 +81,7 @@ TEST_CASE("relative_from - base not found"){
     path other_dir = test_base / "other_directory" / "config.yaml";
     create_directories(other_dir.parent_path());
 
-    CHECK_THROWS_AS(relative_from("attack_config", other_dir.string()), wpa3_tester::config_err);
+    CHECK_THROWS_AS(relative_from("attack_config", other_dir), wpa3_tester::config_err);
 
     remove_all(test_base);
 }
@@ -91,7 +91,7 @@ TEST_CASE("relative_from - complex nested structure"){
     path attack_config = test_base / "project" / "attack_config" / "Enterprise" / "reflection_attack" / "test.yaml";
     create_directories(attack_config.parent_path());
 
-    string result = relative_from("attack_config", attack_config.string());
+    string result = relative_from("attack_config", attack_config);
     CHECK_EQ(result, "Enterprise/reflection_attack");
     remove_all(test_base);
 }
@@ -112,7 +112,7 @@ TEST_CASE("relative_from - single level nesting"){
     path attack_config = test_base / "attack_config" / "single" / "config.yaml";
     create_directories(attack_config.parent_path());
 
-    string result = relative_from("attack_config", attack_config.string());
+    string result = relative_from("attack_config", attack_config);
     CHECK_EQ(result, "single");
     remove_all(test_base);
 }

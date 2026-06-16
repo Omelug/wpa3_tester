@@ -27,16 +27,10 @@ unique_ptr<RunStatus> load_test_rs(const path &test_folder) {
 	return rs;
 }
 
-
-string get_driver(const map<string, string> &drivers, const string &actor) {
-	const auto it = drivers.find(actor);
-	return it != drivers.end() ? it->second : "?";
-}
-
 ofstream open_report(const path &report_path) {
 	ofstream report(report_path);
 	if(!report.is_open())
-		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());
+		log(LogLevel::ERROR, "Failed to create report: {}", report_path);
 	return report;
 }
 

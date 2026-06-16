@@ -1,6 +1,8 @@
 #include "attacks//mc_mitm/MonitorSocket.h"
 #include <memory>
+#include <pcap/pcap.h>
 #include <string>
+#include <sys/poll.h>
 #include <tins/tins.h>
 
 #include "logger/error_log.h"
@@ -118,6 +120,17 @@ MonitorSocket::RecvResult MonitorSocket::recv(){
 	const int ret = pcap_next_ex(sniffer_.get_pcap_handle(), &header, &frame);
 	if(ret <= 0) return {};
 	return parse_frame(frame, header->caplen);
+}
+
+void MonitorSocket::recv_loop(const chrono::steady_clock::time_point deadline,
+                              const function<bool(RecvResult)> &on_packet){
+	const int fd = pcap_get_selectable_fd(get_pcap_handle());
+	pollfd pfd{fd, POLLIN, 0};
+	while(true){
+		const int rem = static_cast<int>(chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+		if(rem <= 0 || poll(&pfd, 1, rem) <= 0) break;
+		if(auto r = recv(); r && on_packet(std::move(r))) break;
+	}
 }
 
 void MonitorSocket::set_filter(const string &bpf){ sniffer_.set_filter(bpf); }

@@ -99,7 +99,6 @@ void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 }
 
 void create_public_dirs(const path &p){
-	// Track which directories don't exist yet
 	vector<path> to_chmod;
 	path current = p;
 	while(!current.empty()){
@@ -115,7 +114,7 @@ void create_public_dirs(const path &p){
 
 	create_directories(p);
 
-	// Set permissions only on newly created directories
+	// set permissions only on newly created directories
 	for(const auto &dir : to_chmod){
 		permissions(dir, perms::all);
 	}

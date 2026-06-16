@@ -275,6 +275,11 @@ ActorPtr &RunStatus::get_actor(const string &actor_name){
 	throw config_err("Actor " + actor_name + " not found in actors map");
 }
 
+const ActorPtr &RunStatus::get_actor(const string &actor_name) const{
+	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+	throw config_err("Actor " + actor_name + " not found in actors map");
+}
+
 void RunStatus::print_test_list(){
 	auto tests = scan_attack_configs(TEST);
 	if(tests.empty()){

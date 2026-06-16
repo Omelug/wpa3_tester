@@ -56,6 +56,7 @@
       <w>endl</w>
       <w>eopnotsupp</w>
       <w>eperm</w>
+      <w>epollhup</w>
       <w>errbuf</w>
       <w>essid</w>
       <w>exch</w>

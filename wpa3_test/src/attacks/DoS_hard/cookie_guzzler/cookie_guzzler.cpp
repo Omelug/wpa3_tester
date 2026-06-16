@@ -104,8 +104,8 @@ void stats_attack(const RunStatus &rs){
 		{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
 	});
 
-	//const string STA_graph_path = observer::tshark_graph(rs, "client", events);
-	//const string AP_graph_path =
+	//const path STA_graph_path = observer::tshark_graph(rs, "client", events);
+	//const path AP_graph_path =
 	//    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
 
 	const auto ap = rs.config().at("actors").at("access_point");

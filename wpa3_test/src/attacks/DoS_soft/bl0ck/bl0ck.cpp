@@ -281,8 +281,8 @@ void stats_bl0ck_attack(const RunStatus &rs){
 									},
 								});
 
-	const string attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
-	const string client_graph   = observer::tshark::tshark_graph(rs, "client", elements);
+	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
+	const path client_graph   = observer::tshark::tshark_graph(rs, "client", elements);
 
 	const Bl0ckResult result = load_result(rs);
 	generate_report(rs, result, attacker_graph, client_graph);

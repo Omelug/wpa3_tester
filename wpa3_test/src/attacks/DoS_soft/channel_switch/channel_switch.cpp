@@ -113,8 +113,8 @@ void run_chs_attack(RunStatus &rs){
 	rs.process_manager.stop_all();
 }
 
-void generate_report(const RunStatus &rs, const string &STA_graph_path, const string &AP_graph_path,
-					const optional<hostapd::CrackResult> &crack_result){
+void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,
+	const path &ATT_graph_path, const path &rogue_graph_path, const optional<hostapd::CrackResult> &crack_result){
 	const path report_path = rs.run_folder()/ "report.md";
 	ofstream report(report_path);
 	if(!report.is_open()){
@@ -132,6 +132,7 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	//report <<
 	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
+	//TODO add hostapd helepr ?
 	const auto get_version = [&](const string &actor) -> string {
 		const auto &a = rs.config().at("actors").at(actor);
 		if(!a.contains("setup")) return "default";
@@ -139,11 +140,22 @@ void generate_report(const RunStatus &rs, const string &STA_graph_path, const st
 		if(!s.contains("program_config")) return "default";
 		return s.at("program_config").value("version", "default");
 	};
-	report << "### STA (client, wpa_supplicant " << get_version("client") << ")\n";
-	report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
-	report << "### AP (access_point, hostapd " << get_version("access_point") << ")\n";
-	report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
-
+	if(!STA_graph_path.empty()){
+		report << "### STA (client, wpa_supplicant " << get_version("client") << ")\n";
+		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
+	}
+	if(!AP_graph_path.empty()){
+		report << "### AP (access_point, hostapd " << get_version("access_point") << ")\n";
+		report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
+	}
+	if(!ATT_graph_path.empty()){
+		report << "### ATT (access_point, hostapd-mana " << get_version("access_point") << ")\n";
+		report << "![ATT Throughput Graph](" << relative(ATT_graph_path, rs.run_folder()).string() << ")\n\n";
+	}
+	if(!rogue_graph_path.empty()){
+		report << "###  Rogue AP (rogue_ap)\n";
+		report << "![Rogue AP Throughput Graph](" << relative(rogue_graph_path, rs.run_folder()).string() << ")\n\n";
+	}
 	if(crack_result.has_value()){
 		report << "## Credential Cracking (hcxpmktool)\n";
 		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
@@ -188,10 +200,18 @@ void stats_chs_attack(const RunStatus &rs){
 		result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 
-	const string STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
-	const string AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
+	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
+	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
 																observer::get_observer_folder(rs, "tcpdump"));
 
-	generate_report(rs, STA_graph_path, AP_graph_path, crack_result);
+	const string client_mac = rs.get_actor("client")["mac"];
+	observer::tshark::pcap_events(rs, elements, {
+								{"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black"}
+							});
+
+	const path ATT_graph_path = observer::tshark::tshark_graph(rs, "attacker", elements);
+	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
+
+	generate_report(rs, STA_graph_path, AP_graph_path, ATT_graph_path, rogue_graph_path, crack_result);
 }
 }

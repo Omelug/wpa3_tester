@@ -60,7 +60,7 @@ TEST_CASE("ProcessManager - stop_all handles multiple processes"){
         CHECK_EQ(pm.processes_size(), 0);
 
         log(LogLevel::INFO, "stop_all test completed successfully");
-        //remove_all(test_dir);
+        remove_all(test_dir);
     }
 
 TEST_CASE("ProcessManager - stop_all handles empty process list"){
@@ -138,7 +138,7 @@ TEST_CASE("ProcessManager - process logging"){
 
         pm.stop_all();
         log(LogLevel::INFO, "process logging test completed successfully");
-        //remove_all(test_dir);
+        remove_all(test_dir);
     }
 
 TEST_CASE("ProcessManager - wait_for with timeout"){
@@ -313,7 +313,7 @@ TEST_CASE("ProcessManager - wait_for returns false on Ctrl+C"){
     pm.run("sleeper", {"sleep", "60"});
     pm.allow_history("sleeper");
 
-    // set flag after 150 ms — simulates Ctrl+C mid-wait
+    // set flag after 150 ms — simulates Ctrl+C
     thread interrupter([]{ this_thread::sleep_for(150ms); g_interrupted.store(true); });
 
     const auto start = chrono::steady_clock::now();
@@ -324,9 +324,54 @@ TEST_CASE("ProcessManager - wait_for returns false on Ctrl+C"){
     g_interrupted.store(false); // reset global for subsequent tests
 
     CHECK_FALSE(result);
-    CHECK_LT(elapsed, 500ms); // must unblock within ~250 ms, not wait 30 s
+    CHECK_LT(elapsed, 500ms); // not waiting 30s
 
     pm.stop_all();
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - run throws run_err on start failure"){
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_run_fail";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    const path nonexistent = test_dir / "does_not_exist";
+    CHECK_THROWS_AS(pm.run("fail_proc", {"sleep", "10"}, nonexistent), run_err);
+    CHECK_FALSE(pm.process_exists("fail_proc"));
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("ProcessManager - drain thread natural exit path") {
+    ProcessManager pm;
+    const auto test_dir = temp_directory_path() / "pm_test_drain_natural";
+    create_directories(test_dir);
+    pm.init_logging(test_dir);
+
+    SUBCASE("silent exit: poll() returns broken_pipe, no output, naturally_exited set") {
+        // No stdout/stderr → pure EPOLLHUP → reproc returns broken_pipe -> if(ec) branch
+        pm.run("silent", {"sleep", "0"});
+        this_thread::sleep_for(400ms);
+        // stop() must not deadlock or throw even though process is already gone
+        CHECK_NOTHROW(pm.stop("silent"));
+        CHECK_FALSE(pm.process_exists("silent"));
+    }
+
+    SUBCASE("output captured by first flush before poll() error") {
+        // process writes stdout + stderr then exits; first flush (lines 52-58) drains buffered data
+        pm.run("outputter", {"bash", "-c", "echo stdout_marker; echo stderr_marker >&2"});
+        pm.allow_history("outputter");
+        this_thread::sleep_for(400ms);
+
+        ifstream f(pm.log_base_dir / "outputter.log");
+        const string content((istreambuf_iterator(f)), istreambuf_iterator<char>{});
+        CHECK_NE(content.find("stdout_marker"), string::npos);
+        CHECK_NE(content.find("stderr_marker"), string::npos);
+
+        pm.stop("outputter");
+    }
+
     remove_all(test_dir);
 }
 

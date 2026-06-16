@@ -45,6 +45,8 @@ add_custom_target(coverage
     COMMAND ${GENHTML}
             ${COVERAGE_CLEAN}
             --output-directory ${COVERAGE_REPORT}
+            --prefix ${CMAKE_SOURCE_DIR}
+            --hierarchical
             --ignore-errors ${COVERAGE_IGNORE}
             --parallel ${NPROC}
 

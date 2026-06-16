@@ -78,16 +78,18 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			}
 		}
 
-		// Only flush pipe remainder when the process died naturally.
-		// When killed via killpg, surviving grandchildren may keep pipes open
+		// flush pipe if process died naturally.
+		// when killed via killpg, surviving grandchildren may keep pipes open
 		// indefinitely, causing poll() to never reach EOF and blocking join().
 		if(natural_exit){
 			mp->naturally_exited = true;
 			log(LogLevel::DEBUG, "flush start {}", process_name);
-			const auto flush_deadline = steady_clock::now() + milliseconds(500);
 			for(const auto &[stream, label, event]: streams){
-				while(steady_clock::now() < flush_deadline){
-					if(auto [events, poll_ec] = mp->proc->poll(event, reproc::milliseconds(50));
+				// per-stream deadline: each stream gets a fresh budget so a slow
+				const auto deadline = steady_clock::now() + milliseconds(500);
+				while(steady_clock::now() < deadline){
+					const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
+					if(auto [events, poll_ec] = mp->proc->poll(event, reproc::milliseconds(min(remaining.count(), milliseconds(50).count())));
 						poll_ec || !(events & event)) break;
 
 					auto [n, read_ec] = mp->proc->read(stream, buffer, sizeof(buffer));
@@ -97,13 +99,14 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			}
 			log(LogLevel::DEBUG, "flush done {}", process_name);
 		}
-		// Flush incomplete (no trailing newline) lines and emit error if process died unexpectedly
+
+		// flush incomplete (no trailing newline) lines and emit error if process died unexpectedly
 		{
 			lock_guard lock(logger_mtx);
 			const string ts = current_timestamp();
 			for(auto &[label, buf]: mp->logs.buffers){
 				if(buf.empty()) continue;
-				const string full_line = ts + " [" + process_name + "] [" + label + "] " + buf;
+				const string full_line = format("{} \"[{}] [{}] {}\"", ts, process_name, label, buf);
 				buf.clear();
 				if(combined_log.is_open()) write_log_line(combined_log, full_line);
 				if(mp->logs.log.is_open()) write_log_line(mp->logs.log, full_line);

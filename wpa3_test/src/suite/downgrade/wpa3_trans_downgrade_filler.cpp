@@ -21,12 +21,12 @@ Wpa3TransDowngradeTestEntry parse_test_folder(const path &test_folder) {
 	const auto result = helper::load_result_json(test_folder);
 	if (!result) return e;
 
-	const auto drv     = helper::load_test_drivers(test_folder);
+	const auto rs      = helper::load_test_rs(test_folder);
 	e.rogue_4way_count = result->value("rogue_4way_count", 0);
 	e.downgrade_seen   = result->value("downgrade_seen", false);
 	e.passed           = result->value("vulnerable", false);
-	e.ap_driver        = helper::get_driver(drv, "access_point");
-	e.client_driver    = helper::get_driver(drv, "client");
+	e.ap_driver        = rs->get_actor("access_point").get(SK::driver_name);
+	e.client_driver    = rs->get_actor("client").get(SK::driver_name);
 	return e;
 }
 

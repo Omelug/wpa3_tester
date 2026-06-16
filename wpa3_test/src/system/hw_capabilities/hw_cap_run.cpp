@@ -123,10 +123,10 @@ void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
 }
 
 // ---------------- exec -. errors
-
+/*
 void hw_capabilities::exec(const vector<string> &cmd, const bool check){
 	const string full = join(cmd, " ");
 	if(const int ret = system(full.c_str()); check && ret != 0)
 		throw run_err("Command failed: " + full);
-}
+}*/
 }

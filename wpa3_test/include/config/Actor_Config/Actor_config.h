@@ -30,7 +30,7 @@ public:
     explicit Actor_config(const nlohmann::json &j, std::string source = "");
 	virtual ~Actor_config();
 
-    bool matches(const Actor_config &offer);
+    bool matches(const Actor_config &offer) const;
     Actor_config &operator+=(const Actor_config &other);
 	void set(SK key, const std::optional<std::string> &new_value);
 	void set(BK key, const std::optional<bool> &new_value);

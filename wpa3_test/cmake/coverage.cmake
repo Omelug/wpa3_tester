@@ -13,7 +13,7 @@ endif()
 
 set(COVERAGE_INFO      "${CMAKE_BINARY_DIR}/coverage.info")
 set(COVERAGE_CLEAN     "${CMAKE_BINARY_DIR}/coverage_clean.info")
-set(COVERAGE_REPORT    "${CMAKE_BINARY_DIR}/coverage_report")
+set(COVERAGE_REPORT    "${CMAKE_BINARY_DIR}/../coverage_report")
 set(COVERAGE_IGNORE    "inconsistent,range,negative,unused")
 
 add_custom_target(coverage
@@ -33,10 +33,12 @@ add_custom_target(coverage
             --ignore-errors ${COVERAGE_IGNORE}
             --parallel ${NPROC}
 
-    # keep only project sources — auto-excludes nix, gcc headers, _deps, etc.
+    # keep only project sources (explicit dirs exclude build/_deps entirely)
     COMMAND ${LCOV}
             --extract ${COVERAGE_INFO}
-            "${CMAKE_SOURCE_DIR}/*"
+            "${CMAKE_SOURCE_DIR}/wpa3_test/*"
+            "${CMAKE_SOURCE_DIR}/tests/*"
+            "${CMAKE_SOURCE_DIR}/result_overview/*"
             --output-file ${COVERAGE_CLEAN}
             --ignore-errors ${COVERAGE_IGNORE}
 

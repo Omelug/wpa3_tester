@@ -110,9 +110,9 @@ class hw_capabilities{
 								std::unordered_set<size_t> &usedOptions, ActorMap &current,
 								std::vector<ActorMap> &results
 	);
-	static int nl80211_cb(nl_msg *msg, void *arg);
 	static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 public:
+	static int nl80211_cb(nl_msg *msg, void *arg);
 	static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 	static std::vector<ActorMap> check_all_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 	static std::string get_heuristic_err_msg(const ActorCMap &rules, const std::vector<ActorPtr> &options);
@@ -124,7 +124,7 @@ public:
 	static std::string run_cmd_output(const std::vector<std::string> &argv,
 									const std::optional<std::string> &netns = std::nullopt
 	);
-	static void exec(const std::vector<std::string> &cmd, bool check = false);
+	//static void exec(const std::vector<std::string> &cmd, bool check = false);
 
 	// git helpers
 	static bool git_available();

@@ -22,7 +22,7 @@ void check_monitor(nlattr **attrs, NlCaps *caps){
 	if(iftypes[NL80211_IFTYPE_MONITOR]) caps->monitor = true;
 }
 
-void check_features(nlattr **attrs, NlCaps *caps){
+void check_active_monitor(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_FEATURE_FLAGS]) return;
 	const uint32_t features = nla_get_u32(attrs[NL80211_ATTR_FEATURE_FLAGS]);
 	caps->active_monitor = (features & NL80211_FEATURE_ACTIVE_MONITOR) != 0;
@@ -139,7 +139,7 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	check_WPA2_PSK(attrs, caps);
 	check_type(attrs, caps);
 	check_monitor(attrs, caps);
-	check_features(attrs, caps);
+	check_active_monitor(attrs, caps);
 	check_band_caps(attrs, caps);
 	check_beacon_prot(attrs, caps);
 	check_CSA(attrs, caps);

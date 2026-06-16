@@ -53,6 +53,13 @@ target_link_libraries(run_utils_tests PRIVATE
 )
 add_test(NAME UtilsTests COMMAND run_utils_tests)
 
+add_executable(run_nl80211_cb_tests test_nl80211_cb.cpp)
+target_link_libraries(run_nl80211_cb_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME Nl80211CbTests COMMAND run_nl80211_cb_tests)
+
 add_executable(run_ip_tests test_ip.cpp)
 target_link_libraries(run_ip_tests PRIVATE
         wpa3_core

@@ -15,9 +15,6 @@ std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test
 
 std::unique_ptr<RunStatus> load_test_rs(const std::filesystem::path &test_folder);
 
-// return driver or "?"
-std::string get_driver(const std::map<std::string, std::string> &drivers, const std::string &actor);
-
 // open report.md for write
 std::ofstream open_report(const std::filesystem::path &report_path);
 

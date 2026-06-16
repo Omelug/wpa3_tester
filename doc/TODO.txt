@@ -5,7 +5,7 @@ v: visualization
 
 Version v 0.0.0.0:
 CSA:
-    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
+    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd, channel switch na kanály mimo reg
 f: špatně se resetuje scan_ip (ap_info)
 +: filler for channel_switch
 +: HT IE cahnnel switch (similiar to CSA attack)
@@ -19,7 +19,6 @@ fd: save_log to documentation a nějak otestovat, funguje jen někdy
 d: how run program
 d: clion setup
 +: do cache type suites (run only tif requires allows it, other possibilities ignore)
-+: channel switch na kanály mimo reg
 +: Network Manager
 
 PDF:

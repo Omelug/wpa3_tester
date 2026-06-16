@@ -70,22 +70,22 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
         ActorMACMap seen;
         
         auto probe_req = make_shared<Dot11ProbeRequest>();
-        probe_req->addr2("11:22:33:44:55:66");  // STA MAC
+        probe_req->addr2("12:22:33:44:55:66");  // STA MAC (unicast: byte0=0x12, bit0=0)
         probe_req->ssid("MyNetwork");
-        
+
         auto radiotap = make_shared<RadioTap>();
         radiotap->channel(2412, 6);  // Channel 1, ERP type (802.11g)
         radiotap->dbm_signal(-70);
-        
+
         radiotap->inner_pdu(*probe_req);
-        
+
         RunStatus::solve_new_pdu(*radiotap, seen);
-        
+
         CHECK_EQ(seen.size(), 1);
-        CHECK((seen.contains("11:22:33:44:55:66")));
-        
-        auto actor = seen.at("11:22:33:44:55:66");
-        CHECK_EQ(actor[SK::mac], "11:22:33:44:55:66");
+		CHECK(seen.contains("12:22:33:44:55:66"));
+
+        auto actor = seen.at("12:22:33:44:55:66");
+        CHECK_EQ(actor[SK::mac], "12:22:33:44:55:66");
         CHECK_EQ(actor[SK::ssid], "MyNetwork");
         CHECK_EQ(actor[BK::AP], false);
         CHECK(actor[BK::GHz2_4]);

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "logger/error_log.h"
 
@@ -25,7 +26,7 @@ public:
 };
 
 TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
-    Actor_config cfg;
+    ActorPtr actor(make_shared<Actor_Config_sim>());
 
     ifstream file("iw_phy_output.txt");
     REQUIRE(file.is_open());
@@ -34,38 +35,38 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
     const string output = buffer.str();
     file.close();
 
-    OpenWrtConn::parse_hw_capabilities(cfg, output);
+    OpenWrtConn::parse_hw_capabilities(actor, output);
 
-    CHECK(cfg[BK::GHz2_4]);
-    CHECK_EQ(cfg[BK::GHz5], false);
-    CHECK_EQ(cfg[BK::GHz6], false);
+    CHECK(actor[BK::GHz2_4]);
+    CHECK_EQ(actor[BK::GHz5], false);
+    CHECK_EQ(actor[BK::GHz6], false);
 
-    CHECK(cfg[BK::AP]);
-    CHECK(cfg[BK::STA]);
-    CHECK(cfg[BK::monitor]);
+    CHECK(actor[BK::AP]);
+    CHECK(actor[BK::STA]);
+    CHECK(actor[BK::monitor]);
 
-    CHECK(cfg[BK::w80211n]);
-    CHECK_EQ(cfg[BK::w80211ac], false);
-    CHECK_EQ(cfg[BK::w80211ax], false);
+    CHECK(actor[BK::w80211n]);
+    CHECK_EQ(actor[BK::w80211ac], false);
+    CHECK_EQ(actor[BK::w80211ax], false);
 }
 
 TEST_CASE("parse_hw_capabilities - empty output"){
-    Actor_config cfg;
+	ActorPtr actor(make_shared<Actor_Config_sim>());
     const string output;
-    OpenWrtConn::parse_hw_capabilities(cfg, output);
+    OpenWrtConn::parse_hw_capabilities(actor, output);
 
-    CHECK_EQ(cfg[BK::GHz2_4], false);
-    CHECK_EQ(cfg[BK::AP], false);
-    CHECK_EQ(cfg[BK::w80211n], false);
+    CHECK_EQ(actor[BK::GHz2_4], false);
+    CHECK_EQ(actor[BK::AP], false);
+    CHECK_EQ(actor[BK::w80211n], false);
 }
 
 TEST_CASE("get_hw_capabilities - exec failure"){
-    Actor_config cfg;
+	ActorPtr actor(make_shared<Actor_Config_sim>());
     MockOpenWrtConn conn;
     conn.mock_ret = 1;
     conn.mock_output = "iw: command not found";
 
-    CHECK_THROWS_AS(conn.get_hw_capabilities(cfg, "radio0"), ex_conn_err);
+    CHECK_THROWS_AS(conn.get_hw_capabilities(actor, "radio0"), ex_conn_err);
 }
 
 TEST_CASE("get_radio_list - mock wifi status"){

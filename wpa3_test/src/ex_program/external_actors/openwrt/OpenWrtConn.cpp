@@ -1,5 +1,6 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 
+#include "config/Actor_Config/Actor_Config_external.h"
 #include "config/global_config.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
@@ -256,7 +257,7 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 	}
 }
 
-void OpenWrtConn::parse_hw_capabilities(ActorPtr &actor, const string &output){
+void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &output){
 	auto has = [&](const string &tag){ return output.find(tag) != string::npos; };
 
 	actor->set(BK::GHz2_4,   has("Band 1:"));

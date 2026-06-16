@@ -50,14 +50,17 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 ){
 
 	auto if_out = actor_tx.get(SK::iface);
-	auto if_in = actor_rx.get(SK::iface);
+	auto if_in  = actor_rx.get(SK::iface);
+	const bool rx_has_vif  = actor_rx[SK::sniff_iface].has_value();
+	const string cap_iface = rx_has_vif ? actor_rx.get(SK::sniff_iface) : if_in;
+
 	MonitorSocket s_out(if_out, actor_tx[SK::netns]);
-	MonitorSocket s_in(if_in, actor_rx[SK::netns]);
+	MonitorSocket s_in(cap_iface, actor_rx[SK::netns]);
 	const Channel ch = actor_tx->get_channel();
 
 	InjectionSuiteResult suite;
 	suite.iface_out = if_out;
-	suite.iface_in  = if_in; // updated below for 2-iface case
+	suite.iface_in  = cap_iface;
 	suite.channel   = ch;
 	try{ suite.driver = get_driver_name(if_out, actor_tx[SK::netns]); } catch(...){}
 
@@ -80,14 +83,20 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 	add(test_injection_order(s_out, s_in, valid,   "valid",   ch));
 
 	// retrans + txack only make sense with two distinct interfaces
-	bool two_iface = (if_in != if_out);
+	bool two_iface = cap_iface != if_out;
 	if(two_iface && testack){
-		//FIXME add these test to result a zbavit se závislosti na okolním AP
-		const auto nearby = get_nearby_ap_addr(s_in);
-		const auto destmac = nearby ? nearby->first : peermac;
-		add(test_injection_retrans(s_out, s_in, destmac, ownmac, ch));
-		if(nearby)
-			add(test_injection_txack(s_out, s_in, destmac, ownmac, ch));
+		if(rx_has_vif){
+			// receiver's main iface (managed/AP) HW-ACKs frames → no nearby AP needed
+			const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
+			add(test_injection_retrans(s_out, s_in, rx_mac, ownmac, ch));
+			add(test_injection_txack(s_out, s_in, rx_mac, ownmac, ch));
+		} else {
+			const auto nearby = get_nearby_ap_addr(s_in);
+			const auto destmac = nearby ? nearby->first : peermac;
+			add(test_injection_retrans(s_out, s_in, destmac, ownmac, ch));
+			if(nearby)
+				add(test_injection_txack(s_out, s_in, destmac, ownmac, ch));
+		}
 	}
 
 	return suite;

@@ -11,7 +11,7 @@ actors:
     selection:
       channel: 11
       condition: [monitor]
-      driver: ath9k_htc
+      #driver: ath9k_htc
     netns: tx
     source: internal
 

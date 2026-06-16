@@ -1,3 +1,4 @@
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -11,12 +12,14 @@ using namespace filesystem;
 using suite::bl0ck_test_suites::Bl0ckTestEntry;
 
 static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
+    const path base = data_dir / "wpa3_suites" / "DoS_soft" / "bl0ck";
+    const array<string, 3> suites = {"BA_filler", "BAR_filler", "BARS_filler"};
+
     vector<Bl0ckTestEntry> results;
-    for (const string suite : {"BA_filler", "BAR_filler", "BARS_filler"}) {
-        for (const auto &test_path : suite::helper::get_suite_test_folders(data_dir / "wpa3_suites" / suite)) {
+    for (const auto &suite : suites) {
+        for (const auto &test_path : suite::helper::get_suite_test_folders(base / suite)) {
             auto e = suite::bl0ck_test_suites::parse_test_folder(test_path);
-            if (!e.passed.has_value()) continue;
-            results.push_back(std::move(e));
+            if (e.passed.has_value()) results.push_back(std::move(e));
         }
     }
     return results;

@@ -68,13 +68,9 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	vector<CsaVersionTestEntry> test_results;
-	for(const auto &entry: directory_iterator(run_dir)){
-		if(!entry.is_directory()) continue;
-		auto e = parse_test_folder(entry.path());
-		if(!e.passed.has_value()) continue;
-		test_results.push_back(std::move(e));
-	}
+	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
+		return parse_test_folder(p);
+	});
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if(!report.is_open()) return;
@@ -82,7 +78,7 @@ void generate_report(RunSuiteStatus &rss){
 	report << "# Channel Switch Versions Test Suite Report\n\n";
 	report << "Summary of Channel Switch attack tests across different hostapd versions.\n\n";
 
-	if(test_results.empty()){
+	if(entries.empty()){
 		report << "No test results found.\n";
 		report.close();
 		return;
@@ -92,7 +88,7 @@ void generate_report(RunSuiteStatus &rss){
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Hostapd Version | Result |\n";
 	report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
 
-	for(const auto &e: test_results){
+	for(const auto &e: entries){
 		const string name_cell   = exists(run_dir / e.name / "report.md")
 			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
 		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED")
@@ -103,12 +99,12 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(test_results, [](const auto &e){ return e.passed.value_or(false); });
-	report << "- Total Tests: " << test_results.size() << "\n";
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value_or(false); });
+	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
-	report << "- Failed: " << (test_results.size() - passed_count) << "\n";
+	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1)
-		   << (100.0 * passed_count / test_results.size()) << "%\n";
+		   << (100.0 * passed_count / entries.size()) << "%\n";
 
 	report.close();
 	set_public_perms(run_dir / "report.md");

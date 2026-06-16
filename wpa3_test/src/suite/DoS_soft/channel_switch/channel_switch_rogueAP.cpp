@@ -23,6 +23,8 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 		e.passed = result->value("passed", false);
 		if(result->contains("disconnected"))
 			e.disconnected = result->at("disconnected").get<bool>();
+		if(result->contains("ap_disconnected"))
+			e.ap_disconnected = result->at("ap_disconnected").get<bool>();
 		if(result->contains("rogue_ap_connected"))
 			e.rogue_ap = result->at("rogue_ap_connected").get<bool>();
 	}
@@ -113,8 +115,8 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
-	report << "|------|-----------------|---------------------|-----------------------|---------------|-----------|---------------------|------------|--------|\n";
+	report << "| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
+	report << "|------|-----------------|---------------------|-----------------------|--------------------------------|-----------|---------------------|------------|--------|\n";
 
 	for(const auto &e: test_results){
 		const string rel = e.rel_path.string();
@@ -132,7 +134,7 @@ void generate_report(RunSuiteStatus &rss){
 			   << " | " << ap_cell
 			   << " | " << client_cell
 			   << " | " << attacker_cell
-			   << " | " << opt_bool(e.disconnected)
+			   << " | " << opt_bool(e.disconnected) << " (" << opt_bool(e.ap_disconnected) << ")"
 			   << " | " << opt_bool(e.rogue_ap)
 			   << " | " << ocv_cell
 			   << " | " << e.client_mfp

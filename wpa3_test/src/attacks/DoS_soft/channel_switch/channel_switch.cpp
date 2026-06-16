@@ -181,6 +181,7 @@ void stats_chs_attack(const RunStatus &rs){
 				});
 
 	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED").empty();
+	const bool ap_disconnected =!get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
 
 	optional<hostapd::CrackResult> crack_result;
 	optional<bool> rogue_ap_connected;
@@ -189,25 +190,27 @@ void stats_chs_attack(const RunStatus &rs){
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		rogue_ap_connected = !mana_events.empty();
 
-		const string psk = hostapd::get_password(rs, "client");
-		if(!psk.empty())
-			crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
+		string psk = hostapd::get_password(rs, "client");
+		if(psk.empty()) psk = "password123"; //TODO hardcoded
+		crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
 
 	nlohmann::json result;
 	result["disconnected"] = disconnected;
+	result["ap_disconnected"] = ap_disconnected;
 	if(rogue_ap_connected.has_value())
 		result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 
+	const string client_mac = rs.get_actor("client")["mac"];
+	observer::tshark::pcap_events(rs, elements, {
+								{"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black"},
+								{"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "red"}
+							});
+
 	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
 																observer::get_observer_folder(rs, "tcpdump"));
-
-	const string client_mac = rs.get_actor("client")["mac"];
-	observer::tshark::pcap_events(rs, elements, {
-								{"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black"}
-							});
 
 	const path ATT_graph_path = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);

@@ -14,7 +14,6 @@ using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-//TODO simplifi test
 static vector<uint8_t> make_label(){
 	static mt19937 rng{random_device{}()};
 	uniform_int_distribution<uint32_t> dist;
@@ -32,7 +31,7 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 ){
 	const auto label = make_label();
 
-	auto frame = unique_ptr<PDU>(pdu.clone());
+	const auto frame = unique_ptr<PDU>(pdu.clone());
 	frame->inner_pdu(new RawPDU(label.data(), label.size()));
 
 	const auto *d11 = pdu.find_pdu<Dot11>();
@@ -54,15 +53,12 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 			}
 		}
 
-		const auto deadline = steady_clock::now() + seconds(1);
-		while(steady_clock::now() < deadline){
-			auto r = sin.recv();
-			if(!r){ this_thread::sleep_for(milliseconds(1)); continue; }
-			if(!ranges::search(r.raw, label).empty()){
-				captured.push_back(std::move(r.raw));
-				if(count > 0 && static_cast<int>(captured.size()) >= count) break;
-			}
-		}
+		sin.recv_loop( steady_clock::now() + seconds(1), [&](auto r) -> bool {
+			if(ranges::search(r.raw, label).empty()) return false;
+			captured.push_back(std::move(r.raw));
+			return count > 0 && static_cast<int>(captured.size()) >= count;
+		});
+
 		if(!captured.empty() || attempt >= retries) break;
 		attempt++;
 	}
@@ -76,18 +72,16 @@ void hw_capabilities::flush_socket(MonitorSocket &s){
 optional<pair<HWAddress<6>, string>> hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){
 	struct Entry{ int8_t rssi; HWAddress<6> mac; string ssid; };
 	vector<Entry> beacons;
-	const auto deadline = steady_clock::now() + milliseconds(500);
-	while(steady_clock::now() < deadline){
-		auto r = sin.recv();
-		if(!r){ this_thread::sleep_for(milliseconds(1)); continue; }
+	sin.recv_loop( steady_clock::now() + milliseconds(500), [&](auto r) -> bool {
 		try{
 			const RadioTap rt(r.raw.data(), r.raw.size());
-			if(!(rt.present() & RadioTap::DBM_SIGNAL)) continue;
+			if(!(rt.present() & RadioTap::DBM_SIGNAL)) return false;
 			const auto *beacon = rt.find_pdu<Dot11Beacon>();
-			if(!beacon) continue;
+			if(!beacon) return false;
 			beacons.push_back({rt.dbm_signal(), beacon->addr2(), get_ssid(*beacon)});
 		} catch(...){}
-	}
+		return false;
+	});
 	if(beacons.empty()) return nullopt;
 	const auto best = ranges::max_element(beacons, [](const auto &a, const auto &b){ return a.rssi < b.rssi; });
 	return pair{best->mac, best->ssid};
@@ -107,10 +101,7 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 	while(true){
 		flush_socket(sin);
 		sout.send(probe_req, ch);
-		const auto deadline = steady_clock::now() + seconds(1);
-		while(steady_clock::now() < deadline){
-			auto r = sin.recv();
-			if(!r){ this_thread::sleep_for(milliseconds(1)); continue; }
+		sin.recv_loop( steady_clock::now() + seconds(1), [&](auto r) -> bool {
 			try{
 				const RadioTap rt(r.raw.data(), r.raw.size());
 				const auto addrs = get_addrs(rt, r.raw);
@@ -120,7 +111,8 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 					if(addrs.addr1 == dst) result.tx_acks.push_back(r.raw);
 				}
 			} catch(...){}
-		}
+			return false;
+		});
 		if((!result.rx_probes.empty() && !result.tx_acks.empty()) || attempt >= retries) break;
 		attempt++;
 	}
@@ -242,19 +234,17 @@ InjectionTestResult hw_capabilities::test_injection_order(
 		sout.send(p6, ch);
 		tids.clear();
 
-		const auto deadline = steady_clock::now() + milliseconds(2500);
-		while(steady_clock::now() < deadline){
-			auto r = sin.recv();
-			if(!r){ this_thread::sleep_for(milliseconds(10)); continue; }
-			if(ranges::search(r.raw, label).empty()) continue;
+		sin.recv_loop( steady_clock::now() + milliseconds(2500), [&](auto r) -> bool {
+			if(ranges::search(r.raw, label).empty()) return false;
 			try{
 				const RadioTap rt(r.raw.data(), r.raw.size());
 				const auto *q = rt.find_pdu<Dot11QoSData>();
-				// Skip retransmissions (RETRY bit set); we only care about original TX order.
+				// skip retransmissions (RETRY bit set); we only care about original TX order.
 				if(q && !q->retry())
 					tids.push_back(q->qos_control() & 0xF);
 			} catch(...){}
-		}
+			return false;
+		});
 		if(ranges::contains(tids, 2) && ranges::contains(tids, 6)) break;
 	}
 

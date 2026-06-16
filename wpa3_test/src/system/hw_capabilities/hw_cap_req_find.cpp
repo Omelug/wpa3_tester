@@ -78,8 +78,7 @@ ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector
 
 	Actor_config::print_ActorCMap("Actor rules", rules);
 	Actor_config::print_ActorCMap("Actor options", options);
-
-	throw req_err("Not found valid requirements");
+	throw req_err("Not found valid requirements"+  get_heuristic_err_msg(rules, options));
 }
 
 vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){
@@ -91,4 +90,42 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, 
 	find_all_solutions(ruleKeys, 0, rules, options, used, current, results);
 	return results;
 }
+
+string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vector<ActorPtr> &options){
+		string msg;
+		for(const auto &[actor_name, req_ptr] : rules){
+			const Actor_config &req = *req_ptr;
+			bool any_match = false;
+			for(const auto &opt : options)
+				if(req.matches(*opt)){ any_match = true; break; }
+			if(any_match) continue;
+			msg += "actor '" + actor_name + "': no option matches (";
+			for(size_t i = 0; i < options.size(); i++){
+				const Actor_config &opt = *options[i];
+				string diffs;
+				for(const auto k : sk_values()){
+				  const auto &r = req[k];
+				  if(!r.has_value()) continue;
+				  const auto &o = opt[k];
+				  if(!o.has_value())   { diffs += string(sk_name(k)) + "=missing, "; continue; }
+				  if(r != o)           { diffs += string(sk_name(k)) + ":" + *o + "!=" + *r + ", "; }
+				}
+				for(const auto k : bk_values()){
+				  const auto &r = req[k];
+				  if(!r.has_value()) continue;
+				  const auto &o = opt[k];
+				  if(!o.has_value())   { diffs += string(bk_name(k)) + "=missing, "; continue; }
+				  if(r != o){
+					  diffs += string(bk_name(k)) + ":" + (*o?"T":"F") + "!=" + (*r?"T":"F") + ", ";
+				  }
+				}
+			if(!diffs.empty()) msg += "opt[" + to_string(i) + "]: " + diffs + "; ";
+		  }
+		  msg += "); ";
+      }
+      if(msg.empty())
+		msg = "each actor individually matches some option; conflict is combinatorial";
+      return msg;
+}
+
 }

@@ -66,7 +66,7 @@ Actor_config::~Actor_config() {
 		conn->disconnect();
 }
 
-bool Actor_config::matches(const Actor_config &offer) {
+bool Actor_config::matches(const Actor_config &offer) const {
 	for(const auto k : sk_values()){
 		const auto &required = (*this)[k];
 		if(!required.has_value()) continue;

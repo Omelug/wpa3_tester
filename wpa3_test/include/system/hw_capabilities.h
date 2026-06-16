@@ -115,6 +115,7 @@ class hw_capabilities{
 public:
 	static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 	static std::vector<ActorMap> check_all_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
+	static std::string get_heuristic_err_msg(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 
 	// run helpers
 	static void run_in(const std::string &cmd, const std::filesystem::path &cwd);

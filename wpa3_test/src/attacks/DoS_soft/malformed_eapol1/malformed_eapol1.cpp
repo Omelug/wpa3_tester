@@ -11,6 +11,7 @@
 
 namespace wpa3_tester::eapol_logoff{
 using namespace std;
+using namespace  filesystem;
 using namespace Tins;
 
 RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, Channel ap_channel){

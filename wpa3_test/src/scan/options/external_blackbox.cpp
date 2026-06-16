@@ -7,6 +7,7 @@
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
+#include "scan/active/scan_STA.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
@@ -34,7 +35,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		actor->set(SK::permanent_mac, mac);
 
 		actor->set(SK::ssid, ssid);
-		actor->set(BK::AP, is_ap); //TODO different possibilities?
+		actor->set(BK::AP, is_ap);
 		actor->set(BK::STA, !is_ap);
 
 		if(channel_freq > 0){
@@ -58,6 +59,18 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		string ssid;
 		try{ ssid = probe_req->ssid(); } catch(...){}
 		add_entity(probe_req->addr2(), false, ssid);
+	} else if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
+		if(mgmt->subtype() == 0 || mgmt->subtype() == 2){ // assoc-req / reassoc-req
+			const HWAddress<6> sta_mac = mgmt->addr2();
+			if(!(sta_mac[0] & 0x01)){ // filter multicast/broadcast
+				if(!seen.contains(sta_mac))
+					seen.emplace(sta_mac, ActorPtr(make_shared<Actor_Config_external>()));
+				if(auto *ext = dynamic_cast<Actor_Config_external*>(seen.at(sta_mac).get())){
+					scan::fill_actor_caps_from_assoc_req(pdu, *ext);
+					ext->set(SK::permanent_mac, sta_mac);
+				}
+			}
+		}
 	} else if(const auto *data = pdu.find_pdu<Dot11Data>()){
 		const bool to_ds   = data->to_ds();
 		const bool from_ds = data->from_ds();

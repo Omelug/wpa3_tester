@@ -4,6 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+CSA:
+    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
 +: heruistic requirements error logs
 f: špatně se resetuje scan_ip (ap_info)
 +: filler for channel_switch

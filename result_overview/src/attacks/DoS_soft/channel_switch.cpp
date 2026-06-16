@@ -115,7 +115,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "                <th>AP MAC (source)</th>\n"
           << "                <th>Client MAC (source)</th>\n"
           << "                <th>Attacker MAC (driver) <br> RogueAP MAC (driver)\n"
-          << "                <th>Disconnected?</th>\n"
+          << "                <th>Disconnected? <br> (from AP view)</th>\n"
           << "                <th>Rogue AP?</th>\n"
           << "                <th>AP OCV / Client OCV</th>\n"
           << "                <th>Client MFP</th>\n"
@@ -129,7 +129,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
                 f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";
-            f << "                    <td>" << opt_bool(e->disconnected) << "</td>\n";
+            f << "                    <td>" << opt_bool(e->disconnected) << " (" << opt_bool(e->ap_disconnected) << ")</td>\n";
             f << "                    <td>" << opt_bool(e->rogue_ap)     << "</td>\n";
             f << "                    <td>" << opt_bool(e->ap_ocv) << " / " << opt_bool(e->client_ocv) << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";

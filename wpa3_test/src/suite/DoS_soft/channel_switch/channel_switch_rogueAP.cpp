@@ -90,17 +90,11 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	vector<CsaTestEntry> test_results;
-	for(const auto &src_dir: directory_iterator(run_dir)){
-		if(!src_dir.is_directory()) continue;
-		for(const auto &entry: directory_iterator(src_dir.path())){
-			if(!entry.is_directory()) continue;
-			auto e = parse_test_folder(entry.path());
-			if(!e.passed.has_value()) continue;
-			e.rel_path = relative(entry.path(), run_dir);
-			test_results.push_back(std::move(e));
-		}
-	}
+	auto test_results = helper::collect_entries_nested(run_dir, [](const path &p, const path &rel) {
+		auto e = parse_test_folder(p);
+		e.rel_path = rel;
+		return e;
+	});
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if(!report.is_open()) return;

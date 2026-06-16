@@ -29,8 +29,9 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 				{"netns", "tx"}
 			}},
 			{"receiver", {
-				{"source",    "internal"},
-				{"selection", make_selection(r)},
+				{"source",      "internal"},
+				{"selection",   make_selection(r)},
+				{"sniff_iface", "rx"},
 			}},
 		}},
 	};

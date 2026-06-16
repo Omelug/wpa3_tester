@@ -33,13 +33,9 @@ MalformedEapol1TestEntry parse_test_folder(const path &test_folder) {
 }
 
 vector<MalformedEapol1TestEntry> get_results(const path &run_dir) {
-	vector<MalformedEapol1TestEntry> entries;
-	for (const auto &entry : directory_iterator(run_dir)) {
-		if (!entry.is_directory()) continue;
-		auto e = parse_test_folder(entry.path());
-		if (!e.passed.has_value()) continue;
-		entries.push_back(std::move(e));
-	}
+	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
+		return parse_test_folder(p);
+	});
 	ranges::sort(entries, [](const MalformedEapol1TestEntry &a, const MalformedEapol1TestEntry &b) {
 		return a.test_name < b.test_name;
 	});

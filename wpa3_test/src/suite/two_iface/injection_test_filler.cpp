@@ -22,9 +22,9 @@ InjectionTestEntry parse_test_folder(const path &test_folder) {
 	const auto result = helper::load_result_json(test_folder);
 	if (!result) return e;
 
-	const auto drv = helper::load_test_drivers(test_folder);
-	e.tx_driver    = helper::get_driver(drv, "transceiver");
-	e.rx_driver    = helper::get_driver(drv, "receiver");
+	const auto rs  = helper::load_test_rs(test_folder);
+	e.tx_driver    = rs->get_actor("transceiver").get(SK::driver_name);
+	e.rx_driver    = rs->get_actor("receiver").get(SK::driver_name);
 
 	if (result->contains("tests") && result->at("tests").is_object()) {
 		for (const auto &[name, val] : result->at("tests").items()) {

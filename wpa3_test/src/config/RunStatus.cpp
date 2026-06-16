@@ -18,15 +18,15 @@ namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 
-RunStatus::RunStatus(const string &config_path, string testName, const string &sub_folder){
+RunStatus::RunStatus(const path &config_path, string testName, const string &sub_folder){
 	_config_path = config_path;
-	if(!exists(config_path)){ throw config_err("Config not found: " + config_path); }
+	if(!exists(config_path)){ throw config_err("Config not found: {}", config_path); }
 
 	if(testName.empty()){
 		// load name from YAML if not name set
 		const YAML::Node node = YAML::LoadFile(config_path);
 		if(!node["name"] || !node["name"].IsScalar()){
-			throw config_err("Config missing required string field 'name':" + config_path);
+			throw config_err("Config missing required string field 'name': {}", config_path);
 		}
 		testName = node["name"].as<string>();
 	}

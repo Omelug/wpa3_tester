@@ -1,6 +1,7 @@
 #include "suite/suite_helper.h"
 
 #include <fstream>
+#include <memory>
 #include "config/RunStatus.h"
 #include "logger/log.h"
 
@@ -16,17 +17,14 @@ optional<json> load_result_json(const path &test_folder) {
 	return json::parse(rf);
 }
 
-map<string, string> load_test_drivers(const path &test_folder) {
-	map<string, string> drivers;
+unique_ptr<RunStatus> load_test_rs(const path &test_folder) {
 	const auto config_path = test_folder / "test_config.yaml";
-	if(!exists(config_path)) return drivers;
-	RunStatus rs{};
-	rs.config_path(config_path);
-	rs.run_folder(test_folder);
-	rs.load_actor_interface_mapping();
-	for(const auto &[name, actor] : rs.actors)
-		drivers[name] = actor->get_or(SK::driver_name, "?");
-	return drivers;
+	if(!exists(config_path)) throw std::runtime_error("test config file does not exist");
+	auto rs = make_unique<RunStatus>();
+	rs->config_path(config_path);
+	rs->run_folder(test_folder);
+	rs->load_actor_interface_mapping();
+	return rs;
 }
 
 

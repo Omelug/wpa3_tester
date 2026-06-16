@@ -21,14 +21,14 @@ MalformedEapol1TestEntry parse_test_folder(const path &test_folder) {
 	const auto result = helper::load_result_json(test_folder);
 	if (!result) return e;
 
-	const auto drv    = helper::load_test_drivers(test_folder);
+	const auto rs      = helper::load_test_rs(test_folder);
 	e.disconnect_count = result->value("disconnect_count", 0);
 	e.passed           = e.disconnect_count > 0;
 	e.sta_graph        = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph         = test_folder / "observer" / "tshark" / "access_point_graph.png";
-	e.ap_driver        = helper::get_driver(drv, "access_point");
-	e.client_driver    = helper::get_driver(drv, "client");
-	e.attacker_driver  = helper::get_driver(drv, "attacker");
+	e.ap_driver        = rs->get_actor("access_point").get(SK::driver_name);
+	e.client_driver    = rs->get_actor("client").get(SK::driver_name);
+	e.attacker_driver  = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }
 

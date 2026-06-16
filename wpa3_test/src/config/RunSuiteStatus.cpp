@@ -348,8 +348,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
-
-		throw req_err("actor_filler: no valid hardware assignments found");
+		throw req_err("actor_filler: no valid hardware assignments found, " + hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
 	}
 
 	const path gen_folder = test_config_folder / source_name;
@@ -358,12 +357,12 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 	if(ec) throw run_err("actor_filler: unable to create directory");
 
 	const string base_name = template_config.at("name").get<string>();
-	for(size_t i = 0; i < solutions.size(); i++){
+	for(const auto & solution : solutions){
 		json cfg = template_config;
 
 		// build stable hash from sorted actor_name=perm_mac pairs
 		vector<string> mac_parts;
-		for(const auto &[actor_name, hw] : solutions[i]){
+		for(const auto &[actor_name, hw] : solution){
 			const auto &perm_mac = (*hw)[SK::permanent_mac];
 			if(!perm_mac.has_value()) continue;
 			mac_parts.push_back(actor_name + "=" + *perm_mac);

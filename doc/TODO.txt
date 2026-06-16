@@ -6,14 +6,13 @@ v: visualization
 Version v 0.0.0.0:
 CSA:
     +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
-+: heruistic requirements error logs
 f: špatně se resetuje scan_ip (ap_info)
 +: filler for channel_switch
 +: HT IE cahnnel switch (similiar to CSA attack)
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
 r: co jde v suite, sjednotit
-r: vymazat zbytečné větve z githubuho otestovat, funguje jen někdy
-fd: save_log to documentation a nějak
+r: vymazat zbytečné větve z github
+fd: save_log to documentation a nějak otestovat, funguje jen někdy
 +: add git results repository to documentation
 
 +: add git results repository
@@ -26,6 +25,7 @@ d: clion setup
 PDF:
     +: reflection attack na EAP-pwd - útočník se nedkáže připojit na AP, pouze na EAP
     +: vysvětlit co jsou var_ a indexy v permutacích
+    +: přidat filler
     +: cache description
     +: info about injection tests
     +: PMKSA
@@ -50,6 +50,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: heruistic requirements error logs
 +: filler for downgrade
 +: filler for OWE leaks
 t: setup_actor()

@@ -24,6 +24,18 @@ actors:
       channel: 6
 $extends: [ #../../observers.comp.yaml,
   ../../rogue_ap.comp.yaml]
+observers:
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: ""
+  rogue_tshark:
+    actor: rogue_ap
+    program: tshark
+    program_config:
+      filter: ""
+
 attack_config:
   attack_time: 60
   ms_interval: 100

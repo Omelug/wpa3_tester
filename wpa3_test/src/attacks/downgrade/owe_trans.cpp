@@ -94,8 +94,8 @@ void stats_attack(const RunStatus &rs) {
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
 
-	const string client_graph  = observer::tshark::tshark_graph(rs, "client", elements);
-	const string attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
+	const path client_graph  = observer::tshark::tshark_graph(rs, "client", elements);
+	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
 	const path report_path = rs.run_folder() / "report.md";
 	ofstream report(report_path);
@@ -125,7 +125,7 @@ void stats_attack(const RunStatus &rs) {
 		report << "### Attacker (probe capture)\n";
 		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
 		if (rs.config().at("actors").contains("rogue_ap")) {
-			const string rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements).string();
+			const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements).string();
 			report << "### Rogue AP\n";
 			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
 		}

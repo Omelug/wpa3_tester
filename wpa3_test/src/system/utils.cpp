@@ -42,7 +42,7 @@ string kernel_version(){
 }
 
 
-string relative_from(const string &base_dir_name, const string &config_path){
+string relative_from(const string &base_dir_name, const path &config_path){
 	const path config_full_path = absolute(config_path);
 	const path config_dir = config_full_path.parent_path();
 

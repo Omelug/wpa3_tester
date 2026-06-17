@@ -65,9 +65,6 @@ void client_ap_attacker_setup_enterprise(RunStatus &rs){
 	setup_STA(rs, "client");
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-	//if(rs.get_actor("access_point")->is_WB()){
-	//    rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", chrono::seconds(40));
-	//} // ony check, not
 	log(LogLevel::INFO, "client is connected");
 }
 }

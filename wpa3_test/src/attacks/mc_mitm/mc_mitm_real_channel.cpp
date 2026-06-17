@@ -27,7 +27,7 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
 	return false;
 }
 
-bool McMitm::handle_auth_from_client_real(HWAddress<6> addr1, const Dot11 &dot11){
+bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
 	if(addr1 != ap_mac) return false;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();

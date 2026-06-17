@@ -207,29 +207,19 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 static const string OPENSSL_GIT_URL = "https://github.com/openssl/openssl.git";
 static const string OPENSSL_REPO_NAME = "openssl";
 
-//FIXME not need this, change to tag directly (and add it to validator with tag description)
-// Maps "openssl-1.0.2e" -> "OpenSSL_1_0_2e"
-static string openssl_version_to_tag(const string &version){
-	string v = version;
-	if(v.starts_with("openssl-")) v = v.substr(8);
-	string tag = "OpenSSL_";
-	for(const char c: v){ tag += (c == '.') ? '_' : c; }
-	return tag;
-}
-
 static path get_openssl_build_folder(){
-	return path(get_global_config().at("paths").at("openssl").at("openssl_vuln_build_folder").get<string>());
+	return get_global_config().at("paths").at("openssl").at("openssl_vuln_build_folder").get<string>();
 }
 
-OpenSSLPaths get_openssl_paths(const string &version){
+OpenSSLPaths get_openssl_paths(const string &tag){
 	const path build_folder  = get_openssl_build_folder();
-	const path install_dir   = build_folder / version;
+	const path install_dir   = build_folder / tag;
 	const path lib_dir       = install_dir / "lib";
 	const path libcrypto     = lib_dir / "libcrypto.so";
 	const path include_dir   = install_dir / "include";
 
 	if(exists(libcrypto)){
-		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", version, lib_dir);
+		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", tag, lib_dir);
 		return {lib_dir, libcrypto, include_dir};
 	}
 
@@ -246,12 +236,11 @@ OpenSSLPaths get_openssl_paths(const string &version){
 	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
 	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
 
-	const string tag = openssl_version_to_tag(version);
 	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 	hw_capabilities::run_in("git clean -fd", repo_path);
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
-	log(LogLevel::INFO, "Compiling OpenSSL {} ...", version);
+	log(LogLevel::INFO, "Compiling OpenSSL {} ...", tag);
 	const string prefix = install_dir.string();
 	hw_capabilities::run_in("./config --prefix=" + prefix + " --openssldir=" + prefix + " shared no-asm", repo_path);
 	hw_capabilities::run_in("make -j$(nproc)", repo_path);
@@ -260,7 +249,7 @@ OpenSSLPaths get_openssl_paths(const string &version){
 	if(!exists(libcrypto)){
 		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: {}", libcrypto);
 	}
-	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", version, install_dir);
+	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", tag, install_dir);
 	return {lib_dir, libcrypto, include_dir};
 }
 
@@ -353,19 +342,12 @@ static string get_conf_value(const path &cfg, initializer_list<string_view> keys
 	return {};
 }
 
-string get_ssid(const nlohmann::json &program_config, const string &config_path){
+/*string get_ssid(const nlohmann::json &program_config, const string &config_path){
 	if(program_config.contains("ssid")) return program_config["ssid"].get<string>();
 	if(!config_path.empty())
 		if(const auto v = get_conf_value(config_path, {"ssid"}); !v.empty()) return v;
 	throw config_err("'ssid' not found in program_config or file: {}", config_path);
-}
-
-string get_channel(const nlohmann::json &program_config, const string &config_path){
-	if(program_config.contains("channel")) return to_string(program_config["channel"].get<int>());
-	if(!config_path.empty())
-		if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;
-	throw config_err("'channel' not found in program_config or file: {}", config_path);
-}
+}*/
 
 string get_password(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"sae_password", "psk"});
@@ -373,6 +355,13 @@ string get_password(const RunStatus &rs, const string &actor_name){
 
 string get_ssid(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"ssid"});
+}
+
+string get_channel(const nlohmann::json &program_config, const string &config_path){
+	if(program_config.contains("channel")) return to_string(program_config["channel"].get<int>());
+	if(!config_path.empty())
+		if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;
+	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
 string get_mfp_from_supplicant(const path &conf){

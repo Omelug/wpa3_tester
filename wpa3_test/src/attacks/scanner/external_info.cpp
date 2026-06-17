@@ -167,7 +167,7 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 		report << "|-----|------|---------|--------|-----|-----|------|-------------|------|\n";
 		for(const auto &[bssid, entry] : ap_map){
 			const auto &cfg = entry.cfg;
-			auto yn = [&](BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
+			auto yn = [&](const BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
 			report << "| " << bssid
 				   << " | " << cfg.get_or(SK::ssid,    "?")
 				   << " | " << cfg.get_or(SK::channel, "?")
@@ -188,7 +188,7 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 		report << "| MAC | Signal | WPA3 | MFP | OCV |\n";
 		report << "|-----|--------|------|-----|-----|\n";
 		for(const auto &[mac, cfg] : sta_map){
-			auto yn = [&](BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
+			auto yn = [&](const BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };
 			report << "| " << mac
 				   << " | " << cfg.get_or(SK::signal, "?")
 				   << " | " << yn(BK::WPA3_SAE)

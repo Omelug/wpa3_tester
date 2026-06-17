@@ -5,7 +5,7 @@ v: visualization
 
 Version v 0.0.0.0:
 CSA:
-    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd, channel switch na kanály mimo reg
+    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
 f: špatně se resetuje scan_ip (ap_info)
 +: HT IE cahnnel switch (similiar to CSA attack)
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)

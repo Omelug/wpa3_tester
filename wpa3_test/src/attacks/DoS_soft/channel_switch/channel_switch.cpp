@@ -81,7 +81,6 @@ void setup_chs_attack(RunStatus &rs){
 		string answer;
 		cout << "Is device connected to '" << ssid << "'? Connect it and press enter." << flush;
 		getline(cin, answer);
-		//
 	}
 
 
@@ -133,23 +132,16 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//report <<
 	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
 	//TODO add hostapd helepr ?
-	const auto get_version = [&](const string &actor) -> string {
-		const auto &a = rs.config().at("actors").at(actor);
-		if(!a.contains("setup")) return "default";
-		const auto &s = a.at("setup");
-		if(!s.contains("program_config")) return "default";
-		return s.at("program_config").value("version", "default");
-	};
 	if(!STA_graph_path.empty()){
-		report << "### STA (client, wpa_supplicant " << get_version("client") << ")\n";
+		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
 		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
 	}
 	if(!AP_graph_path.empty()){
-		report << "### AP (access_point, hostapd " << get_version("access_point") << ")\n";
+		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
 		report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
 	}
 	if(!ATT_graph_path.empty()){
-		report << "### ATT (access_point, hostapd-mana " << get_version("access_point") << ")\n";
+		report << "### ATT (access_point, hostapd-mana " << hostapd::get_version(rs, "access_point") << ")\n";
 		report << "![ATT Throughput Graph](" << relative(ATT_graph_path, rs.run_folder()).string() << ")\n\n";
 	}
 	if(!rogue_graph_path.empty()){

@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include "config/RunStatus.h"
-#include "logger/log.h"
 
 namespace wpa3_tester::hostapd{
 std::string get_wpa_supplicant(const std::string &version = "");
@@ -12,6 +11,7 @@ std::string get_hostapd_mana(const std::string &version = "");
 // parses sae_password, fallback to psk from the generated <actor_name>_wpa_supplicant/hostapd.conf.
 std::string get_password(const RunStatus &rs, const std::string &actor_name);
 std::string get_ssid(const RunStatus &rs, const std::string &actor_name);
+std::string get_version(const RunStatus &rs, const std::string &actor_name);
 // reads field from program_config json, falls back to parsing config_path file
 //std::string get_ssid(const nlohmann::json &program_config, const std::string &config_path);
 std::string get_channel(const nlohmann::json &program_config, const std::string &config_path);

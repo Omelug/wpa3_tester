@@ -93,6 +93,8 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, 
 }
 
 string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vector<ActorPtr> &options){
+	if(options.size() < rules.size())
+		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
 	string msg;
 	for(const auto &[actor_name, req_ptr] : rules){
 		const Actor_config &req = *req_ptr;

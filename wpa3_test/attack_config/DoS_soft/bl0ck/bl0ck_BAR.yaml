@@ -18,4 +18,4 @@ actors:
       driver: mt76x2u
   attacker:
     selection:
-      driver: rtw88_8821cu
+      driver: [rtw_8821cu, rtw88_8821cu]

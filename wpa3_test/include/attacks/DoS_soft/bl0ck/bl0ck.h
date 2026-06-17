@@ -14,7 +14,7 @@ struct Bl0ckResult{
 Tins::RadioTap get_bl0ck_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw, int subtype);
 
 // Send BAR or BA frames for the specified duration
-void block(const std::string &STA_mac, const std::string &AP_mac, const std::string &iface, int frame_in_batch,
+void block(const Tins::HWAddress<6> &sta_mac, const Tins::HWAddress<6> &ap_mac, const std::string &iface, int frame_in_batch,
 			const std::string &attack_type, int duration_sec, bool is_random
 );
 

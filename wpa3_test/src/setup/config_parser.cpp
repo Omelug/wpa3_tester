@@ -54,7 +54,7 @@ void deep_merge(json &base, const json &patch){
 	}
 }
 
-json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy, bool is_child = false){
+json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy, const bool is_child = false){
 	if(!current_node.is_object()){
 		return current_node;
 	}

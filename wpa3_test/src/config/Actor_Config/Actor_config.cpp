@@ -189,7 +189,7 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 	string result;
 
 	bool first = true;
-	const auto visit_sk = [&](SK k){
+	const auto visit_sk = [&](const SK k){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) return;
 		if(!first) result += ", ";
@@ -200,7 +200,7 @@ string Actor_config::to_str(const ParamFilter *filter) const {
 	else       for(const SK k : sk_values())    visit_sk(k);
 
 	vector<string> conds;
-	const auto visit_bk = [&](BK k){
+	const auto visit_bk = [&](const BK k){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) return;
 		conds.push_back(*v ? string(bk_name(k)) : "!" + string(bk_name(k)));
@@ -232,7 +232,7 @@ json Actor_config::to_json(const ParamFilter *filter) const {
 	else       for(const SK k : sk_values())    visit_sk(k);
 
 	json conditions = json::array();
-	const auto visit_bk = [&](BK k){
+	const auto visit_bk = [&](const BK k){
 		const auto &v = (*this)[k];
 		if(!v.has_value()) return;
 		auto name = string(bk_name(k));

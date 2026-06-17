@@ -87,16 +87,12 @@ void RunStatus::execute(){
 	struct LogGuard { ~LogGuard(){ close_log_file(); } } log_guard;
 
 	try {
-		try {
-			auto &gcfg = get_global_config();
-			if(gcfg.contains("regulatory_domain")){
-				const string reg = gcfg.at("regulatory_domain").get<string>();
-				log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
-				if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
-					log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
-			}
-		} catch(const exception &e){
-			log(LogLevel::DEBUG, "Regulatory domain not applied: {}", e.what());
+		auto &gcfg = get_global_config();
+		if(gcfg.contains("regulatory_domain")){
+			const string reg = gcfg.at("regulatory_domain").get<string>();
+			log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
+			if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+				log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
 		}
 
 		if(run_config().get_only_stats()){
@@ -109,20 +105,15 @@ void RunStatus::execute(){
 			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 		} //include req validation
 
-		try {
-			auto &gcfg = get_global_config();
-			if(gcfg.value("nm_exclude_actors", false)){
-				for(const auto &[name, actor]: actors){
-					if(!actor->get_or(SK::external_OS, "").empty()) continue;
-					const string iface = actor->get_or(SK::iface, "");
-					if(iface.empty()) continue;
-					log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-					if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
-						log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
-				}
+		if(gcfg.value("nm_exclude_actors", false)){
+			for(const auto &[name, actor]: actors){
+				if(!actor->get_or(SK::external_OS, "").empty()) continue;
+				const string iface = actor->get_or(SK::iface, "");
+				if(iface.empty()) continue;
+				log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+				if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
+					log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 			}
-		} catch(const exception &e){
-			log(LogLevel::DEBUG, "nm_exclude_actors not applied: {}", e.what());
 		}
 
 		setup_test();

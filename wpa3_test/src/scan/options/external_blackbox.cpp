@@ -163,7 +163,7 @@ vector<int> RunStatus::get_external_BB_channels(){
 		return {};
 	}
 
-	const auto s = all_channels | views::transform([](int c){ return to_string(c); })
+	const auto s = all_channels | views::transform([](const int c){ return to_string(c); })
 	                            | views::join_with(string(", "))
 	                            | ranges::to<string>();
 	log(LogLevel::INFO, "Scanning channels: {}", s);

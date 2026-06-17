@@ -42,7 +42,7 @@ void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
 	}
 }
 
-void print_capabilities(stringstream &ss, uint16_t caps){
+void print_capabilities(stringstream &ss, const uint16_t caps){
 	const bool mfpc = (caps & (1 << 7));   // Management Frame Protection Capable
 	const bool mfpr = (caps & (1 << 6));   // Management Frame Protection Required
 	const bool ocv = (caps & (1 << 10));   // Operating Channel Validation

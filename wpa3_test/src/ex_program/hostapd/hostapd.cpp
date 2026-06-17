@@ -63,7 +63,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
 	const string hostapd_config_path = hostapd_config(rs.run_folder(), actor_name, program_config,
 													rs.config_path().parent_path());
-	rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, hostapd_config_path));
+	rs.get_actor(actor_name)->set(SK::ssid, get_ssid(rs, actor_name));
 	rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_config_path));
 
 	string version;
@@ -172,11 +172,11 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 
 		if(auto eq = s.find('='); eq != string::npos){
 			string key = s.substr(0, eq);
-			if(!in_block && global_ov.count(key)){
+			if(!in_block && global_ov.contains(key)){
 				if(w_global.insert(key).second) out << key << "=" << global_ov.at(key) << "\n";
 				continue;
 			}
-			if(in_block && network_ov.count(key)){
+			if(in_block && network_ov.contains(key)){
 				if(w_network.insert(key).second) out << "\t" << key << "=" << network_ov.at(key) << "\n";
 				continue;
 			}
@@ -187,7 +187,7 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 	// no network={} block in file: append globals then a new network block
 	if(!block_seen){
 		for(auto &[k, v] : global_ov)
-			if(!w_global.count(k)) out << k << "=" << v << "\n";
+			if(!w_global.contains(k)) out << k << "=" << v << "\n";
 		if(!network_ov.empty()){
 			out << "network={\n";
 			for(auto &[k, v] : network_ov) out << "\t" << k << "=" << v << "\n";
@@ -289,7 +289,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 														 rs.config_path().parent_path());
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){
-		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(program_config, mana_config_path));
+		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(rs, actor_name));
 		rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, mana_config_path));
 	}
 
@@ -311,7 +311,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const path output_path = rs.run_folder() / "captured_hashes.txt";
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	// parsing hashes - bypass, but mana_wpaout don't works n NIxOS (some low level protection?)
+	// parsing hashes - bypass, but mana_wpaout don't work n NixOS (some low level protection?)
 	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
 		ifstream log_file(log_path);
 		if(!log_file.is_open()) return;

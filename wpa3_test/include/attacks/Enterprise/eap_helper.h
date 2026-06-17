@@ -25,7 +25,7 @@ struct EAP_Att {
     std::string_view              identity;
     std::chrono::milliseconds     timeout;
 
-    void decrease_timeout(std::chrono::time_point<std::chrono::steady_clock> start_time) {
+    void decrease_timeout(const std::chrono::time_point<std::chrono::steady_clock> start_time) {
         const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time);
         timeout = elapsed >= timeout ? std::chrono::milliseconds{0} : timeout - elapsed;

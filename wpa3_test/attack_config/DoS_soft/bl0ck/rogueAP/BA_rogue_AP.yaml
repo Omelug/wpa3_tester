@@ -13,11 +13,11 @@ actors:
       driver: mt76x2u
   attacker:
     selection:
-      driver: rtw_8821cu
+      driver: [ rtw_8821cu, rtw88_8821cu]
   rogue_ap:
     source: internal
     selection:
-      #driver: rtw_8821cu
+      # driver: [ rtw_8821cu, rtw88_8821cu]
       channel: 36
       condition: [ monitor ]
     setup:

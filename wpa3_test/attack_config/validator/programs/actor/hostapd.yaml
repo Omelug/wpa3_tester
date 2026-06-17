@@ -10,4 +10,8 @@ properties:
   other_options:
     type: string
     description: arguments for program
+  openssl:
+    type: string
+    pattern: "^OpenSSL_[a-zA-Z0-9_]+$"
+    description: OpenSSL version tag (e.g. OpenSSL_1_0_2f)
 additionalProperties: true

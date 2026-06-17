@@ -96,7 +96,7 @@ vector<uint8_t> build_identity_response(const uint8_t eap_id, const string_view 
     return build_eapol_eap(CODE_RESPONSE, eap_id, body);
 }
 
-vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, string_view peer_identity){
+vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, const string_view peer_identity){
     // PWD-ID data: Group(2) + RF(1) + PRF(1) + Token(4) + Prep(1) = 9 bytes fixed prefix
     constexpr size_t FIXED = 9;
     vector<uint8_t> body;
@@ -111,8 +111,8 @@ vector<uint8_t> build_pwd_id_response(const EapPwdFrame& request, string_view pe
     return build_eapol_eap(CODE_RESPONSE, request.eap_id, body);
 }
 
-// Shared helper for commit and confirm: both just flip code to Response, keep data.
-static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame& request, uint8_t opcode){
+// shared helper for commit and confirm: both just flip code to Response, keep data.
+static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame& request, const uint8_t opcode){
     vector<uint8_t> body;
     body.push_back(TYPE_PWD);
     body.push_back(opcode); // same opcode, no L/M bits
@@ -121,12 +121,12 @@ static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame& request, uint8_t opc
 }
 
 vector<uint8_t> reflect_commit(const EapPwdFrame& request){
-	// Group 19 (P-256): scalar(32) + element(64) = 96 bytes – just reflect verbatim
+	// group 19 (P-256): scalar(32) + element(64) = 96 bytes – just reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_COMMIT);
 }
 
 vector<uint8_t> reflect_confirm(const EapPwdFrame& request){
-	// Group 19: confirm(32) – reflect verbatim
+	// group 19: confirm(32) – reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_CONFIRM);
 }
 
@@ -155,7 +155,7 @@ bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att){
 }
 
 bool eap_pwd_wait_for_success(EAP_Att &eap_att){
-	// Wait for EAP-Success after confirm
+	// wait for EAP-Success after confirm
 	const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t>&){
 		return false;
 	});

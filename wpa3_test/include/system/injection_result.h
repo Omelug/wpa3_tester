@@ -21,7 +21,7 @@ inline std::string result_to_string(const it_test_result r){
 	}
 }
 
-inline it_test_result it_test_result_from_string(std::string_view s){
+inline it_test_result it_test_result_from_string(const std::string_view s){
 	if(s == "PASSED")    return PASSED;
 	if(s == "FAIL")      return FAIL;
 	if(s == "NOCAPTURE") return NOCAPTURE;

@@ -36,7 +36,7 @@ string get_random_ath_masker_mac(const string &attacker_mac){
 	return result;
 }
 
-void load_ath_masker(bool git_install){
+void load_ath_masker(const bool git_install){
 	const string ath_folder = get_global_config().at("paths").at("ath_masker");
 	if(ath_folder.empty()) throw req_err("Setup paths/ath_masker in global_config:" + global_config_path().string());
 	if(git_install){

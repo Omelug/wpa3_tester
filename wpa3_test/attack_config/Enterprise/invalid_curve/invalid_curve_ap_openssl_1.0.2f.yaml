@@ -7,4 +7,4 @@ actors:
     setup:
       program: hostapd
       program_config:
-        openssl: openssl-1.0.2f
+        openssl: OpenSSL_1_0_2f

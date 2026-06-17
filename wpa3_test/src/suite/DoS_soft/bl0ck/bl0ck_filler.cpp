@@ -19,7 +19,7 @@ Bl0ckTestEntry parse_test_folder(const path &test_folder){
 	e.name = test_folder.filename().string();
 
 	if(const auto result = helper::load_result_json(test_folder))
-		e.passed = result->value("passed", false);
+		e.disconnected = result->value("disconnect_count",0) > 0;
 
 	const auto cfg_path = test_folder / "test_config.yaml";
 	if(exists(cfg_path)){
@@ -84,10 +84,10 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	size_t passed_count = 0;
 	for(const auto &e: entries){
-		if(e.passed.value()) ++passed_count;
+		if(e.disconnected.value()) ++passed_count;
 		const string name_cell   = exists(run_dir / e.name / "report.md")
 			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
-		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/result.json)";
+		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/result.json)";
 		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | "
 			   << e.attacker_mac << " (" << e.attacker_driver << ") | "
 			   << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " << result_link << " |\n";

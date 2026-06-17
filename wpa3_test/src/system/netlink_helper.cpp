@@ -250,7 +250,7 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 	}
 	return make_error_code(errc::timed_out);
 }
-
+//TODO add channeel switching to iface_info
 Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel &ch){
 	NetNSContext ns_guard(netns);
 
@@ -272,7 +272,7 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	if(!msg)
 		return make_error_code(errc::not_enough_memory);
 
-	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_CHANNEL, 0);
+	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ,
 	                  static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch)));

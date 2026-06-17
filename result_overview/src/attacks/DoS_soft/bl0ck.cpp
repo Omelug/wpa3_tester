@@ -19,7 +19,7 @@ static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
     for (const auto &suite : suites) {
         for (const auto &test_path : suite::helper::get_suite_test_folders(base / suite)) {
             auto e = suite::bl0ck_test_suites::parse_test_folder(test_path);
-            if (e.passed.has_value()) results.push_back(std::move(e));
+            if (e.disconnected.has_value()) results.push_back(std::move(e));
         }
     }
     return results;
@@ -66,8 +66,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
            not bl0ck frames.
 		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation</p>
     </div>
-
-)html";
+)html"; //FIXME TEst is more successful if attacker further than (idk why, possible mt76 and au cannt be next to each other)
 
     if (results.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
@@ -81,19 +80,18 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
                     <th>Client MAC (source)</th>
                     <th>Attacker MAC (driver)</th>
                     <th>Variant</th>
-                    <th>Passed?</th>
+                    <th>Disconnected?</th>
                 </tr>
             </thead>
             <tbody>
 )html";
         for (const auto &e : results) {
-            const string passed_str = e.passed.value() ? "yes" : "no";
             f << "                <tr>\n";
             f << "                    <td>" << e.ap_mac       << " (" << e.ap_source       << ")</td>\n";
             f << "                    <td>" << e.client_mac   << " (" << e.client_source   << ")</td>\n";
             f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
             f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
-            f << "                    <td>" << passed_str << "</td>\n";
+            f << "                    <td>" << (e.disconnected.value() ? "yes" : "no")<< "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";

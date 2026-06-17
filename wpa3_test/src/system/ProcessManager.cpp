@@ -186,7 +186,6 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 		throw run_err("This process already exists:" + process_name);
 	}
 
-	//log(LogLevel::DEBUG, "PROCESS RUN: "+ process_name);
 	auto mp = make_shared<ManagedProcess>();
 	mp->proc = make_shared<reproc::process>();
 
@@ -196,9 +195,11 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	options.redirect.parent = false;
 
 	path log_dir = log_base_dir;
+	create_public_dirs(working_dir);
 
+	string wd_string; //this need to be here, not in block, idk why
 	if(!working_dir.empty()){
-		string wd_string = working_dir.string();
+		wd_string = working_dir.string();
 		options.working_directory = wd_string.c_str();
 	}
 	if(!logging_dir.empty()){ log_dir = logging_dir; }

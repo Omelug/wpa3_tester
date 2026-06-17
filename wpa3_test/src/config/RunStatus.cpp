@@ -36,6 +36,7 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 		actual_sub_folder = relative_from("attack_config", config_path);
 	}
 	_run_folder = BASE_FOLDER / actual_sub_folder / testName / "last_run";
+	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
 
@@ -74,10 +75,7 @@ void RunStatus::execute(){
 		}
 	}
 
-	// Ensure parent directories exist
-	error_code ec;
-	create_public_dirs(_run_folder, ec);
-	if(ec) throw run_err("Unable to create run base directory");
+	create_public_dirs(_run_folder);
 
 	// Initialize log file if save_log is enabled
 	if(_run_config.get_save_log()){
@@ -86,7 +84,7 @@ void RunStatus::execute(){
 	}
 	struct LogGuard { ~LogGuard(){ close_log_file(); } } log_guard;
 
-	try {
+	//try {
 		auto &gcfg = get_global_config();
 		if(gcfg.contains("regulatory_domain")){
 			const string reg = gcfg.at("regulatory_domain").get<string>();
@@ -139,7 +137,7 @@ void RunStatus::execute(){
 			done_log.close();
 			set_public_perms(done_file);
 		}
-	} catch (const exception& e) {
+	/*} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
 		const path error_file = run_folder() / "errors.txt";
@@ -165,7 +163,7 @@ void RunStatus::execute(){
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}
+	}*/
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){

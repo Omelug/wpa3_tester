@@ -33,7 +33,7 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
         for (const auto &entry : std::filesystem::directory_iterator(src_dir.path())) {
             if (!entry.is_directory()) continue;
             auto e = parse_fn(entry.path(), std::filesystem::relative(entry.path(), run_dir));
-            if (!e.passed.has_value()) continue;
+            //if (!e.passed.has_value()) continue;
             entries.push_back(std::move(e));
         }
     }

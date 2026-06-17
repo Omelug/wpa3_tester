@@ -4,5 +4,5 @@ In new versions
 +: Create system for auto loading firmware
 (not sure if possible fully automated, truy find already woking solution )
 
-+:create Clion plugin for runtests from config
++:create Clion plugin for runtests from config and link to tests
 +: change config to something like KCL

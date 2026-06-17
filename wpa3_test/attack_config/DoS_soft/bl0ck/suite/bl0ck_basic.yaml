@@ -8,3 +8,4 @@ tests:
     test_name: bl0ck_BAR
   bl0ck_BARS:
     test_name: bl0ck_BARS
+rewrite: errors

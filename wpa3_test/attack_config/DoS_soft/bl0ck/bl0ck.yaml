@@ -42,7 +42,7 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         psk: "\"password123\""
-        sae_password: password123
+        #sae_password: password123
         scan_freq: 5180
         ssid: wpa3_tester_AP
         version: 2_10

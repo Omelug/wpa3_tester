@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/program.h"
@@ -30,16 +31,25 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 }
 
 void client_ap_setup(RunStatus &rs){
+
 	// check if contains rs.get_actor("attacker")["source"] != "internal"
-	if(rs.get_actor("client")["source"] != "internal" && (rs.get_actor("client")["source"] != "simulation")){
-		throw run_err("only internal actors are supported");
+	if(rs.get_actor("access_point")->is_WB())
+		setup_AP(rs, "access_point");
+
+	if(rs.get_actor("client")->is_WB()){
+		setup_STA(rs, "client");
+	} else{
+		string answer;
+		cout << "Is device connected to AP '" << hostapd::get_ssid(rs, "access_point") << "'? Connect it and press enter." << flush;
+		getline(cin, answer);
+		return;
 	}
 
-	setup_AP(rs, "access_point");
-	setup_STA(rs, "client");
-
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-	rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+
+	if(rs.get_actor("access_point").get(SK::source) != "external"){
+		rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+	}
 	log(LogLevel::INFO, "client is connected");
 }
 

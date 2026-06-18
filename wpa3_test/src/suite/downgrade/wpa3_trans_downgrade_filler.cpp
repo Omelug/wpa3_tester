@@ -14,7 +14,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-Wpa3TransDowngradeTestEntry parse_test_folder(const path &test_folder) {
+Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_folder){
 	Wpa3TransDowngradeTestEntry e{};
 	e.test_name = test_folder.filename().string();
 
@@ -30,14 +30,6 @@ Wpa3TransDowngradeTestEntry parse_test_folder(const path &test_folder) {
 	return e;
 }
 
-vector<Wpa3TransDowngradeTestEntry> get_results(const path &run_dir) {
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
-		return parse_test_folder(p);
-	});
-	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
-	return entries;
-}
-
 void setup_suite(const RunSuiteStatus &rss) {
 	const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
 	create_public_dirs(config_dir);
@@ -47,7 +39,7 @@ void setup_suite(const RunSuiteStatus &rss) {
 
 void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
-	const auto entries = get_results(run_dir);
+	const auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(run_dir);
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if (!report.is_open()) return;

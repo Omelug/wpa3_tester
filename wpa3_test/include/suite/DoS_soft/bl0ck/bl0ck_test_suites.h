@@ -17,9 +17,9 @@ struct Bl0ckTestEntry {
 	std::string attack_variant;
 	std::optional<bool> disconnected;
 	//std::optional<bool> passed;
-};
 
-Bl0ckTestEntry parse_test_folder(const std::filesystem::path &test_folder);
+	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
+};
 
 void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss);
 

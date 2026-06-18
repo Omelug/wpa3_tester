@@ -14,9 +14,10 @@ struct Wpa3TransDowngradeTestEntry {
 	int         rogue_4way_count;
 	bool        downgrade_seen;
 	std::optional<bool> passed; // nullopt = no result.json; value = vulnerable
+
+	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-Wpa3TransDowngradeTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<Wpa3TransDowngradeTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);

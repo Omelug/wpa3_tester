@@ -1,6 +1,5 @@
 #pragma once
 #include <filesystem>
-#include <optional>
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
@@ -16,9 +15,10 @@ struct MalformedEapol1TestEntry {
 	//std::optional<bool> passed;
 	std::filesystem::path sta_graph;
 	std::filesystem::path ap_graph;
+
+	static MalformedEapol1TestEntry parse(const std::filesystem::path &test_folder);
 };
 
-MalformedEapol1TestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<MalformedEapol1TestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);

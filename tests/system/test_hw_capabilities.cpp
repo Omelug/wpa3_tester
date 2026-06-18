@@ -113,8 +113,8 @@ TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
 TEST_CASE("hw_capabilities::rand_mac - format"){
 	const regex mac_pattern(R"(^[0-9a-f]{2}(:[0-9a-f]{2}){5}$)");
 	for(int i = 0; i < 20; ++i){
-		const string mac = hw_capabilities::rand_mac();
-		CHECK(regex_match(mac, mac_pattern));
+		const Tins::HWAddress<6> mac = hw_capabilities::rand_mac();
+		CHECK(regex_match(mac.to_string(), mac_pattern));
 		CHECK_EQ(mac.size(), 17u);
 	}
 }

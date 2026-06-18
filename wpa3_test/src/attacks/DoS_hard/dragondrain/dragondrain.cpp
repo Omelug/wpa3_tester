@@ -48,7 +48,7 @@ void run_attack(RunStatus &rs){
 	const string channel = ap["channel"];
 
 	this_thread::sleep_for(seconds(10));
-	start_dragondrain(rs, "attacker", attacker["iface"], target_mac, channel, att_cfg);
+	start_dragondrain(rs, "attacker", attacker.get(SK::iface), target_mac, channel, att_cfg);
 	this_thread::sleep_for(seconds(att_cfg.at("timeout_sec").get<int>()));
 	rs.process_manager.stop("attacker");
 	this_thread::sleep_for(seconds(10));

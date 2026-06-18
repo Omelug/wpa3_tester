@@ -149,7 +149,7 @@ public:
 
 	static void create_ns(const std::string &ns_name);
 	static void move_to_netns(const std::string &iface, const std::string &netns);
-	static std::string rand_mac();
+	static Tins::HWAddress<6> rand_mac();
 
 	// working with interfaces
 	static std::string get_iface(const std::string &ip_address, const std::optional<std::string> &netns);

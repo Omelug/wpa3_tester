@@ -19,7 +19,7 @@ using namespace Tins;
 using namespace chrono;
 
 void generate_report(const RunStatus &rs, const Bl0ckResult &result,
-							const string &attacker_graph, const string &client_graph){
+							const path &attacker_graph, const path &client_graph){
 	const path report_path = rs.run_folder() / "report.md";
 	ofstream report(report_path);
 	if(!report.is_open()){
@@ -40,7 +40,7 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	// ----- result
 	report << "## Test Result\n\n";
 	report << "| Metric | Value |\n|--------|-------|\n";
-	report << "| **Result** | **" << (result.passed ? "PASSED" : "FAILED") << "** |\n";
+	//report << "| **Result** | **" << (result.passed ? "PASSED" : "FAILED") << "** |\n";
 	report << "| Disconnections | " << result.disconnect_count << " |\n";
 
 	if(result.reconnect_times_ms.empty()){
@@ -56,16 +56,16 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	report << "\n";
 
 	// ----- graphs
-	//report << "### Traffic Analysis\n\n";
-	//report << "Graphs show BA/BAR frames and client disconnect events over time.\n\n";
-
-	report << "### Attacker capture\n";
-	report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
-	report << "### Client capture (wpa\\_supplicant "
-			<< rs.config().at("actors").at("client").at("setup").at("program_config").value("version", "default")
-			<< ")\n";
-	report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
-
+	if(exists(attacker_graph)){
+		report << "### Attacker capture\n";
+		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
+		report << "### Client capture (wpa\\_supplicant "
+				<< rs.config().at("actors").at("client").at("setup").at("program_config").value("version", "default")
+				<< ")\n";
+	}
+	if(exists(client_graph)){
+		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+	}
 	report << "---\n";
 	report.close();
 }

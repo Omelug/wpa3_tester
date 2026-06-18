@@ -127,7 +127,7 @@ vector<ActorPtr> RunStatus::list_external_entities(
 		if(chrono::steady_clock::now() >= total_end) break;
 		log(LogLevel::INFO, "Scanning channel {} on {}", channel, iface);
 
-		const Channel ch{channel, WifiBand::BAND_2_4, nullopt}; //FIXME only 2_4
+		const Channel ch{channel, WifiBand::BAND_2_4_or_5, nullopt}; //FIXME only 2_4/5Ghz
 		scanner->set_channel(ch);
 		this_thread::sleep_for(chrono::milliseconds(200));
 

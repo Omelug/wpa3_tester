@@ -5,8 +5,9 @@
 namespace wpa3_tester::bl0ck_attack{
 
 struct Bl0ckResult{
-	bool passed = false;
+	//std::optional<bool> passed;
 	int disconnect_count = 0;
+	std::optional<bool> ap_disconnected;
 	std::vector<double> reconnect_times_ms;
 };
 
@@ -23,7 +24,7 @@ void run_bl0ck_attack(RunStatus &rs);
 
 void stats_bl0ck_attack(const RunStatus &rs);
 void generate_report(const RunStatus &rs, const Bl0ckResult &result,
-							const std::string &attacker_graph, const std::string &client_graph);
+							const std::filesystem::path &attacker_graph, const std::filesystem::path &client_graph);
 void speed_observation_start(RunStatus & rs);
 
 Tins::RadioTap get_BAR_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, uint8_t fn = 4,

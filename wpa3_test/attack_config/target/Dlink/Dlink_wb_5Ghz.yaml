@@ -1,0 +1,16 @@
+source: external
+selection:
+  whitebox_host: OpenWrt
+  condition: [ AP, 80211ac, 5GHz ]
+setup:
+  program: openwrt
+  program_config:
+    ssid: OpenWrt_5GHz
+    channel: 36
+    key: password123
+    proto: RSN
+    encryption: sae-mixed
+    mode: ap
+    htmode: HT20
+  ex_WB_programs: [ tcpdump ]
+ip_addr: "10.0.0.1"

@@ -45,7 +45,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		const int ocv_b = opt_rank(b.second.ap_ocv) + opt_rank(b.second.client_ocv);
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
-		const int disc_a = opt_rank(a.second.disconnected);
+		const int_results( disc_a = opt_rank(a.second.disconnected);
 		const int disc_b = opt_rank(b.second.disconnected);
 		if (disc_a != disc_b) return disc_a < disc_b;
 

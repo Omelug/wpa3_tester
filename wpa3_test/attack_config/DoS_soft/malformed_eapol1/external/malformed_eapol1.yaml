@@ -1,47 +1,24 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: malformed_eapol1
+name: malformed_eapol1_Dlink
 attacker_module: malformed_eapol1
 actors:
   access_point:
-    source: internal
-    selection:
-      channel: 6
-      condition: [ AP ]
-    setup:
-      program: hostapd
-      program_config:
-        other_options: "-d"
-        driver: nl80211
-        ssid: test_malformed_eapol1
-        hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        rsn_pairwise: CCMP
-        #wpa_passphrase: password123
-        sae_password: password123
-        channel: 6
-        version: 2_11
-    ip_addr: "10.0.0.1"
+    $extends: ../../../target/Dlink/Dlink_wb.yaml
   client:
     source: internal
     setup:
       program: wpa_supplicant
       program_config:
-        ssid: test_malformed_eapol1
-        #psk: password123
+        ssid: OpenWrt_2_4GHz
         sae_password: password123
         ieee80211w: 2
         proto: RSN
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-        version: 2_10 # TODO 2_1 patched?;
+        version: 2_10
     selection:
       channel: 6
-    netns: sta
     ip_addr: "10.0.0.2"
   attacker:
     source: internal

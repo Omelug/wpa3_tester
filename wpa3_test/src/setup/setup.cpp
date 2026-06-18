@@ -23,6 +23,8 @@ void RunStatus::setup_test(){
 
 	save_actor_interface_mapping();
 	process_manager.init_logging(_run_folder);
+	if(_run_config.get_save_log())
+		set_log_file(_run_folder / "logger" / "tester.log");
 
 	const auto module_name = _config.at("attacker_module");
 

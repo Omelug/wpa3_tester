@@ -32,10 +32,6 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	return e;
 }
 
-vector<MalformedEapol1TestEntry> get_results(const path &run_dir) {
-	return helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
-}
-
 void generate_report(RunSuiteStatus &rss) {
 	log(LogLevel::INFO, "Generating malformed_eapol1 suite report");
 
@@ -45,7 +41,7 @@ void generate_report(RunSuiteStatus &rss) {
 		return;
 	}
 
-	const auto entries = get_results(run_dir);
+	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
 
 	const auto report_path = run_dir / "report.md";
 	auto report = helper::open_report(report_path);
@@ -94,7 +90,7 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "- Disconnected (passed): " << passed_count << "\n";
 	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
 	report << "- Success rate: " << fixed << setprecision(1)
-	       << (100.0 * passed_count / static_cast<double>(entries.size())) << "%\n";
+	       << (100.0 * passed_count / entries.size()) << "%\n";
 
 	report.close();
 	set_public_perms(report_path);

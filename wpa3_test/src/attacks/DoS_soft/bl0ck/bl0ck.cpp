@@ -13,6 +13,7 @@
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/iperf_wrapper.h"
@@ -168,7 +169,7 @@ static Bl0ckResult load_result(const RunStatus &rs){
 	Bl0ckResult r{};
 	//r.passed           = j.value("passed", false);
 	r.disconnect_count = j.at("disconnect_count").get<int>();
-	if(j.contains("ap_disconnected"))
+	if(j.contains("ap_disconnected") && !j.at("ap_disconnected").is_null())
 		r.ap_disconnected = j.at("ap_disconnected").get<bool>();
 	r.reconnect_times_ms = j.value("reconnect_times_ms", vector<double>{});
 	return r;

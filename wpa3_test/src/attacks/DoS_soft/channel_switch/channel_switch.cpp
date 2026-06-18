@@ -66,24 +66,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
-	if(rs.get_actor("client")->is_WB() && rs.get_actor("access_point")->is_WB()){
-		components::client_ap_setup(rs);
-	}
-
-	if(!rs.get_actor("client")->is_WB() && !rs.get_actor("access_point")->is_WB()){
-		string ssid;
-		const auto &ap_cfg = rs.config().at("actors").at("access_point");
-		if(ap_cfg.contains("setup") && ap_cfg.at("setup").contains("program_config")){
-			const auto &pc = ap_cfg.at("setup").at("program_config");
-			if(pc.contains("ssid")) ssid = pc.at("ssid").get<string>();
-		}
-
-		string answer;
-		cout << "Is device connected to '" << ssid << "'? Connect it and press enter." << flush;
-		getline(cin, answer);
-	}
-
-
+	components::client_ap_setup(rs);
 	components::setup_rogue_ap(rs);
 }
 

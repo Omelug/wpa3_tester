@@ -36,6 +36,7 @@ Bl0ckTestEntry parse_test_folder(const path &test_folder){
 			e.client_mac    = it->second->get_or(SK::mac,    "");
 			e.client_source = it->second->get_or(SK::source, "");
 		}
+
 		if(const auto it = rs.actors.find("attacker"); it != rs.actors.end()){
 			e.attacker_mac    = it->second->get_or(SK::mac,         "");
 			e.attacker_driver = it->second->get_or(SK::driver_name, "");

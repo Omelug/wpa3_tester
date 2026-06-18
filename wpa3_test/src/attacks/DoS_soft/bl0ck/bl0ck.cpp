@@ -108,9 +108,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 	int iteration = 0;
 	while(steady_clock::now() < end_time){
 		try{
-			const HWAddress<6> sta_hw = is_random
-										? HWAddress < 6 > (hw_capabilities::rand_mac())
-										: sta_mac;
+			const HWAddress<6> sta_hw = is_random ? hw_capabilities::rand_mac() : sta_mac;
 			RadioTap block_frame;
 
 			if(attack_type == "BAR") block_frame = get_BAR_frame(ap_hw, sta_hw);
@@ -132,38 +130,31 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 }
 
 static Bl0ckResult compute_result(const RunStatus &rs){
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
-	const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", true);
-
-	Bl0ckResult r;
-	r.disconnect_count = static_cast<int>(disc_times.size());
-	r.passed = r.disconnect_count > 0;
-
-	for(const auto &disc : disc_times){
-		for(const auto &conn : conn_times){
-			if(conn > disc){
-				r.reconnect_times_ms.push_back(
-					static_cast<double>(duration_cast<milliseconds>(conn - disc).count())
-				);
-				break;
+	Bl0ckResult r{};
+	if(rs.get_actor("client")->is_WB()){
+		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+		r.disconnect_count = static_cast<int>(disc_times.size());
+		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
+		for(const auto &disc : disc_times){
+			for(const auto &conn : conn_times){
+				if(conn > disc){
+					r.reconnect_times_ms.push_back(
+						static_cast<double>(duration_cast<milliseconds>(conn - disc).count())
+					);
+					break;
+				}
 			}
 		}
+	}else if(rs.get_actor("access_point")->is_WB()){
+		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
 	}
-
-	const string pass_str = r.passed ? "PASSED" : "FAILED";
+	//FIXME log if passed
+	/*const string pass_str = r.disconnect_count > 0 ? "PASSED" : "FAILED";
 	log(LogLevel::INFO, "Bl0ck result: {} — disconnects: {}", pass_str, r.disconnect_count);
 	for(size_t i = 0; i < r.reconnect_times_ms.size(); ++i)
 		log(LogLevel::INFO, "  reconnect[{}]: {:.0f} ms", i, r.reconnect_times_ms[i]);
-
+	*/
 	return r;
-}
-
-static void save_result(const RunStatus &rs, const Bl0ckResult &r){
-	json j;
-	j["passed"]            = r.passed;
-	j["disconnect_count"]  = r.disconnect_count;
-	j["reconnect_times_ms"] = r.reconnect_times_ms;
-	rs.save_result(j);
 }
 
 static Bl0ckResult load_result(const RunStatus &rs){
@@ -174,9 +165,11 @@ static Bl0ckResult load_result(const RunStatus &rs){
 		return compute_result(rs);
 	}
 	const json j = json::parse(f);
-	Bl0ckResult r;
-	r.passed           = j.value("passed", false);
-	r.disconnect_count = j.value("disconnect_count", 0);
+	Bl0ckResult r{};
+	//r.passed           = j.value("passed", false);
+	r.disconnect_count = j.at("disconnect_count").get<int>();
+	if(j.contains("ap_disconnected"))
+		r.ap_disconnected = j.at("ap_disconnected").get<bool>();
 	r.reconnect_times_ms = j.value("reconnect_times_ms", vector<double>{});
 	return r;
 }
@@ -189,10 +182,10 @@ void setup_attack(RunStatus &rs){
 void run_bl0ck_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &attacker = rs.get_actor("attacker");
-	const string iface = attacker["iface"];
+	const string iface = attacker.get(SK::iface);
 
-	const string STA_mac = rs.get_actor("client")["mac"];
-	const string AP_mac = rs.get_actor("access_point")["mac"];
+	const string STA_mac = rs.get_actor("client").get(SK::mac);
+	const string AP_mac = rs.get_actor("access_point").get(SK::mac);
 
 	const string bl0ck_att_type = att_cfg.at("attack_variant").get<string>();
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
@@ -208,7 +201,11 @@ void run_bl0ck_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Block Attack END");
 
 	rs.process_manager.stop_all();
-	save_result(rs, compute_result(rs));
+	rs.save_result({
+		{"disconnect_count", r.disconnect_count},
+		{"ap_disconnected", r.ap_disconnected},
+		{"reconnect_times_ms", r.reconnect_times_ms}
+	});
 }
 
 void stats_bl0ck_attack(const RunStatus &rs){

@@ -25,6 +25,7 @@ OweTransTestEntry parse_test_folder(const path &test_folder) {
 	e.probe_count     = result->value("probe_requests_detected", 0);
 	e.disconnected    = result->value("disconnected", false);
 	e.passed          = result->value("vulnerable", false);
+
 	e.ap_driver       = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver   = rs->get_actor("client").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);

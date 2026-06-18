@@ -8,6 +8,7 @@
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
+using namespace Tins;
 
 int hw_capabilities::freq_to_channel(const int freq){
 	// 2.4 GHz
@@ -55,7 +56,7 @@ int hw_capabilities::channel_to_freq(const Channel &ch){
 	throw invalid_argument("Invalid channel: " + to_string(ch.ch_num));
 }
 
-string hw_capabilities::rand_mac(){
+HWAddress<6> hw_capabilities::rand_mac(){
 	static random_device rd;
 	static mt19937 gen(rd());
 	uniform_int_distribution<> dis(0, 255);
@@ -63,6 +64,6 @@ string hw_capabilities::rand_mac(){
 	char mac[18];
 	snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", dis(gen), dis(gen), dis(gen), dis(gen), dis(gen),
 			dis(gen));
-	return mac;
+	return HWAddress<6>(mac);
 }
 }

@@ -125,7 +125,7 @@ void stats_attack(const RunStatus &rs) {
 		report << "### Attacker (probe capture)\n";
 		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
 		if (rs.config().at("actors").contains("rogue_ap")) {
-			const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements).string();
+			const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 			report << "### Rogue AP\n";
 			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
 		}

@@ -69,9 +69,9 @@ void stats_attack(const RunStatus &rs) {
 	const bool rogue_connected  = !rogue_sta_times.empty();
 	const bool downgrade_seen   = !wpa2_auth_times.empty();
 
-	const path client_graph  = observer::tshark::tshark_graph(rs, "client",   elements).string();
-	const path rogue_graph   = observer::tshark::tshark_graph(rs, "rogue_ap", elements).string();
-	const path att_graph     = observer::tshark::tshark_graph(rs, "attacker", elements).string();
+	const path client_graph  = observer::tshark::tshark_graph(rs, "client",   elements);
+	const path rogue_graph   = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
+	const path att_graph     = observer::tshark::tshark_graph(rs, "attacker", elements);
 
 	const path report_path = rs.run_folder() / "report.md";
 	ofstream report(report_path);

@@ -13,7 +13,7 @@ struct MalformedEapol1TestEntry {
 	std::string client_driver;
 	std::string attacker_driver;
 	int         disconnect_count;
-	std::optional<bool> passed;
+	//std::optional<bool> passed;
 	std::filesystem::path sta_graph;
 	std::filesystem::path ap_graph;
 };

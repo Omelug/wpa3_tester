@@ -66,8 +66,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
            not bl0ck frames.
 		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation</p>
     </div>
-)html"; //FIXME TEst is more successful if attacker further than (idk why, possible mt76 and au cannt be next to each other)
-
+)html"; //FIXME client-AP nesmí být na jedné straně spolu, bl0ck jinak asi nemá dost času -> nějaký WARRNING  ?
     if (results.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
     } else {

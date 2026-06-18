@@ -23,7 +23,7 @@ MalformedEapol1TestEntry parse_test_folder(const path &test_folder) {
 
 	const auto rs      = helper::load_test_rs(test_folder);
 	e.disconnect_count = result->value("disconnect_count", 0);
-	e.passed           = e.disconnect_count > 0;
+	//e.passed           = e.disconnect_count > 0;
 	e.sta_graph        = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph         = test_folder / "observer" / "tshark" / "access_point_graph.png";
 	e.ap_driver        = rs->get_actor("access_point").get(SK::driver_name);
@@ -67,12 +67,12 @@ void generate_report(RunSuiteStatus &rss) {
 	}
 
 	report << "## Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected | Disconnects | Graphs |\n";
-	report << "|------|-----------|---------------|-----------------|:------------:|:-----------:|--------|\n";
+	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected (count) | Graphs |\n";
+	report << "|------|-----------|---------------|-----------------|:--------------------:|:-- ---:|\n";
 
 	int passed_count = 0;
 	for (const auto &e : entries) {
-		if (e.passed.value()) ++passed_count;
+		if (e.disconnect_count > 0) ++passed_count;
 
 		string graphs;
 		if (exists(e.sta_graph))
@@ -85,13 +85,12 @@ void generate_report(RunSuiteStatus &rss) {
 
 		const string name_cell = exists(run_dir / e.test_name / "report.md")
 			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string disc_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/result.json)";
 		report << "| " << name_cell
 		       << " | " << e.ap_driver
 		       << " | " << e.client_driver
 		       << " | " << e.attacker_driver
-		       << " | " << disc_link
-		       << " | " << e.disconnect_count
+		       << " | " << disc_link << "(" << e.disconnect_count << ")"
 		       << " | " << graphs
 		       << " |\n";
 	}

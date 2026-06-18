@@ -14,7 +14,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-Bl0ckTestEntry parse_test_folder(const path &test_folder){
+Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	Bl0ckTestEntry e;
 	e.name = test_folder.filename().string();
 
@@ -61,11 +61,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &rel) {
-		auto e = parse_test_folder(p);
-		e.name = rel.string();
-		return e;
-	});
+	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if(!report.is_open()) return;

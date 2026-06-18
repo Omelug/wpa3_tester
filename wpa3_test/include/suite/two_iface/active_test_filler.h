@@ -14,9 +14,10 @@ struct ActiveTestEntry {
 	int         acked;
 	int         not_acked;
 	std::optional<bool> passed; // nullopt = no result.json; value = success
+
+	static ActiveTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-ActiveTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<ActiveTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);

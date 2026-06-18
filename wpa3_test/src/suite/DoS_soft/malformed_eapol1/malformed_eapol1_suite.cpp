@@ -62,7 +62,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	report << "## Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected (count) | Graphs |\n";
-	report << "|------|-----------|---------------|-----------------|:--------------------:|:-- ---:|\n";
+	report << "|------|-----------|---------------|-----------------|:--------------------:|:------:|\n";
 
 	int passed_count = 0;
 	for (const auto &e : entries) {

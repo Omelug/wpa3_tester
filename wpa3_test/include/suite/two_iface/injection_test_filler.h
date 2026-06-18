@@ -16,9 +16,10 @@ struct InjectionTestEntry {
 	int         tests_total;
 	std::vector<std::pair<std::string, std::string>> failures;
 	std::optional<bool> passed; // nullopt = no result.json; value = all sub-tests passed
+
+	static InjectionTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-InjectionTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<InjectionTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);

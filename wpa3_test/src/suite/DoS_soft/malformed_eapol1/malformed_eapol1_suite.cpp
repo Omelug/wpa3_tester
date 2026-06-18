@@ -14,7 +14,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-MalformedEapol1TestEntry parse_test_folder(const path &test_folder) {
+MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder){
 	MalformedEapol1TestEntry e{};
 	e.test_name = test_folder.filename().string();
 
@@ -33,13 +33,7 @@ MalformedEapol1TestEntry parse_test_folder(const path &test_folder) {
 }
 
 vector<MalformedEapol1TestEntry> get_results(const path &run_dir) {
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
-		return parse_test_folder(p);
-	});
-	ranges::sort(entries, [](const MalformedEapol1TestEntry &a, const MalformedEapol1TestEntry &b) {
-		return a.test_name < b.test_name;
-	});
-	return entries;
+	return helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
 }
 
 void generate_report(RunSuiteStatus &rss) {

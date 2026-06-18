@@ -68,7 +68,7 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
+	auto entries = helper::collect_entries_nested(run_dir, [](const path &p) {
 		return parse_test_folder(p);
 	});
 

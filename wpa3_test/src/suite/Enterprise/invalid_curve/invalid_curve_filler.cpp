@@ -15,11 +15,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-void setup_suite(const RunSuiteStatus &rss) {
-	enterprise_filler_helper::setup_suite(rss);
-}
-
-InvalidCurveTestEntry parse_test_folder(const path &test_folder) {
+InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 	InvalidCurveTestEntry e{};
 	e.test_name = test_folder.filename().string();
 
@@ -33,17 +29,9 @@ InvalidCurveTestEntry parse_test_folder(const path &test_folder) {
 	return e;
 }
 
-vector<InvalidCurveTestEntry> get_results(const path &run_dir) {
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
-		return parse_test_folder(p);
-	});
-	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
-	return entries;
-}
-
 void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
-	const auto entries = get_results(run_dir);
+	const auto entries = helper::get_results_default<InvalidCurveTestEntry>(run_dir);
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if (!report.is_open()) return;
@@ -63,10 +51,10 @@ void generate_report(RunSuiteStatus &rss) {
 
 	for (const auto &e : entries) {
 		const string name_cell   = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
+									? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
 		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/result.json)";
 		report << "| " << name_cell << " | " << e.ap_driver << " | "
-		       << e.attacker_driver << " | " << result_link << " |\n";
+				<< e.attacker_driver << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
@@ -75,7 +63,7 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1)
-	       << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
+			<< (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 
 	report.close();
 	set_public_perms(run_dir / "report.md");

@@ -13,9 +13,10 @@ struct ApInfoWpa3TestEntry {
 	std::string mfp;
 	std::string akm;
 	bool        acm_triggered = false;
+
+	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);
 };
 
-ApInfoWpa3TestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<ApInfoWpa3TestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);

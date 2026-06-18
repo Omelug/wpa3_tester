@@ -78,9 +78,9 @@ void generate_report(RunSuiteStatus &rss){
 		return;
 	}
 
-	auto test_results = helper::collect_entries_nested(run_dir, [](const path &p, const path &rel) {
+	auto test_results = helper::collect_entries_nested(run_dir, [&run_dir](const path &p) {
 		auto e = parse_test_folder(p);
-		e.rel_path = rel;
+		e.rel_path = relative(p, run_dir);
 		return e;
 	});
 

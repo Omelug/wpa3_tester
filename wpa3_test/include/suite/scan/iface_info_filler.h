@@ -10,9 +10,10 @@ struct IfaceInfoTestEntry {
 	std::string test_name;
 	std::string hw_summary;
 	std::filesystem::path report_md;
+
+	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-IfaceInfoTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 std::vector<IfaceInfoTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus &rss);

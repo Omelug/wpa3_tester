@@ -14,7 +14,7 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-ActiveTestEntry parse_test_folder(const path &test_folder) {
+ActiveTestEntry ActiveTestEntry::parse(const path &test_folder){
 	ActiveTestEntry e{};
 	e.test_name = test_folder.filename().string();
 
@@ -30,17 +30,9 @@ ActiveTestEntry parse_test_folder(const path &test_folder) {
 	return e;
 }
 
-vector<ActiveTestEntry> get_results(const path &run_dir) {
-	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
-		return parse_test_folder(p);
-	});
-	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
-	return entries;
-}
-
 void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
-	const auto entries = get_results(run_dir);
+	const auto entries = helper::get_results_default<ActiveTestEntry>(run_dir);
 
 	auto report = helper::open_report(run_dir / "report.md");
 	if (!report.is_open()) return;

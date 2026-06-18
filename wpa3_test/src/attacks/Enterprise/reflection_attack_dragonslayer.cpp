@@ -49,7 +49,7 @@ void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto attacker = rs.get_actor("attacker");
 	const auto target_type = att_cfg.at("target_type").get<string>();
-	start_dragonslayer(rs, attacker["actor_name"], attacker["iface"], target_type);
+	start_dragonslayer(rs, attacker.get(SK::actor_name), attacker.get(SK::iface), target_type);
 
 	ofstream attack_result(rs.run_folder()/ "result.txt");
 	attack_result << to_string(

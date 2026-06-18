@@ -132,20 +132,20 @@ void parse_pid_log(const string &data_filepath, const string &csv_outputpath){
 }
 
 void generate_pid_graph(const string &csv_filepath, const string &output_imagepath){
-	string gnuplot_cmd = "gnuplot -e \"";
-	gnuplot_cmd += "set datafile separator ','; ";
-	gnuplot_cmd += "set terminal pngcairo size 1000,600; ";
-	gnuplot_cmd += "set output '" + output_imagepath + "'; ";
-	gnuplot_cmd += "set title 'Resource Usage (pidstat)'; ";
-	gnuplot_cmd += "set xdata time; ";
-	gnuplot_cmd += "set timefmt '%Y-%m-%dT%H:%M:%S'; ";
-	gnuplot_cmd += "set format x '%H:%M:%S'; ";
-	gnuplot_cmd += "set xlabel 'Time'; ";
-	gnuplot_cmd += "set ylabel '% Usage / MB'; ";
-	gnuplot_cmd += "plot '" + csv_filepath + "' using 1:2 with lines title '% CPU', ";
-	gnuplot_cmd += "     '' using 1:4 with lines title '% MEM';\"";
+	string g = "gnuplot -e \"";
+	g += "set datafile separator ','; ";
+	g += "set terminal pngcairo size 1000,600; ";
+	g += "set output '" + output_imagepath + "'; ";
+	g += "set title 'Resource Usage (pidstat)'; ";
+	g += "set xdata time; ";
+	g += "set timefmt '%Y-%m-%dT%H:%M:%S'; ";
+	g += "set format x '%H:%M:%S'; ";
+	g += "set xlabel 'Time'; ";
+	g += "set ylabel '% Usage / MB'; ";
+	g += "plot '" + csv_filepath + "' using 1:2 with lines title '% CPU', ";
+	g += "     '' using 1:4 with lines title '% MEM';\"";
 
-	const int result = system(gnuplot_cmd.c_str());
+	const int result = system(g.c_str());
 	if(result != 0){
 		throw stats_err("Pid graph gnuplot failed");
 	}

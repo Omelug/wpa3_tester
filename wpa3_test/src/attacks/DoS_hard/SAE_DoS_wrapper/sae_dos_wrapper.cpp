@@ -98,7 +98,7 @@ void run_attack(RunStatus &rs){
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const auto sae = cookie_guzzler::get_commit_values(
-		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
+		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), ssid, ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();
@@ -106,7 +106,7 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const string config_path = rs.run_folder()/"config.yaml";
-	write_run_config(config_path, sae.value(), ap["mac"], client["mac"], ap["channel"], attacker["iface"], att_cfg);
+	write_run_config(config_path, sae.value(), ap["mac"], client["mac"], ap["channel"], attacker.get(SK::iface), att_cfg);
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
 	rs.start_observers();

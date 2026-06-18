@@ -21,16 +21,16 @@ void run_attack(RunStatus &rs){
 	const auto att = rs.get_actor("attacker");
 	const auto ap = rs.get_actor("access_point");
 
-	const NetworkInterface iface(att["iface"]);
+	const NetworkInterface iface(att.get(SK::iface));
 	PacketSender sender(iface);
 
 	for(int i = 0; i < test_count; ++i){
-		auto ath_mac = firmware::get_random_ath_masker_mac(att["mac"]);
+		auto ath_mac = firmware::get_random_ath_masker_mac(att.get(SK::mac));
 
 		Dot11ProbeRequest probe;
 		probe.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
 		probe.addr2(ath_mac);
-		probe.addr3(ap["mac"]);
+		probe.addr3(ap.get(SK::mac));
 		probe.ssid("");
 		probe.supported_rates({1.0f, 2.0f, 5.5f, 11.0f});
 		RadioTap radiotap{};

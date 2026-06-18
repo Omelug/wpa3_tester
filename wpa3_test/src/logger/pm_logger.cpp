@@ -121,13 +121,13 @@ int ProcessManager::get_pid(const string &process_name){
 void ProcessManager::recreate_log_folder(const path &log_base_dir){
 	error_code ec;
 
-	// if log folder exists -> clear
+	// if log folder exists -> clear (preserve tester.log written before init_logging)
 	if(exists(log_base_dir, ec)){
 		permissions(log_base_dir, perms::all, perm_options::add, ec);
-		remove_all(log_base_dir, ec);
-		if(ec){
-			log(LogLevel::ERROR, "Failed to clean logger directory: {}:{}", log_base_dir.string(), ec.message());
-			throw run_err("Unable to clean logger directory");
+		for(const auto &entry : directory_iterator(log_base_dir, ec)){
+			if(entry.path().filename() == "tester.log") continue;
+			remove_all(entry.path(), ec);
+			if(ec) log(LogLevel::ERROR, "Failed to remove {}: {}", entry.path().string(), ec.message());
 		}
 	}
 

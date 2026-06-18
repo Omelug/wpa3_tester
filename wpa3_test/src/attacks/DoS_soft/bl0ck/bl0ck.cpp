@@ -201,6 +201,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Block Attack END");
 
 	rs.process_manager.stop_all();
+	Bl0ckResult r = compute_result(rs);
 	rs.save_result({
 		{"disconnect_count", r.disconnect_count},
 		{"ap_disconnected", r.ap_disconnected},

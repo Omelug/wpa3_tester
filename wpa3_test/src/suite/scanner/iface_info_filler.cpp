@@ -47,12 +47,9 @@ IfaceInfoTestEntry parse_test_folder(const path &test_folder) {
 }
 
 vector<IfaceInfoTestEntry> get_results(const path &run_dir) {
-	vector<IfaceInfoTestEntry> entries;
-	for (const auto &dir_entry : directory_iterator(run_dir)) {
-		if (!dir_entry.is_directory()) continue;
-		if (dir_entry.path().filename() == "test_config") continue;
-		entries.push_back(parse_test_folder(dir_entry.path()));
-	}
+	auto entries = helper::collect_entries_nested(run_dir, [](const path &p, const path &) {
+		return parse_test_folder(p);
+	});
 	ranges::sort(entries, [](const auto &a, const auto &b) { return a.test_name < b.test_name; });
 	return entries;
 }

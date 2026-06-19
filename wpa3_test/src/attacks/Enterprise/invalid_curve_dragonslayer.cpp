@@ -60,11 +60,11 @@ void run_attack(RunStatus &rs){
 	const auto &attacker = rs.get_actor("attacker");
 
 	if(target_type == "ap"){
-		start_dragonslayer(rs, attacker["actor_name"], attacker.get(SK::iface), target_type);
+		start_dragonslayer(rs, attacker.get(SK::actor_name), attacker.get(SK::iface), target_type);
 		rs.process_manager.wait_for("attacker", "Server is vulnerable to invalid curve attack", chrono::seconds(60));
 	}
 	if(target_type == "sta"){
-		start_dragonslayer(rs, attacker["actor_name"], attacker.get(SK::iface), target_type);
+		start_dragonslayer(rs, attacker.get(SK::actor_name), attacker.get(SK::iface), target_type);
 		program::start(rs, "client");
 
 		constexpr size_t replay = 5;

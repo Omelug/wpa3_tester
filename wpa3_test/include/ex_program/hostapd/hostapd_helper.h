@@ -18,21 +18,20 @@ std::string get_channel(const nlohmann::json &program_config, const std::string 
 // parses ieee80211w from a wpa_supplicant.conf; returns "OFF"/"OPTIONAL"/"REQUIRED", empty if absent
 std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 
-struct CrackResult {
-    int total;
-    int cracked;
+struct CrackResult{
+	int total;
+	int cracked;
 };
 
 // verify each WPA*02* hash from a creds file against psk using hcxpmktool
 CrackResult crack_pmk_hashes(const std::filesystem::path &creds_file, const std::string &psk);
 
-struct OpenSSLPaths {
-    std::filesystem::path lib_dir;     // for LD_LIBRARY_PATH
-    std::filesystem::path libcrypto;   // for LD_PRELOAD
-    std::filesystem::path include_dir; // for -I when compiling against it
+struct OpenSSLPaths{
+	std::filesystem::path lib_dir;     // for LD_LIBRARY_PATH
+	std::filesystem::path libcrypto;   // for LD_PRELOAD
+	std::filesystem::path include_dir; // for -I when compiling against it
 };
 
 OpenSSLPaths get_openssl_paths(const std::string &tag);
 std::string get_hostapd_with_openssl(const std::string &hostapd_version, const std::string &openssl_version);
-
 }

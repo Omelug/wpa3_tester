@@ -16,18 +16,19 @@ namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
 : detect_injected_(detect_injected), sniffer_(iface, make_sniff_cfg()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
-		throw run_err("pcap_setnonblock failed: " + string(errbuf));
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
+		"pcap_setnonblock failed: " + string(errbuf));
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
-: detect_injected_(detect_injected), sniffer_([&]() {
+: detect_injected_(detect_injected),
+sniffer_([&](){
 	netlink_helper::NetNSContext ns_guard(netns);
 	return Sniffer(iface, make_sniff_cfg());
 }()){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
-		"pcap_setnonblock failed: " + string(errbuf));
+	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
+		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
@@ -54,7 +55,8 @@ void MonitorSocket::send(PDU &pdu, const Channel &){
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel &ch,
-												const bool detect_injected){
+												const bool detect_injected
+){
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
@@ -108,7 +110,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, const 
 		uint32_t strip = 0;
 		if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS)) strip = 4;
 		auto pdu = make_unique<RadioTap>(frame, caplen - strip);
-		return {std::move(pdu), vector(frame, frame + caplen - strip)};
+		return {move(pdu), vector(frame, frame + caplen - strip)};
 	} catch(...){
 		return {};
 	}
@@ -123,13 +125,15 @@ MonitorSocket::RecvResult MonitorSocket::recv(){
 }
 
 void MonitorSocket::recv_loop(const chrono::steady_clock::time_point deadline,
-                              const function<bool(RecvResult)> &on_packet){
+							const function<bool(RecvResult)> &on_packet
+){
 	const int fd = pcap_get_selectable_fd(get_pcap_handle());
 	pollfd pfd{fd, POLLIN, 0};
 	while(true){
-		const int rem = static_cast<int>(chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+		const int rem = static_cast<int>(chrono::duration_cast<chrono::milliseconds>(
+			deadline - chrono::steady_clock::now()).count());
 		if(rem <= 0 || poll(&pfd, 1, rem) <= 0) break;
-		if(auto r = recv(); r && on_packet(std::move(r))) break;
+		if(auto r = recv(); r && on_packet(move(r))) break;
 	}
 }
 

@@ -6,8 +6,8 @@ using namespace std;
 
 static const char *md_badge(const it_test_result result){
 	if(result == NOCAPTURE) return "NO-CAPTURE";
-	if(result ==  FAIL)      return "FAIL";
-	if(result == PASSED)   return "PASSED";
+	if(result == FAIL) return "FAIL";
+	if(result == PASSED) return "PASSED";
 	return "UNKNOWN";
 }
 
@@ -19,15 +19,14 @@ string print_injection_result(const InjectionSuiteResult &suite){
 	md << "| Property | Value |\n";
 	md << "|----------|-------|\n";
 	md << "| Interface (inject) | `" << suite.iface_out << "` |\n";
-	if(suite.iface_in != suite.iface_out)
-		md << "| Interface (monitor) | `" << suite.iface_in << "` |\n";
+	if(suite.iface_in != suite.iface_out) md << "| Interface (monitor) | `" << suite.iface_in << "` |\n";
 	md << "| Driver | " << suite.driver << " |\n";
 	md << "| Channel | " << suite.channel.ch_num << " |\n\n";
 
 	md << "### Results\n\n";
 	md << "| Test | Status | Detail |\n";
 	md << "|------|--------|--------|\n";
-	for(const auto &t : suite.tests){
+	for(const auto &t: suite.tests){
 		md << "| `" << t.test_name() << "` | **" << md_badge(t.result()) << "** | ";
 		md << t.detail() << " |\n";
 	}
@@ -40,5 +39,4 @@ string print_injection_result(const InjectionSuiteResult &suite){
 
 	return md.str();
 }
-
 }

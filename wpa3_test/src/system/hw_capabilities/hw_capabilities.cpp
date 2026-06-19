@@ -37,8 +37,7 @@ string hw_capabilities::read_sysfs(const string &iface, const string &file){
 string hw_capabilities::get_driver_name(const string &iface, const optional<string> &netns){
 	//need new proces for netns change (read_sys dont reflect it)
 	string target = run_cmd_output({"readlink", "/sys/class/net/" + iface + "/device/driver"}, netns);
-	while(!target.empty() && (target.back() == '\n' || target.back() == '\r'))
-		target.pop_back();
+	while(!target.empty() && (target.back() == '\n' || target.back() == '\r')) target.pop_back();
 	if(target.empty()) throw config_err("get_driver_name: no driver symlink for " + iface);
 	return path(target).filename().string();
 }
@@ -55,8 +54,8 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 	}
 	// fallback: hash the .ko file via modinfo + sha256sum
 	string ko_path = run_cmd_output({"modinfo", "-F", "filename", driver_name});
-	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' '))
-		ko_path.pop_back();
+	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' ')) ko_path.
+			pop_back();
 	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
 
 	const string sha_out = run_cmd_output({"sha256sum", ko_path});
@@ -71,26 +70,23 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 	modules.push_back(driver_name);
 
 	string deps = run_cmd_output({"modinfo", "-F", "depends", driver_name});
-	while(!deps.empty() && (deps.back() == '\n' || deps.back() == '\r' || deps.back() == ' '))
-		deps.pop_back();
+	while(!deps.empty() && (deps.back() == '\n' || deps.back() == '\r' || deps.back() == ' ')) deps.pop_back();
 	if(!deps.empty()){
 		stringstream ss(deps);
 		string tok;
 		while(getline(ss, tok, ',')){
-			while(!tok.empty() && (tok.back() == ' ' || tok.back() == '\r'))
-				tok.pop_back();
+			while(!tok.empty() && (tok.back() == ' ' || tok.back() == '\r')) tok.pop_back();
 			if(!tok.empty()) modules.push_back(tok);
 		}
 	}
 
 	// Collect "module:srcversion;" for each module that has a srcversion
 	string combined;
-	for(const auto &mod : modules){
+	for(const auto &mod: modules){
 		ifstream ifs("/sys/module/" + mod + "/srcversion");
 		if(ifs.is_open()){
 			string sv;
-			if(getline(ifs, sv) && !sv.empty())
-				combined += mod + ":" + sv + ";";
+			if(getline(ifs, sv) && !sv.empty()) combined += mod + ":" + sv + ";";
 		}
 	}
 	if(combined.empty()) return nullopt;
@@ -134,8 +130,8 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 		string iface = entry.path().filename().string();
 
 		vector<string> ignored_list{};
-		if(auto g = get_global_config(); !g.empty())
-			ignored_list = g.at("actors").value("ignore_interfaces", vector<string>{});
+		if(auto g = get_global_config(); !g.empty()) ignored_list = g.at("actors").value(
+			"ignore_interfaces", vector<string>{});
 
 		if(set ignored_set(ignored_list.begin(), ignored_list.end()); ignored_set.contains(iface)){
 			log(LogLevel::DEBUG, "Ignoring interface {} due to ignore_interfaces config", iface);
@@ -193,7 +189,7 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 		return;
 	}
 	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);
-	run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, std::nullopt);
+	run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, nullopt);
 }
 
 string hw_capabilities::get_iface(const string &ip_address, const optional<string> &netns){
@@ -251,8 +247,8 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 
 void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
-	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
-		throw timeout_err("Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.message());
+	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res) throw timeout_err(
+		"Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.message());
 }
 
 string get_iface_type(const string &iface, const optional<string> &netns){
@@ -260,8 +256,8 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 	if(output.empty()) throw run_err("Failed to get interface info for: " + iface);
 
 	smatch match;
-	if(!regex_search(output, match, regex(R"(type (\w+))")))
-		throw run_err("Could not determine interface type for: " + iface);
+	if(!regex_search(output, match, regex(R"(type (\w+))"))) throw run_err(
+		"Could not determine interface type for: " + iface);
 
 	return match[1].str();
 }
@@ -285,16 +281,19 @@ bool hw_capabilities::set_monitor_active(const string &iface, const optional<str
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){
 	run_cmd({"ip", "link", "set", iface, "down"}, netns);
-	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); res) throw timeout_err(
-		"Timeout waiting for '" + iface + "' to go DOWN:" + res.message());
+	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); res)
+		throw timeout_err("Timeout waiting for '" + iface + "' to go DOWN:" + res.message());
 }
 
 void hw_capabilities::set_iface_up(const string &iface, const optional<string> &netns){
 	run_cmd({"ip", "link", "set", iface, "up"}, netns);
-	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res) throw timeout_err(
-		"Timeout waiting for '" + iface + "' to go UP:" + res.message());
+	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res)
+		throw timeout_err("Timeout waiting for '" + iface + "' to go UP:" + res.message());
 }
-void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns, const vector<string> &monitor_flags){
+
+void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftype type, const optional<string> &netns,
+									const vector<string> &monitor_flags
+){
 	if(netlink_helper::query_wifi_iftype(iface, netns) == type) return;
 
 	const auto *type_str = [&]() ->const char *{
@@ -311,12 +310,12 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		// hwsim (and some drivers) reject in-place type change to AP — del + recreate on the same phy
 		const string phy = get_phy(string(iface), netns);
 		run_cmd({"iw", "dev", iface.data(), "del"}, netns);
-		if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0)
-			throw run_err("iw phy {} interface add {} type __ap failed", phy, iface);
+		if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0) throw run_err(
+			"iw phy {} interface add {} type __ap failed", phy, iface);
 	}
 
-	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); res)
-		throw run_err("Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.message());
+	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); res) throw run_err(
+		"Timeout waiting for '{}' to reach type '{}': {}", iface, type_str, res.message());
 
 	if(type == NL80211_IFTYPE_MONITOR && !monitor_flags.empty()){
 		vector<string> cmd = {"iw", "dev", iface.data(), "set", "monitor"};

@@ -16,7 +16,11 @@ struct ACMCookie{
 };
 
 struct CookieStore{
-	std::unordered_map<Tins::HWAddress<6>,ACMCookie> queue; // key = sta_mac.to_string()
+	std::unordered_map<Tins::HWAddress < 6>
+,
+	ACMCookie
+	>
+	queue; // key = sta_mac.to_string()
 	std::mutex mtx;
 	std::atomic<bool> stop{false};
 };

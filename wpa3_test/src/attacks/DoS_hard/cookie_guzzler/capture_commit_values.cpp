@@ -15,8 +15,8 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-optional<sae_helper::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
-												const int timeout_sec, pcap_t *handle, const string &iface
+optional<sae_helper::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle,
+												const string &iface
 ){
 	char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -26,37 +26,39 @@ optional<sae_helper::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac,
 		if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
 		pcap_setnonblock(handle, 1, errbuf);
 	}
-	auto guard = unique_ptr<pcap_t, void(*)(pcap_t*)>(owns ? handle : nullptr,
-		[](pcap_t *h){ if(h) pcap_close(h); });
+	auto guard = unique_ptr<pcap_t,void(*)(pcap_t *)>(owns ? handle : nullptr, [](pcap_t *h){ if(h) pcap_close(h); });
 
 	const string filter_str = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
 	bpf_program fp{};
-	if(pcap_compile(handle, &fp, filter_str.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0)
-		pcap_setfilter(handle, &fp);
+	if(pcap_compile(handle, &fp, filter_str.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0) pcap_setfilter(handle, &fp);
 	pcap_freecode(&fp);
 
-	auto result = components::poll_sniffer<sae_helper::SAEPair>(
-		handle, milliseconds(timeout_sec * 1000),
-		[](const uint8_t *packet, uint32_t caplen) -> optional<sae_helper::SAEPair> {
-			if(caplen < 10){
-				log(LogLevel::DEBUG, "Packet too short: {}", caplen);
-				return nullopt;
-			}
+	auto result = components::poll_sniffer<sae_helper::SAEPair>(handle, milliseconds(timeout_sec * 1000),
+																[](const uint8_t *packet, uint32_t caplen
+														) ->optional<sae_helper::SAEPair>{
+																	if(caplen < 10){
+																		log(LogLevel::DEBUG, "Packet too short: {}",
+																			caplen);
+																		return nullopt;
+																	}
 
-			log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", packet[0], packet[1], packet[2], packet[3]);
+																	log(LogLevel::DEBUG,
+																		"Hex: {:02x} {:02x} {:02x} {:02x}", packet[0],
+																		packet[1], packet[2], packet[3]);
 
-			//if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
-			if(auto frame = sae_helper::parse_sae_commit({packet, packet + caplen})){
-				log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", frame->scalar.size());
-				return frame;
-			}
-			return nullopt;
-		},
-		iface
-	);
+																	//if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
+																	if(auto frame = sae_helper::parse_sae_commit({
+																		packet, packet + caplen
+																	})){
+																		log(LogLevel::DEBUG,
+																			"Captured SAE commit, scalar size: {}",
+																			frame->scalar.size());
+																		return frame;
+																	}
+																	return nullopt;
+																}, iface);
 
-	if(holds_alternative<sae_helper::SAEPair>(result))
-		return get<sae_helper::SAEPair>(std::move(result));
+	if(holds_alternative<sae_helper::SAEPair>(result)) return get<sae_helper::SAEPair>(move(result));
 	return nullopt;
 }
 

@@ -43,7 +43,8 @@ void check_CSA(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
 	nlattr *cmd;
 	int rem;
-	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem){
+	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem)
+	{
 		if(nla_get_u32(cmd) == NL80211_CMD_CHANNEL_SWITCH){
 			caps->csa = true;
 			return;
@@ -51,7 +52,7 @@ void check_CSA(nlattr **attrs, NlCaps *caps){
 	}
 }
 
-void check_beacon_prot(nlattr *attrs[], NlCaps *caps){
+void check_beacon_prot(nlattr * attrs[], NlCaps * caps){
 	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
 
 	const uint8_t *ext_features = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
@@ -149,13 +150,14 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	return NL_SKIP;
 }
 
-void hw_capabilities::check_band_caps(nlattr *attrs[], NlCaps *caps){
+void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 	if(!attrs[NL80211_ATTR_WIPHY_BANDS]) return;
 
 	nlattr *band;
 	int rem_band;
 
-	nla_for_each_nested(band, attrs[NL80211_ATTR_WIPHY_BANDS], rem_band){
+	nla_for_each_nested(band, attrs[NL80211_ATTR_WIPHY_BANDS], rem_band)
+	{
 		nlattr *band_attrs[NL80211_BAND_ATTR_MAX + 1]{};
 		nla_parse(band_attrs, NL80211_BAND_ATTR_MAX, static_cast<nlattr *>(nla_data(band)), nla_len(band), nullptr);
 
@@ -170,7 +172,8 @@ void hw_capabilities::check_band_caps(nlattr *attrs[], NlCaps *caps){
 			nlattr *iftype_data;
 			int rem_iftype;
 
-			nla_for_each_nested(iftype_data, band_attrs[NL80211_BAND_ATTR_IFTYPE_DATA], rem_iftype){
+			nla_for_each_nested(iftype_data, band_attrs[NL80211_BAND_ATTR_IFTYPE_DATA], rem_iftype)
+			{
 				nlattr *iftype_attrs[NL80211_BAND_IFTYPE_ATTR_MAX + 1]{};
 				nla_parse(iftype_attrs, NL80211_BAND_IFTYPE_ATTR_MAX, static_cast<nlattr *>(nla_data(iftype_data)),
 						nla_len(iftype_data), nullptr);
@@ -185,7 +188,8 @@ void hw_capabilities::check_band_caps(nlattr *attrs[], NlCaps *caps){
 		nlattr *freq;
 		int rem_freq;
 
-		nla_for_each_nested(freq, band_attrs[NL80211_BAND_ATTR_FREQS], rem_freq){
+		nla_for_each_nested(freq, band_attrs[NL80211_BAND_ATTR_FREQS], rem_freq)
+		{
 			nlattr *freq_attrs[NL80211_FREQUENCY_ATTR_MAX + 1]{};
 			nla_parse(freq_attrs, NL80211_FREQUENCY_ATTR_MAX, static_cast<nlattr *>(nla_data(freq)), nla_len(freq),
 					nullptr);

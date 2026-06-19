@@ -60,7 +60,7 @@ void kill_process_in_ns_name(const string &ns_name){
 	const vector<pid_t> pids = pids_in_ns(ns_name);
 	if(pids.empty()) return;
 
-	for(const pid_t p : pids) kill(p, SIGTERM);
+	for(const pid_t p: pids) kill(p, SIGTERM);
 
 	const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
 
@@ -68,15 +68,14 @@ void kill_process_in_ns_name(const string &ns_name){
 	bool all_dead = false;
 	while(!all_dead && chrono::steady_clock::now() < deadline){
 		all_dead = true;
-		for(const pid_t p : pids){
-			if(exists("/proc/" + to_string(static_cast<long>(p))))
-				all_dead = false;
+		for(const pid_t p: pids){
+			if(exists("/proc/" + to_string(static_cast<long>(p)))) all_dead = false;
 		}
 		if(!all_dead) this_thread::sleep_for(chrono::milliseconds(10));
 	}
 
 	// SIGKILL survivors
-	for(const pid_t p : pids){
+	for(const pid_t p: pids){
 		if(exists("/proc/" + to_string(static_cast<long>(p)))){
 			kill(p, SIGKILL);
 			log(LogLevel::DEBUG, "SIGKILL process {} from namespace {}", p, ns_name);
@@ -84,11 +83,10 @@ void kill_process_in_ns_name(const string &ns_name){
 	}
 
 	// Wait for SIGKILL to take effect — kernel needs a moment
-	for(const pid_t p : pids){
+	for(const pid_t p: pids){
 		const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(200);
-		while(exists("/proc/" + to_string(static_cast<long>(p))) &&
-			  chrono::steady_clock::now() < kill_deadline)
-			this_thread::sleep_for(chrono::milliseconds(5));
+		while(exists("/proc/" + to_string(static_cast<long>(p))) && chrono::steady_clock::now() <
+			kill_deadline) this_thread::sleep_for(chrono::milliseconds(5));
 
 		waitpid(p, nullptr, WNOHANG);
 		log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
@@ -114,102 +112,98 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 }
 
 void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
-	const chrono::milliseconds timeout = chrono::milliseconds(3000)){
+						const chrono::milliseconds timeout = chrono::milliseconds(3000)
+){
 	const string ns_path = "/var/run/netns/" + ns_name;
 
-    // Open and bind netlink socket BEFORE touching the ns — umount2 alone can
-    // drop the last reference and immediately return interfaces to root ns,
-    // firing RTM_NEWLINK before we'd have a chance to subscribe.
-    const int nl_fd = ifaces.empty() ? -1 :
-        socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
-    if(!ifaces.empty()){
-        if(nl_fd < 0){
-            log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
-        } else {
-            sockaddr_nl sa{};
-            sa.nl_family = AF_NETLINK;
-            sa.nl_groups = RTMGRP_LINK;
-            if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
-                log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
-                close(nl_fd);
-            }
-        }
-    }
+	// Open and bind netlink socket BEFORE touching the ns — umount2 alone can
+	// drop the last reference and immediately return interfaces to root ns,
+	// firing RTM_NEWLINK before we'd have a chance to subscribe.
+	const int nl_fd = ifaces.empty() ? -1 : socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
+	if(!ifaces.empty()){
+		if(nl_fd < 0){
+			log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
+		} else{
+			sockaddr_nl sa{};
+			sa.nl_family = AF_NETLINK;
+			sa.nl_groups = RTMGRP_LINK;
+			if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
+				log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
+				close(nl_fd);
+			}
+		}
+	}
 
-	if(umount2(ns_path.c_str(), MNT_DETACH) != 0)
-		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
+	if(umount2(ns_path.c_str(), MNT_DETACH) != 0) log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path,
+													strerror(errno));
 
-    if(unlink(ns_path.c_str()) != 0)
-        log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+	if(unlink(ns_path.c_str()) != 0) log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
 
-    if(ifaces.empty() || nl_fd < 0){
-        if(nl_fd >= 0) close(nl_fd);
-        return;
-    }
+	if(ifaces.empty() || nl_fd < 0){
+		if(nl_fd >= 0) close(nl_fd);
+		return;
+	}
 
-    // Track which interfaces are still missing from root ns
-    unordered_set waiting(ifaces.begin(), ifaces.end());
-    // Remove ones already back
-    for(auto it = waiting.begin(); it != waiting.end();)
-        exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
+	// Track which interfaces are still missing from root ns
+	unordered_set waiting(ifaces.begin(), ifaces.end());
+	// Remove ones already back
+	for(auto it = waiting.begin(); it != waiting.end()
+		;) exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
 
-    const auto deadline = chrono::steady_clock::now() + timeout;
-    char buf[8192];
+	const auto deadline = chrono::steady_clock::now() + timeout;
+	char buf[8192];
 
-    while(!waiting.empty() && chrono::steady_clock::now() < deadline){
-        pollfd pfd{nl_fd, POLLIN, 0};
-        const auto remaining = chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now());
-        if(remaining.count() <= 0) break;
-        if(poll(&pfd, 1, static_cast<int>(remaining.count())) <= 0) break;
+	while(!waiting.empty() && chrono::steady_clock::now() < deadline){
+		pollfd pfd{nl_fd, POLLIN, 0};
+		const auto remaining = chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now());
+		if(remaining.count() <= 0) break;
+		if(poll(&pfd, 1, static_cast<int>(remaining.count())) <= 0) break;
 
-        ssize_t len = recv(nl_fd, buf, sizeof(buf), 0);
-        if(len <= 0) continue;
+		ssize_t len = recv(nl_fd, buf, sizeof(buf), 0);
+		if(len <= 0) continue;
 
-        for(auto *nh = reinterpret_cast<nlmsghdr *>(buf);
-            NLMSG_OK(nh, static_cast<uint32_t>(len));
-            nh = NLMSG_NEXT(nh, len)){
+		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nh, static_cast<uint32_t>(len)); nh =
+			NLMSG_NEXT(nh, len)){
+			if(nh->nlmsg_type != RTM_NEWLINK) continue;
 
-            if(nh->nlmsg_type != RTM_NEWLINK) continue;
+			int attr_len = static_cast<int>(nh->nlmsg_len - NLMSG_SPACE(sizeof(ifinfomsg)));
+			auto *attr = reinterpret_cast<rtattr *>(static_cast<char *>(NLMSG_DATA(nh)) +
+				NLMSG_ALIGN(sizeof(ifinfomsg)));
 
-            int attr_len = static_cast<int>(nh->nlmsg_len - NLMSG_SPACE(sizeof(ifinfomsg)));
-            auto *attr = reinterpret_cast<rtattr *>(
-                static_cast<char *>(NLMSG_DATA(nh)) + NLMSG_ALIGN(sizeof(ifinfomsg)));
-
-            while(RTA_OK(attr, attr_len)){
-                if(attr->rta_type == IFLA_IFNAME){
-                    const string name = static_cast<char *>(RTA_DATA(attr));
-                    if(waiting.contains(name) && exists("/sys/class/net/" + name)){
-                        log(LogLevel::DEBUG, "Interface {} returned to root ns", name);
-                        waiting.erase(name);
-                    }
-                }
-                attr = RTA_NEXT(attr, attr_len);
-            }
-        }
-    }
+			while(RTA_OK(attr, attr_len)){
+				if(attr->rta_type == IFLA_IFNAME){
+					const string name = static_cast<char *>(RTA_DATA(attr));
+					if(waiting.contains(name) && exists("/sys/class/net/" + name)){
+						log(LogLevel::DEBUG, "Interface {} returned to root ns", name);
+						waiting.erase(name);
+					}
+				}
+				attr = RTA_NEXT(attr, attr_len);
+			}
+		}
+	}
 	close(nl_fd);
-    for(const auto &name : waiting)
-        log(LogLevel::WARNING, "Interface {} did not return to root netns in time", name);
+	for(const auto &name: waiting) log(LogLevel::WARNING, "Interface {} did not return to root netns in time", name);
 }
 
 void cleanup_all_namespaces(){
-    log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
+	log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
 
-    const path netns_dir = "/var/run/netns";
-    if(!exists(netns_dir)){
-        log(LogLevel::INFO, "Cleanup complete.");
-        return;
-    }
+	const path netns_dir = "/var/run/netns";
+	if(!exists(netns_dir)){
+		log(LogLevel::INFO, "Cleanup complete.");
+		return;
+	}
 
-    for(const auto &entry : directory_iterator(netns_dir)){
-        const auto ns_name = entry.path().filename().string();
-        log(LogLevel::INFO, "Cleaning up processes in namespace: {}", ns_name);
-        kill_process_in_ns_name(ns_name);
+	for(const auto &entry: directory_iterator(netns_dir)){
+		const auto ns_name = entry.path().filename().string();
+		log(LogLevel::INFO, "Cleaning up processes in namespace: {}", ns_name);
+		kill_process_in_ns_name(ns_name);
 
-        const auto ifaces = psy_if_in_ns(ns_name);
-        delete_ns_and_wait(ns_name, ifaces);
-    }
-    log(LogLevel::INFO, "Cleanup complete.");
+		const auto ifaces = psy_if_in_ns(ns_name);
+		delete_ns_and_wait(ns_name, ifaces);
+	}
+	log(LogLevel::INFO, "Cleanup complete.");
 }
 
 ActorCMap get_actors(const ActorCMap &actors, const string &source){
@@ -234,8 +228,7 @@ bool RunStatus::config_requirement(){
 	// ------------------ INTERNAL ---------------------------
 	auto internal_actors = get_actors(actors, "internal");
 	if(!internal_actors.empty()){
-		if(!_hw_option_cache.internal_opts.has_value())
-			_hw_option_cache.internal_opts = internal_options();
+		if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = internal_options();
 		internal_mapping = hw_capabilities::check_req_options(internal_actors, *_hw_option_cache.internal_opts);
 	}
 
@@ -253,14 +246,15 @@ bool RunStatus::config_requirement(){
 	}
 	// ------------------ EXTERNAL WHITEBOX -----------------
 	if(!external_wb_actors.empty()){
-		if(!_hw_option_cache.external_wb_opts.has_value())
-			_hw_option_cache.external_wb_opts = external_wb_options();
-		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
+		if(!_hw_option_cache.external_wb_opts.has_value()) _hw_option_cache.external_wb_opts = external_wb_options();
+		external_wb_mapping =
+				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 	}
 
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	if(!external_bb_actors.empty()){
-		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors, external_bb_options(external_bb_actors));
+		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors,
+																external_bb_options(external_bb_actors));
 	}
 
 	// ---------------- SIMULATIONS -------------------------
@@ -274,19 +268,18 @@ bool RunStatus::config_requirement(){
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
 
 	auto setup_by_map = [&](ActorCMap &actor_map, const ActorMap &mapping){
-		for(auto &[actor_name, actor]: actor_map)
-			actor->setup_actor(_config, mapping.at(actor_name));
+		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name));
 	};
-	setup_by_map(internal_actors,    internal_mapping);
+	setup_by_map(internal_actors, internal_mapping);
 	setup_by_map(external_wb_actors, external_wb_mapping);
 	setup_by_map(external_bb_actors, external_bb_mapping);
-	setup_by_map(simulation_actors,  simulation_mapping);
+	setup_by_map(simulation_actors, simulation_mapping);
 
 	// --------------- POST-BACKTRACKING REQUIREMENTS
 	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")){
 		for(const auto &[key, actor_names]: _config.at("requirements").at("two_iface").items()){
-			if(!actor_names.is_array() || actor_names.size() < 2)
-				throw config_err("two_iface." + key + " must be an array of two actors");
+			if(!actor_names.is_array() || actor_names.size() < 2) throw config_err(
+				"two_iface." + key + " must be an array of two actors");
 
 			const ActorPtr &actor1 = get_actor(actor_names[0].get<string>());
 			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());

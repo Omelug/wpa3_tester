@@ -11,11 +11,11 @@ attack_config:
 actors:
   access_point:
     selection:
-      driver: [rtw_8821au, rtw88_8821au]
+      driver: [ rtw_8821au, rtw88_8821au ]
   client:
     selection:
       permanent_mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
   attacker:
     selection:
-      driver: [rtw_8821cu, rtw88_8821cu]
+      driver: [ rtw_8821cu, rtw88_8821cu ]

@@ -6,15 +6,14 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::suite::injection_test_filler {
-
-struct InjectionTestEntry {
+namespace wpa3_tester::suite::injection_test_filler{
+struct InjectionTestEntry{
 	std::string test_name;
 	std::string tx_driver;
 	std::string rx_driver;
-	int         tests_passed;
-	int         tests_total;
-	std::vector<std::pair<std::string, std::string>> failures;
+	int tests_passed;
+	int tests_total;
+	std::vector<std::pair<std::string,std::string>> failures;
 	std::optional<bool> passed; // nullopt = no result.json; value = all sub-tests passed
 
 	static InjectionTestEntry parse(const std::filesystem::path &test_folder);
@@ -22,6 +21,5 @@ struct InjectionTestEntry {
 
 std::vector<InjectionTestEntry> get_results(const std::filesystem::path &run_dir);
 
-void generate_report(RunSuiteStatus &rss);
-
+void generate_report(RunSuiteStatus & rss);
 }

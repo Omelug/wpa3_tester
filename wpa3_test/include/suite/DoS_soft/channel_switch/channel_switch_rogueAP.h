@@ -5,8 +5,7 @@
 #include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::suite::channel_switch_rogueAP{
-
-struct CsaTestEntry {
+struct CsaTestEntry{
 	std::string name;
 	std::string ap_mac;
 	std::string ap_source;
@@ -28,9 +27,7 @@ struct CsaTestEntry {
 	std::filesystem::path rel_path;
 };
 
-
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 
 void generate_report(RunSuiteStatus &rss);
-
 }

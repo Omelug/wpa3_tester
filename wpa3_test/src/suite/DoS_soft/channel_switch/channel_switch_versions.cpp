@@ -49,35 +49,43 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 	const path tshark = test_folder / "observer" / "tshark";
 	if(const auto p = tshark / "client_graph.png"; exists(p)) e.client_graph = p;
 	if(const auto p = tshark / "access_point_graph.png"; exists(p)) e.ap_graph = p;
-
 	return e;
 }
 
 void generate_report(RunSuiteStatus &rss){
-	helper::with_report(rss.run_folder(), [](auto &report, const auto &run_dir){
-		const auto entries = helper::collect_entries_nested(run_dir, [](const path &p){
-			return parse_test_folder(p);
-		});
-
-		report << "# Channel Switch Versions Test Suite Report\n\n";
-		report << "Summary of Channel Switch attack tests across different hostapd versions.\n\n";
-
-		if(entries.empty()){ report << "No test results found.\n"; return; }
-
-		report << "## Test Results\n\n";
-		report << "| Test | AP Driver | Client Driver | Attacker Driver | Hostapd Version | Result |\n";
-		report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
-
-		for(const auto &e: entries){
-			const string name_cell = exists(run_dir / e.name / REPORT_NAME)
-									? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
-									: e.name;
-			const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
-					RESULT_NAME + ")";
-			report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " <<
-					e.attacker_driver << " | " << e.hostapd_version << " | " << result_link << " |\n";
-		}
-		;
+	const auto run_dir = rss.run_folder();
+	const auto entries = helper::collect_entries_nested(run_dir, [](const path &p){
+		return parse_test_folder(p);
 	});
+
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
+
+	report << "# Channel Switch Versions Test Suite Report\n\n";
+	report << "Summary of Channel Switch attack tests across different hostapd versions.\n\n";
+
+	if(entries.empty()){ report << "No test results found.\n"; return; }
+
+	report << "## Test Results\n\n";
+	report << "| Test | AP Driver | Client Driver | Attacker Driver | Hostapd Version | Result |\n";
+	report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
+
+	for(const auto &e: entries){
+		const string name_cell = exists(run_dir / e.name / REPORT_NAME)
+								? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
+								: e.name;
+		//const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
+		//		RESULT_NAME + ")";
+		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " <<
+				e.attacker_driver << " | " << e.hostapd_version << " | " << /*result_link*/ "" << " |\n";
+	}
+
+	/*report << "\n## Summary\n\n";
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed; });
+	report << "- Total Tests: " << entries.size() << "\n";
+	report << "- Passed: " << passed_count << "\n";
+	report << "- Failed: " << (entries.size() - passed_count) << "\n";
+	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
+	*/
 }
 }

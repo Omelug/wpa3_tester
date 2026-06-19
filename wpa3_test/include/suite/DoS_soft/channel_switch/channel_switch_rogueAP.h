@@ -24,7 +24,6 @@ struct CsaTestEntry{
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;
 	std::string client_mfp;
-	std::optional<bool> passed;
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
 	std::filesystem::path rel_path;

@@ -2,15 +2,13 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <optional>
-#include <string>
 #include <vector>
-#include <nlohmann/json.hpp>
+#include <boost/pfr.hpp>
+
 #include "default.h"
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::suite::helper{
-std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test_folder);
 
 std::unique_ptr<RunStatus> load_test_rs(const std::filesystem::path &test_folder);
 

@@ -7,6 +7,7 @@
 #include "suite/downgrade/wpa3_trans_downgrade_filler.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
@@ -16,15 +17,10 @@ using namespace filesystem;
 using namespace nlohmann;
 
 Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_folder){
-	Wpa3TransDowngradeTestEntry e{};
+	auto e = helper::load_result_default<Wpa3TransDowngradeTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
-	const auto result = helper::load_result_json(test_folder);
-	if(!result) return e;
-
 	const auto rs = helper::load_test_rs(test_folder);
-	e.disconnected = result->value("disconnected", false);
-	e.downgrade_seen = result->value("downgrade_seen", false);
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	return e;

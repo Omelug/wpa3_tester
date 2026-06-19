@@ -9,6 +9,7 @@
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
@@ -21,10 +22,10 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	e.name = test_folder.filename().string();
 
 	if(const auto result = helper::load_result_json(test_folder)){
-		e.passed = result->value("passed", false);
-		if(result->contains("disconnected")) e.disconnected = result->at("disconnected").get<bool>();
-		if(result->contains("ap_disconnected")) e.ap_disconnected = result->at("ap_disconnected").get<bool>();
-		if(result->contains("rogue_ap_connected")) e.rogue_ap_connected = result->at("rogue_ap_connected").get<bool>();
+		e.passed             = result->value("passed",             false);
+		e.disconnected       = result->value("disconnected",       false);
+		e.ap_disconnected    = result->value("ap_disconnected",    false);
+		e.rogue_ap_connected = result->value("rogue_ap_connected", false);
 	}
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;

@@ -9,12 +9,15 @@ struct CsaVersionTestEntry{
 	std::string name;
 	std::string hostapd_version;
 	std::string supplicant_version;
+
 	std::string ap_driver;
 	std::string client_driver;
 	std::string attacker_driver;
 	std::string rogue_ap_driver;
+
 	std::string new_channel;
 	std::string attack_time;
+
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
 };

@@ -84,7 +84,7 @@ void generate_report(RunSuiteStatus &rss){
 		const string name_cell = exists(run_dir / e.rel_path / REPORT_NAME)
 								? "[" + e.name + "](" + rel + "/" + REPORT_NAME + ")"
 								: e.name;
-		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + rel + "/" +
+		const string result_link = "[" + string(e.rogue_ap_connected.value() ? "PASSED" : "FAILED") + "](" + rel + "/" +
 				RESULT_NAME + ")";
 		const string ap_cell = e.ap_mac + " (" + e.ap_source + ")";
 		const string client_cell = e.client_mac + " (" + e.client_source + ")";
@@ -99,7 +99,7 @@ void generate_report(RunSuiteStatus &rss){
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value_or(false); });
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.rogue_ap_connected.value_or(false); });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";

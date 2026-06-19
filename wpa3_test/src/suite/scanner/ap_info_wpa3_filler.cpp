@@ -11,18 +11,8 @@ using namespace std;
 using namespace filesystem;
 
 ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
-	auto e = helper::load_result_default<CsaTestEntry>(test_folder);
-	ApInfoWpa3TestEntry e{};
+	auto e = helper::load_result_default<ApInfoWpa3TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
-
-	const auto j = helper::load_result_json(test_folder);
-	if(!j) return e;
-
-	e.mac = j->value("mac", "");
-	e.ssid = j->value("ssid", "");
-	e.mfp = j->value("mfp", "?");
-	e.akm = j->value("akm", "");
-	e.acm_triggered = j->value("acm_triggered", false);
 	return e;
 }
 

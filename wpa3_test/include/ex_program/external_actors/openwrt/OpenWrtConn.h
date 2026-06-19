@@ -14,8 +14,7 @@ public:
 	void forward_internet(const std::string &remote_ip) const;
 	void time_fix() const;
 
-	void setup_iface(const std::string &radio_name, ActorPtr &actor, nlohmann::json config
-	) override;
+	void setup_iface(const std::string &radio_name, ActorPtr &actor, nlohmann::json config) override;
 
 	explicit OpenWrtConn() = default;
 	bool connect(const ActorPtr &actor) override;

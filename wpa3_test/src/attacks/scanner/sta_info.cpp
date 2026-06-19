@@ -10,7 +10,6 @@
 using namespace std;
 
 namespace wpa3_tester::sta_info{
-
 void setup_attack(RunStatus &rs){
 	components::setup_AP(rs, "scanner");
 }
@@ -26,13 +25,8 @@ void run_attack(RunStatus &rs){
 
 	const int timeout = att_cfg.at("scan_timeout_sec").get<int>();
 
-	const Actor_Config_external sta = scan::scan_sta_actor(
-		scanner.get(SK::sniff_iface), scanner.get(SK::mac), timeout);
+	const Actor_Config_external sta = scan::scan_sta_actor(scanner.get(SK::sniff_iface), scanner.get(SK::mac), timeout);
 
-	rs.save_result({
-		{"ap_mac",  scanner["mac"]},
-		{"station", sta.to_json()},
-	});
+	rs.save_result({{"ap_mac", scanner["mac"]}, {"station", sta.to_json()},});
 }
-
 }

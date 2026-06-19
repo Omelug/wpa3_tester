@@ -25,8 +25,7 @@ public:
 	void send(const std::vector<unsigned char> &raw, const Channel &ch);
 	static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
 	RecvResult recv();
-	void recv_loop(std::chrono::steady_clock::time_point deadline,
-	               const std::function<bool(RecvResult)> &on_packet);
+	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_packet);
 	pcap_t *get_pcap_handle(){ return sniffer_.get_pcap_handle(); }
 	Tins::Sniffer &sniffer(){ return sniffer_; }
 

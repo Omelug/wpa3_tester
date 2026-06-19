@@ -39,9 +39,9 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		actor->set(BK::STA, !is_ap);
 
 		if(channel_freq > 0){
-			if     (channel_freq >= 2412 && channel_freq <= 2484) actor[BK::GHz2_4] = true;
-			else if(channel_freq >= 5170 && channel_freq <= 5885) actor[BK::GHz5]   = true;
-			else if(channel_freq >= 5945 && channel_freq <= 7125) actor[BK::GHz6]   = true;
+			if(channel_freq >= 2412 && channel_freq <= 2484) actor[BK::GHz2_4] = true;
+			else if(channel_freq >= 5170 && channel_freq <= 5885) actor[BK::GHz5] = true;
+			else if(channel_freq >= 5945 && channel_freq <= 7125) actor[BK::GHz6] = true;
 			actor->set(SK::channel, to_string(hw_capabilities::freq_to_channel(channel_freq)));
 		}
 		if(signal != -1) actor->set(SK::signal, to_string(signal));
@@ -63,16 +63,15 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		if(mgmt->subtype() == 0 || mgmt->subtype() == 2){ // assoc-req / reassoc-req
 			const HWAddress<6> sta_mac = mgmt->addr2();
 			if(!(sta_mac[0] & 0x01)){ // filter multicast/broadcast
-				if(!seen.contains(sta_mac))
-					seen.emplace(sta_mac, ActorPtr(make_shared<Actor_Config_external>()));
-				if(auto *ext = dynamic_cast<Actor_Config_external*>(seen.at(sta_mac).get())){
+				if(!seen.contains(sta_mac)) seen.emplace(sta_mac, ActorPtr(make_shared<Actor_Config_external>()));
+				if(auto *ext = dynamic_cast<Actor_Config_external *>(seen.at(sta_mac).get())){
 					scan::fill_actor_caps_from_assoc_req(pdu, *ext);
 					ext->set(SK::permanent_mac, sta_mac);
 				}
 			}
 		}
 	} else if(const auto *data = pdu.find_pdu<Dot11Data>()){
-		const bool to_ds   = data->to_ds();
+		const bool to_ds = data->to_ds();
 		const bool from_ds = data->from_ds();
 		if(to_ds && !from_ds){
 			add_entity(data->addr2(), false);
@@ -108,15 +107,18 @@ static pcap_t *open_scan_pcap(const string &iface, const ActorPtr &scanner){
 	return handle;
 }
 
-vector<ActorPtr> RunStatus::list_external_entities(
-	const string &iface, const size_t timeout_sec, const vector<int> &channels
+vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const size_t timeout_sec,
+													const vector<int> &channels
 ){
 	if(channels.empty()) throw setup_err("No channels specified for scanning");
 
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);
 	pcap_t *handle = open_scan_pcap(iface, scanner);
-	struct PcapGuard{ pcap_t *h; ~PcapGuard(){ pcap_close(h); } } _guard{handle};
+	struct PcapGuard{
+		pcap_t *h;
+		~PcapGuard(){ pcap_close(h); }
+	} _guard{handle};
 
 	ActorMACMap seen;
 	constexpr size_t SEC_MINIMUM = 2;
@@ -132,11 +134,10 @@ vector<ActorPtr> RunStatus::list_external_entities(
 		this_thread::sleep_for(chrono::milliseconds(200));
 
 		components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
-			[&](const uint8_t *pkt, const size_t len) -> optional<monostate>{
-				try{ solve_new_pdu(vector(pkt, pkt + len), seen); } catch(...){}
-				return nullopt;
-			}
-		);
+											[&](const uint8_t *pkt, const size_t len) ->optional<monostate>{
+												try{ solve_new_pdu(vector(pkt, pkt + len), seen); } catch(...){}
+												return nullopt;
+											});
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }
@@ -146,7 +147,7 @@ vector<int> RunStatus::get_external_BB_channels(){
 
 	if(_config.contains("scan_channels")){
 		all_channels = _config.at("scan_channels").get<vector<int>>();
-	} else {
+	} else{
 		for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
 			if(actor_config.at("selection").contains("channel")){
 				all_channels.push_back(actor_config.at("selection").at("channel").get<int>());
@@ -163,39 +164,36 @@ vector<int> RunStatus::get_external_BB_channels(){
 		return {};
 	}
 
-	const auto s = all_channels | views::transform([](const int c){ return to_string(c); })
-	                            | views::join_with(string(", "))
-	                            | ranges::to<string>();
+	const auto s = all_channels | views::transform([](const int c){ return to_string(c); }) |
+			views::join_with(string(", ")) | ranges::to<string>();
 	log(LogLevel::INFO, "Scanning channels: {}", s);
 	return all_channels;
 }
 
-vector<ActorPtr> RunStatus::scan_until_match(
-	const string &iface, const vector<int> &channels, const ActorCMap &actors
-){
+vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<int> &channels, const ActorCMap &actors){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);
 	scanner->set_monitor_mode();
 	pcap_t *handle = open_scan_pcap(iface, scanner);
-	struct PcapGuard{ pcap_t *h; ~PcapGuard(){ pcap_close(h); } } _guard{handle};
+	struct PcapGuard{
+		pcap_t *h;
+		~PcapGuard(){ pcap_close(h); }
+	} _guard{handle};
 
 	ActorMACMap seen;
 	set<HWAddress<6>> reported;
 	bool found = false;
 
-	const auto on_packet = [&](const uint8_t *pkt, const size_t len) -> optional<bool> {
+	const auto on_packet = [&](const uint8_t *pkt, const size_t len) ->optional<bool>{
 		const size_t before = seen.size();
 		try{ solve_new_pdu(vector(pkt, pkt + len), seen); } catch(...){}
 
 		if(seen.size() > before){
-			for(const auto &[mac, actor] : seen){
+			for(const auto &[mac, actor]: seen){
 				if(!reported.insert(mac).second) continue;
 				const bool is_ap = (*actor)[BK::AP].value_or(false);
-				log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm",
-					is_ap ? "AP " : "STA", mac,
-					actor->get_or(SK::ssid, ""),
-					actor->get_or(SK::channel, "?"),
-					actor->get_or(SK::signal, "?"));
+				log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm", is_ap ? "AP " : "STA", mac,
+					actor->get_or(SK::ssid, ""), actor->get_or(SK::channel, "?"), actor->get_or(SK::signal, "?"));
 			}
 			auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 			try{
@@ -208,15 +206,14 @@ vector<ActorPtr> RunStatus::scan_until_match(
 	};
 
 	while(!found){
-		for(const int ch_num : channels){
+		for(const int ch_num: channels){
 			if(found) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
 			this_thread::sleep_for(chrono::milliseconds(200));
 
 			auto result = components::poll_sniffer<bool>(handle, chrono::milliseconds(20000), on_packet);
-			if(holds_alternative<StopReason>(result) &&
-			   get<StopReason>(result) == StopReason::Interrupted) break;
+			if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
 		}
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
@@ -228,10 +225,8 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &actors){
 	const string iface = _config.at("scan_iface");
 	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();
 
-	if(_config.value("scan_until_success", false) && !actors.empty())
-		return scan_until_match(iface, channels, actors);
+	if(_config.value("scan_until_success", false) && !actors.empty()) return scan_until_match(iface, channels, actors);
 
 	return list_external_entities(iface, timeout, channels);
 }
-
 }

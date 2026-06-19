@@ -7,6 +7,7 @@ namespace wpa3_tester{
 enum class TimeAxis{ RELATIVE, UNIX };
 
 enum class GraphElement_t{ UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS };
+
 class GraphElements;
 typedef std::vector<std::unique_ptr<GraphElements>> G_elms;
 
@@ -34,7 +35,6 @@ inline G_elms clone_elements(const G_elms &src){
 	for(const auto &e: src) result.push_back(e->clone());
 	return result;
 }
-
 
 class EventLines: public GraphElements{
 public:
@@ -89,8 +89,7 @@ public:
 
 	// index in enum_labels -> y pos
 	double y_pos(const Enum val) const{
-		for(size_t i = 0; i < enum_labels.size(); ++i)
-			if(enum_labels[i].first == val) return static_cast<double>(i);
+		for(size_t i = 0; i < enum_labels.size(); ++i) if(enum_labels[i].first == val) return static_cast<double>(i);
 		return 0.0;
 	}
 
@@ -115,7 +114,9 @@ public:
 	void gpcmd(const std::string &cmd) const;
 protected:
 	void add_XY_points(const GraphXYPoints &xy_points);
-	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots, size_t &label_index);
+	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots,
+						size_t &label_index
+	);
 public:
 	template<class Enum>
 	void add_stairs(const GraphStairs<Enum> &stairs);

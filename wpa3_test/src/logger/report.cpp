@@ -25,8 +25,8 @@ void attack_mapping_table(ofstream &report, const RunStatus &rs){
 	}
 
 	//report << "#### Actor/Interface Mapping\n\n"
-	report << "| Type | Actor Name | Interface | MAC | Driver |\n"
-	       << "|------|------------|-----------|-----|--------|\n";
+	report << "| Type | Actor Name | Interface | MAC | Driver |\n" <<
+			"|------|------------|-----------|-----|--------|\n";
 
 	string line;
 	getline(csv_file, line);

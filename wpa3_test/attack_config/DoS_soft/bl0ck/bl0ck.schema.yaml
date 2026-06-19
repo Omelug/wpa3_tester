@@ -19,11 +19,11 @@ properties:
               condition:
                 allOf:
                   - anyOf:
-                      - contains: {const: "5GHz"}
-                      - contains: {const: "6GHz"}
+                      - contains: { const: "5GHz" }
+                      - contains: { const: "6GHz" }
                   - anyOf:
-                      - contains: {const: "80211ac"}
-                      - contains: {const: "80211ax"}
+                      - contains: { const: "80211ac" }
+                      - contains: { const: "80211ax" }
       client:
         properties:
           selection:
@@ -31,11 +31,11 @@ properties:
               condition:
                 allOf:
                   - anyOf:
-                      - contains: {const: "5GHz"}
-                      - contains: {const: "6GHz"}
+                      - contains: { const: "5GHz" }
+                      - contains: { const: "6GHz" }
                   - anyOf:
-                      - contains: {const: "80211ac"}
-                      - contains: {const: "80211ax"}
+                      - contains: { const: "80211ac" }
+                      - contains: { const: "80211ax" }
   attack_config:
     required:
       - attack_time_sec

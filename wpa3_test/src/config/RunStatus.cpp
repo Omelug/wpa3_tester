@@ -96,8 +96,8 @@ void RunStatus::execute(){
 	if(gcfg.contains("regulatory_domain")){
 		const string reg = gcfg.at("regulatory_domain").get<string>();
 		log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
-		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0) log(
-			LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
+		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
 	}
 
 	if(run_config().get_only_stats()){
@@ -116,8 +116,8 @@ void RunStatus::execute(){
 			const string iface = actor->get_or(SK::iface, "");
 			if(iface.empty()) continue;
 			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-			if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0) log(
-				LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
+			if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
+				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 		}
 	}
 
@@ -368,8 +368,8 @@ void RunStatus::load_actor_interface_mapping(){
 		// Strip CSV quoting and unescape "" -> "
 		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"'){
 			json_str = json_str.substr(1, json_str.size() - 2);
-			for(size_t i = 0; i + 1 < json_str.size(); ++i)
-				if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.erase(i + 1, 1);
+			for(size_t i = 0; i + 1 < json_str.size(); ++i) if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.
+					erase(i + 1, 1);
 		}
 
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
@@ -400,7 +400,7 @@ nlohmann::json RunStatus::load_result() const{
 	const path p = run_folder() / RESULT_NAME;
 	ifstream f(p);
 	if(!f.is_open()){
-		throw stats_err(RESULT_NAME+ " not found");
+		throw stats_err(RESULT_NAME + " not found");
 	}
 	return nlohmann::json::parse(f);
 }

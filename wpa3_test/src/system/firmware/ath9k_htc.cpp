@@ -77,7 +77,7 @@ bool is_ath9k_noorder_loaded(){
 }
 
 void disable_custom_drivers(){
-	if(is_ath_masker_loaded())    try{ unload_ath_masker(); } catch(...) {}
-	if(is_ath9k_noorder_loaded()) try{ unload_ath9k_noorder_change(); } catch(...) {}
+	if(is_ath_masker_loaded()) try{ unload_ath_masker(); } catch(...){}
+	if(is_ath9k_noorder_loaded()) try{ unload_ath9k_noorder_change(); } catch(...){}
 }
 }

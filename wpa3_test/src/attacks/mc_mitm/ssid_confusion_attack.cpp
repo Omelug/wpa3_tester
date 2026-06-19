@@ -9,9 +9,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ssid_confusion{
-unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &,
-													const bool
-){
+unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &, const bool){
 	auto b = make_unique<Dot11Beacon>();
 	b->addr1(real.addr1()); // broadcast
 	b->addr2(real.addr2()); // BSSID (kept identical to real AP — key to the attack)

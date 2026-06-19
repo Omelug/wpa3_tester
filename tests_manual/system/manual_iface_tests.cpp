@@ -90,7 +90,7 @@ TEST_CASE("start ap test"){
 
     SUBCASE("AP Start and Stop"){
         RunStatus rs;
-        auto base_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
+        auto base_actor = ActorPtr(make_shared<Actor_Config_sim>());
         base_actor->set(SK::iface, base_iface);
         REQUIRE_NOTHROW(start_ap(rs, ap_iface, base_actor, {TestConfig::channel, WifiBand::BAND_2_4_or_5, nullopt}, beacon, TestConfig::mac_addr));
 
@@ -116,7 +116,7 @@ TEST_CASE("STA connected to AP in different namespaces") {
     SUBCASE("Full Connection Flow") {
         RunStatus rs;
 
-        auto ap_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
+        auto ap_actor = ActorPtr(make_shared<Actor_Config_sim>());
         ap_actor->set(SK::iface, ap_phys_iface);
         ap_actor->set(SK::netns, ap_ns);
 

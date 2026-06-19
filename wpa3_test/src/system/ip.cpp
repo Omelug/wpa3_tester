@@ -12,6 +12,7 @@
 #include "system/hw_capabilities.h"
 
 using namespace std;
+
 namespace wpa3_tester::ip{
 void set_ip(RunStatus &rs, const string &actor_name){
 	const auto ip_addr = rs.config().at("actors").at(actor_name).at("ip_addr").get<string>();
@@ -31,9 +32,8 @@ string resolve_host(const string &hostname){
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if(getaddrinfo(hostname.c_str(), nullptr, &hints, &raw) != 0)
-		throw run_err("Cannot resolve: " + hostname);
-	const unique_ptr<addrinfo, decltype(&freeaddrinfo)> res(raw, freeaddrinfo);
+	if(getaddrinfo(hostname.c_str(), nullptr, &hints, &raw) != 0) throw run_err("Cannot resolve: " + hostname);
+	const unique_ptr<addrinfo,decltype(&freeaddrinfo)> res(raw, freeaddrinfo);
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in *>(res->ai_addr)->sin_addr, ip, sizeof(ip));
 	return ip;
@@ -42,7 +42,7 @@ string resolve_host(const string &hostname){
 string get_ip(const string &iface){
 	ifaddrs *raw = nullptr;
 	if(getifaddrs(&raw) == -1) throw run_err("Failed to get interface addresses");
-	const unique_ptr<ifaddrs, decltype(&freeifaddrs)> ifaddr(raw, freeifaddrs);
+	const unique_ptr<ifaddrs,decltype(&freeifaddrs)> ifaddr(raw, freeifaddrs);
 
 	for(const ifaddrs *ifa = ifaddr.get(); ifa != nullptr; ifa = ifa->ifa_next){
 		if(!ifa->ifa_addr || ifa->ifa_addr->sa_family != AF_INET) continue;

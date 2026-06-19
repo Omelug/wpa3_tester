@@ -14,16 +14,16 @@ tests:
         "38:d5:47:0c:2d:99"
       ]
     config:
-       name: bl0ck_mac_var_perm_mac
-       $extends: ../bl0ck.yaml
-       actors:
+      name: bl0ck_mac_var_perm_mac
+      $extends: ../bl0ck.yaml
+      actors:
         client:
           selection:
             permanent_mac: var_perm_mac
         attacker:
           selection:
             driver: rtw88_8821cu
-       attack_config:
+      attack_config:
         attack_time_sec: 15
         attack_variant: "BAR"
         random: true

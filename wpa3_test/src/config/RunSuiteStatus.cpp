@@ -33,26 +33,25 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 
 	if(suite_name.empty()){
 		const YNode node = YAML::LoadFile(config_path.string());
-		if(!node["name"] || !node["name"].IsScalar())
-			throw config_err("Config missing required string field 'name': " + config_path.string());
+		if(!node["name"] || !node["name"].IsScalar()) throw config_err(
+			"Config missing required string field 'name': " + config_path.string());
 		suite_name = node["name"].as<string>();
 	}
 	string actual_sub_folder = ".";
 	if(sub_folder.empty()){
 		try{
 			actual_sub_folder = relative_from("attack_config", config_path);
-		}catch(const config_err &){
+		} catch(const config_err &){
 			log(LogLevel::ERROR, "relative_from issue");
 		}
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder/ suite_name /LAST_RUN_DIR;
+	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name / LAST_RUN_DIR;
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 
 	parse_run_config(config, run_config);
 	run_config.merge_from(get_global_run_config());
-	if(config.contains("wait_between_tests"))
-		wait_between_tests = config.at("wait_between_tests").get<int>();
+	if(config.contains("wait_between_tests")) wait_between_tests = config.at("wait_between_tests").get<int>();
 }
 
 json RunSuiteStatus::config_validation(const path &config_path){
@@ -71,11 +70,11 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		global_validator.validate(config_json);
 		return config_json;
 	} catch(const domain_error &){
-		std::throw_with_nested(config_err("Schema error: " + config_path.string()));
+		throw_with_nested(config_err("Schema error: " + config_path.string()));
 	} catch(const invalid_argument &){
-		std::throw_with_nested(config_err("Error in config: " + config_path.string()));
+		throw_with_nested(config_err("Error in config: " + config_path.string()));
 	} catch(const exception &){
-		std::throw_with_nested(config_err("Config validation error: " + config_path.string()));
+		throw_with_nested(config_err("Config validation error: " + config_path.string()));
 	}
 }
 
@@ -241,13 +240,14 @@ void RunSuiteStatus::print_tests_in_suite(const string &ts_name){
 		cout << "Not tests in this suite" << endl;
 		return;
 	}
-	for(const auto &[src, name, cfg_path]: tests){ cout << "Test: " << src << "/" << name << " -> " << cfg_path << endl; }
+	for(const auto &[src, name, cfg_path]: tests){
+		cout << "Test: " << src << "/" << name << " -> " << cfg_path << endl;
+	}
 }
 
 void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 										const vector<pair<string,vector<vector<string>>>> &groups,
-										const path &gen_folder,
-										const string &source_name, config_paths &test_map
+										const path &gen_folder, const string &source_name, config_paths &test_map
 ){
 	path tmp_template = gen_folder / "template_base.tmp.yaml";
 	save_yaml(source_info.at("config"), tmp_template);
@@ -325,7 +325,6 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const string &source_name,
 											const path &test_config_folder, config_paths &test_map
 ){
-
 	cleanup_all_namespaces();
 	const path rel = source_info.at("config").get<string>();
 	path src = absolute(_config_path.parent_path() / rel);
@@ -335,21 +334,21 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 
 	// get only internal actors
 	ActorCMap rules;
-	for(const auto &[actor_name, actor_j] : template_config.at("actors").items()){
+	for(const auto &[actor_name, actor_j]: template_config.at("actors").items()){
 		if(!actor_j.contains("source") || actor_j.at("source").get<string>() != "internal") continue;
 		rules.emplace(actor_name, ActorPtr(make_shared<Actor_Config_internal>(actor_j)));
 	}
 	if(rules.empty()) throw config_err("actor_filler: no internal actors in " + src.string());
 
-	if(!_hw_option_cache.internal_opts.has_value())
-		_hw_option_cache.internal_opts = RunStatus::internal_options();
+	if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = RunStatus::internal_options();
 
 	const auto solutions = hw_capabilities::check_all_req_options(rules, *_hw_option_cache.internal_opts);
 	if(solutions.empty()){
-
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
-		throw req_err("actor_filler: no valid hardware assignments found, " + hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
+		throw req_err(
+			"actor_filler: no valid hardware assignments found, " + hw_capabilities::get_heuristic_err_msg(
+				rules, *_hw_option_cache.internal_opts));
 	}
 
 	const path gen_folder = test_config_folder / source_name;
@@ -358,12 +357,12 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 	if(ec) throw run_err("actor_filler: unable to create directory");
 
 	const string base_name = template_config.at("name").get<string>();
-	for(const auto & solution : solutions){
+	for(const auto &solution: solutions){
 		json cfg = template_config;
 
 		// build stable hash from sorted actor_name=perm_mac pairs
 		vector<string> mac_parts;
-		for(const auto &[actor_name, hw] : solution){
+		for(const auto &[actor_name, hw]: solution){
 			const auto &perm_mac = (*hw)[SK::permanent_mac];
 			if(!perm_mac.has_value()) continue;
 			mac_parts.push_back(actor_name + "=" + *perm_mac);
@@ -371,7 +370,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		}
 		ranges::sort(mac_parts);
 		string mac_concat;
-		for(const auto &p : mac_parts) mac_concat += p;
+		for(const auto &p: mac_parts) mac_concat += p;
 		ostringstream oss;
 		oss << hex << hash<string>{}(mac_concat);
 		const string hash_str = oss.str().substr(0, 8);
@@ -387,7 +386,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 }
 
 config_paths RunSuiteStatus::get_test_paths(){
-	const auto test_config_folder = _run_folder /TEST_SUITE_CONFIG_DIR;
+	const auto test_config_folder = _run_folder / TEST_SUITE_CONFIG_DIR;
 	config_paths test_map;
 	for(auto &[source_name, source_info]: config.at("tests").items()){
 		if(source_info.contains("path")){
@@ -452,8 +451,8 @@ void RunSuiteStatus::execute(){
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()){
-			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j)
-				this_thread::sleep_for(chrono::milliseconds(100));
+			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j) this_thread::sleep_for(
+				chrono::milliseconds(100));
 		}
 	}
 
@@ -469,11 +468,10 @@ void RunSuiteStatus::execute(){
 
 void RunSuiteStatus::execute(const string &test_name){
 	auto tests_paths = get_test_paths();
-	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return get<1>(p) == test_name; });
+	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return get < 1 > (p) == test_name; });
 	if(it == tests_paths.end()){
 		log(LogLevel::WARNING, "Test '{}' not found — run the full suite first to generate test configs", test_name);
-		for(const auto &[src, name, cfg_path]: tests_paths)
-			log(LogLevel::WARNING, "  available: {}/{}", src, name);
+		for(const auto &[src, name, cfg_path]: tests_paths) log(LogLevel::WARNING, "  available: {}/{}", src, name);
 		throw config_err("Test '" + test_name + "' not found in suite");
 	}
 

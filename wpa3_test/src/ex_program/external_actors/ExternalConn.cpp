@@ -10,7 +10,7 @@ namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 
-ExternalConn::ExternalConn()= default;
+ExternalConn::ExternalConn() = default;
 
 ExternalConn::~ExternalConn(){
 	if(session){
@@ -49,11 +49,11 @@ bool ExternalConn::connect(const ActorPtr &actor){
 	// auth with password (preferred) or public key
 	const string password = actor.get(SK::ssh_password);
 	if(password.empty()){
-		if(ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS)
-			throw ex_conn_err("SSH auth failed: no password and no key");
+		if(ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS) throw ex_conn_err(
+			"SSH auth failed: no password and no key");
 	} else{
-		if(ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS)
-			throw ex_conn_err("SSH auth failed: " + string(ssh_get_error(session)));
+		if(ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS) throw ex_conn_err(
+			"SSH auth failed: " + string(ssh_get_error(session)));
 	}
 	return true;
 }
@@ -91,25 +91,19 @@ optional<string> ExternalConn::get_driver_hash(const string &driver_name) const{
 optional<string> ExternalConn::get_module_hash(const string &driver_name) const{
 	if(driver_name.empty()) return nullopt;
 	// try srcversion for driver + depends; fallback per-module to sha256 of .ko
-	const string cmd =
-		"(for m in " + driver_name + " $(modinfo -F depends " + driver_name +
-		" 2>/dev/null | grep -v '^modinfo:' | tr ',' ' '); do"
-		" sv=$(cat /sys/module/$m/srcversion 2>/dev/null);"
-		" if [ -z \"$sv\" ]; then"
-		"   ko=$(modinfo -F filename $m 2>/dev/null);"
-		"   [ -n \"$ko\" ] && sv=$(sha256sum $ko 2>/dev/null | cut -c1-16);"
-		" fi;"
-		" [ -n \"$sv\" ] && printf '%s:%s;' \"$m\" \"$sv\";"
-		" done) | sha256sum | cut -c1-16";
+	const string cmd = "(for m in " + driver_name + " $(modinfo -F depends " + driver_name +
+			" 2>/dev/null | grep -v '^modinfo:' | tr ',' ' '); do" " sv=$(cat /sys/module/$m/srcversion 2>/dev/null);"
+			" if [ -z \"$sv\" ]; then" "   ko=$(modinfo -F filename $m 2>/dev/null);"
+			"   [ -n \"$ko\" ] && sv=$(sha256sum $ko 2>/dev/null | cut -c1-16);" " fi;"
+			" [ -n \"$sv\" ] && printf '%s:%s;' \"$m\" \"$sv\";" " done) | sha256sum | cut -c1-16";
 	string s = exec(cmd);
 	while(!s.empty() && (s.back() == '\n' || s.back() == '\r' || s.back() == ' ')) s.pop_back();
 	if(s.empty() || s == "-") return nullopt;
 	return s;
 }
 
-
 string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_err) const{
-	std::lock_guard lock(session_mtx);
+	lock_guard lock(session_mtx);
 	const string final_cmd = kill_on_exit ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'" : cmd;
 	//log(LogLevel::DEBUG, "exec "+final_cmd);
 	if(!session) throw ex_conn_err("Cannot exec: not connected");
@@ -128,10 +122,10 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	} guard(session);
 
 	if(!guard.ch) throw ex_conn_err("Failed to create SSH channel: " + string(ssh_get_error(session)));
-	if(ssh_channel_open_session(guard.ch) != SSH_OK)
-		throw ex_conn_err("Failed to open SSH channel: " + string(ssh_get_error(session)));
-	if(ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK)
-		throw ex_conn_err("Failed to execute: " + final_cmd + " | SSH error: " + ssh_get_error(session));
+	if(ssh_channel_open_session(guard.ch) != SSH_OK) throw ex_conn_err(
+		"Failed to open SSH channel: " + string(ssh_get_error(session)));
+	if(ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK) throw ex_conn_err(
+		"Failed to execute: " + final_cmd + " | SSH error: " + ssh_get_error(session));
 
 	string result;
 	char buf[1024];
@@ -283,14 +277,14 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 #pragma GCC diagnostic pop
 
 void ExternalConn::on_disconnect(DisconnectCallback cb){
-	disconnect_callbacks.push_back(std::move(cb));
+	disconnect_callbacks.push_back(move(cb));
 }
 
 void ExternalConn::disconnect(){
 	if(!session) return;
 
 	//LIFO
-	for(auto & disconnect_callback : ranges::reverse_view(disconnect_callbacks)){
+	for(auto &disconnect_callback: ranges::reverse_view(disconnect_callbacks)){
 		try{
 			if(disconnect_callback) disconnect_callback();
 		} catch(const exception &e){

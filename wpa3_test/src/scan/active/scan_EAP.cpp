@@ -14,6 +14,7 @@ using namespace Tins;
 
 namespace wpa3_tester::scan{
 using namespace wpa3_tester::eap;
+
 struct EAP_Info{
 	uint8_t code = 0;
 	optional<string> identity;
@@ -69,23 +70,40 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 	switch(type){
 	case TYPE_IDENTITY: info.identity = extract_identity(payload);
 		break;
-	case TYPE_MD5:      info.method = "EAP-MD5";      break;
-	case TYPE_GTC:      info.method = "EAP-GTC";      break;
-	case TYPE_TLS:      info.method = "EAP-TLS";      break;
-	case TYPE_LEAP:     info.method = "EAP-LEAP";     break;
-	case TYPE_SIM:      info.method = "EAP-SIM";      break;
-	case TYPE_TTLS:     info.method = "EAP-TTLS";     break;
-	case TYPE_AKA:      info.method = "EAP-AKA";      break;
-	case TYPE_PEAP:     info.method = "EAP-PEAP";     break;
-	case TYPE_MSCHAPV2: info.method = "EAP-MSCHAPv2"; break;
-	case TYPE_POTP:     info.method = "EAP-POTP";     break;
-	case TYPE_FAST:     info.method = "EAP-FAST";     break;
-	case TYPE_EKE:      info.method = "EAP-EKE";      break;
-	case TYPE_TEAP:     info.method = "EAP-TEAP";     break;
-	case TYPE_AKA_PRIME:info.method = "EAP-AKA-PRIME";break;
-	case TYPE_PWD:      info.method = "EAP-PWD";      break;
-	case TYPE_EXPANDED: info.method = "Expanded-Type"; break;
-	default: info.method = "Unknown-" + to_string(type); break;
+	case TYPE_MD5: info.method = "EAP-MD5";
+		break;
+	case TYPE_GTC: info.method = "EAP-GTC";
+		break;
+	case TYPE_TLS: info.method = "EAP-TLS";
+		break;
+	case TYPE_LEAP: info.method = "EAP-LEAP";
+		break;
+	case TYPE_SIM: info.method = "EAP-SIM";
+		break;
+	case TYPE_TTLS: info.method = "EAP-TTLS";
+		break;
+	case TYPE_AKA: info.method = "EAP-AKA";
+		break;
+	case TYPE_PEAP: info.method = "EAP-PEAP";
+		break;
+	case TYPE_MSCHAPV2: info.method = "EAP-MSCHAPv2";
+		break;
+	case TYPE_POTP: info.method = "EAP-POTP";
+		break;
+	case TYPE_FAST: info.method = "EAP-FAST";
+		break;
+	case TYPE_EKE: info.method = "EAP-EKE";
+		break;
+	case TYPE_TEAP: info.method = "EAP-TEAP";
+		break;
+	case TYPE_AKA_PRIME: info.method = "EAP-AKA-PRIME";
+		break;
+	case TYPE_PWD: info.method = "EAP-PWD";
+		break;
+	case TYPE_EXPANDED: info.method = "Expanded-Type";
+		break;
+	default: info.method = "Unknown-" + to_string(type);
+		break;
 	}
 	if(type == TYPE_EXPANDED && payload.size() >= 12){
 		// bytes 5-7: Vendor-Id
@@ -95,7 +113,9 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 	return info;
 }
 
-static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress<6>,EAP_Session> &sessions){
+static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress < 6>,
+										EAP_Session> &sessions
+){
 	const auto *dot11_data = pdu.find_pdu<Dot11Data>();
 	const auto *raw = pdu.find_pdu<RawPDU>();
 	if(!dot11_data || !raw) return nullopt;
@@ -110,25 +130,22 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 	session.last_seen = steady_clock::now();
 	session.last_type_code = info.type_code;
 
-	if(info.identity && session.identities.insert(*info.identity).second)
-		log(LogLevel::INFO, "[*] New Identity for {}: {}", client_mac, *info.identity);
+	if(info.identity && session.identities.insert(*info.identity).second) log(
+		LogLevel::INFO, "[*] New Identity for {}: {}", client_mac, *info.identity);
 
-	if(info.method && session.methods.insert(*info.method).second)
-		log(LogLevel::INFO, "[+] New Method for {}: {}", client_mac, *info.method);
+	if(info.method && session.methods.insert(*info.method).second) log(LogLevel::INFO, "[+] New Method for {}: {}",
+																		client_mac, *info.method);
 
 	switch(info.code){
 	case CODE_REQUEST:
-	case CODE_RESPONSE:
-		if(session.status == AuthStatus::UNKNOWN) session.status = AuthStatus::IN_PROGRESS;
+	case CODE_RESPONSE: if(session.status == AuthStatus::UNKNOWN) session.status = AuthStatus::IN_PROGRESS;
 		break;
-	case CODE_SUCCESS:
-		if(session.status != AuthStatus::SUCCESS){
+	case CODE_SUCCESS: if(session.status != AuthStatus::SUCCESS){
 			session.status = AuthStatus::SUCCESS;
 			log(LogLevel::INFO, "[OK] Auth SUCCESS: Client {} is now CONNECTED.", client_mac);
 		}
 		break;
-	case CODE_FAILURE:
-		if(session.status != AuthStatus::FAILED){
+	case CODE_FAILURE: if(session.status != AuthStatus::FAILED){
 			session.status = AuthStatus::FAILED;
 			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);
 		}
@@ -140,7 +157,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 }
 
 void active_eap_identity_scan(const string &iface, const string &target_ap_mac, const int timeout_sec){
-	map<HWAddress<6>,EAP_Session> sessions;
+	map < HWAddress < 6 >, EAP_Session > sessions;
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu){ return handle_eap_pdu(pdu, target_ap_mac, sessions); },
 											iface, "", seconds(timeout_sec));
 }

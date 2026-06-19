@@ -22,7 +22,7 @@ using nlohmann::json;
 
 static constexpr int BURST = 50;
 
-void run_attack(RunStatus &rs) {
+void run_attack(RunStatus &rs){
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
@@ -43,10 +43,10 @@ void run_attack(RunStatus &rs) {
 	netlink_helper::NetNSContext ns(netns1);
 
 	Sniffer sniffer(actor_tx.get(SK::iface), sniff_cfg);
-	thread sniffer_thread([&] {
-		sniffer.sniff_loop([&](PDU &pdu) -> bool {
-			if (stop) return false;
-			if (pdu.find_pdu<Dot11Ack>()) ++ack_count;
+	thread sniffer_thread([&]{
+		sniffer.sniff_loop([&](PDU &pdu) ->bool{
+			if(stop) return false;
+			if(pdu.find_pdu<Dot11Ack>()) ++ack_count;
 			return true;
 		});
 	});
@@ -63,7 +63,7 @@ void run_attack(RunStatus &rs) {
 	PacketSender sender(actor_tx.get(SK::iface));
 	this_thread::sleep_for(milliseconds(200)); // let sniffer thread start
 
-	for(int i = 0; i < BURST; ++i) {
+	for(int i = 0; i < BURST; ++i){
 		sender.send(rt);
 		this_thread::sleep_for(milliseconds(10));
 	}
@@ -73,14 +73,10 @@ void run_attack(RunStatus &rs) {
 	sniffer.stop_sniff();
 	sniffer_thread.join();
 
-	const int acked     = ack_count.load();
+	const int acked = ack_count.load();
 	const int not_acked = BURST - acked;
 
-	const json result = {
-		{"acked",     acked},
-		{"not_acked", not_acked},
-		{"success",   acked >= BURST * 95 / 100},
-	};
+	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= BURST * 95 / 100},};
 
 	const path result_path = rs.run_folder() / RESULT_NAME;
 	{

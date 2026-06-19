@@ -5,8 +5,7 @@
 #include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::suite::bl0ck_test_suites{
-
-struct Bl0ckTestEntry {
+struct Bl0ckTestEntry{
 	std::string name;
 	std::string ap_mac;
 	std::string ap_source;
@@ -22,5 +21,4 @@ struct Bl0ckTestEntry {
 };
 
 void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss);
-
 }

@@ -9,8 +9,8 @@ using namespace Tins;
 using namespace wpa3_tester;
 
 int main(){
-    const auto r_sta_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
-    const auto r_ap_actor = ActorPtr(std::make_shared<Actor_Config_sim>());
+    const auto r_sta_actor = ActorPtr(make_shared<Actor_Config_sim>());
+    const auto r_ap_actor = ActorPtr(make_shared<Actor_Config_sim>());
 
     r_sta_actor->set(SK::iface, "wlan1");
     r_sta_actor->set(SK::iface, "wlan2");

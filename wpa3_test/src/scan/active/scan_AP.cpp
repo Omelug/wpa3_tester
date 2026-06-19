@@ -13,7 +13,6 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::scan{
-
 void print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 	static const map<RSNInformation::AKMSuites,string> akm_map = {
 		{RSNInformation::EAP, "EAP"}, {RSNInformation::PSK, "PSK"}, {RSNInformation::EAP_FT, "EAP-FT"},
@@ -86,15 +85,15 @@ static optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, ScanAP &scan_ap
 unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, ScanAP &scan_ap,
 								const optional<path> &beacon_pcap
 ){
-	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid.to_string();
+	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid.
+			to_string();
 
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
 		[&](PDU &pdu){ return handle_beacon(pdu, scan_ap, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
-	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
+	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return move(*val);
 	return nullptr;
 }
-
 
 void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
@@ -113,8 +112,8 @@ void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 	apply_rsn(*beacon, cfg);
 	apply_ht_vht_he(*beacon, cfg);
 
-	cfg.set(BK::AP,      true);
-	cfg.set(BK::STA,     false);
+	cfg.set(BK::AP, true);
+	cfg.set(BK::STA, false);
 	cfg.set(BK::managed, false);
 	cfg.set(BK::monitor, false);
 }
@@ -124,16 +123,12 @@ Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, co
 	cfg.set(SK::mac, bssid);
 
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + bssid;
-	components::poll_sniffer_pdu<monostate>(
-		[&](PDU &pdu) -> optional<monostate>{
-			fill_actor_caps_from_beacon(pdu, cfg);
-			return monostate{};
-		},
-		iface, filter, seconds(timeout_sec)
-	);
+	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
+		fill_actor_caps_from_beacon(pdu, cfg);
+		return monostate{};
+	}, iface, filter, seconds(timeout_sec));
 
 	log(LogLevel::INFO, "scan_ap_actor {}: {}", bssid, cfg.to_str());
 	return cfg;
 }
-
 }

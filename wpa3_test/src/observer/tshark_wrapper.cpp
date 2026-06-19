@@ -114,14 +114,14 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 
 	const auto tshark_dir = get_observer_folder(rs, program_name);
 	rs.process_manager.run(node_name + "_cap", command, tshark_dir, tshark_dir);
-	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path]() {
-		try {
-			if (exists(temp_pcap_path)) { rename(temp_pcap_path, pcap_path);}
-		} catch (const filesystem_error&) {
+	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path](){
+		try{
+			if(exists(temp_pcap_path)){ rename(temp_pcap_path, pcap_path); }
+		} catch(const filesystem_error &){
 			filesystem::copy(temp_pcap_path, pcap_path, copy_options::overwrite_existing);
 			remove(temp_pcap_path);
 		}
-		if (exists(pcap_path)) set_public_perms(pcap_path);
+		if(exists(pcap_path)) set_public_perms(pcap_path);
 	});
 }
 
@@ -309,7 +309,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	char ts_buf[64], retry_buf[64];
 	while(fgets(buffer, sizeof(buffer), pipe)){
 		if(sscanf(buffer, "%63s %63s", ts_buf, retry_buf) == 2){
-			const double timestamp = std::atof(ts_buf);
+			const double timestamp = atof(ts_buf);
 			const int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
 
 			double bin = floor(timestamp * 10.0) / 10.0;

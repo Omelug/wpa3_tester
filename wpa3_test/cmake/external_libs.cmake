@@ -74,7 +74,7 @@ FetchContent_Declare(doctest
 )
 
 pkg_check_modules(SYSTEM_PCAP libpcap)
-if(SYSTEM_PCAP_FOUND)
+if (SYSTEM_PCAP_FOUND)
     message(STATUS "Using system libpcap ${SYSTEM_PCAP_VERSION}")
     add_library(pcap_imported SHARED IMPORTED GLOBAL)
     set_target_properties(pcap_imported PROPERTIES
@@ -86,8 +86,8 @@ if(SYSTEM_PCAP_FOUND)
     set(PCAP_FOUND TRUE CACHE BOOL "" FORCE)
     set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
     include_directories(${SYSTEM_PCAP_INCLUDE_DIRS})
-else()
-    FetchContent_Declare( libpcap
+else ()
+    FetchContent_Declare(libpcap
             GIT_REPOSITORY https://github.com/the-tcpdump-group/libpcap.git
             GIT_TAG libpcap-1.10.6
             GIT_SHALLOW TRUE
@@ -106,7 +106,7 @@ else()
     set(PCAP_LINKS_SOLO TRUE CACHE BOOL "" FORCE)
 
     include_directories(${libpcap_SOURCE_DIR} ${libpcap_BINARY_DIR})
-endif()
+endif ()
 
 
 FetchContent_Declare(libtins
@@ -172,14 +172,14 @@ pkg_check_modules(LIBNL REQUIRED libnl-3.0 libnl-genl-3.0)
 list(APPEND CMAKE_BUILD_RPATH ${LIBNL_LIBRARY_DIRS})
 
 pkg_check_modules(LIBSSH libssh)
-if(NOT LIBSSH_FOUND)
+if (NOT LIBSSH_FOUND)
     FetchContent_Declare(libssh
             GIT_REPOSITORY https://gitlab.com/libssh/libssh-mirror.git
             GIT_TAG libssh-0.11.1
             GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(libssh)
-else()
+else ()
     list(APPEND CMAKE_BUILD_RPATH ${LIBSSH_LIBRARY_DIRS})
-endif()
+endif ()
 

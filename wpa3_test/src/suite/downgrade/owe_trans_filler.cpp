@@ -3,10 +3,11 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "suite/downgrade/owe_trans_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/downgrade/owe_trans_filler.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
@@ -16,16 +17,10 @@ using namespace filesystem;
 using namespace nlohmann;
 
 OweTransTestEntry OweTransTestEntry::parse(const path &test_folder){
-	OweTransTestEntry e{};
+	auto e = helper::load_result_default<OweTransTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
-	const auto result = helper::load_result_json(test_folder);
-	if(!result) return e;
-
 	const auto rs = helper::load_test_rs(test_folder);
-	e.probe_count = result->value("probe_requests_detected", 0);
-	e.disconnected = result->value("disconnected", false);
-	e.passed = result->value("vulnerable", false);
 
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);

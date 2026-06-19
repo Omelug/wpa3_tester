@@ -9,6 +9,7 @@
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
@@ -20,7 +21,8 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 	CsaVersionTestEntry e;
 	e.name = test_folder.filename().string();
 
-	if(const auto result = helper::load_result_json(test_folder)) e.passed = result->value("passed", false);
+	if(const auto result = helper::load_result_json(test_folder))
+		e.passed = result->value("passed", false);
 
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);

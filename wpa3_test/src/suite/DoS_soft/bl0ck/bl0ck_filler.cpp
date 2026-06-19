@@ -6,6 +6,7 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"

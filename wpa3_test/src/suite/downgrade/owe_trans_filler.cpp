@@ -5,10 +5,8 @@
 #include "suite/downgrade/owe_trans_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
-#include "logger/log.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::suite::owe_trans_filler{
 using namespace std;
@@ -30,17 +28,13 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<OweTransTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# OWE Transition Probe Leak Test Suite Report\n\n";
 	report << "Tests whether a client leaks probe requests after disconnection from an OWE AP.\n\n";
 
-	if(entries.empty()){
-		report << "No test results found.\n";
-		report.close();
-		return;
-	}
+	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Test Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Probes | Disconnected | Probe found |\n";
@@ -50,14 +44,10 @@ void generate_report(RunSuiteStatus &rss){
 		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
 								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
 								: e.test_name;
-		const string vuln_link = "[" + string(e.probe_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME
-				+ ")";
-		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver <<
-				" | " << e.probe_count << " | " << (e.disconnected ? "yes" : "no") << " | " << vuln_link << " |\n";
+		const string vuln_link = "[" + string(e.probe_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
+				RESULT_NAME + ")";
+		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver
+				<< " | " << e.probe_count << " | " << (e.disconnected ? "yes" : "no") << " | " << vuln_link << " |\n";
 	}
-
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "OWE trans report generated: {}", run_dir / REPORT_NAME);
 }
 }

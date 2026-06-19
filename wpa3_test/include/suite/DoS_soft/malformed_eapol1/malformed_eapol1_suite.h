@@ -18,7 +18,5 @@ struct MalformedEapol1TestEntry{
 	static MalformedEapol1TestEntry parse(const std::filesystem::path &test_folder);
 };
 
-std::vector<MalformedEapol1TestEntry> get_results(const std::filesystem::path &run_dir);
-
 void generate_report(RunSuiteStatus & rss);
 }

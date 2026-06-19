@@ -15,7 +15,6 @@ struct CsaVersionTestEntry{
 	std::string rogue_ap_driver;
 	std::string new_channel;
 	std::string attack_time;
-	std::optional<bool> passed;
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
 };

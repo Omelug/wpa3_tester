@@ -177,9 +177,11 @@ void stats_chs_attack(const RunStatus &rs){
 		crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
 
-	nlohmann::json result;
-	result["disconnected"] = disconnected;
-	result["ap_disconnected"] = ap_disconnected;
+	nlohmann::json result = {
+		{"disconnected", disconnected},
+		{"ap_disconnected", ap_disconnected}
+	};
+
 	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 

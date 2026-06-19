@@ -3,7 +3,8 @@
 #include "config/Run_Config.h"
 
 using namespace wpa3_tester;
-using json = nlohmann::json;
+using namespace nlohmann;
+using namespace std;
 
 TEST_CASE("Run_Config default false"){
     Run_Config rc;

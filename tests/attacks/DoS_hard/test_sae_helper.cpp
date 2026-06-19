@@ -71,7 +71,7 @@ TEST_CASE("make_sae_commit - base"){
     CHECK_EQ(result->scalar, expected_scalar);
     CHECK_EQ(result->element.size(), 64);
     CHECK_EQ(result->element, expected_element);
-    std::vector<uint8_t> empty = {};
+    vector<uint8_t> empty = {};
     CHECK_EQ(result->token, empty);
 
 }
@@ -93,6 +93,6 @@ TEST_CASE("bytes_to_hex - multiple bytes colon-separated"){
 }
 
 TEST_CASE("bytes_to_hex - no trailing colon"){
-    std::string result = wpa3_tester::sae_helper::bytes_to_hex({0x01, 0x02});
+    string result = wpa3_tester::sae_helper::bytes_to_hex({0x01, 0x02});
     CHECK_FALSE(result.ends_with(":"));
 }

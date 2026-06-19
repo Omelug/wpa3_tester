@@ -79,7 +79,7 @@ ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector
 
 	Actor_config::print_ActorCMap("Actor rules", rules);
 	Actor_config::print_ActorCMap("Actor options", options);
-	throw req_err("Not found valid requirements: "+  get_heuristic_err_msg(rules, options));
+	throw req_err("Not found valid requirements: " + get_heuristic_err_msg(rules, options));
 }
 
 vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){
@@ -93,55 +93,73 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, 
 }
 
 string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vector<ActorPtr> &options){
-	if(options.size() < rules.size())
-		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
+	if(options.size() < rules.size()) return format("not enough interfaces: {} required, {} available", rules.size(),
+													options.size());
 	string msg;
-	for(const auto &[actor_name, req_ptr] : rules){
+	for(const auto &[actor_name, req_ptr]: rules){
 		const Actor_config &req = *req_ptr;
 		bool any_match = false;
-		for(const auto &opt : options)
-			if(req.matches(*opt)){ any_match = true; break; }
+		for(const auto &opt: options) if(req.matches(*opt)){
+			any_match = true;
+			break;
+		}
 		if(any_match) continue;
-		for(const auto k : sk_values()){
+		for(const auto k: sk_values()){
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
 			const auto &r = req[k];
 			if(!r.has_value()) continue;
 			set<string> possible;
-			for(const auto &opt : options){
+			for(const auto &opt: options){
 				const auto &o = (*opt)[k];
 				if(o.has_value()) possible.insert(*o);
 			}
 			if(possible.contains(*r)) continue;
 			const string kname{sk_name(k)};
-			msg += kname; msg += " "; msg += *r;
-			msg += " is required by "; msg += actor_name;
-			msg += ", possible "; msg += kname; msg += "s {";
+			msg += kname;
+			msg += " ";
+			msg += *r;
+			msg += " is required by ";
+			msg += actor_name;
+			msg += ", possible ";
+			msg += kname;
+			msg += "s {";
 			bool first = true;
-			for(const auto &v : possible){ if(!first) msg += ", "; msg += v; first = false; }
+			for(const auto &v: possible){
+				if(!first) msg += ", ";
+				msg += v;
+				first = false;
+			}
 			msg += "}; ";
 		}
-		for(const auto k : bk_values()){
+		for(const auto k: bk_values()){
 			const auto &r = req[k];
 			if(!r.has_value()) continue;
 			set<string> possible;
-			for(const auto &opt : options){
+			for(const auto &opt: options){
 				const auto &o = (*opt)[k];
 				if(o.has_value()) possible.insert(*o ? "true" : "false");
 			}
 			const string req_val = *r ? "true" : "false";
 			if(possible.contains(req_val)) continue;
 			const string kname{bk_name(k)};
-			msg += kname; msg += " "; msg += req_val;
-			msg += " is required by "; msg += actor_name;
-			msg += ", possible "; msg += kname; msg += "s {";
+			msg += kname;
+			msg += " ";
+			msg += req_val;
+			msg += " is required by ";
+			msg += actor_name;
+			msg += ", possible ";
+			msg += kname;
+			msg += "s {";
 			bool first = true;
-			for(const auto &v : possible){ if(!first) msg += ", "; msg += v; first = false; }
+			for(const auto &v: possible){
+				if(!first) msg += ", ";
+				msg += v;
+				first = false;
+			}
 			msg += "}; ";
 		}
 	}
-	if(msg.empty())
-		msg = "each actor individually matches some option; conflict is combinatorial";
+	if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";
 	return msg;
 }
-
 }

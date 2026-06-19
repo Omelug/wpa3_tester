@@ -14,7 +14,7 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-void  start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
+void start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
 						const string &channel, const nlohmann::json &att_cfg
 ){
 	const int bitrate = att_cfg.at("bitrate").get<int>();
@@ -33,8 +33,7 @@ void  start_dragondrain(RunStatus &rs, const string &actor_name, const string &i
 
 void setup_attack(RunStatus &rs){
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
-	if(!exists(dragondrain_folder))
-		throw setup_err("dragondrain not found at: " + dragondrain_folder);
+	if(!exists(dragondrain_folder)) throw setup_err("dragondrain not found at: " + dragondrain_folder);
 	components::client_ap_setup(rs);
 }
 

@@ -1,16 +1,16 @@
 requirements:
-  simple: [ath9k_noorder_change] #FIXME, only if ath_htc (slow af)
+  simple: [ ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
 actors:
   receiver:
     selection:
       channel: 11
-      condition: [monitor]
+      condition: [ monitor ]
       #driver: mt76x2u
     source: internal
   transceiver:
     selection:
       channel: 11
-      condition: [monitor]
+      condition: [ monitor ]
       #driver: ath9k_htc
     netns: tx
     source: internal

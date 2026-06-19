@@ -11,7 +11,7 @@
 
 namespace wpa3_tester::eapol_logoff{
 using namespace std;
-using namespace  filesystem;
+using namespace filesystem;
 using namespace Tins;
 
 RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, Channel ap_channel){
@@ -87,10 +87,8 @@ void run_attack(RunStatus &rs){
 	const NetworkInterface iface(iface_name);
 	const Channel channel = rs.get_actor("access_point")->get_channel();
 
-	RadioTap radiotap = get_malformed_eapol(
-		rs.get_actor("access_point").get(SK::mac),
-		rs.get_actor("client").get(SK::mac),
-		channel);
+	RadioTap radiotap = get_malformed_eapol(rs.get_actor("access_point").get(SK::mac),
+											rs.get_actor("client").get(SK::mac), channel);
 	PacketSender sender;
 
 	this_thread::sleep_for(chrono::seconds(5));
@@ -112,9 +110,6 @@ void stats(const RunStatus &rs){
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
 
-	rs.save_result({
-		{"disconnected",     disconnected},
-		{"disconnect_count", static_cast<int>(disc_times.size())},
-	});
+	rs.save_result({{"disconnected", disconnected}, {"disconnect_count", static_cast<int>(disc_times.size())},});
 }
 }

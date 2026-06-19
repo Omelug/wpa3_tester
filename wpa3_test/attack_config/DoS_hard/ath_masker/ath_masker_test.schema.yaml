@@ -35,7 +35,7 @@ properties:
 
       attacker:
         type: object
-        required: [ source]
+        required: [ source ]
 
   attack_config:
     type: object

@@ -19,7 +19,8 @@ protected:
 public:
 	// AP <-> rogue_sta <-> rogue AP <-> client
 	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
-			const std::string &client_mac, std::optional<std::filesystem::path> log_folder = std::nullopt , bool only_to_mitm = false
+			const std::string &client_mac, std::optional<std::filesystem::path> log_folder = std::nullopt,
+			bool only_to_mitm = false
 	);
 	virtual ~McMitm();
 
@@ -58,7 +59,7 @@ public:
 	static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
 	//TODO protected + fixture
- // for handle function is return -> end pdu processing
+	// for handle function is return -> end pdu processing
 	//bool handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
 	bool handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
 	bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);

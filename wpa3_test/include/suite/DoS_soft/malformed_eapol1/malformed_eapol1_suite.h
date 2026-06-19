@@ -4,14 +4,13 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::suite::malformed_eapol1_filler {
-
-struct MalformedEapol1TestEntry {
+namespace wpa3_tester::suite::malformed_eapol1_filler{
+struct MalformedEapol1TestEntry{
 	std::string test_name;
 	std::string ap_driver;
 	std::string client_driver;
 	std::string attacker_driver;
-	int         disconnect_count;
+	int disconnect_count;
 	//std::optional<bool> passed;
 	std::filesystem::path sta_graph;
 	std::filesystem::path ap_graph;
@@ -21,6 +20,5 @@ struct MalformedEapol1TestEntry {
 
 std::vector<MalformedEapol1TestEntry> get_results(const std::filesystem::path &run_dir);
 
-void generate_report(RunSuiteStatus &rss);
-
+void generate_report(RunSuiteStatus & rss);
 }

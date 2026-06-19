@@ -19,8 +19,8 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	Bl0ckTestEntry e;
 	e.name = test_folder.filename().string();
 
-	if(const auto result = helper::load_result_json(test_folder))
-		e.disconnected = result->value("disconnect_count",0) > 0;
+	if(const auto result = helper::load_result_json(test_folder)) e.disconnected = result->value("disconnect_count", 0)
+			> 0;
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
@@ -30,23 +30,23 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		rs.load_actor_interface_mapping();
 
 		if(const auto actor = rs.actor("access_point")){
-			e.ap_mac    = (*actor)->get_or(SK::mac,    "");
+			e.ap_mac = (*actor)->get_or(SK::mac, "");
 			e.ap_source = (*actor)->get_or(SK::source, "");
 		}
 		if(const auto actor = rs.actor("client")){
-			e.client_mac    = (*actor)->get_or(SK::mac,    "");
+			e.client_mac = (*actor)->get_or(SK::mac, "");
 			e.client_source = (*actor)->get_or(SK::source, "");
 		}
 
 		if(const auto actor = rs.actor("attacker")){
-			e.attacker_mac    = (*actor)->get_or(SK::mac,         "");
+			e.attacker_mac = (*actor)->get_or(SK::mac, "");
 			e.attacker_driver = (*actor)->get_or(SK::driver_name, "");
 		}
 
 		try{
 			const auto cfg = YAML::LoadFile(cfg_path.string());
-			if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
-				e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
+			if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"]) e.attack_variant = cfg["attack_config"][
+				"attack_variant"].as<string>();
 		} catch(...){}
 	}
 
@@ -83,23 +83,24 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	size_t passed_count = 0;
 	for(const auto &e: entries){
 		if(e.disconnected.value()) ++passed_count;
-		const string name_cell   = exists(run_dir / e.name /REPORT_NAME)
-			? "[" + e.name + "](" + e.name + "/" + REPORT_NAME+ ")" : e.name;
-		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME+ ")";
-		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | "
-			   << e.attacker_mac << " (" << e.attacker_driver << ") | "
-			   << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " << result_link << " |\n";
+		const string name_cell = exists(run_dir / e.name / REPORT_NAME)
+								? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
+								: e.name;
+		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
+				RESULT_NAME + ")";
+		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | " << e.attacker_mac << " (" <<
+				e.attacker_driver << ") | " << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " <<
+				result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1)
-		   << (100.0 * passed_count / entries.size()) << "%\n";
+	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir /REPORT_NAME);
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir /REPORT_NAME);
+	set_public_perms(run_dir / REPORT_NAME);
+	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir / REPORT_NAME);
 }
 }

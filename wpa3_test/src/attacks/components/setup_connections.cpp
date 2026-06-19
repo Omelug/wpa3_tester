@@ -31,16 +31,15 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 }
 
 void client_ap_setup(RunStatus &rs){
-
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
-	if(rs.get_actor("access_point")->is_WB())
-		setup_AP(rs, "access_point");
+	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
 
 	if(rs.get_actor("client")->is_WB()){
 		setup_STA(rs, "client");
 	} else{
 		string answer;
-		cout << "Is device connected to AP '" << hostapd::get_ssid(rs, "access_point") << "'? Connect it and press enter." << flush;
+		cout << "Is device connected to AP '" << hostapd::get_ssid(rs, "access_point") <<
+				"'? Connect it and press enter." << flush;
 		getline(cin, answer);
 		return;
 	}
@@ -66,8 +65,9 @@ void setup_rogue_ap(RunStatus &rs){
 };
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs){
-	if( (rs.get_actor("attacker").get(SK::source) != "simulation" || rs.get_actor("client").get(SK::source) != "simulation")
-	 && (rs.get_actor("attacker").get(SK::source) != "internal" || rs.get_actor("client").get(SK::source) != "internal")){
+	if((rs.get_actor("attacker").get(SK::source) != "simulation" || rs.get_actor("client").get(SK::source) !=
+		"simulation") && (rs.get_actor("attacker").get(SK::source) != "internal" || rs.get_actor("client").
+		get(SK::source) != "internal")){
 		throw run_err("only internal actors are supported");
 	}
 

@@ -24,12 +24,12 @@ void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()
 	}
 }
 
-std::vector<std::string> wrap_with_netns(const std::vector<std::string> &argv, const std::optional<std::string> &netns){
+vector<string> wrap_with_netns(const vector<string> &argv, const optional<string> &netns){
 	if(!netns.has_value()){
 		return argv;
 	}
 
-	std::vector<std::string> full_argv;
+	vector<string> full_argv;
 	// Pre-allocate space: 4 for "ip netns exec [name]" + the original command size
 	full_argv.reserve(argv.size() + 4);
 

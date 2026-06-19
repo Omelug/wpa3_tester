@@ -14,19 +14,19 @@ public:
 	explicit ActorPtr(std::shared_ptr<Actor_config> p);
 
 	Actor_config *operator->() const;
-	Actor_config &operator*()  const;
-	Actor_config *get()        const;
+	Actor_config &operator*() const;
+	Actor_config *get() const;
 	[[nodiscard]] std::string get(SK key) const;
 	[[nodiscard]] bool get(BK key) const;
 	std::shared_ptr<Actor_config> shared() const;
 
 	std::string operator[](const std::string &key) const;
-	std::optional<std::string>&       operator[](SK key);
-	const std::optional<std::string>& operator[](SK key) const;
-	std::optional<bool>&              operator[](BK key);
-	const std::optional<bool>&        operator[](BK key) const;
+	std::optional<std::string> &operator[](SK key);
+	const std::optional<std::string> &operator[](SK key) const;
+	std::optional<bool> &operator[](BK key);
+	const std::optional<bool> &operator[](BK key) const;
 
-	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr;}
-	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr;}
+	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr; }
+	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr; }
 };
 }

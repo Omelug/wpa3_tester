@@ -12,9 +12,9 @@ using nlohmann::json;
 
 // ----- TwoIface base
 TwoIface::TwoIface(ParamFilter id, string name)
-: cache_id(std::move(id)), cache_name(std::move(name)){}
+: cache_id(move(id)), cache_name(move(name)){}
 
-pair<json, bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
+pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
 	const string key = make_cache_key(a1, a2);
 
 	if(behave != force_run){
@@ -91,13 +91,12 @@ path TwoIface::cache_folder() const{
 }
 
 path TwoIface::cache_path() const{
-	return cache_folder() /  "cache.txt";
+	return cache_folder() / "cache.txt";
 }
 
-json TwoIface::make_selection(const ActorPtr &a) const {
+json TwoIface::make_selection(const ActorPtr &a) const{
 	auto sel = a->to_json(&cache_id)["selection"];
 	sel["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
 	return sel;
 }
-
 }

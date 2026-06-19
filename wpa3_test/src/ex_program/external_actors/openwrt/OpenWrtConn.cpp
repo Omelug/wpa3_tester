@@ -78,9 +78,7 @@ void OpenWrtConn::time_fix() const{
 	exec("/etc/init.d/sysntpd start");
 }
 
-void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
-							const nlohmann::json config
-){
+void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json config){
 	const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
 	if(!j.contains(radio_name)) throw ex_conn_err("Radio not found: " + radio_name);
@@ -103,10 +101,11 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor,
 	exec("uci set wireless." + section + "=wifi-iface");
 	exec("uci set wireless." + section + ".device=" + radio_name);
 
-	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at(
-		"program_config");
+	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at("program_config");
 	for(auto &[key, value]: program_config.items()){
-		if(value.is_string()) exec(string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>()).append("'"));
+		if(value.is_string()) exec(
+			string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>())
+										.append("'"));
 	}
 	exec("uci set wireless." + section + ".network=lan");
 
@@ -201,7 +200,8 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 // -------------------------------------------
 
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
-	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at("program_config");
+	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at(
+		"program_config");
 	cerr << program_config.dump() << endl;
 	actor->set(SK::ssid, program_config.at("ssid").get<string>());
 	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
@@ -260,15 +260,15 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &output){
 	auto has = [&](const string &tag){ return output.find(tag) != string::npos; };
 
-	actor->set(BK::GHz2_4,   has("Band 1:"));
-	actor->set(BK::GHz5,     has("Band 2:"));
-	actor->set(BK::GHz6,     has("* 6.0 GHz") || has("Band 3:"));
+	actor->set(BK::GHz2_4, has("Band 1:"));
+	actor->set(BK::GHz5, has("Band 2:"));
+	actor->set(BK::GHz6, has("* 6.0 GHz") || has("Band 3:"));
 
-	actor->set(BK::AP,       has(" * AP"));
-	actor->set(BK::STA,      has(" * managed"));
-	actor->set(BK::monitor,  has(" * monitor"));
+	actor->set(BK::AP, has(" * AP"));
+	actor->set(BK::STA, has(" * managed"));
+	actor->set(BK::monitor, has(" * monitor"));
 
-	actor->set(BK::w80211n,  has("HT20") || has("HT40"));
+	actor->set(BK::w80211n, has("HT20") || has("HT40"));
 	actor->set(BK::w80211ac, has("VHT"));
 	actor->set(BK::w80211ax, has("HE"));
 }

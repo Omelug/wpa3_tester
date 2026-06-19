@@ -29,7 +29,7 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 	e.attacker_driver  = rs->get_actor("attacker").get(SK::driver_name);
 	e.rogue_ap_driver  = rs->get_actor("rogue_ap").get(SK::driver_name);
 
-	const auto cfg_path = test_folder / "test_config.yaml";
+	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
 		try{
 			const auto cfg = YAML::LoadFile(cfg_path.string());

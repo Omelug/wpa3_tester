@@ -22,25 +22,25 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	if(const auto result = helper::load_result_json(test_folder))
 		e.disconnected = result->value("disconnect_count",0) > 0;
 
-	const auto cfg_path = test_folder / "test_config.yaml";
+	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
 		RunStatus rs{};
 		rs.config_path(cfg_path);
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
-		if(const auto it = rs.actors.find("access_point"); it != rs.actors.end()){
-			e.ap_mac    = it->second->get_or(SK::mac,    "");
-			e.ap_source = it->second->get_or(SK::source, "");
+		if(const auto actor = rs.actor("access_point")){
+			e.ap_mac    = (*actor)->get_or(SK::mac,    "");
+			e.ap_source = (*actor)->get_or(SK::source, "");
 		}
-		if(const auto it = rs.actors.find("client"); it != rs.actors.end()){
-			e.client_mac    = it->second->get_or(SK::mac,    "");
-			e.client_source = it->second->get_or(SK::source, "");
+		if(const auto actor = rs.actor("client")){
+			e.client_mac    = (*actor)->get_or(SK::mac,    "");
+			e.client_source = (*actor)->get_or(SK::source, "");
 		}
 
-		if(const auto it = rs.actors.find("attacker"); it != rs.actors.end()){
-			e.attacker_mac    = it->second->get_or(SK::mac,         "");
-			e.attacker_driver = it->second->get_or(SK::driver_name, "");
+		if(const auto actor = rs.actor("attacker")){
+			e.attacker_mac    = (*actor)->get_or(SK::mac,         "");
+			e.attacker_driver = (*actor)->get_or(SK::driver_name, "");
 		}
 
 		try{

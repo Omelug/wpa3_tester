@@ -72,7 +72,7 @@ void generate_report(RunSuiteStatus &rss){
 		return parse_test_folder(p);
 	});
 
-	auto report = helper::open_report(run_dir / "report.md");
+	auto report = helper::open_report(run_dir);
 	if(!report.is_open()) return;
 
 	report << "# Channel Switch Versions Test Suite Report\n\n";
@@ -108,6 +108,6 @@ void generate_report(RunSuiteStatus &rss){
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Channel switch versions report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "Channel switch versions report generated: {}", run_dir/"report.md");
 }
 }

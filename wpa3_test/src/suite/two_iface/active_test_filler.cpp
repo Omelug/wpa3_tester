@@ -34,7 +34,7 @@ void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<ActiveTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir / "report.md");
+	auto report = helper::open_report(run_dir);
 	if (!report.is_open()) return;
 
 	report << "# Active Test Suite Report\n\n";
@@ -73,7 +73,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Active test report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "Active test report generated: {}", run_dir/"report.md");
 }
 
 }

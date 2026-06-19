@@ -40,6 +40,8 @@
       <w>cstdint</w>
       <w>cstdlib</w>
       <w>cstring</w>
+      <w>cwmax</w>
+      <w>cwmin</w>
       <w>ddwrt</w>
       <w>defconfig</w>
       <w>defualt</w>
@@ -50,6 +52,7 @@
       <w>disas</w>
       <w>disconn</w>
       <w>dlinkroot</w>
+      <w>dmesg</w>
       <w>dragondrain</w>
       <w>eapol</w>
       <w>efchatz</w>
@@ -67,6 +70,7 @@
       <w>fprintf</w>
       <w>frametype</w>
       <w>freqs</w>
+      <w>fwding</w>
       <w>gcmp</w>
       <w>genhtml</w>
       <w>genl</w>
@@ -167,6 +171,7 @@
       <w>reuseaddr</w>
       <w>rfkill</w>
       <w>rlen</w>
+      <w>rowspan</w>
       <w>rsneapol</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>
@@ -189,12 +194,15 @@
       <w>tdls</w>
       <w>teap</w>
       <w>testack</w>
+      <w>testnetwork</w>
       <w>tftp</w>
       <w>thead</w>
       <w>tids</w>
+      <w>tkip</w>
       <w>tmargin</w>
       <w>tsharks</w>
       <w>txack</w>
+      <w>txop</w>
       <w>txpower</w>
       <w>udevadm</w>
       <w>vline</w>
@@ -202,6 +210,7 @@
       <w>vuln</w>
       <w>whitebox</w>
       <w>wiphy</w>
+      <w>wlan</w>
       <w>wnic</w>
       <w>wpaout</w>
       <w>writerd</w>
@@ -211,6 +220,7 @@
       <w>ymax</w>
       <w>ymin</w>
       <w>ytics</w>
+      <w>zerocounters</w>
     </words>
   </dictionary>
 </component>

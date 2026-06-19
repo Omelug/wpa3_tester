@@ -387,7 +387,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 }
 
 config_paths RunSuiteStatus::get_test_paths(){
-	const auto test_config_folder = _run_folder / "test_config";
+	const auto test_config_folder = _run_folder /TEST_SUITE_CONFIG_DIR;
 	config_paths test_map;
 	for(auto &[source_name, source_info]: config.at("tests").items()){
 		if(source_info.contains("path")){

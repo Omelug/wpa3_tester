@@ -19,7 +19,7 @@ void RunStatus::setup_test(){
 	}
 
 	create_public_dirs(_run_folder, ec);
-	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder.string(), ec.message());
+	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder, ec.message());
 
 	save_actor_interface_mapping();
 	process_manager.init_logging(_run_folder);

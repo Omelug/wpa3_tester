@@ -18,7 +18,7 @@ TEST_CASE("RunStatus constructor - config file not found"){
 
 TEST_CASE("RunStatus constructor - missing name field"){
     path test_dir = temp_directory_path() / "attack_config" / "test_runstatus_missing_name";
-    path config_file = test_dir / "test_config.yaml";
+    path config_file = test_dir / TEST_CONFIG_NAME;
     create_directories(test_dir);
 
     ofstream config(config_file);
@@ -37,7 +37,7 @@ actors:
 
 TEST_CASE("RunStatus constructor - with explicit test name"){
     path test_dir = temp_directory_path() / "attack_config" / "test_runstatus_explicit_name";
-    path config_file = test_dir / "test_config.yaml";
+    path config_file = test_dir / TEST_CONFIG_NAME;
     create_directories(test_dir);
 
     ofstream config(config_file);
@@ -60,7 +60,7 @@ actors:
 
 TEST_CASE("RunStatus constructor - config validation"){
     path test_dir = temp_directory_path() / "attack_config" / "test_runstatus_validation";
-    path config_file = test_dir / "test_config.yaml";
+    path config_file = test_dir / TEST_CONFIG_NAME;
     create_directories(test_dir);
 
     ofstream config(config_file);

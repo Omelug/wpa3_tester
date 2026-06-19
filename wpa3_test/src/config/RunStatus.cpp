@@ -127,7 +127,7 @@ void RunStatus::execute(){
 		clean();
 		return;
 	}
-	const path out_path = _run_folder / "test_config.yaml";
+	const path out_path = _run_folder / TEST_CONFIG_NAME;
 	save_yaml(_config, out_path);
 	run_test();
 	if(g_interrupted.load()){
@@ -266,6 +266,11 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 		} catch(const YAML::Exception &e){ throw config_err("Invalid yaml " + string(e.what())); }
 	}
 	return t_map;
+}
+
+optional<ActorPtr> RunStatus::actor(const string &actor_name){
+	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+	return nullopt;
 }
 
 ActorPtr &RunStatus::get_actor(const string &actor_name){

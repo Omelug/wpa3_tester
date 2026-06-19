@@ -10,9 +10,10 @@ struct ActiveTestEntry{
 	std::string test_name;
 	std::string tx_driver;
 	std::string rx_driver;
+	//result params
 	int acked;
 	int not_acked;
-	std::optional<bool> passed; // nullopt = no result.json; value = success
+	bool success;
 
 	static ActiveTestEntry parse(const std::filesystem::path &test_folder);
 };

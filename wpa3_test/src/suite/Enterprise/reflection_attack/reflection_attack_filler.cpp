@@ -18,14 +18,10 @@ using namespace filesystem;
 using namespace nlohmann;
 
 ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_folder){
-	ReflectionAttackTestEntry e{};
+	auto e = helper::load_result_default<ReflectionAttackTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
-	const auto result = helper::load_result_json(test_folder);
-	if(!result) return e;
-
 	const auto rs = helper::load_test_rs(test_folder);
-	e.passed = result->value("passed", false);
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;

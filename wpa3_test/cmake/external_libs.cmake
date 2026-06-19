@@ -28,6 +28,10 @@ set(DISABLE_TC ON CACHE BOOL "" FORCE)
 set(ENABLE_PROFILING OFF CACHE BOOL "" FORCE)
 
 find_package(PkgConfig REQUIRED)
+# NixOS: dbus-1.pc has libsystemd as a transitive dep; add system profile pkgconfig so the probe doesn't warn
+if(EXISTS "/run/current-system/sw/lib/pkgconfig")
+    set(ENV{PKG_CONFIG_PATH} "/run/current-system/sw/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+endif()
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -46,6 +50,7 @@ set(LIBTINS_ENABLE_ACK_TRACKER OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_WPA2 OFF CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_DOT11 ON CACHE BOOL "" FORCE)
 set(LIBTINS_ENABLE_PCAP ON CACHE BOOL "" FORCE)
+set(WITH_DBUS OFF CACHE BOOL "" FORCE)
 set(REPROC_STATIC ON CACHE BOOL "" FORCE)
 set(REPROC_CXX ON CACHE BOOL "" FORCE)
 set(REPROC++ ON CACHE BOOL "" FORCE)
@@ -54,7 +59,7 @@ set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         boost_pfr
         GIT_REPOSITORY https://github.com/boostorg/pfr.git
-        GIT_TAG        boost-1.88.0
+        GIT_TAG        2.2.0
 )
 
 FetchContent_Declare(argparse
@@ -152,13 +157,10 @@ FetchContent_Declare(yaml-cpp
         PATCH_COMMAND sed -i "/#include <algorithm>/a #include <cstdint>" src/emitterutils.cpp
 )
 
-FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp)
-FetchContent_MakeAvailable(json)
-FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
-FetchContent_MakeAvailable(
-        reproc libtins doctest argparse yaml-cpp json
-        json_schema_validator linux_headers_wifi radiotap boost_pfr
-)
+FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
+        json_schema_validator linux_headers_wifi radiotap boost_pfr)
+
+target_compile_options(tins PRIVATE -Wno-deprecated-declarations)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
 target_include_directories(radiotap_lib PUBLIC ${radiotap_SOURCE_DIR})

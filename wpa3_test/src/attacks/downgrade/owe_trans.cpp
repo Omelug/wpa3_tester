@@ -133,8 +133,8 @@ void stats_attack(const RunStatus &rs){
 	}
 
 	const json result = {
-		{"disconnected", disconnected}, {"disconnect_count", static_cast<int>(disc_times.size())},
-		{"probe_requests_detected", probe_count}, {"vulnerable", probe_count > 0},
+		{"disconnected", disconnected},
+		{"probe_count", probe_count}
 	};
 	rs.save_result(result);
 }

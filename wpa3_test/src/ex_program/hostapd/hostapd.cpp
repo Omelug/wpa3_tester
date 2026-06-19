@@ -45,7 +45,7 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 		copy_f(src, cfg_path);
 		ofstream out(cfg_path, ios::app);
 		write_hostapd_kv(out, ap_setup);
-	} else {
+	} else{
 		ofstream out(cfg_path);
 		if(!out){
 			log(LogLevel::ERROR, "hostapd_config: failed to open config file: {}", cfg_path.string());
@@ -79,18 +79,14 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 		const string openssl_version = program_config["openssl"].get<string>();
 		const OpenSSLPaths ssl = get_openssl_paths(openssl_version);
 		command.insert(command.end(), {
-							"env",
-							"LD_LIBRARY_PATH=" + ssl.lib_dir.string(),
-							"LD_PRELOAD=" + ssl.libcrypto.string(),
+							"env", "LD_LIBRARY_PATH=" + ssl.lib_dir.string(), "LD_PRELOAD=" + ssl.libcrypto.string(),
 						});
 		hostapd_bin = get_hostapd_with_openssl(version, openssl_version);
-	} else {
+	} else{
 		hostapd_bin = get_hostapd(version);
 	}
 
-	command.insert(command.end(), {
-						hostapd_bin, "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,
-					});
+	command.insert(command.end(), {hostapd_bin, "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
 		string token;
@@ -103,7 +99,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 
 static const set<string> wpa_global_keys = {"okc", "pmf", "ctrl_interface", "eapol_version"};
 static const set<string> wpa_quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
-static const set<string> wpa_skip_keys   = {"wpa_supplicant_path", "version", "other_options"};
+static const set<string> wpa_skip_keys = {"wpa_supplicant_path", "version", "other_options"};
 
 static string wpa_network_fmt(const string &key, const json &val){
 	if(val.is_string() && !wpa_quoted_keys.contains(key)) return val.get<string>();
@@ -129,13 +125,11 @@ static void write_wpa_network_block(ofstream &out, const json &setup){
 
 // rewrites cfg in-place, replacing matched keys and injecting new ones.
 static void apply_wpa_overrides(const path &cfg, const json &overrides){
-	map<string, string> global_ov, network_ov;
+	map<string,string> global_ov, network_ov;
 	for(auto it = overrides.begin(); it != overrides.end(); ++it){
 		if(wpa_skip_keys.contains(it.key())) continue;
-		if(wpa_global_keys.contains(it.key()))
-			global_ov[it.key()] = it.value().dump();
-		else
-			network_ov[it.key()] = wpa_network_fmt(it.key(), it.value());
+		if(wpa_global_keys.contains(it.key())) global_ov[it.key()] = it.value().dump();
+		else network_ov[it.key()] = wpa_network_fmt(it.key(), it.value());
 	}
 	if(global_ov.empty() && network_ov.empty()) return;
 
@@ -149,7 +143,7 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 	set<string> w_global, w_network;
 
 	ofstream out(cfg);
-	for(auto &l : lines){
+	for(auto &l: lines){
 		string s = l;
 		s.erase(0, s.find_first_not_of(" \t"));
 		if(auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
@@ -157,15 +151,13 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 
 		if(s == "network={"){
 			block_seen = in_block = true;
-			for(auto &[k, v] : global_ov)
-				if(w_global.insert(k).second) out << k << "=" << v << "\n";
+			for(auto &[k, v]: global_ov) if(w_global.insert(k).second) out << k << "=" << v << "\n";
 			out << l << "\n";
 			continue;
 		}
 		if(in_block && s == "}"){
 			in_block = false;
-			for(auto &[k, v] : network_ov)
-				if(w_network.insert(k).second) out << "\t" << k << "=" << v << "\n";
+			for(auto &[k, v]: network_ov) if(w_network.insert(k).second) out << "\t" << k << "=" << v << "\n";
 			out << l << "\n";
 			continue;
 		}
@@ -186,11 +178,10 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 
 	// no network={} block in file: append globals then a new network block
 	if(!block_seen){
-		for(auto &[k, v] : global_ov)
-			if(!w_global.contains(k)) out << k << "=" << v << "\n";
+		for(auto &[k, v]: global_ov) if(!w_global.contains(k)) out << k << "=" << v << "\n";
 		if(!network_ov.empty()){
 			out << "network={\n";
-			for(auto &[k, v] : network_ov) out << "\t" << k << "=" << v << "\n";
+			for(auto &[k, v]: network_ov) out << "\t" << k << "=" << v << "\n";
 			out << "}\n";
 		}
 	}
@@ -214,7 +205,7 @@ string wpa_supplicant_config(const string &run_folder, const string &actor_name,
 		path src = src_path.is_absolute() ? src_path : config_folder / src_path;
 		copy_f(src, cfg_path);
 		apply_wpa_overrides(cfg_path, client_setup);
-	} else {
+	} else{
 		ofstream out(cfg_path);
 		if(!out){
 			log(LogLevel::ERROR, "wpa_supplicant_config: failed to open config file: {}", cfg_path.string());
@@ -257,7 +248,7 @@ void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
 // --------- HOSTAPD_MANA ---------
 
 static string hostapd_mana_config(const string &run_folder, const string &actor_name, const json &ap_setup,
-								   const path &config_folder
+								const path &config_folder
 ){
 	path folder(run_folder);
 	path cfg_path = folder / (actor_name + "_hostapd_mana.conf");
@@ -272,7 +263,7 @@ static string hostapd_mana_config(const string &run_folder, const string &actor_
 		copy_f(src, cfg_path);
 		ofstream out(cfg_path, ios::app);
 		write_hostapd_kv(out, ap_setup);
-	} else {
+	} else{
 		ofstream out(cfg_path);
 		if(!out) throw run_err("hostapd_mana_config: unable to open config file");
 		write_hostapd_kv(out, ap_setup);
@@ -286,7 +277,7 @@ static string hostapd_mana_config(const string &run_folder, const string &actor_
 void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
 	const string mana_config_path = hostapd_mana_config(rs.run_folder(), actor_name, program_config,
-														 rs.config_path().parent_path());
+														rs.config_path().parent_path());
 
 	if(rs.get_actor(actor_name)["source"] == "internal"){
 		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(rs, actor_name));

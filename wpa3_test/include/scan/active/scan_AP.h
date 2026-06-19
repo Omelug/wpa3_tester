@@ -2,7 +2,6 @@
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::scan{
-
 class ScanAP{
 public:
 	std::string ssid;

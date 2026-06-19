@@ -12,12 +12,14 @@ void program::start(RunStatus &rs, const string &actor_name){
 	const auto program = setup.at("program").get<string>();
 	auto actor = rs.get_actor(actor_name);
 	if(program == "hostapd"){
-		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(program + " can be only internal");
+		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(
+			program + " can be only internal");
 		hostapd::run_hostapd(rs, actor_name);
 		return;
 	}
 	if(program == "wpa_supplicant"){
-		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(program + " can be only internal");
+		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(
+			program + " can be only internal");
 		hostapd::run_wpa_supplicant(rs, actor_name);
 		return;
 	}
@@ -28,7 +30,8 @@ void program::start(RunStatus &rs, const string &actor_name){
 		return;
 	}
 	if(program == "hostapd-mana"){
-		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(program + " can be only internal");
+		if(actor.get(SK::source) != "internal" && actor.get(SK::source) != "simulation") throw setup_err(
+			program + " can be only internal");
 		hostapd::run_hostapd_mana(rs, actor_name);
 		return;
 	}

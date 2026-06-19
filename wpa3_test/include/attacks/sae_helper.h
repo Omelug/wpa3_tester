@@ -3,7 +3,6 @@
 #include <tins/tins.h>
 
 namespace wpa3_tester::sae_helper{
-
 std::string bytes_to_hex(const std::vector<uint8_t> &bytes);
 std::string bytes_to_hex_plain(const std::vector<uint8_t> &bytes);
 

@@ -18,12 +18,12 @@ void start_dragonslayer(RunStatus &rs, const string &actor_name, const string &i
 	if(target_type == "ap"){
 		command.insert(command.end(), {
 							dragonslayer_folder + "/wpa_supplicant/wpa_supplicant", "-D", "nl80211", "-c",
-							rs.run_folder()/ "dragonslayer.conf", "-i", iface, "-a", "1"
+							rs.run_folder() / "dragonslayer.conf", "-i", iface, "-a", "1"
 						});
 	}
 	if(target_type == "sta"){
 		command.insert(command.end(), {
-							dragonslayer_folder + "/hostapd/hostapd", rs.run_folder()/ "dragonslayer.conf", "-i",
+							dragonslayer_folder + "/hostapd/hostapd", rs.run_folder() / "dragonslayer.conf", "-i",
 							iface, "-a", "1"
 						});
 	}
@@ -35,14 +35,14 @@ void setup_attack(RunStatus &rs){
 	assert(target_type == "ap" || target_type == "sta");
 	if(target_type == "ap"){
 		copy_f(rs.config_path().parent_path() / "config/dragonslayer-wpa_supplicant.conf",
-				rs.run_folder()/ "dragonslayer.conf");
+				rs.run_folder() / "dragonslayer.conf");
 	}
 	if(target_type == "sta"){
 		copy_f(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
-				rs.run_folder()/ "dragonslayer.conf");
+				rs.run_folder() / "dragonslayer.conf");
 	}
 
-	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
 	// -------- AP
 	program::start(rs, "access_point");

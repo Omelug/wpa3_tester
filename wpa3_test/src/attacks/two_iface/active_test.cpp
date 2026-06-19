@@ -5,6 +5,8 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
+
+#include "default.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/actor_keys.h"
 #include "system/hw_capabilities.h"
@@ -20,12 +22,10 @@ using nlohmann::json;
 
 static constexpr int BURST = 50;
 
-void run_attack(RunStatus &rs) {
+void run_attack(RunStatus &rs){
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
-	const string iface1 = actor_tx.get(SK::iface);
-	const string iface2 = actor_rx.get(SK::iface);
 	const auto netns1 = actor_tx[SK::netns];
 
 	const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
@@ -42,11 +42,11 @@ void run_attack(RunStatus &rs) {
 
 	netlink_helper::NetNSContext ns(netns1);
 
-	Sniffer sniffer(iface1, sniff_cfg);
-	thread sniffer_thread([&] {
-		sniffer.sniff_loop([&](PDU &pdu) -> bool {
-			if (stop) return false;
-			if (pdu.find_pdu<Dot11Ack>()) ++ack_count;
+	Sniffer sniffer(actor_tx.get(SK::iface), sniff_cfg);
+	thread sniffer_thread([&]{
+		sniffer.sniff_loop([&](PDU &pdu) ->bool{
+			if(stop) return false;
+			if(pdu.find_pdu<Dot11Ack>()) ++ack_count;
 			return true;
 		});
 	});
@@ -60,10 +60,10 @@ void run_attack(RunStatus &rs) {
 	frame.subtype(4);    // null data
 	rt /= frame;
 
-	PacketSender sender(iface1);
+	PacketSender sender(actor_tx.get(SK::iface));
 	this_thread::sleep_for(milliseconds(200)); // let sniffer thread start
 
-	for(int i = 0; i < BURST; ++i) {
+	for(int i = 0; i < BURST; ++i){
 		sender.send(rt);
 		this_thread::sleep_for(milliseconds(10));
 	}
@@ -73,16 +73,12 @@ void run_attack(RunStatus &rs) {
 	sniffer.stop_sniff();
 	sniffer_thread.join();
 
-	const int acked     = ack_count.load();
+	const int acked = ack_count.load();
 	const int not_acked = BURST - acked;
 
-	const json result = {
-		{"acked",     acked},
-		{"not_acked", not_acked},
-		{"success",   acked >= BURST * 95 / 100},
-	};
+	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= BURST * 95 / 100},};
 
-	const path result_path = rs.run_folder() / "result.json";
+	const path result_path = rs.run_folder() / RESULT_NAME;
 	{
 		ofstream ofs(result_path);
 		ofs << result.dump(2);

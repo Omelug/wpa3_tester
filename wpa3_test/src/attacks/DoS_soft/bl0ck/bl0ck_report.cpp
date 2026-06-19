@@ -5,6 +5,7 @@
 #include <random>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "logger/report.h"
@@ -18,9 +19,10 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-void generate_report(const RunStatus &rs, const Bl0ckResult &result,
-							const path &attacker_graph, const path &client_graph){
-	const path report_path = rs.run_folder() / "report.md";
+void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path &attacker_graph,
+					const path &client_graph
+){
+	const path report_path = rs.run_folder() / REPORT_NAME;
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report.md");
@@ -45,11 +47,11 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 
 	if(result.reconnect_times_ms.empty()){
 		report << "| Reconnect time | n/a |\n";
-	} else {
-		for(size_t i = 0; i < result.reconnect_times_ms.size(); ++i)
-			report << "| Reconnect time [" << i << "] | " << static_cast<int>(result.reconnect_times_ms[i]) << " ms |\n";
+	} else{
+		for(size_t i = 0; i < result.reconnect_times_ms.size(); ++i) report << "| Reconnect time [" << i << "] | " <<
+				static_cast<int>(result.reconnect_times_ms[i]) << " ms |\n";
 		double avg = 0;
-		for(const double t : result.reconnect_times_ms) avg += t;
+		for(const double t: result.reconnect_times_ms) avg += t;
 		avg /= static_cast<double>(result.reconnect_times_ms.size());
 		report << "| Avg reconnect time | " << static_cast<int>(avg) << " ms |\n";
 	}
@@ -59,9 +61,9 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	if(exists(attacker_graph)){
 		report << "### Attacker capture\n";
 		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
-		report << "### Client capture (wpa\\_supplicant "
-				<< rs.config().at("actors").at("client").at("setup").at("program_config").value("version", "default")
-				<< ")\n";
+		report << "### Client capture (wpa\\_supplicant " << rs.config().at("actors").at("client").at("setup").
+																at("program_config").value("version", "default") <<
+				")\n";
 	}
 	if(exists(client_graph)){
 		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
@@ -69,5 +71,4 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 	report << "---\n";
 	report.close();
 }
-
 }

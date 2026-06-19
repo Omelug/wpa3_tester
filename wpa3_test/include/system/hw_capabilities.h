@@ -78,13 +78,13 @@ struct NlCaps{
 	bool _80211ax = false; // 802.11ax
 
 	bool beacon_prot = false;
-	bool csa = false;         // NL80211_CMD_CHANNEL_SWITCH supported
-	bool ocv = false;         // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
-	bool mfp = false;         // BIP cipher suite (hardware IGTK/BIGTK support)
+	bool csa = false; // NL80211_CMD_CHANNEL_SWITCH supported
+	bool ocv = false; // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
+	bool mfp = false; // BIP cipher suite (hardware IGTK/BIGTK support)
 
-	int no_ir_24ghz = 0;  // channels skipped due to NO_IR
-	int no_ir_5ghz  = 0;
-	int no_ir_6ghz  = 0;
+	int no_ir_24ghz = 0; // channels skipped due to NO_IR
+	int no_ir_5ghz = 0;
+	int no_ir_6ghz = 0;
 };
 
 struct CryptoCaps{
@@ -102,13 +102,12 @@ constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
 
 class hw_capabilities{
 	static bool find_solution(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
-							const std::vector<ActorPtr> &options,
-							std::unordered_set<size_t> &usedOptions, ActorMap &currentAssignment
+							const std::vector<ActorPtr> &options, std::unordered_set<size_t> &usedOptions,
+							ActorMap &currentAssignment
 	);
 	static void find_all_solutions(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorCMap &rules,
-								const std::vector<ActorPtr> &options,
-								std::unordered_set<size_t> &usedOptions, ActorMap &current,
-								std::vector<ActorMap> &results
+									const std::vector<ActorPtr> &options, std::unordered_set<size_t> &usedOptions,
+									ActorMap &current, std::vector<ActorMap> &results
 	);
 	static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 public:
@@ -119,8 +118,9 @@ public:
 
 	// run helpers
 	static void run_in(const std::string &cmd, const std::filesystem::path &cwd);
-	static int run_cmd(const std::vector<std::string> &argv,
-		const std::optional<std::string> &netns = std::nullopt, bool print = true);
+	static int run_cmd(const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt,
+						bool print = true
+	);
 	static std::string run_cmd_output(const std::vector<std::string> &argv,
 									const std::optional<std::string> &netns = std::nullopt
 	);
@@ -138,7 +138,8 @@ public:
 
 	// check availability
 	static std::string read_sysfs(const std::string &iface, const std::string &file);
-	static std::string get_driver_name(const std::string &iface, const std::optional<std::string> &netns = std::nullopt);
+	static std::string get_driver_name(const std::string &iface, const std::optional<std::string> &netns = std::nullopt
+	);
 	static std::optional<std::string> get_driver_hash(const std::string &driver_name);
 	static std::optional<std::string> get_module_hash(const std::string &driver_name);
 	static std::string get_phy(const std::string &iface, const std::optional<std::string> &netns);
@@ -159,66 +160,68 @@ public:
 								const std::optional<std::string> &netns
 	);
 	static void set_channel(const std::string &iface, const Channel &ch, const std::optional<std::string> &netns);
-	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, const Channel &ch);
+	static bool set_monitor_active(const std::string &iface, const std::optional<std::string> &netns, const Channel &ch
+	);
 
 	static void set_iface_down(const std::string &iface, const std::optional<std::string> &netns);
 	static void set_iface_up(const std::string &iface, const std::optional<std::string> &netns);
-	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns, const std::vector<std::string> &monitor_flags = {});
+	static void set_wifi_type(std::string_view iface, nl80211_iftype type, const std::optional<std::string> &netns,
+							const std::vector<std::string> &monitor_flags = {}
+	);
 
 	// ----- injection utilities -----
 	// Inject pdu, capture frames containing the unique label. count=0 = no limit.
-	static std::vector<std::vector<uint8_t>> inject_and_capture(
-		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &pdu, const Channel &ch,
-		int count = 0, int retries = 1
+	static std::vector<std::vector<uint8_t>> inject_and_capture(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
+																const Channel &ch, int count = 0, int retries = 1
 	);
 	static void flush_socket(MonitorSocket &s);
-	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
-	static ProbeCapture capture_probe_response_ack(
-		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &probe_req, const Channel &ch, int retries = 1
+	static std::optional<std::pair < Tins::HWAddress < 6>
+,
+	std::string
+	>
+	>
+	get_nearby_ap_addr(MonitorSocket &sin);
+	static ProbeCapture capture_probe_response_ack(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req,
+													const Channel &ch, int retries = 1
 	);
 
 	// ----- injection tests — return result only, no printing -----
-	static InjectionTestResult test_injection_more_fragments(
-		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, const Channel &ch
+	static InjectionTestResult test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
+															const Dot11Ref &ref, const std::string &strtype,
+															const Channel &ch
 	);
 	// Generic field-preservation test; name identifies the subtest in the result.
-	static InjectionTestResult test_packet_injection(
-		MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &pdu, const std::function<bool(const std::vector<uint8_t> &)> &test_func,
-		const std::string &name, const std::string &msgfail, const Channel &ch
+	static InjectionTestResult test_packet_injection(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
+													const std::function<bool(const std::vector<uint8_t> &)> &test_func,
+													const std::string &name, const std::string &msgfail,
+													const Channel &ch
 	);
-	static InjectionTestResult test_injection_fields(
-		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, const Channel &ch
+	static InjectionTestResult test_injection_fields(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
+													const std::string &strtype, const Channel &ch
 	);
-	static InjectionTestResult test_injection_order(
-		MonitorSocket &sout, MonitorSocket &sin,
-		const Dot11Ref &ref, const std::string &strtype, const Channel &ch,
-		int retries = 1
+	static InjectionTestResult test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
+													const std::string &strtype, const Channel &ch, int retries = 1
 	);
-	static InjectionTestResult test_injection_retrans(
-		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, const Channel &ch
+	static InjectionTestResult test_injection_retrans(MonitorSocket &sout, MonitorSocket &sin,
+													const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2,
+													const Channel &ch
 	);
-	static InjectionTestResult test_injection_txack(
-		MonitorSocket &sout, MonitorSocket &sin,
-		const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, const Channel &ch
+	static InjectionTestResult test_injection_txack(MonitorSocket &sout, MonitorSocket &sin,
+													const Tins::HWAddress<6> &dest_mac,
+													const Tins::HWAddress<6> &own_mac, const Channel &ch
 	);
 
 	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)
-	static void setup_injection_iface(
-		const std::string &iface, const Channel &ch,
-		const std::optional<std::string> &netns = std::nullopt
+	static void setup_injection_iface(const std::string &iface, const Channel &ch,
+									const std::optional<std::string> &netns = std::nullopt
 	);
 
 	// Run the full injection test suite; returns structured results for printing.
 	// peermac: fallback peer used for retrans test when no nearby AP is found.
 	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
-	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx, const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"), bool
-													skip_mf = false, bool testack = true
+	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx,
+													const Tins::HWAddress<6> &peermac = Tins::HWAddress < 6 > (
+														"00:11:22:33:44:55"), bool skip_mf = false, bool testack = true
 	);
 };
 }

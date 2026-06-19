@@ -30,13 +30,13 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 				if (!entry.is_directory()) continue;
 				auto e = suite::channel_switch_rogueAP::parse_test_folder(entry.path());
 				if (e.passed.has_value())
-					results.emplace_back(variant, std::move(e));
+					results.emplace_back(variant, move(e));
 			}
 		}
 	}
 
-	std::ranges::sort(results, [](const TaggedEntry& a, const TaggedEntry& b) {
-		auto opt_rank = [](const std::optional<bool>& v) -> int {
+	ranges::sort(results, [](const TaggedEntry& a, const TaggedEntry& b) {
+		auto opt_rank = [](const optional<bool>& v) -> int {
 		   return v.has_value() ? (*v ? 0 : 1) : 2;
 		};
 		if (a.first != b.first) return a.first < b.first;

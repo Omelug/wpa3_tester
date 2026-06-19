@@ -2,5 +2,5 @@
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::ssid_confusion{
-	void run_attack(RunStatus & rs);
+void run_attack(RunStatus & rs);
 }

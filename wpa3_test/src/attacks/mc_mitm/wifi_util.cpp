@@ -124,8 +124,8 @@ Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, co
 	return copy;
 }
 
-void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, Channel channel, const Dot11Beacon &beacon,
-			optional<HWAddress<6>> mac, int interval, int dtim_period
+void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, Channel channel,
+			const Dot11Beacon &beacon, optional<HWAddress<6>> mac, int interval, int dtim_period
 ){
 	// In order of priority: provided ssid, ssid from beacon, or default
 	const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
@@ -169,17 +169,16 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	netlink_helper::NetlinkRegistry::get_fd(netns);
 	base_actor->set_iface_down();
 	hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, true);
-	if(netlink_helper::wait_for_iface_disappear(ap_iface, netns)) throw setup_err(
-		"Interface " + ap_iface + " did not disappear");
+	if(netlink_helper::wait_for_iface_disappear(ap_iface, netns))
+		throw setup_err("Interface " + ap_iface + " did not disappear");
 
 	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
 
 	// ── step 2: add AP virtual interface ─────────────────────────────────────
-	hw_capabilities::run_cmd({
-								"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"
-							}, netns);
-	if(netlink_helper::wait_for_iface_appear(ap_iface, netns)) throw setup_err(
-		"Interface " + ap_iface + " did not appear");
+	hw_capabilities::run_cmd({"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"},
+							netns);
+	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
+		throw setup_err("Interface " + ap_iface + " did not appear");
 	this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);

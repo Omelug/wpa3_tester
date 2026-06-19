@@ -5,6 +5,8 @@
 #include <optional>
 #include <thread>
 #include <nlohmann/json.hpp>
+
+#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd.h"
@@ -24,7 +26,8 @@ using namespace Tins;
 using namespace chrono;
 
 RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Channel &ap_channel,
-						const Channel &new_channel, const int switch_count){
+						const Channel &new_channel, const int switch_count
+){
 	Dot11Beacon beacon;
 	beacon.addr1(Dot11::BROADCAST);
 	beacon.addr2(ap_mac);
@@ -74,12 +77,14 @@ void run_chs_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &ap_actor = rs.get_actor("access_point");
 
-	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
-	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
+	const HWAddress<6> ap_mac(rs.get_actor("access_point").get(SK::mac));
+	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const string essid = ap_actor.get(SK::ssid);
 	const Channel old_channel = ap_actor->get_channel();
-	const Channel new_channel{att_cfg.at("new_channel").get<int>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]};
+	const Channel new_channel{
+		att_cfg.at("new_channel").get<int>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]
+	};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 
@@ -96,8 +101,10 @@ void run_chs_attack(RunStatus &rs){
 }
 
 void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,
-	const path &ATT_graph_path, const path &rogue_graph_path, const optional<hostapd::CrackResult> &crack_result){
-	const path report_path = rs.run_folder()/ "report.md";
+					const path &ATT_graph_path, const path &rogue_graph_path,
+					const optional<hostapd::CrackResult> &crack_result
+){
+	const path report_path = rs.run_folder() / REPORT_NAME;
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report file!");
@@ -114,7 +121,7 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	//report <<
 	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
-	//TODO add hostapd helepr ?
+	//TODO add hostapd helper ?
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
 		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
@@ -156,7 +163,7 @@ void stats_chs_attack(const RunStatus &rs){
 				});
 
 	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED").empty();
-	const bool ap_disconnected =!get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
+	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
 
 	optional<hostapd::CrackResult> crack_result;
 	optional<bool> rogue_ap_connected;
@@ -173,19 +180,24 @@ void stats_chs_attack(const RunStatus &rs){
 	nlohmann::json result;
 	result["disconnected"] = disconnected;
 	result["ap_disconnected"] = ap_disconnected;
-	if(rogue_ap_connected.has_value())
-		result["rogue_ap_connected"] = rogue_ap_connected.value();
+	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 
-	const string client_mac = rs.get_actor("client")["mac"];
+	const string client_mac = rs.get_actor("client").get(SK::mac);
 	observer::tshark::pcap_events(rs, elements, {
-								{"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black"},
-								{"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "red"}
-							});
+									{
+										"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
+										"client PROBE", "black"
+									},
+									{
+										"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
+										"client PROBE", "red"
+									}
+								});
 
 	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
-																observer::get_observer_folder(rs, "tcpdump"));
+															observer::get_observer_folder(rs, "tcpdump"));
 
 	const path ATT_graph_path = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);

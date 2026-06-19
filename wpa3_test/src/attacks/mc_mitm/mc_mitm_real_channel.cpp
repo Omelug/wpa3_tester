@@ -46,7 +46,7 @@ bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 
 	return false;
 }
 
-bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const std::vector<unsigned char> &raw,
+bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
 								const Dot11 &dot11
 ) const{
 	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
@@ -95,8 +95,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 	// Beacon from real AP — update timestamp
 	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
 		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num) last_real_beacon =
-				steady_clock::now();
+		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num)
+			last_real_beacon = steady_clock::now();
 		return;
 	}
 
@@ -138,14 +138,14 @@ void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
 
 void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
 
-void McMitm::send_to_real(const std::vector<uint8_t> &raw) const{
+void McMitm::send_to_real(const vector<uint8_t> &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
 }
 
-//void McMitm::send_to_real(const std::vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
+//void McMitm::send_to_real(const vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
 void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
 
-void McMitm::send_to_rogue(const std::vector<uint8_t> &raw) const{
+void McMitm::send_to_rogue(const vector<uint8_t> &raw) const{
 	sock_rogue->send(raw, netconfig.rogue_channel);
 }
 
@@ -168,8 +168,8 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	if(dot11->addr1() == ap_mac){
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
-		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) client_state.update_state(
-			ClientState::Target);
+		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
+			client_state.update_state(ClientState::Target);
 	} else if(addr2 == ap_mac){ // AP -> STA
 		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);

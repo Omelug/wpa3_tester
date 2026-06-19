@@ -5,8 +5,7 @@
 #include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::suite::channel_switch_rogueAP{
-
-struct CsaTestEntry {
+struct CsaTestEntry{
 	std::string name;
 	std::string ap_mac;
 	std::string ap_source;
@@ -18,7 +17,7 @@ struct CsaTestEntry {
 	std::string rogue_ap_driver;
 	std::optional<bool> disconnected;
 	std::optional<bool> ap_disconnected;
-	std::optional<bool> rogue_ap;
+	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;
 	std::string client_mfp;
@@ -31,5 +30,4 @@ struct CsaTestEntry {
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 
 void generate_report(RunSuiteStatus &rss);
-
 }

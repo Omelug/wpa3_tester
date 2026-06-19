@@ -17,7 +17,6 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ap_info{
-
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -30,11 +29,11 @@ void run_attack(RunStatus &rs){
 	if(att_cfg.value("beacon_scan", false)){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
-		auto beacon_pcap = rs.run_folder()/ (target_ap["actor_name"] + ".pcap");
+		auto beacon_pcap = rs.run_folder() / (target_ap["actor_name"] + ".pcap");
 		set_public_perms(beacon_pcap);
 		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
 		{
-			const path beacon_txt = rs.run_folder()/ "beacon_scan.txt";
+			const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
 			ofstream ofs(beacon_txt);
 			ofs << "Scan results for " << target_ap["mac"] << "\n";
 			ofs << scan_ap.to_str() << endl;
@@ -75,10 +74,10 @@ void run_attack(RunStatus &rs){
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
 		const auto [cookie, count] = pmk_gobbler::trigger_acm(scanner["sniff_iface"], scanner["mac"],
-															HWAddress < 6 > (target_ap["mac"]),
+															HWAddress<6>(target_ap["mac"]),
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
-		const path acm_txt = rs.run_folder()/ "ACM_trigger.txt";
+		const path acm_txt = rs.run_folder() / "ACM_trigger.txt";
 		ofstream ofs(acm_txt);
 		ofs << "ACM trigger after " << count << " frames " << "\n";
 		ofs << scan_ap.to_str() << "\n";
@@ -103,12 +102,8 @@ void run_attack(RunStatus &rs){
 	}
 
 	const nlohmann::json result = {
-		{"ssid",          scan_ap.ssid},
-		{"mac",           target_ap["mac"]},
-		{"beacon_found",  scan_ap.rsn.has_value()},
-		{"mfp",           mfp},
-		{"akm",           akm},
-		{"acm_triggered", acm_triggered},
+		{"ssid", scan_ap.ssid}, {"mac", target_ap["mac"]}, {"beacon_found", scan_ap.rsn.has_value()}, {"mfp", mfp},
+		{"akm", akm}, {"acm_triggered", acm_triggered},
 	};
 	rs.save_result(result);
 }

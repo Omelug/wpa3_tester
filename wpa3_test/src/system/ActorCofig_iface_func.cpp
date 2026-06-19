@@ -47,7 +47,6 @@ void Actor_config::cleanup() const{
 	set_iface_up();
 }
 
-
 void Actor_config::create_sniff_iface() const{
 	const string &iface = get(SK::iface);
 	const string &sniff_iface = get(SK::sniff_iface);
@@ -78,7 +77,10 @@ void Actor_config::create_sniff_iface() const{
 
 void Actor_config::set_channel(const Channel &ch) const{
 	const string &iface = get(SK::iface);
-	if(conn != nullptr){ conn->set_channel(iface, ch); return; }
+	if(conn != nullptr){
+		conn->set_channel(iface, ch);
+		return;
+	}
 	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
 }
 
@@ -105,7 +107,10 @@ void Actor_config::up_sniff_iface() const{
 
 void Actor_config::set_managed_mode() const{
 	const string &iface = get(SK::iface);
-	if(conn != nullptr){ conn->set_managed_mode(iface); return; }
+	if(conn != nullptr){
+		conn->set_managed_mode(iface);
+		return;
+	}
 	const optional<string> netns = (*this)[SK::netns];
 
 	log(LogLevel::INFO, "Preparing interface {} for managed mode", iface);
@@ -125,14 +130,20 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 
 void Actor_config::set_monitor_mode() const{
 	const string &iface = get(SK::iface);
-	if(conn != nullptr){ conn->set_monitor_mode(iface); return; }
+	if(conn != nullptr){
+		conn->set_monitor_mode(iface);
+		return;
+	}
 
 	vector<string> monitor_flags = {"fcsfail", "otherbss"};
 	if((*this)[BK::active_monitor]) monitor_flags.push_back("active");
 	if((*this)[BK::control_monitor]) monitor_flags.push_back("control");
 
 	string flags_str;
-	for(const auto &f : monitor_flags){ if(!flags_str.empty()) flags_str += ' '; flags_str += f; }
+	for(const auto &f: monitor_flags){
+		if(!flags_str.empty()) flags_str += ' ';
+		flags_str += f;
+	}
 	log(LogLevel::INFO, "Setting interface {} to monitor mode with flags {}", iface, flags_str);
 
 	set_iface_down();

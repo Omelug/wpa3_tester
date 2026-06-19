@@ -15,7 +15,6 @@ using namespace chrono;
 using namespace Tins;
 
 namespace wpa3_tester::scan{
-
 // --------SCAN stations for AP --------------
 bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
 	// RTS addr1 and addr2
@@ -85,8 +84,7 @@ bool station_frame_parse(const unique_ptr<PDU> &pdu, ScanAP &scan_ap){
 	return capture;
 }
 
-void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_sec,
-				const filesystem::path &stations_pcap
+void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_sec, const filesystem::path &stations_pcap
 ){
 	SnifferConfiguration sniff_config;
 	sniff_config.set_snap_len(2000);
@@ -127,8 +125,8 @@ void fill_actor_caps_from_assoc_req(PDU &pdu, Actor_Config_external &cfg){
 	apply_ht_vht_he(*mgmt, cfg);
 	apply_rsn(*mgmt, cfg);
 
-	cfg.set(BK::AP,      false);
-	cfg.set(BK::STA,     true);
+	cfg.set(BK::AP, false);
+	cfg.set(BK::STA, true);
 	cfg.set(BK::managed, false);
 	cfg.set(BK::monitor, false);
 }
@@ -137,13 +135,10 @@ Actor_Config_external scan_sta_actor(const string &iface, const string &bssid, c
 	Actor_Config_external cfg;
 
 	const string filter = "type mgt subtype assoc-req and ether addr1 " + bssid;
-	components::poll_sniffer_pdu<monostate>(
-		[&](PDU &pdu) -> optional<monostate>{
-			fill_actor_caps_from_assoc_req(pdu, cfg);
-			return monostate{};
-		},
-		iface, filter, seconds(timeout_sec)
-	);
+	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
+		fill_actor_caps_from_assoc_req(pdu, cfg);
+		return monostate{};
+	}, iface, filter, seconds(timeout_sec));
 
 	log(LogLevel::INFO, "scan_sta_actor {}: {}", bssid, cfg.to_str());
 	return cfg;

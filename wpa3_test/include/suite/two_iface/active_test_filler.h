@@ -5,14 +5,13 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::suite::active_test_filler {
-
-struct ActiveTestEntry {
+namespace wpa3_tester::suite::active_test_filler{
+struct ActiveTestEntry{
 	std::string test_name;
 	std::string tx_driver;
 	std::string rx_driver;
-	int         acked;
-	int         not_acked;
+	int acked;
+	int not_acked;
 	std::optional<bool> passed; // nullopt = no result.json; value = success
 
 	static ActiveTestEntry parse(const std::filesystem::path &test_folder);
@@ -20,6 +19,5 @@ struct ActiveTestEntry {
 
 std::vector<ActiveTestEntry> get_results(const std::filesystem::path &run_dir);
 
-void generate_report(RunSuiteStatus &rss);
-
+void generate_report(RunSuiteStatus & rss);
 }

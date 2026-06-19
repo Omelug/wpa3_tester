@@ -51,6 +51,12 @@ set(REPROC_CXX ON CACHE BOOL "" FORCE)
 set(REPROC++ ON CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
+FetchContent_Declare(
+        boost_pfr
+        GIT_REPOSITORY https://github.com/boostorg/pfr.git
+        GIT_TAG        boost-1.88.0
+)
+
 FetchContent_Declare(argparse
         GIT_REPOSITORY https://github.com/p-ranav/argparse.git
         GIT_TAG v3.2
@@ -151,7 +157,7 @@ FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(json_schema_validator linux_headers_wifi radiotap)
 FetchContent_MakeAvailable(
         reproc libtins doctest argparse yaml-cpp json
-        json_schema_validator linux_headers_wifi radiotap
+        json_schema_validator linux_headers_wifi radiotap boost_pfr
 )
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")

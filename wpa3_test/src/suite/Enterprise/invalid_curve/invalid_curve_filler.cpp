@@ -7,6 +7,7 @@
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 

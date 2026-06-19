@@ -7,6 +7,7 @@
 #include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
 namespace wpa3_tester::suite::iface_info_filler{

@@ -15,15 +15,11 @@ using namespace filesystem;
 using namespace nlohmann;
 
 MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder){
-	MalformedEapol1TestEntry e{};
+	auto e = helper::load_result_default<MalformedEapol1TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
-	const auto result = helper::load_result_json(test_folder);
-	if(!result) return e;
-
 	const auto rs = helper::load_test_rs(test_folder);
-	e.disconnect_count = result->value("disconnect_count", 0);
-	//e.passed           = e.disconnect_count > 0;
+	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph = test_folder / "observer" / "tshark" / "access_point_graph.png";
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);

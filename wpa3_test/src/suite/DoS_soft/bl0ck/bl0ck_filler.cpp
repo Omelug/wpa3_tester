@@ -65,15 +65,14 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
 	report << "Summary of Bl0ck attack tests across different driver combinations.\n\n";
 
 	if(entries.empty()){
 		report << "No test results found.\n";
-		report.close();
 		return;
 	}
 
@@ -100,8 +99,5 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
 
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir / REPORT_NAME);
 }
 }

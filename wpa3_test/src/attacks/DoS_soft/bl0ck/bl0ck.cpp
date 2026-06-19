@@ -134,9 +134,9 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 static Bl0ckResult compute_result(const RunStatus &rs){
 	Bl0ckResult r{};
 	if(rs.get_actor("client")->is_WB()){
-		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 		r.disconnect_count = static_cast<int>(disc_times.size());
-		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
+		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", true);
 		for(const auto &disc: disc_times){
 			for(const auto &conn: conn_times){
 				if(conn > disc){
@@ -147,7 +147,7 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 			}
 		}
 	} else if(rs.get_actor("access_point")->is_WB()){
-		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
+		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
 	}
 	//FIXME log if passed
 	/*const string pass_str = r.disconnect_count > 0 ? "PASSED" : "FAILED";
@@ -221,7 +221,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 				});
 
 	if(rs.config().at("actors").contains("rogue_ap")){
-		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA", true), "MANA", "black"));
 	}
 
 	observer::tshark::pcap_events(rs, elements, {

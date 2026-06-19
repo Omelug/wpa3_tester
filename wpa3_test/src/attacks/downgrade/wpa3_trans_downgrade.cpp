@@ -56,9 +56,9 @@ void stats_attack(const RunStatus &rs){
 
 	observer::tshark::pcap_events(rs, elements, {{"attacker", "wlan.fc.type_subtype == 4", "ProbeReq", "blue"},});
 
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
-	const auto rogue_sta_times = get_time_logs(rs, "rogue_ap", "AP-STA-CONNECTED");
-	const auto rogue_4way_times = get_time_logs(rs, "rogue_ap", "EAPOL-4WAY-HS-COMPLETED");
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
+	const auto rogue_sta_times = get_time_logs(rs, "rogue_ap", "AP-STA-CONNECTED", true);
+	const auto rogue_4way_times = get_time_logs(rs, "rogue_ap", "EAPOL-4WAY-HS-COMPLETED", true);
 
 	const bool disconnected = !disc_times.empty();
 	const bool downgrade_seen = !rogue_4way_times.empty();

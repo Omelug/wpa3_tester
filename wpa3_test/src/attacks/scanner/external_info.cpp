@@ -22,7 +22,7 @@ static void try_add_sta(ApInfoMap &ap_map, StaInfoMap &sta_map, const HWAddress<
 	if(!sta_map.contains(mac)){
 		Actor_Config_external cfg;
 		cfg.set(SK::mac, mac);
-		sta_map.emplace(mac, move(cfg));
+		sta_map.emplace(mac, std::move(cfg));
 	}
 }
 

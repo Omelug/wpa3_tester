@@ -4,6 +4,8 @@
 #include <nlohmann/json.hpp>
 
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
+
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
@@ -48,9 +50,9 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "|------|-----------|-----------------|--------|\n";
 
 	for (const auto &e : entries) {
-		const string name_cell   = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/result.json)";
+		const string name_cell   = exists(run_dir / e.test_name /REPORT_NAME)
+			? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME+ ")" : e.test_name;
+		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell << " | " << e.ap_driver << " | "
 		       << e.attacker_driver << " | " << result_link << " |\n";
 	}
@@ -64,8 +66,8 @@ void generate_report(RunSuiteStatus &rss) {
 	       << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Reflection attack report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "Reflection attack report generated: {}", run_dir/REPORT_NAME);
 }
 
 }

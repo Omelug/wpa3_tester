@@ -9,6 +9,7 @@
 #include <sstream>
 #include <thread>
 
+#include "default.h"
 #include "config/global_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
@@ -44,7 +45,7 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 			log(LogLevel::ERROR, "relative_from issue");
 		}
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder/ suite_name / "last_run";
+	_run_folder = BASE_FOLDER / actual_sub_folder/ suite_name /LAST_RUN_DIR;
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 

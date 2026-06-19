@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
@@ -47,7 +48,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	const auto entries = get_results(run_dir);
 
-	const auto report_path = run_dir / "report.md";
+	const auto report_path = run_dir /REPORT_NAME;
 	auto report = helper::open_report(report_path);
 	if (!report.is_open()) return;
 
@@ -77,9 +78,9 @@ void generate_report(RunSuiteStatus &rss) {
 		}
 		if (graphs.empty()) graphs = "-";
 
-		const string name_cell = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		const string name_cell = exists(run_dir / e.test_name /REPORT_NAME)
+			? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME+ ")" : e.test_name;
+		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell
 		       << " | " << e.ap_driver
 		       << " | " << e.client_driver

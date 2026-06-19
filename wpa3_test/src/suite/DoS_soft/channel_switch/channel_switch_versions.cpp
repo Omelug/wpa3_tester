@@ -5,6 +5,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include "suite/DoS_soft/channel_switch/channel_switch_versions.h"
+
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
@@ -89,10 +91,10 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
 
 	for(const auto &e: entries){
-		const string name_cell   = exists(run_dir / e.name / "report.md")
-			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
+		const string name_cell   = exists(run_dir / e.name /REPORT_NAME)
+			? "[" + e.name + "](" + e.name + "/" + REPORT_NAME+ ")" : e.name;
 		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED")
-			+ "](" + e.name + "/result.json)";
+			+ "](" + e.name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver
 			   << " | " << e.attacker_driver << " | " << e.hostapd_version
 			   << " | " << result_link << " |\n";
@@ -107,7 +109,7 @@ void generate_report(RunSuiteStatus &rss){
 		   << (100.0 * passed_count / entries.size()) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Channel switch versions report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "Channel switch versions report generated: {}", run_dir/REPORT_NAME);
 }
 }

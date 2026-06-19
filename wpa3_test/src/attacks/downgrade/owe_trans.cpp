@@ -5,6 +5,8 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
+
+#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -97,7 +99,7 @@ void stats_attack(const RunStatus &rs) {
 	const path client_graph  = observer::tshark::tshark_graph(rs, "client", elements);
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
-	const path report_path = rs.run_folder() / "report.md";
+	const path report_path = rs.run_folder() /REPORT_NAME;
 	ofstream report(report_path);
 	if (!report.is_open()) {
 		log(LogLevel::ERROR, "Failed to create report.md");

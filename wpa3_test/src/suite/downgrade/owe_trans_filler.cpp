@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/downgrade/owe_trans_filler.h"
@@ -53,9 +54,9 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "|------|-----------|---------------|-----------------|:------:|:------------:|:----------:|\n";
 
 	for (const auto &e : entries) {
-		const string name_cell = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string vuln_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		const string name_cell = exists(run_dir / e.test_name /REPORT_NAME)
+			? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME+ ")" : e.test_name;
+		const string vuln_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell
 		       << " | " << e.ap_driver
 		       << " | " << e.client_driver
@@ -75,8 +76,8 @@ void generate_report(RunSuiteStatus &rss) {
 	       << (100.0 * static_cast<double>(vuln_count) / static_cast<double>(entries.size())) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "OWE trans report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "OWE trans report generated: {}", run_dir/REPORT_NAME);
 }
 
 }

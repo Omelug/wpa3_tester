@@ -2,6 +2,8 @@
 #include <fstream>
 #include <map>
 #include <variant>
+
+#include "default.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
 #include "logger/report.h"
@@ -148,7 +150,7 @@ void run_attack(RunStatus &rs){
 }
 
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map){
-	const auto report_path = rs.run_folder() / "report.md";
+	const auto report_path = rs.run_folder() /REPORT_NAME;
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());

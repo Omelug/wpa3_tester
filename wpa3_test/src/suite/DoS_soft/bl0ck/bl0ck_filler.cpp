@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iomanip>
 
+#include "default.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
@@ -82,9 +83,9 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	size_t passed_count = 0;
 	for(const auto &e: entries){
 		if(e.disconnected.value()) ++passed_count;
-		const string name_cell   = exists(run_dir / e.name / "report.md")
-			? "[" + e.name + "](" + e.name + "/report.md)" : e.name;
-		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/result.json)";
+		const string name_cell   = exists(run_dir / e.name /REPORT_NAME)
+			? "[" + e.name + "](" + e.name + "/" + REPORT_NAME+ ")" : e.name;
+		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | "
 			   << e.attacker_mac << " (" << e.attacker_driver << ") | "
 			   << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " << result_link << " |\n";
@@ -98,7 +99,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 		   << (100.0 * passed_count / entries.size()) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir / "report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir /REPORT_NAME);
 }
 }

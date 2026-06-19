@@ -144,7 +144,7 @@ void run_attack(RunStatus &rs){
 	att->set_iface_up();
 
 	//  force AP into ACM mode
-	trigger_acm(att_iface, att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
+	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
 	rs.start_observers();
 	CookieStore store;
 	thread capture_thread([&](){
@@ -170,7 +170,6 @@ void run_attack(RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs){
-	const auto ap = rs.config().at("actors").at("access_point");
 
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {
@@ -183,7 +182,7 @@ void stats_attack(const RunStatus &rs){
 	//TODO test elements.push_back(make_unique<EventLines>(
 	//    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));
 	observer::station_counter::create_station_graph(rs, "access_point", elements);
-	observer::resource_checker::create_graph(rs, ap["source"], elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 	//TODO test observer::tshark::generate_time_series_retry_graph(rs, "attacker");
 }
 }

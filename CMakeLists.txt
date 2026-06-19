@@ -43,9 +43,13 @@ option(ENABLE_COVERAGE "Enable coverage" OFF)
 
 if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
+    #cmake_host_system_information(RESULT _ncpus QUERY NUMBER_OF_LOGICAL_CORES)
+    #math(EXPR _jobs "${_ncpus} / 2 + 1")
+    #set(CMAKE_BUILD_PARALLEL_LEVEL ${_jobs} CACHE STRING "" FORCE)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "nice -n 19")
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
 endif ()
+
 
 if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)

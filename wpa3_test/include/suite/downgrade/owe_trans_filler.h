@@ -11,9 +11,10 @@ struct OweTransTestEntry{
 	std::string ap_driver;
 	std::string client_driver;
 	std::string attacker_driver;
+
+	//results json
 	int probe_count;
 	bool disconnected;
-	std::optional<bool> passed; // nullopt = no result.json; value = vulnerable
 
 	static OweTransTestEntry parse(const std::filesystem::path &test_folder);
 };

@@ -3,8 +3,8 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "suite/downgrade/wpa3_trans_downgrade_filler.h"
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/result_helper.h"

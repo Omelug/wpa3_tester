@@ -73,7 +73,7 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const optional<sae_helper::SAEPair> sae_params = get_commit_values(
-		rs, attacker["iface"], attacker["sniff_iface"],rs.get_actor("access_point")->get(SK::ssid), ap["mac"], 30);
+		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface),rs.get_actor("access_point")->get(SK::ssid), ap["mac"], 30);
 
 	if(sae_params.has_value()){
 		rs.start_observers();
@@ -83,7 +83,7 @@ void run_attack(RunStatus &rs){
 		// change to monitor mode
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
-		check_vuln(attacker["iface"], ap_mac, duration, sae_params.value(), attacker["mac"],
+		check_vuln(attacker.get(SK::iface), ap_mac, duration, sae_params.value(), attacker["mac"],
 			att_cfg.at("burst_size").get<size_t>(), att_cfg.at("packets_per_second_limit").get<size_t>());
 	} else{
 		throw run_err("SAE Commit capture failed");

@@ -32,7 +32,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 
 void client_ap_setup(RunStatus &rs){
 
-	// check if contains rs.get_actor("attacker")["source"] != "internal"
+	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
 	if(rs.get_actor("access_point")->is_WB())
 		setup_AP(rs, "access_point");
 
@@ -66,8 +66,8 @@ void setup_rogue_ap(RunStatus &rs){
 };
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs){
-	if( (rs.get_actor("attacker")["source"] != "simulation" || rs.get_actor("client")["source"] != "simulation")
-	 && (rs.get_actor("attacker")["source"] != "internal" || rs.get_actor("client")["source"] != "internal")){
+	if( (rs.get_actor("attacker").get(SK::source) != "simulation" || rs.get_actor("client").get(SK::source) != "simulation")
+	 && (rs.get_actor("attacker").get(SK::source) != "internal" || rs.get_actor("client").get(SK::source) != "internal")){
 		throw run_err("only internal actors are supported");
 	}
 

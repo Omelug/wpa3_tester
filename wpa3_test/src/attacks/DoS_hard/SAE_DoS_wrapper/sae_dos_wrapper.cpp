@@ -65,17 +65,27 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 	const int restarts = att_cfg.at("max_restarts").get<int>();
 
 	ofstream f(config_path);
-	f << "target_bssid_5ghz: \"" << ap_mac << "\"\n" << "target_bssid_2_4ghz: \"" << ap_mac << "\"\n\n" <<
-			"sae_scalar_2_4_hex_list:\n  - \"" << scalar_hex << "\"\n" << "sae_finite_2_4_hex_list:\n  - \"" <<
-			finite_hex << "\"\n" << "sae_scalar_5_hex_list:\n  - \"" << scalar_hex << "\"\n" <<
-			"sae_finite_5_hex_list:\n  - \"" << finite_hex << "\"\n\n" << "scanner_interface: \"\"\n" <<
-			"channel_2_4ghz: \"" << channel << "\"\n" << "channel_5ghz: \"" << to_string(ch_5) << "\"\n\n" <<
-			"target_sta_macs: [\"" << client_mac << "\"]\n" << "target_sta_macs_5ghz_special: []\n" <<
-			"target_sta_macs_2_4ghz_special: []\n\n" << "adapter_konfiguration:\n" << "  " << att_iface << ":\n" <<
-			"    band: \"" << band << "\"\n" << "    angriff: \"" << attack_type << "\"\n\n" <<
-			"packets_per_second_limit: " << pps << "\n" << "burst_size_optimal: " << burst << "\n" <<
-			"inter_packet_gap: " << gap << "\n" << "experiment_duration: " << duration << "\n" << "max_restarts: " <<
-			restarts << "\n";
+	f << "target_bssid_5ghz: \"" << ap_mac << "\"\n"
+	  << "target_bssid_2_4ghz: \"" << ap_mac << "\"\n\n"
+	  << "sae_scalar_2_4_hex_list:\n  - \"" << scalar_hex << "\"\n"
+	  << "sae_finite_2_4_hex_list:\n  - \"" << finite_hex << "\"\n"
+	  << "sae_scalar_5_hex_list:\n  - \"" << scalar_hex << "\"\n"
+	  << "sae_finite_5_hex_list:\n  - \"" << finite_hex << "\"\n\n"
+	  << "scanner_interface: \"\"\n"
+	  << "channel_2_4ghz: \"" << channel << "\"\n"
+	  << "channel_5ghz: \"" << to_string(ch_5) << "\"\n\n"
+	  << "target_sta_macs: [\"" << client_mac << "\"]\n"
+	  << "target_sta_macs_5ghz_special: []\n"
+	  << "target_sta_macs_2_4ghz_special: []\n\n"
+	  << "adapter_konfiguration:\n"
+	  << "  " << att_iface << ":\n"
+	  << "    band: \"" << band << "\"\n"
+	  << "    angriff: \"" << attack_type << "\"\n\n"
+	  << "packets_per_second_limit: " << pps << "\n"
+	  << "burst_size_optimal: " << burst << "\n"
+	  << "inter_packet_gap: " << gap << "\n"
+	  << "experiment_duration: " << duration << "\n"
+	  << "max_restarts: " << restarts << "\n";
 }
 
 void run_attack(RunStatus &rs){
@@ -96,7 +106,7 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const string config_path = rs.run_folder() / "config.yaml";
-	write_run_config(config_path, sae.value(), ap["mac"], client["mac"], ap["channel"], attacker.get(SK::iface),
+	write_run_config(config_path, sae.value(), ap.get(SK::mac), client.get(SK::mac), ap["channel"], attacker.get(SK::iface),
 					att_cfg);
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 

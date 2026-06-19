@@ -9,6 +9,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
@@ -159,7 +160,7 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 }
 
 static Bl0ckResult load_result(const RunStatus &rs){
-	const path p = rs.run_folder() / "result.json";
+	const path p = rs.run_folder() / RESULT_NAME;
 	ifstream f(p);
 	if(!f.is_open()){
 		log(LogLevel::WARNING, "result.json not found, recomputing");

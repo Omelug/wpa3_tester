@@ -5,6 +5,8 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
+
+#include "default.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/actor_keys.h"
 #include "system/hw_capabilities.h"
@@ -24,8 +26,6 @@ void run_attack(RunStatus &rs) {
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
-	const string iface1 = actor_tx.get(SK::iface);
-	const string iface2 = actor_rx.get(SK::iface);
 	const auto netns1 = actor_tx[SK::netns];
 
 	const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
@@ -42,7 +42,7 @@ void run_attack(RunStatus &rs) {
 
 	netlink_helper::NetNSContext ns(netns1);
 
-	Sniffer sniffer(iface1, sniff_cfg);
+	Sniffer sniffer(actor_tx.get(SK::iface), sniff_cfg);
 	thread sniffer_thread([&] {
 		sniffer.sniff_loop([&](PDU &pdu) -> bool {
 			if (stop) return false;
@@ -60,7 +60,7 @@ void run_attack(RunStatus &rs) {
 	frame.subtype(4);    // null data
 	rt /= frame;
 
-	PacketSender sender(iface1);
+	PacketSender sender(actor_tx.get(SK::iface));
 	this_thread::sleep_for(milliseconds(200)); // let sniffer thread start
 
 	for(int i = 0; i < BURST; ++i) {
@@ -82,7 +82,7 @@ void run_attack(RunStatus &rs) {
 		{"success",   acked >= BURST * 95 / 100},
 	};
 
-	const path result_path = rs.run_folder() / "result.json";
+	const path result_path = rs.run_folder() / RESULT_NAME;
 	{
 		ofstream ofs(result_path);
 		ofs << result.dump(2);

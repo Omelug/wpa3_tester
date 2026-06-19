@@ -5,6 +5,7 @@
 #include <random>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "logger/report.h"
@@ -20,7 +21,7 @@ using namespace chrono;
 
 void generate_report(const RunStatus &rs, const Bl0ckResult &result,
 							const path &attacker_graph, const path &client_graph){
-	const path report_path = rs.run_folder() / "report.md";
+	const path report_path = rs.run_folder() /REPORT_NAME;
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report.md");

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
@@ -102,10 +103,10 @@ void generate_report(RunSuiteStatus &rss){
 
 	for(const auto &e: test_results){
 		const string rel = e.rel_path.string();
-		const string name_cell   = exists(run_dir / e.rel_path / "report.md")
-			? "[" + e.name + "](" + rel + "/report.md)" : e.name;
+		const string name_cell   = exists(run_dir / e.rel_path /REPORT_NAME)
+			? "[" + e.name + "](" + rel + "/" + REPORT_NAME+ ")" : e.name;
 		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED")
-			+ "](" + rel + "/result.json)";
+			+ "](" + rel + "/" + RESULT_NAME+")";
 		const string ap_cell       = e.ap_mac       + " (" + e.ap_source + ")";
 		const string client_cell   = e.client_mac   + " (" + e.client_source + ")";
 		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
@@ -132,7 +133,7 @@ void generate_report(RunSuiteStatus &rss){
 		   << (100.0 * passed_count / test_results.size()) << "%\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "CSA rogue AP report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "CSA rogue AP report generated: {}", run_dir/REPORT_NAME);
 }
 }

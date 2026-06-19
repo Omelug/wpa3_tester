@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <linux/nl80211.h>
 #include <tins/tins.h>
+
+#include "default.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
 #include "system/hw_capabilities.h"
@@ -116,7 +118,7 @@ void run_attack(RunStatus &rs) {
 
 	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(actor_tx, actor_rx);
 
-	const path result_path = rs.run_folder() / "result.json";
+	const path result_path = rs.run_folder() / RESULT_NAME;
 	{
 		ofstream ofs(result_path);
 		ofs << suite.to_json().dump(2);

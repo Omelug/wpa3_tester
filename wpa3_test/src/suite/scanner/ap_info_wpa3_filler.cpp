@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
@@ -55,8 +56,8 @@ void generate_report(RunSuiteStatus &rss) {
 	}
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "ap_info_wpa3_filler report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "ap_info_wpa3_filler report generated: {}", run_dir/REPORT_NAME);
 }
 
 }

@@ -18,7 +18,8 @@ static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
     vector<Bl0ckTestEntry> results;
     for (const auto &suite : suites) {
         for (const auto &test_path : suite::helper::get_suite_test_folders(base / suite)) {
-            auto e = suite::bl0ck_test_suites::parse_test_folder(test_path);
+            auto e = Bl0ckTestEntry::parse(test_path);
+        	//TODO check nov alid reuslts?
             if (e.disconnected.has_value()) results.push_back(std::move(e));
         }
     }

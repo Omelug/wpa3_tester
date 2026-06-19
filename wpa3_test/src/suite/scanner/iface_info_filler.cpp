@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include "default.h"
 #include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
@@ -78,8 +79,8 @@ void generate_report(RunSuiteStatus &rss) {
 	}
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "iface_info suite report generated: {}", (run_dir / "report.md"));
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "iface_info suite report generated: {}", run_dir /REPORT_NAME);
 }
 
 }

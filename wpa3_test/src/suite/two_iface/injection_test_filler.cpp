@@ -3,6 +3,8 @@
 #include <nlohmann/json.hpp>
 
 #include "suite/two_iface/injection_test_filler.h"
+
+#include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
@@ -62,9 +64,9 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "|------|-----------|-----------|:------:|:-----:|:----------:|\n";
 
 	for (const auto &e : entries) {
-		const string name_cell = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string pass_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/result.json)";
+		const string name_cell = exists(run_dir / e.test_name /REPORT_NAME)
+			? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME+ ")" : e.test_name;
+		const string pass_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME+ ")";
 		report << "| " << name_cell
 		       << " | " << e.tx_driver
 		       << " | " << e.rx_driver
@@ -95,8 +97,8 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "- Partial/full failures: " << (entries.size() - all_passed_count) << "\n";
 
 	report.close();
-	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Injection test report generated: {}", run_dir/"report.md");
+	set_public_perms(run_dir /REPORT_NAME);
+	log(LogLevel::INFO, "Injection test report generated: {}", run_dir/REPORT_NAME);
 }
 
 }

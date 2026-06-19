@@ -5,6 +5,8 @@
 #include <optional>
 #include <thread>
 #include <nlohmann/json.hpp>
+
+#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd.h"
@@ -97,7 +99,7 @@ void run_chs_attack(RunStatus &rs){
 
 void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,
 	const path &ATT_graph_path, const path &rogue_graph_path, const optional<hostapd::CrackResult> &crack_result){
-	const path report_path = rs.run_folder()/ "report.md";
+	const path report_path = rs.run_folder()/REPORT_NAME;
 	ofstream report(report_path);
 	if(!report.is_open()){
 		log(LogLevel::ERROR, "Failed to create report file!");
@@ -114,7 +116,7 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	//report <<
 	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
-	//TODO add hostapd helepr ?
+	//TODO add hostapd helper ?
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
 		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";

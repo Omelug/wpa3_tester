@@ -2,6 +2,8 @@
 #include <chrono>
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "logger/log.h"
@@ -70,7 +72,7 @@ void stats_attack(const RunStatus &rs){
 	const path rogue_graph   = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 	const path att_graph     = observer::tshark::tshark_graph(rs, "attacker", elements);
 
-	const path report_path = rs.run_folder() / "report.md";
+	const path report_path = rs.run_folder() /REPORT_NAME;
 	ofstream report(report_path);
 	if (!report.is_open()) {
 		log(LogLevel::ERROR, "Failed to create report.md");

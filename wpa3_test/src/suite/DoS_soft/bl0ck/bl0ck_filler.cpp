@@ -30,19 +30,17 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
-		if(const auto actor = rs.actor("access_point")){
-			e.ap_mac = (*actor)->get_or(SK::mac, "");
-			e.ap_source = (*actor)->get_or(SK::source, "");
-		}
-		if(const auto actor = rs.actor("client")){
-			e.client_mac = (*actor)->get_or(SK::mac, "");
-			e.client_source = (*actor)->get_or(SK::source, "");
-		}
+		const auto ap = rs.get_actor("access_point");
+		e.ap_mac = ap->get(SK::mac);
+		e.ap_source = ap->get(SK::source);
 
-		if(const auto actor = rs.actor("attacker")){
-			e.attacker_mac = (*actor)->get_or(SK::mac, "");
-			e.attacker_driver = (*actor)->get_or(SK::driver_name, "");
-		}
+		const auto client = rs.get_actor("client");
+		e.client_mac = client->get(SK::mac);
+		e.client_source = client->get(SK::source);
+
+		const auto att = rs.get_actor("attacker");
+		e.attacker_mac = att->get(SK::mac);
+		e.attacker_driver = att->get(SK::driver_name);
 
 		try{
 			const auto cfg = YAML::LoadFile(cfg_path.string());

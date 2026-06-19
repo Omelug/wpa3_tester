@@ -26,24 +26,24 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
-		if(const auto it = rs.actors.find("access_point"); it != rs.actors.end()){
-			e.ap_mac = it->second->get_or(SK::mac, "");
-			e.ap_source = it->second->get_or(SK::source, "");
-			e.ap_ocv = it->second[BK::OCV];
-		}
-		if(const auto it = rs.actors.find("client"); it != rs.actors.end()){
-			e.client_mac = it->second->get_or(SK::mac, "");
-			e.client_source = it->second->get_or(SK::source, "");
-			e.client_ocv = it->second[BK::OCV];
-			e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
-		}
-		if(const auto it = rs.actors.find("attacker"); it != rs.actors.end()){
-			e.attacker_mac = it->second->get_or(SK::mac, "");
-			e.attacker_driver = it->second->get_or(SK::driver_name, "");
-		}
-		if(const auto it = rs.actors.find("rogue_ap"); it != rs.actors.end()){
-			e.rogue_ap_mac = it->second->get_or(SK::mac, "");
-			e.rogue_ap_driver = it->second->get_or(SK::driver_name, "");
+		const auto ap = rs.get_actor("access_point");
+		e.ap_mac = ap->get(SK::mac);
+		e.ap_source = ap->get(SK::source);
+		e.ap_ocv = ap[BK::OCV];
+
+		auto client = rs.get_actor("client");
+		e.client_mac = client->get(SK::mac);
+		e.client_source = client->get(SK::source);
+		e.client_ocv = client[BK::OCV];
+		e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
+
+		const auto att = rs.get_actor("attacker");
+		e.attacker_mac = att->get(SK::mac);
+		e.attacker_driver = att->get(SK::driver_name);
+
+		if(const auto rogue = rs.actor("attacker")){
+			e.rogue_ap_mac = rogue->get(SK::mac);
+			e.rogue_ap_driver = rogue->get(SK::driver_name);
 		}
 	}
 

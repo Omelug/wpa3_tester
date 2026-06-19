@@ -162,13 +162,13 @@ void stats_chs_attack(const RunStatus &rs){
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
 				});
 
-	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED").empty();
-	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
+	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true).empty();
+	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
 
 	optional<hostapd::CrackResult> crack_result;
 	optional<bool> rogue_ap_connected;
 	if(rs.config().at("actors").contains("rogue_ap")){
-		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
+		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA", true);
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		rogue_ap_connected = !mana_events.empty();
 

@@ -28,7 +28,7 @@ void run_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int probe_wait_time = att_cfg.value("probe_wait_time", 30);
 
-	const string sta_mac_str = rs.get_actor("client")["mac"];
+	const string sta_mac_str = rs.get_actor("client").get(SK::mac);
 	const string attacker_iface = rs.get_actor("attacker")["iface"];
 
 	rs.start_observers();

@@ -11,9 +11,8 @@ struct Wpa3TransDowngradeTestEntry {
 	std::string test_name;
 	std::string ap_driver;
 	std::string client_driver;
-	int         rogue_4way_count;
-	bool        downgrade_seen;
-	std::optional<bool> passed; // nullopt = no result.json; value = vulnerable
+	bool	disconnected;
+	bool	downgrade_seen;
 
 	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
 };

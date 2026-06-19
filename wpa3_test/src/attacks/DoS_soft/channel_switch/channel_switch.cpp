@@ -74,8 +74,8 @@ void run_chs_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &ap_actor = rs.get_actor("access_point");
 
-	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
-	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
+	const HWAddress<6> ap_mac(rs.get_actor("access_point").get(SK::mac));
+	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const string essid = ap_actor.get(SK::ssid);
 	const Channel old_channel = ap_actor->get_channel();
@@ -177,7 +177,7 @@ void stats_chs_attack(const RunStatus &rs){
 		result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 
-	const string client_mac = rs.get_actor("client")["mac"];
+	const string client_mac = rs.get_actor("client").get(SK::mac);
 	observer::tshark::pcap_events(rs, elements, {
 								{"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black"},
 								{"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "red"}

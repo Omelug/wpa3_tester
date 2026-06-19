@@ -83,13 +83,14 @@ void setup_attack(RunStatus &rs){
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 
-	const HWAddress<6> ap_mac(rs.get_actor("access_point")["mac"]);
-	const HWAddress<6> sta_mac(rs.get_actor("client")["mac"]);
 	const string iface_name = rs.get_actor("attacker")["iface"];
 	const NetworkInterface iface(iface_name);
 	const Channel channel = rs.get_actor("access_point")->get_channel();
 
-	RadioTap radiotap = get_malformed_eapol(ap_mac, sta_mac, channel);
+	RadioTap radiotap = get_malformed_eapol(
+		rs.get_actor("access_point").get(SK::mac),
+		rs.get_actor("client").get(SK::mac),
+		channel);
 	PacketSender sender;
 
 	this_thread::sleep_for(chrono::seconds(5));

@@ -42,7 +42,7 @@ void run_attack(RunStatus &rs) {
 	rs.process_manager.stop_all();
 }
 
-void stats_attack(const RunStatus &rs) {
+void stats_attack(const RunStatus &rs){
 	G_elms elements;
 
 	rs.log_events(elements, {
@@ -62,12 +62,9 @@ void stats_attack(const RunStatus &rs) {
 	const auto disc_times       = get_time_logs(rs, "client",   "CTRL-EVENT-DISCONNECTED");
 	const auto rogue_sta_times  = get_time_logs(rs, "rogue_ap", "AP-STA-CONNECTED");
 	const auto rogue_4way_times = get_time_logs(rs, "rogue_ap", "EAPOL-4WAY-HS-COMPLETED");
-	// wpa_supplicant logs "key_mgmt=WPA-PSK" when completing auth with a PSK network
-	const auto wpa2_auth_times  = get_time_logs(rs, "client",   "key_mgmt=WPA-PSK");
 
 	const bool disconnected     = !disc_times.empty();
-	const bool rogue_connected  = !rogue_sta_times.empty();
-	const bool downgrade_seen   = !wpa2_auth_times.empty();
+	const bool downgrade_seen   = !rogue_4way_times.empty();
 
 	const path client_graph  = observer::tshark::tshark_graph(rs, "client",   elements);
 	const path rogue_graph   = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
@@ -80,17 +77,15 @@ void stats_attack(const RunStatus &rs) {
 	} else {
 		report << "# WPA3 Transition Downgrade to WPA2-PSK\n\n";
 		report << "A client connected to a WPA3-Transition AP (SAE+PSK) is disconnected by stopping "
-		          "the legitimate AP. A rogue WPA2-PSK-only AP with the same SSID and credentials "
-		          "is running. A vulnerable client will automatically associate using WPA2-PSK.\n\n";
+				  "the legitimate AP. A rogue WPA2-PSK-only AP with the same SSID and credentials "
+				  "is running. A vulnerable client will automatically associate using WPA2-PSK.\n\n";
 		report::attack_config_table(report, rs);
 		report::attack_mapping_table(report, rs);
 		report << "## Results\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
 		report << "| Client disconnected from legitimate AP | " << (disconnected ? "yes" : "no") << " |\n";
-		report << "| Client connected to rogue AP | " << (rogue_connected ? "yes" : "no") << " |\n";
-		report << "| WPA2-PSK downgrade observed on client | " << (downgrade_seen ? "yes" : "no") << " |\n";
-		report << "| Rogue AP 4-way handshakes completed | " << rogue_4way_times.size() << " |\n";
-		report << "| Vulnerable (downgrade to WPA2) | " << (rogue_connected ? "yes" : "no") << " |\n\n";
+		report << "| Rogue AP | " << (downgrade_seen ? "yes" : "no") << " |\n";
+
 		report << "### Traffic\n";
 		if(!client_graph.empty()){
 			report << "### Client\n";
@@ -109,12 +104,9 @@ void stats_attack(const RunStatus &rs) {
 		set_public_perms(report_path);
 	}
 
-	const json result = {
+	rs.save_result({
 		{"disconnected",        disconnected},
 		{"downgrade_seen",      downgrade_seen},
-		{"rogue_4way_count",    static_cast<int>(rogue_4way_times.size())},
-		{"vulnerable",          rogue_connected},
-	};
-	rs.save_result(result);
+	});
 }
 }

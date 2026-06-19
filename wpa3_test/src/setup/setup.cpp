@@ -19,7 +19,7 @@ void RunStatus::setup_test(){
 	}
 
 	create_public_dirs(_run_folder, ec);
-	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder.string(), ec.message());
+	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder, ec.message());
 
 	save_actor_interface_mapping();
 	process_manager.init_logging(_run_folder);
@@ -28,8 +28,8 @@ void RunStatus::setup_test(){
 
 	const auto module_name = _config.at("attacker_module");
 
-	if(const auto run_it = attack_module_maps::setup_map.find(module_name);
-		run_it != attack_module_maps::setup_map.end()){
+	if(const auto run_it = attack_module_maps::setup_map.find(module_name); run_it != attack_module_maps::setup_map.
+		end()){
 		run_it->second(*this);
 	} else{
 		log(LogLevel::DEBUG, "setup function not set");

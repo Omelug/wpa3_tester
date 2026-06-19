@@ -52,7 +52,8 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 				for(const auto &s: streams){
 					while(true){
 						auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-						if(read_ec == errc::resource_unavailable_try_again || read_ec == errc::operation_would_block) break;
+						if(read_ec == errc::resource_unavailable_try_again || read_ec ==
+							errc::operation_would_block) break;
 						if(read_ec || n == 0) break;
 						handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
 					}
@@ -87,8 +88,9 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 				const auto deadline = steady_clock::now() + milliseconds(500);
 				while(!mp->shutting_down.load() && steady_clock::now() < deadline){
 					const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
-					if(auto [events, poll_ec] = mp->proc->poll(event, reproc::milliseconds(min(remaining.count(), milliseconds(50).count())));
-						poll_ec || !(events & event)) break;
+					if(auto [events, poll_ec] = mp->proc->poll(
+						event, reproc::milliseconds(min(remaining.count(), milliseconds(50).count()))); poll_ec || !(
+						events & event)) break;
 
 					auto [n, read_ec] = mp->proc->read(stream, buffer, sizeof(buffer));
 					if(read_ec || n == 0) break;
@@ -205,7 +207,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	if(!logging_dir.empty()){ log_dir = logging_dir; }
 	path log_path = log_dir / (process_name + ".log");
 
-	log(LogLevel::DEBUG, "Starting process {}: '{}'", process_name, join(cmd," "));
+	log(LogLevel::DEBUG, "Starting process {}: '{}'", process_name, join(cmd, " "));
 
 	// Initialize logs BEFORE starting process
 	auto &logs = mp->logs;
@@ -223,7 +225,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	}
 
 	vector<string> cmd_with_setsid;
-	cmd_with_setsid.emplace_back("setsid");  // crate new group to kill all with subprocesses
+	cmd_with_setsid.emplace_back("setsid"); // crate new group to kill all with subprocesses
 	cmd_with_setsid.insert(cmd_with_setsid.end(), cmd.begin(), cmd.end());
 
 	if(const auto ec = mp->proc->start(cmd_with_setsid, options)){
@@ -256,8 +258,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	{
 		lock_guard lock(logger_mtx);
 		const auto it = processes.find(actor_name);
-		if(it == processes.end() || !it->second)
-			throw run_err("Unknown process in wait_for: " + actor_name);
+		if(it == processes.end() || !it->second) throw run_err("Unknown process in wait_for: " + actor_name);
 		mp = it->second;
 		auto &logs = mp->logs;
 
@@ -280,11 +281,12 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	auto &logs = mp->logs;
 	bool pred_met = false;
 	const auto deadline = steady_clock::now() + timeout;
-	while (!pred_met && !g_interrupted.load()) {
+	while(!pred_met && !g_interrupted.load()){
 		const auto remaining = duration_cast<nanoseconds>(deadline - steady_clock::now());
-		if (remaining <= nanoseconds(0)) break;
-		pred_met = wait_cv.wait_for(cv_lock, min(remaining, nanoseconds(milliseconds(50))),
-			[&logs, &mp]{ return logs.wait.matched || mp->shutting_down.load(); });
+		if(remaining <= nanoseconds(0)) break;
+		pred_met = wait_cv.wait_for(cv_lock, min(remaining, nanoseconds(milliseconds(50))), [&logs, &mp]{
+			return logs.wait.matched || mp->shutting_down.load();
+		});
 	}
 
 	lock_guard data_lock(logger_mtx);
@@ -300,8 +302,8 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	}
 	if(!pred_met){
 		if(throw_err)
-			throw timeout_err("Timeout waiting for pattern '{}' in process '{}' (timeout: {} seconds)",
-							pattern, actor_name, static_cast<int>(timeout.count()));
+			throw timeout_err("Timeout waiting for pattern '{}' in process '{}' (timeout: {} seconds)", pattern,
+							actor_name, static_cast<int>(timeout.count()));
 		return false;
 	}
 	logs.history.clear();
@@ -401,8 +403,7 @@ void ProcessManager::stop_all(){
 		for(const auto &name: processes | views::keys){ process_names.push_back(name); }
 	}
 
-	for(const auto &process_name: process_names)
-		stop(process_name);
+	for(const auto &process_name: process_names) stop(process_name);
 	log(LogLevel::DEBUG, "All processes stopped");
 }
 }

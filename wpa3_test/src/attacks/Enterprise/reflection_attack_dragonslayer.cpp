@@ -10,19 +10,18 @@ using namespace std;
 using namespace filesystem;
 
 namespace wpa3_tester::reflection_dragonslayer{
-
 void setup_attack(RunStatus &rs){
 	const auto target_type = rs.config().at("attack_config").at("target_type").get<string>();
 	assert(target_type == "ap" || target_type == "sta");
 	if(target_type == "ap"){
 		copy_f(rs.config_path().parent_path() / "config/dragonslayer-wpa_supplicant.conf",
-				rs.run_folder()/ "dragonslayer.conf");
+				rs.run_folder() / "dragonslayer.conf");
 	}
 	if(target_type == "sta"){
 		copy_f(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
-				rs.run_folder()/ "dragonslayer.conf");
+				rs.run_folder() / "dragonslayer.conf");
 	}
-	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder()/ "hostapd.eap_user");
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 	components::client_ap_attacker_setup_enterprise(rs);
 }
 
@@ -36,7 +35,7 @@ void start_dragonslayer(RunStatus &rs, const string &actor_name, const string &i
 	if(target_type == "ap"){
 		command.insert(command.end(), {
 							dragonslayer_folder + "/wpa_supplicant/wpa_supplicant", "-D", "nl80211", "-c",
-							rs.run_folder()/ "dragonslayer.conf", "-i", iface, "-a", "0"
+							rs.run_folder() / "dragonslayer.conf", "-i", iface, "-a", "0"
 						});
 	}
 	if(target_type == "sta"){
@@ -51,11 +50,11 @@ void run_attack(RunStatus &rs){
 	const auto target_type = att_cfg.at("target_type").get<string>();
 	start_dragonslayer(rs, attacker.get(SK::actor_name), attacker.get(SK::iface), target_type);
 
-	ofstream attack_result(rs.run_folder()/ "result.txt");
+	ofstream attack_result(rs.run_folder() / "result.txt");
 	attack_result << to_string(
 		rs.process_manager.wait_for("attacker", "server is vulnerable to reflection", chrono::seconds(40), false));
 	attack_result.close();
-	set_public_perms(rs.run_folder()/ "result.txt");
+	set_public_perms(rs.run_folder() / "result.txt");
 }
 
 /*void stats(const RunStatus& rs){

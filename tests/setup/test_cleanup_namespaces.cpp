@@ -14,10 +14,12 @@
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
+using namespace std;
+
 void cleanup_all_namespaces();
-void kill_process_in_ns_name(const std::string &ns_name);
-void delete_ns_and_wait(const std::string &ns_name, const std::vector<std::string> &ifaces,
-    std::chrono::milliseconds timeout = std::chrono::milliseconds(3000));
+void kill_process_in_ns_name(const string &ns_name);
+void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
+    chrono::milliseconds timeout = chrono::milliseconds(3000));
 }
 
 using namespace std;
@@ -68,7 +70,7 @@ static bool pid_alive(const pid_t pid){
 
 struct NsGuard{
     string name;
-    explicit NsGuard(string n): name(std::move(n)){}
+    explicit NsGuard(string n): name(move(n)){}
     ~NsGuard() = default;
 };
 

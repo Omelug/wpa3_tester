@@ -43,7 +43,8 @@ void check_CSA(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
 	nlattr *cmd;
 	int rem;
-	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem){
+	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem)
+	{
 		if(nla_get_u32(cmd) == NL80211_CMD_CHANNEL_SWITCH){
 			caps->csa = true;
 			return;
@@ -280,11 +281,19 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	nlmsg_free(msg);
 	nl_socket_free(sock);
 
-	if(caps.no_ir_5ghz > 0 && !caps.band5)
-		log(LogLevel::WARNING, "{}: {} 5 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml", cfg->get(SK::iface), caps.no_ir_5ghz);
-	if(caps.no_ir_6ghz > 0 && !caps.band6)
-		log(LogLevel::WARNING, "{}: {} 6 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml", cfg->get(SK::iface), caps.no_ir_6ghz);
-	if(caps.no_ir_24ghz > 0 && !caps.band24)
-		log(LogLevel::DEBUG, "{}: {} 2.4 GHz channel(s) excluded by regulatory (NO_IR)", cfg->get(SK::iface), caps.no_ir_24ghz);
+	if(caps.no_ir_5ghz > 0 && !caps.band5){
+		log(LogLevel::WARNING,
+			"{}: {} 5 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml",
+			cfg->get(SK::iface), caps.no_ir_5ghz);
+	}
+	if(caps.no_ir_6ghz > 0 && !caps.band6){
+		log(LogLevel::WARNING,
+			"{}: {} 6 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml",
+			cfg->get(SK::iface), caps.no_ir_6ghz);
+	}
+	if(caps.no_ir_24ghz > 0 && !caps.band24){
+		log(LogLevel::DEBUG, "{}: {} 2.4 GHz channel(s) excluded by regulatory (NO_IR)", cfg->get(SK::iface),
+			caps.no_ir_24ghz);
+	}
 }
 }

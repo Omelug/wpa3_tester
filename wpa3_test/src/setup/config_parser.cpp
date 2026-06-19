@@ -44,8 +44,7 @@ void deep_merge(json &base, const json &patch){
 		if(it.key() == "$DELETE"){
 			if(it.value().is_string()) base.erase(it.value().get<string>());
 			else if(it.value().is_array())
-				for(const auto &k: it.value())
-					if(k.is_string()) base.erase(k.get<string>());
+				for(const auto &k: it.value()) if(k.is_string()) base.erase(k.get<string>());
 		} else if(it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()){
 			deep_merge(base[it.key()], it.value());
 		} else{
@@ -65,8 +64,7 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 			current_node["$validator"] = absolute(base_dir / current_node["$validator"].get<string>()).string();
 		} else if(current_node["$validator"].is_array()){
 			for(auto &v: current_node["$validator"]){
-				if(v.is_string())
-					v = absolute(base_dir / v.get<string>()).string();
+				if(v.is_string()) v = absolute(base_dir / v.get<string>()).string();
 			}
 		}
 	}
@@ -121,8 +119,7 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 		current_node.erase("$DELETE");
 		if(del.is_string()) merged.erase(del.get<string>());
 		else if(del.is_array())
-			for(const auto &k: del)
-				if(k.is_string()) merged.erase(k.get<string>());
+			for(const auto &k: del) if(k.is_string()) merged.erase(k.get<string>());
 	}
 
 	// current node overrides all parents (nested $DELETE in sub-objects handled by deep_merge)
@@ -192,31 +189,29 @@ json RunStatus::config_validation(const path &config_path){
 }
 
 void RunStatus::ensure_requirement(const string &req) const{
-	assert(req ==  "ath_masker" or req ==  "ath9k_noorder_change");
-	if(req == "ath_masker")				firmware::load_ath_masker(_run_config.get_install_req());
-	if(req == "ath9k_noorder_change")	firmware::load_ath9k_noorder_change();
+	assert(req == "ath_masker" or req == "ath9k_noorder_change");
+	if(req == "ath_masker") firmware::load_ath_masker(_run_config.get_install_req());
+	if(req == "ath9k_noorder_change") firmware::load_ath9k_noorder_change();
 }
 
 void RunStatus::check_local_requirements(){
-	std::set<std::string> all_requirements;
+	set<string> all_requirements;
 
 	if(_config.contains("requirements")){
 		const auto &reqs = _config.at("requirements");
 		if(reqs.is_object() && reqs.contains("simple")){
 			for(const auto &req: reqs.at("simple")){
-				if(req.is_string()) all_requirements.insert(req.get<std::string>());
+				if(req.is_string()) all_requirements.insert(req.get<string>());
 			}
 		}
 	}
 
 	// Per-actor requirements
 	for(auto &[actor_name, actor_data]: _config.at("actors").items()){
-		if(!actor_data.contains("setup") || !actor_data.at("setup").contains("requirements"))
-			continue;
+		if(!actor_data.contains("setup") || !actor_data.at("setup").contains("requirements")) continue;
 		const auto &reqs = actor_data.at("setup").at("requirements");
 		if(reqs.is_object() && reqs.contains("simple")){
-			for(const auto &req: reqs.at("simple"))
-				if(req.is_string()) all_requirements.insert(req.get<std::string>());
+			for(const auto &req: reqs.at("simple")) if(req.is_string()) all_requirements.insert(req.get<string>());
 		}
 	}
 
@@ -234,7 +229,7 @@ void save_yaml(const json &json_obj, const path &out_path){
 			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
 				if(yaml_node.IsMap()){
 					self(self, it->second);
-				}else{
+				} else{
 					self(self, *it);
 				}
 			}

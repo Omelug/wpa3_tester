@@ -35,7 +35,7 @@ void run_attack(RunStatus &rs){
 		probe.supported_rates({1.0f, 2.0f, 5.5f, 11.0f});
 		RadioTap radiotap{};
 		Channel ch;
-		ch.ch_num = stoi(ap.get(SK::channel));//FIXME band fromconfig
+		ch.ch_num = stoi(ap.get(SK::channel)); //FIXME band fromconfig
 
 		const int freq_mhz = hw_capabilities::channel_to_freq(ch);
 		radiotap.channel(freq_mhz, RadioTap::OFDM);
@@ -46,7 +46,7 @@ void run_attack(RunStatus &rs){
 			sender.send(radiotap, iface);
 		} catch(const pcap_error &e){
 			log(LogLevel::ERROR, "PCAP Error: ", e.what());
-		} catch(const std::exception &e){
+		} catch(const exception &e){
 			log(LogLevel::ERROR, "General Error: {}", e.what());
 		}
 

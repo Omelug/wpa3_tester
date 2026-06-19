@@ -49,7 +49,7 @@ TEST_SUITE("MonitorSocket::parse_frame") {
     }
 
     TEST_CASE("garbage bytes return empty result") {
-        const std::vector<uint8_t> garbage = {0x00, 0xFF, 0xAA, 0x42};
+        const vector<uint8_t> garbage = {0x00, 0xFF, 0xAA, 0x42};
         auto result = MonitorSocket::parse_frame(garbage.data(),
                                                  static_cast<uint32_t>(garbage.size()));
         CHECK_UNARY_FALSE(static_cast<bool>(result));
@@ -57,7 +57,7 @@ TEST_SUITE("MonitorSocket::parse_frame") {
     }
 
     TEST_CASE("zero caplen returns empty result") {
-        const std::vector<uint8_t> raw = {0x00};
+        const vector<uint8_t> raw = {0x00};
         auto result = MonitorSocket::parse_frame(raw.data(), 0);
         CHECK_UNARY_FALSE(static_cast<bool>(result));
     }
@@ -66,7 +66,7 @@ TEST_SUITE("MonitorSocket::parse_frame") {
 TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("too short input returns empty") {
-        const std::vector<uint8_t> short_buf = {0x00, 0x00};
+        const vector<uint8_t> short_buf = {0x00, 0x00};
     	Channel ch{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(short_buf, ch);
         CHECK_UNARY(out.empty());
@@ -74,7 +74,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
     TEST_CASE("rt_len larger than buffer returns empty") {
         // bytes 2-3 claim rt_len = 0xFFFF
-        const std::vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
+        const vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
     	Channel ch{6, WifiBand::BAND_2_4, nullopt};
         const auto out = MonitorSocket::build_inject_frame(bad, ch);
         CHECK_UNARY(out.empty());
@@ -100,8 +100,8 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
         const auto out = MonitorSocket::build_inject_frame(raw, ch);
         REQUIRE_UNARY_FALSE(out.empty());
 
-        const std::vector old_payload(raw.begin() + rt_len, raw.end());
-        const std::vector new_payload(out.begin() + rt_len, out.end());
+        const vector old_payload(raw.begin() + rt_len, raw.end());
+        const vector new_payload(out.begin() + rt_len, out.end());
 
         //payload is unmodified
         REQUIRE_EQ(old_payload.size(), new_payload.size());

@@ -50,7 +50,7 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 	}
 
 	const auto obs_folder = get_observer_folder(rs, program_name);
-	const optional<string>& sniff = actor[SK::sniff_iface];
+	const optional<string> &sniff = actor[SK::sniff_iface];
 	const string iface = sniff ? MONITOR_IFACE_PREFIX + *sniff : actor.get(SK::iface);
 
 	vector<string> command;
@@ -61,7 +61,7 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 
 	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
 	rs.process_manager.after_stop(actor_name + "_cap", [pcap_path](){
-		if (exists(pcap_path)) set_public_perms(pcap_path);
+		if(exists(pcap_path)) set_public_perms(pcap_path);
 	});
 }
 }

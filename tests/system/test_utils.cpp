@@ -57,7 +57,7 @@ TEST_CASE("current_time_string - consistency"){
 
 TEST_CASE("relative_from - basic functionality"){
     path test_base = current_path() / "test_relative_base";
-    path attack_config = test_base / "attack_config" / "subdir" / "nested" / "test_config.yaml";
+    path attack_config = test_base / "attack_config" / "subdir" / "nested" / TEST_CONFIG_NAME;
     create_directories(attack_config.parent_path());
 
     string result = relative_from("attack_config", attack_config);

@@ -59,14 +59,14 @@ string McMitm::frame_to_str(const Dot11 &pkt){
 void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &frame, const string &suffix){
 	if(frame.type() == Dot11::CONTROL) return;
 
-	HWAddress<6> addr2;
+	HWAddress < 6 > addr2;
 	if(const auto *mgmt = frame.find_pdu<Dot11ManagementFrame>()){
 		addr2 = mgmt->addr2();
 	} else if(const auto *data = frame.find_pdu<Dot11Data>()){
 		addr2 = data->addr2();
 	} else if(frame.type() == Dot11::MANAGEMENT){
 		const auto raw = const_cast<Dot11&>(frame).serialize();
-		if(raw.size() >= 16) addr2 = HWAddress <6>(raw.data() + 10);
+		if(raw.size() >= 16) addr2 = HWAddress < 6 > (raw.data() + 10);
 	}
 
 	string msg = prefix + ": " + addr2.to_string() + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
@@ -75,7 +75,7 @@ void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &f
 	log(level, msg);
 }
 
-void McMitm::display_traffic(const PDU &pdu, const std::string &prefix, const std::string &suffix){
+void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string &suffix){
 	const auto *dot11 = pdu.find_pdu<Dot11>();
 	if(!dot11) return;
 

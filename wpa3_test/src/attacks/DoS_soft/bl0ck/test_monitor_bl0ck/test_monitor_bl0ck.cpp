@@ -14,8 +14,8 @@ using namespace Tins;
 using namespace chrono;
 
 void speed_observation_start(RunStatus &rs){
-	const HWAddress<6> rx_mac(rs.get_actor("receiver")["mac"]);
-	const HWAddress<6> tx_mac(rs.get_actor("transceiver")["mac"]);
+	const HWAddress<6> rx_mac(rs.get_actor("receiver").get(SK::mac));
+	const HWAddress<6> tx_mac(rs.get_actor("transceiver").get(SK::mac));
 
 	const string mac_filter = "(wlan host " + rx_mac.to_string() + " or wlan host " + tx_mac.to_string() + ")"
 			" or (wlan[0] & 0xfc == 0x84 or wlan[0] & 0xfc == 0x94)";
@@ -27,8 +27,8 @@ void speed_observation_start(RunStatus &rs){
 void run_attack(RunStatus &rs){
 	const NetworkInterface iface_obj(rs.get_actor("transceiver")["iface"]);
 
-	const HWAddress<6> rx_mac(rs.get_actor("receiver")["mac"]);
-	const HWAddress<6> tx_mac(rs.get_actor("transceiver")["mac"]);
+	const HWAddress<6> rx_mac(rs.get_actor("receiver").get(SK::mac));
+	const HWAddress<6> tx_mac(rs.get_actor("transceiver").get(SK::mac));
 	speed_observation_start(rs);
 
 	PacketSender sender;

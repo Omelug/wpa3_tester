@@ -52,8 +52,7 @@ void run_attack(RunStatus &rs){
 		only_to_mitm = rs.config().at("attack_config").at("only_to_mitm").get<bool>();
 	}
 
-	McMitm attack(rogue_client, rogue_ap, ap_ssid, ap_mac, client_mac,
-				rs.run_folder() / "logger", only_to_mitm);
+	McMitm attack(rogue_client, rogue_ap, ap_ssid, ap_mac, client_mac, rs.run_folder() / "logger", only_to_mitm);
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();

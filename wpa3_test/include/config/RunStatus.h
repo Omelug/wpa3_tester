@@ -17,9 +17,9 @@
 //hash for ActorMACMap
 template<>
 struct std::hash<Tins::HWAddress<6>>{
-	size_t operator()(const Tins::HWAddress<6>& addr) const noexcept {
+	size_t operator()(const Tins::HWAddress<6> &addr) const noexcept{
 		size_t result = 0;
-		for (uint8_t byte : addr) {
+		for(uint8_t byte: addr){
 			result ^= std::hash<uint8_t>{}(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
 		}
 		return result;
@@ -39,14 +39,16 @@ class ExternalConn;
 class GraphElements;
 
 using ActorMap = std::unordered_map<std::string,ActorPtr>;
-using ActorMACMap = std::unordered_map<Tins::HWAddress<6>,ActorPtr>;
+using ActorMACMap = std::unordered_map<Tins::HWAddress < 6>
+,
+ActorPtr
+>;
 using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
 	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
-
 protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};
@@ -58,12 +60,12 @@ protected:
 	ActorCMap simulation_mapping{};
 	HwOptionCache _hw_option_cache{};
 public:
-	[[nodiscard]] const HwOptionCache& hw_option_cache() const { return _hw_option_cache; }
+	[[nodiscard]] const HwOptionCache &hw_option_cache() const{ return _hw_option_cache; }
 	void hw_option_cache(const HwOptionCache &c){ _hw_option_cache = c; }
 	[[nodiscard]] Run_Config run_config() const{ return _run_config; }
 	void run_config(const Run_Config &rc){ _run_config.merge_from(rc); }
-	[[nodiscard]] nlohmann::json& config() { return _config;}
-	[[nodiscard]] const nlohmann::json& config() const { return _config;}
+	[[nodiscard]] nlohmann::json &config(){ return _config; }
+	[[nodiscard]] const nlohmann::json &config() const{ return _config; }
 	void config(const nlohmann::json &new_config){ this->_config = new_config; }
 	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }
 	void run_folder(const std::filesystem::path &new_run_folder){ this->_run_folder = new_run_folder; }
@@ -77,7 +79,9 @@ public:
 	ProcessManager process_manager{};
 
 	RunStatus() = default;
-	explicit RunStatus(const std::filesystem::path &config_path, std::string testName = "", const std::string &sub_folder = "");
+	explicit RunStatus(const std::filesystem::path &config_path, std::string testName = "",
+						const std::string &sub_folder = ""
+	);
 	void clean();
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen);
@@ -85,6 +89,7 @@ public:
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
+	std::optional<ActorPtr> actor(const std::string &actor_name);
 	ActorPtr &get_actor(const std::string &actor_name);
 	const ActorPtr &get_actor(const std::string &actor_name) const;
 	static void get_or_create_connection(const ActorPtr &actor);
@@ -94,29 +99,30 @@ public:
 
 	// get external options
 	// For manual testing / wizards
-	static std::vector<ActorPtr> list_external_entities(
-		const std::string &iface, size_t timeout_sec, const std::vector<int> &channels
+	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
+														const std::vector<int> &channels
 	);
 
 	void log_events(G_elms &elements,
 					// { actor_name, pattern, label, color }
 					std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_d
 	) const;
-
 private:
 	// to scan available interfaces
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
 	std::vector<int> get_external_BB_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorCMap &actors = {});
-	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels, const ActorCMap &actors);
+	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels,
+												const ActorCMap &actors
+	);
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
-
 public:
 	static std::vector<ActorPtr> internal_options();
 	void parse_requirements();
 
-	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::filesystem::path &config_path);
+	static nlohmann::json extends_recursive(const nlohmann::json &config_json, const std::filesystem::path &config_path
+	);
 	static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void ensure_requirement(const std::string &req) const;
@@ -130,7 +136,7 @@ public:
 	void stats_test() const;
 	void save_actor_interface_mapping() const;
 	void load_actor_interface_mapping();
-	void save_result(const nlohmann::json& j) const;
+	void save_result(const nlohmann::json &j) const;
 	nlohmann::json load_result() const;
 };
 

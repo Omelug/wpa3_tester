@@ -18,14 +18,14 @@ vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
 	// rename all new Wi-Fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
-	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+	for(const auto &[name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
 		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
 	}
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
 	//only hwsim_ prefixed interfaces are returned
 	vector<ActorPtr> options;
-	for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
+	for(const auto &[name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt)){
 		auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
 		cfg->set(SK::iface, name);
 		cfg->set(SK::radio, radio);

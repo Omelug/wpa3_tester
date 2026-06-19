@@ -293,7 +293,7 @@ definitions:
             setup:
               properties:
                 ex_WB_programs:
-                  not: {}
+                  not: { }
           errorMessage: "ex_WB_programs can only be used with source: external"
       # whitebox_ip/whitebox_host not allowed if not external
       - if:
@@ -329,17 +329,17 @@ definitions:
             not:
               anyOf:
                 - allOf:
-                    - required: [condition]
-                    - properties: {condition: {contains: {const: "AP"}}}
-                    - properties: {condition: {contains: {const: "managed"}}}
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "AP" } } }
+                    - properties: { condition: { contains: { const: "managed" } } }
                 - allOf:
-                    - required: [condition]
-                    - properties: {condition: {contains: {const: "AP"}}}
-                    - properties: {condition: {contains: {const: "monitor"}}}
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "AP" } } }
+                    - properties: { condition: { contains: { const: "monitor" } } }
                 - allOf:
-                    - required: [condition]
-                    - properties: {condition: {contains: {const: "managed"}}}
-                    - properties: {condition: {contains: {const: "monitor"}}}
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "managed" } } }
+                    - properties: { condition: { contains: { const: "monitor" } } }
         errorMessage: "condition can contain at most one interface mode: AP, managed, monitor"
       # channel in selection requires a monitor-capable or AP condition (mirrors monitor_needed())
       - if:
@@ -353,12 +353,12 @@ definitions:
               properties:
                 condition:
                   anyOf:
-                    - contains: {const: "monitor"}
-                    - contains: {const: "active_monitor"}
-                    - contains: {const: "control_monitor"}
-                    - contains: {const: "injection_selftest"}
-                    - contains: {const: "AP"}
-                    - contains: {const: "managed"}
+                    - contains: { const: "monitor" }
+                    - contains: { const: "active_monitor" }
+                    - contains: { const: "control_monitor" }
+                    - contains: { const: "injection_selftest" }
+                    - contains: { const: "AP" }
+                    - contains: { const: "managed" }
           errorMessage: "when channel is in selection, condition must contain monitor, active_monitor, control_monitor, injection, managed or AP"
   Observer:
     type: object

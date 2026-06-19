@@ -59,14 +59,14 @@ TEST_CASE("log - log_actor_map prints name and keys"){
 
 TEST_CASE("formatter - Tins::HWAddress formats as string"){
     const Tins::HWAddress<6> addr("aa:bb:cc:dd:ee:ff");
-    CHECK_EQ(std::format("{}", addr), addr.to_string());
-    CHECK_EQ(std::format("mac={}", Tins::HWAddress<6>("00:11:22:33:44:55")), "mac=00:11:22:33:44:55");
+    CHECK_EQ(format("{}", addr), addr.to_string());
+    CHECK_EQ(format("mac={}", Tins::HWAddress<6>("00:11:22:33:44:55")), "mac=00:11:22:33:44:55");
 }
 
-TEST_CASE("formatter - std::filesystem::path formats as string"){
+TEST_CASE("formatter - filesystem::path formats as string"){
     const filesystem::path p = "/tmp/some/path.txt";
-    CHECK_EQ(std::format("{}", p), p.string());
-    CHECK_EQ(std::format("prefix/{}", filesystem::path("foo/bar")), "prefix/foo/bar");
+    CHECK_EQ(format("{}", p), p.string());
+    CHECK_EQ(format("prefix/{}", filesystem::path("foo/bar")), "prefix/foo/bar");
 }
 
 TEST_CASE("log - escape_tex replaces underscores"){

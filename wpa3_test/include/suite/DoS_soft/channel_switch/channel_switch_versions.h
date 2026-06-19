@@ -5,8 +5,7 @@
 #include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::suite::channel_switch_filler{
-
-struct CsaVersionTestEntry {
+struct CsaVersionTestEntry{
 	std::string name;
 	std::string hostapd_version;
 	std::string supplicant_version;
@@ -23,6 +22,5 @@ struct CsaVersionTestEntry {
 
 CsaVersionTestEntry parse_test_folder(const std::filesystem::path &test_folder);
 
-void generate_report(RunSuiteStatus &rss);
-
+void generate_report(RunSuiteStatus & rss);
 }

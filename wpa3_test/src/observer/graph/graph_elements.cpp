@@ -26,7 +26,9 @@ void Graph::add_XY_points(const GraphXYPoints &xy_points){
 	gpcmd("EOD");
 }
 
-void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots, size_t &label_index){
+void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot,
+							size_t num_label_slots, size_t &label_index
+){
 	if(event_lines.event_times.empty()) return;
 
 	const string block_name = "$ev" + to_string(event_block_index++);
@@ -46,7 +48,6 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
 		} else{
 			t_str = to_string(chrono::system_clock::to_time_t(tp));
 		}
-
 
 		//change ymax/ymin, if needed
 		int pad = (ymax - ymin) / 7;
@@ -78,7 +79,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 		const double t_start = chrono::duration<double>(it->first.time_since_epoch()).count();
 		const double y = stairs.y_pos(it->second);
 
-		auto next = std::next(it);
+		auto next = next(it);
 		const double t_end = (next != stairs.steps.end())
 							? chrono::duration<double>(next->first.time_since_epoch()).count()
 							: t_start + 1.0; // extend last step by 1s
@@ -96,7 +97,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 
 	// Y axis tic labels from enum_labels
 	ostringstream tics;
-	const std::string ytics_cmd = (stairs.axis == YAxis::Y2) ? "set y2tics" : "set ytics";
+	const string ytics_cmd = (stairs.axis == YAxis::Y2) ? "set y2tics" : "set ytics";
 	tics << ytics_cmd << " (";
 	for(size_t i = 0; i < stairs.enum_labels.size(); ++i){
 		if(i > 0) tics << ", ";
@@ -106,7 +107,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 	gpcmd(tics.str());
 
 	// Y range with margin
-	const std::string yrange_cmd = (stairs.axis == YAxis::Y2) ? "set y2range" : "set yrange";
+	const string yrange_cmd = (stairs.axis == YAxis::Y2) ? "set y2range" : "set yrange";
 	ostringstream yrange;
 	yrange << yrange_cmd << " [" << fixed << setprecision(2) << stairs.y_min() << ":" << stairs.y_max() << "]";
 	gpcmd(yrange.str());

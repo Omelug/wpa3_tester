@@ -28,7 +28,10 @@ string git_commit_hash(){
 	FILE *pipe = popen("git rev-parse --short HEAD 2>/dev/null", "r");
 	if(!pipe){ return "unknown"; }
 	char buf[16]{};
-	if(fgets(buf, sizeof(buf), pipe) == nullptr){ pclose(pipe); return "unknown"; }
+	if(fgets(buf, sizeof(buf), pipe) == nullptr){
+		pclose(pipe);
+		return "unknown";
+	}
 	pclose(pipe);
 	string result(buf);
 	if(!result.empty() && result.back() == '\n'){ result.pop_back(); }
@@ -40,7 +43,6 @@ string kernel_version(){
 	if(uname(&uts) != 0){ return "unknown"; }
 	return string(uts.sysname) + " " + uts.release + " " + uts.machine;
 }
-
 
 string relative_from(const string &base_dir_name, const path &config_path){
 	const path config_full_path = absolute(config_path);
@@ -76,10 +78,8 @@ string join(const vector<string> &v, const string &sep){
 	return out;
 }
 
-static constexpr auto PUBLIC_FILE_PERMS =
-    perms::owner_read | perms::owner_write |
-    perms::group_read | perms::group_write |
-    perms::others_read | perms::others_write;  // 0666
+static constexpr auto PUBLIC_FILE_PERMS = perms::owner_read | perms::owner_write | perms::group_read |
+		perms::group_write | perms::others_read | perms::others_write; // 0666
 
 void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 	if(node.is_string()){
@@ -88,11 +88,11 @@ void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 			node = weakly_canonical(base_dir / path(s)).string();
 		}
 	} else if(node.is_object()){
-		for(auto &[key, val] : node.items()){
+		for(auto &[key, val]: node.items()){
 			resolve_relative_paths(val, base_dir);
 		}
 	} else if(node.is_array()){
-		for(auto &elem : node){
+		for(auto &elem: node){
 			resolve_relative_paths(elem, base_dir);
 		}
 	}
@@ -104,18 +104,18 @@ void create_public_dirs(const path &p){
 	while(!current.empty()){
 		if(!exists(current)){
 			to_chmod.push_back(current);
-		} else {
-			break;  // stop at first existing directory
+		} else{
+			break; // stop at first existing directory
 		}
 		path parent = current.parent_path();
-		if(parent == current) break;  // reached root
+		if(parent == current) break; // reached root
 		current = parent;
 	}
 
 	create_directories(p);
 
 	// set permissions only on newly created directories
-	for(const auto &dir : to_chmod){
+	for(const auto &dir: to_chmod){
 		permissions(dir, perms::all);
 	}
 }
@@ -126,7 +126,7 @@ void create_public_dirs(const path &p, error_code &ec){
 	while(!current.empty()){
 		if(!exists(current)){
 			to_chmod.push_back(current);
-		} else {
+		} else{
 			break;
 		}
 		path parent = current.parent_path();
@@ -137,7 +137,7 @@ void create_public_dirs(const path &p, error_code &ec){
 	create_directories(p, ec);
 	if(ec) return;
 
-	for(const auto &dir : to_chmod){
+	for(const auto &dir: to_chmod){
 		permissions(dir, perms::all, ec);
 		if(ec) return;
 	}
@@ -153,5 +153,4 @@ void copy_f(const path &src, const path &dst){
 	copy_file(src, dst, copy_options::overwrite_existing);
 	set_public_perms(dst);
 }
-
 }

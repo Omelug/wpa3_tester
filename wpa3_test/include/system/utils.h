@@ -5,7 +5,6 @@
 #include <nlohmann/json.hpp>
 
 namespace wpa3_tester{
-
 std::string current_time_string();
 std::string git_commit_hash();
 std::string kernel_version();

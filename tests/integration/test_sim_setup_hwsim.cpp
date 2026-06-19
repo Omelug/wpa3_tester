@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace wpa3_tester;
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 static string iw_info(const string &iface){
     FILE *p = popen(("iw dev " + iface + " info 2>&1").c_str(), "r");

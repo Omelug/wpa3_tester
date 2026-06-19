@@ -5,9 +5,8 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::suite::invalid_curve_filler {
-
-struct InvalidCurveTestEntry {
+namespace wpa3_tester::suite::invalid_curve_filler{
+struct InvalidCurveTestEntry{
 	std::string test_name;
 	std::string ap_driver;
 	std::string attacker_driver;
@@ -19,6 +18,5 @@ struct InvalidCurveTestEntry {
 std::vector<InvalidCurveTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
-void generate_report(RunSuiteStatus &rss);
-
+void generate_report(RunSuiteStatus & rss);
 }

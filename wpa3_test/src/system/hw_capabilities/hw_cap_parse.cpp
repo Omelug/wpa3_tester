@@ -64,6 +64,6 @@ HWAddress<6> hw_capabilities::rand_mac(){
 	char mac[18];
 	snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", dis(gen), dis(gen), dis(gen), dis(gen), dis(gen),
 			dis(gen));
-	return HWAddress<6>(mac);
+	return HWAddress < 6 > (mac);
 }
 }

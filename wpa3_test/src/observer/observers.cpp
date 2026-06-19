@@ -8,7 +8,7 @@ using namespace std;
 using namespace filesystem;
 
 path get_observer_folder(const RunStatus &rs, const string &observer_name){
-	const path obs_dir = rs.run_folder()/"observer"/observer_name;
+	const path obs_dir = rs.run_folder() / "observer" / observer_name;
 	error_code ec;
 	create_public_dirs(obs_dir, ec);
 	if(ec){

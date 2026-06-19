@@ -18,7 +18,6 @@ using namespace Tins;
 using namespace filesystem;
 
 namespace scan{
-
 vector<string> parse_csv_line(const string &line){
 	vector<string> fields;
 	stringstream ss(line);
@@ -51,8 +50,7 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 
 	// required columns
 	if(!col_idx.contains("whitebox_host") || !col_idx.contains("whitebox_ip")){
-		throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): {}",
-						conn_table);
+		throw scan_err("Connection table missing required columns (whitebox_host, whitebox_ip): {}", conn_table);
 	}
 
 	while(getline(file, line)){
@@ -85,7 +83,6 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 	log(LogLevel::INFO, "Loaded {} whitebox actors from connection table", result.size());
 	return result;
 }
-
 }
 
 void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
@@ -126,5 +123,4 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 	}
 	return options;
 }
-
 }

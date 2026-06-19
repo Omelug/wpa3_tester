@@ -36,8 +36,12 @@ public:
 	[[nodiscard]] Tins::HWAddress<6> get_mac() const{ return macaddr; }
 	[[nodiscard]] State get_state() const{ return state; }
 
-	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt): macaddr(mac), log_folder(std::move(log_folder)){}
-	explicit ClientState(const Tins::HWAddress<6> mac, const State state, const std::optional<std::filesystem::path> &log_folder = std::nullopt): state(state), macaddr(mac), log_folder(log_folder){}
+	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt
+	): macaddr(mac), log_folder(std::move(log_folder)){}
+
+	explicit ClientState(const Tins::HWAddress<6> mac, const State state,
+						const std::optional<std::filesystem::path> &log_folder = std::nullopt
+	): state(state), macaddr(mac), log_folder(log_folder){}
 
 	void update_state(const State s){
 		log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr, state2str(s));
@@ -46,7 +50,7 @@ public:
 			const bool is_new = !std::filesystem::exists(path);
 			if(std::ofstream f(path, std::ios::app); f){
 				if(is_new) set_public_perms(path);
-				f << "[STATE] " << macaddr <<" : " << state2str(state) << " -> " << state2str(s) << std::endl;
+				f << "[STATE] " << macaddr << " : " << state2str(state) << " -> " << state2str(s) << std::endl;
 			}
 		}
 		state = s;

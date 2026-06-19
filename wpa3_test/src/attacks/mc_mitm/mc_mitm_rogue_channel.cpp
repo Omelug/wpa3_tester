@@ -137,8 +137,8 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 	if(addr2 == ap_mac){ // AP ->
 		if(const auto *b = dot11->find_pdu<Dot11Beacon>()){
 			const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-			if(ch_ie && ch_ie->data_size() >= 1 && ch_ie->data_ptr()[0] == netconfig.rogue_channel.ch_num) last_rogue_beacon =
-					steady_clock::now();
+			if(ch_ie && ch_ie->data_size() >= 1 && ch_ie->data_ptr()[0] == netconfig.rogue_channel.ch_num)
+				last_rogue_beacon = steady_clock::now();
 			return;
 		}
 		if(client_state.get_mac() == dot11->addr1() || client_state.get_state() > ClientState::Target){

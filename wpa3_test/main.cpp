@@ -35,8 +35,8 @@ void parse_arguments(argparse::ArgumentParser &program, const int argc, char *ar
 		throw config_err(err.what());
 	}
 
-	if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
-		throw config_err("Cant use both lists");
+	if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list")) throw config_err(
+		"Cant use both lists");
 	const bool has_config = program.present<string>("--config").has_value();
 	const bool has_test = program.present<string>("--test").has_value();
 	const bool has_suite = program.present<string>("--test_suite").has_value();
@@ -75,7 +75,8 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 	if(const auto config_path = program.present<string>("--config")){
 		//const bool only_stats = program.get<bool>("--only_stats");
 		YAML::Node config = YAML::LoadFile(config_path.value());
-		if(nlohmann::json config_json = yaml_to_json(config); config_json.contains("config_type") && config_json.at("config_type") == "test_suite"){
+		if(nlohmann::json config_json = yaml_to_json(config); config_json.contains("config_type") && config_json.
+			at("config_type") == "test_suite"){
 			RunSuiteStatus rss(config_path.value());
 			rss.execute();
 		} else{

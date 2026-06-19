@@ -1,7 +1,7 @@
 actors:
   receiver:
     selection:
-      condition: [active_monitor]
+      condition: [ active_monitor ]
       driver: mt76x2u
       permanent_mac: 00:c0:ca:b7:69:2a
       channel: 11
@@ -9,7 +9,7 @@ actors:
   transceiver:
     selection:
       channel: 11
-      condition: [monitor]
+      condition: [ monitor ]
       driver: ath9k_htc
       permanent_mac: 24:ec:99:bf:b0:a1
     netns: tx

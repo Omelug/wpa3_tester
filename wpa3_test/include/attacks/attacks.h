@@ -33,27 +33,22 @@ namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"channel_switch", CSA_attack::setup_chs_attack}, {"bl0ck", bl0ck_attack::setup_attack},
-	{"malformed_eapol1", eapol_logoff::setup_attack},
-	{"cookie_guzzler", components::client_ap_setup}, {"pmk_gobbler", components::client_ap_setup},
-	{"memory_omnivore", components::client_ap_setup}, {"reflection_attack", reflection::setup_attack},
-	{"invalid_curve", invalid_curve::setup_attack},
+	{"malformed_eapol1", eapol_logoff::setup_attack}, {"cookie_guzzler", components::client_ap_setup},
+	{"pmk_gobbler", components::client_ap_setup}, {"memory_omnivore", components::client_ap_setup},
+	{"reflection_attack", reflection::setup_attack}, {"invalid_curve", invalid_curve::setup_attack},
 	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::setup_attack},
-	{"dragondrain", dragondrain::setup_attack},
-	{"dragondrain", dragondrain::setup_attack}, {"mc_mitm", mc_mitm::setup_attack},
-	{"ssid_confusion", mc_mitm::setup_attack}, {"ath_masker_test", ath_masker_test::setup_attack},
-	{"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
-	{"owe_trans", owe_trans::setup_attack},
-	{"wpa3_trans_downgrade", wpa3_trans_downgrade::setup_attack},
-	{"sta_info",             sta_info::setup_attack},
+	{"dragondrain", dragondrain::setup_attack}, {"dragondrain", dragondrain::setup_attack},
+	{"mc_mitm", mc_mitm::setup_attack}, {"ssid_confusion", mc_mitm::setup_attack},
+	{"ath_masker_test", ath_masker_test::setup_attack}, {"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
+	{"owe_trans", owe_trans::setup_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::setup_attack},
+	{"sta_info", sta_info::setup_attack},
 };
 
 /* map of attacker_module->attack run function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	// --------------- scans/ sanity checks
-	{"iface_info", iface_info::run_attack},
-	{"ap_info",    ap_info::run_attack},
-	{"sta_info",   sta_info::run_attack},
-	{"external_info",   external_info::run_attack},
+	{"iface_info", iface_info::run_attack}, {"ap_info", ap_info::run_attack}, {"sta_info", sta_info::run_attack},
+	{"external_info", external_info::run_attack},
 	// --------------- actually attacks
 	{"channel_switch", CSA_attack::run_chs_attack}, {"bl0ck", bl0ck_attack::run_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},
@@ -61,14 +56,11 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	{"cookie_guzzler", cookie_guzzler::run_attack}, {"pmk_gobbler", pmk_gobbler::run_attack},
 	{"memory_omnivore", memory_omnivore::run_attack}, {"reflection_attack", reflection::run_attack},
 	{"invalid_curve", invalid_curve::run_attack},
-	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::run_attack},
-	{"dragondrain", dragondrain::run_attack}, {"mc_mitm", mc_mitm::run_attack},
-	{"ssid_confusion", ssid_confusion::run_attack}, {"ath_masker_test", ath_masker_test::run_attack},
-	{"sae_dos_wrapper", sae_dos_wrapper::run_attack},
-	{"active_test", active_test::run_attack},
-	{"injection_test", injection_test::run_attack},
-	{"owe_trans", owe_trans::run_attack},
-	{"wpa3_trans_downgrade", wpa3_trans_downgrade::run_attack},
+	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::run_attack}, {"dragondrain", dragondrain::run_attack},
+	{"mc_mitm", mc_mitm::run_attack}, {"ssid_confusion", ssid_confusion::run_attack},
+	{"ath_masker_test", ath_masker_test::run_attack}, {"sae_dos_wrapper", sae_dos_wrapper::run_attack},
+	{"active_test", active_test::run_attack}, {"injection_test", injection_test::run_attack},
+	{"owe_trans", owe_trans::run_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::run_attack},
 };
 
 /* map of attacker_module->stats run function*/
@@ -81,11 +73,8 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	//{"reflection_attack", reflection::stats}
 	//{"invalid_curve", invalid_curve::run_attack}
 	{"dragondrain", dragondrain::stats_attack}, {"mc_mitm", mc_mitm::stats},
-	{"ath_masker_test", ath_masker_test::stats},
-	{"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
-	{"owe_trans", owe_trans::stats_attack},
-	{"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
+	{"ath_masker_test", ath_masker_test::stats}, {"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
+	{"owe_trans", owe_trans::stats_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
 	{"iface_info", iface_info::stats_attack},
 };
-
 }

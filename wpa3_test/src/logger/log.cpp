@@ -83,8 +83,8 @@ void log(const LogLevel level, const string &msg){
 }
 
 void log_actor_map(const string &name, const ActorCMap &m){
-	auto keys_view = m | std::views::keys;
-	const std::vector keys(keys_view.begin(), keys_view.end());
+	auto keys_view = m | views::keys;
+	const vector keys(keys_view.begin(), keys_view.end());
 	const string keys_str = keys.empty() ? "<empty>" : join(keys, ", ");
 	log(LogLevel::DEBUG, "{}:{}", name, keys_str);
 }
@@ -125,7 +125,8 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 }
 
 vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern,
-                                    bool between_markers){
+									bool between_markers
+){
 	vector<LogTimePoint> timestamps;
 	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
 	if(!exists(actor_log)){
@@ -140,8 +141,14 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	bool in_window = !between_markers;
 	while(getline(file, line)){
 		if(between_markers){
-			if(line.find(START_tag) != string::npos){ in_window = true;  continue; }
-			if(line.find(END_tag)   != string::npos){ in_window = false; continue; }
+			if(line.find(START_tag) != string::npos){
+				in_window = true;
+				continue;
+			}
+			if(line.find(END_tag) != string::npos){
+				in_window = false;
+				continue;
+			}
 		}
 		if(!in_window) continue;
 		if(regex_search(line, match, re)){

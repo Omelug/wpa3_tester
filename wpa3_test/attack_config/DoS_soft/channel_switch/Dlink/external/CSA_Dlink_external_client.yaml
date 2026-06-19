@@ -3,7 +3,7 @@ name: channel_switch_Dlink_external_client
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml
 scan_iface: wlan1 #FIXME ath nechce přepínat kanály -> zasekne se u channel 1
-scan_channels: [6]
+scan_channels: [ 6 ]
 scan_until_success: true
 actors:
   access_point:
@@ -29,7 +29,7 @@ actors:
   rogue_ap:
     sniff_iface: rogue
 $extends: [ #../../observers.comp.yaml,
-  ../../rogue_ap.comp.yaml]
+  ../../rogue_ap.comp.yaml ]
 observers:
   attacker_tshark:
     actor: attacker

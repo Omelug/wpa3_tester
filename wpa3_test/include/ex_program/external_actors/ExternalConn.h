@@ -40,18 +40,23 @@ public:
 	virtual void setup_ap(const RunStatus &, ActorPtr &){
 		throw not_implemented_err("setup_ap");
 	}
-	virtual void setup_iface(const std::string &, ActorPtr &, nlohmann::json ){
+
+	virtual void setup_iface(const std::string &, ActorPtr &, nlohmann::json){
 		throw not_implemented_err("setup_iface");
 	}
+
 	virtual void check_req(const nlohmann::json &, const std::string &){
 		throw not_implemented_err("check_req");
 	}
+
 	virtual void logger(RunStatus &, const std::string &){
 		throw not_implemented_err("logger");
 	}
+
 	virtual void get_hw_capabilities(ActorPtr &, const std::string &){
 		throw not_implemented_err("get_hw_capabilities");
 	}
+
 	void on_disconnect(DisconnectCallback cb);
 	void disconnect();
 };

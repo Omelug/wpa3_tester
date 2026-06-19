@@ -16,7 +16,7 @@ void ProcessManager::write_log_line(ofstream &os, const string &line){
 void ProcessManager::write_log_all(const string &line){
 	lock_guard lock(logger_mtx);
 	const string combined_prefix = current_timestamp() + "[write_log_all] ";
-	write_log_line(combined_log, combined_prefix+ line);
+	write_log_line(combined_log, combined_prefix + line);
 	for(const auto &[name, proc]: processes){
 		const string prefix = current_timestamp() + " [" + name + "] [write_log_all] ";
 		write_log_line(proc->logs.log, prefix + line);
@@ -111,10 +111,9 @@ int get_target_pid(int current_pid){
 int ProcessManager::get_pid(const string &process_name){
 	lock_guard lock(logger_mtx);
 	const auto it = processes.find(process_name);
-	if(it == processes.end())
-		throw setup_err("Process '" + process_name + "' not found in process map.");
-	if(it->second->start_pid <= 0)
-		throw setup_err("Process '" + process_name + "' has no valid pid (not a real process).");
+	if(it == processes.end()) throw setup_err("Process '" + process_name + "' not found in process map.");
+	if(it->second->start_pid <= 0) throw setup_err(
+		"Process '" + process_name + "' has no valid pid (not a real process).");
 	return get_target_pid(it->second->start_pid);
 }
 
@@ -142,16 +141,14 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 void ProcessManager::allow_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
 	const auto it = processes.find(actor_name);
-	if(it == processes.end())
-		throw setup_err("Process " + actor_name + " not found to allow history");
+	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found to allow history");
 	it->second->logs.history_enabled = true;
 }
 
 void ProcessManager::ignore_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
 	const auto it = processes.find(actor_name);
-	if(it == processes.end())
-		throw setup_err("Process " + actor_name + " not found to ignore history");
+	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found to ignore history");
 	it->second->logs.history_enabled = false;
 	it->second->logs.history.clear();
 }
@@ -159,9 +156,7 @@ void ProcessManager::ignore_history(const string &actor_name){
 void ProcessManager::discard_history(const string &actor_name){
 	lock_guard lock(logger_mtx);
 	const auto it = processes.find(actor_name);
-	if(it == processes.end())
-		throw setup_err("Process " + actor_name + " not found for discard history");
+	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found for discard history");
 	it->second->logs.history.clear();
 }
-
 }

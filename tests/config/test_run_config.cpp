@@ -32,7 +32,7 @@ TEST_CASE("parse_run_config - true bool fields"){
 }
 
 TEST_CASE("parse_run_config - rewrite modes"){
-    auto parse_rewrite = [](const std::string &val){
+    auto parse_rewrite = [](const string &val){
         Run_Config rc;
         parse_run_config(json{{"rewrite", val}}, rc);
         return rc.get_rewrite();

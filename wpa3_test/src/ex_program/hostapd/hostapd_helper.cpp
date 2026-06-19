@@ -12,7 +12,7 @@ namespace wpa3_tester::hostapd{
 using namespace std;
 using namespace filesystem;
 
-struct RepoConfig {
+struct RepoConfig{
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
 	string binary_name;     // "hostapd"/"hostapd-mana"
@@ -71,16 +71,17 @@ string find_matching_tag(const path &repo_dir, const string &version, const Repo
 }
 
 static string get_extra_cflags(){
-#ifdef HOSTAPD_EXTRA_CFLAGS
+	#ifdef HOSTAPD_EXTRA_CFLAGS
 	return HOSTAPD_EXTRA_CFLAGS;
-#else
+	#else
 	const char *v = getenv("EXTRA_CFLAGS");
 	return v ? v : "";
-#endif
+	#endif
 }
 
-void build_hostapd_like(const string &version, const path &build_folder, const path &target,
-						const RepoConfig &cfg, const optional<OpenSSLPaths> &openssl = nullopt){
+void build_hostapd_like(const string &version, const path &build_folder, const path &target, const RepoConfig &cfg,
+						const optional<OpenSSLPaths> &openssl = nullopt
+){
 	path repo_path = build_folder / cfg.repo_name;
 	path source_dir = repo_path / "hostapd";
 
@@ -88,24 +89,12 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	if(!exists(config_path)){ copy(source_dir / "defconfig", config_path); }
 
 	ofstream conf(config_path, ios::app);
-	conf << "\n# --- Wi-Fi Framework Testing Extensions ---"
-		"\nCONFIG_IEEE80211W=y"
-		"\nCONFIG_SAE=y"
-		"\nCONFIG_WNM=y"
-		"\nCONFIG_OCV=y"
-		"\nCONFIG_OWE=y" //FIXME invalid or in order in old versions?
+	conf << "\n# --- Wi-Fi Framework Testing Extensions ---" "\nCONFIG_IEEE80211W=y" "\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
+			"\nCONFIG_OCV=y" "\nCONFIG_OWE=y" //FIXME invalid or in order in old versions?
 
-		"\nCONFIG_SUITEB192=y"
-		"\nCONFIG_DPP=y"
-		"\nCONFIG_IEEE80211N=y"
-		"\nCONFIG_IEEE80211AC=y"
-		"\nCONFIG_IEEE80211AX=y"
-		"\nCONFIG_IEEE80211R=y"
-		"\nCONFIG_INTERWORKING=y"
-		"\nCONFIG_TESTING_OPTIONS=y"
-		"\nCONFIG_CTRL_IFACE=y"
-		"\nCONFIG_DEBUG_FILE=y"
-		"\nCONFIG_EAP_PWD=y" "\n";
+			"\nCONFIG_SUITEB192=y" "\nCONFIG_DPP=y" "\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y"
+			"\nCONFIG_IEEE80211AX=y" "\nCONFIG_IEEE80211R=y" "\nCONFIG_INTERWORKING=y" "\nCONFIG_TESTING_OPTIONS=y"
+			"\nCONFIG_CTRL_IFACE=y" "\nCONFIG_DEBUG_FILE=y" "\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
 
 	log(LogLevel::INFO, "Compiling {} {} ... ", cfg.repo_name, version);
@@ -126,7 +115,8 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 }
 
 string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg,
-				  const optional<OpenSSLPaths> &openssl = nullopt){
+				const optional<OpenSSLPaths> &openssl = nullopt
+){
 	const string folder_key = (cfg.repo_name == "hostapd_mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
@@ -150,14 +140,16 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 
 	if(cfg.has_tags){
 		const string tag = find_matching_tag(repo_path, version, cfg);
-		try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-		catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+		try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+			log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
+		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 		hw_capabilities::run_in("git clean -fd", repo_path);
 		hw_capabilities::run_in("git checkout " + tag, repo_path);
-	} else {
-		try { hw_capabilities::run_in("git fetch", repo_path); }
-		catch(const run_err &){ log(LogLevel::WARNING, "git fetch failed (offline?), using local version"); }
+	} else{
+		try{ hw_capabilities::run_in("git fetch", repo_path); } catch(const run_err &){
+			log(LogLevel::WARNING, "git fetch failed (offline?), using local version");
+		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 		hw_capabilities::run_in("git clean -fd", repo_path);
 	}
@@ -167,7 +159,7 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 	return binary_path;
 }
 
-void build_wpa_supplicant_version(const string &version, const path &build_folder, const path& target){
+void build_wpa_supplicant_version(const string &version, const path &build_folder, const path &target){
 	path repo_path = build_folder / "hostapd";
 	path wpa_supp_dir = repo_path / "wpa_supplicant";
 
@@ -177,22 +169,11 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	}
 
 	ofstream conf(config_path, ios::app);
-	conf << "\n# --- Configuration changes for the Wi-Fi Framework ---"
-		"\nCONFIG_SAE=y" "\nCONFIG_TESTING_OPTIONS=y"
-		"\nCONFIG_FRAMEWORK_EXTENSIONS=y" "\nCONFIG_IEEE80211W=y"
-		"\nCONFIG_WNM=y"
-		"\nCONFIG_OCV=y"
-		"\nCONFIG_IEEE80211N=y"
-		"\nCONFIG_IEEE80211AC=y"
-		"\nCONFIG_IEEE80211AX=y"
-		"\nCONFIG_IEEE80211R=y"
-		"\nCONFIG_INTERWORKING=y"
-		"\nCONFIG_CTRL_IFACE=y"
-		"\nCONFIG_DEBUG_FILE=y"
-		"\nCONFIG_EAP_PWD=y"
-		"\nCONFIG_CTRL_IFACE_DBUS="
-		"\nCONFIG_CTRL_IFACE_DBUS_NEW="
-		"\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";
+	conf << "\n# --- Configuration changes for the Wi-Fi Framework ---" "\nCONFIG_SAE=y" "\nCONFIG_TESTING_OPTIONS=y"
+			"\nCONFIG_FRAMEWORK_EXTENSIONS=y" "\nCONFIG_IEEE80211W=y" "\nCONFIG_WNM=y" "\nCONFIG_OCV=y"
+			"\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y" "\nCONFIG_IEEE80211AX=y" "\nCONFIG_IEEE80211R=y"
+			"\nCONFIG_INTERWORKING=y" "\nCONFIG_CTRL_IFACE=y" "\nCONFIG_DEBUG_FILE=y" "\nCONFIG_EAP_PWD=y"
+			"\nCONFIG_CTRL_IFACE_DBUS=" "\nCONFIG_CTRL_IFACE_DBUS_NEW=" "\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";
 	conf.close();
 
 	log(LogLevel::INFO, "Compiling wpa_supplicant {} ... ", version);
@@ -200,7 +181,7 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 	const string extra = get_extra_cflags();
 	hw_capabilities::run_in("make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", wpa_supp_dir);
 	copy_f(wpa_supp_dir / "wpa_supplicant", target);
-	}
+}
 
 // --------- OPENSSL ---------
 
@@ -212,11 +193,11 @@ static path get_openssl_build_folder(){
 }
 
 OpenSSLPaths get_openssl_paths(const string &tag){
-	const path build_folder  = get_openssl_build_folder();
-	const path install_dir   = build_folder / tag;
-	const path lib_dir       = install_dir / "lib";
-	const path libcrypto     = lib_dir / "libcrypto.so";
-	const path include_dir   = install_dir / "include";
+	const path build_folder = get_openssl_build_folder();
+	const path install_dir = build_folder / tag;
+	const path lib_dir = install_dir / "lib";
+	const path libcrypto = lib_dir / "libcrypto.so";
+	const path include_dir = install_dir / "include";
 
 	if(exists(libcrypto)){
 		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", tag, lib_dir);
@@ -233,8 +214,9 @@ OpenSSLPaths get_openssl_paths(const string &tag){
 		log(LogLevel::INFO, "OpenSSL repository cloned successfully");
 	}
 
-	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
+	}
 
 	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 	hw_capabilities::run_in("git clean -fd", repo_path);
@@ -276,8 +258,9 @@ string get_wpa_supplicant(const string &version){
 	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
 	const path repo_path = hostapd_folder / "hostapd";
 	const string tag = find_matching_tag(repo_path, version, HOSTAPD_CONFIG);
-	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
+	}
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	build_wpa_supplicant_version(version, hostapd_folder, wpa_supp_bin);
@@ -309,8 +292,7 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 		if(!hash.starts_with("WPA*")) continue;
 		total++;
 		// hcxpmktool exit 0 = confirmed, 2 = unconfirmed, 1 = error
-		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0)
-			cracked++;
+		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0) cracked++;
 	}
 	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
 	return {total, cracked};
@@ -320,22 +302,21 @@ static path actor_conf_path(const RunStatus &rs, const string &actor_name){
 	const auto &actor = rs.config().at("actors").at(actor_name);
 	if(!actor.contains("setup")) return {};
 	const string program = actor.at("setup").at("program").get<string>();
-	return rs.run_folder() /
-		(actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
+	return rs.run_folder() / (actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
 }
 
 static string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
 	string line;
-	for(const string_view key : keys){
-		f.clear(); f.seekg(0);
+	for(const string_view key: keys){
+		f.clear();
+		f.seekg(0);
 		while(getline(f, line)){
 			string s = line;
 			s.erase(0, s.find_first_not_of(" \t"));
 			if(!s.starts_with(string(key) + "=")) continue;
 			string val = s.substr(key.size() + 1);
-			if(val.size() >= 2 && val.front() == '"' && val.back() == '"')
-				val = val.substr(1, val.size() - 2);
+			if(val.size() >= 2 && val.front() == '"' && val.back() == '"') val = val.substr(1, val.size() - 2);
 			return val;
 		}
 	}
@@ -367,8 +348,7 @@ string get_version(const RunStatus &rs, const string &actor_name){
 
 string get_channel(const nlohmann::json &program_config, const string &config_path){
 	if(program_config.contains("channel")) return to_string(program_config["channel"].get<int>());
-	if(!config_path.empty())
-		if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;
+	if(!config_path.empty()) if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
@@ -406,15 +386,15 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	const path repo_path = hostapd_folder / HOSTAPD_CONFIG.repo_name;
 
 	const string tag = find_matching_tag(repo_path, hostapd_version, HOSTAPD_CONFIG);
-	try { hw_capabilities::run_in("git fetch --tags", repo_path); }
-	catch(const run_err &){ log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags"); }
+	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
+	}
 	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 	hw_capabilities::run_in("git clean -fd", repo_path);
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
-	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path,
-		copy_options::overwrite_existing);
+	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path, copy_options::overwrite_existing);
 	return binary_path;
 }
 }

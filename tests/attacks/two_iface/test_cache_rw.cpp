@@ -15,7 +15,7 @@ TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "lookup_cache - miss when file absent") 
 
 TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "write_cache / lookup_cache - roundtrip") {
     const json data = {{"result", 42}};
-    const std::string key = iface.make_cache_key(a1, a2);
+    const string key = iface.make_cache_key(a1, a2);
     iface.write_cache(key, data);
     const auto got = iface.lookup_cache(key);
     REQUIRE(got.has_value());
@@ -23,7 +23,7 @@ TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "write_cache / lookup_cache - roundtrip"
 }
 
 TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "write_cache - updates existing key in place") {
-    const std::string key = iface.make_cache_key(a1, a2);
+    const string key = iface.make_cache_key(a1, a2);
     iface.write_cache(key, {{"v", 1}});
     iface.write_cache(key, {{"v", 2}});
     const auto got = iface.lookup_cache(key);
@@ -32,8 +32,8 @@ TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "write_cache - updates existing key in p
 }
 
 TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "write_cache - two distinct keys coexist") {
-    const std::string k12 = iface.make_cache_key(a1, a2);
-    const std::string k21 = iface.make_cache_key(a2, a1);
+    const string k12 = iface.make_cache_key(a1, a2);
+    const string k21 = iface.make_cache_key(a2, a1);
     iface.write_cache(k12, {{"dir", "12"}});
     iface.write_cache(k21, {{"dir", "21"}});
     CHECK_EQ(iface.lookup_cache(k12).value()["dir"], "12");

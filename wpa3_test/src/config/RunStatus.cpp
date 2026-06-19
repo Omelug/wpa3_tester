@@ -3,6 +3,8 @@
 #include <optional>
 #include <string>
 #include <yaml-cpp/yaml.h>
+
+#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/attacks.h"
 #include "config/global_config.h"
@@ -35,7 +37,7 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	if(sub_folder.empty()){
 		actual_sub_folder = relative_from("attack_config", config_path);
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / testName / "last_run";
+	_run_folder = BASE_FOLDER / actual_sub_folder / testName / LAST_RUN_DIR;
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
@@ -55,16 +57,19 @@ void RunStatus::execute(){
 
 	if(exists(_run_folder)){
 		if(access(_run_folder.string().c_str(), W_OK) != 0){
-			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder));
+			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}",
+				absolute(_run_folder));
 			error_code ec;
 			remove_all(_run_folder, ec);
 			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
-		} else {
-			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(_run_folder / "done.txt"))){
+		} else{
+			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(
+				_run_folder / "done.txt"))){
 				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(_run_folder / "done.txt"))){
+			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(
+				_run_folder / "done.txt"))){
 				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}
@@ -82,61 +87,63 @@ void RunStatus::execute(){
 		const path log_file = _run_folder / "logger" / "tester.log";
 		set_log_file(log_file);
 	}
-	struct LogGuard { ~LogGuard(){ close_log_file(); } } log_guard;
+	struct LogGuard{
+		~LogGuard(){ close_log_file(); }
+	} log_guard;
 
 	//try {
-		auto &gcfg = get_global_config();
-		if(gcfg.contains("regulatory_domain")){
-			const string reg = gcfg.at("regulatory_domain").get<string>();
-			log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
-			if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
-				log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
-		}
+	auto &gcfg = get_global_config();
+	if(gcfg.contains("regulatory_domain")){
+		const string reg = gcfg.at("regulatory_domain").get<string>();
+		log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
+		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
+	}
 
-		if(run_config().get_only_stats()){
-			load_actor_interface_mapping();
-			stats_test();
-			return;
-		}
-
-		while(config_requirement()){
-			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
-		} //include req validation
-
-		if(gcfg.value("nm_exclude_actors", false)){
-			for(const auto &[name, actor]: actors){
-				if(!actor->get_or(SK::external_OS, "").empty()) continue;
-				const string iface = actor->get_or(SK::iface, "");
-				if(iface.empty()) continue;
-				log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-				if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
-					log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
-			}
-		}
-
-		setup_test();
-		if(g_interrupted.load()){
-			log(LogLevel::WARNING, "Test stopped by Ctrl+C");
-			clean();
-			return;
-		}
-		const path out_path = _run_folder / "test_config.yaml";
-		save_yaml(_config, out_path);
-		run_test();
-		if(g_interrupted.load()){
-			log(LogLevel::WARNING, "Test stopped by Ctrl+C");
-			return;
-		}
+	if(run_config().get_only_stats()){
+		load_actor_interface_mapping();
 		stats_test();
-		const path done_file = run_folder() / "done.txt";
-		ofstream done_log(done_file, ios::out | ios::trunc);
-		if(done_log.is_open()){
-			done_log << "commit: " << git_commit_hash() << endl;
-			done_log << "date:   " << current_time_string() << endl;
-			done_log << "kernel: " << kernel_version() << endl;
-			done_log.close();
-			set_public_perms(done_file);
+		return;
+	}
+
+	while(config_requirement()){
+		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
+	} //include req validation
+
+	if(gcfg.value("nm_exclude_actors", false)){
+		for(const auto &[name, actor]: actors){
+			if(!actor->get_or(SK::external_OS, "").empty()) continue;
+			const string iface = actor->get_or(SK::iface, "");
+			if(iface.empty()) continue;
+			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+			if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
+				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 		}
+	}
+
+	setup_test();
+	if(g_interrupted.load()){
+		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+		clean();
+		return;
+	}
+	const path out_path = _run_folder / TEST_CONFIG_NAME;
+	save_yaml(_config, out_path);
+	run_test();
+	if(g_interrupted.load()){
+		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+		return;
+	}
+	stats_test();
+	const path done_file = run_folder() / "done.txt";
+	ofstream done_log(done_file, ios::out | ios::trunc);
+	if(done_log.is_open()){
+		done_log << "commit: " << git_commit_hash() << endl;
+		done_log << "date:   " << current_time_string() << endl;
+		done_log << "kernel: " << kernel_version() << endl;
+		done_log.close();
+		set_public_perms(done_file);
+	}
 	/*} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
@@ -195,22 +202,24 @@ void RunStatus::run_test(){
 
 void RunStatus::stats_test() const{
 	const auto module_name = config().at("attacker_module");
-	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.end()){
+	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.
+		end()){
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "stats function not set for {}",  module_name.get<string>()); }
+	} else{ log(LogLevel::DEBUG, "stats function not set for {}", module_name.get<string>()); }
 }
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 	for(const auto &[name, actor]: actors){
-		ofs << actor->get_or(SK::source, "<none>") << ","
-			<< name << "," << actor->get_or(SK::iface, "<none>") << ","
-			<< actor->get_or(SK::mac, "<none>") << ","
-			<< actor->get_or(SK::driver_name, "<none>") << ","
-			<< actor->get_or(SK::channel, "<none>") << ",";
+		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << "," <<
+				actor->get_or(SK::mac, "<none>") << "," << actor->get_or(SK::driver_name, "<none>") << "," << actor->
+				get_or(SK::channel, "<none>") << ",";
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';
-		for(const char c : raw_json){ if(c == '"') ofs << '"'; ofs << c; }
+		for(const char c: raw_json){
+			if(c == '"') ofs << '"';
+			ofs << c;
+		}
 		ofs << '"' << endl;
 	}
 }
@@ -222,7 +231,7 @@ bool RunStatus::should_skip(const path &p){
 	const auto rel = relative(p, ATTACK_CONFIG);
 	const auto first = *rel.begin();
 	if(first == "validator") return true;
-	if(first == "target")    return true;
+	if(first == "target") return true;
 	if(rel == "global_config.yaml") return true;
 	if(p.extension() != ".yaml") return true;
 	if(rel.string().find("/validator/") != string::npos) return true;
@@ -257,6 +266,11 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 		} catch(const YAML::Exception &e){ throw config_err("Invalid yaml " + string(e.what())); }
 	}
 	return t_map;
+}
+
+optional<ActorPtr> RunStatus::actor(const string &actor_name){
+	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+	return nullopt;
 }
 
 ActorPtr &RunStatus::get_actor(const string &actor_name){
@@ -354,9 +368,8 @@ void RunStatus::load_actor_interface_mapping(){
 		// Strip CSV quoting and unescape "" -> "
 		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"'){
 			json_str = json_str.substr(1, json_str.size() - 2);
-			for(size_t i = 0; i + 1 < json_str.size(); ++i)
-				if(json_str[i] == '"' && json_str[i + 1] == '"')
-					json_str.erase(i + 1, 1);
+			for(size_t i = 0; i + 1 < json_str.size(); ++i) if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.
+					erase(i + 1, 1);
 		}
 
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
@@ -371,22 +384,24 @@ void RunStatus::load_actor_interface_mapping(){
 	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
 }
 
-void RunStatus::save_result(const nlohmann::json& j) const{
-	const path p = run_folder() / "result.json";
+void RunStatus::save_result(const nlohmann::json &j) const{
+	const path p = run_folder() / RESULT_NAME;
 	ofstream f(p);
-	if(!f.is_open()){ log(LogLevel::ERROR, "Cannot write result.json"); return; }
+	if(!f.is_open()){
+		log(LogLevel::ERROR, "Cannot write {}", RESULT_NAME);
+		return;
+	}
 	f << j.dump(2) << "\n";
 	f.close();
 	set_public_perms(p);
 }
 
 nlohmann::json RunStatus::load_result() const{
-	const path p = run_folder() / "result.json";
+	const path p = run_folder() / RESULT_NAME;
 	ifstream f(p);
 	if(!f.is_open()){
-		throw stats_err("result.json not found");
+		throw stats_err(RESULT_NAME + " not found");
 	}
-	return  nlohmann::json::parse(f);
+	return nlohmann::json::parse(f);
 }
-
 }

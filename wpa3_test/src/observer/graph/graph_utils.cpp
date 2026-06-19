@@ -11,7 +11,7 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 	size_t label_index = 0;
 	size_t block_index = 0;
 
-	map<string, size_t> label_slots;
+	map<string,size_t> label_slots;
 	for(auto &element: elements){
 		if(element->type == GraphElement_t::EVENT_LINES){
 			const string &lbl = element.get()->label;

@@ -10,7 +10,7 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	if((*this)[SK::mac].has_value()){
 		// setup force set mac address
 		set_mac_address(get(SK::mac));
-	}else{
+	} else{
 		//just get mac from iface
 		set(SK::mac, real_actor.get(SK::mac));
 	}
@@ -24,11 +24,11 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	set(SK::module_hash, real_actor[SK::module_hash]);
 
 	set(SK::whitebox_host, real_actor[SK::whitebox_host]);
-	set(SK::whitebox_ip,   real_actor[SK::whitebox_ip]);
-	set(SK::ssh_user,      real_actor[SK::ssh_user]);
-	set(SK::ssh_port,      real_actor[SK::ssh_port]);
-	set(SK::ssh_password,  real_actor[SK::ssh_password]);
-	set(SK::external_OS,   real_actor[SK::external_OS]);
+	set(SK::whitebox_ip, real_actor[SK::whitebox_ip]);
+	set(SK::ssh_user, real_actor[SK::ssh_user]);
+	set(SK::ssh_port, real_actor[SK::ssh_port]);
+	set(SK::ssh_password, real_actor[SK::ssh_password]);
+	set(SK::external_OS, real_actor[SK::external_OS]);
 
 	auto actor_ptr = ActorPtr(shared_from_this());
 	conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);
@@ -52,5 +52,4 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		create_sniff_iface();
 	}
 }
-
 }

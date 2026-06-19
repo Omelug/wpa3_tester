@@ -13,8 +13,9 @@ enum class StopReason{ Timeout, HandlerDone, Interrupted };
 
 namespace wpa3_tester::components{
 template<typename T, typename Handler>
-std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout, Handler &&on_packet, const std::string &iface = ""){
-
+std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
+										Handler &&on_packet, const std::string &iface = ""
+){
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if(handle == nullptr){
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
@@ -29,8 +30,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
 	};
 
-	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()}
-						: std::nullopt;
+	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()} : std::nullopt;
 
 	while(true){
 		int remaining_ms = -1;
@@ -79,14 +79,13 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
 	};
 
-	const auto deadline = timeout
-						? std::optional{std::chrono::steady_clock::now() + timeout.value()}
-						: std::nullopt;
+	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()} : std::nullopt;
 
 	while(true){
 		int remaining_ms = -1;
 		if(deadline){
-			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now()).count());
+			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
+				*deadline - std::chrono::steady_clock::now()).count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 

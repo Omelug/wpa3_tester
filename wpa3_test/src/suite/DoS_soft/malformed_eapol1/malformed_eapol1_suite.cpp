@@ -3,13 +3,14 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
+#include "default.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::suite::malformed_eapol1_filler {
+namespace wpa3_tester::suite::malformed_eapol1_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
@@ -19,38 +20,42 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	e.test_name = test_folder.filename().string();
 
 	const auto result = helper::load_result_json(test_folder);
-	if (!result) return e;
+	if(!result) return e;
 
-	const auto rs      = helper::load_test_rs(test_folder);
+	const auto rs = helper::load_test_rs(test_folder);
 	e.disconnect_count = result->value("disconnect_count", 0);
 	//e.passed           = e.disconnect_count > 0;
-	e.sta_graph        = test_folder / "observer" / "tshark" / "client_graph.png";
-	e.ap_graph         = test_folder / "observer" / "tshark" / "access_point_graph.png";
-	e.ap_driver        = rs->get_actor("access_point").get(SK::driver_name);
-	e.client_driver    = rs->get_actor("client").get(SK::driver_name);
-	e.attacker_driver  = rs->get_actor("attacker").get(SK::driver_name);
+	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
+	e.ap_graph = test_folder / "observer" / "tshark" / "access_point_graph.png";
+	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
+	e.client_driver = rs->get_actor("client").get(SK::driver_name);
+	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }
 
-void generate_report(RunSuiteStatus &rss) {
+vector<MalformedEapol1TestEntry> get_results(const path &run_dir){
+	return helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
+}
+
+void generate_report(RunSuiteStatus &rss){
 	log(LogLevel::INFO, "Generating malformed_eapol1 suite report");
 
 	const auto run_dir = rss.run_folder();
-	if (!exists(run_dir)) {
+	if(!exists(run_dir)){
 		log(LogLevel::ERROR, "Run folder not found: {}", run_dir);
 		return;
 	}
 
 	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
 
-	const auto report_path = run_dir / "report.md";
+	const auto report_path = run_dir / REPORT_NAME;
 	auto report = helper::open_report(report_path);
-	if (!report.is_open()) return;
+	if(!report.is_open()) return;
 
 	report << "# Malformed EAPOL-1 Test Suite Report\n\n";
 	report << "Tests whether a malformed EAPOL Key frame (invalid tag length) causes client disconnection.\n\n";
 
-	if (entries.empty()) {
+	if(entries.empty()){
 		report << "No test results found.\n";
 		report.close();
 		return;
@@ -61,40 +66,35 @@ void generate_report(RunSuiteStatus &rss) {
 	report << "|------|-----------|---------------|-----------------|:--------------------:|:------:|\n";
 
 	int passed_count = 0;
-	for (const auto &e : entries) {
-		if (e.disconnect_count > 0) ++passed_count;
+	for(const auto &e: entries){
+		if(e.disconnect_count > 0) ++passed_count;
 
 		string graphs;
-		if (exists(e.sta_graph))
-			graphs += "[STA](" + e.sta_graph.string() + ")";
-		if (exists(e.ap_graph)) {
-			if (!graphs.empty()) graphs += " ";
+		if(exists(e.sta_graph)) graphs += "[STA](" + e.sta_graph.string() + ")";
+		if(exists(e.ap_graph)){
+			if(!graphs.empty()) graphs += " ";
 			graphs += "[AP](" + e.ap_graph.string() + ")";
 		}
-		if (graphs.empty()) graphs = "-";
+		if(graphs.empty()) graphs = "-";
 
-		const string name_cell = exists(run_dir / e.test_name / "report.md")
-			? "[" + e.test_name + "](" + e.test_name + "/report.md)" : e.test_name;
-		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/result.json)";
-		report << "| " << name_cell
-		       << " | " << e.ap_driver
-		       << " | " << e.client_driver
-		       << " | " << e.attacker_driver
-		       << " | " << disc_link << "(" << e.disconnect_count << ")"
-		       << " | " << graphs
-		       << " |\n";
+		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
+								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
+								: e.test_name;
+		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
+				RESULT_NAME + ")";
+		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver <<
+				" | " << disc_link << "(" << e.disconnect_count << ")" << " | " << graphs << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
 	report << "- Total: " << entries.size() << "\n";
 	report << "- Disconnected (passed): " << passed_count << "\n";
 	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
-	report << "- Success rate: " << fixed << setprecision(1)
-	       << (100.0 * passed_count / entries.size()) << "%\n";
+	report << "- Success rate: " << fixed << setprecision(1) << (100.0 * passed_count / static_cast<double>(entries.
+		size())) << "%\n";
 
 	report.close();
 	set_public_perms(report_path);
 	log(LogLevel::INFO, "Report written: {}", report_path.string());
 }
-
 }

@@ -16,7 +16,6 @@
 using namespace std;
 
 namespace wpa3_tester::netlink_helper{
-
 struct IftypeResult{
 	nl80211_iftype iftype = NL80211_IFTYPE_UNSPECIFIED;
 	bool found = false;
@@ -60,9 +59,7 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 	return result.found ? result.iftype : NL80211_IFTYPE_UNSPECIFIED;
 }
 
-[[nodiscard]] static optional<uint32_t> get_iface_flags(const string_view iface_name,
-	const optional<string> &netns){
-
+[[nodiscard]] static optional<uint32_t> get_iface_flags(const string_view iface_name, const optional<string> &netns){
 	NetNSContext ns_guard(netns);
 	const int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock < 0) return nullopt;
@@ -93,7 +90,8 @@ nl80211_iftype query_wifi_iftype(const string_view iface_name, const optional<st
 }
 
 Result wait_for_link_flags(const string_view iface_name, const optional<string> &netns, const bool want_up,
-							const int timeout_ms){
+							const int timeout_ms
+){
 	//already in correct state
 	if(want_up && iface_is_up(iface_name, netns)) return {};
 	if(!want_up && iface_is_down(iface_name, netns)) return {};
@@ -191,7 +189,8 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 }
 
 Result wait_for_wifi_iftype(const string_view iface_name, const optional<string> &netns,
-							const nl80211_iftype expected_type, const int max_retries, const int retry_ms){
+							const nl80211_iftype expected_type, const int max_retries, const int retry_ms
+){
 	for(int i = 0; i < max_retries; ++i){
 		if(query_wifi_iftype(iface_name.data(), netns) == expected_type) return {};
 		usleep(static_cast<useconds_t>(retry_ms) * 1000u);
@@ -241,8 +240,9 @@ static uint32_t query_iface_freq(const string_view iface_name, const optional<st
 	return result.found ? result.freq : 0;
 }
 
-Result wait_for_channel(const string_view iface_name, const optional<string> &netns,
-						const Channel &ch, const int max_retries, const int retry_ms){
+Result wait_for_channel(const string_view iface_name, const optional<string> &netns, const Channel &ch,
+						const int max_retries, const int retry_ms
+){
 	const auto expected_freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
 	for(int i = 0; i < max_retries; ++i){
 		if(query_iface_freq(iface_name, netns) == expected_freq) return {};
@@ -250,48 +250,42 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 	}
 	return make_error_code(errc::timed_out);
 }
+
 //TODO add channeel switching to iface_info
 Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel &ch){
 	NetNSContext ns_guard(netns);
 
 	const unique_ptr<nl_sock,void(*)(nl_sock *)> sock(nl_socket_alloc(), nl_socket_free);
-	if(!sock || genl_connect(sock.get()) < 0)
-		return make_error_code(errc::io_error);
+	if(!sock || genl_connect(sock.get()) < 0) return make_error_code(errc::io_error);
 
 	nl_socket_set_buffer_size(sock.get(), 8192, 8192);
 
 	const int nl80211_id = genl_ctrl_resolve(sock.get(), "nl80211");
-	if(nl80211_id < 0)
-		return make_error_code(errc::no_such_device);
+	if(nl80211_id < 0) return make_error_code(errc::no_such_device);
 
 	const unsigned int ifindex = if_nametoindex(iface.data());
-	if(ifindex == 0)
-		return make_error_code(errc::no_such_device);
+	if(ifindex == 0) return make_error_code(errc::no_such_device);
 
 	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
-	if(!msg)
-		return make_error_code(errc::not_enough_memory);
+	if(!msg) return make_error_code(errc::not_enough_memory);
 
 	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
-	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ,
-	                  static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch)));
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ, static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch)));
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_CHANNEL_TYPE, NL80211_CHAN_NO_HT);
 
 	int err = 0;
 	// ReSharper disable once CppParameterMayBeConstPtrOrRef
-	nl_socket_modify_err_cb(sock.get(), NL_CB_CUSTOM, [](sockaddr_nl *, nlmsgerr *e, void *arg) -> int {
+	nl_socket_modify_err_cb(sock.get(), NL_CB_CUSTOM, [](sockaddr_nl *, nlmsgerr *e, void *arg) ->int{
 		*static_cast<int *>(arg) = e->error;
 		return NL_STOP;
 	}, &err);
 
-	if(nl_send_auto(sock.get(), msg.get()) < 0)
-		return make_error_code(errc::io_error);
+	if(nl_send_auto(sock.get(), msg.get()) < 0) return make_error_code(errc::io_error);
 
 	nl_recvmsgs_default(sock.get());
 
-	if(err < 0)
-		return error_code(-err, system_category());
+	if(err < 0) return error_code(-err, system_category());
 	return {};
 }
 }

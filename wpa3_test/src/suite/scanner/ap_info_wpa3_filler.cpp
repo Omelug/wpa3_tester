@@ -31,7 +31,7 @@ void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries =  helper::get_results_default<ApInfoWpa3TestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir / "report.md");
+	auto report = helper::open_report(run_dir);
 	if (!report.is_open()) return;
 
 	report << "# AP Info WPA3 Filler\n\n";
@@ -56,7 +56,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "ap_info_wpa3_filler report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "ap_info_wpa3_filler report generated: {}", run_dir/"report.md");
 }
 
 }

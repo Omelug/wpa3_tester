@@ -63,7 +63,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir / "report.md");
+	auto report = helper::open_report(run_dir);
 	if(!report.is_open()) return;
 
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
@@ -99,6 +99,6 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir / "report.md");
 }
 }

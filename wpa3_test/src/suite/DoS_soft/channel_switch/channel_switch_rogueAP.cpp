@@ -84,7 +84,7 @@ void generate_report(RunSuiteStatus &rss){
 		return e;
 	});
 
-	auto report = helper::open_report(run_dir / "report.md");
+	auto report = helper::open_report(run_dir);
 	if(!report.is_open()) return;
 
 	report << "# CSA Rogue AP Test Suite Report\n\n";
@@ -133,6 +133,6 @@ void generate_report(RunSuiteStatus &rss){
 
 	report.close();
 	set_public_perms(run_dir / "report.md");
-	log(LogLevel::INFO, "CSA rogue AP report generated: {}", (run_dir / "report.md").string());
+	log(LogLevel::INFO, "CSA rogue AP report generated: {}", run_dir/"report.md");
 }
 }

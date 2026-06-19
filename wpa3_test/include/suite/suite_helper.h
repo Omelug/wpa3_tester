@@ -29,7 +29,7 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
         if (!src_dir.is_directory()) continue;
         for (const auto &entry : std::filesystem::directory_iterator(src_dir.path())) {
             if (!entry.is_directory()) continue;
-            if (!std::filesystem::exists(entry.path() / "test_config.yaml")) continue;
+            if (!std::filesystem::exists(entry.path() / TEST_CONFIG_NAME)) continue;
             entries.push_back(parse_fn(entry.path()));
         }
     }

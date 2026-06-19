@@ -31,7 +31,7 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 }
 
 void setup_suite(const RunSuiteStatus &rss) {
-	const auto config_dir = rss.run_folder() / "test_config" / "all_actors" / "config";
+	const auto config_dir = rss.run_folder() /TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
 	create_public_dirs(config_dir);
 	copy_f(rss.config_path().parent_path() / "config/hostapd-mana.conf",
 			config_dir / "hostapd-mana.conf");

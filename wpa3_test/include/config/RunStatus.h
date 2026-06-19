@@ -85,6 +85,7 @@ public:
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
+	std::optional<ActorPtr> actor(const std::string &actor_name);
 	ActorPtr &get_actor(const std::string &actor_name);
 	const ActorPtr &get_actor(const std::string &actor_name) const;
 	static void get_or_create_connection(const ActorPtr &actor);

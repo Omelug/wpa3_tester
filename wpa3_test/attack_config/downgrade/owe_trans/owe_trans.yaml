@@ -39,7 +39,7 @@ actors:
   attacker:
     source: internal
     selection:
-      #driowe_transver: mt76x2u
+      #driver: mt76x2u
       condition: [ monitor ]
       channel: 6
 observers:

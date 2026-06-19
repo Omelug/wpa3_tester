@@ -19,7 +19,7 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder){
 	IfaceInfoTestEntry e{};
 	e.test_name = test_folder.filename().string();
 
-	const auto config_path = test_folder / "test_config.yaml";
+	const auto config_path = test_folder / TEST_CONFIG_NAME;
 	if (exists(config_path)) {
 		RunStatus rs{};
 		rs.config_path(config_path);

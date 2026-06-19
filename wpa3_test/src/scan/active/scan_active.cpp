@@ -34,9 +34,9 @@ void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
 	try{
 		const auto rsn = mgmt.rsn_information();
 		const uint16_t caps = rsn.capabilities();
-		cfg.set(BK::MFP,         static_cast<bool>(caps & (1u << 7)));
-		cfg.set(BK::OCV,         static_cast<bool>(caps & (1u << 10)));
-		cfg.set(BK::beacon_prot, static_cast<bool>(caps & (1u << 11)));
+		cfg.set(BK::MFP,         static_cast<bool>(caps & 1u << 7));
+		cfg.set(BK::OCV,         static_cast<bool>(caps & 1u << 10));
+		cfg.set(BK::beacon_prot, static_cast<bool>(caps & 1u << 11));
 
 		bool wpa2_psk = false, wpa3_sae = false;
 		for(const auto &akm: rsn.akm_cyphers()){

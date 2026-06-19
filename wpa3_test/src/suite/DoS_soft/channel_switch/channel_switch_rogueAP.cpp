@@ -3,8 +3,8 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "default.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -27,10 +27,10 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 		if(result->contains("ap_disconnected"))
 			e.ap_disconnected = result->at("ap_disconnected").get<bool>();
 		if(result->contains("rogue_ap_connected"))
-			e.rogue_ap = result->at("rogue_ap_connected").get<bool>();
+			e.rogue_ap_connected = result->at("rogue_ap_connected").get<bool>();
 	}
 
-	const auto cfg_path = test_folder / "test_config.yaml";
+	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
 		RunStatus rs{};
 		rs.config_path(cfg_path);
@@ -118,7 +118,7 @@ void generate_report(RunSuiteStatus &rss){
 			   << " | " << client_cell
 			   << " | " << attacker_cell
 			   << " | " << opt_bool(e.disconnected) << " (" << opt_bool(e.ap_disconnected) << ")"
-			   << " | " << opt_bool(e.rogue_ap)
+			   << " | " << opt_bool(e.rogue_ap_connected)
 			   << " | " << ocv_cell
 			   << " | " << e.client_mfp
 			   << " | " << result_link << " |\n";

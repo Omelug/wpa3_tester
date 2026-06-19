@@ -19,5 +19,5 @@ struct InvalidCurveTestEntry{
 std::vector<InvalidCurveTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
-void generate_report(RunSuiteStatus & rss);
+void generate_report(const RunSuiteStatus & rss);
 }

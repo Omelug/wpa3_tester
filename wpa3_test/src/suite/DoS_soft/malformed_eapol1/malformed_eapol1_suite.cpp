@@ -6,10 +6,8 @@
 #include "default.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunSuiteStatus.h"
-#include "logger/log.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{
 using namespace std;
@@ -34,37 +32,21 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	return e;
 }
 
-vector<MalformedEapol1TestEntry> get_results(const path &run_dir){
-	return helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
-}
-
 void generate_report(RunSuiteStatus &rss){
-	log(LogLevel::INFO, "Generating malformed_eapol1 suite report");
-
 	const auto run_dir = rss.run_folder();
-	if(!exists(run_dir)){
-		log(LogLevel::ERROR, "Run folder not found: {}", run_dir);
-		return;
-	}
+	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
 
-	const auto entries = get_results(run_dir);
-
-	const auto report_path = run_dir / REPORT_NAME;
-	auto report = helper::open_report(report_path);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# Malformed EAPOL-1 Test Suite Report\n\n";
 	report << "Tests whether a malformed EAPOL Key frame (invalid tag length) causes client disconnection.\n\n";
 
-	if(entries.empty()){
-		report << "No test results found.\n";
-		report.close();
-		return;
-	}
+	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected (count) | Graphs |\n";
-	report << "|------|-----------|---------------|-----------------|:--------------------:|:-- ---:|\n";
+	report << "|------|-----------|---------------|-----------------|:--------------------:|:------:|\n";
 
 	int passed_count = 0;
 	for(const auto &e: entries){
@@ -83,19 +65,15 @@ void generate_report(RunSuiteStatus &rss){
 								: e.test_name;
 		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
-		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver <<
-				" | " << disc_link << "(" << e.disconnect_count << ")" << " | " << graphs << " |\n";
+		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " <<
+				e.attacker_driver << " | " << disc_link << "(" << e.disconnect_count << ")" << " | " << graphs << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
 	report << "- Total: " << entries.size() << "\n";
 	report << "- Disconnected (passed): " << passed_count << "\n";
 	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
-	report << "- Success rate: " << fixed << setprecision(1) << (100.0 * passed_count / static_cast<double>(entries.
-		size())) << "%\n";
-
-	report.close();
-	set_public_perms(report_path);
-	log(LogLevel::INFO, "Report written: {}", report_path.string());
+	report << "- Success rate: " << fixed << setprecision(1) << (100.0 * passed_count /
+			static_cast<double>(entries.size())) << "%\n";
 }
 }

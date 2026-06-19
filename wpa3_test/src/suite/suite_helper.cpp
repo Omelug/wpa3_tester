@@ -28,9 +28,10 @@ unique_ptr<RunStatus> load_test_rs(const path &test_folder) {
 }
 
 ofstream open_report(const path &report_path) {
-	ofstream report(report_path);
+	const path resolved = is_directory(report_path) ? report_path / "report.md" : report_path;
+	ofstream report(resolved);
 	if(!report.is_open())
-		log(LogLevel::ERROR, "Failed to create report: {}", report_path);
+		log(LogLevel::ERROR, "Failed to create report: {}", resolved);
 	return report;
 }
 

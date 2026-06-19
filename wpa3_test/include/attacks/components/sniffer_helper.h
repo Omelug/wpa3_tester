@@ -100,7 +100,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 		if(ret == 0 || !(pfds[0].revents & POLLIN)) continue;
 
 		if(const std::unique_ptr<Tins::PDU> pdu{sniffer.next_packet()}){
-			if(auto result = on_packet(*pdu)) return move(*result);
+			if(auto result = on_packet(*pdu)) return std::move(*result);
 		}
 	}
 }

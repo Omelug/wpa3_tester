@@ -4,6 +4,7 @@
 
 using namespace wpa3_tester;
 using json = nlohmann::json;
+using namespace std;
 
 TEST_CASE_FIXTURE(TwoIfaceCacheFixture, "make_cache_key - order sensitive") {
 	CHECK_NE(iface.make_cache_key(a1, a2), iface.make_cache_key(a2, a1));

@@ -77,7 +77,7 @@ using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);
 // between_markers -> only @START -> @END/@END_STOP
 std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &process_name,
-										const std::string &pattern, bool between_markers = true
+										const std::string &pattern, bool between_markers = false
 );
 std::string escape_tex(std::string text);
 }

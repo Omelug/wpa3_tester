@@ -12,4 +12,5 @@ actors:
       program: wpa_supplicant
       program_config:
         ieee80211w: 0
+        key_mgmt: WPA-PSK
 $extends: ./CSA_Dlink.yaml

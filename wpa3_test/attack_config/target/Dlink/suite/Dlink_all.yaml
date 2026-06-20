@@ -14,6 +14,12 @@ tests:
     test_name: bl0ck_BARS_Dlink
 
   # --------- channel_switch -----------
+  channel_switch_Dlink:
+    test_name: channel_switch_Dlink
+  #channel_switch_Dlink_MFP_disabled:
+  #  test_name: channel_switch_Dlink_MFP_disabled
+  channel_switch_Dlink_MFP_req:
+    test_name: channel_switch_Dlink_MFP_req
 
   # ------ Enterprise
   reflection_attack_Dlink:

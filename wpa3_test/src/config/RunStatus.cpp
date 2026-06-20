@@ -174,7 +174,7 @@ void RunStatus::execute(){
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){
-	if(actor->conn){ return; }
+	if(actor->conn && actor->conn->is_connected()){ return; }
 	shared_ptr<ExternalConn> conn;
 	if(actor.get(SK::external_OS) == "openwrt"){
 		conn = make_shared<OpenWrtConn>();
@@ -231,7 +231,6 @@ bool RunStatus::should_skip(const path &p){
 	const auto rel = relative(p, ATTACK_CONFIG);
 	const auto first = *rel.begin();
 	if(first == "validator") return true;
-	if(first == "target") return true;
 	if(rel == "global_config.yaml") return true;
 	if(p.extension() != ".yaml") return true;
 	if(rel.string().find("/validator/") != string::npos) return true;

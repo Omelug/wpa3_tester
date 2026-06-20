@@ -29,7 +29,7 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
-	rs.process_manager.stop("access_point");
+	rs.process_manager.stop("access_point"); //FIXME add external stop
 
 	const bool rogue_connected = rs.process_manager.wait_for("rogue_ap", "AP-STA-CONNECTED", seconds(wait_after_stop),
 															false);

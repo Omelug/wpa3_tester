@@ -1,32 +1,24 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: ap_info
-$validator: "./ap_info.schema.yaml"
+name: ap_info_Dlink
+$validator: "./ap_info.yaml"
 attacker_module: ap_info
 scan_iface: wlan1
 actors:
   target:
     source: external
     selection:
-      #mac: "78:98:E8:55:3E:8D"
-      permanent_mac: "24:ec:99:bf:c7:cf"
+      permanent_mac: "78:98:E8:55:3E:8D"
       channel: 6
   scanner:
     source: internal
     selection:
       condition: [ monitor ]
       channel: 6
-    #sniff_iface: scanner
-
-observers:
-  tshark_client:
-    actor: scanner
-    program: tshark
-    program_config:
-      filter: "special_filter:actors"
+    #FIXME ACM trigger sniff_iface: scanner
 
 attack_config:
   beacon_scan: true
   beacon_timeout_sec: 10
   EAP_scan: true
-  ACM_trigger: true
+  ACM_trigger: false
   acm_trigger_count: 2560

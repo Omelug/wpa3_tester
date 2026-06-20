@@ -2,8 +2,6 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <tins/tins.h>
 
@@ -53,9 +51,9 @@ std::decay_t<T> clean_arg(T &&arg){
 template<typename...Args>
 void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> fmt, Args &&...args){
 	auto cleaned = std::make_tuple(clean_arg(std::forward<Args>(args))...);
-	const std::string msg = std::apply([&fmt](auto &...a){
-		return std::vformat(fmt.get(), std::make_format_args(a...));
-	}, cleaned);
+	const std::string msg = [&]<size_t...Is>(std::index_sequence<Is...>){
+		return std::vformat(fmt.get(), std::make_format_args(std::get<Is>(cleaned)...));
+	}(std::index_sequence_for<Args...>{});
 	write_log_message(level, msg);
 }
 
@@ -63,13 +61,6 @@ void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> 
 //void log(LogLevel level, const char *fmt, ...);
 void log(LogLevel level, const std::string &msg);
 void log_actor_map(const std::string &name, const ActorCMap &m);
-
-inline void debug_step(){
-	std::cout << "Wait for enter..." << std::flush;
-	std::cin.clear();
-	std::cin.get();
-	std::cout << "ok" << std::endl;
-}
 
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 

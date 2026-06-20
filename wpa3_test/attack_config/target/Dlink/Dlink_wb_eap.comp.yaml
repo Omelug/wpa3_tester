@@ -1,0 +1,19 @@
+source: external
+selection:
+  whitebox_host: OpenWrt
+  condition: [ AP, 2_4GHz ]
+setup:
+  program: openwrt
+  program_config:
+    ssid: reflection_attack
+    channel: 6
+    mode: ap
+    htmode: HT20
+    wpa: "2"
+    wpa_key_mgmt: WPA-EAP
+    ieee8021x: "1"
+    eap_server: "1"
+    pwd_group: "19"
+    encryption: ccmp
+  ex_WB_programs: [ tcpdump ]
+ip_addr: "10.0.0.1"

@@ -1,0 +1,10 @@
+$extends: ./reflection_attack.yaml
+name: reflection_attack_Dlink
+attacker_module: reflection_attack
+actors:
+  $DELETE: access_point
+  access_point:
+    $extends: ../../target/Dlink/Dlink_wb_eap.comp.yaml
+    setup:
+      program_config:
+        eap_user_file: ./config/hostapd.eap_user

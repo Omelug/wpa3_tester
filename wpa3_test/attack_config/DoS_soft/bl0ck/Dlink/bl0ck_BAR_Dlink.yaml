@@ -1,0 +1,7 @@
+name: bl0ck_BAR_Dlink
+$extends: ./bl0ck_Dlink.comp.yaml
+attack_config:
+  attack_time_sec: 15
+  attack_variant: "BAR"
+  random: false
+  frame_in_batch: 50

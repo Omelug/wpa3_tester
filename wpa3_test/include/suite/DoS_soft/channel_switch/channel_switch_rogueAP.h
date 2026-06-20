@@ -15,7 +15,7 @@ struct CsaTestEntry{
 	std::string attacker_driver;
 	std::string rogue_ap_mac;
 	std::string rogue_ap_driver;
-	std::optional<bool> disconnected;
+	bool disconnected;
 	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> ap_ocv;

@@ -25,17 +25,17 @@ void run_attack(RunStatus &rs){
 
 	log(LogLevel::DEBUG, "Scanning start");
 	scan::ScanAP scan_ap{};
-	scan_ap.bssid = target_ap["mac"];
+	scan_ap.bssid = target_ap.get(SK::mac);
 	if(att_cfg.value("beacon_scan", false)){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
-		auto beacon_pcap = rs.run_folder() / (target_ap["actor_name"] + ".pcap");
+		auto beacon_pcap = rs.run_folder() / (target_ap.get(SK::actor_name) + ".pcap");
 		set_public_perms(beacon_pcap);
-		RSN_scan(scanner["iface"], timeout, scan_ap, beacon_pcap);
+		RSN_scan(scanner.get(SK::iface), timeout, scan_ap, beacon_pcap);
 		{
 			const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
 			ofstream ofs(beacon_txt);
-			ofs << "Scan results for " << target_ap["mac"] << "\n";
+			ofs << "Scan results for " << target_ap.get(SK::mac)<< "\n";
 			ofs << scan_ap.to_str() << endl;
 			ofs.close();
 			set_public_perms(beacon_txt);
@@ -44,7 +44,7 @@ void run_attack(RunStatus &rs){
 
 	if(att_cfg.value("stations_scan", false)){
 		const auto timeout = att_cfg.value("stations_timeout_sec", 10);
-		scan::station_scan(scan_ap, scanner["iface"], timeout, path(rs.run_folder()));
+		scan::station_scan(scan_ap, scanner.get(SK::iface), timeout, rs.run_folder());
 	}
 
 	if(att_cfg.value("EAP_scan", false)){
@@ -63,7 +63,7 @@ void run_attack(RunStatus &rs){
 		if(is_eap){
 			const auto timeout = att_cfg.value("EAP_timeout_sec", 10);
 			log(LogLevel::DEBUG, "AP supports EAP. Scanning identities for {} seconds", timeout);
-			scan::active_eap_identity_scan(scanner["iface"], target_ap["mac"], timeout);
+			scan::active_eap_identity_scan(scanner.get(SK::iface), target_ap.get(SK::mac), timeout);
 		} else{
 			log(LogLevel::INFO, "Skipping EAP scan: Beacon RSN does not indicate 802.1X/EAP support.");
 		}
@@ -72,9 +72,10 @@ void run_attack(RunStatus &rs){
 	bool acm_triggered = false;
 	if(att_cfg.value("ACM_trigger", false)){
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-			rs, scanner["iface"], scanner["sniff_iface"], scan_ap.ssid, target_ap["mac"], 30);
-		const auto [cookie, count] = pmk_gobbler::trigger_acm(scanner["sniff_iface"], scanner["mac"],
-															HWAddress<6>(target_ap["mac"]),
+			rs, scanner.get(SK::iface), scanner.get(SK::sniff_iface), scan_ap.ssid, target_ap.get(SK::mac), 30);
+		const auto [cookie, count] =
+			pmk_gobbler::trigger_acm(scanner.get(SK::sniff_iface),scanner.get(SK::mac),
+															target_ap.get(SK::mac),
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
 		const path acm_txt = rs.run_folder() / "ACM_trigger.txt";
@@ -101,10 +102,10 @@ void run_attack(RunStatus &rs){
 		akm = akm_ss.str();
 	}
 
-	const nlohmann::json result = {
-		{"ssid", scan_ap.ssid}, {"mac", target_ap["mac"]}, {"beacon_found", scan_ap.rsn.has_value()}, {"mfp", mfp},
+	rs.save_result({
+		{"ssid", scan_ap.ssid}, {"mac", target_ap.get(SK::mac)},
+		{"beacon_found", scan_ap.rsn.has_value()}, {"mfp", mfp},
 		{"akm", akm}, {"acm_triggered", acm_triggered},
-	};
-	rs.save_result(result);
+	});
 }
 }

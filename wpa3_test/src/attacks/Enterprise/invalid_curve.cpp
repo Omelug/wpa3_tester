@@ -262,7 +262,8 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att){
 void setup_attack(RunStatus &rs){
 	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
+	if(rs.get_actor("access_point").get(SK::source) == "internal")
+		rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
 }

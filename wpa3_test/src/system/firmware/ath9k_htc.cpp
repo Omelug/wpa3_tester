@@ -48,9 +48,7 @@ void load_ath_masker(const bool git_install){
 }
 
 void unload_ath_masker(){
-	const string ath_folder = get_global_config().at("paths").at("ath_masker");
-	if(ath_folder.empty() || !filesystem::exists(ath_folder)) return;
-	hw_capabilities::run_in("bash ./unload.sh", ath_folder);
+	hw_capabilities::run_cmd({"rmmod", "ath_masker"});
 }
 
 void load_ath9k_noorder_change(){

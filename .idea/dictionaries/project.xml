@@ -74,6 +74,7 @@
       <w>gcmp</w>
       <w>genhtml</w>
       <w>genl</w>
+      <w>getactor</w>
       <w>gnlh</w>
       <w>gpcmd</w>
       <w>hcxpmktool</w>
@@ -212,6 +213,7 @@
       <w>wiphy</w>
       <w>wlan</w>
       <w>wnic</w>
+      <w>wpad</w>
       <w>wpaout</w>
       <w>writerd</w>
       <w>xlabel</w>

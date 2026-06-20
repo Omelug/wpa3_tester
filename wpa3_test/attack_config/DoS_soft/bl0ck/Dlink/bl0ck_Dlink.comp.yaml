@@ -1,20 +1,9 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: bl0ck_BA_external
 attacker_module: bl0ck
 scan_iface: wlan1
 actors:
   access_point:
-    $extends: ../../target/Dlink/Dlink_wb_5Ghz.yaml
-
-  #access_point:
-  #  source: external
-  #  selection:
-  #    mac: "78:98:E8:55:3E:8D"
-  #    condition: [ AP, 80211ac, 5GHz ]
-  #client:
-  #  source: external
-  #  selection:
-  #    condition: [ monitor, 80211ac, 5GHz ]
+    $extends: ../../../target/Dlink/Dlink_wb_5Ghz.comp.yaml
   client:
     source: internal
     setup:
@@ -53,8 +42,3 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-attack_config:
-  attack_time_sec: 15
-  attack_variant: "BA"
-  random: false
-  frame_in_batch: 50

@@ -30,7 +30,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 				if (!entry.is_directory()) continue;
 				auto e = suite::channel_switch_rogueAP::parse_test_folder(entry.path());
 				if (e.passed.has_value())
-					results.emplace_back(variant, move(e));
+					results.emplace_back(variant, std::move(e));
 			}
 		}
 	}
@@ -45,11 +45,11 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		const int ocv_b = opt_rank(b.second.ap_ocv) + opt_rank(b.second.client_ocv);
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
-		const int_results( disc_a = opt_rank(a.second.disconnected);
+		const int disc_a = opt_rank(a.second.disconnected);
 		const int disc_b = opt_rank(b.second.disconnected);
 		if (disc_a != disc_b) return disc_a < disc_b;
 
-		return opt_rank(a.second.rogue_ap) < opt_rank(b.second.rogue_ap);
+		return opt_rank(a.second.rogue_ap_connected) < opt_rank(b.second.rogue_ap_connected);
 	});
 
 	return results;
@@ -130,7 +130,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
                 f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";
             f << "                    <td>" << opt_bool(e->disconnected) << " (" << opt_bool(e->ap_disconnected) << ")</td>\n";
-            f << "                    <td>" << opt_bool(e->rogue_ap)     << "</td>\n";
+            f << "                    <td>" << opt_bool(e->rogue_ap_connected)     << "</td>\n";
             f << "                    <td>" << opt_bool(e->ap_ocv) << " / " << opt_bool(e->client_ocv) << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";
             f << "                </tr>\n";

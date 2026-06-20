@@ -33,6 +33,7 @@ static const std::filesystem::path ATTACK_CONFIG = std::filesystem::path(PROJECT
 inline auto var_PREFIX = std::string("var_");
 inline auto START_tag = "@START";
 inline auto END_tag = "@END";
+inline auto END_STOP_tag = "@END";
 
 class Actor_config;
 class ExternalConn;

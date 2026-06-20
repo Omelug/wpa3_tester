@@ -319,7 +319,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 		if(proc_iter == processes.end()) return;
 
 		mp = proc_iter->second;
-		write_log_line(mp->logs.log, "@END_STOP");
+		write_log_line(mp->logs.log, END_STOP_tag);
 
 		// clean up wait state and notify any waiting threads
 		mp->logs.history_enabled = false;

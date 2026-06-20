@@ -30,14 +30,14 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        other_options: "-d"
         ssid: TestNetwork
         ieee80211w: 1
         proto: RSN
         key_mgmt: SAE WPA-PSK
         pairwise: CCMP
         group: CCMP
-        sae_password: password123
-        wpa_passphrase: password123
+        psk: password123
     netns: sta
     ip_addr: "10.0.0.2"
   rogue_ap:

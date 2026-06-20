@@ -123,6 +123,18 @@ properties:
     type: boolean
 
   # --- WPA Enterprise ---
+  wpa:
+    type: [ string, integer ]
+  wpa_key_mgmt:
+    type: string
+  ieee8021x:
+    type: [ string, integer ]
+  eap_server:
+    type: [ string, integer ]
+  pwd_group:
+    type: [ string, integer ]
+  eap_user_file:
+    type: string
   auth_server:
     type: string
   auth_port:

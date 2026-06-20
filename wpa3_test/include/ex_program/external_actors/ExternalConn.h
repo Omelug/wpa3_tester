@@ -27,6 +27,7 @@ public:
 	std::optional<std::string> get_driver_hash(const std::string &driver_name) const;
 	std::optional<std::string> get_module_hash(const std::string &driver_name) const;
 
+	[[nodiscard]] bool is_connected() const { return session != nullptr; }
 	virtual std::string exec(const std::string &cmd, bool kill_on_exit = false, int *ret_err = nullptr) const;
 	void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;
 	bool set_channel(const std::string &iface, const Channel &ch) const;

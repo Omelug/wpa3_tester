@@ -11,6 +11,7 @@
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -134,8 +135,9 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 		}
 	}
 
-	if(umount2(ns_path.c_str(), MNT_DETACH) != 0) log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path,
-													strerror(errno));
+	if(umount2(ns_path.c_str(), MNT_DETACH) != 0){
+		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
+	}
 
 	if(unlink(ns_path.c_str()) != 0) log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
 
@@ -249,6 +251,15 @@ bool RunStatus::config_requirement(){
 		if(!_hw_option_cache.external_wb_opts.has_value()) _hw_option_cache.external_wb_opts = external_wb_options();
 		external_wb_mapping =
 				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
+		bool cache_dead = false;
+		if(_hw_option_cache.external_wb_opts.has_value()){
+			for(const auto &opt : *_hw_option_cache.external_wb_opts){
+				if(opt->conn && !opt->conn->is_connected()){ cache_dead = true; break; }
+			}
+		}
+		if(!_hw_option_cache.external_wb_opts.has_value() || cache_dead)
+			_hw_option_cache.external_wb_opts = external_wb_options();
+		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 	}
 
 	// ------------------ EXTERNAL BLACKBOX -----------------

@@ -1,0 +1,34 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+name: Dlink_all
+config_type: test_suite
+tests:
+
+  # add Dos_hard suite
+
+  # --------- bl0ck -----------
+  bl0ck_BA_Dlink:
+    test_name: bl0ck_BA_Dlink
+  bl0ck_BAR_Dlink:
+    test_name: bl0ck_BAR_Dlink
+  bl0ck_BARS_Dlink:
+    test_name: bl0ck_BARS_Dlink
+
+  # --------- channel_switch -----------
+
+  # ------ Enterprise
+  reflection_attack_Dlink:
+    test_name: reflection_attack_Dlink
+  invalid_curve_attack_Dlink:
+    test_name: invalid_curve_attack_Dlink
+
+  # ------- downgrade -------------
+  wpa3_trans_downgrade_Dlink:
+    test_name: wpa3_trans_downgrade_Dlink
+
+  # -------- scanner --------
+  ap_info_Dlink:
+    test_name: ap_info_Dlink
+
+
+  # TODO add BAR/BARS
+rewrite: errors

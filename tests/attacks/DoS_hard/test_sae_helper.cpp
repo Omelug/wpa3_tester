@@ -28,8 +28,7 @@ TEST_CASE("ParsesCommitFromPcap"){
     path pcap_path = path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path);
-    optional<wpa3_tester::sae_helper::SAEPair> result
-        = wpa3_tester::sae_helper::parse_sae_commit(probe_data);
+    optional<wpa3_tester::sae_helper::SAEPair> result = wpa3_tester::sae_helper::parse_sae_commit(probe_data);
 
     REQUIRE(result.has_value());
     CHECK_EQ(result->scalar.size(), 32);

@@ -1,0 +1,13 @@
+$extends: ./downgrade_vuln.yaml
+name: downgrade_Dlink_wb_wpa3_disable
+attacker_module: wpa3_trans_downgrade
+actors:
+  $DELETE: access_point
+  access_point:
+    $extends: ../../target/Dlink/Dlink_wb_wpa3_disable.comp.yaml
+  client:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        ssid: OpenWrt_2_4GHz

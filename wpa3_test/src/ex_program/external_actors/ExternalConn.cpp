@@ -179,35 +179,38 @@ void ExternalConn::set_ip(const string &iface, const string &ip_addr) const{
 	exec("ip link set " + iface + " up");
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void ExternalConn::upload_file(const path &local_path, const path &remote_path) const{
 	if(!session) throw ex_conn_err("SSH session not connected");
 
-	const sftp_session sftp = sftp_new(session);
-	if(!sftp || sftp_init(sftp) != SSH_OK){
-		if(sftp) sftp_free(sftp);
-		throw ex_conn_err("SFTP init failed");
-	}
-
 	ifstream local_f(local_path, ios::binary);
-	if(!local_f){
-		sftp_free(sftp);
-		throw ex_conn_err("Local file not found: {}", local_path);
+	if(!local_f) throw ex_conn_err("Local file not found: {}", local_path);
+
+	const string contents{istreambuf_iterator<char>(local_f), istreambuf_iterator<char>()};
+
+	ssh_scp scp = ssh_scp_new(session, SSH_SCP_WRITE, remote_path.parent_path().c_str());
+	if(!scp) throw ex_conn_err("SCP init failed");
+	if(ssh_scp_init(scp) != SSH_OK){
+		ssh_scp_free(scp);
+		throw ex_conn_err("SCP init failed: {}", ssh_get_error(session));
 	}
 
-	const sftp_file remote_f = sftp_open(sftp, remote_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0755);
-	if(!remote_f){
-		sftp_free(sftp);
-		throw ex_conn_err("Remote open failed");
+	const string filename = remote_path.filename().string();
+	if(ssh_scp_push_file(scp, filename.c_str(), contents.size(), 0644) != SSH_OK){
+		ssh_scp_free(scp);
+		throw ex_conn_err("SCP push file failed: {}", ssh_get_error(session));
 	}
 
-	char buffer[4096];
-	while(local_f.read(buffer, sizeof(buffer)) || local_f.gcount() > 0){
-		if(sftp_write(remote_f, buffer, local_f.gcount()) < 0) break;
+	if(ssh_scp_write(scp, contents.data(), contents.size()) != SSH_OK){
+		ssh_scp_free(scp);
+		throw ex_conn_err("SCP write failed: {}", ssh_get_error(session));
 	}
 
-	sftp_close(remote_f);
-	sftp_free(sftp);
+	ssh_scp_close(scp);
+	ssh_scp_free(scp);
 }
+#pragma GCC diagnostic pop
 
 void ExternalConn::upload_script_raw(const path &local_path, const path &remote_path) const{
 	ifstream ifile(local_path);

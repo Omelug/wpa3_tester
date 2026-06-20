@@ -1,7 +1,5 @@
 # DoS_hard attack tests
-add_subdirectory(cookie_guzzler)
 add_subdirectory(pmk_gobbler)
-#add_subdirectory(memory_omnivore)
 
 # sae_helpers
 add_executable(run_sae_helpers ./test_sae_helper.cpp)

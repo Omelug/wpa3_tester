@@ -15,12 +15,19 @@ void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_na
 	if(!setup_node.contains("ex_WB_programs")){ return; }
 	auto ex_WB_programs = setup_node.at("ex_WB_programs");
 	for(const auto &req_name: ex_WB_programs){
+		const string pkg = req_name.get<string>();
 		int ret = 0;
-		exec("opkg install " + req_name.get<string>(), false, &ret);
+		exec("opkg status " + pkg + " | grep -q 'Status:.*installed'", false, &ret);
+		if(ret == 0) continue;
+
+		exec("opkg install " + pkg, false, &ret);
 		if(ret){
-			exec("opkg update", false, &ret);
-			exec("opkg install " + req_name.get<string>(), false, &ret);
-			if(ret){ throw config_err("Cannot install " + req_name.get<string>() + " after opkg update"); }
+			exec("opkg update", false, &ret); //FIXME hardcoced conflict packages
+			exec("opkg remove wpad wpad-wolfssl wpad-basic wpad-basic-wolfssl 2>/dev/null", false, &ret);
+			exec("opkg install " + pkg, false, &ret);
+			if(ret){ throw config_err("Cannot install " + pkg + " after opkg update"); }
+			exec("reboot", false, &ret);
+			throw config_err("Rebooting router to activate " + pkg + " — re-run the test after reboot");
 		}
 	}
 }
@@ -54,6 +61,7 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 void OpenWrtConn::forward_internet(const string &remote_ip) const{
 	hw_capabilities::run_cmd({"bash", "-c", "echo 1 | tee /proc/sys/net/ipv4/ip_forward"});
 	auto internet_iface = get_global_config().at("internet_interface").get<string>();
+
 	// default netns
 	const string local_iface = hw_capabilities::get_iface(remote_ip, nullopt);
 	hw_capabilities::run_cmd({"iptables", "-A", "FORWARD", "-i", local_iface, "-o", internet_iface, "-j", "ACCEPT"});
@@ -202,7 +210,6 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at(
 		"program_config");
-	cerr << program_config.dump() << endl;
 	actor->set(SK::ssid, program_config.at("ssid").get<string>());
 	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
 
@@ -212,12 +219,20 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	};
 	const string wifi_iface = get_wifi_iface_section(actor.get(SK::iface));
 
+	// reset section to avoid stale options from previous test runs bleeding in
+	exec("uci delete wireless." + wifi_iface);
+	exec("uci set wireless." + wifi_iface + "=wifi-iface");
 	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
 	exec("uci set wireless." + wifi_iface + ".device=" + actor.get(SK::radio));
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 
-		if(radio_keys.contains(key)){
+		if(key == "eap_user_file"){
+			const filesystem::path local = rs.config_path().parent_path() / value;
+			constexpr string_view remote = "/etc/hostapd.eap_user";
+			upload_file(local, remote);
+			exec(format("uci set wireless.{}.eap_user_file={}", wifi_iface, remote));
+		} else if(radio_keys.contains(key)){
 			exec(format("uci set wireless.{}.{}={}", actor.get(SK::radio), key, value));
 		} else{
 			exec(format("uci set wireless.{}.{}={}", wifi_iface, key, value));
@@ -246,7 +261,7 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 	const string phy = "phy" + radio.substr(5);
 	int ret = 0;
 	const string output = exec("iw phy " + phy + " info", false, &ret);
-	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);
+	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy {}:{}", phy, output);
 	parse_hw_capabilities(actor, output);
 
 	string mac = exec("cat /sys/class/ieee80211/" + phy + "/macaddress 2>/dev/null");
@@ -254,6 +269,13 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 	if(!mac.empty()){
 		actor->set(SK::mac, mac);
 		actor->set(SK::permanent_mac, mac);
+	}
+
+	const string driver = get_driver(radio);
+	if(!driver.empty()){
+		actor->set(SK::driver_name, driver);
+		actor->set(SK::driver_hash, get_driver_hash(driver));
+		actor->set(SK::module_hash, get_module_hash(driver));
 	}
 }
 
@@ -267,9 +289,18 @@ void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &out
 	actor->set(BK::AP, has(" * AP"));
 	actor->set(BK::STA, has(" * managed"));
 	actor->set(BK::monitor, has(" * monitor"));
+	actor->set(BK::active_monitor, has("active monitor"));
 
 	actor->set(BK::w80211n, has("HT20") || has("HT40"));
 	actor->set(BK::w80211ac, has("VHT"));
 	actor->set(BK::w80211ax, has("HE"));
+
+	actor->set(BK::CSA,         has("channel_switch"));
+	actor->set(BK::OCV,         has("operating channel validation"));
+	actor->set(BK::beacon_prot, has("beacon protection"));
+	actor->set(BK::MFP,         has("00-0f-ac:6")); // BIP-CMAC-128
+
+	actor->set(BK::WPA_PSK,  has("00-0f-ac:4")); // CCMP cipher suite
+	actor->set(BK::WPA3_SAE, has("SAE"));
 }
 }

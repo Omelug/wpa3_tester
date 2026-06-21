@@ -257,8 +257,8 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	});
 }
 
-void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
-	const string phy = "phy" + radio.substr(5);
+void OpenWrtConn::get_hw_capabilities(const ActorPtr &actor){
+	const string phy = "phy" + actor.get(SK::radio).substr(5);
 	int ret = 0;
 	const string output = exec("iw phy " + phy + " info", false, &ret);
 	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy {}:{}", phy, output);
@@ -271,7 +271,7 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 		actor->set(SK::permanent_mac, mac);
 	}
 
-	const string driver = get_driver(radio);
+	const string driver = get_driver(actor.get(SK::radio));
 	if(!driver.empty()){
 		actor->set(SK::driver_name, driver);
 		actor->set(SK::driver_hash, get_driver_hash(driver));

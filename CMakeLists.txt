@@ -58,3 +58,4 @@ endif ()
 
 enable_testing()
 add_subdirectory(wpa3_test)
+add_subdirectory(wpa3_test/remote_injector)

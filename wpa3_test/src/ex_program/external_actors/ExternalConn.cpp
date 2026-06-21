@@ -1,7 +1,12 @@
 #include "ex_program/external_actors/ExternalConn.h"
+#include <chrono>
+#include <cstdlib>
 #include <fcntl.h>
+#include <map>
+#include <thread>
 #include <libssh/sftp.h>
 #include "config/Actor_Config/ActorPtr.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 
 #include <ranges>
@@ -302,6 +307,58 @@ void ExternalConn::disconnect(){
 	session = nullptr;
 }
 
+static const map<string, string> ARCH_TO_TRIPLE = {
+	{"mips",    "mips-linux-musl"},
+	{"mipsel",  "mipsel-linux-musl"},
+	{"aarch64", "aarch64-linux-musl"},
+	{"armv7l",  "arm-linux-musleabihf"},
+	{"armv6l",  "arm-linux-musleabi"},
+};
+
+static path injector_source_path(){
+	return read_symlink("/proc/self/exe").parent_path().parent_path().parent_path()
+		   / "wpa3_test" / "remote_injector" / "main.c";
+}
+
+static void build_inject_binary(const string &arch, const path &out_path){
+	const auto it = ARCH_TO_TRIPLE.find(arch);
+	if(it == ARCH_TO_TRIPLE.end())
+		throw ex_conn_err("No musl toolchain triple known for arch '{}'", arch);
+	const string &triple = it->second;
+
+	const path toolchain_dir = path(getenv("HOME")) / ".musl-cross" / (triple + "-cross");
+	const path gcc = toolchain_dir / "bin" / (triple + "-gcc");
+
+	if(!exists(gcc)){
+		log(LogLevel::INFO, "Downloading musl toolchain for {} ({})...", arch, triple);
+		const string url = "https://musl.cc/" + triple + "-cross.tgz";
+		create_directories(toolchain_dir.parent_path());
+		const string dl_cmd = "curl -fsSL '" + url + "' | tar xz -C '" + toolchain_dir.parent_path().string() + "'";
+		if(system(dl_cmd.c_str()) != 0)
+			throw ex_conn_err("Failed to download musl toolchain from {}", url);
+	}
+
+	log(LogLevel::INFO, "Cross-compiling remote_injector for {}...", arch);
+	const string cc_cmd = "'" + gcc.string() + "' -O2 -static -o '" + out_path.string()
+						  + "' '" + injector_source_path().string() + "'";
+	if(system(cc_cmd.c_str()) != 0)
+		throw ex_conn_err("Cross-compilation failed for arch {}", arch);
+	log(LogLevel::INFO, "Built {}", out_path);
+}
+
+static path injector_local_path(const string &remote_arch){
+	const path bin_dir = read_symlink("/proc/self/exe").parent_path();
+	const path arch_binary = bin_dir / ("remote_injector_" + remote_arch);
+	if(exists(arch_binary)) return arch_binary;
+
+	if(!get_global_run_config().get_install_req()) //FIXME global (but it makes ssence here)
+		throw ex_conn_err("No remote_injector binary for arch '{}' — place it at {} "
+						  "or set install_req: true to build automatically", remote_arch, arch_binary);
+
+	build_inject_binary(remote_arch, arch_binary);
+	return arch_binary;
+}
+
 ssh_channel ExternalConn::open_capture_channel(const string &iface) const{
 	lock_guard lock(session_mtx);
 	const ssh_channel ch = ssh_channel_new(session);
@@ -317,6 +374,53 @@ ssh_channel ExternalConn::open_capture_channel(const string &iface) const{
 		ssh_channel_free(ch);
 		throw ex_conn_err("open_capture_channel: exec failed on " + iface);
 	}
+	return ch;
+}
+
+void ExternalConn::ensure_inject_binary() const{
+	constexpr string_view remote_path = "/tmp/wpa3_injector";
+	string arch = exec("uname -m 2>/dev/null");
+	while(!arch.empty() && (arch.back() == '\n' || arch.back() == '\r')) arch.pop_back();
+	const path local_binary = injector_local_path(arch);
+
+	int ret = 0;
+	const string remote_size = exec(string("stat -c%s ") + string(remote_path) + " 2>/dev/null", false, &ret);
+	const auto local_size = to_string(file_size(local_binary));
+	if(ret != 0 || remote_size.substr(0, remote_size.find('\n')) != local_size){
+		log(LogLevel::INFO, "Uploading remote_injector ({}) -> {}", arch, remote_path);
+		upload_file(local_binary, remote_path);
+		exec(string("chmod +x ") + string(remote_path));
+	}
+}
+
+ssh_channel ExternalConn::open_inject_channel(const string &iface) const{
+	ensure_inject_binary();
+	constexpr string_view remote_path = "/tmp/wpa3_injector";
+	lock_guard lock(session_mtx);
+	const ssh_channel ch = ssh_channel_new(session);
+	if(!ch) throw ex_conn_err("open_inject_channel: ssh_channel_new failed");
+	if(ssh_channel_open_session(ch) != SSH_OK){
+		ssh_channel_free(ch);
+		throw ex_conn_err("open_inject_channel: open_session failed");
+	}
+	const string cmd = string(remote_path) + " " + iface;
+	if(ssh_channel_request_exec(ch, cmd.c_str()) != SSH_OK){
+		ssh_channel_send_eof(ch);
+		ssh_channel_close(ch);
+		ssh_channel_free(ch);
+		throw ex_conn_err("open_inject_channel: exec failed on " + iface);
+	}
+	// Give the process ~50 ms to start; if it exits immediately, read stderr for diagnosis.
+	this_thread::sleep_for(chrono::milliseconds(50));
+	if(ssh_channel_is_eof(ch)){
+		char errbuf[512] = {};
+		ssh_channel_read_nonblocking(ch, errbuf, sizeof(errbuf) - 1, 1 /* stderr */);
+		ssh_channel_send_eof(ch);
+		ssh_channel_close(ch);
+		ssh_channel_free(ch);
+		throw ex_conn_err("remote_injector exited immediately on {}: {}", iface, errbuf[0] ? errbuf : "(no stderr)");
+	}
+	log(LogLevel::INFO, "remote_injector running on {}", iface);
 	return ch;
 }
 }

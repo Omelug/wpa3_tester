@@ -54,7 +54,7 @@ public:
 		throw not_implemented_err("logger");
 	}
 
-	virtual void get_hw_capabilities(ActorPtr &, const std::string &){
+	virtual void get_hw_capabilities(const ActorPtr &){
 		throw not_implemented_err("get_hw_capabilities");
 	}
 
@@ -63,5 +63,9 @@ public:
 
 	// Persistent SSH channel running "tcpdump -i <iface> -U -w -"; caller owns and must close it.
 	ssh_channel open_capture_channel(const std::string &iface) const;
+	// Upload remote_injector binary to /tmp/wpa3_injector if outdated.
+	void ensure_inject_binary() const;
+	// Open SSH channel for frame injection (calls ensure_inject_binary internally).
+	ssh_channel open_inject_channel(const std::string &iface) const;
 };
 }

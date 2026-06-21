@@ -1,5 +1,3 @@
-requirements:
-  simple: [ ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
 actors:
   receiver:
     selection:
@@ -15,7 +13,12 @@ actors:
       program: openwrt
       program_config:
         channel: 11
-
+observers:
+  cx_tshark:
+    actor: receiver
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
 attacker_module: injection_test
 name: injection_test_Dlink
 rewrite: all

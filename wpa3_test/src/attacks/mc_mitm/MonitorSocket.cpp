@@ -1,4 +1,5 @@
 #include "attacks//mc_mitm/MonitorSocket.h"
+#include <arpa/inet.h>
 #include <memory>
 #include <pcap/pcap.h>
 #include <string>
@@ -32,18 +33,33 @@ MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns,
 MonitorSocket::MonitorSocket(const ssh_channel rx_ch, const bool detect_injected)
 : detect_injected_(detect_injected), rx_ch_(rx_ch){}
 
+MonitorSocket::MonitorSocket(const ssh_channel tx_ch, tag_tx_t)
+: detect_injected_(false), tx_ch_(tx_ch){}
+
 MonitorSocket::~MonitorSocket(){
 	if(rx_ch_){
 		ssh_channel_send_eof(rx_ch_);
 		ssh_channel_close(rx_ch_);
 		ssh_channel_free(rx_ch_);
 	}
+	if(tx_ch_){
+		ssh_channel_send_eof(tx_ch_);
+		ssh_channel_close(tx_ch_);
+		ssh_channel_free(tx_ch_);
+	}
 }
 
 MonitorSocket::MonitorSocket(MonitorSocket &&o) noexcept
 : detect_injected_(o.detect_injected_), sniffer_(std::move(o.sniffer_)),
-rx_ch_(exchange(o.rx_ch_, nullptr)), rx_buf_(move(o.rx_buf_)),
+rx_ch_(exchange(o.rx_ch_, nullptr)), tx_ch_(exchange(o.tx_ch_, nullptr)),
+rx_buf_(std::move(o.rx_buf_)),
 rx_head_(o.rx_head_), pcap_hdr_done_(o.pcap_hdr_done_), mf_workaround(o.mf_workaround){}
+
+static void write_to_inject_channel(ssh_channel ch, const vector<uint8_t> &bytes){
+	const uint16_t len_be = htons(static_cast<uint16_t>(bytes.size()));
+	ssh_channel_write(ch, &len_be, 2);
+	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
+}
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
 void MonitorSocket::send(PDU &pdu, const Channel &){
@@ -65,6 +81,10 @@ void MonitorSocket::send(PDU &pdu, const Channel &){
 	} else{
 		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO pročNOACK flag??????
 		bytes = pdu.serialize();
+	}
+	if(tx_ch_){
+		write_to_inject_channel(tx_ch_, bytes);
+		return;
 	}
 	pcap_inject(sniffer_->get_pcap_handle(), bytes.data(), bytes.size());
 }
@@ -117,6 +137,10 @@ void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch){
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 	const auto out = build_inject_frame(raw, ch, detect_injected_);
 	if(out.empty()) return;
+	if(tx_ch_){
+		write_to_inject_channel(tx_ch_, out);
+		return;
+	}
 	pcap_inject(sniffer_->get_pcap_handle(), out.data(), out.size());
 }
 

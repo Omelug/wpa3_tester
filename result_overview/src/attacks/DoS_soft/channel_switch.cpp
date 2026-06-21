@@ -29,8 +29,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 			for (const auto &entry : directory_iterator(src_dir)) {
 				if (!entry.is_directory()) continue;
 				auto e = suite::channel_switch_rogueAP::parse_test_folder(entry.path());
-				if (e.passed.has_value())
-					results.emplace_back(variant, std::move(e));
+				results.emplace_back(variant, std::move(e));
 			}
 		}
 	}

@@ -6,9 +6,8 @@
 
 #include "default.h"
 #include "config/RunSuiteStatus.h"
-#include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::suite::injection_test_filler{
 using namespace std;
@@ -47,17 +46,13 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<InjectionTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# Injection Test Suite Report\n\n";
 	report << "Tests frame injection capability across different driver combinations.\n\n";
 
-	if(entries.empty()){
-		report << "No test results found.\n";
-		report.close();
-		return;
-	}
+	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Test Results\n\n";
 	report << "| Test | TX Driver | RX Driver | Passed | Total | All Passed |\n";
@@ -67,23 +62,20 @@ void generate_report(RunSuiteStatus &rss){
 		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
 								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
 								: e.test_name;
-		const string pass_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME
-				+ ")";
-		report << "| " << name_cell << " | " << e.tx_driver << " | " << e.rx_driver << " | " << e.tests_passed << " | "
-				<< e.tests_total << " | " << pass_link << " |\n";
+		const string pass_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/" +
+				RESULT_NAME + ")";
+		report << "| " << name_cell << " | " << e.tx_driver << " | " << e.rx_driver << " | " << e.tests_passed <<
+				" | " << e.tests_total << " | " << pass_link << " |\n";
 	}
 
 	bool any_failures = false;
 	for(const auto &e: entries){
 		if(e.failures.empty()) continue;
-		if(!any_failures){
-			report << "\n## Failures\n\n";
-			any_failures = true;
-		}
+		if(!any_failures){ report << "\n## Failures\n\n"; any_failures = true; }
 		report << "### " << e.test_name << "\n\n";
 		report << "| Sub-test | Detail |\n|----------|--------|\n";
-		for(const auto &[name, detail]: e.failures) report << "| " << name << " | " << (detail.empty() ? "-" : detail)
-				<< " |\n";
+		for(const auto &[name, detail]: e.failures)
+			report << "| " << name << " | " << (detail.empty() ? "-" : detail) << " |\n";
 		report << "\n";
 	}
 
@@ -92,9 +84,5 @@ void generate_report(RunSuiteStatus &rss){
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- All sub-tests passed: " << all_passed_count << "\n";
 	report << "- Partial/full failures: " << (entries.size() - all_passed_count) << "\n";
-
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "Injection test report generated: {}", run_dir / REPORT_NAME);
 }
 }

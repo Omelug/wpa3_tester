@@ -10,7 +10,8 @@ struct InvalidCurveTestEntry{
 	std::string test_name;
 	std::string ap_driver;
 	std::string attacker_driver;
-	std::optional<bool> passed; // nullopt = no result.json
+	//result params
+	std::optional<bool> passed;
 
 	static InvalidCurveTestEntry parse(const std::filesystem::path &test_folder);
 };
@@ -18,5 +19,5 @@ struct InvalidCurveTestEntry{
 std::vector<InvalidCurveTestEntry> get_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
-void generate_report(RunSuiteStatus & rss);
+void generate_report(const RunSuiteStatus & rss);
 }

@@ -1,14 +1,15 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <yaml-cpp/yaml.h>
 
 #include "default.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
+#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 
 namespace wpa3_tester::suite::bl0ck_test_suites{
 using namespace std;
@@ -16,11 +17,8 @@ using namespace filesystem;
 using namespace nlohmann;
 
 Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
-	Bl0ckTestEntry e;
+	auto e = helper::load_result_default<Bl0ckTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
-
-	if(const auto result = helper::load_result_json(test_folder)) e.disconnected = result->value("disconnect_count", 0)
-			> 0;
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
@@ -29,25 +27,21 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
-		if(const auto actor = rs.actor("access_point")){
-			e.ap_mac = (*actor)->get_or(SK::mac, "");
-			e.ap_source = (*actor)->get_or(SK::source, "");
-		}
-		if(const auto actor = rs.actor("client")){
-			e.client_mac = (*actor)->get_or(SK::mac, "");
-			e.client_source = (*actor)->get_or(SK::source, "");
-		}
+		const auto ap = rs.get_actor("access_point");
+		e.ap_mac = ap->get(SK::mac);
+		e.ap_source = ap->get(SK::source);
 
-		if(const auto actor = rs.actor("attacker")){
-			e.attacker_mac = (*actor)->get_or(SK::mac, "");
-			e.attacker_driver = (*actor)->get_or(SK::driver_name, "");
-		}
+		const auto client = rs.get_actor("client");
+		e.client_mac = client->get(SK::mac);
+		e.client_source = client->get(SK::source);
 
-		try{
-			const auto cfg = YAML::LoadFile(cfg_path.string());
-			if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"]) e.attack_variant = cfg["attack_config"][
-				"attack_variant"].as<string>();
-		} catch(...){}
+		const auto att = rs.get_actor("attacker");
+		e.attacker_mac = att->get(SK::mac);
+		e.attacker_driver = att->get(SK::driver_name);
+
+		const auto cfg = YAML::LoadFile(cfg_path);
+		if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
+			e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 	}
 
 	return e;
@@ -64,15 +58,14 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
 	report << "Summary of Bl0ck attack tests across different driver combinations.\n\n";
 
 	if(entries.empty()){
 		report << "No test results found.\n";
-		report.close();
 		return;
 	}
 
@@ -82,11 +75,10 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	size_t passed_count = 0;
 	for(const auto &e: entries){
-		if(e.disconnected.value()) ++passed_count;
 		const string name_cell = exists(run_dir / e.name / REPORT_NAME)
 								? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
 								: e.name;
-		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
+		const string result_link = "[" + string(e.disconnect_count ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 				RESULT_NAME + ")";
 		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | " << e.attacker_mac << " (" <<
 				e.attacker_driver << ") | " << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " <<
@@ -99,8 +91,5 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
 
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "Bl0ck mac_gen report generated: {}", run_dir / REPORT_NAME);
 }
 }

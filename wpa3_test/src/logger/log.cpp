@@ -1,5 +1,4 @@
 #include "logger/log.h"
-#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <mutex>

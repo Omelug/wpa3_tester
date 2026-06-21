@@ -28,7 +28,6 @@ void run_attack(RunStatus &rs){
 
 	const auto netns1 = actor_tx[SK::netns];
 
-	const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
 	const HWAddress<6> tx_mac(actor_tx.get(SK::mac));
 
 	// Sniff ACK frames on the transceiver interface
@@ -54,7 +53,7 @@ void run_attack(RunStatus &rs){
 	// Build a null data frame: transceiver -> receiver
 	RadioTap rt;
 	Dot11Data frame;
-	frame.addr1(rx_mac); // destination
+	frame.addr1(actor_rx.get(SK::mac)); // destination
 	frame.addr2(tx_mac); // source
 	frame.addr3(tx_mac); // BSSID
 	frame.subtype(4);    // null data

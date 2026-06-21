@@ -28,7 +28,7 @@ ssid(move(ssid)),
 // TODO fallback to info from actors
 ap_mac(ap_mac),
 only_to_mitm(only_to_mitm),
-client_state(client_mac, move(log_folder)){}
+client_state(client_mac, std::move(log_folder)){}
 
 McMitm::~McMitm(){ stop(); }
 

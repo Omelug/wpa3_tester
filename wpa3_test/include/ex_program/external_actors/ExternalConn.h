@@ -60,5 +60,8 @@ public:
 
 	void on_disconnect(DisconnectCallback cb);
 	void disconnect();
+
+	// Persistent SSH channel running "tcpdump -i <iface> -U -w -"; caller owns and must close it.
+	ssh_channel open_capture_channel(const std::string &iface) const;
 };
 }

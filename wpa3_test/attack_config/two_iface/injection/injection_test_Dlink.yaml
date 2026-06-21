@@ -11,7 +11,7 @@ actors:
     $extends: ../../target/Dlink/Dlink_wb.yaml
 
 attacker_module: injection_test
-name: injection_test_example_Dlink
+name: injection_test_Dlink
 rewrite: all
 delete_old: true
 install_req: true

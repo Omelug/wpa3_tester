@@ -6,6 +6,7 @@
 #include "default.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "system/hw_capabilities.h"
 #include "system/injection_result.h"
 #include "system/utils.h"
@@ -14,13 +15,6 @@ namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
-
-void hw_capabilities::setup_injection_iface(const string &iface, const Channel &ch, const optional<string> &netns){
-	set_iface_down(iface, netns);
-	set_wifi_type(iface, NL80211_IFTYPE_MONITOR, netns);
-	set_iface_up(iface, netns);
-	set_channel(iface, ch, netns);
-}
 
 static bool driver_needs_mf_workaround(const string &driver){
 	return driver == "iwlwifi" || driver == "ath9k_htc" || driver == "rt2800usb";
@@ -38,11 +32,16 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 														const HWAddress<6> &peermac, const bool skip_mf,
 														const bool testack
 ){
+	if(actor_tx->conn)
+		throw not_implemented_err("Remote TX injection not supported (OpenWrt as actor_tx)");
+
 	const bool rx_has_vif = actor_rx[SK::sniff_iface].has_value();
 	const string cap_iface = rx_has_vif ? actor_rx.get(SK::sniff_iface) : actor_rx.get(SK::iface);
 
 	MonitorSocket s_out(actor_tx.get(SK::iface), actor_tx[SK::netns]);
-	MonitorSocket s_in(cap_iface, actor_rx[SK::netns]);
+	MonitorSocket s_in = actor_rx->conn
+		? MonitorSocket(actor_rx->conn->open_capture_channel(cap_iface))
+		: MonitorSocket(cap_iface, actor_rx[SK::netns]);
 
 	const Channel ch = actor_tx->get_channel();
 
@@ -50,7 +49,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	suite.iface_out = actor_tx.get(SK::iface);;
 	suite.iface_in = cap_iface;
 	suite.channel = ch;
-	suite.driver = get_driver_name(actor_tx.get(SK::iface), actor_tx[SK::netns]);
+	suite.driver = actor_tx.get(SK::driver_name);
 
 	s_out.mf_workaround = driver_needs_mf_workaround(suite.driver);
 

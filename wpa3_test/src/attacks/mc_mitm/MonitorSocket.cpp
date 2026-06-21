@@ -14,33 +14,48 @@ using namespace Tins;
 
 namespace wpa3_tester{
 MonitorSocket::MonitorSocket(const string &iface, const bool detect_injected)
-: detect_injected_(detect_injected), sniffer_(iface, make_sniff_cfg()){
+: detect_injected_(detect_injected), sniffer_(make_unique<Sniffer>(iface, make_sniff_cfg())){
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1) throw run_err(
+	if(pcap_setnonblock(sniffer_->get_pcap_handle(), 1, errbuf) == -1) throw run_err(
 		"pcap_setnonblock failed: " + string(errbuf));
 }
 
 MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected)
-: detect_injected_(detect_injected),
-sniffer_([&](){
+: detect_injected_(detect_injected){
 	netlink_helper::NetNSContext ns_guard(netns);
-	return Sniffer(iface, make_sniff_cfg());
-}()){
+	sniffer_ = make_unique<Sniffer>(iface, make_sniff_cfg());
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(pcap_setnonblock(sniffer_.get_pcap_handle(), 1, errbuf) == -1)
+	if(pcap_setnonblock(sniffer_->get_pcap_handle(), 1, errbuf) == -1)
 		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
+MonitorSocket::MonitorSocket(const ssh_channel rx_ch, const bool detect_injected)
+: detect_injected_(detect_injected), rx_ch_(rx_ch){}
+
+MonitorSocket::~MonitorSocket(){
+	if(rx_ch_){
+		ssh_channel_send_eof(rx_ch_);
+		ssh_channel_close(rx_ch_);
+		ssh_channel_free(rx_ch_);
+	}
+}
+
+MonitorSocket::MonitorSocket(MonitorSocket &&o) noexcept
+: detect_injected_(o.detect_injected_), sniffer_(std::move(o.sniffer_)),
+rx_ch_(exchange(o.rx_ch_, nullptr)), rx_buf_(move(o.rx_buf_)),
+rx_head_(o.rx_head_), pcap_hdr_done_(o.pcap_hdr_done_), mf_workaround(o.mf_workaround){}
+
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
 void MonitorSocket::send(PDU &pdu, const Channel &){
+	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 	if(detect_injected_){
 		// Set More Data flag so we can detect injected frames
 		if(auto *dot11 = pdu.find_pdu<Dot11>()) dot11->more_data(1);
 	}
 
-	// Wrap in RadioTap if not already present.
-	// Keep the header minimal (only TXFlags) — matching Python behavior.
-	// Adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
+	// wrap in RadioTap if not already present.
+	// keep the header minimal (only TXFlags) — matching Python behavior.
+	// adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()){
 		RadioTap rt{};
@@ -51,7 +66,7 @@ void MonitorSocket::send(PDU &pdu, const Channel &){
 		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO pročNOACK flag??????
 		bytes = pdu.serialize();
 	}
-	pcap_inject(sniffer_.get_pcap_handle(), bytes.data(), bytes.size());
+	pcap_inject(sniffer_->get_pcap_handle(), bytes.data(), bytes.size());
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, const Channel &ch,
@@ -99,9 +114,10 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 }
 
 void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch){
+	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 	const auto out = build_inject_frame(raw, ch, detect_injected_);
 	if(out.empty()) return;
-	pcap_inject(sniffer_.get_pcap_handle(), out.data(), out.size());
+	pcap_inject(sniffer_->get_pcap_handle(), out.data(), out.size());
 }
 
 MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, const uint32_t caplen){
@@ -110,16 +126,20 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, const 
 		uint32_t strip = 0;
 		if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS)) strip = 4;
 		auto pdu = make_unique<RadioTap>(frame, caplen - strip);
-		return {move(pdu), vector(frame, frame + caplen - strip)};
+		return {std::move(pdu), vector(frame, frame + caplen - strip)};
 	} catch(...){
 		return {};
 	}
 }
 
 MonitorSocket::RecvResult MonitorSocket::recv(){
+	if(rx_ch_){
+		fill_rx_buf();
+		return parse_remote_recv();
+	}
 	pcap_pkthdr *header;
 	const u_char *frame;
-	const int ret = pcap_next_ex(sniffer_.get_pcap_handle(), &header, &frame);
+	const int ret = pcap_next_ex(sniffer_->get_pcap_handle(), &header, &frame);
 	if(ret <= 0) return {};
 	return parse_frame(frame, header->caplen);
 }
@@ -127,17 +147,33 @@ MonitorSocket::RecvResult MonitorSocket::recv(){
 void MonitorSocket::recv_loop(const chrono::steady_clock::time_point deadline,
 							const function<bool(RecvResult)> &on_packet
 ){
+	if(rx_ch_){
+		while(true){
+			const int rem = static_cast<int>(chrono::duration_cast<chrono::milliseconds>(
+				deadline - chrono::steady_clock::now()).count());
+			if(rem <= 0) break;
+			// Block until data arrives or timeout; 50 ms slices to recheck deadline
+			const int avail = ssh_channel_poll_timeout(rx_ch_, min(rem, 50), 0);
+			if(avail == SSH_ERROR) break;
+			fill_rx_buf();                      // single fill per poll cycle
+			while(auto r = parse_remote_recv()) // drain without re-reading SSH channel
+				if(on_packet(std::move(r))) return;
+		}
+		return;
+	}
 	const int fd = pcap_get_selectable_fd(get_pcap_handle());
 	pollfd pfd{fd, POLLIN, 0};
 	while(true){
 		const int rem = static_cast<int>(chrono::duration_cast<chrono::milliseconds>(
 			deadline - chrono::steady_clock::now()).count());
 		if(rem <= 0 || poll(&pfd, 1, rem) <= 0) break;
-		if(auto r = recv(); r && on_packet(move(r))) break;
+		if(auto r = recv(); r && on_packet(std::move(r))) break;
 	}
 }
 
-void MonitorSocket::set_filter(const string &bpf){ sniffer_.set_filter(bpf); }
+void MonitorSocket::set_filter(const string &bpf){
+	if(sniffer_) sniffer_->set_filter(bpf);
+}
 
 SnifferConfiguration MonitorSocket::make_sniff_cfg(){
 	SnifferConfiguration cfg;
@@ -145,5 +181,36 @@ SnifferConfiguration MonitorSocket::make_sniff_cfg(){
 	cfg.set_timeout(1); //FIXME prej bug, neblokující nastaveno v pcap_setnonblock
 	//cfg.set_promisc_mode(true);
 	return cfg;
+}
+
+void MonitorSocket::fill_rx_buf(){
+	char tmp[4096];
+	int n;
+	while((n = ssh_channel_read_nonblocking(rx_ch_, tmp, sizeof(tmp), 0)) > 0)
+		rx_buf_.insert(rx_buf_.end(), tmp, tmp + n);
+}
+
+MonitorSocket::RecvResult MonitorSocket::parse_remote_recv(){
+	const uint8_t *buf = rx_buf_.data() + rx_head_;
+	size_t avail = rx_buf_.size() - rx_head_;
+
+	if(!pcap_hdr_done_){
+		if(avail < 24) return {};
+		rx_head_ += 24; buf += 24; avail -= 24;
+		pcap_hdr_done_ = true;
+	}
+	// pcap packet record: ts_sec(4) ts_usec(4) caplen(4) len(4)
+	if(avail < 16) return {};
+	uint32_t caplen;
+	memcpy(&caplen, buf + 8, 4); // both sides LE (OpenWrt + x86)
+	if(avail < 16 + caplen) return {};
+	auto r = parse_frame(buf + 16, caplen);
+	rx_head_ += 16 + caplen;
+	// Compact once head grows large — one memcpy beats per-packet erase
+	if(rx_head_ > 65536){
+		rx_buf_.erase(rx_buf_.begin(), rx_buf_.begin() + static_cast<ptrdiff_t>(rx_head_));
+		rx_head_ = 0;
+	}
+	return r;
 }
 }

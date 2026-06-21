@@ -163,12 +163,21 @@ properties:
   network:
     type: string
     default: lan
-required: [ ssid, mode ]
-if:
-  properties:
-    encryption:
-      enum: [ psk, psk2, psk-mixed, sae, sae-mixed ]
-then:
-  required: [ key ]
+required: [ mode ]
+allOf:
+  - if:
+      properties:
+        mode:
+          not:
+            const: monitor
+    then:
+      required: [ ssid ]
+  - if:
+      required: [ encryption ]
+      properties:
+        encryption:
+          enum: [ psk, psk2, psk-mixed, sae, sae-mixed ]
+    then:
+      required: [ key ]
 
 additionalProperties: false

@@ -339,7 +339,7 @@ static void build_inject_binary(const string &arch, const path &out_path){
 	}
 
 	log(LogLevel::INFO, "Cross-compiling remote_injector for {}...", arch);
-	const string cc_cmd = "'" + gcc.string() + "' -O2 -static -o '" + out_path.string()
+	const string cc_cmd = "'" + gcc.string() + "' -O2 -static -no-pie -o '" + out_path.string()
 						  + "' '" + injector_source_path().string() + "'";
 	if(system(cc_cmd.c_str()) != 0)
 		throw ex_conn_err("Cross-compilation failed for arch {}", arch);
@@ -381,6 +381,14 @@ void ExternalConn::ensure_inject_binary() const{
 	constexpr string_view remote_path = "/tmp/wpa3_injector";
 	string arch = exec("uname -m 2>/dev/null");
 	while(!arch.empty() && (arch.back() == '\n' || arch.back() == '\r')) arch.pop_back();
+
+	// uname -m returns "mips" on both BE and LE MIPS Linux; use opkg arch to detect endianness
+	if(arch == "mips"){
+		const string opkg_arch = exec("opkg print-architecture 2>/dev/null | awk '/mips/{print $2; exit}'", false);
+		if(opkg_arch.find("mipsel") != string::npos)
+			arch = "mipsel";
+	}
+
 	const path local_binary = injector_local_path(arch);
 
 	int ret = 0;

@@ -35,7 +35,7 @@ foreach(_i RANGE 0 ${_last} 2)
 
         add_custom_target(remote_injector_${_arch}
             COMMAND ${CMAKE_COMMAND} -E echo "Cross-compiling for ${_arch} using ${_gcc}"
-            COMMAND ${_gcc} -O2 -static -o ${_out}
+            COMMAND ${_gcc} -O2 -static -no-pie -o ${_out}
                     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
             COMMENT "Building remote_injector_${_arch}"
             VERBATIM

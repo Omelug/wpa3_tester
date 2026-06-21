@@ -116,6 +116,13 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	exec("uci set wireless." + section + ".device=" + radio_name);
 
 	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at("program_config");
+	const string mode = program_config.value("mode", "ap");
+
+	if(mode == "monitor"){
+		setup_monitor_iface(radio_name, actor, program_config);
+		return;
+	}
+
 	for(auto &[key, value]: program_config.items()){
 		if(value.is_string()) exec(
 			string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>())
@@ -127,8 +134,35 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	exec("wifi reload");
 
 	// wait for ifname and store in actor
-	actor->set(SK::iface, wait_for_ifname(section));
-	actor->set(SK::mac, get_mac_address(actor[SK::iface].value()));
+	const string ifname = wait_for_ifname(section);
+	actor->set(SK::iface, ifname);
+	actor->set(SK::mac, get_mac_address(ifname));
+	actor->set(SK::radio, radio_name);
+}
+
+void OpenWrtConn::setup_monitor_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json &program_config){
+	// Bypass UCI/wifi for monitor mode — wpa_supplicant fights with netifd and prevents interface creation.
+	// Use iw directly to create the monitor interface on the phy.
+	const string phy = "phy" + radio_name.substr(5); // "radio0" → "phy0"
+	const string ifname = phy + "-mon0";
+
+	exec("wifi down " + radio_name + " 2>/dev/null; true");
+	// delete ALL vifs on this phy — driver limits concurrent interfaces
+	exec("for dev in $(iw dev | awk '/phy#" + phy.substr(3) + "/{p=1} p && /Interface/{print $2; p=0}'); do iw dev $dev del 2>/dev/null; done; true");
+	exec("iw phy " + phy + " interface add " + ifname + " type monitor");
+
+	if(program_config.contains("channel")){
+		const string ch = program_config.at("channel").is_string()
+			? program_config.at("channel").get<string>()
+			: to_string(program_config.at("channel").get<int>());
+		const string htmode = program_config.value("htmode", "HT20");
+		exec("iw dev " + ifname + " set channel " + ch + " " + htmode);
+	}
+
+	exec("ip link set " + ifname + " up");
+
+	actor->set(SK::iface, ifname);
+	actor->set(SK::mac, get_mac_address(ifname));
 	actor->set(SK::radio, radio_name);
 }
 

@@ -36,8 +36,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	const string cap_iface = rx_has_vif ? actor_rx.get(SK::sniff_iface) : actor_rx.get(SK::iface);
 
 	MonitorSocket s_out = actor_tx->conn
-		? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)),
-						MonitorSocket::tag_tx_t{})
+		? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)), MonitorSocket::tag_tx_t{})
 		: MonitorSocket(actor_tx.get(SK::iface), actor_tx[SK::netns]);
 	MonitorSocket s_in = actor_rx->conn
 		? MonitorSocket(actor_rx->conn->open_capture_channel(cap_iface))
@@ -46,7 +45,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	const Channel ch = actor_tx->get_channel();
 
 	InjectionSuiteResult suite;
-	suite.iface_out = actor_tx.get(SK::iface);;
+	suite.iface_out = actor_tx.get(SK::iface);
 	suite.iface_in = cap_iface;
 	suite.channel = ch;
 	suite.driver = actor_tx.get(SK::driver_name);

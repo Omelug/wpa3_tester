@@ -49,10 +49,12 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		set_channel(get_channel());
 		//set_iface_down();
 	}
+
 	//FIXME before channel switch?>
 	if(actor_json.contains("sniff_iface")){
 		set(SK::sniff_iface, MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
 		create_sniff_iface();
 	}
+	conn->exec("ip link set " + get(SK::iface) + " up");
 }
 }

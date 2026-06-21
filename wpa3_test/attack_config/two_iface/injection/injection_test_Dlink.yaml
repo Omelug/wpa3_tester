@@ -6,13 +6,20 @@ actors:
       driver: mt76x2u
     source: internal
   transceiver:
+    source: external
     selection:
-      channel: 11 #TODO now it needs to be here
-    $extends: ../../target/Dlink/Dlink_wb.comp.yaml
+      channel: 11
+      whitebox_host: OpenWrt
+      condition: [ monitor, 2_4GHz ]
     setup:
       program: openwrt
+      ex_WB_programs: [ remote_injector, tcpdump ]
       program_config:
         channel: 11
+        mode: monitor
+        htmode: HT20
+    ip_addr: "10.0.0.1"
+
 observers:
   cx_tshark:
     actor: receiver

@@ -32,13 +32,13 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 														const HWAddress<6> &peermac, const bool skip_mf,
 														const bool testack
 ){
-	if(actor_tx->conn)
-		throw not_implemented_err("Remote TX injection not supported (OpenWrt as actor_tx)");
-
 	const bool rx_has_vif = actor_rx[SK::sniff_iface].has_value();
 	const string cap_iface = rx_has_vif ? actor_rx.get(SK::sniff_iface) : actor_rx.get(SK::iface);
 
-	MonitorSocket s_out(actor_tx.get(SK::iface), actor_tx[SK::netns]);
+	MonitorSocket s_out = actor_tx->conn
+		? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)),
+						MonitorSocket::tag_tx_t{})
+		: MonitorSocket(actor_tx.get(SK::iface), actor_tx[SK::netns]);
 	MonitorSocket s_in = actor_rx->conn
 		? MonitorSocket(actor_rx->conn->open_capture_channel(cap_iface))
 		: MonitorSocket(cap_iface, actor_rx[SK::netns]);
@@ -97,7 +97,7 @@ using nlohmann::json;
 void run_attack(RunStatus &rs){
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
-
+	rs.start_observers();
 	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(actor_tx, actor_rx);
 
 	const path result_path = rs.run_folder() / RESULT_NAME;

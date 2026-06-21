@@ -12,5 +12,5 @@ setup:
     encryption: sae-mixed
     mode: ap
     htmode: HT20
-  ex_WB_programs: [ tcpdump ]
+  ex_WB_programs: [ remote_injector, tcpdump ]
 ip_addr: "10.0.0.1"

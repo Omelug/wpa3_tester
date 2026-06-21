@@ -15,7 +15,13 @@ void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_na
 	if(!setup_node.contains("ex_WB_programs")){ return; }
 	auto ex_WB_programs = setup_node.at("ex_WB_programs");
 	for(const auto &req_name: ex_WB_programs){
+
 		const string pkg = req_name.get<string>();
+		if(pkg == "remote_injector"){
+			ensure_inject_binary();
+			continue;
+		}
+
 		int ret = 0;
 		exec("opkg status " + pkg + " | grep -q 'Status:.*installed'", false, &ret);
 		if(ret == 0) continue;

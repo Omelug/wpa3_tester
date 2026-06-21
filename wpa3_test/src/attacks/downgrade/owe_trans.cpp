@@ -79,7 +79,7 @@ void stats_attack(const RunStatus &rs){
 
 	optional<hostapd::CrackResult> crack_result;
 	if(rs.config().at("actors").contains("rogue_ap")){
-		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
+		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA", true), "MANA", "black"));
 
 		const string psk = hostapd::get_password(rs, "client");
 		if(!psk.empty()) crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
@@ -133,8 +133,8 @@ void stats_attack(const RunStatus &rs){
 	}
 
 	const json result = {
-		{"disconnected", disconnected}, {"disconnect_count", static_cast<int>(disc_times.size())},
-		{"probe_requests_detected", probe_count}, {"vulnerable", probe_count > 0},
+		{"disconnected", disconnected},
+		{"probe_count", probe_count}
 	};
 	rs.save_result(result);
 }

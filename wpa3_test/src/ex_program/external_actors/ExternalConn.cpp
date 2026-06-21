@@ -280,7 +280,7 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 #pragma GCC diagnostic pop
 
 void ExternalConn::on_disconnect(DisconnectCallback cb){
-	disconnect_callbacks.push_back(move(cb));
+	disconnect_callbacks.push_back(std::move(cb));
 }
 
 void ExternalConn::disconnect(){
@@ -300,5 +300,23 @@ void ExternalConn::disconnect(){
 	ssh_disconnect(session);
 	ssh_free(session);
 	session = nullptr;
+}
+
+ssh_channel ExternalConn::open_capture_channel(const string &iface) const{
+	lock_guard lock(session_mtx);
+	const ssh_channel ch = ssh_channel_new(session);
+	if(!ch) throw ex_conn_err("open_capture_channel: ssh_channel_new failed");
+	if(ssh_channel_open_session(ch) != SSH_OK){
+		ssh_channel_free(ch);
+		throw ex_conn_err("open_capture_channel: open_session failed");
+	}
+	const string cmd = "tcpdump -i " + iface + " -U -w - 2>/dev/null";
+	if(ssh_channel_request_exec(ch, cmd.c_str()) != SSH_OK){
+		ssh_channel_send_eof(ch);
+		ssh_channel_close(ch);
+		ssh_channel_free(ch);
+		throw ex_conn_err("open_capture_channel: exec failed on " + iface);
+	}
+	return ch;
 }
 }

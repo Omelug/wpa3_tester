@@ -10,7 +10,8 @@ struct ReflectionAttackTestEntry{
 	std::string test_name;
 	std::string ap_driver;
 	std::string attacker_driver;
-	std::optional<bool> passed; // nullopt = no result.json
+	//results params
+	std::optional<bool> passed;
 
 	static ReflectionAttackTestEntry parse(const std::filesystem::path &test_folder);
 };

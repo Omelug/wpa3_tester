@@ -91,7 +91,7 @@ unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec,
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
 		[&](PDU &pdu){ return handle_beacon(pdu, scan_ap, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
-	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return move(*val);
+	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;
 }
 

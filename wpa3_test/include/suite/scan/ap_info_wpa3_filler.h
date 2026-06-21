@@ -7,10 +7,13 @@
 namespace wpa3_tester::suite::ap_info_wpa3_filler{
 struct ApInfoWpa3TestEntry{
 	std::string test_name;
+
+	// result params
 	std::string mac;
 	std::string ssid;
 	std::string mfp;
 	std::string akm;
+	bool beacon_found;
 	bool acm_triggered = false;
 
 	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);

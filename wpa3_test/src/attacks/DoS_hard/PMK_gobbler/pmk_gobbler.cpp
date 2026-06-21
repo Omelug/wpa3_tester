@@ -98,7 +98,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 			lock_guard lock(store.mtx);
 			if(!store.queue.empty()){
 				const auto it = store.queue.begin();
-				entry = move(it->second);
+				entry = std::move(it->second);
 				store.queue.erase(it);
 			}
 		}

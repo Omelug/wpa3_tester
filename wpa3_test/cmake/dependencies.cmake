@@ -8,6 +8,13 @@ target_include_directories(wpa3_deps INTERFACE
         ${linux_headers_wifi_SOURCE_DIR}
 )
 
+find_path(SYSTEM_BOOST_PFR_INCLUDE boost/pfr.hpp)
+if(SYSTEM_BOOST_PFR_INCLUDE)
+    message(STATUS "Using system Boost.PFR: ${SYSTEM_BOOST_PFR_INCLUDE}")
+else()
+    message(STATUS "Using FetchContent Boost.PFR: ${boost_pfr_SOURCE_DIR}/include")
+endif()
+
 target_include_directories(wpa3_deps INTERFACE
         ${CMAKE_CURRENT_BINARY_DIR}/awk_scripts
         include
@@ -22,6 +29,7 @@ target_include_directories(wpa3_deps INTERFACE
         ${LIBSSH_INCLUDE_DIRS}
         ${radiotap_SOURCE_DIR}
         ${WIFI_HEADERS_DIR}
+        $<IF:$<BOOL:${SYSTEM_BOOST_PFR_INCLUDE}>,${SYSTEM_BOOST_PFR_INCLUDE},${boost_pfr_SOURCE_DIR}/include>
 )
 
 target_link_libraries(wpa3_deps INTERFACE

@@ -7,9 +7,8 @@
 #include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
-#include "logger/log.h"
+#include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::suite::iface_info_filler{
 using namespace std;
@@ -49,19 +48,15 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<IfaceInfoTestEntry>(run_dir);
 
-	auto report = helper::open_report(run_dir);
-	if(!report.is_open()) return;
+	helper::ReportGuard report(run_dir);
+	if(!report) return;
 
 	report << "# Interface Info\n\n";
 
-	if(entries.empty()){
-		report << "No test results found.\n";
-		report.close();
-		return;
-	}
+	if(entries.empty()){ report << "No test results found.\n"; return; }
 
-	report << "| Test | Info | Report |\n";
-	report << "|------|---------|--------|\n";
+	report << "| Test | Info  | Report |\n";
+	report << "|------|-------|--------|\n";
 
 	for(const auto &e: entries){
 		string report_link = "-";
@@ -71,9 +66,5 @@ void generate_report(RunSuiteStatus &rss){
 		}
 		report << "| " << e.test_name << " | " << e.hw_summary << " | " << report_link << " |\n";
 	}
-
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "iface_info suite report generated: {}", run_dir / REPORT_NAME);
 }
 }

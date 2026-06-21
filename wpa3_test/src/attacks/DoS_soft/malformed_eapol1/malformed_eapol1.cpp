@@ -108,8 +108,6 @@ void stats(const RunStatus &rs){
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
-	const bool disconnected = !disc_times.empty();
-
-	rs.save_result({{"disconnected", disconnected}, {"disconnect_count", static_cast<int>(disc_times.size())},});
+	rs.save_result({{"disconnect_count", static_cast<int>(disc_times.size())},});
 }
 }

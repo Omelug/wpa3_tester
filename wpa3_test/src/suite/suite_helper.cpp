@@ -6,6 +6,7 @@
 #include "default.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
+#include "system/utils.h"
 
 namespace wpa3_tester::suite::helper{
 using namespace std;
@@ -26,6 +27,12 @@ ofstream open_report(const path &report_path){
 	ofstream report(resolved);
 	if(!report.is_open()) log(LogLevel::ERROR, "Failed to create report: {}", resolved);
 	return report;
+}
+
+void finalize_report(ofstream &report, const path &run_dir){
+	report.close();
+	set_public_perms(run_dir / REPORT_NAME);
+	log(LogLevel::INFO, "Report written: {}", run_dir / REPORT_NAME);
 }
 
 vector<path> get_suite_test_folders(const path &suite_dir){

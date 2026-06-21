@@ -124,7 +124,6 @@ public:
 	static std::string run_cmd_output(const std::vector<std::string> &argv,
 									const std::optional<std::string> &netns = std::nullopt
 	);
-	//static void exec(const std::vector<std::string> &cmd, bool check = false);
 
 	// git helpers
 	static bool git_available();
@@ -170,7 +169,7 @@ public:
 	);
 
 	// ----- injection utilities -----
-	// Inject pdu, capture frames containing the unique label. count=0 = no limit.
+	// inject pdu, capture frames containing the unique label, count=0 = no limit.
 	static std::vector<std::vector<uint8_t>> inject_and_capture(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 																const Channel &ch, int count = 0, int retries = 1
 	);
@@ -185,12 +184,12 @@ public:
 													const Channel &ch, int retries = 1
 	);
 
-	// ----- injection tests — return result only, no printing -----
+	// ----- injection tests —-----
 	static InjectionTestResult test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
 															const Dot11Ref &ref, const std::string &strtype,
 															const Channel &ch
 	);
-	// Generic field-preservation test; name identifies the subtest in the result.
+
 	static InjectionTestResult test_packet_injection(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 													const std::function<bool(const std::vector<uint8_t> &)> &test_func,
 													const std::string &name, const std::string &msgfail,
@@ -211,12 +210,7 @@ public:
 													const Tins::HWAddress<6> &own_mac, const Channel &ch
 	);
 
-	// Set interface to monitor mode on the given channel (down → monitor → up → set_channel)
-	static void setup_injection_iface(const std::string &iface, const Channel &ch,
-									const std::optional<std::string> &netns = std::nullopt
-	);
-
-	// Run the full injection test suite; returns structured results for printing.
+	// run the full injection test suite; returns structured results for printing.
 	// peermac: fallback peer used for retrans test when no nearby AP is found.
 	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
 	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx,

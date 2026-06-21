@@ -7,6 +7,7 @@
 #include <thread>
 #include <doctest/doctest.h>
 
+#include "default.h"
 #include "logger/error_log.h"
 #include "system/utils.h"
 

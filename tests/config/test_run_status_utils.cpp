@@ -4,6 +4,7 @@
 #include <string>
 #include <doctest/doctest.h>
 
+#include "default.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 

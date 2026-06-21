@@ -98,7 +98,7 @@ void run_attack(RunStatus &rs){
 		mfp = mfpr ? "REQUIRED" : (mfpc ? "Capable" : "No");
 
 		stringstream akm_ss;
-		scan_ap.print_AKMs(akm_ss, scan_ap.rsn->akm_cyphers());
+		scan::ScanAP::print_AKMs(akm_ss, scan_ap.rsn->akm_cyphers());
 		akm = akm_ss.str();
 	}
 

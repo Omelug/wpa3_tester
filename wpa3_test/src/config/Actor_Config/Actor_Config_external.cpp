@@ -36,8 +36,11 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 
 	const auto actor_json = config.at("actors").at(get(SK::actor_name));
 	int channel_num = -1;
-	if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
-	else if(const auto &c = real_actor[SK::channel]) channel_num = stoi(c.value());
+	if(const auto d = (*this)[SK::channel]){
+		channel_num = stoi(d.value());
+	}else if(const auto &c = real_actor[SK::channel]){
+		channel_num = stoi(c.value());
+	}
 
 	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
 

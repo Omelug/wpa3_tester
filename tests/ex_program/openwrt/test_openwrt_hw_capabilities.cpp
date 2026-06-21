@@ -66,7 +66,7 @@ TEST_CASE("get_hw_capabilities - exec failure"){
     conn.mock_ret = 1;
     conn.mock_output = "iw: command not found";
 
-    CHECK_THROWS_AS(conn.get_hw_capabilities(actor, "radio0"), ex_conn_err);
+    CHECK_THROWS_AS(conn.get_hw_capabilities(actor), ex_conn_err);
 }
 
 TEST_CASE("get_radio_list - mock wifi status"){

@@ -216,7 +216,7 @@ void RunStatus::check_local_requirements(){
 	}
 
 	for(const auto &req: all_requirements){
-		log(LogLevel::WARNING, "Found requirement: {}", req);
+		log(LogLevel::INFO, "Found requirement: {}", req);
 		ensure_requirement(req);
 	}
 }

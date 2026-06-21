@@ -31,7 +31,7 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----|------|-----|-----|-----|\n";
 	for(const auto &e: entries){
 		report << "| " << e.test_name << " | " << e.mac << " | " << e.ssid << " | " << e.mfp << " | " << e.akm <<
-				" | " << (e.acm_triggered ? "yes" : "-") << " |\n";
+				" | " << e.acm_triggered  << " |\n";
 	}
 }
 }

@@ -1,0 +1,17 @@
+requirements:
+  simple: [ ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
+actors:
+  receiver:
+    selection:
+      channel: 11
+      condition: [ monitor ]
+      driver: mt76x2u
+    source: internal
+  transceiver:
+    $extends: ../../target/Dlink/Dlink_wb.yaml
+
+attacker_module: injection_test
+name: injection_test_example_Dlink
+rewrite: all
+delete_old: true
+install_req: true

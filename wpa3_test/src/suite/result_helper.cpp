@@ -1,5 +1,3 @@
-#include "suite/suite_helper.h"
-
 #include <fstream>
 #include "default.h"
 #include "config/RunStatus.h"

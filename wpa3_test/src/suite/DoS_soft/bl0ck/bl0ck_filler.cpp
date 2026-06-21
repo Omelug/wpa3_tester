@@ -1,15 +1,15 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <yaml-cpp/yaml.h>
 
 #include "default.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
 #include "suite/result_helper.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
+#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 
 namespace wpa3_tester::suite::bl0ck_test_suites{
 using namespace std;
@@ -17,11 +17,8 @@ using namespace filesystem;
 using namespace nlohmann;
 
 Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
-	Bl0ckTestEntry e;
+	auto e = helper::load_result_default<Bl0ckTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
-
-	if(const auto result = helper::load_result_json(test_folder)) e.disconnected = result->value("disconnect_count", 0)
-			> 0;
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
@@ -42,11 +39,9 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		e.attacker_mac = att->get(SK::mac);
 		e.attacker_driver = att->get(SK::driver_name);
 
-		try{
-			const auto cfg = YAML::LoadFile(cfg_path.string());
-			if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"]) e.attack_variant = cfg["attack_config"][
-				"attack_variant"].as<string>();
-		} catch(...){}
+		const auto cfg = YAML::LoadFile(cfg_path);
+		if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
+			e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 	}
 
 	return e;
@@ -80,11 +75,10 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	size_t passed_count = 0;
 	for(const auto &e: entries){
-		if(e.disconnected.value()) ++passed_count;
 		const string name_cell = exists(run_dir / e.name / REPORT_NAME)
 								? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
 								: e.name;
-		const string result_link = "[" + string(e.disconnected.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
+		const string result_link = "[" + string(e.disconnect_count ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 				RESULT_NAME + ")";
 		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | " << e.attacker_mac << " (" <<
 				e.attacker_driver << ") | " << (e.attack_variant.empty() ? "?" : e.attack_variant) << " | " <<

@@ -55,8 +55,8 @@ void generate_report(RunSuiteStatus &rss){
 
 	if(entries.empty()){ report << "No test results found.\n"; return; }
 
-	report << "| Test | Info | Report |\n";
-	report << "|------|---------|--------|\n";
+	report << "| Test | Info  | Report |\n";
+	report << "|------|-------|--------|\n";
 
 	for(const auto &e: entries){
 		string report_link = "-";

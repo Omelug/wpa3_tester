@@ -28,7 +28,7 @@ void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int 
 	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit,
 	[&]() -> optional<RadioTap>{
 		// get cookie_guzzler frame
-		return sae_helper::make_sae_commit(ap_mac, sta_mac, sae_params);
+		return sae_helper::make_sae_commit(ap_mac, att_mac, sae_params);
 	});
 }
 

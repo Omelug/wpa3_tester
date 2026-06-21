@@ -8,7 +8,13 @@ actors:
       driver: mt76x2u
     source: internal
   transceiver:
-    $extends: ../../target/Dlink/Dlink_wb.yaml
+    selection:
+      channel: 11 #TODO now it needs to be here
+    $extends: ../../target/Dlink/Dlink_wb.comp.yaml
+    setup:
+      program: openwrt
+      program_config:
+        channel: 11
 
 attacker_module: injection_test
 name: injection_test_Dlink

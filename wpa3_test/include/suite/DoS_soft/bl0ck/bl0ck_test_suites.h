@@ -14,7 +14,9 @@ struct Bl0ckTestEntry{
 	std::string attacker_mac;
 	std::string attacker_driver;
 	std::string attack_variant;
-	std::optional<bool> disconnected;
+
+	//result params
+	std::optional<bool> disconnect_count;
 	//std::optional<bool> passed;
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);

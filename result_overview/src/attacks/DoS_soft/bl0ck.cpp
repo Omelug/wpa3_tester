@@ -91,7 +91,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
             f << "                    <td>" << e.client_mac   << " (" << e.client_source   << ")</td>\n";
             f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
             f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
-            f << "                    <td>" << (e.disconnect_count > 0 ? "yes" : "no")<< "</td>\n";
+            f << "                    <td>" << e.disconnect_count > 0<< "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";

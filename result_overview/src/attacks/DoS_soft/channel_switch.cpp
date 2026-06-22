@@ -128,9 +128,9 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
                 f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";
-            f << "                    <td>" << opt_bool(e->disconnected) << " (" << opt_bool(e->ap_disconnected) << ")</td>\n";
-            f << "                    <td>" << opt_bool(e->rogue_ap_connected)     << "</td>\n";
-            f << "                    <td>" << opt_bool(e->ap_ocv) << " / " << opt_bool(e->client_ocv) << "</td>\n";
+            f << "                    <td>" << e->disconnected << " (" << e->ap_disconnected << ")</td>\n";
+            f << "                    <td>" << e->rogue_ap_connected     << "</td>\n";
+            f << "                    <td>" << e->ap_ocv << " / " << e->client_ocv << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";
             f << "                </tr>\n";
         }

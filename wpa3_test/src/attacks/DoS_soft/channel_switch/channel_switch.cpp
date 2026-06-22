@@ -119,19 +119,19 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//TODO add hostapd helper ?
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
-		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
 	}
 	if(!AP_graph_path.empty()){
 		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
-		report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
 	}
 	if(!ATT_graph_path.empty()){
 		report << "### ATT (access_point, hostapd-mana " << hostapd::get_version(rs, "access_point") << ")\n";
-		report << "![ATT Throughput Graph](" << relative(ATT_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![ATT Throughput Graph](" << ATT_graph_path << ")\n\n";
 	}
 	if(!rogue_graph_path.empty()){
 		report << "###  Rogue AP (rogue_ap)\n";
-		report << "![Rogue AP Throughput Graph](" << relative(rogue_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![Rogue AP Throughput Graph](" << rogue_graph_path << ")\n\n";
 	}
 	if(crack_result.has_value()){
 		report << "## Credential Cracking (hcxpmktool)\n";

@@ -90,6 +90,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map);
 
 void run_attack(RunStatus &rs){
+	//TODO now its scanning only on onwe channel
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");
@@ -134,18 +135,15 @@ void run_attack(RunStatus &rs){
 		stas.push_back(sta_cfg.to_json());
 	}
 
-	rs.save_result({
-		//{"ap_count",  static_cast<int>(ap_map.size())},
-		//{"sta_count", static_cast<int>(sta_map.size())},
-		{"aps", aps}, {"stations", stas},
-	});
+	rs.save_result({{"aps", aps}, {"stations", stas},});
+
 	//FIXME  save results, move report to stats fuction
 	generate_report(rs, ap_map, sta_map);
 }
 
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map){
 	report::ReportGuard report(rs.run_folder());
-	if(!report) return; //FIXMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+	if(!report) return;
 
 	report << "# External Info Scanner Report\n\n";
 	report::attack_config_table(report, rs);

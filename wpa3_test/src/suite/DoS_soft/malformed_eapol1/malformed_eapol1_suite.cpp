@@ -60,10 +60,11 @@ void generate_report(RunSuiteStatus &rss){
 		const string name_cell = exists(rss.run_folder() / e.test_name / REPORT_NAME)
 								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
 								: e.test_name;
-		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
+		const string disc_link = "[" + string((e.disconnect_count > 0) ? "yes" : "no") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
 		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " <<
-				e.attacker_driver << " | " << disc_link << "(" << e.disconnect_count << ")" << " | " << graphs << " |\n";
+				e.attacker_driver << " | " << disc_link << "(" << e.disconnect_count << ")"
+				<< " | " << graphs << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

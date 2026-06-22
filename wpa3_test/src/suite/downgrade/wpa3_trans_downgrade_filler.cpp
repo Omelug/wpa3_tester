@@ -54,7 +54,7 @@ void generate_report(RunSuiteStatus &rss){
 								: e.test_name;
 		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver
 				//<< " | " << e.rogue_4way_count
-				<< " | " << (e.downgrade_seen ? "yes" : "no") << " |\n";
+				<< " | " << e.downgrade_seen << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

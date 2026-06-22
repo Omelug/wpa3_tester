@@ -79,21 +79,21 @@ void stats_attack(const RunStatus &rs){
 	report::attack_mapping_table(report, rs);
 	report << "## Results\n\n";
 	report << "| Metric | Value |\n|--------|-------|\n";
-	report << "| Client disconnected from legitimate AP | " << (disconnected ? "yes" : "no") << " |\n";
-	report << "| Rogue AP | " << (downgrade_seen ? "yes" : "no") << " |\n";
+	report << "| Client disconnected from legitimate AP | " << disconnected << " |\n";
+	report << "| Rogue AP | " << downgrade_seen << " |\n";
 
 	report << "### Traffic\n";
 	if(!client_graph.empty()){
 		report << "### Client\n";
-		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+		report << "![Client graph](" << client_graph << ")\n\n";
 	}
 	if(!rogue_graph.empty()){
 		report << "### Rogue AP (WPA2-PSK)\n";
-		report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+		report << "![Rogue AP graph](" << rogue_graph << ")\n\n";
 	}
 	if(!att_graph.empty()){
 		report << "### Attacker (probe capture)\n";
-		report << "![Attacker graph](" << relative(att_graph, rs.run_folder()).string() << ")\n\n";
+		report << "![Attacker graph](" << att_graph << ")\n\n";
 	}
 	report << "---\n";
 }

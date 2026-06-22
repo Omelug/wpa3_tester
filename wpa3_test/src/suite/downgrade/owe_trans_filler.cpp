@@ -48,7 +48,7 @@ void generate_report(RunSuiteStatus &rss){
 		const string vuln_link = "[" + string(e.probe_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
 		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver
-				<< " | " << e.probe_count << " | " << (e.disconnected ? "yes" : "no") << " | " << vuln_link << " |\n";
+				<< " | " << e.probe_count << " | " << e.disconnected << " | " << vuln_link << " |\n";
 	}
 }
 }

@@ -15,6 +15,7 @@ struct ApInfoWpa3TestEntry{
 	std::string akm;
 	bool beacon_found;
 	bool acm_triggered = false;
+	std::vector<std::string> stations;
 
 	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);
 };

@@ -87,7 +87,7 @@ TEST_SUITE("get_addrs") {
     }
 
     TEST_CASE("non-Dot11 PDU returns zero addresses") {
-        // Feed a plain IP packet — no Dot11 layer at all
+        // plain IP packet — no Dot11 layer at all
         IP ip("1.2.3.4", "5.6.7.8");
         const auto raw = ip.serialize();
         const auto addrs = get_addrs(ip, raw);

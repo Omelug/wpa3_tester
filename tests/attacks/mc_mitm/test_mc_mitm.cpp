@@ -60,7 +60,7 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
 
 TEST_CASE("patch_channel_raw - beacon frame"){
     vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/beacon_test.pcapng");
-    vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
+    vector<uint8_t> original_data = beacon_data; // keep copy for comparison
 
     McMitm::patch_channel_raw(beacon_data, 11);
     PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());

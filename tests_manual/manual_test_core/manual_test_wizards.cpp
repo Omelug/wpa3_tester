@@ -66,7 +66,7 @@ unique_ptr<string> get_iface_wizard(){
 		// Treat as interface name
 		selected_iface = input;
 
-		// Verify it exists in the list
+		// verify it exists in the list
 		bool found = false;
 		for(const auto &iface: wifi_interfaces){
 			if(iface == selected_iface){

@@ -66,8 +66,17 @@ void attack_mapping_table(ReportGuard &report, const RunStatus &rs){
 }
 
 string device(Tins::HWAddress<6> mac){
-	//TODTO get mac[link to device] --markdown
-	return "";
+	//TODO get mac[link to device] --markdown
+	return mac;
 }
-
+//?TODO add object to << link with empty run_dir -> relative path set by gurd
+string link(string text, const path &link_path, const optional<path> &run_dir){
+	if(exists(link_path)){
+		const string href = run_dir
+			? link_path.lexically_relative(*run_dir).string()
+			: link_path.string();
+		return "["+text+"]("+href+")";
+	}
+	return text;
+}
 }

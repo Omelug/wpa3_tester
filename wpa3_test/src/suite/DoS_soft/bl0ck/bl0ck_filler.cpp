@@ -68,14 +68,14 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 
 	size_t passed_count = 0;
 	for(const auto &e: entries){
-		const string name_cell = exists(run_dir / e.name / REPORT_NAME)
-								? "[" + e.name + "](" + e.name + "/" + REPORT_NAME + ")"
-								: e.name;
 		const string result_link = "[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 				RESULT_NAME + ")";
-		report << "| " << name_cell << " | " << e.ap_mac << " | " << e.client_mac << " | " << e.attacker_mac << " (" <<
-				e.attacker_driver << ") | " << e.attack_variant.empty() << " | " <<
-				result_link << " |\n";
+		report << "| " << report::link(e.name , path(e.name) / REPORT_NAME) << " | "
+			<< e.ap_mac << " | "
+			<< e.client_mac << " | "
+			<< e.attacker_mac << " (" << e.attacker_driver << ") | "
+			<< e.attack_variant.empty() << " | "
+			<< result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

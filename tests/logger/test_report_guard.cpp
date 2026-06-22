@@ -102,3 +102,18 @@ TEST_CASE("ReportGuard - integer passthrough") {
 	{ ReportGuard rg(fx.dir); rg << 42; }
 	CHECK_EQ(fx.read_report(), "42");
 }
+
+TEST_CASE("link - with run_dir returns relative markdown link") {
+	ReportFixture fx("link_rel");
+	const path file = fx.dir / "sub" / "report.md";
+	create_directories(file.parent_path());
+	ofstream(file).close();
+	CHECK_EQ(link("label", file, fx.dir), "[label](sub/report.md)");
+}
+
+TEST_CASE("link - without run_dir returns absolute markdown link") {
+	ReportFixture fx("link_abs");
+	const path file = fx.dir / "report.md";
+	ofstream(file).close();
+	CHECK_EQ(link("label", file), "[label]("+file.string()+")");
+}

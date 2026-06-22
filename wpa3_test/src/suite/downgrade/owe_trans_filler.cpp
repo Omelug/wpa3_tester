@@ -41,13 +41,16 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|---------------|-----------------|:------:|:------------:|:----------:|\n";
 
 	for(const auto &e: entries){
-		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
-								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
-								: e.test_name;
 		const string vuln_link = "[" + string(e.probe_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
-				RESULT_NAME + ")";
-		report << "| " << name_cell << " | " << e.ap_driver << " | " << e.client_driver << " | " << e.attacker_driver
-				<< " | " << e.probe_count << " | " << e.disconnected << " | " << vuln_link << " |\n";
+			RESULT_NAME + ")";
+
+		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
+			<< e.ap_driver << " | "
+			<< e.client_driver << " | "
+			<< e.attacker_driver << " | "
+			<< e.probe_count << " | "
+			<< e.disconnected << " | "
+			<< vuln_link << " |\n";
 	}
 }
 }

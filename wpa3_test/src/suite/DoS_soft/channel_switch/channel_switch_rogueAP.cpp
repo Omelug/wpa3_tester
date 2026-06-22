@@ -86,12 +86,15 @@ void generate_report(RunSuiteStatus &rss){
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
 			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
 
-		report << "| " << name_cell << " | " << ap_cell << " | " << client_cell << " | " << attacker_cell << " | " <<
-				e.disconnected << " (" << e.ap_disconnected << ")" << " | " <<
-				e.rogue_ap_connected << " | "
-				<< e.ap_ocv << " / " << e.client_ocv
-				<< " | " << e.client_mfp << " | " <<
-				result_link << " |\n";
+		report << "| " << name_cell << " | "
+			<< ap_cell << " | "
+			<< client_cell << " | "
+			<< attacker_cell << " | "
+			<< e.disconnected << " (" << e.ap_disconnected << ")" << " | "
+			<< e.rogue_ap_connected << " | "
+			<< e.ap_ocv << " / " << e.client_ocv << " | "
+			<< e.client_mfp << " | "
+			<< result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

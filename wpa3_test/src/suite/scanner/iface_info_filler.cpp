@@ -48,23 +48,21 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<IfaceInfoTestEntry>(run_dir);
 
-	report::ReportGuard report(run_dir);
-	if(!report) return;
+	report::ReportGuard r(run_dir);
+	if(!r) return;
 
-	report << "# Interface Info\n\n";
+	r << "# Interface Info\n\n";
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
+	if(entries.empty()){ r << "No test results found.\n"; return; }
 
-	report << "| Test | Info  | Report |\n";
-	report << "|------|-------|--------|\n";
+	r << "| Test | Info  | Report |\n";
+	r << "|------|-------|--------|\n";
 
 	for(const auto &e: entries){
-		string report_link = "-";
-		if(!e.report_md.empty()){
-			const auto rel = e.report_md.lexically_relative(run_dir);
-			report_link = "[report](" + rel.string() + ")";
-		}
-		report << "| " << e.test_name << " | " << e.hw_summary << " | " << report_link << " |\n";
+		r << "| "
+			<< e.test_name << " | "
+			<< e.hw_summary << " | "
+			<< report::link("report", e.report_md, run_dir) << " |\n";
 	}
 }
 }

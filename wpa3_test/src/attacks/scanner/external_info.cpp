@@ -107,7 +107,7 @@ void run_attack(RunStatus &rs){
 												if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >=
 													actor_limit) return monostate{};
 												return nullopt;
-											}, scanner.get(SK::iface),
+											}, scanner.get(SK::sniff_iface),
 											"type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req"
 											" or type mgt subtype probe-req or type mgt subtype auth or type data",
 											seconds(timeout_sec));

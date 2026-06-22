@@ -19,8 +19,8 @@ static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
     for (const auto &suite : suites) {
         for (const auto &test_path : suite::helper::get_suite_test_folders(base / suite)) {
             auto e = Bl0ckTestEntry::parse(test_path);
-        	//TODO check nov alid reuslts?
-            if (e.disconnected.has_value()) results.push_back(std::move(e));
+        	//TODO check nov alid results?
+            if (e.disconnect_count > 0) results.push_back(std::move(e));
         }
     }
     return results;
@@ -91,7 +91,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
             f << "                    <td>" << e.client_mac   << " (" << e.client_source   << ")</td>\n";
             f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
             f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
-            f << "                    <td>" << (e.disconnected.value() ? "yes" : "no")<< "</td>\n";
+            f << "                    <td>" << (e.disconnect_count > 0 ? "yes" : "no")<< "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";

@@ -1,0 +1,27 @@
+$schema: http://json-schema.org/draft-07/schema#
+name: malformed_eapol1_Dlink_client
+attacker_module: malformed_eapol1
+actors:
+  access_point:
+    $extends: ../../../target/Dlink/Dlink_bb.comp.yaml
+  client:
+    source: external
+    selection:
+      channel: 6
+  attacker:
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [ monitor ]
+      channel: 6
+observers:
+  client_tshark:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "udp port 5201"
+  ap_tshark:
+    actor: access_point
+    program: tshark
+    program_config:
+      filter: "udp port 5201"

@@ -52,9 +52,7 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 
 void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
-	const auto entries = helper::collect_entries_nested(run_dir, [](const path &p){
-		return parse_test_folder(p);
-	});
+	const auto entries = helper::collect_entries_nested(run_dir, [](const path &p){return parse_test_folder(p);});
 
 	report::ReportGuard report(run_dir);
 	if(!report) return;

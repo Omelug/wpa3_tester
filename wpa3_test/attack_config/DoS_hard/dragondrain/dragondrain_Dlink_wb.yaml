@@ -8,7 +8,7 @@ actors:
   access_point:
     $extends: ../../target/Dlink/Dlink_wb.comp.yaml
   client:
-    $extends: ../../target/Dlink/mixed_client_2_4.yaml
+    $extends: ../../target/Dlink/mixed_client_2_4.comp.yaml
   attacker:
     source: internal
     selection:

@@ -11,6 +11,7 @@ public:
 	std::set<Tins::HWAddress<6>> stations;
 
 	static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
+	static void print_AKM(std::stringstream &ss, Tins::RSNInformation::AKMSuites akm);
 	std::string to_str() const;
 };
 

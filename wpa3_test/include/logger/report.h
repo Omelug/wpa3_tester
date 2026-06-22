@@ -2,6 +2,7 @@
 #include <iosfwd>
 
 #include "config/RunStatus.h"
+#include <optional>
 
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{
@@ -21,9 +22,20 @@ struct ReportGuard {
 	ReportGuard &operator=(const ReportGuard &) = delete;
 
 	explicit operator bool() const { return stream_.is_open(); }
-
+	ReportGuard &operator<<(const std::filesystem::path &p){
+		stream_ << std::filesystem::relative(p, run_dir_).string(); return *this;
+	}
+	ReportGuard &operator<<(bool val){
+		stream_ << (val ? "yes" : "no"); return *this;
+	}
+	ReportGuard &operator<<(std::optional<bool> val){
+		stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this;
+	}
+	ReportGuard &operator<<(const std::string &val){
+		stream_ << (val.empty() ? "?" : val); return *this;
+	}
 	template<typename T>
-	std::ostream &operator<<(T &&val){ return stream_ << std::forward<T>(val); }
+	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:
 	std::ofstream stream_;

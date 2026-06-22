@@ -55,11 +55,6 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	return e;
 }
 
-static string opt_bool(const optional<bool> &v){
-	if(!v.has_value()) return "N/A";
-	return v.value() ? "yes" : "no";
-}
-
 void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::collect_entries_nested(run_dir, [&run_dir](const path &p){
@@ -92,10 +87,12 @@ void generate_report(RunSuiteStatus &rss){
 		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
 			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
-		const string ocv_cell = opt_bool(e.ap_ocv) + " / " + opt_bool(e.client_ocv);
+
 		report << "| " << name_cell << " | " << ap_cell << " | " << client_cell << " | " << attacker_cell << " | " <<
-				opt_bool(e.disconnected) << " (" << opt_bool(e.ap_disconnected) << ")" << " | " <<
-				opt_bool(e.rogue_ap_connected) << " | " << ocv_cell << " | " << e.client_mfp << " | " <<
+				e.disconnected << " (" << e.ap_disconnected << ")" << " | " <<
+				e.rogue_ap_connected << " | "
+				<< e.ap_ocv << " / " << e.client_ocv
+				<< " | " << e.client_mfp << " | " <<
 				result_link << " |\n";
 	}
 

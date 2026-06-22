@@ -104,9 +104,9 @@ void stats_attack(const RunStatus &rs){
 	report::attack_mapping_table(report, rs);
 	report << "## Results\n\n";
 	report << "| Metric | Value |\n|--------|-------|\n";
-	report << "| Client disconnected | " << (disconnected ? "yes" : "no") << " |\n";
+	report << "| Client disconnected | " << disconnected << " |\n";
 	report << "| Probe requests detected | " << probe_count << " |\n";
-	report << "| Vulnerable (probes sent) | " << (probe_count > 0 ? "yes" : "no") << " |\n\n";
+	report << "| Vulnerable (probes sent) | " << (probe_count > 0) << " |\n\n";
 	if(crack_result.has_value()){
 		report << "## Credential Capture (hcxpmktool)\n";
 		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
@@ -116,13 +116,13 @@ void stats_attack(const RunStatus &rs){
 	}
 	report << "### Traffic\n";
 	report << "### Client\n";
-	report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+	report << "![Client graph](" << client_graph << ")\n\n";
 	report << "### Attacker (probe capture)\n";
-	report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
+	report << "![Attacker graph](" << attacker_graph << ")\n\n";
 	if(rs.config().at("actors").contains("rogue_ap")){
 		const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 		report << "### Rogue AP\n";
-		report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+		report << "![Rogue AP graph](" << rogue_graph << ")\n\n";
 	}
 	report << "---\n";
 

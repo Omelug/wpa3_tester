@@ -4,4 +4,6 @@ attacker_module: malformed_eapol1
 $extends: ./malformed_eapol1.yaml
 actors:
   client:
-      version: 2_11 # TODO 2_11 pahced -> add to overview;
+    setup:
+      program_config:
+        version: 2_11 # TODO 2_11 patched -> add to overview;

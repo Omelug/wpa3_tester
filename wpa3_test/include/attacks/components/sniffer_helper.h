@@ -66,6 +66,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 	Tins::SnifferConfiguration sniff_config;
 	sniff_config.set_timeout(100);
 	sniff_config.set_immediate_mode(true);
+	//sniff_config.set_rfmon(true);
 	sniff_config.set_filter(filter);
 
 	log(LogLevel::INFO, "Scanning with {}", filter);

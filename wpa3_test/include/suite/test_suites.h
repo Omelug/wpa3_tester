@@ -42,5 +42,6 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"iface_info_filler", iface_info_filler::generate_report},
 	{"ap_info_wpa3_filler", ap_info_wpa3_filler::generate_report},
 	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::generate_report},
+	{"CSA_ex_filler", channel_switch_rogueAP::generate_report},
 };
 }

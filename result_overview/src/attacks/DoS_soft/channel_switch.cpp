@@ -119,9 +119,9 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "            <tbody>\n";
         for (const auto *e : rows) {
             f << "                <tr>\n";
-            f << "                    <td>" << e->ap_mac     << " (" << e->ap_source     << ")</td>\n";
-            f << "                    <td>" << e->client_mac << " (" << e->client_source << ")</td>\n";
-            f << "                    <td>" << e->attacker_mac << " (" << e->attacker_driver << ")";
+            f << "                    <td>" << device(e->ap_mac, page_dir)   << " (" << e->ap_source     << ")</td>\n";
+            f << "                    <td>" << device(e->client_mac, page_dir) << " (" << e->client_source << ")</td>\n";
+            f << "                    <td>" << device(e->attacker_mac, page_dir) << " (" << e->attacker_driver << ")";
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
                 f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";

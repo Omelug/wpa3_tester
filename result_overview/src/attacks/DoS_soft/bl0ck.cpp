@@ -89,9 +89,9 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 )html";
         for (const auto &e : results) {
             f << "                <tr>\n";
-            f << "                    <td>" << e.ap_mac       << " (" << e.ap_source       << ")</td>\n";
-            f << "                    <td>" << e.client_mac   << " (" << e.client_source   << ")</td>\n";
-            f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
+            f << "                    <td>" << device(e.ap_mac, page_dir)       << " (" << e.ap_source       << ")</td>\n";
+            f << "                    <td>" << device(e.client_mac, page_dir)   << " (" << e.client_source   << ")</td>\n";
+            f << "                    <td>" << device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n";
             f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
             f << "                    <td>" << (e.disconnect_count > 0)<< "</td>\n";
             f << "                </tr>\n";

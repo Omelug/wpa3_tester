@@ -102,10 +102,14 @@ void run_attack(RunStatus &rs){
 		akm = akm_ss.str();
 	}
 
+	vector<string> stations_vec;
+	for(const auto &sta: scan_ap.stations) stations_vec.push_back(sta.to_string());
+
 	rs.save_result({
 		{"ssid", scan_ap.ssid}, {"mac", target_ap.get(SK::mac)},
 		{"beacon_found", scan_ap.rsn.has_value()}, {"mfp", mfp},
 		{"akm", akm}, {"acm_triggered", acm_triggered},
+		{"stations", stations_vec},
 	});
 }
 }

@@ -27,11 +27,14 @@ void generate_report(RunSuiteStatus &rss){
 
 	if(entries.empty()){ report << "No test results found.\n"; return; }
 
-	report << "| Test | MAC | SSID | MFP | AKM | ACM |\n";
-	report << "|------|-----|------|-----|-----|-----|\n";
+	report << "| Test | MAC | SSID | MFP | AKM | ACM | Stations |\n";
+	report << "|------|-----|------|-----|-----|-----|----------|\n";
 	for(const auto &e: entries){
+		string stas;
+		for(const auto &s: e.stations) stas += (stas.empty() ? "" : "<br>") + s;
+		if(stas.empty()) stas = "-";
 		report << "| " << e.test_name << " | " << e.mac << " | " << e.ssid << " | " << e.mfp << " | " << e.akm <<
-				" | " << e.acm_triggered  << " |\n";
+				" | " << e.acm_triggered << " | " << stas << " |\n";
 	}
 }
 }

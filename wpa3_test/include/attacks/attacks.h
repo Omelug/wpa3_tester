@@ -76,5 +76,6 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	{"ath_masker_test", ath_masker_test::stats}, {"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
 	{"owe_trans", owe_trans::stats_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
 	{"iface_info", iface_info::stats_attack},
+	{"external_info", external_info::stats},
 };
 }

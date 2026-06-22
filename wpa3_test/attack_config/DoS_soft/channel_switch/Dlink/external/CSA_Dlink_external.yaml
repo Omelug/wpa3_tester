@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema#
-name: channel_switch_Dlink_external_client
+name: channel_switch_Dlink_external
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml
 scan_iface: wlan1 #FIXME ath nechce přepínat kanály -> zasekne se u channel 1
@@ -28,25 +28,10 @@ actors:
       channel: 6
   rogue_ap:
     sniff_iface: rogue
-$extends: [ #../../observers.comp.yaml,
-  ../../rogue_ap.comp.yaml ]
-observers:
-  attacker_tshark:
-    actor: attacker
-    program: tshark
-    program_config:
-      filter: ""
-  rogue_tshark:
-    actor: rogue_ap
-    program: tshark
-    program_config:
-      filter: ""
+$extends: [ ./ex_observers.comp.yaml, ../../rogue_ap.comp.yaml ]
 
 attack_config:
   attack_time: 60
   ms_interval: 100
   new_channel: 1
-install_req: true
 rewrite: errors
-#rewrite: all
-#only_stats: true

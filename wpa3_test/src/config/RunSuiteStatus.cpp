@@ -69,12 +69,12 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));
 		global_validator.validate(config_json);
 		return config_json;
-	} catch(const domain_error &){
-		throw_with_nested(config_err("Schema error: " + config_path.string()));
-	} catch(const invalid_argument &){
-		throw_with_nested(config_err("Error in config: " + config_path.string()));
-	} catch(const exception &){
-		throw_with_nested(config_err("Config validation error: " + config_path.string()));
+	} catch(const domain_error &e){
+		throw_with_nested(config_err("Schema error: {}", config_path));
+	} catch(const invalid_argument &e){
+		throw_with_nested(config_err("Error in config: {} : {}", config_path.string(), e.what()));
+	} catch(const exception &e){
+		throw_with_nested(config_err("Config validation error: {}", config_path));
 	}
 }
 

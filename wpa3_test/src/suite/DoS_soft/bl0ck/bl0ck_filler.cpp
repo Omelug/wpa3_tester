@@ -7,6 +7,7 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/log.h"
+#include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
@@ -49,16 +50,9 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 
 void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
-
-	const auto run_dir = rss.run_folder();
-	if(!exists(run_dir)){
-		log(LogLevel::ERROR, "Run folder not found: {}", run_dir);
-		return;
-	}
-
+	auto run_dir = rss.run_folder();
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
-
-	helper::ReportGuard report(run_dir);
+	report::ReportGuard report(run_dir);
 	if(!report) return;
 
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";

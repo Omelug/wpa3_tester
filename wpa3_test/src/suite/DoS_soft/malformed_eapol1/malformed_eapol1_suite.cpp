@@ -6,6 +6,7 @@
 #include "default.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -29,11 +30,10 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 }
 
 void generate_report(RunSuiteStatus &rss){
-	const auto run_dir = rss.run_folder();
-	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(run_dir);
+	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(rss.run_folder());
 
-	const auto report_path = run_dir / REPORT_NAME;
-	helper::ReportGuard report(run_dir);
+	const auto report_path =  rss.run_folder() / REPORT_NAME;
+	report::ReportGuard report(rss.run_folder());
 	if(!report) return;
 
 	report << "# Malformed EAPOL-1 Test Suite Report\n\n";
@@ -57,7 +57,7 @@ void generate_report(RunSuiteStatus &rss){
 		}
 		if(graphs.empty()) graphs = "-";
 
-		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
+		const string name_cell = exists(rss.run_folder() / e.test_name / REPORT_NAME)
 								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
 								: e.test_name;
 		const string disc_link = "[" + string(e.disconnect_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +

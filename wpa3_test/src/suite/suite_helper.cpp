@@ -22,19 +22,6 @@ unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 	return rs;
 }
 
-ofstream open_report(const path &report_path){
-	const path resolved = is_directory(report_path) ? report_path / REPORT_NAME : report_path;
-	ofstream report(resolved);
-	if(!report.is_open()) log(LogLevel::ERROR, "Failed to create report: {}", resolved);
-	return report;
-}
-
-void finalize_report(ofstream &report, const path &run_dir){
-	report.close();
-	set_public_perms(run_dir / REPORT_NAME);
-	log(LogLevel::INFO, "Report written: {}", run_dir / REPORT_NAME);
-}
-
 vector<path> get_suite_test_folders(const path &suite_dir){
 	vector<path> folders;
 	const path last_run = suite_dir / LAST_RUN_DIR;

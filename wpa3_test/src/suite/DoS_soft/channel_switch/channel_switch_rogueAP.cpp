@@ -8,6 +8,7 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -67,7 +68,7 @@ void generate_report(RunSuiteStatus &rss){
 		return e;
 	});
 
-	helper::ReportGuard report(run_dir);
+	report::ReportGuard report(run_dir);
 	if(!report) return;
 
 	report << "# CSA Rogue AP Test Suite Report\n\n";

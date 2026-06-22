@@ -5,6 +5,7 @@
 #include "suite/downgrade/owe_trans_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -28,7 +29,7 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<OweTransTestEntry>(run_dir);
 
-	helper::ReportGuard report(run_dir);
+	report::ReportGuard report(run_dir);
 	if(!report) return;
 
 	report << "# OWE Transition Probe Leak Test Suite Report\n\n";

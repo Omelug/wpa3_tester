@@ -104,13 +104,8 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 					const path &ATT_graph_path, const path &rogue_graph_path,
 					const optional<hostapd::CrackResult> &crack_result
 ){
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report file!");
-		return;
-	}
-	set_public_perms(report_path);
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
 
 	report << "# CSA DoS Attack\n\n";
 	//FIXME link to CSA attack
@@ -147,7 +142,6 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	}
 
 	report << "---\n";
-	report.close();
 }
 
 void stats_chs_attack(const RunStatus &rs){

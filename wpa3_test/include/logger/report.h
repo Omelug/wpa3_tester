@@ -5,6 +5,34 @@
 
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{
-void attack_config_table(std::ofstream &report, const RunStatus &rs);
-void attack_mapping_table(std::ofstream &report, const RunStatus &rs);
+
+// open report.md for write
+std::ofstream open_report(const std::filesystem::path &report_path);
+
+// close report, fix permissions, log "Report written"
+void finalize_report(std::ofstream &report, const std::filesystem::path &run_dir);
+
+// RAII report guard: opens report.md, exposes operator<<, finalizes on destruction
+struct ReportGuard {
+	explicit ReportGuard(const std::filesystem::path &run_dir)
+		: stream_(open_report(run_dir)), run_dir_(run_dir) {}
+	~ReportGuard(){ if(stream_.is_open()) finalize_report(stream_, run_dir_); }
+	ReportGuard(const ReportGuard &) = delete;
+	ReportGuard &operator=(const ReportGuard &) = delete;
+
+	explicit operator bool() const { return stream_.is_open(); }
+
+	template<typename T>
+	std::ostream &operator<<(T &&val){ return stream_ << std::forward<T>(val); }
+
+private:
+	std::ofstream stream_;
+	std::filesystem::path run_dir_;
+};
+
+void attack_config_table(ReportGuard &report, const RunStatus &rs);
+void attack_mapping_table(ReportGuard &report, const RunStatus &rs);
+
+std::string device(Tins::HWAddress<6> mac);
+std::string yn(BK k);
 }

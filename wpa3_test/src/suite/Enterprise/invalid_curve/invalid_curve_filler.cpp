@@ -8,6 +8,7 @@
 #include "config/RunSuiteStatus.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
+#include "logger/report.h"
 
 namespace wpa3_tester::suite::invalid_curve_filler{
 using namespace std;
@@ -28,7 +29,7 @@ void generate_report(const RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<InvalidCurveTestEntry>(run_dir);
 
-	helper::ReportGuard report(run_dir);
+	report::ReportGuard report(run_dir);
 	if(!report) return;
 
 	report << "# Invalid Curve Attack Test Suite Report\n\n";

@@ -20,21 +20,27 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<ApInfoWpa3TestEntry>(run_dir);
 
-	report::ReportGuard report(run_dir);
-	if(!report) return;
+	report::ReportGuard r(run_dir);
+	if(!r) return;
 
-	report << "# AP Info WPA3 Filler\n\n";
+	r << "# AP Info WPA3 Filler\n\n";
+	if(entries.empty()){ r << "No test results found.\n"; return; }
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
-
-	report << "| Test | MAC | SSID | MFP | AKM | ACM | Stations |\n";
-	report << "|------|-----|------|-----|-----|-----|----------|\n";
+	r << "| Test | MAC | SSID | MFP | AKM | ACM | Stations |\n";
+	r << "|------|-----|------|-----|-----|-----|----------|\n";
 	for(const auto &e: entries){
+
 		string stas;
 		for(const auto &s: e.stations) stas += (stas.empty() ? "" : "<br>") + s;
-		if(stas.empty()) stas = "-"; // FIXME e.mac
-		report << "| " << e.test_name << " | " << e.mac << " | " << e.ssid << " | " << e.mfp << " | " << e.akm <<
-				" | " << e.acm_triggered << " | " << stas << " |\n";
+
+		r << "| "
+		<< e.test_name << " | "
+		<< report::device(e.mac) << " | "
+		<< e.ssid << " | "
+		<< e.mfp << " | "
+		<< e.akm << " | "
+		<< e.acm_triggered << " | "
+		<< stas << " |\n";
 	}
 }
 }

@@ -49,5 +49,6 @@ void attack_config_table(ReportGuard &report, const RunStatus &rs);
 void attack_mapping_table(ReportGuard &report, const RunStatus &rs);
 
 std::string device(Tins::HWAddress<6> mac);
-std::string yn(BK k);
+std::string link(std::string text, const std::filesystem::path &link_path, const std::optional<std::filesystem::path> &run_dir = std::nullopt);
+
 }

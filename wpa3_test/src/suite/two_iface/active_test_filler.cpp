@@ -42,13 +42,10 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------|:-----:|:---------:|:------:|\n";
 
 	for(const auto &e: entries){
-		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
-								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
-								: e.test_name;
 		const string result_link = "[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
 		report
-				<< "| " << name_cell << " | "
+				<< "| " << path(e.test_name) / REPORT_NAME << " | "
 				<< e.tx_driver << " | "
 				<< e.rx_driver << " | "
 				<< e.acked << " | "

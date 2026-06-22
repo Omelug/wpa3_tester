@@ -24,7 +24,6 @@ const vector<uint8_t> expected_element =
 };
 
 TEST_CASE("ParsesCommitFromPcap"){
-    // Use the real pcap file
     path pcap_path = path(PROJECT_ROOT_DIR) /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path);

@@ -113,7 +113,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "                <th>Attacker MAC (driver) <br> RogueAP MAC (driver)\n"
           << "                <th>Disconnected? <br> (from AP view)</th>\n"
           << "                <th>Rogue AP?</th>\n"
-          << "                <th>AP OCV / Client OCV</th>\n"
+          << "                <th>AP OCV / Client OCV support</th>\n"
           << "                <th>Client MFP</th>\n"
           << "            </tr></thead>\n"
           << "            <tbody>\n";

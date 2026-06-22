@@ -21,19 +21,20 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)){
 		RunStatus rs{};
-		rs.config_path(cfg_path);
+		rs.config_path(absolute(cfg_path));
+		rs.config(RunStatus::config_validation(rs.config_path()));
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
 		const auto ap = rs.get_actor("access_point");
 		e.ap_mac = ap->get(SK::mac);
 		e.ap_source = ap->get(SK::source);
-		e.ap_ocv = ap[BK::OCV];
+		e.ap_ocv = hostapd::get_okc(rs, "access_point");
 
-		auto client = rs.get_actor("client");
+		const auto client = rs.get_actor("client");
 		e.client_mac = client->get(SK::mac);
 		e.client_source = client->get(SK::source);
-		e.client_ocv = client[BK::OCV];
+		e.client_ocv =  hostapd::get_ocv(rs, "client");
 		e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
 
 		const auto att = rs.get_actor("attacker");

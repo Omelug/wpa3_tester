@@ -102,7 +102,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
         data->from_ds(false);
         
         auto radiotap = make_shared<RadioTap>();
-        radiotap->channel(5180, 7);  // Channel 36, HT type (802.11n)
+        radiotap->channel(5180, 7);  // channel 36, HT type (802.11n)
         radiotap->dbm_signal(-55);
         
         radiotap->inner_pdu(*data);

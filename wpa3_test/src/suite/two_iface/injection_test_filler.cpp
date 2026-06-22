@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <fstream>
 #include <nlohmann/json.hpp>
 
 #include "suite/two_iface/injection_test_filler.h"

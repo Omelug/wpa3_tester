@@ -1,5 +1,4 @@
 #include "attacks//mc_mitm/MonitorSocket.h"
-#include <arpa/inet.h>
 #include <memory>
 #include <pcap/pcap.h>
 #include <string>

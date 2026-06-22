@@ -6,6 +6,7 @@
 #include "suite/downgrade/wpa3_trans_downgrade_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -35,7 +36,7 @@ void generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(run_dir);
 
-	helper::ReportGuard report(run_dir);
+	report::ReportGuard report(run_dir);
 	if(!report) return;
 
 	report << "# WPA3 Transition Downgrade Test Suite Report\n\n";

@@ -90,20 +90,25 @@ void run_attack(RunStatus &rs){
 	}
 
 	string mfp = "?";
-	string akm;
+	vector<string> akm;
 	if(scan_ap.rsn.has_value()){
 		const uint16_t caps = scan_ap.rsn->capabilities();
 		const bool mfpr = caps & (1 << 6);
 		const bool mfpc = caps & (1 << 7);
 		mfp = mfpr ? "REQUIRED" : (mfpc ? "Capable" : "No");
 
-		stringstream akm_ss;
-		scan::ScanAP::print_AKMs(akm_ss, scan_ap.rsn->akm_cyphers());
-		akm = akm_ss.str();
+		akm.reserve(scan_ap.rsn->akm_cyphers().size());
+		for(const auto &a: scan_ap.rsn->akm_cyphers()){
+			stringstream ss;
+			scan::ScanAP::print_AKM(ss, a);
+			akm.push_back(ss.str());
+		}
 	}
 
+	const auto &stas = scan_ap.stations;
 	vector<string> stations_vec;
-	for(const auto &sta: scan_ap.stations) stations_vec.push_back(sta.to_string());
+	stations_vec.reserve(stas.size());
+	for(const auto &sta: stas) stations_vec.push_back(sta.to_string());
 
 	rs.save_result({
 		{"ssid", scan_ap.ssid}, {"mac", target_ap.get(SK::mac)},

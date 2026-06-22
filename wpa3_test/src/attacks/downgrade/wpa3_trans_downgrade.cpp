@@ -29,7 +29,7 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
-	rs.process_manager.stop("access_point"); //FIXME add external stop
+	components::stop_AP(rs, "access_point");
 
 	const bool rogue_connected = rs.process_manager.wait_for("rogue_ap", "AP-STA-CONNECTED", seconds(wait_after_stop),
 															false);
@@ -62,45 +62,39 @@ void stats_attack(const RunStatus &rs){
 
 	const bool disconnected = !disc_times.empty();
 	const bool downgrade_seen = !rogue_4way_times.empty();
+	rs.save_result({{"disconnected", disconnected}, {"downgrade_seen", downgrade_seen},});
 
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 	const path att_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-	} else{
-		report << "# WPA3 Transition Downgrade to WPA2-PSK\n\n";
-		report << "A client connected to a WPA3-Transition AP (SAE+PSK) is disconnected by stopping "
-				"the legitimate AP. A rogue WPA2-PSK-only AP with the same SSID and credentials "
-				"is running. A vulnerable client will automatically associate using WPA2-PSK.\n\n";
-		report::attack_config_table(report, rs);
-		report::attack_mapping_table(report, rs);
-		report << "## Results\n\n";
-		report << "| Metric | Value |\n|--------|-------|\n";
-		report << "| Client disconnected from legitimate AP | " << (disconnected ? "yes" : "no") << " |\n";
-		report << "| Rogue AP | " << (downgrade_seen ? "yes" : "no") << " |\n";
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
 
-		report << "### Traffic\n";
-		if(!client_graph.empty()){
-			report << "### Client\n";
-			report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
-		}
-		if(!rogue_graph.empty()){
-			report << "### Rogue AP (WPA2-PSK)\n";
-			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
-		}
-		if(!att_graph.empty()){
-			report << "### Attacker (probe capture)\n";
-			report << "![Attacker graph](" << relative(att_graph, rs.run_folder()).string() << ")\n\n";
-		}
-		report << "---\n";
-		report.close();
-		set_public_perms(report_path);
+	report << "# WPA3 Transition Downgrade to WPA2-PSK\n\n";
+	report << "A client connected to a WPA3-Transition AP (SAE+PSK) is disconnected by stopping "
+			"the legitimate AP. A rogue WPA2-PSK-only AP with the same SSID and credentials "
+			"is running. A vulnerable client will automatically associate using WPA2-PSK.\n\n";
+	report::attack_config_table(report, rs);
+	report::attack_mapping_table(report, rs);
+	report << "## Results\n\n";
+	report << "| Metric | Value |\n|--------|-------|\n";
+	report << "| Client disconnected from legitimate AP | " << (disconnected ? "yes" : "no") << " |\n";
+	report << "| Rogue AP | " << (downgrade_seen ? "yes" : "no") << " |\n";
+
+	report << "### Traffic\n";
+	if(!client_graph.empty()){
+		report << "### Client\n";
+		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
 	}
-
-	rs.save_result({{"disconnected", disconnected}, {"downgrade_seen", downgrade_seen},});
+	if(!rogue_graph.empty()){
+		report << "### Rogue AP (WPA2-PSK)\n";
+		report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+	}
+	if(!att_graph.empty()){
+		report << "### Attacker (probe capture)\n";
+		report << "![Attacker graph](" << relative(att_graph, rs.run_folder()).string() << ")\n\n";
+	}
+	report << "---\n";
 }
 }

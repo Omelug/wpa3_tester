@@ -22,13 +22,8 @@ using namespace chrono;
 void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path &attacker_graph,
 					const path &client_graph
 ){
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-		return;
-	}
-	set_public_perms(report_path);
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
 
 	const string variant = rs.config().at("attack_config").value("attack_variant", "?");
 	report << "# Bl0ck DoS Attack (" << variant << ")\n\n";
@@ -69,6 +64,5 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path 
 		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
 	}
 	report << "---\n";
-	report.close();
 }
 }

@@ -9,6 +9,7 @@
 #include "logger/report.h"
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -138,17 +139,13 @@ void run_attack(RunStatus &rs){
 		//{"sta_count", static_cast<int>(sta_map.size())},
 		{"aps", aps}, {"stations", stas},
 	});
-
+	//FIXME  save results, move report to stats fuction
 	generate_report(rs, ap_map, sta_map);
 }
 
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map){
-	const auto report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());
-		return;
-	}
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return; //FIXMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 
 	report << "# External Info Scanner Report\n\n";
 	report::attack_config_table(report, rs);
@@ -183,9 +180,5 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 		}
 		report << "\n";
 	}
-
-	report.close();
-	set_public_perms(report_path);
-	log(LogLevel::INFO, "External info report generated: {}", report_path.string());
 }
 }

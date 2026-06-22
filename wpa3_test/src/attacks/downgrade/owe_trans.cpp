@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
 
-#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -95,42 +94,38 @@ void stats_attack(const RunStatus &rs){
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-	} else{
-		report << "# OWE Transition Probe Leak\n\n";
-		report << "After stopping the OWE AP, a client with autoconnect will emit probe requests "
-				"to rediscover the network, potentially revealing its preferred SSID list.\n\n";
-		report::attack_config_table(report, rs);
-		report::attack_mapping_table(report, rs);
-		report << "## Results\n\n";
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
+
+	report << "# OWE Transition Probe Leak\n\n";
+	report << "After stopping the OWE AP, a client with autoconnect will emit probe requests "
+			"to rediscover the network, potentially revealing its preferred SSID list.\n\n";
+	report::attack_config_table(report, rs);
+	report::attack_mapping_table(report, rs);
+	report << "## Results\n\n";
+	report << "| Metric | Value |\n|--------|-------|\n";
+	report << "| Client disconnected | " << (disconnected ? "yes" : "no") << " |\n";
+	report << "| Probe requests detected | " << probe_count << " |\n";
+	report << "| Vulnerable (probes sent) | " << (probe_count > 0 ? "yes" : "no") << " |\n\n";
+	if(crack_result.has_value()){
+		report << "## Credential Capture (hcxpmktool)\n";
+		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
-		report << "| Client disconnected | " << (disconnected ? "yes" : "no") << " |\n";
-		report << "| Probe requests detected | " << probe_count << " |\n";
-		report << "| Vulnerable (probes sent) | " << (probe_count > 0 ? "yes" : "no") << " |\n\n";
-		if(crack_result.has_value()){
-			report << "## Credential Capture (hcxpmktool)\n";
-			report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
-			report << "| Metric | Value |\n|--------|-------|\n";
-			report << "| Captured handshakes | " << crack_result->total << " |\n";
-			report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
-		}
-		report << "### Traffic\n";
-		report << "### Client\n";
-		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
-		report << "### Attacker (probe capture)\n";
-		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
-		if(rs.config().at("actors").contains("rogue_ap")){
-			const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
-			report << "### Rogue AP\n";
-			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
-		}
-		report << "---\n";
-		report.close();
-		set_public_perms(report_path);
+		report << "| Captured handshakes | " << crack_result->total << " |\n";
+		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
 	}
+	report << "### Traffic\n";
+	report << "### Client\n";
+	report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
+	report << "### Attacker (probe capture)\n";
+	report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
+	if(rs.config().at("actors").contains("rogue_ap")){
+		const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
+		report << "### Rogue AP\n";
+		report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
+	}
+	report << "---\n";
+
 
 	const json result = {
 		{"disconnected", disconnected},

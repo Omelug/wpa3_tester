@@ -3,9 +3,9 @@ observers:
     actor: attacker
     program: tshark
     program_config:
-      filter: ""
+      filter: "special_filter:actors"
   rogue_tshark:
     actor: rogue_ap
     program: tshark
     program_config:
-      filter: ""
+      filter: "special_filter:actors"

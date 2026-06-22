@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -19,6 +20,16 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	log(LogLevel::INFO, "{} is running", actor_name);
 	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
+	}
+}
+
+void stop_AP(RunStatus &rs, const string &actor_name){
+	const auto &actor = rs.get_actor(actor_name);
+	assert(actor->is_WB());
+	if(actor->is_external_WB()){
+		actor->conn->exec("wifi down");
+	} else{
+		rs.process_manager.stop(actor_name);
 	}
 }
 

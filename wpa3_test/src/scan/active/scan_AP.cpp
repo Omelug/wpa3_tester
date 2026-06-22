@@ -13,7 +13,7 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::scan{
-void print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
+void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 	static const map<RSNInformation::AKMSuites,string> akm_map = {
 		{RSNInformation::EAP, "EAP"}, {RSNInformation::PSK, "PSK"}, {RSNInformation::EAP_FT, "EAP-FT"},
 		{RSNInformation::PSK_FT, "PSK-FT"}, {RSNInformation::EAP_SHA256, "EAP-SHA256"},
@@ -36,7 +36,7 @@ void print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
 	ss << "AKM Suites: ";
 	for(auto &akm: akms){
-		print_AKM(ss, akm);
+		ScanAP::print_AKM(ss, akm);
 		ss << " ";
 	}
 }

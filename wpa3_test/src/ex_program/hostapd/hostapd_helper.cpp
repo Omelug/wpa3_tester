@@ -338,6 +338,16 @@ string get_ssid(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"ssid"});
 }
 
+optional<bool> get_ocv(const RunStatus &rs, const string &actor_name){
+	const auto v = get_conf_value(actor_conf_path(rs, actor_name), {"ocv"});
+	return v == "1";
+}
+
+optional<bool> get_okc(const RunStatus &rs, const string &actor_name){
+	const auto v = get_conf_value(actor_conf_path(rs, actor_name), {"okc"});
+	return v == "1";
+}
+
 string get_version(const RunStatus &rs, const string &actor_name){
 	const auto &a = rs.config().at("actors").at(actor_name);
 	if(!a.contains("setup")) return "default";

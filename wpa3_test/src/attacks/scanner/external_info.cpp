@@ -88,7 +88,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map);
 
 void run_attack(RunStatus &rs){
-	//TODO now its scanning only on onwe channel
+	//TODO now its scanning only on one channel
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");
@@ -102,14 +102,16 @@ void run_attack(RunStatus &rs){
 	ApInfoMap ap_map;
 	StaInfoMap sta_map;
 
+	const string filter = "type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req "
+				 "or type mgt subtype probe-req or type mgt subtype auth or type data";
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
 												const bool new_ap = parse_frame(pdu, ap_map, sta_map);
 												if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >=
 													actor_limit) return monostate{};
 												return nullopt;
-											}, scanner.get(SK::sniff_iface),
-											"type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req"
-											" or type mgt subtype probe-req or type mgt subtype auth or type data",
+											},
+											scanner.get(SK::sniff_iface),
+											filter,
 											seconds(timeout_sec));
 
 	auto passes_filter = [&](const Actor_Config_external &cfg) ->bool{
@@ -134,8 +136,21 @@ void run_attack(RunStatus &rs){
 	}
 
 	rs.save_result({{"aps", aps}, {"stations", stas},});
-
-	//FIXME  save results, move report to stats fuction
+}
+void stats(const RunStatus &rs){
+	const nlohmann::json result = rs.load_result();
+	ApInfoMap ap_map;
+	StaInfoMap sta_map;
+	for(const auto &ap_json: result.at("aps")){
+		Actor_Config_external cfg(ap_json);
+		const HWAddress<6> bssid(ap_json.at("mac").get<string>());
+		ApEntry &entry = ap_map[bssid];
+		entry.cfg = std::move(cfg);
+		for(const auto &mac_str: ap_json.at("stations"))
+			entry.stations.insert(HWAddress<6>(mac_str.get<string>()));
+	}
+	for(const auto &sta_json: result.at("stations"))
+		sta_map.emplace(HWAddress<6>(sta_json.at("mac").get<string>()), Actor_Config_external(sta_json));
 	generate_report(rs, ap_map, sta_map);
 }
 

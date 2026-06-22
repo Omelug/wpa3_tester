@@ -18,4 +18,4 @@ Actor_Config_external
 >;
 
 void run_attack(RunStatus & rs);
-}
+void ru_attack(RunStatus & rs);void run_attack(RunStatus & rs);}

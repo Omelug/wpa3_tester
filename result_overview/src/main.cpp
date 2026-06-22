@@ -36,10 +36,12 @@ static string html_page() {
         <ul>
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
             <li><a href="attacks/dos_soft/bl0ck/index.html">DoS Soft — Block ACK (Bl0ck)</a></li>
+
         </ul>
     </div>
 
 )html";
+	//FIXME TODO  add link to devices
     out << R"html(    </div>
 
 </body>

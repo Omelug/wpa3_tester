@@ -6,7 +6,6 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd.h"
@@ -17,7 +16,6 @@
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::CSA_attack{
 using namespace std;

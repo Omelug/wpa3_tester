@@ -1,5 +1,4 @@
 #pragma once
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"

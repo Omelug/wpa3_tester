@@ -1,9 +1,7 @@
 #include "attacks/scanner/external_info.h"
-#include <fstream>
 #include <map>
 #include <variant>
 
-#include "default.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
 #include "logger/report.h"

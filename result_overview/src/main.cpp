@@ -1,10 +1,8 @@
-#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
-#include <vector>
 
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"

@@ -1,7 +1,6 @@
 #include "attacks/downgrade/owe_trans.h"
 #include <atomic>
 #include <chrono>
-#include <fstream>
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>

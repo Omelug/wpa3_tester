@@ -1,12 +1,9 @@
 #include "suite/suite_helper.h"
 
-#include <fstream>
 #include <memory>
 
 #include "default.h"
 #include "config/RunStatus.h"
-#include "logger/log.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::suite::helper{
 using namespace std;

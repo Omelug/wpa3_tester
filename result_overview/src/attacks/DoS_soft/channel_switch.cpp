@@ -1,9 +1,9 @@
 #include "attacks/DoS_soft/channel_switch.h"
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
 #include <string>
 #include <vector>
+#include "html_guard.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
@@ -61,7 +61,9 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     create_public_dirs(page_dir);
     const path img_dir = page_dir / "img";
 
-    ofstream f(page_dir / "index.html");
+	HtmlGuard f(page_dir);
+	if(!f) return;
+
     f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,11 +96,6 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 </div>
 
 )html";
-
-    auto opt_bool = [](const optional<bool> &v) -> string {
-        if (!v.has_value()) return "N/A";
-        return v.value() ? "yes" : "no";
-    };
 
     auto emit_table = [&](const string &title, const string &table_id, const string &variant_filter) {
         vector<const CsaTestEntry*> rows;
@@ -145,8 +142,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
     }
 
     f << "</body>\n</html>\n";
-    f.close();
-    set_public_perms(page_dir / "index.html");
+
 }
 
 }

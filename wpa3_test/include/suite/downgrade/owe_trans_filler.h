@@ -1,6 +1,5 @@
 #pragma once
 #include <filesystem>
-#include <optional>
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"

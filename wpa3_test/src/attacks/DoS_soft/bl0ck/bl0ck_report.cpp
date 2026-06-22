@@ -1,17 +1,12 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 
 #include <cassert>
-#include <fstream>
-#include <random>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "config/RunStatus.h"
-#include "logger/log.h"
 #include "logger/report.h"
 #include "observer/iperf_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::bl0ck_attack{
 using namespace std;

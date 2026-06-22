@@ -1,7 +1,6 @@
 #include "suite/scan/ap_info_wpa3_filler.h"
 
 #include <filesystem>
-#include <fstream>
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "suite/result_helper.h"
@@ -33,7 +32,7 @@ void generate_report(RunSuiteStatus &rss){
 	for(const auto &e: entries){
 		string stas;
 		for(const auto &s: e.stations) stas += (stas.empty() ? "" : "<br>") + s;
-		if(stas.empty()) stas = "-";
+		if(stas.empty()) stas = "-"; // FIXME e.mac
 		report << "| " << e.test_name << " | " << e.mac << " | " << e.ssid << " | " << e.mfp << " | " << e.akm <<
 				" | " << e.acm_triggered << " | " << stas << " |\n";
 	}

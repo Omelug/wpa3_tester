@@ -8,14 +8,9 @@ struct ApEntry{
 	std::set<Tins::HWAddress<6>> stations;
 };
 
-using ApInfoMap = std::map<Tins::HWAddress < 6>
-,
-ApEntry
->;
-using StaInfoMap = std::map<Tins::HWAddress < 6>
-,
-Actor_Config_external
->;
+using ApInfoMap = std::map<Tins::HWAddress<6>,ApEntry>;
+using StaInfoMap = std::map<Tins::HWAddress<6>,Actor_Config_external>;
 
-void run_attack(RunStatus & rs);
-void ru_attack(RunStatus & rs);void run_attack(RunStatus & rs);}
+void run_attack(RunStatus &rs);
+void stats(const RunStatus &rs);
+}

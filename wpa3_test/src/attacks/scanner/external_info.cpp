@@ -137,6 +137,7 @@ void run_attack(RunStatus &rs){
 
 	rs.save_result({{"aps", aps}, {"stations", stas},});
 }
+
 void stats(const RunStatus &rs){
 	const nlohmann::json result = rs.load_result();
 	ApInfoMap ap_map;

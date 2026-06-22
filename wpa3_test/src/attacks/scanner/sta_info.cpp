@@ -27,6 +27,6 @@ void run_attack(RunStatus &rs){
 
 	const Actor_Config_external sta = scan::scan_sta_actor(scanner.get(SK::sniff_iface), scanner.get(SK::mac), timeout);
 
-	rs.save_result({{"ap_mac", scanner["mac"]}, {"station", sta.to_json()},});
+	rs.save_result({{"ap_mac", scanner.get(SK::mac)}, {"station", sta.to_json()},});
 }
 }

@@ -140,7 +140,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	actor->set(SK::radio, radio_name);
 }
 
-void OpenWrtConn::setup_monitor_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json &program_config){
+void OpenWrtConn::setup_monitor_iface(const string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const{
 	// Bypass UCI/wifi for monitor mode — wpa_supplicant fights with netifd and prevents interface creation.
 	// Use iw directly to create the monitor interface on the phy.
 	const string phy = "phy" + radio_name.substr(5); // "radio0" → "phy0"

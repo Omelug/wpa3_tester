@@ -46,9 +46,9 @@ private:
 	std::filesystem::path page_dir_;
 };
 
-inline std::string device(Tins::HWAddress<6> mac, std::filesystem::path page_dir){
+inline std::string device(const Tins::HWAddress<6> mac, std::filesystem::path page_dir){
 	//FIXME
-	return mac;
+	return mac.to_string();
 }
 
 }

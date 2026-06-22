@@ -1,7 +1,7 @@
 #include <array>
 #include <filesystem>
-#include <fstream>
 #include <string>
+#include "html_guard.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "system/utils.h"
@@ -32,7 +32,9 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "dos_soft" / "bl0ck";
     create_public_dirs(page_dir);
 
-    ofstream f(page_dir / "index.html");
+	HtmlGuard f(page_dir);
+	if(!f) return;
+
     f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,15 +93,13 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
             f << "                    <td>" << e.client_mac   << " (" << e.client_source   << ")</td>\n";
             f << "                    <td>" << e.attacker_mac << " (" << e.attacker_driver << ")</td>\n";
             f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
-            f << "                    <td>" << e.disconnect_count > 0<< "</td>\n";
+            f << "                    <td>" << (e.disconnect_count > 0)<< "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";
     }
 
     f << "</body>\n</html>\n";
-    f.close();
-    set_public_perms(page_dir / "index.html");
 }
 
 }

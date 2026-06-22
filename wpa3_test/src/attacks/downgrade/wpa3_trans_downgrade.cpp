@@ -1,9 +1,7 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include <chrono>
-#include <fstream>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "logger/log.h"

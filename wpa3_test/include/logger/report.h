@@ -22,19 +22,22 @@ struct ReportGuard {
 	ReportGuard &operator=(const ReportGuard &) = delete;
 
 	explicit operator bool() const { return stream_.is_open(); }
-	ReportGuard &operator<<(const std::filesystem::path &p){
-		stream_ << std::filesystem::relative(p, run_dir_).string(); return *this;
+    ReportGuard &operator<<(const std::filesystem::path &p){
+	    const auto rel = p.is_absolute() ? p.lexically_relative(run_dir_) : p;
+	    stream_ << rel.string(); return *this;
 	}
-	ReportGuard &operator<<(bool val){
-		stream_ << (val ? "yes" : "no"); return *this;
-	}
-	ReportGuard &operator<<(std::optional<bool> val){
-		stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this;
-	}
-	ReportGuard &operator<<(const std::string &val){
-		stream_ << (val.empty() ? "?" : val); return *this;
-	}
+
+    ReportGuard &operator<<(const bool val){ stream_ << (val ? "yes" : "no"); return *this; }
+    ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
+
+	ReportGuard &operator<<(const std::string &val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
+	ReportGuard &operator<<(std::string &&val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
+
 	template<typename T>
+	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
+	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
+	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path>)
 	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:

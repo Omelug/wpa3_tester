@@ -47,8 +47,13 @@ void generate_report(RunSuiteStatus &rss){
 								: e.test_name;
 		const string result_link = "[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
-		report << "| " << name_cell << " | " << e.tx_driver << " | " << e.rx_driver << " | " << e.acked << " | " <<
-				e.not_acked << " | " << result_link << " |\n";
+		report
+				<< "| " << name_cell << " | "
+				<< e.tx_driver << " | "
+				<< e.rx_driver << " | "
+				<< e.acked << " | "
+				<< e.not_acked << " | "
+				<< result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

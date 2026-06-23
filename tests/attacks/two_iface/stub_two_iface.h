@@ -20,15 +20,17 @@ struct StubTwoIface : TwoIface {
         return run_result;
     }
 
-    std::filesystem::path cache_folder() const override {
-        return std::filesystem::temp_directory_path() / "stub_two_iface" / cache_name;
-    }
+    std::filesystem::path cache_folder() const override;
 
-    using TwoIface::make_cache_key;
+	using TwoIface::make_cache_key;
     using TwoIface::lookup_cache;
     using TwoIface::write_cache;
     using TwoIface::cache_path;
 };
+
+inline std::filesystem::path StubTwoIface::cache_folder() const{
+	return std::filesystem::temp_directory_path() / "stub_two_iface" / cache_name;
+}
 
 inline ActorPtr make_stub_actor(const std::string &driver, const std::string &mac){
     const auto ac = std::make_shared<Actor_Config_sim>();

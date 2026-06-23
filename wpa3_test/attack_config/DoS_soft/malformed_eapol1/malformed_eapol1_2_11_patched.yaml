@@ -1,5 +1,5 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: malformed_eapol1_2_1_patched
+name: malformed_eapol1_2_11_patched
 attacker_module: malformed_eapol1
 $extends: ./malformed_eapol1.yaml
 actors:

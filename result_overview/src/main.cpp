@@ -6,6 +6,7 @@
 
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"
+#include "attacks/DoS_soft/malformed_eapol1.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -36,6 +37,7 @@ static string html_page() {
         <ul>
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
             <li><a href="attacks/dos_soft/bl0ck/index.html">DoS Soft — Block ACK (Bl0ck)</a></li>
+            <li><a href="attacks/dos_soft/malformed_eapol1/index.html">DoS Soft — Malformed EAPOL-1</a></li>
 
         </ul>
     </div>
@@ -66,6 +68,7 @@ int main() {
 
     wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
     wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
+	wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
 
     return 0;
 }

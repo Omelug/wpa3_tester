@@ -8,6 +8,7 @@
 #include "logger/report.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{
 using namespace std;
@@ -24,6 +25,7 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	e.ap_graph = test_folder / "observer" / "tshark" / "access_point_graph.png";
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
+	e.client_version = hostapd::get_version(*rs, "client");
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }
@@ -41,12 +43,12 @@ void generate_report(RunSuiteStatus &rss){
 	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Attacker Driver | Disconnected (count) | Graphs |\n";
-	report << "|------|-----------|---------------|-----------------|:--------------------:|:------:|\n";
+	report << "| Test | AP Driver | Client Driver | Client Version | Attacker Driver | Disconnected (count) | Graphs |\n";
+	report << "|------|-----------|---------------|----------------|-----------------|:--------------------:|:------:|\n";
 
-	int passed_count = 0;
+	//int passed_count = 0;
 	for(const auto &e: entries){
-		if(e.disconnect_count > 0) ++passed_count;
+		//if(e.disconnect_count > 0) ++passed_count;
 
 		string graphs;
 		if(exists(e.sta_graph)) graphs += "[STA](" + e.sta_graph.string() + ")";
@@ -61,16 +63,17 @@ void generate_report(RunSuiteStatus &rss){
 		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
 			<< e.client_driver << " | "
+			<< e.client_version << " | "
 			<< e.attacker_driver << " | "
 			<< disc_link << "(" << e.disconnect_count << ")" << " | "
 			<< graphs << " |\n";
 	}
 
-	report << "\n## Summary\n\n";
+	/*report << "\n## Summary\n\n";
 	report << "- Total: " << entries.size() << "\n";
 	report << "- Disconnected (passed): " << passed_count << "\n";
 	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
 	report << "- Success rate: " << fixed << setprecision(1) << (100.0 * passed_count /
-			static_cast<double>(entries.size())) << "%\n";
+			static_cast<double>(entries.size())) << "%\n";*/
 }
 }

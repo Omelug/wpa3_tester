@@ -8,6 +8,7 @@ struct MalformedEapol1TestEntry{
 	std::string test_name;
 	std::string ap_driver;
 	std::string client_driver;
+	std::string client_version;
 	std::string attacker_driver;
 	//result params
 	int disconnect_count;

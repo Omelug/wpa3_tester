@@ -3,6 +3,7 @@
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "default.h"
+#include "logger/devices.h"
 #include "logger/report.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
@@ -34,6 +35,20 @@ void run_attack(RunStatus &rs){
 	*/
 
 	rs.save_actor_interface_mapping();
+
+	// ----- save live system snapshot -----
+	nlohmann::json result;
+	try{ result["current_mac"] = hw_capabilities::get_mac_address(iface, nullopt).to_string(); } catch(...){ result["current_mac"] = "n/a"; }
+	try{ result["is_up"]       = netlink_helper::iface_is_up(iface, nullopt); }                 catch(...){ result["is_up"] = false; }
+	try{ result["phy"]         = hw_capabilities::get_phy(iface, nullopt); }                    catch(...){ result["phy"] = "n/a"; }
+	try{ result["ip_addr"]     = ip::get_ip(iface); }                                           catch(...){ result["ip_addr"] = "n/a"; }
+	try{ result["iw_info"]     = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"}); } catch(...){ result["iw_info"] = ""; }
+	rs.save_result(result);
+
+	ofstream result_txt(rs.run_folder() / "result.txt");
+	result_txt << scanner->to_str();
+	result_txt.close();
+	set_public_perms(rs.run_folder() / "result.txt");
 }
 
 void generate_report(const RunStatus &rs){
@@ -41,18 +56,19 @@ void generate_report(const RunStatus &rs){
 	if(it == rs.actors.end()) return;
 	const auto &scanner = it->second;
 
-	const string iface = scanner->get(SK::iface);
+	const string iface = scanner->get_or(SK::iface, "");
 	if(iface.empty()) return;
 
-	const string current_mac = hw_capabilities::get_mac_address(iface, nullopt).to_string();
-	const bool is_up = netlink_helper::iface_is_up(iface, nullopt);
-	const string phy = hw_capabilities::get_phy(iface, nullopt);
-	const string ip_addr = [&]() -> string {
-		try{ return ip::get_ip(iface); } catch(...){ return "n/a"; }
-	}();
-	const string iw_info = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"});
+	nlohmann::json result;
+	try{ result = rs.load_result(); } catch(...){}
 
-	string perm_mac = scanner->get(SK::permanent_mac);
+	const string current_mac = result.value("current_mac", "n/a");
+	const bool   is_up       = result.value("is_up",       false);
+	const string phy         = result.value("phy",         "n/a");
+	const string ip_addr     = result.value("ip_addr",     "n/a");
+	const string iw_info     = result.value("iw_info",     "");
+
+	const string perm_mac = scanner->get_or(SK::permanent_mac, "");
 	string mac_slug = perm_mac.empty() ? current_mac : perm_mac;
 	ranges::replace(mac_slug, ':', '_');
 
@@ -69,7 +85,7 @@ void generate_report(const RunStatus &rs){
 		md << "|----------|-------|\n";
 		md << "| Name       | `" << iface << "` |\n";
 		md << "| PHY        | " << phy << " |\n";
-		md << "| Driver     | " << scanner->get(SK::driver_name) << " |\n";
+		md << "| Driver     | " << scanner->get_or(SK::driver_name, "n/a") << " |\n";
 		md << "| State      | " << (is_up ? "UP" : "DOWN") << " |\n";
 		md << "| IP Address | " << ip_addr << " |\n\n";
 
@@ -127,6 +143,9 @@ void generate_report(const RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs){
+	const auto scanner = rs.get_actor("scanner");
+	report::add_device(scanner);
+
 	generate_report(rs);
 }
 }

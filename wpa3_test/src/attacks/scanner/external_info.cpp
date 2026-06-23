@@ -4,6 +4,7 @@
 
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
+#include "logger/devices.h"
 #include "logger/report.h"
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
@@ -134,6 +135,16 @@ void run_attack(RunStatus &rs){
 		if(!passes_filter(sta_cfg)) continue;
 		stas.push_back(sta_cfg.to_json());
 	}
+
+	auto save_external = [](const Actor_Config_external &cfg){
+		Actor_Config_external dev = cfg;
+		if(!dev[SK::permanent_mac].has_value()) dev.set(SK::permanent_mac, dev.get_or(SK::mac, ""));
+		report::add_device(ActorPtr(make_shared<Actor_Config_external>(std::move(dev))));
+	};
+	for(const auto &entry: ap_map | views::values)
+		save_external(entry.cfg);
+	for(const auto &cfg: sta_map | views::values)
+		save_external(cfg);
 
 	rs.save_result({{"aps", aps}, {"stations", stas},});
 }

@@ -46,9 +46,16 @@ private:
 	std::filesystem::path page_dir_;
 };
 
-inline std::string device(const Tins::HWAddress<6> mac, std::filesystem::path /*page_dir*/){
-	//FIXME
-	return mac.to_string();
+inline std::string device(const Tins::HWAddress<6> mac, const std::filesystem::path &page_dir){
+	const auto mac_str = mac.to_string();
+	auto root = page_dir;
+	while(!root.empty() && root != root.parent_path()){
+		const auto dev_page = root / "devices" / mac_str / "index.html";
+		if(std::filesystem::exists(dev_page))
+			return "<a href=\"" + dev_page.lexically_relative(page_dir).string() + "\">" + mac_str + "</a>";
+		root = root.parent_path();
+	}
+	return mac_str;
 }
 
 }

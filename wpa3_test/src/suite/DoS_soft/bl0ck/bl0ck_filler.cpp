@@ -74,7 +74,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 			<< e.ap_mac << " | "
 			<< e.client_mac << " | "
 			<< e.attacker_mac << " (" << e.attacker_driver << ") | "
-			<< e.attack_variant.empty() << " | "
+			<< e.attack_variant << " | "
 			<< result_link << " |\n";
 	}
 

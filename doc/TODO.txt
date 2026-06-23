@@ -4,6 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: simulation test config
+t: external info/iface_info parsing tests
 +: requirement external connection STA-AP
 +: create Dlink Openwrt all test tool
 +: injection test for openwrt

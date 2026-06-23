@@ -1,9 +1,10 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 name: malformed_eapol1_basic_suite
+suite_functions: malformed_eapol1_filler
 config_type: test_suite
 tests:
   malformed_eapol1:
     test_name: malformed_eapol1
-  malformed_eapol1_2_1_patched:
-    test_name: malformed_eapol1_2_1_patched
+  malformed_eapol1_2_11_patched:
+    test_name: malformed_eapol1_2_11_patched
 rewrite: errors

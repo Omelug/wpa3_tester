@@ -43,5 +43,6 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"ap_info_wpa3_filler", ap_info_wpa3_filler::generate_report},
 	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::generate_report},
 	{"CSA_ex_filler", channel_switch_rogueAP::generate_report},
+	//{"malformed_eapol1_basic_suite", malformed_eapol1_basic_suite::generate_report},
 };
 }

@@ -1,15 +1,4 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1_rogueAP
 attacker_module: malformed_eapol1
-$extends: ./malformed_eapol1.yaml
-actors:
-  rogue_ap:
-    source: internal
-    selection:
-      driver: mt76x2u
-      condition: [ monitor ]
-      channel: 6
-    setup:
-      program: hostapd-mana
-      program_config:
-        hostapd-mana_path: ./hostapd-mana.conf
+$extends: [./malformed_eapol1.yaml, ./rogue_ap.comp.yaml]

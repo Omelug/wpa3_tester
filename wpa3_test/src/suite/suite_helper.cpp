@@ -9,7 +9,7 @@ namespace wpa3_tester::suite::helper{
 using namespace std;
 using namespace filesystem;
 
-//TODO use
+//TODO skip non existing configs?
 unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 	const auto config_path = test_folder / TEST_CONFIG_NAME;
 	if(!exists(config_path)) throw runtime_error("test config file does not exist");

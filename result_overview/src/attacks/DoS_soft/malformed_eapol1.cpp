@@ -61,9 +61,10 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
           << "                <th>Test</th>\n"
           << "                <th>AP Driver</th>\n"
           << "                <th>Client Driver</th>\n"
-          << "                <th>Client wpa_supplicantVersion</th>\n"
+          << "                <th>Client wpa_supplicant version</th>\n"
           << "                <th>Attacker Driver</th>\n"
           << "                <th>Disconnected?</th>\n"
+          << "                <th>Rogue AP?</th>\n"
           << "            </tr></thead>\n"
           << "            <tbody>\n";
         for (const auto &e : results) {
@@ -74,6 +75,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
             f << "                    <td>" << e.client_version << "</td>\n";
             f << "                    <td>" << e.attacker_driver << "</td>\n";
             f << "                    <td>" << (e.disconnect_count > 0) << " (" << e.disconnect_count << ")</td>\n";
+            f << "                    <td>" << e.rogue_ap_connected << "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";

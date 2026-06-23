@@ -18,7 +18,6 @@ using namespace nlohmann;
 MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<MalformedEapol1TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
-
 	const auto rs = helper::load_test_rs(test_folder);
 	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
@@ -43,8 +42,8 @@ void generate_report(RunSuiteStatus &rss){
 	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Client Version | Attacker Driver | Disconnected (count) | Graphs |\n";
-	report << "|------|-----------|---------------|----------------|-----------------|:--------------------:|:------:|\n";
+	report << "| Test | AP Driver | Client Driver | Client Version | Attacker Driver | Disconnected (count) | Rogue AP | Graphs |\n";
+	report << "|------|-----------|---------------|----------------|-----------------|:--------------------:|:--------:|:------:|\n";
 
 	//int passed_count = 0;
 	for(const auto &e: entries){
@@ -66,6 +65,7 @@ void generate_report(RunSuiteStatus &rss){
 			<< e.client_version << " | "
 			<< e.attacker_driver << " | "
 			<< disc_link << "(" << e.disconnect_count << ")" << " | "
+			<< e.rogue_ap_connected << " | "
 			<< graphs << " |\n";
 	}
 

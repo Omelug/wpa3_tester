@@ -52,7 +52,7 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(MonitorSocket &sout,
 
 		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) ->bool{
 			if(ranges::search(r.raw, label).empty()) return false;
-			captured.push_back(move(r.raw));
+			captured.push_back(std::move(r.raw));
 			return count > 0 && static_cast<int>(captured.size()) >= count;
 		});
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <filesystem>
-#include <optional>
 #include <string>
 #include "config/RunSuiteStatus.h"
 
@@ -16,8 +15,7 @@ struct Bl0ckTestEntry{
 	std::string attack_variant;
 
 	//result params
-	std::optional<bool> disconnect_count;
-	//std::optional<bool> passed;
+	int disconnect_count = 0;
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 };

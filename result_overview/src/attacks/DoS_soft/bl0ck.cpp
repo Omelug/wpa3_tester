@@ -12,15 +12,16 @@ using namespace filesystem;
 using suite::bl0ck_test_suites::Bl0ckTestEntry;
 
 static vector<Bl0ckTestEntry> collect_results(const path &data_dir) {
-    const path base = data_dir / "wpa3_suites" / "DoS_soft" / "bl0ck";
+    const path base = data_dir / "wpa3_suites" / "DoS_soft" / "bl0ck" / "suite";
     const array<string, 3> suites = {"BA_filler", "BAR_filler", "BARS_filler"};
 
     vector<Bl0ckTestEntry> results;
     for (const auto &suite : suites) {
-        for (const auto &test_path : suite::helper::get_suite_test_folders(base / suite)) {
-            auto e = Bl0ckTestEntry::parse(test_path);
-        	//TODO check nov alid results?
-            if (e.disconnect_count > 0) results.push_back(std::move(e));
+        for (const auto &src_dir : suite::helper::get_suite_test_folders(base / suite)) {
+            for (const auto &entry : directory_iterator(src_dir)) {
+                if (!entry.is_directory()) continue;
+                results.push_back(Bl0ckTestEntry::parse(entry.path()));
+            }
         }
     }
     return results;
@@ -92,7 +93,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
             f << "                    <td>" << device(e.ap_mac, page_dir)       << " (" << e.ap_source       << ")</td>\n";
             f << "                    <td>" << device(e.client_mac, page_dir)   << " (" << e.client_source   << ")</td>\n";
             f << "                    <td>" << device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n";
-            f << "                    <td>" << (e.attack_variant.empty() ? "?" : e.attack_variant) << "</td>\n";
+            f << "                    <td>" << e.attack_variant << "</td>\n";
             f << "                    <td>" << (e.disconnect_count > 0)<< "</td>\n";
             f << "                </tr>\n";
         }

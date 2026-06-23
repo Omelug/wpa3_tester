@@ -4,6 +4,7 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <tins/hw_address.h>
 #include "html_guard.h"
 
 using namespace std;
@@ -101,4 +102,33 @@ TEST_CASE("HtmlGuard - integer passthrough") {
 	HtmlFixture fx("hg_int");
 	{ HtmlGuard hg(fx.dir); hg << 42; }
 	CHECK_EQ(fx.read_index(), "42");
+}
+
+TEST_CASE("device() - no device page -> returns MAC string") {
+	HtmlFixture fx("dev_none");
+	const auto mac = Tins::HWAddress<6>("aa:bb:cc:dd:ee:ff");
+	CHECK_EQ(device(mac, fx.dir), string("aa:bb:cc:dd:ee:ff"));
+}
+
+TEST_CASE("device() - device page at root -> returns relative link") {
+	HtmlFixture fx("dev_root");
+	const string mac_str = "aa:bb:cc:dd:ee:ff";
+	const auto mac = Tins::HWAddress<6>(mac_str);
+	const path dev_dir = fx.dir / "devices" / mac_str;
+	create_directories(dev_dir);
+	{ ofstream(dev_dir / "index.html") << "device"; }
+	CHECK_EQ(device(mac, fx.dir),
+	         "<a href=\"devices/aa:bb:cc:dd:ee:ff/index.html\">aa:bb:cc:dd:ee:ff</a>");
+}
+
+TEST_CASE("device() - device page found via ancestor -> link uses correct depth") {
+	HtmlFixture fx("dev_nested");
+	const string mac_str = "bb:cc:dd:ee:ff:00";
+	const auto mac = Tins::HWAddress<6>(mac_str);
+	const path dev_dir = fx.dir / "devices" / mac_str;
+	create_directories(dev_dir);
+	{ ofstream(dev_dir / "index.html") << "device"; }
+	const path nested = fx.dir / "attacks" / "dos_soft" / "channel_switch";
+	CHECK_EQ(device(mac, nested),
+	         "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
 }

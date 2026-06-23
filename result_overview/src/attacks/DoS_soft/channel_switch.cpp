@@ -123,7 +123,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             f << "                    <td>" << device(e->client_mac, page_dir) << " (" << e->client_source << ")</td>\n";
             f << "                    <td>" << device(e->attacker_mac, page_dir) << " (" << e->attacker_driver << ")";
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
-                f << "<br>" << e->rogue_ap_mac << " (" << e->rogue_ap_driver << ")";
+                f << "<br>" << device(e->rogue_ap_mac, page_dir) << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";
             f << "                    <td>" << e->disconnected << " (" << e->ap_disconnected << ")</td>\n";
             f << "                    <td>" << e->rogue_ap_connected     << "</td>\n";

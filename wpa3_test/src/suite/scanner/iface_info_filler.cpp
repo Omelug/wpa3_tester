@@ -7,6 +7,7 @@
 #include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/devices.h"
 #include "logger/report.h"
 #include "suite/suite_helper.h"
 
@@ -25,6 +26,7 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder){
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 		iface_info::stats_attack(rs);
+		try{ report::add_device(rs.get_actor("scanner")); } catch(...){}
 
 		ifstream f(test_folder / "result.txt");
 		if(f.is_open()) e.hw_summary = string{istreambuf_iterator(f), {}};

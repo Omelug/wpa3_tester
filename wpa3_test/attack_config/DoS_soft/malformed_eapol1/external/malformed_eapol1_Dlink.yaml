@@ -1,0 +1,12 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: malformed_eapol1_Dlink
+attacker_module: malformed_eapol1
+$extends: ../malformed_eapol1_rogueAP.yaml
+actors:
+  $DELETE: access_point
+  access_point:
+    $extends: ../../../target/Dlink/Dlink_wb.comp.yaml
+  client:
+    setup:
+      program_config:
+        ssid: OpenWrt_2_4GHz

@@ -9,4 +9,7 @@ tests:
     test_name: malformed_eapol1_2_11_patched
   malformed_eapol1_rogueAP:
     test_name: malformed_eapol1_rogueAP
+  malformed_eapol1_Dlink:
+    test_name: malformed_eapol1_Dlink
+
 rewrite: errors

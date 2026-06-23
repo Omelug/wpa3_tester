@@ -79,6 +79,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 void setup_attack(RunStatus &rs){
 	components::client_ap_setup(rs);
 	components::setup_rogue_ap(rs);
+
 }
 
 void run_attack(RunStatus &rs){
@@ -93,8 +94,11 @@ void run_attack(RunStatus &rs){
 	PacketSender sender;
 
 	this_thread::sleep_for(chrono::seconds(5));
-	for(int i = 0; i < 5; ++i) sender.send(radiotap, iface);
-	this_thread::sleep_for(chrono::seconds(10));
+	for(int i = 0; i < 500; ++i){ //TODO attack_config packets /time?
+		sender.send(radiotap, iface);
+		this_thread::sleep_for(chrono::milliseconds(10));
+	}
+	this_thread::sleep_for(chrono::seconds(7)); //to check connection after attack
 }
 
 void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path){

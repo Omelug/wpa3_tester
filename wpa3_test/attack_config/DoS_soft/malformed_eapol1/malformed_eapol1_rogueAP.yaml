@@ -9,7 +9,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        other_options: "-d"
+        #other_options: "-d"
         ssid: test_malformed_eapol1
         psk: password123
         ieee80211w: 1

@@ -24,7 +24,7 @@ McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid,
 rogue_ap(rogue_ap),
 nic_real_ap(AP_IFACE_PREFIX + rogue_sta["iface"]),
 nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap["iface"]),
-ssid(move(ssid)),
+ssid(std::move(ssid)),
 // TODO fallback to info from actors
 ap_mac(ap_mac),
 only_to_mitm(only_to_mitm),
@@ -234,10 +234,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)){
-			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(move(recv_res.pdu), recv_res.raw);
+			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(std::move(recv_res.pdu), recv_res.raw);
 		}
 		if(FD_ISSET(fd_rogue, &read_fds)){
-			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(move(recv_res.pdu), recv_res.raw);
+			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(std::move(recv_res.pdu), recv_res.raw);
 		}
 		/*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
             send_disas(disas_queue.front().second);

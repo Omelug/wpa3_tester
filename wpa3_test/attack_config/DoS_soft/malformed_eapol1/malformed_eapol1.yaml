@@ -38,7 +38,7 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
-        version: 2_10 # TODO 2_1 patched?;
+        version: 2_10 # TODO 2_11 patched?;
     selection:
       channel: 6
     netns: sta

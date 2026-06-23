@@ -49,7 +49,7 @@ using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
-	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
+	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::path(PROJECT_ROOT_DIR).parent_path() / "data" / "wpa3_test";
 protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};

@@ -101,6 +101,8 @@ void RunStatus::execute(){
 	}
 
 	if(run_config().get_only_stats()){
+		config_path(absolute(run_folder()/TEST_CONFIG_NAME));
+		config(config_validation(config_path()));
 		load_actor_interface_mapping();
 		stats_test();
 		return;

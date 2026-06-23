@@ -4,10 +4,11 @@
 #include <tins/rawpdu.h>
 
 #include "attacks/components/setup_connections.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
+#include "logger/report.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::eapol_logoff{
 using namespace std;
@@ -38,7 +39,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 			"0016"                             // WPA Key Data Length: 22
 			//WPA Key Data
 			"dd"                                //Tag Number: Vendor Specific (221)
-			"ff"                                // Tag length: 255  <--------------------- INVALID length !!!!
+			"ff"                                // Tag length: 255  <-- INVALID length !!!!
 			"000fac"                            // OUI: 00:0f:ac (Ieee 802.11)
 			"04"                                // Vendor Specific OUI Type: 4
 			"00000000000000000000000000000000"; // PMKID
@@ -96,11 +97,29 @@ void run_attack(RunStatus &rs){
 	this_thread::sleep_for(chrono::seconds(10));
 }
 
+void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path){
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
+
+	report << "# Malformed EAPOL-1 DoS Attack\n\n";
+	report::attack_mapping_table(report, rs);
+	if(!STA_graph_path.empty()){
+		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
+		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
+	}
+	if(!AP_graph_path.empty()){
+		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
+		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
+	}
+	report << "---\n";
+}
+
 void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 
 	rs.log_events(elements, {
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"}, {"client", START_tag, "START", "black"},
+					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+					{"client", START_tag, "START", "black"},
 					{"client", END_tag, "END", "black"},
 				});
 
@@ -109,5 +128,7 @@ void stats(const RunStatus &rs){
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	rs.save_result({{"disconnect_count", static_cast<int>(disc_times.size())},});
+
+	generate_report(rs, STA_graph_path, AP_graph_path);
 }
 }

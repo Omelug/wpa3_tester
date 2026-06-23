@@ -12,7 +12,7 @@ using nlohmann::json;
 
 // ----- TwoIface base
 TwoIface::TwoIface(ParamFilter id, string name)
-: cache_id(move(id)), cache_name(move(name)){}
+: cache_id(std::move(id)), cache_name(std::move(name)){}
 
 pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
 	const string key = make_cache_key(a1, a2);

@@ -149,20 +149,27 @@ void run_attack(RunStatus &rs){
 	rs.save_result({{"aps", aps}, {"stations", stas},});
 }
 
+static HWAddress<6> hw_from_json(const nlohmann::json &j){
+	if(j.is_string()) return HWAddress<6>(j.get<string>());
+	uint8_t b[6]{};
+	for(size_t i = 0; i < 6 && i < j.size(); ++i) b[i] = j[i].get<uint8_t>();
+	return HWAddress<6>(b);
+}
+
 void stats(const RunStatus &rs){
 	const nlohmann::json result = rs.load_result();
 	ApInfoMap ap_map;
 	StaInfoMap sta_map;
 	for(const auto &ap_json: result.at("aps")){
 		Actor_Config_external cfg(ap_json);
-		const HWAddress<6> bssid(ap_json.at("mac").get<string>());
+		const HWAddress<6> bssid(ap_json.at("selection").at("mac").get<string>());
 		ApEntry &entry = ap_map[bssid];
 		entry.cfg = std::move(cfg);
-		for(const auto &mac_str: ap_json.at("stations"))
-			entry.stations.insert(HWAddress<6>(mac_str.get<string>()));
+		for(const auto &mac_j: ap_json.at("stations"))
+			entry.stations.insert(hw_from_json(mac_j));
 	}
 	for(const auto &sta_json: result.at("stations"))
-		sta_map.emplace(HWAddress<6>(sta_json.at("mac").get<string>()), Actor_Config_external(sta_json));
+		sta_map.emplace(HWAddress<6>(sta_json.at("selection").at("mac").get<string>()), Actor_Config_external(sta_json));
 	generate_report(rs, ap_map, sta_map);
 }
 

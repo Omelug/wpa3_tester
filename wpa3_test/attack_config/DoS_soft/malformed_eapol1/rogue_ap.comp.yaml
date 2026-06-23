@@ -9,9 +9,9 @@ actors:
       program: hostapd-mana
       program_config:
         driver: nl80211
-        ssid: test_channel_switch
+        ssid: test_malformed_eapol1
         hw_mode: g
-        channel: 1
+        channel: 6
         ieee80211n: 1
         ieee80211w: 1
         group_mgmt_cipher: AES-128-CMAC

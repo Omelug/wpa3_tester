@@ -20,7 +20,7 @@ bool add_device(ActorPtr actor){
 	const auto &perm_mac_opt = (*actor)[SK::permanent_mac];
 	if(!perm_mac_opt.has_value())
 		throw config_err("add_device: actor has no permanent_mac");
-
+//if not clonflict, merge?
 	path dev_dir = device_path / *perm_mac_opt;
 	create_public_dirs(dev_dir);
 

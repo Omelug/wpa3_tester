@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-07/schema#"
+$schema: "https://json-schema.org/draft/2020-12/schema"
 name: invalid_curve_ap_filler
 suite_functions: invalid_curve_ap_filler
 config_type: test_suite

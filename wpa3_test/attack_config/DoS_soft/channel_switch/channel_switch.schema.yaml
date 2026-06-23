@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 title: Channel Switch Attack Config
 type: object
 required:
@@ -17,6 +17,7 @@ properties:
       - attack_time
       - ms_interval
       - new_channel
+    additionalProperties: false
     properties:
       $validator:
         type: string
@@ -32,4 +33,3 @@ properties:
       new_channel:
         type: integer
         description: New channel to switch
-      additionalProperties: false

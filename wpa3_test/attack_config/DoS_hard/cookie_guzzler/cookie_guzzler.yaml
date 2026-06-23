@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: cookie_guzzler
 $validator: cookie_guzzler.schema.yaml
 attacker_module: cookie_guzzler

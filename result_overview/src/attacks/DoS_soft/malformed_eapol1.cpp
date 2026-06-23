@@ -44,7 +44,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
     <div class="card">
         <p><b>prerequisites:</b> client attempting WPA3 handshake with access point</p>
-        <p>The attacker injects a malformed EAPOL Key frame (invalid tag length) during
+        <p>The attacker injects a malformed EAPOL 1 Key frame (invalid tag length) during
            the 4-way handshake, causing the client to disconnect.</p>
         <p><b>success:</b> client disconnected from access point</p>
     </div>

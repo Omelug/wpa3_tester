@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1_2_1_patched
 attacker_module: malformed_eapol1
 $extends: ./malformed_eapol1.yaml

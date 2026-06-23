@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: sae_commit_monitor_test
 attacker_module: sae_commit_monitor_test
 actors:

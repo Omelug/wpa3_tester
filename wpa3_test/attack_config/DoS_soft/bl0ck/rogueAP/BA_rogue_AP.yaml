@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 $validator: ../bl0ck.schema.yaml
 $extends: ../bl0ck_BA.yaml
 name: bl0ck_BA_rogue_AP

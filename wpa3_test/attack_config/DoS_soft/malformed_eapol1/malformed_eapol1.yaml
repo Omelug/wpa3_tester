@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1
 attacker_module: malformed_eapol1
 actors:
@@ -59,9 +59,9 @@ observers:
     actor: client
     program: tshark
     program_config:
-      filter: "udp port 5201"
+      filter: "special_filter:actors"
   ap_tshark:
     actor: access_point
     program: tshark
     program_config:
-      filter: "udp port 5201"
+      filter: "special_filter:actors"

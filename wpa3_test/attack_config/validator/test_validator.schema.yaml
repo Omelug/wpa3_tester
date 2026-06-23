@@ -1,15 +1,15 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 title: Test Configuration Schema
 type: object
 required:
   - name
   - attacker_module
   - actors
-config_type:
-  type: string
-  const: test
-  description: "Have to be test or not included"
 properties:
+  config_type:
+    type: string
+    const: test
+    description: "Have to be test or not included"
   $extends:
     type: string
     description: Path to the parent YAML template
@@ -30,16 +30,16 @@ properties:
     description: Test actors definitions
     minProperties: 1
     additionalProperties:
-      $ref: '#/definitions/Actor'
+      $ref: '#/$defs/Actor'
   observers:
     type: object
     description: Test observer definitions
     additionalProperties:
-      $ref: '#/definitions/Observer'
+      $ref: '#/$defs/Observer'
   scan_iface:
     type: string
     description: Interface to scan when source is external
-  #FIXME invalid in  draft-07
+  #TODO validate that scan_iface is required when any actor has source: external
   #  if:
   #    properties:
   #      actors:
@@ -139,7 +139,7 @@ properties:
 allOf:
   - $ref: './run_config.schema.yaml'
 
-definitions:
+$defs:
   Actor:
     type: object
     additionalProperties: false

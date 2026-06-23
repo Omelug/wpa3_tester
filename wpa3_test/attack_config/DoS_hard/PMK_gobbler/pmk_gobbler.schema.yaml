@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 title: Cookie guzzler Config
 type: object
 required:
@@ -15,9 +15,22 @@ properties:
     required:
       - attack_time_sec
       - acm_trigger_count
+    additionalProperties: false
     properties:
-      attack_time:
+      attack_time_sec:
         type: integer
         description: time of sending cookie guzzler packets
         minimum: 1
-      additionalProperties: false
+      acm_trigger_count:
+        type: integer
+        minimum: 0
+      burst_size:
+        type: integer
+        minimum: 1
+      cookie_wait_ms:
+        type: integer
+        minimum: 0
+      packets_per_second_limit:
+        type: integer
+        minimum: 1
+

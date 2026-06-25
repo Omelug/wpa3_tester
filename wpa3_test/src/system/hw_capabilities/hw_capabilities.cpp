@@ -247,6 +247,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 
 void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
+	set_iface_down(iface, netns);
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res) throw timeout_err(
 		"Timeout waiting for '" + iface + "' to switch to channel " + to_string(ch.ch_num) + ": " + res.message());
 }

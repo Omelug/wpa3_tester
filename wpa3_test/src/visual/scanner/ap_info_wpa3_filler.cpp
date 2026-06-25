@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
+#include "overview/html_guard.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -14,6 +15,27 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<ApInfoWpa3TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 	return e;
+}
+
+void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f,
+                                       const vector<path> &folders,
+                                       const path & /*page_dir*/) {
+	f << "        <table class=\"aggregate\">\n"
+	  << "            <thead><tr>"
+	  << "<th>Test</th><th>MAC</th><th>SSID</th><th>MFP</th><th>AKM</th><th>ACM triggered</th>"
+	  << "</tr></thead>\n            <tbody>\n";
+	for (const auto &p : folders) {
+		const auto e = parse(p);
+		f << "                <tr>\n"
+		  << "                    <td>" << e.test_name << "</td>\n"
+		  << "                    <td>" << e.mac << "</td>\n"
+		  << "                    <td>" << e.ssid << "</td>\n"
+		  << "                    <td>" << e.mfp << "</td>\n"
+		  << "                    <td>" << e.akm << "</td>\n"
+		  << "                    <td>" << e.acm_triggered << "</td>\n"
+		  << "                </tr>\n";
+	}
+	f << "            </tbody>\n        </table>\n";
 }
 
 void generate_report(RunSuiteStatus &rss){

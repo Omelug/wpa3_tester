@@ -2,7 +2,10 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <vector>
 #include "config/RunSuiteStatus.h"
+
+namespace wpa3_tester::overview { struct HtmlGuard; }
 
 namespace wpa3_tester::suite::channel_switch_rogueAP{
 struct CsaTestEntry{
@@ -30,6 +33,10 @@ struct CsaTestEntry{
 };
 
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);
+
+void render_table(overview::HtmlGuard &f,
+                  const std::vector<std::filesystem::path> &folders,
+                  const std::filesystem::path &page_dir);
 
 void generate_report(RunSuiteStatus &rss);
 }

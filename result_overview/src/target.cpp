@@ -13,6 +13,7 @@
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
+#include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -31,6 +32,7 @@ static const map<string, string> k_attack_title = {
     {"malformed_eapol1",  "Malformed EAPOL-1 DoS"},
     {"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
     {"reflection_attack", "Reflection Attack (EAP-PWD)"},
+    {"sae_dos_wrapper",   "SAE DoS (generic variants)"},
 };
 
 static string read_attacker_module(const path &test_folder) {
@@ -73,119 +75,17 @@ static void emit_section_header(HtmlGuard &f, const string &module) {
     f << "</h2>\n";
 }
 
-static string test_name_cell(const path &test_folder, const string &name, const path &page_dir) {
-    const auto report = test_folder / "report.md";
-    if (!exists(report)) return name;
-    return "<a href=\"" + report.lexically_relative(page_dir).string() + "\">" + name + "</a>";
-}
-
-static void render_ap_info(HtmlGuard &f, const vector<path> &folders) {
-    using suite::ap_info_wpa3_filler::ApInfoWpa3TestEntry;
-    f << "        <table class=\"aggregate\">\n"
-      << "            <thead><tr>"
-      << "<th>Test</th><th>MAC</th><th>SSID</th><th>MFP</th><th>AKM</th><th>ACM triggered</th>"
-      << "</tr></thead>\n            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = ApInfoWpa3TestEntry::parse(p);
-        f << "                <tr>\n"
-          << "                    <td>" << e.test_name << "</td>\n"
-          << "                    <td>" << e.mac << "</td>\n"
-          << "                    <td>" << e.ssid << "</td>\n"
-          << "                    <td>" << e.mfp << "</td>\n"
-          << "                    <td>" << e.akm << "</td>\n"
-          << "                    <td>" << e.acm_triggered << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
-}
-
-static void render_bl0ck(HtmlGuard &f, const vector<path> &folders, const path &page_dir) {
-    using suite::bl0ck_test_suites::Bl0ckTestEntry;
-    f << "        <table class=\"aggregate\">\n"
-      << "            <thead><tr>"
-      << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
-      << "<th>Attacker (driver)</th><th>Variant</th><th>Disconnected?</th>"
-      << "</tr></thead>\n            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = Bl0ckTestEntry::parse(p);
-        f << "                <tr>\n"
-          << "                    <td>" << test_name_cell(p, e.name, page_dir) << "</td>\n"
-          << "                    <td>" << device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
-          << "                    <td>" << device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
-          << "                    <td>" << device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-          << "                    <td>" << e.attack_variant << "</td>\n"
-          << "                    <td>" << (e.disconnect_count > 0) << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
-}
-
-static void render_channel_switch(HtmlGuard &f, const vector<path> &folders, const path &page_dir) {
-    f << "        <table class=\"aggregate\">\n"
-      << "            <thead><tr>"
-      << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
-      << "<th>Attacker (driver)</th><th>Disconnected?</th><th>Rogue AP?</th><th>Client MFP</th>"
-      << "</tr></thead>\n            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = suite::channel_switch_rogueAP::parse_test_folder(p);
-        f << "                <tr>\n"
-          << "                    <td>" << test_name_cell(p, e.name, page_dir) << "</td>\n"
-          << "                    <td>" << device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
-          << "                    <td>" << device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
-          << "                    <td>" << device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-          << "                    <td>" << e.disconnected << "</td>\n"
-          << "                    <td>" << e.rogue_ap_connected << "</td>\n"
-          << "                    <td>" << e.client_mfp << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
-}
-
-static void render_invalid_curve(HtmlGuard &f, const vector<path> &folders) {
-    using suite::invalid_curve_filler::InvalidCurveTestEntry;
-    f << "        <table class=\"aggregate\">\n"
-      << "            <thead><tr>"
-      << "<th>Test</th><th>AP Driver</th><th>Attacker Driver</th><th>Passed?</th>"
-      << "</tr></thead>\n            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = InvalidCurveTestEntry::parse(p);
-        f << "                <tr>\n"
-          << "                    <td>" << e.test_name << "</td>\n"
-          << "                    <td>" << e.ap_driver << "</td>\n"
-          << "                    <td>" << e.attacker_driver << "</td>\n"
-          << "                    <td>" << e.passed << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
-}
-
-static void render_reflection_attack(HtmlGuard &f, const vector<path> &folders) {
-    using suite::reflection_attack_filler::ReflectionAttackTestEntry;
-    f << "        <table class=\"aggregate\">\n"
-      << "            <thead><tr>"
-      << "<th>Test</th><th>AP Driver</th><th>Attacker Driver</th><th>Passed?</th>"
-      << "</tr></thead>\n            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = ReflectionAttackTestEntry::parse(p);
-        f << "                <tr>\n"
-          << "                    <td>" << e.test_name << "</td>\n"
-          << "                    <td>" << e.ap_driver << "</td>\n"
-          << "                    <td>" << e.attacker_driver << "</td>\n"
-          << "                    <td>" << e.passed << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
-}
-
 static void render_attack_section(HtmlGuard &f, const string &module,
                                   const vector<path> &folders, const path &page_dir) {
+    using namespace suite;
     emit_section_header(f, module);
 
-    if      (module == "ap_info")           render_ap_info(f, folders);
-    else if (module == "bl0ck")             render_bl0ck(f, folders, page_dir);
-    else if (module == "channel_switch")    render_channel_switch(f, folders, page_dir);
-    else if (module == "invalid_curve")     render_invalid_curve(f, folders);
-    else if (module == "reflection_attack") render_reflection_attack(f, folders);
+    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, folders, page_dir);
+    else if (module == "bl0ck")             bl0ck_test_suites::Bl0ckTestEntry::render_table(f, folders, page_dir);
+    else if (module == "channel_switch")    channel_switch_rogueAP::render_table(f, folders, page_dir);
+    else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, folders, page_dir);
+    else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders, page_dir);
+    else if (module == "sae_dos_wrapper")   sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
     else {
         f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
     }

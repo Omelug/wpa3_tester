@@ -41,6 +41,14 @@ properties:
               type: string
           additionalProperties: false
 
+        - title: Sub suite source
+          type: object
+          required: [ test_suite_name ]
+          properties:
+            test_suite_name:
+              type: string
+          additionalProperties: false
+
         - title: Shuffle actor for get all data
           type: object
           required: [ type, config ]

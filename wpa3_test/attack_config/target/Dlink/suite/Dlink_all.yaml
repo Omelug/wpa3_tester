@@ -16,6 +16,8 @@ tests:
   # --------- channel_switch -----------
   channel_switch_Dlink:
     test_name: channel_switch_Dlink
+  channel_switch_Dlink_5GHz:
+    test_name: channel_switch_Dlink_5GHz
   #channel_switch_Dlink_MFP_disabled:
   #  test_name: channel_switch_Dlink_MFP_disabled
   channel_switch_Dlink_MFP_req:
@@ -36,6 +38,7 @@ tests:
   ap_info_Dlink:
     test_name: ap_info_Dlink
 
+  # -------- test suites ----------------------
   generic_dos_attacks_suite:
     test_suite_name: generic_dos_attacks_suite
 

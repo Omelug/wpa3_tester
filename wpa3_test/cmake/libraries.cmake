@@ -23,7 +23,7 @@ glob_src(CONFIG_SRC "src/config")
 glob_src(OBSERVER_SRC "src/observer")
 glob_src(EX_PROG_SRC "src/ex_program")
 glob_src(SETUP_SRC "src/setup")
-glob_src(SUITE_SRC "src/suite")
+glob_src(SUITE_SRC "src/visual")
 glob_src(SCAN_SRC "src/scan")
 
 file(GLOB_RECURSE ATT_SHARED_SRC CONFIGURE_DEPENDS "src/attacks/*.cpp")

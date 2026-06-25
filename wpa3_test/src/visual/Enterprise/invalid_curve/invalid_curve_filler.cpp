@@ -5,9 +5,10 @@
 #include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/report.h"
+#include "overview/html_guard.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
-#include "logger/report.h"
 
 namespace wpa3_tester::suite::invalid_curve_filler{
 using namespace std;
@@ -22,6 +23,25 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
+}
+
+void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
+                                          const vector<path> &folders,
+                                          const path & /*page_dir*/) {
+	f << "        <table class=\"aggregate\">\n"
+	  << "            <thead><tr>"
+	  << "<th>Test</th><th>AP Driver</th><th>Attacker Driver</th><th>Passed?</th>"
+	  << "</tr></thead>\n            <tbody>\n";
+	for (const auto &p : folders) {
+		const auto e = parse(p);
+		f << "                <tr>\n"
+		  << "                    <td>" << e.test_name << "</td>\n"
+		  << "                    <td>" << e.ap_driver << "</td>\n"
+		  << "                    <td>" << e.attacker_driver << "</td>\n"
+		  << "                    <td>" << e.passed << "</td>\n"
+		  << "                </tr>\n";
+	}
+	f << "            </tbody>\n        </table>\n";
 }
 
 void generate_report(const RunSuiteStatus &rss){

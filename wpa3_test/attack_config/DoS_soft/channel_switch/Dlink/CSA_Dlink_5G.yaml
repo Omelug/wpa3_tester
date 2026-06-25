@@ -1,0 +1,31 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: channel_switch_Dlink_5GHz
+attacker_module: channel_switch
+$validator: ../channel_switch.schema.yaml
+actors:
+  access_point:
+    source: external
+    selection:
+      channel: 36
+      whitebox_host: OpenWrt
+      condition: [ AP, 5GHz ]
+    setup:
+      program_config:
+        channel: 36
+        htmode: HT20
+  client:
+    source: internal
+    selection:
+      channel: 36
+      condition: [ monitor, 5GHz ]
+  attacker:
+    source: internal
+    selection:
+      channel: 36
+      condition: [ monitor, 5GHz ]
+$extends: [ ./CSA_Dlink.yaml ]
+attack_config:
+  attack_time: 60
+  ms_interval: 100
+  new_channel: 40
+install_req: true

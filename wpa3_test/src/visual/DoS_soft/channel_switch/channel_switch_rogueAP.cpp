@@ -7,6 +7,7 @@
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/report.h"
+#include "overview/html_guard.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -45,6 +46,29 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	if(const auto p = tshark / "access_point_graph.png"; exists(p)) e.ap_graph = p;
 
 	return e;
+}
+
+void render_table(overview::HtmlGuard &f,
+                  const vector<path> &folders,
+                  const path &page_dir) {
+	f << "        <table class=\"aggregate\">\n"
+	  << "            <thead><tr>"
+	  << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
+	  << "<th>Attacker (driver)</th><th>Disconnected?</th><th>Rogue AP?</th><th>Client MFP</th>"
+	  << "</tr></thead>\n            <tbody>\n";
+	for (const auto &p : folders) {
+		const auto e = parse_test_folder(p);
+		f << "                <tr>\n"
+		  << "                    <td>" << overview::test_name_cell(p, e.name, page_dir) << "</td>\n"
+		  << "                    <td>" << overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
+		  << "                    <td>" << overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
+		  << "                    <td>" << overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
+		  << "                    <td>" << e.disconnected << "</td>\n"
+		  << "                    <td>" << e.rogue_ap_connected << "</td>\n"
+		  << "                    <td>" << e.client_mfp << "</td>\n"
+		  << "                </tr>\n";
+	}
+	f << "            </tbody>\n        </table>\n";
 }
 
 void generate_report(RunSuiteStatus &rss){

@@ -36,7 +36,7 @@ void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
 	ss << "AKM Suites: ";
 	for(auto &akm: akms){
-		ScanAP::print_AKM(ss, akm);
+		print_AKM(ss, akm);
 		ss << " ";
 	}
 }

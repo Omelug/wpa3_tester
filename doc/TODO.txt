@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+f: external wb negeneruje pQoS provoz, BL0ck, u BB by byla dobrá podmínka
 ch: udělat něco s otravným zanořováním
 +: simulation test config
 t: external info/iface_info parsing tests

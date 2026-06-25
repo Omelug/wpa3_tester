@@ -42,6 +42,7 @@ public: // getters and setters
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
 	static void defined_by_name(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map
 	);
+	static void defined_by_sub_suite(nlohmann::basic_json<> source_info, config_paths &test_map);
 	static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
 									const std::filesystem::path &test_config_folder, config_paths &test_map
 	);

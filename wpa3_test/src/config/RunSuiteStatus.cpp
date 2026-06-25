@@ -89,6 +89,13 @@ void RunSuiteStatus::defined_by_name(basic_json<> source_j, const string &source
 	test_map.emplace_back(source_name, "", RunStatus::findConfigByTestName(name));
 }
 
+void RunSuiteStatus::defined_by_sub_suite(basic_json<> source_info, config_paths &test_map){
+	const string suite_name = source_info.at("test_suite_name").get<string>();
+	RunSuiteStatus sub_suite(findConfigByTestSuiteName(suite_name));
+	auto sub_paths = sub_suite.get_test_paths();
+	test_map.insert(test_map.end(), sub_paths.begin(), sub_paths.end());
+}
+
 void replace_all(string &str, const string &from, const string &to){
 	if(from.empty()) return;
 	size_t start_pos = 0;
@@ -395,6 +402,10 @@ config_paths RunSuiteStatus::get_test_paths(){
 		}
 		if(source_info.contains("test_name")){
 			defined_by_name(source_info, source_name, test_map);
+			continue;
+		}
+		if(source_info.contains("test_suite_name")){
+			defined_by_sub_suite(source_info, test_map);
 			continue;
 		}
 

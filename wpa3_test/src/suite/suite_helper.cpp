@@ -24,10 +24,9 @@ unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 
 vector<path> get_suite_test_folders(const path &suite_dir){
 	vector<path> folders;
-	const path last_run = suite_dir / LAST_RUN_DIR;
-	if(!exists(last_run) || !is_directory(last_run)) return folders;
+	if(!exists(suite_dir) || !is_directory(suite_dir)) return folders;
 	error_code ec;
-	for(const auto &entry: directory_iterator(last_run, ec)){
+	for(const auto &entry: directory_iterator(suite_dir, ec)){
 		if(!entry.is_directory()) continue;
 		if(entry.path().filename() == TEST_SUITE_CONFIG_DIR) continue;
 		folders.push_back(entry.path());

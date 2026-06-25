@@ -45,10 +45,10 @@ static string read_attacker_module(const path &test_folder) {
 }
 
 // last_run/{attack_dir}/{test_dir}/test_config.yaml
-static vector<path> collect_test_folders(const path &last_run_dir) {
+static vector<path> collect_test_folders(const path &run_dir) {
     vector<path> result;
-    if (!is_directory(last_run_dir)) return result;
-    for (const auto &attack_dir : directory_iterator(last_run_dir)) {
+    if (!is_directory(run_dir)) return result;
+    for (const auto &attack_dir : directory_iterator(run_dir)) {
         if (!attack_dir.is_directory()) continue;
         for (const auto &test_dir : directory_iterator(attack_dir.path())) {
             if (!test_dir.is_directory()) continue;
@@ -227,7 +227,7 @@ static void generate_target_page(const path &output_dir,
     for (const auto &suite_entry : directory_iterator(suites_dir)) {
         if (!suite_entry.is_directory()) continue;
         const string suite_name = suite_entry.path().filename().string();
-        const auto test_folders = collect_test_folders(suite_entry.path() / "last_run");
+        const auto test_folders = collect_test_folders(suite_entry.path());
         if (test_folders.empty()) continue;
         any = true;
 

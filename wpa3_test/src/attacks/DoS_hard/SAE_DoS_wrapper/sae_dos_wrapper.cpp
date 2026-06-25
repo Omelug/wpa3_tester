@@ -19,6 +19,7 @@
 #include "observer/resource_checker.h"
 #include "observer/graph/graph_elements.h"
 #include "system/hw_capabilities.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -86,6 +87,7 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 	  << "inter_packet_gap: " << gap << "\n"
 	  << "experiment_duration: " << duration << "\n"
 	  << "max_restarts: " << restarts << "\n";
+	set_public_perms(config_path);
 }
 
 void run_attack(RunStatus &rs){
@@ -108,6 +110,7 @@ void run_attack(RunStatus &rs){
 	const string config_path = rs.run_folder() / "config.yaml";
 	write_run_config(config_path, sae.value(), ap.get(SK::mac), client.get(SK::mac), ap["channel"], attacker.get(SK::iface),
 					att_cfg);
+
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
 	rs.start_observers();

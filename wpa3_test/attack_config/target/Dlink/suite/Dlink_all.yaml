@@ -38,7 +38,15 @@ tests:
   ap_info_Dlink:
     test_name: ap_info_Dlink
 
-  # -------- test suites ----------------------
+  # -------- DoS hard ----------------------
+
+  #memory_omnivore_Dlink:
+  #  test_name: memory_omnivore_Dlink
+  #pmk_gobbler_Dlink:
+  #  test_name: pmk_gobbler_Dlink
+  cookie_guzzler:
+    test_name: cookie_guzzler
+
   generic_dos_attacks_suite:
     test_suite_name: generic_dos_attacks_suite
 

@@ -42,7 +42,8 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor, injection_selftest ]
+      condition: [ monitor, #injection_selftest #TODO add dondition for injection?
+      ]
       channel: 6
     sniff_iface: att
   #rogue_ap:
@@ -84,4 +85,4 @@ attack_config:
   attack_time_sec: 40
   regeneration_time_sec: 30
   burst_size: 32
-  packets_per_second_limit: 500
+  packets_per_second_limit: 50

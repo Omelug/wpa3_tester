@@ -45,7 +45,7 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 			log(LogLevel::ERROR, "relative_from issue");
 		}
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name / LAST_RUN_DIR;
+	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name ;
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 

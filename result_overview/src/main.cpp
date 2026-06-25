@@ -8,6 +8,7 @@
 #include "attacks/DoS_soft/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"
 #include "devices.h"
+#include "target.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -48,6 +49,12 @@ static string html_page() {
 		</h2>
     </div>
 
+    <div class="card">
+        <h2>
+			<a href="target/index.html">Targets</a>
+		</h2>
+    </div>
+
 </body>
 </html>
 )html";
@@ -72,6 +79,7 @@ int main() {
     wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
     wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
     wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
+    wpa3_tester::overview::generate_targets(output_dir, data_dir);
 
     return 0;
 }

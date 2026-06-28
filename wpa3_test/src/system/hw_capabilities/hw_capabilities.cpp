@@ -185,7 +185,6 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 
 	if(phy_name.empty()){
 		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);
-		//throw run_err("Could not find physical device for interface " + iface);
 		return;
 	}
 	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);

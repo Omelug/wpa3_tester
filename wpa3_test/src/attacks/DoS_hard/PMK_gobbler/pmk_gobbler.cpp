@@ -157,6 +157,7 @@ void run_attack(RunStatus &rs){
 		if(capture_thread.joinable()) capture_thread.join();
 		throw;
 	}
+	rs.process_manager.write_log_all("@attack_stop");
 
 	if(capture_thread.joinable()) capture_thread.join();
 	ap->conn->disconnect();
@@ -169,6 +170,8 @@ void stats_attack(const RunStatus &rs){
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
+					{"client", "@attack_stark", "attack_stark", "black"},
+					{"client", "@AKM_trigger", "AKM trigger", "black"}, {"client", "@attack_stop", "attack_stop", "black"},
 				});
 
 	//TODO test elements.push_back(make_unique<EventLines>(

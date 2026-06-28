@@ -39,23 +39,26 @@ void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const optional<sae_helper::SAEPair> sae_params = get_commit_values(rs, attacker.get(SK::iface),
 																		attacker.get(SK::sniff_iface),
-																		rs.get_actor("access_point")->get(SK::ssid),
-																		ap["mac"], 30);
+																		ap.get(SK::ssid),
+																		ap.get(SK::mac), 30);
 
 	if(sae_params.has_value()){
 		rs.start_observers();
 		log(LogLevel::INFO, "SAE Commit captured");
-		const HWAddress<6> ap_mac(ap["mac"]);
 		const int duration = att_cfg.at("attack_time_sec").get<int>();
 		// change to monitor mode
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
-		check_vuln(attacker.get(SK::iface), ap_mac, duration, sae_params.value(), attacker["mac"],
-					att_cfg.at("burst_size").get<size_t>(), att_cfg.at("packets_per_second_limit").get<size_t>());
+		rs.process_manager.write_log_all("@attack_stark");
+		check_vuln(
+			attacker.get(SK::iface), ap.get(SK::mac),
+			duration, sae_params.value(), attacker.get(SK::mac),
+			att_cfg.at("burst_size").get<size_t>(),
+			att_cfg.at("packets_per_second_limit").get<size_t>());
 	} else{
 		throw run_err("SAE Commit capture failed");
 	}
-	rs.process_manager.write_log_all("@ENDofAttack");
+	rs.process_manager.write_log_all("@attack_stop");
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	this_thread::sleep_for(seconds(regeneration_time_sec));
 	ap->conn->disconnect();
@@ -69,13 +72,13 @@ void stats_attack(const RunStatus &rs){
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
+					{"client", "@attack_stark", "attack_start", "black"}, {"client", "@attack_stop", "attack_stop", "black"},
 				});
 
 	//const path STA_graph_path = observer::tshark_graph(rs, "client", events);
 	//const path AP_graph_path =
 	//    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
 
-	const auto ap = rs.config().at("actors").at("access_point");
-	observer::resource_checker::create_graph(rs, ap["source"], elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source) , elements);
 }
 }

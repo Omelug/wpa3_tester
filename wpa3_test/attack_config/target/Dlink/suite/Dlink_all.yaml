@@ -40,10 +40,10 @@ tests:
 
   # -------- DoS hard ----------------------
 
-  #memory_omnivore_Dlink:
-  #  test_name: memory_omnivore_Dlink
-  #pmk_gobbler_Dlink:
-  #  test_name: pmk_gobbler_Dlink
+  memory_omnivore_Dlink:
+    test_name: memory_omnivore_Dlink
+  pmk_gobbler_Dlink:
+    test_name: pmk_gobbler_Dlink
   cookie_guzzler:
     test_name: cookie_guzzler
 

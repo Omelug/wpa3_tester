@@ -80,6 +80,7 @@ void run_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Attack started");
 
 	size_t mac_idx = 0;
+	rs.process_manager.write_log_all("@attack_start");
 	dos_helpers::timed_burst(sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL,
 							[&]() ->optional<RadioTap>{
 								const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
@@ -87,7 +88,7 @@ void run_attack(RunStatus &rs){
 								sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
 								return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
 							});
-
+	rs.process_manager.write_log_all("@attack_stop");
 	ap->conn->disconnect();
 }
 
@@ -98,6 +99,7 @@ void stats_attack(const RunStatus &rs){
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
+					{"client", "@attack_stark", "attack_start", "black"}, {"client", "@attack_stop", "attack_stop", "black"},
 				});
 	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 }

@@ -306,6 +306,10 @@ string RunStatus::findConfigByTestName(const string &name){
 	throw config_err("Unknown test name: " + name + ", Isn't it test suite?");
 }
 
+//TODO ??
+// tuple 1 item -> {"X"} = {"combinated", "X" ,"X",black"}
+// tuple 2 items {"actor", "X"} -> {"actor", "X" , "X","black"}
+// tuple 3 items {"actor", "X", "color"} -> {"actor", "X" , "X", "color"}
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 							// { actor_name, pattern, label, color }
 							initializer_list<tuple<string,string,string,string>> event_d

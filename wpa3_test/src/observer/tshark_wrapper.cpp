@@ -319,15 +319,21 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	}
 	pclose(pipe);
 
+	if(stats_map.empty()){
+		log(LogLevel::WARNING, "No retransmit data for '{}', skipping graph", actor_name);
+		return;
+	}
+
 	//create graph
 	auto g = Graph();
 	g.file = popen("gnuplot", "w");
+	g.ymin = 0;
+	g.ymax = 110;
 	g.gpcmd("set terminal pngcairo size 1200,600");
 	g.gpcmd("set output '" + output_path.string() + "'");
 	g.gpcmd("set title 'Retransmit Rate over Time '");
 	g.gpcmd("set xlabel 'Time (s)'\n");
 	g.gpcmd("set ylabel 'Retry Percentage (%%)'");
-	g.gpcmd("set yrange [0:110]");
 	g.gpcmd("set grid");
 	g.gpcmd("set style fill transparent solid 0.5 noborder");
 
@@ -338,7 +344,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	}
 	g.gpcmd("EOD");
 
-	g.gpcmd("plot $MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
+	g.plot_parts.push_back("$MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
 		"$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle");
 
 	g.render();

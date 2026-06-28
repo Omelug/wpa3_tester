@@ -2,11 +2,12 @@
 
 #include <filesystem>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
-#include "html_guard.h"
+#include "overview/html_guard.h"
 #include "system/utils.h"
 #include "suite/scan/ap_info_wpa3_filler.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
@@ -33,6 +34,13 @@ static const map<string, string> k_attack_title = {
     {"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
     {"reflection_attack", "Reflection Attack (EAP-PWD)"},
     {"sae_dos_wrapper",   "SAE DoS (generic variants)"},
+    {"cookie_guzzler",    "Cookie Guzzler DoS"},
+    {"memory_omnivore",   "Memory Omnivore DoS"},
+    {"pmk_gobbler",       "PMK Gobbler DoS"},
+};
+
+static const set<string> k_sae_dos_modules = {
+    "sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler",
 };
 
 static string read_attacker_module(const path &test_folder) {
@@ -85,7 +93,7 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     else if (module == "channel_switch")    channel_switch_rogueAP::render_table(f, folders, page_dir);
     else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, folders, page_dir);
     else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders, page_dir);
-    else if (module == "sae_dos_wrapper")   sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
+    else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
     else {
         f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
     }

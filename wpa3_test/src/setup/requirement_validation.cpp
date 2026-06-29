@@ -221,8 +221,8 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 
 bool RunStatus::config_requirement(){
 	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
-	check_local_requirements();
 	firmware::disable_custom_drivers();
+	check_local_requirements();
 	cleanup_all_namespaces();
 	parse_requirements();
 	log_actor_map("Actors: ", actors);

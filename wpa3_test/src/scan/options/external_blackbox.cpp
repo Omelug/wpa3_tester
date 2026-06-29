@@ -195,7 +195,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<i
 				log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm", is_ap ? "AP " : "STA", mac,
 					actor->get_or(SK::ssid, ""), actor->get_or(SK::channel, "?"), actor->get_or(SK::signal, "?"));
 			}
-			auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
+			const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 			try{
 				hw_capabilities::check_req_options(actors, opts);
 				found = true;

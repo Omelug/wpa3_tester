@@ -22,7 +22,7 @@ actors:
 $extends: [ ../observers_DoS.comp.yaml ]
 attack_config:
   attack_time_sec: 300
-  burst_size: 64
+  burst_size: 128
   acm_threshold: 5 # defualt openwrt value
   random_dh_groups: true
   use_connected_stas: true

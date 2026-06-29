@@ -85,7 +85,7 @@ optional<string> ExternalConn::get_driver_hash(const string &driver_name) const{
 	string s = exec("cat /sys/module/" + driver_name + "/srcversion 2>/dev/null | tr -d '\\n'");
 	if(!s.empty()) return s;
 	// fallback: sha256 of the .ko file
-	string ko = exec("modinfo -F filename " + driver_name + " 2>/dev/null | tr -d '\\n\\r '");
+	const string ko = exec("modinfo -F filename " + driver_name + " 2>/dev/null | tr -d '\\n\\r '");
 	if(ko.empty() || ko == "(builtin)") return nullopt;
 	string sha = exec("sha256sum " + ko + " 2>/dev/null | cut -c1-16 | tr -d '\\n'");
 	while(!sha.empty() && (sha.back() == '\n' || sha.back() == '\r' || sha.back() == ' ')) sha.pop_back();

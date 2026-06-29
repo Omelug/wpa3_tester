@@ -52,7 +52,7 @@ int main(const int argc, char *argv[]){
 	while(1){
 		uint16_t len_be;
 		if(read_exact(STDIN_FILENO, &len_be, 2) < 0) break;
-		uint16_t len = ntohs(len_be);
+		const uint16_t len = ntohs(len_be);
 		if(len == 0) break;
 		if(read_exact(STDIN_FILENO, buf, len) < 0) break;
 		const ssize_t sent = send(sock, buf, len, 0);

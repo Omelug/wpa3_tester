@@ -11,7 +11,8 @@ actors:
     $extends: ../../target/Dlink/mixed_client_2_4.comp.yaml
     #selection:
     #  driver: mt76x2u
-    #sniff_iface: client
+    sniff_iface: client
+
   attacker:
     source: internal
     selection:
@@ -20,9 +21,20 @@ actors:
       ]
       channel: 6
     sniff_iface: att
+#observers: #FIXME mausezahn nefunguje, nic nezachytává
+  #client_mausezahn:
+  #  actor: client
+  #  program: mausezahn
+  #  program_config:
+  #    target_actor: access_point
+  #tshark_client:
+  #  actor: client
+  #  program: tshark
+  #  program_config:
+  #    filter: ""
 $extends: [ ../observers_DoS.comp.yaml ]
 attack_config:
   attack_time_sec: 40
-  regeneration_time_sec: 20
-  burst_size: 64
+  regeneration_time_sec: 10
+  burst_size: 512
   packets_per_second_limit: 50

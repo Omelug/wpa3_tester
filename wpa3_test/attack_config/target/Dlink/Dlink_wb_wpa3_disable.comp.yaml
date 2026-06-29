@@ -12,5 +12,6 @@ setup:
     encryption: sae-mixed
     mode: ap
     htmode: HT20
+    transition_disable: "0x01"
   ex_WB_programs: [ tcpdump ]
 ip_addr: "10.0.0.1"

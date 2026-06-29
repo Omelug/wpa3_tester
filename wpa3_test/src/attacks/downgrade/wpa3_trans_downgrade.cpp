@@ -1,9 +1,12 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include <chrono>
+#include <iostream>
 #include <nlohmann/json.hpp>
+#include <tins/tins.h>
 
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
@@ -11,6 +14,7 @@
 
 namespace wpa3_tester::wpa3_trans_downgrade{
 using namespace std;
+using namespace Tins;
 using namespace filesystem;
 using namespace chrono;
 using nlohmann::json;
@@ -93,6 +97,20 @@ void stats_attack(const RunStatus &rs){
 		report << "### Attacker (probe capture)\n";
 		report << "![Attacker graph](" << att_graph << ")\n\n";
 	}
+
+	/*optional<hostapd::CrackResult> crack_result;
+	if(rs.config().at("actors").contains("rogue_ap")){
+		string psk = hostapd::get_password(rs, "client"); //FIXME only hostapd
+		if(psk.empty()) psk = "password123"; //TODO hardcoded
+		crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
+	}
+	if(crack_result.has_value()){
+		report << "## Credential Cracking (hcxpmktool)\n";
+		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
+		report << "| Metric | Value |\n|--------|-------|\n";
+		report << "| Captured handshakes | " << crack_result->total << " |\n";
+		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
+	}*/
 	report << "---\n";
 }
 }

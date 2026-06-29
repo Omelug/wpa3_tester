@@ -32,7 +32,7 @@ actors:
       program_config:
         other_options: "-d"
         ssid: TestNetwork
-        ieee80211w: 1
+        ieee80211w: 2 #Needed for WPA3 disable
         proto: RSN
         key_mgmt: SAE WPA-PSK
         pairwise: CCMP

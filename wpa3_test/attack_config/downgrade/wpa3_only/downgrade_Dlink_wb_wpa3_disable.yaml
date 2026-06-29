@@ -11,8 +11,10 @@ actors:
       program: wpa_supplicant
       program_config:
         ssid: OpenWrt_2_4GHz
+        ieee80211w: 2 #WPA3 Disable needs required !!! #TODO add to description/pdf
     $DELETE: selection
   rogue_ap:
     setup:
       program_config:
+        version: 2_10
         hostapd-mana_path: config/hostapd-mana_Dlink.conf

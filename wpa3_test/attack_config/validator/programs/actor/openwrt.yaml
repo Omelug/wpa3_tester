@@ -80,6 +80,14 @@ properties:
     minLength: 1
   auth_cache:
     type: boolean
+  transition_disable:
+    oneOf:
+      - type: string
+        pattern: "^0x[0-9A-Fa-f]{2}$"
+      - type: integer
+        minimum: 0
+        maximum: 255
+    description: "Transition Disable bitmap (e.g. 0x01 or 1 = SAE only)"
 
   # --- OCV (Operating Channel Validation) ---
   ocv:

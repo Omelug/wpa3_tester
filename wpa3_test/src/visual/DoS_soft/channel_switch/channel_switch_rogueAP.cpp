@@ -36,7 +36,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	e.attacker_mac = att->get(SK::mac);
 	e.attacker_driver = att->get(SK::driver_name);
 
-	if(const auto rogue = rs->actor("attacker")){
+	if(const auto rogue = rs->actor("rogue_ap")){
 		e.rogue_ap_mac = rogue->get(SK::mac);
 		e.rogue_ap_driver = rogue->get(SK::driver_name);
 	}

@@ -1,7 +1,6 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
-
-#include "config/Actor_Config/Actor_Config_external.h"
 #include "config/global_config.h"
+#include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
@@ -92,7 +91,7 @@ void OpenWrtConn::time_fix() const{
 	exec("/etc/init.d/sysntpd start");
 }
 
-void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json config){
+void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json &config){
 	const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
 	if(!j.contains(radio_name)) throw ex_conn_err("Radio not found: " + radio_name);
@@ -112,6 +111,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	if(section.empty()) section = "wpa3_tester_" + radio_name; // create new
 	log(LogLevel::DEBUG, "Setting up wifi-iface {} for {}", section, radio_name);
 
+	exec("uci delete wireless." + section + " 2>/dev/null; true");
 	exec("uci set wireless." + section + "=wifi-iface");
 	exec("uci set wireless." + section + ".device=" + radio_name);
 
@@ -124,14 +124,16 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	}
 
 	for(auto &[key, value]: program_config.items()){
-		if(value.is_string()) exec(
-			string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>())
-										.append("'"));
+		string v;
+		if(value.is_string())      v = value.get<string>();
+		else if(value.is_number()) v = value.dump();
+		else continue;
+		exec(string("uci set wireless.").append(section).append(".").append(key).append("='").append(v).append("'"));
 	}
 	exec("uci set wireless." + section + ".network=lan");
 
 	exec("uci commit wireless");
-	exec("wifi reload");
+	exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
 
 	// wait for ifname and store in actor
 	const string ifname = wait_for_ifname(section);
@@ -230,16 +232,13 @@ string OpenWrtConn::get_radio(const string &iface) const{
 }
 
 string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
-	const auto j = nlohmann::json::parse(exec("wifi status"));
+	const auto j = nlohmann::json::parse(exec("ubus call network.wireless status 2>/dev/null"));
 
 	for(const auto &[radio_name, radio]: j.items()){
+		if(!radio.contains("interfaces")) continue;
 		for(const auto &wifi_iface: radio.at("interfaces")){
-			if(wifi_iface.value("ifname", "") == iface) return wifi_iface.at("section").get<string>();
-			const string sec = wifi_iface.value("section", "");
-			if(!sec.empty()){
-				const string uci_iface = exec("uci get wireless." + sec + ".ifname 2>/dev/null");
-				if(uci_iface.find(iface) != string::npos) return sec;
-			}
+			if(wifi_iface.value("ifname", "") == iface && wifi_iface.contains("section"))
+				return wifi_iface.at("section").get<string>();
 		}
 	}
 	throw ex_conn_err("No section found for iface: " + iface);
@@ -255,9 +254,9 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 
 	// radio level keys
 	static const set<string> radio_keys = {
-		"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level"
+		"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level", "transition_disable"
 	};
-	const string wifi_iface = get_wifi_iface_section(actor.get(SK::iface));
+	const string wifi_iface = actor.get(SK::iface);
 
 	// reset section to avoid stale options from previous test runs bleeding in
 	exec("uci delete wireless." + wifi_iface);
@@ -279,7 +278,9 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		}
 	}
 	exec("uci commit wireless");
-	exec("wifi reload");
+	int ret = 0;
+	exec("wifi reload 2>&1", false, &ret);
+	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap — AP may not be configured correctly", ret);
 }
 
 void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){

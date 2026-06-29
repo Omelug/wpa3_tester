@@ -19,7 +19,7 @@ template<>
 struct std::hash<Tins::HWAddress<6>>{
 	size_t operator()(const Tins::HWAddress<6> &addr) const noexcept{
 		size_t result = 0;
-		for(uint8_t byte: addr){
+		for(const uint8_t byte: addr){
 			result ^= std::hash<uint8_t>{}(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
 		}
 		return result;

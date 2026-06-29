@@ -26,7 +26,7 @@ bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t
 	const auto &ruleIt = rules.find(actor_name);
 	if(ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
 
-	Actor_config &currentRuleReq = *ruleIt->second;
+	const Actor_config &currentRuleReq = *ruleIt->second;
 
 	for(size_t i = 0; i < options.size(); i++){
 		if(usedOptions.contains(i)) continue;
@@ -54,7 +54,7 @@ void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const s
 	const string &actor_name = ruleKeys[ruleIdx];
 	const auto &ruleIt = rules.find(actor_name);
 	if(ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
-	Actor_config &req = *ruleIt->second;
+	const Actor_config &req = *ruleIt->second;
 	for(size_t i = 0; i < options.size(); i++){
 		if(usedOptions.contains(i)) continue;
 		if(!req.matches(*options[i])) continue;

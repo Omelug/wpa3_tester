@@ -124,14 +124,15 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	});
 }
 
-path extract_pcap_to_csv(const string &actor_name, const path &real_folder){
+path extract_pcap_to_csv(const string &actor_name, const path &real_folder, const string &tshark_filter){
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const path csv_path = real_folder / (actor_name + ".csv");
 
-	const vector<string> gen_cmd = {
+	vector<string> gen_cmd = {
 		"tshark", "-l", "-t", "ad", "-r", pcap_path.string(), "-T", "fields", "-e", "frame.number", "-e", "frame.time",
 		"-e", "frame.len", "-E", "separator=,"
 	};
+	if(!tshark_filter.empty()) { gen_cmd.push_back("-Y"); gen_cmd.push_back(tshark_filter); }
 
 	const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
 
@@ -230,13 +231,13 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 }
 
 path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<unique_ptr<GraphElements>> &elements,
-				const path &folder
+				const path &folder, const string &tshark_filter
 ){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
 
 	path output_path = real_folder / (actor_name + "_graph.png");
-	const path csv_path = extract_pcap_to_csv(actor_name, real_folder);
+	const path csv_path = extract_pcap_to_csv(actor_name, real_folder, tshark_filter);
 
 	auto [times, sizes] = times_packet_sizes_from_csv(csv_path);
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
@@ -291,7 +292,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_name, const path &folder){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
-	path output_path = real_folder / (actor_name + "_g.png");
+	const path output_path = real_folder / (actor_name + "_g.png");
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 
 	// [relative time] [ retry? (True/False)]

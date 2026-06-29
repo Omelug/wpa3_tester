@@ -6,6 +6,7 @@
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
+#include "overview/html_guard.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -23,6 +24,27 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	return e;
+}
+
+void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f,
+                                               const vector<path> &folders,
+                                               const path &page_dir){
+	f << "        <table class=\"aggregate\">\n"
+	  << "            <thead><tr>"
+	  << "<th>Test</th><th>AP Driver</th><th>Client Driver</th>"
+	  << "<th>Disconnected</th><th>Downgrade Seen</th>"
+	  << "</tr></thead>\n            <tbody>\n";
+	for(const auto &p : folders){
+		const auto e = parse(p);
+		f << "                <tr>\n"
+		  << "                    <td>" << overview::test_name_cell(p, e.test_name, page_dir) << "</td>\n"
+		  << "                    <td>" << e.ap_driver << "</td>\n"
+		  << "                    <td>" << e.client_driver << "</td>\n"
+		  << "                    <td>" << e.disconnected << "</td>\n"
+		  << "                    <td>" << e.downgrade_seen << "</td>\n"
+		  << "                </tr>\n";
+	}
+	f << "            </tbody>\n        </table>\n";
 }
 
 void setup_suite(const RunSuiteStatus &rss){

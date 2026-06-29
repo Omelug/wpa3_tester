@@ -33,6 +33,8 @@ tests:
   # client settings
   wpa3_trans_downgrade_Dlink:
     test_name: wpa3_trans_downgrade_Dlink
+  downgrade_Dlink_wb_wpa3_disable:
+    test_name: downgrade_Dlink_wb_wpa3_disable
 
   # -------- scanner --------
   ap_info_Dlink:

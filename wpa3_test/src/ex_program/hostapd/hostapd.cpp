@@ -1,4 +1,5 @@
 #include "ex_program/hostapd/hostapd.h"
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -274,6 +275,47 @@ static string hostapd_mana_config(const string &run_folder, const string &actor_
 	return cfg_path.string();
 }
 
+static string hex_encode(const uint8_t *data, size_t len){
+	static constexpr char HEX[] = "0123456789abcdef";
+	string out;
+	out.reserve(len * 2);
+	for(size_t i = 0; i < len; ++i){ out += HEX[(data[i] >> 4) & 0xf]; out += HEX[data[i] & 0xf]; }
+	return out;
+}
+
+// Parse hccapx v4 written by hostapd-mana (mana_wpaout) and convert to WPA*02* lines
+static vector<string> hccapx_to_wpa_hashes(const path &hccapx_path){
+	ifstream f(hccapx_path, ios::binary);
+	if(!f) return {};
+	vector<string> hashes;
+	while(f){
+		uint8_t sig[8];
+		if(!f.read(reinterpret_cast<char *>(sig), 8)) break;
+		if(memcmp(sig, "HCPX\x04\x00\x00\x00", 8) != 0) break;
+		uint8_t msg_pair, ssid_len, ssid[32], keyver, mic[16], mac_ap[6], anonce[32], mac_sta[6], snonce[32];
+		uint16_t eapol_len;
+		uint8_t eapol[256];
+		f.read(reinterpret_cast<char *>(&msg_pair), 1);
+		f.read(reinterpret_cast<char *>(&ssid_len), 1);
+		f.read(reinterpret_cast<char *>(ssid), 32);
+		f.read(reinterpret_cast<char *>(&keyver), 1);
+		f.read(reinterpret_cast<char *>(mic), 16);
+		f.read(reinterpret_cast<char *>(mac_ap), 6);
+		f.read(reinterpret_cast<char *>(anonce), 32);
+		f.read(reinterpret_cast<char *>(mac_sta), 6);
+		f.read(reinterpret_cast<char *>(snonce), 32);
+		f.read(reinterpret_cast<char *>(&eapol_len), 2);
+		f.read(reinterpret_cast<char *>(eapol), 256);
+		if(!f) break;
+		const size_t eapol_sz = min(static_cast<size_t>(eapol_len), size_t{256});
+		hashes.push_back("WPA*02*" + hex_encode(mic, 16) + "*" + hex_encode(mac_ap, 6) + "*" +
+						 hex_encode(mac_sta, 6) + "*" + hex_encode(ssid, ssid_len) + "*" +
+						 hex_encode(anonce, 32) + "*" + hex_encode(eapol, eapol_sz) + "*" +
+						 hex_encode(&msg_pair, 1));
+	}
+	return hashes;
+}
+
 void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
 	const string mana_config_path = hostapd_mana_config(rs.run_folder(), actor_name, program_config,
@@ -300,25 +342,31 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 
 	const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");
 	const path output_path = rs.run_folder() / "captured_hashes.txt";
+	const path hccapx_path = rs.run_folder() / "mana_handshakes.hccapx";
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	// parsing hashes - bypass, but mana_wpaout don't work n NixOS (some low level protection?)
-	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
-		ifstream log_file(log_path);
-		if(!log_file.is_open()) return;
-
+	rs.process_manager.after_stop(actor_name, [log_path, output_path, hccapx_path](){
 		ofstream out(output_path);
-		string line;
 		set<string> seen;
-		while(getline(log_file, line)){
-			const auto pos = line.find("MANA WPA2 HASHCAT | ");
-			if(pos == string::npos) continue;
-			const string hash = line.substr(pos + 20);
-			if(seen.insert(hash).second){
+		auto add = [&](const string &hash){
+			if(!hash.empty() && seen.insert(hash).second){
 				out << hash << "\n";
 				log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
 			}
+		};
+
+		// mana_wpaout path: hostapd-mana 2.10+ with mana_wpaout writes hccapx
+		for(const auto &h: hccapx_to_wpa_hashes(hccapx_path)) add(h);
+
+		// fallback: older/patched MANA logging "MANA WPA2 HASHCAT | WPA*02*..."
+		ifstream log_file(log_path);
+		string line;
+		while(getline(log_file, line)){
+			const auto pos = line.find("MANA WPA2 HASHCAT | ");
+			if(pos == string::npos) continue;
+			add(line.substr(pos + 20));
 		}
+
 		if(exists(output_path)) set_public_perms(output_path);
 	});
 }

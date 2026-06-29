@@ -16,17 +16,18 @@ struct RepoConfig{
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
 	string binary_name;     // "hostapd"/"hostapd-mana"
-	bool has_tags;          // hostapd has tags, hostapd-mana doesn't
+	bool has_tags;          // hostapd has tags, hostapd-mana uses branches
 	string tag_prefix;      // "hostap_" for hostapd
+	string branch_prefix;   // "hostapd-" for hostapd-mana (branches: hostapd-2.10, hostapd-2.6, ...)
 	string no_version_name; // "hostapd"/"hostapd-mana" installed
 };
 
 static const RepoConfig HOSTAPD_CONFIG = {
-	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", true, "hostap_", "hostapd",
+	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", true, "hostap_", "", "hostapd",
 };
 
 static const RepoConfig HOSTAPD_MANA_CONFIG = {
-	"hostapd_mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", false, "hostapd-mana_", "hostapd-mana"
+	"hostapd_mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", false, "hostapd-mana_", "hostapd-", "hostapd-mana"
 };
 
 void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
@@ -86,18 +87,20 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	path source_dir = repo_path / "hostapd";
 
 	path config_path = source_dir / ".config";
-	if(!exists(config_path)){ copy(source_dir / "defconfig", config_path); }
+	copy(source_dir / "defconfig", config_path, copy_options::overwrite_existing);
 
 	ofstream conf(config_path, ios::app);
 	conf << "\n# --- Wi-Fi Framework Testing Extensions ---" "\nCONFIG_IEEE80211W=y" "\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
-			"\nCONFIG_OCV=y" "\nCONFIG_OWE=y" //FIXME invalid or in order in old versions?
-
-			"\nCONFIG_SUITEB192=y" "\nCONFIG_DPP=y" "\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y"
-			"\nCONFIG_IEEE80211AX=y" "\nCONFIG_IEEE80211R=y" "\nCONFIG_INTERWORKING=y" "\nCONFIG_TESTING_OPTIONS=y"
+			"\nCONFIG_OCV=y" "\nCONFIG_OWE=y"
+			"\nCONFIG_SUITEB192=y" "\nCONFIG_DPP=y" "\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y";
+	if(cfg.has_tags) conf << "\nCONFIG_IEEE80211AX=y"; // mana beacon.c has broken AX call site
+	conf << "\nCONFIG_IEEE80211R=y" "\nCONFIG_INTERWORKING=y" "\nCONFIG_TESTING_OPTIONS=y"
 			"\nCONFIG_CTRL_IFACE=y" "\nCONFIG_DEBUG_FILE=y" "\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
 
 	log(LogLevel::INFO, "Compiling {} {} ... ", cfg.repo_name, version);
+	error_code rm_ec;
+	remove_all(repo_path / "build", rm_ec); // may be root-owned from a previous privileged build
 	hw_capabilities::run_in("make clean", source_dir);
 
 	string extra = get_extra_cflags();
@@ -152,6 +155,12 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 		hw_capabilities::run_in("git clean -fd", repo_path);
+		if(!cfg.branch_prefix.empty()){
+			string branch_version = version;
+			ranges::replace(branch_version, '_', '.');
+			const string branch = cfg.branch_prefix + branch_version;
+			hw_capabilities::run_in("git checkout " + branch, repo_path);
+		}
 	}
 
 	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);

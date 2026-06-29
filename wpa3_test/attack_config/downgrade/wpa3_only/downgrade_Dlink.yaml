@@ -10,9 +10,11 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        ieee80211w: 2
         ssid: OpenWrt_2_4GHz
     $DELETE: selection
   rogue_ap:
     setup:
       program_config:
+        version: 2_10
         hostapd-mana_path: config/hostapd-mana_Dlink.conf

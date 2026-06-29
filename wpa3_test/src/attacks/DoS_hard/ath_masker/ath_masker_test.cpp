@@ -34,13 +34,13 @@ void run_attack(RunStatus &rs){
 		probe.ssid("");
 		probe.supported_rates({1.0f, 2.0f, 5.5f, 11.0f});
 		RadioTap radiotap{};
-		Channel ch;
-		ch.ch_num = stoi(ap.get(SK::channel)); //FIXME band fromconfig
+		//Channel ch;
+		//ch.ch_num = stoi(ap.get(SK::channel)); //FIXME band fromconfig
 
-		const int freq_mhz = hw_capabilities::channel_to_freq(ch);
-		radiotap.channel(freq_mhz, RadioTap::OFDM);
+		//const int freq_mhz = hw_capabilities::channel_to_freq(ch);
+		//radiotap.channel(freq_mhz, RadioTap::OFDM);
 		radiotap.inner_pdu(probe);
-		radiotap.flags(RadioTap::FCS);
+		//radiotap.flags(RadioTap::FCS);
 
 		try{
 			sender.send(radiotap, iface);

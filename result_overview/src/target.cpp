@@ -15,6 +15,7 @@
 #include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
 #include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "suite/downgrade/wpa3_trans_downgrade_filler.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -36,7 +37,8 @@ static const map<string, string> k_attack_title = {
     {"sae_dos_wrapper",   "SAE DoS (generic variants)"},
     {"cookie_guzzler",    "Cookie Guzzler DoS"},
     {"memory_omnivore",   "Memory Omnivore DoS"},
-    {"pmk_gobbler",       "PMK Gobbler DoS"},
+    {"pmk_gobbler",          "PMK Gobbler DoS"},
+    {"wpa3_trans_downgrade", "WPA3 Transition Downgrade"},
 };
 
 static const set<string> k_sae_dos_modules = {
@@ -94,6 +96,7 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, folders, page_dir);
     else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders, page_dir);
     else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
+    else if (module == "wpa3_trans_downgrade") wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::render_table(f, folders, page_dir);
     else {
         f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
     }

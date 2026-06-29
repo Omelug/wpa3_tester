@@ -1,6 +1,8 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 name: cookie_guzzler
 $validator: cookie_guzzler.schema.yaml
+requirements:
+  simple: [ ath_masker ]
 attacker_module: cookie_guzzler
 actors:
   access_point:

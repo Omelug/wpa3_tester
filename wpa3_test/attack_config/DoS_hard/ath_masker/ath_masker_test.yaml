@@ -34,3 +34,4 @@ observers:
       filter: "special_filter:actors_5_bytes"
 attack_config:
   test_mac_count: 100
+rewrite: all

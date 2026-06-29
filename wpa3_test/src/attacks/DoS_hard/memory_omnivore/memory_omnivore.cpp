@@ -12,6 +12,7 @@
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace Tins;
@@ -23,6 +24,7 @@ static constexpr size_t N_DH_GROUPS = size(DH_GROUPS);
 
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
 	vector<HWAddress<6>> pool;
+	const auto attacker_mac = rs.get_actor("attacker").get(SK::mac);
 	if(use_connected_stas){
 		pool = dos_helpers::get_connected_stas(rs);
 		pool.resize(min(static_cast<int>(pool.size()), pool_size));
@@ -30,7 +32,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 		if(static_cast<int>(pool.size()) < pool_size){
 			log(LogLevel::WARNING, "Only {} connected STAs available (need {}), padding with random MACs", pool.size(),
 				pool_size);
-			while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(hw_capabilities::rand_mac());
+			while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 		} else{
 			log(LogLevel::INFO, "Using {} connected STA MACs", pool_size);
 		}
@@ -38,7 +40,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 	}
 
 	pool.reserve(pool_size);
-	for(int i = 0; i < pool_size; ++i) pool.emplace_back(hw_capabilities::rand_mac());
+	for(int i = 0; i < pool_size; ++i) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 	log(LogLevel::INFO, "Using {} random MACs", pool_size);
 	return pool;
 }

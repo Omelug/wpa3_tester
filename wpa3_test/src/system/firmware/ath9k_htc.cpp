@@ -62,7 +62,12 @@ void unload_ath9k_noorder_change(){
 }
 
 bool is_ath_masker_loaded(){
-	return filesystem::exists("/sys/module/ath_masker");
+	ifstream modules("/proc/modules");
+	string line;
+	while(getline(modules, line)){
+		if(line.rfind("ath_masker ", 0) == 0) return true;
+	}
+	return false;
 }
 
 bool is_ath9k_noorder_loaded(){

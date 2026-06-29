@@ -11,3 +11,8 @@ actors:
       program: wpa_supplicant
       program_config:
         ssid: OpenWrt_2_4GHz
+    $DELETE: selection
+  rogue_ap:
+    setup:
+      program_config:
+        hostapd-mana_path: config/hostapd-mana_Dlink.conf

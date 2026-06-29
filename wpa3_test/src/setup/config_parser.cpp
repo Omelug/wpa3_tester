@@ -206,7 +206,7 @@ void RunStatus::check_local_requirements(){
 		}
 	}
 
-	// Per-actor requirements
+	// per-actor requirements
 	for(auto &[actor_name, actor_data]: _config.at("actors").items()){
 		if(!actor_data.contains("setup") || !actor_data.at("setup").contains("requirements")) continue;
 		const auto &reqs = actor_data.at("setup").at("requirements");

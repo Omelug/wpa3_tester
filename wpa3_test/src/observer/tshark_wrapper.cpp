@@ -34,13 +34,12 @@ string masked_mac_filter_5(const RunStatus &rs){
 		string
 		pre = clean_mac.substr(0, 10);
 
-		// addr1 (receiver)
-		string addr1 = "(link[4:4] == 0x" + pre.substr(0, 8) + " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
-
-		// addr2 (transceiver)
-		string addr2 = "(link[10:4] == 0x" + pre.substr(0, 8) + " and link[14:1] == 0x" + pre.substr(8, 2) + ")";
-
-		mac_filters.push_back("(" + addr1 + " or " + addr2 + ")");
+		string filter = "("; //addr1 (receiver)
+		filter += "(link[4:4] == 0x" + pre.substr(0, 8) + " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
+		filter += " or "; //addr2 (transceiver)
+		filter += "(link[10:4] == 0x" + pre.substr(0, 8) + " and link[14:1] == 0x" + pre.substr(8, 2) + ")";;
+		filter += ')';
+		mac_filters.push_back(std::move(filter));
 	}
 	return or_filter(mac_filters);
 }
@@ -51,7 +50,7 @@ string all_actors_mac_filter(const RunStatus &rs, const bool broadcast){
 	for(const auto &actor: rs.actors | views::values){
 		mac_filters.push_back("wlan host " + actor.get(SK::mac));
 	}
-	if(broadcast) mac_filters.push_back("wlan host ff:ff:ff:ff:ff:ff");
+	if(broadcast) mac_filters.emplace_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
 
@@ -94,7 +93,7 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	add_nets_header(rs, command, node_name);
 
 	string pcap_path = get_observer_folder(rs, program_name) / (node_name + "_capture.pcap");
-	const optional<string> iface = actor[SK::sniff_iface];
+	const optional<string>& iface = actor[SK::sniff_iface];
 	const string iface_str = iface ? iface.value() : actor.get(SK::iface);
 
 	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
@@ -236,7 +235,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
 
-	const path output_path = real_folder / (actor_name + "_graph.png");
+	path output_path = real_folder / (actor_name + "_graph.png");
 	const path csv_path = extract_pcap_to_csv(actor_name, real_folder);
 
 	auto [times, sizes] = times_packet_sizes_from_csv(csv_path);
@@ -257,7 +256,10 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	if(!g.file) throw run_err("Failed to start gnuplot");
 
 	g.gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
-	g.gpcmd("set output '" + output_path.string() + "'");
+	string out_cmd = "set output '";
+	out_cmd.append(output_path.string());
+	out_cmd += '\'';
+	g.gpcmd(out_cmd);
 	g.gpcmd("set grid");
 	g.gpcmd("set xlabel 'Time (s)'");
 	g.gpcmd("set ylabel 'Packet Size'");
@@ -289,13 +291,13 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_name, const path &folder){
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
-	const path output_path = real_folder / (actor_name + "_g.png");
+	path output_path = real_folder / (actor_name + "_g.png");
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 
 	// [relative time] [ retry? (True/False)]
-	const string cmd = "tshark -r " + pcap_path.string() +
-			// " -Y \"wlan.addr == " + mac+"\" " +
-			" -T fields -e frame.time_relative -e wlan.fc.retry";
+	string cmd = "tshark -r ";
+	cmd.append(pcap_path.string());
+	cmd.append(" -T fields -e frame.time_relative -e wlan.fc.retry");
 
 	// parse tshark
 	FILE *pipe = popen(cmd.c_str(), "r");
@@ -309,7 +311,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	char ts_buf[64], retry_buf[64];
 	while(fgets(buffer, sizeof(buffer), pipe)){
 		if(sscanf(buffer, "%63s %63s", ts_buf, retry_buf) == 2){
-			const double timestamp = atof(ts_buf);
+			const double timestamp = strtod(ts_buf, nullptr);
 			const int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
 
 			double bin = floor(timestamp * 10.0) / 10.0;
@@ -330,7 +332,10 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	g.ymin = 0;
 	g.ymax = 110;
 	g.gpcmd("set terminal pngcairo size 1200,600");
-	g.gpcmd("set output '" + output_path.string() + "'");
+	string out_cmd2 = "set output '";
+	out_cmd2.append(output_path.string());
+	out_cmd2 += '\'';
+	g.gpcmd(out_cmd2);
 	g.gpcmd("set title 'Retransmit Rate over Time '");
 	g.gpcmd("set xlabel 'Time (s)'\n");
 	g.gpcmd("set ylabel 'Retry Percentage (%%)'");
@@ -344,10 +349,11 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	}
 	g.gpcmd("EOD");
 
-	g.plot_parts.push_back("$MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
+	g.plot_parts.emplace_back("$MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
 		"$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle");
 
 	g.render();
+	set_public_perms(output_path);
 }
 
 void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &elements,

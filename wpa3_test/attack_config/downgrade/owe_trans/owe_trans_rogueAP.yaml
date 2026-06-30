@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       condition: [ AP ]
-      mac: "78:98:E8:55:3E:8D"
+      mac: "78:98:E8:55:3E:8D" #FIXME
     setup:
       program: hostapd
       program_config:

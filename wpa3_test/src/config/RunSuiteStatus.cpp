@@ -354,8 +354,8 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
 		throw req_err(
-			"actor_filler: no valid hardware assignments found, " + hw_capabilities::get_heuristic_err_msg(
-				rules, *_hw_option_cache.internal_opts));
+			"actor_filler: no valid hardware assignments found, {}",
+			hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
 	}
 
 	const path gen_folder = test_config_folder / source_name;
@@ -462,8 +462,8 @@ void RunSuiteStatus::execute(){
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()){
-			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j) this_thread::sleep_for(
-				chrono::milliseconds(100));
+			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j)
+				this_thread::sleep_for(chrono::milliseconds(100));
 		}
 	}
 
@@ -490,7 +490,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	RunStatus rs(test_path, name, ".");
 	rs.run_config(run_config);
 	rs.run_config(get_global_run_config());
-	rs.run_folder(run_folder() / src_key / rs.config().at("name").get<string>());
+	rs.run_folder(run_folder()/src_key/rs.config().at("name").get<string>());
 	rs.execute();
 }
 

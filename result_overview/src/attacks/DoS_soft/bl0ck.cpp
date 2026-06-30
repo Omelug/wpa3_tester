@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include "html_guard.h"
+#include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "system/utils.h"
@@ -25,6 +26,10 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
         for (const auto &src_dir : suite::helper::get_suite_test_folders(bl0ck_base / "suite" / filler)) {
             for (const auto &entry : directory_iterator(src_dir)) {
                 if (!entry.is_directory()) continue;
+            	if(!exists(path(entry)/DONE_FILE)){
+            		log(LogLevel::ERROR, "{} not found", DONE_FILE);
+            		continue;
+            	}
                 results.emplace_back("suite", Bl0ckTestEntry::parse(entry.path()));
             }
         }
@@ -33,6 +38,10 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
     for (const auto &src_dir : suite::helper::get_suite_test_folders(bl0ck_base / "Dlink" / "bl0ck_Dlink_suite")) {
         for (const auto &entry : directory_iterator(src_dir)) {
             if (!entry.is_directory()) continue;
+        	if(!exists(path(entry)/DONE_FILE)){
+        		log(LogLevel::ERROR, "{} not found", DONE_FILE);
+        		continue;
+        	}
             results.emplace_back("Dlink", Bl0ckTestEntry::parse(entry.path()));
         }
     }

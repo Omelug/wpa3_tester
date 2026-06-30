@@ -11,14 +11,16 @@ actors:
       program: hostapd
       program_config:
         driver: nl80211
-        ssid: test_owe
         hw_mode: g
         channel: 6
         ieee80211n: 1
-        ieee80211w: 2
+        owe_transition_mode: true
+        open_ssid: test_open
+        owe_ssid: test_owe
         wpa: 2
         wpa_key_mgmt: OWE
         rsn_pairwise: CCMP
+        ieee80211w: 2
     ip_addr: "10.0.0.1"
   client:
     source: internal

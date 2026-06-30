@@ -4,8 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno)
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
-f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
 +: simulation test config
 t: external info/iface_info parsing tests
 +: requirement external connection STA-AP
@@ -57,6 +57,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
+f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
 +: external for Enterprise
 +: filler for channel_switch
 +: heuristic requirements error logs

@@ -63,13 +63,13 @@ void RunStatus::execute(){
 			remove_all(_run_folder, ec);
 			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
 		} else{
-			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(
-				_run_folder / "done.txt"))){
+			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / ERROR_FILE) || exists(
+				_run_folder / DONE_FILE))){
 				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(
-				_run_folder / "done.txt"))){
+			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / ERROR_FILE) || !exists(
+				_run_folder / DONE_FILE))){
 				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}
@@ -137,7 +137,7 @@ void RunStatus::execute(){
 		return;
 	}
 	stats_test();
-	const path done_file = run_folder() / "done.txt";
+	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
 	if(done_log.is_open()){
 		done_log << "commit: " << git_commit_hash() << endl;
@@ -149,7 +149,7 @@ void RunStatus::execute(){
 	} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
-		const path error_file = run_folder() / "errors.txt";
+		const path error_file = run_folder() / ERROR_FILE;
 		ofstream error_log(error_file, ios::out | ios::app);
 		if (error_log.is_open()) {
 			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;

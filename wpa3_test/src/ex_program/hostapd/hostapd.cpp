@@ -60,11 +60,75 @@ string hostapd_config(const string &run_folder, const string &actor_name, const 
 	return cfg_path.string();
 }
 
+static const set<string> owe_trans_skip = {
+	"owe_transition_mode", "open_ssid", "owe_ssid",
+	"hostapd_path", "version", "openssl", "other_options"
+};
+static const set<string> owe_bss_only = {
+	"wpa", "wpa_key_mgmt", "rsn_pairwise", "ieee80211w",
+	"rsn_group_mgmt_cipher", "group_mgmt_cipher", "wpa_psk", "wpa_passphrase",
+	"sae_password", "sae_groups"
+};
+
+static string hostapd_owe_trans_config(RunStatus &rs, const string &actor_name){
+	const json &pc = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
+	const string primary_mac = rs.get_actor(actor_name).get(SK::mac);
+	const string primary_iface = rs.get_actor(actor_name).get(SK::iface);
+	const string secondary_bssid = owe_trans_bssid(primary_mac);
+	const string secondary_iface = primary_iface.substr(0, 11) + "_owe"; // Linux iface name <= 15 chars
+	const string open_ssid = pc.at("open_ssid").get<string>();
+	const string owe_ssid = pc.at("owe_ssid").get<string>();
+
+	path cfg_path = path(rs.run_folder()) / (actor_name + "_hostapd.conf");
+	error_code ec;
+	create_directories(rs.run_folder(), ec);
+	if(ec) throw run_err("hostapd_owe_trans_config: unable to create run folder");
+	ofstream out(cfg_path);
+	if(!out) throw run_err("hostapd_owe_trans_config: unable to open config file");
+
+	// ─── primary (open) BSS ──────────────────────────────────────────
+	for(auto it = pc.begin(); it != pc.end(); ++it){
+		if(owe_trans_skip.contains(it.key()) || owe_bss_only.contains(it.key())) continue;
+		out << it.key() << "=";
+		if(it.value().is_string()) out << it.value().get<string>(); else out << it.value().dump();
+		out << "\n";
+	}
+	out << "ssid=" << open_ssid << "\n"
+		<< "owe_transition_bssid=" << secondary_bssid << "\n"
+		<< "owe_transition_ssid=\"" << owe_ssid << "\"\n\n";
+
+	// ─── secondary (OWE) BSS ─────────────────────────────────────────
+	out << "bss=" << secondary_iface << "\n"
+		<< "bssid=" << secondary_bssid << "\n"
+		<< "ssid=" << owe_ssid << "\n";
+	for(auto it = pc.begin(); it != pc.end(); ++it){
+		if(!owe_bss_only.contains(it.key())) continue;
+		out << it.key() << "=";
+		if(it.value().is_string()) out << it.value().get<string>(); else out << it.value().dump();
+		out << "\n";
+	}
+	out << "owe_transition_bssid=" << primary_mac << "\n"
+		<< "owe_transition_ssid=\"" << open_ssid << "\"\n";
+
+	out.close();
+	set_public_perms(cfg_path);
+	log(LogLevel::INFO, "hostapd_owe_trans_config: written {} (open={}, owe={})",
+		cfg_path.string(), open_ssid, owe_ssid);
+	return cfg_path.string();
+}
+
 void run_hostapd(RunStatus &rs, const string &actor_name){
 	json program_config = rs.config().at("actors").at(actor_name).at("setup").at("program_config");
-	const string hostapd_config_path = hostapd_config(rs.run_folder(), actor_name, program_config,
-													rs.config_path().parent_path());
-	rs.get_actor(actor_name)->set(SK::ssid, get_ssid(rs, actor_name));
+
+	string hostapd_config_path;
+	if(program_config.value("owe_transition_mode", false)){
+		hostapd_config_path = hostapd_owe_trans_config(rs, actor_name);
+		rs.get_actor(actor_name)->set(SK::ssid, program_config.at("owe_ssid").get<string>());
+	} else{
+		hostapd_config_path = hostapd_config(rs.run_folder(), actor_name, program_config,
+											rs.config_path().parent_path());
+		rs.get_actor(actor_name)->set(SK::ssid, get_ssid(rs, actor_name));
+	}
 	rs.get_actor(actor_name)->set(SK::channel, get_channel(program_config, hostapd_config_path));
 
 	string version;

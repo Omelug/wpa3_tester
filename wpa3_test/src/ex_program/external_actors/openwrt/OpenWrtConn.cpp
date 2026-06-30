@@ -123,6 +123,65 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 		return;
 	}
 
+	if(program_config.value("owe_transition_mode", false)){
+		const string open_ssid = program_config.at("open_ssid").get<string>();
+		const string owe_ssid  = program_config.at("owe_ssid").get<string>();
+		const string open_section = section + "_open";
+
+		static const set<string> trans_skip  = {"owe_transition_mode", "open_ssid", "owe_ssid", "mode"};
+		static const set<string> owe_bss_only = {"ieee80211w"};
+
+		auto apply_keys = [&](const string &sec, bool skip_owe_only){
+			for(const auto &[key, value]: program_config.items()){
+				if(trans_skip.contains(key)) continue;
+				if(skip_owe_only && owe_bss_only.contains(key)) continue;
+				string v;
+				if(value.is_string())      v = value.get<string>();
+				else if(value.is_number()) v = value.dump();
+				else continue;
+				exec("uci set wireless." + sec + "." + key + "='" + v + "'");
+			}
+		};
+
+		// OWE BSS (hidden)
+		exec("uci delete wireless." + section + " 2>/dev/null; true");
+		exec("uci set wireless." + section + "=wifi-iface");
+		exec("uci set wireless." + section + ".device=" + radio_name);
+		apply_keys(section, false);
+		exec("uci set wireless." + section + ".ssid='" + owe_ssid + "'");
+		exec("uci set wireless." + section + ".encryption=owe");
+		exec("uci set wireless." + section + ".mode=ap");
+		exec("uci set wireless." + section + ".hidden=1");
+		exec("uci set wireless." + section + ".network=lan");
+
+		// Open BSS
+		exec("uci delete wireless." + open_section + " 2>/dev/null; true");
+		exec("uci set wireless." + open_section + "=wifi-iface");
+		exec("uci set wireless." + open_section + ".device=" + radio_name);
+		apply_keys(open_section, true);
+		exec("uci set wireless." + open_section + ".ssid='" + open_ssid + "'");
+		exec("uci set wireless." + open_section + ".encryption=none");
+		exec("uci set wireless." + open_section + ".mode=ap");
+		exec("uci set wireless." + open_section + ".network=lan");
+
+		exec("uci commit wireless");
+		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
+
+		// get real ifnames to link the two BSSes
+		const string owe_ifname  = wait_for_ifname(section);
+		const string open_ifname = wait_for_ifname(open_section);
+		exec("uci set wireless." + section + ".owe_transition_ifname=" + open_ifname);
+		exec("uci set wireless." + open_section + ".owe_transition_ifname=" + owe_ifname);
+		exec("uci commit wireless");
+		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
+		wait_for_ifname(section);
+
+		actor->set(SK::iface, owe_ifname);
+		actor->set(SK::mac, get_mac_address(owe_ifname));
+		actor->set(SK::radio, radio_name);
+		return;
+	}
+
 	for(auto &[key, value]: program_config.items()){
 		string v;
 		if(value.is_string())      v = value.get<string>();
@@ -249,7 +308,8 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at(
 		"program_config");
-	actor->set(SK::ssid, program_config.at("ssid").get<string>());
+	const string ssid_key = program_config.value("owe_transition_mode", false) ? "owe_ssid" : "ssid";
+	actor->set(SK::ssid, program_config.at(ssid_key).get<string>());
 	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
 
 	// radio level keys

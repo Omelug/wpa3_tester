@@ -371,6 +371,16 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
+string owe_trans_bssid(const string &primary_mac){
+	unsigned a[6];
+	if(sscanf(primary_mac.c_str(), "%x:%x:%x:%x:%x:%x", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]) != 6)
+		throw run_err("owe_trans_bssid: invalid MAC: {}", primary_mac);
+	a[5] ^= 1;
+	char buf[18];
+	snprintf(buf, sizeof(buf), "%02x:%02x:%02x:%02x:%02x:%02x", a[0], a[1], a[2], a[3], a[4], a[5]);
+	return string(buf);
+}
+
 string get_mfp_from_supplicant(const path &conf){
 	if(!exists(conf)) return {};
 	const string val = get_conf_value(conf, {"ieee80211w"});

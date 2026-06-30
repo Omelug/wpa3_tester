@@ -6,6 +6,7 @@
 #include <vector>
 #include "html_guard.h"
 #include "suite/downgrade/owe_trans_filler.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -31,11 +32,10 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
     for (const auto &[tag, suite_name] : suites) {
         const path suite_dir = base / suite_name;
         if (!exists(suite_dir)) continue;
-        for (const auto &src_dir : filesystem::directory_iterator(suite_dir)) {
+        for (const auto &src_dir : directory_iterator(suite_dir)) {
             if (!src_dir.is_directory()) continue;
-            for (const auto &entry : filesystem::directory_iterator(src_dir.path())) {
-                if (!entry.is_directory()) continue;
-                results.push_back({tag, entry.path(), OweTransTestEntry::parse(entry.path())});
+            for (const auto &entry : suite::helper::get_suite_test_folders(src_dir.path())) {
+                results.push_back({tag, entry, OweTransTestEntry::parse(entry)});
             }
         }
     }
@@ -69,7 +69,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
         <p>After the OWE AP is stopped, a client with autoconnect will emit probe requests to rediscover
            the network. Broadcast probes (empty SSID) reveal that the device is scanning; directed SSID probes
            additionally reveal the preferred network name.</p>
-        <p><b>Success:</b> at least one probe request detected after AP shutdown.</p>
+        <p><b>Success:</b> at least one SSID probe request detected after AP shutdown.</p>
     </div>
 
     <div class="card">

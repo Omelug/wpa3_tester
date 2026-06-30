@@ -10,6 +10,20 @@ properties:
     minLength: 1
     maxLength: 32
     default: OpenWrt
+  # --- OWE transition mode ---
+  owe_transition_mode:
+    type: boolean
+    description: "Create paired open+OWE BSSes for OWE transition"
+  open_ssid:
+    type: string
+    minLength: 1
+    maxLength: 32
+    description: "SSID for the open BSS (OWE transition only)"
+  owe_ssid:
+    type: string
+    minLength: 1
+    maxLength: 32
+    description: "SSID for the hidden OWE BSS (OWE transition only)"
   mode:
     type: string
     enum: [ ap, sta, monitor, adhoc, mesh ]
@@ -178,8 +192,18 @@ allOf:
         mode:
           not:
             const: monitor
+        owe_transition_mode:
+          not:
+            const: true
     then:
       required: [ ssid ]
+  - if:
+      required: [ owe_transition_mode ]
+      properties:
+        owe_transition_mode:
+          const: true
+    then:
+      required: [ open_ssid, owe_ssid ]
   - if:
       required: [ encryption ]
       properties:

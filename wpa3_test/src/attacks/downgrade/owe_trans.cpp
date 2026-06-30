@@ -21,7 +21,7 @@ using namespace chrono;
 using nlohmann::json;
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup(rs, false);
 }
 
 void run_attack(RunStatus &rs){
@@ -29,13 +29,13 @@ void run_attack(RunStatus &rs){
 	const int probe_wait_time = att_cfg.value("probe_wait_time", 30);
 
 	const string sta_mac_str = rs.get_actor("client").get(SK::mac);
-	const string attacker_iface = rs.get_actor("attacker")["iface"];
+	const string attacker_iface = rs.get_actor("attacker").get(SK::iface);
 
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Stopping AP - waiting for client probe requests");
 	components::setup_rogue_ap(rs);
-	rs.process_manager.stop("access_point");
+	components::stop_AP(rs, "access_point");
 
 	atomic probe_count{0};
 	atomic stop_sniff{false};
@@ -83,8 +83,8 @@ void stats_attack(const RunStatus &rs){
 		if(!psk.empty()) crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
 
-	const auto probe_times = observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 4",
-																"ProbeReq");
+	const auto probe_times =
+		observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 4", "ProbeReq");
 	const int probe_count = static_cast<int>(probe_times.size());
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
@@ -124,7 +124,6 @@ void stats_attack(const RunStatus &rs){
 		report << "![Rogue AP graph](" << rogue_graph << ")\n\n";
 	}
 	report << "---\n";
-
 
 	const json result = {
 		{"disconnected", disconnected},

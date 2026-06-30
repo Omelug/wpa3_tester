@@ -4,9 +4,9 @@ attacker_module: bl0ck
 $extends: ./bl0ck.yaml
 $validator: ./bl0ck.schema.yaml
 attack_config:
-  attack_time_sec: 15
+  attack_time_sec: 25
   attack_variant: "BAR"
-  random: false
+  random: true
   frame_in_batch: 50
 actors:
   access_point:

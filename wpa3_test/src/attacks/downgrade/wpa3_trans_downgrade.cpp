@@ -20,7 +20,7 @@ using namespace chrono;
 using nlohmann::json;
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 }
 

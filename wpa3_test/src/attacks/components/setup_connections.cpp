@@ -41,7 +41,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 	}
 }
 
-void client_ap_setup(RunStatus &rs){
+void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
 	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
 
@@ -57,7 +57,7 @@ void client_ap_setup(RunStatus &rs){
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 
-	if(rs.get_actor("access_point").get(SK::source) != "external"){
+	if(check_way_eapol && rs.get_actor("access_point").get(SK::source) != "external"){
 		rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
 	}
 	log(LogLevel::INFO, "client is connected");

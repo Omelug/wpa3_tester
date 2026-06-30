@@ -34,7 +34,7 @@ void start_dragondrain(RunStatus &rs, const string &actor_name, const string &if
 void setup_attack(RunStatus &rs){
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
 	if(!exists(dragondrain_folder)) throw setup_err("dragondrain not found at: " + dragondrain_folder);
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 }
 
 void run_attack(RunStatus &rs){

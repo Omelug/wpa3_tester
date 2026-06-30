@@ -120,7 +120,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 																bars_ctx.current_sn.load());
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
-			for(int i = 0; i < 30; ++i) sender.send(block_frame, iface_obj);
+			for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
 			this_thread::sleep_for(100ms);
 			iteration++;
 		} catch(const exception &e){
@@ -176,7 +176,7 @@ static Bl0ckResult load_result(const RunStatus &rs){
 }
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 }
 

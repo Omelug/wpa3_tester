@@ -1,24 +1,21 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: owe_transition_probe_leak
+name: owe_transition_probe_leak_Dlink
 attacker_module: owe_trans
 actors:
   access_point:
-    source: internal
+    source: external
     selection:
-      condition: [ AP ]
-      driver: [rtw88_8821cu, rtw_8821cu]
+      whitebox_host: OpenWrt
+      condition: [ AP, 2_4GHz ]
     setup:
-      program: hostapd
+      program: openwrt
       program_config:
-        driver: nl80211
         ssid: test_owe
-        hw_mode: g
         channel: 6
-        ieee80211n: 1
+        encryption: owe
         ieee80211w: 2
-        wpa: 2
-        wpa_key_mgmt: OWE
-        rsn_pairwise: CCMP
+        mode: ap
+        htmode: HT20
     ip_addr: "10.0.0.1"
   client:
     source: internal

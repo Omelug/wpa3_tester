@@ -79,7 +79,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 }
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 
 }

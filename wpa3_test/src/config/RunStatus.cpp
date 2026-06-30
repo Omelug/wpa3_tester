@@ -91,7 +91,7 @@ void RunStatus::execute(){
 		~LogGuard(){ close_log_file(); }
 	} log_guard;
 
-	//try {
+	try {
 	auto &gcfg = get_global_config();
 	if(gcfg.contains("regulatory_domain")){
 		const string reg = gcfg.at("regulatory_domain").get<string>();
@@ -146,7 +146,7 @@ void RunStatus::execute(){
 		done_log.close();
 		set_public_perms(done_file);
 	}
-	/*} catch (const exception& e) {
+	} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
 		const path error_file = run_folder() / "errors.txt";
@@ -172,7 +172,7 @@ void RunStatus::execute(){
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}*/
+	}
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){

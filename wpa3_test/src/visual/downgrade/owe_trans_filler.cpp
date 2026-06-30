@@ -37,18 +37,19 @@ void generate_report(RunSuiteStatus &rss){
 	if(entries.empty()){ report << "No test results found.\n"; return; }
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP Driver | Client Driver | Attacker Driver | Probes | Disconnected | Probe found |\n";
-	report << "|------|-----------|---------------|-----------------|:------:|:------------:|:----------:|\n";
+	report << "| Test | AP Driver | Client Driver | Attacker Driver | BC probes | SSID probes | Disconnected | Vulnerable |\n";
+	report << "|------|-----------|---------------|-----------------|:---------:|:-----------:|:------------:|:----------:|\n";
 
 	for(const auto &e: entries){
-		const string vuln_link = "[" + string(e.probe_count > 0 ? "yes" : "no") + "](" + e.test_name + "/" +
-			RESULT_NAME + ")";
+		const bool vuln = e.ssid_probe_count > 0;
+		const string vuln_link = "[" + string(vuln ? "yes" : "no") + "](" + e.test_name + "/" + RESULT_NAME + ")";
 
-		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
+		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
 			<< e.client_driver << " | "
 			<< e.attacker_driver << " | "
-			<< e.probe_count << " | "
+			<< e.broadcast_probe_count << " | "
+			<< e.ssid_probe_count << " | "
 			<< e.disconnected << " | "
 			<< vuln_link << " |\n";
 	}

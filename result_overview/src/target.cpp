@@ -15,6 +15,7 @@
 #include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
 #include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "suite/downgrade/owe_trans_filler.h"
 #include "suite/downgrade/wpa3_trans_downgrade_filler.h"
 
 namespace wpa3_tester::overview {
@@ -97,7 +98,8 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders, page_dir);
     else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
     else if (module == "wpa3_trans_downgrade") wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::render_table(f, folders, page_dir);
-    else {
+    else if (module == "owe_trans") owe_trans_filler::OweTransTestEntry::render_table(f, folders, page_dir);
+	else {
         f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
     }
 

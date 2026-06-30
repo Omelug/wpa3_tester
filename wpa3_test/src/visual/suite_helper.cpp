@@ -29,7 +29,7 @@ vector<path> get_suite_test_folders(const path &suite_dir){
 	for(const auto &entry: directory_iterator(suite_dir, ec)){
 		if(!entry.is_directory()) continue;
 		if(entry.path().filename() == TEST_SUITE_CONFIG_DIR) continue;
-		if(!exists(entry.path() / DONE_FILE)) continue;
+		//FIXME ? if(!exists(entry.path() / DONE_FILE)) continue;
 		folders.push_back(entry.path());
 	}
 	return folders;

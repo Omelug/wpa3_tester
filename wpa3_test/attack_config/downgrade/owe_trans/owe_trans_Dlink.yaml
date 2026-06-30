@@ -26,7 +26,7 @@ actors:
       program: wpa_supplicant
       program_config:
         #other_options: "-d"
-        ssid: test_owe
+        ssid: test_open
         ieee80211w: 2
         proto: RSN
         key_mgmt: OWE

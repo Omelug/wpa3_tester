@@ -4,6 +4,8 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 
+namespace wpa3_tester::overview { struct HtmlGuard; }
+
 namespace wpa3_tester::suite::owe_trans_filler{
 struct OweTransTestEntry{
 	std::string test_name;
@@ -17,6 +19,9 @@ struct OweTransTestEntry{
 	bool disconnected;
 
 	static OweTransTestEntry parse(const std::filesystem::path &test_folder);
+	static void render_table(overview::HtmlGuard &f,
+	                         const std::vector<std::filesystem::path> &folders,
+	                         const std::filesystem::path &page_dir);
 };
 
 std::vector<OweTransTestEntry> get_results(const std::filesystem::path &run_dir);

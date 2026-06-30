@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include "html_guard.h"
+#include "logger/log.h"
 #include "suite/downgrade/owe_trans_filler.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -21,22 +22,18 @@ struct TaggedEntry {
 };
 
 static vector<TaggedEntry> collect_results(const path &data_dir) {
-    const path base = data_dir / "wpa3_suites" / "downgrade" / "owe_trans";
-    const array<pair<string,string>, 3> suites = {{
-        {"standard",  "owe_trans_filler"},
-        {"Dlink",     "owe_trans_Dlink_filler"},
-        {"rogueAP",   "owe_trans_rogueAP_filler"},
-    }};
+    const path suite_dir = data_dir / "wpa3_suites" / "downgrade" / "owe_trans" / "owe_trans_filler";
 
     vector<TaggedEntry> results;
-    for (const auto &[tag, suite_name] : suites) {
-        const path suite_dir = base / suite_name;
-        if (!exists(suite_dir)) continue;
-        for (const auto &src_dir : directory_iterator(suite_dir)) {
-            if (!src_dir.is_directory()) continue;
-            for (const auto &entry : suite::helper::get_suite_test_folders(src_dir.path())) {
-                results.push_back({tag, entry, OweTransTestEntry::parse(entry)});
-            }
+    for (const auto &src_dir : suite::helper::get_suite_test_folders(suite_dir)) {
+        const string tag = src_dir.filename().string();
+        for (const auto &entry : directory_iterator(src_dir)) {
+            if (!entry.is_directory()) continue;
+        	if(!exists(path(entry)/DONE_FILE)){
+        		log(LogLevel::ERROR, "{} not found", DONE_FILE);
+        		continue;
+        	}
+            results.push_back({tag, entry.path(), OweTransTestEntry::parse(entry.path())});
         }
     }
     return results;
@@ -75,8 +72,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li>Random probe SSIDs / suppressing directed probes (driver / supplicant level)</li>
-            <li>MAC address randomisation limits correlation across scans</li>
+            <li>MAC address randomisation/li>
         </ul>
     </div>
 )html";
@@ -121,9 +117,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
     if (results.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
     } else {
-        emit_table("Standard", "tStandard", "standard");
-        emit_table("Dlink", "tDlink", "Dlink");
-        emit_table("Rogue AP", "tRogueAP", "rogueAP");
+        emit_table("All Actors", "tAllActors", "all_actors");
     }
 
     f << "</body>\n</html>\n";

@@ -21,6 +21,9 @@ std::string get_channel(const nlohmann::json &program_config, const std::string 
 // parses ieee80211w from a wpa_supplicant.conf -> "OFF"/"OPTIONAL"/"REQUIRED", empty if absent
 std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 
+// computes secondary BSSID for OWE transition mode (flips LSB of last octet)
+std::string owe_trans_bssid(const std::string &primary_mac);
+
 struct CrackResult{
 	int total;
 	int cracked;

@@ -1,27 +1,29 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: owe_transition_probe_leak_Dlink
+name: owe_only_probe_leak
 attacker_module: owe_trans
 actors:
   access_point:
-    source: external
+    source: internal
     selection:
-      whitebox_host: OpenWrt
-      condition: [ AP, 2_4GHz ]
+      condition: [ AP ]
+      driver: [rtw88_8821au, rtw_8821au]
     setup:
-      program: openwrt
+      program: hostapd
       program_config:
-        open_ssid: test_open
-        owe_ssid: test_owe
+        driver: nl80211
+        ssid: test_owe
+        hw_mode: g
         channel: 6
+        ieee80211n: 1
         ieee80211w: 2
-        mode: ap
-        htmode: HT20
-        owe_transition_mode: true
+        wpa: 2
+        wpa_key_mgmt: OWE
+        rsn_pairwise: CCMP
     ip_addr: "10.0.0.1"
   client:
     source: internal
-    selection:
-      driver: rtl8xxxu
+    #selection:
+    #  driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:
@@ -53,5 +55,5 @@ observers:
       filter: "special_filter:actors"
 attack_config:
   # seconds to wait after AP is stopped before checking for probe requests
-  probe_wait_time: 15
+  probe_wait_time: 30
 rewrite: errors

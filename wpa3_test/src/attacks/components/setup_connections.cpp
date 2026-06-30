@@ -57,8 +57,12 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 
-	if(check_way_eapol && rs.get_actor("access_point").get(SK::source) != "external"){
-		rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+	if(rs.get_actor("access_point").get(SK::source) != "external"){
+		if(check_way_eapol){
+			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+		} else{
+			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(10));
+		}
 	}
 	log(LogLevel::INFO, "client is connected");
 }

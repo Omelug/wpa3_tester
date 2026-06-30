@@ -13,7 +13,7 @@ actors:
       permanent_mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
 attack_config:
-  attack_time_sec: 15
+  attack_time_sec: 25
   attack_variant: "BA"
   random: false
   frame_in_batch: 50

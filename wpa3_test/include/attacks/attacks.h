@@ -33,8 +33,10 @@ namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"channel_switch", CSA_attack::setup_chs_attack}, {"bl0ck", bl0ck_attack::setup_attack},
-	{"malformed_eapol1", eapol_logoff::setup_attack}, {"cookie_guzzler", components::client_ap_setup},
-	{"pmk_gobbler", components::client_ap_setup}, {"memory_omnivore", components::client_ap_setup},
+	{"malformed_eapol1", eapol_logoff::setup_attack},
+	{"cookie_guzzler", components::client_ap_setup_t},
+	{"pmk_gobbler", components::client_ap_setup_t},
+	{"memory_omnivore", components::client_ap_setup_t},
 	{"reflection_attack", reflection::setup_attack}, {"invalid_curve", invalid_curve::setup_attack},
 	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::setup_attack},
 	{"dragondrain", dragondrain::setup_attack}, {"dragondrain", dragondrain::setup_attack},

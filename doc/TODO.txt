@@ -4,8 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
-ch: udělat něco s otravným zanořováním
 +: simulation test config
 t: external info/iface_info parsing tests
 +: requirement external connection STA-AP

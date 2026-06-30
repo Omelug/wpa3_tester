@@ -32,6 +32,11 @@ actors:
         monitor,
         5GHz ]
 observers:
+  mausezahn:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: access_point
   att_tshark:
     actor: attacker
     program: tshark

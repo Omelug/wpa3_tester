@@ -7,6 +7,7 @@
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"
+#include "attacks/downgrade/owe_trans.h"
 #include "devices.h"
 #include "target.h"
 #include "system/utils.h"
@@ -40,6 +41,7 @@ static string html_page() {
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
             <li><a href="attacks/dos_soft/bl0ck/index.html">DoS Soft — Block ACK (Bl0ck)</a></li>
             <li><a href="attacks/dos_soft/malformed_eapol1/index.html">DoS Soft — Malformed EAPOL-1</a></li>
+            <li><a href="attacks/downgrade/owe_trans/index.html">Downgrade — OWE Transition Probe Leak</a></li>
         </ul>
     </div>
 
@@ -79,6 +81,7 @@ int main() {
     wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
     wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
     wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
+    wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);
     wpa3_tester::overview::generate_targets(output_dir, data_dir);
 
     return 0;

@@ -334,11 +334,10 @@ void ProcessManager::stop(const string &process_name) noexcept{
 	if(!mp->naturally_exited){
 		if(mp->pgid > 0){
 			(void)killpg(mp->pgid, SIGTERM);
+			this_thread::sleep_for(chrono::milliseconds(500));
 			(void)killpg(mp->pgid, SIGKILL);
-		} else if(mp->proc){
-			[[maybe_unused]] const auto ec_t = mp->proc->terminate();
-			[[maybe_unused]] const auto ec_k = mp->proc->kill();
 		}
+		// mp->proc path: reproc::stop(operations) below handles SIGTERM→wait→SIGKILL
 	}
 
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();

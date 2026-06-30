@@ -12,7 +12,8 @@ struct OweTransTestEntry{
 	std::string attacker_driver;
 
 	//results json
-	int probe_count;
+	int broadcast_probe_count;
+	int ssid_probe_count;
 	bool disconnected;
 
 	static OweTransTestEntry parse(const std::filesystem::path &test_folder);

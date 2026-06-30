@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       condition: [ AP ]
-      driver: [rtw88_8821cu, rtw_8821cu]
+      driver: [rtw88_8821au, rtw_8821au]
     setup:
       program: hostapd
       program_config:
@@ -22,8 +22,8 @@ actors:
     ip_addr: "10.0.0.1"
   client:
     source: internal
-    selection:
-      driver: rtl8xxxu
+    #selection:
+    #  driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:
@@ -55,5 +55,5 @@ observers:
       filter: "special_filter:actors"
 attack_config:
   # seconds to wait after AP is stopped before checking for probe requests
-  probe_wait_time: 15
+  probe_wait_time: 30
 rewrite: errors

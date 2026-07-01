@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno)
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 +: simulation test config

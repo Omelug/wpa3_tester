@@ -23,7 +23,7 @@ void run_bl0ck_attack(RunStatus & rs);
 
 void stats_bl0ck_attack(const RunStatus &rs);
 void generate_report(const RunStatus &rs, const Bl0ckResult &result, const std::filesystem::path &attacker_graph,
-					const std::filesystem::path &client_graph
+					const std::filesystem::path &client_graph, const std::filesystem::path &ap_graph
 );
 void speed_observation_start(RunStatus & rs);
 

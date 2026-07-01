@@ -11,6 +11,6 @@ setup:
     proto: RSN
     encryption: sae-mixed
     mode: ap
-    htmode: HT20
+    htmode: VHT20
   ex_WB_programs: [ tcpdump ]
 ip_addr: "10.0.0.1"

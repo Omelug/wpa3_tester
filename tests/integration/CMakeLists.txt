@@ -1,3 +1,7 @@
 add_executable(run_hwsim_tests test_sim_setup_hwsim.cpp)
 target_link_libraries(run_hwsim_tests PRIVATE wpa3_core doctest_headers)
 add_test(NAME HwsimTests COMMAND run_hwsim_tests)
+
+add_executable(run_run_status_no_module_tests test_run_status_no_module.cpp)
+target_link_libraries(run_run_status_no_module_tests PRIVATE wpa3_core doctest_headers)
+add_test(NAME RunStatusNoModuleTests COMMAND run_run_status_no_module_tests)

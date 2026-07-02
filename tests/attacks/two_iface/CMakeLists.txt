@@ -1,7 +1,2 @@
-add_executable(run_two_iface_cache_rw_tests test_cache_rw.cpp)
-target_link_libraries(run_two_iface_cache_rw_tests PRIVATE wpa3_core doctest_headers)
-add_test(NAME TwoIfaceCacheRWTests COMMAND run_two_iface_cache_rw_tests)
-
-add_executable(run_two_iface_validate_tests test_validate.cpp)
-target_link_libraries(run_two_iface_validate_tests PRIVATE wpa3_core doctest_headers)
-add_test(NAME TwoIfaceValidateTests COMMAND run_two_iface_validate_tests)
+add_doctest_exe(run_two_iface_cache_rw_tests SOURCES test_cache_rw.cpp TEST_NAME TwoIfaceCacheRWTests)
+add_doctest_exe(run_two_iface_validate_tests SOURCES test_validate.cpp TEST_NAME TwoIfaceValidateTests)

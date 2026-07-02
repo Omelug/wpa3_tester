@@ -238,3 +238,85 @@ TEST_CASE("hw_capabilities::check_req_options - string key matching"){
 	REQUIRE(result.contains("dev"));
 	CHECK_EQ(result.at("dev").get(), match.get());
 }
+
+// ------------ check_all_req_options / find_all_solutions
+
+TEST_CASE("hw_capabilities::check_all_req_options - empty rules returns one empty solution"){
+	ActorCMap rules{};
+	vector options{make_actor({{BK::AP, true}})};
+	const auto results = hw_capabilities::check_all_req_options(rules, options);
+	REQUIRE_EQ(results.size(), 1u);
+	CHECK(results[0].empty());
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - no matching option returns empty"){
+	ActorPtr rule = make_actor({{BK::AP, true}});
+	ActorPtr option = make_actor({{BK::AP, false}});
+
+	ActorCMap rules{{"dev", rule}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {option});
+	CHECK(results.empty());
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - single rule single match returns one solution"){
+	ActorPtr rule = make_actor({{BK::AP, true}});
+	ActorPtr opt = make_actor({{BK::AP, true}});
+
+	ActorCMap rules{{"ap", rule}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {opt});
+	REQUIRE_EQ(results.size(), 1u);
+	REQUIRE(results[0].contains("ap"));
+	CHECK_EQ(results[0].at("ap").get(), opt.get());
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - one rule two matching options returns two solutions"){
+	ActorPtr rule = make_actor({{BK::AP, true}});
+	ActorPtr opt1 = make_actor({{BK::AP, true}});
+	ActorPtr opt2 = make_actor({{BK::AP, true}});
+
+	ActorCMap rules{{"ap", rule}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {opt1, opt2});
+	CHECK_EQ(results.size(), 2u);
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - two rules distinct options one solution"){
+	ActorPtr rule_ap = make_actor({{BK::AP, true}});
+	ActorPtr rule_sta = make_actor({{BK::STA, true}});
+	ActorPtr opt_ap = make_actor({{BK::AP, true}, {BK::STA, false}});
+	ActorPtr opt_sta = make_actor({{BK::AP, false}, {BK::STA, true}});
+
+	ActorCMap rules{{"ap_role", rule_ap}, {"sta_role", rule_sta}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {opt_ap, opt_sta});
+	REQUIRE_EQ(results.size(), 1u);
+	CHECK(results[0].contains("ap_role"));
+	CHECK(results[0].contains("sta_role"));
+	CHECK_NE(results[0].at("ap_role").get(), results[0].at("sta_role").get());
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - two rules two interchangeable options two solutions"){
+	// Both options match both rules → two distinct assignments
+	ActorPtr rule1 = make_actor({{BK::AP, true}});
+	ActorPtr rule2 = make_actor({{BK::AP, true}});
+	ActorPtr opt1 = make_actor({{BK::AP, true}});
+	ActorPtr opt2 = make_actor({{BK::AP, true}});
+
+	ActorCMap rules{{"r1", rule1}, {"r2", rule2}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {opt1, opt2});
+	REQUIRE_EQ(results.size(), 2u);
+	// Each solution assigns a different option to each role
+	for(const auto &sol: results){
+		REQUIRE(sol.contains("r1"));
+		REQUIRE(sol.contains("r2"));
+		CHECK_NE(sol.at("r1").get(), sol.at("r2").get());
+	}
+}
+
+TEST_CASE("hw_capabilities::check_all_req_options - two rules one option returns empty"){
+	ActorPtr rule1 = make_actor({{BK::AP, true}});
+	ActorPtr rule2 = make_actor({{BK::AP, true}});
+	ActorPtr opt = make_actor({{BK::AP, true}});
+
+	ActorCMap rules{{"r1", rule1}, {"r2", rule2}};
+	const auto results = hw_capabilities::check_all_req_options(rules, {opt});
+	CHECK(results.empty());
+}

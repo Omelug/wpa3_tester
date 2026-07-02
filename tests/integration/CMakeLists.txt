@@ -3,5 +3,13 @@ target_link_libraries(run_hwsim_tests PRIVATE wpa3_core doctest_headers)
 add_test(NAME HwsimTests COMMAND run_hwsim_tests)
 
 add_executable(run_run_status_no_module_tests test_run_status_no_module.cpp)
-target_link_libraries(run_run_status_no_module_tests PRIVATE wpa3_core doctest_headers)
+target_link_libraries(run_run_status_no_module_tests PRIVATE test_helpers wpa3_core doctest_headers)
 add_test(NAME RunStatusNoModuleTests COMMAND run_run_status_no_module_tests)
+
+add_executable(run_internal_options_tests test_internal_options.cpp)
+target_link_libraries(run_internal_options_tests PRIVATE test_helpers wpa3_core doctest_headers)
+add_test(NAME InternalOptionsTests COMMAND run_internal_options_tests)
+
+add_executable(run_create_simulation_tests test_create_simulation.cpp)
+target_link_libraries(run_create_simulation_tests PRIVATE test_helpers wpa3_core doctest_headers)
+add_test(NAME CreateSimulationTests COMMAND run_create_simulation_tests)

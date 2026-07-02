@@ -49,6 +49,7 @@ add_test(NAME HtmlGuardTests COMMAND run_html_guard_tests)
 # devices tests
 add_executable(run_devices_tests test_devices.cpp)
 target_link_libraries(run_devices_tests PRIVATE
+        test_helpers
         wpa3_core
         doctest_headers
 )

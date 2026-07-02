@@ -6,5 +6,6 @@ target_include_directories(test_helpers PUBLIC .)
 
 target_link_libraries(test_helpers PUBLIC
         wpa3_deps
+        wpa3_core
         tins
 )

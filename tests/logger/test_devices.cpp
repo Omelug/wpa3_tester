@@ -7,6 +7,7 @@
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/devices.h"
 #include "logger/error_log.h"
+#include "root_dir_helper.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -14,7 +15,8 @@ using namespace wpa3_tester;
 
 namespace{
 // mirrors device_path() in devices.cpp (data/devices lives next to wpa3_test/); not exposed via devices.h
-const filesystem::path device_root = root_dir().parent_path() / "data" / "devices";
+// must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const.
+filesystem::path device_root(){ return root_dir().parent_path() / "data" / "devices"; }
 
 ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){
     ActorPtr actor(make_shared<Actor_Config_sim>(nlohmann::json::object()));
@@ -43,20 +45,18 @@ TEST_CASE("add_device - throws without permanent_mac"){
 }
 
 TEST_CASE("add_device - first call creates a new device, second identical call does not"){
-    const string mac = "test:00:00:00:00:01";
-    filesystem::remove_all(device_root / mac);
+    const test_helpers::IsolatedRootDir isolated("devices_test_1");
+    const string mac = "aa:bb:cc:dd:ee:01";
 
     const auto actor = make_actor(mac);
     CHECK(report::add_device(actor));
     CHECK_FALSE(report::add_device(actor));
-
-    filesystem::remove_all(device_root / mac);
 }
 
 TEST_CASE("add_device - written snapshot and symlink have the expected format"){
-    const string mac = "test:00:00:00:00:02";
-    const filesystem::path dev_dir = device_root / mac;
-    filesystem::remove_all(dev_dir);
+    const test_helpers::IsolatedRootDir isolated("devices_test_2");
+    const string mac = "aa:bb:cc:dd:ee:02";
+    const filesystem::path dev_dir = device_root() / mac;
 
     const auto actor = make_actor(mac);
     REQUIRE(report::add_device(actor));
@@ -74,14 +74,12 @@ TEST_CASE("add_device - written snapshot and symlink have the expected format"){
     const filesystem::path symlink_path = dev_dir / "last.json";
     REQUIRE(filesystem::is_symlink(symlink_path));
     CHECK_EQ(filesystem::read_symlink(symlink_path), files[0].filename());
-
-    filesystem::remove_all(dev_dir);
 }
 
 TEST_CASE("add_device - two different records for the same device are both kept"){
-    const string mac = "test:00:00:00:00:03";
-    const filesystem::path dev_dir = device_root / mac;
-    filesystem::remove_all(dev_dir);
+    const test_helpers::IsolatedRootDir isolated("devices_test_3");
+    const string mac = "aa:bb:cc:dd:ee:03";
+    const filesystem::path dev_dir = device_root() / mac;
 
     const auto actor_a = make_actor(mac, true);
     const auto actor_b = make_actor(mac, false); // different caps -> not a duplicate
@@ -98,6 +96,4 @@ TEST_CASE("add_device - two different records for the same device are both kept"
     ifstream f(dev_dir / filesystem::read_symlink(symlink_path));
     const nlohmann::json last_record = nlohmann::json::parse(f);
     CHECK_EQ(last_record.at("caps"), actor_b->hw_info_caps_to_flat_json());
-
-    filesystem::remove_all(dev_dir);
 }

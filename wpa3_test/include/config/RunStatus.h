@@ -118,8 +118,8 @@ private:
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels,
 												const ActorCMap &actors
 	);
-	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 public:
+	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();
 	void parse_requirements();
 

@@ -7,14 +7,14 @@
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/devices.h"
 #include "logger/error_log.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace wpa3_tester;
 
 namespace{
-// mirrors device_path in devices.cpp (data/devices lives next to wpa3_test/)
-//FIXME tohle není hezk-e
-const filesystem::path device_root = filesystem::path(PROJECT_ROOT_DIR).parent_path() / "data" / "devices";
+// mirrors device_path() in devices.cpp (data/devices lives next to wpa3_test/); not exposed via devices.h
+const filesystem::path device_root = root_dir().parent_path() / "data" / "devices";
 
 ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){
     ActorPtr actor(make_shared<Actor_Config_sim>(nlohmann::json::object()));

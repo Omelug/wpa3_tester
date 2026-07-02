@@ -45,7 +45,7 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 			log(LogLevel::ERROR, "relative_from issue");
 		}
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name ;
+	_run_folder = BASE_FOLDER() / actual_sub_folder / suite_name ;
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 
@@ -63,7 +63,7 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		RunStatus::validate_recursive(config_json, config_path.parent_path());
 
 		//global validation
-		const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
+		const path global_schema_path = root_dir() / "attack_config" / "validator" /
 				"test_suite_validator.schema.yaml";
 		const YAMLValidator global_validator(global_schema_path.string());
 		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));

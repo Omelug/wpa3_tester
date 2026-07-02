@@ -6,79 +6,15 @@ add_custom_target(copy_pcap_files
         COMMENT "Copying pcap to build directory"
 )
 
-# mc_mitm attack tests
-add_executable(run_mc_mitm_tests test_mc_mitm.cpp)
+set(MC_MITM_LIBS test_helpers tins)
 
-target_link_libraries(run_mc_mitm_tests PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
+add_doctest_exe(run_mc_mitm_tests SOURCES test_mc_mitm.cpp TEST_NAME McMitmTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_monitor_socket_tests SOURCES test_MonitorSocket.cpp TEST_NAME RunMonitorSocketTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_wifi_utils SOURCES test_wifi_utils.cpp TEST_NAME WiFiUtilsTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_real_channel_tests SOURCES test_real_channel.cpp TEST_NAME RealChannelTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_rogue_channel_tests SOURCES test_rogue_channel.cpp TEST_NAME RogueChannelTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_scan_active_tests SOURCES test_scan_active.cpp TEST_NAME ScanActiveTests LIBS ${MC_MITM_LIBS})
 
-add_dependencies(run_mc_mitm_tests copy_pcap_files)
-add_test(NAME McMitmTests COMMAND run_mc_mitm_tests)
-
-# MonitorSocket
-add_executable(run_monitor_socket_tests test_MonitorSocket.cpp)
-
-target_link_libraries(run_monitor_socket_tests PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
-
-add_dependencies(run_monitor_socket_tests copy_pcap_files)
-add_test(NAME RunMonitorSocketTests COMMAND run_monitor_socket_tests)
-
-# wifi utils
-add_executable(run_wifi_utils test_wifi_utils.cpp)
-
-target_link_libraries(run_wifi_utils PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
-
-add_dependencies(run_wifi_utils copy_pcap_files)
-add_test(NAME WiFiUtilsTests COMMAND run_wifi_utils)
-
-# run_real_channel_tests
-add_executable(run_real_channel_tests test_real_channel.cpp)
-
-target_link_libraries(run_real_channel_tests PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
-
-add_dependencies(run_real_channel_tests copy_pcap_files)
-add_test(NAME RealChannelTests COMMAND run_real_channel_tests)
-
-# run_rogue_channel_tests
-add_executable(run_rogue_channel_tests test_rogue_channel.cpp)
-
-target_link_libraries(run_rogue_channel_tests PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
-add_dependencies(run_rogue_channel_tests copy_pcap_files)
-add_test(NAME RogueChannelTests COMMAND run_rogue_channel_tests)
-
-# scan_active: apply_radiotap / apply_rsn / apply_ht_vht_he
-add_executable(run_scan_active_tests test_scan_active.cpp)
-
-target_link_libraries(run_scan_active_tests PRIVATE
-        test_helpers
-        wpa3_core
-        doctest_headers
-        tins
-)
-
-add_dependencies(run_scan_active_tests copy_pcap_files)
-add_test(NAME ScanActiveTests COMMAND run_scan_active_tests)
+foreach (t run_mc_mitm_tests run_monitor_socket_tests run_wifi_utils run_real_channel_tests run_rogue_channel_tests run_scan_active_tests)
+    add_dependencies(${t} copy_pcap_files)
+endforeach ()

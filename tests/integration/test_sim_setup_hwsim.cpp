@@ -26,12 +26,18 @@ static void load_hwsim(){
     if(attempted) return;
     attempted = true;
 
+    unordered_set<string> before;
+    for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt))
+        before.insert(name);
+
     if(hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=2"}, nullopt, false) != 0)
         return;
 
     hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
+    // only rename interfaces newly created by modprobe above - never touch pre-existing (real) wifi cards
     for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt))
-        hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name}, nullopt, false);
+        if(!before.contains(name))
+            hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name}, nullopt, false);
     hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
     g_hwsim_ok = !hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt).empty();

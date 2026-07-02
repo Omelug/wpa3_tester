@@ -3,7 +3,6 @@
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
-#include <regex>
 #include <stdexcept>
 #include "config/global_config.h"
 #include "config/Actor_Config/ActorPtr.h"

@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
@@ -22,6 +23,16 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	}
 }
 
+void stop_AP(RunStatus &rs, const string &actor_name){
+	const auto &actor = rs.get_actor(actor_name);
+	assert(actor->is_WB());
+	if(actor->is_external_WB()){
+		actor->conn->exec("wifi down");
+	} else{
+		rs.process_manager.stop(actor_name);
+	}
+}
+
 void setup_STA(RunStatus &rs, const string &actor_name){
 	program::start(rs, actor_name);
 	rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", seconds(10));
@@ -30,7 +41,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 	}
 }
 
-void client_ap_setup(RunStatus &rs){
+void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
 	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
 
@@ -47,7 +58,11 @@ void client_ap_setup(RunStatus &rs){
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 
 	if(rs.get_actor("access_point").get(SK::source) != "external"){
-		rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+		if(check_way_eapol){
+			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+		} else{
+			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(10));
+		}
 	}
 	log(LogLevel::INFO, "client is connected");
 }

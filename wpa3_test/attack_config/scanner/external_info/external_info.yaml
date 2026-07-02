@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: external_info
 $validator: "./external_info.schema.yaml"
 attacker_module: external_info

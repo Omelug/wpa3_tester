@@ -18,6 +18,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/iperf_wrapper.h"
+#include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 
@@ -78,7 +79,7 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 		ctx.current_sn.store(sn);
 		ctx.current_fn.store(fn);
 		ctx.has_sn.store(true);
-		log(LogLevel::DEBUG, "BARS: Updated SSN=%u FN=%u", sn, fn);
+		log(LogLevel::DEBUG, "BARS: Updated SSN={%u} FN={%u}", sn, fn);
 		return nullopt; // continue
 	}, iface, filter, seconds(timeout_sec));
 }
@@ -120,7 +121,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 																bars_ctx.current_sn.load());
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
-			for(int i = 0; i < 30; ++i) sender.send(block_frame, iface_obj);
+			for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
 			this_thread::sleep_for(100ms);
 			iteration++;
 		} catch(const exception &e){
@@ -176,7 +177,7 @@ static Bl0ckResult load_result(const RunStatus &rs){
 }
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 }
 
@@ -241,9 +242,11 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
+	const path ap_graph = observer::tshark::tshark_graph(rs, "access_point", elements,
+		observer::get_observer_folder(rs, "tcpdump"));
 
 	const Bl0ckResult result = load_result(rs);
-	generate_report(rs, result, attacker_graph, client_graph);
+	generate_report(rs, result, attacker_graph, client_graph, ap_graph);
 
 	log(LogLevel::INFO, "Bl0ck attack stats done");
 }

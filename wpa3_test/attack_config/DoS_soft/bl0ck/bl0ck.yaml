@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: bl0ck
 attacker_module: bl0ck
 
@@ -41,7 +41,7 @@ actors:
         ieee80211w: 2
         key_mgmt: SAE
         pairwise: CCMP
-        psk: "\"password123\""
+        psk: password123
         #sae_password: password123
         scan_freq: 5180
         ssid: wpa3_tester_AP

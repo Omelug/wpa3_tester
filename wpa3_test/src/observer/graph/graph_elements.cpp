@@ -50,7 +50,7 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
 		}
 
 		//change ymax/ymin, if needed
-		int pad = (ymax - ymin) / 7;
+		int pad = static_cast<int>(ymax - ymin) / 7;
 		if(y < ymin) ymin = y - pad;
 		if(y > ymax) ymax = y + pad;
 
@@ -79,9 +79,9 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 		const double t_start = chrono::duration<double>(it->first.time_since_epoch()).count();
 		const double y = stairs.y_pos(it->second);
 
-		auto next = next(it);
-		const double t_end = (next != stairs.steps.end())
-							? chrono::duration<double>(next->first.time_since_epoch()).count()
+		auto n = next(it);
+		const double t_end = (n != stairs.steps.end())
+							? chrono::duration<double>(n->first.time_since_epoch()).count()
 							: t_start + 1.0; // extend last step by 1s
 
 		// Two points per step — horizontal hold
@@ -91,7 +91,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 		gpcmd(a.str());
 		gpcmd(b.str());
 
-		it = next;
+		it = n;
 	}
 	gpcmd("EOD");
 

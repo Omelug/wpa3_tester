@@ -58,7 +58,7 @@ optional<sae_helper::SAEPair> capture_sae_commit(const HWAddress<6> &ap_mac, con
 																	return nullopt;
 																}, iface);
 
-	if(holds_alternative<sae_helper::SAEPair>(result)) return get<sae_helper::SAEPair>(move(result));
+	if(holds_alternative<sae_helper::SAEPair>(result)) return get<sae_helper::SAEPair>(std::move(result));
 	return nullopt;
 }
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <tins/pdu.h>
-#include <tins/dot11.h>
 #include "config/Actor_Config/Actor_Config_external.h"
 
 namespace wpa3_tester::scan{

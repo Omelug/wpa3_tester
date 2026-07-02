@@ -136,8 +136,8 @@ void Actor_config::set_monitor_mode() const{
 	}
 
 	vector<string> monitor_flags = {"fcsfail", "otherbss"};
-	if((*this)[BK::active_monitor]) monitor_flags.push_back("active");
-	if((*this)[BK::control_monitor]) monitor_flags.push_back("control");
+	if((*this)[BK::active_monitor]) monitor_flags.emplace_back("active");
+	if((*this)[BK::control_monitor]) monitor_flags.emplace_back("control");
 
 	string flags_str;
 	for(const auto &f: monitor_flags){

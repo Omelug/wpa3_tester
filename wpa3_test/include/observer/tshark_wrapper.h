@@ -14,12 +14,14 @@ LogTimePoint get_pcap_start_time(const std::string &pcap_path);
 
 void start_tshark_remote(RunStatus &rs, const std::string &actor_name, const std::string &filter);
 void start_tshark(RunStatus &rs, const std::string &node_name, const std::string &filter = "udp port 5201");
-std::filesystem::path extract_pcap_to_csv(const std::string &actor_name, const std::filesystem::path &real_folder);
+std::filesystem::path extract_pcap_to_csv(const std::string &actor_name, const std::filesystem::path &real_folder,
+										const std::string &tshark_filter = "");
 std::vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const std::string &process_name,
 											const std::string &tshark_filter, const std::string &event_name
 );
 std::filesystem::path tshark_graph(const RunStatus &rs, const std::string &actor_name, const G_elms &elements = {},
-									const std::filesystem::path &folder = ""
+									const std::filesystem::path &folder = "",
+									const std::string &tshark_filter = ""
 );
 void generate_time_series_retry_graph(const RunStatus &rs, const std::string &actor_name,
 									const std::filesystem::path &folder = ""

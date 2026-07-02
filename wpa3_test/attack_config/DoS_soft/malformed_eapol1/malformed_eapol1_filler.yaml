@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-07/schema#"
+$schema: "https://json-schema.org/draft/2020-12/schema"
 name: malformed_eapol1_filler
 suite_functions: malformed_eapol1_filler
 config_type: test_suite

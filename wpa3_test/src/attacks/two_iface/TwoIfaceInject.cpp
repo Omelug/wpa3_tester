@@ -60,11 +60,10 @@ bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const Cac
 	};
 
 	if(injection_key == "injection"){
-		for(const auto &[key, val]: result.at("tests").items()) if(it_test_result_from_string(
-			val.at("result").get<string>()) != PASSED) fail(key);
+		for(const auto &[key, val]: result.at("tests").items())
+			if(val.at("result").get<it_test_result>() != PASSED) fail(key);
 	} else{
-		if(it_test_result_from_string(result.at("tests").at(injection_key).at("result").get<string>()) !=
-			PASSED) fail(injection_key);
+		if(result.at("tests").at(injection_key).at("result").get<it_test_result>() != PASSED) fail(injection_key);
 	}
 	return !from_cache;
 }

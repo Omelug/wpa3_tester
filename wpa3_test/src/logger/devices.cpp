@@ -1,15 +1,15 @@
-#include "config/Actor_Config/ActorPtr.h"
-#include "logger/error_log.h"
 #include <chrono>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include "config/Actor_Config/ActorPtr.h"
+#include "logger/error_log.h"
 
 #include "system/utils.h"
 
 namespace wpa3_tester::report{
 using namespace std;
 using namespace filesystem;
-using json = nlohmann::json;
+using namespace nlohmann;
 
 // devices/<perm_mac>/last.json symlink to last
 const path device_path = path(PROJECT_ROOT_DIR).parent_path() / "data" / "devices";
@@ -20,7 +20,6 @@ bool add_device(ActorPtr actor){
 	const auto &perm_mac_opt = (*actor)[SK::permanent_mac];
 	if(!perm_mac_opt.has_value())
 		throw config_err("add_device: actor has no permanent_mac");
-//if not clonflict, merge?
 	path dev_dir = device_path / *perm_mac_opt;
 	create_public_dirs(dev_dir);
 

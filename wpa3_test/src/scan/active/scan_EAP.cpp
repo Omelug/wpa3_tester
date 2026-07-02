@@ -101,19 +101,19 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 	const HWAddress<6> client_mac =
 		(dot11_data->addr1() == target_ap_mac) ? dot11_data->addr2() : dot11_data->addr1();
 
-	const EAP_Info info = parse_eap_packet(*raw);
+	const auto [code, identity, method, type_code] = parse_eap_packet(*raw);
 
 	auto &session = sessions[client_mac];
 	session.last_seen = steady_clock::now();
-	session.last_type_code = info.type_code;
+	session.last_type_code = type_code;
 
-	if(info.identity && session.identities.insert(*info.identity).second) log(
-		LogLevel::INFO, "[*] New Identity for {}: {}", client_mac, *info.identity);
+	if(identity && session.identities.insert(*identity).second) log(
+		LogLevel::INFO, "[*] New Identity for {}: {}", client_mac, *identity);
 
-	if(info.method && session.methods.insert(*info.method).second) log(LogLevel::INFO, "[+] New Method for {}: {}",
-																		client_mac, *info.method);
+	if(method && session.methods.insert(*method).second) log(LogLevel::INFO, "[+] New Method for {}: {}",
+																		client_mac, *method);
 
-	switch(info.code){
+	switch(code){
 	case CODE_REQUEST:
 	case CODE_RESPONSE: if(session.status == AuthStatus::UNKNOWN) session.status = AuthStatus::IN_PROGRESS;
 		break;
@@ -127,7 +127,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);
 		}
 		break;
-	default: throw run_err("Unknown EAP code: " + to_string(info.code));
+	default: throw run_err("Unknown EAP code: " + to_string(code));
 	}
 
 	return nullopt; // until timeout

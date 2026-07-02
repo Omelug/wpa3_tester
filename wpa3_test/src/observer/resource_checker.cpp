@@ -18,7 +18,7 @@ void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, c
 									const int interval_sec, const path &local_log
 ){
 	const auto &actor = rs.get_actor(actor_name);
-	const path local_script = path(PROJECT_ROOT_DIR) / "awk_scripts/monitor.awk";
+	const path local_script = root_dir() / "awk_scripts/monitor.awk";
 	const path remote_script = "/tmp/monitor_" + actor_name + ".awk";
 	string remote_log = "/tmp/" + actor_name + SUFFIX_res + ".log";
 	const string pid_file = remote_log + ".pid";

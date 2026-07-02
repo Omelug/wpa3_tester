@@ -52,12 +52,12 @@ void unload_ath_masker(){
 }
 
 void load_ath9k_noorder_change(){
-	const string fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	const string fw_dir = root_dir().string() + "/src/system/firmware/ath9k-firmware";
 	hw_capabilities::run_in("bash ./install.sh", fw_dir);
 }
 
 void unload_ath9k_noorder_change(){
-	const string fw_dir = string(PROJECT_ROOT_DIR) + "/src/system/firmware/ath9k-firmware";
+	const string fw_dir = root_dir().string() + "/src/system/firmware/ath9k-firmware";
 	hw_capabilities::run_in("bash ./unload.sh", fw_dir);
 }
 

@@ -3,6 +3,7 @@
 #include "pcap_helper.h"
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace filesystem;
@@ -24,7 +25,7 @@ const vector<uint8_t> expected_element =
 };
 
 TEST_CASE("ParsesCommitFromPcap"){
-    path pcap_path = path(PROJECT_ROOT_DIR) /
+    path pcap_path = wpa3_tester::root_dir() /
         "../tests/attacks/DoS_hard/cookie_guzzler/test_sae_commit.pcapng";
     vector<uint8_t> probe_data = wpa3_tester::test_helpers::read_pcap_file(pcap_path);
     optional<wpa3_tester::sae_helper::SAEPair> result = wpa3_tester::sae_helper::parse_sae_commit(probe_data);

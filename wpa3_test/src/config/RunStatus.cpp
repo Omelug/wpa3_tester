@@ -37,7 +37,7 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	if(sub_folder.empty()){
 		actual_sub_folder = relative_from("attack_config", config_path);
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / testName ;
+	_run_folder = BASE_FOLDER() / actual_sub_folder / testName ;
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
@@ -230,7 +230,7 @@ bool RunStatus::should_skip(const path &p){
 	if(p.string().ends_with(".schema.yaml")) return true;
 	// components
 	if(p.string().ends_with(".comp.yaml")) return true; //TODO add to documentation
-	const auto rel = relative(p, ATTACK_CONFIG);
+	const auto rel = relative(p, ATTACK_CONFIG());
 	const auto first = *rel.begin();
 	if(first == "validator") return true;
 	if(rel == "global_config.yaml") return true;
@@ -242,7 +242,7 @@ bool RunStatus::should_skip(const path &p){
 
 unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct){
 	unordered_map<string,string> t_map;
-	const path attack_config_dir = path(PROJECT_ROOT_DIR) / "attack_config";
+	const path attack_config_dir = root_dir() / "attack_config";
 
 	if(!exists(attack_config_dir) || !is_directory(attack_config_dir)){ return t_map; }
 
@@ -393,8 +393,7 @@ void RunStatus::save_result(const nlohmann::json &j) const{
 	const path p = run_folder() / RESULT_NAME;
 	ofstream f(p);
 	if(!f.is_open()){
-		log(LogLevel::ERROR, "Cannot write {}", RESULT_NAME);
-		return;
+		throw stats_err( "Cannot write {}", RESULT_NAME);
 	}
 	f << j.dump(2) << "\n";
 	f.close();

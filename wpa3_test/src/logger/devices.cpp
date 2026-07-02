@@ -12,7 +12,7 @@ using namespace filesystem;
 using namespace nlohmann;
 
 // devices/<perm_mac>/last.json symlink to last
-const path device_path = path(PROJECT_ROOT_DIR).parent_path() / "data" / "devices";
+path device_path(){ return root_dir().parent_path() / "data" / "devices"; }
 
 //TODO ? zjednosušit poocí HWInfo, nebo se to bude plést, pokud sem přidám víc info?
 
@@ -20,7 +20,7 @@ bool add_device(ActorPtr actor){
 	const auto &perm_mac_opt = (*actor)[SK::permanent_mac];
 	if(!perm_mac_opt.has_value())
 		throw config_err("add_device: actor has no permanent_mac");
-	path dev_dir = device_path / *perm_mac_opt;
+	path dev_dir = device_path() / *perm_mac_opt;
 	create_public_dirs(dev_dir);
 
 	const json caps = actor->hw_info_caps_to_flat_json();

@@ -101,7 +101,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 	vector<ActorPtr> options;
 	//option1: whitebox_host -> whitebox_ip
 	const path conn_table = absolute(
-		path(PROJECT_ROOT_DIR) / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
+		root_dir() / "attack_config" / get_global_config().at("actors").at("conn_table").get<string>());
 
 	for(auto &cfg: scan::get_actors_conn_table(conn_table)){
 		if(!cfg[SK::whitebox_ip].has_value()){

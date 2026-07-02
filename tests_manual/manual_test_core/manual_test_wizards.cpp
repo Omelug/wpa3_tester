@@ -238,7 +238,7 @@ bool ask_ok(const string &question){
 
 ActorPtr wb_actor_selection(){
 	cout << "\nThis test need OpenWrt devices defined in connection table" << endl;
-	const path conn_table_path = absolute(path(PROJECT_ROOT_DIR) / "attack_config" /
+	const path conn_table_path = absolute(root_dir() / "attack_config" /
 		"example_whitebox_table.csv");
 
 	cout << "Using connection table: " << conn_table_path << endl;

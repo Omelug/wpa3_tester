@@ -18,8 +18,8 @@ const fs::path config_dir = temp_root / "attack_config";
 const fs::path config_path = config_dir / "no_module_test.yaml";
 const string test_name = "integration_no_module_test";
 
-// mirrors RunStatus::BASE_FOLDER (data/wpa3_test next to wpa3_test/)
-const fs::path run_folder = fs::path(PROJECT_ROOT_DIR).parent_path() / "data" / "wpa3_test" / test_name;
+// mirrors RunStatus::BASE_FOLDER() (data/wpa3_test next to wpa3_test/); private, so can't call it directly
+const fs::path run_folder = root_dir().parent_path() / "data" / "wpa3_test" / test_name;
 
 bool hwsim_available(){
     if(hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=1"}, nullopt, false) != 0) return false;

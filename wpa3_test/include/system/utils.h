@@ -1,10 +1,15 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
 
 namespace wpa3_tester{
+// Returns PROJECT_ROOT_DIR by default; pass a value to override it (tests use this to
+// point at a temp fixture dir instead of the real wpa3_test/ source tree).
+const std::filesystem::path &root_dir(const std::optional<std::filesystem::path> &set_to = std::nullopt);
+
 std::string current_time_string();
 std::string git_commit_hash();
 std::string kernel_version();

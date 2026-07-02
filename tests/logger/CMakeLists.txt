@@ -37,7 +37,7 @@ add_test(NAME ReportGuardTests COMMAND run_report_guard_tests)
 # html guard tests
 add_executable(run_html_guard_tests test_html_guard.cpp)
 target_include_directories(run_html_guard_tests PRIVATE
-        ${CMAKE_SOURCE_DIR}/result_overview/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../result_overview/include
 )
 target_link_libraries(run_html_guard_tests PRIVATE
         wpa3_core

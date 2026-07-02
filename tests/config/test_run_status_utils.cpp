@@ -86,3 +86,34 @@ actors:
 
     remove_all(test_dir);
 }
+
+// -----------------
+// RunStatus::should_skip
+
+TEST_CASE("should_skip - schema and component files are skipped regardless of location"){
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "foo" / "bar.schema.yaml"));
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "foo" / "bar.comp.yaml"));
+}
+
+TEST_CASE("should_skip - non-yaml files are skipped"){
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "foo" / "bar.txt"));
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "foo" / "bar"));
+}
+
+TEST_CASE("should_skip - anything under a top-level validator/ directory is skipped"){
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "validator" / "run_config.schema.yaml"));
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "validator" / "notes.yaml"));
+}
+
+TEST_CASE("should_skip - nested validator/ or target/ directories are skipped"){
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "mc_mitm" / "validator" / "extra.yaml"));
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "mc_mitm" / "target" / "extra.yaml"));
+}
+
+TEST_CASE("should_skip - top-level global_config.yaml is skipped"){
+    CHECK(RunStatus::should_skip(ATTACK_CONFIG / "global_config.yaml"));
+}
+
+TEST_CASE("should_skip - ordinary attack config yaml is not skipped"){
+    CHECK_FALSE(RunStatus::should_skip(ATTACK_CONFIG / "mc_mitm" / "mc_mitm_sim.yaml"));
+}

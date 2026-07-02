@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: invalid_curve_attack_dragonslayer
 attacker_module: invalid_curve
 actors:

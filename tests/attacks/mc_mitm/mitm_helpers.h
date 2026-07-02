@@ -6,7 +6,7 @@
 
 namespace wpa3_tester{
 
-// Minimal McMitm fixture
+// minimal McMitm fixture
 constexpr auto AP_MAC  = "11:22:33:44:55:66";
 constexpr auto CLIENT_MAC  = "aa:bb:cc:dd:ee:ff";
 
@@ -48,12 +48,12 @@ protected:
     }
 
 private:
-    // Rewrites the entire file each time — guarantees no stale data across test cases
+    // rewrites the entire file each time — guarantees no stale data across test cases
     void append_to_pcap(const std::string &path) const;
 };
 
 inline void McMitmTestable::append_to_pcap(const std::string &path) const{
-    // Collect the right frame list for this path
+    // collect the right frame list for this path
     const auto &frames = (path == real_pcap_path) ? real_sent_frames
                          : rogue_sent_frames;
     pcap_t *dead = pcap_open_dead(DLT_IEEE802_11_RADIO, 65535);

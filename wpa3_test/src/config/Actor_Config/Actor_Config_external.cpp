@@ -36,8 +36,11 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 
 	const auto actor_json = config.at("actors").at(get(SK::actor_name));
 	int channel_num = -1;
-	if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
-	else if(const auto &c = real_actor[SK::channel]) channel_num = stoi(c.value());
+	if(const auto d = (*this)[SK::channel]){
+		channel_num = stoi(d.value());
+	}else if(const auto &c = real_actor[SK::channel]){
+		channel_num = stoi(c.value());
+	}
 
 	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
 
@@ -46,10 +49,12 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		set_channel(get_channel());
 		//set_iface_down();
 	}
+
 	//FIXME before channel switch?>
 	if(actor_json.contains("sniff_iface")){
 		set(SK::sniff_iface, MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
 		create_sniff_iface();
 	}
+	conn->exec("ip link set " + get(SK::iface) + " up");
 }
 }

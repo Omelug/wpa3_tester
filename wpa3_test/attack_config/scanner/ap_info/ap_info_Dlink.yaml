@@ -1,0 +1,24 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: ap_info_Dlink
+$validator: "./ap_info.yaml"
+attacker_module: ap_info
+scan_iface: wlan1
+actors:
+  target:
+    source: external
+    selection:
+      permanent_mac: "78:98:E8:55:3E:8D"
+      channel: 6
+  scanner:
+    source: internal
+    selection:
+      condition: [ monitor ]
+      channel: 6
+    #FIXME ACM trigger sniff_iface: scanner
+
+attack_config:
+  beacon_scan: true
+  beacon_timeout_sec: 10
+  EAP_scan: true
+  ACM_trigger: false
+  acm_trigger_count: 2560

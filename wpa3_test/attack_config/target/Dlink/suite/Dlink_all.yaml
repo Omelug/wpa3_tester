@@ -1,0 +1,60 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+name: Dlink_all
+config_type: test_suite
+tests:
+
+  # add Dos_hard suite
+
+  # --------- bl0ck -----------
+  bl0ck_BA_Dlink:
+    test_name: bl0ck_BA_Dlink
+  bl0ck_BAR_Dlink:
+    test_name: bl0ck_BAR_Dlink
+  bl0ck_BARS_Dlink:
+    test_name: bl0ck_BARS_Dlink
+
+  # --------- channel_switch -----------
+  channel_switch_Dlink:
+    test_name: channel_switch_Dlink
+  channel_switch_Dlink_5GHz:
+    test_name: channel_switch_Dlink_5GHz
+  #channel_switch_Dlink_MFP_disabled:
+  #  test_name: channel_switch_Dlink_MFP_disabled
+  channel_switch_Dlink_MFP_req:
+    test_name: channel_switch_Dlink_MFP_req
+
+  # ------ Enterprise
+  reflection_attack_Dlink:
+    test_name: reflection_attack_Dlink
+  invalid_curve_attack_Dlink:
+    test_name: invalid_curve_attack_Dlink
+
+  # ------- downgrade -------------
+
+  owe_transition_probe_leak_Dlink:
+    test_name: owe_transition_probe_leak_Dlink
+
+  # client settings
+  wpa3_trans_downgrade_Dlink:
+    test_name: wpa3_trans_downgrade_Dlink
+  downgrade_Dlink_wb_wpa3_disable:
+    test_name: downgrade_Dlink_wb_wpa3_disable
+
+  # -------- scanner --------
+  ap_info_Dlink:
+    test_name: ap_info_Dlink
+
+  # -------- DoS hard ----------------------
+
+  memory_omnivore_Dlink:
+    test_name: memory_omnivore_Dlink
+  pmk_gobbler_Dlink:
+    test_name: pmk_gobbler_Dlink
+  cookie_guzzler:
+    test_name: cookie_guzzler
+
+  generic_dos_attacks_suite:
+    test_suite_name: generic_dos_attacks_suite
+
+  # TODO add BAR/BARS
+rewrite: errors

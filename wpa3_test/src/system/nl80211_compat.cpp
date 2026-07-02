@@ -129,27 +129,6 @@ void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 	}
 }
 
-int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
-	auto *caps = static_cast<NlCaps *>(arg);
-	const auto *gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
-	nlattr *attrs[NL80211_ATTR_MAX + 1]{};
-
-	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), nullptr);
-
-	check_WPA3_SAE(attrs, caps);
-	check_WPA2_PSK(attrs, caps);
-	check_type(attrs, caps);
-	check_monitor(attrs, caps);
-	check_active_monitor(attrs, caps);
-	check_band_caps(attrs, caps);
-	check_beacon_prot(attrs, caps);
-	check_CSA(attrs, caps);
-	check_OCV(attrs, caps);
-	check_MFP(attrs, caps);
-
-	return NL_SKIP;
-}
-
 void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 	if(!attrs[NL80211_ATTR_WIPHY_BANDS]) return;
 
@@ -211,6 +190,27 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 			if(mhz >= 5925 && mhz <= 7125) caps->band6 = true;
 		}
 	}
+}
+
+int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
+	auto *caps = static_cast<NlCaps *>(arg);
+	const auto *gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
+	nlattr *attrs[NL80211_ATTR_MAX + 1]{};
+
+	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), nullptr);
+
+	check_WPA3_SAE(attrs, caps);
+	check_WPA2_PSK(attrs, caps);
+	check_type(attrs, caps);
+	check_monitor(attrs, caps);
+	check_active_monitor(attrs, caps);
+	check_band_caps(attrs, caps);
+	check_beacon_prot(attrs, caps);
+	check_CSA(attrs, caps);
+	check_OCV(attrs, caps);
+	check_MFP(attrs, caps);
+
+	return NL_SKIP;
 }
 
 uint32_t get_wiphy_idx_by_ifname(const string &ifname){

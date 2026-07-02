@@ -1,0 +1,56 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: channel_switch_Dlink_ocv
+attacker_module: channel_switch
+$validator: ../channel_switch.schema.yaml
+actors:
+  access_point:
+    source: external
+    selection:
+      channel: 6
+      whitebox_host: OpenWrt
+      condition: [ AP, 2_4GHz, OCV ] #FIXME nefuguje, Dlink neppodporuje 
+    setup:
+      program: openwrt
+      program_config:
+        ssid: test_channel_switch
+        channel: 6
+        key: password123
+        proto: RSN
+        encryption: sae-mixed
+        mode: ap
+        htmode: HT20
+        ieee80211w: 2
+        ocv: true
+      ex_WB_programs: [ tcpdump ]
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    selection:
+      channel: 6
+      condition: [ managed ]
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_11
+        ssid: test_channel_switch
+        #sae_password: password123
+        psk: password123
+        ieee80211w: 1
+        proto: RSN
+        key_mgmt: SAE WPA-PSK
+        pairwise: CCMP
+        group: CCMP
+    netns: sta
+    ip_addr: "10.0.0.2"
+  attacker:
+    source: internal
+    selection:
+      driver: mt76x2u
+      condition: [ monitor ]
+      channel: 6
+$extends: [ ../observers.comp.yaml, ../rogue_ap.comp.yaml ]
+attack_config:
+  attack_time: 60
+  ms_interval: 100
+  new_channel: 1
+install_req: true

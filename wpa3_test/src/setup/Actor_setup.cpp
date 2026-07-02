@@ -69,6 +69,9 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set(SK::ht_mode, real_actor[SK::ht_mode]);
 	set(SK::ssid, real_actor[SK::ssid]);
 
+	//FIXME set support params? (or useless?)
+	//set(BK::OCV, real_actor[BK::OCV]);
+
 	if((*this)[SK::mac].has_value()){
 		// setup force set mac address
 		set_mac_address(get(SK::mac));

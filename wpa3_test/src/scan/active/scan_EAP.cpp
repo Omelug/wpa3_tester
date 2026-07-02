@@ -67,44 +67,22 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 	const uint8_t type = payload[4];
 	info.type_code = type;
 
-	switch(type){
-	case TYPE_IDENTITY: info.identity = extract_identity(payload);
-		break;
-	case TYPE_MD5: info.method = "EAP-MD5";
-		break;
-	case TYPE_GTC: info.method = "EAP-GTC";
-		break;
-	case TYPE_TLS: info.method = "EAP-TLS";
-		break;
-	case TYPE_LEAP: info.method = "EAP-LEAP";
-		break;
-	case TYPE_SIM: info.method = "EAP-SIM";
-		break;
-	case TYPE_TTLS: info.method = "EAP-TTLS";
-		break;
-	case TYPE_AKA: info.method = "EAP-AKA";
-		break;
-	case TYPE_PEAP: info.method = "EAP-PEAP";
-		break;
-	case TYPE_MSCHAPV2: info.method = "EAP-MSCHAPv2";
-		break;
-	case TYPE_POTP: info.method = "EAP-POTP";
-		break;
-	case TYPE_FAST: info.method = "EAP-FAST";
-		break;
-	case TYPE_EKE: info.method = "EAP-EKE";
-		break;
-	case TYPE_TEAP: info.method = "EAP-TEAP";
-		break;
-	case TYPE_AKA_PRIME: info.method = "EAP-AKA-PRIME";
-		break;
-	case TYPE_PWD: info.method = "EAP-PWD";
-		break;
-	case TYPE_EXPANDED: info.method = "Expanded-Type";
-		break;
-	default: info.method = "Unknown-" + to_string(type);
-		break;
+	static const map<uint8_t,string> method_names = {
+		{TYPE_MD5, "EAP-MD5"}, {TYPE_GTC, "EAP-GTC"}, {TYPE_TLS, "EAP-TLS"}, {TYPE_LEAP, "EAP-LEAP"},
+		{TYPE_SIM, "EAP-SIM"}, {TYPE_TTLS, "EAP-TTLS"}, {TYPE_AKA, "EAP-AKA"}, {TYPE_PEAP, "EAP-PEAP"},
+		{TYPE_MSCHAPV2, "EAP-MSCHAPv2"}, {TYPE_POTP, "EAP-POTP"}, {TYPE_FAST, "EAP-FAST"}, {TYPE_EKE, "EAP-EKE"},
+		{TYPE_TEAP, "EAP-TEAP"}, {TYPE_AKA_PRIME, "EAP-AKA-PRIME"}, {TYPE_PWD, "EAP-PWD"},
+		{TYPE_EXPANDED, "Expanded-Type"},
+	};
+
+	if(type == TYPE_IDENTITY){
+		info.identity = extract_identity(payload);
+	} else if(const auto it = method_names.find(type); it != method_names.end()){
+		info.method = it->second;
+	} else{
+		info.method = "Unknown-" + to_string(type);
 	}
+
 	if(type == TYPE_EXPANDED && payload.size() >= 12){
 		// bytes 5-7: Vendor-Id
 		// bytes 8-11: Vendor-Type
@@ -113,8 +91,8 @@ EAP_Info parse_eap_packet(const RawPDU &raw){
 	return info;
 }
 
-static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress < 6>,
-										EAP_Session> &sessions
+static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_ap_mac,
+										map<HWAddress<6>,EAP_Session> &sessions
 ){
 	const auto *dot11_data = pdu.find_pdu<Dot11Data>();
 	const auto *raw = pdu.find_pdu<RawPDU>();
@@ -157,7 +135,7 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 }
 
 void active_eap_identity_scan(const string &iface, const string &target_ap_mac, const int timeout_sec){
-	map < HWAddress < 6 >, EAP_Session > sessions;
+	map<HWAddress<6>,EAP_Session> sessions;
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu){ return handle_eap_pdu(pdu, target_ap_mac, sessions); },
 											iface, "", seconds(timeout_sec));
 }

@@ -1,4 +1,5 @@
-#include "config/Actor_Config/Actor_Config_external.h"
+#include "scan/active/scan_active.h"
+
 #include "config/Actor_Config/actor_keys.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -29,13 +30,29 @@ void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
 	}
 }
 
+RSNCapFlags parse_rsn_caps(const uint16_t caps){
+	return {
+		.mfp_capable = static_cast<bool>(caps & 1u << 7),
+		.mfp_required = static_cast<bool>(caps & 1u << 6),
+		.ocv = static_cast<bool>(caps & 1u << 10),
+		.beacon_prot = static_cast<bool>(caps & 1u << 11),
+	};
+}
+
+void set_role_flags(Actor_Config_external &cfg, const bool is_ap){
+	cfg.set(BK::AP, is_ap);
+	cfg.set(BK::STA, !is_ap);
+	cfg.set(BK::managed, false);
+	cfg.set(BK::monitor, false);
+}
+
 void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
 	try{
 		const auto rsn = mgmt.rsn_information();
-		const uint16_t caps = rsn.capabilities();
-		cfg.set(BK::MFP, static_cast<bool>(caps & 1u << 7));
-		cfg.set(BK::OCV, static_cast<bool>(caps & 1u << 10));
-		cfg.set(BK::beacon_prot, static_cast<bool>(caps & 1u << 11));
+		const auto flags = parse_rsn_caps(rsn.capabilities());
+		cfg.set(BK::MFP, flags.mfp_capable);
+		cfg.set(BK::OCV, flags.ocv);
+		cfg.set(BK::beacon_prot, flags.beacon_prot);
 
 		for(const auto &akm: rsn.akm_cyphers()){
 			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm ==

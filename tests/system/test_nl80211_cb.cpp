@@ -233,7 +233,7 @@ TEST_CASE("nl80211_cb - 80211ax via BAND_IFTYPE_DATA HE_CAP_PHY") {
     CHECK(call_cb(msg.m)._80211ax);
 }
 
-TEST_CASE("nl80211_cb - NO_IR freq increments counter and does not set band") {
+TEST_CASE("nl80211_cb - NO_IR freq increments counter but band is still usable") {
     Msg msg;
     nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
     nlattr *band  = nla_nest_start(msg.m, 0);
@@ -246,7 +246,7 @@ TEST_CASE("nl80211_cb - NO_IR freq increments counter and does not set band") {
     nla_nest_end(msg.m, band);
     nla_nest_end(msg.m, bands);
     const auto caps = call_cb(msg.m);
-    CHECK_FALSE(caps.band5);
+    CHECK(caps.band5);
     CHECK_EQ(caps.no_ir_5ghz, 1);
 }
 

@@ -69,3 +69,16 @@ target_link_libraries(run_rogue_channel_tests PRIVATE
 )
 add_dependencies(run_rogue_channel_tests copy_pcap_files)
 add_test(NAME RogueChannelTests COMMAND run_rogue_channel_tests)
+
+# scan_active: apply_radiotap / apply_rsn / apply_ht_vht_he
+add_executable(run_scan_active_tests test_scan_active.cpp)
+
+target_link_libraries(run_scan_active_tests PRIVATE
+        test_helpers
+        wpa3_core
+        doctest_headers
+        tins
+)
+
+add_dependencies(run_scan_active_tests copy_pcap_files)
+add_test(NAME ScanActiveTests COMMAND run_scan_active_tests)

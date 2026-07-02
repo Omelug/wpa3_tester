@@ -67,4 +67,11 @@ target_link_libraries(run_ip_tests PRIVATE
 )
 add_test(NAME IpTests COMMAND run_ip_tests)
 
+add_executable(run_interrupt_tests test_interrupt.cpp)
+target_link_libraries(run_interrupt_tests PRIVATE
+        wpa3_core
+        doctest_headers
+)
+add_test(NAME InterruptTests COMMAND run_interrupt_tests)
+
 add_subdirectory(hw_info)

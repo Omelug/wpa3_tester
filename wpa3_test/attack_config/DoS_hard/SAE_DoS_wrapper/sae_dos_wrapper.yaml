@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: sae_dos_wrapper
 attacker_module: sae_dos_wrapper
 requirements:
@@ -42,7 +42,8 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor, injection_selftest ]
+      condition: [ monitor #, injection_selftest
+      ]
       channel: 6
     sniff_iface: att
 observers:

@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: injection_test_example_req
 attacker_module: null_test # not module
 requirements:

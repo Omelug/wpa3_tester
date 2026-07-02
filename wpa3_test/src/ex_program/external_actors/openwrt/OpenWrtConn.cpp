@@ -1,7 +1,6 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
-
-#include "config/Actor_Config/Actor_Config_external.h"
 #include "config/global_config.h"
+#include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
@@ -15,12 +14,25 @@ void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_na
 	if(!setup_node.contains("ex_WB_programs")){ return; }
 	auto ex_WB_programs = setup_node.at("ex_WB_programs");
 	for(const auto &req_name: ex_WB_programs){
+
+		const string pkg = req_name.get<string>();
+		if(pkg == "remote_injector"){
+			ensure_inject_binary();
+			continue;
+		}
+
 		int ret = 0;
-		exec("opkg install " + req_name.get<string>(), false, &ret);
+		exec("opkg status " + pkg + " | grep -q 'Status:.*installed'", false, &ret);
+		if(ret == 0) continue;
+
+		exec("opkg install " + pkg, false, &ret);
 		if(ret){
-			exec("opkg update", false, &ret);
-			exec("opkg install " + req_name.get<string>(), false, &ret);
-			if(ret){ throw config_err("Cannot install " + req_name.get<string>() + " after opkg update"); }
+			exec("opkg update", false, &ret); //FIXME hardcoced conflict packages
+			exec("opkg remove wpad wpad-wolfssl wpad-basic wpad-basic-wolfssl 2>/dev/null", false, &ret);
+			exec("opkg install " + pkg, false, &ret);
+			if(ret){ throw config_err("Cannot install " + pkg + " after opkg update"); }
+			exec("reboot", false, &ret);
+			throw config_err("Rebooting router to activate " + pkg + " — re-run the test after reboot");
 		}
 	}
 }
@@ -54,6 +66,7 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 void OpenWrtConn::forward_internet(const string &remote_ip) const{
 	hw_capabilities::run_cmd({"bash", "-c", "echo 1 | tee /proc/sys/net/ipv4/ip_forward"});
 	auto internet_iface = get_global_config().at("internet_interface").get<string>();
+
 	// default netns
 	const string local_iface = hw_capabilities::get_iface(remote_ip, nullopt);
 	hw_capabilities::run_cmd({"iptables", "-A", "FORWARD", "-i", local_iface, "-o", internet_iface, "-j", "ACCEPT"});
@@ -78,7 +91,7 @@ void OpenWrtConn::time_fix() const{
 	exec("/etc/init.d/sysntpd start");
 }
 
-void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json config){
+void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json &config){
 	const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
 
 	if(!j.contains(radio_name)) throw ex_conn_err("Radio not found: " + radio_name);
@@ -98,23 +111,120 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	if(section.empty()) section = "wpa3_tester_" + radio_name; // create new
 	log(LogLevel::DEBUG, "Setting up wifi-iface {} for {}", section, radio_name);
 
+	exec("uci delete wireless." + section + "_open 2>/dev/null; true");
+	exec("uci delete wireless." + section + " 2>/dev/null; true");
 	exec("uci set wireless." + section + "=wifi-iface");
 	exec("uci set wireless." + section + ".device=" + radio_name);
 
 	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at("program_config");
+	const string mode = program_config.value("mode", "ap");
+
+	if(mode == "monitor"){
+		setup_monitor_iface(radio_name, actor, program_config);
+		return;
+	}
+
+	if(program_config.value("owe_transition_mode", false)){
+		const string open_ssid = program_config.at("open_ssid").get<string>();
+		const string owe_ssid  = program_config.at("owe_ssid").get<string>();
+		const string open_section = section + "_open";
+
+		static const set<string> trans_skip  = {"owe_transition_mode", "open_ssid", "owe_ssid", "mode"};
+		static const set<string> owe_bss_only = {"ieee80211w"};
+
+		auto apply_keys = [&](const string &sec, bool skip_owe_only){
+			for(const auto &[key, value]: program_config.items()){
+				if(trans_skip.contains(key)) continue;
+				if(skip_owe_only && owe_bss_only.contains(key)) continue;
+				string v;
+				if(value.is_string())      v = value.get<string>();
+				else if(value.is_number()) v = value.dump();
+				else continue;
+				exec("uci set wireless." + sec + "." + key + "='" + v + "'");
+			}
+		};
+
+		// OWE BSS (hidden)
+		exec("uci delete wireless." + section + " 2>/dev/null; true");
+		exec("uci set wireless." + section + "=wifi-iface");
+		exec("uci set wireless." + section + ".device=" + radio_name);
+		apply_keys(section, false);
+		exec("uci set wireless." + section + ".ssid='" + owe_ssid + "'");
+		exec("uci set wireless." + section + ".encryption=owe");
+		exec("uci set wireless." + section + ".mode=ap");
+		exec("uci set wireless." + section + ".hidden=1");
+		exec("uci set wireless." + section + ".network=lan");
+
+		// Open BSS
+		exec("uci delete wireless." + open_section + " 2>/dev/null; true");
+		exec("uci set wireless." + open_section + "=wifi-iface");
+		exec("uci set wireless." + open_section + ".device=" + radio_name);
+		apply_keys(open_section, true);
+		exec("uci set wireless." + open_section + ".ssid='" + open_ssid + "'");
+		exec("uci set wireless." + open_section + ".encryption=none");
+		exec("uci set wireless." + open_section + ".mode=ap");
+		exec("uci set wireless." + open_section + ".network=lan");
+
+		exec("uci commit wireless");
+		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
+
+		// get real ifnames to link the two BSSes
+		const string owe_ifname  = wait_for_ifname(section);
+		const string open_ifname = wait_for_ifname(open_section);
+		exec("uci set wireless." + section + ".owe_transition_ifname=" + open_ifname);
+		exec("uci set wireless." + open_section + ".owe_transition_ifname=" + owe_ifname);
+		exec("uci commit wireless");
+		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
+		wait_for_ifname(section);
+
+		actor->set(SK::iface, owe_ifname);
+		actor->set(SK::mac, get_mac_address(owe_ifname));
+		actor->set(SK::radio, radio_name);
+		return;
+	}
+
 	for(auto &[key, value]: program_config.items()){
-		if(value.is_string()) exec(
-			string("uci set wireless.").append(section).append(".").append(key).append("='").append(value.get<string>())
-										.append("'"));
+		string v;
+		if(value.is_string())      v = value.get<string>();
+		else if(value.is_number()) v = value.dump();
+		else continue;
+		exec(string("uci set wireless.").append(section).append(".").append(key).append("='").append(v).append("'"));
 	}
 	exec("uci set wireless." + section + ".network=lan");
 
 	exec("uci commit wireless");
-	exec("wifi reload");
+	exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
 
 	// wait for ifname and store in actor
-	actor->set(SK::iface, wait_for_ifname(section));
-	actor->set(SK::mac, get_mac_address(actor[SK::iface].value()));
+	const string ifname = wait_for_ifname(section);
+	actor->set(SK::iface, ifname);
+	actor->set(SK::mac, get_mac_address(ifname));
+	actor->set(SK::radio, radio_name);
+}
+
+void OpenWrtConn::setup_monitor_iface(const string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const{
+	// Bypass UCI/wifi for monitor mode — wpa_supplicant fights with netifd and prevents interface creation.
+	// Use iw directly to create the monitor interface on the phy.
+	const string phy = "phy" + radio_name.substr(5); // "radio0" → "phy0"
+	const string ifname = phy + "-mon0";
+
+	exec("wifi down " + radio_name + " 2>/dev/null; true");
+	// delete ALL vifs on this phy — driver limits concurrent interfaces
+	exec("for dev in $(iw dev | awk '/phy#" + phy.substr(3) + "/{p=1} p && /Interface/{print $2; p=0}'); do iw dev $dev del 2>/dev/null; done; true");
+	exec("iw phy " + phy + " interface add " + ifname + " type monitor");
+
+	if(program_config.contains("channel")){
+		const string ch = program_config.at("channel").is_string()
+			? program_config.at("channel").get<string>()
+			: to_string(program_config.at("channel").get<int>());
+		const string htmode = program_config.value("htmode", "HT20");
+		exec("iw dev " + ifname + " set channel " + ch + " " + htmode);
+	}
+
+	exec("ip link set " + ifname + " up");
+
+	actor->set(SK::iface, ifname);
+	actor->set(SK::mac, get_mac_address(ifname));
 	actor->set(SK::radio, radio_name);
 }
 
@@ -182,16 +292,13 @@ string OpenWrtConn::get_radio(const string &iface) const{
 }
 
 string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
-	const auto j = nlohmann::json::parse(exec("wifi status"));
+	const auto j = nlohmann::json::parse(exec("ubus call network.wireless status 2>/dev/null"));
 
 	for(const auto &[radio_name, radio]: j.items()){
+		if(!radio.contains("interfaces")) continue;
 		for(const auto &wifi_iface: radio.at("interfaces")){
-			if(wifi_iface.value("ifname", "") == iface) return wifi_iface.at("section").get<string>();
-			const string sec = wifi_iface.value("section", "");
-			if(!sec.empty()){
-				const string uci_iface = exec("uci get wireless." + sec + ".ifname 2>/dev/null");
-				if(uci_iface.find(iface) != string::npos) return sec;
-			}
+			if(wifi_iface.value("ifname", "") == iface && wifi_iface.contains("section"))
+				return wifi_iface.at("section").get<string>();
 		}
 	}
 	throw ex_conn_err("No section found for iface: " + iface);
@@ -202,29 +309,39 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at(
 		"program_config");
-	cerr << program_config.dump() << endl;
-	actor->set(SK::ssid, program_config.at("ssid").get<string>());
+	const string ssid_key = program_config.value("owe_transition_mode", false) ? "owe_ssid" : "ssid";
+	actor->set(SK::ssid, program_config.at(ssid_key).get<string>());
 	actor->set(SK::channel, to_string(program_config.at("channel").get<int>()));
 
 	// radio level keys
 	static const set<string> radio_keys = {
-		"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level"
+		"channel", "htmode", "txpower", "country", "beacon_int", "noscan", "disabled", "log_level", "transition_disable"
 	};
-	const string wifi_iface = get_wifi_iface_section(actor.get(SK::iface));
+	const string wifi_iface = actor.get(SK::iface);
 
+	// reset section to avoid stale options from previous test runs bleeding in
+	exec("uci delete wireless." + wifi_iface);
+	exec("uci set wireless." + wifi_iface + "=wifi-iface");
 	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
 	exec("uci set wireless." + wifi_iface + ".device=" + actor.get(SK::radio));
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 
-		if(radio_keys.contains(key)){
+		if(key == "eap_user_file"){
+			const filesystem::path local = rs.config_path().parent_path() / value;
+			constexpr string_view remote = "/etc/hostapd.eap_user";
+			upload_file(local, remote);
+			exec(format("uci set wireless.{}.eap_user_file={}", wifi_iface, remote));
+		} else if(radio_keys.contains(key)){
 			exec(format("uci set wireless.{}.{}={}", actor.get(SK::radio), key, value));
 		} else{
 			exec(format("uci set wireless.{}.{}={}", wifi_iface, key, value));
 		}
 	}
 	exec("uci commit wireless");
-	exec("wifi reload");
+	int ret = 0;
+	exec("wifi reload 2>&1", false, &ret);
+	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap — AP may not be configured correctly", ret);
 }
 
 void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
@@ -242,11 +359,11 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	});
 }
 
-void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
-	const string phy = "phy" + radio.substr(5);
+void OpenWrtConn::get_hw_capabilities(const ActorPtr &actor){
+	const string phy = "phy" + actor.get(SK::radio).substr(5);
 	int ret = 0;
 	const string output = exec("iw phy " + phy + " info", false, &ret);
-	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy " + phy + ": " + output);
+	if(ret != 0) throw ex_conn_err("Failed to get hw capabilities for phy {}:{}", phy, output);
 	parse_hw_capabilities(actor, output);
 
 	string mac = exec("cat /sys/class/ieee80211/" + phy + "/macaddress 2>/dev/null");
@@ -254,6 +371,13 @@ void OpenWrtConn::get_hw_capabilities(ActorPtr &actor, const string &radio){
 	if(!mac.empty()){
 		actor->set(SK::mac, mac);
 		actor->set(SK::permanent_mac, mac);
+	}
+
+	const string driver = get_driver(actor.get(SK::radio));
+	if(!driver.empty()){
+		actor->set(SK::driver_name, driver);
+		actor->set(SK::driver_hash, get_driver_hash(driver));
+		actor->set(SK::module_hash, get_module_hash(driver));
 	}
 }
 
@@ -267,9 +391,18 @@ void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &out
 	actor->set(BK::AP, has(" * AP"));
 	actor->set(BK::STA, has(" * managed"));
 	actor->set(BK::monitor, has(" * monitor"));
+	actor->set(BK::active_monitor, has("active monitor"));
 
 	actor->set(BK::w80211n, has("HT20") || has("HT40"));
 	actor->set(BK::w80211ac, has("VHT"));
 	actor->set(BK::w80211ax, has("HE"));
+
+	actor->set(BK::CSA,         has("channel_switch"));
+	actor->set(BK::OCV,         has("operating channel validation"));
+	actor->set(BK::beacon_prot, has("beacon protection"));
+	actor->set(BK::MFP,         has("00-0f-ac:6")); // BIP-CMAC-128
+
+	actor->set(BK::WPA_PSK,  has("00-0f-ac:4")); // CCMP cipher suite
+	actor->set(BK::WPA3_SAE, has("SAE"));
 }
 }

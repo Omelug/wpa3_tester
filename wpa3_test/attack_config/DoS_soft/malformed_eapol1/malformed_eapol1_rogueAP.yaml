@@ -1,15 +1,20 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1_rogueAP
 attacker_module: malformed_eapol1
-$extends: ./malformed_eapol1.yaml
+$extends: [./malformed_eapol1.yaml, ./rogue_ap.comp.yaml]
 actors:
-  rogue_ap:
+  $DELETE: client
+  client:
     source: internal
-    selection:
-      driver: mt76x2u
-      condition: [ monitor ]
-      channel: 6
     setup:
-      program: hostapd-mana
+      program: wpa_supplicant
       program_config:
-        hostapd-mana_path: ./hostapd-mana.conf
+        #other_options: "-d"
+        ssid: test_malformed_eapol1
+        psk: password123
+        ieee80211w: 1
+        proto: RSN
+        key_mgmt: SAE WPA-PSK
+        pairwise: CCMP
+        group: CCMP
+        version: 2_10

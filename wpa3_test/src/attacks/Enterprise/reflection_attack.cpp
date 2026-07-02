@@ -72,7 +72,8 @@ void setup_attack(RunStatus &rs){
 	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
+	if(rs.get_actor("access_point").get(SK::source) == "internal")
+		rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
 	log(LogLevel::INFO, "access_point running");
 	ip::set_ip(rs, "access_point");
 }
@@ -86,11 +87,8 @@ void run_attack(RunStatus &rs){
 	const string identity = att_cfg.at("identity").get<string>();
 	const string ssid = ap_actor->get(SK::ssid);
 
-	const HWAddress<6> our_mac(attacker.get(SK::mac));
-	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
-
 	MonitorSocket sock(attacker.get(SK::iface), attacker.get(SK::netns)); // attacker need to be in netns
-	EAP_Att eap_att{sock, ap_actor->get_channel(), our_mac, ap_mac, ssid, identity, 30s};
+	EAP_Att eap_att{sock, ap_actor->get_channel(), attacker.get(SK::mac), ap_actor.get(SK::mac), ssid, identity, 30s};
 	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 

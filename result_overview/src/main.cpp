@@ -1,13 +1,15 @@
-#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
-#include <vector>
 
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"
+#include "attacks/DoS_soft/malformed_eapol1.h"
+#include "attacks/downgrade/owe_trans.h"
+#include "devices.h"
+#include "target.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -38,11 +40,22 @@ static string html_page() {
         <ul>
             <li><a href="attacks/dos_soft/channel_switch/index.html">DoS Soft — Channel Switch (CSA)</a></li>
             <li><a href="attacks/dos_soft/bl0ck/index.html">DoS Soft — Block ACK (Bl0ck)</a></li>
+            <li><a href="attacks/dos_soft/malformed_eapol1/index.html">DoS Soft — Malformed EAPOL-1</a></li>
+            <li><a href="attacks/downgrade/owe_trans/index.html">Downgrade — OWE Transition Probe Leak</a></li>
         </ul>
     </div>
 
-)html";
-    out << R"html(    </div>
+    <div class="card">
+        <h2>
+			<a href="devices/index.html">Devices</a>
+		</h2>
+    </div>
+
+    <div class="card">
+        <h2>
+			<a href="target/index.html">Targets</a>
+		</h2>
+    </div>
 
 </body>
 </html>
@@ -64,8 +77,12 @@ int main() {
     f.close();
     wpa3_tester::set_public_perms(index);
 
+    wpa3_tester::overview::generate_devices(output_dir, data_dir);
     wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
     wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
+    wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
+    wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);
+    wpa3_tester::overview::generate_targets(output_dir, data_dir);
 
     return 0;
 }

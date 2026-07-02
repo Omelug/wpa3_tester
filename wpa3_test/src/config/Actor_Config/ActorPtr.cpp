@@ -1,11 +1,10 @@
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
 
-#include <memory>
 using namespace std;
 
 namespace wpa3_tester{
-ActorPtr::ActorPtr(shared_ptr<Actor_config> p): ptr(move(p)){}
+ActorPtr::ActorPtr(shared_ptr<Actor_config> p): ptr(std::move(p)){}
 Actor_config *ActorPtr::operator->() const{ return ptr.get(); }
 Actor_config &ActorPtr::operator*() const{ return *ptr; }
 Actor_config *ActorPtr::get() const{ return ptr.get(); }

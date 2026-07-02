@@ -39,7 +39,7 @@ TEST_CASE("Actor_config - json constructor without selection"){
 
     Actor_Config_sim actor(j);
 
-    // Should remain empty/nullopt
+    // should remain empty/nullopt
     CHECK_FALSE(actor[SK::iface]);
     CHECK_FALSE(actor[BK::monitor]);
 }
@@ -201,10 +201,10 @@ TEST_CASE("Actor_config - operator[] accessor"){
 
     CHECK(actor.get(SK::iface) == "wlan0");
 
-    // Missing key
+    // missing key
 	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name), config_err);
 
-    // Key exists but has no value should throw
+    // dey exists but has no value should throw
 	 CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
 
     // permanent_mac missing should throw
@@ -429,7 +429,7 @@ TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
     CHECK_FALSE(restored[BK::AP].value());
 }
 
-// ActorPtr
+// ------------- ActorPtr
 
 TEST_CASE("ActorPtr - basic accessors"){
     auto cfg = ActorPtr(make_shared<Actor_Config_sim>());

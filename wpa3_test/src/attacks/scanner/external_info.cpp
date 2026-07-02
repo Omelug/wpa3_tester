@@ -1,14 +1,14 @@
 #include "attacks/scanner/external_info.h"
-#include <fstream>
 #include <map>
 #include <variant>
 
-#include "default.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
+#include "logger/devices.h"
 #include "logger/report.h"
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
+#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 using namespace std;
@@ -89,6 +89,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map);
 
 void run_attack(RunStatus &rs){
+	//TODO now its scanning only on one channel
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");
@@ -102,14 +103,16 @@ void run_attack(RunStatus &rs){
 	ApInfoMap ap_map;
 	StaInfoMap sta_map;
 
+	const string filter = "type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req "
+				 "or type mgt subtype probe-req or type mgt subtype auth or type data";
 	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
 												const bool new_ap = parse_frame(pdu, ap_map, sta_map);
 												if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >=
 													actor_limit) return monostate{};
 												return nullopt;
-											}, scanner.get(SK::iface),
-											"type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req"
-											" or type mgt subtype probe-req or type mgt subtype auth or type data",
+											},
+											scanner.get(SK::sniff_iface),
+											filter,
 											seconds(timeout_sec));
 
 	auto passes_filter = [&](const Actor_Config_external &cfg) ->bool{
@@ -133,22 +136,46 @@ void run_attack(RunStatus &rs){
 		stas.push_back(sta_cfg.to_json());
 	}
 
-	rs.save_result({
-		//{"ap_count",  static_cast<int>(ap_map.size())},
-		//{"sta_count", static_cast<int>(sta_map.size())},
-		{"aps", aps}, {"stations", stas},
-	});
+	auto save_external = [](const Actor_Config_external &cfg){
+		Actor_Config_external dev = cfg;
+		if(!dev[SK::permanent_mac].has_value()) dev.set(SK::permanent_mac, dev.get_or(SK::mac, ""));
+		report::add_device(ActorPtr(make_shared<Actor_Config_external>(std::move(dev))));
+	};
+	for(const auto &entry: ap_map | views::values)
+		save_external(entry.cfg);
+	for(const auto &cfg: sta_map | views::values)
+		save_external(cfg);
 
+	rs.save_result({{"aps", aps}, {"stations", stas},});
+}
+
+static HWAddress<6> hw_from_json(const nlohmann::json &j){
+	if(j.is_string()) return HWAddress<6>(j.get<string>());
+	uint8_t b[6]{};
+	for(size_t i = 0; i < 6 && i < j.size(); ++i) b[i] = j[i].get<uint8_t>();
+	return HWAddress<6>(b);
+}
+
+void stats(const RunStatus &rs){
+	const nlohmann::json result = rs.load_result();
+	ApInfoMap ap_map;
+	StaInfoMap sta_map;
+	for(const auto &ap_json: result.at("aps")){
+		Actor_Config_external cfg(ap_json);
+		const HWAddress<6> bssid(ap_json.at("selection").at("mac").get<string>());
+		ApEntry &entry = ap_map[bssid];
+		entry.cfg = std::move(cfg);
+		for(const auto &mac_j: ap_json.at("stations"))
+			entry.stations.insert(hw_from_json(mac_j));
+	}
+	for(const auto &sta_json: result.at("stations"))
+		sta_map.emplace(HWAddress<6>(sta_json.at("selection").at("mac").get<string>()), Actor_Config_external(sta_json));
 	generate_report(rs, ap_map, sta_map);
 }
 
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map){
-	const auto report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report: {}", report_path.string());
-		return;
-	}
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
 
 	report << "# External Info Scanner Report\n\n";
 	report::attack_config_table(report, rs);
@@ -183,9 +210,5 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 		}
 		report << "\n";
 	}
-
-	report.close();
-	set_public_perms(report_path);
-	log(LogLevel::INFO, "External info report generated: {}", report_path.string());
 }
 }

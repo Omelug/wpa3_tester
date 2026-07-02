@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-07/schema#"
+$schema: "https://json-schema.org/draft/2020-12/schema"
 title: OpenWrt AP program_config
 type: object
 properties:
@@ -10,6 +10,20 @@ properties:
     minLength: 1
     maxLength: 32
     default: OpenWrt
+  # --- OWE transition mode ---
+  owe_transition_mode:
+    type: boolean
+    description: "Create paired open+OWE BSSes for OWE transition"
+  open_ssid:
+    type: string
+    minLength: 1
+    maxLength: 32
+    description: "SSID for the open BSS (OWE transition only)"
+  owe_ssid:
+    type: string
+    minLength: 1
+    maxLength: 32
+    description: "SSID for the hidden OWE BSS (OWE transition only)"
   mode:
     type: string
     enum: [ ap, sta, monitor, adhoc, mesh ]
@@ -80,6 +94,14 @@ properties:
     minLength: 1
   auth_cache:
     type: boolean
+  transition_disable:
+    oneOf:
+      - type: string
+        pattern: "^0x[0-9A-Fa-f]{2}$"
+      - type: integer
+        minimum: 0
+        maximum: 255
+    description: "Transition Disable bitmap (e.g. 0x01 or 1 = SAE only)"
 
   # --- OCV (Operating Channel Validation) ---
   ocv:
@@ -123,6 +145,18 @@ properties:
     type: boolean
 
   # --- WPA Enterprise ---
+  wpa:
+    type: [ string, integer ]
+  wpa_key_mgmt:
+    type: string
+  ieee8021x:
+    type: [ string, integer ]
+  eap_server:
+    type: [ string, integer ]
+  pwd_group:
+    type: [ string, integer ]
+  eap_user_file:
+    type: string
   auth_server:
     type: string
   auth_port:
@@ -151,12 +185,31 @@ properties:
   network:
     type: string
     default: lan
-required: [ ssid, mode ]
-if:
-  properties:
-    encryption:
-      enum: [ psk, psk2, psk-mixed, sae, sae-mixed ]
-then:
-  required: [ key ]
+required: [ mode ]
+allOf:
+  - if:
+      properties:
+        mode:
+          not:
+            const: monitor
+        owe_transition_mode:
+          not:
+            const: true
+    then:
+      required: [ ssid ]
+  - if:
+      required: [ owe_transition_mode ]
+      properties:
+        owe_transition_mode:
+          const: true
+    then:
+      required: [ open_ssid, owe_ssid ]
+  - if:
+      required: [ encryption ]
+      properties:
+        encryption:
+          enum: [ psk, psk2, psk-mixed, sae, sae-mixed ]
+    then:
+      required: [ key ]
 
 additionalProperties: false

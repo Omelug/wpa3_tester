@@ -223,7 +223,7 @@ TEST_CASE("RunStatus - parse_requirements()"){
         
         REQUIRE_EQ(rs.actors.size(), 1);
         REQUIRE(rs.actors.contains("only_actor"));
-        CHECK_EQ(rs.get_actor("only_actor")["actor_name"], "only_actor");
+        CHECK_EQ(rs.get_actor("only_actor").get(SK::actor_name), "only_actor");
         REQUIRE_EQ(rs.observers.size(), 2);
 		REQUIRE(rs.observers.contains("tcpdump_observer"));
 		REQUIRE(rs.observers.contains("tshark_observer"));

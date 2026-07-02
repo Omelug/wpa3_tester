@@ -1,0 +1,80 @@
+#include <filesystem>
+#include <iomanip>
+#include <nlohmann/json.hpp>
+
+#include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
+#include "default.h"
+#include "config/RunSuiteStatus.h"
+#include "logger/report.h"
+#include "overview/html_guard.h"
+#include "suite/result_helper.h"
+#include "suite/suite_helper.h"
+
+namespace wpa3_tester::suite::invalid_curve_filler{
+using namespace std;
+using namespace filesystem;
+using namespace nlohmann;
+
+InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
+	auto e = helper::load_result_default<InvalidCurveTestEntry>(test_folder);
+	e.test_name = test_folder.filename().string();
+
+	const auto rs = helper::load_test_rs(test_folder);
+	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
+	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
+	return e;
+}
+
+void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
+                                          const vector<path> &folders,
+                                          const path & /*page_dir*/) {
+	f << "        <table class=\"aggregate\">\n"
+	  << "            <thead><tr>"
+	  << "<th>Test</th><th>AP Driver</th><th>Attacker Driver</th><th>Passed?</th>"
+	  << "</tr></thead>\n            <tbody>\n";
+	for (const auto &p : folders) {
+		const auto e = parse(p);
+		f << "                <tr>\n"
+		  << "                    <td>" << e.test_name << "</td>\n"
+		  << "                    <td>" << e.ap_driver << "</td>\n"
+		  << "                    <td>" << e.attacker_driver << "</td>\n"
+		  << "                    <td>" << e.passed << "</td>\n"
+		  << "                </tr>\n";
+	}
+	f << "            </tbody>\n        </table>\n";
+}
+
+void generate_report(const RunSuiteStatus &rss){
+	const auto run_dir = rss.run_folder();
+	const auto entries = helper::get_results_default<InvalidCurveTestEntry>(run_dir);
+
+	report::ReportGuard report(run_dir);
+	if(!report) return;
+
+	report << "# Invalid Curve Attack Test Suite Report\n\n";
+	report << "Tests whether the AP is vulnerable to EAP-PWD invalid curve attack (CVE-2019-9499).\n\n";
+
+	if(entries.empty()){ report << "No test results found.\n"; return; }
+
+	report << "## Test Results\n\n";
+	report << "| Test | AP Driver | Attacker Driver | Result |\n";
+	report << "|------|-----------|-----------------|--------|\n";
+
+	for(const auto &e: entries){
+		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
+				RESULT_NAME + ")";
+		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
+			<< e.ap_driver << " | "
+			<< e.attacker_driver << " | "
+			<< result_link << " |\n";
+	}
+
+	report << "\n## Summary\n\n";
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value(); });
+	report << "- Total Tests: " << entries.size() << "\n";
+	report << "- Passed: " << passed_count << "\n";
+	report << "- Failed: " << (entries.size() - passed_count) << "\n";
+	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) /
+			static_cast<double>(entries.size())) << "%\n";
+}
+}

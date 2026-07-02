@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: ath_masker_test
 attacker_module: ath_masker_test
 requirements:
@@ -34,3 +34,4 @@ observers:
       filter: "special_filter:actors_5_bytes"
 attack_config:
   test_mac_count: 100
+rewrite: all

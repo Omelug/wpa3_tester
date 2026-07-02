@@ -85,9 +85,9 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
         const auto out = MonitorSocket::build_inject_frame({raw.begin(), raw.end()}, 6);
 
         REQUIRE_UNARY_FALSE(out.empty());
-        // RadioTap revision byte must be 0
+        // radioTap revision byte must be 0
         CHECK_EQ(out[0], 0x00);
-        // Deserialize and verify channel
+        // deserialize and verify channel
         RadioTap rt(out.data(), out.size());
         CHECK_EQ(rt.channel_freq(), hw_capabilities::channel_to_freq(6));
     }*/

@@ -1,12 +1,10 @@
 #include "attacks/downgrade/owe_trans.h"
 #include <atomic>
 #include <chrono>
-#include <fstream>
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
 
-#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -23,7 +21,7 @@ using namespace chrono;
 using nlohmann::json;
 
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup(rs, false);
 }
 
 void run_attack(RunStatus &rs){
@@ -31,15 +29,16 @@ void run_attack(RunStatus &rs){
 	const int probe_wait_time = att_cfg.value("probe_wait_time", 30);
 
 	const string sta_mac_str = rs.get_actor("client").get(SK::mac);
-	const string attacker_iface = rs.get_actor("attacker")["iface"];
+	const string attacker_iface = rs.get_actor("attacker").get(SK::iface);
 
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Stopping AP - waiting for client probe requests");
 	components::setup_rogue_ap(rs);
-	rs.process_manager.stop("access_point");
+	components::stop_AP(rs, "access_point");
 
-	atomic probe_count{0};
+	atomic broadcast_probe_count{0};
+	atomic ssid_probe_count{0};
 	atomic stop_sniff{false};
 
 	SnifferConfiguration sniff_cfg;
@@ -49,10 +48,14 @@ void run_attack(RunStatus &rs){
 
 	Sniffer sniffer(attacker_iface, sniff_cfg);
 	thread sniff_thread([&]{
-		sniffer.sniff_loop([&](PDU &) ->bool{
+		sniffer.sniff_loop([&](PDU &pdu) ->bool{
 			if(stop_sniff.load()) return false;
-			const int n = ++probe_count;
-			log(LogLevel::INFO, "Probe request from client (count: {})", n);
+			const auto *probe = pdu.find_pdu<Dot11ProbeRequest>();
+			if(probe && probe->ssid().empty()){
+				log(LogLevel::INFO, "Broadcast probe req (count: {})", ++broadcast_probe_count);
+			} else {
+				log(LogLevel::INFO, "SSID probe req (count: {})", ++ssid_probe_count);
+			}
 			return true;
 		});
 	});
@@ -62,7 +65,7 @@ void run_attack(RunStatus &rs){
 	sniffer.stop_sniff();
 	sniff_thread.join();
 
-	log(LogLevel::INFO, "Total probe requests detected: {}", probe_count.load());
+	log(LogLevel::INFO, "Probe requests: {} broadcast, {} SSID", broadcast_probe_count.load(), ssid_probe_count.load());
 	rs.process_manager.stop_all();
 }
 
@@ -75,7 +78,10 @@ void stats_attack(const RunStatus &rs){
 					{"client", END_tag, "END", "black"},
 				});
 
-	observer::tshark::pcap_events(rs, elements, {{"attacker", "wlan.fc.type_subtype == 4", "ProbeReq", "blue"},});
+	observer::tshark::pcap_events(rs, elements, {
+		{"attacker", "wlan.fc.type_subtype == 4 and wlan.ssid == \"\"", "ProbeBC", "blue"},
+		{"attacker", "wlan.fc.type_subtype == 4 and wlan.ssid != \"\"", "ProbeSSID", "cyan"},
+	});
 
 	optional<hostapd::CrackResult> crack_result;
 	if(rs.config().at("actors").contains("rogue_ap")){
@@ -85,9 +91,12 @@ void stats_attack(const RunStatus &rs){
 		if(!psk.empty()) crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
 	}
 
-	const auto probe_times = observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type_subtype == 4",
-																"ProbeReq");
-	const int probe_count = static_cast<int>(probe_times.size());
+	const auto bc_times = observer::tshark::get_tshark_events(rs, "attacker",
+		"wlan.fc.type_subtype == 4 and wlan.ssid == \"\"", "ProbeBC");
+	const auto ssid_times = observer::tshark::get_tshark_events(rs, "attacker",
+		"wlan.fc.type_subtype == 4 and wlan.ssid != \"\"", "ProbeSSID");
+	const int broadcast_probe_count = static_cast<int>(bc_times.size());
+	const int ssid_probe_count = static_cast<int>(ssid_times.size());
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
 	const bool disconnected = !disc_times.empty();
@@ -95,46 +104,43 @@ void stats_attack(const RunStatus &rs){
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report.md");
-	} else{
-		report << "# OWE Transition Probe Leak\n\n";
-		report << "After stopping the OWE AP, a client with autoconnect will emit probe requests "
-				"to rediscover the network, potentially revealing its preferred SSID list.\n\n";
-		report::attack_config_table(report, rs);
-		report::attack_mapping_table(report, rs);
-		report << "## Results\n\n";
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
+
+	report << "# OWE Transition Probe Leak\n\n";
+	report << "After stopping the OWE AP, a client with autoconnect will emit probe requests "
+			"to rediscover the network, potentially revealing its preferred SSID list.\n\n";
+	report::attack_config_table(report, rs);
+	report::attack_mapping_table(report, rs);
+	report << "## Results\n\n";
+	report << "| Metric | Value |\n|--------|-------|\n";
+	report << "| Client disconnected | " << disconnected << " |\n";
+	report << "| Broadcast probe requests | " << broadcast_probe_count << " |\n";
+	report << "| SSID probe requests | " << ssid_probe_count << " |\n";
+	report << "| Vulnerable (probes sent) | " << (broadcast_probe_count + ssid_probe_count > 0) << " |\n\n";
+	if(crack_result.has_value()){
+		report << "## Credential Capture (hcxpmktool)\n";
+		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
-		report << "| Client disconnected | " << (disconnected ? "yes" : "no") << " |\n";
-		report << "| Probe requests detected | " << probe_count << " |\n";
-		report << "| Vulnerable (probes sent) | " << (probe_count > 0 ? "yes" : "no") << " |\n\n";
-		if(crack_result.has_value()){
-			report << "## Credential Capture (hcxpmktool)\n";
-			report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
-			report << "| Metric | Value |\n|--------|-------|\n";
-			report << "| Captured handshakes | " << crack_result->total << " |\n";
-			report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
-		}
-		report << "### Traffic\n";
-		report << "### Client\n";
-		report << "![Client graph](" << relative(client_graph, rs.run_folder()).string() << ")\n\n";
-		report << "### Attacker (probe capture)\n";
-		report << "![Attacker graph](" << relative(attacker_graph, rs.run_folder()).string() << ")\n\n";
-		if(rs.config().at("actors").contains("rogue_ap")){
-			const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
-			report << "### Rogue AP\n";
-			report << "![Rogue AP graph](" << relative(rogue_graph, rs.run_folder()).string() << ")\n\n";
-		}
-		report << "---\n";
-		report.close();
-		set_public_perms(report_path);
+		report << "| Captured handshakes | " << crack_result->total << " |\n";
+		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
 	}
+	report << "### Traffic\n";
+	report << "### Client\n";
+	report << "![Client graph](" << client_graph << ")\n\n";
+	report << "### Attacker (probe capture)\n";
+	report << "![Attacker graph](" << attacker_graph << ")\n\n";
+	if(rs.config().at("actors").contains("rogue_ap")){
+		const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
+		report << "### Rogue AP\n";
+		report << "![Rogue AP graph](" << rogue_graph << ")\n\n";
+	}
+	report << "---\n";
 
 	const json result = {
 		{"disconnected", disconnected},
-		{"probe_count", probe_count}
+		{"broadcast_probe_count", broadcast_probe_count},
+		{"ssid_probe_count", ssid_probe_count}
 	};
 	rs.save_result(result);
 }

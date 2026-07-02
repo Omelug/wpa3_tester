@@ -1,0 +1,59 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: owe_only_probe_leak
+attacker_module: owe_trans
+actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [ AP ]
+      driver: [rtw88_8821au, rtw_8821au]
+    setup:
+      program: hostapd
+      program_config:
+        driver: nl80211
+        ssid: test_owe
+        hw_mode: g
+        channel: 6
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa: 2
+        wpa_key_mgmt: OWE
+        rsn_pairwise: CCMP
+    ip_addr: "10.0.0.1"
+  client:
+    source: internal
+    #selection:
+    #  driver: rtl8xxxu
+    setup:
+      program: wpa_supplicant
+      program_config:
+        #other_options: "-d"
+        ssid: test_owe
+        ieee80211w: 2
+        proto: RSN
+        key_mgmt: OWE
+        pairwise: CCMP
+        group: CCMP
+    netns: sta
+    ip_addr: "10.0.0.2"
+  attacker:
+    source: internal
+    selection:
+      #driver: mt76x2u
+      condition: [ monitor ]
+      channel: 6
+observers:
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+  client_tshark:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+attack_config:
+  # seconds to wait after AP is stopped before checking for probe requests
+  probe_wait_time: 30
+rewrite: errors

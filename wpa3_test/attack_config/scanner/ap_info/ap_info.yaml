@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-07/schema#
+$schema: https://json-schema.org/draft/2020-12/schema
 name: ap_info
 $validator: "./ap_info.schema.yaml"
 attacker_module: ap_info
@@ -15,7 +15,7 @@ actors:
     selection:
       condition: [ monitor ]
       channel: 6
-    sniff_iface: scanner
+    #sniff_iface: scanner
 
 observers:
   tshark_client:

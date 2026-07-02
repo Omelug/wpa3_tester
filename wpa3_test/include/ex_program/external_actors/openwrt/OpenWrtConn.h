@@ -10,11 +10,12 @@ class OpenWrtConn: public ExternalConn{
 	// --- device functions
 	void check_req(const nlohmann::json &config, const std::string &actor_name) override;
 	std::string wait_for_ifname(const std::string &section) const;
+	void setup_monitor_iface(const std::string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const;
 public:
 	void forward_internet(const std::string &remote_ip) const;
 	void time_fix() const;
 
-	void setup_iface(const std::string &radio_name, ActorPtr &actor, nlohmann::json config) override;
+	void setup_iface(const std::string &radio_name, ActorPtr &actor, const nlohmann::json &config) override;
 
 	explicit OpenWrtConn() = default;
 	bool connect(const ActorPtr &actor) override;
@@ -27,7 +28,7 @@ public:
 	std::string get_wifi_iface_section(const std::string &iface) const;
 	void setup_ap(const RunStatus &rs, ActorPtr &actor) override;
 	void logger(RunStatus &rs, const std::string &actor_name) override;
-	void get_hw_capabilities(ActorPtr &actor, const std::string &radio) override;
+	void get_hw_capabilities(const ActorPtr &actor) override;
 	static void parse_hw_capabilities(const ActorPtr &actor, const std::string &output);
 };
 }

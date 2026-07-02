@@ -37,7 +37,7 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	if(sub_folder.empty()){
 		actual_sub_folder = relative_from("attack_config", config_path);
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / testName / LAST_RUN_DIR;
+	_run_folder = BASE_FOLDER / actual_sub_folder / testName ;
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
@@ -63,13 +63,13 @@ void RunStatus::execute(){
 			remove_all(_run_folder, ec);
 			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
 		} else{
-			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / "errors.txt") || exists(
-				_run_folder / "done.txt"))){
+			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / ERROR_FILE) || exists(
+				_run_folder / DONE_FILE))){
 				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / "errors.txt") || !exists(
-				_run_folder / "done.txt"))){
+			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / ERROR_FILE) || !exists(
+				_run_folder / DONE_FILE))){
 				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}
@@ -91,7 +91,7 @@ void RunStatus::execute(){
 		~LogGuard(){ close_log_file(); }
 	} log_guard;
 
-	//try {
+	try {
 	auto &gcfg = get_global_config();
 	if(gcfg.contains("regulatory_domain")){
 		const string reg = gcfg.at("regulatory_domain").get<string>();
@@ -101,6 +101,8 @@ void RunStatus::execute(){
 	}
 
 	if(run_config().get_only_stats()){
+		config_path(absolute(run_folder()/TEST_CONFIG_NAME));
+		config(config_validation(config_path()));
 		load_actor_interface_mapping();
 		stats_test();
 		return;
@@ -135,7 +137,7 @@ void RunStatus::execute(){
 		return;
 	}
 	stats_test();
-	const path done_file = run_folder() / "done.txt";
+	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
 	if(done_log.is_open()){
 		done_log << "commit: " << git_commit_hash() << endl;
@@ -144,10 +146,10 @@ void RunStatus::execute(){
 		done_log.close();
 		set_public_perms(done_file);
 	}
-	/*} catch (const exception& e) {
+	} catch (const exception& e) {
 		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 
-		const path error_file = run_folder() / "errors.txt";
+		const path error_file = run_folder() / ERROR_FILE;
 		ofstream error_log(error_file, ios::out | ios::app);
 		if (error_log.is_open()) {
 			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
@@ -170,11 +172,11 @@ void RunStatus::execute(){
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}*/
+	}
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor){
-	if(actor->conn){ return; }
+	if(actor->conn && actor->conn->is_connected()){ return; }
 	shared_ptr<ExternalConn> conn;
 	if(actor.get(SK::external_OS) == "openwrt"){
 		conn = make_shared<OpenWrtConn>();
@@ -231,7 +233,6 @@ bool RunStatus::should_skip(const path &p){
 	const auto rel = relative(p, ATTACK_CONFIG);
 	const auto first = *rel.begin();
 	if(first == "validator") return true;
-	if(first == "target") return true;
 	if(rel == "global_config.yaml") return true;
 	if(p.extension() != ".yaml") return true;
 	if(rel.string().find("/validator/") != string::npos) return true;
@@ -305,6 +306,10 @@ string RunStatus::findConfigByTestName(const string &name){
 	throw config_err("Unknown test name: " + name + ", Isn't it test suite?");
 }
 
+//TODO ??
+// tuple 1 item -> {"X"} = {"combinated", "X" ,"X",black"}
+// tuple 2 items {"actor", "X"} -> {"actor", "X" , "X","black"}
+// tuple 3 items {"actor", "X", "color"} -> {"actor", "X" , "X", "color"}
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 							// { actor_name, pattern, label, color }
 							initializer_list<tuple<string,string,string,string>> event_d

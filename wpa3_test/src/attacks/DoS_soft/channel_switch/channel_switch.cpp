@@ -6,7 +6,6 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd.h"
@@ -17,7 +16,6 @@
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::CSA_attack{
 using namespace std;
@@ -69,7 +67,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 }
 
@@ -104,13 +102,8 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 					const path &ATT_graph_path, const path &rogue_graph_path,
 					const optional<hostapd::CrackResult> &crack_result
 ){
-	const path report_path = rs.run_folder() / REPORT_NAME;
-	ofstream report(report_path);
-	if(!report.is_open()){
-		log(LogLevel::ERROR, "Failed to create report file!");
-		return;
-	}
-	set_public_perms(report_path);
+	report::ReportGuard report(rs.run_folder());
+	if(!report) return;
 
 	report << "# CSA DoS Attack\n\n";
 	//FIXME link to CSA attack
@@ -124,19 +117,19 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//TODO add hostapd helper ?
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
-		report << "![STA Throughput Graph](" << relative(STA_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
 	}
 	if(!AP_graph_path.empty()){
 		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
-		report << "![AP Throughput Graph](" << relative(AP_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
 	}
 	if(!ATT_graph_path.empty()){
 		report << "### ATT (access_point, hostapd-mana " << hostapd::get_version(rs, "access_point") << ")\n";
-		report << "![ATT Throughput Graph](" << relative(ATT_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![ATT Throughput Graph](" << ATT_graph_path << ")\n\n";
 	}
 	if(!rogue_graph_path.empty()){
 		report << "###  Rogue AP (rogue_ap)\n";
-		report << "![Rogue AP Throughput Graph](" << relative(rogue_graph_path, rs.run_folder()).string() << ")\n\n";
+		report << "![Rogue AP Throughput Graph](" << rogue_graph_path << ")\n\n";
 	}
 	if(crack_result.has_value()){
 		report << "## Credential Cracking (hcxpmktool)\n";
@@ -147,7 +140,6 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	}
 
 	report << "---\n";
-	report.close();
 }
 
 void stats_chs_attack(const RunStatus &rs){

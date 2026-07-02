@@ -4,7 +4,6 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/error_log.h"
-#include "setup/config_parser.h"
 
 using namespace std;
 using namespace filesystem;

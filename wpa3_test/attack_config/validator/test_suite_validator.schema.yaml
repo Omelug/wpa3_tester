@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-07/schema#"
+$schema: "https://json-schema.org/draft/2020-12/schema"
 title: Validator pro WPA3 Test Suite
 type: object
 
@@ -38,6 +38,14 @@ properties:
           required: [ test_name ]
           properties:
             test_name:
+              type: string
+          additionalProperties: false
+
+        - title: Sub suite source
+          type: object
+          required: [ test_suite_name ]
+          properties:
+            test_suite_name:
               type: string
           additionalProperties: false
 

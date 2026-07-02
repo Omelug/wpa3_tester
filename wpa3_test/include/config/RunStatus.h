@@ -19,7 +19,7 @@ template<>
 struct std::hash<Tins::HWAddress<6>>{
 	size_t operator()(const Tins::HWAddress<6> &addr) const noexcept{
 		size_t result = 0;
-		for(uint8_t byte: addr){
+		for(const uint8_t byte: addr){
 			result ^= std::hash<uint8_t>{}(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
 		}
 		return result;
@@ -33,6 +33,7 @@ static const std::filesystem::path ATTACK_CONFIG = std::filesystem::path(PROJECT
 inline auto var_PREFIX = std::string("var_");
 inline auto START_tag = "@START";
 inline auto END_tag = "@END";
+inline auto END_STOP_tag = "@END";
 
 class Actor_config;
 class ExternalConn;
@@ -48,7 +49,7 @@ using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
-	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::current_path() / "data" / "wpa3_test";
+	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::path(PROJECT_ROOT_DIR).parent_path() / "data" / "wpa3_test";
 protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};

@@ -45,7 +45,7 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 			log(LogLevel::ERROR, "relative_from issue");
 		}
 	}
-	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name / LAST_RUN_DIR;
+	_run_folder = BASE_FOLDER / actual_sub_folder / suite_name ;
 	log(LogLevel::INFO, "Used test suite config {}", _config_path.string());
 	this->config = config_validation(_config_path);
 
@@ -69,12 +69,12 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));
 		global_validator.validate(config_json);
 		return config_json;
-	} catch(const domain_error &){
-		throw_with_nested(config_err("Schema error: " + config_path.string()));
-	} catch(const invalid_argument &){
-		throw_with_nested(config_err("Error in config: " + config_path.string()));
-	} catch(const exception &){
-		throw_with_nested(config_err("Config validation error: " + config_path.string()));
+	} catch(const domain_error &e){
+		throw_with_nested(config_err("Schema error: {}", config_path));
+	} catch(const invalid_argument &e){
+		throw_with_nested(config_err("Error in config: {} : {}", config_path.string(), e.what()));
+	} catch(const exception &e){
+		throw_with_nested(config_err("Config validation error: {}", config_path));
 	}
 }
 
@@ -87,6 +87,13 @@ void RunSuiteStatus::defined_by_path(basic_json<> source_j, const string &source
 void RunSuiteStatus::defined_by_name(basic_json<> source_j, const string &source_name, config_paths &test_map){
 	const string name = source_j.at("test_name").get<string>();
 	test_map.emplace_back(source_name, "", RunStatus::findConfigByTestName(name));
+}
+
+void RunSuiteStatus::defined_by_sub_suite(basic_json<> source_info, config_paths &test_map){
+	const string suite_name = source_info.at("test_suite_name").get<string>();
+	RunSuiteStatus sub_suite(findConfigByTestSuiteName(suite_name));
+	auto sub_paths = sub_suite.get_test_paths();
+	test_map.insert(test_map.end(), sub_paths.begin(), sub_paths.end());
 }
 
 void replace_all(string &str, const string &from, const string &to){
@@ -347,8 +354,8 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
 		throw req_err(
-			"actor_filler: no valid hardware assignments found, " + hw_capabilities::get_heuristic_err_msg(
-				rules, *_hw_option_cache.internal_opts));
+			"actor_filler: no valid hardware assignments found, {}",
+			hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
 	}
 
 	const path gen_folder = test_config_folder / source_name;
@@ -395,6 +402,10 @@ config_paths RunSuiteStatus::get_test_paths(){
 		}
 		if(source_info.contains("test_name")){
 			defined_by_name(source_info, source_name, test_map);
+			continue;
+		}
+		if(source_info.contains("test_suite_name")){
+			defined_by_sub_suite(source_info, test_map);
 			continue;
 		}
 
@@ -451,8 +462,8 @@ void RunSuiteStatus::execute(){
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()){
-			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j) this_thread::sleep_for(
-				chrono::milliseconds(100));
+			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j)
+				this_thread::sleep_for(chrono::milliseconds(100));
 		}
 	}
 
@@ -479,7 +490,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	RunStatus rs(test_path, name, ".");
 	rs.run_config(run_config);
 	rs.run_config(get_global_run_config());
-	rs.run_folder(run_folder() / src_key / rs.config().at("name").get<string>());
+	rs.run_folder(run_folder()/src_key/rs.config().at("name").get<string>());
 	rs.execute();
 }
 

@@ -217,6 +217,7 @@ void generate_resource_graph(const path &data_filepath, const path &output_image
 
 void create_graph(const RunStatus &rs, const string &source, const G_elms &elements){
 	const auto log_path = get_observer_folder(rs, "resource_checker") / ("access_point" + SUFFIX_res + ".log");
+	set_public_perms(log_path);
 	if(source == "external") create_resource_monitor_graph(log_path, elements);
 	if(source == "internal") create_resource_pid_graph(log_path);
 }

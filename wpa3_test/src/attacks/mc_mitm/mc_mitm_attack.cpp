@@ -11,7 +11,7 @@ using namespace chrono;
 
 namespace wpa3_tester::mc_mitm{
 void setup_attack(RunStatus &rs){
-	components::client_ap_setup(rs);
+	components::client_ap_setup_t(rs);
 	//components::client_ap_attacker_setup(rs);
 
 	//TODO components::setup_STA(rs, "client");

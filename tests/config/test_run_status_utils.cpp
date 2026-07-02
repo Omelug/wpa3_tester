@@ -6,6 +6,7 @@
 
 #include "default.h"
 #include "config/RunStatus.h"
+#include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/error_log.h"
 
 using namespace std;
@@ -116,4 +117,116 @@ TEST_CASE("should_skip - top-level global_config.yaml is skipped"){
 
 TEST_CASE("should_skip - ordinary attack config yaml is not skipped"){
     CHECK_FALSE(RunStatus::should_skip(ATTACK_CONFIG / "mc_mitm" / "mc_mitm_sim.yaml"));
+}
+
+// -----------------
+// RunStatus::load_actor_interface_mapping
+
+TEST_CASE("load_actor_interface_mapping - round-trips actors written by save_actor_interface_mapping"){
+    const path test_dir = temp_directory_path() / "test_load_actor_interface_mapping";
+    create_directories(test_dir);
+
+    RunStatus rs;
+    rs.run_folder(test_dir);
+
+    const auto make = [](const string &name, const string &iface, const string &mac, const string &driver,
+                        const string &channel
+    ){
+        const auto a = make_shared<Actor_Config_sim>();
+        a->set(SK::source, "simulation");
+        a->set(SK::actor_name, name);
+        a->set(SK::iface, iface);
+        a->set(SK::mac, mac);
+        a->set(SK::driver_name, driver);
+        a->set(SK::channel, channel);
+        return ActorPtr(a);
+    };
+    rs.actors.emplace("sta", make("sta", "wlan0", "02:00:00:00:00:01", "ath9k", "6"));
+    rs.actors.emplace("ap", make("ap", "wlan1", "02:00:00:00:00:02", "mac80211_hwsim", "1"));
+
+    rs.save_actor_interface_mapping();
+    REQUIRE(exists(test_dir / "mapping.csv"));
+
+    rs.actors.clear();
+    rs.load_actor_interface_mapping();
+
+    REQUIRE_EQ(rs.actors.size(), 2);
+    REQUIRE(rs.actors.contains("sta"));
+    REQUIRE(rs.actors.contains("ap"));
+
+    const auto &sta = rs.actors.at("sta");
+    CHECK_EQ(sta.get(SK::iface), "wlan0");
+    CHECK_EQ(sta.get(SK::mac), "02:00:00:00:00:01");
+    CHECK_EQ(sta.get(SK::driver_name), "ath9k");
+    CHECK_EQ(sta.get(SK::channel), "6");
+
+    const auto &ap = rs.actors.at("ap");
+    CHECK_EQ(ap.get(SK::iface), "wlan1");
+    CHECK_EQ(ap.get(SK::channel), "1");
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("load_actor_interface_mapping - missing mapping.csv leaves actors untouched"){
+    const path test_dir = temp_directory_path() / "test_load_actor_interface_mapping_missing";
+    remove_all(test_dir);
+    create_directories(test_dir);
+
+    RunStatus rs;
+    rs.run_folder(test_dir);
+
+    CHECK_NOTHROW(rs.load_actor_interface_mapping());
+    CHECK(rs.actors.empty());
+
+    remove_all(test_dir);
+}
+
+// -----------------
+// RunStatus::save_result / load_result
+
+TEST_CASE("save_result - load_result round-trips a json object"){
+    const path test_dir = temp_directory_path() / "test_save_load_result";
+    create_directories(test_dir);
+
+    RunStatus rs;
+    rs.run_folder(test_dir);
+
+    const nlohmann::json original = {{"passed", true}, {"count", 3}};
+    rs.save_result(original);
+
+    REQUIRE(exists(test_dir / RESULT_NAME));
+    CHECK_EQ(rs.load_result(), original);
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("load_result - throws stats_err when result.json is missing"){
+    const path test_dir = temp_directory_path() / "test_load_result_missing";
+    remove_all(test_dir);
+    create_directories(test_dir);
+
+    RunStatus rs;
+    rs.run_folder(test_dir);
+
+    CHECK_THROWS_AS(rs.load_result(), stats_err);
+
+    remove_all(test_dir);
+}
+
+TEST_CASE("load_actor_interface_mapping - malformed rows are skipped, not thrown"){
+    const path test_dir = temp_directory_path() / "test_load_actor_interface_mapping_malformed";
+    create_directories(test_dir);
+
+    ofstream ofs(test_dir / "mapping.csv");
+    ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj\n";
+    ofs << "simulation,broken_row\n"; // too few columns
+    ofs.close();
+
+    RunStatus rs;
+    rs.run_folder(test_dir);
+
+    CHECK_NOTHROW(rs.load_actor_interface_mapping());
+    CHECK(rs.actors.empty());
+
+    remove_all(test_dir);
 }

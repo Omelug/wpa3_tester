@@ -98,9 +98,8 @@ static optional<monostate> handle_eap_pdu(PDU &pdu, const HWAddress<6> &target_a
 	const auto *raw = pdu.find_pdu<RawPDU>();
 	if(!dot11_data || !raw) return nullopt;
 
-	const HWAddress<6> addr1 = dot11_data->addr1();
-	const HWAddress<6> addr2 = dot11_data->addr2();
-	const HWAddress<6> client_mac = (addr1 == target_ap_mac) ? addr2 : addr1;
+	const HWAddress<6> client_mac =
+		(dot11_data->addr1() == target_ap_mac) ? dot11_data->addr2() : dot11_data->addr1();
 
 	const EAP_Info info = parse_eap_packet(*raw);
 

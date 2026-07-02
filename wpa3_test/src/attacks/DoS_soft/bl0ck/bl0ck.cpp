@@ -79,7 +79,7 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 		ctx.current_sn.store(sn);
 		ctx.current_fn.store(fn);
 		ctx.has_sn.store(true);
-		log(LogLevel::DEBUG, "BARS: Updated SSN={%u} FN={%u}", sn, fn);
+		log(LogLevel::DEBUG, "BARS: Updated SSN=" + std::to_string(sn) + " FN=" + std::to_string(fn));
 		return nullopt; // continue
 	}, iface, filter, seconds(timeout_sec));
 }

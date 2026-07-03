@@ -46,18 +46,6 @@ if (UNIX)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
 endif ()
 
-# Registers a doctest executable: add_doctest_exe(<target> SOURCES <src...> [TEST_NAME <name>] [LIBS <lib...>])
-# TEST_NAME defaults to <target> if omitted.
-function(add_doctest_exe target)
-    cmake_parse_arguments(ARG "" "TEST_NAME" "SOURCES;LIBS" ${ARGN})
-    if (NOT ARG_TEST_NAME)
-        set(ARG_TEST_NAME ${target})
-    endif ()
-    add_executable(${target} ${ARG_SOURCES})
-    target_link_libraries(${target} PRIVATE wpa3_core doctest_headers ${ARG_LIBS})
-    add_test(NAME ${ARG_TEST_NAME} COMMAND ${target})
-endfunction()
-
 
 if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)

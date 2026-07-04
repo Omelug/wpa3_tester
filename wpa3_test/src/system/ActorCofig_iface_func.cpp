@@ -63,7 +63,7 @@ void Actor_config::create_sniff_iface() const{
 
 	log(LogLevel::DEBUG, "Interface {} not found, creating new one.", sniff_iface);
 	const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"), filesystem::directory_iterator{});
-	log(LogLevel::DEBUG, "Current open FDs: %ld {} {}", fd_count, iface, sniff_iface.c_str());
+	log(LogLevel::DEBUG, "Current open FDs: {} {} {}", fd_count, iface, sniff_iface.c_str());
 
 	string monitor_flags;
 	vector<string> cmd = {

@@ -22,7 +22,7 @@ void run_attack(RunStatus &rs){
 	const string iface = rs.get_actor("scanner")["iface"];
 
 	// ----- hw_info (modes, bands) via cache -----
-	const path hw_cache = path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" / "scan" / "internal_iface.json";
+	const path hw_cache = root_dir().parent_path() / "data" / "cache" / "scan" / "internal_iface.json";
 
 	auto scanner = rs.get_actor("scanner");
 	scanner->set(SK::iface, iface);

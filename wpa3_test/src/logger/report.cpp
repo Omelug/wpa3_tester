@@ -40,7 +40,6 @@ void attack_mapping_table(ReportGuard &report, const RunStatus &rs){
 		return;
 	}
 
-	//report << "#### Actor/Interface Mapping\n\n"
 	report << "| Type | Actor Name | Interface | MAC | Driver |\n" <<
 			  "|------|------------|-----------|-----|--------|\n";
 

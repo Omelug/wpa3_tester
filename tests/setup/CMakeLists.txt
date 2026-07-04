@@ -1,33 +1,7 @@
-# validation tests
-add_executable(run_validation_tests test_config_validation.cpp)
-
-target_link_libraries(run_validation_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
+add_doctest_exe(run_validation_tests SOURCES test_config_validation.cpp TEST_NAME ValidationTests)
 target_compile_definitions(run_validation_tests PRIVATE
         TEST_DATA_DIR="config_validation"
 )
 
-add_test(NAME ValidationTests COMMAND run_validation_tests)
-
-# system tests
-add_executable(run_cleanup_tests test_cleanup_namespaces.cpp)
-
-target_link_libraries(run_cleanup_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-add_test(NAME CleanupTests COMMAND run_cleanup_tests)
-
-# scan tests
-add_executable(run_scan_tests test_scan.cpp)
-
-target_link_libraries(run_scan_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-add_test(NAME ScanTests COMMAND run_scan_tests)
+add_doctest_exe(run_cleanup_tests SOURCES test_cleanup_namespaces.cpp TEST_NAME CleanupTests)
+add_doctest_exe(run_scan_tests SOURCES test_scan.cpp TEST_NAME ScanTests)

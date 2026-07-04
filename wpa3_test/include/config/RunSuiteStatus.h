@@ -6,6 +6,7 @@
 #include "Actor_Config/ActorPtr.h"
 #include "Actor_Config/Actor_config.h"
 #include "system/ProcessManager.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using config_paths = std::vector<std::tuple<std::string,std::string,std::filesystem::path>>;
@@ -30,7 +31,7 @@ public: // getters and setters
 	bool only_stats = false;
 	int wait_between_tests = 0;
 	Run_Config run_config{};
-	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::path(PROJECT_ROOT_DIR).parent_path() / "data" / "wpa3_suites";
+	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / "data" / "wpa3_suites"; }
 
 	static void print_test_suite_list();
 	static void print_tests_in_suite(const std::string &ts_name);

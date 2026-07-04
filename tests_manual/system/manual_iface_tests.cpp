@@ -78,7 +78,7 @@ TEST_CASE("set wifi type"){
 TEST_CASE("start ap test"){
     const string base_iface = TestConfig::base_iface;
     const string ap_iface = "ap_" + base_iface;
-    const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
+    const string pcap_path = root_dir().string() + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
     log(LogLevel::INFO, "Running test on iface: {}", base_iface);
 
     const auto raw = test_helpers::read_pcap_file(pcap_path);
@@ -108,7 +108,7 @@ TEST_CASE("STA connected to AP in different namespaces") {
     REQUIRE_NOTHROW(hw_capabilities::create_ns(ap_ns));
     REQUIRE_NOTHROW(hw_capabilities::move_to_netns(ap_phys_iface, ap_ns));
 
-    const string pcap_path = string(PROJECT_ROOT_DIR) + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
+    const string pcap_path = root_dir().string() + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
     const auto raw = test_helpers::read_pcap_file(pcap_path);
     RadioTap rt(raw.data(), raw.size());
     const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();

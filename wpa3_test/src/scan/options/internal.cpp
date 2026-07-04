@@ -11,7 +11,7 @@ using namespace Tins;
 using namespace filesystem;
 
 vector<ActorPtr> RunStatus::internal_options(){
-	const path hw_cache_dir = path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" / "scan";
+	const path hw_cache_dir = root_dir().parent_path() / "data" / "cache" / "scan";
 	create_public_dirs(hw_cache_dir);
 	auto hw_cache = hw_cache_dir / "internal_iface.json";
 	vector<ActorPtr> options;

@@ -13,6 +13,12 @@ namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 
+const path &root_dir(const optional<path> &set_to){
+	static path dir = PROJECT_ROOT_DIR;
+	if(set_to) dir = *set_to;
+	return dir;
+}
+
 string current_time_string(){
 	const auto now = chrono::system_clock::now();
 	const auto timer = chrono::system_clock::to_time_t(now);

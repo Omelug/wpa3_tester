@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/error_log.h"
@@ -13,11 +14,17 @@ using namespace filesystem;
 
 vector<ActorPtr> RunStatus::create_simulation(const size_t n_radios){
 	log(LogLevel::INFO, "Loading mac80211_hwsim with {} radios", n_radios);
+
+	unordered_set<string> before;
+	for(const auto &[name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt))
+		before.insert(name);
+
 	hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=" + to_string(n_radios)});
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// rename all new Wi-Fi interfaces to hwsim_<orig> so they get WifiVirtualHwsim type
+	// rename only newly created Wi-Fi interfaces to hwsim_<orig> - never touch pre-existing (real) wifi cards
 	for(const auto &[name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+		if(before.contains(name)) continue;
 		hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name});
 	}
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);

@@ -4,14 +4,23 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/malformed_eapol1/malformed_eapol1_basic_suite/malformed_eapol1_Dlink nemělo by to záležet jen na clientovi, jestli se odpojí? - zkusit Dlink s ostatními klienty
++: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
++" možnost do global_config nepoužívat cache
++: do channel switch overview dát cracked
++: doc/rtw_8821cu_crach.txt (zkusit na nixOS, mělo by být v kernelu)
++: sudo nano /etc/udev/rules.d/40-realtek-wifi.rules pro mass storage USB adaptéry ()
+???+: requirwmwnt, žw u bl0ck musí být attacker mezi AP a client
+nebo proč BARS někdy klienta odpojí a někdy ne?
++: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: scanner for external WB actors
-+: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno)
++: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 +: simulation test config
 t: external info/iface_info parsing tests
 +: requirement external connection STA-AP
 +: create Dlink Openwrt all test tool
-+: injection test for openwrt
++: injection test for openwrt (tried, openwrt crash)
 
 +: external Dlink for malformed eapol
 CSA:
@@ -21,7 +30,7 @@ f: špatně se resetuje scan_ip (ap_info)
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
 r: co jde v suite, sjednotit
 r: vymazat zbytečné větve z github
-fd: save_log to documentation a nějak otestovat, funguje jen někdy
+t: save_log to documentation a nějak otestovat
 +: add git results repository to documentation
 
 +: add git results repository

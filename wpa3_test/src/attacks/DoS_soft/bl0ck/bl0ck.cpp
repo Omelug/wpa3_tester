@@ -202,11 +202,11 @@ void run_bl0ck_attack(RunStatus &rs){
 	this_thread::sleep_for(seconds(5));
 	log(LogLevel::INFO, "Block Attack END");
 
-	rs.process_manager.stop_all();
-	Bl0ckResult r = compute_result(rs);
+	//rs.process_manager.stop_all();
+	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);
 	rs.save_result({
-		{"disconnect_count", r.disconnect_count}, {"ap_disconnected", r.ap_disconnected},
-		{"reconnect_times_ms", r.reconnect_times_ms}
+		{"disconnect_count", disconnect_count}, {"ap_disconnected", ap_disconnected},
+		{"reconnect_times_ms", reconnect_times_ms}
 	});
 }
 

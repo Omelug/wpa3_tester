@@ -19,11 +19,11 @@ static bool is_suite(const path &p){
 int main(){
     int passed = 0, failed = 0;
 
-    for(const auto &entry : recursive_directory_iterator(ATTACK_CONFIG)){
+    for(const auto &entry : recursive_directory_iterator(ATTACK_CONFIG())){
         if(!entry.is_regular_file() || entry.path().extension() != ".yaml") continue;
         if(RunStatus::should_skip(entry.path())) continue;
 
-        const string rel = relative(entry.path(), ATTACK_CONFIG).string();
+        const string rel = relative(entry.path(), ATTACK_CONFIG()).string();
         try{
             if(is_suite(entry.path()))
                 RunSuiteStatus::config_validation(entry.path());

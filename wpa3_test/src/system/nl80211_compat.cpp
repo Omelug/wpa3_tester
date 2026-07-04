@@ -182,9 +182,9 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 				if(mhz >= 2412 && mhz <= 2484) caps->no_ir_24ghz++;
 				if(mhz >= 5180 && mhz <= 5885) caps->no_ir_5ghz++;
 				if(mhz >= 5925 && mhz <= 7125) caps->no_ir_6ghz++;
-				continue;
 			}
 
+			// NO_IR = passive-scan only until a beacon is heard, not "unsupported" — band is still usable.
 			if(mhz >= 2412 && mhz <= 2484) caps->band24 = true;
 			if(mhz >= 5180 && mhz <= 5885) caps->band5 = true;
 			if(mhz >= 5925 && mhz <= 7125) caps->band6 = true;
@@ -250,6 +250,9 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 
 	// query by wiphy index — ensures full physical radio attributes (incl. ext_features) are returned
 	nla_put_u32(msg, NL80211_ATTR_WIPHY, get_wiphy_idx_by_ifname(cfg->get(SK::iface)));
+	// without split dump, the kernel silently truncates large replies (e.g. 6GHz band HE iftype data)
+	// instead of fragmenting them, so unsplit dumps can drop bands entirely.
+	nla_put_flag(msg, NL80211_ATTR_SPLIT_WIPHY_DUMP);
 
 	NlCaps caps{};
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, &hw_capabilities::nl80211_cb, &caps);

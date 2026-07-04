@@ -87,7 +87,7 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 }
 
 path TwoIface::cache_folder() const{
-	return path(PROJECT_ROOT_DIR).parent_path() / "data" / "cache" / "two_iface" / cache_name;
+	return root_dir().parent_path() / "data" / "cache" / "two_iface" / cache_name;
 }
 
 path TwoIface::cache_path() const{

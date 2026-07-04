@@ -174,7 +174,7 @@ json RunStatus::config_validation(const path &config_path){
 		validate_recursive(config_json, config_path.parent_path());
 
 		//global validation
-		const path global_schema_path = path(PROJECT_ROOT_DIR) / "attack_config" / "validator" /
+		const path global_schema_path = root_dir() / "attack_config" / "validator" /
 				"test_validator.schema.yaml";
 		const YAMLValidator validator(global_schema_path);
 		validator.validate(config_json);

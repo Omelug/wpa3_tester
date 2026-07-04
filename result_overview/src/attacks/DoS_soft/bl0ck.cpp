@@ -57,7 +57,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 
 	HtmlGuard f(page_dir);
 	if(!f) return;
-
+//FIXME musí být opravdu fyzicky mezi nebo na vurnerable staří aby byl rychlejší jeden packet? 
     f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,7 +72,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
     <h1>Bl0ck — Block ACK (BA) DoS</h1>
 
     <div class="card">
-        <p><b>prerequisites:</b> client connected to access point, QoS data used 802.11ac or 802.11ax</p>
+        <p><b>prerequisites:</b> client connected to access point, QoS data used 802.11ac or 802.11ax, attacker needs to be physically between AP and client</p>
         <p>Bl0ck exploits the Block ACK mechanism by injecting spoofed frames
            that corrupt the receiver's sequence-number state, causing network issues (typycal disconnect)
            subsequent legitimate frames and effectively disconnect.

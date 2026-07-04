@@ -28,6 +28,7 @@ actors:
     source: internal
     selection:
       channel: 36
+      driver: rtw_8821cu #TODO rtw_8821au nefunguje, proč?
       condition: [ #injection, #TODO má tu být injection?
         monitor,
         5GHz ]

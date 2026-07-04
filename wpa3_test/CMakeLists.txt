@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.20)
 project(wpa3_tester)
 
+# Registers a doctest executable: add_doctest_exe(<target> SOURCES <src...> [TEST_NAME <name>] [LIBS <lib...>])
+function(add_doctest_exe target)
+    cmake_parse_arguments(ARG "" "TEST_NAME" "SOURCES;LIBS" ${ARGN})
+    if (NOT ARG_TEST_NAME)
+        set(ARG_TEST_NAME ${target})
+    endif ()
+    add_executable(${target} ${ARG_SOURCES})
+    target_link_libraries(${target} PRIVATE wpa3_core doctest_headers ${ARG_LIBS})
+    add_test(NAME ${ARG_TEST_NAME} COMMAND ${target})
+endfunction()
+
 include(cmake/awk_files.cmake)
 include(cmake/external_libs.cmake)
 

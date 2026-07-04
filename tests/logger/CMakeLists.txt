@@ -1,48 +1,11 @@
-# logger time tests
-add_executable(run_logger_time_tests test_log_time.cpp)
-target_link_libraries(run_logger_time_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
+add_doctest_exe(run_logger_time_tests SOURCES test_log_time.cpp TEST_NAME LoggerTimeTests)
+add_doctest_exe(run_logger_tests SOURCES test_log.cpp TEST_NAME LoggerTests)
+add_doctest_exe(run_error_message_tests SOURCES test_error_messages.cpp TEST_NAME ErrorMessageTests)
+add_doctest_exe(run_report_guard_tests SOURCES test_report_guard.cpp TEST_NAME ReportGuardTests)
 
-add_test(NAME LoggerTimeTests COMMAND run_logger_time_tests)
-
-# logger tests
-add_executable(run_logger_tests test_log.cpp)
-target_link_libraries(run_logger_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-add_test(NAME LoggerTests COMMAND run_logger_tests)
-
-# error message tests
-add_executable(run_error_message_tests test_error_messages.cpp)
-target_link_libraries(run_error_message_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-add_test(NAME ErrorMessageTests COMMAND run_error_message_tests)
-
-# report guard tests
-add_executable(run_report_guard_tests test_report_guard.cpp)
-target_link_libraries(run_report_guard_tests PRIVATE
-        wpa3_core
-        doctest_headers
-)
-
-add_test(NAME ReportGuardTests COMMAND run_report_guard_tests)
-
-# html guard tests
-add_executable(run_html_guard_tests test_html_guard.cpp)
+add_doctest_exe(run_html_guard_tests SOURCES test_html_guard.cpp TEST_NAME HtmlGuardTests)
 target_include_directories(run_html_guard_tests PRIVATE
-        ${CMAKE_SOURCE_DIR}/result_overview/include
-)
-target_link_libraries(run_html_guard_tests PRIVATE
-        wpa3_core
-        doctest_headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../result_overview/include
 )
 
-add_test(NAME HtmlGuardTests COMMAND run_html_guard_tests)
-
+add_doctest_exe(run_devices_tests SOURCES test_devices.cpp TEST_NAME DevicesTests LIBS test_helpers)

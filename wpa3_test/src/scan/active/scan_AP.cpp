@@ -6,13 +6,20 @@
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "scan/active/scan_active.h"
-#include "system/utils.h"
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::scan{
+void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
+	ss << "AKM Suites: ";
+	for(auto &akm: akms){
+		print_AKM(ss, akm);
+		ss << " ";
+	}
+}
+
 void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 	static const map<RSNInformation::AKMSuites,string> akm_map = {
 		{RSNInformation::EAP, "EAP"}, {RSNInformation::PSK, "PSK"}, {RSNInformation::EAP_FT, "EAP-FT"},
@@ -27,30 +34,17 @@ void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
 	if(it != akm_map.end()){
 		ss << it->second;
 	} else{
-		char buf[20];
-		sprintf(buf, "UNKNOWN(0x%08x)", static_cast<uint32_t>(akm));
-		ss << buf;
-	}
-}
-
-void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
-	ss << "AKM Suites: ";
-	for(auto &akm: akms){
-		print_AKM(ss, akm);
-		ss << " ";
+		ss << format("UNKNOWN(0x{:08x})", static_cast<uint32_t>(akm));
 	}
 }
 
 void print_capabilities(stringstream &ss, const uint16_t caps){
-	const bool mfpc = (caps & (1 << 7));   // Management Frame Protection Capable
-	const bool mfpr = (caps & (1 << 6));   // Management Frame Protection Required
-	const bool ocv = (caps & (1 << 10));   // Operating Channel Validation
-	const bool bprot = (caps & (1 << 11)); // Beacon Protection
+	const auto flags = parse_rsn_caps(caps);
 
 	ss << "--- RSN Capabilities ---\n";
-	ss << "MFP: " << (mfpr ? "REQUIRED" : (mfpc ? "Capable" : "No")) << "\n";
-	ss << "OCV: " << ocv << "\n";
-	ss << "Beacon Protection: " << bprot << "\n";
+	ss << "MFP: " << (flags.mfp_required ? "REQUIRED" : (flags.mfp_capable ? "Capable" : "No")) << "\n";
+	ss << "OCV: " << flags.ocv << "\n";
+	ss << "Beacon Protection: " << flags.beacon_prot << "\n";
 }
 
 string ScanAP::to_str() const{
@@ -100,22 +94,23 @@ void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 	if(!beacon) return;
 
 	cfg.set(SK::mac, beacon->addr2());
-	try{ cfg.set(SK::ssid, beacon->ssid()); } catch(...){}
+	try{ cfg.set(SK::ssid, beacon->ssid()); } catch(const exception &e){
+		log(LogLevel::WARNING, "fill_actor_caps_from_beacon: ssid option not found: {}", e.what());
+	}
 
 	apply_radiotap(pdu, cfg);
 
 	// Channel fallback from DS Parameter Set if RadioTap had no frequency
 	if(!cfg[SK::channel].has_value()){
-		try{ cfg.set(SK::channel, to_string(beacon->ds_parameter_set())); } catch(...){}
+		try{ cfg.set(SK::channel, to_string(beacon->ds_parameter_set())); } catch(const exception &e){
+			log(LogLevel::WARNING, "fill_actor_caps_from_beacon: DS Parameter Set option not found: {}", e.what());
+		}
 	}
 
 	apply_rsn(*beacon, cfg);
 	apply_ht_vht_he(*beacon, cfg);
 
-	cfg.set(BK::AP, true);
-	cfg.set(BK::STA, false);
-	cfg.set(BK::managed, false);
-	cfg.set(BK::monitor, false);
+	set_role_flags(cfg, true);
 }
 
 Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, const int timeout_sec){

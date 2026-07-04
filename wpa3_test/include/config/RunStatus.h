@@ -13,6 +13,7 @@
 #include "Actor_Config/Actor_config.h"
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
+#include "system/utils.h"
 
 //hash for ActorMACMap
 template<>
@@ -29,7 +30,7 @@ struct std::hash<Tins::HWAddress<6>>{
 namespace wpa3_tester{
 enum CONFIG_TYPE{ TEST, TEST_SUITE };
 
-static const std::filesystem::path ATTACK_CONFIG = std::filesystem::path(PROJECT_ROOT_DIR) / "attack_config";
+inline std::filesystem::path ATTACK_CONFIG(){ return root_dir() / "attack_config"; }
 inline auto var_PREFIX = std::string("var_");
 inline auto START_tag = "@START";
 inline auto END_tag = "@END";
@@ -49,7 +50,7 @@ using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
-	static inline const std::filesystem::path BASE_FOLDER = std::filesystem::path(PROJECT_ROOT_DIR).parent_path() / "data" / "wpa3_test";
+	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / "data" / "wpa3_test"; }
 protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};
@@ -117,8 +118,8 @@ private:
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels,
 												const ActorCMap &actors
 	);
-	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 public:
+	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();
 	void parse_requirements();
 

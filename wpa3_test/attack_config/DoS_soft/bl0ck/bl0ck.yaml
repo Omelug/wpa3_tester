@@ -47,7 +47,6 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      channel: 36
       condition: [ monitor, 80211ac, 5GHz ]
     netns: sta
     ip_addr: "10.0.0.2"
@@ -59,6 +58,7 @@ actors:
       condition: [ #injection, #TODO má tu být injection?
         monitor,
         5GHz ]
+      driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
   ap_mausezahn:
     actor: access_point

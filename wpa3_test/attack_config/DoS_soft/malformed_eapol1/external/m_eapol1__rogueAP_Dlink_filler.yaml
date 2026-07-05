@@ -1,0 +1,14 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+name: m_eapol1__rogueAP_Dlink_filler
+suite_functions: m_eapol1__rogueAP_Dlink_filler
+config_type: test_suite
+tests:
+  m_eapol_hostapd_10:
+    type: actor_filler
+    config: ./malformed_eapol1_Dlink.yaml
+  m_eapol_hostapd_11:
+    type: actor_filler
+    config: ./malformed_eapol1_patched_Dlink.yaml
+
+delete_old: true
+rewrite: "errors"

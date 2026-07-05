@@ -20,8 +20,53 @@ static vector<MalformedEapol1TestEntry> collect_results(const path &data_dir) {
     return results;
 }
 
+static vector<MalformedEapol1TestEntry> collect_dlink_results(const path &data_dir) {
+    const path suite_dir = data_dir / "wpa3_suites" / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1__rogueAP_Dlink_filler";
+
+    vector<MalformedEapol1TestEntry> results;
+    for (const auto &src_dir : suite::helper::get_suite_test_folders(suite_dir)) {
+        for (const auto &entry : directory_iterator(src_dir)) {
+            if (!entry.is_directory()) continue;
+            results.push_back(MalformedEapol1TestEntry::parse(entry.path()));
+        }
+    }
+    return results;
+}
+
+static void emit_table(HtmlGuard &f, const string &title, const string &table_id,
+                       const vector<MalformedEapol1TestEntry> &rows) {
+    if (rows.empty()) return;
+
+    f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
+      << "        <h2>" << title << "</h2>\n"
+      << "        <table id=\"" << table_id << "\" class=\"aggregate\">\n"
+      << "            <thead><tr>\n"
+      << "                <th>Test</th>\n"
+      << "                <th>AP Driver</th>\n"
+      << "                <th>Client Driver</th>\n"
+      << "                <th>Client wpa_supplicant version</th>\n"
+      << "                <th>Attacker Driver</th>\n"
+      << "                <th>Disconnected?</th>\n"
+      << "                <th>Rogue AP?</th>\n"
+      << "            </tr></thead>\n"
+      << "            <tbody>\n";
+    for (const auto &e : rows) {
+        f << "                <tr>\n";
+        f << "                    <td>" << e.test_name      << "</td>\n";
+        f << "                    <td>" << e.ap_driver      << "</td>\n";
+        f << "                    <td>" << e.client_driver  << "</td>\n";
+        f << "                    <td>" << e.client_version << "</td>\n";
+        f << "                    <td>" << e.attacker_driver << "</td>\n";
+        f << "                    <td>" << (e.disconnect_count > 0) << " (" << e.disconnect_count << ")</td>\n";
+        f << "                    <td>" << e.rogue_ap_connected << "</td>\n";
+        f << "                </tr>\n";
+    }
+    f << "            </tbody>\n        </table>\n    </div>\n";
+}
+
 void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
-    const auto results = collect_results(data_dir);
+    const auto results       = collect_results(data_dir);
+    const auto results_dlink = collect_dlink_results(data_dir);
 
     const path page_dir = output_dir / "attacks" / "dos_soft" / "malformed_eapol1";
     create_public_dirs(page_dir);
@@ -51,34 +96,11 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
 )html";
 
-    if (results.empty()) {
+    if (results.empty() && results_dlink.empty()) {
         f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
     } else {
-        f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-          << "        <h2>Test Results</h2>\n"
-          << "        <table id=\"resultsTable\" class=\"aggregate\">\n"
-          << "            <thead><tr>\n"
-          << "                <th>Test</th>\n"
-          << "                <th>AP Driver</th>\n"
-          << "                <th>Client Driver</th>\n"
-          << "                <th>Client wpa_supplicant version</th>\n"
-          << "                <th>Attacker Driver</th>\n"
-          << "                <th>Disconnected?</th>\n"
-          << "                <th>Rogue AP?</th>\n"
-          << "            </tr></thead>\n"
-          << "            <tbody>\n";
-        for (const auto &e : results) {
-            f << "                <tr>\n";
-            f << "                    <td>" << e.test_name     << "</td>\n";
-            f << "                    <td>" << e.ap_driver     << "</td>\n";
-            f << "                    <td>" << e.client_driver << "</td>\n";
-            f << "                    <td>" << e.client_version << "</td>\n";
-            f << "                    <td>" << e.attacker_driver << "</td>\n";
-            f << "                    <td>" << (e.disconnect_count > 0) << " (" << e.disconnect_count << ")</td>\n";
-            f << "                    <td>" << e.rogue_ap_connected << "</td>\n";
-            f << "                </tr>\n";
-        }
-        f << "            </tbody>\n        </table>\n    </div>\n";
+        emit_table(f, "Test Results", "resultsTable", results);
+        emit_table(f, "Dlink", "resultsTableDlink", results_dlink);
     }
 
     f << "</body>\n</html>\n";

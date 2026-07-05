@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include "attacks/two_iface/TwoIfaceActive.h"
 #include "attacks/two_iface/TwoIfaceInject.h"
+#include "config/global_config.h"
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
@@ -295,10 +296,11 @@ bool RunStatus::config_requirement(){
 			const ActorPtr &actor1 = get_actor(actor_names[0].get<string>());
 			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());
 
+			const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
 			if(key == "active"){
-				if(TwoIfaceActive::run_check(actor1, actor2, run_on_miss)) return true;
+				if(TwoIfaceActive::run_check(actor1, actor2, cb)) return true;
 			} else if(key.starts_with("injection")){
-				if(TwoIfaceInject::run_check(actor1, actor2, run_on_miss, key)) return true;
+				if(TwoIfaceInject::run_check(actor1, actor2, cb, key)) return true;
 			} else{
 				throw not_implemented_err("two_iface test key not found: " + key);
 			}

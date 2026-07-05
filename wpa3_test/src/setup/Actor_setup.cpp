@@ -1,5 +1,6 @@
 #include "attacks/two_iface/TwoIfaceInject.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -103,7 +104,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)){
 		const ActorPtr self(shared_from_this());
-		if(!TwoIfaceInject::run_check(self, self, run_on_miss, "injection")) log(LogLevel::INFO, "Get from cache");
+		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
+		if(!TwoIfaceInject::run_check(self, self, cb, "injection")) log(LogLevel::INFO, "Get from cache");
 	}
 
 	if(get_or(BK::AP, false)) set_ap_mode();

@@ -30,3 +30,5 @@ delete_old: true
 install_req: true
 compile_external: true
 save_log: true
+use_hw_cache: false
+use_two_iface_cache: true

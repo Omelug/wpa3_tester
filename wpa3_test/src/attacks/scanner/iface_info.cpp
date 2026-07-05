@@ -5,6 +5,7 @@
 #include "default.h"
 #include "logger/devices.h"
 #include "logger/report.h"
+#include "config/global_config.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
 #include "system/ip.h"
@@ -22,7 +23,10 @@ void run_attack(RunStatus &rs){
 	const string iface = rs.get_actor("scanner")["iface"];
 
 	// ----- hw_info (modes, bands) via cache -----
-	const path hw_cache = root_dir().parent_path() / "data" / "cache" / "scan" / "internal_iface.json";
+	const bool use_cache = get_global_config().value("use_hw_cache", true);
+	const optional<path> hw_cache = use_cache
+		? optional{root_dir().parent_path() / "data" / "cache" / "scan" / "internal_iface.json"}
+		: nullopt;
 
 	auto scanner = rs.get_actor("scanner");
 	scanner->set(SK::iface, iface);

@@ -5,5 +5,5 @@ config_type: test_suite
 tests:
   all_actors:
     type: actor_filler
-    config: ./malformed_eapol1.yaml
+    config: ./malformed_eapol1_rogueAP.yaml
 rewrite: "errors"

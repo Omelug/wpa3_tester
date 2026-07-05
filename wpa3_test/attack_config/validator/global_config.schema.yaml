@@ -22,3 +22,9 @@ properties:
     description: "Run 'nmcli device set <iface> managed no' for each local actor interface before every test"
   actors:
     type: object
+  use_hw_cache:
+    type: boolean
+    description: "Enable hw_info on-disk cache. Set to false to always recompute hardware capabilities."
+  use_two_iface_cache:
+    type: boolean
+    description: "Enable two_iface on-disk cache. Set to false to always rerun two-interface tests."

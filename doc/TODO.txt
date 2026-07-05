@@ -6,7 +6,6 @@ v: visualization
 Version v 0.0.0.0:
 +: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/malformed_eapol1/malformed_eapol1_basic_suite/malformed_eapol1_Dlink nemělo by to záležet jen na clientovi, jestli se odpojí? - zkusit Dlink s ostatními klienty
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
-+" možnost do global_config nepoužívat cache
 +: do channel switch overview dát cracked
 +: doc/rtw_8821cu_crach.txt (zkusit na nixOS, mělo by být v kernelu)
 +: sudo nano /etc/udev/rules.d/40-realtek-wifi.rules pro mass storage USB adaptéry ()
@@ -68,6 +67,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: možnost do global_config nepoužívat cache
 f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
 +: external for Enterprise
 +: filler for channel_switch

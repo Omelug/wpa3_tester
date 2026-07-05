@@ -14,3 +14,4 @@
 - html, because have table agrregation
 - in [result_overview](../../result_overview) (separated target, `make `)
 - HtmlGuard
+- have same entry parsing like report in [visual](../../wpa3_test/src/visual)

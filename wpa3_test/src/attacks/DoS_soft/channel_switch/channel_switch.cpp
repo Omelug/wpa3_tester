@@ -112,8 +112,6 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	report::attack_mapping_table(report, rs);
 	//report << "### Traffic Analysis\n";
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
-	//report <<
-	//		"Successful CSA attack is characterized by sharp drop in received packets on the AP side as the client switches channels.\n";
 	//TODO add hostapd helper ?
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";

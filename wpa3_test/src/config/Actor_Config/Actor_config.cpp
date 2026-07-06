@@ -1,5 +1,6 @@
 #include "config/Actor_Config/Actor_config.h"
 #include <sstream>
+#include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
@@ -26,7 +27,7 @@ Actor_config::Actor_config(const json &j, string source){
 	if(j.contains("selection") && j.at("selection").is_object()){
 		const auto &sel = j.at("selection");
 
-		for(const auto k: sk_values()){
+		for(const auto k: sk_keys()){
 			const auto name = string(sk_name(k));
 			if(!sel.contains(name)) continue;
 			if(sel[name].is_string()){
@@ -68,7 +69,7 @@ Actor_config::~Actor_config(){
 }
 
 bool Actor_config::matches(const Actor_config &offer) const{
-	for(const auto k: sk_values()){
+	for(const auto k: sk_keys()){
 		const auto &required = (*this)[k];
 		if(!required.has_value()) continue;
 		const auto &offered = offer[k];
@@ -87,7 +88,7 @@ bool Actor_config::matches(const Actor_config &offer) const{
 		}
 	}
 
-	for(const auto k: bk_values()){
+	for(const auto k: bk_keys()){
 		const auto &required = (*this)[k];
 		if(!required.has_value()) continue;
 		const auto &offered = offer[k];
@@ -98,7 +99,7 @@ bool Actor_config::matches(const Actor_config &offer) const{
 }
 
 Actor_config &Actor_config::operator+=(const Actor_config &other){
-	for(const auto k: sk_values()){
+	for(const auto k: sk_keys()){
 		const auto &val = other[k];
 		if(!val.has_value()) continue;
 		auto &mine = (*this)[k];
@@ -110,7 +111,7 @@ Actor_config &Actor_config::operator+=(const Actor_config &other){
 		}
 	}
 
-	for(const auto k: bk_values()){
+	for(const auto k: bk_keys()){
 		const auto &val = other[k];
 		if(!val.has_value()) continue;
 		auto &mine = (*this)[k];
@@ -135,6 +136,19 @@ void Actor_config::set(const SK key, const optional<string> &new_value){
 
 void Actor_config::set(const BK key, const optional<bool> &new_value){
 	(*this)[key] = new_value;
+}
+
+void Actor_config::set(const vector<SK> &keys, const optional<string> &new_value){
+	for(const auto k : keys) set(k, new_value);
+}
+
+void Actor_config::set(const vector<BK> &keys, const optional<bool> &new_value){
+	for(const auto k : keys) set(k, new_value);
+}
+
+void Actor_config::set(const ActorPtr &source, const ParamFilter &filter){
+	for(const auto k : filter.first) set(k, (*source)[k]);
+	for(const auto k : filter.second) set(k, (*source)[k]);
 }
 
 optional<string> &Actor_config::operator[](SK key){
@@ -197,7 +211,7 @@ string Actor_config::to_str(const ParamFilter *filter) const{
 		first = false;
 	};
 	if(filter) for(const SK k: filter->first) visit_sk(k);
-	else for(const SK k: sk_values()) visit_sk(k);
+	else for(const SK k: sk_keys()) visit_sk(k);
 
 	vector<string> conds;
 	const auto visit_bk = [&](const BK k){
@@ -206,7 +220,7 @@ string Actor_config::to_str(const ParamFilter *filter) const{
 		conds.push_back(*v ? string(bk_name(k)) : "!" + string(bk_name(k)));
 	};
 	if(filter) for(const BK k: filter->second) visit_bk(k);
-	else for(const BK k: bk_values()) visit_bk(k);
+	else for(const BK k: bk_keys()) visit_bk(k);
 
 	if(!conds.empty()){
 		result += " [";
@@ -229,7 +243,7 @@ json Actor_config::to_json(const ParamFilter *filter) const{
 		if(v.has_value()) sel[string(sk_name(k))] = *v;
 	};
 	if(filter) for(const SK k: filter->first) visit_sk(k);
-	else for(const SK k: sk_values()) visit_sk(k);
+	else for(const SK k: sk_keys()) visit_sk(k);
 
 	json conditions = json::array();
 	const auto visit_bk = [&](const BK k){
@@ -239,7 +253,7 @@ json Actor_config::to_json(const ParamFilter *filter) const{
 		conditions.push_back(*v ? name : "!" + name);
 	};
 	if(filter) for(const BK k: filter->second) visit_bk(k);
-	else for(const BK k: bk_values()) visit_bk(k);
+	else for(const BK k: bk_keys()) visit_bk(k);
 
 	if(!conditions.empty()) sel["condition"] = conditions;
 
@@ -256,12 +270,12 @@ json Actor_config::to_json(const ParamFilter *filter) const{
 
 json Actor_config::hw_info_caps_to_flat_json() const{
 	json j = json::object();
-	for(const auto sk: sk_values()){
+	for(const auto sk: sk_keys()){
 		if(!HwInfo::is_hw_info(sk)) continue;
 		const auto &v = (*this)[sk];
 		if(v.has_value()) j[string(sk_name(sk))] = *v;
 	}
-	for(const auto bk: bk_values()){
+	for(const auto bk: bk_keys()){
 		if(!HwInfo::is_hw_info(bk)) continue;
 		const auto &v = (*this)[bk];
 		if(v.has_value()) j[string(bk_name(bk))] = *v;
@@ -270,7 +284,7 @@ json Actor_config::hw_info_caps_to_flat_json() const{
 }
 
 void Actor_config::caps_from_flat_json(const json &j){
-	for(const auto k: bk_values()){
+	for(const auto k: bk_keys()){
 		if(!HwInfo::is_hw_info(k)) continue;
 		const auto name = string(bk_name(k));
 		if(j.contains(name) && j.at(name).is_boolean()) (*this)[k] = j.at(name).get<bool>();

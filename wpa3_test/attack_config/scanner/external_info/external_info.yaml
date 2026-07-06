@@ -9,7 +9,8 @@ actors:
     selection:
       condition: [ monitor ]
       channel: 6
-    sniff_iface: scanner
+    #sniff_iface: scanner //TODO sniff_iface testy -
+    # FIXME rtl8xxxu nefunguje (dá se na channel 6 , monito ale nic nevypisuje)
 
 observers:
   tshark_scanner:

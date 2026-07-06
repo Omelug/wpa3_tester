@@ -72,11 +72,9 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	G_elms elements;
 
-	rs.log_events(elements, {
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"client", "CTRL-EVENT-SCAN-STARTED", "SCAN", "orange"}, {"client", START_tag, "START", "black"},
-					{"client", END_tag, "END", "black"},
-				});
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+
+	rs.log_events(elements,{{"client", "CTRL-EVENT-SCAN-STARTED", "SCAN", "orange"}});
 
 	observer::tshark::pcap_events(rs, elements, {
 		{"attacker", "wlan.fc.type_subtype == 4 and wlan.ssid == \"\"", "ProbeBC", "blue"},

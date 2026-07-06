@@ -9,7 +9,6 @@
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
 #include "suite/suite_helper.h"
-#include "system/utils.h"
 
 using namespace std;
 using namespace Tins;
@@ -31,7 +30,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 		const HWAddress<6> bssid = beacon->addr3();
 		if(!ap_map.contains(bssid)){
 			scan::fill_actor_caps_from_beacon(pdu, ap_map[bssid].cfg);
-			log(LogLevel::DEBUG, "Found AP: {}", bssid);
+			log(LogLevel::DEBUG, "Found AP: {} on channel {}", bssid, ap_map[bssid].cfg[SK::channel].value_or("?"));
 			return true;
 		}
 		return false;
@@ -89,10 +88,10 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const StaInfoMap &sta_map);
 
 void run_attack(RunStatus &rs){
-	//TODO now its scanning only on one channel
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto scanner = rs.get_actor("scanner");
+	log(LogLevel::INFO, "Scanning on channel {}", scanner.get(SK::channel));
 
 	const int timeout_sec = att_cfg.at("timeout_sec").get<int>();
 	const int actor_limit = att_cfg.value("actor_limit", 0);
@@ -111,7 +110,7 @@ void run_attack(RunStatus &rs){
 													actor_limit) return monostate{};
 												return nullopt;
 											},
-											scanner.get(SK::sniff_iface),
+											scanner.get(SK::iface),
 											filter,
 											seconds(timeout_sec));
 
@@ -150,10 +149,10 @@ void run_attack(RunStatus &rs){
 }
 
 static HWAddress<6> hw_from_json(const nlohmann::json &j){
-	if(j.is_string()) return HWAddress<6>(j.get<string>());
+	if(j.is_string()) return j.get<string>();
 	uint8_t b[6]{};
 	for(size_t i = 0; i < 6 && i < j.size(); ++i) b[i] = j[i].get<uint8_t>();
-	return HWAddress<6>(b);
+	return b;
 }
 
 void stats(const RunStatus &rs){

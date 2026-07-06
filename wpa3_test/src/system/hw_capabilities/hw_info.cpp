@@ -21,7 +21,7 @@ nlohmann::json HwInfo::to_json() const{
 }
 
 void HwInfo::from_json(const nlohmann::json &j) const{
-	for(const auto sk: sk_values()){
+	for(const auto sk: sk_keys()){
 		if(!is_hw_info(sk)) continue;
 		const auto name = string(sk_name(sk));
 		if(j.contains(name) && j.at(name).is_string() && !j.at(name).get<string>().empty()) actor->set(

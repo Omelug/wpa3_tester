@@ -33,6 +33,9 @@ public:
 	Actor_config &operator+=(const Actor_config &other);
 	void set(SK key, const std::optional<std::string> &new_value);
 	void set(BK key, const std::optional<bool> &new_value);
+	void set(const std::vector<SK> &keys, const std::optional<std::string> &new_value);
+	void set(const std::vector<BK> &keys, const std::optional<bool> &new_value);
+	void set(const ActorPtr &source, const ParamFilter &filter);
 
 	//to allow HWAddress -> simplify code
 	struct MacSK{

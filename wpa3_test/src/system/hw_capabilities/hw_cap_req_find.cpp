@@ -104,7 +104,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 			break;
 		}
 		if(any_match) continue;
-		for(const auto k: sk_values()){
+		for(const auto k: sk_keys()){
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
 			const auto &r = req[k];
 			if(!r.has_value()) continue;
@@ -131,7 +131,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 			}
 			msg += "}; ";
 		}
-		for(const auto k: bk_values()){
+		for(const auto k: bk_keys()){
 			const auto &r = req[k];
 			if(!r.has_value()) continue;
 			set<string> possible;

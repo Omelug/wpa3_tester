@@ -150,12 +150,11 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 	} else if(rs.get_actor("access_point")->is_WB()){
 		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
 	}
+
+	if(	r.disconnect_count > 0 || r.ap_disconnected){
+		log(LogLevel::INFO, "Client disconnected");
+	}
 	//FIXME log if passed
-	/*const string pass_str = r.disconnect_count > 0 ? "PASSED" : "FAILED";
-	log(LogLevel::INFO, "Bl0ck result: {} — disconnects: {}", pass_str, r.disconnect_count);
-	for(size_t i = 0; i < r.reconnect_times_ms.size(); ++i)
-		log(LogLevel::INFO, "  reconnect[{}]: {:.0f} ms", i, r.reconnect_times_ms[i]);
-	*/
 	return r;
 }
 
@@ -168,10 +167,9 @@ static Bl0ckResult load_result(const RunStatus &rs){
 	}
 	const json j = json::parse(f);
 	Bl0ckResult r{};
-	//r.passed           = j.value("passed", false);
 	r.disconnect_count = j.at("disconnect_count").get<int>();
-	if(j.contains("ap_disconnected") && !j.at("ap_disconnected").is_null()) r.ap_disconnected = j.at("ap_disconnected").
-			get<bool>();
+	if(j.contains("ap_disconnected") && !j.at("ap_disconnected").is_null())
+		r.ap_disconnected = j.at("ap_disconnected").get<bool>();
 	r.reconnect_times_ms = j.value("reconnect_times_ms", vector<double>{});
 	return r;
 }

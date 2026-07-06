@@ -34,7 +34,7 @@ static void load_hwsim(){
         return;
 
     hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
-    // only rename interfaces newly created by modprobe above - never touch pre-existing (real) wifi cards
+    // only rename interfaces newly created by modprobe above - never touch pre-existing (real) Wi-Fi cards
     for(const auto &[name, radio, type] : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt))
         if(!before.contains(name))
             hw_capabilities::run_cmd({"ip", "link", "set", name, "name", HWSIM_IFACE_PREFIX + name}, nullopt, false);
@@ -93,6 +93,35 @@ struct HwsimFixture {
         return {{"actors", {{name, extra}}}};
     }
 };
+
+
+TEST_CASE("setup_actor - only set options"){
+	HwsimFixture f;
+	if(f.skip()) return;
+	 auto actor = f.make_actor();
+	ActorPtr actor_rule(make_shared<Actor_Config_sim>());
+	actor_rule->set({SK::mac, SK::permanent_mac},"02:bb:cc:dd:ee:01");
+	auto actor_hw_sim = f.make_actor();
+	actor_rule->set(SK::iface, actor_hw_sim.get(SK::iface));
+	actor_rule->set(SK::actor_name, "actor_name_test");
+	actor_rule->set({
+		//BK::AP, BK::STA, /*BK::injection_selftest,*/ BK::monitor, BK::managed, //TODO
+		//BK::active_monitor, BK::control_monitor,
+		BK::GHz2_4, BK::GHz5, BK::GHz6,
+		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE},
+		true);
+
+	ActorPtr actor_opt(make_shared<Actor_Config_sim>());
+	actor_opt->set(SK::actor_name, "actor_opt_test");
+	nlohmann::json config = {{"actors", {{"actor_opt_test", {}}}}};
+	actor_opt->setup_actor(config, actor_rule);
+
+	for(const BK k: {BK::GHz2_4, BK::GHz5, BK::GHz6,
+		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE})
+		CHECK(actor_opt.get(k));
+}
 
 TEST_CASE("hwsim setup_actor - change mac address"){
     HwsimFixture f;

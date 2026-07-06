@@ -39,9 +39,9 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		actor->set(BK::STA, !is_ap);
 
 		if(channel_freq > 0){
-			if(channel_freq >= 2412 && channel_freq <= 2484) actor[BK::GHz2_4] = true;
-			else if(channel_freq >= 5170 && channel_freq <= 5885) actor[BK::GHz5] = true;
-			else if(channel_freq >= 5945 && channel_freq <= 7125) actor[BK::GHz6] = true;
+			if(channel_freq >= 2412 && channel_freq <= 2484) actor->set(BK::GHz2_4, true);
+			else if(channel_freq >= 5170 && channel_freq <= 5885) actor->set(BK::GHz5, true);
+			else if(channel_freq >= 5945 && channel_freq <= 7125) actor->set(BK::GHz6, true);
 			actor->set(SK::channel, to_string(hw_capabilities::freq_to_channel(channel_freq)));
 		}
 		if(signal != -1) actor->set(SK::signal, to_string(signal));

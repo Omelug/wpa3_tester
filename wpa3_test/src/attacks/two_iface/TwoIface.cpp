@@ -19,7 +19,7 @@ pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const
 
 	if(behave != force_run){
 		const auto cached = lookup_cache(key);
-		if(cached.has_value()){
+		if(cached.has_value() && !cached->contains("err_msg")){
 			log(LogLevel::WARNING, "Found in cache");
 			return {*cached, true};
 		}
@@ -27,6 +27,7 @@ pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const
 	}
 
 	const json result = run(a1, a2);
+	if(result.contains("err_msg")) throw req_err("TwoIface '" + cache_name + "': " + result.at("err_msg").get<string>());
 
 	const auto existing = lookup_cache(key);
 	if(existing.has_value() && *existing != result){

@@ -16,14 +16,14 @@ public:
 
     mutable vector<string> calls;
 
-    void cleanup()                               const override { calls.push_back("cleanup"); }
-    void set_iface_up()                          const override { calls.push_back("set_iface_up"); }
-    void set_iface_down()                        const override { calls.push_back("set_iface_down"); }
-    void up_sniff_iface()                        const override { calls.push_back("up_sniff_iface"); }
-    void set_ap_mode()                           const override { calls.push_back("set_ap_mode"); }
-    void set_managed_mode()                      const override { calls.push_back("set_managed_mode"); }
-    void set_monitor_mode()                      const override { calls.push_back("set_monitor_mode"); }
-    void create_sniff_iface()                    const override { calls.push_back("create_sniff_iface"); }
+    void cleanup()                               const override { calls.emplace_back("cleanup"); }
+    void set_iface_up()                          const override { calls.emplace_back("set_iface_up"); }
+    void set_iface_down()                        const override { calls.emplace_back("set_iface_down"); }
+    void up_sniff_iface()                        const override { calls.emplace_back("up_sniff_iface"); }
+    void set_ap_mode()                           const override { calls.emplace_back("set_ap_mode"); }
+    void set_managed_mode()                      const override { calls.emplace_back("set_managed_mode"); }
+    void set_monitor_mode()                      const override { calls.emplace_back("set_monitor_mode"); }
+    void create_sniff_iface()                    const override { calls.emplace_back("create_sniff_iface"); }
     void set_mac_address(const Tins::HWAddress<6> &mac) const override {
         calls.push_back("set_mac_address:" + mac.to_string());
     }

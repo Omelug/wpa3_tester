@@ -32,4 +32,6 @@ attack_config:
   attack_time: 30
   ms_interval: 100
   new_channel: 1
+  sleep_before_sec: 10
+  sleep_after_sec: 10
 rewrite: errors

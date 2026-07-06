@@ -33,3 +33,10 @@ properties:
       new_channel:
         type: integer
         description: New channel to switch
+      sleep_before_sec:
+        type: integer
+        description: time before test for get valid traffic before
+      sleep_after_sec:
+        type: integer
+        description: time after to check if situation will be ok again
+

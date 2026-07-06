@@ -49,7 +49,7 @@ void run_attack(RunStatus &rs){
 		// change to monitor mode
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
-		rs.process_manager.write_log_all("@attack_stark");
+		rs.process_manager.write_log_all(ATTACK_START_tag);
 		check_vuln(
 			attacker.get(SK::iface), ap.get(SK::mac),
 			duration, sae_params.value(), attacker.get(SK::mac),
@@ -58,7 +58,7 @@ void run_attack(RunStatus &rs){
 	} else{
 		throw run_err("SAE Commit capture failed");
 	}
-	rs.process_manager.write_log_all("@attack_stop");
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	this_thread::sleep_for(seconds(regeneration_time_sec));
 	ap->conn->disconnect();

@@ -342,7 +342,8 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 
 		log_events(elements, {
 			{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-			{"client", ATTACK_START_tag, "attack_start", "black"}, {"client", ATTACK_STOP_tag, "attack_stop", "black"},
+			{"client", ATTACK_START_tag, "attack_start", "black"},
+			{"client", ATTACK_STOP_tag, "attack_stop", "black"},
 		});
 	}
 }

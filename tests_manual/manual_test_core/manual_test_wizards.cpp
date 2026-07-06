@@ -158,7 +158,7 @@ TargetInfo get_target_wizard(const string &iface, const Channel &channel){
 
 	for(const auto &actor: entities){
 		TargetInfo target;
-		target.bssid = (*actor)["mac"];
+		target.bssid = (*actor).get(SK::mac);
 		target.ssid = (*actor)["ssid"];
 		target.channel = channel;
 

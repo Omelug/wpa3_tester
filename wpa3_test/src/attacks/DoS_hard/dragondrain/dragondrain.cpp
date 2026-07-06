@@ -43,7 +43,7 @@ void run_attack(RunStatus &rs){
 	const auto attacker = rs.get_actor("attacker");
 
 	const auto ap = rs.get_actor("access_point");
-	const string target_mac = ap["mac"];
+	const string target_mac = ap.get(SK::mac);
 	const string channel = ap["channel"];
 
 	this_thread::sleep_for(seconds(10));
@@ -57,9 +57,6 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-
-	// generate graph with ob
-	const auto ap = rs.config().at("actors").at("access_point");
-	observer::resource_checker::create_graph(rs, ap.at("source").get<string>(), elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 }
 }

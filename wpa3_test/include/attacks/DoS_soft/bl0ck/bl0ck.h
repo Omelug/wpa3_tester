@@ -15,7 +15,7 @@ Tins::RadioTap get_bl0ck_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAd
 
 // Send BAR or BA frames for the specified duration
 void block(const Tins::HWAddress<6> &sta_mac, const Tins::HWAddress<6> &ap_mac, const std::string &iface,
-			int frame_in_batch, const std::string &attack_type, int duration_sec, bool is_random
+			int frame_in_batch, const std::string &attack_type, int duration_sec, bool is_random, int ms_interval
 );
 
 void setup_attack(RunStatus & rs);

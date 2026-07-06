@@ -36,7 +36,7 @@ inline std::string var_PREFIX = "var_";
 inline std::string START_tag = "@START";
 inline std::string END_tag = "@END";
 inline std::string END_STOP_tag = "@END_STOP";
-inline std::string ATTACK_START_tag ="@attack_stark";
+inline std::string ATTACK_START_tag ="@attack_start";
 inline std::string ATTACK_STOP_tag ="@attack_stop";
 
 class Actor_config;

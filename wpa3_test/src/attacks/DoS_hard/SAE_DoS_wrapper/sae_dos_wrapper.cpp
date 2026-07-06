@@ -100,7 +100,7 @@ void run_attack(RunStatus &rs){
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const auto sae = cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), ssid,
-														ap["mac"], 30);
+														ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();

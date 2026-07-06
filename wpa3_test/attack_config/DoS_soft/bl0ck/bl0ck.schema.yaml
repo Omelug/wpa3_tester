@@ -62,4 +62,14 @@ properties:
         description: Number of concurrent frames to send
         minimum: 1
         maximum: 3000
+      ms_interval:
+        type: integer
+        description: repeating interval of sending CSA
+        minimum: 1
+      sleep_before_sec:
+        type: integer
+        description: time before test for get valid traffic before
+      sleep_after_sec:
+        type: integer
+        description: time after to check if situation will be ok again
     additionalProperties: false

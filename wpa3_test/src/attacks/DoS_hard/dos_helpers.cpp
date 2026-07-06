@@ -31,7 +31,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
 		ls >> token >> mac_str; // "Station" "<mac>"
 		try{
 			result.emplace_back(mac_str);
-		} catch(...){}
+		} catch(...){} //FIXME WTF, proč je tu catch
 	}
 	log(LogLevel::INFO, " Found {} connected STAs", result.size());
 	return result;
@@ -45,7 +45,8 @@ bool check_fcs_present(const vector<uint8_t> &packet){
 		static_cast<int>(packet.size()), nullptr) != 0) return false;
 
 	while(ieee80211_radiotap_iterator_next(&it) == 0){
-		if(it.this_arg_index == IEEE80211_RADIOTAP_FLAGS && it.this_arg != nullptr) return (*it.this_arg & 0x10) != 0;
+		if(it.this_arg_index == IEEE80211_RADIOTAP_FLAGS && it.this_arg != nullptr)
+			return (*it.this_arg & 0x10) != 0;
 	}
 
 	return false;

@@ -144,13 +144,8 @@ void stats_chs_attack(const RunStatus &rs){
 	log(LogLevel::INFO, "CSA attack stats");
 
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {
-					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-				});
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, {{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"}});
 
 	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true).empty();
 	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
@@ -164,7 +159,7 @@ void stats_chs_attack(const RunStatus &rs){
 
 		string psk = hostapd::get_password(rs, "client");
 		if(psk.empty()) psk = "password123"; //TODO hardcoded
-		crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);
+		crack_result = hostapd::crack_pmk_hashes(rs.run_folder()/"captured_hashes.txt", psk);
 	}
 
 	nlohmann::json result = {

@@ -31,21 +31,33 @@ namespace wpa3_tester{
 enum CONFIG_TYPE{ TEST, TEST_SUITE };
 
 inline std::filesystem::path ATTACK_CONFIG(){ return root_dir() / "attack_config"; }
-inline auto var_PREFIX = std::string("var_");
-inline auto START_tag = "@START";
-inline auto END_tag = "@END";
-inline auto END_STOP_tag = "@END";
+inline std::string var_PREFIX = "var_";
+
+inline std::string START_tag = "@START";
+inline std::string END_tag = "@END";
+inline std::string END_STOP_tag = "@END_STOP";
+inline std::string ATTACK_START_tag ="@attack_stark";
+inline std::string ATTACK_STOP_tag ="@attack_stop";
 
 class Actor_config;
 class ExternalConn;
 class GraphElements;
 
 using ActorMap = std::unordered_map<std::string,ActorPtr>;
-using ActorMACMap = std::unordered_map<Tins::HWAddress < 6>
-,
-ActorPtr
->;
+using ActorMACMap = std::unordered_map<Tins::HWAddress <6>,ActorPtr>;
 using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
+
+//TODO nejde to nějak dát do struktury, ale aby vstup pro přehlcování unkcí zůstal stejný?
+typedef std::string actor_name_t;
+typedef std::string pattern_t;
+typedef std::string label_t;
+typedef std::string color_t;
+
+enum EVENT_SET{
+	DISCONNECT,
+	CONNECT,
+	TESTER_TAGS
+};
 
 class RunStatus{
 	// in actors are all actors in test
@@ -104,11 +116,13 @@ public:
 	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
 														const std::vector<int> &channels
 	);
-
+	// ----------- log_events
+	// base
 	void log_events(G_elms &elements,
-					// { actor_name, pattern, label, color }
-					std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_d
+		std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d
 	) const;
+
+	void log_events(G_elms &elements, const std::set<EVENT_SET> &event_sets) const;
 private:
 	// to scan available interfaces
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);

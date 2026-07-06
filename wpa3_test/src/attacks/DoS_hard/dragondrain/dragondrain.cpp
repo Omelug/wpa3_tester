@@ -56,12 +56,7 @@ void run_attack(RunStatus &rs){
 
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {
-					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-				});
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
 	// generate graph with ob
 	const auto ap = rs.config().at("actors").at("access_point");

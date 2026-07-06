@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: CSA_ex
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml
-scan_iface: wlan1 #FIXME ath nechce přepínat kanály -> zasekne se u channel 1
+scan_iface: wlan1
 scan_channels: [6]
 scan_until_success: true
 actors:

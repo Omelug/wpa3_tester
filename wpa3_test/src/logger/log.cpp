@@ -122,7 +122,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	const auto total_ns = static_cast<int64_t>(epoch_sec) * 1'000'000'000LL + frac_ns;
 	return LogTimePoint{nanoseconds{total_ns}};
 }
-
+//TODO effective  if called multimple times in log_events ?
 vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern,
 									bool between_markers
 ){

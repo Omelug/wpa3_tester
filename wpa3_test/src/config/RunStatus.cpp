@@ -196,7 +196,9 @@ void RunStatus::run_test(){
 
 	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()){
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>()); }
+	} else{
+		log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>());
+	}
 
 	process_manager.write_log_all(END_tag);
 	process_manager.stop_all();
@@ -211,6 +213,7 @@ void RunStatus::stats_test() const{
 }
 
 void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
+	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 	for(const auto &[name, actor]: actors){
 		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << "," <<
 				actor->get_or(SK::mac, "<none>") << "," << actor->get_or(SK::driver_name, "<none>") << "," << actor->
@@ -306,18 +309,44 @@ string RunStatus::findConfigByTestName(const string &name){
 	throw config_err("Unknown test name: " + name + ", Isn't it test suite?");
 }
 
-//TODO ??
-// tuple 1 item -> {"X"} = {"combinated", "X" ,"X",black"}
-// tuple 2 items {"actor", "X"} -> {"actor", "X" , "X","black"}
-// tuple 3 items {"actor", "X", "color"} -> {"actor", "X" , "X", "color"}
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
-							// { actor_name, pattern, label, color }
-							initializer_list<tuple<string,string,string,string>> event_d
-) const{
+							initializer_list<tuple<actor_name_t,pattern_t, label_t, color_t>> event_d) const{
 	for(auto &[actor, pattern, label, color]: event_d){
 		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern), label, color));
 	}
 }
+
+//FIXME stricly connected to actors names from config -> move actor names to some constatnts?
+void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const{
+	if(event_sets.contains(DISCONNECT)){
+		//throw error of actors not found
+		get_actor("access_point");
+		get_actor("client");
+		log_events(elements, {
+			{"access_point", "did not acknowledge", "ACK_fail", "red"},
+			{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
+		});
+	}
+	if(event_sets.contains(CONNECT)){
+		//throw error of actors not found
+		get_actor("access_point");
+		get_actor("client");
+		log_events(elements, {
+			{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
+			{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
+		});
+	}
+	if(event_sets.contains(TESTER_TAGS)){
+		//throw error of actor not found
+		get_actor("client");
+
+		log_events(elements, {
+			{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
+			{"client", ATTACK_START_tag, "attack_start", "black"}, {"client", ATTACK_STOP_tag, "attack_stop", "black"},
+		});
+	}
+}
+
 
 void RunStatus::save_actor_interface_mapping() const{
 	if(_run_folder.empty()){
@@ -332,7 +361,6 @@ void RunStatus::save_actor_interface_mapping() const{
 		return;
 	}
 
-	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 	write_actors_csv(actors, ofs);
 
 	ofs.close();

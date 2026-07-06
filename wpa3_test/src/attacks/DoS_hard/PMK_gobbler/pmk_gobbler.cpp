@@ -175,14 +175,8 @@ void run_attack(RunStatus &rs){
 
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {
-					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-					{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-					{"client", "@attack_stark", "attack_stark", "black"},
-					{"client", "@AKM_trigger", "AKM trigger", "black"}, {"client", "@attack_stop", "attack_stop", "black"},
-				});
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, {{"client", "@AKM_trigger", "AKM trigger", "black"}});
 
 	//TODO test elements.push_back(make_unique<EventLines>(
 	//    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));

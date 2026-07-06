@@ -1,8 +1,6 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include <chrono>
-#include <iostream>
 #include <nlohmann/json.hpp>
-#include <tins/tins.h>
 
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
@@ -10,7 +8,6 @@
 #include "logger/log.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::wpa3_trans_downgrade{
 using namespace std;
@@ -48,11 +45,10 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	G_elms elements;
 
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
-					{"client", "key_mgmt=WPA-PSK", "WPA2-DOWNGRADE", "red"}, {"client", START_tag, "START", "black"},
-					{"client", END_tag, "END", "black"}, {"rogue_ap", "AP-STA-CONNECTED", "ROGUE-CONN", "purple"},
+					{"client", "key_mgmt=WPA-PSK", "WPA2-DOWNGRADE", "red"},  //FIXME wtf, to fakt píše DOWNGRADE, není to TYPO?
+					{"rogue_ap", "AP-STA-CONNECTED", "ROGUE-CONN", "purple"},
 					{"rogue_ap", "EAPOL-4WAY-HS-COMPLETED", "ROGUE-4WAY", "orange"},
 				});
 

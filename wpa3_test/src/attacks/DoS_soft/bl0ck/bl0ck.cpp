@@ -214,13 +214,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 	log(LogLevel::INFO, "Bl0ck attack stats");
 
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {
-					{"access_point", "did not acknowledge", "ACK_fail", "red"},
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"}, {"client", START_tag, "START", "black"},
-					{"client", END_tag, "END", "black"},
-				});
-
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	if(rs.config().at("actors").contains("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA", true), "MANA", "black"));
 	}

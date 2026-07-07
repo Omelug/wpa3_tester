@@ -15,25 +15,14 @@
 using namespace std;
 
 namespace wpa3_tester::firmware{
-string get_random_ath_masker_mac(const string &attacker_mac){
-	stringstream ss(attacker_mac);
-	string segment;
-	vector<string> parts;
-
-	while(getline(ss, segment, ':')){ parts.push_back(segment); }
-
-	string result;
-	for(int i = 0; i < 5; ++i){ result += parts[i] + ":"; }
-
-	random_device rd;
-	mt19937 gen(rd());
+string get_random_ath_masker_mac(const string &attacker_mac) {
+	mt19937 gen(random_device{}());
 	uniform_int_distribution<> dis(0, 255);
-	int random_byte = dis(gen);
 
-	stringstream hex_ss;
-	hex_ss << hex << setw(2) << setfill('0') << random_byte;
-	result += hex_ss.str();
-	return result;
+	stringstream ss;
+	ss << attacker_mac.substr(0, 15)
+	   << hex << setw(2) << setfill('0') << dis(gen);
+	return ss.str();
 }
 
 void load_ath_masker(const bool git_install){

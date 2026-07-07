@@ -355,7 +355,7 @@ void RunStatus::save_actor_interface_mapping() const{
 		return;
 	}
 
-	const string path = _run_folder / "mapping.csv";
+	const string path = _run_folder / MAPPING_CSV;
 	ofstream ofs(path, ios::out | ios::trunc);
 	if(!ofs){
 		log(LogLevel::ERROR, "Failed to open {} for writing CSV mapping", path);
@@ -370,7 +370,7 @@ void RunStatus::save_actor_interface_mapping() const{
 }
 
 void RunStatus::load_actor_interface_mapping(){
-	const string csv_path = _run_folder / "mapping.csv";
+	const string csv_path = _run_folder / MAPPING_CSV;
 	ifstream ifs(csv_path);
 	if(!ifs){
 		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);

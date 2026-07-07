@@ -32,7 +32,7 @@ void attack_config_table(ReportGuard &report, const RunStatus &rs){
 }
 
 void attack_mapping_table(ReportGuard &report, const RunStatus &rs){
-	auto mapping = rs.run_folder() / "mapping.csv";
+	auto mapping = rs.run_folder() / MAPPING_CSV;
 
 	ifstream csv_file(mapping);
 	if(!csv_file.is_open()){

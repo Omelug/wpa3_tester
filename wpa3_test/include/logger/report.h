@@ -7,6 +7,11 @@
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{
 
+struct Link {
+    std::string text;
+    std::filesystem::path link_path;
+};
+
 // open report.md for write
 std::ofstream open_report(const std::filesystem::path &report_path);
 
@@ -26,6 +31,17 @@ struct ReportGuard {
 	    const auto rel = p.is_absolute() ? p.lexically_relative(run_dir_) : p;
 	    stream_ << rel.string(); return *this;
 	}
+    ReportGuard &operator<<(const Link &l){
+        if(std::filesystem::exists(l.link_path)){
+            const auto rel = l.link_path.is_absolute()
+                ? l.link_path.lexically_relative(run_dir_)
+                : l.link_path;
+            stream_ << '[' << l.text << "](" << rel.string() << ')';
+        } else {
+            stream_ << l.text;
+        }
+        return *this;
+    }
 
     ReportGuard &operator<<(const bool val){ stream_ << (val ? "yes" : "no"); return *this; }
     ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
@@ -52,6 +68,6 @@ void attack_config_table(ReportGuard &report, const RunStatus &rs);
 void attack_mapping_table(ReportGuard &report, const RunStatus &rs);
 
 std::string device(Tins::HWAddress<6> mac);
-std::string link(std::string text, const std::filesystem::path &link_path, const std::optional<std::filesystem::path> &run_dir = std::nullopt);
+Link link(std::string text, std::filesystem::path link_path);
 
 }

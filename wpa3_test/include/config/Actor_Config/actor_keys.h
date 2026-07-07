@@ -26,6 +26,7 @@ enum class SK : uint8_t{
 enum class BK : uint8_t{
 	AP, STA, injection_selftest, monitor, managed,
 	active_monitor, control_monitor,
+	//THIS IS ONLY SUPPORT, NOT ACTIVE/USAGE
 	GHz2_4, GHz5, GHz6,
 	w80211n, w80211ac, w80211ax, beacon_prot,
 	CSA, OCV, MFP, WPA_PSK, WPA3_SAE,
@@ -64,13 +65,13 @@ constexpr std::optional<BK> bk_cast(const std::string_view name){
 	return std::nullopt;
 }
 
-constexpr auto sk_values(){
+constexpr auto sk_keys(){
 	std::array<SK,static_cast<size_t>(SK::COUNT_)> arr{};
 	for(size_t i = 0; i < arr.size(); ++i) arr[i] = static_cast<SK>(i);
 	return arr;
 }
 
-constexpr auto bk_values(){
+constexpr auto bk_keys(){
 	std::array<BK,static_cast<size_t>(BK::COUNT_)> arr{};
 	for(size_t i = 0; i < arr.size(); ++i) arr[i] = static_cast<BK>(i);
 	return arr;

@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# Customizes a Raspberry Pi OS Lite (64-bit, Bookworm) image for wpa3-tester.
+# Must be run as root (via: sudo bash customize.sh ...)
+# Called by: make image
+#
+# Args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
+set -euo pipefail
+
+IMAGE=$1
+PI_USER=$2
+PI_PASSWORD=$3
+PI_HOSTNAME=$4
+SSH_KEY=${5:-}
+PI_IP=${6:-}
+PI_GW=${7:-}
+PI_PREFIX=${8:-24}
+
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+
+echo "==> Attaching loop device to $IMAGE ..."
+LOOP=$(losetup --find --show --partscan "$IMAGE")
+echo "    $LOOP"
+
+BOOT=$(mktemp -d)
+ROOT=$(mktemp -d)
+
+cleanup() {
+    umount "$BOOT" 2>/dev/null || true
+    umount "$ROOT" 2>/dev/null || true
+    losetup -d "$LOOP" 2>/dev/null || true
+    rmdir "$BOOT" "$ROOT" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+echo "==> Mounting partitions..."
+mount "${LOOP}p1" "$BOOT"   # FAT32 boot/firmware partition
+mount "${LOOP}p2" "$ROOT"   # ext4 root partition
+
+# ── Boot partition ─────────────────────────────────────────────────────────────
+
+# Enable SSH on first boot (legacy mechanism, still honoured in Bookworm)
+touch "$BOOT/ssh"
+
+# Create user: Bookworm reads userconf.txt from boot partition on first boot
+PW_HASH=$(echo "$PI_PASSWORD" | openssl passwd -6 -stdin)
+echo "${PI_USER}:${PW_HASH}" > "$BOOT/userconf.txt"
+
+# SSH public key — firstboot.sh installs it from this location on the Pi
+if [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
+    cp "$SSH_KEY" "$BOOT/authorized_key.pub"
+    echo "    SSH key: $SSH_KEY"
+else
+    echo "    SSH key: not found at '$SSH_KEY' — password login only"
+fi
+
+# ── Root partition ─────────────────────────────────────────────────────────────
+
+# Hostname
+echo "$PI_HOSTNAME" > "$ROOT/etc/hostname"
+# Update /etc/hosts (may not exist in minimal image — ignore failure)
+sed -i "s/raspberrypi/$PI_HOSTNAME/g" "$ROOT/etc/hosts" 2>/dev/null || true
+
+# Ethernet static IP — create NM connection profile if PI_IP is set
+if [ -n "$PI_IP" ]; then
+    UUID=$(cat /proc/sys/kernel/random/uuid)
+    mkdir -p "$ROOT/etc/NetworkManager/system-connections"
+    {
+        cat << EOF
+[connection]
+id=eth0-static
+uuid=$UUID
+type=ethernet
+interface-name=eth0
+autoconnect=yes
+autoconnect-priority=10
+
+[ethernet]
+
+[ipv4]
+method=manual
+addresses=$PI_IP/$PI_PREFIX
+EOF
+        [ -n "$PI_GW" ] && echo "gateway=$PI_GW"
+        echo "dns=8.8.8.8;1.1.1.1;"
+        printf '\n[ipv6]\nmethod=disabled\n'
+    } > "$ROOT/etc/NetworkManager/system-connections/eth0-static.nmconnection"
+    # NM ignores connection files that aren't 600
+    chmod 600 "$ROOT/etc/NetworkManager/system-connections/eth0-static.nmconnection"
+    echo "    static IP: $PI_IP/$PI_PREFIX${PI_GW:+  gw $PI_GW}"
+else
+    echo "    static IP: DHCP"
+fi
+
+# NetworkManager — leave all WiFi interfaces unmanaged so the tester
+# can control them directly via nl80211; ethernet stays managed for SSH
+mkdir -p "$ROOT/etc/NetworkManager/conf.d"
+cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
+[keyfile]
+unmanaged-devices=interface-name:wlan*
+EOF
+
+# Region CZ — WiFi regulatory domain + timezone
+echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
+ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
+echo "Europe/Prague" > "$ROOT/etc/timezone"
+
+# rfkill — unblock WiFi on every boot (RPi OS soft-blocks it by default)
+mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
+cat > "$ROOT/etc/systemd/system/rfkill-unblock-wifi.service" << 'EOF'
+[Unit]
+Description=Unblock WiFi rfkill
+After=systemd-rfkill.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/rfkill unblock wifi
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+ln -sf /etc/systemd/system/rfkill-unblock-wifi.service \
+       "$ROOT/etc/systemd/system/multi-user.target.wants/rfkill-unblock-wifi.service"
+
+# Firstboot script + systemd service
+install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"
+install -m 644 "$SCRIPT_DIR/firstboot.service" "$ROOT/etc/systemd/system/wpa3-firstboot.service"
+
+# Enable service (equivalent to systemctl enable, but without chroot/systemctl)
+mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
+ln -sf /etc/systemd/system/wpa3-firstboot.service \
+       "$ROOT/etc/systemd/system/multi-user.target.wants/wpa3-firstboot.service"
+
+echo ""
+echo "==> Image customized:"
+echo "    hostname : $PI_HOSTNAME  (reach via $PI_HOSTNAME.local after firstboot)"
+echo "    user     : $PI_USER / $PI_PASSWORD"
+echo "    ssh key  : ${SSH_KEY:-none}"

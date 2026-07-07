@@ -17,7 +17,6 @@ nebo proč BARS někdy klienta odpojí a někdy ne?
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 t: external info/iface_info parsing tests
 +: requirement external connection STA-AP
-+: create Dlink Openwrt all test tool
 +: injection test for openwrt (tried, openwrt crash)
 
 +: external Dlink for malformed eapol
@@ -34,8 +33,6 @@ t: save_log to documentation a nějak otestovat
 +: add git results repository
 d: how run program
 d: clion setup
-+: do cache type suites (run only tif requires allows it, other possibilities ignore)
-+: Network Manager
 
 PDF:
     +: reflection attack na EAP-pwd - útočník se nedkáže připojit na AP, pouze na EAP
@@ -65,6 +62,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: create Dlink_all (test suite for all Dlink tests)
 +: simulation test setup
 +: možnost do global_config nepoužívat cache
 f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka

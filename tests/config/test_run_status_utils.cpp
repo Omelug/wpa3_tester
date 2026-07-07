@@ -145,7 +145,7 @@ TEST_CASE("load_actor_interface_mapping - round-trips actors written by save_act
     rs.actors.emplace("ap", make("ap", "wlan1", "02:00:00:00:00:02", "mac80211_hwsim", "1"));
 
     rs.save_actor_interface_mapping();
-    REQUIRE(exists(test_dir / "mapping.csv"));
+    REQUIRE(exists(test_dir / MAPPING_CSV));
 
     rs.actors.clear();
     rs.load_actor_interface_mapping();
@@ -217,7 +217,7 @@ TEST_CASE("load_actor_interface_mapping - malformed rows are skipped, not thrown
     const path test_dir = temp_directory_path() / "test_load_actor_interface_mapping_malformed";
     create_directories(test_dir);
 
-    ofstream ofs(test_dir / "mapping.csv");
+    ofstream ofs(test_dir / MAPPING_CSV);
     ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj\n";
     ofs << "simulation,broken_row\n"; // too few columns
     ofs.close();

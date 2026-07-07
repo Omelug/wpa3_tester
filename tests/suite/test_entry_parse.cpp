@@ -39,7 +39,7 @@ void write_result(const path &d, const json &j) {
 
 // actors: {name, driver, mac}
 void write_mapping(const path &d, initializer_list<tuple<string, string, string>> actors) {
-    ofstream f(d / "mapping.csv");
+    ofstream f(d / MAPPING_CSV);
     f << "Type,ActorName,Interface,MAC,Driver,channel,json_obj\n";
     for (auto &&[name, drv, mac] : actors) {
         // sk_name(SK::driver_name) == "driver", not "driver_name"

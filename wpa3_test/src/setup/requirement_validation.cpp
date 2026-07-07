@@ -221,6 +221,7 @@ ActorCMap get_actors(const ActorCMap &actors, const string &source){
 }
 
 bool RunStatus::config_requirement(){
+	hw_capabilities::run_cmd({"rfkill", "unblock", "all"}, nullopt, false);
 	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 	firmware::disable_custom_drivers();
 	check_local_requirements();
@@ -282,9 +283,13 @@ bool RunStatus::config_requirement(){
 	auto setup_by_map = [&](ActorCMap &actor_map, const ActorMap &mapping){
 		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name));
 	};
+	log(LogLevel::DEBUG, "Setup internal");
 	setup_by_map(internal_actors, internal_mapping);
+	log(LogLevel::DEBUG, "Setup external WB");
 	setup_by_map(external_wb_actors, external_wb_mapping);
+	log(LogLevel::DEBUG, "Setup internal BB");
 	setup_by_map(external_bb_actors, external_bb_mapping);
+	log(LogLevel::DEBUG, "Setup simulation");
 	setup_by_map(simulation_actors, simulation_mapping);
 
 	// --------------- POST-BACKTRACKING REQUIREMENTS

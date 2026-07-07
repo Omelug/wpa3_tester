@@ -47,8 +47,11 @@ target_link_libraries(wpa3_deps INTERFACE
         OpenSSL::SSL OpenSSL::Crypto
 )
 
+if(NOT DEFINED WPA3_PROJECT_ROOT)
+    set(WPA3_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 target_compile_definitions(wpa3_deps INTERFACE
-        PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        PROJECT_ROOT_DIR="${WPA3_PROJECT_ROOT}"
 )
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)
 target_precompile_headers(wpa3_deps INTERFACE

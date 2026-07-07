@@ -10,7 +10,7 @@ namespace wpa3_tester{
 struct Driver{
 	std::optional<std::string> driver_name;
 	std::optional<std::string> driver_hash; // /sys/module/<name>/srcversion
-	std::optional<std::string> module_hash; // combined hash of driver + all depends srcversions
+	std::optional<std::string> module_hash; // combined hash of driver + all depends on srcversions
 };
 
 // String keys

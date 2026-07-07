@@ -68,14 +68,7 @@ string device(const Tins::HWAddress<6> mac){
 	//TODO get mac[link to device] --markdown
 	return mac.to_string();
 }
-//?TODO add object to << link with empty run_dir -> relative path set by gurd
-string link(string text, const path &link_path, const optional<path> &run_dir){
-	if(exists(link_path)){
-		const string href = run_dir
-			? link_path.lexically_relative(*run_dir).string()
-			: link_path.string();
-		return "["+text+"]("+href+")";
-	}
-	return text;
+Link link(string text, path link_path){
+	return {std::move(text), std::move(link_path)};
 }
 }

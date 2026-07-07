@@ -5,8 +5,6 @@ namespace wpa3_tester{
 using namespace std;
 
 void Actor_Config_external::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
-	set(SK::ssid, real_actor[SK::ssid]);
-
 	if((*this)[SK::mac].has_value()){
 		// setup force set mac address
 		set_mac_address(get(SK::mac));
@@ -19,16 +17,16 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	if(!is_external_WB()) return;
 	conn = real_actor->conn;
 
-	set(SK::driver_name, real_actor[SK::driver_name]);
-	set(SK::driver_hash, real_actor[SK::driver_hash]);
-	set(SK::module_hash, real_actor[SK::module_hash]);
-
-	set(SK::whitebox_host, real_actor[SK::whitebox_host]);
-	set(SK::whitebox_ip, real_actor[SK::whitebox_ip]);
-	set(SK::ssh_user, real_actor[SK::ssh_user]);
-	set(SK::ssh_port, real_actor[SK::ssh_port]);
-	set(SK::ssh_password, real_actor[SK::ssh_password]);
-	set(SK::external_OS, real_actor[SK::external_OS]);
+	set(real_actor, {{
+		SK::ssid,
+		SK::driver_name, SK::driver_hash, SK::module_hash,
+		SK::whitebox_host, SK::whitebox_ip,
+		SK::ssh_user, SK::ssh_port, SK::ssh_password, SK::external_OS
+	}, {
+		BK::GHz2_4, BK::GHz5, BK::GHz6,
+		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
+	}});
 
 	auto actor_ptr = ActorPtr(shared_from_this());
 	conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);

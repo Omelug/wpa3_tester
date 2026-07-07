@@ -60,18 +60,17 @@ Channel Actor_config::get_channel() const{
 void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
 	conn = real_actor->conn;
 
-	set(SK::driver_name, real_actor[SK::driver_name]);
-	set(SK::driver_hash, real_actor[SK::driver_hash]);
-	set(SK::module_hash, real_actor[SK::module_hash]);
-
-	set(SK::iface, real_actor[SK::iface]);
-	set(SK::radio, real_actor[SK::radio]);
-
-	set(SK::ht_mode, real_actor[SK::ht_mode]);
-	set(SK::ssid, real_actor[SK::ssid]);
-
-	//FIXME set support params? (or useless?)
-	//set(BK::OCV, real_actor[BK::OCV]);
+	set(real_actor, {
+		{
+			SK::driver_name,SK::driver_hash,SK::module_hash,
+			SK::iface, SK::radio,
+			SK::ht_mode, SK::ssid
+		},{
+			BK::GHz2_4, BK::GHz5, BK::GHz6,
+			BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+			BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
+		}
+	});
 
 	if((*this)[SK::mac].has_value()){
 		// setup force set mac address

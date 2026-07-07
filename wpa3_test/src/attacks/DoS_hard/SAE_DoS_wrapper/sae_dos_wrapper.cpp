@@ -41,7 +41,7 @@ void setup_attack(RunStatus &rs){
 		hw_capabilities::run_cmd({"apt-get", "install", "-y", "python3.10"});
 	}
 
-	const string req = suite + "/requirements.txt"; //TODO move requirement aadn python3.10  to fork
+	const string req = suite + "/requirements.txt"; //TODO move requirement and python3.10  to fork
 	if(exists(req)){
 		log(LogLevel::INFO, "Installing python dependencies from {}...", req);
 		hw_capabilities::run_cmd({"python3.10", "-m", "pip", "install", "-r" + req});
@@ -95,12 +95,11 @@ void run_attack(RunStatus &rs){
 	const ActorPtr ap = rs.get_actor("access_point");
 	const ActorPtr client = rs.get_actor("client");
 
-	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
-		string>();
-
 	log(LogLevel::INFO, "Capturing SAE commit values...");
-	const auto sae = cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), ssid,
-														ap.get(SK::mac), 30);
+	//TODO zkotrolovat, že tu je ssid ([předtím bylo hardcoded)
+	const auto sae = cookie_guzzler::get_commit_values(rs,
+		attacker.get(SK::iface), attacker.get(SK::sniff_iface), ap.get(SK::ssid), ap.get(SK::mac), 30
+	);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();

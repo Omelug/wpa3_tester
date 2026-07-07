@@ -137,10 +137,9 @@ void run_attack(RunStatus &rs){
 	const size_t packets_per_sec = att_cfg.at("packets_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
-	const auto ssid = rs.config().at("actors").at("access_point").at("setup").at("program_config").at("ssid").get<
-		string>();
+	//TODO zkotrolovat, že tu je ssid ([předtím bylohardcoded)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, att.get(SK::iface), att.get(SK::sniff_iface), ssid, ap.get(SK::mac), 30);
+		rs, att.get(SK::iface), att.get(SK::sniff_iface), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	att->set_monitor_mode();
 	att->set_iface_up();
 
@@ -148,7 +147,9 @@ void run_attack(RunStatus &rs){
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
+
 	rs.start_observers();
+
 	CookieStore store;
 	thread capture_thread([&](){
 		try{
@@ -178,8 +179,6 @@ void stats_attack(const RunStatus &rs){
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {{"client", "@AKM_trigger", "AKM trigger", "black"}});
 
-	//TODO test elements.push_back(make_unique<EventLines>(
-	//    observer::tshark::get_tshark_events(rs, "attacker", "wlan.fc.type == 0  && wlan.fc.subtype == 11", "AUTH"), "AUTH", "red"));
 	observer::station_counter::create_station_graph(rs, "access_point", elements);
 	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
 	//TODO test observer::tshark::generate_time_series_retry_graph(rs, "attacker");

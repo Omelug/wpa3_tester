@@ -191,7 +191,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
 	const int frame_in_batch = att_cfg.at("frame_in_batch").get<int>();
 	const bool is_random = att_cfg.at("random").get<bool>();
-	const int ms_interval = att_cfg.at("ms_interval"); //FIXME need get? (asi ne, tak projít všechny zbyteřné get v projektu)
+	const int ms_interval = att_cfg.at("ms_interval").get<int>();
 
 	rs.start_observers();
 

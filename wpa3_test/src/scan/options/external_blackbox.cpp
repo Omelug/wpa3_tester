@@ -17,7 +17,7 @@ using namespace Tins;
 void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 	int8_t signal = -1;
 	int channel_freq = -1;
-	if(const auto *rt = pdu.find_pdu<RadioTap>()){
+	if(const auto *rt = pdu.find_pdu<RadioTap>()){ //FIXME log?
 		try{ signal = rt->dbm_signal(); } catch(...){}
 		try{ channel_freq = rt->channel_freq(); } catch(...){}
 	}
@@ -102,13 +102,13 @@ static pcap_t *open_scan_pcap(const string &iface, const ActorPtr &scanner){
 	if(pcap_activate(handle) < 0){
 		const string msg = pcap_geterr(handle);
 		pcap_close(handle);
-		throw setup_err("pcap_activate failed: " + msg);
+		throw setup_err("pcap_activate failed: {}",  msg);
 	}
 	return handle;
 }
 
 vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const size_t timeout_sec,
-													const vector<int> &channels
+													const vector<uint8_t> &channels
 ){
 	if(channels.empty()) throw setup_err("No channels specified for scanning");
 
@@ -125,7 +125,7 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 	const size_t channel_sec = max<size_t>(SEC_MINIMUM, timeout_sec / channels.size());
 	const auto total_end = chrono::steady_clock::now() + chrono::seconds(timeout_sec);
 
-	for(const int channel: channels){
+	for(const uint8_t channel: channels){
 		if(chrono::steady_clock::now() >= total_end) break;
 		log(LogLevel::INFO, "Scanning channel {} on {}", channel, iface);
 
@@ -142,15 +142,15 @@ vector<ActorPtr> RunStatus::list_external_entities(const string &iface, const si
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }
 
-vector<int> RunStatus::get_external_BB_channels(){
-	vector<int> all_channels;
+vector<uint8_t> RunStatus::get_external_BB_channels(){
+	vector<uint8_t> all_channels;
 
 	if(_config.contains("scan_channels")){
-		all_channels = _config.at("scan_channels").get<vector<int>>();
+		all_channels = _config.at("scan_channels").get<vector<uint8_t>>();
 	} else{
 		for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
 			if(actor_config.at("selection").contains("channel")){
-				all_channels.push_back(actor_config.at("selection").at("channel").get<int>());
+				all_channels.push_back(actor_config.at("selection").at("channel").get<uint8_t>());
 			} else{
 				log(LogLevel::WARNING, "Actor {} missing channel configuration", actor_name);
 			}
@@ -164,13 +164,25 @@ vector<int> RunStatus::get_external_BB_channels(){
 		return {};
 	}
 
-	const auto s = all_channels | views::transform([](const int c){ return to_string(c); }) |
+	const auto s = all_channels | views::transform([](const uint8_t c){ return to_string(c); }) |
 			views::join_with(string(", ")) | ranges::to<string>();
 	log(LogLevel::INFO, "Scanning channels: {}", s);
 	return all_channels;
 }
 
-vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<int> &channels, const ActorCMap &actors){
+vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
+	const vector<uint8_t> channels = get_external_BB_channels();
+	if(channels.empty()) return {};
+	const string iface = _config.at("scan_iface");
+	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();
+
+	if(_config.value("scan_until_success", false) && !ex_bb_actors.empty())
+		return scan_until_match(iface, channels, ex_bb_actors);
+
+	return list_external_entities(iface, timeout, channels);
+}
+
+vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels, const ActorCMap &actors){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);
 	scanner->set_monitor_mode();
@@ -206,7 +218,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<i
 	};
 
 	while(!found){
-		for(const int ch_num: channels){
+		for(const uint8_t ch_num: channels){
 			if(found) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
@@ -217,16 +229,5 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<i
 		}
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
-}
-
-vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &actors){
-	const vector<int> channels = get_external_BB_channels();
-	if(channels.empty()) return {};
-	const string iface = _config.at("scan_iface");
-	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();
-
-	if(_config.value("scan_until_success", false) && !actors.empty()) return scan_until_match(iface, channels, actors);
-
-	return list_external_entities(iface, timeout, channels);
 }
 }

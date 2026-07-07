@@ -140,7 +140,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 				if(value.is_string())      v = value.get<string>();
 				else if(value.is_number()) v = value.dump();
 				else continue;
-				exec("uci set wireless." + sec + "." + key + "='" + v + "'");
+				exec(format("uci set wireless.{}.{}='{}'", sec, key, v));
 			}
 		};
 

@@ -3,7 +3,6 @@
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
 #include "config/global_config.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
@@ -19,7 +18,7 @@ using namespace filesystem;
 static ActorPtr make_actor(initializer_list<pair<BK,bool>> bools = {}, initializer_list<pair<SK,string>> strs = {}){
 	const auto ac = make_shared<Actor_Config_sim>();
 	for(auto [k, v]: bools) (*ac)[k] = v;
-	for(auto [k, v]: strs) (*ac)[k] = v;
+	for(const auto& [k, v]: strs) (*ac)[k] = v;
 	return ActorPtr(ac);
 }
 
@@ -58,9 +57,9 @@ TEST_CASE("hw_capabilities::freq_to_channel"){
 	}
 
 	SUBCASE("Invalid frequencies"){
-		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(2411), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(3000), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(-1), invalid_argument);
+		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(2411), setup_err);
+		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(3000), setup_err);
+		CHECK_THROWS_AS(hw_capabilities::freq_to_channel(-1), setup_err);
 	}
 }
 
@@ -85,15 +84,14 @@ TEST_CASE("hw_capabilities::channel_to_freq"){
 	}
 
 	SUBCASE("Invalid channels"){
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({0, WifiBand::BAND_2_4, nullopt}), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({15,WifiBand::BAND_2_4, nullopt}), invalid_argument);
-		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({-1, WifiBand::BAND_2_4, nullopt}), invalid_argument);
+		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({0, WifiBand::BAND_2_4, nullopt}), setup_err);
+		CHECK_THROWS_AS(hw_capabilities::channel_to_freq({15,WifiBand::BAND_2_4, nullopt}), setup_err);
 	}
 }
 
 TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
 	SUBCASE("Roundtrip consistency"){
-		vector<tuple<int,int,WifiBand>> test_cases = {
+		vector<tuple<int, uint8_t,WifiBand>> test_cases = {
 			{2412, 1, WifiBand::BAND_2_4}, {2437, 6, WifiBand::BAND_2_4_or_5}, {2472, 13, WifiBand::BAND_2_4},
 			// 2.4 GHz
 			{5180, 36, WifiBand::BAND_5}, {5500, 100, WifiBand::BAND_2_4_or_5}, {5885, 177, WifiBand::BAND_5}, // 5 GHz
@@ -167,7 +165,7 @@ TEST_CASE("hw_capabilities::list_interfaces - no-match filter returns empty"){
 	GlobalConfigFixture gc;
 	// WifiVirtualHwsim is unlikely to be present in a standard environment
 	const auto ifaces = hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim);
-	// Just verify the call succeeds and returns a vector (may be empty)
+	// Just verify the call succeeds and returns a vector (maybe empty)
 	CHECK_GE(ifaces.size(), 0u);
 }
 

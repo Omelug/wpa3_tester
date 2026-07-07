@@ -1,5 +1,6 @@
 #include "attacks/two_iface/TwoIface.h"
 #include <fstream>
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 
@@ -52,7 +53,7 @@ optional<json> TwoIface::lookup_cache(const string &key) const{
 		const auto sep = line.find('\t');
 		if(sep == string::npos) continue;
 		if(line.substr(0, sep) != key) continue;
-		const auto j = json::parse(line.substr(sep + 1), nullptr, false);
+		auto j = json::parse(line.substr(sep + 1), nullptr, false);
 		if(!j.is_discarded()) return j;
 	}
 	return nullopt;

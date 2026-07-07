@@ -16,7 +16,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
@@ -84,7 +84,7 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 	}, iface, filter, seconds(timeout_sec));
 }
 
-void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string &iface, const int frame_in_batch,
+void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string &iface, const int frame_in_batch,
 			const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval
 ){
 	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
@@ -113,9 +113,9 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_hw, const string 
 			const HWAddress<6> sta_hw = is_random ? hw_capabilities::rand_mac() : sta_mac;
 			RadioTap block_frame;
 
-			if(attack_type == "BAR") block_frame = get_BAR_frame(ap_hw, sta_hw);
-			if(attack_type == "BA") block_frame = get_BA_frame(ap_hw, sta_hw);
-			if(attack_type == "BARS") block_frame = get_BAR_frame(ap_hw, sta_hw, bars_ctx.current_fn.load(),
+			if(attack_type == "BAR") block_frame = get_BAR_frame(ap_mac, sta_hw);
+			if(attack_type == "BA") block_frame = get_BA_frame(ap_mac, sta_hw);
+			if(attack_type == "BARS") block_frame = get_BAR_frame(ap_mac, sta_hw, bars_ctx.current_fn.load(),
 																bars_ctx.current_sn.load());
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);

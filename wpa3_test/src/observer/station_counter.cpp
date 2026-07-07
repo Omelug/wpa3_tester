@@ -16,7 +16,7 @@ const string program_name = "station_counter";
 
 void start_remote(RunStatus &rs, const string &actor_name, const int interval_sec, const string &local_log){
 	const auto &actor = rs.get_actor(actor_name);
-	const string iface = rs.get_actor(actor_name)["iface"];
+	const string iface = rs.get_actor(actor_name).get(SK::iface);
 
 	const string remote_log = "/tmp/" + actor_name + SUFFIX_sta + ".log";
 	const string pid_file = remote_log + ".pid";
@@ -62,7 +62,7 @@ void start_station_monitoring(RunStatus &rs, const string &actor_name, const int
 	const auto actor = rs.get_actor(actor_name);
 	const string local_log = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
 
-	const auto iface = rs.get_actor(actor_name)["iface"];
+	const auto iface = rs.get_actor(actor_name).get(SK::iface);
 	if(actor->conn != nullptr){
 		start_remote(rs, actor_name, interval_sec, local_log);
 	} else{
@@ -84,7 +84,7 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 			double count;
 			if(iss >> ts >> count){
 				max_stations = max(max_stations, count);
-				times.push_back(LogTimePoint(chrono::seconds(ts)));
+				times.emplace_back(chrono::seconds(ts));
 				sta_count.push_back(count);
 			}
 		}

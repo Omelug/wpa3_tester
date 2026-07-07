@@ -5,21 +5,22 @@
 #include <string>
 #include <tins/tins.h>
 
-#include "config/RunStatus.h"
 
+namespace std{
 template<>
-struct std::formatter<std::filesystem::path>: std::formatter<std::string>{
-	auto format(const std::filesystem::path &p, auto &ctx) const{
-		return std::formatter<std::string>::format(p.string(), ctx);
+struct formatter<filesystem::path>: formatter<string>{
+	auto format(const filesystem::path &p, auto &ctx) const{
+		return formatter<string>::format(p.string(), ctx);
 	}
 };
 
 template<size_t n>
-struct std::formatter<Tins::HWAddress<n>>: std::formatter<std::string>{
+struct formatter<Tins::HWAddress<n>>: formatter<string>{
 	auto format(const Tins::HWAddress<n> &addr, auto &ctx) const{
-		return std::formatter<std::string>::format(addr.to_string(), ctx);
+		return formatter<string>::format(addr.to_string(), ctx);
 	}
 };
+}
 
 namespace wpa3_tester{
 enum class LogLevel{
@@ -60,15 +61,10 @@ void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> 
 //[[gnu::format(printf, 2, 3)]]
 //void log(LogLevel level, const char *fmt, ...);
 void log(LogLevel level, const std::string &msg);
-void log_actor_map(const std::string &name, const ActorCMap &m);
 
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);
-// between_markers -> only @START -> @END/@END_STOP
-std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &process_name,
-										const std::string &pattern, bool between_markers = false
-);
 std::string escape_tex(std::string text);
 }

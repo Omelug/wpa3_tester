@@ -11,7 +11,7 @@ using namespace std;
 Channel Actor_config::get_channel() const{
 	if(!(*this)[SK::channel].has_value()) throw config_err("Actor_config: channel not set");
 
-	const int ch_num = stoi(get(SK::channel));
+	const uint8_t ch_num = static_cast<uint8_t>(stoi(get(SK::channel)));
 
 	// Determine band from boolean keys
 	auto band = WifiBand::BAND_2_4_or_5; // default
@@ -93,7 +93,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	cleanup();
 
 	const auto actor_json = config.at("actors").at(get(SK::actor_name));
-	int channel_num = -1;
+	uint8_t channel_num = 0;
 	if(const auto d = (*this)[SK::channel]) channel_num = stoi(d.value());
 	else if(const auto &c = real_actor[SK::channel]) channel_num = stoi(c.value());
 
@@ -113,7 +113,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set_iface_up();
 
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
-	if(channel_num != -1 && monitor_needed()) set_channel(
+	if(channel_num != 0 && monitor_needed()) set_channel(
 		Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 
 	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();

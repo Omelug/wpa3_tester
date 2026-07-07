@@ -75,8 +75,8 @@ void check_OCV(nlattr **attrs, NlCaps *caps){
 void check_MFP(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_CIPHER_SUITES]) return;
 	const auto *ciphers = static_cast<uint32_t *>(nla_data(attrs[NL80211_ATTR_CIPHER_SUITES]));
-	const int num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
-	for(int i = 0; i < num; i++){
+	const ulong num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
+	for(ulong i = 0; i < num; i++){
 		if(ciphers[i] == 0x000FAC06){ // BIP-CMAC-128 — hardware IGTK/BIGTK support
 			caps->mfp = true;
 			return;
@@ -87,8 +87,8 @@ void check_MFP(nlattr **attrs, NlCaps *caps){
 void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
 	if(attrs[NL80211_ATTR_CIPHER_SUITES]){
 		const auto *ciphers = static_cast<uint32_t *>(nla_data(attrs[NL80211_ATTR_CIPHER_SUITES]));
-		const int num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
-		for(int i = 0; i < num; i++){
+		const ulong num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
+		for(ulong i = 0; i < num; i++){
 			if(ciphers[i] == 0x000FAC04) caps->wpa2_psk = true; // 00-0F-AC:4 - CCMP
 		}
 	}

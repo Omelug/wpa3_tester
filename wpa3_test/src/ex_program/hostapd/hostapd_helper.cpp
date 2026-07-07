@@ -372,13 +372,9 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 }
 
 string owe_trans_bssid(const string &primary_mac){
-	unsigned a[6];
-	if(sscanf(primary_mac.c_str(), "%x:%x:%x:%x:%x:%x", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]) != 6)
-		throw run_err("owe_trans_bssid: invalid MAC: {}", primary_mac);
-	a[5] ^= 1;
-	char buf[18];
-	snprintf(buf, sizeof(buf), "%02x:%02x:%02x:%02x:%02x:%02x", a[0], a[1], a[2], a[3], a[4], a[5]);
-	return string(buf);
+	const auto addr = Tins::HWAddress<6>(primary_mac);
+	return format("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
 }
 
 string get_mfp_from_supplicant(const path &conf){

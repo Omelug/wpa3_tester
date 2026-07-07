@@ -46,7 +46,7 @@ void run_attack(RunStatus &){
         const bool   strip_rsn    = att_cfg.value("strip_rsn", false);
         const int    timeout      = att_cfg.value("attack_time_sec", 30);
 
-        McMitm attack(att_real["iface"], att_rogue["iface"], real_ssid, client.get(SK::mac));
+        McMitm attack(att_real.get(SK::iface), att_rogue.get(SK::iface), real_ssid, client.get(SK::mac));
         attack.setup_ifaces(att_real, client.get(SK::mac), att_rogue, ap.get(SK::mac));
         rs.start_observers();
 
@@ -70,7 +70,7 @@ void run_attack(RunStatus &){
         // Scan for real AP beacon to clone its IEs (RSN, HT caps, …)
         attack_scan::ScanAP scan_ap{};
         scan_ap.bssid = ap.get(SK::mac);
-        attack.beacon = RSN_scan(att_real["iface"], 10, scan_ap);
+        attack.beacon = RSN_scan(att_real.get(SK::iface), 10, scan_ap);
         if (!attack.beacon)
             throw run_err("SSID Confusion: beacon of real AP not found");
 

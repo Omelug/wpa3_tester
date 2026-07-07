@@ -65,7 +65,7 @@ void generate_report(RunSuiteStatus &rss){
 			<< e.client_version << " | "
 			<< e.attacker_driver << " | "
 			<< disc_link << "(" << e.disconnect_count << ")" << " | "
-			<< e.rogue_ap_connected << " | "
+			<< (e.rogue_ap_connected.value_or(false) ? "yes" : "no") << " | "
 			<< graphs << " |\n";
 	}
 

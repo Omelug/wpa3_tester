@@ -4,8 +4,9 @@
 #include <fstream>
 #include <string>
 #include <tins/tins.h>
-#include "config/Actor_Config/actor_keys.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/log.h"
+#include "logger/log_util.h"
 
 using namespace std;
 using wpa3_tester::LogTimePoint;

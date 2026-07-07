@@ -4,6 +4,8 @@
 #include <thread>
 #include <vector>
 #include <tins/tins.h>
+
+#include "config/RunStatus.h"
 #include "logger/log.h"
 
 namespace wpa3_tester::dos_helpers{

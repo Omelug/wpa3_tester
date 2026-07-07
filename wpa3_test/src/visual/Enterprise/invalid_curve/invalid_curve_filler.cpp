@@ -38,7 +38,7 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
 		  << "                    <td>" << e.test_name << "</td>\n"
 		  << "                    <td>" << e.ap_driver << "</td>\n"
 		  << "                    <td>" << e.attacker_driver << "</td>\n"
-		  << "                    <td>" << e.passed << "</td>\n"
+		  << "                    <td>" << (e.passed.value_or(false) ? "yes" : "no") << "</td>\n"
 		  << "                </tr>\n";
 	}
 	f << "            </tbody>\n        </table>\n";

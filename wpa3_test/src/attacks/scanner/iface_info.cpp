@@ -20,7 +20,7 @@ using namespace filesystem;
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 
-	const string iface = rs.get_actor("scanner")["iface"];
+	const string iface = rs.get_actor("scanner").get(SK::iface);
 
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
@@ -107,35 +107,33 @@ void generate_report(const RunStatus &rs){
 		md << "### Interface Modes\n\n";
 		md << "| Mode | Supported |\n";
 		md << "|------|-----------|\n";
-		md << "| AP | " << (*scanner)[BK::AP] << " |\n";
-		md << "| STA | " << (*scanner)[BK::STA] << " |\n";
-		md << "| Monitor | " << (*scanner)[BK::monitor] << " |\n\n";
+		md << "| AP | " << scanner[BK::AP] << " |\n";
+		md << "| STA | " << scanner[BK::STA] << " |\n";
+		md << "| Monitor | " << scanner[BK::monitor] << " |\n\n";
 
 		md << "### Frequency Bands\n\n";
 		md << "| Band | Supported |\n";
 		md << "|------|-----------|\n";
-		md << "| 2.4 GHz | " << (*scanner)[BK::GHz2_4] << " |\n";
-		md << "| 5 GHz | " << (*scanner)[BK::GHz5] << " |\n";
-		md << "| 6 GHz | " << (*scanner)[BK::GHz6] << " |\n\n";
+		md << "| 2.4 GHz | " << scanner[BK::GHz2_4] << " |\n";
+		md << "| 5 GHz | " << scanner[BK::GHz5] << " |\n";
+		md << "| 6 GHz | " << scanner[BK::GHz6] << " |\n\n";
 
 		md << "### 802.11 Standards\n\n";
 		md << "| Standard | Supported |\n";
 		md << "|----------|-----------|\n";
-		md << "| 802.11n (HT) | " << (*scanner)[BK::w80211n] << " |\n";
-		md << "| 802.11ac (VHT) | " << (*scanner)[BK::w80211ac] << " |\n";
-		md << "| 802.11ax (HE) | " << (*scanner)[BK::w80211ax] << " |\n\n";
+		md << "| 802.11n (HT) | " << scanner[BK::w80211n] << " |\n";
+		md << "| 802.11ac (VHT) | " << scanner[BK::w80211ac] << " |\n";
+		md << "| 802.11ax (HE) | " << scanner[BK::w80211ax] << " |\n\n";
 
 		md << "### Security & Features\n\n";
 		md << "| Feature | Supported |\n";
 		md << "|----------|-----------|\n";
-		md << "| WPA2-PSK (CCMP) | " << (*scanner)[BK::WPA_PSK] << " |\n";
-		md << "| WPA3-SAE | " << (*scanner)[BK::WPA3_SAE] << " |\n";
-		md << "| MFP (BIP-CMAC-128) | " << (*scanner)[BK::MFP] << " |\n";
-		md << "| OCV | " << (*scanner)[BK::OCV] << " |\n";
-		md << "| Beacon Protection | " << (*scanner)[BK::beacon_prot] << " |\n\n";
-
-		if((*scanner)[SK::driver_name].has_value())
-			md << "- **Driver (nl80211)**: `" << (*scanner)[SK::driver_name].value() << "`\n";
+		md << "| WPA2-PSK (CCMP) | " << scanner[BK::WPA_PSK] << " |\n";
+		md << "| WPA3-SAE | " << scanner[BK::WPA3_SAE] << " |\n";
+		md << "| MFP (BIP-CMAC-128) | " << scanner[BK::MFP] << " |\n";
+		md << "| OCV | " << scanner[BK::OCV] << " |\n";
+		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n\n";
+		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
 
 		md << "## `iw dev " << iface << " info`\n\n";

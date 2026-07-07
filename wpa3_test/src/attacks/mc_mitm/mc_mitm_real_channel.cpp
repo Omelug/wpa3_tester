@@ -105,8 +105,6 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 	//print
 	if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
 		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
-	} else if(client_state.get_mac() == dot11.addr1()){
-		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
 	} else if(might_forward){
 		display_traffic(dot11, "Real channel", " -- MitM ap");
 	}

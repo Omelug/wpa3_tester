@@ -14,7 +14,7 @@
 #include "config/Actor_Config/Actor_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
 

@@ -25,7 +25,7 @@ void speed_observation_start(RunStatus &rs){
 }
 
 void run_attack(RunStatus &rs){
-	const NetworkInterface iface_obj(rs.get_actor("transceiver")["iface"]);
+	const NetworkInterface iface_obj(rs.get_actor("transceiver").get(SK::iface));
 
 	const HWAddress<6> rx_mac(rs.get_actor("receiver").get(SK::mac));
 	const HWAddress<6> tx_mac(rs.get_actor("transceiver").get(SK::mac));

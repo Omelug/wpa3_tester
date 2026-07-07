@@ -86,7 +86,7 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 		ifstream ifs("/sys/module/" + mod + "/srcversion");
 		if(ifs.is_open()){
 			string sv;
-			if(getline(ifs, sv) && !sv.empty()) combined += mod + ":" + sv + ";";
+			if(getline(ifs, sv) && !sv.empty()) combined += format("{}:{};", mod, sv);
 		}
 	}
 	if(combined.empty()) return nullopt;

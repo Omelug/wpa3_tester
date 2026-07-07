@@ -38,7 +38,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
 }
 
 bool check_fcs_present(const vector<uint8_t> &packet){
-	ieee80211_radiotap_iterator it;
+	ieee80211_radiotap_iterator it{};
 
 	if(ieee80211_radiotap_iterator_init(
 		&it, reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(packet.data())),

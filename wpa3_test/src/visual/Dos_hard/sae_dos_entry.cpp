@@ -28,7 +28,7 @@ void SaeDosFolderEntry::render_table(overview::HtmlGuard &f,
           << "                    <td>" << overview::test_name_cell(p, e.name, page_dir) << "</td>\n"
           << "                    <td>";
         if (!e.ap_res_png.empty())
-            f << "<img src=\"" << e.ap_res_png << "\" style=\"max-height:160px;\">";
+            f << R"(<img src=")" << e.ap_res_png << R"(" style="max-height:160px;">)";
         else
             f << "—";
         f << "</td>\n"

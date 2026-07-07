@@ -8,11 +8,11 @@ namespace wpa3_tester::observer::resource_checker{
 const std::string SUFFIX_res = "_res";
 
 struct ResourceRecord{
-	long long timestamp;
-	std::vector<int> core_percents;
-	long long mem_free_kb;
-	int airtime_pct;
-	int rx_drops;
+	long long timestamp{};
+	std::vector<int> core_percents{};
+	long long mem_free_kb{};
+	int airtime_pct{};
+	int rx_drops{};
 };
 
 void start_resource_monitoring_remote(RunStatus &rs, const std::string &actor_name, const std::string &iface,

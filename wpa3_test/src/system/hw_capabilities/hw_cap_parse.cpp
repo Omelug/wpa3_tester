@@ -30,7 +30,7 @@ int hw_capabilities::freq_to_channel(const int freq){
 		if((freq - 5950) % 5 == 0) return ch;
 	}
 
-	throw invalid_argument("Invalid frequency: " + to_string(freq) + " MHz");
+	throw setup_err("Invalid frequency: {}MHz", freq);
 }
 
 int hw_capabilities::channel_to_freq(const Channel &ch){
@@ -53,17 +53,15 @@ int hw_capabilities::channel_to_freq(const Channel &ch){
 			if(freq >= 5955 && freq <= 7115) return freq;
 		}
 	}
-	throw invalid_argument("Invalid channel: " + to_string(ch.ch_num));
+	throw setup_err("Invalid channel: {}", ch.ch_num);
 }
 
 HWAddress<6> hw_capabilities::rand_mac(){
-	static random_device rd;
-	static mt19937 gen(rd());
-	uniform_int_distribution<> dis(0, 255);
-
-	char mac[18];
-	snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", dis(gen), dis(gen), dis(gen), dis(gen), dis(gen),
-			dis(gen));
-	return HWAddress < 6 > (mac);
+	static mt19937 gen(random_device{}());
+	uniform_int_distribution<uint8_t> dis;
+	array<uint8_t, 6> bytes{};
+	ranges::generate(bytes, [&]{ return dis(gen); });
+	return bytes.data();
 }
+
 }

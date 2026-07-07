@@ -11,7 +11,7 @@
 #include "ex_program/hostapd/hostapd.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
@@ -35,7 +35,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Ch
 
 	Dot11ManagementFrame::channel_switch_type cs;
 	cs.switch_mode = 1;
-	cs.new_channel = static_cast<uint8_t>(new_channel.ch_num);
+	cs.new_channel = new_channel.ch_num;
 	cs.switch_count = switch_count;
 	beacon.channel_switch(cs);
 
@@ -76,11 +76,11 @@ void run_chs_attack(RunStatus &rs){
 
 	const HWAddress<6> ap_mac(rs.get_actor("access_point").get(SK::mac));
 	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
-	const string iface_name = rs.get_actor("attacker")["iface"];
+	const string iface_name = rs.get_actor("attacker").get(SK::iface);
 	const string essid = ap_actor.get(SK::ssid);
 	const Channel old_channel = ap_actor->get_channel();
 	const Channel new_channel{
-		att_cfg.at("new_channel").get<int>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]
+		att_cfg.at("new_channel").get<uint8_t>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]
 	};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");

@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <format>
 #include <iomanip>
 
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
@@ -63,8 +64,8 @@ void render_table(overview::HtmlGuard &f,
 		  << "                    <td>" << overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
 		  << "                    <td>" << overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
 		  << "                    <td>" << overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-		  << "                    <td>" << e.disconnected << "</td>\n"
-		  << "                    <td>" << e.rogue_ap_connected << "</td>\n"
+		  << "                    <td>" << (e.disconnected.value_or(false) ? "yes" : "no") << "</td>\n"
+		  << "                    <td>" << (e.rogue_ap_connected.value_or(false) ? "yes" : "no") << "</td>\n"
 		  << "                    <td>" << e.client_mfp << "</td>\n"
 		  << "                </tr>\n";
 	}
@@ -94,15 +95,15 @@ void generate_report(RunSuiteStatus &rss){
 	for(const auto &e: entries){
 		const string rel = e.rel_path.string();
 		const string name_cell = exists(run_dir / e.rel_path / REPORT_NAME)
-								? "[" + e.name + "](" + rel + "/" + REPORT_NAME + ")"
+								? format("[{}]({}/{})", e.name, rel, REPORT_NAME)
 								: e.name;
-		const string result_link = "[" + string(e.rogue_ap_connected.value() ? "PASSED" : "FAILED") + "](" + rel + "/" +
-				RESULT_NAME + ")";
-		const string ap_cell = e.ap_mac + " (" + e.ap_source + ")";
-		const string client_cell = e.client_mac + " (" + e.client_source + ")";
-		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
+		const string result_link = format("[{}]({}/{})",
+			e.rogue_ap_connected.value() ? "PASSED" : "FAILED", rel, RESULT_NAME);
+		const string ap_cell = format("{} ({})", e.ap_mac, e.ap_source);
+		const string client_cell = format("{} ({})", e.client_mac, e.client_source);
+		string attacker_cell = format("{} ({})", e.attacker_mac, e.attacker_driver);
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
-			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
+			attacker_cell += format("<br>{} ({})", e.rogue_ap_mac, e.rogue_ap_driver);
 
 		report << "| " << name_cell << " | "
 			<< ap_cell << " | "
@@ -120,6 +121,6 @@ void generate_report(RunSuiteStatus &rss){
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
+	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 }
 }

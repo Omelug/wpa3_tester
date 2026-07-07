@@ -9,7 +9,7 @@ enum class WifiBand{
 };
 
 struct Channel{
-	int ch_num = 0;
+	uint8_t ch_num = 0;
 	WifiBand band = WifiBand::BAND_2_4_or_5;
 	std::optional<std::string> ht_mode;
 };

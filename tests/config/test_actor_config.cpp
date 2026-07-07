@@ -2,6 +2,7 @@
 #include <doctest.h>
 #include <nlohmann/json.hpp>
 #include "config/Actor_Config/Actor_config.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/error_log.h"
 
@@ -167,8 +168,8 @@ TEST_CASE("Actor_config - operator+= merge"){
 
         base += other;
 
-        CHECK_EQ(base["iface"], "wlan0");
-        CHECK_EQ(base["driver"], "ath9k");
+        CHECK_EQ(base.get(SK::iface), "wlan0");
+        CHECK_EQ(base.get(SK::driver_name), "ath9k");
         CHECK(base.get(BK::monitor));
         CHECK(base.get(BK::injection_selftest));
     }
@@ -350,7 +351,7 @@ TEST_CASE("Actor_config::to_str - bool keys true and false"){
     actor.set(BK::injection_selftest, false);
 
     const auto s = actor.to_str();
-    CHECK_NE(s.find("["), string::npos);
+    CHECK_NE(s.find('['), string::npos);
     CHECK_NE(s.find("AP"), string::npos);
     CHECK_NE(s.find("!injection_selftest"), string::npos);
 }
@@ -383,8 +384,8 @@ TEST_CASE("Actor_config::to_json - string keys in selection"){
 
     const auto j = actor.to_json();
     REQUIRE(j.contains("selection"));
-    CHECK_EQ(j["selection"]["iface"],  "wlan0");
-    CHECK_EQ(j["selection"]["driver"], "ath9k");
+    CHECK_EQ(j["selection"]["iface"].get<std::string>(), "wlan0");
+    CHECK_EQ(j["selection"]["driver"].get<std::string>(), "ath9k");
 }
 
 TEST_CASE("Actor_config::to_json - bool conditions"){
@@ -455,22 +456,12 @@ TEST_CASE("ActorPtr - basic accessors"){
     }
 
     SUBCASE("operator[](string)"){
-        CHECK_EQ(ap["iface"], "wlan2");
-    }
-
-    SUBCASE("operator[](SK) const"){
-        const ActorPtr cap(cfg);
-        CHECK_EQ(cap[SK::iface].value(), "wlan2");
+        CHECK_EQ(ap.get(SK::iface), "wlan2");
     }
 
     SUBCASE("operator[](BK) mutable"){
         ap->set(BK::injection_selftest, true);
         CHECK(ap[BK::injection_selftest].value());
-    }
-
-    SUBCASE("operator[](BK) const"){
-        const ActorPtr cap(cfg);
-        CHECK(cap[BK::monitor].value());
     }
 }
 

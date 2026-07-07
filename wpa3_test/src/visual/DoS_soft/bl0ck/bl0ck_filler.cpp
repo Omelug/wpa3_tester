@@ -89,7 +89,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report << "| Test | AP MAC | Client MAC | Attacker (driver) | Variant | Result |\n";
 	report << "|------|--------|------------|-------------------|---------|--------|\n";
 
-	size_t passed_count = 0;
+	ulong passed_count = 0;
 	for(const auto &e: entries){
 		const string result_link = "[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 				RESULT_NAME + ")";
@@ -105,7 +105,7 @@ void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
+	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 
 }
 }

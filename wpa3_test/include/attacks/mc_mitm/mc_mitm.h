@@ -5,6 +5,7 @@
 #include <tins/tins.h>
 #include "client_state.h"
 #include "MonitorSocket.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/log.h"
 
 namespace wpa3_tester{

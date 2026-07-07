@@ -151,7 +151,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 		hostapd_bin = get_hostapd(version);
 	}
 
-	command.insert(command.end(), {hostapd_bin, "-i", rs.get_actor(actor_name)["iface"], hostapd_config_path,});
+	command.insert(command.end(), {hostapd_bin, "-i", rs.get_actor(actor_name).get(SK::iface), hostapd_config_path,});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
 		string token;
@@ -300,7 +300,7 @@ void run_wpa_supplicant(RunStatus &rs, const string &actor_name){
 	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
-						get_wpa_supplicant(version), "-i", rs.get_actor(actor_name)["iface"], "-c", wpa_supp_config_path
+						get_wpa_supplicant(version), "-i", rs.get_actor(actor_name).get(SK::iface), "-c", wpa_supp_config_path
 					});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
@@ -401,7 +401,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	command.insert(command.end(), {
 						get_hostapd_mana(version),
 						//"-P", pid_file, // write PID to file, don't work without -B (background)
-						"-i", rs.get_actor(actor_name)["iface"], mana_config_path,
+						"-i", rs.get_actor(actor_name).get(SK::iface), mana_config_path,
 					});
 
 	const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");

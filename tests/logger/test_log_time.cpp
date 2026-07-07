@@ -9,6 +9,7 @@
 
 #include "config/RunStatus.h"
 #include "logger/log.h"
+#include "logger/log_util.h"
 
 using namespace std;
 using wpa3_tester::LogTimePoint;

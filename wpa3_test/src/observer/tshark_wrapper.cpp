@@ -132,13 +132,17 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 		"tshark", "-l", "-t", "ad", "-r", pcap_path.string(), "-T", "fields", "-e", "frame.number", "-e", "frame.time",
 		"-e", "frame.len", "-E", "separator=,"
 	};
-	if(!tshark_filter.empty()) { gen_cmd.push_back("-Y"); gen_cmd.push_back(tshark_filter); }
+
+	if(!tshark_filter.empty()){
+		gen_cmd.emplace_back("-Y");
+		gen_cmd.push_back(tshark_filter);
+	}
 
 	const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
 
 	ofstream csv_file(csv_path);
 	if(!csv_file.is_open()){
-		throw run_err("Failed to write CSV: " + csv_path.string());
+		throw run_err("Failed to write CSV: {}", csv_path.string());
 	}
 	csv_file << csv_output;
 	csv_file.close();

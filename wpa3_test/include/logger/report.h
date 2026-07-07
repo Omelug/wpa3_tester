@@ -32,6 +32,9 @@ struct ReportGuard {
 
 	ReportGuard &operator<<(const std::string &val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
 	ReportGuard &operator<<(std::string &&val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
+	ReportGuard &operator<<(const std::optional<std::string> &val){
+		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
+	}
 
 	template<typename T>
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&

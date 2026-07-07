@@ -11,7 +11,7 @@
 #include "config/Observer_config.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "logger/error_log.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "setup/config_parser.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"

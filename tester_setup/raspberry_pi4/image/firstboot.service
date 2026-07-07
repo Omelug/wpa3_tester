@@ -1,0 +1,18 @@
+[Unit]
+Description=WPA3 Tester First Boot Setup
+After=network-online.target
+Wants=network-online.target
+# Skip if already completed (flag file written by firstboot.sh)
+ConditionPathExists=!/var/lib/wpa3-firstboot.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/wpa3-firstboot.sh
+# 10 min timeout — apt on slow SD card can take a while
+TimeoutStartSec=600
+StandardOutput=journal+console
+StandardError=journal+console
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

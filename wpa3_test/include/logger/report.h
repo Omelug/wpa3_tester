@@ -1,8 +1,8 @@
 #pragma once
 #include <iosfwd>
 
-#include "config/RunStatus.h"
 #include <optional>
+#include "config/RunStatus.h"
 
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{
@@ -32,7 +32,8 @@ struct ReportGuard {
 	    stream_ << rel.string(); return *this;
 	}
     ReportGuard &operator<<(const Link &l){
-        if(std::filesystem::exists(l.link_path)){
+        const auto resolved = l.link_path.is_absolute() ? l.link_path : run_dir_ / l.link_path;
+        if(std::filesystem::exists(resolved)){
             const auto rel = l.link_path.is_absolute()
                 ? l.link_path.lexically_relative(run_dir_)
                 : l.link_path;
@@ -56,7 +57,8 @@ struct ReportGuard {
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path>)
+	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+	          !std::same_as<std::remove_cvref_t<T>, Link>)
 	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:

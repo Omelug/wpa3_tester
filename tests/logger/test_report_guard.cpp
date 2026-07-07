@@ -4,6 +4,8 @@
 #include <fstream>
 #include <optional>
 #include <string>
+
+#include "default.h"
 #include "logger/report.h"
 
 using namespace std;
@@ -16,7 +18,7 @@ struct ReportFixture {
 		create_directories(dir);
 	}
 	string read_report() const {
-		ifstream f(dir / "report.md");
+		ifstream f(dir / REPORT_NAME);
 		return {istreambuf_iterator<char>(f), istreambuf_iterator<char>()};
 	}
 	~ReportFixture() { remove_all(dir); }
@@ -25,7 +27,7 @@ struct ReportFixture {
 TEST_CASE("ReportGuard - creates report.md") {
 	ReportFixture fx("rg_creates");
 	{ ReportGuard rg(fx.dir); }
-	CHECK(exists(fx.dir / "report.md"));
+	CHECK(exists(fx.dir / REPORT_NAME));
 }
 
 TEST_CASE("ReportGuard - operator bool") {
@@ -103,17 +105,26 @@ TEST_CASE("ReportGuard - integer passthrough") {
 	CHECK_EQ(fx.read_report(), "42");
 }
 
-TEST_CASE("link - with run_dir returns relative markdown link") {
-	ReportFixture fx("link_rel");
-	const path file = fx.dir / "sub" / "report.md";
+TEST_CASE("ReportGuard - Link: existing path rendered as relative markdown link") {
+	ReportFixture fx("link_exists");
+	const path file = fx.dir / "sub" / REPORT_NAME;
 	create_directories(file.parent_path());
 	ofstream(file).close();
-	CHECK_EQ(link("label", file, fx.dir), "[label](sub/report.md)");
+	{ ReportGuard rg(fx.dir); rg << link("label", file); }
+	CHECK_EQ(fx.read_report(), "[label](sub/report.md)");
 }
 
-TEST_CASE("link - without run_dir returns absolute markdown link") {
-	ReportFixture fx("link_abs");
-	const path file = fx.dir / "report.md";
+TEST_CASE("ReportGuard - Link: relative path left as-is") {
+	ReportFixture fx("link_rel");
+	const path file = fx.dir / "sub" / REPORT_NAME;
+	create_directories(file.parent_path());
 	ofstream(file).close();
-	CHECK_EQ(link("label", file), "[label]("+file.string()+")");
+	{ ReportGuard rg(fx.dir); rg << link("label", path("sub/report.md")); }
+	CHECK_EQ(fx.read_report(), "[label](sub/report.md)");
+}
+
+TEST_CASE("ReportGuard - Link: missing path renders plain text") {
+	ReportFixture fx("link_missing");
+	{ ReportGuard rg(fx.dir); rg << link("label", fx.dir / "nonexistent.md"); }
+	CHECK_EQ(fx.read_report(), "label");
 }

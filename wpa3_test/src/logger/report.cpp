@@ -1,7 +1,6 @@
 #include "logger/report.h"
-
+#include "default.h"
 #include "logger/log.h"
-#include "suite/suite_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::report{

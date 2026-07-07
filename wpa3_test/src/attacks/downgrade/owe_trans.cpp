@@ -11,7 +11,6 @@
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::owe_trans{
 using namespace std;

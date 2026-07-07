@@ -3,6 +3,8 @@
 #include <fstream>
 #include <optional>
 #include <string>
+
+#include "default.h"
 #include "system/utils.h"
 
 inline std::ostream &operator<<(std::ostream &os, std::optional<bool> val){
@@ -65,7 +67,7 @@ inline std::string device(const Tins::HWAddress<6> mac, const std::filesystem::p
 inline std::string test_name_cell(const std::filesystem::path &test_folder,
                                   const std::string &name,
                                   const std::filesystem::path &page_dir) {
-	const auto report = test_folder / "report.md";
+	const auto report = test_folder / REPORT_NAME;
 	if (!std::filesystem::exists(report)) return name;
 	return "<a href=\"" + report.lexically_relative(page_dir).string() + "\">" + name + "</a>";
 }

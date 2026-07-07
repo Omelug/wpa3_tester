@@ -64,7 +64,7 @@ void generate_report(RunSuiteStatus &rss){
 		r << "| "
 			<< e.test_name << " | "
 			<< e.hw_summary << " | "
-			<< report::link("report", e.report_md, run_dir) << " |\n";
+			<< report::link("report", e.report_md) << " |\n";
 	}
 }
 }

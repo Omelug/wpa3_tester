@@ -99,10 +99,7 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
     else if (module == "wpa3_trans_downgrade") wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::render_table(f, folders, page_dir);
     else if (module == "owe_trans") owe_trans_filler::OweTransTestEntry::render_table(f, folders, page_dir);
-	else {
-        f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
-    }
-
+    else f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
     f << "    </div>\n";
 }
 

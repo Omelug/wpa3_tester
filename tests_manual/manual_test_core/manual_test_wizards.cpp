@@ -151,8 +151,7 @@ TargetInfo get_target_wizard(const string &iface, const Channel &channel){
 
 	// Use list_external_entities function
 	const vector channels = {channel.ch_num};
-	RunStatus rs; // Create temporary RunStatus instance
-	const vector<ActorPtr> entities = rs.list_external_entities(iface, 4, channels);
+	const vector<ActorPtr> entities = RunStatus::list_external_entities(iface, 4, channels);
 
 	vector<TargetInfo> targets;
 

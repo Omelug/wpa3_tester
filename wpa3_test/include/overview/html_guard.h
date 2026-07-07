@@ -34,6 +34,9 @@ struct HtmlGuard {
 	HtmlGuard &operator<<(const std::string &val){
 		if(val.empty()) stream_ << '?'; else stream_ << val; return *this;
 	}
+	HtmlGuard &operator<<(const std::optional<std::string> &val){
+		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
+	}
 	template<typename T>
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
@@ -47,7 +50,7 @@ private:
 };
 
 inline std::string device(const Tins::HWAddress<6> mac, const std::filesystem::path &page_dir){
-	const auto mac_str = mac.to_string();
+	auto mac_str = mac.to_string();
 	auto root = page_dir;
 	while(!root.empty() && root != root.parent_path()){
 		const auto dev_page = root / "devices" / mac_str / "index.html";

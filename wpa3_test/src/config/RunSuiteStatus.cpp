@@ -382,7 +382,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		oss << hex << hash<string>{}(mac_concat);
 		const string hash_str = oss.str().substr(0, 8);
 
-		cfg["name"] = base_name + "_" + hash_str;
+		cfg["name"] = format("{}_{}", base_name, hash_str);
 
 		const path test_path = gen_folder / (hash_str + "_actor_filler.yaml");
 		save_yaml(cfg, test_path);

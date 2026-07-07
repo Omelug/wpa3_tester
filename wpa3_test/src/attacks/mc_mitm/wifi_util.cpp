@@ -53,7 +53,7 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel
 	for(const auto &opt: beacon.options()){
 		if(opt.option() == Dot11::TIM) continue; // remove, not in probe responses
 		if(opt.option() == Dot11::DS_SET){
-			uint8_t ch = static_cast<uint8_t>(rogue_channel.ch_num);
+			uint8_t ch = rogue_channel.ch_num;
 			resp.add_option({Dot11::DS_SET, 1, &ch});
 			continue;
 		}
@@ -119,19 +119,19 @@ Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, co
 	Dot11Beacon copy = beacon;
 	copy.channel_switch({
 		1, //type
-		static_cast<uint8_t>(new_channel.ch_num), count
+		new_channel.ch_num, count
 	});
 	return copy;
 }
 
-void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, Channel channel,
+void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
 			const Dot11Beacon &beacon, optional<HWAddress<6>> mac, int interval, int dtim_period
 ){
 	// In order of priority: provided ssid, ssid from beacon, or default
 	const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
 	if(!ssid_ie || ssid_ie->data_size() <= 0) throw run_err("invalid beacon for start ap");
 	auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
-	optional<string> netns = base_actor[SK::netns];
+	const optional<string> &netns = base_actor[SK::netns];
 	// Split beacon into head (before TIM) and tail (after TIM)
 
 	Dot11Beacon head;

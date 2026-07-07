@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <libssh/libssh.h>
+#include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 #include "system/wifi_channel.h"
 

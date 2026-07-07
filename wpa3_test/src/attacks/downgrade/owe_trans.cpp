@@ -8,7 +8,7 @@
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
 #include "system/utils.h"

@@ -5,7 +5,7 @@
 #include "inteprrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
-#include "logger/log.h"
+#include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
 
@@ -43,8 +43,7 @@ void run_attack(RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs){
-	G_elms elements;
-
+	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {
 					{"client", "key_mgmt=WPA-PSK", "WPA2-DOWNGRADE", "red"},  //FIXME wtf, to fakt píše DOWNGRADE, není to TYPO?

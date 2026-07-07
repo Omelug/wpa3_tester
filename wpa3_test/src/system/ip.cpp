@@ -17,8 +17,8 @@ namespace wpa3_tester::ip{
 void set_ip(RunStatus &rs, const string &actor_name){
 	const auto ip_addr = rs.config().at("actors").at(actor_name).at("ip_addr").get<string>();
 	const auto actor = rs.get_actor(actor_name);
-	if(actor.get()->conn != nullptr){
-		rs.get_actor(actor_name).get()->conn->set_ip(actor.get(SK::iface), ip_addr);
+	if(actor->conn != nullptr){
+		rs.get_actor(actor_name)->conn->set_ip(actor.get(SK::iface), ip_addr);
 	} else{
 		vector<string> command = {};
 		observer::add_nets_header(rs, command, actor_name);

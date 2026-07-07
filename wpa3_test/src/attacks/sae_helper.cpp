@@ -97,7 +97,7 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 	// --- Token + Scalar + Element depends on status code (wireshark packet-ieee80211.c) ---
 	if(status == 76){
 		// only anti-clogging token, no scalar/element
-		if(remaining > 0) frame.token.assign(ptr.begin(), ptr.begin() + remaining);
+		if(remaining > 0) frame.token.assign(ptr.data(), ptr.data() + remaining);
 		return frame;
 	}
 
@@ -105,14 +105,14 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 		// token if more data than scalar+element
 		if(remaining > crypto_total){
 			const size_t token_len = remaining - crypto_total;
-			frame.token.assign(ptr.begin(), ptr.begin() + token_len);
+			frame.token.assign(ptr.data(), ptr.data() + token_len);
 			ptr = ptr.subspan(token_len);
 			remaining -= token_len;
 		}
 		// scalar + Element
 		if(remaining < crypto_total) return nullopt;
-		frame.scalar.assign(ptr.begin(), ptr.begin() + scalar_len);
-		frame.element.assign(ptr.begin() + scalar_len, ptr.begin() + crypto_total);
+		frame.scalar.assign(ptr.data(), ptr.data() + scalar_len);
+		frame.element.assign(ptr.data() + scalar_len, ptr.data() + crypto_total);
 		return frame;
 	}
 

@@ -29,10 +29,10 @@ MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns,
 		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
-MonitorSocket::MonitorSocket(const ssh_channel rx_ch, const bool detect_injected)
+MonitorSocket::MonitorSocket(ssh_channel rx_ch, const bool detect_injected)
 : detect_injected_(detect_injected), rx_ch_(rx_ch){}
 
-MonitorSocket::MonitorSocket(const ssh_channel tx_ch, tag_tx_t)
+MonitorSocket::MonitorSocket(ssh_channel tx_ch, tag_tx_t)
 : detect_injected_(false), tx_ch_(tx_ch){}
 
 MonitorSocket::~MonitorSocket(){

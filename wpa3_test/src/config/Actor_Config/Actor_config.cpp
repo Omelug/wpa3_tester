@@ -87,14 +87,13 @@ bool Actor_config::matches(const Actor_config &offer) const{
 		}
 	}
 
-	for(const auto k: bk_values()){
+	return ranges::all_of(bk_values(), [&](const auto k){
 		const auto &required = (*this)[k];
-		if(!required.has_value()) continue;
+		if(!required.has_value()) return true;
 		const auto &offered = offer[k];
-		if(!offered.has_value()) continue;
-		if(required != offered) return false;
-	}
-	return true;
+		if(!offered.has_value()) return true;
+		return required == offered;
+	});
 }
 
 Actor_config &Actor_config::operator+=(const Actor_config &other){

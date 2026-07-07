@@ -14,7 +14,7 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 	map<string,size_t> label_slots;
 	for(auto &element: elements){
 		if(element->type == GraphElement_t::EVENT_LINES){
-			const string &lbl = element.get()->label;
+			const string &lbl = element->label;
 			if(!label_slots.contains(lbl)){
 				const size_t slot = label_slots.size();
 				label_slots.emplace(lbl, slot);
@@ -25,11 +25,11 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 
 	for(auto &element: elements){
 		if(element->type == GraphElement_t::EVENT_LINES){
-			auto *ev = static_cast<EventLines *>(element.get());
+			auto *ev = dynamic_cast<EventLines *>(element.get());
 			add_event_lines(*ev, block_index, label_slots.at(ev->label), num_slots, label_index);
 		}
 		if(element->type == GraphElement_t::GRAPH_XY_POINTS){
-			add_XY_points(*static_cast<GraphXYPoints *>(element.get()));
+			add_XY_points(*dynamic_cast<GraphXYPoints *>(element.get()));
 		}
 		if(element->type == GraphElement_t::UNKNOWN){
 			throw run_err("Graph element type is unknown");

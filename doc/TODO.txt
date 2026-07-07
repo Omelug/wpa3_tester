@@ -12,11 +12,9 @@ Version v 0.0.0.0:
 ???+: requirwmwnt, žw u bl0ck musí být attacker mezi AP a client
 nebo proč BARS někdy klienta odpojí a někdy ne?
 +: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
-t: projít testy a vyházet ty nepodstatné
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
-+: simulation test config
 t: external info/iface_info parsing tests
 +: requirement external connection STA-AP
 +: create Dlink Openwrt all test tool
@@ -67,6 +65,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: simulation test setup
 +: možnost do global_config nepoužívat cache
 f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
 +: external for Enterprise
@@ -122,6 +121,7 @@ Documentation:
 +: get LateX from english (or link it form altex git )
 
 Better code:
+t: projít testy a vyházet ty nepodstatné
 r: vymazat github copilota z hstorie
 ?: (maybe general NL80211_{} boolean conditions?>)
 f: FetchContent_MakeAvailable  paralel downlading should be improved

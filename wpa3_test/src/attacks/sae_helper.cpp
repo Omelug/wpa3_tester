@@ -10,11 +10,14 @@ namespace wpa3_tester::sae_helper{
 string bytes_to_hex(const vector<uint8_t> &bytes){
 	if(bytes.empty()) return "(empty)";
 	string result;
-	for(size_t i = 0; i < bytes.size(); ++i){
+	result.reserve(bytes.size() * 3);
+	bool first = true;
+	for(const uint8_t b: bytes){
+		if(!first) result += ':';
 		char buf[3];
-		snprintf(buf, sizeof(buf), "%02x", bytes[i]);
+		snprintf(buf, sizeof(buf), "%02x", b);
 		result += buf;
-		if(i < bytes.size() - 1) result += ":";
+		first = false;
 	}
 	return result;
 }
@@ -120,7 +123,7 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 }
 
 RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params){
-	if(!sae_params.is_valid()) throw run_err("invalid  combinations of sae params");
+	if(!sae_params.is_valid()) throw run_err("invalid combinations of sae params");
 
 	Dot11Authentication auth;
 	auth.addr1(ap_mac);
@@ -134,6 +137,7 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 
 	// group 19 (P-256) | optional ACM token | dummy scalar | dummy element
 	vector<uint8_t> payload;
+	payload.reserve(2 + sae_params.token.size() + sae_params.scalar.size() + sae_params.element.size());
 	payload.push_back(sae_params.group_id & 0xFF);
 	payload.push_back((sae_params.group_id >> 8) & 0xFF);
 	payload.insert(payload.end(), sae_params.token.begin(), sae_params.token.end());
@@ -141,7 +145,7 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 	payload.insert(payload.end(), sae_params.element.begin(), sae_params.element.end());
 
 	auth.inner_pdu(RawPDU(payload));
-	RadioTap rt;
+	RadioTap rt{};
 	rt.inner_pdu(auth);
 	return rt;
 }

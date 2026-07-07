@@ -1,0 +1,39 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Malformed EAPOL1 Attack Config
+type: object
+required:
+  - actors
+properties:
+  actors:
+    required:
+      - access_point
+      - client
+      - attacker
+    properties:
+      rogue_ap:
+        description: "Optionally to MitM the client via rogue AP"
+  attack_config:
+    required:
+      - attack_time
+      - ms_interval
+    additionalProperties: false
+    properties:
+      $validator:
+        type: string
+        description: path to this schema
+      attack_time:
+        type: integer
+        description: duration of sending malformed EAPOL1 packets
+        minimum: 1
+      ms_interval:
+        type: integer
+        description: interval between malformed EAPOL1 packets in milliseconds
+        minimum: 1
+      sleep_before_sec:
+        type: integer
+        description: time before attack to capture valid traffic
+        minimum: 0
+      sleep_after_sec:
+        type: integer
+        description: time after attack to observe recovery
+        minimum: 0

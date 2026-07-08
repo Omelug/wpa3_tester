@@ -21,7 +21,21 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libyaml-cpp-dev \
     libtins-dev \
     iproute2 iw tcpdump \
-    avahi-daemon
+    avahi-daemon \
+    dkms linux-headers-$(uname -r)
+
+echo "[firstboot] Installing rtw88 driver (DKMS)..."
+rm -rf /tmp/rtw88-src
+git clone https://github.com/lwfinger/rtw88 /tmp/rtw88-src
+PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' /tmp/rtw88-src/dkms.conf)
+VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' /tmp/rtw88-src/dkms.conf)
+if [ ! -d "/usr/src/${PKG}-${VER}" ]; then
+    mv /tmp/rtw88-src /usr/src/${PKG}-${VER}
+else
+    rm -rf /tmp/rtw88-src
+fi
+dkms add -m "${PKG}" -v "${VER}" 2>/dev/null || true
+dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
 
 # ── WiFi region ────────────────────────────────────────────────────────────────
 raspi-config nonint do_wifi_country CZ

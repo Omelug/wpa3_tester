@@ -112,7 +112,7 @@ string get_openwrt_iface_wizard(const OpenWrtConn *conn){
 	return ifaces[idx];
 }
 
-int get_2_4_channel_wizard(){
+uint8_t get_2_4_channel_wizard(){
 	cli_section("WiFi Channel Selection");
 
 	cout << "Available WiFi channels (2.4GHz):\n";
@@ -132,7 +132,7 @@ int get_2_4_channel_wizard(){
 	cout << "  [14] Channel 14 (2484 MHz)\n";
 	cout << "\nSelect channel [1-14]: ";
 
-	int channel;
+	uint8_t channel;
 	cin >> channel;
 	cin.ignore(); // Clear newline
 

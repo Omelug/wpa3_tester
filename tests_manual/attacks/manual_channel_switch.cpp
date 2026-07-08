@@ -22,8 +22,8 @@ int main(const int argc, char *argv[]){
     const HWAddress<6> sta_mac(argv[2]);
     const string iface_name = argv[3];
     const string ssid = argv[4];
-    const Channel ap_channel{stoi(argv[5]), WifiBand::BAND_2_4_or_5, nullopt};
-    const Channel new_channel{stoi(argv[6]),WifiBand::BAND_2_4_or_5, nullopt};
+    const Channel ap_channel{static_cast<uint8_t>(stoi(argv[5])), WifiBand::BAND_2_4_or_5, nullopt};
+    const Channel new_channel{static_cast<uint8_t>(stoi(argv[6])), WifiBand::BAND_2_4_or_5, nullopt};
     const int ms_interval = stoi(argv[7]);
     const int attack_time = stoi(argv[8]);
 

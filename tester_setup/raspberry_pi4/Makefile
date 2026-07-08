@@ -43,7 +43,10 @@ IMAGE_XZ      := image/cache/raspios_lite_arm64.img.xz
 IMAGE_RAW     := image/cache/raspios_lite_arm64.img
 CUSTOM_IMAGE  := image/wpa3-tester.img
 
-.PHONY: help image flash bootstrap deploy run clean_image sysroot deploy-cross clean_cross
+HOST_IFACE   ?= $(shell ip route get 8.8.8.8 2>/dev/null | awk '/dev/{print $$5; exit}')
+PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '/dev/{print $$5; exit}')
+
+.PHONY: help image flash bootstrap deploy run clean_image sysroot deploy-cross clean_cross internet internet-off check-internet
 
 help:
 	@echo ""
@@ -60,6 +63,10 @@ help:
 	@echo "    make sysroot      PI=<addr>        sync Pi libs to cross-sysroot/ (once)"
 	@echo "    make deploy-cross PI=<addr>        build for aarch64 on host, push binary"
 	@echo "    make clean_cross                   remove cross build dir"
+	@echo ""
+	@echo "  Internet sharing (Pi has no direct internet):"
+	@echo "    make internet     PI=<addr>        NAT host internet → Pi"
+	@echo "    make internet-off                  remove NAT rules"
 	@echo ""
 	@echo "  Overridable defaults:"
 	@echo "    PI_USER=$(PI_USER)   PI_HOSTNAME=$(PI_HOSTNAME)"
@@ -111,6 +118,26 @@ flash: $(CUSTOM_IMAGE)
 	@echo "      ssh $(PI_USER)@$(PI_HOSTNAME).local 'journalctl -u wpa3-firstboot -f'"
 	@echo "    When complete:"
 	@echo "      make deploy PI=$(PI_HOSTNAME).local"
+
+# ── Internet sharing host → Pi (NAT via iptables) ─────────────────────────────
+
+internet:
+	@test -n "$(HOST_IFACE)" || { echo "Error: cannot detect host internet interface"; exit 1; }
+	@test -n "$(PI_IFACE)"   || { echo "Error: cannot detect Pi interface (is PI_IP reachable?)"; exit 1; }
+	@echo "==> Sharing internet: $(HOST_IFACE) → $(PI_IFACE) (Pi=$(PI_IP))"
+	sudo sysctl -w net.ipv4.ip_forward=1
+	sudo iptables -t nat -C POSTROUTING -o $(HOST_IFACE) -j MASQUERADE 2>/dev/null || \
+	    sudo iptables -t nat -A POSTROUTING -o $(HOST_IFACE) -j MASQUERADE
+	sudo iptables -C FORWARD -i $(PI_IFACE) -o $(HOST_IFACE) -j ACCEPT 2>/dev/null || \
+	    sudo iptables -A FORWARD -i $(PI_IFACE) -o $(HOST_IFACE) -j ACCEPT
+	$(SSH) "sudo ip route replace default via $(PI_GW) && sudo sh -c 'echo nameserver 8.8.8.8 > /etc/resolv.conf'"
+	@echo "==> Done. Verify with: make check-internet"
+
+internet-off:
+	sudo iptables -t nat -D POSTROUTING -o $(HOST_IFACE) -j MASQUERADE 2>/dev/null || true
+	sudo iptables -D FORWARD -i $(PI_IFACE) -o $(HOST_IFACE) -j ACCEPT 2>/dev/null || true
+	sudo sysctl -w net.ipv4.ip_forward=0
+	@echo "==> NAT removed."
 
 # ── Bootstrap (manual / stock image fallback) ──────────────────────────────────
 

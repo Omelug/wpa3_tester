@@ -8,7 +8,7 @@ namespace wpa3_tester::manual_tests{
 void cli_section(const std::string &section_title);
 std::unique_ptr<std::string> get_iface_wizard();
 std::string get_openwrt_iface_wizard(const OpenWrtConn *conn);
-int get_2_4_channel_wizard();
+uint8_t get_2_4_channel_wizard();
 
 struct TargetInfo{
     std::string bssid;

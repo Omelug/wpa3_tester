@@ -43,10 +43,13 @@ IMAGE_XZ      := image/cache/raspios_lite_arm64.img.xz
 IMAGE_RAW     := image/cache/raspios_lite_arm64.img
 CUSTOM_IMAGE  := image/wpa3-tester.img
 
-HOST_IFACE   ?= $(shell ip route get 8.8.8.8 2>/dev/null | awk '/dev/{print $$5; exit}')
-PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '/dev/{print $$5; exit}')
+HOST_IFACE   ?= $(shell ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<NF;i++) if($$i=="dev"){print $$(i+1); exit}}')
+PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i++) if($$i=="dev"){print $$(i+1); exit}}')
+# Host IP as seen from the Pi (defaults to the Pi's gateway = this machine on a direct cable)
+HOST_IP      ?= $(PI_GW)
+NETCAT_PORT  ?= 6666
 
-.PHONY: help image flash bootstrap deploy run clean_image sysroot deploy-cross clean_cross internet internet-off check-internet
+.PHONY: help image flash bootstrap deploy run clean_image sysroot deploy-cross clean_cross internet internet-off check-internet debug_netcat
 
 help:
 	@echo ""
@@ -67,6 +70,10 @@ help:
 	@echo "  Internet sharing (Pi has no direct internet):"
 	@echo "    make internet     PI=<addr>        NAT host internet → Pi"
 	@echo "    make internet-off                  remove NAT rules"
+	@echo ""
+	@echo "  Crash-log capture:"
+	@echo "    make debug_netcat PI=<addr>        load netconsole on Pi + listen locally"
+	@echo "      (UART/pstore support is baked into the image automatically)"
 	@echo ""
 	@echo "  Overridable defaults:"
 	@echo "    PI_USER=$(PI_USER)   PI_HOSTNAME=$(PI_HOSTNAME)"
@@ -105,12 +112,21 @@ $(IMAGE_XZ):
 # ── Flash to SD card ───────────────────────────────────────────────────────────
 
 flash: $(CUSTOM_IMAGE)
-	@test -n "$(DISK)" || { echo "Error: DISK is not set. Usage: make flash DISK=/dev/sdX"; exit 1; }
 	@echo ""
 	@lsblk -d -o NAME,SIZE,MODEL | grep -v loop
 	@echo ""
-	bash -c 'read -p "Flash $(CUSTOM_IMAGE) to $(DISK)? All data will be LOST. [y/N] " c && [ "$$c" = "y" ]'
-	sudo dd if=$(CUSTOM_IMAGE) of=$(DISK) bs=4M status=progress conv=fsync
+	@bash -c '\
+	    DISK="$(DISK)"; \
+	    if [ -z "$$DISK" ]; then \
+	        read -p "Enter SD card device (e.g. /dev/sdb): " DISK; \
+	    fi; \
+	    test -n "$$DISK" || { echo "Error: no device entered"; exit 1; }; \
+	    read -p "Flash $(CUSTOM_IMAGE) to $$DISK? All data will be LOST. [y/N] " c && [ "$$c" = "y" ] || exit 1; \
+	    if command -v bmaptool >/dev/null 2>&1; then \
+        sudo bmaptool copy $(CUSTOM_IMAGE) $$DISK; \
+    else \
+        sudo dd if=$(CUSTOM_IMAGE) of=$$DISK bs=16M oflag=direct status=progress conv=fsync; \
+    fi'
 	sudo sync
 	@echo ""
 	@echo "==> Done. Insert SD into Pi, connect ethernet, power on."
@@ -130,7 +146,6 @@ internet:
 	    sudo iptables -t nat -A POSTROUTING -o $(HOST_IFACE) -j MASQUERADE
 	sudo iptables -C FORWARD -i $(PI_IFACE) -o $(HOST_IFACE) -j ACCEPT 2>/dev/null || \
 	    sudo iptables -A FORWARD -i $(PI_IFACE) -o $(HOST_IFACE) -j ACCEPT
-	$(SSH) "sudo ip route replace default via $(PI_GW) && sudo sh -c 'echo nameserver 8.8.8.8 > /etc/resolv.conf'"
 	@echo "==> Done. Verify with: make check-internet"
 
 internet-off:
@@ -195,10 +210,32 @@ deploy-cross:
 		-DCMAKE_BUILD_TYPE=Debug \
 		-DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) --target wpa3_tester -j$(shell nproc)
+	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"
 	rsync -az --info=progress2 \
 		$(CROSS_BUILD)/bin/wpa3_tester \
 		$(PI_USER)@$(PI):$(REMOTE)/build/bin/wpa3_tester
+	rsync -az --delete --info=progress2 \
+		$(SRC_ROOT)/wpa3_test/attack_config/ \
+		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
 	@echo "==> Binary deployed. Run: make run"
+
+# ── Crash-log capture via netconsole ──────────────────────────────────────────
+# Loads the netconsole kernel module on the Pi so it streams dmesg over UDP to
+# this host, then opens a local listener.  The Ethernet stack survives most Wi-Fi
+# driver panics, so the "last words" arrive even when the kernel is already dead.
+#
+# UART (GPIO14/15) and pstore are baked in by customize.sh — no make target needed.
+# To read a post-panic pstore log:  ssh pi@PI 'cat /sys/fs/pstore/*'
+
+debug_netcat:
+	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make debug_netcat PI=<addr>"; exit 1; }
+	@test -n "$(PI_IFACE)" || { echo "Error: cannot detect Pi interface (is PI_IP=$(PI_IP) reachable?)"; exit 1; }
+	@HOST_MAC=$$(ip link show $(PI_IFACE) | awk '/ether/{print $$2}') && \
+	    test -n "$$HOST_MAC" || { echo "Error: cannot read MAC of $(PI_IFACE)"; exit 1; } && \
+	    echo "==> netconsole: Pi $(PI_IP)/eth0 → $(HOST_IP):$(NETCAT_PORT)  host-MAC $$HOST_MAC" && \
+	    $(SSH) "sudo modprobe netconsole netconsole=$(NETCAT_PORT)@$(PI_IP)/eth0,$(NETCAT_PORT)@$(HOST_IP)/$$HOST_MAC"
+	@echo "==> Listening on UDP :$(NETCAT_PORT)  (Ctrl+C to stop)"
+	nc -u -l -p $(NETCAT_PORT)
 
 # ── Cleanup ────────────────────────────────────────────────────────────────────
 

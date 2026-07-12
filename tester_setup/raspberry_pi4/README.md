@@ -137,3 +137,45 @@ make bootstrap PI=<ip-address>
 Then proceed with `make deploy` / `make run` as above.
 
 ---
+
+## C) Cross-compilation (fast iteration, build on host)
+
+Instead of building on the Pi, compile for `aarch64` on the host and push only
+the binary. Much faster on repeated builds — no Pi CPU, no network transfer of
+source.
+
+### One-time host dependencies
+
+```bash
+sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+```
+
+### 1. Sync sysroot from Pi
+
+Pull Pi's libraries to `cross-sysroot/` (repeat after `apt install` on Pi):
+
+```bash
+make sysroot PI=10.0.0.2
+```
+
+### 2. Build and deploy
+
+```bash
+make deploy-cross PI=10.0.0.2
+```
+
+Builds `wpa3_tester` for `aarch64` on the host, then pushes:
+- `build/bin/wpa3_tester`
+- `wpa3_test/attack_config/`
+
+### 3. Run
+
+```bash
+make run PI=10.0.0.2
+```
+
+### Cleanup
+
+```bash
+make clean_cross   # remove build-cross/ directory
+```

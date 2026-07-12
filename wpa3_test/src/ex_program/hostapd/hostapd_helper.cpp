@@ -125,6 +125,8 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 	const path hostapd_folder(hostapd_folder_str);
 
 	if(version.empty()){
+		if(hw_capabilities::run_cmd({"which", cfg.no_version_name}, nullopt, false) != 0)
+			throw config_err("{} version not set and '{}' not found in PATH", cfg.repo_name, cfg.no_version_name);
 		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
 		return cfg.no_version_name;
 	}

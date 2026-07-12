@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+t: rapsberry compile
 +: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/malformed_eapol1/malformed_eapol1_basic_suite/malformed_eapol1_Dlink nemělo by to záležet jen na clientovi, jestli se odpojí? - zkusit Dlink s ostatními klienty
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
 +: do channel switch overview dát cracked
@@ -62,6 +63,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++:create Clion plugin for runtests from config and link to tests
 +: create Dlink_all (test suite for all Dlink tests)
 +: simulation test setup
 +: možnost do global_config nepoužívat cache

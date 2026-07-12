@@ -175,6 +175,7 @@ deploy:
 		--exclude='build/' \
 		--exclude='build-cross/' \
 		--exclude='data/' \
+		--exclude='tools/' \
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
@@ -185,6 +186,7 @@ GDB_PORT ?= 1234
 
 run-debug:
 	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
+	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
 	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"
 	@echo "    Connect with:"
 	@echo "      gdb-multiarch $(CROSS_BUILD)/bin/wpa3_tester"

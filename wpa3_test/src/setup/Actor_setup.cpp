@@ -13,25 +13,6 @@ Channel Actor_config::get_channel() const{
 
 	const uint8_t ch_num = static_cast<uint8_t>(stoi(get(SK::channel)));
 
-	// Determine band from boolean keys
-	auto band = WifiBand::BAND_2_4_or_5; // default
-
-	int count = 0;
-	if(get_or(BK::GHz2_4, false)){
-		band = WifiBand::BAND_2_4;
-		count++;
-	}
-	if(get_or(BK::GHz5, false)){
-		band = WifiBand::BAND_5;
-		count++;
-	}
-	if(get_or(BK::GHz6, false)){
-		band = WifiBand::BAND_6;
-		count++;
-	}
-
-	if(count > 1) throw config_err("Actor_config: Multiple bands set (2_4GHz, 5GHz, 6GHz). Only one allowed.");
-
 	// Validate channel number for band
 	const auto valid_2_4 = [](const int c){ return c >= 1 && c <= 14; };
 	const auto valid_5 = [](const int c){
@@ -39,19 +20,23 @@ Channel Actor_config::get_channel() const{
 	};
 	const auto valid_6 = [](const int c){ return c >= 1 && c <= 233; };
 
-	if(band == WifiBand::BAND_2_4 && !valid_2_4(ch_num)) throw config_err(
-		"Actor_config: Invalid 2.4GHz channel " + to_string(ch_num));
-	if(band == WifiBand::BAND_5 && !valid_5(ch_num)) throw config_err(
-		"Actor_config: Invalid 5GHz channel " + to_string(ch_num));
-	if(band == WifiBand::BAND_6 && !valid_6(ch_num)) throw config_err(
-		"Actor_config: Invalid 6GHz channel " + to_string(ch_num));
-
-	// For BAND_2_4_or_5, infer from channel number
-	if(band == WifiBand::BAND_2_4_or_5){
-		if(valid_2_4(ch_num)) band = WifiBand::BAND_2_4;
-		else if(valid_5(ch_num)) band = WifiBand::BAND_5;
-		else throw config_err("Actor_config: Channel " + to_string(ch_num) + " invalid for 2.4GHz or 5GHz");
+	if((valid_2_4(ch_num) && get_or(BK::GHz2_4, false)) +
+		(valid_5(ch_num) && get_or(BK::GHz5, false)) +
+		(valid_6(ch_num) && get_or(BK::GHz6, false)) != 1){
+		throw config_err("Actor_config: Multiple bands valid or no valid. Only one allowed.");
 	}
+
+	if(valid_2_4(ch_num) && !get_or(BK::GHz2_4, false))
+		throw config_err("Actor_config: Invalid 2.4GHz channel {}", ch_num);
+	if(valid_5(ch_num) && !get_or(BK::GHz5, false))
+		throw config_err("Actor_config: Invalid 5GHz channel {}", ch_num);
+	if(!(valid_2_4(ch_num) || valid_5(ch_num)) && valid_6(ch_num) && !get_or(BK::GHz6, false))
+		throw config_err("Actor_config: Invalid 6GHz channel {}", ch_num);
+
+	auto band = WifiBand::BAND_2_4_or_5; // default
+
+	if(!(valid_2_4(ch_num) || valid_5(ch_num)) && valid_6(ch_num))
+		band = WifiBand::BAND_6;
 
 	return Channel{ch_num, band, (*this)[SK::ht_mode]};
 }

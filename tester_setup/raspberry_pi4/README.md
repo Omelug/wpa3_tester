@@ -179,3 +179,19 @@ make run PI=10.0.0.2
 ```bash
 make clean_cross   # remove build-cross/ directory
 ```
+
+### Remote debugging (CLion)
+
+1. Start gdbserver on Pi:
+   ```bash
+   make run-debug PI=10.0.0.2
+   ```
+
+2. In CLion select **"Pi: GDB debug"** and click Debug —
+   automatically runs `make deploy-cross` then connects to `10.0.0.2:1234`.
+
+   If the config doesn't load: *Run > Edit Configurations > + > GDB Remote Debug*,
+   set symbol file to `build-cross/bin/wpa3_tester`, host `10.0.0.2`, port `1234`,
+   GDB path `gdb-multiarch`.
+
+   Host requirement: `sudo apt install gdb-multiarch`

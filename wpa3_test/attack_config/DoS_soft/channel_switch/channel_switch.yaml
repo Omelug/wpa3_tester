@@ -11,7 +11,7 @@ actors:
     setup:
       program: hostapd
       program_config:
-        version: "2.10"
+        version: "2.11"
         hostapd_path: "./config/hostapd.conf"
     ip_addr: "10.0.0.1"
   client:
@@ -19,7 +19,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        version: "2.10"
+        version: "2.9"
         wpa_supplicant_path: "./config/client.conf"
     netns: sta
     ip_addr: "10.0.0.2"

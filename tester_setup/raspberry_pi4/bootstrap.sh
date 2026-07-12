@@ -18,28 +18,43 @@ echo "==> Installing build dependencies..."
 sudo apt-get update -qq
 sudo apt-get install -y \
     build-essential cmake ninja-build ccache \
-    clang lld pkg-config flex bison git \
+    clang lld mold pkg-config flex bison git \
     libssl-dev \
-    libnl-3-dev libnl-genl-3-dev \
+    libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
     libpcap-dev \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
     iproute2 iw tcpdump \
+    usb-modeswitch usb-modeswitch-data \
     dkms linux-headers-$(uname -r)
 
-echo "==> Installing rtw88 driver (DKMS)..."
-sudo rm -rf /tmp/rtw88-src
-sudo git clone https://github.com/lwfinger/rtw88 /tmp/rtw88-src
-PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' /tmp/rtw88-src/dkms.conf)
-VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' /tmp/rtw88-src/dkms.conf)
-if [ ! -d "/usr/src/${PKG}-${VER}" ]; then
-    sudo mv /tmp/rtw88-src /usr/src/${PKG}-${VER}
-else
-    sudo rm -rf /tmp/rtw88-src
-fi
-sudo dkms add -m "${PKG}" -v "${VER}" 2>/dev/null || true
-sudo dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
+dkms_install() {
+    local label=$1 url=$2 tmp=$3
+    echo "==> Installing ${label} driver (DKMS)..."
+    sudo rm -rf "${tmp}"
+    sudo git clone "${url}" "${tmp}"
+    local PKG VER
+    PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' "${tmp}/dkms.conf")
+    VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' "${tmp}/dkms.conf")
+    if [ ! -d "/usr/src/${PKG}-${VER}" ]; then
+        sudo mv "${tmp}" "/usr/src/${PKG}-${VER}"
+    else
+        sudo rm -rf "${tmp}"
+    fi
+    sudo dkms add    -m "${PKG}" -v "${VER}" 2>/dev/null || true
+    sudo dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
+}
+
+dkms_install "rtw88"  "https://github.com/lwfinger/rtw88"  /tmp/rtw88-src
+dkms_install "8188gu" "https://github.com/morrownr/8188gu" /tmp/8188gu-src
+
+echo "==> Adding RTL8188GU USB modeswitch rule..."
+sudo tee /etc/usb_modeswitch.d/0bda:1a2b << 'EOF' > /dev/null
+DefaultVendor=0x0bda
+DefaultProduct=0x1a2b
+StandardEject=1
+EOF
 
 echo "==> Setting WiFi region CZ..."
 sudo raspi-config nonint do_wifi_country CZ

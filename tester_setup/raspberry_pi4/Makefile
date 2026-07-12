@@ -49,7 +49,7 @@ PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i
 HOST_IP      ?= $(PI_GW)
 NETCAT_PORT  ?= 6666
 
-.PHONY: help image flash bootstrap deploy run clean_image sysroot deploy-cross clean_cross internet internet-off check-internet debug_netcat
+.PHONY: help image flash bootstrap deploy run run-debug deploy-debug clean_image sysroot deploy-cross clean_cross internet internet-off check-internet debug_netcat gdbserver-start
 
 help:
 	@echo ""
@@ -70,6 +70,11 @@ help:
 	@echo "  Internet sharing (Pi has no direct internet):"
 	@echo "    make internet     PI=<addr>        NAT host internet → Pi"
 	@echo "    make internet-off                  remove NAT rules"
+	@echo ""
+	@echo "  Remote debugging:"
+	@echo "    make run-debug    PI=<addr>        start gdbserver on Pi (installs it if missing)"
+	@echo "      then: gdb-multiarch build-cross/bin/wpa3_tester"
+	@echo "            (gdb) target remote <addr>:1234"
 	@echo ""
 	@echo "  Crash-log capture:"
 	@echo "    make debug_netcat PI=<addr>        load netconsole on Pi + listen locally"
@@ -175,6 +180,26 @@ deploy:
 
 run:
 	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
+
+GDB_PORT ?= 1234
+
+run-debug:
+	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
+	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"
+	@echo "    Connect with:"
+	@echo "      gdb-multiarch $(CROSS_BUILD)/bin/wpa3_tester"
+	@echo "      (gdb) target remote $(PI):$(GDB_PORT)"
+	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
+
+deploy-debug: deploy-cross gdbserver-start
+
+gdbserver-start:
+	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
+	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
+	$(SSH) "nohup sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG) </dev/null > /tmp/gdbserver.log 2>&1 &"
+	@sleep 1
+	$(SSH) "pgrep -x gdbserver > /dev/null || { echo 'ERROR: gdbserver failed to start:'; cat /tmp/gdbserver.log; exit 1; }"
+	@echo "==> gdbserver running on $(PI):$(GDB_PORT)"
 
 # ── Cross-compilation ──────────────────────────────────────────────────────────
 # Requires on host (one-time):

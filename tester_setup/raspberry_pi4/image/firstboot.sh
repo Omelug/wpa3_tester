@@ -40,10 +40,6 @@ dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
 # ── WiFi region ────────────────────────────────────────────────────────────────
 raspi-config nonint do_wifi_country CZ
 
-# ── mDNS — enables reach via hostname.local ────────────────────────────────────
-systemctl enable avahi-daemon
-systemctl start  avahi-daemon
-
 # ── SSH key — injected into boot partition by customize.sh ─────────────────────
 # /boot/firmware is where RPi OS Bookworm mounts the FAT boot partition
 BOOT_KEY=/boot/firmware/authorized_key.pub
@@ -58,11 +54,6 @@ if [ -f "$BOOT_KEY" ]; then
     chown -R "${PI_USER}:${PI_USER}" "$PI_HOME/.ssh"
     echo "[firstboot] SSH key installed for $PI_USER"
 fi
-
-# ── Passwordless sudo (dev/test machine only) ──────────────────────────────────
-PI_USER=$(getent passwd 1000 | cut -d: -f1)
-echo "${PI_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/90-wpa3-dev
-chmod 440 /etc/sudoers.d/90-wpa3-dev
 
 # ── Done ───────────────────────────────────────────────────────────────────────
 touch "$DONE_FLAG"

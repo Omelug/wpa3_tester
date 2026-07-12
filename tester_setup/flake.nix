@@ -20,6 +20,7 @@
         environment.systemPackages = with pkgs; [
           cmake ninja clang pkg-config flex bison iw
           libnl libssh libtins openssl yaml-cpp
+          bmap-tools
         ];
 
         virtualisation.memorySize = 2048;

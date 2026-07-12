@@ -53,6 +53,17 @@ else
     echo "    SSH key: not found at '$SSH_KEY' — password login only"
 fi
 
+# ── Debug / crash logging ──────────────────────────────────────────────────────
+
+# UART serial console on GPIO14 (TX) / GPIO15 (RX) — kernel messages go to
+# a USB-UART adapter even during a kernel panic
+echo "enable_uart=1" >> "$BOOT/config.txt"
+# Pstore — saves the panic log into a reserved RAM region that survives a soft
+# reboot; after restart the log appears in /sys/fs/pstore/
+echo "dtoverlay=pstore" >> "$BOOT/config.txt"
+# earlyprintk — emit pre-console kernel messages on the serial line
+sed -i 's/$/ earlyprintk/' "$BOOT/cmdline.txt"
+
 # ── Root partition ─────────────────────────────────────────────────────────────
 
 # Hostname
@@ -104,6 +115,15 @@ echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"
 
+# Passwordless sudo (dev/test machine only)
+echo "${PI_USER} ALL=(ALL) NOPASSWD: ALL" > "$ROOT/etc/sudoers.d/90-wpa3-dev"
+chmod 440 "$ROOT/etc/sudoers.d/90-wpa3-dev"
+
+# avahi-daemon — enables hostname.local reachability
+mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
+ln -sf /lib/systemd/system/avahi-daemon.service \
+       "$ROOT/etc/systemd/system/multi-user.target.wants/avahi-daemon.service"
+
 # rfkill — unblock WiFi on every boot (RPi OS soft-blocks it by default)
 mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 cat > "$ROOT/etc/systemd/system/rfkill-unblock-wifi.service" << 'EOF'
@@ -121,6 +141,13 @@ WantedBy=multi-user.target
 EOF
 ln -sf /etc/systemd/system/rfkill-unblock-wifi.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/rfkill-unblock-wifi.service"
+
+# Persistent journal
+mkdir -p "$ROOT/etc/systemd/journald.conf.d"
+cat > "$ROOT/etc/systemd/journald.conf.d/10-persistent.conf" << 'EOF'
+[Journal]
+Storage=persistent
+EOF
 
 # Firstboot script + systemd service
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"

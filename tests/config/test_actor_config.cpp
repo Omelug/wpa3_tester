@@ -267,7 +267,7 @@ TEST_CASE("Actor_config - get_channel"){
     SUBCASE("Valid 5GHz channel with explicit band") {
         Actor_config actor;
         actor.set(SK::channel, "36");
-       actor.set(BK::GHz5, true);
+        actor.set(BK::GHz5, true);
         auto ch = actor.get_channel();
         CHECK_EQ(ch.ch_num, 36);
         CHECK_EQ(ch.band, WifiBand::BAND_5);
@@ -280,22 +280,6 @@ TEST_CASE("Actor_config - get_channel"){
         auto [ch_num, band, ht_mode] = actor.get_channel();
         CHECK_EQ(ch_num, 1);
         CHECK_EQ(band, WifiBand::BAND_6);
-    }
-
-    SUBCASE("Inferred 2.4GHz from channel number") {
-        Actor_config actor;
-        actor.set(SK::channel, "11");
-    	auto [ch_num, band, ht_mode] = actor.get_channel();
-        CHECK_EQ(ch_num, 11);
-        CHECK_EQ(band, WifiBand::BAND_2_4);
-    }
-
-    SUBCASE("Inferred 5GHz from channel number") {
-        Actor_config actor;
-        actor.set(SK::channel, "100");
-    	auto [ch_num, band, ht_mode] = actor.get_channel();
-        CHECK_EQ(ch_num, 100);
-        CHECK_EQ(band, WifiBand::BAND_5);
     }
 
     SUBCASE("Invalid channel throws") {

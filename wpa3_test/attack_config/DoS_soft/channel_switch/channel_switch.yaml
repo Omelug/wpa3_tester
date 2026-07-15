@@ -7,7 +7,7 @@ actors:
   access_point:
     source: internal
     selection:
-      condition: [ AP ]
+      condition: [ AP,  2_4GHz]
     setup:
       program: hostapd
       program_config:
@@ -27,7 +27,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 attack_config:
   #TODO try same channel like current

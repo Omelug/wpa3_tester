@@ -67,6 +67,9 @@ DefaultProduct=0x1a2b
 StandardEject=1
 EOF
 
+echo "==> Disabling ath9k_hw ANI for driver stability..."
+echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
+
 echo "==> Setting WiFi region CZ..." # TODO hardcoded change
 sudo raspi-config nonint do_wifi_country CZ
 

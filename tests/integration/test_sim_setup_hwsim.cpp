@@ -117,10 +117,34 @@ TEST_CASE("setup_actor - only set options"){
 	nlohmann::json config = {{"actors", {{"actor_opt_test", {}}}}};
 	actor_opt->setup_actor(config, actor_rule);
 
-	for(const BK k: {BK::GHz2_4, BK::GHz5, BK::GHz6,
-		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+	// not set band if not set in actor
+	for(const BK k: {BK::GHz2_4, BK::GHz5, BK::GHz6})
+		CHECK_EQ(actor_opt[k], nullopt);
+
+	for(const BK k: {BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
 		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE})
 		CHECK(actor_opt.get(k));
+}
+
+TEST_CASE("setup_actor - band set if actor_opt has it"){
+	HwsimFixture f;
+	if(f.skip()) return;
+	ActorPtr actor_rule(make_shared<Actor_Config_sim>());
+	actor_rule->set({SK::mac, SK::permanent_mac}, "02:bb:cc:dd:ee:01");
+	auto actor_hw_sim = f.make_actor();
+	actor_rule->set(SK::iface, actor_hw_sim.get(SK::iface));
+	actor_rule->set(SK::actor_name, "actor_name_test");
+	actor_rule->set({BK::GHz2_4, BK::GHz5, BK::GHz6}, true);
+
+	ActorPtr actor_opt(make_shared<Actor_Config_sim>());
+	actor_opt->set(SK::actor_name, "actor_opt_test");
+	actor_opt->set(BK::GHz2_4, true);
+	nlohmann::json config = {{"actors", {{"actor_opt_test", {}}}}};
+	actor_opt->setup_actor(config, actor_rule);
+
+	CHECK_EQ(actor_opt[BK::GHz2_4], optional<bool>{true});
+	CHECK_EQ(actor_opt[BK::GHz5], nullopt);
+	CHECK_EQ(actor_opt[BK::GHz6], nullopt);
 }
 
 TEST_CASE("hwsim setup_actor - change mac address"){

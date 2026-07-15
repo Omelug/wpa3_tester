@@ -160,6 +160,10 @@ FetchContent_Declare(yaml-cpp
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
         json_schema_validator linux_headers_wifi radiotap boost_pfr)
 
+if(CMAKE_CROSSCOMPILING AND TARGET radiotap_check)
+    set_target_properties(radiotap_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+
 target_compile_options(tins PRIVATE -Wno-deprecated-declarations)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")
@@ -170,7 +174,7 @@ set_source_files_properties("${radiotap_SOURCE_DIR}/radiotap.c" PROPERTIES
 )
 
 add_library(doctest_headers INTERFACE)
-target_include_directories(doctest_headers INTERFACE
+target_include_directories(doctest_headers SYSTEM INTERFACE
         "${doctest_SOURCE_DIR}"
         "${doctest_SOURCE_DIR}/doctest"
 )

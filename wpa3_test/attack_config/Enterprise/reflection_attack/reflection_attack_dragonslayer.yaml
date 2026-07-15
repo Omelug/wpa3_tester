@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [ AP ]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: hostapd
       program_config:
@@ -25,7 +25,7 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 attack_config:
   target_type: sta

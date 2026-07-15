@@ -287,6 +287,19 @@ TEST_CASE("Actor_config - get_channel"){
         actor.set(SK::channel, "999");
         CHECK_THROWS_AS(actor.get_channel(), config_err);
     }
+
+    SUBCASE("No band set throws") {
+        Actor_config actor;
+        actor.set(SK::channel, "6");
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
+
+    SUBCASE("Band set but channel outside that band throws") {
+        Actor_config actor;
+        actor.set(SK::channel, "36"); // 5GHz/6GHz range, not 2.4GHz
+        actor.set(BK::GHz2_4, true);
+        CHECK_THROWS_AS(actor.get_channel(), config_err);
+    }
 }
 
 TEST_CASE("Actor_config - operator+=complex"){

@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [ AP ]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: hostapd
       program_config:
@@ -27,7 +27,7 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: [ monitor ] #, active_monitor ]
+      condition: [ monitor, 2_4GHz ] #active_monitor
       channel: 6
     netns: att
 observers:

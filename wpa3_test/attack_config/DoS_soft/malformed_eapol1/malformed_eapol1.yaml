@@ -7,7 +7,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [ AP ]
+      condition: [ AP, 2_4GHz ]
     setup:
       program: hostapd
       program_config:
@@ -48,7 +48,7 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 observers:
   mz_gen:

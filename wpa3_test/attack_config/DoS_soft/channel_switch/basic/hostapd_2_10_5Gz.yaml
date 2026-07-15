@@ -20,6 +20,7 @@ actors:
   attacker:
     selection:
       channel: 36
+      condition: [ monitor, 5GHz ]
 
 attack_config:
   attack_time: 30

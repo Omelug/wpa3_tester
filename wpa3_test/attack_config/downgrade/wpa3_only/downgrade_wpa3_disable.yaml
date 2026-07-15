@@ -53,7 +53,7 @@ actors:
   attacker:
     source: internal
     selection:
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 observers:
   attacker_tshark:

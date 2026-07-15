@@ -7,7 +7,7 @@ actors:
   scanner:
     source: internal
     selection:
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
     #sniff_iface: scanner //TODO sniff_iface testy -
     # FIXME rtl8xxxu nefunguje (dá se na channel 6 , monito ale nic nevypisuje)

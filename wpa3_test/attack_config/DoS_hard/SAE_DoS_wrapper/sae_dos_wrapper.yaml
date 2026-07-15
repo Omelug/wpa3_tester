@@ -42,8 +42,7 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor #, injection_selftest
-      ]
+      condition: [ monitor, 2_4GHz ] #injection_selftest
       channel: 6
     sniff_iface: att
 observers:

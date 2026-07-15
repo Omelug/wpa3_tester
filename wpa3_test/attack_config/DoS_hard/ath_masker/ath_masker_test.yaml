@@ -19,7 +19,7 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor, control_monitor ]
+      condition: [ monitor, control_monitor, 2_4GHz ]
       channel: 6
 observers:
   tshark_client:

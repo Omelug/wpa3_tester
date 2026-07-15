@@ -19,7 +19,7 @@ actors:
     selection:
       # driver: [ rtw_8821cu, rtw88_8821cu]
       channel: 36
-      condition: [ monitor ]
+      condition: [ monitor, 5GHz ]
     setup:
       program: hostapd-mana
       program_config:

@@ -3,7 +3,7 @@ actors:
     source: internal
     selection:
       channel: 1
-      condition: [ AP ]
+      condition: [ AP, 2_4GHz ]
       driver: ath9k_htc
     setup:
       program: hostapd-mana

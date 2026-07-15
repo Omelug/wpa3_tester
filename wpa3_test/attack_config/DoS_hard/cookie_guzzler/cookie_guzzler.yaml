@@ -17,8 +17,7 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor, #injection_selftest #TODO add dondition for injection?
-      ]
+      condition: [ monitor, 2_4GHz ] #injection_selftest #TODO add condition for injection?
       channel: 6
     sniff_iface: att
 #observers: #FIXME mausezahn nefunguje, nic nezachytává

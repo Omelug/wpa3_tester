@@ -1,7 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include <filesystem>
-#include <source_location>
 #include <yaml-cpp/node/parse.h>
 #include "config/global_config.h"
 #include "config/ObserverPtr.h"
@@ -47,9 +46,9 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
     }
 }
 
-path this_file = source_location::current().file_name();
+const path test_data_dir = TEST_DATA_DIR;
 TEST_CASE("RunStatus Config Validation - Test configuration"){
-    const path test_base = this_file.parent_path() / "config_validation"/"test";
+    const path test_base = test_data_dir/"test";
 
     const vector<ConfigTestCase> tests = {
         {"1. Minimal not extends", "01_test_happy_path_minimal.yaml",   "01_test_happy_path_minimal.yaml", true},
@@ -70,7 +69,7 @@ TEST_CASE("RunStatus Config Validation - Test configuration"){
 }
 
 TEST_CASE ("RunStatus Config Validation - Validator configuration"){
-    const path test_base = this_file.parent_path() / "config_validation"/"validator";
+    const path test_base = test_data_dir/"validator";
     const vector<ConfigTestCase> tests = {
         {"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
         {"2. validator extends", "02_test_validator_extends.yaml",    "01_result_validator_minimal.yaml", true},
@@ -83,7 +82,7 @@ TEST_CASE ("RunStatus Config Validation - Validator configuration"){
 }
 
 TEST_CASE ("RunStatus Config Validation - Observer configuration"){
-    const path test_base = this_file.parent_path() / "config_validation"/"observer";
+    const path test_base = test_data_dir/"observer";
     const vector<ConfigTestCase> tests = {
         {"1. observer tcpdump valid", "01_test_observer_tcpdump_valid.yaml",    "01_result_observer_tcpdump_valid.yaml", true},
         {"2. observer tshark valid", "02_test_observer_tshark_valid.yaml",    "02_result_observer_tshark_valid.yaml", true},
@@ -96,7 +95,7 @@ TEST_CASE ("RunStatus Config Validation - Observer configuration"){
 }
 
 TEST_CASE("RunStatus Config Validation - Test suite configuration"){
-    const path test_base = this_file.parent_path() / "config_validation"/"test_suite";
+    const path test_base = test_data_dir/"test_suite";
     const vector<ConfigTestCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
         //{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
@@ -167,7 +166,7 @@ void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
 }
 
 TEST_CASE("Global Config - get_global_config / get_global_run_config"){
-    const path test_base = this_file.parent_path() / "config_validation" / "global_config";
+    const path test_base = test_data_dir / "global_config";
 
     SUBCASE("1. valid config with run_config fields") {
         const path root = test_base / "01";
@@ -203,7 +202,7 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
 }
 
 TEST_CASE("RunStatus - parse_requirements()"){
-    const path test_base = this_file.parent_path() / "config_validation"/"test";
+    const path test_base = test_data_dir/"test";
     
     SUBCASE("Parse actors and observers from config") {
         RunStatus rs(test_base / "01_test_happy_path_minimal.yaml", "", ".");
@@ -251,7 +250,7 @@ TEST_CASE("RunStatus - parse_requirements()"){
 }
 
 TEST_CASE("RunStatus - Test suite test generation"){
-    const path test_base = absolute(this_file.parent_path() / "config_validation" / "test_suite");
+    const path test_base = absolute(test_data_dir / "test_suite");
 
     const vector<ConfigSuiteCase> tests = {
         {"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},

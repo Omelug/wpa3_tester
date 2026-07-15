@@ -1,4 +1,4 @@
-add_doctest_exe(hw_cap_tests SOURCES test_hw_capabilities.cpp TEST_NAME HWCapabilitiesTests)
+add_doctest_exe(run_hw_cap_tests SOURCES test_hw_capabilities.cpp TEST_NAME HWCapabilitiesTests)
 add_doctest_exe(run_pdu_solve_tests SOURCES test_solve_new_pdu.cpp TEST_NAME SolveNewPduTests)
 add_doctest_exe(run_system_tests SOURCES test_process_manager.cpp TEST_NAME SystemTests)
 add_doctest_exe(run_validator_tests SOURCES test_validator.cpp TEST_NAME YAMLValidatorTests)

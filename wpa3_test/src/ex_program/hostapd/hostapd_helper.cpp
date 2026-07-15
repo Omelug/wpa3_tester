@@ -291,31 +291,31 @@ string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
-static string hex_encode(const uint8_t *data, size_t len){
+/*static string hex_encode(const uint8_t *data, size_t len){
 	static constexpr char HEX[] = "0123456789abcdef";
 	string out;
 	out.reserve(len * 2);
 	for(size_t i = 0; i < len; ++i){ out += HEX[(data[i] >> 4) & 0xf]; out += HEX[data[i] & 0xf]; }
 	return out;
-}
+}*/
 
-#pragma pack(push, 1)
-struct hccapx_v4 {
-	uint8_t signature[4];
+// defined in https://hashcat.net/wiki/doku.php?id=hccapx
+struct hccapx{
+	uint32_t signature;
 	uint32_t version;
-	[[maybe_unused]] uint8_t msg_pair;
-	uint8_t ssid_len;
-	uint8_t ssid[32];
-	uint8_t keyver;
-	uint8_t mic[16];
-	uint8_t mac_ap[6];
-	uint8_t anonce[32];
-	uint8_t mac_sta[6];
-	[[maybe_unused]] uint8_t snonce[32];
+	uint8_t  message_pair;
+	uint8_t  essid_len;
+	uint8_t  essid[32];
+	uint8_t  keyver;
+	uint8_t  keymic[16];
+	uint8_t  mac_ap[6];
+	uint8_t  nonce_ap[32];
+	uint8_t  mac_sta[6];
+	uint8_t  nonce_sta[32];
 	uint16_t eapol_len;
-	uint8_t eapol[256];
-};
-#pragma pack(pop)
+	uint8_t  eapol[256];
+
+} __attribute__((packed));
 
 std::string to_hex(const uint8_t* data, size_t len) {
 	std::stringstream ss;
@@ -326,15 +326,15 @@ std::string to_hex(const uint8_t* data, size_t len) {
 	return ss.str();
 }
 
-std::vector<std::string> hccapx_to_wpa_hashes(const std::string& filename) {
+std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path& hccapx_path) {
 	std::vector<std::string> hashes;
-	std::ifstream file(filename, std::ios::binary);
+	std::ifstream file(hccapx_path, std::ios::binary);
 
 	if (!file.is_open()) {
 		return hashes;
 	}
 
-	const size_t RECORD_SIZE = 393;
+	const size_t RECORD_SIZE = 393; // constatnt format size
 	std::vector<uint8_t> buffer(RECORD_SIZE);
 
 	while (file.read(reinterpret_cast<char*>(buffer.data()), RECORD_SIZE)) {
@@ -349,11 +349,11 @@ std::vector<std::string> hccapx_to_wpa_hashes(const std::string& filename) {
 		const uint8_t* essid_ptr   = &buffer[10];
 		const uint8_t* keymic_ptr  = &buffer[43];
 		const uint8_t* mac_ap_ptr  = &buffer[59];
-		const uint8_t* mac_sta_ptr = &buffer[65];
-		const uint8_t* anonce_ptr  = &buffer[71];
-		const uint8_t* eapol_ptr   = &buffer[103];
+		const uint8_t* anonce_ptr  = &buffer[65];
+		const uint8_t* mac_sta_ptr = &buffer[97];
+		const uint8_t* eapol_ptr   = &buffer[135];
 
-		uint16_t eapol_len = buffer[359] | (static_cast<uint16_t>(buffer[360]) << 8);
+		uint16_t eapol_len = buffer[391] | (static_cast<uint16_t>(buffer[392]) << 8);
 
 		if (eapol_len > 256) eapol_len = 256;
 

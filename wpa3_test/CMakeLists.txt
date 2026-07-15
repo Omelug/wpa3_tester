@@ -9,7 +9,7 @@ function(add_doctest_exe target)
     endif ()
     add_executable(${target} ${ARG_SOURCES})
     target_link_libraries(${target} PRIVATE wpa3_core doctest_headers ${ARG_LIBS})
-    add_test(NAME ${ARG_TEST_NAME} COMMAND ${target})
+    add_test(NAME ${ARG_TEST_NAME} COMMAND ${target} WORKING_DIRECTORY $<TARGET_FILE_DIR:${target}>)
 endfunction()
 
 include(cmake/awk_files.cmake)

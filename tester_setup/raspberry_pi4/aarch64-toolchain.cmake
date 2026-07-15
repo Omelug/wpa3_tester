@@ -9,13 +9,19 @@ set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
 
 # Tell clang where to find crtbeginS.o / libgcc from the GCC cross-toolchain.
 # --sysroot would otherwise hide /usr from clang's search.
-set(CMAKE_C_FLAGS_INIT   "--gcc-toolchain=/usr")
-set(CMAKE_CXX_FLAGS_INIT "--gcc-toolchain=/usr")
+set(CMAKE_C_FLAGS_INIT   "--gcc-toolchain=/usr -ffile-prefix-map=${CMAKE_SOURCE_DIR}/=./")
+set(CMAKE_CXX_FLAGS_INIT "--gcc-toolchain=/usr -ffile-prefix-map=${CMAKE_SOURCE_DIR}/=./")
 
-# lld as cross-linker
-set(CMAKE_EXE_LINKER_FLAGS_INIT    "-fuse-ld=lld")
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")
+# prefer mold (faster), fall back to lld
+find_program(MOLD_EXE mold NO_CMAKE_FIND_ROOT_PATH)
+if(MOLD_EXE)
+    set(_LD "-fuse-ld=mold")
+else()
+    set(_LD "-fuse-ld=lld")
+endif()
+set(CMAKE_EXE_LINKER_FLAGS_INIT    "${_LD} -static-libstdc++ -static-libgcc")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "${_LD}")
+set(CMAKE_MODULE_LINKER_FLAGS_INIT "${_LD}")
 
 # CMAKE_SYSROOT is passed from the command line by make sysroot/deploy-cross
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)   # run host tools (cmake, ninja)

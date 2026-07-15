@@ -1,3 +1,5 @@
+file(COPY config_validation DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 add_doctest_exe(run_validation_tests SOURCES test_config_validation.cpp TEST_NAME ValidationTests)
 target_compile_definitions(run_validation_tests PRIVATE
         TEST_DATA_DIR="config_validation"

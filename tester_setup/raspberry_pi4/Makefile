@@ -264,7 +264,7 @@ test-cross:
 		$(CROSS_BUILD)/bin/ \
 		$(PI_USER)@$(PI):$(REMOTE)/build/bin/
 	rsync -az --info=progress2 \
-		--include='*/' --include='run_*' --exclude='*' \
+		--include='*/' --include='run_*' --include='*.pcap' --include='*.pcapng' --exclude='*' \
 		$(CROSS_BUILD)/tests/ \
 		$(PI_USER)@$(PI):$(REMOTE)/build/tests/
 	rsync -az --info=progress2 \

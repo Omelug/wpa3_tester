@@ -11,34 +11,43 @@ using namespace std;
 Channel Actor_config::get_channel() const{
 	if(!(*this)[SK::channel].has_value()) throw config_err("Actor_config: channel not set");
 
-	const uint8_t ch_num = static_cast<uint8_t>(stoi(get(SK::channel)));
+	const int ch_num = stoi(get(SK::channel));
 
-	// Validate channel number for band
-	const auto valid_2_4 = [](const int c){ return c >= 1 && c <= 14; };
-	const auto valid_5 = [](const int c){
-		return (c >= 36 && c <= 48) || (c >= 52 && c <= 144) || (c >= 149 && c <= 165);
-	};
-	const auto valid_6 = [](const int c){ return c >= 1 && c <= 233; };
+	const bool is_valid_2_4 = (ch_num >= 1 && ch_num <= 14);
+	const bool is_valid_5   = (ch_num >= 36 && ch_num <= 48) ||
+							  (ch_num >= 52 && ch_num <= 144) ||
+							  (ch_num >= 149 && ch_num <= 165);
+	const bool is_valid_6   = (ch_num >= 1 && ch_num <= 233);
 
-	if((valid_2_4(ch_num) && get_or(BK::GHz2_4, false)) +
-		(valid_5(ch_num) && get_or(BK::GHz5, false)) +
-		(valid_6(ch_num) && get_or(BK::GHz6, false)) != 1){
-		throw config_err("Actor_config: Multiple bands valid or no valid. Only one allowed.");
+	const bool conf_2_4 = get_or(BK::GHz2_4, false);
+	const bool conf_5   = get_or(BK::GHz5, false);
+	const bool conf_6   = get_or(BK::GHz6, false);
+
+	const bool matches_2_4 = is_valid_2_4 && conf_2_4;
+	const bool matches_5   = is_valid_5 && conf_5;
+	const bool matches_6   = is_valid_6 && conf_6;
+
+	const int match_count = matches_2_4 + matches_5 + matches_6;
+
+	if (match_count == 0) {
+		throw config_err("Actor_config: Channel {} is not valid for any enabled band (2.4GHz: {}, 5GHz: {}, 6GHz: {})",
+						 ch_num, conf_2_4, conf_5, conf_6);
 	}
 
-	if(valid_2_4(ch_num) && !get_or(BK::GHz2_4, false))
-		throw config_err("Actor_config: Invalid 2.4GHz channel {}", ch_num);
-	if(valid_5(ch_num) && !get_or(BK::GHz5, false))
-		throw config_err("Actor_config: Invalid 5GHz channel {}", ch_num);
-	if(!(valid_2_4(ch_num) || valid_5(ch_num)) && valid_6(ch_num) && !get_or(BK::GHz6, false))
-		throw config_err("Actor_config: Invalid 6GHz channel {}", ch_num);
+	if (match_count > 1) {
+		throw config_err("Actor_config: Ambiguous channel {} - matches multiple enabled bands. Only one band can be active.", ch_num);
+	}
 
-	auto band = WifiBand::BAND_2_4_or_5; // default
+	const WifiBand band = matches_6   ? WifiBand::BAND_6 :
+						  matches_2_4 ? WifiBand::BAND_2_4 :
+						  matches_5   ? WifiBand::BAND_5 :
+										WifiBand::BAND_2_4_or_5;
 
-	if(!(valid_2_4(ch_num) || valid_5(ch_num)) && valid_6(ch_num))
-		band = WifiBand::BAND_6;
-
-	return Channel{ch_num, band, (*this)[SK::ht_mode]};
+	return Channel{
+		.ch_num  = static_cast<uint8_t>(ch_num),
+		.band    = band,
+		.ht_mode = (*this)[SK::ht_mode]
+	};
 }
 
 // Only simulation/internal,external have specific
@@ -51,7 +60,6 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 			SK::iface, SK::radio,
 			SK::ht_mode, SK::ssid
 		},{
-			BK::GHz2_4, BK::GHz5, BK::GHz6,
 			BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
 			BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
 		}
@@ -99,6 +107,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
 	if(channel_num != 0 && monitor_needed()) set_channel(
 		Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
+
+	set(real_actor, {{}, {BK::GHz2_4, BK::GHz5, BK::GHz6}}); // after get_channel
 
 	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();
 	up_sniff_iface();

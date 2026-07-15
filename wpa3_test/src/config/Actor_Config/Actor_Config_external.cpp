@@ -23,7 +23,6 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		SK::whitebox_host, SK::whitebox_ip,
 		SK::ssh_user, SK::ssh_port, SK::ssh_password, SK::external_OS
 	}, {
-		BK::GHz2_4, BK::GHz5, BK::GHz6,
 		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
 		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
 	}});
@@ -47,6 +46,7 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		set_channel(get_channel());
 		//set_iface_down();
 	}
+	set(real_actor, {{}, {BK::GHz2_4, BK::GHz5, BK::GHz6}}); // after get_channel
 
 	//FIXME before channel switch?>
 	if(actor_json.contains("sniff_iface")){

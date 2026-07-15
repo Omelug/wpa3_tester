@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <format>
 #include <iomanip>
 
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
@@ -93,27 +92,20 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------------|---------------------|-----------------------|--------------------------------|-----------|---------------------|------------|--------|\n";
 
 	for(const auto &e: entries){
-		const string rel = e.rel_path.string();
-		const string name_cell = exists(run_dir / e.rel_path / REPORT_NAME)
-								? format("[{}]({}/{})", e.name, rel, REPORT_NAME)
-								: e.name;
-		const string result_link = format("[{}]({}/{})",
-			e.rogue_ap_connected.value() ? "PASSED" : "FAILED", rel, RESULT_NAME);
-		const string ap_cell = format("{} ({})", e.ap_mac, e.ap_source);
-		const string client_cell = format("{} ({})", e.client_mac, e.client_source);
-		string attacker_cell = format("{} ({})", e.attacker_mac, e.attacker_driver);
+		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
-			attacker_cell += format("<br>{} ({})", e.rogue_ap_mac, e.rogue_ap_driver);
+			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
+		const string result_text = e.rogue_ap_connected ? (*e.rogue_ap_connected ? "PASSED" : "FAILED") : "N/A";
 
-		report << "| " << name_cell << " | "
-			<< ap_cell << " | "
-			<< client_cell << " | "
+		report << "| " << report::link(e.name, e.rel_path / REPORT_NAME) << " | "
+			<< e.ap_mac << " (" << e.ap_source << ") | "
+			<< e.client_mac << " (" << e.client_source << ") | "
 			<< attacker_cell << " | "
-			<< e.disconnected << " (" << e.ap_disconnected << ")" << " | "
+			<< e.disconnected << " (" << e.ap_disconnected << ") | "
 			<< e.rogue_ap_connected << " | "
 			<< e.ap_ocv << " / " << e.client_ocv << " | "
 			<< e.client_mfp << " | "
-			<< result_link << " |\n";
+			<< report::link(result_text, e.rel_path / RESULT_NAME) << " |\n";
 	}
 
 	report << "\n## Summary\n\n";

@@ -8,6 +8,7 @@ actors:
     setup:
       program: hostapd-mana
       program_config:
+        version: 2_10
         driver: nl80211
         ssid: test_channel_switch
         hw_mode: g
@@ -21,3 +22,12 @@ actors:
         rsn_pairwise: CCMP
         wpa_pairwise: CCMP
         macaddr_acl: 0
+        mana_loud: 1
+        #mana_wpaout: 1
+        #enable_mana: 1
+        #mana_mode: 1
+        #mana_wpaout: 1
+        mana_wpaout: "mana_handshakes.hccapx"
+        #mana_wpaout: wpa.creds
+        #mana_outfile: hostapd.manaout
+        #mana_wpaout:wpa.creds

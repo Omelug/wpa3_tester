@@ -25,9 +25,18 @@ sudo apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump \
+    iproute2 iw tcpdump hcxtools \
     usb-modeswitch usb-modeswitch-data \
+    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     dkms linux-headers-$(uname -r)
+
+if ! command -v mausezahn &>/dev/null; then
+    echo "==> Building mausezahn from source (not in RPi OS repos)..."
+    sudo rm -rf /tmp/netsniff-ng
+    git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
+    (cd /tmp/netsniff-ng && sudo ./configure && sudo make mausezahn && sudo make install_mausezahn)
+    sudo rm -rf /tmp/netsniff-ng
+fi
 
 dkms_install() {
     local label=$1 url=$2 tmp=$3
@@ -48,6 +57,8 @@ dkms_install() {
 
 dkms_install "rtw88"  "https://github.com/lwfinger/rtw88"  /tmp/rtw88-src
 dkms_install "8188gu" "https://github.com/morrownr/8188gu" /tmp/8188gu-src
+
+sudo chmod +x /usr/bin/dumpcap
 
 echo "==> Adding RTL8188GU USB modeswitch rule..."
 sudo tee /etc/usb_modeswitch.d/0bda:1a2b << 'EOF' > /dev/null

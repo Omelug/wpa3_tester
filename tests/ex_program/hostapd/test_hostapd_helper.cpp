@@ -2,6 +2,7 @@
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
+#include <source_location>
 #include <nlohmann/json.hpp>
 
 #include "config/global_config.h"
@@ -10,8 +11,9 @@
 
 using namespace std;
 using namespace filesystem;
-using json = nlohmann::json;
 using namespace wpa3_tester;
+
+static const path TEST_DIR = path(source_location::current().file_name()).parent_path();
 
 TEST_CASE("get_hostapd - empty version returns system default"){
     string result = hostapd::get_hostapd("");
@@ -51,4 +53,115 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
     MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()}, nullopt));
 
     remove_all(test_folder);
+}
+
+// ── hccapx_to_wpa_hashes ────────────────────────────────────────────────────
+
+TEST_CASE("hccapx_to_wpa_hashes - missing file returns empty"){
+    const auto result = hostapd::hccapx_to_wpa_hashes("/nonexistent/path.hccapx");
+    CHECK(result.empty());
+}
+
+TEST_CASE("hccapx_to_wpa_hashes - parses mana_handshakes.hccapx"){
+    const path hccapx = TEST_DIR / "mana_handshakes.hccapx";
+    REQUIRE(exists(hccapx));
+
+    const auto hashes = hostapd::hccapx_to_wpa_hashes(hccapx);
+
+    REQUIRE_FALSE(hashes.empty());
+    for(const auto &h : hashes){
+        CHECK(h.starts_with("WPA*02*"));
+        // format: WPA*02*<mic16B>*<ap_mac6B>*<sta_mac6B>*<ssid>*<anonce32B>*<eapol>*<pair>
+        const auto fields = [&]{
+            vector<string> f;
+            stringstream ss(h);
+            string tok;
+            while(getline(ss, tok, '*')) f.push_back(tok);
+            return f;
+        }();
+        // WPA * 02 * mic * mac_ap * mac_sta * ssid * anonce * eapol * pair = 9 parts
+        CHECK_EQ(fields.size(), 9);
+        CHECK_EQ(fields[0], "WPA");
+        CHECK_EQ(fields[1], "02");
+        CHECK_EQ(fields[2].size(), 32);   // MIC: 16 bytes hex
+        CHECK_EQ(fields[3].size(), 12);   // AP MAC: 6 bytes hex
+        CHECK_EQ(fields[4].size(), 12);   // STA MAC: 6 bytes hex
+        CHECK_FALSE(fields[5].empty());   // SSID hex
+        CHECK_EQ(fields[6].size(), 64);   // ANonce: 32 bytes hex
+        CHECK_FALSE(fields[7].empty());   // EAPOL
+    }
+}
+
+TEST_CASE("hccapx_to_wpa_hashes - SSID is test_channel_switch"){
+    const path hccapx = TEST_DIR / "mana_handshakes.hccapx";
+    REQUIRE(exists(hccapx));
+
+    const auto hashes = hostapd::hccapx_to_wpa_hashes(hccapx);
+    REQUIRE_FALSE(hashes.empty());
+
+    // SSID "test_channel_switch" hex = 746573745f6368616e6e656c5f7377697463h
+    const string expected_ssid_hex = "746573745f6368616e6e656c5f737769746368";
+    for(const auto &h : hashes){
+        // field[5] is ssid
+        size_t pos = 0, cnt = 0;
+        while(cnt < 5 && (pos = h.find('*', pos)) != string::npos){ ++pos; ++cnt; }
+        const size_t end = h.find('*', pos);
+        CHECK_EQ(h.substr(pos, end - pos), expected_ssid_hex);
+    }
+}
+
+// ── crac c k_pmk_hashes ────────────────────────────────────────────────────────
+
+TEST_CASE("crack_pmk_hashes - missing file returns zero"){
+    const auto r = hostapd::crack_pmk_hashes("/nonexistent/captured_hashes.txt", "anypassword");
+    CHECK_EQ(r.total, 0);
+    CHECK_EQ(r.cracked, 0);
+}
+
+TEST_CASE("crack_pmk_hashes - wrong PSK cracks nothing"
+    * doctest::skip(hw_capabilities::run_cmd({"hcxpmktool", "--version"}, nullopt, false) != 0)
+){
+    const path hccapx = TEST_DIR / "mana_handshakes.hccapx";
+    REQUIRE(exists(hccapx));
+
+    const auto hashes = hostapd::hccapx_to_wpa_hashes(hccapx);
+    REQUIRE_FALSE(hashes.empty());
+
+    const path tmp = temp_directory_path() / "test_captured_hashes.txt";
+    { ofstream f(tmp); for(const auto &h : hashes) f << h << "\n"; }
+
+    const auto r = hostapd::crack_pmk_hashes(tmp, "definitelyWrongPassword123!");
+    CHECK_EQ(r.cracked, 0);
+    CHECK_EQ(r.total, static_cast<int>(hashes.size()));
+
+    remove(tmp);
+}
+
+TEST_CASE("crack_pmk_hashes - cracks all hashes"
+    * doctest::skip(hw_capabilities::run_cmd({"hcxpmktool", "--version"}, nullopt, false) != 0)
+){
+    const path tmp = TEST_DIR / "captured_hashes.txt";
+    const auto r = hostapd::crack_pmk_hashes(tmp, "password123");
+    CHECK_EQ(r.cracked, r.total);
+
+    remove(tmp);
+}
+
+TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"
+	* doctest::skip(hw_capabilities::run_cmd({"hcxpmktool", "--version"}, nullopt, false) != 0)
+){
+	const path hccapx = TEST_DIR / "mana_handshakes.hccapx";
+	REQUIRE(exists(hccapx));
+
+	const auto hashes = hostapd::hccapx_to_wpa_hashes(hccapx);
+	REQUIRE_FALSE(hashes.empty());
+
+	const path tmp = temp_directory_path() / "captured_hashes.txt";
+	{ ofstream f(tmp); for(const auto &h : hashes) f << h << "\n"; }
+
+	const auto r = hostapd::crack_pmk_hashes(tmp, "password123");
+	CHECK_EQ(r.total, static_cast<int>(hashes.size()));
+	CHECK_EQ(r.cracked, r.total);
+
+	remove(tmp);
 }

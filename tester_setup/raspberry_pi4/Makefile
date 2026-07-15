@@ -20,7 +20,7 @@ PI_HOSTNAME ?= wpa3-tester
 PI_PASSWORD ?= wpa3tester
 SSH_KEY     ?= $(HOME)/.ssh/id_rsa.pub
 DISK        ?=
-CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler.yaml
 # Static IP baked into the image — also used as SSH target (PI defaults to PI_IP)
 # Direct PC–Pi cable:  PI_IP=10.0.0.2  PI_GW=10.0.0.1
 # Home network:        PI_IP=192.168.1.100  PI_GW=192.168.1.1
@@ -184,7 +184,9 @@ run:
 
 GDB_PORT ?= 1234
 
-run-debug:
+deploy-debug: deploy-cross gdbserver-start
+
+run-debug: deploy-debug
 	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
 	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
 	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"
@@ -193,7 +195,6 @@ run-debug:
 	@echo "      (gdb) target remote $(PI):$(GDB_PORT)"
 	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
 
-deploy-debug: deploy-cross gdbserver-start
 
 gdbserver-start:
 	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"

@@ -341,6 +341,40 @@ $defs:
                     - properties: { condition: { contains: { const: "managed" } } }
                     - properties: { condition: { contains: { const: "monitor" } } }
         errorMessage: "condition can contain at most one interface mode: AP, managed, monitor"
+      # exactly one of 2_4GHz / 5GHz / 6GHz in condition
+      - properties:
+          selection:
+            not:
+              anyOf:
+                - allOf:
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "2_4GHz" } } }
+                    - properties: { condition: { contains: { const: "5GHz" } } }
+                - allOf:
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "2_4GHz" } } }
+                    - properties: { condition: { contains: { const: "6GHz" } } }
+                - allOf:
+                    - required: [ condition ]
+                    - properties: { condition: { contains: { const: "5GHz" } } }
+                    - properties: { condition: { contains: { const: "6GHz" } } }
+        errorMessage: "condition can contain at most one band: 2_4GHz, 5GHz, 6GHz"
+      # when channel AND condition are both set, condition must contain exactly one band
+      - if:
+          properties:
+            selection:
+              required: [ channel, condition ]
+          required: [ selection ]
+        then:
+          properties:
+            selection:
+              properties:
+                condition:
+                  anyOf:
+                    - contains: { const: "2_4GHz" }
+                    - contains: { const: "5GHz" }
+                    - contains: { const: "6GHz" }
+          errorMessage: "when channel is set, condition must contain exactly one band: 2_4GHz, 5GHz, 6GHz"
       # channel in selection requires a monitor-capable or AP condition (mirrors monitor_needed())
       - if:
           properties:

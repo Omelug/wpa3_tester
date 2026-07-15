@@ -40,7 +40,7 @@ actors:
     source: internal
     selection:
       #driver: mt76x2u
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 observers:
   attacker_tshark:

@@ -5,7 +5,7 @@ actors:
   receiver:
     source: internal
     selection:
-      condition: [ monitor ]
+      condition: [ monitor, 2_4GHz ]
       driver: ath9k_htc
       channel: 1
     netns: rx
@@ -13,7 +13,7 @@ actors:
   transceiver:
     source: internal
     selection:
-      condition: [ monitor, injection_selftest ]
+      condition: [ monitor, injection_selftest, 2_4GHz ]
       #driver: ath9k_htc TOD why this dont work neither with ath_masker?
       driver: mt76x2u
       channel: 1

@@ -13,7 +13,7 @@ echo "[firstboot] Starting at $(date)"
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential cmake ninja-build ccache tshark tcpdump \
-    clang lld mold pkg-config flex bison git \
+    clang lld mold pkg-config flex bison git g++-13 \
     libssl-dev \
     libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
     libpcap-dev \

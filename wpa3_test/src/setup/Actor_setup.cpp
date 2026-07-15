@@ -65,6 +65,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		}
 	});
 
+	if(get_or(BK::GHz2_4, false)) set(real_actor, BK::GHz2_4);
+	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
+	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);
+
 	if((*this)[SK::mac].has_value()){
 		// setup force set mac address
 		set_mac_address(get(SK::mac));
@@ -107,8 +111,6 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
 	if(channel_num != 0 && monitor_needed()) set_channel(
 		Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
-
-	set(real_actor, {{}, {BK::GHz2_4, BK::GHz5, BK::GHz6}}); // after get_channel
 
 	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();
 	up_sniff_iface();

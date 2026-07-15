@@ -36,6 +36,7 @@ public:
 	void set(const std::vector<SK> &keys, const std::optional<std::string> &new_value);
 	void set(const std::vector<BK> &keys, const std::optional<bool> &new_value);
 	void set(const ActorPtr &source, const ParamFilter &filter);
+	void set(const ActorPtr &source, BK key);
 
 	//to allow HWAddress -> simplify code
 	struct MacSK{

@@ -351,9 +351,8 @@ std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path& hccap
 		const uint8_t* mac_ap_ptr  = &buffer[59];
 		const uint8_t* anonce_ptr  = &buffer[65];
 		const uint8_t* mac_sta_ptr = &buffer[97];
-		const uint8_t* eapol_ptr   = &buffer[135];
-
-		uint16_t eapol_len = buffer[391] | (static_cast<uint16_t>(buffer[392]) << 8);
+		uint16_t eapol_len = buffer[135] | (static_cast<uint16_t>(buffer[136]) << 8);
+		const uint8_t* eapol_ptr   = &buffer[137];
 
 		if (eapol_len > 256) eapol_len = 256;
 

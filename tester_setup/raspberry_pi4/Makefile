@@ -49,7 +49,7 @@ PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i
 HOST_IP      ?= $(PI_GW)
 NETCAT_PORT  ?= 6666
 
-.PHONY: help image flash bootstrap deploy run run-debug deploy-debug clean_image sysroot deploy-cross clean_cross internet internet-off check-internet debug_netcat gdbserver-start
+.PHONY: help image flash bootstrap deploy run run-debug deploy-debug clean_image sysroot deploy-cross test-cross clean_cross internet internet-off check-internet debug_netcat gdbserver-start
 
 help:
 	@echo ""
@@ -66,6 +66,7 @@ help:
 	@echo "    make sysroot      PI=<addr>        sync Pi libs to cross-sysroot/ (once)"
 	@echo "    make deploy-cross PI=<addr>        build for aarch64 on host, push binary"
 	@echo "    make clean_cross                   remove cross build dir"
+	@echo "    make test-cross   PI=<addr>        build all tests for aarch64, deploy, run ctest on Pi"
 	@echo ""
 	@echo "  Internet sharing (Pi has no direct internet):"
 	@echo "    make internet     PI=<addr>        NAT host internet → Pi"
@@ -246,6 +247,36 @@ deploy-cross:
 		$(SRC_ROOT)/wpa3_test/attack_config/ \
 		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
 	@echo "==> Binary deployed. Run: make run"
+
+test-cross:
+	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
+	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing — run 'make sysroot' first"; exit 1; }
+	PKG_CONFIG_SYSROOT_DIR=$(SYSROOT) \
+	PKG_CONFIG_PATH=$(SYSROOT)/usr/lib/aarch64-linux-gnu/pkgconfig:$(SYSROOT)/usr/share/pkgconfig \
+	cmake -S $(SRC_ROOT) -B $(CROSS_BUILD) -G Ninja \
+		-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) \
+		-DCMAKE_SYSROOT=$(SYSROOT) \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
+	cmake --build $(CROSS_BUILD) -j$(shell nproc)
+	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"
+	rsync -az --info=progress2 \
+		$(CROSS_BUILD)/bin/ \
+		$(PI_USER)@$(PI):$(REMOTE)/build/bin/
+	rsync -az --info=progress2 \
+		--include='*/' --include='run_*' --exclude='*' \
+		$(CROSS_BUILD)/tests/ \
+		$(PI_USER)@$(PI):$(REMOTE)/build/tests/
+	rsync -az --info=progress2 \
+		--include='*/' --include='CTestTestfile.cmake' --exclude='*' \
+		$(CROSS_BUILD)/ \
+		$(PI_USER)@$(PI):$(REMOTE)/build/
+	$(SSH) "find $(REMOTE)/build -name 'CTestTestfile.cmake' \
+		-exec sed -i 's|$(CROSS_BUILD)|$(REMOTE_ABS)/build|g' {} +"
+	rsync -az --delete --info=progress2 \
+		$(SRC_ROOT)/wpa3_test/attack_config/ \
+		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
+	$(SSH) "sudo -E ctest --test-dir $(REMOTE)/build --output-on-failure"
 
 # ── Crash-log capture via netconsole ──────────────────────────────────────────
 # Loads the netconsole kernel module on the Pi so it streams dmesg over UDP to

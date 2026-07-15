@@ -17,6 +17,8 @@ properties:
       - attack_time
       - ms_interval
       - new_channel
+      - sleep_before_sec
+      - sleep_after_sec
     additionalProperties: false
     properties:
       $validator:

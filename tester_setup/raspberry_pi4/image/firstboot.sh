@@ -12,7 +12,7 @@ echo "[firstboot] Starting at $(date)"
 # ── Build dependencies ─────────────────────────────────────────────────────────
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake ninja-build ccache \
+    build-essential cmake ninja-build ccache tshark tcpdump \
     clang lld mold pkg-config flex bison git \
     libssl-dev \
     libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
@@ -21,6 +21,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libyaml-cpp-dev \
     libtins-dev \
     iproute2 iw tcpdump \
+    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     usb-modeswitch usb-modeswitch-data \
     avahi-daemon \
     dkms linux-headers-$(uname -r)
@@ -44,6 +45,13 @@ dkms_install() {
 
 dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"   /tmp/rtw88-src
 dkms_install "8188gu"    "https://github.com/morrownr/8188gu"  /tmp/8188gu-src
+
+echo "[firstboot] Building mausezahn from source..."
+git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
+(cd /tmp/netsniff-ng && ./configure && make mausezahn && make install_mausezahn)
+rm -rf /tmp/netsniff-ng
+
+chmod +x /usr/bin/dumpcap
 
 # RTL8188GU: switch from USB CD-ROM mode (0bda:1a2b) to WiFi mode on plug-in
 cat > /etc/usb_modeswitch.d/0bda:1a2b << 'EOF'

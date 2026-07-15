@@ -7,6 +7,7 @@
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
+#include <byteswap.h>
 
 namespace wpa3_tester::hostapd{
 using namespace std;
@@ -90,10 +91,12 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	copy(source_dir / "defconfig", config_path, copy_options::overwrite_existing);
 
 	ofstream conf(config_path, ios::app);
-	conf << "\n# --- Wi-Fi Framework Testing Extensions ---" "\nCONFIG_IEEE80211W=y" "\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
+	conf << "\n# --- Wi-Fi Framework Testing Extensions ---" "\nCONFIG_LIBNL32=y"
+			"\nCONFIG_IEEE80211W=y" "\nCONFIG_SAE=y" "\nCONFIG_WNM=y"
 			"\nCONFIG_OCV=y" "\nCONFIG_OWE=y"
 			"\nCONFIG_SUITEB192=y" "\nCONFIG_DPP=y" "\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y";
 	if(cfg.has_tags) conf << "\nCONFIG_IEEE80211AX=y"; // mana beacon.c has broken AX call site
+	if(cfg.repo_name == "hostapd_mana") conf << "\nCONFIG_MANA=y\nCONFIG_MANA_EAP=y\nCONFIG_SYCOPHANT=y";
 	conf << "\nCONFIG_IEEE80211R=y" "\nCONFIG_INTERWORKING=y" "\nCONFIG_TESTING_OPTIONS=y"
 			"\nCONFIG_CTRL_IFACE=y" "\nCONFIG_DEBUG_FILE=y" "\nCONFIG_EAP_PWD=y" "\n";
 	conf.close();
@@ -104,6 +107,7 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	hw_capabilities::run_in("make clean", source_dir);
 
 	string extra = get_extra_cflags();
+	if(cfg.repo_name == "hostapd_mana") extra += " -fcommon"; // mana defines globals in beacon.h
 	string env_prefix;
 	if(openssl){
 		extra += " -I" + openssl->include_dir.string();
@@ -287,27 +291,122 @@ string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
-CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
-	if(!exists(creds_file)){
-		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
-		return {0, 0};
+static string hex_encode(const uint8_t *data, size_t len){
+	static constexpr char HEX[] = "0123456789abcdef";
+	string out;
+	out.reserve(len * 2);
+	for(size_t i = 0; i < len; ++i){ out += HEX[(data[i] >> 4) & 0xf]; out += HEX[data[i] & 0xf]; }
+	return out;
+}
+
+#pragma pack(push, 1)
+struct hccapx_v4 {
+	uint8_t signature[4];
+	uint32_t version;
+	[[maybe_unused]] uint8_t msg_pair;
+	uint8_t ssid_len;
+	uint8_t ssid[32];
+	uint8_t keyver;
+	uint8_t mic[16];
+	uint8_t mac_ap[6];
+	uint8_t anonce[32];
+	uint8_t mac_sta[6];
+	[[maybe_unused]] uint8_t snonce[32];
+	uint16_t eapol_len;
+	uint8_t eapol[256];
+};
+#pragma pack(pop)
+
+std::string to_hex(const uint8_t* data, size_t len) {
+	std::stringstream ss;
+	ss << std::hex << std::setfill('0');
+	for (size_t i = 0; i < len; ++i) {
+		ss << std::setw(2) << static_cast<int>(data[i]);
+	}
+	return ss.str();
+}
+
+std::vector<std::string> hccapx_to_wpa_hashes(const std::string& filename) {
+	std::vector<std::string> hashes;
+	std::ifstream file(filename, std::ios::binary);
+
+	if (!file.is_open()) {
+		return hashes;
 	}
 
-	ifstream f(creds_file);
-	int total = 0, cracked = 0;
-	string line;
-	while(getline(f, line)){
-		// Lines are either "WPA*02*..." or "[WPA2-EAPOL HASHCAT]\tWPA*02*..."
-		const auto tab_pos = line.find('\t');
-		const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
-		if(!hash.starts_with("WPA*")) continue;
-		total++;
-		// hcxpmktool exit 0 = confirmed, 2 = unconfirmed, 1 = error
-		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, false) == 0) cracked++;
+	const size_t RECORD_SIZE = 393;
+	std::vector<uint8_t> buffer(RECORD_SIZE);
+
+	while (file.read(reinterpret_cast<char*>(buffer.data()), RECORD_SIZE)) {
+
+		if (buffer[0] != 'H' || buffer[1] != 'C' || buffer[2] != 'P' || buffer[3] != 'X') {
+			continue;
+		}
+
+		uint8_t message_pair = buffer[8];
+		uint8_t essid_len    = buffer[9];
+
+		const uint8_t* essid_ptr   = &buffer[10];
+		const uint8_t* keymic_ptr  = &buffer[43];
+		const uint8_t* mac_ap_ptr  = &buffer[59];
+		const uint8_t* mac_sta_ptr = &buffer[65];
+		const uint8_t* anonce_ptr  = &buffer[71];
+		const uint8_t* eapol_ptr   = &buffer[103];
+
+		uint16_t eapol_len = buffer[359] | (static_cast<uint16_t>(buffer[360]) << 8);
+
+		if (eapol_len > 256) eapol_len = 256;
+
+		if (eapol_len == 128 && eapol_ptr[2] == 0x00 && eapol_ptr[3] == 0x7b) {
+			eapol_len = 127;
+		}
+
+		std::stringstream mp_ss;
+		mp_ss << std::setw(2) << std::setfill('0') << static_cast<int>(message_pair);
+
+		std::string hash_line = "WPA*02*" +
+				  to_hex(keymic_ptr, 16) + "*" +
+				  to_hex(mac_ap_ptr, 6) + "*" +
+				  to_hex(mac_sta_ptr, 6) + "*" +
+				  to_hex(essid_ptr, essid_len) + "*" +
+				  to_hex(anonce_ptr, 32) + "*" +
+				  to_hex(eapol_ptr, eapol_len) + "*" +
+				  mp_ss.str();
+
+		hashes.push_back(hash_line);
 	}
-	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
-	return {total, cracked};
+
+	return hashes;
 }
+
+
+CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
+    if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
+       throw config_err("hcxpmktool not found in PATH - install hcxtools package");
+    log(LogLevel::INFO, "hcxpmktool: {}", hw_capabilities::run_cmd_output({"hcxpmktool", "--version"}, nullopt));
+
+    if(!exists(creds_file)){
+       log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
+       return {0, 0};
+    }
+
+    ifstream f(creds_file);
+    int total = 0, cracked = 0;
+    string line;
+    while(getline(f, line)){
+       const auto tab_pos = line.find('\t');
+       const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
+       if(!hash.starts_with("WPA*")) continue;
+       total++;
+
+       if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, true) == 0) {
+           cracked++;
+       }
+    }
+    log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
+    return {total, cracked};
+}
+
 
 static path actor_conf_path(const RunStatus &rs, const string &actor_name){
 	const auto &actor = rs.config().at("actors").at(actor_name);

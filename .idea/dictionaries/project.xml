@@ -17,6 +17,7 @@
       <w>addrs</w>
       <w>algs</w>
       <w>angriff</w>
+      <w>anonce</w>
       <w>arphrd</w>
       <w>attackhead</w>
       <w>bigtk</w>
@@ -63,6 +64,7 @@
       <w>errbuf</w>
       <w>essid</w>
       <w>exch</w>
+      <w>fcommon</w>
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
@@ -77,6 +79,8 @@
       <w>getactor</w>
       <w>gnlh</w>
       <w>gpcmd</w>
+      <w>hccapx</w>
+      <w>hcpx</w>
       <w>hcxpmktool</w>
       <w>hostap</w>
       <w>htmode</w>
@@ -98,6 +102,7 @@
       <w>iwlwifi</w>
       <w>jsonfilter</w>
       <w>keydatalen</w>
+      <w>keyver</w>
       <w>killpg</w>
       <w>kname</w>
       <w>konfiguration</w>

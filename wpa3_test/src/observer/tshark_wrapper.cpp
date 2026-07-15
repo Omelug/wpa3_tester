@@ -89,6 +89,11 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 		return;
 	}
 
+	static const bool available = hw_capabilities::run_cmd({"tshark", "--version"}, nullopt, false) == 0;
+	if(!available){
+		throw setup_err("tshark not found, skipping pcap capture for '{}'", node_name);
+	}
+
 	vector<string> command = {};
 	add_nets_header(rs, command, node_name);
 

@@ -33,6 +33,7 @@ include(cmake/dependencies.cmake)
 include(cmake/libraries.cmake)
 include(cmake/targets.cmake)
 include(cmake/coverage.cmake)
+include(cmake/asan.cmake)
 
 set(HOSTAPD_EXTRA_CFLAGS "")
 if (EXISTS "/etc/nixos")

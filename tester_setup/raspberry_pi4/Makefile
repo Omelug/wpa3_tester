@@ -260,14 +260,20 @@ test-cross:
 		-DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) -j$(shell nproc)
 	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"
+	$(SSH) "sudo rm -rf $(REMOTE)/build/tests/setup/config_validation/test_suite/run_out 2>/dev/null; true"
 	rsync -az --info=progress2 \
 		$(CROSS_BUILD)/bin/ \
 		$(PI_USER)@$(PI):$(REMOTE)/build/bin/
-	rsync -az --info=progress2 \
-		--include='*/' --include='run_*' --include='*.pcap' --include='*.pcapng' --exclude='*' \
+	rsync -az --no-group --omit-dir-times --info=progress2 \
+		--exclude='run_out/' \
+		--include='*/' --include='run_*' \
+		--include='*.pcap' --include='*.pcapng' \
+		--include='*.yaml' --include='*.hccapx' --include='*.txt' \
+		--exclude='*' \
 		$(CROSS_BUILD)/tests/ \
 		$(PI_USER)@$(PI):$(REMOTE)/build/tests/
-	rsync -az --info=progress2 \
+	rsync -az --no-group --omit-dir-times --info=progress2 \
+		--exclude='run_out/' \
 		--include='*/' --include='CTestTestfile.cmake' --exclude='*' \
 		$(CROSS_BUILD)/ \
 		$(PI_USER)@$(PI):$(REMOTE)/build/
@@ -276,6 +282,9 @@ test-cross:
 	rsync -az --delete --info=progress2 \
 		$(SRC_ROOT)/wpa3_test/attack_config/ \
 		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
+	rsync -az --info=progress2 \
+		$(SRC_ROOT)/wpa3_test/attack_config/validator/ \
+		$(PI_USER)@$(PI):$(REMOTE)/build/wpa3_test/attack_config/validator/
 	$(SSH) "sudo -E ctest --test-dir $(REMOTE)/build --output-on-failure"
 
 # ── Crash-log capture via netconsole ──────────────────────────────────────────

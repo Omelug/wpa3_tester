@@ -269,10 +269,24 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
 	if(!msg) return make_error_code(errc::not_enough_memory);
 
-	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
+	const uint32_t freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
+
+	uint32_t chan_width = NL80211_CHAN_WIDTH_20_NOHT;
+	uint32_t center1   = freq;
+	if(ch.ht_mode){
+		if(*ch.ht_mode == "HT40+" || *ch.ht_mode == "HT40"){ chan_width = NL80211_CHAN_WIDTH_40; center1 = freq + 10; }
+		else if(*ch.ht_mode == "HT40-"){                      chan_width = NL80211_CHAN_WIDTH_40; center1 = freq - 10; }
+		else if(*ch.ht_mode == "HT20"){                       chan_width = NL80211_CHAN_WIDTH_20; }
+	}
+
+	// NL80211_CMD_SET_CHANNEL updates the wdev's chandef (visible in `iw dev info`).
+	// NL80211_CMD_SET_WIPHY only updates the PHY-level default; on some kernels
+	// (e.g. RPi 6.x) that is not reflected per-wdev in `iw dev info`.
+	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_CHANNEL, 0);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
-	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ, static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch)));
-	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_CHANNEL_TYPE, NL80211_CHAN_NO_HT);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ, freq);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_CHANNEL_WIDTH, chan_width);
+	(void)nla_put_u32(msg.get(), NL80211_ATTR_CENTER_FREQ1, center1);
 
 	int err = 0;
 	// ReSharper disable once CppParameterMayBeConstPtrOrRef

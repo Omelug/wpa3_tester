@@ -1,7 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include <fstream>
-#include <source_location>
 #include <sstream>
 #include <string>
 #include "config/Actor_Config/Actor_config.h"
@@ -11,8 +10,6 @@
 
 using namespace std;
 using namespace wpa3_tester;
-using namespace filesystem;
-path this_file = source_location::current().file_name();
 
 class MockOpenWrtConn: public OpenWrtConn{
 public:

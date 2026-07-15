@@ -18,7 +18,7 @@ echo "==> Installing build dependencies..."
 sudo apt-get update -qq
 sudo apt-get install -y \
     build-essential cmake ninja-build ccache \
-    clang lld mold pkg-config flex bison git \
+    clang lld mold pkg-config flex bison git g++-13 \
     libssl-dev \
     libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
     libpcap-dev \

@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+?f: asan je podezřelej, nehlásí leaky
 t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)
 t: rapsberry compile
 +: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/malformed_eapol1/malformed_eapol1_basic_suite/malformed_eapol1_Dlink nemělo by to záležet jen na clientovi, jestli se odpojí? - zkusit Dlink s ostatními klienty

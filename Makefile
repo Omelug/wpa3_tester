@@ -1,12 +1,13 @@
 BUILD_DIR := build
 BUILD_DIR_COVERAGE := build/coverage
+BUILD_DIR_ASAN := build/asan
 TARGET := wpa3_tester
 GRC_CONF := ./debug/grc/wpa3_tester.grc
 SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile
-.PHONY: all compile run clean_build
+.PHONY: all compile run clean_build asan_build asan
 
 clion_debug: compile
 	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
@@ -88,6 +89,20 @@ coverage_build:
 
 coverage: coverage_build
 	cmake --build $(BUILD_DIR_COVERAGE) --target coverage
+
+asan_build:
+	mkdir -p $(BUILD_DIR_ASAN)
+	@if [ ! -f $(BUILD_DIR_ASAN)/build.ninja ] && [ ! -f $(BUILD_DIR_ASAN)/Makefile ]; then \
+		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_ASAN) -G Ninja \
+			-DENABLE_ASAN=ON \
+			-DCMAKE_BUILD_TYPE=Debug \
+			-DCMAKE_C_COMPILER_LAUNCHER=ccache \
+			-DCMAKE_CXX_COMPILER_LAUNCHER=ccache; \
+	fi
+	cmake --build $(BUILD_DIR_ASAN) -j $(NPROC)
+
+asan: asan_build
+	cmake --build $(BUILD_DIR_ASAN) --target leak-check
 
 clear_cache:
 	rm -rf ./data/cache

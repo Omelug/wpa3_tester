@@ -180,14 +180,27 @@ pair<vector<LogTimePoint>,vector<double>> times_packet_sizes_from_csv(const path
 
 LogTimePoint get_pcap_start_time(const string &pcap_path){
 	const vector<string> get_start_cmd = {
-		"tshark", "-t", "ad", "-r", pcap_path, "-T", "fields", "-e", "frame.time", "-c", "1"
+		"tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1"
 	};
 
-	string start_str = hw_capabilities::run_cmd_output(get_start_cmd);
-	start_str.erase(0, start_str.find_first_not_of(" \n\r\t"));
-	start_str.erase(start_str.find_last_not_of(" \n\r\t") + 1);
+	string s = hw_capabilities::run_cmd_output(get_start_cmd);
+	s.erase(0, s.find_first_not_of(" \n\r\t"));
+	s.erase(s.find_last_not_of(" \n\r\t") + 1);
+	if(s.empty()) return LogTimePoint{};
 
-	return log_time_to_epoch_ns(start_str);
+	try{
+		const auto dot = s.find('.');
+		const int64_t sec_ns = stoll(s) * 1'000'000'000LL;
+		int64_t frac_ns = 0;
+		if(dot != string::npos){
+			string frac = s.substr(dot + 1);
+			frac.resize(9, '0');
+			frac_ns = stoll(frac);
+		}
+		return LogTimePoint(chrono::nanoseconds(sec_ns + frac_ns));
+	} catch(...){
+		return LogTimePoint{};
+	}
 }
 
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,

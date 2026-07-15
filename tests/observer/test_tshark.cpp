@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <source_location>
 #include <string>
 
 #include "config/RunStatus.h"
@@ -25,8 +24,6 @@ namespace{
 bool tshark_available(){
     return system("tshark --version > /dev/null 2>&1") == 0;
 }
-
-path this_file = source_location::current().file_name();
 
 ActorPtr make_actor(const string &mac){
     auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
@@ -175,7 +172,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
         return;
     }
 
-    const path pcapng = this_file.parent_path() / "test_tshark_minimal.pcapng";
+    const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
     REQUIRE(exists(pcapng));
 
     const path out_dir = temp_directory_path() / ("wpa3_pcap_" +
@@ -207,7 +204,7 @@ TEST_CASE("get_pcap_start_time - returns nonzero time for known pcap"){
         return;
     }
 
-    const path pcapng = path(this_file).parent_path() / "test_tshark_minimal.pcapng";
+    const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
     REQUIRE(exists(pcapng));
 
     const LogTimePoint tp = get_pcap_start_time(pcapng);

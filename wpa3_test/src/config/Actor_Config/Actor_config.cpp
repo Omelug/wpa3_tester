@@ -150,6 +150,10 @@ void Actor_config::set(const ActorPtr &source, const ParamFilter &filter){
 	for(const auto k : filter.second) set(k, (*source)[k]);
 }
 
+void Actor_config::set(const ActorPtr &source, const BK key){
+	if((*source)[key].has_value()) set(key, (*source)[key]);
+}
+
 optional<string> &Actor_config::operator[](SK key){
 	//driver
 	if(key == SK::driver_name) return _driver.driver_name;

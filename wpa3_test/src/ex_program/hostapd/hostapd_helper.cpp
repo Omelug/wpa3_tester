@@ -302,16 +302,16 @@ string get_hostapd_mana(const string &version){
 // defined in https://hashcat.net/wiki/doku.php?id=hccapx
 struct hccapx{
 	uint32_t signature;
-	uint32_t version;
+	[[maybe_unused]] uint32_t version;
 	uint8_t  message_pair;
 	uint8_t  essid_len;
 	uint8_t  essid[32];
-	uint8_t  keyver;
+	[[maybe_unused]] uint8_t  keyver;
 	uint8_t  keymic[16];
 	uint8_t  mac_ap[6];
 	uint8_t  nonce_ap[32];
 	uint8_t  mac_sta[6];
-	uint8_t  nonce_sta[32];
+	[[maybe_unused]] uint8_t  nonce_sta[32];
 	uint16_t eapol_len;
 	uint8_t  eapol[256];
 
@@ -326,7 +326,7 @@ std::string to_hex(const uint8_t* data, size_t len) {
 	return ss.str();
 }
 
-std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path& hccapx_path) {
+std::vector<std::string> hccapx_to_wpa_hashes(const path& hccapx_path) {
 	std::vector<std::string> hashes;
 	std::ifstream file(hccapx_path, std::ios::binary);
 
@@ -334,50 +334,49 @@ std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path& hccap
 		return hashes;
 	}
 
-	const size_t RECORD_SIZE = 393; // constatnt format size
-	std::vector<uint8_t> buffer(RECORD_SIZE);
+	hccapx record{};
 
-	while (file.read(reinterpret_cast<char*>(buffer.data()), RECORD_SIZE)) {
+	// load to struct
+	while (file.read(reinterpret_cast<char*>(&record), sizeof(hccapx))) {
 
-		if (buffer[0] != 'H' || buffer[1] != 'C' || buffer[2] != 'P' || buffer[3] != 'X') {
+		// control signature "HCPX" (0x58504348 - Little Endian)
+		if (record.signature != 0x58504348) {
 			continue;
 		}
 
-		uint8_t message_pair = buffer[8];
-		uint8_t essid_len    = buffer[9];
+		uint8_t essid_len = record.essid_len;
+		if (essid_len > 32) {
+			essid_len = 32;
+		}
 
-		const uint8_t* essid_ptr   = &buffer[10];
-		const uint8_t* keymic_ptr  = &buffer[43];
-		const uint8_t* mac_ap_ptr  = &buffer[59];
-		const uint8_t* anonce_ptr  = &buffer[65];
-		const uint8_t* mac_sta_ptr = &buffer[97];
-		uint16_t eapol_len = buffer[135] | (static_cast<uint16_t>(buffer[136]) << 8);
-		const uint8_t* eapol_ptr   = &buffer[137];
+		// EAPOl len
+		uint16_t eapol_len = record.eapol_len;
+		if (eapol_len > 256) {
+			eapol_len = 256;
+		}
 
-		if (eapol_len > 256) eapol_len = 256;
-
-		if (eapol_len == 128 && eapol_ptr[2] == 0x00 && eapol_ptr[3] == 0x7b) {
+		// padding
+		if (eapol_len == 128 && record.eapol[2] == 0x00 && record.eapol[3] == 0x7b) {
 			eapol_len = 127;
 		}
 
 		std::stringstream mp_ss;
-		mp_ss << std::setw(2) << std::setfill('0') << static_cast<int>(message_pair);
+		mp_ss << std::setw(2) << std::setfill('0') << static_cast<int>(record.message_pair);
 
 		std::string hash_line = "WPA*02*" +
-				  to_hex(keymic_ptr, 16) + "*" +
-				  to_hex(mac_ap_ptr, 6) + "*" +
-				  to_hex(mac_sta_ptr, 6) + "*" +
-				  to_hex(essid_ptr, essid_len) + "*" +
-				  to_hex(anonce_ptr, 32) + "*" +
-				  to_hex(eapol_ptr, eapol_len) + "*" +
-				  mp_ss.str();
+				to_hex(record.keymic, 16) + "*" +
+				to_hex(record.mac_ap, 6) + "*" +
+				to_hex(record.mac_sta, 6) + "*" +
+				to_hex(record.essid, essid_len) + "*" +
+				to_hex(record.nonce_ap, 32) + "*" +
+				to_hex(record.eapol, eapol_len) + "*" +
+				mp_ss.str();
 
 		hashes.push_back(hash_line);
 	}
 
 	return hashes;
 }
-
 
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
     if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)

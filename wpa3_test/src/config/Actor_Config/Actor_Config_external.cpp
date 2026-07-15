@@ -27,6 +27,11 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
 	}});
 
+	if(get_or(BK::GHz2_4, false)) set(real_actor, BK::GHz2_4);
+	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
+	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);
+
+
 	auto actor_ptr = ActorPtr(shared_from_this());
 	conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);
 	real_actor->conn->check_req(config, get(SK::actor_name));
@@ -46,7 +51,6 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		set_channel(get_channel());
 		//set_iface_down();
 	}
-	set(real_actor, {{}, {BK::GHz2_4, BK::GHz5, BK::GHz6}}); // after get_channel
 
 	//FIXME before channel switch?>
 	if(actor_json.contains("sniff_iface")){

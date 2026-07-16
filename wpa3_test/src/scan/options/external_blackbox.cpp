@@ -23,7 +23,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 	}
 
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
-		if(mac[0] & 0x01) return; // skip broadcast / multicast
+		if(mac.is_multicast()|| mac.is_broadcast()) return; // skip broadcast / multicast
 		ActorPtr actor;
 		if(seen.contains(mac)){
 			actor = seen.at(mac);
@@ -60,9 +60,10 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 		try{ ssid = probe_req->ssid(); } catch(...){}
 		add_entity(probe_req->addr2(), false, ssid);
 	} else if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
-		if(mgmt->subtype() == 0 || mgmt->subtype() == 2){ // assoc-req / reassoc-req
+		if(mgmt->subtype() == Dot11::ManagementSubtypes::ASSOC_REQ ||
+			mgmt->subtype() == Dot11::ManagementSubtypes::REASSOC_REQ){ // assoc-req / reassoc-req
 			const HWAddress<6> sta_mac = mgmt->addr2();
-			if(!(sta_mac[0] & 0x01)){ // filter multicast/broadcast
+			if(sta_mac.is_unicast()){ // filter multicast/broadcast
 				if(!seen.contains(sta_mac)) seen.emplace(sta_mac, ActorPtr(make_shared<Actor_Config_external>()));
 				if(auto *ext = dynamic_cast<Actor_Config_external *>(seen.at(sta_mac).get())){
 					scan::fill_actor_caps_from_assoc_req(pdu, *ext);

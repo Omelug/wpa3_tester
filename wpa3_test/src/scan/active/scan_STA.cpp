@@ -25,7 +25,7 @@ bool add_station(ScanAP &scan_ap, const HWAddress<6> &mac, const char *via){
 
 bool parse_control_frame(const Dot11Control *ctrl, ScanAP &scan_ap){
 	// RTS addr1 and addr2
-	if(ctrl->subtype() == 11){
+	if(ctrl->subtype() == Dot11::ManagementSubtypes::AUTH){
 		const auto *d11rts = dynamic_cast<const Dot11RTS *>(ctrl);
 		if(d11rts && d11rts->addr1() == scan_ap.bssid) return add_station(scan_ap, d11rts->target_addr(), "RTS");
 	}
@@ -46,8 +46,9 @@ bool parse_data_frame(const Dot11Data *data, ScanAP &scan_ap){
 
 bool parse_mgmt_frame(const Dot11ManagementFrame *mgmt, ScanAP &scan_ap){
 	// Subtype 4 = Probe Request; 0/11 = Assoc Req / Auth
-	if(mgmt->subtype() == 4) return add_station(scan_ap, mgmt->addr2(), "Probe Request");
-	if(mgmt->subtype() == 0 || mgmt->subtype() == 11) return add_station(scan_ap, mgmt->addr2(), "Assoc Req/Auth");
+	if(mgmt->subtype() == Dot11::ManagementSubtypes::PROBE_REQ) return add_station(scan_ap, mgmt->addr2(), "Probe Request");
+	if(mgmt->subtype() == Dot11::ManagementSubtypes::ASSOC_REQ ||
+		mgmt->subtype() == Dot11::ManagementSubtypes::AUTH) return add_station(scan_ap, mgmt->addr2(), "Assoc Req/Auth");
 	return false;
 }
 

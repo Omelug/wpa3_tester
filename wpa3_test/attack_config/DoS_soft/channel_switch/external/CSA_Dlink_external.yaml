@@ -1,9 +1,9 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: CSA_ex
+name: channel_switch_Dlink_external
 attacker_module: channel_switch
-$validator: ../../channel_switch.schema.yaml
+$validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
-scan_channels: [6]
+scan_channels: [ 6 ]
 scan_until_success: true
 actors:
   access_point:
@@ -15,6 +15,11 @@ actors:
     source: external
     selection:
       channel: 6
+      permanent_mac: "28:87:ba:a3:cf:16"
+      #permanent_mac: "90:de:80:6c:90:92"
+      #permanent_mac: "00:03:7f:c2:00:43"
+      #Samsung dad
+      #permanent_mac: "6c:ac:c2:cb:69:2f"
   attacker:
     source: internal
     selection:
@@ -23,7 +28,7 @@ actors:
       channel: 6
   rogue_ap:
     sniff_iface: rogue
-$extends: [ ./ex_observers.comp.yaml, ../../rogue_ap.comp.yaml ]
+$extends: [ ./ex_observers.comp.yaml, ../rogue_ap.comp.yaml ]
 
 attack_config:
   attack_time: 60
@@ -31,5 +36,4 @@ attack_config:
   new_channel: 1
   sleep_before_sec: 10
   sleep_after_sec: 10
-install_req: true
 rewrite: errors

@@ -1,7 +1,7 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: channel_switch_Dlink_MFP_req
+name: channel_switch_Dlink_MFP_disabled
 attacker_module: channel_switch
-$validator: ../channel_switch.schema.yaml
+$validator: ../../channel_switch.schema.yaml
 actors:
   client:
     source: internal
@@ -11,5 +11,6 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        ieee80211w: 2
+        ieee80211w: 0
+        key_mgmt: WPA-PSK
 $extends: ./CSA_Dlink.yaml

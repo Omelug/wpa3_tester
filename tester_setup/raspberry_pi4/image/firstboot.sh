@@ -23,7 +23,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     iproute2 iw tcpdump \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     usb-modeswitch usb-modeswitch-data \
-    avahi-daemon \
+    avahi-daemon quilt \
     dkms linux-headers-$(uname -r)
 
 dkms_install() {
@@ -50,6 +50,22 @@ echo "[firstboot] Building mausezahn from source..."
 git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
 (cd /tmp/netsniff-ng && ./configure && make mausezahn && make install_mausezahn)
 rm -rf /tmp/netsniff-ng
+
+echo "[firstboot] Building hostapd-mana from source..."
+git clone --depth=1 https://gitlab.com/kalilinux/packages/hostapd-mana /tmp/hostapd-mana
+(
+    cd /tmp/hostapd-mana
+    QUILT_PATCHES=debian/patches quilt push -a
+    cd hostapd
+    make -j$(nproc)
+    install -m 755 hostapd     /usr/sbin/hostapd-mana
+    install -m 755 hostapd_cli /usr/sbin/hostapd-mana_cli
+    mkdir -p /etc/hostapd-mana
+    cp hostapd.conf     /etc/hostapd-mana/hostapd-mana.conf
+    cp hostapd.eap_user /etc/hostapd-mana/hostapd-mana.eap_user
+    install -m 644 debian/certs/* /etc/hostapd-mana/ 2>/dev/null || true
+)
+rm -rf /tmp/hostapd-mana
 
 chmod +x /usr/bin/dumpcap
 

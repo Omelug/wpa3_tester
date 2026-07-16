@@ -56,7 +56,7 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
 }
 
 // ── hccapx_to_wpa_hashes ────────────────────────────────────────────────────
-
+//TODO refactor stess (tests passs bet format helper not )
 TEST_CASE("hccapx_to_wpa_hashes - missing file returns empty"){
     const auto result = hostapd::hccapx_to_wpa_hashes("/nonexistent/path.hccapx");
     CHECK(result.empty());
@@ -140,11 +140,9 @@ TEST_CASE("crack_pmk_hashes - wrong PSK cracks nothing"
 TEST_CASE("crack_pmk_hashes - cracks all hashes"
     * doctest::skip(hw_capabilities::run_cmd({"hcxpmktool", "--version"}, nullopt, false) != 0)
 ){
-    const path tmp = TEST_DIR / "captured_hashes.txt";
-    const auto r = hostapd::crack_pmk_hashes(tmp, "password123");
+    const path hashes_file = TEST_DIR / "captured_hashes.txt";
+    const auto r = hostapd::crack_pmk_hashes(hashes_file, "password123");
     CHECK_EQ(r.cracked, r.total);
-
-    remove(tmp);
 }
 
 TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"

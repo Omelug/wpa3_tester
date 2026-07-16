@@ -20,7 +20,7 @@ PI_HOSTNAME ?= wpa3-tester
 PI_PASSWORD ?= wpa3tester
 SSH_KEY     ?= $(HOME)/.ssh/id_rsa.pub
 DISK        ?=
-CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler.yaml
+CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml
 # Static IP baked into the image — also used as SSH target (PI defaults to PI_IP)
 # Direct PC–Pi cable:  PI_IP=10.0.0.2  PI_GW=10.0.0.1
 # Home network:        PI_IP=192.168.1.100  PI_GW=192.168.1.1
@@ -180,7 +180,7 @@ deploy:
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
-run:
+run: deploy-cross
 	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
 
 GDB_PORT ?= 1234

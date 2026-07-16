@@ -279,12 +279,12 @@ optional<ActorPtr> RunStatus::actor(const string &actor_name){
 
 ActorPtr &RunStatus::get_actor(const string &actor_name){
 	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
-	throw config_err("Actor " + actor_name + " not found in actors map");
+	throw config_err("Actor {} not found in actors map", actor_name);
 }
 
 const ActorPtr &RunStatus::get_actor(const string &actor_name) const{
 	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
-	throw config_err("Actor " + actor_name + " not found in actors map");
+	throw config_err("Actor {} not found in actors map", actor_name);
 }
 
 void RunStatus::print_test_list(){

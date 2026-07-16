@@ -25,10 +25,18 @@ sudo apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump hcxtools \
+    iproute2 iw tcpdump \
+    libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
+    quilt \
     dkms linux-headers-$(uname -r)
+
+echo "==> Installing hcxtools from source (latest git)..."
+sudo rm -rf /tmp/hcxtools
+git clone --depth=1 https://github.com/ZerBea/hcxtools.git /tmp/hcxtools
+(cd /tmp/hcxtools && make && sudo make install)
+sudo rm -rf /tmp/hcxtools
 
 if ! command -v mausezahn &>/dev/null; then
     echo "==> Building mausezahn from source (not in RPi OS repos)..."
@@ -38,11 +46,30 @@ if ! command -v mausezahn &>/dev/null; then
     sudo rm -rf /tmp/netsniff-ng
 fi
 
+if ! command -v hostapd-mana &>/dev/null; then
+    echo "==> Building hostapd-mana from source..."
+    sudo rm -rf /tmp/hostapd-mana
+    git clone --depth=1 https://gitlab.com/kalilinux/packages/hostapd-mana /tmp/hostapd-mana
+    (
+        cd /tmp/hostapd-mana
+        QUILT_PATCHES=debian/patches quilt push -a
+        cd hostapd
+        make -j$(nproc)
+        sudo install -m 755 hostapd     /usr/sbin/hostapd-mana
+        sudo install -m 755 hostapd_cli /usr/sbin/hostapd-mana_cli
+        sudo mkdir -p /etc/hostapd-mana
+        sudo cp hostapd.conf     /etc/hostapd-mana/hostapd-mana.conf
+        sudo cp hostapd.eap_user /etc/hostapd-mana/hostapd-mana.eap_user
+        sudo install -m 644 ../debian/certs/* /etc/hostapd-mana/ 2>/dev/null || true
+    )
+    sudo rm -rf /tmp/hostapd-mana
+fi
+
 dkms_install() {
     local label=$1 url=$2 tmp=$3
     echo "==> Installing ${label} driver (DKMS)..."
     sudo rm -rf "${tmp}"
-    sudo git clone "${url}" "${tmp}"
+    sudo GIT_TERMINAL_PROMPT=0 git clone "${url}" "${tmp}"
     local PKG VER
     PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' "${tmp}/dkms.conf")
     VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' "${tmp}/dkms.conf")
@@ -56,7 +83,7 @@ dkms_install() {
 }
 
 dkms_install "rtw88"  "https://github.com/lwfinger/rtw88"  /tmp/rtw88-src
-dkms_install "8188gu" "https://github.com/morrownr/8188gu" /tmp/8188gu-src
+#dkms_install "8188gu" "https://github.com/morrownr/8188gu" /tmp/8188gu-src
 
 sudo chmod +x /usr/bin/dumpcap
 

@@ -363,13 +363,14 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 						"-i", rs.get_actor(actor_name).get(SK::iface), mana_config_path,
 					});
 
-	const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");
-	const path output_path = rs.run_folder() / "captured_hashes.txt";
-	const path hccapx_path = rs.run_folder() / "mana_handshakes.hccapx";
-	const path mana_22000 = rs.run_folder() / "hostapd-mana.22000";
+	const path run_folder_path(rs.run_folder());
+	const path log_path = run_folder_path / "logger" / (actor_name + ".log");
+	const path output_path = run_folder_path / "captured_hashes.txt";
+	const path hccapx_path = run_folder_path / "mana_handshakes.hccapx";
+	const path mana_22000 = run_folder_path / "hostapd-mana.22000";
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	rs.process_manager.after_stop(actor_name, [log_path, output_path, hccapx_path, mana_22000](){
+	rs.process_manager.after_stop(actor_name, [log_path, output_path, hccapx_path, mana_22000, run_folder_path](){
 		ofstream out(output_path);
 		set<string> seen;
 		auto add = [&](const string &hash){
@@ -404,6 +405,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		}
 
 		if(exists(output_path)) set_public_perms(output_path);
+		//extract_hashes_from_pcaps(run_folder_path); //TODO test for this
 	});
 }
 }

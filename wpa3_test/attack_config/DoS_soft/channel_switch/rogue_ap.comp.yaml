@@ -8,7 +8,7 @@ actors:
     setup:
       program: hostapd-mana
       program_config:
-        version: 2_10
+        #version: 2_6
         driver: nl80211
         ssid: test_channel_switch
         hw_mode: g
@@ -27,7 +27,7 @@ actors:
         #enable_mana: 1
         #mana_mode: 1
         #mana_wpaout: 1
-        mana_wpaout: "mana_handshakes.hccapx"
+        #mana_wpaout: "mana_handshakes.hccapx"
         #mana_wpaout: wpa.creds
         #mana_outfile: hostapd.manaout
         #mana_wpaout:wpa.creds

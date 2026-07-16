@@ -15,6 +15,7 @@ std::string get_ssid(const RunStatus &rs, const std::string &actor_name);
 std::optional<bool> get_ocv(const RunStatus &rs, const std::string &actor_name);  // wpa_supplicant: ocv (network block key)
 std::optional<bool> get_okc(const RunStatus &rs, const std::string &actor_name);  // hostapd: okc (top-level key)
 std::string get_version(const RunStatus &rs, const std::string &actor_name);
+
 // reads field from program_config json, falls back to parsing config_path file
 std::string get_channel(const nlohmann::json &program_config, const std::string &config_path);
 

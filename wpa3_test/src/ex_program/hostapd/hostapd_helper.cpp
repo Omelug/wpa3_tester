@@ -326,6 +326,7 @@ std::string to_hex(const uint8_t* data, size_t len) {
 	return ss.str();
 }
 
+/*
 std::vector<std::string> hccapx_to_wpa_hashes(const path& hccapx_path) {
 	std::vector<std::string> hashes;
 	std::ifstream file(hccapx_path, std::ios::binary);
@@ -376,7 +377,7 @@ std::vector<std::string> hccapx_to_wpa_hashes(const path& hccapx_path) {
 	}
 
 	return hashes;
-}
+}*/
 
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
     if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)

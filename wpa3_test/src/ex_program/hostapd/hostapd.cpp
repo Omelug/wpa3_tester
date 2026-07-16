@@ -380,7 +380,8 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 			}
 		};
 
-		if(exists(mana_22000)){
+		//FIXME crackable from different sources(not priority now )
+		/*if(exists(mana_22000)){
 			ifstream f(mana_22000);
 			string line;
 			while(getline(f, line)){
@@ -393,7 +394,7 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		   for(const auto &h: hccapx_to_wpa_hashes(hccapx_path)){
 			   add(h);
 		   }
-		}
+		}*/
 		if(exists(log_path)) {
 		   ifstream log_file(log_path);
 		   string line;
@@ -405,7 +406,6 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		}
 
 		if(exists(output_path)) set_public_perms(output_path);
-		//extract_hashes_from_pcaps(run_folder_path); //TODO test for this
 	});
 }
 }

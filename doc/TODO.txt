@@ -4,6 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+rd: zjednodušit README v rapberry
+d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
 t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)
 t: rapsberry compile

@@ -239,6 +239,9 @@ $defs:
           essid:
             type: string
             description: Name of AP
+          ssid:
+            type: string
+            description: SSID of the AP (external source only)
           iface:
             type: string
             description: Name of interface
@@ -309,6 +312,19 @@ $defs:
               - required: [ whitebox_host ]
               - required: [ external_OS ]
           errorMessage: "whitebox_ip/whitebox_host not allowed if not external"
+      # ssid in selection only allowed for source: external
+      - if:
+          not:
+            properties:
+              source:
+                const: external
+            required: [ source ]
+        then:
+          properties:
+            selection:
+              not:
+                required: [ ssid ]
+          errorMessage: "ssid in selection can only be used with source: external"
       - if:
           properties:
             setup:

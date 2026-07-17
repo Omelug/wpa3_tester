@@ -14,9 +14,11 @@ namespace wpa3_tester{
 using namespace std;
 using namespace Tins;
 
+#define INVALID_VALUE (0)
+
 void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
-	int8_t signal = -1;
-	int channel_freq = -1;
+	int8_t signal = INVALID_VALUE;
+	uint16_t channel_freq = INVALID_VALUE;
 	if(const auto *rt = pdu.find_pdu<RadioTap>()){ //FIXME log?
 		try{ signal = rt->dbm_signal(); } catch(...){}
 		try{ channel_freq = rt->channel_freq(); } catch(...){}
@@ -25,26 +27,29 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
 		if(mac.is_multicast()|| mac.is_broadcast()) return; // skip broadcast / multicast
 		ActorPtr actor;
-		if(seen.contains(mac)){
-			actor = seen.at(mac);
-		} else{
+		const bool is_new = !seen.contains(mac);
+		if(is_new){
 			actor = ActorPtr(make_shared<Actor_Config_external>());
 			seen.emplace(mac, actor);
+		} else{
+			actor = seen.at(mac);
 		}
+
 		actor->set(SK::mac, mac);
 		actor->set(SK::permanent_mac, mac);
+		if(is_new) log(LogLevel::INFO, "New external actor: {}", actor->to_str());
 
-		actor->set(SK::ssid, ssid);
-		actor->set(BK::AP, is_ap);
-		actor->set(BK::STA, !is_ap);
+		if(!ssid.empty()) actor->set(SK::ssid, ssid);
+		if(!actor[BK::AP].has_value()) actor->set(BK::AP, is_ap);
+		if(!actor[BK::STA].has_value()) actor->set(BK::STA, !is_ap);
 
-		if(channel_freq > 0){
+		if(channel_freq != INVALID_VALUE){
 			if(channel_freq >= 2412 && channel_freq <= 2484) actor->set(BK::GHz2_4, true);
 			else if(channel_freq >= 5170 && channel_freq <= 5885) actor->set(BK::GHz5, true);
 			else if(channel_freq >= 5945 && channel_freq <= 7125) actor->set(BK::GHz6, true);
 			actor->set(SK::channel, to_string(hw_capabilities::freq_to_channel(channel_freq)));
 		}
-		if(signal != -1) actor->set(SK::signal, to_string(signal));
+		if(signal != INVALID_VALUE) actor->set(SK::signal, to_string(signal));
 	};
 
 	if(const auto *beacon = pdu.find_pdu<Dot11Beacon>()){
@@ -218,7 +223,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 		return nullopt;
 	};
 
-	while(!found){
+	while(!found && !g_interrupted.load()){
 		for(const uint8_t ch_num: channels){
 			if(found) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);

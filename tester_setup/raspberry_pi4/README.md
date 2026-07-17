@@ -136,6 +136,8 @@ make bootstrap PI=<ip-address>
 
 Then proceed with `make deploy` / `make run` as above.
 
+> `bootstrap.sh` also disables USB autosuspend and ath9k_hw ANI — no extra step needed.
+
 ---
 
 ## C) Cross-compilation (fast iteration, build on host)

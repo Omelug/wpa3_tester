@@ -36,7 +36,7 @@ int main(){
     cout << "\nScanning on interface '" << selected_iface << "' for " << timeout << " seconds...\n";
     cout << "Please wait...\n";
 
-    vector<ActorPtr> entities;
+    vector<EntityInfo> entities;
     try{
         entities = RunStatus::list_external_entities(actor.get(SK::iface), timeout, {6, 13});
     } catch(const exception &e){

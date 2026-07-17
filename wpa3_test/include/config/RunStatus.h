@@ -43,9 +43,11 @@ class Actor_config;
 class ExternalConn;
 class GraphElements;
 
-using ActorMap = std::unordered_map<std::string,ActorPtr>;
-using ActorMACMap = std::unordered_map<Tins::HWAddress <6>,ActorPtr>;
-using ObserverMap = std::unordered_map<std::string,observer::ObserverPtr>;
+using ActorMap    = std::unordered_map<std::string, ActorPtr>;
+using ActorMACMap = std::unordered_map<Tins::HWAddress<6>, ActorPtr>;
+using AssocMap    = std::unordered_map<Tins::HWAddress<6>, Tins::HWAddress<6>>; // STA → AP BSSID
+using EntityInfo  = std::pair<ActorPtr, std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>>; // (actor, (own_mac, peer_mac))
+using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
 //TODO nejde to nějak dát do struktury, ale aby vstup pro přehlcování unkcí zůstal stejný?
 typedef std::string actor_name_t;
@@ -100,6 +102,8 @@ public:
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen);
 	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen);
+	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen, AssocMap &assoc);
+	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen, AssocMap &assoc);
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string,std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
@@ -113,7 +117,7 @@ public:
 
 	// get external options
 	// For manual testing / wizards
-	static std::vector<ActorPtr> list_external_entities(const std::string &iface, size_t timeout_sec,
+	static std::vector<EntityInfo> list_external_entities(const std::string &iface, size_t timeout_sec,
 														const std::vector<unsigned char> &channels
 	);
 	// ----------- log_events
@@ -130,7 +134,8 @@ private:
 	std::vector<uint8_t> get_external_BB_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorCMap &actors = {});
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
-												const ActorCMap &actors
+												const ActorCMap &actors,
+												const std::vector<std::pair<std::string, std::string>> &conn_conds = {}
 	);
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);

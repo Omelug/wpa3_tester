@@ -17,7 +17,7 @@ struct TargetInfo{
 };
 
 TargetInfo get_target_wizard(const std::string &iface, const Channel &channel);
-void print_external_entities(const std::vector<ActorPtr> &entities);
+void print_external_entities(const std::vector<EntityInfo> &entities);
 bool ask_ok(const std::string &question);
 ActorPtr wb_actor_selection();
 

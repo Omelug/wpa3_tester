@@ -16,6 +16,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
+#include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
 #include "system/firmware/ath9k_htc.h"
@@ -231,17 +232,7 @@ bool RunStatus::config_requirement(){
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
-	unordered_set<string> affected_phys;
-	for(const auto &[iface_name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::WifiVirtualMon, nullopt)){
-		affected_phys.insert(radio);
-		hw_capabilities::run_cmd({"iw", "dev", iface_name, "del"}, nullopt, false);
-		if(netlink_helper::wait_for_iface_disappear(iface_name, nullopt))
-			throw setup_err("Interface " + iface_name + " did not disappear");
-	}
-
-	for(const auto &[iface_name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
-		reset_usb_device(iface_name);
-	}
+	reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");

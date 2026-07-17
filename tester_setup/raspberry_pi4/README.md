@@ -1,21 +1,19 @@
-# Raspberry Pi 4B — setup & deploy
+# Raspberry Pi 4B 
 
 Target OS: **Raspberry Pi OS Lite 64-bit (Bookworm)**
+ #TODO zkontrolovat, 6e 
+! on kernel 6.6 
 
-WiFi interfaces are unmanaged by NetworkManager — the tester controls them
-directly via nl80211. Ethernet stays managed (SSH, DHCP).
+- WiFi interfaces are unmanaged by NetworkManager
+- ethernet stays managed and needed for communication (SSH, DHCP, internet sharing ).
 
 ---
 
-## A) Automated image (recommended)
+## Automated image (recommended)
 
-### 1. Build image
+##### Build image:  ```make image```
 
-```bash
-make image
-```
-
-Downloads Raspberry Pi OS Lite, customizes it:
+After download, it customize image: 
 - creates user `pi` / `wpa3tester`
 - enables SSH
 - injects `~/.ssh/id_rsa.pub` for key-based login
@@ -23,7 +21,7 @@ Downloads Raspberry Pi OS Lite, customizes it:
 - disables NetworkManager for all `wlan*` interfaces
 - installs a firstboot service that runs `apt install` on first boot
 
-Override defaults if needed:
+Override defaults if needed: (check [Makefile](Makefile) for more options)
 
 ```bash
 make image PI_USER=pi PI_PASSWORD=secret PI_HOSTNAME=wpa3-tester SSH_KEY=~/.ssh/id_ed25519.pub
@@ -46,15 +44,15 @@ For a direct cable connection, set the PC's ethernet port to `10.0.0.1/24`
 (once, via NM or `sudo ip addr add 10.0.0.1/24 dev eth0`).
 Then deploy with `PI=10.0.0.2` instead of the hostname.
 
-### 2. Flash to SD card
-
+### Flash to SD card 
+!!! This will overwrite your disk, check 
 ```bash
 make flash DISK=/dev/sdX
 ```
 
 Lists available block devices and asks for confirmation before writing.
 
-### 3. Notebook ethernet setup (direct cable only)
+### Notebook ethernet setup (direct cable only)
 
 Set the notebook's ethernet interface to the same subnet as `PI_IP` once
 (persistent NM profile, survives reboot):
@@ -79,23 +77,16 @@ Run once per notebook session (not persistent across reboots):
 
 ```bash
 sudo sysctl -w net.ipv4.ip_forward=1
+# Replace `wlan0` with your internet interface 
 sudo iptables -t nat -A POSTROUTING -o wlan0  -j MASQUERADE
-sudo iptables -A FORWARD -i enp3s0 -j ACCEPT
-sudo iptables -A FORWARD -o enp3s0 -j ACCEPT
+# Replace`eth0` with the cable interface.
+sudo iptables -A FORWARD -i eth0 -j ACCEPT
+sudo iptables -A FORWARD -o eth0 -j ACCEPT
 ```
 
-> Replace `wlan0` with your internet interface and `enp3s0` with the cable interface.
+### First boot
 
-> **`.local` hostname** (`wpa3-tester.local`) requires `avahi-daemon` and
-> `libnss-mdns` on the notebook:
-> ```bash
-> sudo apt install avahi-daemon libnss-mdns
-> ```
-> Until firstboot completes, `.local` won't resolve — use the IP directly.
-
-### 4. First boot
-
-Insert SD card, connect ethernet cable, power on.
+Insert SD card, connect ethernet cable, power on, `make internet`'.
 The firstboot service installs build dependencies (~3 min).
 Follow progress via IP (works immediately, no mDNS needed):
 
@@ -105,7 +96,7 @@ ssh pi@10.0.0.2 'journalctl -u wpa3-firstboot -f'
 
 When it prints `[firstboot] Complete` the Pi is ready.
 
-### 5. Deploy & run
+### Deploy & run
 
 ```bash
 # Push source and build on Pi
@@ -118,82 +109,50 @@ make run PI=10.0.0.2
 make run PI=10.0.0.2 CONFIG=wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 ```
 
-`make deploy` rsyncs the project source (excluding `build/`, `data/`, `.git/`)
-and rebuilds on the Pi. Typical iteration time: rsync + build.
-
 ---
 
-## B) Manual setup (stock image fallback)
+## Manual setup (stock image fallback)
 
 1. Flash **Raspberry Pi OS Lite (64-bit)** via `rpi-imager`
    - Advanced settings: enable SSH, set username/password
 2. Boot, connect ethernet
-3. Run bootstrap:
-
-```bash
-make bootstrap PI=<ip-address>
-```
+3. Run bootstrap: `make bootstrap PI=<ip-address>`
 
 Then proceed with `make deploy` / `make run` as above.
 
-> `bootstrap.sh` also disables USB autosuspend and ath9k_hw ANI — no extra step needed.
+> `bootstrap.sh` also disables USB autosuspend and ath9k_hw ANI — for stability
 
 ---
 
-## C) Cross-compilation (fast iteration, build on host)
+## Cross-compilation (fast iteration, build on host)
 
 Instead of building on the Pi, compile for `aarch64` on the host and push only
-the binary. Much faster on repeated builds — no Pi CPU, no network transfer of
-source.
+the binary
 
-### One-time host dependencies
+1. One-time host dependencies `sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
-```bash
-sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-```
-
-### 1. Sync sysroot from Pi
-
+2. Sync sysroot from Pi: 
 Pull Pi's libraries to `cross-sysroot/` (repeat after `apt install` on Pi):
+ <br> `make sysroot PI=10.0.0.2`
 
-```bash
-make sysroot PI=10.0.0.2
-```
+3. Build and deploy `make deploy-cross PI=10.0.0.2`
 
-### 2. Build and deploy
+4. Run `make run PI=10.0.0.2`
 
-```bash
-make deploy-cross PI=10.0.0.2
-```
-
-Builds `wpa3_tester` for `aarch64` on the host, then pushes:
-- `build/bin/wpa3_tester`
-- `wpa3_test/attack_config/`
-
-### 3. Run
-
-```bash
-make run PI=10.0.0.2
-```
-
-### Cleanup
-
-```bash
-make clean_cross   # remove build-cross/ directory
-```
+5. Cleanup `make clean_cross`   # remove build-cross/ directory
 
 ### Remote debugging (CLion)
 
+Host requirement: `sudo apt install gdb-multiarch` 
+
 1. Start gdbserver on Pi:
-   ```bash
-   make run-debug PI=10.0.0.2
-   ```
+   ```make run-debug PI=10.0.0.2```
 
 2. In CLion select **"Pi: GDB debug"** and click Debug —
    automatically runs `make deploy-cross` then connects to `10.0.0.2:1234`.
+
 
    If the config doesn't load: *Run > Edit Configurations > + > GDB Remote Debug*,
    set symbol file to `build-cross/bin/wpa3_tester`, host `10.0.0.2`, port `1234`,
    GDB path `gdb-multiarch`.
 
-   Host requirement: `sudo apt install gdb-multiarch`

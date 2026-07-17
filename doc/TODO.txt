@@ -4,12 +4,15 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+
++: requirement external connection STA-AP
+
+r: zrkráššlit Makefile
++: testy pro qemu s mým raspberry image
 r:  hostapd version notneded  (its get from kali repository)
-rd: zjednodušit README v rapberry
 d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
 t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)
-t: rapsberry compile
 +: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/malformed_eapol1/malformed_eapol1_basic_suite/malformed_eapol1_Dlink nemělo by to záležet jen na clientovi, jestli se odpojí? - zkusit Dlink s ostatními klienty
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
 +: do channel switch overview dát cracked
@@ -22,7 +25,6 @@ nebo proč BARS někdy klienta odpojí a někdy ne?
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 ?: proč je /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 t: external info/iface_info parsing tests
-+: requirement external connection STA-AP
 +: injection test for openwrt (tried, openwrt crash)
 
 +: external Dlink for malformed eapol
@@ -68,6 +70,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
+rd: zjednodušit README v rapberry
 +:create Clion plugin for runtests from config and link to tests
 +: create Dlink_all (test suite for all Dlink tests)
 +: simulation test setup

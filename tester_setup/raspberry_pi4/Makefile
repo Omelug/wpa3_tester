@@ -38,7 +38,7 @@ SYSROOT      := $(CURDIR)/cross-sysroot
 CROSS_BUILD  := $(SRC_ROOT)/build-cross
 TOOLCHAIN    := $(CURDIR)/aarch64-toolchain.cmake
 
-RPI_IMAGE_URL := https://downloads.raspberrypi.com/raspios_lite_arm64_latest
+RPI_IMAGE_URL := https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64-lite.img.xz
 IMAGE_XZ      := image/cache/raspios_lite_arm64.img.xz
 IMAGE_RAW     := image/cache/raspios_lite_arm64.img
 CUSTOM_IMAGE  := image/wpa3-tester.img

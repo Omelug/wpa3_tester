@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+r:  hostapd version notneded  (its get from kali repository)
 rd: zjednodušit README v rapberry
 d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
@@ -145,6 +146,7 @@ ch: + docuemnt what exactly are validator/ref ($ref dont works with extends)
 r:  better open/cloose once, multiple ClientStates?
 
 New features:
++: git mirrors  for sure of avaible dependencies
 v?: cache visualization for documnetation?
 r: fix whitebox scanners to get more data fir blackboc external
 +: create config wizard after first install

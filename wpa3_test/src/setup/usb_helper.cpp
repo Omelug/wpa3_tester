@@ -1,6 +1,5 @@
 #include <chrono>
 #include <filesystem>
-#include <thread>
 #include <vector>
 
 #include "inteprrupt.h"
@@ -14,7 +13,6 @@ using namespace filesystem;
 using nlohmann::json;
 
 namespace wpa3_tester{
-
 
 path get_usb_auth_path(const string& iface_name) {
 	const path sysfs_path = path("/sys/class/net") / iface_name / "device";

@@ -134,6 +134,15 @@ properties:
             minItems: 2
             #TODO simplify this
         additionalProperties: false
+      ex_BB_connection:
+        type: array
+        description: List of expected STA-AP connections; each pair is [sta_actor_name, ap_actor_name] (both must be external actors)
+        items:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 2
     additionalProperties: false
 
 allOf:
@@ -391,11 +400,14 @@ $defs:
                     - contains: { const: "5GHz" }
                     - contains: { const: "6GHz" }
           errorMessage: "when channel is set, condition must contain exactly one band: 2_4GHz, 5GHz, 6GHz"
-      # channel in selection requires a monitor-capable or AP condition (mirrors monitor_needed())
+      # channel in selection requires a monitor-capable or AP condition (mirrors monitor_needed()) - not for external (channel is a selection criterion there)
       - if:
           properties:
             selection:
               required: [ channel, condition ]
+            source:
+              not:
+                const: external
           required: [ selection ]
         then:
           properties:

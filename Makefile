@@ -7,10 +7,18 @@ SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile
-.PHONY: all compile run clean_build asan_build asan
+.PHONY: all compile run clean_build asan_build asan tester_setup
 
 clion_debug: compile
 	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+
+tester_setup:
+	@echo "==> Disabling ath9k_hw ANI for driver stability..."
+	echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
+	@echo "==> Disabling USB autosuspend..."
+	echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
+	sudo update-initramfs -u
+	@echo "==> Done. Reboot recommended."
 
 install:
 	sudo apt install grc

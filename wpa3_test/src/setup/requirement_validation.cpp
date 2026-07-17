@@ -228,6 +228,9 @@ bool RunStatus::config_requirement(){
 	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 	firmware::disable_custom_drivers();
 	check_local_requirements();
+
+	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME zobecnit pro derivery
+
 	cleanup_all_namespaces();
 	parse_requirements();
 	log_actor_map("Actors: ", actors);

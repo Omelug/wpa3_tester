@@ -5,7 +5,11 @@ v: visualization
 
 Version v 0.0.0.0:
 
+f: reset usb 
+CSA - upravit report pro external BB
++: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: requirement external connection STA-AP
+
 +: wizard v tester_stup pro eternal lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 r: zrkráššlit Makefile
 +: testy pro qemu s mým raspberry image

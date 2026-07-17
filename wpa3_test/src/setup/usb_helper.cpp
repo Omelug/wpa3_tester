@@ -65,6 +65,8 @@ void reset_usb_ifaces(){
 		}
 	}
 
+	hw_capabilities::run_cmd({"modprobe", "ath9k_htc"}, nullopt, false); //FIXME zobrecnit
+
 	vector<string> waiting;
 	for(const auto &iface_name: reset_targets | views::keys)
 		waiting.push_back(iface_name);

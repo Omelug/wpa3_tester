@@ -203,8 +203,14 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
 	const string iface = _config.at("scan_iface");
 	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();
 
+	vector<pair<string,string>> conn_conds;
+	if(_config.contains("requirements") && _config.at("requirements").contains("ex_BB_connection")){
+		for(const auto &p : _config.at("requirements").at("ex_BB_connection"))
+			conn_conds.emplace_back(p[0].get<string>(), p[1].get<string>());
+	}
+
 	if(_config.value("scan_until_success", false) && !ex_bb_actors.empty())
-		return scan_until_match(iface, channels, ex_bb_actors, {});
+		return scan_until_match(iface, channels, ex_bb_actors, conn_conds);
 
 	const auto entities = list_external_entities(iface, timeout, channels);
 	return entities | views::transform([](const EntityInfo &e){ return e.first; }) | ranges::to<vector<ActorPtr>>();
@@ -250,7 +256,10 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 					if(!assignment.contains(sta_name) || !assignment.contains(ap_name)){ conns_ok = false; break; }
 					const HWAddress<6> sta_mac(assignment.at(sta_name)->get(SK::mac));
 					const HWAddress<6> ap_mac(assignment.at(ap_name)->get(SK::mac));
-					if(!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac){ conns_ok = false; break; }
+					if(!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac){
+						conns_ok = false;
+						break;
+					}
 				}
 				if(conns_ok){
 					found = true;

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <sstream>
 #include <thread>
+#include <unordered_set>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -16,6 +17,7 @@
 #include "logger/error_log.h"
 #include "logger/log_util.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_helper.h"
 #include "system/firmware/ath9k_htc.h"
 
 using namespace std;
@@ -229,11 +231,16 @@ bool RunStatus::config_requirement(){
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
-	// ------------------ INTERNAL ---------------------------
-	auto internal_actors = get_actors(actors, "internal");
-	if(!internal_actors.empty()){
-		if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = internal_options();
-		internal_mapping = hw_capabilities::check_req_options(internal_actors, *_hw_option_cache.internal_opts);
+	unordered_set<string> affected_phys;
+	for(const auto &[iface_name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::WifiVirtualMon, nullopt)){
+		affected_phys.insert(radio);
+		hw_capabilities::run_cmd({"iw", "dev", iface_name, "del"}, nullopt, false);
+		if(netlink_helper::wait_for_iface_disappear(iface_name, nullopt))
+			throw setup_err("Interface " + iface_name + " did not disappear");
+	}
+
+	for(const auto &[iface_name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+		reset_usb_device(iface_name);
 	}
 
 	//  external wb/bb separation
@@ -248,6 +255,21 @@ bool RunStatus::config_requirement(){
 			external_bb_actors.emplace(actor.get(SK::actor_name), actor);
 		}
 	}
+
+	// ------------------ EXTERNAL BLACKBOX -----------------
+	// before internal, because need clean interface for scanning
+	if(!external_bb_actors.empty()){
+		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors,
+																external_bb_options(external_bb_actors));
+	}
+
+	// ------------------ INTERNAL ---------------------------
+	auto internal_actors = get_actors(actors, "internal");
+	if(!internal_actors.empty()){
+		if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = internal_options();
+		internal_mapping = hw_capabilities::check_req_options(internal_actors, *_hw_option_cache.internal_opts);
+	}
+
 	// ------------------ EXTERNAL WHITEBOX -----------------
 	if(!external_wb_actors.empty()){
 		if(!_hw_option_cache.external_wb_opts.has_value()) _hw_option_cache.external_wb_opts = external_wb_options();
@@ -262,12 +284,6 @@ bool RunStatus::config_requirement(){
 		if(!_hw_option_cache.external_wb_opts.has_value() || cache_dead)
 			_hw_option_cache.external_wb_opts = external_wb_options();
 		external_wb_mapping = hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
-	}
-
-	// ------------------ EXTERNAL BLACKBOX -----------------
-	if(!external_bb_actors.empty()){
-		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors,
-																external_bb_options(external_bb_actors));
 	}
 
 	// ---------------- SIMULATIONS -------------------------

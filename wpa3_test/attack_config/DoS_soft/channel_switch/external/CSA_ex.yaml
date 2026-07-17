@@ -5,10 +5,15 @@ $validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
 scan_channels: [6]
 scan_until_success: true
+#RTL8188EUS e blbost - > přidat scanner podmínky (nebo přes actor?)
+#TODO requirement connected AP-STA external
+#FIXM funguje jen u ath_htc, není to ítm, že musí už předtím v monitor módu?
+#označit n2jak wizard , nebo wizard -> error v run config
 actors:
   access_point:
     source: external
     selection:
+      ssid: OpenWrt_2_4GHz
       channel: 6
       condition: [ AP, 2_4GHz ]
   client:
@@ -23,6 +28,9 @@ actors:
       channel: 6
   rogue_ap:
     sniff_iface: rogue
+    setup:
+      program_config:
+        ssid: OpenWrt_2_4GHz
 $extends: [ ./ex_observers.comp.yaml, ../rogue_ap.comp.yaml ]
 
 attack_config:

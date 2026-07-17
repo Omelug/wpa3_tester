@@ -104,6 +104,8 @@ fi
 
 # ath9k_hw — disable ANI (Adaptive Noise Immunity) for driver stability
 echo "options ath9k_hw ani_enable=0" > "$ROOT/etc/modprobe.d/ath9k.conf"
+# USB — disable autosuspend (prevents Wi-Fi adapter disconnects under load)
+echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
 
 # NetworkManager — leave all WiFi interfaces unmanaged so the tester
 # can control them directly via nl80211; ethernet stays managed for SSH

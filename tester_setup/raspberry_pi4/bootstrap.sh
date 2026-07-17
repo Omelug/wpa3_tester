@@ -96,6 +96,9 @@ EOF
 
 echo "==> Disabling ath9k_hw ANI for driver stability..."
 echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
+echo "==> Disabling USB autosuspend..."
+echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
+sudo update-initramfs -u
 
 echo "==> Setting WiFi region CZ..." # TODO hardcoded change
 sudo raspi-config nonint do_wifi_country CZ

@@ -151,11 +151,11 @@ TargetInfo get_target_wizard(const string &iface, const Channel &channel){
 
 	// Use list_external_entities function
 	const vector channels = {channel.ch_num};
-	const vector<ActorPtr> entities = RunStatus::list_external_entities(iface, 4, channels);
+	const vector<EntityInfo> entities = RunStatus::list_external_entities(iface, 4, channels);
 
 	vector<TargetInfo> targets;
 
-	for(const auto &actor: entities){
+	for(const auto &[actor, macs]: entities){
 		TargetInfo target;
 		target.bssid = (*actor).get(SK::mac);
 		target.ssid = (*actor)["ssid"];
@@ -195,7 +195,7 @@ TargetInfo get_target_wizard(const string &iface, const Channel &channel){
 	return targets[idx];
 }
 
-void print_external_entities(const vector<ActorPtr> &entities){
+void print_external_entities(const vector<EntityInfo> &entities){
 	if(entities.empty()){
 		cout << "No entities found!\n";
 		cout << "\nPossible reasons:\n";
@@ -205,18 +205,31 @@ void print_external_entities(const vector<ActorPtr> &entities){
 		return;
 	}
 
-	// Separate APs and STAs
 	vector<ActorPtr> aps;
 	vector<ActorPtr> stas;
+	const Tins::HWAddress<6> no_peer{};
 
-	for(const auto &entity: entities){
-		if(entity[BK::AP].value()){
-			aps.push_back(entity);
-		} else{ stas.push_back(entity); }
+	for(const auto &[actor, macs]: entities){
+		if(actor[BK::AP].value_or(false)){
+			aps.push_back(actor);
+		} else{
+			stas.push_back(actor);
+		}
 	}
 
 	Actor_config::print_ActorCMap("Access points", aps);
 	Actor_config::print_ActorCMap("Stations:", stas);
+
+	cout << "\n--- Associations (STA → AP) ---\n";
+	bool any_assoc = false;
+	for(const auto &[actor, macs]: entities){
+		const auto &[own_mac, peer_mac] = macs;
+		if(peer_mac != no_peer){
+			cout << "  " << own_mac << " → " << peer_mac << "\n";
+			any_assoc = true;
+		}
+	}
+	if(!any_assoc) cout << "  (none observed)\n";
 
 	cout << "\n========================================\n";
 	cout << "Total entities found: " << entities.size()

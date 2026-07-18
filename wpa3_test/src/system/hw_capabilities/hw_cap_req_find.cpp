@@ -66,19 +66,22 @@ void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const s
 	}
 }
 
-ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){
+ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options, bool print){
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
 	ActorMap result;
 	if(unordered_set<size_t> usedOptions; find_solution(ruleKeys, 0, rules, options, usedOptions, result)){
-		log(LogLevel::DEBUG, "Solved!");
-		for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
+		if(print){
+			log(LogLevel::DEBUG, "Solved!");
+			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
+		}
 		return result;
 	}
-
-	Actor_config::print_ActorCMap("Actor rules", rules);
-	Actor_config::print_ActorCMap("Actor options", options);
+	if(print){
+		Actor_config::print_ActorCMap("Actor rules", rules);
+		Actor_config::print_ActorCMap("Actor options", options);
+	}
 	throw req_err("Not found valid requirements: " + get_heuristic_err_msg(rules, options));
 }
 

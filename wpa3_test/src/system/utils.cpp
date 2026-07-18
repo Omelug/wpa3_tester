@@ -75,6 +75,13 @@ string relative_from(const string &base_dir_name, const path &config_path){
 	throw config_err("folder name not found");
 }
 
+string trim(string s){
+	s.erase(0, s.find_first_not_of(" \t\r\n"));
+	if(auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
+	else s.clear();
+	return s;
+}
+
 string join(const vector<string> &v, const string &sep){
 	string out;
 	for(size_t i = 0; i < v.size(); ++i){

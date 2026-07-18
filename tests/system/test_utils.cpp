@@ -118,6 +118,15 @@ TEST_CASE("relative_from - single level nesting"){
     remove_all(test_base);
 }
 
+TEST_CASE("trim"){
+    CHECK_EQ(trim("hello"), "hello");
+    CHECK_EQ(trim("  hello  "), "hello");
+    CHECK_EQ(trim("\thello\t"), "hello");
+	CHECK_EQ(trim("key=value\r\n"), "key=value");
+	CHECK_EQ(trim(""), "");
+	CHECK_EQ(trim("  a b  c  "), "a b  c");
+}
+
 TEST_CASE("create_public_dirs - new directories and file are world-accessible"){
     const path test1 = path("/tmp/test_create_public_dirs") / "test1";
     const path test2 = test1 / "test2";

@@ -184,8 +184,7 @@ LogTimePoint get_pcap_start_time(const string &pcap_path){
 	};
 
 	string s = hw_capabilities::run_cmd_output(get_start_cmd);
-	s.erase(0, s.find_first_not_of(" \n\r\t"));
-	s.erase(s.find_last_not_of(" \n\r\t") + 1);
+	s = trim(s);
 	if(s.empty()) return LogTimePoint{};
 
 	try{
@@ -231,8 +230,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	istringstream stream(csv_output);
 	string line;
 	while(getline(stream, line)){
-		line.erase(0, line.find_first_not_of(" \n\r\t"));
-		line.erase(line.find_last_not_of(" \n\r\t") + 1);
+		line = trim(line);
 		if(line.empty()) continue;
 
 		try{

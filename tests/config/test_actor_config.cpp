@@ -200,7 +200,7 @@ TEST_CASE("Actor_config - operator[] accessor"){
     Actor_config actor;
     actor.set(SK::iface, "wlan0");
 
-    CHECK(actor.get(SK::iface) == "wlan0");
+    CHECK_EQ(actor.get(SK::iface), "wlan0");
 
     // missing key
 	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name), config_err);
@@ -449,7 +449,7 @@ TEST_CASE("ActorPtr - basic accessors"){
     }
 
     SUBCASE("shared()"){
-        CHECK(ap.shared() == cfg.shared());
+        CHECK_EQ(ap.shared(), cfg.shared());
     }
 
     SUBCASE("operator[](string)"){

@@ -187,8 +187,7 @@ static void write_wpa_network_block(ofstream &out, const json &setup){
 	out << "}\n";
 }
 
-// rewrites cfg in-place, replacing matched keys and injecting new ones.
-static void apply_wpa_overrides(const path &cfg, const json &overrides){
+void apply_wpa_overrides(const path &cfg, const json &overrides){
 	map<string,string> global_ov, network_ov;
 	for(auto it = overrides.begin(); it != overrides.end(); ++it){
 		if(wpa_skip_keys.contains(it.key())) continue;
@@ -201,48 +200,49 @@ static void apply_wpa_overrides(const path &cfg, const json &overrides){
 	vector<string> lines;
 	string line;
 	while(getline(in, line)) lines.push_back(line);
-	in.close();
 
 	bool in_block = false, block_seen = false;
-	set<string> w_global, w_network;
 
 	ofstream out(cfg);
 	for(auto &l: lines){
-		string s = l;
-		s.erase(0, s.find_first_not_of(" \t"));
-		if(auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
-		else s.clear();
+		string s = trim(l);
 
 		if(s == "network={"){
 			block_seen = in_block = true;
-			for(auto &[k, v]: global_ov) if(w_global.insert(k).second) out << k << "=" << v << "\n";
+			for(auto &[k, v]: global_ov) out << k << "=" << v << "\n";
+			global_ov.clear();
 			out << l << "\n";
 			continue;
 		}
 		if(in_block && s == "}"){
 			in_block = false;
-			for(auto &[k, v]: network_ov) if(w_network.insert(k).second) out << "\t" << k << "=" << v << "\n";
+			for(auto &[k, v]: network_ov) out << "\t" << k << "=" << v << "\n";
+			network_ov.clear();
 			out << l << "\n";
 			continue;
 		}
 
 		if(auto eq = s.find('='); eq != string::npos){
 			string key = s.substr(0, eq);
-			if(!in_block && global_ov.contains(key)){
-				if(w_global.insert(key).second) out << key << "=" << global_ov.at(key) << "\n";
-				continue;
-			}
-			if(in_block && network_ov.contains(key)){
-				if(w_network.insert(key).second) out << "\t" << key << "=" << network_ov.at(key) << "\n";
-				continue;
+			if(!in_block){
+				if(auto it = global_ov.find(key); it != global_ov.end()){
+					out << key << "=" << it->second << "\n";
+					global_ov.erase(it);
+					continue;
+				}
+			} else {
+				if(auto it = network_ov.find(key); it != network_ov.end()){
+					out << "\t" << key << "=" << it->second << "\n";
+					network_ov.erase(it);
+					continue;
+				}
 			}
 		}
 		out << l << "\n";
 	}
 
-	// no network={} block in file: append globals then a new network block
 	if(!block_seen){
-		for(auto &[k, v]: global_ov) if(!w_global.contains(k)) out << k << "=" << v << "\n";
+		for(auto &[k, v]: global_ov) out << k << "=" << v << "\n";
 		if(!network_ov.empty()){
 			out << "network={\n";
 			for(auto &[k, v]: network_ov) out << "\t" << k << "=" << v << "\n";

@@ -57,8 +57,7 @@ string find_matching_tag(const path &repo_dir, const string &version, const Repo
 	stringstream ss(tags_output);
 	string tag;
 	while(getline(ss, tag)){
-		tag.erase(0, tag.find_first_not_of(" \t\r\n"));
-		tag.erase(tag.find_last_not_of(" \t\r\n") + 1);
+		tag = trim(tag);
 		if(!tag.empty()){ tags.push_back(tag); }
 	}
 

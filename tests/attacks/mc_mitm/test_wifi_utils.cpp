@@ -31,7 +31,7 @@ TEST_CASE("beacon_to_probe_resp"){
 }
 
 TEST_CASE("patch_channel_raw - beacon frame"){
-    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/beacon_test.pcapng");
+    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
     vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
     McMitm::patch_channel_raw(beacon_data, 11);
@@ -47,15 +47,15 @@ TEST_CASE("patch_channel_raw - beacon frame"){
 }
 
 // ------ get_addrs
-static constexpr auto PCAP_BEACON    = "pcap/wifi_util/beacon.pcapng";
+static constexpr auto PCAP_BEACON    = "test_data/wifi_util/beacon.pcapng";
 static HWAddress<6> BEACON_ADDR1   = "ff:ff:ff:ff:ff:ff"; // always broadcast
 static HWAddress<6> BEACON_ADDR2   = "24:ec:99:bf:b0:a1"; // AP BSSID from your capture
 
-static constexpr auto PCAP_DATA_QOS  = "pcap/wifi_util/data_qos.pcapng";
+static constexpr auto PCAP_DATA_QOS  = "test_data/wifi_util/data_qos.pcapng";
 static HWAddress<6> DATA_ADDR1     = "78:98:e8:55:3e:8d"; // receiver MAC
 static HWAddress<6> DATA_ADDR2     = "24:ec:99:bf:e0:cd"; // transmitter MAC
 
-static constexpr auto PCAP_CTRL_ACTION_PROTECTED  = "pcap/wifi_util/action_protected.pcapng";
+static constexpr auto PCAP_CTRL_ACTION_PROTECTED  = "test_data/wifi_util/action_protected.pcapng";
 static HWAddress<6> ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
 static HWAddress<6> ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
 
@@ -98,10 +98,10 @@ TEST_SUITE("get_addrs") {
 }
 
 // --- get_eapol_msg_num
-static constexpr auto PCAP_EAPOL_M1  = "pcap/wifi_util/eapol_m1.pcapng";
-static constexpr auto PCAP_EAPOL_M2  = "pcap/wifi_util/eapol_m2.pcapng";
-static constexpr auto PCAP_EAPOL_M3  = "pcap/wifi_util/eapol_m3.pcapng";
-static constexpr auto PCAP_EAPOL_M4  = "pcap/wifi_util/eapol_m4.pcapng";
+static constexpr auto PCAP_EAPOL_M1  = "test_data/wifi_util/eapol_m1.pcapng";
+static constexpr auto PCAP_EAPOL_M2  = "test_data/wifi_util/eapol_m2.pcapng";
+static constexpr auto PCAP_EAPOL_M3  = "test_data/wifi_util/eapol_m3.pcapng";
+static constexpr auto PCAP_EAPOL_M4  = "test_data/wifi_util/eapol_m4.pcapng";
 
 TEST_SUITE("get_eapol_msg_num") {
 

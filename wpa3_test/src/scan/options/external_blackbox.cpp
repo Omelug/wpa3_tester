@@ -206,6 +206,44 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
 	return entities | views::transform([](const EntityInfo &e){ return e.first; }) | ranges::to<vector<ActorPtr>>();
 }
 
+bool RunStatus::process_single_packet(
+	const uint8_t *pkt, const size_t len,
+	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
+	const ActorCMap &actors, const vector<pair<string,string>> &conn_conds
+) {
+	const size_t before_seen = seen.size();
+	const size_t before_assoc = assoc.size();
+	try { solve_new_pdu(vector(pkt, pkt + len), seen, assoc); } catch(...) {}
+
+	if (seen.size() > before_seen) {
+		for (const auto &[mac, actor] : seen) {
+			if (!reported.insert(mac).second) continue;
+			const bool is_ap = (*actor)[BK::AP].value_or(false);
+			log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm", is_ap ? "AP " : "STA", mac,
+				actor->get_or(SK::ssid, ""), actor->get_or(SK::channel, "?"), actor->get_or(SK::signal, "?"));
+		}
+	}
+
+	if (seen.size() > before_seen || assoc.size() > before_assoc) {
+		const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
+		try {
+			const ActorMap assignment = hw_capabilities::check_req_options(actors, opts);
+			bool conns_ok = true;
+			for (const auto &[sta_name, ap_name] : conn_conds) {
+				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) { conns_ok = false; break; }
+				const HWAddress<6> sta_mac(assignment.at(sta_name)->get(SK::mac));
+				const HWAddress<6> ap_mac(assignment.at(ap_name)->get(SK::mac));
+				if (!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac) {
+					conns_ok = false;
+					break;
+				}
+			}
+			if (conns_ok) return true;
+		} catch (const req_err &) {} // ignore ninvalid requires
+	}
+	return false;
+}
+
 vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels,
                                               const ActorCMap &actors,
                                               const vector<pair<string,string>> &conn_conds
@@ -224,38 +262,10 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 	set<HWAddress<6>> reported;
 	bool found = false;
 
-	const auto on_packet = [&](const uint8_t *pkt, const size_t len) ->optional<bool>{
-		const size_t before_seen = seen.size();
-		const size_t before_assoc = assoc.size();
-		try{ solve_new_pdu(vector(pkt, pkt + len), seen, assoc); } catch(...){}
-
-		if(seen.size() > before_seen){
-			for(const auto &[mac, actor]: seen){
-				if(!reported.insert(mac).second) continue;
-				const bool is_ap = (*actor)[BK::AP].value_or(false);
-				log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm", is_ap ? "AP " : "STA", mac,
-					actor->get_or(SK::ssid, ""), actor->get_or(SK::channel, "?"), actor->get_or(SK::signal, "?"));
-			}
-		}
-		if(seen.size() > before_seen || assoc.size() > before_assoc){
-			const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
-			try{
-				const ActorMap assignment = hw_capabilities::check_req_options(actors, opts);
-				bool conns_ok = true;
-				for(const auto &[sta_name, ap_name]: conn_conds){
-					if(!assignment.contains(sta_name) || !assignment.contains(ap_name)){ conns_ok = false; break; }
-					const HWAddress<6> sta_mac(assignment.at(sta_name)->get(SK::mac));
-					const HWAddress<6> ap_mac(assignment.at(ap_name)->get(SK::mac));
-					if(!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac){
-						conns_ok = false;
-						break;
-					}
-				}
-				if(conns_ok){
-					found = true;
-					return true;
-				}
-			} catch(const req_err &){}
+	const auto on_packet = [&](const uint8_t *pkt, const size_t len) -> optional<bool> {
+		if (process_single_packet(pkt, len, seen, assoc, reported, actors, conn_conds)) {
+			found = true;
+			return true;
 		}
 		return nullopt;
 	};
@@ -265,9 +275,10 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 			if(found) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
+			//FIXME needed , should be in set_cahnnel?
 			this_thread::sleep_for(chrono::milliseconds(200));
-
-			auto result = components::poll_sniffer<bool>(handle, chrono::milliseconds(20000), on_packet);
+			//TODO hardcoded timers
+			auto result = components::poll_sniffer<bool>(handle, chrono::seconds(20), on_packet);
 			if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
 		}
 	}

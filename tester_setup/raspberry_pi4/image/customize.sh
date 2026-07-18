@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Customizes a Raspberry Pi OS Lite (64-bit, Bookworm) image for wpa3-tester.
-# Must be run as root (via: sudo bash customize.sh ...)
-# Called by: make image
-#
+# Must be run as root
 # Args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
+
 set -euo pipefail
 
 IMAGE=$1
@@ -24,6 +23,7 @@ echo "    $LOOP"
 BOOT=$(mktemp -d)
 ROOT=$(mktemp -d)
 
+# ---  cleanup on error/exit (even if Ctrl+C is pressed)
 cleanup() {
     umount "$BOOT" 2>/dev/null || true
     umount "$ROOT" 2>/dev/null || true
@@ -36,12 +36,12 @@ echo "==> Mounting partitions..."
 mount "${LOOP}p1" "$BOOT"   # FAT32 boot/firmware partition
 mount "${LOOP}p2" "$ROOT"   # ext4 root partition
 
-# ── Boot partition ─────────────────────────────────────────────────────────────
+# ---- Boot partition
 
-# Enable SSH on first boot (legacy mechanism, still honoured in Bookworm)
+# enable SSH on first boot
 touch "$BOOT/ssh"
 
-# Create user: Bookworm reads userconf.txt from boot partition on first boot
+# create user - bookworm reads userconf.txt from boot partition on first boot
 PW_HASH=$(echo "$PI_PASSWORD" | openssl passwd -6 -stdin)
 echo "${PI_USER}:${PW_HASH}" > "$BOOT/userconf.txt"
 
@@ -53,8 +53,9 @@ else
     echo "    SSH key: not found at '$SSH_KEY' — password login only"
 fi
 
-# ── Debug / crash logging ──────────────────────────────────────────────────────
+# --- Debug / crash logging
 
+#TODO not tried yet, i dont have 3.3 UART<->USB cable
 # UART serial console on GPIO14 (TX) / GPIO15 (RX) — kernel messages go to
 # a USB-UART adapter even during a kernel panic
 echo "enable_uart=1" >> "$BOOT/config.txt"
@@ -64,14 +65,13 @@ echo "dtoverlay=pstore" >> "$BOOT/config.txt"
 # earlyprintk — emit pre-console kernel messages on the serial line
 sed -i 's/$/ earlyprintk/' "$BOOT/cmdline.txt"
 
-# ── Root partition ─────────────────────────────────────────────────────────────
+# --- Root partition
 
-# Hostname
 echo "$PI_HOSTNAME" > "$ROOT/etc/hostname"
 # Update /etc/hosts (may not exist in minimal image — ignore failure)
 sed -i "s/raspberrypi/$PI_HOSTNAME/g" "$ROOT/etc/hosts" 2>/dev/null || true
 
-# Ethernet static IP — create NM connection profile if PI_IP is set
+# ethernet static IP — create NM connection profile if PI_IP is set
 if [ -n "$PI_IP" ]; then
     UUID=$(cat /proc/sys/kernel/random/uuid)
     mkdir -p "$ROOT/etc/NetworkManager/system-connections"
@@ -107,8 +107,8 @@ echo "options ath9k_hw ani_enable=0" > "$ROOT/etc/modprobe.d/ath9k.conf"
 # USB — disable autosuspend (prevents Wi-Fi adapter disconnects under load)
 echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
 
-# NetworkManager — leave all WiFi interfaces unmanaged so the tester
-# can control them directly via nl80211; ethernet stays managed for SSH
+# NetworkManager — leave all WiFi interfaces unmanaged
+# tester can control them directly via nl80211, ethernet stays managed for SSH
 mkdir -p "$ROOT/etc/NetworkManager/conf.d"
 cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
 [keyfile]
@@ -147,14 +147,14 @@ EOF
 ln -sf /etc/systemd/system/rfkill-unblock-wifi.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/rfkill-unblock-wifi.service"
 
-# Persistent journal
+# persistent journal
 mkdir -p "$ROOT/etc/systemd/journald.conf.d"
 cat > "$ROOT/etc/systemd/journald.conf.d/10-persistent.conf" << 'EOF'
 [Journal]
 Storage=persistent
 EOF
 
-# Firstboot script + systemd service
+# firstboot script + systemd service
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"
 install -m 644 "$SCRIPT_DIR/firstboot.service" "$ROOT/etc/systemd/system/wpa3-firstboot.service"
 

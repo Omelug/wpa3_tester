@@ -36,14 +36,14 @@ SRC_ROOT     := $(realpath ../..)
 REMOTE       := ~/wpa3_tester
 REMOTE_ABS    = /home/$(PI_USER)/wpa3_tester
 SSH           = ssh -o StrictHostKeyChecking=no $(PI_USER)@$(PI)
-SYSROOT      := $(CURDIR)/cross-sysroot
-CROSS_BUILD  := $(SRC_ROOT)/build-cross
+SYSROOT      := $(CURDIR)/run/cross-sysroot
+CROSS_BUILD  := $(CURDIR)/run/build-cross
 TOOLCHAIN    := $(CURDIR)/aarch64-toolchain.cmake
 
 RPI_IMAGE_URL := https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64-lite.img.xz
-IMAGE_XZ      := image/cache/raspios_lite_arm64.img.xz
-IMAGE_RAW     := image/cache/raspios_lite_arm64.img
-CUSTOM_IMAGE  := image/wpa3-tester.img
+IMAGE_XZ      := run/cache/raspios_lite_arm64.img.xz
+IMAGE_RAW     := run/cache/raspios_lite_arm64.img
+CUSTOM_IMAGE  := run/wpa3-tester.img
 
 HOST_IFACE   ?= $(shell ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<NF;i++) if($$i=="dev"){print $$(i+1); exit}}')
 PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i++) if($$i=="dev"){print $$(i+1); exit}}')
@@ -65,7 +65,7 @@ help:
 	@echo "    make run          PI=<addr>        deploy and launch tester"
 	@echo ""
 	@echo "  Cross-compilation (build on host, push binary only):"
-	@echo "    make sysroot      PI=<addr>        sync Pi libs to cross-sysroot/ (once)"
+	@echo "    make sysroot      PI=<addr>        sync Pi libs to run/cross-sysroot/ (once)"
 	@echo "    make deploy-cross PI=<addr>        build for aarch64 on host, push binary"
 	@echo "    make clean_cross                   remove cross build dir"
 	@echo "    make test-cross   PI=<addr>        build all tests for aarch64, deploy, run ctest on Pi"
@@ -114,7 +114,7 @@ $(IMAGE_RAW): $(IMAGE_XZ)
 	xz --decompress --keep --stdout $(IMAGE_XZ) > $(IMAGE_RAW)
 
 $(IMAGE_XZ):
-	mkdir -p image/cache
+	mkdir -p run/cache
 	wget --show-progress -O $(IMAGE_XZ) $(RPI_IMAGE_URL)
 
 # ── Flash to SD card ───────────────────────────────────────────────────────────
@@ -176,7 +176,6 @@ deploy:
 	rsync -az --delete --info=progress2 \
 		--exclude='.git/' \
 		--exclude='build/' \
-		--exclude='build-cross/' \
 		--exclude='data/' \
 		--exclude='tools/' \
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
@@ -311,7 +310,7 @@ debug_netcat:
 
 clean_image:
 	rm -f $(CUSTOM_IMAGE)
-	@echo "Base image cache kept in image/cache/. Remove manually if needed."
+	@echo "Base image cache kept in run/cache/. Remove manually if needed."
 
 clean_cross:
 	rm -rf $(CROSS_BUILD)

@@ -9,7 +9,7 @@ DONE_FLAG=/var/lib/wpa3-firstboot.done
 
 echo "[firstboot] Starting at $(date)"
 
-# ── Build dependencies ─────────────────────────────────────────────────────────
+# --- Build dependencies
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential cmake ninja-build ccache tshark tcpdump \
@@ -76,10 +76,11 @@ DefaultProduct=0x1a2b
 StandardEject=1
 EOF
 
-# ── WiFi region ────────────────────────────────────────────────────────────────
+# -- WiFi region
+#TODO hardcoded region
 raspi-config nonint do_wifi_country CZ
 
-# ── SSH key — injected into boot partition by customize.sh ─────────────────────
+# --- SSH key
 # /boot/firmware is where RPi OS Bookworm mounts the FAT boot partition
 BOOT_KEY=/boot/firmware/authorized_key.pub
 if [ -f "$BOOT_KEY" ]; then
@@ -94,7 +95,7 @@ if [ -f "$BOOT_KEY" ]; then
     echo "[firstboot] SSH key installed for $PI_USER"
 fi
 
-# ── Done ───────────────────────────────────────────────────────────────────────
+# --- Done
 touch "$DONE_FLAG"
 systemctl disable wpa3-firstboot.service
 echo "[firstboot] Complete at $(date)"

@@ -4,8 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-
-f: reset usb 
++: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
+f: reset usb
 CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: requirement external connection STA-AP

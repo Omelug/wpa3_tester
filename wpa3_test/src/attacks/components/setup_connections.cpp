@@ -47,13 +47,14 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 
 	if(rs.get_actor("client")->is_WB()){
 		setup_STA(rs, "client");
-	} else{
+	} // TODO  needed in some tests ?
+	/*else{
 		string answer;
 		cout << "Is device connected to AP '" << hostapd::get_ssid(rs, "access_point") <<
 				"'? Connect it and press enter." << flush;
 		getline(cin, answer);
 		return;
-	}
+	}*/
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 

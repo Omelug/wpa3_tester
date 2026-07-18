@@ -44,4 +44,6 @@ struct OpenSSLPaths{
 
 OpenSSLPaths get_openssl_paths(const std::string &tag);
 std::string get_hostapd_with_openssl(const std::string &hostapd_version, const std::string &openssl_version);
+
+void apply_wpa_overrides(const std::filesystem::path &cfg, const nlohmann::json &overrides);
 }

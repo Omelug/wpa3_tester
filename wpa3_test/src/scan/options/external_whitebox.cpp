@@ -10,6 +10,7 @@
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
 #include "system/ip.h"
+#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -23,8 +24,7 @@ vector<string> parse_csv_line(const string &line){
 	stringstream ss(line);
 	string field;
 	while(getline(ss, field, ',')){
-		field.erase(0, field.find_first_not_of(" \t\r\n"));
-		field.erase(field.find_last_not_of(" \t\r\n") + 1);
+		field = trim(field);
 		fields.push_back(field);
 	}
 	return fields;

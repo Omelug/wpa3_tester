@@ -10,7 +10,7 @@ CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: wizard v tester_stup pro eternal lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 +: testy pro qemu s mým raspberry image
-r:  hostapd version notneded  (its get from kali repository)
+r:  hostapd version notnede  (its get from kali repository)
 d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
 t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)
@@ -34,11 +34,9 @@ CSA:
 f: špatně se resetuje scan_ip (ap_info)
 +: HT IE cahnnel switch (similiar to CSA attack)
 f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
-r: co jde v suite, sjednotit
 r: vymazat zbytečné větve z github
 t: save_log to documentation a nějak otestovat
 +: add git results repository to documentation
-
 +: add git results repository
 d: how run program
 d: clion setup
@@ -71,6 +69,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
+r: co jde v suite, sjednotit
 r: Makefile structure
 +: requirement external connection STA-AP
 rd: zjednodušit README v rapberry

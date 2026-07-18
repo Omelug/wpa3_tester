@@ -136,18 +136,19 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 	const auto total_end = chrono::steady_clock::now() + chrono::seconds(timeout_sec);
 
 	for(const uint8_t channel: channels){
-		if(chrono::steady_clock::now() >= total_end) break;
+		if(chrono::steady_clock::now() >= total_end || g_interrupted.load()) break;
 		log(LogLevel::INFO, "Scanning channel {} on {}", channel, iface);
 
 		const Channel ch{channel, WifiBand::BAND_2_4_or_5, nullopt}; //FIXME only 2_4/5Ghz
 		scanner->set_channel(ch);
-		this_thread::sleep_for(chrono::milliseconds(200));
+		interruptible_sleep(chrono::milliseconds(200));
 
-		components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
+		const auto result = components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
 											[&](const uint8_t *pkt, const size_t len) ->optional<monostate>{
 												try{ solve_new_pdu(vector(pkt, pkt + len), seen, assoc); } catch(...){}
 												return nullopt;
 											});
+		if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
 	}
 
 	vector<EntityInfo> result;
@@ -227,7 +228,7 @@ bool RunStatus::process_single_packet(
 	if (seen.size() > before_seen || assoc.size() > before_assoc) {
 		const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 		try {
-			const ActorMap assignment = hw_capabilities::check_req_options(actors, opts);
+			const ActorMap assignment = hw_capabilities::check_req_options(actors, opts, false);
 			bool conns_ok = true;
 			for (const auto &[sta_name, ap_name] : conn_conds) {
 				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) { conns_ok = false; break; }
@@ -239,7 +240,7 @@ bool RunStatus::process_single_packet(
 				}
 			}
 			if (conns_ok) return true;
-		} catch (const req_err &) {} // ignore ninvalid requires
+		} catch (const req_err &) {} // ignore invalid requires
 	}
 	return false;
 }
@@ -272,13 +273,13 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 
 	while(!found && !g_interrupted.load()){
 		for(const uint8_t ch_num: channels){
-			if(found) break;
+			if(found || g_interrupted.load()) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
 			//FIXME needed , should be in set_cahnnel?
-			this_thread::sleep_for(chrono::milliseconds(200));
+			interruptible_sleep(chrono::milliseconds(200));
 			//TODO hardcoded timers
-			auto result = components::poll_sniffer<bool>(handle, chrono::seconds(20), on_packet);
+			auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
 			if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
 		}
 	}

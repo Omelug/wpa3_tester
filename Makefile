@@ -2,26 +2,19 @@ BUILD_DIR := build
 BUILD_DIR_COVERAGE := build/coverage
 BUILD_DIR_ASAN := build/asan
 TARGET := wpa3_tester
-GRC_CONF := ./debug/grc/wpa3_tester.grc
 SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile
 .PHONY: all compile run clean_build asan_build asan tester_setup
 
-clion_debug: compile
-	sudo ./build/bin/wpa3_tester --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
-
 tester_setup:
-	@echo "==> Disabling ath9k_hw ANI for driver stability..."
+	@echo "Disabling ath9k_hw ANI for driver stability..."
 	echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
-	@echo "==> Disabling USB autosuspend..."
+	@echo " Disabling USB autosuspend..."
 	echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
 	sudo update-initramfs -u
-	@echo "==> Done. Reboot recommended."
-
-install:
-	sudo apt install grc
+	@echo "Done. Reboot recommended."
 
 compile:
 	@mkdir -p $(BUILD_DIR)
@@ -33,19 +26,16 @@ compile:
 run: compile
 	mkdir -p data
 	mkdir -p data/wpa3_test
-	#grc -e -c $(GRC_CONF) \
 	sudo ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
-# ------- clean ------------------
-clean_build:
-	rm -rf $(BUILD_DIR)
-
+# debug visualization
 RUN_CALLGRAPH := doc/callgraph/callgraph.out
 MY_CODE_FILTER = wpa3_test|main|hw_capabilities|requirement
 callgraph:
 	@echo "--- Run valgrind ---"
 	mkdir -p doc/callgraph
-	sudo valgrind --tool=callgrind --callgrind-out-file=$(RUN_CALLGRAPH)  --dump-line=yes ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+	#FIXME HARDCODED CONFIG
+	sudo valgrind --tool=callgrind --callgrind-out-file=$(RUN_CALLGRAPH)  --dump-line=yes ./$(BUILD_DIR)/bin/$(TARGET) --test CSA_ex
 	sudo chmod 666 $(RUN_CALLGRAPH)
 	sudo chown -R $(USER):$(USER) doc/
 graphviz:
@@ -56,13 +46,13 @@ graphviz:
  	#pozor na -n (limit zobrazení)
  	# --node-label=self-time
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s | \
-		#grep -vE '(void|auto|char&) |\(anonymous namespace\)::|0x[0-9a-fA-F]+|nlohmann::|Tins::|libc.so|libgcc|libnl|__|_dl_|_[A-Za-z0-9]{32}|_[A-Za-z0-9]{64}|Id-linux|YAML::|(int|bool|long) YAML::|operator|lib{3,8}.so|argparse' | \
 		grep -E 'digraph|nl80211|graph \[|node \[|(wpa3_tester::|main ->).*(wpa3_tester::|-> main)|nl80211|}$$' | \
-		grep -vE '' \
+		cat \
 		> ./doc/callgraph/callgraph.dot
 	cat ./doc/callgraph/callgraph.dot | dot -Tsvg -o ./doc/callgraph/callgraph.svg
 	@echo "--- Saved to callgraph.svg ---"
 
+# test
 test_build:
 	cmake --build build -j $(shell nproc --ignore=2)
 
@@ -85,6 +75,7 @@ config_validation:
 	cmake --build $(BUILD_DIR) --target test_config_validation -j $(NPROC)
 	$(BUILD_DIR)/bin/manual_tests/config/test_config_validation
 
+# coverage
 coverage_build:
 	mkdir -p $(BUILD_DIR_COVERAGE)
 	@if [ ! -f $(BUILD_DIR_COVERAGE)/build.ninja ] && [ ! -f $(BUILD_DIR_COVERAGE)/Makefile ]; then \
@@ -112,11 +103,15 @@ asan_build:
 asan: asan_build
 	cmake --build $(BUILD_DIR_ASAN) --target leak-check
 
-clear_cache:
-	rm -rf ./data/cache
-
+# overview
 build_overview:
 	cmake --build $(BUILD_DIR) --target result_overview -j $(NPROC)
 
 make_overview: build_overview
 	./$(BUILD_DIR)/bin/result_overview
+
+# clear
+clean_build:
+	rm -rf $(BUILD_DIR)
+clear_cache:
+	rm -rf ./data/cache

@@ -112,7 +112,7 @@ class hw_capabilities{
 	static void check_band_caps(nlattr *attrs[], NlCaps *caps);
 public:
 	static int nl80211_cb(nl_msg *msg, void *arg);
-	static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
+	static ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options, bool print = true);
 	static std::vector<ActorMap> check_all_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 	static std::string get_heuristic_err_msg(const ActorCMap &rules, const std::vector<ActorPtr> &options);
 

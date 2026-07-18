@@ -23,6 +23,8 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
+using namespace observer::tshark;
+
 RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Channel &ap_channel,
 						const Channel &new_channel, const int switch_count
 ){
@@ -55,6 +57,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	PacketSender sender{iface_name};
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
+		//TODO cant be before loop?
 		RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
 		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
@@ -170,7 +173,8 @@ void stats_chs_attack(const RunStatus &rs){
 	rs.save_result(result);
 
 	const string client_mac = rs.get_actor("client").get(SK::mac);
-	observer::tshark::pcap_events(rs, elements, {
+
+	pcap_events(rs, elements, {
 									{
 										"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
 										"client PROBE", "black"
@@ -181,12 +185,12 @@ void stats_chs_attack(const RunStatus &rs){
 									}
 								});
 
-	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
-	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements,
+	const path STA_graph_path = tshark_graph(rs, "client", elements);
+	const path AP_graph_path = tshark_graph(rs, "access_point", elements,
 															observer::get_observer_folder(rs, "tcpdump"));
 
-	const path ATT_graph_path = observer::tshark::tshark_graph(rs, "attacker", elements);
-	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
+	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);
+	const path rogue_graph_path = tshark_graph(rs, "rogue_ap", elements);
 
 	generate_report(rs, STA_graph_path, AP_graph_path, ATT_graph_path, rogue_graph_path, crack_result);
 }

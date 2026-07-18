@@ -10,9 +10,8 @@
 !.idea/editor.xml
 lib/external
 build
-build-cross
 cmake-build-debug
-run
+tester_setup/raspberry_pi4/run/
 data
 /tests/setup/config_validation/test_suite/run_out
 *bin

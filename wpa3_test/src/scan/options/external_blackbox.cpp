@@ -16,16 +16,6 @@ using namespace Tins;
 
 #define INVALID_VALUE (0)
 
-void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen){
-	AssocMap dummy;
-	solve_new_pdu(pdu, seen, dummy);
-}
-
-void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMACMap &seen){
-	AssocMap dummy;
-	solve_new_pdu(pkt, seen, dummy);
-}
-
 void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 	int8_t signal = INVALID_VALUE;
 	uint16_t freq = INVALID_VALUE;

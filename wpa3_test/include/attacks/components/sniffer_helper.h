@@ -32,7 +32,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 
 	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()} : std::nullopt;
 
-	while(true){
+	while(!g_interrupted.load()){
 		int remaining_ms = -1;
 		if(deadline){
 			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -56,6 +56,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 			if(auto result = on_packet(pkt, hdr->caplen)) return std::move(*result);
 		}
 	}
+	return StopReason::Interrupted;
 }
 
 template<typename T, typename Handler>

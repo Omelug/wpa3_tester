@@ -115,7 +115,8 @@ cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
 unmanaged-devices=interface-name:wlan*
 EOF
 
-# Region CZ — WiFi regulatory domain + timezone //TODO hardcoded change
+# Region CZ — WiFi regulatory domain + timezone
+# TODO hardcoded change
 echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"

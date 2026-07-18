@@ -22,8 +22,8 @@ TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
         radiotap->channel(2437, 6);  // Channel 6, ERP type (802.11g)
         radiotap->dbm_signal(-45);
         radiotap->inner_pdu(*beacon);
-
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 1);
         CHECK(seen.contains("00:11:22:33:44:55"));
@@ -51,8 +51,9 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Response"){
         radiotap->dbm_signal(-60);
         
         radiotap->inner_pdu(*probe_resp);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 1);
         CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));
@@ -78,8 +79,9 @@ TEST_CASE("RunStatus::solve_new_pdu - Probe Request"){
         radiotap->dbm_signal(-70);
 
         radiotap->inner_pdu(*probe_req);
+		AssocMap assoc;
 
-        RunStatus::solve_new_pdu(*radiotap, seen);
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
 
         CHECK_EQ(seen.size(), 1);
 		CHECK(seen.contains("12:22:33:44:55:66"));
@@ -106,12 +108,13 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame STA->AP"){
         radiotap->dbm_signal(-55);
         
         radiotap->inner_pdu(*data);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+
+		AssocMap assoc;
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 2);
-        CHECK((seen.contains("22:33:44:55:66:77")));  // STA
-        CHECK((seen.contains("aa:bb:cc:dd:ee:ff")));   // AP
+		CHECK(seen.contains("22:33:44:55:66:77")); // STA
+		CHECK(seen.contains("aa:bb:cc:dd:ee:ff")); // AP
 
         // Check STA
         auto sta = seen.at("22:33:44:55:66:77");
@@ -139,8 +142,8 @@ TEST_CASE("RunStatus::solve_new_pdu - Data frame AP->STA"){
         radiotap->dbm_signal(-40);
         
         radiotap->inner_pdu(*data);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 2);
         CHECK(seen.contains("aa:bb:cc:dd:ee:ff"));   // AP
@@ -170,8 +173,8 @@ TEST_CASE("RunStatus::solve_new_pdu - Update existing entity"){
         radiotap->dbm_signal(-50);
         
         radiotap->inner_pdu(*beacon);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 1);
         auto updated_actor = seen.at("00:11:22:33:44:55");
@@ -187,8 +190,8 @@ TEST_CASE("RunStatus::solve_new_pdu - No RadioTap"){
         auto beacon = make_shared<Dot11Beacon>();
         beacon->addr2("00:11:22:33:44:55");
         beacon->ssid("NoRadioTap");
-        
-        RunStatus::solve_new_pdu(*beacon, seen);
+		AssocMap assoc;
+        RunStatus::solve_new_pdu(*beacon, seen, assoc);
         
         CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("00:11:22:33:44:55");
@@ -208,8 +211,9 @@ TEST_CASE("RunStatus::solve_new_pdu - 6 GHz band"){
         radiotap->dbm_signal(-65);
         
         radiotap->inner_pdu(*beacon);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
         
         CHECK_EQ(seen.size(), 1);
         auto actor = seen.at("66:77:88:99:aa:bb");
@@ -231,8 +235,9 @@ TEST_CASE("RunStatus::solve_new_pdu - WDS/IBSS frames ignored"){
         radiotap->channel(2437, 6);
         
         radiotap->inner_pdu(*data);
-        
-        RunStatus::solve_new_pdu(*radiotap, seen);
+		AssocMap assoc;
+
+        RunStatus::solve_new_pdu(*radiotap, seen, assoc);
 
         // Should be ignored, no entities added
         CHECK_EQ(seen.size(), 0);

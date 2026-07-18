@@ -14,14 +14,14 @@ using namespace wpa3_tester::scan;
 // transmitter 24:ec:99:bf:b0:a1, SSID "mc_mitm_test"
 // NOTE: radiotap has two antennas with different dBm Antenna Signal readings (tshark shows -29,
 // but Tins::RadioTap::dbm_signal() parses the other one: -28) — -28 is what apply_radiotap() actually sees.
-static constexpr auto PCAP_BEACON = "pcap/beacon_test.pcapng";
+static constexpr auto PCAP_BEACON = "test_data/beacon_test.pcapng";
 // assoc_resp.pcapng: association response (subtype 1), ch1/2412MHz, -50dBm, HT capable, no RSN IE at all
-static constexpr auto PCAP_ASSOC_RESP = "pcap/assoc_resp.pcapng";
-// assoc_req.pcapng: real association request (subtype 0) extracted from pcap/monitor_socket/radiotap_multi.pcapng
+static constexpr auto PCAP_ASSOC_RESP = "test_data/assoc_resp.pcapng";
+// assoc_req.pcapng: real association request (subtype 0) extracted from test_data/monitor_socket/radiotap_multi.pcapng
 // frame 5, ch1/2412MHz, RSN (SAE only, MFP capable), HT capable (no HT Operation IE), no VHT/HE
 // transmitter (station) 24:ec:99:bf:e0:cd
 // NOTE: same dual-antenna radiotap quirk as beacon_test.pcapng — tshark shows -44, Tins parses -27.
-static constexpr auto PCAP_ASSOC_REQ = "pcap/assoc_req.pcapng";
+static constexpr auto PCAP_ASSOC_REQ = "test_data/assoc_req.pcapng";
 
 // -----------------
 // apply_radiotap

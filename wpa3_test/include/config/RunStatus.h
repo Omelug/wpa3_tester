@@ -100,8 +100,6 @@ public:
 	);
 	void clean();
 	void execute();
-	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen);
-	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen);
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen, AssocMap &assoc);
 	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen, AssocMap &assoc);
 	static bool should_skip(const std::filesystem::path &p);
@@ -128,11 +126,15 @@ public:
 
 	void log_events(G_elms &elements, const std::set<EVENT_SET> &event_sets) const;
 private:
-	// to scan available interfaces
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
+protected:
 	std::vector<uint8_t> get_external_BB_channels();
-	std::vector<ActorPtr> external_bb_options(const ActorCMap &actors = {});
+	std::vector<ActorPtr> external_bb_options(const ActorCMap &ex_bb_actors = {});
+	static bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
+									std::set<Tins::HWAddress<6>> &reported, const ActorCMap &actors,
+									const std::vector<std::pair<std::string, std::string>> &conn_conds
+	);
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 												const ActorCMap &actors,
 												const std::vector<std::pair<std::string, std::string>> &conn_conds = {}

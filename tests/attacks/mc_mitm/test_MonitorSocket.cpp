@@ -8,9 +8,9 @@ using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-static constexpr auto PCAP_NO_FCS   = "pcap/monitor_socket/radiotap_no_fcs.pcapng";
-static constexpr auto PCAP_WITH_FCS = "pcap/monitor_socket/radiotap_with_fcs.pcapng";
-static constexpr auto PCAP_MULTI    = "pcap/monitor_socket/radiotap_multi.pcapng";
+static constexpr auto PCAP_NO_FCS   = "test_data/monitor_socket/radiotap_no_fcs.pcapng";
+static constexpr auto PCAP_WITH_FCS = "test_data/monitor_socket/radiotap_with_fcs.pcapng";
+static constexpr auto PCAP_MULTI    = "test_data/monitor_socket/radiotap_multi.pcapng";
 
 // ------- unit tests ---------
 

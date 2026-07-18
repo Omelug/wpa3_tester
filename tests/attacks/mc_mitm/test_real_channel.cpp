@@ -14,7 +14,7 @@ TEST_SUITE("handle_action_real") {
 
     TEST_CASE("non-Action management frame returns false"){
         // Beacon is management but subtype=8, not 13
-        auto [rt, raw] = test_helpers::load_frame("./pcap/wifi_util/beacon.pcapng");
+        auto [rt, raw] = test_helpers::load_frame("./test_data/wifi_util/beacon.pcapng");
         auto *dot11 = rt.find_pdu<Dot11>();
         REQUIRE_NE(dot11, nullptr);
 
@@ -26,7 +26,7 @@ TEST_SUITE("handle_action_real") {
     }
 
     TEST_CASE("encrypted Action from AP returns true") {
-        auto [rt, raw] = test_helpers::load_frame("./pcap/wifi_util/action_protected.pcapng");
+        auto [rt, raw] = test_helpers::load_frame("./test_data/wifi_util/action_protected.pcapng");
         auto *dot11 = rt.find_pdu<Dot11>();
         REQUIRE_NE(dot11, nullptr);
         REQUIRE(dot11->wep()); // sanity check: Protected bit must be set
@@ -40,7 +40,7 @@ TEST_SUITE("handle_action_real") {
     }
 
     TEST_CASE("SA Query (category=8) from unknown src returns false") {
-        auto [rt, raw] = test_helpers::load_frame("./pcap/wifi_util/action_protected.pcapng");
+        auto [rt, raw] = test_helpers::load_frame("./test_data/wifi_util/action_protected.pcapng");
         auto *dot11 = rt.find_pdu<Dot11>();
         REQUIRE_NE(dot11, nullptr);
 

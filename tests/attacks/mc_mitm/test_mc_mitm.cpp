@@ -10,7 +10,7 @@ using namespace wpa3_tester;
 
 namespace wpa3_tester{
 TEST_CASE("MonitorSocket receives all auth frames from pcap"){
-    const string pcap_path = "./pcap/rogue_client_capture.pcapng";
+    const string pcap_path = "./test_data/rogue_client_capture.pcapng";
 
 	const HWAddress<6> ap_mac = "78:98:e8:55:3e:8d";
     const HWAddress<6> client_mac = "24:ec:99:bf:c7:cf";
@@ -59,7 +59,7 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
 }
 
 TEST_CASE("patch_channel_raw - beacon frame"){
-    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./pcap/beacon_test.pcapng");
+    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
     vector<uint8_t> original_data = beacon_data; // keep copy for comparison
 
     McMitm::patch_channel_raw(beacon_data, 11);
@@ -75,7 +75,7 @@ TEST_CASE("patch_channel_raw - beacon frame"){
 }
 
 TEST_CASE("patch_channel_raw - probe response frame"){
-    vector<uint8_t> probe_data = test_helpers::read_pcap_file("./pcap/probe_res.pcapng");
+    vector<uint8_t> probe_data = test_helpers::read_pcap_file("./test_data/probe_res.pcapng");
     vector<uint8_t> original_data = probe_data;
     McMitm::patch_channel_raw(probe_data, 11);
 

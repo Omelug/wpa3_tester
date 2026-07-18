@@ -8,10 +8,9 @@
 !.idea/cmake.xml
 !.idea/sshConfigs.xml
 !.idea/editor.xml
-lib/external
 build
 cmake-build-debug
-tester_setup/raspberry_pi4/run/
+tester_setup/raspberry_pi4/run
 data
 /tests/setup/config_validation/test_suite/run_out
 *bin

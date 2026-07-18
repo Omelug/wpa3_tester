@@ -132,7 +132,7 @@ the binary
 1. One-time host dependencies `sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
 2. Sync sysroot from Pi: 
-Pull Pi's libraries to `cross-sysroot/` (repeat after `apt install` on Pi):
+Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
  <br> `make sysroot PI=10.0.0.2`
 
 3. Build and deploy `make deploy-cross PI=10.0.0.2`
@@ -153,6 +153,6 @@ Host requirement: `sudo apt install gdb-multiarch`
 
 
    If the config doesn't load: *Run > Edit Configurations > + > GDB Remote Debug*,
-   set symbol file to `build-cross/bin/wpa3_tester`, host `10.0.0.2`, port `1234`,
+   set symbol file to `tester_setup/raspberry_pi4/run/build-cross/bin/wpa3_tester`, host `10.0.0.2`, port `1234`,
    GDB path `gdb-multiarch`.
 

@@ -27,6 +27,14 @@ void set_ip(RunStatus &rs, const string &actor_name){
 	}
 }
 
+void dhcp(RunStatus &rs, const string &actor_name){
+	const auto iface = rs.get_actor(actor_name).get(SK::iface);
+	vector<string> command;
+	observer::add_nets_header(rs, command, actor_name);
+	command.insert(command.end(), {"dhclient", iface});
+	hw_capabilities::run_cmd(command);
+}
+
 string resolve_host(const string &hostname){
 	addrinfo hints{}, *raw;
 	hints.ai_family = AF_INET;

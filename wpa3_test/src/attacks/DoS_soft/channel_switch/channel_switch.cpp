@@ -69,8 +69,19 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
+	// only setup if can
 	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
+	if(rs.get_actor("client").is(SK::source, "external") &&
+		rs.get_actor("access_point").is(SK::source, "internal")){
+		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
+		hostapd::get_ssid(rs, "access_point"),
+		hostapd::get_password(rs, "access_point"));
+		//string
+		rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120), true, &); //FIXMe hardcoded timeout
+
+	}
+
 }
 
 void run_chs_attack(RunStatus &rs){

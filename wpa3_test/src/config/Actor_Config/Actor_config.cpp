@@ -192,6 +192,14 @@ bool Actor_config::get(const BK key) const{
 	return *v;
 }
 
+auto Actor_config::is(const SK key, const std::string &str_value) const->bool{
+	if(key == SK::source && str_value != "internal" && str_value != "external" && str_value != "simulation"){
+		log(LogLevel::ERROR, "is(source): invalid value '{}'", str_value);
+		assert(false && "is(source): must be internal/external/simulation");
+	}
+	return get(key) == str_value;
+}
+
 string Actor_config::get_or(const SK key, string default_val) const{
 	const auto &v = (*this)[key];
 	return v.value_or(std::move(default_val));

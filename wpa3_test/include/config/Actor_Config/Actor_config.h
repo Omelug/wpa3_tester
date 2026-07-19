@@ -62,6 +62,8 @@ public:
 
 	[[nodiscard]] std::string get(SK key) const;
 	[[nodiscard]] bool get(BK key) const;
+	[[nodiscard]] bool is(SK key, const std::string &str_value) const;
+
 	[[nodiscard]] std::string get_or(SK key, std::string default_val) const;
 	[[nodiscard]] bool get_or(BK key, bool default_val) const;
 

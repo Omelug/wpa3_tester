@@ -47,16 +47,18 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 
 	if(rs.get_actor("client")->is_WB()){
 		setup_STA(rs, "client");
-	} // TODO  needed in some tests ?
-	/*else{
-		string answer;
-		cout << "Is device connected to AP '" << hostapd::get_ssid(rs, "access_point") <<
-				"'? Connect it and press enter." << flush;
-		getline(cin, answer);
-		return;
-	}*/
-
-	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+	} else if(rs.get_actor("client").is(SK::source, "external") &&
+	          rs.get_actor("access_point").is(SK::source, "internal")){
+		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
+		    hostapd::get_ssid(rs, "access_point"),
+		    hostapd::get_password(rs, "access_point"));
+		if(check_way_eapol){
+			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(120));
+		} else{
+			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120));
+		}
+	}
 
 	if(rs.get_actor("access_point").get(SK::source) != "external"){
 		if(check_way_eapol){

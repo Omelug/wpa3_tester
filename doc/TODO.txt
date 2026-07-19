@@ -4,13 +4,13 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+ch: limitovat cklienty na známé stringy, kde to jde, pak limitace ve validatorech
 +: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
 f: reset usb
 CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: wizard v tester_stup pro eternal lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 +: testy pro qemu s mým raspberry image
-r:  hostapd version notnede  (its get from kali repository)
 d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
 t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)

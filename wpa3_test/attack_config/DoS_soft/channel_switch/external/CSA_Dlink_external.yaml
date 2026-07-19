@@ -4,7 +4,6 @@ attacker_module: channel_switch
 $validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
 scan_channels: [ 6 ]
-scan_until_success: true
 actors:
   access_point:
     source: external

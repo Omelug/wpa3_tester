@@ -17,6 +17,8 @@ public:
 	Actor_config &operator*() const;
 	Actor_config *get() const;
 	[[nodiscard]] std::string get(SK key) const;
+	// help function for secure
+	[[nodiscard]] bool is(SK key, const std::string &str_value) const;
 	[[nodiscard]] bool get(BK key) const;
 	std::shared_ptr<Actor_config> shared() const;
 

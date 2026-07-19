@@ -212,6 +212,21 @@ TEST_CASE("Actor_config - operator[] accessor"){
 	 CHECK_THROWS_AS(auto a = actor.get(SK::permanent_mac), config_err);
 }
 
+TEST_CASE("Actor_config::is - source valid values"){
+    Actor_config actor;
+    actor.set(SK::source, "internal");
+    CHECK(actor.is(SK::source, "internal"));
+    CHECK_FALSE(actor.is(SK::source, "external"));
+    CHECK_FALSE(actor.is(SK::source, "simulation"));
+}
+
+TEST_CASE("Actor_config::is - invalid source aborts" * doctest::skip(true)){
+    // assert(false) fires on bogus source — process aborts, not catchable here
+    Actor_config actor;
+    actor.set(SK::source, "internal");
+    (void)actor.is(SK::source, "bogus");
+}
+
 TEST_CASE("Actor_config - permanent_mac normalization"){
     Actor_config actor;
     actor.set(SK::permanent_mac, "AA:BB:CC:DD:EE:FF");

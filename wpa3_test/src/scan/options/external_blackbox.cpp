@@ -167,6 +167,8 @@ vector<uint8_t> RunStatus::get_external_BB_channels(){
 		all_channels = _config.at("scan_channels").get<vector<uint8_t>>();
 	} else{
 		for(const auto &[actor_name, actor_config]: _config.at("actors").items()){
+			if(actor_config.value("scan_ignore", false)) continue;
+			if(!actor_config.contains("selection")) continue;
 			if(actor_config.at("selection").contains("channel")){
 				all_channels.push_back(actor_config.at("selection").at("channel").get<uint8_t>());
 			} else{

@@ -31,6 +31,7 @@ actors:
     ip_addr: "10.0.0.1"
   client:
     source: external
+    scan_ignore: yes
     selection:
       condition: [ STA, 2_4GHz ]
       channel: 6

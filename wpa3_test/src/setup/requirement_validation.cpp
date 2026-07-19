@@ -235,18 +235,18 @@ bool RunStatus::config_requirement(){
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
-	//reset_usb_ifaces();
+	reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");
 	ActorCMap external_wb_actors;
 	ActorCMap external_bb_actors;
 
-	for(const auto &actor: external_actors | views::values){
+	for(const auto &[name, actor]: external_actors){
 		if(actor->is_external_WB()){
-			external_wb_actors.emplace(actor.get(SK::actor_name), actor);
-		} else{
-			external_bb_actors.emplace(actor.get(SK::actor_name), actor);
+			external_wb_actors.emplace(name, actor);
+		} else if(!_config.at("actors").at(name).value("scan_ignore", false)){
+			external_bb_actors.emplace(name, actor);
 		}
 	}
 

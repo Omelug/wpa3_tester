@@ -16,6 +16,7 @@ class ProcessManager{
 	struct WaitListener{
 		std::optional<std::regex> pattern; // nullopt == not active wait_for
 		std::atomic<bool> matched{false};
+		std::string matched_line;
 	};
 
 	struct ProcessLogs{
@@ -81,7 +82,8 @@ public:
 
 	//return  true if found
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
-				std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true
+				std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
+				std::string *matched_line = nullptr
 	); // 60 minutes (practically infinity)
 	void stop(const std::string &process_name) noexcept;
 	void before_stop(const std::string &process_name, const std::function<void()> &callback);

@@ -235,7 +235,7 @@ bool RunStatus::config_requirement(){
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
-	reset_usb_ifaces();
+	//reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");

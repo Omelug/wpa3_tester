@@ -160,6 +160,7 @@ void ProcessManager::handle_chunk(
 
 			if(mp->logs.wait.pattern && regex_search(line, *mp->logs.wait.pattern)){
 				log(LogLevel::DEBUG, "MATCH {} {}", process_name, line);
+				mp->logs.wait.matched_line = line;
 				mp->logs.wait.matched = true;
 				should_notify = true;
 			}
@@ -252,7 +253,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 }
 
 bool ProcessManager::wait_for(const string &actor_name, const string &pattern, const seconds timeout,
-							const bool throw_err
+							const bool throw_err, string *matched_line
 ){
 	log(LogLevel::DEBUG, "WAIT pattern: {}", pattern);
 	shared_ptr<ManagedProcess> mp;
@@ -271,6 +272,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 		while(getline(ss, line)){
 			if(regex_search(line, *logs.wait.pattern)){
 				log(LogLevel::DEBUG, "MATCH in history {} {}", actor_name, line);
+				if(matched_line) *matched_line = line;
 				logs.history.clear();
 				logs.wait.pattern = nullopt;
 				return true;
@@ -307,6 +309,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 							actor_name, static_cast<int>(timeout.count()));
 		return false;
 	}
+	if(matched_line) *matched_line = logs.wait.matched_line;
 	logs.history.clear();
 	return true;
 }

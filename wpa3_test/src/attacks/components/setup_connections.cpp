@@ -53,11 +53,24 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
 		    hostapd::get_ssid(rs, "access_point"),
 		    hostapd::get_password(rs, "access_point"));
+
+		string matched_line;
 		if(check_way_eapol){
-			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(120));
+			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line);
 		} else{
-			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120));
+			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120), true, &matched_line);
 		}
+
+		smatch m;
+		if(regex_search(matched_line, m, regex(R"([0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})"))){
+			const Tins::HWAddress<6> mac(m[0].str());
+			rs.get_actor("client")->set(SK::mac, mac);
+			rs.get_actor("client")->set(SK::permanent_mac, mac);
+		} else{
+			log(LogLevel::WARNING, "AP-STA-CONNECTED: could not parse MAC from '{}'", matched_line);
+		}
+		log(LogLevel::INFO, "client connected: {}", matched_line);
+		return;
 	}
 
 	if(rs.get_actor("access_point").get(SK::source) != "external"){

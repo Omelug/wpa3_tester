@@ -3,6 +3,7 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
+#include <regex>
 #include <thread>
 #include <nlohmann/json.hpp>
 
@@ -56,9 +57,9 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	//TODO change to  helper for Bl0ck/malformed eapol/CSA, Dos_HARd?
 	PacketSender sender{iface_name};
 	const auto end_time = steady_clock::now() + seconds(attack_time);
+
+	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
-		//TODO cant be before loop?
-		RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
 		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
@@ -70,18 +71,8 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 // ----------------- MODULE functions ------------------
 void setup_chs_attack(RunStatus &rs){
 	// only setup if can
-	components::client_ap_setup_t(rs);
+	components::client_ap_setup(rs, false);
 	components::setup_rogue_ap(rs);
-	if(rs.get_actor("client").is(SK::source, "external") &&
-		rs.get_actor("access_point").is(SK::source, "internal")){
-		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
-		hostapd::get_ssid(rs, "access_point"),
-		hostapd::get_password(rs, "access_point"));
-		//string
-		rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120), true, &); //FIXMe hardcoded timeout
-
-	}
-
 }
 
 void run_chs_attack(RunStatus &rs){
@@ -196,6 +187,7 @@ void stats_chs_attack(const RunStatus &rs){
 									}
 								});
 
+	//TODO change to tshark grpas vector -> change
 	const path STA_graph_path = tshark_graph(rs, "client", elements);
 	const path AP_graph_path = tshark_graph(rs, "access_point", elements,
 															observer::get_observer_folder(rs, "tcpdump"));

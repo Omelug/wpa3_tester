@@ -15,6 +15,7 @@ actors:
       program: hostapd
       program_config:
         version: 2_11
+        country_code: CZ
         driver: nl80211
         ssid: test_channel_switch
         hw_mode: g

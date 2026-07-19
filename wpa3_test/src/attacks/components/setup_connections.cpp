@@ -45,6 +45,21 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
 	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
 
+	if(rs.get_actor("access_point").is(SK::source, "internal")){
+		const auto &ap = rs.get_actor("access_point");
+		if(ap[SK::ip_addr]){
+			const string ip    = ap.get(SK::ip_addr);
+			const string iface = ap.get(SK::iface);
+			const string pfx   = ip.substr(0, ip.rfind('.'));
+			rs.process_manager.run("dnsmasq_ap", {
+				"dnsmasq", "--no-daemon", "--bind-interfaces",
+				"--interface=" + iface,
+				"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h"
+			}, rs.run_folder());
+			log(LogLevel::INFO, "dnsmasq DHCP started on {} ({})", iface, ip);
+		}
+	}
+
 	if(rs.get_actor("client")->is_WB()){
 		setup_STA(rs, "client");
 		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));

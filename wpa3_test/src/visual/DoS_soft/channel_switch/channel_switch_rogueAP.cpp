@@ -27,6 +27,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	e.ap_ocv = hostapd::get_okc(*rs, "access_point");
 
 	const auto client = rs->get_actor("client");
+	//FIXME add mac to config/mapping to get it here in report (if client is external)
 	e.client_mac = client->get(SK::mac);
 	e.client_source = client->get(SK::source);
 	e.client_ocv =  hostapd::get_ocv(*rs, "client");

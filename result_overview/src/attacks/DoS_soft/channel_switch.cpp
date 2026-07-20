@@ -18,9 +18,10 @@ using TaggedEntry = pair<string, CsaTestEntry>;
 static vector<TaggedEntry> collect_results(const path &data_dir) {
 	const path base = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch";
 
-	const array<pair<string, path>, 2> sources = {{
+	const array<pair<string, path>, 3> sources = {{
 		{"internal", base / "rogueAP" / "CSA_rogueAP_internal_filler"},
-		{"Dlink",    base / "Dlink"   / "CSA_rogueAP_Dlink_filler"},
+		{"Dlink",    base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler"},
+		{"external",    base / "external" / "CSA_external_client"},
 	}};
 
 	vector<TaggedEntry> results;

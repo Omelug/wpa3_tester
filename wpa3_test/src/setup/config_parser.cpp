@@ -15,6 +15,8 @@ using YNode = YAML::Node;
 using namespace filesystem;
 
 json yaml_to_json(const YNode &node){
+	
+
 	if(node.IsScalar()){
 		if(node.Tag() == "!"){
 			return node.as<string>();
@@ -33,6 +35,35 @@ json yaml_to_json(const YNode &node){
 		auto j = json::object();
 		for(auto it = node.begin(); it != node.end(); ++it){
 			j[it->first.as<string>()] = yaml_to_json(it->second);
+		}
+		return j;
+	}
+	return {};
+}
+
+json yaml_to_json_with_marks(const YNode &node, const string &current_path,
+                              unordered_map<string, YAML::Mark> &line_map){
+	line_map[current_path.empty() ? "/" : current_path] = node.Mark();
+
+	if(node.IsScalar()){
+		if(node.Tag() == "!") return node.as<string>();
+		try{ return node.as<bool>(); } catch(...){}
+		try{ return node.as<int64_t>(); } catch(...){}
+		try{ return node.as<double>(); } catch(...){}
+		return node.as<string>();
+	}
+	if(node.IsSequence()){
+		auto j = json::array();
+		size_t index = 0;
+		for(auto const &item: node)
+			j.push_back(yaml_to_json_with_marks(item, current_path + "/" + to_string(index++), line_map));
+		return j;
+	}
+	if(node.IsMap()){
+		auto j = json::object();
+		for(auto it = node.begin(); it != node.end(); ++it){
+			string key = it->first.as<string>();
+			j[key] = yaml_to_json_with_marks(it->second, current_path + "/" + key, line_map);
 		}
 		return j;
 	}
@@ -166,8 +197,8 @@ void RunStatus::validate_recursive(nlohmann::json &current_node, const path &bas
 
 json RunStatus::config_validation(const path &config_path){
 	try{
-		const YNode config_node = YAML::LoadFile(config_path);
-		json config_json = yaml_to_json(config_node);
+		unordered_map<string, YAML::Mark> line_map;
+		json config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
 
 		// extends, validators
 		config_json = extends_recursive(config_json, config_path);
@@ -177,8 +208,10 @@ json RunStatus::config_validation(const path &config_path){
 		const path global_schema_path = root_dir() / "attack_config" / "validator" /
 				"test_validator.schema.yaml";
 		const YAMLValidator validator(global_schema_path);
-		validator.validate(config_json);
+		validator.validate(config_json, line_map, config_path.string());
 		return config_json;
+	} catch(const tester_error &){
+		throw;
 	} catch(const domain_error &e){
 		throw config_err(string("Schema error: ") + e.what());
 	} catch(const invalid_argument &e){

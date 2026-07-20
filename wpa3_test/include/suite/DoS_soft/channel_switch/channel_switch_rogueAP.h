@@ -21,6 +21,7 @@ struct CsaTestEntry{
 
 	//result params
 	std::optional<bool> disconnected;
+	std::string disconnected_source;
 	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 

@@ -21,7 +21,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 	const array<pair<string, path>, 3> sources = {{
 		{"internal", base / "rogueAP" / "CSA_rogueAP_internal_filler"},
 		{"Dlink",    base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler"},
-		{"external",    base / "external" / "CSA_external_client"},
+		{"external",    base / "external" / "CSA_external_client_filler"},
 	}};
 
 	vector<TaggedEntry> results;
@@ -140,6 +140,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
     } else {
         emit_table("Test Results", "resultsTable", "internal");
         emit_table("Dlink", "resultsTableDlink", "Dlink");
+        emit_table("External Client", "resultsTableExternal", "external");
     }
 
     f << "</body>\n</html>\n";

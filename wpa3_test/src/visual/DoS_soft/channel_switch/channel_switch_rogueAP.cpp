@@ -28,7 +28,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 
 	const auto client = rs->get_actor("client");
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
-	e.client_mac = client->get(SK::mac);
+	e.client_mac = client->get_or(SK::mac, Tins::HWAddress<6>("00:00:00:00:00:00").to_string());//FIXME for debug, change to get only
 	e.client_source = client->get(SK::source);
 	e.client_ocv =  hostapd::get_ocv(*rs, "client");
 	e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");

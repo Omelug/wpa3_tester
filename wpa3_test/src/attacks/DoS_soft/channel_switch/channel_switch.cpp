@@ -3,7 +3,6 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
-#include <regex>
 #include <thread>
 #include <nlohmann/json.hpp>
 
@@ -151,7 +150,24 @@ void stats_chs_attack(const RunStatus &rs){
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"}});
 
-	const bool disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true).empty();
+	optional<bool> disconnected;
+	string disconnected_source;
+	const string client_mac = rs.get_actor("client").get(SK::mac);
+	if(rs.get_actor("client")->is_WB()){
+		const path client_log = rs.run_folder() / "logger" / "client.log";
+		if(exists(client_log)){
+			disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true).empty();
+			disconnected_source = "log";
+		}
+	} else {
+		const path pcap_path = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";
+		if(exists(pcap_path)){
+			const string filter = "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac;
+			disconnected = !get_tshark_events(rs, "attacker", filter, "DISCONNECTED").empty();
+			disconnected_source = "pcap";
+		}
+	}
+
 	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
 
 	optional<hostapd::CrackResult> crack_result;
@@ -166,15 +182,14 @@ void stats_chs_attack(const RunStatus &rs){
 		crack_result = hostapd::crack_pmk_hashes(rs.run_folder()/"captured_hashes.txt", psk);
 	}
 
-	nlohmann::json result = {
-		{"disconnected", disconnected},
-		{"ap_disconnected", ap_disconnected}
-	};
+	nlohmann::json result = {{"ap_disconnected", ap_disconnected}};
+	if(disconnected.has_value()){
+		result["disconnected"] = *disconnected;
+		result["disconnected_source"] = disconnected_source;
+	}
 
 	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
-
-	const string client_mac = rs.get_actor("client").get(SK::mac);
 
 	pcap_events(rs, elements, {
 									{

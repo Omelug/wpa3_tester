@@ -21,7 +21,8 @@ void RunStatus::setup_test(){
 	create_public_dirs(_run_folder, ec);
 	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder, ec.message());
 
-	save_actor_interface_mapping();
+	save_actor_interface_mapping(); //for debug before setup  //TODO debug macro ?
+
 	process_manager.init_logging(_run_folder);
 	if(_run_config.get_save_log())
 		set_log_file(_run_folder / "logger" / "tester.log");
@@ -34,5 +35,7 @@ void RunStatus::setup_test(){
 	} else{
 		log(LogLevel::DEBUG, "setup function not set");
 	}
+
+	save_actor_interface_mapping();
 }
 }

@@ -7,7 +7,7 @@ required:
 properties:
   actors:
     required:
-      - access_point
+      - ap
       - client
       - attacker
   attack_config:

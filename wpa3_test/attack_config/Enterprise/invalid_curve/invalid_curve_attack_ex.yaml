@@ -2,6 +2,6 @@ $extends: ./invalid_curve_ap.yaml
 name: invalid_curve_attack_Dlink
 attacker_module: invalid_curve
 actors:
-  $DELETE: access_point
-  access_point:
+  $DELETE: ap
+  ap:
     $extends: ../../comp/Dlink/Dlink_wb_eap.comp.yaml

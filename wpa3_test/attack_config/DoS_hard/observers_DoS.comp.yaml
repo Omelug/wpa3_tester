@@ -3,7 +3,7 @@ observers:
   #  actor: client
   #  program: mausezahn
   #  program_config:
-  #    target_actor: access_point
+  #    target_actor: ap
   #tshark_client:
   #  actor: client
   #  program: tshark
@@ -15,12 +15,12 @@ observers:
     program_config:
       filter: "special_filter:actors_5_bytes"
   program_config_ap:
-    actor: access_point
+    actor: ap
     program: tcpdump
     program_config:
       filter: "udp port 5201"
   ap_resources:
-    actor: access_point
+    actor: ap
     program: resource_checker
     program_config:
       interval: 1

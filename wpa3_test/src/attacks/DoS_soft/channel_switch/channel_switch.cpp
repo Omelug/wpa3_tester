@@ -76,9 +76,9 @@ void setup_chs_attack(RunStatus &rs){
 
 void run_chs_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
-	const auto &ap_actor = rs.get_actor("access_point");
+	const auto &ap_actor = rs.get_actor("ap");
 
-	const HWAddress<6> ap_mac(rs.get_actor("access_point").get(SK::mac));
+	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
 	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker").get(SK::iface);
 	const string essid = ap_actor.get(SK::ssid);
@@ -121,11 +121,11 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
 	}
 	if(!AP_graph_path.empty()){
-		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
+		report << "### AP (ap, hostapd " << hostapd::get_version(rs, "ap") << ")\n";
 		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
 	}
 	if(!ATT_graph_path.empty()){
-		report << "### ATT (access_point, hostapd-mana " << hostapd::get_version(rs, "access_point") << ")\n";
+		report << "### ATT (ap, hostapd-mana " << hostapd::get_version(rs, "ap") << ")\n";
 		report << "![ATT Throughput Graph](" << ATT_graph_path << ")\n\n";
 	}
 	if(!rogue_graph_path.empty()){
@@ -168,7 +168,7 @@ void stats_chs_attack(const RunStatus &rs){
 		}
 	}
 
-	const bool ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
+	const bool ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", true).empty();
 
 	optional<hostapd::CrackResult> crack_result;
 	optional<bool> rogue_ap_connected;
@@ -204,7 +204,7 @@ void stats_chs_attack(const RunStatus &rs){
 
 	//TODO change to tshark grpas vector -> change
 	const path STA_graph_path = tshark_graph(rs, "client", elements);
-	const path AP_graph_path = tshark_graph(rs, "access_point", elements,
+	const path AP_graph_path = tshark_graph(rs, "ap", elements,
 															observer::get_observer_folder(rs, "tcpdump"));
 
 	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);

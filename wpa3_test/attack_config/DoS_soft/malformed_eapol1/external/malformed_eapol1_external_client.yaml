@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1_Dlink_client
 attacker_module: malformed_eapol1
 actors:
-  access_point:
+  ap:
     $extends: ../../../comp/Dlink/Dlink_bb.comp.yaml
   client:
     source: external
@@ -21,7 +21,7 @@ observers:
     program_config:
       filter: "udp port 5201"
   ap_tshark:
-    actor: access_point
+    actor: ap
     program: tshark
     program_config:
       filter: "udp port 5201"

@@ -127,7 +127,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 }
 
 void run_attack(RunStatus &rs){
-	const ActorPtr ap = rs.get_actor("access_point");
+	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr att = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -179,8 +179,8 @@ void stats_attack(const RunStatus &rs){
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {{"client", "@AKM_trigger", "AKM trigger", "black"}});
 
-	observer::station_counter::create_station_graph(rs, "access_point", elements);
-	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
+	observer::station_counter::create_station_graph(rs, "ap", elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 	//TODO test observer::tshark::generate_time_series_retry_graph(rs, "attacker");
 }
 }

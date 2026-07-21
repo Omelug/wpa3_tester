@@ -89,10 +89,10 @@ void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	rs.start_observers();
 
-	const Channel channel = rs.get_actor("access_point")->get_channel();
+	const Channel channel = rs.get_actor("ap")->get_channel();
 
 	RadioTap radiotap =
-		get_malformed_eapol(rs.get_actor("access_point").get(SK::mac),rs.get_actor("client").get(SK::mac), channel);
+		get_malformed_eapol(rs.get_actor("ap").get(SK::mac),rs.get_actor("client").get(SK::mac), channel);
 
 	interruptible_sleep(chrono::seconds(att_cfg.at("sleep_before_sec")));
 
@@ -118,7 +118,7 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
 	}
 	if(!AP_graph_path.empty()){
-		report << "### AP (access_point, hostapd " << hostapd::get_version(rs, "access_point") << ")\n";
+		report << "### AP (ap, hostapd " << hostapd::get_version(rs, "ap") << ")\n";
 		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
 	}
 	if(!rogue_graph_path.empty()){
@@ -140,7 +140,7 @@ void stats(const RunStatus &rs){
 	}
 
 	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
-	const path AP_graph_path = observer::tshark::tshark_graph(rs, "access_point", elements);
+	const path AP_graph_path = observer::tshark::tshark_graph(rs, "ap", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);

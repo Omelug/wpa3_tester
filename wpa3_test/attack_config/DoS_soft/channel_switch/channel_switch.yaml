@@ -4,7 +4,7 @@ attacker_module: channel_switch
 $validator: ./channel_switch.schema.yaml
 $extends: ./observers.comp.yaml
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP,  2_4GHz]

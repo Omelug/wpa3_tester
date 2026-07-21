@@ -11,15 +11,15 @@ using namespace Tins;
 
 namespace wpa3_tester::ath_masker_test{
 void setup_attack(RunStatus &rs){
-	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
+	program::start(rs, "ap");
+	rs.process_manager.wait_for("ap", "AP-ENABLED", chrono::seconds(40));
 }
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 	const int test_count = rs.config().at("attack_config").at("test_mac_count").get<int>();
 	const auto att = rs.get_actor("attacker");
-	const auto ap = rs.get_actor("access_point");
+	const auto ap = rs.get_actor("ap");
 
 	const NetworkInterface iface(att.get(SK::iface));
 	PacketSender sender(iface);

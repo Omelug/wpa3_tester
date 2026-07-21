@@ -2,8 +2,8 @@ $extends: ./downgrade_vuln.yaml
 name: wpa3_trans_downgrade_Dlink
 attacker_module: wpa3_trans_downgrade
 actors:
-  $DELETE: access_point
-  access_point:
+  $DELETE: ap
+  ap:
     $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     source: internal

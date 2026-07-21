@@ -21,7 +21,7 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
-	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
+	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	return e;
 }

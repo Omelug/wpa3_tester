@@ -16,7 +16,7 @@ using namespace Tins;
 namespace wpa3_tester::dos_helpers{
 // TODO make alternative external WB
 vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
-	const ActorPtr ap = rs.get_actor("access_point");
+	const ActorPtr ap = rs.get_actor("ap");
 	vector<HWAddress<6>> result;
 
 	const string out = ap->conn->exec(

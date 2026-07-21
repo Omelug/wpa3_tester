@@ -2,48 +2,18 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1
 $validator: ./malformed_eapol1.schema.yaml
 attacker_module: malformed_eapol1
+
+$extends: [
+  ../../comp/ap/ap_2_11_WPA3_only_6.comp.yaml,
+  # 2_10 not patched
+  ../../comp/client/client_2_10_WPA3_only_MFPr_6.comp.yaml
+]
+
 actors:
-  access_point:
-    source: internal
-    selection:
-      channel: 6
-      condition: [ AP, 2_4GHz ]
+  ap:
     setup:
-      program: hostapd
       program_config:
         other_options: "-d"
-        driver: nl80211
-        ssid: test_malformed_eapol1
-        hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        rsn_pairwise: CCMP
-        #wpa_passphrase: password123
-        sae_password: password123
-        channel: 6
-        version: 2_11
-    ip_addr: "10.0.0.1"
-  client:
-    source: internal
-    setup:
-      program: wpa_supplicant
-      program_config:
-        ssid: test_malformed_eapol1
-        #psk: password123
-        sae_password: password123
-        ieee80211w: 2
-        proto: RSN
-        key_mgmt: SAE
-        pairwise: CCMP
-        group: CCMP
-        version: 2_10 # TODO 2_11 patched?;
-    selection:
-      channel: 6
-    netns: sta
-    ip_addr: "10.0.0.2"
   attacker:
     source: internal
     selection:
@@ -55,14 +25,14 @@ observers:
     actor: client
     program: mausezahn
     program_config:
-      target_actor: access_point
+      target_actor: ap
   client_tshark:
     actor: client
     program: tshark
     program_config:
       filter: "special_filter:actors"
   ap_tshark:
-    actor: access_point
+    actor: ap
     program: tshark
     program_config:
       filter: "special_filter:actors"

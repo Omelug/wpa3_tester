@@ -320,20 +320,20 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const{
 	if(event_sets.contains(DISCONNECT)){
 		//throw error of actors not found
-		get_actor("access_point");
+		get_actor("ap");
 		get_actor("client");
 		log_events(elements, {
-			{"access_point", "did not acknowledge", "ACK_fail", "red"},
+			{"ap", "did not acknowledge", "ACK_fail", "red"},
 			{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
 		});
 	}
 	if(event_sets.contains(CONNECT)){
 		//throw error of actors not found
-		get_actor("access_point");
+		get_actor("ap");
 		get_actor("client");
 		log_events(elements, {
 			{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
-			{"access_point", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
+			{"ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
 		});
 	}
 	if(event_sets.contains(TESTER_TAGS)){

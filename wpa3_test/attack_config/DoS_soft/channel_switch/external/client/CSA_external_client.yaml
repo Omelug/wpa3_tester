@@ -3,35 +3,26 @@ name: CSA_external_client
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml
 scan_iface: wlan1
+
+
+$extends: [
+  ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
+  ../../../../comp/rogue_ap/rogue_ap_1.comp.yaml
+  ../ex_observers.comp.yaml,
+]
+
 actors:
   ap:
     source: internal
     selection:
-      condition: [ AP, 2_4GHz ]
-      channel: 6
       permanent_mac: "24:ec:99:bf:c7:cf"
       driver: ath9k_htc
     setup:
-      program: hostapd
       program_config:
-        version: 2_11
         country_code: CZ
-        driver: nl80211
-        ssid: test_wpa3_tester
-        hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        # s ieee80211w: 1 OnePlus funguje (i když je to nevalidní podle WPA3)
+        # s ieee80211w: 1 OnePlus funguje (i když je to nevalidní podle WPA3, nejspíš to není vyjímečné - dohledat zdroj)
         #ieee80211w: 1
         #wpa_key_mgmt: SAE WPA-PSK
-        rsn_pairwise: CCMP
-        wpa_passphrase: password123
-        sae_password: password123
-        channel: 6
-    ip_addr: "10.0.0.1"
   client:
     source: external
     scan_ignore: yes
@@ -43,7 +34,6 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6
-$extends: [ ../ex_observers.comp.yaml, ../../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 
 attack_config:
   attack_time: 60

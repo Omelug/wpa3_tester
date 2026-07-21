@@ -1,18 +1,11 @@
 $extends: ../channel_switch.yaml
 name: CSA_same_channel
 $validator: ../channel_switch.schema.yaml
-actors:
-  ap:
-    setup:
-      program: hostapd
-      program_config:
-        hostapd_path: "../config/hostapd.conf"
-  client:
-    source: internal
-    setup:
-      program: wpa_supplicant
-      program_config:
-        wpa_supplicant_path: "../config/client.conf"
+
+$extends: [
+  ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
+  ../../../comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml
+]
 
 attack_config:
   attack_time: 30

@@ -15,14 +15,14 @@ tests:
         ap:
           selection:
             driver: var_driver_0
-            condition: [ "2_4GHz" ]
+            condition: [ 2_4GHz ]
         client:
           selection:
             driver: var_driver_1
-            condition: [ "2_4GHz" ]
+            condition: [ 2_4GHz ]
         attacker:
           selection:
             driver: var_driver_2
-            condition: [ "2_4GHz" ]
+            condition: [ 2_4GHz ]
 
 delete_old: false

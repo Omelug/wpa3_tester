@@ -1,7 +1,7 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 name: CSA_external_client
 attacker_module: channel_switch
-$validator: ../channel_switch.schema.yaml
+$validator: ../../channel_switch.schema.yaml
 scan_iface: wlan1
 actors:
   access_point:
@@ -22,8 +22,9 @@ actors:
         auth_algs: 1
         wpa: 2
         ieee80211n: 1
-        ieee80211w: 1
-        wpa_key_mgmt: SAE WPA-PSK
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        # s ieee80211w: 1 OnePlus funguje (i když je to nevalidní podle WPA3)
         #ieee80211w: 1
         #wpa_key_mgmt: SAE WPA-PSK
         rsn_pairwise: CCMP
@@ -42,7 +43,7 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6
-$extends: [ ./ex_observers.comp.yaml, ../rogue_ap.comp.yaml ]
+$extends: [ ../ex_observers.comp.yaml, ../../rogue_ap.comp.yaml ]
 
 attack_config:
   attack_time: 60

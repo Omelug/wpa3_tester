@@ -1,0 +1,16 @@
+name: CSA_external_client_all
+config_type: test_suite
+tests:
+  CSA_external_client:
+    test_name: CSA_external_client
+
+  #TODo funguje s random MAC získávání hadshaku pomocí hostapd mana?
+
+  #TODO eCSA element needed?
+  #CSA_external_client_5GHz:
+  #  test_name: CSA_external_client_5GHz
+
+  CSA_external_client_invalid_ch:
+    test_name: CSA_external_client_invalid_ch
+
+rewrite: errors

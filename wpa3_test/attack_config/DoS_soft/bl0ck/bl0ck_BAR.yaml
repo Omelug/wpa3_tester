@@ -9,7 +9,7 @@ attack_config:
   random: true
   frame_in_batch: 50
 actors:
-  access_point:
+  ap:
     selection:
       driver: [ rtw_8821au, rtw88_8821au]
   client:

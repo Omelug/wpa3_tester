@@ -2,12 +2,11 @@ $extends: ../channel_switch.yaml
 name: CSA_same_channel
 $validator: ../channel_switch.schema.yaml
 actors:
-  access_point:
+  ap:
     setup:
       program: hostapd
       program_config:
         hostapd_path: "../config/hostapd.conf"
-
   client:
     source: internal
     setup:

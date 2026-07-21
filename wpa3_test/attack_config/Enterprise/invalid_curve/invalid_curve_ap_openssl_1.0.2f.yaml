@@ -3,7 +3,7 @@ name: invalid_curve_attack_openssl_1_0_2f
 attacker_module: invalid_curve
 $extends: ./invalid_curve_ap.yaml
 actors:
-  access_point:
+  ap:
     setup:
       program: hostapd
       program_config:

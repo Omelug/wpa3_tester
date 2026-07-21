@@ -2,7 +2,7 @@ $schema: http://json-schema.org/draft-07/schema#
 name: full_no_exteds_test
 attacker_module: attacker_module
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP, 2_4GHz, "WPA-PSK", WPA3-SAE ]

@@ -10,7 +10,7 @@ using namespace filesystem;
 SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {
     SaeDosFolderEntry e;
     e.name = test_folder.filename().string();
-    const auto png = test_folder / "observer" / "resource_checker" / "access_point_res.png";
+    const auto png = test_folder / "observer" / "resource_checker" / "ap_res.png";
     if (exists(png))
         e.ap_res_png = png;
     return e;

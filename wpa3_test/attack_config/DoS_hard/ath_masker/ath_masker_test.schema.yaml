@@ -19,11 +19,11 @@ properties:
   actors:
     type: object
     required:
-      - access_point
+      - ap
       - attacker
     additionalProperties: false
     properties:
-      access_point:
+      ap:
         type: object
         required: [ source, setup ]
         properties:

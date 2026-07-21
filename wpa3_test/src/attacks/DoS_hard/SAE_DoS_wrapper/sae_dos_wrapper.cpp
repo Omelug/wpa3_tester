@@ -92,7 +92,7 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 
 void run_attack(RunStatus &rs){
 	const ActorPtr attacker = rs.get_actor("attacker");
-	const ActorPtr ap = rs.get_actor("access_point");
+	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr client = rs.get_actor("client");
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
@@ -127,6 +127,6 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

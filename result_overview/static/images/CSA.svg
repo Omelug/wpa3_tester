@@ -40,10 +40,10 @@
         <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">client</text>
     </g>
 
-    <!-- access_point -->
+    <!-- ap -->
     <g transform="translate(250,130)">
         <use href="#router-base" fill="#2F855A" />
-        <text x="50" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">access_point</text>
+        <text x="50" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">ap</text>
     </g>
 
     <!-- attacker -->
@@ -55,7 +55,7 @@
         <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#E53E3E">attacker</text>
     </g>
 
-    <!-- client ↔ access_point association (dashed) -->
+    <!-- client ↔ ap association (dashed) -->
     <path d="M 120 280 Q 180 250 230 215" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
     <path d="M 230 215 Q 180 250 120 280" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
 

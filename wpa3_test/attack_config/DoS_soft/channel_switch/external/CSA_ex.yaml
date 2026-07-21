@@ -8,11 +8,11 @@ scan_until_success: true
 #RTL8188EUS e blbost - > přidat scanner podmínky (nebo přes actor?)
 #TODO requirement connected AP-STA external
 requirements:
-  ex_BB_connection : [[access_point, client]]
+  ex_BB_connection : [[ap, client]]
 #FIXM funguje jen u ath_htc, není to ítm, že musí už předtím v monitor módu?
 #označit n2jak wizard , nebo wizard -> error v run config
 actors:
-  access_point:
+  ap:
     source: external
     selection:
       ssid: OpenWrt_2_4GHz

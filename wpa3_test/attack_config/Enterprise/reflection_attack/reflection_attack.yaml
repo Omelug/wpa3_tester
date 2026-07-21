@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: reflection_attack
 attacker_module: reflection_attack
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       channel: 6
@@ -38,7 +38,7 @@ observers:
       #filter: ""
       filter: "special_filter:actors"
   ap_tshark:
-    actor: access_point
+    actor: ap
     program: tshark
     program_config:
       filter: "special_filter:actors"

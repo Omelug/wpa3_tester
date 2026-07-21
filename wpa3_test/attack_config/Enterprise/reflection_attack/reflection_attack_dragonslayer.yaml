@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: reflection_attack_gragonslayer
 attacker_module: reflection_attack
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       channel: 6

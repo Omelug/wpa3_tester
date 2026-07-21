@@ -18,7 +18,7 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 	e.name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
-	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
+	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	e.rogue_ap_driver = rs->get_actor("rogue_ap").get(SK::driver_name);
@@ -28,9 +28,9 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 		try{
 			const auto cfg = YAML::LoadFile(cfg_path.string());
 			if(cfg["name"]) e.name = cfg["name"].as<string>();
-			if(cfg["actors"] && cfg["actors"]["access_point"] && cfg["actors"]["access_point"]["setup"] && cfg["actors"]
-				["access_point"]["setup"]["program_config"] && cfg["actors"]["access_point"]["setup"]["program_config"][
-					"version"]) e.hostapd_version = cfg["actors"]["access_point"]["setup"]["program_config"]["version"].
+			if(cfg["actors"] && cfg["actors"]["ap"] && cfg["actors"]["ap"]["setup"] && cfg["actors"]
+				["ap"]["setup"]["program_config"] && cfg["actors"]["ap"]["setup"]["program_config"][
+					"version"]) e.hostapd_version = cfg["actors"]["ap"]["setup"]["program_config"]["version"].
 					as<string>();
 			if(cfg["actors"] && cfg["actors"]["client"] && cfg["actors"]["client"]["setup"] && cfg["actors"]["client"][
 				"setup"]["program_config"] && cfg["actors"]["client"]["setup"]["program_config"]["version"]) e.
@@ -46,7 +46,7 @@ CsaVersionTestEntry parse_test_folder(const path &test_folder){
 
 	const path tshark = test_folder / "observer" / "tshark";
 	if(const auto p = tshark / "client_graph.png"; exists(p)) e.client_graph = p;
-	if(const auto p = tshark / "access_point_graph.png"; exists(p)) e.ap_graph = p;
+	if(const auto p = tshark / "ap_graph.png"; exists(p)) e.ap_graph = p;
 	return e;
 }
 

@@ -17,7 +17,7 @@ void setup_attack(RunStatus &rs){
 	//TODO components::setup_STA(rs, "client");
 	//rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 
-	//const auto ap        = rs.get_actor("access_point");
+	//const auto ap        = rs.get_actor("ap");
 	//const auto rogue_client = rs.get_actor("rogue_client");
 	//const auto rogue_ap = rs.get_actor("rogue_ap");
 
@@ -42,7 +42,7 @@ void run_attack(RunStatus &rs){
 	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
 
 	// get macs for faking
-	const auto ap_mac = rs.get_actor("access_point").get(SK::mac);
+	const auto ap_mac = rs.get_actor("ap").get(SK::mac);
 	const auto client_mac = rs.get_actor("client").get(SK::mac);
 
 	rs.start_observers();

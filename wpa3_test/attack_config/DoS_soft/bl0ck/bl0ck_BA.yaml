@@ -4,7 +4,7 @@ $extends: ./bl0ck.yaml
 name: bl0ck_BA
 attacker_module: bl0ck
 actors:
-  access_point:
+  ap:
     selection:
       driver: [ rtw_8821au, rtw88_8821au ]
   client:

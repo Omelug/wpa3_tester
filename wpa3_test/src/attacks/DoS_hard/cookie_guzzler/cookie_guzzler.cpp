@@ -33,7 +33,7 @@ void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int 
 }
 
 void run_attack(RunStatus &rs){
-	const ActorPtr ap = rs.get_actor("access_point");
+	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr attacker = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -70,8 +70,8 @@ void stats_attack(const RunStatus &rs){
 
 	const filesystem::path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
 	//const path AP_graph_path =
-	//    observer::tshark_graph(rs, "access_point", events, observer::get_observer_folder(rs, "tcpdump"));
+	//    observer::tshark_graph(rs, "ap", events, observer::get_observer_folder(rs, "tcpdump"));
 
-	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source) , elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source) , elements);
 }
 }

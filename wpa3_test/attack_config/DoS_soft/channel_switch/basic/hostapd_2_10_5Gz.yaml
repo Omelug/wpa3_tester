@@ -2,7 +2,7 @@ $extends: ../channel_switch.yaml
 name: channel_switch_2_10_5G
 $validator: ../channel_switch.schema.yaml
 actors:
-  access_point:
+  ap:
     setup:
       program: hostapd
       program_config:
@@ -25,4 +25,4 @@ actors:
 attack_config:
   attack_time: 30
   ms_interval: 100
-  new_channel: 40 # no Channel Availability Check #TODO
+  new_channel: 40 # no Channel Availability Check in validator #TODO

@@ -37,7 +37,7 @@ unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const stri
 void run_attack(RunStatus &){
 	/*const auto att_real  = rs.get_actor("rogue_client");
         const auto att_rogue = rs.get_actor("rogue_ap");
-        const auto ap        = rs.get_actor("access_point");
+        const auto ap        = rs.get_actor("ap");
         const auto client       = rs.get_actor("client");
 
         const auto& att_cfg    = rs.config().at("attack_config");

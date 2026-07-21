@@ -3,7 +3,7 @@ name: m_eapol1_external_client
 attacker_module: malformed_eapol1
 scan_iface: wlan1
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP, 2_4GHz ]
@@ -16,7 +16,7 @@ actors:
         version: 2_11
         country_code: CZ
         driver: nl80211
-        ssid: test_malformed_eapol1
+        ssid: test_wpa3_tester
         hw_mode: g
         auth_algs: 1
         wpa: 2

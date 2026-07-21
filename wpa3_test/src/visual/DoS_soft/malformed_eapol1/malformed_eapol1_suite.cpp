@@ -21,8 +21,8 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	const auto rs = helper::load_test_rs(test_folder);
 	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
-	e.ap_graph = test_folder / "observer" / "tshark" / "access_point_graph.png";
-	e.ap_driver = rs->get_actor("access_point").get(SK::driver_name);
+	e.ap_graph = test_folder / "observer" / "tshark" / "ap_graph.png";
+	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	e.client_version = hostapd::get_version(*rs, "client");
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);

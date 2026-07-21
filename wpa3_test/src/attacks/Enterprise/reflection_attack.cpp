@@ -71,18 +71,18 @@ bool run_reflection_exchange(EAP_Att &eap_att){
 void setup_attack(RunStatus &rs){
 	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
-	program::start(rs, "access_point");
-	if(rs.get_actor("access_point").get(SK::source) == "internal")
-		rs.process_manager.wait_for("access_point", "AP-ENABLED", seconds(40));
-	log(LogLevel::INFO, "access_point running");
-	ip::set_ip(rs, "access_point");
+	program::start(rs, "ap");
+	if(rs.get_actor("ap").get(SK::source) == "internal")
+		rs.process_manager.wait_for("ap", "AP-ENABLED", seconds(40));
+	log(LogLevel::INFO, "ap running");
+	ip::set_ip(rs, "ap");
 }
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto attacker = rs.get_actor("attacker");
-	const auto ap_actor = rs.get_actor("access_point");
+	const auto ap_actor = rs.get_actor("ap");
 
 	const string identity = att_cfg.at("identity").get<string>();
 	const string ssid = ap_actor->get(SK::ssid);

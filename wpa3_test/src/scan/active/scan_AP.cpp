@@ -43,8 +43,7 @@ void print_capabilities(stringstream &ss, const uint16_t caps){
 
 	ss << "--- RSN Capabilities ---\n";
 	ss << "MFP: " << (flags.mfp_required ? "REQUIRED" : (flags.mfp_capable ? "Capable" : "No")) << "\n";
-	ss << "OCV: " << flags.ocv << "\n";
-	ss << "Beacon Protection: " << flags.beacon_prot << "\n";
+	ss << "OCV: " << flags.ocvc << "\n";
 }
 
 string ScanAP::to_str() const{

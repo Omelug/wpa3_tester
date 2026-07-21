@@ -1,7 +1,7 @@
 name: ap_with_sniff_iface_valid
 attacker_module: test_module
 actors:
-  access_point:
+  ap:
     source: internal
     sniff_iface: mon0
     setup:

@@ -6,13 +6,13 @@ required:
 properties:
   actors:
     required:
-      - access_point
+      - ap
       - client
       - attacker
     properties:
       rogue_ap:
         description: "Optional rogue AP"
-      access_point:
+      ap:
         properties:
           selection:
             properties:

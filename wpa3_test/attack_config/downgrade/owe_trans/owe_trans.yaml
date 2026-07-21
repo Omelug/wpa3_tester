@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: owe_transition_probe_leak
 attacker_module: owe_trans
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP ] #FIXME TODO add 

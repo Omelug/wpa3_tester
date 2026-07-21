@@ -5,7 +5,7 @@ requirements:
   simple: [ ath_masker ]
 $validator: ./ath_masker_test.schema.yaml
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP, 2_4GHz ]
@@ -23,7 +23,7 @@ actors:
       channel: 6
 observers:
   tshark_client:
-    actor: access_point
+    actor: ap
     program: tshark
     program_config:
       filter: "special_filter:actors_5_bytes"

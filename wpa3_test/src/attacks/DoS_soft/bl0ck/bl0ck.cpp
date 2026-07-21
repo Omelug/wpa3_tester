@@ -145,8 +145,8 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 				}
 			}
 		}
-	} else if(rs.get_actor("access_point")->is_WB()){
-		r.ap_disconnected = !get_time_logs(rs, "access_point", "AP-STA-DISCONNECTED", true).empty();
+	} else if(rs.get_actor("ap")->is_WB()){
+		r.ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", true).empty();
 	}
 
 	if(	r.disconnect_count > 0 || r.ap_disconnected){
@@ -183,7 +183,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	const string iface = attacker.get(SK::iface);
 
 	const string STA_mac = rs.get_actor("client").get(SK::mac);
-	const string AP_mac = rs.get_actor("access_point").get(SK::mac);
+	const string AP_mac = rs.get_actor("ap").get(SK::mac);
 
 	const string bl0ck_att_type = att_cfg.at("attack_variant").get<string>();
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
@@ -233,7 +233,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
-	const path ap_graph = observer::tshark::tshark_graph(rs, "access_point", elements,
+	const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements,
 		observer::get_observer_folder(rs, "tcpdump"));
 
 	const Bl0ckResult result = load_result(rs);

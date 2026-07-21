@@ -28,7 +28,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 
-		const auto ap = rs.get_actor("access_point");
+		const auto ap = rs.get_actor("ap");
 		e.ap_mac = ap->get(SK::mac);
 		e.ap_source = ap->get(SK::source);
 

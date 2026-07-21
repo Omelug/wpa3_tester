@@ -3,7 +3,7 @@ name: memory_omnivore_Dlink_ACK
 attacker_module: memory_omnivore
 $validator: memory_omniverse.schema.yaml
 actors:
-  access_point:
+  ap:
     source: external
     selection:
       whitebox_host: OpenWrt
@@ -57,7 +57,7 @@ observers:
     program_config:
       filter: ""
   ap_resources:
-    actor: access_point
+    actor: ap
     program: resource_checker
     program_config:
       interval: 1

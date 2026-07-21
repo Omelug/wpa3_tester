@@ -4,7 +4,7 @@ attacker_module: channel_switch
 #FIXME delete strict rules ffrom CSA_external_client (mac ) for 5Ghz supported
 # TODO add better no enough GHZ adapters
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP, 5GHz ]

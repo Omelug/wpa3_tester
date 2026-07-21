@@ -70,7 +70,7 @@ TEST_CASE("SaeDosFolderEntry::parse - sets name, no png") {
 
 TEST_CASE("SaeDosFolderEntry::parse - detects existing png") {
     const auto d = setup_dir("sae_with_png");
-    const auto png = d / "observer" / "resource_checker" / "access_point_res.png";
+    const auto png = d / "observer" / "resource_checker" / "ap_res.png";
     create_directories(png.parent_path());
     ofstream(png) << "";
     const auto e = suite::sae_dos::SaeDosFolderEntry::parse(d);
@@ -145,7 +145,7 @@ TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {
     const auto d = setup_dir("bl0ck_full");
     write_result(d, {{"disconnect_count", 2}});
     write_mapping(d, {
-        {"access_point", "ath9k",    "aa:bb:cc:00:00:01"},
+        {"ap", "ath9k",    "aa:bb:cc:00:00:01"},
         {"client",       "rt2800",   "aa:bb:cc:00:00:02"},
         {"attacker",     "ath9k_htc","aa:bb:cc:00:00:03"},
     });
@@ -169,9 +169,9 @@ TEST_CASE("OweTransTestEntry::parse - reads drivers and probe counts") {
     const test_helpers::IsolatedRootDir iso("ep_owe");
     const auto d = setup_dir("owe_full");
     write_result(d, {{"broadcast_probe_count", 5}, {"ssid_probe_count", 2}, {"disconnected", true}});
-    write_config(d, {"access_point", "client", "attacker"});
+    write_config(d, {"ap", "client", "attacker"});
     write_mapping(d, {
-        {"access_point", "ath9k",   "aa:00:00:00:00:01"},
+        {"ap", "ath9k",   "aa:00:00:00:00:01"},
         {"client",       "rt2800",  "aa:00:00:00:00:02"},
         {"attacker",     "mt76x2u", "aa:00:00:00:00:03"},
     });
@@ -189,9 +189,9 @@ TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and passed") {
     const test_helpers::IsolatedRootDir iso("ep_invcurve");
     const auto d = setup_dir("invcurve_full");
     write_result(d, {{"passed", true}});
-    write_config(d, {"access_point", "attacker"});
+    write_config(d, {"ap", "attacker"});
     write_mapping(d, {
-        {"access_point", "ath9k",   "aa:00:00:00:01:01"},
+        {"ap", "ath9k",   "aa:00:00:00:01:01"},
         {"attacker",     "mt76x2u", "aa:00:00:00:01:02"},
     });
     const auto e = suite::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
@@ -222,9 +222,9 @@ TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and passed") {
     const test_helpers::IsolatedRootDir iso("ep_refl");
     const auto d = setup_dir("refl_full");
     write_result(d, {{"passed", false}});
-    write_config(d, {"access_point", "attacker"});
+    write_config(d, {"ap", "attacker"});
     write_mapping(d, {
-        {"access_point", "ath9k",   "cc:00:00:00:00:01"},
+        {"ap", "ath9k",   "cc:00:00:00:00:01"},
         {"attacker",     "mt76x2u", "cc:00:00:00:00:02"},
     });
     const auto e = suite::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
@@ -238,9 +238,9 @@ TEST_CASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen
     const test_helpers::IsolatedRootDir iso("ep_wpa3dn");
     const auto d = setup_dir("wpa3dn_full");
     write_result(d, {{"downgrade_seen", true}, {"disconnected", true}});
-    write_config(d, {"access_point", "client"});
+    write_config(d, {"ap", "client"});
     write_mapping(d, {
-        {"access_point", "ath9k",  "dd:00:00:00:00:01"},
+        {"ap", "ath9k",  "dd:00:00:00:00:01"},
         {"client",       "rt2800", "dd:00:00:00:00:02"},
     });
     const auto e = suite::wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
@@ -281,9 +281,9 @@ TEST_CASE("MalformedEapol1TestEntry::parse - reads drivers and disconnect_count"
     const test_helpers::IsolatedRootDir iso("ep_meapol");
     const auto d = setup_dir("meapol_full");
     write_result(d, {{"disconnect_count", 4}, {"rogue_ap_connected", true}});
-    write_config(d, {"access_point", "client", "attacker"});
+    write_config(d, {"ap", "client", "attacker"});
     write_mapping(d, {
-        {"access_point", "ath9k",   "ff:00:00:00:00:01"},
+        {"ap", "ath9k",   "ff:00:00:00:00:01"},
         {"client",       "rt2800",  "ff:00:00:00:00:02"},
         {"attacker",     "mt76x2u", "ff:00:00:00:00:03"},
     });

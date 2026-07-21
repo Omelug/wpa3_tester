@@ -4,7 +4,7 @@ attacker_module: bl0ck
 $validator: ./bl0ck.schema.yaml
 $extends: ./bl0ck.yaml
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       driver: [ rtw_8821au, rtw88_8821au ]

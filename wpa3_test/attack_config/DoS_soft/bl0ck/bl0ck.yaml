@@ -10,7 +10,7 @@ attacker_module: bl0ck
 #    injection_fields_order_valid: [transceiver, receiver]
 
 actors:
-  access_point:
+  ap:
     source: internal
     selection:
       condition: [ AP, 80211ac, 5GHz ]
@@ -61,7 +61,7 @@ actors:
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
   ap_mausezahn:
-    actor: access_point
+    actor: ap
     program: mausezahn
     program_config:
       target_actor: client

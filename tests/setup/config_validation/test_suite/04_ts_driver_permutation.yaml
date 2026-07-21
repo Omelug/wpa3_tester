@@ -9,7 +9,7 @@ tests:
     config:
       $extends: 03_test.yaml
       actors:
-        access_point:
+        ap:
           selection:
             driver: var_driver_0
         client:

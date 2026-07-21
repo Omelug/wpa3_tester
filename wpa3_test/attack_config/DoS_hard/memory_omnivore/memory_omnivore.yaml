@@ -3,7 +3,7 @@ name: memory_omnivore_Dlink
 attacker_module: memory_omnivore
 $validator: memory_omniverse.schema.yaml
 actors:
-  access_point:
+  ap:
     $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml

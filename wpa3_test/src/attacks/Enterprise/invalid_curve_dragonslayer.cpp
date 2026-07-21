@@ -45,10 +45,10 @@ void setup_attack(RunStatus &rs){
 	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
 	// -------- AP
-	program::start(rs, "access_point");
-	rs.process_manager.wait_for("access_point", "AP-ENABLED", chrono::seconds(40));
-	log(LogLevel::INFO, "access_point is running");
-	ip::set_ip(rs, "access_point");
+	program::start(rs, "ap");
+	rs.process_manager.wait_for("ap", "AP-ENABLED", chrono::seconds(40));
+	log(LogLevel::INFO, "ap is running");
+	ip::set_ip(rs, "ap");
 
 	// ---- attacker
 	const auto attacker = rs.get_actor("attacker");

@@ -5,7 +5,7 @@ attacker_module: reflection_attack
 # TODO not valid now, module cant run
 scan_iface: wlan1
 actors:
-  access_point:
+  ap:
     source: external
     selection:
       mac: "78:98:E8:55:3E:8D"

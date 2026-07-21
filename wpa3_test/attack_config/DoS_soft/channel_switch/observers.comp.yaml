@@ -3,20 +3,24 @@ observers:
     actor: client
     program: mausezahn
     program_config:
-      target_actor: access_point
+      target_actor: ap
   ap_tshark:
     actor: client
     program: tshark
     program_config:
       filter: "udp port 5201"
   ap_tcpdump:
-    actor: access_point
+    actor: ap
     program: tcpdump
     program_config:
       filter: "udp port 5201"
-  #FIXME stejně potřebuju pcap z kanálu 1
-  #attacker_tshark:
-  #  actor: attacker
-  #  program: tshark
-  #  program_config:
-  #    filter: ""
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+  rogue_tshark:
+    actor: rogue_ap
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"

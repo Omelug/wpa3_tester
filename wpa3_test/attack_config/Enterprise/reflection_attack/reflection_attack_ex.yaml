@@ -2,8 +2,8 @@ $extends: ./reflection_attack.yaml
 name: reflection_attack_Dlink
 attacker_module: reflection_attack
 actors:
-  $DELETE: access_point
-  access_point:
+  $DELETE: ap
+  ap:
     $extends: ../../comp/Dlink/Dlink_wb_eap.comp.yaml
     setup:
       program_config:

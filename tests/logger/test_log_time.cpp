@@ -76,15 +76,15 @@ struct TempLog{
 
 TEST_CASE("get_time_logs - finds matching lines"){
     const string log_content =
-        "2026-02-20T14:38:08.310201504+0100 [access_point] [stdout] wlan2: AP-ENABLED\n"
-        "2026-02-20T14:38:09.000000000+0100 [access_point] [stdout] some other line\n"
-        "2026-02-20T14:38:10.500000000+0100 [access_point] [stdout] wlan2: AP-ENABLED\n";
+        "2026-02-20T14:38:08.310201504+0100 [ap] [stdout] wlan2: AP-ENABLED\n"
+        "2026-02-20T14:38:09.000000000+0100 [ap] [stdout] some other line\n"
+        "2026-02-20T14:38:10.500000000+0100 [ap] [stdout] wlan2: AP-ENABLED\n";
 
-    TempLog tmp("access_point", log_content);
+    TempLog tmp("ap", log_content);
     wpa3_tester::RunStatus rs;
     rs.run_folder(tmp.run_folder);
 
-    const auto times = wpa3_tester::get_time_logs(rs, "access_point", "AP-ENABLED");
+    const auto times = wpa3_tester::get_time_logs(rs, "ap", "AP-ENABLED");
     REQUIRE_EQ(times.size(), 2);
 
 	INFO("%d",times[1] - times[0]);

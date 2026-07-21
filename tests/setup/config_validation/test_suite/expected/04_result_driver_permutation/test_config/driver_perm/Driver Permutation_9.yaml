@@ -1,5 +1,5 @@
 actors:
-  access_point:
+  ap:
     selection:
       driver: driver3
     source: internal

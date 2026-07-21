@@ -5,7 +5,7 @@ attacker_module: pmk_gobbler
 requirements:
   simple: [ ath_masker ]
 actors:
-  access_point:
+  ap:
     source: external
     selection:
       whitebox_host: OpenWrt
@@ -52,14 +52,14 @@ observers:
   #  actor: client
   #  program: mausezahn
   #  program_config:
-  #    target_actor: access_point
+  #    target_actor: ap
   #tshark_client:
   #  actor: client
   #  program: tshark
   #  program_config:
   #    filter: "special_filter:actors_5_bytes"
   ap_stations:
-    actor: access_point
+    actor: ap
     program: station_counter
     program_config:
       interval: 1

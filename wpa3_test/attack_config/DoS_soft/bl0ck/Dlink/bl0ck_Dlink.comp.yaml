@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 attacker_module: bl0ck
 scan_iface: wlan1
 actors:
-  access_point:
+  ap:
     $extends: ../../../comp/Dlink/Dlink_wb_5Ghz.comp.yaml
   client:
     source: internal
@@ -37,7 +37,7 @@ observers:
     actor: client
     program: mausezahn
     program_config:
-      target_actor: access_point
+      target_actor: ap
   att_tshark:
     actor: attacker
     program: tshark
@@ -49,7 +49,7 @@ observers:
     program_config:
       filter: "special_filter:actors"
   ap_tcpdump:
-    actor: access_point
+    actor: ap
     program: tcpdump
     program_config:
       filter: "udp port 5201"

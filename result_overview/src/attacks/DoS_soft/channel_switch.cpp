@@ -79,12 +79,12 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
     <h1>Channel Switch Announcement (CSA) DoS</h1>
 
     <div class="card">
-		<p><b>prerequisites:</b> client connected to legit access_point </p>
+		<p><b>prerequisites:</b> client connected to legit ap </p>
         <p>The attacker sends CSA beacons causing a connected client to switch
            Wi-Fi channels, disconnecting it from the legitimate AP.
 		   Optionally can attacker create rogue AP on new channel with WPA2 to downgrade and het WPA2 hash </p>
 		<p><b>variants:</b> optionally attack can have rogue AP to check downgrade and WPA2 password<p>
-		<p><b>success:</b> client disconnected from access_point, in second variant try to connect to rogue AP</p>
+		<p><b>success:</b> client disconnected from ap, in second variant try to connect to rogue AP</p>
 
 
 <img src="../../../images/CSA.svg" alt="CSA attack diagram" style="max-width:60%; margin-top:12px; display:block; margin-left:auto; margin-right:auto;">

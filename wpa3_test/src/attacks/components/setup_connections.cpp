@@ -43,10 +43,10 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 
 void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
-	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
+	if(rs.get_actor("ap")->is_WB()) setup_AP(rs, "ap");
 
-	if(rs.get_actor("access_point").is(SK::source, "internal")){
-		const auto &ap = rs.get_actor("access_point");
+	if(rs.get_actor("ap").is(SK::source, "internal")){
+		const auto &ap = rs.get_actor("ap");
 		if(ap[SK::ip_addr]){
 			const string ip    = ap.get(SK::ip_addr);
 			const string iface = ap.get(SK::iface);
@@ -64,16 +64,16 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 		setup_STA(rs, "client");
 		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 	} else if(rs.get_actor("client").is(SK::source, "external") &&
-	          rs.get_actor("access_point").is(SK::source, "internal")){
+	          rs.get_actor("ap").is(SK::source, "internal")){
 		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
-		    hostapd::get_ssid(rs, "access_point"),
-		    hostapd::get_password(rs, "access_point"));
+		    hostapd::get_ssid(rs, "ap"),
+		    hostapd::get_password(rs, "ap"));
 
 		string matched_line;
 		if(check_way_eapol){
-			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line);
+			rs.process_manager.wait_for("ap", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line);
 		} else{
-			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(120), true, &matched_line);
+			rs.process_manager.wait_for("ap", "AP-STA-CONNECTED", seconds(120), true, &matched_line);
 		}
 
 		smatch m;
@@ -88,11 +88,11 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 		return;
 	}
 
-	if(rs.get_actor("access_point").get(SK::source) != "external"){
+	if(rs.get_actor("ap").get(SK::source) != "external"){
 		if(check_way_eapol){
-			rs.process_manager.wait_for("access_point", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
+			rs.process_manager.wait_for("ap", "EAPOL-4WAY-HS-COMPLETED", seconds(40));
 		} else{
-			rs.process_manager.wait_for("access_point", "AP-STA-CONNECTED", seconds(10));
+			rs.process_manager.wait_for("ap", "AP-STA-CONNECTED", seconds(10));
 		}
 	}
 	log(LogLevel::INFO, "client is connected");
@@ -117,7 +117,7 @@ void client_ap_attacker_setup_enterprise(RunStatus &rs){
 		throw run_err("only internal actors are supported");
 	}
 
-	if(rs.get_actor("access_point")->is_WB()) setup_AP(rs, "access_point");
+	if(rs.get_actor("ap")->is_WB()) setup_AP(rs, "ap");
 	setup_STA(rs, "client");
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));

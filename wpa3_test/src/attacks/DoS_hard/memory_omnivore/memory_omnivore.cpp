@@ -48,12 +48,12 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 
 void run_attack(RunStatus &rs){
 	const ActorPtr attacker = rs.get_actor("attacker");
-	const ActorPtr ap = rs.get_actor("access_point");
+	const ActorPtr ap = rs.get_actor("ap");
 
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), hostapd::get_ssid(rs, "access_point"),
+		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), hostapd::get_ssid(rs, "ap"),
 		ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
@@ -98,6 +98,6 @@ void run_attack(RunStatus &rs){
 void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-	observer::resource_checker::create_graph(rs, rs.get_actor("access_point").get(SK::source), elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

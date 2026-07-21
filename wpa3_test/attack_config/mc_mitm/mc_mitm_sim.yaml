@@ -2,7 +2,7 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: mc_mitm_test_sim
 attacker_module: mc_mitm
 actors:
-  access_point:
+  ap:
     source: simulation
     selection:
       condition: [ AP ]
@@ -37,7 +37,7 @@ actors:
   #  actor: client
   #  program: mausezahn
   #  program_config:
-  #    target_actor: access_point
+  #    target_actor: ap
 
   #client_tshark:
   #  actor: rogue_client

@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+r?: hostapd_path - nebylo by jednoduší to na už ve validátoru rozbalit, přendata na yaml a dál zpracovat stejně?  (bez kopírování pčes suite apod)
 ch: limitovat cklienty na známé stringy, kde to jde, pak limitace ve validatorech
 +: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
 f: reset usb

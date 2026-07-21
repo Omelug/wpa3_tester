@@ -34,7 +34,7 @@ void run_attack(RunStatus &rs){
 
 	log(LogLevel::INFO, "Stopping AP - waiting for client probe requests");
 	components::setup_rogue_ap(rs);
-	components::stop_AP(rs, "access_point");
+	components::stop_AP(rs, "ap");
 
 	atomic broadcast_probe_count{0};
 	atomic ssid_probe_count{0};

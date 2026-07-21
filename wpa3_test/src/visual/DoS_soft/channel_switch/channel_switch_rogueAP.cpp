@@ -21,10 +21,10 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	const auto rs = helper::load_test_rs(test_folder); //FIXME error on currupted test, stop (checkall load_test_rs)
-	const auto ap = rs->get_actor("access_point");
+	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
 	e.ap_source = ap->get(SK::source);
-	e.ap_ocv = hostapd::get_okc(*rs, "access_point");
+	e.ap_ocv = hostapd::get_okc(*rs, "ap");
 
 	const auto client = rs->get_actor("client");
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
@@ -44,7 +44,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 
 	const path tshark = test_folder / "observer" / "tshark";
 	if(const auto p = tshark / "client_graph.png"; exists(p)) e.client_graph = p;
-	if(const auto p = tshark / "access_point_graph.png"; exists(p)) e.ap_graph = p;
+	if(const auto p = tshark / "ap_graph.png"; exists(p)) e.ap_graph = p;
 
 	return e;
 }

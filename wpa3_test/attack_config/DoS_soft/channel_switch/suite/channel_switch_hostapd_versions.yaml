@@ -13,7 +13,7 @@ tests:
       $extends: ../channel_switch.yaml
       name: channel_switch_var_hostapd
       actors:
-        access_point:
+        ap:
           setup:
             program: hostapd
             program_config:

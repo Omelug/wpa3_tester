@@ -3,7 +3,7 @@ name: channel_switch_Dlink_5GHz
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml
 actors:
-  access_point:
+  ap:
     source: external
     selection:
       channel: 36

@@ -3,8 +3,8 @@ name: malformed_eapol1_patched_Dlink
 attacker_module: malformed_eapol1
 $extends: ../malformed_eapol1_rogueAP.yaml
 actors:
-  $DELETE: access_point
-  access_point:
+  $DELETE: ap
+  ap:
     $extends: ../../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     setup:

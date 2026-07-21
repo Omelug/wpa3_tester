@@ -26,6 +26,3 @@ tests:
             condition: [ "2_4GHz" ]
 
 delete_old: false
-rewrite: "errors"
-compile_external: true
-install_req: true

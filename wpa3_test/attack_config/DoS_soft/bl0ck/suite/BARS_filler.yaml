@@ -7,6 +7,3 @@ tests:
     type: actor_filler
     config: ../bl0ck_BARS.yaml
 delete_old: true
-rewrite: "errors"
-compile_external: true
-install_req: true

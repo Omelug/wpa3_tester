@@ -51,7 +51,7 @@ actors:
       channel: 6
       condition: [ monitor, 2_4GHz ]
       driver: mt76x2u
-$extends: [ ../observers.comp.yaml, ../rogue_ap.comp.yaml ]
+$extends: [ ../observers.comp.yaml, ../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 attack_config:
   attack_time: 30
   ms_interval: 100

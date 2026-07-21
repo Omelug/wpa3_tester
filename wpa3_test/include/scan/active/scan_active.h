@@ -13,8 +13,7 @@ void apply_rsn(const Tins::Dot11ManagementFrame &mgmt, Actor_Config_external &cf
 struct RSNCapFlags{
 	bool mfp_capable;
 	bool mfp_required;
-	bool ocv;
-	bool beacon_prot;
+	bool ocvc;
 };
 RSNCapFlags parse_rsn_caps(uint16_t caps);
 

@@ -32,10 +32,10 @@ void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
 
 RSNCapFlags parse_rsn_caps(const uint16_t caps){
 	return {
+		// 80211-2024 / 9.4.2.23.4 RSN Capabilities
 		.mfp_capable = static_cast<bool>(caps & 1u << 7),
 		.mfp_required = static_cast<bool>(caps & 1u << 6),
-		.ocv = static_cast<bool>(caps & 1u << 10),
-		.beacon_prot = static_cast<bool>(caps & 1u << 11),
+		.ocvc = static_cast<bool>(caps & 1u << 14)
 	};
 }
 
@@ -46,22 +46,23 @@ void set_role_flags(Actor_Config_external &cfg, const bool is_ap){
 	cfg.set(BK::monitor, false);
 }
 
-void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
-	try{
-		const auto rsn = mgmt.rsn_information();
-		const auto flags = parse_rsn_caps(rsn.capabilities());
-		cfg.set(BK::MFP, flags.mfp_capable);
-		cfg.set(BK::OCV, flags.ocv);
-		cfg.set(BK::beacon_prot, flags.beacon_prot);
+bool parse_beacon_protection(const Dot11ManagementFrame &mgmt) {
+	const auto* opt = mgmt.search_option(Dot11::OptionTypes::EXT_CAP);
+	if (!opt) return false;
 
-		for(const auto &akm: rsn.akm_cyphers()){
-			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm ==
-				RSNInformation::PSK_SHA256) cfg.set(BK::WPA_PSK, true);
-			if(akm == RSNInformation::SAE_SHA256 || akm == RSNInformation::SAE_FT) cfg.set(BK::WPA3_SAE, true);
-		}
-	} catch(const exception &e){
-		log(LogLevel::WARNING, "apply_rsn: RSN information not found: {}", e.what());
+	const auto data = opt->data_ptr();
+	const size_t data_size = opt->data_size();
+
+	// 80211-2024 / 9.4.2.25 Extended RSN Capabilities
+
+	// get id 84
+	constexpr size_t byte_idx = 84 / 8; // 10
+	constexpr uint8_t bit_mask = 1u << (84 % 8); // 1 << 4 = 0x10
+
+	if (data_size > byte_idx) {
+		return (data[byte_idx] & bit_mask) != 0;
 	}
+	return false;
 }
 
 void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
@@ -102,5 +103,23 @@ void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cf
 		}
 	}
 	cfg.set(BK::w80211ax, has_he);
+}
+
+void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
+	try{
+		const auto rsn = mgmt.rsn_information();
+		const auto flags = parse_rsn_caps(rsn.capabilities());
+		cfg.set(BK::MFP, flags.mfp_capable);
+		cfg.set(BK::OCV, flags.ocvc);
+		cfg.set(BK::beacon_prot,  parse_beacon_protection(mgmt));
+
+		for(const auto &akm: rsn.akm_cyphers()){
+			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm ==
+				RSNInformation::PSK_SHA256) cfg.set(BK::WPA_PSK, true);
+			if(akm == RSNInformation::SAE_SHA256 || akm == RSNInformation::SAE_FT) cfg.set(BK::WPA3_SAE, true);
+		}
+	} catch(const exception &e){
+		log(LogLevel::WARNING, "apply_rsn: RSN information not found: {}", e.what());
+	}
 }
 }

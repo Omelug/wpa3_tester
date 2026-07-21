@@ -1,0 +1,26 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: m_eapol1_external_client_invalid_ch
+attacker_module: channel_switch
+actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [ AP, 2_4GHz ]
+      channel: 6
+  client:
+    selection:
+      condition: [ STA, 2_4GHz ]
+  attacker:
+    selection:
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+
+attack_config:
+  attack_time: 60
+  ms_interval: 100
+  #14 is only allowed in Japan
+  new_channel: 14
+  sleep_before_sec: 10
+  sleep_after_sec: 10
+
+$extends: [./m_eapol1_eexternal_client.yaml]

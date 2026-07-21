@@ -82,7 +82,7 @@ ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", options);
 	}
-	throw req_err("Not found valid requirements: " + get_heuristic_err_msg(rules, options));
+	throw req_err("Not found valid requirements: {}", get_heuristic_err_msg(rules, options));
 }
 
 vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options){

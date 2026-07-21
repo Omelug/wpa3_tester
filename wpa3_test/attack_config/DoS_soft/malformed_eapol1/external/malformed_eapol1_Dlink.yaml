@@ -5,7 +5,7 @@ $extends: ../malformed_eapol1_rogueAP.yaml
 actors:
   $DELETE: access_point
   access_point:
-    $extends: ../../../target/Dlink/Dlink_wb.comp.yaml
+    $extends: ../../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     setup:
       program_config:

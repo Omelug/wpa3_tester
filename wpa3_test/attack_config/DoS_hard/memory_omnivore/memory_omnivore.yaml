@@ -4,9 +4,9 @@ attacker_module: memory_omnivore
 $validator: memory_omniverse.schema.yaml
 actors:
   access_point:
-    $extends: ../../target/Dlink/Dlink_wb.comp.yaml
+    $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
-    $extends: ../../target/Dlink/mixed_client_2_4.comp.yaml
+    $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
     selection:
       driver: mt76x2u
       #driver: ath9k_htc

@@ -1,7 +1,7 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 name: malformed_eapol1_rogueAP
 attacker_module: malformed_eapol1
-$extends: [./malformed_eapol1.yaml, ./rogue_ap.comp.yaml]
+$extends: [./malformed_eapol1.yaml, ./../../comp/rogue_ap/rogue_ap_6.comp.yaml]
 actors:
   $DELETE: client
   client:

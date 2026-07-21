@@ -34,7 +34,7 @@ actors:
     setup:
       program_config:
         ssid: OpenWrt_2_4GHz
-$extends: [ ./ex_observers.comp.yaml, ../rogue_ap.comp.yaml ]
+$extends: [ ./ex_observers.comp.yaml, ../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 
 attack_config:
   attack_time: 60

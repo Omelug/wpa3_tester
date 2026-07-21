@@ -4,7 +4,7 @@ attacker_module: wpa3_trans_downgrade
 actors:
   $DELETE: access_point
   access_point:
-    $extends: ../../target/Dlink/Dlink_wb_wpa3_disable.comp.yaml
+    $extends: ../../comp/Dlink/Dlink_wb_wpa3_disable.comp.yaml
   client:
     source: internal
     setup:

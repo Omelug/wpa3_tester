@@ -7,6 +7,4 @@ tests:
     type: actor_filler
     config: ./injection_test.yaml
 delete_old: true
-rewrite: "errors"
-compile_external: true
-install_req: true
+

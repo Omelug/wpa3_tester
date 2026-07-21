@@ -10,6 +10,3 @@ tests:
     test_name: channel_switch_2_10_ocv_beacon_prot
 
 delete_old: true
-rewrite: "errors"
-compile_external: true
-install_req: true

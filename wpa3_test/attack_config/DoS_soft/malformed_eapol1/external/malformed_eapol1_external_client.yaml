@@ -3,7 +3,7 @@ name: malformed_eapol1_Dlink_client
 attacker_module: malformed_eapol1
 actors:
   access_point:
-    $extends: ../../../target/Dlink/Dlink_bb.comp.yaml
+    $extends: ../../../comp/Dlink/Dlink_bb.comp.yaml
   client:
     source: external
     selection:

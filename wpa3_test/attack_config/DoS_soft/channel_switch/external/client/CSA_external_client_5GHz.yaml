@@ -1,0 +1,35 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+name: CSA_external_client_5GHz
+attacker_module: channel_switch
+#FIXME delete strict rules ffrom CSA_external_client (mac ) for 5Ghz supported
+# TODO add better no enough GHZ adapters
+actors:
+  access_point:
+    source: internal
+    selection:
+      condition: [ AP, 5GHz ]
+      channel: 36
+    setup:
+      program_config:
+        hw_mode: a
+        channel: 36
+  client:
+    selection:
+      condition: [ STA, 5GHz ]
+      channel: 36
+  attacker:
+    selection:
+      condition: [ monitor, 5GHz ]
+      channel: 36
+  rogue_ap:
+    selection:
+      condition: [ AP, 5GHz ]
+      channel: 40
+$extends: [./CSA_external_client.yaml]
+
+attack_config:
+  attack_time: 60
+  ms_interval: 100
+  new_channel: 40
+  sleep_before_sec: 10
+  sleep_after_sec: 10

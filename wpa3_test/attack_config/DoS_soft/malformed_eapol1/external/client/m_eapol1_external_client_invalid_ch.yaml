@@ -23,4 +23,4 @@ attack_config:
   sleep_before_sec: 10
   sleep_after_sec: 10
 
-$extends: [./m_eapol1_eexternal_client.yaml]
+$extends: [./m_eapol1_external_client.yaml]

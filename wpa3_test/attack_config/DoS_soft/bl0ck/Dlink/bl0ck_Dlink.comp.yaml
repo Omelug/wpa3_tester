@@ -3,7 +3,7 @@ attacker_module: bl0ck
 scan_iface: wlan1
 actors:
   access_point:
-    $extends: ../../../target/Dlink/Dlink_wb_5Ghz.comp.yaml
+    $extends: ../../../comp/Dlink/Dlink_wb_5Ghz.comp.yaml
   client:
     source: internal
     setup:

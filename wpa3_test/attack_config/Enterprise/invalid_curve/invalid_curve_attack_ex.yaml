@@ -4,4 +4,4 @@ attacker_module: invalid_curve
 actors:
   $DELETE: access_point
   access_point:
-    $extends: ../../target/Dlink/Dlink_wb_eap.comp.yaml
+    $extends: ../../comp/Dlink/Dlink_wb_eap.comp.yaml

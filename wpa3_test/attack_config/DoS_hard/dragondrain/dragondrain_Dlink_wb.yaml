@@ -6,9 +6,9 @@ requirements:
   simple: [ ath_masker ]
 actors:
   access_point:
-    $extends: ../../target/Dlink/Dlink_wb.comp.yaml
+    $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
-    $extends: ../../target/Dlink/mixed_client_2_4.comp.yaml
+    $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
   attacker:
     source: internal
     selection:

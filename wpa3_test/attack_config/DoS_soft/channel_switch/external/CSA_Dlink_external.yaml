@@ -27,7 +27,7 @@ actors:
       channel: 6
   rogue_ap:
     sniff_iface: rogue
-$extends: [ ./ex_observers.comp.yaml, ../rogue_ap.comp.yaml ]
+$extends: [ ./ex_observers.comp.yaml, ../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 
 attack_config:
   attack_time: 60

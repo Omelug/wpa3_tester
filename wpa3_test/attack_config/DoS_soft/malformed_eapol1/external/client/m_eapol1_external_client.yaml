@@ -53,7 +53,7 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-$extends: [ ../../rogue_ap.comp.yaml ]
+$extends: [ ../../../../comp/rogue_ap/rogue_ap_6.comp.yaml ]
 
 attack_config:
   attack_time: 60

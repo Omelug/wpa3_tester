@@ -93,13 +93,6 @@ void RunStatus::execute(){
 
 	try {
 	auto &gcfg = get_global_config();
-	if(gcfg.contains("regulatory_domain")){
-		const string reg = gcfg.at("regulatory_domain").get<string>();
-		log(LogLevel::INFO, "Setting regulatory domain: iw reg set {}", reg);
-		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
-			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
-	}
-
 	if(run_config().get_only_stats()){
 		config_path(absolute(run_folder()/TEST_CONFIG_NAME));
 		config(config_validation(config_path()));

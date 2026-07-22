@@ -6,8 +6,8 @@ scan_iface: wlan1
 
 
 $extends: [
-  ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
-  ../../../../comp/rogue_ap/rogue_ap_1.comp.yaml
+  ../../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
+  ../../../../comp/rogue_ap/rogue_ap_1.comp.yaml,
   ../ex_observers.comp.yaml,
 ]
 

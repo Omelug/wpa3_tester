@@ -325,59 +325,6 @@ std::string to_hex(const uint8_t* data, size_t len) {
 	return ss.str();
 }
 
-/*
-std::vector<std::string> hccapx_to_wpa_hashes(const path& hccapx_path) {
-	std::vector<std::string> hashes;
-	std::ifstream file(hccapx_path, std::ios::binary);
-
-	if (!file.is_open()) {
-		return hashes;
-	}
-
-	hccapx record{};
-
-	// load to struct
-	while (file.read(reinterpret_cast<char*>(&record), sizeof(hccapx))) {
-
-		// control signature "HCPX" (0x58504348 - Little Endian)
-		if (record.signature != 0x58504348) {
-			continue;
-		}
-
-		uint8_t essid_len = record.essid_len;
-		if (essid_len > 32) {
-			essid_len = 32;
-		}
-
-		// EAPOl len
-		uint16_t eapol_len = record.eapol_len;
-		if (eapol_len > 256) {
-			eapol_len = 256;
-		}
-
-		// padding
-		if (eapol_len == 128 && record.eapol[2] == 0x00 && record.eapol[3] == 0x7b) {
-			eapol_len = 127;
-		}
-
-		std::stringstream mp_ss;
-		mp_ss << std::setw(2) << std::setfill('0') << static_cast<int>(record.message_pair);
-
-		std::string hash_line = "WPA*02*" +
-				to_hex(record.keymic, 16) + "*" +
-				to_hex(record.mac_ap, 6) + "*" +
-				to_hex(record.mac_sta, 6) + "*" +
-				to_hex(record.essid, essid_len) + "*" +
-				to_hex(record.nonce_ap, 32) + "*" +
-				to_hex(record.eapol, eapol_len) + "*" +
-				mp_ss.str();
-
-		hashes.push_back(hash_line);
-	}
-
-	return hashes;
-}*/
-
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
     if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
        throw config_err("hcxpmktool not found in PATH - install hcxtools package");
@@ -413,31 +360,6 @@ static path actor_conf_path(const RunStatus &rs, const string &actor_name){
 	return rs.run_folder() / (actor_name + (program == "wpa_supplicant" ? "_wpa_supplicant.conf" : "_hostapd.conf"));
 }
 
-static string get_conf_value(const path &cfg, initializer_list<string_view> keys){
-	ifstream f(cfg);
-	string line;
-	for(const string_view key: keys){
-		f.clear();
-		f.seekg(0);
-		while(getline(f, line)){
-			string s = line;
-			s.erase(0, s.find_first_not_of(" \t"));
-			if(!s.starts_with(string(key) + "=")) continue;
-			string val = s.substr(key.size() + 1);
-			if(val.size() >= 2 && val.front() == '"' && val.back() == '"') val = val.substr(1, val.size() - 2);
-			return val;
-		}
-	}
-	return {};
-}
-
-/*string get_ssid(const nlohmann::json &program_config, const string &config_path){
-	if(program_config.contains("ssid")) return program_config["ssid"].get<string>();
-	if(!config_path.empty())
-		if(const auto v = get_conf_value(config_path, {"ssid"}); !v.empty()) return v;
-	throw config_err("'ssid' not found in program_config or file: {}", config_path);
-}*/
-
 string get_password(const RunStatus &rs, const string &actor_name){
 	return get_conf_value(actor_conf_path(rs, actor_name), {"sae_password", "psk"});
 }
@@ -470,10 +392,39 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
-string owe_trans_bssid(const string &primary_mac){
-	const auto addr = Tins::HWAddress<6>(primary_mac);
-	return format("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
+string akm_from_ap_log(const path &log_path, const string &stop_tag){
+	ifstream f(log_path);
+	string line;
+	while(getline(f, line)){
+		if(line.find(stop_tag) != string::npos) break;
+		const auto pos = line.find("AKM suite ");
+		if(pos == string::npos) continue;
+		const auto start = pos + string("AKM suite ").size();
+		const auto end = line.find_first_of(" \t\n\r]", start);
+		const string suite = line.substr(start, end == string::npos ? string::npos : end - start);
+		if(suite.empty()) continue;
+		if(suite.ends_with(":8")) return suite + "\n(WPA3)";
+		if(suite.ends_with(":2")) return suite + "\n(WPA2)";
+		return suite;
+	}
+	return {};
+}
+
+string mfp_from_ap_log(const path &log_path, const string &stop_tag){
+	ifstream f(log_path);
+	string line;
+	while(getline(f, line)){
+		if(line.find(stop_tag) != string::npos) break;
+		const auto mfpc_pos = line.find("MFPC=");
+		if(mfpc_pos == string::npos) continue;
+		const char mfpc = line.size() > mfpc_pos + 5 ? line[mfpc_pos + 5] : '0';
+		if(mfpc != '1') return "OFF";
+		const auto mfpr_pos = line.find("MFPR=");
+		if(mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1')
+			return "REQUIRED";
+		return "OPTIONAL";
+	}
+	return {};
 }
 
 string get_mfp_from_supplicant(const path &conf){
@@ -484,6 +435,31 @@ string get_mfp_from_supplicant(const path &conf){
 	if(val == "0") return "OFF";
 	return {};
 }
+
+string owe_trans_bssid(const string &primary_mac){
+	const auto addr = Tins::HWAddress<6>(primary_mac);
+	return format("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+				addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
+}
+
+string get_conf_value(const path &cfg, initializer_list<string_view> keys){
+	ifstream f(cfg);
+	string line;
+	for(const string_view key: keys){
+		f.clear();
+		f.seekg(0);
+		while(getline(f, line)){
+			string s = line;
+			s.erase(0, s.find_first_not_of(" \t"));
+			if(!s.starts_with(string(key) + "=")) continue;
+			string val = s.substr(key.size() + 1);
+			if(val.size() >= 2 && val.front() == '"' && val.back() == '"') val = val.substr(1, val.size() - 2);
+			return val;
+		}
+	}
+	return {};
+}
+
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){
 	const OpenSSLPaths ssl = get_openssl_paths(openssl_version);

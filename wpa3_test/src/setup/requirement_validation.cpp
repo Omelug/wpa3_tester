@@ -235,6 +235,18 @@ bool RunStatus::config_requirement(){
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
+	// set the regulatory domain before loading the driver so ath9k_htc (user_regd=1)
+	// picks it up from the kernel on init instead of falling back to EEPROM.
+	auto &gcfg = get_global_config();
+	if(gcfg.contains("regulatory_domain")){
+		const string reg = gcfg.at("regulatory_domain").get<string>();
+		log(LogLevel::INFO, "Setting regulatory domain pre-USB-reset: iw reg set {}", reg);
+		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
+		else
+			this_thread::sleep_for(chrono::milliseconds(100));
+	}
+
 	reset_usb_ifaces();
 
 	//  external wb/bb separation

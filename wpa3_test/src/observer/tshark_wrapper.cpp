@@ -385,4 +385,20 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 		elements.push_back(make_unique<EventLines>(get_tshark_events(rs, actor, filter, label), label, color));
 	}
 }
+
+string akm_from_pcap(const path &pcap_path){
+	if(!exists(pcap_path)) return {};
+	// wlan.rsn.akms.type appears in assoc req/resp and EAPOL msg3 RSN IE
+	const string output = hw_capabilities::run_cmd_output({
+		"tshark", "-r", pcap_path.string(),
+		"-Y", "wlan.rsn.akms.type",
+		"-T", "fields", "-e", "wlan.rsn.akms.type",
+		"-c", "1"
+	}, nullopt);
+	const string type = trim(output);
+	if(type == "8") return "00-0F-AC:8(WPA3)";
+	if(type == "2") return "00-0F-AC:2(WPA2)";
+	if(!type.empty()) return "00-0F-AC:" + type;
+	return {};
+}
 }

@@ -23,10 +23,11 @@ compile:
 	fi
 	cmake --build $(BUILD_DIR) --target wpa3_tester -j $(NPROC)
 
-run: compile
+run: compile Makefile
 	mkdir -p data
 	mkdir -p data/wpa3_test
-	sudo ./$(BUILD_DIR)/bin/$(TARGET) --config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
+	sudo ./$(BUILD_DIR)/bin/$(TARGET) --test_suite CSA_rogueAP_internal_filler
+	#--config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 # debug visualization
 RUN_CALLGRAPH := doc/callgraph/callgraph.out

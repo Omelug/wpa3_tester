@@ -6,7 +6,9 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "logger/report.h"
+#include "observer/tshark_wrapper.h"
 #include "overview/html_guard.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
@@ -31,7 +33,36 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	e.client_mac = client->get_or(SK::mac, Tins::HWAddress<6>("00:00:00:00:00:00").to_string());//FIXME for debug, change to get only
 	e.client_source = client->get(SK::source);
 	e.client_ocv =  hostapd::get_ocv(*rs, "client");
-	e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
+
+	if(exists(test_folder / "client_wpa_supplicant.conf")){
+		e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
+		e.client_WPA_support = hostapd::get_conf_value(test_folder / "client_wpa_supplicant.conf", {"key_mgmt"});
+	}
+
+	if(exists(test_folder / "ap_hostapd.conf")){
+		e.ap_WPA_support = hostapd::get_conf_value(test_folder / "ap_hostapd.conf", {"wpa_key_mgmt"});
+	}
+
+	if(e.ap_source == "internal"){
+		const path ap_log = test_folder / "logger" / "ap.log";
+		if(exists(ap_log)){
+			auto program_str = rs->config().at("actors").at("ap").at("program").get<string>();
+			if(program_str == "hostapd"){
+				e.conn_WPA_version = hostapd::akm_from_ap_log(ap_log, START_tag);
+				if(e.client_mfp.empty())
+					e.client_mfp = hostapd::mfp_from_ap_log(ap_log, START_tag);
+			}
+			if(program_str == "openwrt"){
+				e.conn_WPA_version = openwrt::akm_from_openwrt_log(ap_log, START_tag);
+				if(e.client_mfp.empty())
+					e.client_mfp = openwrt::mfp_from_openwrt_log(ap_log, START_tag);
+			}
+		}
+	}
+	if(e.conn_WPA_version.empty()){
+		const path attacker_pcap = test_folder / "observer" / "tshark" / "attacker_capture.pcap";
+		e.conn_WPA_version = observer::tshark::akm_from_pcap(attacker_pcap);
+	}
 
 	const auto att = rs->get_actor("attacker");
 	e.attacker_mac = att->get(SK::mac);
@@ -64,8 +95,8 @@ void render_table(overview::HtmlGuard &f,
 		  << "                    <td>" << overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
 		  << "                    <td>" << overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
 		  << "                    <td>" << overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-		  << "                    <td>" << (e.disconnected.value_or(false) ? "yes" : "no") << "</td>\n"
-		  << "                    <td>" << (e.rogue_ap_connected.value_or(false) ? "yes" : "no") << "</td>\n"
+		  << "                    <td>" << e.disconnected << "</td>\n"
+		  << "                    <td>" << e.rogue_ap_connected << "</td>\n"
 		  << "                    <td>" << e.client_mfp << "</td>\n"
 		  << "                </tr>\n";
 	}

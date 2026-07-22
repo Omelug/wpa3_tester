@@ -181,8 +181,10 @@ deploy:
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
+TEST_SUITE  ?= CSA_rogueAP_internal_filler
+
 run: deploy-cross
-	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
+	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
 
 GDB_PORT ?= 1234
 

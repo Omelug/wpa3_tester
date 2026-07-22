@@ -102,8 +102,9 @@ else
     echo "    static IP: DHCP"
 fi
 
-# ath9k_hw — disable ANI (Adaptive Noise Immunity) for driver stability
-echo "options ath9k_hw ani_enable=0" > "$ROOT/etc/modprobe.d/ath9k.conf"
+# ath9k_hw — disable ANI + let the kernel regulatory domain override EEPROM
+printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
+    > "$ROOT/etc/modprobe.d/ath9k.conf"
 # USB — disable autosuspend (prevents Wi-Fi adapter disconnects under load)
 echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
 

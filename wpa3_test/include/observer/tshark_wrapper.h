@@ -30,4 +30,8 @@ void pcap_events(const RunStatus &rs, G_elms &elements,
 				// { actor, filter, label, color }
 				std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_def
 );
+
+// Extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark).
+// Returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", or empty string if not found.
+std::string akm_from_pcap(const std::filesystem::path &pcap_path);
 }

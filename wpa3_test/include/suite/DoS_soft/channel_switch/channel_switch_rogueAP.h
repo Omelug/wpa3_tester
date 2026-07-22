@@ -28,6 +28,11 @@ struct CsaTestEntry{
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;
 	std::string client_mfp;
+
+	std::string ap_WPA_support;
+	std::string client_WPA_support;
+	std::string conn_WPA_version;
+
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
 	std::filesystem::path rel_path;

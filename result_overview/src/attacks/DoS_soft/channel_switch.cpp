@@ -116,6 +116,8 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "                <th>Rogue AP?</th>\n"
           << "                <th>AP OCV / Client OCV support</th>\n"
           << "                <th>Client MFP</th>\n"
+    	  << "                <th>AP/Client WPA support</th>\n"
+          << "                <th>connected version</th>\n"
           << "            </tr></thead>\n"
           << "            <tbody>\n";
         for (const auto *e : rows) {
@@ -130,6 +132,8 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             f << "                    <td>" << e->rogue_ap_connected     << "</td>\n";
             f << "                    <td>" << e->ap_ocv << " / " << e->client_ocv << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";
+        	f << "                    <td>" << e->ap_WPA_support << " / " << e->client_WPA_support << "</td>\n";
+        	f << "                    <td>" << e->conn_WPA_version << "</td>\n";
             f << "                </tr>\n";
         }
         f << "            </tbody>\n        </table>\n    </div>\n";

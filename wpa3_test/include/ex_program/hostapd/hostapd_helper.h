@@ -22,6 +22,11 @@ std::string get_channel(const nlohmann::json &program_config, const std::string 
 // parses ieee80211w from a wpa_supplicant.conf -> "OFF"/"OPTIONAL"/"REQUIRED", empty if absent
 std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 
+// parse AKM suite from a hostapd -d log up to stop_tag; returns e.g. "00-0F-AC:8\n(WPA3)"
+std::string akm_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
+// parse client MFP from MFPR/MFPC fields in a hostapd -d log up to stop_tag
+std::string mfp_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
+
 // computes secondary BSSID for OWE transition mode (flips LSB of last octet)
 std::string owe_trans_bssid(const std::string &primary_mac);
 
@@ -35,6 +40,8 @@ std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path &hccap
 
 // verify each WPA*02* hash from a creds file against psk using hcxpmktool
 CrackResult crack_pmk_hashes(const std::filesystem::path &creds_file, const std::string &psk);
+
+std::string get_conf_value(const std::filesystem::path &cfg, std::initializer_list<std::string_view> keys);
 
 struct OpenSSLPaths{
 	std::filesystem::path lib_dir;     // for LD_LIBRARY_PATH

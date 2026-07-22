@@ -4,7 +4,7 @@ $validator: ./malformed_eapol1.schema.yaml
 attacker_module: malformed_eapol1
 
 $extends: [
-  ../../comp/ap/ap_2_11_WPA3_only_6.comp.yaml,
+  ../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
   # 2_10 not patched
   ../../comp/client/client_2_10_WPA3_only_MFPr_6.comp.yaml
 ]

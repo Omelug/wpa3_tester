@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <iomanip>
 #include <nlohmann/json.hpp>
 
 #include "default.h"
@@ -65,7 +64,7 @@ void generate_report(RunSuiteStatus &rss){
 			<< e.client_version << " | "
 			<< e.attacker_driver << " | "
 			<< disc_link << "(" << e.disconnect_count << ")" << " | "
-			<< (e.rogue_ap_connected.value_or(false) ? "yes" : "no") << " | "
+			<< e.rogue_ap_connected << " | "
 			<< graphs << " |\n";
 	}
 

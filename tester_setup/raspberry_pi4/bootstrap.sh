@@ -94,8 +94,9 @@ DefaultProduct=0x1a2b
 StandardEject=1
 EOF
 
-echo "==> Disabling ath9k_hw ANI for driver stability..."
-echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
+echo "==> Configuring ath9k: disable ANI, enable user regulatory domain override..."
+printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
+    | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
 echo "==> Disabling USB autosuspend..."
 echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
 sudo update-initramfs -u

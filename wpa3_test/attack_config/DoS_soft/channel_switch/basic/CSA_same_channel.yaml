@@ -1,8 +1,8 @@
-$extends: ../channel_switch.yaml
 name: CSA_same_channel
 $validator: ../channel_switch.schema.yaml
 
 $extends: [
+  ../channel_switch.yaml,
   ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
   ../../../comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml
 ]

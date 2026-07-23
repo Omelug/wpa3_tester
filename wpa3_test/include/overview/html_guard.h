@@ -36,6 +36,9 @@ struct HtmlGuard {
 	HtmlGuard &operator<<(const std::string &val){
 		if(val.empty()) stream_ << '?'; else stream_ << val; return *this;
 	}
+	HtmlGuard &operator<<(const std::pair<std::string, std::string> &val){
+		if(val.first.empty()) stream_ << '?'; else stream_ << val.first << "("<<val.second << ")"; return *this;
+	}
 	HtmlGuard &operator<<(const std::optional<std::string> &val){
 		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
 	}
@@ -43,6 +46,7 @@ struct HtmlGuard {
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
+	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path>)
 	HtmlGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 

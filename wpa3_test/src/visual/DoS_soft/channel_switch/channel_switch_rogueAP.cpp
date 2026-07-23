@@ -30,38 +30,39 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 
 	const auto client = rs->get_actor("client");
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
-	e.client_mac = client->get_or(SK::mac, Tins::HWAddress<6>("00:00:00:00:00:00").to_string());//FIXME for debug, change to get only
+	e.client_mac = client->get(SK::mac);
 	e.client_source = client->get(SK::source);
 	e.client_ocv =  hostapd::get_ocv(*rs, "client");
 
 	if(exists(test_folder / "client_wpa_supplicant.conf")){
-		e.client_mfp = hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf");
-		e.client_WPA_support = hostapd::get_conf_value(test_folder / "client_wpa_supplicant.conf", {"key_mgmt"});
+		e.client_mfp = {hostapd::get_mfp_from_supplicant(test_folder / "client_wpa_supplicant.conf"), "wpa_supplicant_conf"};
+		e.client_WPA_support = {hostapd::get_conf_value(test_folder / "client_wpa_supplicant.conf", {"key_mgmt"}), "wpa_supplicant_conf"};
 	}
 
 	if(exists(test_folder / "ap_hostapd.conf")){
-		e.ap_WPA_support = hostapd::get_conf_value(test_folder / "ap_hostapd.conf", {"wpa_key_mgmt"});
+		e.ap_WPA_support = {hostapd::get_conf_value(test_folder / "ap_hostapd.conf", {"wpa_key_mgmt"}), "hostapd_conf"};
 	}
 
 	if(e.ap_source == "internal"){
 		const path ap_log = test_folder / "logger" / "ap.log";
 		if(exists(ap_log)){
-			auto program_str = rs->config().at("actors").at("ap").at("program").get<string>();
+			auto program_str = rs->config().at("actors").at("ap").at("setup").at("program").get<string>();
 			if(program_str == "hostapd"){
-				e.conn_WPA_version = hostapd::akm_from_ap_log(ap_log, START_tag);
-				if(e.client_mfp.empty())
-					e.client_mfp = hostapd::mfp_from_ap_log(ap_log, START_tag);
+				e.conn_WPA_version = {hostapd::akm_from_ap_log(ap_log, START_tag), "hostapd"};
+				if(e.client_mfp.first.empty())
+					e.client_mfp = {hostapd::mfp_from_ap_log(ap_log, START_tag), "hostapd"};
 			}
 			if(program_str == "openwrt"){
-				e.conn_WPA_version = openwrt::akm_from_openwrt_log(ap_log, START_tag);
-				if(e.client_mfp.empty())
-					e.client_mfp = openwrt::mfp_from_openwrt_log(ap_log, START_tag);
+				e.conn_WPA_version = {openwrt::akm_from_openwrt_log(ap_log, START_tag), "openwrt"};
+				if(e.client_mfp.first.empty())
+					e.client_mfp = {openwrt::mfp_from_openwrt_log(ap_log, START_tag), "openwrt"};
 			}
 		}
 	}
-	if(e.conn_WPA_version.empty()){
+
+	if(e.conn_WPA_version.first.empty()){
 		const path attacker_pcap = test_folder / "observer" / "tshark" / "attacker_capture.pcap";
-		e.conn_WPA_version = observer::tshark::akm_from_pcap(attacker_pcap);
+		e.conn_WPA_version = {observer::tshark::akm_from_pcap(attacker_pcap), "" };
 	}
 
 	const auto att = rs->get_actor("attacker");
@@ -140,11 +141,12 @@ void generate_report(RunSuiteStatus &rss){
 			<< report::link(result_text, e.rel_path / RESULT_NAME) << " |\n";
 	}
 
-	report << "\n## Summary\n\n";
+	/*report << "\n## Summary\n\n";
 	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.rogue_ap_connected.value_or(false); });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
 	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
+	*/
 }
 }

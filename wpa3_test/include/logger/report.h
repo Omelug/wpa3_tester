@@ -48,6 +48,9 @@ struct ReportGuard {
     ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
 
 	ReportGuard &operator<<(const std::string &val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
+	ReportGuard &operator<<(const std::pair<std::string, std::string> &val){
+		if(val.first.empty()) stream_ << '?'; else stream_ << val.first << "("<<val.second << ")"; return *this;
+	}
 	ReportGuard &operator<<(std::string &&val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
 	ReportGuard &operator<<(const std::optional<std::string> &val){
 		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
@@ -57,6 +60,7 @@ struct ReportGuard {
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
+	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
 	          !std::same_as<std::remove_cvref_t<T>, Link>)
 	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }

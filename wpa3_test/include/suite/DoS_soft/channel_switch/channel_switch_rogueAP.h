@@ -8,6 +8,8 @@
 namespace wpa3_tester::overview { struct HtmlGuard; }
 
 namespace wpa3_tester::suite::channel_switch_rogueAP{
+typedef std::string desc_t;
+
 struct CsaTestEntry{
 	std::string name;
 	std::string ap_mac;
@@ -27,11 +29,11 @@ struct CsaTestEntry{
 
 	std::optional<bool> ap_ocv;
 	std::optional<bool> client_ocv;
-	std::string client_mfp;
+	std::pair<std::string, desc_t> client_mfp;
 
-	std::string ap_WPA_support;
-	std::string client_WPA_support;
-	std::string conn_WPA_version;
+	std::pair<std::string, desc_t> ap_WPA_support;
+	std::pair<std::string, desc_t> client_WPA_support;
+	std::pair<std::string, desc_t> conn_WPA_version;
 
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;

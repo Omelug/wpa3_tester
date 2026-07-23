@@ -68,7 +68,7 @@ void check_OCV(nlattr **attrs, NlCaps *caps){
 	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
 	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 	constexpr int feature = NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION;
-	log(LogLevel::DEBUG, "nl80211 OCV: ext_features len={}, need byte={}", len, feature / 8);
+	//log(LogLevel::DEBUG, "nl80211 OCV: ext_features len={}, need byte={}", len, feature / 8);
 	if(feature / 8 < len) caps->ocv = (ext[feature / 8] >> (feature % 8)) & 1;
 }
 

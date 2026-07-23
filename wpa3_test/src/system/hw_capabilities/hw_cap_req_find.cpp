@@ -162,7 +162,45 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 			msg += "}; ";
 		}
 	}
-	if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";
+	if(msg.empty()){
+		// Frequency conflict: N actors need the same value but fewer than N options provide it
+		for(const auto k: sk_keys()){
+			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
+			map<string, vector<string>> demand; // value -> actors requiring it
+			for(const auto &[aname, req_ptr]: rules){
+				const auto &r = (*req_ptr)[k];
+				if(r.has_value()) demand[*r].push_back(aname);
+			}
+			for(const auto &[val, actors]: demand){
+				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt){
+					const auto &o = (*opt)[k]; return o.has_value() && *o == val;
+				}));
+				if(actors.size() <= supply) continue;
+				const string kname{sk_name(k)};
+				msg += format("{} '{}' needed by {} actors (", kname, val, actors.size());
+				for(size_t i = 0; i < actors.size(); i++){ if(i) msg += ", "; msg += actors[i]; }
+				msg += format(") but only {} option(s) provide it; ", supply);
+			}
+		}
+		for(const auto k: bk_keys()){
+			map<bool, vector<string>> demand;
+			for(const auto &[aname, req_ptr]: rules){
+				const auto &r = (*req_ptr)[k];
+				if(r.has_value()) demand[*r].push_back(aname);
+			}
+			for(const auto &[val, actors]: demand){
+				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt){
+					const auto &o = (*opt)[k]; return o.has_value() && *o == val;
+				}));
+				if(actors.size() <= supply) continue;
+				const string kname{bk_name(k)};
+				msg += format("{} '{}' needed by {} actors (", kname, val ? "true" : "false", actors.size());
+				for(size_t i = 0; i < actors.size(); i++){ if(i) msg += ", "; msg += actors[i]; }
+				msg += format(") but only {} option(s) provide it; ", supply);
+			}
+		}
+		if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";
+	}
 	return msg;
 }
 }

@@ -20,7 +20,7 @@ ExternalConn::ExternalConn() = default;
 ExternalConn::~ExternalConn(){
 	if(session){
 		// clean up all process associated with this session
-		try{ ExternalConn::exec("pkill -s 0 -TERM"); } catch(...){}
+		try{ exec("pkill -s 0 -TERM"); } catch(...){}
 		ssh_disconnect(session);
 		ssh_free(session);
 	}
@@ -54,11 +54,11 @@ bool ExternalConn::connect(const ActorPtr &actor){
 	// auth with password (preferred) or public key
 	const string password = actor.get(SK::ssh_password);
 	if(password.empty()){
-		if(ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS) throw ex_conn_err(
-			"SSH auth failed: no password and no key");
+		if(ssh_userauth_publickey_auto(session, nullptr, nullptr) != SSH_AUTH_SUCCESS)
+			throw ex_conn_err("SSH auth failed: no password and no key");
 	} else{
-		if(ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS) throw ex_conn_err(
-			"SSH auth failed: " + string(ssh_get_error(session)));
+		if(ssh_userauth_password(session, nullptr, password.c_str()) != SSH_AUTH_SUCCESS)
+			throw ex_conn_err("SSH auth failed: " + string(ssh_get_error(session)));
 	}
 	return true;
 }

@@ -158,6 +158,20 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	return timestamps;
 }
 
+LogTimePoint get_tag_time(const path &log_path, const string &tag){
+	if(!exists(log_path)) return LogTimePoint{};
+	ifstream file(log_path);
+	string line;
+	const regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}))");
+	smatch match;
+	while(getline(file, line)){
+		if(line.find(tag) != string::npos)
+			if(regex_search(line, match, re))
+				return log_time_to_epoch_ns(match[1].str());
+	}
+	return LogTimePoint{};
+}
+
 string escape_tex(string text){
 	size_t pos = 0;
 	while((pos = text.find('_', pos)) != string::npos){

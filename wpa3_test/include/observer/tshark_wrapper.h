@@ -34,4 +34,15 @@ void pcap_events(const RunStatus &rs, G_elms &elements,
 // Extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark).
 // Returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", or empty string if not found.
 std::string akm_from_pcap(const std::filesystem::path &pcap_path);
+// Extract OCV (OCVC bit of RSNXE) from client frames (Probe Req / Assoc Req).
+// Returns true/false if a frame is found, nullopt if no relevant frame exists in the pcap.
+std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
+// Extract OCV (OCVC bit of RSNXE) from AP frames (Beacon / Probe Resp).
+std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
+// Detect client scanning via Probe Requests in pcap_path within [start_time, end_time].
+// Returns "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap), "yes" if
+// probe requests found but no channel info, or empty string if no scanning detected.
+std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
+                                       const std::string &client_mac,
+                                       LogTimePoint start_time, LogTimePoint end_time);
 }

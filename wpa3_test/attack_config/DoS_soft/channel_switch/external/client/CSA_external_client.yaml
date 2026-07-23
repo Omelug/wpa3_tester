@@ -19,6 +19,7 @@ actors:
       driver: ath9k_htc
     setup:
       program_config:
+        other_options: "-d"
         country_code: CZ
         # s ieee80211w: 1 OnePlus funguje (i když je to nevalidní podle WPA3, nejspíš to není vyjímečné - dohledat zdroj)
         #ieee80211w: 1
@@ -41,5 +42,5 @@ attack_config:
   new_channel: 1
   sleep_before_sec: 10
   sleep_after_sec: 10
-install_req: true
+
 rewrite: errors

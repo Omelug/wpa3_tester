@@ -27,13 +27,14 @@ struct CsaTestEntry{
 	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 
-	std::optional<bool> ap_ocv;
-	std::optional<bool> client_ocv;
+	std::pair<std::optional<bool>, desc_t> ap_ocv;
+	std::pair<std::optional<bool>, desc_t> client_ocv;
 	std::pair<std::string, desc_t> client_mfp;
 
 	std::pair<std::string, desc_t> ap_WPA_support;
 	std::pair<std::string, desc_t> client_WPA_support;
 	std::pair<std::string, desc_t> conn_WPA_version;
+	std::pair<std::string, desc_t> client_scanning;
 
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;

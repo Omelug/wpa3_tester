@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
+#include <set>
 #include <sstream>
 
 #include "config/RunStatus.h"
@@ -384,6 +385,37 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 	for(auto &[actor, filter, label, color]: event_def){
 		elements.push_back(make_unique<EventLines>(get_tshark_events(rs, actor, filter, label), label, color));
 	}
+}
+
+// RSNXE (tag 244) capabilities: bits 0-3 = length, bit 6 = OCVC.
+// Returns true/false if a relevant frame with RSNXE is found, nullopt if no such frame exists.
+static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_filter){
+	if(!exists(pcap_path)) return nullopt;
+	// First check if any matching frame exists at all
+	const string frame_check = trim(hw_capabilities::run_cmd_output({
+		"tshark", "-r", pcap_path.string(), "-Y", frame_filter,
+		"-T", "fields", "-e", "frame.number", "-c", "1"
+	}, nullopt));
+	if(frame_check.empty()) return nullopt;
+	// Extract RSNXE capabilities byte (present only when device advertises RSN extensions)
+	const string caps_raw = trim(hw_capabilities::run_cmd_output({
+		"tshark", "-r", pcap_path.string(),
+		"-Y", "(" + frame_filter + ") && wlan.rsn.rsnxcaps",
+		"-T", "fields", "-e", "wlan.rsn.rsnxcaps", "-c", "1"
+	}, nullopt));
+	if(caps_raw.empty()) return false; // frame found, RSNXE absent → no OCV
+	try{ return (stoul(caps_raw, nullptr, 16) & 0x40u) != 0; } // bit 6 = OCVC
+	catch(...){ return nullopt; }
+}
+
+optional<bool> client_ocv_from_pcap(const path &pcap_path){
+	// Probe Request (0x0004) or Association Request (0x0000) carry client's RSNXE
+	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000");
+}
+
+optional<bool> ap_ocv_from_pcap(const path &pcap_path){
+	// Beacon (0x0008) or Probe Response (0x0005) carry AP's RSNXE
+	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
 }
 
 //TODO tests for these functions  with real pcap/logs

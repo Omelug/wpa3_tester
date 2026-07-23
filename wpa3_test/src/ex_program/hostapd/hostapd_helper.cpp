@@ -1,5 +1,7 @@
 #include "ex_program/hostapd/hostapd_helper.h"
 #include <fstream>
+#include <regex>
+#include <set>
 #include <nlohmann/json.hpp>
 #include "hostapd_cflags.h"
 #include "config/global_config.h"
@@ -417,10 +419,10 @@ static optional<RsnIe> parse_rsn_ie_line(const string &line){
 		catch(...){ break; }
 	}
 	if(ie.raw.size() < 10 || ie.raw[0] != 0x30) return nullopt;
-	ie.pw_count = ie.raw[8] | (uint16_t(ie.raw[9]) << 8);
+	ie.pw_count = ie.raw[8] | (static_cast<uint16_t>(ie.raw[9]) << 8);
 	ie.akm_off  = 10 + ie.pw_count * 4;
 	if(ie.raw.size() < ie.akm_off + 2) return nullopt;
-	ie.akm_count = ie.raw[ie.akm_off] | (uint16_t(ie.raw[ie.akm_off + 1]) << 8);
+	ie.akm_count = ie.raw[ie.akm_off] | static_cast<uint16_t>(ie.raw[ie.akm_off + 1]) << 8;
 	ie.caps_off  = ie.akm_off + 2 + ie.akm_count * 4;
 	return ie;
 }
@@ -449,7 +451,7 @@ string mfp_from_ap_log(const path &log_path, const string &stop_tag){
 		if(line.find("WPA: RSN IE in EAPOL-Key") != string::npos){
 			const auto ie = parse_rsn_ie_line(line);
 			if(!ie || ie->raw.size() < ie->caps_off + 2) continue;
-			const uint16_t caps = ie->raw[ie->caps_off] | (uint16_t(ie->raw[ie->caps_off + 1]) << 8);
+			const uint16_t caps = ie->raw[ie->caps_off] | (static_cast<uint16_t>(ie->raw[ie->caps_off + 1]) << 8);
 			if(!(caps & 0x0080)) return "OFF";            // MFPC
 			return (caps & 0x0040) ? "REQUIRED" : "OPTIONAL"; // MFPR
 		}
@@ -559,5 +561,46 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
 	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path, copy_options::overwrite_existing);
 	return binary_path;
+}
+
+string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
+	if(!exists(ap_log) || client_mac.empty()) return {};
+	ifstream f(ap_log);
+	string line;
+	bool in_window = false;
+	bool prev_was_probe = false;
+	int prev_backup_ch = 0;
+	set<int> channels;
+	const regex freq_re(R"(freq=(\d+))");
+	const regex ds_ch_re(R"(ds\.chan=(\d+))");
+	smatch match;
+	while(getline(f, line)){
+		if(!in_window){
+			if(line.find(START_tag) != string::npos) in_window = true;
+			continue;
+		}
+		if(line.find(END_tag) != string::npos || line.find(END_STOP_tag) != string::npos) break;
+
+		if(prev_was_probe){
+			if(line.find("DS Params mismatch") != string::npos && regex_search(line, match, ds_ch_re))
+				channels.insert(stoi(match[1].str()));
+			else if(prev_backup_ch > 0)
+				channels.insert(prev_backup_ch);
+			prev_was_probe = false;
+			prev_backup_ch = 0;
+		}
+
+		if(line.find(client_mac) != string::npos && line.find("WLAN_FC_STYPE_PROBE_REQ") != string::npos){
+			prev_was_probe = true;
+			if(regex_search(line, match, freq_re))
+				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));
+		}
+	}
+	if(prev_was_probe && prev_backup_ch > 0) channels.insert(prev_backup_ch);
+
+	if(channels.empty()) return {};
+	string result = "ch:";
+	for(const int ch: channels) result += " " + to_string(ch);
+	return result;
 }
 }

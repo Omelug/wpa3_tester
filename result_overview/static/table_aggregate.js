@@ -13,7 +13,7 @@ function autoAggregateTable(table) {
             const currentCell = rows[i].cells[colIdx];
             if (!currentCell) continue;
 
-            if (!mainCell || currentCell.innerText.trim() !== mainCell.innerText.trim() || currentCell.innerText.trim() === "?") {
+            if (!mainCell || currentCell.innerText.trim() !== mainCell.innerText.trim()) {
                 if (rowspan > 1) mainCell.rowSpan = rowspan;
                 mainCell = currentCell;
                 rowspan = 1;

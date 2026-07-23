@@ -418,6 +418,51 @@ optional<bool> ap_ocv_from_pcap(const path &pcap_path){
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
 }
 
+string client_scanning_from_pcap(const path &pcap_path, const string &client_mac,
+                                  const LogTimePoint start_time, const LogTimePoint end_time){
+	if(!exists(pcap_path)) return {};
+
+	auto epoch_str = [](const LogTimePoint tp) -> string {
+		const auto ns = chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count();
+		return format("{:.6f}", static_cast<double>(ns) / 1e9);
+	};
+
+	string filter = "wlan.fc.type_subtype == 0x0004";
+	if(!client_mac.empty())
+		filter += " && wlan.sa == " + client_mac;
+	if(start_time.time_since_epoch().count() != 0)
+		filter += " && frame.time_epoch >= " + epoch_str(start_time);
+	if(end_time.time_since_epoch().count() != 0)
+		filter += " && frame.time_epoch <= " + epoch_str(end_time);
+
+	const string output = hw_capabilities::run_cmd_output({
+		"tshark", "-r", pcap_path.string(),
+		"-Y", filter,
+		"-T", "fields", "-e", "wlan.ds.current_channel", "-e", "radiotap.channel.number"
+	}, nullopt);
+
+	if(trim(output).empty()) return {};
+
+	set<int> channels;
+	istringstream stream(output);
+	string line;
+	while(getline(stream, line)){
+		if(line.empty()) continue;
+		istringstream ls(line);
+		string ds_ch, rt_ch;
+		getline(ls, ds_ch, '\t');
+		getline(ls, rt_ch);
+		ds_ch = trim(ds_ch); rt_ch = trim(rt_ch);
+		try{ if(!ds_ch.empty()) channels.insert(stoi(ds_ch)); } catch(...){}
+		try{ if(!rt_ch.empty()) channels.insert(stoi(rt_ch)); } catch(...){}
+	}
+
+	if(channels.empty()) return "yes";
+	string result = "ch:";
+	for(const int ch: channels) result += " " + to_string(ch);
+	return result;
+}
+
 //TODO tests for these functions  with real pcap/logs
 string akm_from_pcap(const path &pcap_path){
 	if(!exists(pcap_path)) return {};

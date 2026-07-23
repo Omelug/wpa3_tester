@@ -290,32 +290,6 @@ string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
-/*static string hex_encode(const uint8_t *data, size_t len){
-	static constexpr char HEX[] = "0123456789abcdef";
-	string out;
-	out.reserve(len * 2);
-	for(size_t i = 0; i < len; ++i){ out += HEX[(data[i] >> 4) & 0xf]; out += HEX[data[i] & 0xf]; }
-	return out;
-}*/
-
-// defined in https://hashcat.net/wiki/doku.php?id=hccapx
-struct hccapx{
-	uint32_t signature;
-	[[maybe_unused]] uint32_t version;
-	uint8_t  message_pair;
-	uint8_t  essid_len;
-	uint8_t  essid[32];
-	[[maybe_unused]] uint8_t  keyver;
-	uint8_t  keymic[16];
-	uint8_t  mac_ap[6];
-	uint8_t  nonce_ap[32];
-	uint8_t  mac_sta[6];
-	[[maybe_unused]] uint8_t  nonce_sta[32];
-	uint16_t eapol_len;
-	uint8_t  eapol[256];
-
-} __attribute__((packed));
-
 std::string to_hex(const uint8_t* data, size_t len) {
 	std::stringstream ss;
 	ss << std::hex << std::setfill('0');
@@ -395,19 +369,30 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 string akm_from_ap_log(const path &log_path, const string &stop_tag){
 	ifstream f(log_path);
 	string line;
+	string akm_fallback;
 	while(getline(f, line)){
 		if(line.find(stop_tag) != string::npos) break;
 		const auto pos = line.find("AKM suite ");
-		if(pos == string::npos) continue;
-		const auto start = pos + string("AKM suite ").size();
-		const auto end = line.find_first_of(" \t\n\r]", start);
-		const string suite = line.substr(start, end == string::npos ? string::npos : end - start);
-		if(suite.empty()) continue;
-		if(suite.ends_with(":8")) return suite + "\n(WPA3)";
-		if(suite.ends_with(":2")) return suite + "\n(WPA2)";
-		return suite;
+		if(pos != string::npos){
+			const auto start = pos + string("AKM suite ").size();
+			const auto end = line.find_first_of(" \t\n\r]", start);
+			string suite = line.substr(start, end == string::npos ? string::npos : end - start);
+			if(suite.empty()) continue;
+			if(suite.ends_with(":8")) return suite + "\n(WPA3)";
+			if(suite.ends_with(":2")) return suite + "\n(WPA2)";
+			return suite;
+		}
+		// fallback: "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)"
+		if(akm_fallback.empty()){
+			const auto akm_pos = line.find("(AKM-defined - ");
+			if(akm_pos != string::npos){
+				const auto start = akm_pos + string("(AKM-defined - ").size();
+				const auto end = line.find(')', start);
+				if(end != string::npos) akm_fallback = line.substr(start, end - start);
+			}
+		}
 	}
-	return {};
+	return akm_fallback;
 }
 
 string mfp_from_ap_log(const path &log_path, const string &stop_tag){

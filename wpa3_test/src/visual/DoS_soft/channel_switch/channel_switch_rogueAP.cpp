@@ -62,7 +62,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 
 	if(e.conn_WPA_version.first.empty()){
 		const path attacker_pcap = test_folder / "observer" / "tshark" / "attacker_capture.pcap";
-		e.conn_WPA_version = {observer::tshark::akm_from_pcap(attacker_pcap), "" };
+		e.conn_WPA_version = {observer::tshark::akm_from_pcap(attacker_pcap), "attacker pcap"};
 	}
 
 	const auto att = rs->get_actor("attacker");

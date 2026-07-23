@@ -13,6 +13,9 @@ $extends: [
 actors:
   ap:
     source: internal
+    setup:
+      program_config:
+        other_options: "-d"
     selection:
       permanent_mac: "24:ec:99:bf:c7:cf"
       driver: ath9k_htc

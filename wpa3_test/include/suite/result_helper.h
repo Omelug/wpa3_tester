@@ -19,6 +19,9 @@ std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test
 template<typename T> inline constexpr bool is_optional_field = false;
 template<typename T> inline constexpr bool is_optional_field<std::optional<T>> = true;
 
+template<typename T> inline constexpr bool is_pair_field = false;
+template<typename A, typename B> inline constexpr bool is_pair_field<std::pair<A, B>> = true;
+
 template<typename T> T entry_default(){ return T{}; }
 template<> inline std::string                   entry_default<std::string>()                   { return "-";   }
 template<> inline std::optional<std::string>    entry_default<std::optional<std::string>>()    { return "N/A"; }
@@ -34,13 +37,15 @@ Entry load_result_default(const std::filesystem::path &test_folder){
 	boost::pfr::for_each_field(e, [&]<typename param_type>(param_type &field, std::size_t idx){
 		const std::string param_name{field_names[idx]};
 		using F = std::decay_t<param_type>;
-		if(result->contains(param_name)){
-			if constexpr(is_optional_field<F>)
-				field = result->at(param_name).get<typename F::value_type>();
-			else
-				result->at(param_name).get_to(field);
-		} else {
-			field = entry_default<F>();
+		if constexpr(!is_pair_field<F>){ // pair fields are display-only, never in result.json
+			if(result->contains(param_name)){
+				if constexpr(is_optional_field<F>)
+					field = result->at(param_name).get<typename F::value_type>();
+				else
+					result->at(param_name).get_to(field);
+			} else {
+				field = entry_default<F>();
+			}
 		}
 	});
 

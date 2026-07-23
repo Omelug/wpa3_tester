@@ -22,7 +22,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 	const array<pair<string, path>, 3> sources = {{
 		{"internal", base / "rogueAP" / "CSA_rogueAP_internal_filler"},
 		{"Dlink",    base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler"},
-		{"external",    base / "external" / "CSA_external_client_filler"},
+		{"external",    base / "external" / "client"/ "CSA_external_client_filler"},
 	}};
 
 	vector<TaggedEntry> results;
@@ -46,8 +46,8 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		};
 		if (a.first != b.first) return a.first < b.first;
 
-		const int ocv_a = opt_rank(a.second.ap_ocv) + opt_rank(a.second.client_ocv);
-		const int ocv_b = opt_rank(b.second.ap_ocv) + opt_rank(b.second.client_ocv);
+		const int ocv_a = opt_rank(a.second.ap_ocv.first) + finite(opt_rank(a.second.client_ocv.first));
+		const int ocv_b = opt_rank(b.second.ap_ocv.first) + opt_rank(b.second.client_ocv.first);
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
 		const int disc_a = opt_rank(a.second.disconnected);
@@ -122,7 +122,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
           << "                <th>AP OCV / Client OCV support</th>\n"
           << "                <th>Client MFP</th>\n"
     	  << "                <th>AP/Client WPA support</th>\n"
-          << "                <th>connected version</th>\n"
+          << "                <th>connected WPA version</th>\n"
           << "            </tr></thead>\n"
           << "            <tbody>\n";
         for (const auto *e : rows) {

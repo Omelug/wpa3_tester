@@ -28,4 +28,4 @@ attack_config:
   attack_time: 60
   ms_interval: 100
   new_channel: 40
-install_req: true
+

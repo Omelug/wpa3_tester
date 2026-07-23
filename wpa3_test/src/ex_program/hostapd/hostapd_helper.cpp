@@ -344,6 +344,7 @@ string get_ssid(const RunStatus &rs, const string &actor_name){
 
 optional<bool> get_ocv(const RunStatus &rs, const string &actor_name){
 	const auto v = get_conf_value(actor_conf_path(rs, actor_name), {"ocv"});
+	if(v.empty()) return nullopt;
 	return v == "1";
 }
 
@@ -395,19 +396,96 @@ string akm_from_ap_log(const path &log_path, const string &stop_tag){
 	return akm_fallback;
 }
 
+// RSN IE layout: tag(1) len(1) version(2) group_cipher(4)
+//   pw_count(2) pw_suites(pw_count*4) akm_count(2) akm_suites(akm_count*4) rsn_caps(2) ...
+struct RsnIe {
+	vector<uint8_t> raw;
+	uint16_t pw_count  = 0;
+	size_t   akm_off   = 0; // offset of akm_count field
+	uint16_t akm_count = 0;
+	size_t   caps_off  = 0; // offset of rsn_caps field (2 bytes)
+};
+
+static optional<RsnIe> parse_rsn_ie_line(const string &line){
+	const auto colon = line.rfind("): ");
+	if(colon == string::npos) return nullopt;
+	RsnIe ie;
+	stringstream ss(line.substr(colon + 3));
+	string tok;
+	while(ss >> tok){
+		try{ ie.raw.push_back(static_cast<uint8_t>(stoi(tok, nullptr, 16))); }
+		catch(...){ break; }
+	}
+	if(ie.raw.size() < 10 || ie.raw[0] != 0x30) return nullopt;
+	ie.pw_count = ie.raw[8] | (uint16_t(ie.raw[9]) << 8);
+	ie.akm_off  = 10 + ie.pw_count * 4;
+	if(ie.raw.size() < ie.akm_off + 2) return nullopt;
+	ie.akm_count = ie.raw[ie.akm_off] | (uint16_t(ie.raw[ie.akm_off + 1]) << 8);
+	ie.caps_off  = ie.akm_off + 2 + ie.akm_count * 4;
+	return ie;
+}
+
+static string akm_suite_name(uint8_t type){
+	switch(type){
+		case 1:  return "WPA-EAP";
+		case 2:  return "WPA-PSK";
+		case 3:  return "FT-EAP";
+		case 4:  return "FT-PSK";
+		case 6:  return "WPA-PSK-SHA256";
+		case 8:  return "SAE";
+		case 11: return "FT-SAE";
+		case 18: return "OWE";
+		default: return format("00-0f-ac:{}", type);
+	}
+}
+
 string mfp_from_ap_log(const path &log_path, const string &stop_tag){
+	ifstream f(log_path);
+	string line;
+	string mfp_fallback; // from older MFPC=/MFPR= log lines
+	while(getline(f, line)){
+		if(line.find(stop_tag) != string::npos) break;
+
+		if(line.find("WPA: RSN IE in EAPOL-Key") != string::npos){
+			const auto ie = parse_rsn_ie_line(line);
+			if(!ie || ie->raw.size() < ie->caps_off + 2) continue;
+			const uint16_t caps = ie->raw[ie->caps_off] | (uint16_t(ie->raw[ie->caps_off + 1]) << 8);
+			if(!(caps & 0x0080)) return "OFF";            // MFPC
+			return (caps & 0x0040) ? "REQUIRED" : "OPTIONAL"; // MFPR
+		}
+
+		if(mfp_fallback.empty()){
+			const auto mfpc_pos = line.find("MFPC=");
+			if(mfpc_pos != string::npos){
+				const char mfpc = line.size() > mfpc_pos + 5 ? line[mfpc_pos + 5] : '0';
+				if(mfpc != '1'){ mfp_fallback = "OFF"; continue; }
+				const auto mfpr_pos = line.find("MFPR=");
+				mfp_fallback = (mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1')
+					? "REQUIRED" : "OPTIONAL";
+			}
+		}
+	}
+	return mfp_fallback;
+}
+
+string client_akm_from_ap_log(const path &log_path, const string &stop_tag){
 	ifstream f(log_path);
 	string line;
 	while(getline(f, line)){
 		if(line.find(stop_tag) != string::npos) break;
-		const auto mfpc_pos = line.find("MFPC=");
-		if(mfpc_pos == string::npos) continue;
-		const char mfpc = line.size() > mfpc_pos + 5 ? line[mfpc_pos + 5] : '0';
-		if(mfpc != '1') return "OFF";
-		const auto mfpr_pos = line.find("MFPR=");
-		if(mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1')
-			return "REQUIRED";
-		return "OPTIONAL";
+		if(line.find("WPA: RSN IE in EAPOL-Key") == string::npos) continue;
+		const auto ie = parse_rsn_ie_line(line);
+		if(!ie || ie->akm_count == 0) continue;
+		string result;
+		for(uint16_t i = 0; i < ie->akm_count; ++i){
+			const size_t suite_off = ie->akm_off + 2 + i * 4;
+			if(ie->raw.size() < suite_off + 4) break;
+			// only handle 00-0f-ac OUI
+			if(ie->raw[suite_off] != 0x00 || ie->raw[suite_off+1] != 0x0f || ie->raw[suite_off+2] != 0xac) continue;
+			if(!result.empty()) result += ' ';
+			result += akm_suite_name(ie->raw[suite_off + 3]);
+		}
+		if(!result.empty()) return result;
 	}
 	return {};
 }

@@ -55,4 +55,4 @@ attack_config:
   new_channel: 1
   sleep_before_sec: 10
   sleep_after_sec: 10
-install_req: true
+

@@ -1,0 +1,997 @@
+2026-07-23T12:16:56.067194317+0200 [ap] [cmd] /home/kali/ClionProjects/wpa3_tester/tools/hostapd/hostapd_2_11 -i wlan2 /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler/all_actors/channel_switch_rogueAP_internal_34e1cfeb/ap_hostapd.conf -d
+2026-07-23T12:16:56.071481037+0200 [ap] [stdout] random: Trying to read entropy from /dev/random
+2026-07-23T12:16:56.071547547+0200 [ap] [stdout] Configuration file: /home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler/all_actors/channel_switch_rogueAP_internal_34e1cfeb/ap_hostapd.conf
+2026-07-23T12:16:56.071569954+0200 [ap] [stdout] nl80211: Kernel version: Linux 6.19.11+kali-amd64 (#1 SMP PREEMPT_DYNAMIC Kali 6.19.11-1kali1 (2026-04-09); x86_64)
+2026-07-23T12:16:56.071589298+0200 [ap] [stdout] nl80211: Maximum supported attribute ID: 345
+2026-07-23T12:16:56.071606311+0200 [ap] [stdout] nl80211: Initialize interface wlan2 (driver: ath9k_htc)
+2026-07-23T12:16:56.071668463+0200 [ap] [stdout] nl80211: TDLS supported
+2026-07-23T12:16:56.071688862+0200 [ap] [stdout] nl80211: TDLS external setup
+2026-07-23T12:16:56.071702690+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:1
+2026-07-23T12:16:56.071729404+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:5
+2026-07-23T12:16:56.071746858+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:2
+2026-07-23T12:16:56.071764007+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:4
+2026-07-23T12:16:56.071779886+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:10
+2026-07-23T12:16:56.071796273+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:8
+2026-07-23T12:16:56.071812413+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:9
+2026-07-23T12:16:56.071828954+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:6
+2026-07-23T12:16:56.071844848+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:13
+2026-07-23T12:16:56.071860573+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:11
+2026-07-23T12:16:56.071877100+0200 [ap] [stdout] nl80211: Supported cipher 00-0f-ac:12
+2026-07-23T12:16:56.071893177+0200 [ap] [stdout] nl80211: Using driver-based off-channel TX
+2026-07-23T12:16:56.071914932+0200 [ap] [stdout] nl80211: Driver-advertised extended capabilities (default) - hexdump(len=8): 04 00 00 00 00 00 00 40
+2026-07-23T12:16:56.071933389+0200 [ap] [stdout] nl80211: Driver-advertised extended capabilities mask (default) - hexdump(len=8): 04 00 00 00 00 00 00 40
+2026-07-23T12:16:56.071959989+0200 [ap] [stdout] nl80211: Use separate P2P group interface (driver advertised support)
+2026-07-23T12:16:56.071973737+0200 [ap] [stdout] nl80211: key_mgmt=0x1ff0f enc=0xfef auth=0x7 flags=0x4000511db1bfae0 flags2=0x8103 rrm_flags=0x10 probe_resp_offloads=0x0 max_stations=0 max_remain_on_chan=5000 max_scan_ssids=4
+2026-07-23T12:16:56.071986464+0200 [ap] [stdout] nl80211: interface wlan2 in phy phy194
+2026-07-23T12:16:56.071998947+0200 [ap] [stdout] nl80211: Set mode ifindex 194 iftype 3 (AP)
+2026-07-23T12:16:56.072011223+0200 [ap] [stdout] nl80211: Setup AP(wlan2) - device_ap_sme=0 use_monitor=0
+2026-07-23T12:16:56.072023366+0200 [ap] [stdout] nl80211: Subscribe to mgmt frames with AP handle 0x561ead2046f0
+2026-07-23T12:16:56.072035835+0200 [ap] [stdout] nl80211: Register frame type=0xb0 (WLAN_FC_STYPE_AUTH) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.072048032+0200 [ap] [stdout] nl80211: Register frame type=0x0 (WLAN_FC_STYPE_ASSOC_REQ) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.072060247+0200 [ap] [stdout] nl80211: Register frame type=0x20 (WLAN_FC_STYPE_REASSOC_REQ) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.072072455+0200 [ap] [stdout] nl80211: Register frame type=0xa0 (WLAN_FC_STYPE_DISASSOC) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.072090947+0200 [ap] [stdout] nl80211: Register frame type=0xc0 (WLAN_FC_STYPE_DEAUTH) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.072103906+0200 [ap] [stdout] nl80211: Register frame type=0x40 (WLAN_FC_STYPE_PROBE_REQ) nl_handle=0x561ead2046f0 match= multicast=0
+2026-07-23T12:16:56.077976385+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=04 multicast=0
+2026-07-23T12:16:56.078033607+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=0501 multicast=0
+2026-07-23T12:16:56.078046906+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=0503 multicast=0
+2026-07-23T12:16:56.078058122+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=0504 multicast=0
+2026-07-23T12:16:56.078070478+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=06 multicast=0
+2026-07-23T12:16:56.078086401+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=08 multicast=0
+2026-07-23T12:16:56.078102345+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=09 multicast=0
+2026-07-23T12:16:56.078123595+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=0a multicast=0
+2026-07-23T12:16:56.078140351+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=11 multicast=0
+2026-07-23T12:16:56.078155642+0200 [ap] [stdout] nl80211: Register frame type=0xd0 (WLAN_FC_STYPE_ACTION) nl_handle=0x561ead2046f0 match=7f multicast=0
+2026-07-23T12:16:56.078339795+0200 [ap] [stdout] nl80211: RFKILL status not available
+2026-07-23T12:16:56.078629440+0200 [ap] [stdout] nl80211: Add own interface ifindex 194 (ifidx_reason -1)
+2026-07-23T12:16:56.078657212+0200 [ap] [stdout] nl80211: if_indices[16]: 194(-1)
+2026-07-23T12:16:56.078669182+0200 [ap] [stdout] nl80211: Do not open EAPOL RX socket - using control port for RX
+2026-07-23T12:16:56.078684612+0200 [ap] [stdout] phy: phy194
+2026-07-23T12:16:56.078696060+0200 [ap] [stdout] BSS count 1, BSSID mask 00:00:00:00:00:00 (0 bits)
+2026-07-23T12:16:56.078765235+0200 [ap] [stdout] nl80211: Regulatory information - country=98
+2026-07-23T12:16:56.078779806+0200 [ap] [stdout] nl80211: 2400-2472 @ 40 MHz 20 mBm
+2026-07-23T12:16:56.078802833+0200 [ap] [stdout] nl80211: 5150-5250 @ 100 MHz 23 mBm (no outdoor)
+2026-07-23T12:16:56.078819208+0200 [ap] [stdout] nl80211: 5250-5350 @ 100 MHz 20 mBm (no outdoor) (DFS)
+2026-07-23T12:16:56.078834837+0200 [ap] [stdout] nl80211: 5470-5725 @ 160 MHz 24 mBm (DFS)
+2026-07-23T12:16:56.078851086+0200 [ap] [stdout] nl80211: 5725-5730 @ 5 MHz 13 mBm (DFS)
+2026-07-23T12:16:56.078864263+0200 [ap] [stdout] nl80211: 5730-5850 @ 80 MHz 13 mBm
+2026-07-23T12:16:56.078879386+0200 [ap] [stdout] nl80211: 5850-5875 @ 25 MHz 13 mBm (no outdoor) (no IR)
+2026-07-23T12:16:56.078892391+0200 [ap] [stdout] nl80211: 5945-6425 @ 320 MHz 12 mBm (no outdoor) (no IR)
+2026-07-23T12:16:56.078908593+0200 [ap] [stdout] nl80211: 57240-66000 @ 2160 MHz 40 mBm
+2026-07-23T12:16:56.078930590+0200 [ap] [stdout] nl80211: Added 802.11b mode based on 802.11g information
+2026-07-23T12:16:56.078961041+0200 [ap] [stdout] nl80211: Mode IEEE 802.11g: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467[DISABLED] 2472[DISABLED] 2484[DISABLED]
+2026-07-23T12:16:56.078978060+0200 [ap] [stdout] nl80211: Mode IEEE 802.11b: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467[DISABLED] 2472[DISABLED] 2484[DISABLED]
+2026-07-23T12:16:56.078993662+0200 [ap] [stdout] Completing interface initialization
+2026-07-23T12:16:56.079009568+0200 [ap] [stdout] Mode: IEEE 802.11g  Channel: 6  Frequency: 2437 MHz
+2026-07-23T12:16:56.079024518+0200 [ap] [stdout] DFS 0 channels required radar detection
+2026-07-23T12:16:56.079051963+0200 [ap] [stdout] nl80211: Set freq 2437 (ht_enabled=1, vht_enabled=0, he_enabled=0, eht_enabled=0, bandwidth=20 MHz, cf1=2437 MHz, cf2=0 MHz)
+2026-07-23T12:16:56.079068201+0200 [ap] [stdout]   * freq=2437
+2026-07-23T12:16:56.079082921+0200 [ap] [stdout]   * eht_enabled=0
+2026-07-23T12:16:56.079107299+0200 [ap] [stdout]   * he_enabled=0
+2026-07-23T12:16:56.079124318+0200 [ap] [stdout]   * vht_enabled=0
+2026-07-23T12:16:56.079139866+0200 [ap] [stdout]   * ht_enabled=1
+2026-07-23T12:16:56.079155686+0200 [ap] [stdout]   * radar_background=0
+2026-07-23T12:16:56.079171208+0200 [ap] [stdout]   * sec_channel_offset=0
+2026-07-23T12:16:56.079187224+0200 [ap] [stdout]   * channel_type=1
+2026-07-23T12:16:56.079201942+0200 [ap] [stdout] RATE[0] rate=10 flags=0x1
+2026-07-23T12:16:56.079220300+0200 [ap] [stdout] RATE[1] rate=20 flags=0x1
+2026-07-23T12:16:56.079236710+0200 [ap] [stdout] RATE[2] rate=55 flags=0x1
+2026-07-23T12:16:56.079251506+0200 [ap] [stdout] RATE[3] rate=110 flags=0x1
+2026-07-23T12:16:56.079266111+0200 [ap] [stdout] RATE[4] rate=60 flags=0x0
+2026-07-23T12:16:56.079282599+0200 [ap] [stdout] RATE[5] rate=90 flags=0x0
+2026-07-23T12:16:56.079298983+0200 [ap] [stdout] RATE[6] rate=120 flags=0x0
+2026-07-23T12:16:56.079315519+0200 [ap] [stdout] RATE[7] rate=180 flags=0x0
+2026-07-23T12:16:56.079328528+0200 [ap] [stdout] RATE[8] rate=240 flags=0x0
+2026-07-23T12:16:56.079345941+0200 [ap] [stdout] RATE[9] rate=360 flags=0x0
+2026-07-23T12:16:56.079361768+0200 [ap] [stdout] RATE[10] rate=480 flags=0x0
+2026-07-23T12:16:56.079377257+0200 [ap] [stdout] RATE[11] rate=540 flags=0x0
+2026-07-23T12:16:56.079391809+0200 [ap] [stdout] hostapd_setup_bss(hapd=0x561ead1fe0b0 (wlan2), first=1)
+2026-07-23T12:16:56.079407180+0200 [ap] [stdout] nl80211: flush -> DEL_STATION wlan2 (all)
+2026-07-23T12:16:56.079424762+0200 [ap] [stdout] Using interface wlan2 with hwaddr 24:ec:99:bf:c7:cf and ssid "test_wpa3_tester"
+2026-07-23T12:16:56.079450321+0200 [ap] [stdout] random: Got 20/20 random bytes
+2026-07-23T12:16:56.081854627+0200 [ap] [stdout] GMK - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:56.081926367+0200 [ap] [stdout] Key Counter - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:56.081944366+0200 [ap] [stdout] WPA: Delay group state machine start until Beacon frames have been configured
+2026-07-23T12:16:56.081988266+0200 [ap] [stdout] nl80211: Set beacon (beacon_set=0)
+2026-07-23T12:16:56.082125463+0200 [ap] [stdout] nl80211: Beacon head - hexdump(len=67): 80 00 00 00 ff ff ff ff ff ff 24 ec 99 bf c7 cf 24 ec 99 bf c7 cf 00 00 00 00 00 00 00 00 00 00 64 00 11 04 00 10 74 65 73 74 5f 77 70 61 33 5f 74 65 73 74 65 72 01 08 82 84 8b 96 0c 12 18 24 03 01 06
+2026-07-23T12:16:56.082162954+0200 [ap] [stdout] nl80211: Beacon tail - hexdump(len=123): 2a 01 04 32 04 30 48 60 6c 30 14 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 cc 00 3b 02 51 00 2d 1a 0c 00 1b ff 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 3d 16 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 08 04 00 00 02 00 00 00 40 dd 18 00 50 f2 02 01 01 01 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32 2f 00
+2026-07-23T12:16:56.082179527+0200 [ap] [stdout] nl80211: ifindex=194
+2026-07-23T12:16:56.082195526+0200 [ap] [stdout] nl80211: beacon_int=100
+2026-07-23T12:16:56.082210352+0200 [ap] [stdout] nl80211: beacon_rate=0
+2026-07-23T12:16:56.082225838+0200 [ap] [stdout] nl80211: rate_type=0
+2026-07-23T12:16:56.082241207+0200 [ap] [stdout] nl80211: dtim_period=2
+2026-07-23T12:16:56.082257177+0200 [ap] [stdout] nl80211: ssid=test_wpa3_tester
+2026-07-23T12:16:56.082269600+0200 [ap] [stdout]   * beacon_int=100
+2026-07-23T12:16:56.082281298+0200 [ap] [stdout]   * dtim_period=2
+2026-07-23T12:16:56.082292864+0200 [ap] [stdout] nl80211: hidden SSID not in use
+2026-07-23T12:16:56.082304605+0200 [ap] [stdout] nl80211: privacy=2
+2026-07-23T12:16:56.082316215+0200 [ap] [stdout] nl80211: auth_algs=0x1
+2026-07-23T12:16:56.082343996+0200 [ap] [stdout] nl80211: wpa_version=0x2
+2026-07-23T12:16:56.082356550+0200 [ap] [stdout] nl80211: key_mgmt_suites=0x400
+2026-07-23T12:16:56.082368290+0200 [ap] [stdout] nl80211: pairwise_ciphers=0x10
+2026-07-23T12:16:56.082379939+0200 [ap] [stdout] nl80211: group_cipher=0x10
+2026-07-23T12:16:56.082391646+0200 [ap] [stdout] nl80211: beacon_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:56.082452167+0200 [ap] [stdout] nl80211: proberesp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:56.082510212+0200 [ap] [stdout] nl80211: assocresp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:56.082522311+0200 [ap] [stdout]   * freq=2437
+2026-07-23T12:16:56.082539422+0200 [ap] [stdout]   * eht_enabled=0
+2026-07-23T12:16:56.082551025+0200 [ap] [stdout]   * he_enabled=0
+2026-07-23T12:16:56.082558979+0200 [ap] [stdout]   * vht_enabled=0
+2026-07-23T12:16:56.082566591+0200 [ap] [stdout]   * ht_enabled=1
+2026-07-23T12:16:56.082574242+0200 [ap] [stdout]   * radar_background=0
+2026-07-23T12:16:56.082581973+0200 [ap] [stdout]   * sec_channel_offset=0
+2026-07-23T12:16:56.082589532+0200 [ap] [stdout]   * channel_type=1
+2026-07-23T12:16:56.082597202+0200 [ap] [stdout] nl802111: sae_pwe=0
+2026-07-23T12:16:56.281493411+0200 [ap] [stdout] nl80211: multicast to unicast disabled on interface wlan2
+2026-07-23T12:16:56.281671132+0200 [ap] [stdout] wlan2: Deauthenticate all stations at BSS start
+2026-07-23T12:16:56.281744166+0200 [ap] [stdout] nl80211: send_mlme - da=ff:ff:ff:ff:ff:ff sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=0 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0xc0 (WLAN_FC_STYPE_DEAUTH) nlmode=3
+2026-07-23T12:16:56.281803972+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:16:56.281863514+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:16:56.281951088+0200 [ap] [stdout] nl80211: Set wlan2 operstate 0->1 (UP)
+2026-07-23T12:16:56.282002921+0200 [ap] [stdout] netlink: Operstate: ifindex=194 linkmode=-1 (no change), operstate=6 (IF_OPER_UP)
+2026-07-23T12:16:56.282042626+0200 [ap] [stdout] WPA: Start group state machine to set initial keys
+2026-07-23T12:16:56.282083349+0200 [ap] [stdout] WPA: group state machine entering state GTK_INIT (VLAN-ID 0)
+2026-07-23T12:16:56.282219041+0200 [ap] [stdout] GTK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:56.282731594+0200 [ap] [stdout] IGTK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:56.282855716+0200 [ap] [stdout] WPA: group state machine entering state SETKEYSDONE (VLAN-ID 0)
+2026-07-23T12:16:56.282943725+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=3 addr=0x561e8cdac983 key_idx=1 set_tx=1 seq_len=0 key_len=16 key_flag=0x1a link_id=-1
+2026-07-23T12:16:56.283011903+0200 [ap] [stdout] nl80211: NEW_KEY
+2026-07-23T12:16:56.283086835+0200 [ap] [stdout] nl80211: KEY_DATA - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:56.283152191+0200 [ap] [stdout]    broadcast key
+2026-07-23T12:16:56.311334432+0200 [ap] [stdout] nl80211: NL80211_CMD_SET_KEY - default key
+2026-07-23T12:16:56.311465592+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=4 addr=0x561e8cdac983 key_idx=4 set_tx=1 seq_len=0 key_len=16 key_flag=0x1a link_id=-1
+2026-07-23T12:16:56.311501580+0200 [ap] [stdout] nl80211: NEW_KEY
+2026-07-23T12:16:56.311574806+0200 [ap] [stdout] nl80211: KEY_DATA - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:56.311646363+0200 [ap] [stdout]    broadcast key
+2026-07-23T12:16:56.311678741+0200 [ap] [stdout] nl80211: NL80211_CMD_SET_KEY - default key
+2026-07-23T12:16:56.312369449+0200 [ap] [stdout] nl80211: link=-1: TX queue param set: queue=0 aifs=1 cw_min=3 cw_max=7 burst_time=15 --> res=0
+2026-07-23T12:16:56.313204105+0200 [ap] [stdout] nl80211: link=-1: TX queue param set: queue=1 aifs=1 cw_min=7 cw_max=15 burst_time=30 --> res=0
+2026-07-23T12:16:56.314113468+0200 [ap] [stdout] nl80211: link=-1: TX queue param set: queue=2 aifs=3 cw_min=15 cw_max=63 burst_time=0 --> res=0
+2026-07-23T12:16:56.315772064+0200 [ap] [stdout] nl80211: link=-1: TX queue param set: queue=3 aifs=7 cw_min=15 cw_max=1023 burst_time=0 --> res=0
+2026-07-23T12:16:56.315953362+0200 [ap] [stdout] wlan2: interface state UNINITIALIZED->ENABLED
+2026-07-23T12:16:56.316012073+0200 [ap] [stdout] wlan2: AP-ENABLED 
+2026-07-23T12:16:56.316062119+0200 [ap] [stdout] wlan2: Setup of interface done.
+2026-07-23T12:16:56.316118071+0200 [ap] [stdout] ctrl_iface not configured!
+2026-07-23T12:16:56.316195072+0200 [ap] [stdout] RTM_NEWLINK: ifi_index=194 ifname=wlan2 operstate=6 linkmode=0 ifi_family=0 ifi_flags=0x11043 ([UP][RUNNING][LOWER_UP])
+2026-07-23T12:16:56.316249788+0200 [ap] [stdout] nl80211: Drv Event 15 (NL80211_CMD_START_AP) received for wlan2
+2026-07-23T12:16:56.316303670+0200 [ap] [stdout] wlan2: nl80211: Ignored unknown event (cmd=15)
+2026-07-23T12:16:56.316349890+0200 [ap] [stdout] nl80211: Drv Event 60 (NL80211_CMD_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:56.316391583+0200 [ap] [stdout] nl80211: Frame TX status event A1=ff:ff:ff:ff:ff:ff stype=12 cookie=0x1 ack=1
+2026-07-23T12:16:56.316432546+0200 [ap] [stdout] wlan2: Event TX_STATUS (16) received
+2026-07-23T12:16:56.316479926+0200 [ap] [stdout] mgmt::deauth cb
+2026-07-23T12:16:56.904844300+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:16:56.904888852+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:16:56.904898166+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7
+2026-07-23T12:16:56.968939545+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:16:56.968999159+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-87 fc=0x40 seq_ctrl=0x70 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:16:56.969007589+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=8
+2026-07-23T12:16:59.908219195+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:16:59.908317585+0200 [ap] [stdout] nl80211: RX frame da=24:ec:99:bf:c7:cf sa=00:c0:ca:b5:e1:58 bssid=24:ec:99:bf:c7:cf freq=2437 ssi_signal=-77 fc=0x8b0 seq_ctrl=0x0 stype=11 (WLAN_FC_STYPE_AUTH) len=128
+2026-07-23T12:16:59.908333457+0200 [ap] [stdout] wlan2: Event RX_MGMT (18) received
+2026-07-23T12:16:59.908343510+0200 [ap] [stdout] mgmt::auth
+2026-07-23T12:16:59.908355458+0200 [ap] [stdout] authentication: STA=00:c0:ca:b5:e1:58 auth_alg=3 auth_transaction=1 status_code=0 wep=0 seq_ctrl=0x0 retry
+2026-07-23T12:16:59.908368560+0200 [ap] [stdout] SAE: Queue Authentication message from 00:c0:ca:b5:e1:58 for processing (queue_len 0)
+2026-07-23T12:16:59.908382070+0200 [ap] [stdout] SAE: Process next available message from queue
+2026-07-23T12:16:59.908393935+0200 [ap] [stdout] authentication: STA=00:c0:ca:b5:e1:58 auth_alg=3 auth_transaction=1 status_code=0 wep=0 seq_ctrl=0x0 retry (from queue)
+2026-07-23T12:16:59.908404043+0200 [ap] [stdout]   New STA
+2026-07-23T12:16:59.908414286+0200 [ap] [stdout] ap_sta_add: register ap_handle_timer timeout for 00:c0:ca:b5:e1:58 (300 seconds - ap_max_inactivity)
+2026-07-23T12:16:59.908427927+0200 [ap] [stdout] nl80211: sta_remove -> DEL_STATION wlan2 00:c0:ca:b5:e1:58 --> -2 (No such file or directory)
+2026-07-23T12:16:59.908437413+0200 [ap] [stdout] nl80211: NL80211_CMD_NEW_STATION STA 00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.908446711+0200 [ap] [stdout]   * supported rates - hexdump(len=4): 02 04 0b 16
+2026-07-23T12:16:59.908456613+0200 [ap] [stdout]   * capability=0x0
+2026-07-23T12:16:59.908466583+0200 [ap] [stdout]   * aid=1 (UNASSOC_STA workaround)
+2026-07-23T12:16:59.908476587+0200 [ap] [stdout]   * listen_interval=0
+2026-07-23T12:16:59.908486225+0200 [ap] [stdout]   * flags set=0x0 mask=0xa0
+2026-07-23T12:16:59.908509985+0200 [ap] [stdout] SAE: State Nothing -> Nothing for peer 00:c0:ca:b5:e1:58 (Init)
+2026-07-23T12:16:59.908524256+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.11: start SAE authentication (RX commit, status=0 (SUCCESS))
+2026-07-23T12:16:59.908536732+0200 [ap] [stdout] SAE: Selecting supported ECC group 19
+2026-07-23T12:16:59.908546134+0200 [ap] [stdout] SAE: Peer commit-scalar - hexdump(len=32): 6d 20 72 f4 00 4b 33 fd 45 eb a3 ca f4 bb f7 04 a5 87 e1 6c 21 c1 b4 fe 3a 9c 99 89 ed 2c 1e 7b
+2026-07-23T12:16:59.908561457+0200 [ap] [stdout] SAE: Peer commit-element(x) - hexdump(len=32): dc ce ba 36 f5 4d d2 e0 8c 8f 86 58 36 e4 01 b1 89 92 3b f5 15 00 7e ad 41 52 24 3c ed f9 0b 7d
+2026-07-23T12:16:59.908570969+0200 [ap] [stdout] SAE: Peer commit-element(y) - hexdump(len=32): c9 a8 52 99 e2 ca e4 da 65 4e 0a ae e0 e2 9e cd 0b 8b 8b 72 dd ef b4 be 40 77 25 e1 0f ce 36 4d
+2026-07-23T12:16:59.908580716+0200 [ap] [stdout] SAE: Possible elements at the end of the frame - hexdump(len=0):
+2026-07-23T12:16:59.908589795+0200 [ap] [stdout] SAE: Peer 00:c0:ca:b5:e1:58 state=Nothing auth_trans=1
+2026-07-23T12:16:59.909093703+0200 [ap] [stdout] SAE: password - hexdump_ascii(len=11): [REMOVED]
+2026-07-23T12:16:59.909112612+0200 [ap] [stdout] SAE: PWE derivation - addr1=24:ec:99:bf:c7:cf addr2=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.909123789+0200 [ap] [stdout] SAE: counter = 001
+2026-07-23T12:16:59.909137289+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909147987+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909182606+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909196884+0200 [ap] [stdout] SAE: counter = 002
+2026-07-23T12:16:59.909210378+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909220193+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909254709+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909268277+0200 [ap] [stdout] SAE: counter = 003
+2026-07-23T12:16:59.909281663+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909291413+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909328942+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.909343003+0200 [ap] [stdout] SAE: counter = 004
+2026-07-23T12:16:59.909356576+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909366318+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909400391+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.909413926+0200 [ap] [stdout] SAE: counter = 005
+2026-07-23T12:16:59.909427082+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909436759+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909472010+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909485507+0200 [ap] [stdout] SAE: counter = 006
+2026-07-23T12:16:59.909498631+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909508431+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909749230+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909766351+0200 [ap] [stdout] SAE: counter = 007
+2026-07-23T12:16:59.909777042+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909786902+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909796428+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.909805671+0200 [ap] [stdout] SAE: counter = 008
+2026-07-23T12:16:59.909815287+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909824614+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909835151+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909856481+0200 [ap] [stdout] SAE: counter = 009
+2026-07-23T12:16:59.909867186+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909876787+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909890100+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909899678+0200 [ap] [stdout] SAE: counter = 010
+2026-07-23T12:16:59.909909657+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909919549+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909934840+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909945540+0200 [ap] [stdout] SAE: counter = 011
+2026-07-23T12:16:59.909955120+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909964359+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.909976672+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.909990275+0200 [ap] [stdout] SAE: counter = 012
+2026-07-23T12:16:59.910000338+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910010959+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910023737+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910033421+0200 [ap] [stdout] SAE: counter = 013
+2026-07-23T12:16:59.910042615+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910051795+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910074799+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910088768+0200 [ap] [stdout] SAE: counter = 014
+2026-07-23T12:16:59.910114968+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910130342+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910173978+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910187828+0200 [ap] [stdout] SAE: counter = 015
+2026-07-23T12:16:59.910201709+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910211894+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910270131+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910282806+0200 [ap] [stdout] SAE: counter = 016
+2026-07-23T12:16:59.910296344+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910306916+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910342961+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910355576+0200 [ap] [stdout] SAE: counter = 017
+2026-07-23T12:16:59.910368766+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910379034+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910426786+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910468763+0200 [ap] [stdout] SAE: counter = 018
+2026-07-23T12:16:59.910479761+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910489258+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910524052+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910556706+0200 [ap] [stdout] SAE: counter = 019
+2026-07-23T12:16:59.910570234+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910580526+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910632860+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.910645087+0200 [ap] [stdout] SAE: counter = 020
+2026-07-23T12:16:59.910658318+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910668198+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910704066+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910716314+0200 [ap] [stdout] SAE: counter = 021
+2026-07-23T12:16:59.910735806+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910745829+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910778507+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910790479+0200 [ap] [stdout] SAE: counter = 022
+2026-07-23T12:16:59.910803969+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910814109+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910852955+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910870195+0200 [ap] [stdout] SAE: counter = 023
+2026-07-23T12:16:59.910883879+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910894791+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910925568+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.910937771+0200 [ap] [stdout] SAE: counter = 024
+2026-07-23T12:16:59.910950666+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910960641+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.910995966+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911008073+0200 [ap] [stdout] SAE: counter = 025
+2026-07-23T12:16:59.911021101+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911031001+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911066527+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911078665+0200 [ap] [stdout] SAE: counter = 026
+2026-07-23T12:16:59.911108567+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911118709+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911171427+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.911203974+0200 [ap] [stdout] SAE: counter = 027
+2026-07-23T12:16:59.911217327+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911227483+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911280279+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911292313+0200 [ap] [stdout] SAE: counter = 028
+2026-07-23T12:16:59.911305251+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911315060+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911350022+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911362231+0200 [ap] [stdout] SAE: counter = 029
+2026-07-23T12:16:59.911375229+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911385260+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911419776+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.911432031+0200 [ap] [stdout] SAE: counter = 030
+2026-07-23T12:16:59.911445110+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911454815+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911489717+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911501969+0200 [ap] [stdout] SAE: counter = 031
+2026-07-23T12:16:59.911515480+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911525475+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911559558+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911571681+0200 [ap] [stdout] SAE: counter = 032
+2026-07-23T12:16:59.911584526+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911594511+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911629312+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911661104+0200 [ap] [stdout] SAE: counter = 033
+2026-07-23T12:16:59.911675348+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911689093+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911702005+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911712442+0200 [ap] [stdout] SAE: counter = 034
+2026-07-23T12:16:59.911725401+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911735522+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911773866+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911786176+0200 [ap] [stdout] SAE: counter = 035
+2026-07-23T12:16:59.911803621+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911813979+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911846383+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.911858641+0200 [ap] [stdout] SAE: counter = 036
+2026-07-23T12:16:59.911871745+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911881547+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911916593+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.911928917+0200 [ap] [stdout] SAE: counter = 037
+2026-07-23T12:16:59.911941828+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911951703+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.911986462+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.911998556+0200 [ap] [stdout] SAE: counter = 038
+2026-07-23T12:16:59.912011437+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912021316+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912056558+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.912068640+0200 [ap] [stdout] SAE: counter = 039
+2026-07-23T12:16:59.912081400+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912091381+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912126262+0200 [ap] [stdout] SAE: pwd-seed result 1 found=0xff
+2026-07-23T12:16:59.912138307+0200 [ap] [stdout] SAE: counter = 040
+2026-07-23T12:16:59.912151341+0200 [ap] [stdout] SAE: pwd-seed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912161263+0200 [ap] [stdout] SAE: pwd-value - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912195796+0200 [ap] [stdout] SAE: pwd-seed result 0 found=0xff
+2026-07-23T12:16:59.912241143+0200 [ap] [stdout] SAE: PWE - hexdump(len=64): [REMOVED]
+2026-07-23T12:16:59.912347556+0200 [ap] [stdout] SAE: own commit-scalar - hexdump(len=32): 2a 3b eb 93 9d 4d c4 ef f6 c5 b9 b3 77 ab 99 f0 76 7a ab 45 e0 32 9a b2 7d 04 ee 72 33 15 1c 7f
+2026-07-23T12:16:59.912363940+0200 [ap] [stdout] SAE: own commit-element(x) - hexdump(len=32): ce 99 31 7d 7e b3 34 a7 e5 ef 01 bb 26 bb b9 90 9f d6 07 8c 8e 4b a3 55 3d bc 9b c9 0d 29 34 14
+2026-07-23T12:16:59.912378165+0200 [ap] [stdout] SAE: own commit-element(y) - hexdump(len=32): 29 79 0c 5f 7c f7 e7 0f 5e 74 26 f0 b1 58 6c c5 a7 2a 00 6d 2b 41 5e cc 8b 2d e9 df 79 1e 6c 8b
+2026-07-23T12:16:59.912390009+0200 [ap] [stdout] authentication reply: STA=00:c0:ca:b5:e1:58 auth_alg=3 auth_transaction=1 resp=0 (IE len=98) (dbg=sae-send-commit)
+2026-07-23T12:16:59.912403417+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=0 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0xb0 (WLAN_FC_STYPE_AUTH) nlmode=3
+2026-07-23T12:16:59.912416436+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:16:59.912429853+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:16:59.912444432+0200 [ap] [stdout] SAE: State Nothing -> Committed for peer 00:c0:ca:b5:e1:58 (Sent Commit)
+2026-07-23T12:16:59.912595156+0200 [ap] [stdout] SAE: k - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912607114+0200 [ap] [stdout] SAE: Derive keys - H2E=0 AKMP=0x0 = 00000000 (UNKNOWN)
+2026-07-23T12:16:59.912626608+0200 [ap] [stdout] SAE: salt for keyseed derivation - hexdump(len=32): 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+2026-07-23T12:16:59.912647483+0200 [ap] [stdout] SAE: keyseed - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912661358+0200 [ap] [stdout] SAE: PMKID - hexdump(len=16): 97 5c 5e 87 9d 98 f8 ed 3c b1 5d 7e 6c 67 90 f5
+2026-07-23T12:16:59.912672505+0200 [ap] [stdout] SAE: KCK - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912679393+0200 [ap] [stdout] SAE: PMK - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.912689368+0200 [ap] [stdout] nl80211: Drv Event 19 (NL80211_CMD_NEW_STATION) received for wlan2
+2026-07-23T12:16:59.912696182+0200 [ap] [stdout] nl80211: New station 00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.915178143+0200 [ap] [stdout] nl80211: Drv Event 60 (NL80211_CMD_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:59.915206076+0200 [ap] [stdout] nl80211: Frame TX status event A1=00:c0:ca:b5:e1:58 stype=11 cookie=0x2 ack=1
+2026-07-23T12:16:59.915219553+0200 [ap] [stdout] wlan2: Event TX_STATUS (16) received
+2026-07-23T12:16:59.915236647+0200 [ap] [stdout] mgmt::auth cb
+2026-07-23T12:16:59.916419771+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:16:59.916450284+0200 [ap] [stdout] nl80211: RX frame da=24:ec:99:bf:c7:cf sa=00:c0:ca:b5:e1:58 bssid=24:ec:99:bf:c7:cf freq=2437 ssi_signal=-77 fc=0xb0 seq_ctrl=0x10 stype=11 (WLAN_FC_STYPE_AUTH) len=64
+2026-07-23T12:16:59.916457967+0200 [ap] [stdout] wlan2: Event RX_MGMT (18) received
+2026-07-23T12:16:59.916464670+0200 [ap] [stdout] mgmt::auth
+2026-07-23T12:16:59.916471698+0200 [ap] [stdout] authentication: STA=00:c0:ca:b5:e1:58 auth_alg=3 auth_transaction=2 status_code=0 wep=0 seq_ctrl=0x10
+2026-07-23T12:16:59.916478395+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.11: SAE authentication (RX confirm, status=0 (SUCCESS))
+2026-07-23T12:16:59.916484813+0200 [ap] [stdout] SAE: peer-send-confirm 1
+2026-07-23T12:16:59.916491193+0200 [ap] [stdout] SAE: Peer 00:c0:ca:b5:e1:58 state=Committed auth_trans=2
+2026-07-23T12:16:59.916500939+0200 [ap] [stdout] authentication reply: STA=00:c0:ca:b5:e1:58 auth_alg=3 auth_transaction=2 resp=0 (IE len=34) (dbg=sae-send-confirm)
+2026-07-23T12:16:59.916507972+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=0 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0xb0 (WLAN_FC_STYPE_AUTH) nlmode=3
+2026-07-23T12:16:59.916514555+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:16:59.916521144+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:16:59.916527542+0200 [ap] [stdout] SAE: State Committed -> Confirmed for peer 00:c0:ca:b5:e1:58 (Sent Confirm)
+2026-07-23T12:16:59.916533962+0200 [ap] [stdout] SAE: Peer 00:c0:ca:b5:e1:58 state=Confirmed auth_trans=2
+2026-07-23T12:16:59.916542757+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 MLME: MLME-AUTHENTICATE.indication(00:c0:ca:b5:e1:58, unknown)
+2026-07-23T12:16:59.916549536+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 MLME: MLME-DELETEKEYS.request(00:c0:ca:b5:e1:58)
+2026-07-23T12:16:59.916561305+0200 [ap] [stdout] SAE: State Confirmed -> Accepted for peer 00:c0:ca:b5:e1:58 (Accept Confirm)
+2026-07-23T12:16:59.916568765+0200 [ap] [stdout] RSN: Cache PMK from SAE - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.916581848+0200 [ap] [stdout] RSN: added PMKSA cache entry for 00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.916595448+0200 [ap] [stdout] RSN: added PMKID - hexdump(len=16): 97 5c 5e 87 9d 98 f8 ed 3c b1 5d 7e 6c 67 90 f5
+2026-07-23T12:16:59.918236298+0200 [ap] [stdout] nl80211: Drv Event 60 (NL80211_CMD_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:59.918267307+0200 [ap] [stdout] nl80211: Frame TX status event A1=00:c0:ca:b5:e1:58 stype=11 cookie=0x3 ack=1
+2026-07-23T12:16:59.918284937+0200 [ap] [stdout] wlan2: Event TX_STATUS (16) received
+2026-07-23T12:16:59.918323887+0200 [ap] [stdout] mgmt::auth cb
+2026-07-23T12:16:59.920455125+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:16:59.920486411+0200 [ap] [stdout] nl80211: RX frame da=24:ec:99:bf:c7:cf sa=00:c0:ca:b5:e1:58 bssid=24:ec:99:bf:c7:cf freq=2437 ssi_signal=-78 fc=0x0 seq_ctrl=0x20 stype=0 (WLAN_FC_STYPE_ASSOC_REQ) len=161
+2026-07-23T12:16:59.920498174+0200 [ap] [stdout] wlan2: Event RX_MGMT (18) received
+2026-07-23T12:16:59.920508462+0200 [ap] [stdout] mgmt::assoc_req
+2026-07-23T12:16:59.920518329+0200 [ap] [stdout] association request: STA=00:c0:ca:b5:e1:58 capab_info=0x431 listen_interval=5 seq_ctrl=0x20
+2026-07-23T12:16:59.920536634+0200 [ap] [stdout] Validating WMM IE: OUI 00:50:f2  OUI type 2  OUI sub-type 0  version 1  QoS info 0x0
+2026-07-23T12:16:59.920548776+0200 [ap] [stdout]   new AID 1
+2026-07-23T12:16:59.920560340+0200 [ap] [stdout] HT: STA 00:c0:ca:b5:e1:58 HT Capabilities Info: 0x196e
+2026-07-23T12:16:59.920572118+0200 [ap] [stdout] update_sta_ht STA 00:c0:ca:b5:e1:58 - no greenfield, num of non-gf stations 1
+2026-07-23T12:16:59.920584632+0200 [ap] [stdout] hostapd_ht_operation_update current operation mode=0x0
+2026-07-23T12:16:59.920597311+0200 [ap] [stdout] hostapd_ht_operation_update new operation mode=0x4 changes=1
+2026-07-23T12:16:59.920609360+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.11: association OK (aid 1)
+2026-07-23T12:16:59.920628774+0200 [ap] [stdout] nl80211: Set beacon (beacon_set=1)
+2026-07-23T12:16:59.920641501+0200 [ap] [stdout] nl80211: Beacon head - hexdump(len=67): 80 00 00 00 ff ff ff ff ff ff 24 ec 99 bf c7 cf 24 ec 99 bf c7 cf 00 00 00 00 00 00 00 00 00 00 64 00 11 04 00 10 74 65 73 74 5f 77 70 61 33 5f 74 65 73 74 65 72 01 08 82 84 8b 96 0c 12 18 24 03 01 06
+2026-07-23T12:16:59.920654627+0200 [ap] [stdout] nl80211: Beacon tail - hexdump(len=123): 2a 01 04 32 04 30 48 60 6c 30 14 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 cc 00 3b 02 51 00 2d 1a 0c 00 1b ff 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 3d 16 06 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 08 04 00 00 02 00 00 00 40 dd 18 00 50 f2 02 01 01 01 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32 2f 00
+2026-07-23T12:16:59.920668065+0200 [ap] [stdout] nl80211: ifindex=194
+2026-07-23T12:16:59.920681687+0200 [ap] [stdout] nl80211: beacon_int=100
+2026-07-23T12:16:59.920692721+0200 [ap] [stdout] nl80211: beacon_rate=0
+2026-07-23T12:16:59.920703054+0200 [ap] [stdout] nl80211: rate_type=0
+2026-07-23T12:16:59.920712420+0200 [ap] [stdout] nl80211: dtim_period=2
+2026-07-23T12:16:59.920721759+0200 [ap] [stdout] nl80211: ssid=test_wpa3_tester
+2026-07-23T12:16:59.920731106+0200 [ap] [stdout]   * beacon_int=100
+2026-07-23T12:16:59.920740520+0200 [ap] [stdout]   * dtim_period=2
+2026-07-23T12:16:59.920749823+0200 [ap] [stdout] nl80211: hidden SSID not in use
+2026-07-23T12:16:59.920759138+0200 [ap] [stdout] nl80211: privacy=2
+2026-07-23T12:16:59.920768526+0200 [ap] [stdout] nl80211: auth_algs=0x1
+2026-07-23T12:16:59.920777886+0200 [ap] [stdout] nl80211: wpa_version=0x2
+2026-07-23T12:16:59.920792562+0200 [ap] [stdout] nl80211: key_mgmt_suites=0x400
+2026-07-23T12:16:59.920807039+0200 [ap] [stdout] nl80211: pairwise_ciphers=0x10
+2026-07-23T12:16:59.920816856+0200 [ap] [stdout] nl80211: group_cipher=0x10
+2026-07-23T12:16:59.920826379+0200 [ap] [stdout] nl80211: beacon_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:59.920835731+0200 [ap] [stdout] nl80211: proberesp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:59.920845059+0200 [ap] [stdout] nl80211: assocresp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:16:59.920854324+0200 [ap] [stdout]   * freq=2437
+2026-07-23T12:16:59.920867541+0200 [ap] [stdout]   * eht_enabled=0
+2026-07-23T12:16:59.920877234+0200 [ap] [stdout]   * he_enabled=0
+2026-07-23T12:16:59.920886687+0200 [ap] [stdout]   * vht_enabled=0
+2026-07-23T12:16:59.920896025+0200 [ap] [stdout]   * ht_enabled=1
+2026-07-23T12:16:59.920922088+0200 [ap] [stdout]   * radar_background=0
+2026-07-23T12:16:59.920931517+0200 [ap] [stdout]   * sec_channel_offset=0
+2026-07-23T12:16:59.920940871+0200 [ap] [stdout]   * channel_type=1
+2026-07-23T12:16:59.920950181+0200 [ap] [stdout] nl802111: sae_pwe=0
+2026-07-23T12:16:59.920963554+0200 [ap] [stdout] nl80211: multicast to unicast disabled on interface wlan2
+2026-07-23T12:16:59.920973449+0200 [ap] [stdout] Add associated STA 00:c0:ca:b5:e1:58 (added_unassoc=1 auth_alg=3 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)
+2026-07-23T12:16:59.920983081+0200 [ap] [stdout] nl80211: NL80211_CMD_SET_STATION STA 00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.920992598+0200 [ap] [stdout]   * supported rates - hexdump(len=12): 02 04 0b 16 0c 12 18 24 30 48 60 6c
+2026-07-23T12:16:59.921004484+0200 [ap] [stdout]   * capability=0x431
+2026-07-23T12:16:59.921014118+0200 [ap] [stdout]   * ht_capabilities - hexdump(len=26): 0c 00 1f ff 00 00 00 01 00 00 00 00 00 96 00 01 00 00 00 00 00 00 00 00 00 00
+2026-07-23T12:16:59.921023523+0200 [ap] [stdout]   * aid=1
+2026-07-23T12:16:59.921032712+0200 [ap] [stdout]   * listen_interval=5
+2026-07-23T12:16:59.921042477+0200 [ap] [stdout]   * flags set=0xbc mask=0xbc
+2026-07-23T12:16:59.921051781+0200 [ap] [stdout]   * qosinfo=0x0
+2026-07-23T12:16:59.921986756+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=0 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x10 (WLAN_FC_STYPE_ASSOC_RESP) nlmode=3
+2026-07-23T12:16:59.922001620+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:16:59.922011629+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:16:59.924144500+0200 [ap] [stdout] nl80211: Drv Event 60 (NL80211_CMD_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:59.924179249+0200 [ap] [stdout] nl80211: Frame TX status event A1=00:c0:ca:b5:e1:58 stype=1 cookie=0x4 ack=1
+2026-07-23T12:16:59.924186793+0200 [ap] [stdout] wlan2: Event TX_STATUS (16) received
+2026-07-23T12:16:59.924193377+0200 [ap] [stdout] mgmt::assoc_resp cb
+2026-07-23T12:16:59.924199980+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.11: associated (aid 1)
+2026-07-23T12:16:59.924209964+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 MLME: MLME-ASSOCIATE.indication(00:c0:ca:b5:e1:58)
+2026-07-23T12:16:59.924216795+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 MLME: MLME-DELETEKEYS.request(00:c0:ca:b5:e1:58)
+2026-07-23T12:16:59.924232281+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=0 addr=0x561ead271010 key_idx=0 set_tx=1 seq_len=0 key_len=0 key_flag=0x20 link_id=-1
+2026-07-23T12:16:59.924240135+0200 [ap] [stdout] nl80211: DEL_KEY
+2026-07-23T12:16:59.924248916+0200 [ap] [stdout]    addr=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.924259312+0200 [ap] [stdout]    pairwise key
+2026-07-23T12:16:59.924286378+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.11: binding station to interface 'wlan2'
+2026-07-23T12:16:59.924301607+0200 [ap] [stdout] nl80211: wlan2[194]: set_sta_vlan(00:c0:ca:b5:e1:58, ifname=wlan2[194], vlan_id=0)
+2026-07-23T12:16:59.924370395+0200 [ap] [stdout] nl80211: Set STA flags - ifname=wlan2 addr=00:c0:ca:b5:e1:58 total_flags=0x6e flags_or=0xe flags_and=0xfffffffe authorized=0
+2026-07-23T12:16:59.924380251+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: event 1 notification
+2026-07-23T12:16:59.924387171+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=0 addr=0x561ead271010 key_idx=0 set_tx=1 seq_len=0 key_len=0 key_flag=0x20 link_id=-1
+2026-07-23T12:16:59.924393811+0200 [ap] [stdout] nl80211: DEL_KEY
+2026-07-23T12:16:59.924400311+0200 [ap] [stdout]    addr=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.924406638+0200 [ap] [stdout]    pairwise key
+2026-07-23T12:16:59.924415284+0200 [ap] [stdout] IEEE 802.1X: Ignore STA - 802.1X not enabled or forced for WPS
+2026-07-23T12:16:59.924435577+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: start authentication
+2026-07-23T12:16:59.924445570+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state INITIALIZE
+2026-07-23T12:16:59.924462289+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=0 addr=0x561ead271010 key_idx=0 set_tx=1 seq_len=0 key_len=0 key_flag=0x20 link_id=-1
+2026-07-23T12:16:59.924474081+0200 [ap] [stdout] nl80211: DEL_KEY
+2026-07-23T12:16:59.924484762+0200 [ap] [stdout]    addr=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.924531340+0200 [ap] [stdout]    pairwise key
+2026-07-23T12:16:59.924540909+0200 [ap] [stdout] nl80211: Set STA flags - ifname=wlan2 addr=00:c0:ca:b5:e1:58 total_flags=0x6e flags_or=0x0 flags_and=0xfffffffe authorized=0
+2026-07-23T12:16:59.924553520+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.1X: unauthorizing port
+2026-07-23T12:16:59.924572258+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK_GROUP entering state IDLE
+2026-07-23T12:16:59.924583672+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state AUTHENTICATION
+2026-07-23T12:16:59.924593196+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state AUTHENTICATION2
+2026-07-23T12:16:59.924602886+0200 [ap] [stdout] WPA: Re-initialize GMK/Counter on first station
+2026-07-23T12:16:59.924615741+0200 [ap] [stdout] GMK - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.924625282+0200 [ap] [stdout] Key Counter - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.924660513+0200 [ap] [stdout] GTK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.924698941+0200 [ap] [stdout] IGTK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.924716913+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=3 addr=0x561e8cdac983 key_idx=1 set_tx=1 seq_len=0 key_len=16 key_flag=0x1a link_id=-1
+2026-07-23T12:16:59.924727730+0200 [ap] [stdout] nl80211: NEW_KEY
+2026-07-23T12:16:59.924739641+0200 [ap] [stdout] nl80211: KEY_DATA - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.924751480+0200 [ap] [stdout]    broadcast key
+2026-07-23T12:16:59.942651996+0200 [ap] [stdout] nl80211: NL80211_CMD_SET_KEY - default key
+2026-07-23T12:16:59.942727381+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=4 addr=0x561e8cdac983 key_idx=4 set_tx=1 seq_len=0 key_len=16 key_flag=0x1a link_id=-1
+2026-07-23T12:16:59.942740401+0200 [ap] [stdout] nl80211: NEW_KEY
+2026-07-23T12:16:59.942748000+0200 [ap] [stdout] nl80211: KEY_DATA - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.942755014+0200 [ap] [stdout]    broadcast key
+2026-07-23T12:16:59.962699013+0200 [ap] [stdout] nl80211: NL80211_CMD_SET_KEY - default key
+2026-07-23T12:16:59.962801482+0200 [ap] [stdout] WPA: Assign ANonce - hexdump(len=32): 0a df 89 bf e6 21 40 4e a2 09 f1 0b 27 36 6b 1e 0a 80 f9 24 25 5b 3e 65 d6 4b 9b 91 9a a6 9c 1e
+2026-07-23T12:16:59.962821142+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state INITPSK
+2026-07-23T12:16:59.962836989+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKSTART
+2026-07-23T12:16:59.962863267+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: sending 1/4 msg of 4-Way Handshake
+2026-07-23T12:16:59.962880114+0200 [ap] [stdout] RSN: Message 1/4 PMKID from SAE - hexdump(len=16): 97 5c 5e 87 9d 98 f8 ed 3c b1 5d 7e 6c 67 90 f5
+2026-07-23T12:16:59.962894311+0200 [ap] [stdout] WPA: Send EAPOL(version=0 secure=0 mic=0 ack=1 install=0 pairwise=1 kde_len=22 keyidx=0 encr=0)
+2026-07-23T12:16:59.962906529+0200 [ap] [stdout] WPA: Replay Counter - hexdump(len=8): 00 00 00 00 00 00 00 01
+2026-07-23T12:16:59.962924809+0200 [ap] [stdout] Send EAPOL-Key msg - hexdump(len=121): 02 03 00 75 02 00 88 00 10 00 00 00 00 00 00 00 01 0a df 89 bf e6 21 40 4e a2 09 f1 0b 27 36 6b 1e 0a 80 f9 24 25 5b 3e 65 d6 4b 9b 91 9a a6 9c 1e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 16 dd 14 00 0f ac 04 97 5c 5e 87 9d 98 f8 ed 3c b1 5d 7e 6c 67 90 f5
+2026-07-23T12:16:59.962952368+0200 [ap] [stdout] nl80211: Send over control port dest=00:c0:ca:b5:e1:58 proto=0x888e len=121 no_encrypt=1
+2026-07-23T12:16:59.962960947+0200 [ap] [stdout] nl80211: tx_control_port cookie=0x5
+2026-07-23T12:16:59.962968576+0200 [ap] [stdout] WPA: Use EAPOL-Key timeout of 100 ms (retry counter 1)
+2026-07-23T12:16:59.962976249+0200 [ap] [stdout] wlan2: hostapd_new_assoc_sta: reschedule ap_handle_timer timeout for 00:c0:ca:b5:e1:58 (300 seconds - ap_max_inactivity)
+2026-07-23T12:16:59.963291385+0200 [ap] [stdout] nl80211: Drv Event 139 (NL80211_CMD_CONTROL_PORT_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:59.963309952+0200 [ap] [stdout] nl80211: Control port TX status (ack=1), cookie=5
+2026-07-23T12:16:59.963318673+0200 [ap] [stdout] wlan2: Event EAPOL_TX_STATUS (37) received
+2026-07-23T12:16:59.963326465+0200 [ap] [stdout] IEEE 802.1X: 00:c0:ca:b5:e1:58 TX status - version=2 type=3 length=117 - ack=1
+2026-07-23T12:16:59.963339952+0200 [ap] [stdout] WPA: EAPOL-Key TX status for STA 00:c0:ca:b5:e1:58 ack=1
+2026-07-23T12:16:59.963348278+0200 [ap] [stdout] WPA: Increase initial EAPOL-Key 1/4 timeout by 1000 ms because of acknowledged frame
+2026-07-23T12:16:59.965585116+0200 [ap] [stdout] nl80211: BSS Event 129 (NL80211_CMD_CONTROL_PORT_FRAME) received for wlan2
+2026-07-23T12:16:59.965617023+0200 [ap] [stdout] wlan2: Event EAPOL_RX (23) received
+2026-07-23T12:16:59.965642679+0200 [ap] [stdout] IEEE 802.1X: 127 bytes from 00:c0:ca:b5:e1:58 (encrypted=0)
+2026-07-23T12:16:59.965654558+0200 [ap] [stdout]    IEEE 802.1X: version=1 type=3 length=123
+2026-07-23T12:16:59.965662058+0200 [ap] [stdout] WPA: Received EAPOL-Key from 00:c0:ca:b5:e1:58 key_info=0x108 type=2 mic_len=16 key_data_length=28
+2026-07-23T12:16:59.965669738+0200 [ap] [stdout] WPA: Received Key Nonce - hexdump(len=32): 51 03 a8 9a 4b 29 fa ca c1 ad 19 08 9d 47 07 9e 5d 72 e8 b5 5a 46 6e 2b 9b 24 d4 30 de a9 60 5c
+2026-07-23T12:16:59.965677247+0200 [ap] [stdout] WPA: Received Replay Counter - hexdump(len=8): 00 00 00 00 00 00 00 01
+2026-07-23T12:16:59.965684964+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: received EAPOL-Key frame (2/4 Pairwise)
+2026-07-23T12:16:59.965692605+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKCALCNEGOTIATING
+2026-07-23T12:16:59.965700146+0200 [ap] [stdout] WPA: PTK derivation using PRF(SHA256)
+2026-07-23T12:16:59.965707600+0200 [ap] [stdout] WPA: PTK derivation - A1=24:ec:99:bf:c7:cf A2=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.965719119+0200 [ap] [stdout] WPA: Nonce1 - hexdump(len=32): 0a df 89 bf e6 21 40 4e a2 09 f1 0b 27 36 6b 1e 0a 80 f9 24 25 5b 3e 65 d6 4b 9b 91 9a a6 9c 1e
+2026-07-23T12:16:59.965727309+0200 [ap] [stdout] WPA: Nonce2 - hexdump(len=32): 51 03 a8 9a 4b 29 fa ca c1 ad 19 08 9d 47 07 9e 5d 72 e8 b5 5a 46 6e 2b 9b 24 d4 30 de a9 60 5c
+2026-07-23T12:16:59.965734911+0200 [ap] [stdout] WPA: PMK - hexdump(len=32): [REMOVED]
+2026-07-23T12:16:59.965743625+0200 [ap] [stdout] WPA: PTK - hexdump(len=48): [REMOVED]
+2026-07-23T12:16:59.965751182+0200 [ap] [stdout] WPA: KCK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.965758801+0200 [ap] [stdout] WPA: KEK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.965766316+0200 [ap] [stdout] WPA: TK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.965773740+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)
+2026-07-23T12:16:59.965783659+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06
+2026-07-23T12:16:59.965791758+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKCALCNEGOTIATING2
+2026-07-23T12:16:59.965799629+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKINITNEGOTIATING
+2026-07-23T12:16:59.965889247+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: sending 3/4 msg of 4-Way Handshake
+2026-07-23T12:16:59.965915061+0200 [ap] [stdout] WPA: Send EAPOL(version=0 secure=1 mic=1 ack=1 install=1 pairwise=1 kde_len=76 keyidx=0 encr=1)
+2026-07-23T12:16:59.965923916+0200 [ap] [stdout] WPA: Replay Counter - hexdump(len=8): 00 00 00 00 00 00 00 02
+2026-07-23T12:16:59.965931592+0200 [ap] [stdout] Plaintext EAPOL-Key Key Data (+ padding) - hexdump(len=88): [REMOVED]
+2026-07-23T12:16:59.965939140+0200 [ap] [stdout] RSN: AES-WRAP using KEK - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.965950921+0200 [ap] [stdout] RSN: Encrypted Key Data from AES-WRAP - hexdump(len=88): 60 20 c6 6a d3 87 b9 e5 ad aa 3b b3 f8 7f fe 1e eb 9d 88 7b 13 97 9b 59 11 52 c8 37 42 c4 05 45 29 e7 fe ba c4 e5 d8 91 bd 6a eb fd 02 dd 17 23 d0 13 74 9c df 43 47 44 f3 ee 12 0c c5 38 9c e4 b9 29 7e 6b fa dc 18 9a a1 12 81 f1 30 4b e1 2b 6d c9 47 ff 42 fd 1d e0
+2026-07-23T12:16:59.965960664+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)
+2026-07-23T12:16:59.965968617+0200 [ap] [stdout] Send EAPOL-Key msg - hexdump(len=187): 02 03 00 b7 02 13 c8 00 10 00 00 00 00 00 00 00 02 0a df 89 bf e6 21 40 4e a2 09 f1 0b 27 36 6b 1e 0a 80 f9 24 25 5b 3e 65 d6 4b 9b 91 9a a6 9c 1e 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3b 47 d8 6c 85 cb 51 71 df 13 9c f4 3b 06 4b 1f 00 58 60 20 c6 6a d3 87 b9 e5 ad aa 3b b3 f8 7f fe 1e eb 9d 88 7b 13 97 9b 59 11 52 c8 37 42 c4 05 45 29 e7 fe ba c4 e5 d8 91 bd 6a eb fd 02 dd 17 23 d0 13 74 9c df 43 47 44 f3 ee 12 0c c5 38 9c e4 b9 29 7e 6b fa dc 18 9a a1 12 81 f1 30 4b e1 2b 6d c9 47 ff 42 fd 1d e0
+2026-07-23T12:16:59.965980816+0200 [ap] [stdout] nl80211: Send over control port dest=00:c0:ca:b5:e1:58 proto=0x888e len=187 no_encrypt=1
+2026-07-23T12:16:59.965991431+0200 [ap] [stdout] nl80211: tx_control_port cookie=0x6
+2026-07-23T12:16:59.965999348+0200 [ap] [stdout] WPA: Use EAPOL-Key timeout of 100 ms (retry counter 1)
+2026-07-23T12:16:59.966374261+0200 [ap] [stdout] nl80211: Drv Event 139 (NL80211_CMD_CONTROL_PORT_FRAME_TX_STATUS) received for wlan2
+2026-07-23T12:16:59.966395116+0200 [ap] [stdout] nl80211: Control port TX status (ack=1), cookie=6
+2026-07-23T12:16:59.966407283+0200 [ap] [stdout] wlan2: Event EAPOL_TX_STATUS (37) received
+2026-07-23T12:16:59.966449715+0200 [ap] [stdout] IEEE 802.1X: 00:c0:ca:b5:e1:58 TX status - version=2 type=3 length=183 - ack=1
+2026-07-23T12:16:59.966458676+0200 [ap] [stdout] WPA: EAPOL-Key TX status for STA 00:c0:ca:b5:e1:58 ack=1
+2026-07-23T12:16:59.968502567+0200 [ap] [stdout] nl80211: BSS Event 129 (NL80211_CMD_CONTROL_PORT_FRAME) received for wlan2
+2026-07-23T12:16:59.968564073+0200 [ap] [stdout] wlan2: Event EAPOL_RX (23) received
+2026-07-23T12:16:59.968592074+0200 [ap] [stdout] IEEE 802.1X: 99 bytes from 00:c0:ca:b5:e1:58 (encrypted=0)
+2026-07-23T12:16:59.968617792+0200 [ap] [stdout]    IEEE 802.1X: version=1 type=3 length=95
+2026-07-23T12:16:59.968642524+0200 [ap] [stdout] WPA: Received EAPOL-Key from 00:c0:ca:b5:e1:58 key_info=0x308 type=2 mic_len=16 key_data_length=0
+2026-07-23T12:16:59.968666844+0200 [ap] [stdout] WPA: Received Key Nonce - hexdump(len=32): 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+2026-07-23T12:16:59.968691048+0200 [ap] [stdout] WPA: Received Replay Counter - hexdump(len=8): 00 00 00 00 00 00 00 02
+2026-07-23T12:16:59.968715110+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: received EAPOL-Key frame (4/4 Pairwise)
+2026-07-23T12:16:59.968739541+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)
+2026-07-23T12:16:59.968775766+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKINITDONE
+2026-07-23T12:16:59.968801966+0200 [ap] [stdout] wpa_driver_nl80211_set_key: ifindex=194 (wlan2) alg=3 addr=0x561ead271010 key_idx=0 set_tx=1 seq_len=0 key_len=16 key_flag=0x2c link_id=-1
+2026-07-23T12:16:59.968826574+0200 [ap] [stdout] nl80211: NEW_KEY
+2026-07-23T12:16:59.968961674+0200 [ap] [stdout] nl80211: KEY_DATA - hexdump(len=16): [REMOVED]
+2026-07-23T12:16:59.968994562+0200 [ap] [stdout]    addr=00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.969036729+0200 [ap] [stdout]    pairwise key
+2026-07-23T12:16:59.969062591+0200 [ap] [stdout] nl80211: Set STA flags - ifname=wlan2 addr=00:c0:ca:b5:e1:58 total_flags=0x6f flags_or=0x1 flags_and=0xffffffff authorized=1
+2026-07-23T12:16:59.969112747+0200 [ap] [stdout] wlan2: AP-STA-CONNECTED 00:c0:ca:b5:e1:58
+2026-07-23T12:16:59.969165309+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 IEEE 802.1X: authorizing port
+2026-07-23T12:16:59.969226801+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 RADIUS: starting accounting session 0979C0B5393F6114
+2026-07-23T12:16:59.969265524+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 WPA: pairwise key handshake completed (RSN)
+2026-07-23T12:16:59.969291603+0200 [ap] [stdout] wlan2: EAPOL-4WAY-HS-COMPLETED 00:c0:ca:b5:e1:58
+2026-07-23T12:17:00.345221130+0200 [ap] [stdout] nl80211: Ignored event 15 (NL80211_CMD_START_AP) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:00.346009530+0200 [ap] [stdout] RTM_NEWLINK: ifi_index=193 ifname=wlan1 operstate=6 linkmode=0 ifi_family=0 ifi_flags=0x11043 ([UP][RUNNING][LOWER_UP])
+2026-07-23T12:17:00.387351458+0200 [ap] [write_log_all] @START
+2026-07-23T12:17:00.651429715+0200 [ap] [stdout] RTM_NEWLINK: ifi_index=194 ifname=wlan2 operstate=6 linkmode=0 ifi_family=0 ifi_flags=0x11043 ([UP][RUNNING][LOWER_UP])
+2026-07-23T12:17:01.099757907+0200 [ap] [stdout] RTM_NEWLINK: ifi_index=187 ifname=wlan3 operstate=6 linkmode=0 ifi_family=0 ifi_flags=0x11043 ([UP][RUNNING][LOWER_UP])
+2026-07-23T12:17:10.652916505+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:10.752936503+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:10.853096480+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:10.953214253+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.053496763+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.153737974+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.253909233+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.353949921+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.389112178+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:11.389230569+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x40 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:11.389293748+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5
+2026-07-23T12:17:11.454383106+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.457094109+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:11.457184789+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-77 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:11.457251557+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3
+2026-07-23T12:17:11.457288231+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:17:11.457317032+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:17:11.529478464+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:11.529647701+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:11.529730573+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7
+2026-07-23T12:17:11.554661521+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.654854459+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.754994781+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.855336626+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:11.955572171+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.056152913+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.165973803+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.264061741+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.364240107+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.464611713+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.564568326+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.664573184+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.765144640+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.865265886+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:12.965647420+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.065492204+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.166088860+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.266099545+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.366533593+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.466228536+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.566458205+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.666374351+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.766884915+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.866710948+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:13.967097115+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.068438854+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.167620304+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.267840017+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.367979038+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.467908820+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.536880993+0200 [ap] [stdout] nl80211: Ignored event 19 (NL80211_CMD_NEW_STATION) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:14.537901345+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:14.544476169+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:14.568241673+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.668587644+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.768665324+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.868881964+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:14.969089467+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.270586504+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.370075916+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.470116587+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.570408015+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.674690553+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.772290460+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.872494194+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:15.972542282+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.072951115+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.180098285+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.280500972+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.380417896+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.480717546+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.581228002+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.681437246+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.781713792+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.881938149+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:16.982136454+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.082756007+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.182857780+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.283050550+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.383201968+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.483495520+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.583731872+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.684293257+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.784500761+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.885213122+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:17.985702005+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.085741694+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.185993436+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.286047408+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.386520714+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.486674468+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.586752424+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.599896190+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:18.619465810+0200 [ap] [stdout] nl80211: Ignored event 20 (NL80211_CMD_DEL_STATION) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:18.686987849+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.787094806+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.887207550+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:18.987459776+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.087695088+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.187935727+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.281138031+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:19.281282372+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-84 fc=0x40 seq_ctrl=0x30 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:19.281319826+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=4
+2026-07-23T12:17:19.288405197+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.345485629+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:19.345668875+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x40 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:19.345722672+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5
+2026-07-23T12:17:19.390555214+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.409189355+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:19.409270234+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-77 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:19.409293519+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3
+2026-07-23T12:17:19.409312422+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:17:19.409330522+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:17:19.488561822+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.588934680+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.688951446+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.789100097+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.889378291+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:19.989596202+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.089968523+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.190324395+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.391153481+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.491033595+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.591213459+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.691535525+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.791739959+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.891981745+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:20.992247280+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.092603069+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.203735960+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.307306950+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.405256153+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.503962353+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.610518809+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.707810485+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.808195674+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:21.908292453+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.008395148+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.108533256+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.209106778+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.309191615+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.408928091+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.520160710+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.615788451+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.715899140+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.816016234+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:22.916202398+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.019803134+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.116845304+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.217014036+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.317123857+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.417334095+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.518067895+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.618242189+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.818632125+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:23.918504978+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.019238508+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.118808110+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.219082121+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.319058660+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.419181362+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.519314779+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.619752453+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.719544552+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.819631355+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:24.919760277+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.019864003+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.120127709+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.222894464+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.320726922+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.420809193+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.521244400+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.621364920+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.721504886+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:25.821737969+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.022725789+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.122865338+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.222898088+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.323096932+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.423656033+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.523910051+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.623742633+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.724340651+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.824507681+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:26.924687892+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.025134613+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.125154839+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.225478756+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.325620254+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.425867179+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.526140965+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.626140543+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.726587492+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.827084140+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:27.927316909+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.027181116+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.127424440+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.227724940+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.327983737+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.428231369+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.528630629+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.628805994+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.665206317+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:28.665321945+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-77 fc=0x40 seq_ctrl=0x40 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:28.665353987+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5
+2026-07-23T12:17:28.729384762+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:28.729513323+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-77 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:28.729561949+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3
+2026-07-23T12:17:28.729592357+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:17:28.729619825+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:17:28.730225038+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.793075386+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:28.793192703+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-80 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:28.793225120+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7
+2026-07-23T12:17:28.829781439+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:28.857161070+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:28.857334472+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-87 fc=0x40 seq_ctrl=0x70 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:28.857438403+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=8
+2026-07-23T12:17:28.930141958+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.030600310+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.131136150+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.231073749+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.331289146+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.431792868+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.532332368+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.632665631+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.732712469+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.833008130+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:29.933174184+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.033606306+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.134894517+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.233903243+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.334046531+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.434179089+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.534404116+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.634545396+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.835719887+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:30.935489723+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.036133136+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.136272380+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.236492610+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.336685115+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.436892577+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.537089440+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.637571719+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.737388089+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.837511945+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:31.853010847+0200 [ap] [stdout] nl80211: Ignored event 19 (NL80211_CMD_NEW_STATION) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:31.853948188+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:31.860281568+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:31.938141531+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.038199809+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.138315893+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.238891726+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.339054779+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.439479597+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.539697685+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.640192946+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.740368828+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.840405152+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:32.940849079+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.041006630+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.141072826+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.241752269+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.342214708+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.442621767+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.542848903+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.643470803+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.744110553+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.844220905+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:33.944554764+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.044664838+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.144900884+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.245200270+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.345292527+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.445650345+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.546086830+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.646636725+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.746548780+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.846719900+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:34.949261196+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.047651078+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.147559454+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.248011537+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.348122097+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.448544719+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.649038822+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.751129076+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.849277812+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:35.863453488+0200 [ap] [stdout] nl80211: Ignored event 60 (NL80211_CMD_FRAME_TX_STATUS) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:35.879296096+0200 [ap] [stdout] nl80211: Ignored event 20 (NL80211_CMD_DEL_STATION) for foreign interface (ifindex 193 wdev 0x0 wiphy -1)
+2026-07-23T12:17:35.949519512+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.049682409+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.149879679+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.250481654+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.350601212+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.451235760+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.551392749+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.599447698+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:36.599563631+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x40 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:36.599596103+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5
+2026-07-23T12:17:36.651504755+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.665264308+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:36.665413542+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-78 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:36.665458790+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3
+2026-07-23T12:17:36.665488278+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:17:36.665516318+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:17:36.729182946+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:36.729305135+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-79 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:36.729337583+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7
+2026-07-23T12:17:36.751939790+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.793484361+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan2
+2026-07-23T12:17:36.793601513+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-86 fc=0x40 seq_ctrl=0x70 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212
+2026-07-23T12:17:36.793634124+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=8
+2026-07-23T12:17:36.852031045+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:36.952131321+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.052472540+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.152796125+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.253088768+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.353153038+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.453320113+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.553589153+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.653929258+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.753851381+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.854369061+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:37.954621476+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.155414598+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.256086214+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.356383356+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.456397866+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.556705312+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.656881170+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.757256684+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.857623466+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:38.957774028+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.058334933+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.158643770+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.259176276+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.359147711+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.459612619+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.559729446+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.660148039+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.760070298+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.860203085+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:39.960343868+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:40.061075311+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:40.161109337+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:40.261149656+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:40.461512904+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+2026-07-23T12:17:40.563872754+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently
+@END_STOP
+2026-07-23T12:17:50.682666300+0200 [ap] [stdout] Signal 15 received - terminating
+2026-07-23T12:17:50.682708975+0200 [ap] [stdout] hostapd_interface_deinit_free(0x561ead1fcbb0)
+2026-07-23T12:17:50.682721130+0200 [ap] [stdout] hostapd_interface_deinit_free: num_bss=1 conf->num_bss=1
+2026-07-23T12:17:50.682739831+0200 [ap] [stdout] hostapd_interface_deinit(0x561ead1fcbb0)
+2026-07-23T12:17:50.682748120+0200 [ap] [stdout] wlan2: interface state ENABLED->DISABLED
+2026-07-23T12:17:50.682755676+0200 [ap] [stdout] hostapd_bss_deinit: deinit bss wlan2
+2026-07-23T12:17:50.682763539+0200 [ap] [stdout] wlan2: STA 00:c0:ca:b5:e1:58 MLME: MLME-DEAUTHENTICATE.indication(00:c0:ca:b5:e1:58, 1)
+2026-07-23T12:17:50.682770870+0200 [ap] [stdout] Removing station 00:c0:ca:b5:e1:58
+2026-07-23T12:17:50.682778223+0200 [ap] [stdout] wlan2: AP-STA-DISCONNECTED 00:c0:ca:b5:e1:58
+2026-07-23T12:17:50.682785759+0200 [ap] [stdout] nl80211: Set STA flags - ifname=wlan2 addr=00:c0:ca:b5:e1:58 total_flags=0x6e flags_or=0xe flags_and=0xfffffffe authorized=0
+2026-07-23T12:17:50.694619217+0200 [ap] [stdout] hostapd_ht_operation_update current operation mode=0x4
+2026-07-23T12:17:50.694669671+0200 [ap] [stdout] hostapd_ht_operation_update new operation mode=0x0 changes=1
+2026-07-23T12:17:50.694685095+0200 [ap] [stdout] nl80211: Set beacon (beacon_set=1)
+2026-07-23T12:17:50.695074802+0200 [ap] [stdout] nl80211: Beacon head - hexdump(len=67): 80 00 00 00 ff ff ff ff ff ff 24 ec 99 bf c7 cf 24 ec 99 bf c7 cf 00 00 00 00 00 00 00 00 00 00 64 00 11 04 00 10 74 65 73 74 5f 77 70 61 33 5f 74 65 73 74 65 72 01 08 82 84 8b 96 0c 12 18 24 03 01 06
+2026-07-23T12:17:50.695098973+0200 [ap] [stdout] nl80211: Beacon tail - hexdump(len=123): 2a 01 04 32 04 30 48 60 6c 30 14 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 cc 00 3b 02 51 00 2d 1a 0c 00 1b ff 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 3d 16 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 08 04 00 00 02 00 00 00 40 dd 18 00 50 f2 02 01 01 01 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32 2f 00
+2026-07-23T12:17:50.695131883+0200 [ap] [stdout] nl80211: ifindex=194
+2026-07-23T12:17:50.695145427+0200 [ap] [stdout] nl80211: beacon_int=100
+2026-07-23T12:17:50.695158406+0200 [ap] [stdout] nl80211: beacon_rate=0
+2026-07-23T12:17:50.695171654+0200 [ap] [stdout] nl80211: rate_type=0
+2026-07-23T12:17:50.695184491+0200 [ap] [stdout] nl80211: dtim_period=2
+2026-07-23T12:17:50.695197370+0200 [ap] [stdout] nl80211: ssid=test_wpa3_tester
+2026-07-23T12:17:50.695513847+0200 [ap] [stdout]   * beacon_int=100
+2026-07-23T12:17:50.695531951+0200 [ap] [stdout]   * dtim_period=2
+2026-07-23T12:17:50.695541792+0200 [ap] [stdout] nl80211: hidden SSID not in use
+2026-07-23T12:17:50.695551066+0200 [ap] [stdout] nl80211: privacy=2
+2026-07-23T12:17:50.695560361+0200 [ap] [stdout] nl80211: auth_algs=0x1
+2026-07-23T12:17:50.695569663+0200 [ap] [stdout] nl80211: wpa_version=0x2
+2026-07-23T12:17:50.695578930+0200 [ap] [stdout] nl80211: key_mgmt_suites=0x400
+2026-07-23T12:17:50.695588161+0200 [ap] [stdout] nl80211: pairwise_ciphers=0x10
+2026-07-23T12:17:50.695599907+0200 [ap] [stdout] nl80211: group_cipher=0x10
+2026-07-23T12:17:50.695610591+0200 [ap] [stdout] nl80211: beacon_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:17:50.695621278+0200 [ap] [stdout] nl80211: proberesp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:17:50.695630270+0200 [ap] [stdout] nl80211: assocresp_ies - hexdump(len=10): 7f 08 04 00 00 02 00 00 00 40
+2026-07-23T12:17:50.695636909+0200 [ap] [stdout]   * freq=2437
+2026-07-23T12:17:50.695643300+0200 [ap] [stdout]   * eht_enabled=0
+2026-07-23T12:17:50.695649558+0200 [ap] [stdout]   * he_enabled=0
+2026-07-23T12:17:50.695655763+0200 [ap] [stdout]   * vht_enabled=0
+2026-07-23T12:17:50.695661843+0200 [ap] [stdout]   * ht_enabled=1
+2026-07-23T12:17:50.695668035+0200 [ap] [stdout]   * radar_background=0
+2026-07-23T12:17:50.695674241+0200 [ap] [stdout]   * sec_channel_offset=0
+2026-07-23T12:17:50.695680440+0200 [ap] [stdout]   * channel_type=1
+2026-07-23T12:17:50.695686660+0200 [ap] [stdout] nl802111: sae_pwe=0
+2026-07-23T12:17:50.695693379+0200 [ap] [stdout] nl80211: multicast to unicast disabled on interface wlan2
+2026-07-23T12:17:50.695699948+0200 [ap] [stdout] ap_free_sta: cancel ap_handle_timer for 00:c0:ca:b5:e1:58
+2026-07-23T12:17:50.695706173+0200 [ap] [stdout] wlan2: Deauthenticate all stations
+2026-07-23T12:17:50.695712700+0200 [ap] [stdout] nl80211: send_mlme - da=ff:ff:ff:ff:ff:ff sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=0 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0xc0 (WLAN_FC_STYPE_DEAUTH) nlmode=3
+2026-07-23T12:17:50.695718973+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437
+2026-07-23T12:17:50.695725132+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd
+2026-07-23T12:17:50.695731421+0200 [ap] [stdout] wlan2: AP-DISABLED 
+2026-07-23T12:17:50.695737666+0200 [ap] [stdout] hostapd_cleanup(hapd=0x561ead1fe0b0 (wlan2))
+2026-07-23T12:17:50.695743989+0200 [ap] [stdout] wlan2: CTRL-EVENT-TERMINATING 
+2026-07-23T12:17:50.695750114+0200 [ap] [stdout] hostapd_free_hapd_data(wlan2)
+2026-07-23T12:17:50.695756252+0200 [ap] [stdout] hostapd_interface_deinit_free: driver=0x561e8cde8880 drv_priv=0x561ead205cb0 -> hapd_deinit
+2026-07-23T12:17:50.695762690+0200 [ap] [stdout] nl80211: deinit ifname=wlan2 disabled_11b_rates=0
+2026-07-23T12:17:50.695768967+0200 [ap] [stdout] nl80211: Remove monitor interface: refcount=0
+2026-07-23T12:17:50.695775050+0200 [ap] [stdout] nl80211: Remove beacon (ifindex=194)
+2026-07-23T12:17:50.750292267+0200 [ap] [stdout] netlink: Operstate: ifindex=194 linkmode=0 (kernel-control), operstate=6 (IF_OPER_UP)
+2026-07-23T12:17:50.750381827+0200 [ap] [stdout] nl80211: Unsubscribe mgmt frames handle 0x8888de9625a8ce79 (deinit)
+2026-07-23T12:17:50.750464662+0200 [ap] [stdout] hostapd_interface_free(0x561ead1fcbb0)
+2026-07-23T12:17:50.750489488+0200 [ap] [stdout] hostapd_interface_free: free hapd 0x561ead1fe0b0
+2026-07-23T12:17:50.750504389+0200 [ap] [stdout] hostapd_cleanup_iface(0x561ead1fcbb0)
+2026-07-23T12:17:50.750515574+0200 [ap] [stdout] hostapd_cleanup_iface_partial(0x561ead1fcbb0)
+2026-07-23T12:17:50.750527178+0200 [ap] [stdout] hostapd_cleanup_iface: free iface=0x561ead1fcbb0

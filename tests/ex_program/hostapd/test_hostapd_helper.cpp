@@ -144,8 +144,17 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
     const auto r = hostapd::crack_pmk_hashes(hashes_file, "password123");
     CHECK_EQ(r.cracked, r.total);
 }
+*/
+// ── akm_from_ap_log ─────────────────────────────────────────────────────────
 
-TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"
+TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
+    const path log = TEST_DIR / path("ap_sae_akm.log");
+    REQUIRE(exists(log));
+    const string akm = hostapd::akm_from_ap_log(log, "@START");
+    CHECK_EQ(akm, "SAE");
+}
+
+/*TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"
 	* doctest::skip(hw_capabilities::run_cmd({"hcxpmktool", "--version"}, nullopt, false) != 0)
 ){
 	const path hccapx = TEST_DIR / "mana_handshakes.hccapx";

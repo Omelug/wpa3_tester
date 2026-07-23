@@ -342,6 +342,21 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	int ret = 0;
 	exec("wifi reload 2>&1", false, &ret);
 	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap — AP may not be configured correctly", ret);
+
+	const string actor_name = actor.get(SK::actor_name);
+	auto try_download = [&](const filesystem::path &remote, const filesystem::path &local){
+		try{
+			download_file(remote, local);
+			log(LogLevel::DEBUG, "Downloaded {} -> {}", remote, local);
+		} catch(const exception &e){
+			log(LogLevel::WARNING, "Could not download {}: {}", remote, e.what());
+		}
+	};
+
+	try_download("/var/run/hostapd-" + actor.get(SK::radio) + ".conf",
+				 rs.run_folder() / (actor_name + "_hostapd.conf"));
+	try_download("/etc/config/wireless",
+				 rs.run_folder() / (actor_name + "_wireless_uci.conf"));
 }
 
 void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
@@ -400,7 +415,7 @@ void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &out
 	actor->set(BK::CSA,         has("channel_switch"));
 	actor->set(BK::OCV,         has("operating channel validation"));
 	actor->set(BK::beacon_prot, has("beacon protection"));
-	actor->set(BK::MFP,         has("00-0f-ac:6")); // BIP-CMAC-128
+	actor->set(BK::MFP,         has("00-0f-ac:6")); // BIP-CMAC-128 //TODO has to be MFP ?
 
 	actor->set(BK::WPA_PSK,  has("00-0f-ac:4")); // CCMP cipher suite
 	actor->set(BK::WPA3_SAE, has("SAE"));

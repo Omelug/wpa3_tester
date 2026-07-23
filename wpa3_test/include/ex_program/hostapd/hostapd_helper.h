@@ -26,6 +26,8 @@ std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 std::string akm_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
 // parse client MFP from MFPR/MFPC fields in a hostapd -d log up to stop_tag
 std::string mfp_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
+// parse client AKM suites from RSN IE in EAPOL-Key in a hostapd -d log up to stop_tag (e.g. "SAE WPA-PSK")
+std::string client_akm_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
 
 // computes secondary BSSID for OWE transition mode (flips LSB of last octet)
 std::string owe_trans_bssid(const std::string &primary_mac);

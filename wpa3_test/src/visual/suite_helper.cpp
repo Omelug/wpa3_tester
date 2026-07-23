@@ -4,6 +4,7 @@
 
 #include "default.h"
 #include "config/RunStatus.h"
+#include "logger/error_log.h"
 
 namespace wpa3_tester::suite::helper{
 using namespace std;
@@ -12,7 +13,7 @@ using namespace filesystem;
 //TODO skip non existing configs?
 unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 	const auto config_path = test_folder / TEST_CONFIG_NAME;
-	if(!exists(config_path)) throw runtime_error("test config file does not exist");
+	if(!exists(config_path)) throw run_err("test config {} file does not exist", config_path);
 	auto rs = make_unique<RunStatus>();
 	rs->config_path(absolute(config_path));
 	rs->config(RunStatus::config_validation(rs->config_path()));

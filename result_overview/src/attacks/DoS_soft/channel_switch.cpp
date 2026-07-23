@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "html_guard.h"
+#include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
@@ -29,6 +30,10 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		for (const auto &src_dir : suite::helper::get_suite_test_folders(suite_dir)) {
 			for (const auto &entry : directory_iterator(src_dir)) {
 				if (!entry.is_directory()) continue;
+				if (!exists(entry.path() / TEST_CONFIG_NAME)){
+					log(LogLevel::WARNING, "test config {} not found", TEST_CONFIG_NAME);
+					continue;
+				}
 				auto e = suite::channel_switch_rogueAP::parse_test_folder(entry.path());
 				results.emplace_back(variant, std::move(e));
 			}

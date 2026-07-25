@@ -27,6 +27,21 @@ function autoAggregateTable(table) {
     }
 }
 
+function initTooltips() {
+    document.querySelectorAll('.has-tooltip').forEach(el => {
+        const tip = el.querySelector('.tooltip-content');
+        if (!tip) return;
+        el.addEventListener('mouseenter', () => {
+            const rect = el.getBoundingClientRect();
+            tip.style.top = (rect.bottom + 4) + 'px';
+            tip.style.left = rect.left + 'px';
+            tip.style.display = 'block';
+        });
+        el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("table.aggregate").forEach(autoAggregateTable);
+    initTooltips();
 });

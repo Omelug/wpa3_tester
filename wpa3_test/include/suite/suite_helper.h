@@ -33,4 +33,5 @@ template<typename Entry>
 std::vector<Entry> get_results_default(const std::filesystem::path &run_dir){
 	return collect_entries_nested(run_dir, Entry::parse);
 }
+
 }

@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
+#include "overview/described.h"
 
 namespace wpa3_tester::overview { struct HtmlGuard; }
 
 namespace wpa3_tester::suite::channel_switch_rogueAP{
-typedef std::string desc_t;
 
 struct CsaTestEntry{
 	std::string name;
@@ -27,14 +27,14 @@ struct CsaTestEntry{
 	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 
-	std::pair<std::optional<bool>, desc_t> ap_ocv;
-	std::pair<std::optional<bool>, desc_t> client_ocv;
-	std::pair<std::string, desc_t> client_mfp;
+	described_bool ap_ocv;
+	described_bool client_ocv;
+	described_str client_mfp;
 
-	std::pair<std::string, desc_t> ap_WPA_support;
-	std::pair<std::string, desc_t> client_WPA_support;
-	std::pair<std::string, desc_t> conn_WPA_version;
-	std::pair<std::string, desc_t> client_scanning;
+	described_str ap_WPA_support;
+	described_str client_WPA_support;
+	described_str conn_WPA_version;
+	described_str client_scanning;
 
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;

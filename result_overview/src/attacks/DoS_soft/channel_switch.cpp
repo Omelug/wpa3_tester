@@ -46,8 +46,8 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		};
 		if (a.first != b.first) return a.first < b.first;
 
-		const int ocv_a = opt_rank(a.second.ap_ocv.first) + finite(opt_rank(a.second.client_ocv.first));
-		const int ocv_b = opt_rank(b.second.ap_ocv.first) + opt_rank(b.second.client_ocv.first);
+		const int ocv_a = opt_rank(a.second.ap_ocv.value()) + finite(opt_rank(a.second.client_ocv.value()));
+		const int ocv_b = opt_rank(b.second.ap_ocv.value()) + opt_rank(b.second.client_ocv.value());
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
 		const int disc_a = opt_rank(a.second.disconnected);
@@ -136,7 +136,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             f << "</td>\n";
             f << "                    <td>" << e->disconnected << " (" << e->ap_disconnected << ")</td>\n";
             f << "                    <td>" << e->rogue_ap_connected     << "</td>\n";
-            f << "                    <td>" << e->ap_ocv << " / " << e->client_ocv << "</td>\n";
+            f << "                    <td>" << e->ap_ocv << "<br>" << e->client_ocv << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";
         	f << "                    <td>" << e->ap_WPA_support << "<br>" << e->client_WPA_support << "</td>\n";
         	f << "                    <td>" << e->conn_WPA_version << "</td>\n";

@@ -58,6 +58,7 @@ Actor_config::Actor_config(const json &j, string source){
 
 	if(j.contains("netns")) set(SK::netns, j.at("netns").get<string>());
 	if(j.contains("source")) set(SK::source, j.at("source").get<string>());
+	if(j.contains("ip_addr")) set(SK::ip_addr, j.at("ip_addr").get<string>());
 }
 
 Actor_config::~Actor_config(){

@@ -12,6 +12,7 @@
 
 #include <boost/pfr.hpp>
 #include <nlohmann/json.hpp>
+#include "overview/described.h"
 
 namespace wpa3_tester::suite::helper{
 std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test_folder);
@@ -19,8 +20,11 @@ std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test
 template<typename T> inline constexpr bool is_optional_field = false;
 template<typename T> inline constexpr bool is_optional_field<std::optional<T>> = true;
 
+// display-only fields: never stored in result.json
 template<typename T> inline constexpr bool is_pair_field = false;
 template<typename A, typename B> inline constexpr bool is_pair_field<std::pair<A, B>> = true;
+template<> inline constexpr bool is_pair_field<described_bool> = true;
+template<> inline constexpr bool is_pair_field<described_str>  = true;
 
 template<typename T> T entry_default(){ return T{}; }
 template<> inline std::string                   entry_default<std::string>()                   { return "-";   }

@@ -27,6 +27,8 @@ actors:
       channel: 6
   rogue_ap:
     sniff_iface: rogue
+    selection:
+      permanent_mac: 24:ec:99:bf:b0:a1
 $extends: [ ./ex_observers.comp.yaml, ../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 
 attack_config:

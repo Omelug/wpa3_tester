@@ -62,40 +62,26 @@ struct HtmlGuard {
 	HtmlGuard &operator<<(const described_bool &val){
 		if(val.empty()){ stream_ << '?'; return *this; }
 		const auto &last = val.last();
-		auto bval = [](std::optional<bool> v) -> const char* {
-			return v.has_value() ? (*v ? "yes" : "no") : "?";
-		};
-		if(val.pairs.size() == 1){
-			stream_ << bval(last.value);
-			if(!last.description.empty()) stream_ << " (" << last.description << ')';
-		} else {
-			stream_ << R"(<span class="has-tooltip">)" << bval(last.value);
-			if(!last.description.empty()) stream_ << " (" << last.description << ')';
-			stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
-			for(const auto &[v, d] : val.pairs)
-				stream_ << "<tr><td>" << bval(v) << "</td><td>" << d << "</td></tr>";
-			stream_ << "</table></span></span>";
-		}
+
+		stream_ << R"(<span class="has-tooltip">)" << last.value;
+		//if(!last.description.empty()) stream_ << " (" << last.description << ')';
+		stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
+		for(const auto &[v, d] : val.pairs)
+			stream_ << "<tr><td>" << v << "</td><td>" << d << "</td></tr>";
+		stream_ << "</table></span></span>";
+
 		return *this;
 	}
 	HtmlGuard &operator<<(const described_str &val){
 		if(val.empty()){ stream_ << '?'; return *this; }
 		const auto &last = val.last();
-		if(val.pairs.size() == 1){
-			if(last.value.empty()) stream_ << '?';
-			else {
-				stream_ << last.value;
-				if(!last.description.empty()) stream_ << " (" << last.description << ')';
-			}
-		} else {
-			stream_ << R"(<span class="has-tooltip">)";
-			if(last.value.empty()) stream_ << '?'; else stream_ << last.value;
-			if(!last.description.empty()) stream_ << " (" << last.description << ')';
-			stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
-			for(const auto &[v, d] : val.pairs)
-				stream_ << "<tr><td>" << (v.empty() ? "?" : v) << "</td><td>" << d << "</td></tr>";
-			stream_ << "</table></span></span>";
-		}
+
+		stream_ << R"(<span class="has-tooltip">)";
+		if(last.value.empty()) stream_ << '?'; else stream_ << last.value;
+		stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
+		for(const auto &[v, d] : val.pairs)
+			stream_ << "<tr><td>" << v << "</td><td>" << d << "</td></tr>";
+		stream_ << "</table></span></span>";
 		return *this;
 	}
 	template<typename T>

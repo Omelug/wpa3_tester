@@ -32,6 +32,7 @@ void Actor_config::cleanup() const{
 
 	run({"pkill", "-f", "tshark.*" + iface}, false);
 	run({"pkill", "-f", "tcpdump.*" + iface}, false);
+	run({"pkill", "-f", "dnsmasq.*" + iface}, false);
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
 	if((*this)[SK::sniff_iface].has_value()){

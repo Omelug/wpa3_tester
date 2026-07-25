@@ -4,6 +4,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/program.h"
+#include "system/hw_capabilities.h"
 #include "system/ip.h"
 #include "system/utils.h"
 
@@ -43,14 +44,15 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 
 void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	// check if contains rs.getactor("attacker").get(SK::source) != "internal"
-	if(rs.get_actor("ap")->is_WB()) setup_AP(rs, "ap");
+	const auto &ap = rs.get_actor("ap");
+	if(ap->is_WB()) setup_AP(rs, "ap");
 
-	if(rs.get_actor("ap").is(SK::source, "internal")){
-		const auto &ap = rs.get_actor("ap");
+	if(ap.is(SK::source, "internal")){
 		if(ap[SK::ip_addr]){
 			const string ip    = ap.get(SK::ip_addr);
 			const string iface = ap.get(SK::iface);
 			const string pfx   = ip.substr(0, ip.rfind('.'));
+			hw_capabilities::run_cmd({"pkill", "-f", "dnsmasq.*" + iface}, std::nullopt, false);
 			rs.process_manager.run("dnsmasq_ap", {
 				"dnsmasq", "--no-daemon", "--bind-interfaces",
 				"--interface=" + iface,

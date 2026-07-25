@@ -18,6 +18,8 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	//FIXME this dont work with external logread  (some issue with buffering?)
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
+	std::this_thread::sleep_for(std::chrono::seconds(2));
+
 	log(LogLevel::INFO, "{} is running", actor_name);
 	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
@@ -52,10 +54,18 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 			const string ip    = ap.get(SK::ip_addr);
 			const string iface = ap.get(SK::iface);
 			const string pfx   = ip.substr(0, ip.rfind('.'));
-			hw_capabilities::run_cmd({"pkill", "-f", "dnsmasq.*" + iface}, std::nullopt, false);
+
+			hw_capabilities::run_cmd({"pkill", "-9", "-f", "dnsmasq.*" + iface}, std::nullopt, false);
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(150)); //FIXME hardcoded timeout
+			hw_capabilities::run_cmd({"ip", "addr", "add", ip + "/24", "dev", iface}, std::nullopt, false);
+
 			rs.process_manager.run("dnsmasq_ap", {
-				"dnsmasq", "--no-daemon", "--bind-interfaces",
+				"dnsmasq", "--no-daemon",
+				"-C", "/dev/null",
+				"--listen-address=" + ip,
 				"--interface=" + iface,
+				"--bind-interfaces",
 				"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h"
 			}, rs.run_folder());
 			log(LogLevel::INFO, "dnsmasq DHCP started on {} ({})", iface, ip);

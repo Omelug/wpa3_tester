@@ -347,6 +347,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	auto try_download = [&](const filesystem::path &remote, const filesystem::path &local){
 		try{
 			download_file(remote, local);
+			set_public_perms(local);
 			log(LogLevel::DEBUG, "Downloaded {} -> {}", remote, local);
 		} catch(const exception &e){
 			log(LogLevel::WARNING, "Could not download {}: {}", remote, e.what());

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include "config/RunStatus.h"
+#include "overview/described.h"
 
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{
@@ -71,6 +72,20 @@ struct ReportGuard {
 	ReportGuard &operator<<(const std::optional<std::string> &val){
 		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
 	}
+	ReportGuard &operator<<(const described_bool &val){
+		if(val.empty()){ stream_ << '?'; return *this; }
+		const auto &[v, d] = val.last();
+		if(!v.has_value()) stream_ << '?'; else stream_ << (*v ? "yes" : "no");
+		if(!d.empty()) stream_ << " (" << d << ')';
+		return *this;
+	}
+	ReportGuard &operator<<(const described_str &val){
+		if(val.empty()){ stream_ << '?'; return *this; }
+		const auto &[v, d] = val.last();
+		if(v.empty()) stream_ << '?';
+		else { stream_ << v; if(!d.empty()) stream_ << " (" << d << ')'; }
+		return *this;
+	}
 
 	template<typename T>
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
@@ -79,7 +94,9 @@ struct ReportGuard {
 	          !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
 	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-	          !std::same_as<std::remove_cvref_t<T>, Link>)
+	          !std::same_as<std::remove_cvref_t<T>, Link> &&
+	          !std::same_as<std::remove_cvref_t<T>, described_bool> &&
+	          !std::same_as<std::remove_cvref_t<T>, described_str>)
 	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:

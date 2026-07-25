@@ -39,15 +39,15 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 	if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
 		const HWAddress<6> sta = mgmt->addr2();
 		switch(mgmt->subtype()){
-		case 0:  // assoc-req
-		case 2:{ // re-assoc-req
+		case Dot11::ASSOC_REQ:
+		case Dot11::REASSOC_REQ:{
 			const HWAddress<6> bssid = mgmt->addr1();
 			scan::fill_actor_caps_from_assoc_req(pdu, sta_map[sta]);
 			if(ap_map.contains(bssid)) ap_map[bssid].stations.insert(sta);
 			log(LogLevel::DEBUG, "STA caps from assoc/reassoc-req: {}", sta);
 			break;
 		}
-		case 4:{ // probe-req: HT/VHT/HE caps + signal, no RSN
+		case Dot11::PROBE_REQ:{ // HT/VHT/HE caps + signal, no RSN
 			auto &cfg = sta_map[sta];
 			cfg.set(SK::mac, sta);
 			scan::apply_radiotap(pdu, cfg);
@@ -57,7 +57,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 			log(LogLevel::DEBUG, "STA caps from probe-req: {}", sta);
 			break;
 		}
-		case 11:{ // auth: signal + SAE detection from algorithm field
+		case Dot11::AUTH:{ // auth: signal + SAE detection from algorithm field
 			auto &cfg = sta_map[sta];
 			cfg.set(SK::mac, sta);
 			scan::apply_radiotap(pdu, cfg);
@@ -184,8 +184,8 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 	if(ap_map.empty()){
 		report << "No access points found.\n\n";
 	} else{
-		report << "| MAC | SSID | Channel | Signal | MFP | OCV | WPA3 | Beacon prot | STAs |\n";
-		report << "|-----|------|---------|--------|-----|-----|------|-------------|------|\n";
+		report << "| MAC | SSID | Channel | Signal | MFP | OCVC | WPA3 | Beacon prot | STAs |\n";
+		report << "|-----|------|---------|--------|-----|------|------|-------------|------|\n";
 		for(const auto &[bssid, entry]: ap_map){
 			const auto &cfg = entry.cfg;
 			auto yn = [&](const BK k){ return cfg.get_or(k, false) ? "yes" : "no"; };

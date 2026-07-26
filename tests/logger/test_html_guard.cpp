@@ -61,13 +61,13 @@ TEST_CASE("HtmlGuard - bool false -> 'no'") {
 
 TEST_CASE("HtmlGuard - optional<bool> true -> 'yes'") {
 	HtmlFixture fx("hg_opt_true");
-	{ HtmlGuard hg(fx.dir); hg << optional<bool>{true}; }
+	{ HtmlGuard hg(fx.dir); hg << optional{true}; }
 	CHECK_EQ(fx.read_index(), "yes");
 }
 
 TEST_CASE("HtmlGuard - optional<bool> false -> 'no'") {
 	HtmlFixture fx("hg_opt_false");
-	{ HtmlGuard hg(fx.dir); hg << optional<bool>{false}; }
+	{ HtmlGuard hg(fx.dir); hg << optional{false}; }
 	CHECK_EQ(fx.read_index(), "no");
 }
 
@@ -131,4 +131,88 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	const path nested = fx.dir / "attacks" / "dos_soft" / "channel_switch";
 	CHECK_EQ(device(mac, nested),
 	         "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
+}
+
+using wpa3_tester::described_bool;
+using wpa3_tester::described_str;
+
+static const string TOOLTIP_HDR =
+	R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
+static const string TOOLTIP_FTR = "</table></span></span>";
+
+TEST_CASE("described_bool - empty -> '?'") {
+	HtmlFixture fx("db_empty");
+	{ HtmlGuard hg(fx.dir); hg << described_bool{}; }
+	CHECK_EQ(fx.read_index(), "?");
+}
+
+TEST_CASE("described_bool - single true entry") {
+	HtmlFixture fx("db_true");
+	described_bool db; db += {true, "src"};
+	{ HtmlGuard hg(fx.dir); hg << db; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR +
+	         "<tr><td>yes</td><td>src</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_bool - single false entry") {
+	HtmlFixture fx("db_false");
+	described_bool db; db += {false, "src"};
+	{ HtmlGuard hg(fx.dir); hg << db; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
+	         "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_bool - single nullopt entry -> 'N/A'") {
+	HtmlFixture fx("db_nullopt");
+	described_bool db; db += {nullopt, "src"};
+	{ HtmlGuard hg(fx.dir); hg << db; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">N/A)" + TOOLTIP_HDR +
+	         "<tr><td>N/A</td><td>src</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_bool - multiple entries: last shown, all in table") {
+	HtmlFixture fx("db_multi");
+	described_bool db; db += {false, "s1"}; db += {true, "s2"};
+	{ HtmlGuard hg(fx.dir); hg << db; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR +
+	         "<tr><td>no</td><td>s1</td></tr>"
+	         "<tr><td>yes</td><td>s2</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_str - empty -> '?'") {
+	HtmlFixture fx("ds_empty");
+	{ HtmlGuard hg(fx.dir); hg << described_str{}; }
+	CHECK_EQ(fx.read_index(), "?");
+}
+
+TEST_CASE("described_str - single non-empty string entry") {
+	HtmlFixture fx("ds_str");
+	described_str ds; ds += {"hello", "src"};
+	{ HtmlGuard hg(fx.dir); hg << ds; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">hello)" + TOOLTIP_HDR +
+	         "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_str - empty value entry shows '?' as display but empty cell in table") {
+	HtmlFixture fx("ds_empty_val");
+	described_str ds; ds += {"", "src"};
+	{ HtmlGuard hg(fx.dir); hg << ds; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">?)" + TOOLTIP_HDR +
+	         "<tr><td></td><td>src</td></tr>" + TOOLTIP_FTR);
+}
+
+TEST_CASE("described_str - multiple entries: last shown, all in table") {
+	HtmlFixture fx("ds_multi");
+	described_str ds; ds += {"first", "s1"}; ds += {"second", "s2"};
+	{ HtmlGuard hg(fx.dir); hg << ds; }
+	CHECK_EQ(fx.read_index(),
+	         R"(<span class="has-tooltip">second)" + TOOLTIP_HDR +
+	         "<tr><td>first</td><td>s1</td></tr>"
+	         "<tr><td>second</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }

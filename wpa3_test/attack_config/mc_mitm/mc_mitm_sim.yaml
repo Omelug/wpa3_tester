@@ -11,7 +11,7 @@ actors:
       program_config:
         version: 2_10
         hostapd_path: "./config/hostapd.conf"
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: simulation
     setup:
@@ -20,7 +20,7 @@ actors:
         version: 2_10
         wpa_supplicant_path: "./config/wpa_supplicant.conf"
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
   rogue_client:
     source: simulation
     selection:

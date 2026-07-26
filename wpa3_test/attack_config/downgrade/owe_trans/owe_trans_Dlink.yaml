@@ -17,7 +17,7 @@ actors:
         mode: ap
         htmode: HT20
         owe_transition_mode: true
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: internal
     selection:
@@ -33,7 +33,7 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
   attacker:
     source: internal
     selection:

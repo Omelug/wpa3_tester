@@ -23,7 +23,7 @@ actors:
         ieee80211w: 2
         log_level: 1
       ex_WB_programs: [ tcpdump ]
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
 
   client:
     source: internal
@@ -44,7 +44,7 @@ actors:
         sae_password: password123
         ssid: test_mc_mitm
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
 
   rogue_client:
     source: internal

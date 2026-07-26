@@ -18,7 +18,7 @@ actors:
         channel: 11
         mode: monitor
         htmode: HT20
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
 
 observers:
   cx_tshark:

@@ -12,7 +12,7 @@ actors:
       program_config:
         version: 2_7
         hostapd_path: "./config/hostapd.conf"
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: internal
     setup:
@@ -23,7 +23,7 @@ actors:
     selection:
       channel: 6
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
   attacker:
     source: internal
     selection:

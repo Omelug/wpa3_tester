@@ -30,7 +30,7 @@ actors:
         vht_oper_chwidth: 0
         wpa: 2
         wpa_key_mgmt: SAE
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: internal
     setup:
@@ -49,7 +49,7 @@ actors:
     selection:
       condition: [ monitor, 80211ac, 5GHz ]
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
     sniff_iface: client_mon
   attacker:
     source: internal

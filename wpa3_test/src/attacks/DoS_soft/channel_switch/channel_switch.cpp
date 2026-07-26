@@ -41,7 +41,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Ch
 	cs.switch_count = switch_count;
 	beacon.channel_switch(cs);
 
-	RadioTap radiotap;
+	RadioTap radiotap{};
 	//const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
 	//radiotap.channel(freq_mhz, RadioTap::OFDM);
 	radiotap.inner_pdu(beacon);

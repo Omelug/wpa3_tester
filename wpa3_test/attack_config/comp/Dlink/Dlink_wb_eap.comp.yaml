@@ -16,4 +16,4 @@ setup:
     pwd_group: "19"
     encryption: ccmp
   ex_WB_programs: [ tcpdump ]
-ip_addr: "10.0.0.1"
+ip_addr: "172.16.100.1"

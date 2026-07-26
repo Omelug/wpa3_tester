@@ -30,7 +30,7 @@ actors:
         wpa_passphrase: password123
         sae_password: password123
         channel: 6
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: external
     scan_ignore: yes

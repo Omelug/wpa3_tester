@@ -22,7 +22,7 @@ actors:
         ieee80211w: 2
         ocv: true
       ex_WB_programs: [ tcpdump ]
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: internal
     selection:
@@ -41,7 +41,7 @@ actors:
         pairwise: CCMP
         group: CCMP
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
   attacker:
     source: internal
     selection:

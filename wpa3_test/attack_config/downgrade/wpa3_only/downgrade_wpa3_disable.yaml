@@ -22,7 +22,7 @@ actors:
         sae_password: password123
         #wpa_passphrase: password123
         transition_disable: "0x01"
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     source: internal
     selection:
@@ -39,7 +39,7 @@ actors:
         group: CCMP
         psk: password123
     netns: sta
-    ip_addr: "10.0.0.2"
+    ip_addr: "172.16.100.2"
   rogue_ap:
     source: internal
     selection:

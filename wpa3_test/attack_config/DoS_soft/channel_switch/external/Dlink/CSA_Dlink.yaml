@@ -25,7 +25,7 @@ actors:
         ieee80211w: 2
         log_level: 1
       ex_WB_programs: [ tcpdump ]
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"
   client:
     setup:
       program: wpa_supplicant

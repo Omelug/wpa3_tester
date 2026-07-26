@@ -55,11 +55,11 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 			const string iface = ap.get(SK::iface);
 			const string pfx   = ip.substr(0, ip.rfind('.'));
 
-			hw_capabilities::run_cmd({"pkill", "-9", "-f", "dnsmasq.*" + iface}, std::nullopt, false);
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(150)); //FIXME hardcoded timeout
+			//hw_capabilities::run_cmd({"pkill", "-9", "-f", "dnsmasq.*" + iface}, std::nullopt, false);
+			//std::this_thread::sleep_for(std::chrono::milliseconds(1500)); //FIXME hardcoded timeout
 			hw_capabilities::run_cmd({"ip", "addr", "add", ip + "/24", "dev", iface}, std::nullopt, false);
-
+			ap->set_iface_up();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 			rs.process_manager.run("dnsmasq_ap", {
 				"dnsmasq", "--no-daemon",
 				"-C", "/dev/null",

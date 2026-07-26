@@ -19,4 +19,4 @@ actors:
         rsn_pairwise: CCMP
         sae_password: password123
         channel: 6
-    ip_addr: "10.0.0.1"
+    ip_addr: "172.16.100.1"

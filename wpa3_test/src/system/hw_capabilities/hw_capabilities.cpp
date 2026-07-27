@@ -142,12 +142,12 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 		if(iface == "lo"){
 			type = InterfaceType::Loopback; // Loopback ('lo')
 		} else if(exists(entry.path() / "wireless") || exists(entry.path() / "phy80211")){
-			if(iface.rfind(AP_IFACE_PREFIX, 0) == 0){
+			if(iface.starts_with(AP_IFACE_PREFIX)){
 				type = InterfaceType::WifiVirtualAP;
-			} else if(iface.rfind(MONITOR_IFACE_PREFIX, 0) == 0){
+			} else if(iface.starts_with(MONITOR_IFACE_PREFIX)){
 				// start with prefix, not good fix
 				type = InterfaceType::WifiVirtualMon; // Virtual wireless Wi-Fi (for monitor mode)
-			} else if(iface.rfind(HWSIM_IFACE_PREFIX, 0) == 0){
+			} else if(iface.starts_with(HWSIM_IFACE_PREFIX)){
 				type = InterfaceType::WifiVirtualHwsim; // mac80211_hwsim simulation interface
 			} else{
 				type = InterfaceType::Wifi; // wireless Wi-Fi

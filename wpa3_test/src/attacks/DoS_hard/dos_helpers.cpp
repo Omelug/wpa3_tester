@@ -25,9 +25,10 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs){
 	istringstream ss(out);
 	string line;
 	while(getline(ss, line)){
-		if(line.rfind("Station", 0) != 0) continue;
+		if(!line.starts_with("Station")) continue;
 		istringstream ls(line);
-		string token, mac_str;
+		string token;
+		string mac_str;
 		ls >> token >> mac_str; // "Station" "<mac>"
 		try{
 			result.emplace_back(mac_str);

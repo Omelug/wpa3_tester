@@ -54,7 +54,7 @@ bool is_ath_masker_loaded(){
 	ifstream modules("/proc/modules");
 	string line;
 	while(getline(modules, line)){
-		if(line.rfind("ath_masker ", 0) == 0) return true;
+		if(line.starts_with("ath_masker ")) return true;
 	}
 	return false;
 }

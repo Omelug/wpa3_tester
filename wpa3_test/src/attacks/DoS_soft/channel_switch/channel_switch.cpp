@@ -88,10 +88,10 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 	scan::ScanAP scan_ap{};
 	scan_ap.bssid = ap_mac;
-	unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
+	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
 	if(beacon){ log(LogLevel::ERROR, "not found beacon for reproduce");}
 	cout << "check_vulnerable called with:\n" << "AP MAC: " << ap_mac << "\n" << "STA MAC: " << sta_mac << "\n" <<
-		"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << endl;
+		"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << '\n';
 	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
 		sender.send(csa_rt);

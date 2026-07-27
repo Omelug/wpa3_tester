@@ -1,6 +1,7 @@
 #include "observer/tcpdump_wrapper.h"
 
 #include <filesystem>
+#include <fstream>
 
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
@@ -58,6 +59,9 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 	path pcap_path = obs_folder / (actor_name + "_capture.pcap");
 	command.insert(command.end(), {"tcpdump", "-i", iface, "-w", pcap_path});
 	if(!filter.empty()) command.push_back(filter);
+
+	std::ofstream(pcap_path).close(); // pre-create so tcpdump preserves perms on O_TRUNC
+	set_public_perms(pcap_path);
 
 	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
 	rs.process_manager.after_stop(actor_name + "_cap", [pcap_path](){

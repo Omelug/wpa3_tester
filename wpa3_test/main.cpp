@@ -35,8 +35,8 @@ void parse_arguments(argparse::ArgumentParser &program, const int argc, char *ar
 		throw config_err(err.what());
 	}
 
-	if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list")) throw config_err(
-		"Cant use both lists");
+	if(program.get<bool>("--test_list") && program.get<bool>("--test_suite_list"))
+		throw config_err("Cant use both lists");
 	const bool has_config = program.present<string>("--config").has_value();
 	const bool has_test = program.present<string>("--test").has_value();
 	const bool has_suite = program.present<string>("--test_suite").has_value();
@@ -52,7 +52,7 @@ static void solve_arguments(const argparse::ArgumentParser &program){
 				cout << "In program are not any tests" << endl;
 				return;
 			}
-			cout << "Test: " << testName.value() << " -> " << tests.at(testName.value()) << endl;
+			cout << "Test: " << testName.value() << " -> " << tests.at(testName.value()) << '\n';
 		} else if(const auto testSuiteName = program.present<string>("--test_suite")){
 			RunSuiteStatus::print_tests_in_suite(testSuiteName.value());
 		} else{

@@ -3,8 +3,13 @@
 $validator: ./validator/global_config.schema.yaml
 
 regulatory_domain: CZ
-#internet_interface: wlan0
+internet_interface: wlan0
 timeout_external_bb_scan_sec: 5
+
+actors:
+  conn_table: ./example_whitebox_table.csv
+  ignore_interfaces: [wlan0, eth0]
+
 paths:
   # These config keys are not included in result config,
   hostapd:
@@ -22,9 +27,7 @@ paths:
     dragondrain_folder: ../../tools/dragondrain-and-time
   ath_masker: ../../tools/ath_masker
   WPA3_SAE_DoS_Research_Suite: ../../tools/WPA3-SAE-DoS-Research-Suite
-actors:
-  conn_table: ./example_whitebox_table.csv
-  ignore_interfaces: [ wlan0, eth0]
+
 nm_exclude_actors: false
 #delete_old: true
 install_req: true

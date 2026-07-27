@@ -318,7 +318,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 	//log(LogLevel::DEBUG, "stop() called for "+process_name);
 	shared_ptr<ManagedProcess> mp;
 	{
-		lock_guard lock(logger_mtx);
+		std::scoped_lock lock(logger_mtx);
 		const auto proc_iter = processes.find(process_name);
 		if(proc_iter == processes.end()) return;
 
@@ -348,7 +348,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 
 	// erase after drain thread exits so flush-phase handle_chunk calls still find the process
 	{
-		lock_guard lock(logger_mtx);
+		std::scoped_lock lock(logger_mtx);
 		processes.erase(process_name);
 	}
 
@@ -384,7 +384,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 }
 
 void ProcessManager::before_stop(const string &process_name, const function<void()> &callback){
-	lock_guard lock(logger_mtx);
+	std::scoped_lock lock(logger_mtx);
 	const auto proc_iter = processes.find(process_name);
 	if(proc_iter != processes.end() && proc_iter->second){
 		proc_iter->second->before_stop_callback = callback;
@@ -392,7 +392,7 @@ void ProcessManager::before_stop(const string &process_name, const function<void
 }
 
 void ProcessManager::after_stop(const string &process_name, const function<void()> &callback){
-	lock_guard lock(logger_mtx);
+	std::scoped_lock lock(logger_mtx);
 	if(const auto proc_iter = processes.find(process_name); proc_iter != processes.end() && proc_iter->second){
 		proc_iter->second->after_stop_callback = callback;
 	}
@@ -401,7 +401,7 @@ void ProcessManager::after_stop(const string &process_name, const function<void(
 void ProcessManager::stop_all(){
 	vector<string> process_names;
 	{
-		lock_guard lock(logger_mtx);
+		std::scoped_lock lock(logger_mtx);
 		process_names.reserve(processes.size());
 		for(const auto &name: processes | views::keys){ process_names.push_back(name); }
 	}

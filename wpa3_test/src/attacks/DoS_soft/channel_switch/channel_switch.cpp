@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <filesystem>
@@ -88,10 +89,14 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 
 	scan::ScanAP scan_ap{};
 	scan_ap.bssid = ap_mac;
-	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
-	if(beacon){ log(LogLevel::ERROR, "not found beacon for reproduce");}
-	cout << "check_vulnerable called with:\n" << "AP MAC: " << ap_mac << "\n" << "STA MAC: " << sta_mac << "\n" <<
-		"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << '\n';
+	const unique_ptr<Dot11Beacon> beacon = nullptr; // scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
+	if(beacon) log(LogLevel::ERROR, "not found beacon for reproduce");
+	cout << "check_vulnerable called with:\n"
+			<< "AP MAC: " << ap_mac << "\n"
+			<< "STA MAC: " << sta_mac << "\n"
+			<< "Interface: " << iface_name << "\n"
+			<< "Channel: " << ap_channel.ch_num << "\n"
+			<< "SSID: " << ssid << '\n';
 	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
 		sender.send(csa_rt);
@@ -183,20 +188,30 @@ void stats_chs_attack(const RunStatus &rs){
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"}});
 
+	//TODO generalizovat
+	LogTimePoint start_tp, end_tp;
+	if(const path rogue_log = rs.run_folder() / "logger" / "rogue_ap.log"; exists(rogue_log)){
+		start_tp = get_tag_time(rogue_log, START_tag);
+		end_tp   = get_tag_time(rogue_log, END_tag);
+	}
+	const auto in_window = [&](const LogTimePoint &t){ return t >= start_tp && t <= end_tp; };
+
 	optional<bool> disconnected;
 	string disconnected_source;
 	const string client_mac = rs.get_actor("client").get(SK::mac);
 	if(rs.get_actor("client")->is_WB()){
 		const path client_log = rs.run_folder() / "logger" / "client.log";
 		if(exists(client_log)){
-			disconnected = !get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true).empty();
+			const auto ev = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
+			disconnected = ranges::any_of(ev, in_window);
 			disconnected_source = "log";
 		}
 	} else {
 		const path pcap_path = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";
 		if(exists(pcap_path)){
 			const string filter = "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac;
-			disconnected = !get_tshark_events(rs, "attacker", filter, "DISCONNECTED").empty();
+			const auto ev = get_tshark_events(rs, "attacker", filter, "DISCONNECTED");
+			disconnected = ranges::any_of(ev, in_window);
 			disconnected_source = "pcap";
 		}
 	}

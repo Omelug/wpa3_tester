@@ -58,6 +58,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 			hw_capabilities::run_cmd({"ip", "addr", "add", ip + "/24", "dev", iface}, std::nullopt, false);
 			ap->set_iface_up();
 			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+			//TODO  add dnsmasq to nix/ requirements 
 			rs.process_manager.run("dnsmasq_ap", {
 				"dnsmasq", "--no-daemon",
 				"-C", "/dev/null",

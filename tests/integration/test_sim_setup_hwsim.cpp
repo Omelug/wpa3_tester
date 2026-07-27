@@ -176,7 +176,7 @@ TEST_CASE("hwsim setup_actor - set AP mode"){
 
     actor->setup_actor(HwsimFixture::cfg(), f.base);
 
-    CHECK_NE(iw_info(f.iface).find("type AP"), string::npos);
+    CHECK_NE(iw_info(f.iface).contains("type AP"), string::npos);
 }
 
 TEST_CASE("hwsim setup_actor - set managed mode"){

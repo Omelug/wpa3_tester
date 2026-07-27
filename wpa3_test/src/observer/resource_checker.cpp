@@ -72,7 +72,7 @@ vector<ResourceRecord> parse_resource_log(const string &filepath){
 			istringstream h(line);
 			string tok;
 			n_cores = 0;
-			while(h >> tok) if(tok.rfind("cpu", 0) == 0) ++n_cores;
+			while(h >> tok) if(tok.starts_with("cpu")) ++n_cores;
 			continue;
 		}
 

@@ -24,7 +24,7 @@ TEST_CASE("log - debug message with actor name"){
     // Restore original cerr
     cerr.rdbuf(original_cerr);
 
-    CHECK_NE(captured_output.str().find(expected_message), string::npos);
+    CHECK_NE(captured_output.str().contains(expected_message));
 }
 
 TEST_CASE("log - set_log_file writes messages to file"){

@@ -19,9 +19,9 @@ struct RepoConfig{
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
 	string binary_name;     // "hostapd"/"hostapd-mana"
-	bool has_tags;          // hostapd has tags, hostapd-mana uses branches
+	bool has_tags;          // hostapd has tags, hostapd-mana uses pinned commit
 	string tag_prefix;      // "hostap_" for hostapd
-	string branch_prefix;   // "hostapd-" for hostapd-mana (branches: hostapd-2.10, hostapd-2.6, ...)
+	string pinned_commit;   // if set, always checkout this commit (ignores version)
 	string no_version_name; // "hostapd"/"hostapd-mana" installed
 };
 
@@ -29,8 +29,10 @@ static const RepoConfig HOSTAPD_CONFIG = {
 	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", true, "hostap_", "", "hostapd",
 };
 
+// Kali master HEAD (2026-07-27)
 static const RepoConfig HOSTAPD_MANA_CONFIG = {
-	"hostapd_mana", "https://github.com/sensepost/hostapd-mana.git", "hostapd", false, "hostapd-mana_", "hostapd-", "hostapd-mana"
+	"hostapd_mana", "https://gitlab.com/kalilinux/packages/hostapd-mana.git", "hostapd",
+	false, "hostapd-mana_", "490fc93b177f525bf8a479d122ded1844a68e510", "hostapd-mana"
 };
 
 void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
@@ -129,14 +131,17 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
 
-	if(version.empty()){
+	if(version.empty() && cfg.pinned_commit.empty()){
 		if(hw_capabilities::run_cmd({"which", cfg.no_version_name}, nullopt, false) != 0)
 			throw config_err("{} version not set and '{}' not found in PATH", cfg.repo_name, cfg.no_version_name);
 		log(LogLevel::WARNING, "{} version not defined, using system default", cfg.repo_name);
 		return cfg.no_version_name;
 	}
 
-	string bin_name = bin_prefix + version;
+	// pinned repos always build the same commit — name binary by short hash, not version
+	string bin_name = cfg.pinned_commit.empty()
+		? bin_prefix + version
+		: bin_prefix + cfg.pinned_commit.substr(0, 12);
 	ranges::replace(bin_name, '.', '_');
 	const path binary_path = hostapd_folder / bin_name;
 
@@ -162,11 +167,8 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 		hw_capabilities::run_in("git clean -fd", repo_path);
-		if(!cfg.branch_prefix.empty()){
-			string branch_version = version;
-			ranges::replace(branch_version, '_', '.');
-			const string branch = cfg.branch_prefix + branch_version;
-			hw_capabilities::run_in("git checkout " + branch, repo_path);
+		if(!cfg.pinned_commit.empty()){
+			hw_capabilities::run_in("git checkout " + cfg.pinned_commit, repo_path);
 		}
 	}
 
@@ -302,9 +304,11 @@ std::string to_hex(const uint8_t* data, size_t len) {
 }
 
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
-    if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
-       throw config_err("hcxpmktool not found in PATH - install hcxtools package");
-    log(LogLevel::INFO, "hcxpmktool: {}", hw_capabilities::run_cmd_output({"hcxpmktool", "--version"}, nullopt));
+	if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0){
+		// TODO if rs.run_config_intall _req (maybe add to requirements, before test run)
+		throw config_err("hcxpmktool not found in PATH - install hcxtools package");
+	}
+	log(LogLevel::INFO, "hcxpmktool: {}", hw_capabilities::run_cmd_output({"hcxpmktool", "--version"}, nullopt));
 
     if(!exists(creds_file)){
        log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
@@ -480,7 +484,7 @@ string client_akm_from_ap_log(const path &log_path, const string &stop_tag){
 		if(!ie || ie->akm_count == 0) continue;
 		string result;
 		for(uint16_t i = 0; i < ie->akm_count; ++i){
-			const size_t suite_off = ie->akm_off + 2 + i * 4;
+			const size_t suite_off = ie->akm_off + 2 + static_cast<size_t>(i * 4);
 			if(ie->raw.size() < suite_off + 4) break;
 			// only handle 00-0f-ac OUI
 			if(ie->raw[suite_off] != 0x00 || ie->raw[suite_off+1] != 0x0f || ie->raw[suite_off+2] != 0xac) continue;
@@ -576,13 +580,13 @@ string client_scanning_from_ap_log(const path &ap_log, const string &client_mac)
 	smatch match;
 	while(getline(f, line)){
 		if(!in_window){
-			if(line.find(START_tag) != string::npos) in_window = true;
+			if(line.contains(START_tag)) in_window = true;
 			continue;
 		}
-		if(line.find(END_tag) != string::npos || line.find(END_STOP_tag) != string::npos) break;
+		if(line.contains(END_tag) || line.contains(END_STOP_tag)) break;
 
 		if(prev_was_probe){
-			if(line.find("DS Params mismatch") != string::npos && regex_search(line, match, ds_ch_re))
+			if(line.contains("DS Params mismatch") && regex_search(line, match, ds_ch_re))
 				channels.insert(stoi(match[1].str()));
 			else if(prev_backup_ch > 0)
 				channels.insert(prev_backup_ch);
@@ -590,7 +594,7 @@ string client_scanning_from_ap_log(const path &ap_log, const string &client_mac)
 			prev_backup_ch = 0;
 		}
 
-		if(line.find(client_mac) != string::npos && line.find("WLAN_FC_STYPE_PROBE_REQ") != string::npos){
+		if(line.contains(client_mac) && line.contains("WLAN_FC_STYPE_PROBE_REQ")){
 			prev_was_probe = true;
 			if(regex_search(line, match, freq_re))
 				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));

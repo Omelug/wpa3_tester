@@ -69,7 +69,10 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	}
 
 	const path attacker_pcap =  test_folder / "observer" / "tshark" / "attacker_capture.pcap";
-
+	/*FIXME add beacon protection column
+	 *if(){
+		attacker_pcap.beacon_prot = ;
+	}*/
 	if(e.conn_WPA_version.value().empty())
 		e.conn_WPA_version += {observer::tshark::akm_from_pcap(attacker_pcap), "attacker pcap"};
 

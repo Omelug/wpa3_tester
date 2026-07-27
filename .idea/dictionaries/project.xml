@@ -45,6 +45,7 @@
       <w>cwmin</w>
       <w>ddwrt</w>
       <w>defconfig</w>
+      <w>defs</w>
       <w>defualt</w>
       <w>delba</w>
       <w>dellink</w>
@@ -142,6 +143,7 @@
       <w>nullopt</w>
       <w>numpairs</w>
       <w>octl</w>
+      <w>ocvc</w>
       <w>ofdm</w>
       <w>openssldir</w>
       <w>openwrt</w>
@@ -177,8 +179,11 @@
       <w>reuseaddr</w>
       <w>rfkill</w>
       <w>rlen</w>
+      <w>rmmod</w>
       <w>rowspan</w>
       <w>rsneapol</w>
+      <w>rsnxcaps</w>
+      <w>rsnxe</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>
       <w>rwxrwxrwx</w>

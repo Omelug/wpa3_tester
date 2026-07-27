@@ -31,11 +31,11 @@ TEST_CASE("before_stop: callback "){
     mutex mtx;
 
     pm.before_stop("proc", [&] {
-        lock_guard lk(mtx);
+        scoped_lock lk(mtx);
         order.emplace_back("before");
     });
     pm.after_stop("proc", [&] {
-        lock_guard lk(mtx);
+        scoped_lock lk(mtx);
         order.emplace_back("after");
     });
 

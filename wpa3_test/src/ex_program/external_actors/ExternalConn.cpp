@@ -108,7 +108,7 @@ optional<string> ExternalConn::get_module_hash(const string &driver_name) const{
 }
 
 string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_err) const{
-	lock_guard lock(session_mtx);
+	scoped_lock lock(session_mtx);
 	const string final_cmd = kill_on_exit ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'" : cmd;
 	//log(LogLevel::DEBUG, "exec "+final_cmd);
 	if(!session) throw ex_conn_err("Cannot exec: not connected");
@@ -360,7 +360,7 @@ static path injector_local_path(const string &remote_arch){
 }
 
 ssh_channel ExternalConn::open_capture_channel(const string &iface) const{
-	lock_guard lock(session_mtx);
+	scoped_lock lock(session_mtx);
 	ssh_channel ch = ssh_channel_new(session);
 	if(!ch) throw ex_conn_err("open_capture_channel: ssh_channel_new failed");
 	if(ssh_channel_open_session(ch) != SSH_OK){
@@ -404,7 +404,7 @@ void ExternalConn::ensure_inject_binary() const{
 ssh_channel ExternalConn::open_inject_channel(const string &iface) const{
 	ensure_inject_binary();
 	constexpr string_view remote_path = "/tmp/wpa3_injector";
-	lock_guard lock(session_mtx);
+	scoped_lock lock(session_mtx);
 	ssh_channel ch = ssh_channel_new(session);
 	if(!ch) throw ex_conn_err("open_inject_channel: ssh_channel_new failed");
 	if(ssh_channel_open_session(ch) != SSH_OK){

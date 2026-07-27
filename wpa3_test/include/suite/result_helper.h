@@ -4,12 +4,6 @@
 #include <string>
 #include <vector>
 
-#if defined(__CLION_IDE__)
-	#ifndef BOOST_PFR_CORE_NAME_PARSING
-		#define BOOST_PFR_CORE_NAME_PARSING (2, 2, "")
-	#endif
-#endif
-
 #include <boost/pfr.hpp>
 #include <nlohmann/json.hpp>
 #include "overview/described.h"
@@ -36,10 +30,8 @@ Entry load_result_default(const std::filesystem::path &test_folder){
 	const auto result = load_result_json(test_folder);
 	if(!result) return e;
 
-	constexpr auto field_names = boost::pfr::names_as_array<Entry>();
-
-	boost::pfr::for_each_field(e, [&]<typename param_type>(param_type &field, std::size_t idx){
-		const std::string param_name{field_names[idx]};
+	boost::pfr::for_each_field(e, [&]<typename param_type, std::size_t I>(param_type &field, std::integral_constant<std::size_t, I>){
+		constexpr std::string_view param_name = boost::pfr::get_name<I, Entry>();
 		using F = std::decay_t<param_type>;
 		if constexpr(!is_pair_field<F>){ // pair fields are display-only, never in result.json
 			if(result->contains(param_name)){

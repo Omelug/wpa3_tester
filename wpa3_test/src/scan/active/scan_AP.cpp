@@ -6,12 +6,14 @@
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "scan/active/scan_active.h"
+
+namespace wpa3_tester::scan{
+
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::scan{
 void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
 	ss << "AKM Suites: ";
 	for(auto &akm: akms){

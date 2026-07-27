@@ -8,10 +8,11 @@ using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-void DetailedSchemaErrorHandler::error(const nlohmann::json::json_pointer &ptr,
-               const nlohmann::json &instance,
-               const std::string &message){
-    nlohmann::json_schema::basic_error_handler::error(ptr, instance, message);
+void DetailedSchemaErrorHandler::error(const json::json_pointer &ptr,
+	const json &instance,
+	const std::string &message)
+{
+    basic_error_handler::error(ptr, instance, message);
 
     std::ostringstream ss;
     std::string path_str = ptr.empty() ? "/" : ptr.to_string();
@@ -41,8 +42,7 @@ void DetailedSchemaErrorHandler::error(const nlohmann::json::json_pointer &ptr,
     formatted_errors_.push_back(ss.str());
 }
 
-std::string DetailedSchemaErrorHandler::extract_custom_error(
-    const nlohmann::json::json_pointer &ptr) const {
+std::string DetailedSchemaErrorHandler::extract_custom_error(const json::json_pointer &ptr) const {
     try {
         std::string ptr_str = ptr.to_string();
         if(ptr_str.empty() || ptr_str == "/") return "";
@@ -60,7 +60,7 @@ std::string DetailedSchemaErrorHandler::extract_custom_error(
             schema_path += "/properties/" + token;
         }
 
-        nlohmann::json::json_pointer schema_ptr(schema_path);
+        json::json_pointer schema_ptr(schema_path);
         if(root_schema_.contains(schema_ptr)){
             const auto &target_node = root_schema_[schema_ptr];
             if(target_node.contains("errorMessage"))
@@ -73,8 +73,8 @@ std::string DetailedSchemaErrorHandler::extract_custom_error(
 }
 
 std::vector<std::string> DetailedSchemaErrorHandler::extract_deep_errors(
-    const nlohmann::json::json_pointer &ptr,
-    const nlohmann::json &instance,
+    const json::json_pointer &ptr,
+    const json &instance,
     const std::string &message) const {
 
     std::vector<std::string> results;
@@ -89,7 +89,7 @@ std::vector<std::string> DetailedSchemaErrorHandler::extract_deep_errors(
     std::string prop_name = message.substr(name_start, name_end - name_start);
 
     if(!instance.is_object() || !instance.contains(prop_name)) return results;
-    const nlohmann::json &prop_value = instance[prop_name];
+    const json &prop_value = instance[prop_name];
 
     // Build schema path: /actors → /properties/actors/additionalProperties
     std::string schema_path;
@@ -108,15 +108,15 @@ std::vector<std::string> DetailedSchemaErrorHandler::extract_deep_errors(
     }
     schema_path += "/additionalProperties";
 
-    nlohmann::json::json_pointer ap_ptr(schema_path);
+    json::json_pointer ap_ptr(schema_path);
     if(!root_schema_.contains(ap_ptr)) return results;
 
     // Resolve local $ref (e.g. '#/$defs/Actor')
-    const nlohmann::json *resolved = &root_schema_[ap_ptr];
+    const json *resolved = &root_schema_[ap_ptr];
     if(resolved->contains("$ref")){
         const std::string &ref = (*resolved)["$ref"].get<std::string>();
         if(!ref.empty() && ref[0] == '#'){
-            nlohmann::json::json_pointer ref_ptr(ref.substr(1));
+            json::json_pointer ref_ptr(ref.substr(1));
             if(root_schema_.contains(ref_ptr))
                 resolved = &root_schema_[ref_ptr];
         }
@@ -126,9 +126,9 @@ std::vector<std::string> DetailedSchemaErrorHandler::extract_deep_errors(
 
     for(const auto &item : (*resolved)["allOf"]){
         try{
-            nlohmann::json_schema::json_validator temp_v(item);
-            nlohmann::json copy = prop_value;
-            nlohmann::json_schema::basic_error_handler eh;
+            json_schema::json_validator temp_v(item);
+            json copy = prop_value;
+            basic_error_handler eh;
             temp_v.validate(copy, eh);
             if(!eh) continue;
 

@@ -8,12 +8,13 @@
 #include "attacks/Enterprise/eap_defs.h"
 #include "logger/log.h"
 
+namespace wpa3_tester::scan{
 using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-namespace wpa3_tester::scan{
 using namespace wpa3_tester::eap;
+
 
 struct EAP_Info{
 	uint8_t code = 0;
@@ -35,18 +36,7 @@ struct EAP_Session{
 	AuthStatus status = AuthStatus::UNKNOWN;
 	uint8_t last_type_code = 0;
 	steady_clock::time_point last_seen;
-
-	string to_str() const;
 };
-
-string EAP_Session::to_str() const{
-	stringstream ss;
-	ss << "IDs: ";
-	for(auto const &id: identities) ss << id << " ";
-	ss << "| Methods: ";
-	for(auto const &m: methods) ss << m << " ";
-	return ss.str();
-}
 
 string extract_identity(const vector<uint8_t> &payload){
 	if(payload.size() <= 5) return "Empty"; // (Code, ID, LenH, LenL, Type, [Data...])

@@ -14,7 +14,7 @@ void ProcessManager::write_log_line(ofstream &os, const string &line){
 }
 
 void ProcessManager::write_log_all(const string &line){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	const string combined_prefix = current_timestamp() + "[write_log_all] ";
 	write_log_line(combined_log, combined_prefix + line);
 	for(const auto &[name, proc]: processes){
@@ -24,12 +24,12 @@ void ProcessManager::write_log_all(const string &line){
 }
 
 size_t ProcessManager::processes_size() const{
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	return processes.size();
 }
 
 bool ProcessManager::process_exists(const string &process_name) const{
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	return processes.contains(process_name);
 }
 
@@ -57,7 +57,7 @@ string ProcessManager::current_timestamp(){
 }
 
 void ProcessManager::init_logging(const path &run_folder){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	log_base_dir = run_folder / "logger";
 	recreate_log_folder(log_base_dir);
 
@@ -109,7 +109,7 @@ int get_target_pid(int current_pid){
 }
 
 int ProcessManager::get_pid(const string &process_name){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	const auto it = processes.find(process_name);
 	if(it == processes.end()) throw setup_err("Process '" + process_name + "' not found in process map.");
 	if(it->second->start_pid <= 0) throw setup_err(
@@ -139,14 +139,14 @@ void ProcessManager::recreate_log_folder(const path &log_base_dir){
 
 // ----------------- history functions
 void ProcessManager::allow_history(const string &actor_name){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	const auto it = processes.find(actor_name);
 	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found to allow history");
 	it->second->logs.history_enabled = true;
 }
 
 void ProcessManager::ignore_history(const string &actor_name){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	const auto it = processes.find(actor_name);
 	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found to ignore history");
 	it->second->logs.history_enabled = false;
@@ -154,7 +154,7 @@ void ProcessManager::ignore_history(const string &actor_name){
 }
 
 void ProcessManager::discard_history(const string &actor_name){
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	const auto it = processes.find(actor_name);
 	if(it == processes.end()) throw setup_err("Process " + actor_name + " not found for discard history");
 	it->second->logs.history.clear();

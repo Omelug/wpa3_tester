@@ -14,7 +14,7 @@ using namespace filesystem;
 
 // Global state for log file
 static mutex log_mutex;
-static ofstream *log_file_ptr = nullptr;
+static unique_ptr<ofstream> log_file_ptr;
 
 const char *levelToString(const LogLevel level){
 	switch(level){
@@ -28,12 +28,8 @@ const char *levelToString(const LogLevel level){
 }
 
 void set_log_file(const path &log_path){
-	lock_guard lock(log_mutex);
-	if(log_file_ptr){
-		log_file_ptr->close();
-		delete log_file_ptr;
-		log_file_ptr = nullptr;
-	}
+	scoped_lock lock(log_mutex);
+	log_file_ptr.reset();
 
 	if(!log_path.empty()){
 		// Create parent directories if needed
@@ -42,23 +38,17 @@ void set_log_file(const path &log_path){
 			create_public_dirs(log_dir);
 		}
 
-		log_file_ptr = new ofstream(log_path, ios::app);
-		if(!log_file_ptr->is_open()){
-			delete log_file_ptr;
-			log_file_ptr = nullptr;
-		} else{
+		auto f = make_unique<ofstream>(log_path, ios::app);
+		if(f->is_open()){
 			set_public_perms(log_path);
+			log_file_ptr = std::move(f);
 		}
 	}
 }
 
 void close_log_file(){
-	lock_guard lock(log_mutex);
-	if(log_file_ptr){
-		log_file_ptr->close();
-		delete log_file_ptr;
-		log_file_ptr = nullptr;
-	}
+	scoped_lock lock(log_mutex);
+	log_file_ptr.reset();
 }
 
 void write_log_message(const LogLevel level, const string &msg){
@@ -69,10 +59,9 @@ void write_log_message(const LogLevel level, const string &msg){
 
 	// Write to log file if enabled
 	{
-		lock_guard lock(log_mutex);
+		scoped_lock lock(log_mutex);
 		if(log_file_ptr && log_file_ptr->is_open()){
 			*log_file_ptr << formatted << endl;
-			log_file_ptr->flush();
 		}
 	}
 }
@@ -114,7 +103,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 		++p;
 		int hhmm = 0;
 		for(int i = 0; i < 4 && isdigit(*p); ++i, ++p) hhmm = hhmm * 10 + (*p - '0');
-		tz_offset_sec = sign * ((hhmm / 100) * 3600 + (hhmm % 100) * 60);
+		tz_offset_sec = sign * (hhmm / 100 * 3600 + (hhmm % 100) * 60);
 	}
 
 	t.tm_isdst = 0;
@@ -140,11 +129,11 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	bool in_window = !between_markers;
 	while(getline(file, line)){
 		if(between_markers){
-			if(line.find(START_tag) != string::npos){
+			if(line.contains(START_tag)){
 				in_window = true;
 				continue;
 			}
-			if(line.find(END_tag) != string::npos){
+			if(line.contains(END_tag)){
 				in_window = false;
 				continue;
 			}
@@ -165,7 +154,7 @@ LogTimePoint get_tag_time(const path &log_path, const string &tag){
 	const regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}))");
 	smatch match;
 	while(getline(file, line)){
-		if(line.find(tag) != string::npos)
+		if(line.contains(tag))
 			if(regex_search(line, match, re))
 				return log_time_to_epoch_ns(match[1].str());
 	}

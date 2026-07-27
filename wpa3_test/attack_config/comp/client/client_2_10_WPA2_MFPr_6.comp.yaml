@@ -9,7 +9,7 @@ actors:
         psk: password123 # TODO tohle zapsat do dokuemntace, pokud je sae_password, je klient imuní (zjistit jak se to ukládá z network manager gui)
         ieee80211w: 2
         proto: RSN
-        key_mgmt: SAE
+        key_mgmt: WPA-PSK
         pairwise: CCMP
         group: CCMP
     selection:

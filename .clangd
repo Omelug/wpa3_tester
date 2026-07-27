@@ -1,5 +1,48 @@
----
 If:
-  PathMatch: ".*/_deps/.*"
+  PathMatch: [".*/_deps/.*", ".*/boost/pfr/.*"]
 Diagnostics:
   Suppress: "*"
+
+---
+
+CompileFlags:
+  Add: [
+    "-Xclang", "-fno-pch-timestamp",
+    "-Xclang", "-fpch-instantiate-templates"
+  ]
+
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Checks: >
+      clang-diagnostic-*,
+      clang-analyzer-*,
+      bugprone-*,
+      cert-*,
+      cppcoreguidelines-*,
+      modernize-*,
+      performance-*,
+      readability-*,
+      -modernize-use-trailing-return-type,
+      -readability-magic-numbers,
+      -cppcoreguidelines-avoid-magic-numbers,
+      -readability-identifier-length,
+      -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+      -cppcoreguidelines-pro-type-reinterpret-cast,
+      -cert-err58-cpp,
+      -modernize-use-designated-initializers,
+      -readability-braces-around-statements,
+      -cppcoreguidelines-pro-bounds-constant-array-index,
+      -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+      -performance-avoid-endl,
+      -cppcoreguidelines-avoid-non-const-global-variables,
+      -readability-implicit-bool-conversion,
+      -readability-math-missing-parentheses,
+      -*-throwing-static-initialization
+    WarningsAsErrors: ""
+    HeaderFilterRegex: "wpa3_test/.*"
+    CheckOptions:
+      readability-function-cognitive-complexity.Threshold: "25"
+      bugprone-easily-swappable-parameters.MinimumLength: "3"
+      readability-implicit-bool-conversion.AllowPointerConditions: "true"
+      hicpp-implicit-bool-conversion.AllowPointerConditions: "true"

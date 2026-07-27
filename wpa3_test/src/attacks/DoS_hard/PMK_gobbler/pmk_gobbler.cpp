@@ -48,7 +48,7 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 			if(store.stop.load()) return monostate{};
 
 			if(auto entry = parse_acm_response({packet, packet + caplen})){
-				lock_guard lock(store.mtx);
+				scoped_lock lock(store.mtx);
 				const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
 				if(inserted)
 					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac, store.queue.size());
@@ -103,7 +103,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, packets_per_second_limit, [&]() ->optional<RadioTap>{
 		optional<ACMCookie> entry;
 		{
-			lock_guard lock(store.mtx);
+			scoped_lock lock(store.mtx);
 			if(!store.queue.empty()){
 				const auto it = store.queue.begin();
 				entry = std::move(it->second);

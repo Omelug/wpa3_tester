@@ -10,7 +10,6 @@
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
-using namespace wpa3_tester;
 using namespace std;
 
 void check_monitor(nlattr **attrs, NlCaps *caps){

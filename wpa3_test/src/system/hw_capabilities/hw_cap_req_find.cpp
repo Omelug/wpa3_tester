@@ -167,9 +167,9 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 		for(const auto k: sk_keys()){
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
 			map<string, vector<string>> demand; // value -> actors requiring it
-			for(const auto &[aname, req_ptr]: rules){
+			for(const auto &[name2, req_ptr]: rules){
 				const auto &r = (*req_ptr)[k];
-				if(r.has_value()) demand[*r].push_back(aname);
+				if(r.has_value()) demand[*r].push_back(name2);
 			}
 			for(const auto &[val, actors]: demand){
 				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt){
@@ -184,9 +184,9 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 		}
 		for(const auto k: bk_keys()){
 			map<bool, vector<string>> demand;
-			for(const auto &[aname, req_ptr]: rules){
+			for(const auto &[name2, req_ptr]: rules){
 				const auto &r = (*req_ptr)[k];
-				if(r.has_value()) demand[*r].push_back(aname);
+				if(r.has_value()) demand[*r].push_back(name2);
 			}
 			for(const auto &[val, actors]: demand){
 				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt){

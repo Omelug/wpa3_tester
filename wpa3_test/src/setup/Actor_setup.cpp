@@ -6,7 +6,7 @@
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
-using namespace std;
+using string = std::string;
 
 Channel Actor_config::get_channel() const{
 	if(!(*this)[SK::channel].has_value()) throw config_err("Actor_config: channel not set");

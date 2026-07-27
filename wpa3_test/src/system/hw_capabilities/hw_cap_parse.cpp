@@ -1,6 +1,4 @@
-#include <cstdio>
 #include <random>
-#include <string>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"

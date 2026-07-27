@@ -103,7 +103,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 
 		// flush incomplete (no trailing newline) lines and emit error if process died unexpectedly
 		{
-			lock_guard lock(logger_mtx);
+			scoped_lock lock(logger_mtx);
 			const string ts = current_timestamp();
 			for(auto &[label, buf]: mp->logs.buffers){
 				if(buf.empty()) continue;
@@ -125,7 +125,7 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 
 ProcessManager::~ProcessManager(){
 	stop_all();
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	if(combined_log.is_open()) combined_log.close();
 }
 
@@ -135,7 +135,7 @@ void ProcessManager::handle_chunk(
 ){
 	bool should_notify = false;
 	{
-		lock_guard lock(logger_mtx);
+		scoped_lock lock(logger_mtx);
 		const auto it = processes.find(process_name);
 		if(it == processes.end() || !it->second){
 			log(LogLevel::WARNING, "handle_chunk: process not found: {}", process_name);
@@ -179,7 +179,7 @@ void ProcessManager::run_dummy(const string &process_name){
 	mp->logs.log.open(log_path, ios::out | ios::trunc);
 	set_public_perms(log_path);
 
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	processes[process_name] = mp;
 }
 
@@ -222,7 +222,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	set_public_perms(log_path);
 
 	{
-		lock_guard lock(logger_mtx);
+		scoped_lock lock(logger_mtx);
 		processes[process_name] = mp;
 	}
 
@@ -232,7 +232,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 
 	if(const auto ec = mp->proc->start(cmd_with_setsid, options)){
 		{
-			lock_guard lock(logger_mtx);
+			scoped_lock lock(logger_mtx);
 			processes.erase(process_name);
 		}
 		throw run_err(format("Failed to start {}: {}", process_name, ec.message()));
@@ -247,7 +247,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	start_drain_for(process_name, mp);
 
 	const string line = format("{} [{}] [cmd] {}", current_timestamp(), process_name, join(cmd, " "));
-	lock_guard lock(logger_mtx);
+	scoped_lock lock(logger_mtx);
 	if(combined_log.is_open()){ write_log_line(combined_log, line); }
 	if(logs.log.is_open()){ write_log_line(logs.log, line); }
 }
@@ -258,7 +258,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 	log(LogLevel::DEBUG, "WAIT pattern: {}", pattern);
 	shared_ptr<ManagedProcess> mp;
 	{
-		lock_guard lock(logger_mtx);
+		scoped_lock lock(logger_mtx);
 		const auto it = processes.find(actor_name);
 		if(it == processes.end() || !it->second) throw run_err("Unknown process in wait_for: " + actor_name);
 		mp = it->second;
@@ -292,7 +292,7 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 		});
 	}
 
-	lock_guard data_lock(logger_mtx);
+	scoped_lock data_lock(logger_mtx);
 	logs.wait.pattern = nullopt;
 
 	if(g_interrupted.load() && !logs.wait.matched){

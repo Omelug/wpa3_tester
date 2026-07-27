@@ -196,7 +196,7 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	reproc::options options{};
 	options.stop.first = {reproc::stop::terminate, reproc::milliseconds(500)};
 	options.stop.second = {reproc::stop::kill, reproc::milliseconds(500)};
-	options.redirect.parent = false;
+	options.redirect.err.type = reproc::redirect::pipe;
 
 	path log_dir = log_base_dir;
 

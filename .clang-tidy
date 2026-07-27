@@ -1,0 +1,26 @@
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-identifier-length,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cert-err58-cpp
+
+WarningsAsErrors: ""
+
+HeaderFilterRegex: "wpa3_test/.*"
+
+CheckOptions:
+  - key: readability-function-cognitive-complexity.Threshold
+    value: "25"
+  - key: bugprone-easily-swappable-parameters.MinimumLength
+    value: "3"

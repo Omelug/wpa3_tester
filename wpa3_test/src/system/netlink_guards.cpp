@@ -8,9 +8,9 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
-using namespace std;
 
 namespace wpa3_tester::netlink_helper{
+using namespace std;
 NetNSContext::NetNSContext(const optional<string> &netns){
 	if(!netns) return;
 
@@ -34,18 +34,14 @@ NetNSContext::NetNSContext(const optional<string> &netns){
 }
 
 NetNSContext::~NetNSContext(){
-	if(switched &&old_ns_fd
-	>=
-	0
-	)
-	{
+	if(switched &&old_ns_fd>=0){
 		setns(old_ns_fd, CLONE_NEWNET);
 	}
 	if(old_ns_fd >= 0) close(old_ns_fd);
 }
 
 int NetlinkRegistry::get_fd(const optional<string> &netns){
-	lock_guard lock(get_mutex());
+	scoped_lock lock(get_mutex());
 	auto &cache = get_cache();
 	const string key = netns.value_or("");
 	if(const auto it = cache.find(key); it != cache.end()){

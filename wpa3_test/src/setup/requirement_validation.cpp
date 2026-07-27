@@ -18,7 +18,6 @@
 #include "logger/log_util.h"
 #include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
-#include "system/netlink_helper.h"
 #include "system/firmware/ath9k_htc.h"
 
 using namespace std;
@@ -229,7 +228,7 @@ bool RunStatus::config_requirement(){
 	firmware::disable_custom_drivers();
 	check_local_requirements();
 
-	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME zobecnit pro derivery
+	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME make generic
 
 	cleanup_all_namespaces();
 	parse_requirements();

@@ -8,12 +8,18 @@
 #include <nlohmann/json.hpp>
 
 #include "default.h"
+#include "overview/described.h"
 #include "suite/result_helper.h"
 
 using namespace std;
 using namespace filesystem;
 using namespace wpa3_tester::suite::helper;
 using json = nlohmann::json;
+using wpa3_tester::described_bool;
+using wpa3_tester::described_str;
+using wpa3_tester::RunStatus;
+using wpa3_tester::TimeWindow;
+using wpa3_tester::LogTimePoint;
 
 // minimal aggregate struct
 struct TestEntry {
@@ -85,4 +91,142 @@ TEST_CASE("load_result_default - no result.json returns entry_defaults") {
     CHECK_EQ(flag,  false);
     CHECK_FALSE(opt_flag.has_value());
     CHECK_FALSE(opt_name.has_value());
+}
+
+// ---- described_bool JSON roundtrip ----
+
+TEST_CASE("described_bool - to_json") {
+    described_bool d;
+    d += {true, "source_a"};
+    d += {nullopt, "source_b"};
+    const json j = d;
+    REQUIRE(j.is_array());
+    REQUIRE_EQ(j.size(), 2u);
+    CHECK_EQ(j[0]["value"], true);
+    CHECK_EQ(j[0]["description"], "source_a");
+    CHECK(j[1]["value"].is_null());
+    CHECK_EQ(j[1]["description"], "source_b");
+}
+
+TEST_CASE("described_bool - from_json roundtrip") {
+    const json j = json::array({
+        {{"value", false}, {"description", "conf"}},
+        {{"value", nullptr}, {"description", "pcap"}},
+    });
+    const auto d = j.get<described_bool>();
+    REQUIRE_EQ(d.pairs.size(), 2u);
+    REQUIRE(d.pairs[0].value.has_value());
+    CHECK_EQ(d.pairs[0].value.value(), false);
+    CHECK_EQ(d.pairs[0].description, "conf");
+    CHECK_FALSE(d.pairs[1].value.has_value());
+    CHECK_EQ(d.pairs[1].description, "pcap");
+}
+
+// ---- described_str JSON roundtrip ----
+
+TEST_CASE("described_str - to_json") {
+    described_str d;
+    d += {"SAE", "hostapd_log"};
+    const json j = d;
+    REQUIRE(j.is_array());
+    REQUIRE_EQ(j.size(), 1u);
+    CHECK_EQ(j[0]["value"], "SAE");
+    CHECK_EQ(j[0]["description"], "hostapd_log");
+}
+
+TEST_CASE("described_str - from_json roundtrip") {
+    const json j = json::array({
+        {{"value", "SAE WPA-PSK"}, {"description", "wpa_supplicant_conf"}},
+    });
+    const auto d = j.get<described_str>();
+    REQUIRE_EQ(d.pairs.size(), 1u);
+    CHECK_EQ(d.pairs[0].value, "SAE WPA-PSK");
+    CHECK_EQ(d.pairs[0].description, "wpa_supplicant_conf");
+}
+
+// ---- helpers for RunStatus-based tests ----
+
+static void setup_test_rs(RunStatus &rs, const path &dir, const string &program = "hostapd") {
+    rs.run_folder(dir);
+    rs.config({{"actors", {{"ap", {{"setup", {{"program", program}}}}}}}});
+}
+
+// ---- get_run_window ----
+
+TEST_CASE("get_run_window - parses @START and @END from combined.log") {
+    const path dir = temp_directory_path() / "wpa3_run_window_test";
+    create_directories(dir / "logger");
+    {
+        ofstream f(dir / "logger" / "combined.log");
+        f << "2026-07-27T18:36:55.686217786+0200[write_log_all] @START\n";
+        f << "2026-07-27T18:37:50.428471706+0200[write_log_all] @END\n";
+    }
+    RunStatus rs;
+    rs.run_folder(dir);
+    const auto w = get_run_window(rs);
+    CHECK_NE(w.start_tp, LogTimePoint{});
+    CHECK_NE(w.end_tp,   LogTimePoint{});
+    CHECK_LT(w.start_tp,  w.end_tp);
+    const auto diff_sec = chrono::duration_cast<chrono::seconds>(w.end_tp - w.start_tp).count();
+    CHECK_LE(diff_sec,  54);
+    CHECK_LE(diff_sec,  56);
+}
+
+// ---- get_conn_WPA_version ----
+
+TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log") {
+    const path dir = temp_directory_path() / "wpa3_conn_wpa_test";
+    create_directories(dir / "logger");
+    {
+        ofstream f(dir / "logger" / "ap.log");
+        f << "2026-07-27T18:36:55.386364254+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
+    }
+    RunStatus rs;
+    setup_test_rs(rs, dir);
+    const auto result = get_conn_WPA_version(rs, {});
+    REQUIRE_FALSE(result.empty());
+    CHECK_EQ(result.value(), "SAE");
+    CHECK_EQ(result.last().description, "hostapd");
+}
+
+// ---- get_client_mfp ----
+
+TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.log") {
+    const path dir = temp_directory_path() / "wpa3_client_mfp_test";
+    create_directories(dir / "logger");
+    {
+        ofstream f(dir / "client_wpa_supplicant.conf");
+        f << "ieee80211w=1\n";
+    }
+    {
+        ofstream f(dir / "logger" / "ap.log");
+        //  RSN caps=0x008c → MFPC=1, MFPR=0 → OPTIONAL
+        f << "2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
+    }
+    RunStatus rs;
+    setup_test_rs(rs, dir);
+    const auto result = get_client_mfp(rs, {});
+    REQUIRE_EQ(result.pairs.size(), 2u);
+    CHECK_EQ(result.pairs[0].value, "OPTIONAL");
+    CHECK_EQ(result.pairs[0].description, "wpa_supplicant_conf");
+    CHECK_EQ(result.pairs[1].value, "OPTIONAL");
+    CHECK_EQ(result.pairs[1].description, "hostapd");
+}
+
+// ---- get_ap_WPA_support ----
+
+TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf") {
+    const path dir = temp_directory_path() / "wpa3_ap_wpa_test";
+    create_directories(dir);
+    {
+        ofstream f(dir / "ap_hostapd.conf");
+        f << "ieee80211w=2\n";
+        f << "wpa_key_mgmt=SAE\n";
+    }
+    RunStatus rs;
+    setup_test_rs(rs, dir);
+    const auto result = get_ap_WPA_support(rs);
+    REQUIRE_FALSE(result.empty());
+    CHECK_EQ(result.value(), "SAE");
+    CHECK_EQ(result.last().description, "hostapd_conf");
 }

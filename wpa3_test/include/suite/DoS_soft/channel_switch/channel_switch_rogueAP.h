@@ -36,7 +36,7 @@ struct CsaTestEntry{
 
 	//std::filesystem::path client_graph;
 	//std::filesystem::path ap_graph;
-	//std::filesystem::path rel_path;
+	std::filesystem::path rel_path;
 };
 
 CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);

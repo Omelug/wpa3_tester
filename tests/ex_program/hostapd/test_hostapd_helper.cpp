@@ -150,7 +150,7 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
 TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
     const path log = TEST_DIR / path("ap_sae_akm.log");
     REQUIRE(exists(log));
-    const string akm = hostapd::akm_from_ap_log(log, "@START");
+    const string akm = hostapd::akm_from_ap_log(log, {});
     CHECK_EQ(akm, "SAE");
 }
 

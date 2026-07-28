@@ -39,6 +39,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ENABLE_COVERAGE "Enable coverage" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" ON)
 
 if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
@@ -51,6 +52,7 @@ if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)
     add_link_options(--coverage)
 endif ()
+
 
 enable_testing()
 add_subdirectory(wpa3_test)

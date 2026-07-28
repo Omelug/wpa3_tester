@@ -73,8 +73,8 @@ TEST_CASE("all_actors_mac_filter - single actor with broadcast"){
     rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = all_actors_mac_filter(rs, true);
-    CHECK_NE(f.find("wlan host aa:bb:cc:dd:ee:ff"), string::npos);
-    CHECK_NE(f.find("wlan host ff:ff:ff:ff:ff:ff"), string::npos);
+    CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
+    CHECK(f.contains("wlan host ff:ff:ff:ff:ff:ff"));
 }
 
 TEST_CASE("all_actors_mac_filter - two actors both present"){
@@ -83,9 +83,9 @@ TEST_CASE("all_actors_mac_filter - two actors both present"){
     rs.actors["sta2"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = all_actors_mac_filter(rs, false);
-    CHECK_NE(f.find("wlan host 11:22:33:44:55:66"), string::npos);
-    CHECK_NE(f.find("wlan host aa:bb:cc:dd:ee:ff"), string::npos);
-    CHECK_NE(f.find(" or "), string::npos);
+    CHECK(f.contains("wlan host 11:22:33:44:55:66"));
+    CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
+    CHECK(f.contains(" or "));
 }
 
 TEST_CASE("all_actors_mac_filter - empty actors returns empty string"){
@@ -101,10 +101,10 @@ TEST_CASE("masked_mac_filter_5 - single valid MAC produces link[] filter"){
 
     const string f = masked_mac_filter_5(rs);
     // First 5 bytes: aa bb cc dd ee → aabbccddee
-    CHECK_NE(f.find("0xaabbccdd"), string::npos);
-    CHECK_NE(f.find("0xee"), string::npos);
-    CHECK_NE(f.find("link[4:4]"), string::npos);
-    CHECK_NE(f.find("link[10:4]"), string::npos);
+    CHECK(f.contains("0xaabbccdd"));
+    CHECK(f.contains("0xee"));
+    CHECK(f.contains("link[4:4]"));
+    CHECK(f.contains("link[10:4]"));
 }
 
 TEST_CASE("masked_mac_filter_5 - MAC shorter than 10 hex chars is skipped"){
@@ -121,9 +121,9 @@ TEST_CASE("masked_mac_filter_5 - two actors joined with or"){
     rs.actors["sta2"] = make_actor("11:22:33:44:55:66");
 
     const string f = masked_mac_filter_5(rs);
-    CHECK_NE(f.find("0xaabbccdd"), string::npos);
-    CHECK_NE(f.find("0x11223344"), string::npos);
-    CHECK_NE(f.find(" or "), string::npos);
+    CHECK(f.contains("0xaabbccdd"));
+    CHECK(f.contains("0x11223344"));
+    CHECK(f.contains(" or "));
 }
 
 // ---- times_packet_sizes_from_csv ----
@@ -191,7 +191,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
     while(getline(f, line)){
         if(line.empty()) continue;
         ++count;
-        CHECK_NE(line.find(','), string::npos);
+        CHECK(line.contains(','));
     }
     CHECK_GE(count, 1);
 

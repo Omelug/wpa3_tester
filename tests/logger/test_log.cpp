@@ -24,7 +24,7 @@ TEST_CASE("log - debug message with actor name"){
     // Restore original cerr
     cerr.rdbuf(original_cerr);
 
-    CHECK_NE(captured_output.str().contains(expected_message));
+    CHECK(captured_output.str().contains(expected_message));
 }
 
 TEST_CASE("log - set_log_file writes messages to file"){
@@ -39,7 +39,7 @@ TEST_CASE("log - set_log_file writes messages to file"){
     const string content((istreambuf_iterator(f)), istreambuf_iterator<char>());
     filesystem::remove(tmp);
 
-    CHECK_NE(content.find("file_log_test"), string::npos);
+    CHECK(content.contains("file_log_test"));
 }
 
 TEST_CASE("log - log_actor_map prints name and keys"){
@@ -53,9 +53,9 @@ TEST_CASE("log - log_actor_map prints name and keys"){
     cerr.rdbuf(orig);
 
     const string out = captured.str();
-    CHECK_NE(out.find("my_map:"), string::npos);
-    CHECK_NE(out.find("alpha"), string::npos);
-    CHECK_NE(out.find("beta"), string::npos);
+    CHECK(out.contains("my_map:"));
+    CHECK(out.contains("alpha"));
+    CHECK(out.contains("beta"));
 }
 
 TEST_CASE("formatter - Tins::HWAddress formats as string"){

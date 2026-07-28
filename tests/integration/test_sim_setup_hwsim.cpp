@@ -190,7 +190,7 @@ TEST_CASE("hwsim setup_actor - set managed mode"){
 
     actor->setup_actor(HwsimFixture::cfg(), f.base);
 
-    CHECK_NE(iw_info(f.iface).find("type managed"), string::npos);
+    CHECK(iw_info(f.iface).contains("type managed"));
 }
 
 TEST_CASE("hwsim setup_actor - set monitor mode"){
@@ -217,7 +217,7 @@ TEST_CASE("hwsim setup_actor - set channel"){
 
     actor->setup_actor(HwsimFixture::cfg(), f.base);
 
-    CHECK_NE(iw_info(f.iface).find("channel 6"), string::npos);
+    CHECK(iw_info(f.iface).contains("channel 6"));
 }
 
 TEST_CASE("hwsim setup_actor - create sniff iface"){

@@ -416,8 +416,7 @@ optional<bool> ap_ocv_from_pcap(const path &pcap_path){
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
 }
 
-string client_scanning_from_pcap(const path &pcap_path, const string &client_mac,
-                                  const LogTimePoint start_time, const LogTimePoint end_time){
+string client_scanning_from_pcap(const path &pcap_path, const string &client_mac, TimeWindow window){
 	if(!exists(pcap_path)) return {};
 
 	auto epoch_str = [](const LogTimePoint tp) -> string {
@@ -428,10 +427,10 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	string filter = "wlan.fc.type_subtype == 0x0004";
 	if(!client_mac.empty())
 		filter += " && wlan.sa == " + client_mac;
-	if(start_time.time_since_epoch().count() != 0)
-		filter += " && frame.time_epoch >= " + epoch_str(start_time);
-	if(end_time.time_since_epoch().count() != 0)
-		filter += " && frame.time_epoch <= " + epoch_str(end_time);
+	if(window.start_tp.time_since_epoch().count() != 0)
+		filter += " && frame.time_epoch >= " + epoch_str(window.start_tp);
+	if(window.end_tp.time_since_epoch().count() != 0)
+		filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
 
 	const string output = hw_capabilities::run_cmd_output({
 		"tshark", "-r", pcap_path.string(),

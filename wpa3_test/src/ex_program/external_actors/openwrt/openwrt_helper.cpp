@@ -1,15 +1,17 @@
 #include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include <fstream>
+#include "logger/log.h"
 
 namespace wpa3_tester::openwrt{
 using namespace std;
 using namespace filesystem;
 
-string akm_from_openwrt_log(const path &log_path, const string &stop_tag){
+string akm_from_openwrt_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 	while(getline(f, line)){
-		if(line.find(stop_tag) != string::npos) break;
+		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
 		if(line.find("AP-STA-CONNECTED") == string::npos) continue;
 		const auto pos = line.find("auth_alg=");
 		if(pos == string::npos) continue;
@@ -23,11 +25,12 @@ string akm_from_openwrt_log(const path &log_path, const string &stop_tag){
 	return {};
 }
 
-string mfp_from_openwrt_log(const path &log_path, const string &stop_tag){
+string mfp_from_openwrt_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 	while(getline(f, line)){
-		if(line.find(stop_tag) != string::npos) break;
+		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
 		if(line.find("AP-STA-CONNECTED") == string::npos) continue;
 		const auto pos = line.find("auth_alg=");
 		if(pos == string::npos) continue;

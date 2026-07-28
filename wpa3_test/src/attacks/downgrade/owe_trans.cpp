@@ -81,7 +81,7 @@ void stats_attack(const RunStatus &rs){
 	});
 
 	optional<hostapd::CrackResult> crack_result;
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 
 		const string psk = hostapd::get_password(rs, "client");
@@ -127,7 +127,7 @@ void stats_attack(const RunStatus &rs){
 	report << "![Client graph](" << client_graph << ")\n\n";
 	report << "### Attacker (probe capture)\n";
 	report << "![Attacker graph](" << attacker_graph << ")\n\n";
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 		report << "### Rogue AP\n";
 		report << "![Rogue AP graph](" << rogue_graph << ")\n\n";

@@ -83,7 +83,7 @@ public:
 	void hw_option_cache(const HwOptionCache &c){ _hw_option_cache = c; }
 	[[nodiscard]] Run_Config run_config() const{ return _run_config; }
 	void run_config(const Run_Config &rc){ _run_config.merge_from(rc); }
-	//[[nodiscard]] nlohmann::json &config(){ return _config; }
+	[[nodiscard]] nlohmann::json &config(){ return _config; }
 	[[nodiscard]] const nlohmann::json &config() const{ return _config; }
 	void config(const nlohmann::json &new_config){ this->_config = new_config; }
 	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }

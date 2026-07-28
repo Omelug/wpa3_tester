@@ -373,12 +373,13 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
-string akm_from_ap_log(const path &log_path, const string &stop_tag){
+string akm_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
 	string akm_fallback;
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 	while(getline(f, line)){
-		if(line.find(stop_tag) != string::npos) break;
+		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
 		const auto pos = line.find("AKM suite ");
 		if(pos != string::npos){
 			const auto start = pos + string("AKM suite ").size();
@@ -445,12 +446,13 @@ static string akm_suite_name(uint8_t type){
 	}
 }
 
-string mfp_from_ap_log(const path &log_path, const string &stop_tag){
+string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
 	string mfp_fallback; // from older MFPC=/MFPR= log lines
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 	while(getline(f, line)){
-		if(line.find(stop_tag) != string::npos) break;
+		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
 
 		if(line.find("WPA: RSN IE in EAPOL-Key") != string::npos){
 			const auto ie = parse_rsn_ie_line(line);
@@ -474,11 +476,12 @@ string mfp_from_ap_log(const path &log_path, const string &stop_tag){
 	return mfp_fallback;
 }
 
-string client_akm_from_ap_log(const path &log_path, const string &stop_tag){
+string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 	while(getline(f, line)){
-		if(line.find(stop_tag) != string::npos) break;
+		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
 		if(line.find("WPA: RSN IE in EAPOL-Key") == string::npos) continue;
 		const auto ie = parse_rsn_ie_line(line);
 		if(!ie || ie->akm_count == 0) continue;

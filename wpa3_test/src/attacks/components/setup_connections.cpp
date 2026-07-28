@@ -110,7 +110,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 }
 
 void setup_rogue_ap(RunStatus &rs){
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		const auto conf = rs.config_path().parent_path() / "config" / "hostapd-mana.conf";
 		if(exists(conf)){
 			copy_f(conf, rs.run_folder() / "rogue_ap_hostapd_mana.conf");

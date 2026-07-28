@@ -3,6 +3,7 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 #include "config/RunStatus.h"
+#include "logger/log.h"
 
 namespace wpa3_tester::hostapd{
 std::string get_wpa_supplicant(const std::string &version = "");
@@ -22,12 +23,12 @@ std::string get_channel(const nlohmann::json &program_config, const std::string 
 // parses ieee80211w from a wpa_supplicant.conf -> "OFF"/"OPTIONAL"/"REQUIRED", empty if absent
 std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 
-// parse AKM suite from a hostapd -d log up to stop_tag; returns e.g. "00-0F-AC:8\n(WPA3)"
-std::string akm_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
-// parse client MFP from MFPR/MFPC fields in a hostapd -d log up to stop_tag
-std::string mfp_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
-// parse client AKM suites from RSN IE in EAPOL-Key in a hostapd -d log up to stop_tag (e.g. "SAE WPA-PSK")
-std::string client_akm_from_ap_log(const std::filesystem::path &log_path, const std::string &stop_tag);
+// parse AKM suite from a hostapd -d log up to window.start_tp; returns e.g. "00-0F-AC:8\n(WPA3)"
+std::string akm_from_ap_log(const std::filesystem::path &log_path, TimeWindow window = {});
+// parse client MFP from MFPR/MFPC fields in a hostapd -d log up to window.start_tp
+std::string mfp_from_ap_log(const std::filesystem::path &log_path, TimeWindow window = {});
+// parse client AKM suites from RSN IE in EAPOL-Key in a hostapd -d log up to window.start_tp (e.g. "SAE WPA-PSK")
+std::string client_akm_from_ap_log(const std::filesystem::path &log_path, TimeWindow window = {});
 
 // Find Probe Requests from client_mac in ap_log after start_tag until END_tag/END_STOP_tag.
 // Returns "ch: X Y Z" (scanned channels from DS Params or freq), empty if none found.

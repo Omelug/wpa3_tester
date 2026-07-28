@@ -216,25 +216,23 @@ void stats_chs_attack(const RunStatus &rs){
 	const auto window = suite::helper::get_run_window(rs);
 	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED").empty();
 
-	// result
-	described_bool disconnected;
-	if(rs.get_actor("client")->is_WB()){
-		const path client_log = rs.run_folder() / "logger" / "client.log";
-		if(exists(client_log)){
-			const auto ev = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
-			disconnected += {!ev.empty(), "log"};
-		}
-	} else {
-		const path pcap_path = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";
-		if(exists(pcap_path)){
-			const string filter = "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac;
-			const auto ev = get_tshark_events(rs, "attacker", filter, "DISCONNECTED", window);
-			disconnected += {!ev.empty(), "pcap"};
-		}
-	}
+	result["client_disconnected"] =  suite::helper::get_client_disconnected(rs, window);
+	result["ap_ocv"] = suite::helper::get_ap_ocv(rs);
+	result["client_ocv"] = suite::helper::get_client_ocv(rs);
 
-	result["disconnected"] = disconnected;
+	result["client_mfp"] = suite::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = suite::helper::get_ap_WPA_support(rs);
+	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
+	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window);
+
+	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
 	result["rogue_ap_connected"] = rogue_ap_connected;
+
+
+	/*FIXME add beacon protection column
+	 *if(){
+		attacker_pcap.beacon_prot_support = ;
+	}*/
 
 	rs.save_result(result);
 

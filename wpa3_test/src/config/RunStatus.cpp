@@ -265,7 +265,7 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 	return t_map;
 }
 
-optional<ActorPtr> RunStatus::actor(const string &actor_name){
+optional<ActorPtr> RunStatus::actor(const string &actor_name) const{
 	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
 	return nullopt;
 }

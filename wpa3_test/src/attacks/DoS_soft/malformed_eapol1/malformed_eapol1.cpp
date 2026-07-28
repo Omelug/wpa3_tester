@@ -133,7 +133,7 @@ void stats(const RunStatus &rs){
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
 	optional<bool> rogue_ap_connected;
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		rogue_ap_connected = !mana_events.empty();

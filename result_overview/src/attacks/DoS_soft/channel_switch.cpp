@@ -50,8 +50,8 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 		const int ocv_b = opt_rank(b.second.ap_ocv.value()) + opt_rank(b.second.client_ocv.value());
 		if (ocv_a != ocv_b) return ocv_a < ocv_b;
 
-		const int disc_a = opt_rank(a.second.disconnected.value());
-		const int disc_b = opt_rank(b.second.disconnected.value());
+		const int disc_a = opt_rank(a.second.client_disconnected.value());
+		const int disc_b = opt_rank(b.second.client_disconnected.value());
 		if (disc_a != disc_b) return disc_a < disc_b;
 
 		return opt_rank(a.second.rogue_ap_connected) < opt_rank(b.second.rogue_ap_connected);
@@ -134,7 +134,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
                 f << "<br>" << device(e->rogue_ap_mac, page_dir) << " (" << e->rogue_ap_driver << ")";
             f << "</td>\n";
-            f << "                    <td>" << e->disconnected << " (" << e->ap_disconnected << ")</td>\n";
+            f << "                    <td>" << e->client_disconnected << " (" << e->ap_disconnected << ")</td>\n";
             f << "                    <td>" << e->rogue_ap_connected     << "</td>\n";
             f << "                    <td>" << e->ap_ocv << "<br>" << e->client_ocv << "</td>\n";
             f << "                    <td>" << e->client_mfp << "</td>\n";

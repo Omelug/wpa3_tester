@@ -111,7 +111,31 @@ TEST_CASE("get_time_logs - missing log file returns empty"){
     CHECK(times.empty());
 }
 
-TEST_CASE("get_time_logs between_markers - only events inside window are returned"){
+TEST_CASE("get_time_logs - window filters to matching range"){
+    const string log_content =
+        "2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
+        "2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
+        "2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
+
+    TempLog tmp("client", log_content);
+    wpa3_tester::RunStatus rs;
+    rs.run_folder(tmp.run_folder);
+
+    // window covers only the middle event (09s)
+    const wpa3_tester::TimeWindow window{
+        wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100"),
+        wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:10.000000000+0100"),
+    };
+    const auto times = wpa3_tester::get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
+    REQUIRE_EQ(times.size(), 1);
+
+    const time_t t = chrono::system_clock::to_time_t(times[0]);
+    tm utc{};
+    gmtime_r(&t, &utc);
+    CHECK_EQ(utc.tm_sec, 9);  // UTC: 14:38:09+0100 → 13:38:09 UTC
+}
+
+TEST_CASE("get_time_logs - returns all events including those around markers"){
     const string log_content =
         "2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
         "2026-02-20T14:38:08.000000000+0100 [client] [write_log_all] @START\n"
@@ -123,10 +147,10 @@ TEST_CASE("get_time_logs between_markers - only events inside window are returne
     wpa3_tester::RunStatus rs;
     rs.run_folder(tmp.run_folder);
 
-    const auto times = wpa3_tester::get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
-    REQUIRE_EQ(times.size(), 1);
+    const auto times = wpa3_tester::get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+    REQUIRE_EQ(times.size(), 3);
 
-    const time_t t = chrono::system_clock::to_time_t(times[0]);
+    const time_t t = chrono::system_clock::to_time_t(times[1]);
     tm utc{};
     gmtime_r(&t, &utc);
     CHECK_EQ(utc.tm_sec, 9);

@@ -64,6 +64,12 @@ void log(LogLevel level, const std::string &msg);
 
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
+struct TimeWindow {
+	LogTimePoint start_tp{};
+	LogTimePoint end_tp{};
+	bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
+};
+
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);
 std::string escape_tex(std::string text);

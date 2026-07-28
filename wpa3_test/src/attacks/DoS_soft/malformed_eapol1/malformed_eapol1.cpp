@@ -134,7 +134,7 @@ void stats(const RunStatus &rs){
 
 	optional<bool> rogue_ap_connected;
 	if(rs.config().at("actors").contains("rogue_ap")){
-		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA", true);
+		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		rogue_ap_connected = !mana_events.empty();
 	}
@@ -143,7 +143,7 @@ void stats(const RunStatus &rs){
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "ap", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
+	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 	nlohmann::json result = {{"disconnect_count", static_cast<int>(disc_times.size())}};
 	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);

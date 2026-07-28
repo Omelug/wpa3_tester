@@ -212,7 +212,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 	}
 

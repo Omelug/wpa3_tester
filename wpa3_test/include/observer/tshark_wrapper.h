@@ -46,5 +46,5 @@ std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
 // probe requests found but no channel info, or empty string if no scanning detected.
 std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
                                        const std::string &client_mac,
-                                       LogTimePoint start_time, LogTimePoint end_time);
+                                       TimeWindow window = {});
 }

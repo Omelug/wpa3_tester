@@ -94,7 +94,7 @@ void stats_attack(const RunStatus &rs){
 	}
 
 	/*optional<hostapd::CrackResult> crack_result;
-	if(rs.config().at("actors").contains("rogue_ap")){
+	if(rs.actor("rogue_ap")){
 		string psk = hostapd::get_password(rs, "client"); //FIXME only hostapd
 		if(psk.empty()) psk = "password123"; //TODO hardcoded
 		crack_result = hostapd::crack_pmk_hashes(rs.run_folder() / "captured_hashes.txt", psk);

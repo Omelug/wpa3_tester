@@ -242,7 +242,7 @@ TEST_CASE("ProcessManager - write_log_all"){
         pm.write_log_all("marker_combined");
         ifstream f(pm.log_base_dir / "combined.log");
         const string content((istreambuf_iterator(f)), {});
-        CHECK_NE(content.find("marker_combined"), string::npos);
+        CHECK(content.contains("marker_combined"));
     }
 
     SUBCASE("writes to process log when process exists"){
@@ -251,12 +251,12 @@ TEST_CASE("ProcessManager - write_log_all"){
         {
             ifstream f(pm.log_base_dir / "combined.log");
             const string content((istreambuf_iterator(f)), {});
-            CHECK_NE(content.find("marker_proc"), string::npos);
+            CHECK(content.contains("marker_proc"));
         }
         {
             ifstream f(pm.log_base_dir / "proc_a.log");
             const string content((istreambuf_iterator(f)), {});
-            CHECK_NE(content.find("marker_proc"), string::npos);
+            CHECK(content.contains("marker_proc"));
         }
     }
 
@@ -367,8 +367,8 @@ TEST_CASE("ProcessManager - drain thread natural exit path") {
 
         ifstream f(pm.log_base_dir / "outputter.log");
         const string content((istreambuf_iterator(f)), istreambuf_iterator<char>{});
-        CHECK_NE(content.find("stdout_marker"), string::npos);
-        CHECK_NE(content.find("stderr_marker"), string::npos);
+        CHECK(content.contains("stdout_marker"));
+        CHECK(content.contains("stderr_marker"));
 
         pm.stop("outputter");
     }

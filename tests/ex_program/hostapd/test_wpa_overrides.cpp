@@ -38,7 +38,7 @@ TEST_CASE("apply_wpa_overrides - replace global key"){
 	string out = read_file(cfg);
 
 	CHECK_EQ(out.find("ctrl_interface=/var/run/wpa_supplicant"), string::npos);
-	CHECK_NE(out.find("ctrl_interface=\"/tmp/new\""), string::npos);
+	CHECK(out.contains("ctrl_interface=\"/tmp/new\""));
 	remove(cfg);
 }
 
@@ -53,8 +53,8 @@ TEST_CASE("apply_wpa_overrides - replace network key"){
 	string out = read_file(cfg);
 
 	CHECK_EQ(out.find("ssid=\"OldNet\""), string::npos);
-	CHECK_NE(out.find("ssid=\"NewNet\""), string::npos);
-	CHECK_NE(out.find("key_mgmt=WPA-PSK"), string::npos);
+	CHECK(out.contains("ssid=\"NewNet\""));
+	CHECK(out.contains("key_mgmt=WPA-PSK"));
 	remove(cfg);
 }
 
@@ -98,9 +98,9 @@ TEST_CASE("apply_wpa_overrides - no network block: appends globals and new block
 	apply_wpa_overrides(cfg, json{{"okc", 0}, {"ssid", "Appended"}});
 	string out = read_file(cfg);
 
-	CHECK_NE(out.find("okc=0"), string::npos);
-	CHECK_NE(out.find("network={"), string::npos);
-	CHECK_NE(out.find("ssid=\"Appended\""), string::npos);
+	CHECK(out.contains("okc=0"));
+	CHECK(out.contains("network={"));
+	CHECK(out.contains("ssid=\"Appended\""));
 	remove(cfg);
 }
 
@@ -121,7 +121,7 @@ TEST_CASE("apply_wpa_overrides - skip keys are not written"){
 	CHECK_EQ(out.find("wpa_supplicant_path"), string::npos);
 	CHECK_EQ(out.find("version"), string::npos);
 	CHECK_EQ(out.find("other_options"), string::npos);
-	CHECK_NE(out.find("key_mgmt=SAE"), string::npos);
+	CHECK(out.contains("key_mgmt=SAE"));
 	remove(cfg);
 }
 
@@ -146,6 +146,6 @@ TEST_CASE("apply_wpa_overrides - CRLF line endings"){
 	string out = read_file(cfg);
 
 	CHECK_EQ(out.find("ssid=\"OldNet\""), string::npos);
-	CHECK_NE(out.find("ssid=\"NewNet\""), string::npos);
+	CHECK(out.contains("ssid=\"NewNet\""));
 	remove(cfg);
 }

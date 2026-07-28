@@ -351,8 +351,8 @@ TEST_CASE("Actor_config::to_str - string keys only"){
     actor.set(SK::driver_name, "ath9k");
 
     const auto s = actor.to_str();
-    CHECK_NE(s.find("iface=wlan0"), string::npos);
-    CHECK_NE(s.find("driver=ath9k"), string::npos);
+    CHECK(s.contains("iface=wlan0"));
+    CHECK(s.contains("driver=ath9k"));
     // no bracket section when no bool keys set
     CHECK_EQ(s.find('['), string::npos);
 }
@@ -363,9 +363,9 @@ TEST_CASE("Actor_config::to_str - bool keys true and false"){
     actor.set(BK::injection_selftest, false);
 
     const auto s = actor.to_str();
-    CHECK_NE(s.find('['), string::npos);
-    CHECK_NE(s.find("AP"), string::npos);
-    CHECK_NE(s.find("!injection_selftest"), string::npos);
+    CHECK(s.contains('['));
+    CHECK(s.contains("AP"));
+    CHECK(s.contains("!injection_selftest"));
 }
 
 TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
@@ -374,8 +374,8 @@ TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
     actor.set(BK::monitor, true);
 
     const auto s = actor.to_str();
-    CHECK_NE(s.find("iface=wlan1"), string::npos);
-    CHECK_NE(s.find("monitor"), string::npos);
+    CHECK(s.contains("iface=wlan1"));
+    CHECK(s.contains("monitor"));
 }
 
 // to_json
@@ -530,7 +530,7 @@ TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
     ParamFilter filter{{SK::iface}, {BK::AP}};
     const auto s = ap->to_str(&filter);
 
-    CHECK_NE(s.find("iface=wlan1"), string::npos);
+    CHECK(s.contains("iface=wlan1"));
     CHECK_EQ(s.find("driver=mt76"), string::npos);
     CHECK_NE(s.find("AP"),          string::npos);
     CHECK_EQ(s.find("monitor"),     string::npos);

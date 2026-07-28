@@ -204,7 +204,7 @@ LogTimePoint get_pcap_start_time(const string &pcap_path){
 }
 
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,
-										const string &event_name
+										const string &event_name, optional<TimeWindow> window
 ){
 	vector<LogTimePoint> timestamps;
 	const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
@@ -235,14 +235,12 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		if(line.empty()) continue;
 
 		try{
-			// Parse line: frame_in_batch,timestamp
 			stringstream ss(line);
 			string frame_num_str, time_str;
 			if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)){
 				const LogTimePoint tp = log_time_to_epoch_ns(time_str);
-				if(tp.time_since_epoch().count() != 0){
+				if(tp.time_since_epoch().count() != 0 && (!window || window->contains(tp)))
 					timestamps.push_back(tp);
-				}
 			}
 		} catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '{}': {}", line, e.what()); }
 	}

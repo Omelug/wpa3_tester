@@ -22,8 +22,7 @@ struct CsaTestEntry{
 	std::string rogue_ap_driver;
 
 	//result params
-	std::optional<bool> disconnected;
-	std::string disconnected_source;
+	described_bool disconnected;
 	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 

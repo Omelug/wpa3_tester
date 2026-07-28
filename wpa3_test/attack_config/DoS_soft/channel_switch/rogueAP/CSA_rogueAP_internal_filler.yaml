@@ -9,5 +9,8 @@ tests:
   all_actors_MFP_req:
     type: actor_filler
     config: ./CSA_rogueAP_internal_MFP_req.yaml
+  all_actors_WPA2_MFP_req:
+    type: actor_filler
+    config: ./CSA_rogueAP_WPA2_internal_MFPr.yaml
 delete_old: true
 rewrite: "errors"

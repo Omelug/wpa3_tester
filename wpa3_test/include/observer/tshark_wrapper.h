@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include "config/RunStatus.h"
 #include "graph/graph_elements.h"
 #include "logger/log.h"
@@ -17,7 +18,8 @@ void start_tshark(RunStatus &rs, const std::string &node_name, const std::string
 std::filesystem::path extract_pcap_to_csv(const std::string &actor_name, const std::filesystem::path &real_folder,
 										const std::string &tshark_filter = "");
 std::vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const std::string &process_name,
-											const std::string &tshark_filter, const std::string &event_name
+											const std::string &tshark_filter, const std::string &event_name,
+											std::optional<TimeWindow> window = std::nullopt
 );
 std::filesystem::path tshark_graph(const RunStatus &rs, const std::string &actor_name, const G_elms &elements = {},
 									const std::filesystem::path &folder = "",

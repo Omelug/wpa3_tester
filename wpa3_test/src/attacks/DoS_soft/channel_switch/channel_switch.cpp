@@ -8,8 +8,9 @@
 #include <nlohmann/json.hpp>
 
 #include "inteprrupt.h"
+#include "overview/described.h"
+#include "suite/result_helper.h"
 #include "attacks/components/setup_connections.h"
-#include "ex_program/hostapd/hostapd.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
@@ -139,10 +140,7 @@ void run_chs_attack(RunStatus &rs){
 	rs.process_manager.stop_all();
 }
 
-void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,
-					const path &ATT_graph_path, const path &rogue_graph_path,
-					const optional<hostapd::CrackResult> &crack_result
-){
+void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>> &elements, const optional<hostapd::CrackResult> &crack_result){
 	report::ReportGuard report(rs.run_folder());
 	if(!report) return;
 
@@ -154,22 +152,31 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 	//report << "### Traffic Analysis\n";
 	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
 	//TODO add hostapd helper ?
+
+	const path STA_graph_path = tshark_graph(rs, "client", elements);
 	if(!STA_graph_path.empty()){
 		report << "### STA (client, wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
 		report << "![STA Throughput Graph](" << STA_graph_path << ")\n\n";
 	}
+	const path AP_graph_path = tshark_graph(rs, "ap", elements,
+															observer::get_observer_folder(rs, "tcpdump"));
 	if(!AP_graph_path.empty()){
 		report << "### AP (ap, hostapd " << hostapd::get_version(rs, "ap") << ")\n";
-		report << "![AP Throughput Graph](" << AP_graph_path << ")\n\n";
+		report << "![AP Graph](" << AP_graph_path << ")\n\n";
 	}
+
+	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);
 	if(!ATT_graph_path.empty()){
-		report << "### ATT (ap, hostapd-mana " << hostapd::get_version(rs, "ap") << ")\n";
-		report << "![ATT Throughput Graph](" << ATT_graph_path << ")\n\n";
+		report << "### ATT (att, hostapd-mana " << hostapd::get_version(rs, "rogue_ap") << ")\n";
+		report << "![ATT Graph](" << ATT_graph_path << ")\n\n";
 	}
+
+	const path rogue_graph_path = tshark_graph(rs, "rogue_ap", elements);
 	if(!rogue_graph_path.empty()){
 		report << "###  Rogue AP (rogue_ap)\n";
-		report << "![Rogue AP Throughput Graph](" << rogue_graph_path << ")\n\n";
+		report << "![Rogue AP Graph](" << rogue_graph_path << ")\n\n";
 	}
+
 	if(crack_result.has_value()){
 		report << "## Credential Cracking (hcxpmktool)\n";
 		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
@@ -183,81 +190,54 @@ void generate_report(const RunStatus &rs, const path &STA_graph_path, const path
 
 void stats_chs_attack(const RunStatus &rs){
 	log(LogLevel::INFO, "CSA attack stats");
+	const string client_mac = rs.get_actor("client").get(SK::mac);
 
+	// --------------- report
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {{"client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue"}});
 
-	//TODO generalizovat
-	LogTimePoint start_tp, end_tp;
-	if(const path rogue_log = rs.run_folder() / "logger" / "rogue_ap.log"; exists(rogue_log)){
-		start_tp = get_tag_time(rogue_log, START_tag);
-		end_tp   = get_tag_time(rogue_log, END_tag);
-	}
-	const auto in_window = [&](const LogTimePoint &t){ return t >= start_tp && t <= end_tp; };
+	pcap_events(rs, elements, {
+								{
+									"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
+									"client PROBE", "black"
+								},
+								{
+									"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
+									"client PROBE", "red"
+								}
+							});
 
-	optional<bool> disconnected;
-	string disconnected_source;
-	const string client_mac = rs.get_actor("client").get(SK::mac);
+	auto [rogue_ap_connected, crack_result] = suite::helper::hostapd_mana_crack(rs, elements);
+	generate_report(rs, elements, crack_result);
+
+	// ---------- result
+	nlohmann::json result{};
+	const auto window = suite::helper::get_run_window(rs);
+	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED").empty();
+
+	// result
+	described_bool disconnected;
 	if(rs.get_actor("client")->is_WB()){
 		const path client_log = rs.run_folder() / "logger" / "client.log";
 		if(exists(client_log)){
-			const auto ev = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", true);
-			disconnected = ranges::any_of(ev, in_window);
-			disconnected_source = "log";
+			const auto ev = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
+			disconnected += {!ev.empty(), "log"};
 		}
 	} else {
 		const path pcap_path = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";
 		if(exists(pcap_path)){
 			const string filter = "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac;
-			const auto ev = get_tshark_events(rs, "attacker", filter, "DISCONNECTED");
-			disconnected = ranges::any_of(ev, in_window);
-			disconnected_source = "pcap";
+			const auto ev = get_tshark_events(rs, "attacker", filter, "DISCONNECTED", window);
+			disconnected += {!ev.empty(), "pcap"};
 		}
 	}
 
-	const bool ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", true).empty();
+	result["disconnected"] = disconnected;
+	result["rogue_ap_connected"] = rogue_ap_connected;
 
-	optional<hostapd::CrackResult> crack_result;
-	optional<bool> rogue_ap_connected;
-	if(rs.config().at("actors").contains("rogue_ap")){
-		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA", true);
-		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
-		rogue_ap_connected = !mana_events.empty();
-
-		string psk = hostapd::get_password(rs, "client");
-		if(psk.empty()) psk = "password123"; //TODO hardcoded
-		crack_result = hostapd::crack_pmk_hashes(rs.run_folder()/"captured_hashes.txt", psk);
-	}
-
-	nlohmann::json result = {{"ap_disconnected", ap_disconnected}};
-	if(disconnected.has_value()){
-		result["disconnected"] = *disconnected;
-		result["disconnected_source"] = disconnected_source;
-	}
-
-	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
 	rs.save_result(result);
 
-	pcap_events(rs, elements, {
-									{
-										"attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
-										"client PROBE", "black"
-									},
-									{
-										"rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
-										"client PROBE", "red"
-									}
-								});
 
-	//TODO change to tshark grpas vector -> change
-	const path STA_graph_path = tshark_graph(rs, "client", elements);
-	const path AP_graph_path = tshark_graph(rs, "ap", elements,
-															observer::get_observer_folder(rs, "tcpdump"));
-
-	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);
-	const path rogue_graph_path = tshark_graph(rs, "rogue_ap", elements);
-
-	generate_report(rs, STA_graph_path, AP_graph_path, ATT_graph_path, rogue_graph_path, crack_result);
 }
 }

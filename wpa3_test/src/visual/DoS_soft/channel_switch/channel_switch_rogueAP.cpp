@@ -48,21 +48,19 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 		}
 	}
 
-	if(e.ap_source == "internal"){
-		const path ap_log = test_folder / "logger" / "ap.log";
-		if(exists(ap_log)){
-			if(program_str == "hostapd"){
-				e.conn_WPA_version += {hostapd::akm_from_ap_log(ap_log, START_tag), "hostapd"};
-				if(e.client_mfp.value().empty())
-					e.client_mfp += {hostapd::mfp_from_ap_log(ap_log, START_tag), "hostapd"};
-				if(e.client_WPA_support.value().empty())
-					e.client_WPA_support += {hostapd::client_akm_from_ap_log(ap_log, START_tag), "hostapd"};
-			}
-			if(program_str == "openwrt"){
-				e.conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, START_tag), "openwrt"};
-				if(e.client_mfp.value().empty())
-					e.client_mfp += {openwrt::mfp_from_openwrt_log(ap_log, START_tag), "openwrt"};
-			}
+	const path ap_log = test_folder / "logger" / "ap.log";
+	if(exists(ap_log)){
+		if(program_str == "hostapd"){
+			e.conn_WPA_version += {hostapd::akm_from_ap_log(ap_log, START_tag), "hostapd"};
+			if(e.client_mfp.value().empty())
+				e.client_mfp += {hostapd::mfp_from_ap_log(ap_log, START_tag), "hostapd"};
+			if(e.client_WPA_support.value().empty())
+				e.client_WPA_support += {hostapd::client_akm_from_ap_log(ap_log, START_tag), "hostapd"};
+		}
+		if(program_str == "openwrt"){
+			e.conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, START_tag), "openwrt"};
+			if(e.client_mfp.value().empty())
+				e.client_mfp += {openwrt::mfp_from_openwrt_log(ap_log, START_tag), "openwrt"};
 		}
 	}
 
@@ -112,9 +110,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	return e;
 }
 
-void render_table(overview::HtmlGuard &f,
-                  const vector<path> &folders,
-                  const path &page_dir) {
+void render_table(overview::HtmlGuard &f, const vector<path> &folders, const path &page_dir) {
 	f << "        <table class=\"aggregate\">\n"
 	  << "            <thead><tr>"
 	  << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
@@ -177,12 +173,5 @@ void generate_report(RunSuiteStatus &rss){
 			<< report::link(result_text, e.rel_path / RESULT_NAME) << " |\n";
 	}
 
-	/*report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.rogue_ap_connected.value_or(false); });
-	report << "- Total Tests: " << entries.size() << "\n";
-	report << "- Passed: " << passed_count << "\n";
-	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
-	*/
 }
 }

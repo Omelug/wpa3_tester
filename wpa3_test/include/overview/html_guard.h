@@ -62,9 +62,12 @@ struct HtmlGuard {
 	HtmlGuard &operator<<(const described_bool &val){
 		if(val.empty()){ stream_ << '?'; return *this; }
 		const auto &last = val.last();
+		const bool conflict = std::ranges::any_of(val.pairs, [&](const auto &p){ return p.value != val.pairs.front().value; });
 
-		stream_ << R"(<span class="has-tooltip">)" << last.value;
-		//if(!last.description.empty()) stream_ << " (" << last.description << ')';
+		stream_ << R"(<span class="has-tooltip">)";
+		if(conflict) stream_ << R"(<strong style="color:red">)";
+		stream_ << last.value;
+		if(conflict) stream_ << "</strong>";
 		stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
 		for(const auto &[v, d] : val.pairs)
 			stream_ << "<tr><td>" << v << "</td><td>" << d << "</td></tr>";
@@ -75,9 +78,12 @@ struct HtmlGuard {
 	HtmlGuard &operator<<(const described_str &val){
 		if(val.empty()){ stream_ << '?'; return *this; }
 		const auto &last = val.last();
+		const bool conflict = std::ranges::any_of(val.pairs, [&](const auto &p){ return p.value != val.pairs.front().value; });
 
 		stream_ << R"(<span class="has-tooltip">)";
+		if(conflict) stream_ << R"(<strong style="color:red">)";
 		if(last.value.empty()) stream_ << '?'; else stream_ << last.value;
+		if(conflict) stream_ << "</strong>";
 		stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
 		for(const auto &[v, d] : val.pairs)
 			stream_ << "<tr><td>" << v << "</td><td>" << d << "</td></tr>";

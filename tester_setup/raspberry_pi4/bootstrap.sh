@@ -2,7 +2,7 @@
 # First-time setup for Raspberry Pi 4B running Raspberry Pi OS Lite (64-bit / Debian Bookworm).
 # Run via: make bootstrap PI=<address>
 set -euo pipefail
-
+#TODO napsat o usb switch/napájen9 do [pdf / dokumentace s odkazy
 echo "==> Checking internet connectivity..."
 for i in 1 2 3; do
     curl -fsS --max-time 5 https://deb.debian.org > /dev/null 2>&1 && break
@@ -25,18 +25,18 @@ sudo apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump \
+    iproute2 iw tcpdump iptables \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     quilt \
-    dkms linux-headers-$(uname -r)
+    dkms "linux-headers-$(uname -r)"
 
-echo "==> Installing hcxtools from source (latest git)..."
-sudo rm -rf /tmp/hcxtools
-git clone --depth=1 https://github.com/ZerBea/hcxtools.git /tmp/hcxtools
-(cd /tmp/hcxtools && make && sudo make install)
-sudo rm -rf /tmp/hcxtools
+#echo "==> Installing hcxtools from source (latest git)..."
+#sudo rm -rf /tmp/hcxtools
+#git clone --depth=1 https://github.com/ZerBea/hcxtools.git /tmp/hcxtools
+#(cd /tmp/hcxtools && make && sudo make install)
+#sudo rm -rf /tmp/hcxtools
 
 if ! command -v mausezahn &>/dev/null; then
     echo "==> Building mausezahn from source (not in RPi OS repos)..."
@@ -45,7 +45,7 @@ if ! command -v mausezahn &>/dev/null; then
     (cd /tmp/netsniff-ng && sudo ./configure && sudo make mausezahn && sudo make install_mausezahn)
     sudo rm -rf /tmp/netsniff-ng
 fi
-
+#TODO musí tam být defaultně (spíč jo)
 if ! command -v hostapd-mana &>/dev/null; then
     echo "==> Building hostapd-mana from source..."
     sudo rm -rf /tmp/hostapd-mana
@@ -54,7 +54,7 @@ if ! command -v hostapd-mana &>/dev/null; then
         cd /tmp/hostapd-mana
         QUILT_PATCHES=debian/patches quilt push -a
         cd hostapd
-        make -j$(nproc)
+        make "-j$(nproc)"
         sudo install -m 755 hostapd     /usr/sbin/hostapd-mana
         sudo install -m 755 hostapd_cli /usr/sbin/hostapd-mana_cli
         sudo mkdir -p /etc/hostapd-mana
@@ -84,7 +84,7 @@ dkms_install() {
 
 dkms_install "rtw88"   "https://github.com/lwfinger/rtw88"           /tmp/rtw88-src
 #dkms_install "8188gu" "https://github.com/morrownr/8188gu"          /tmp/8188gu-src
-dkms_install "8821cu"  "https://github.com/morrownr/8821cu-20210118" /tmp/8821cu-src
+dkms_install "8821cu"  "https://github.com/morrownr/8821cu-20210916" /tmp/8821cu-src
 
 sudo chmod +x /usr/bin/dumpcap
 
@@ -92,7 +92,10 @@ echo "==> Adding RTL8188GU USB modeswitch rule..."
 sudo tee /etc/usb_modeswitch.d/0bda:1a2b << 'EOF' > /dev/null
 DefaultVendor=0x0bda
 DefaultProduct=0x1a2b
+TargetVendor=0x0bda
+TargetProduct=0xb711
 StandardEject=1
+CheckSuccess=20
 EOF
 
 echo "==> Configuring ath9k: disable ANI, enable user regulatory domain override..."
@@ -108,6 +111,23 @@ sudo raspi-config nonint do_wifi_country CZ
 echo "==> Configuring passwordless sudo for $USER (dev/test machine)..."
 echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-wpa3-dev > /dev/null
 sudo chmod 440 /etc/sudoers.d/90-wpa3-dev
+
+echo "==> Configuring static IPs on eth0 (10.0.0.2 + 192.168.0.2)..."
+# Modify or create the eth0 NM connection with both static addresses
+if sudo nmcli connection show eth0-static &>/dev/null; then
+    sudo nmcli connection modify eth0-static \
+        ipv4.method manual \
+        ipv4.addresses "10.0.0.2/24,192.168.0.2/24" \
+        ipv4.gateway "10.0.0.1" \
+        ipv4.dns "8.8.8.8,1.1.1.1"
+else
+    sudo nmcli connection add type ethernet ifname eth0 con-name eth0-static \
+        ipv4.method manual \
+        ipv4.addresses "10.0.0.2/24,192.168.0.2/24" \
+        ipv4.gateway "10.0.0.1" \
+        ipv4.dns "8.8.8.8,1.1.1.1"
+fi
+# Note: not calling 'nmcli connection up' here to avoid dropping the SSH session
 
 PI_IP=$(hostname -I | awk '{print $1}')
 echo ""

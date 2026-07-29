@@ -145,13 +145,135 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
     CHECK_EQ(r.cracked, r.total);
 }
 */
-// ── akm_from_ap_log ─────────────────────────────────────────────────────────
+// ------- akm_from_ap_log
 
 TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
-    const path log = TEST_DIR / path("ap_sae_akm.log");
+    const path log = TEST_DIR / "ap_sae_akm.log";
     REQUIRE(exists(log));
     const string akm = hostapd::akm_from_ap_log(log, {});
     CHECK_EQ(akm, "SAE");
+}
+
+// ------- get_conf_value
+
+TEST_CASE("get_conf_value - returns value for matching key"){
+    const path tmp = temp_directory_path() / "wpa3_test_conf.conf";
+    { ofstream f(tmp); f << "ssid=MyNetwork\nwpa_key_mgmt=SAE\n"; }
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"ssid"}), "MyNetwork");
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"wpa_key_mgmt"}), "SAE");
+    remove(tmp);
+}
+
+TEST_CASE("get_conf_value - strips surrounding double quotes"){
+    const path tmp = temp_directory_path() / "wpa3_test_conf_quoted.conf";
+    { ofstream f(tmp); f << "sae_password=\"secret123\"\n"; }
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"sae_password"}), "secret123");
+    remove(tmp);
+}
+
+TEST_CASE("get_conf_value - falls back to second key when first is absent"){
+    const path tmp = temp_directory_path() / "wpa3_test_conf_fallback.conf";
+    { ofstream f(tmp); f << "psk=passphrase\n"; }
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"sae_password", "psk"}), "passphrase");
+    remove(tmp);
+}
+
+TEST_CASE("get_conf_value - ignores leading whitespace on lines"){
+    const path tmp = temp_directory_path() / "wpa3_test_conf_indent.conf";
+    { ofstream f(tmp); f << "  channel=6\n"; }
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"channel"}), "6");
+    remove(tmp);
+}
+
+TEST_CASE("get_conf_value - returns empty when key not found"){
+    const path tmp = temp_directory_path() / "wpa3_test_conf_missing.conf";
+    { ofstream f(tmp); f << "ssid=test\n"; }
+    CHECK_EQ(hostapd::get_conf_value(tmp, {"nonexistent_key"}), "");
+    remove(tmp);
+}
+
+TEST_CASE("get_conf_value - returns empty for missing file"){
+    CHECK_EQ(hostapd::get_conf_value("/tmp/wpa3_nonexistent.conf", {"ssid"}), "");
+}
+
+// ------- client_akm_from_ap_log
+
+TEST_CASE("client_akm_from_ap_log - returns SAE from RSN IE in 4-Way Handshake log"){
+    const path tmp = temp_directory_path() / "wpa3_test_client_akm.log";
+    {
+        ofstream f(tmp);
+        f << "2026-07-29T01:24:34.109715456+0200 [ap] [stdout] WPA: KEK - hexdump(len=16): [REMOVED]\n"
+          << "2026-07-29T01:24:34.109737104+0200 [ap] [stdout] WPA: TK - hexdump(len=16): [REMOVED]\n"
+          << "2026-07-29T01:24:34.109758827+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
+          << "2026-07-29T01:24:34.109780715+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 cc 00 00 00 00 0f ac 06\n"
+          << "2026-07-29T01:24:34.109802641+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKCALCNEGOTIATING2\n"
+          << "2026-07-29T01:24:34.109824382+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKINITNEGOTIATING\n"
+          << "2026-07-29T01:24:34.109846123+0200 [ap] [stdout] wlan3: STA 00:c0:ca:b5:e1:58 WPA: sending 3/4 msg of 4-Way Handshake\n";
+    }
+    const string akm = hostapd::client_akm_from_ap_log(tmp);
+    remove(tmp);
+    CHECK_EQ(akm, "SAE");
+}
+
+TEST_CASE("client_akm_from_ap_log - returns empty for missing file"){
+    const string akm = hostapd::client_akm_from_ap_log("/tmp/wpa3_nonexistent_client_akm.log");
+    CHECK_EQ(akm, "");
+}
+
+// ------- client_scanning_from_ap_log
+
+TEST_CASE("client_scanning_from_ap_log - extracts scanned channels from DS Params mismatch lines"){
+    const path tmp = temp_directory_path() / "wpa3_test_scanning.log";
+    {
+        ofstream f(tmp);
+        // probe 1: next line is send_mlme (no DS mismatch) → falls back to freq=2437 → ch 6
+        // probe 2: next line is DS mismatch ds.chan=7 → ch 7
+        f << "@START\n"
+          << "2026-07-29T01:24:46.213618042+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5\n"
+          << "2026-07-29T01:24:46.281390097+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan3\n"
+          << "2026-07-29T01:24:46.281541486+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-81 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212\n"
+          << "2026-07-29T01:24:46.281651079+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3\n"
+          << "2026-07-29T01:24:46.281721671+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437\n"
+          << "2026-07-29T01:24:46.281788227+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd\n"
+          << "2026-07-29T01:24:46.310374356+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently\n"
+          << "2026-07-29T01:24:46.349436616+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan3\n"
+          << "2026-07-29T01:24:46.349580930+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-83 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212\n"
+          << "2026-07-29T01:24:46.349650504+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7\n"
+          << "@END\n";
+    }
+    const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
+    remove(tmp);
+    CHECK_EQ(result, "ch: 6 7");
+}
+
+TEST_CASE("client_scanning_from_ap_log - returns empty when no START_tag in log"){
+    const path tmp = temp_directory_path() / "wpa3_test_scanning_nostart.log";
+    {
+        ofstream f(tmp);
+        f << "nl80211: RX frame sa=00:c0:ca:b5:e1:58 freq=2437 (WLAN_FC_STYPE_PROBE_REQ)\n"
+          << "Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=11\n";
+    }
+    const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
+    remove(tmp);
+    CHECK_EQ(result, "");
+}
+
+TEST_CASE("client_scanning_from_ap_log - returns empty for missing file"){
+    CHECK_EQ(hostapd::client_scanning_from_ap_log("/tmp/wpa3_nonexistent_scan.log", "00:c0:ca:b5:e1:58"), "");
+}
+
+TEST_CASE("client_scanning_from_ap_log - returns empty when client MAC not in log"){
+    const path tmp = temp_directory_path() / "wpa3_test_scanning_nomac.log";
+    {
+        ofstream f(tmp);
+        f << "@START\n"
+          << "nl80211: RX frame sa=aa:bb:cc:dd:ee:ff freq=2437 (WLAN_FC_STYPE_PROBE_REQ)\n"
+          << "Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=11\n"
+          << "@END\n";
+    }
+    const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
+    remove(tmp);
+    CHECK_EQ(result, "");
 }
 
 /*TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"

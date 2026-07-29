@@ -14,8 +14,11 @@ struct CsaTestEntry{
 	std::string name;
 	std::string ap_mac;
 	std::string ap_source;
+
 	std::string client_mac;
 	std::string client_source;
+	std::string client_driver;
+
 	std::string attacker_mac;
 	std::string attacker_driver;
 	std::string rogue_ap_mac;

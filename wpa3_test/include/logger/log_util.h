@@ -11,6 +11,6 @@ std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &
 										const std::string &pattern,
 										std::optional<TimeWindow> window = std::nullopt);
 
-// Returns the timestamp of the first log line containing `tag`, or epoch-zero if not found.
+// Returns the timestamp of the first log line containing `tag`, or epoch-zero if not found (file or tag)
 LogTimePoint get_tag_time(const std::filesystem::path &log_path, const std::string &tag);
 }

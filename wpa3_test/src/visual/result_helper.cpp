@@ -152,8 +152,9 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 		conn_WPA_version += {observer::tshark::akm_from_pcap(attacker_pcap), "attacker pcap"};
 
 	return conn_WPA_version;
-};
+}
 
+//TODO test
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 	described_bool client_disconnected{};
 	const string sta_mac = rs.get_actor("client").get(SK::mac);

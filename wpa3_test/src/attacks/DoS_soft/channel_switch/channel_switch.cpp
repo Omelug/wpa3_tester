@@ -223,7 +223,10 @@ void stats_chs_attack(const RunStatus &rs){
 	result["client_mfp"] = suite::helper::get_client_mfp(rs, window);
 	result["ap_WPA_support"] = suite::helper::get_ap_WPA_support(rs);
 	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
-	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window);
+
+	const path combined_log = rs.run_folder() / "logger" / "combined.log";
+	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
+	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
 
 	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
 	result["rogue_ap_connected"] = rogue_ap_connected;

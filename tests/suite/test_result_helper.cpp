@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp>
 
 #include "default.h"
+#include "logger/log_util.h"
 #include "overview/described.h"
 #include "suite/result_helper.h"
 
@@ -172,24 +173,24 @@ TEST_CASE("get_run_window - parses @START and @END from combined.log") {
     CHECK_LE(diff_sec,  56);
 }
 
-// ---- get_conn_WPA_version ----
 
 TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log") {
     const path dir = temp_directory_path() / "wpa3_conn_wpa_test";
-    create_directories(dir / "logger");
+
+	create_directories(dir / "logger");
     {
         ofstream f(dir / "logger" / "ap.log");
         f << "2026-07-27T18:36:55.386364254+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
+    	f << wpa3_tester::START_tag << "\n";
     }
     RunStatus rs;
     setup_test_rs(rs, dir);
-    const auto result = get_conn_WPA_version(rs, {});
+	const TimeWindow window_START{LogTimePoint{}, wpa3_tester::get_tag_time(dir / "logger" / "ap.log", wpa3_tester::START_tag)};
+    const auto result = get_conn_WPA_version(rs, window_START);
     REQUIRE_FALSE(result.empty());
     CHECK_EQ(result.value(), "SAE");
     CHECK_EQ(result.last().description, "hostapd");
 }
-
-// ---- get_client_mfp ----
 
 TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.log") {
     const path dir = temp_directory_path() / "wpa3_client_mfp_test";
@@ -212,8 +213,6 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
     CHECK_EQ(result.pairs[1].value, "OPTIONAL");
     CHECK_EQ(result.pairs[1].description, "hostapd");
 }
-
-// ---- get_ap_WPA_support ----
 
 TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf") {
     const path dir = temp_directory_path() / "wpa3_ap_wpa_test";

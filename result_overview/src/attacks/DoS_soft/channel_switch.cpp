@@ -41,6 +41,10 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 	}
 
 	ranges::sort(results, [](const TaggedEntry& a, const TaggedEntry& b) {
+		const string sta_mac_a = a.second.client_mac;
+		const string sta_mac_b = b.second.client_mac;
+		if (sta_mac_a != sta_mac_b) return sta_mac_a < sta_mac_b;
+
 		auto opt_rank = [](const optional<bool>& v) -> int {
 		   return v.has_value() ? (*v ? 0 : 1) : 2;
 		};
@@ -129,7 +133,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
         for (const auto *e : rows) {
             f << "                <tr>\n";
             f << "                    <td>" << device(e->ap_mac, page_dir)   << " (" << e->ap_source     << ")</td>\n";
-            f << "                    <td>" << device(e->client_mac, page_dir) << " (" << e->client_source << ")</td>\n";
+            f << "                    <td>" << device(e->client_mac, page_dir) << " (" << e->client_source << "," << e->client_driver <<")</td>\n";
             f << "                    <td>" << device(e->attacker_mac, page_dir) << " (" << e->attacker_driver << ")";
             if (!e->rogue_ap_mac.empty() || !e->rogue_ap_driver.empty())
                 f << "<br>" << device(e->rogue_ap_mac, page_dir) << " (" << e->rogue_ap_driver << ")";

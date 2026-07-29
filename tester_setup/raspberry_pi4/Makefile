@@ -184,16 +184,16 @@ deploy:
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
-TEST_SUITE  ?= CSA_rogueAP_internal_filler
+TEST_SUITE  ?= CSA_rogueAP_Dlink_filler
 
-run: deploy-cross
+run: deploy-cross internet
 	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
 
 GDB_PORT ?= 1234
 
 deploy-debug: deploy-cross gdbserver-start
 
-run-debug: deploy-debug
+run-debug: deploy-debug internet
 	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
 	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
 	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"

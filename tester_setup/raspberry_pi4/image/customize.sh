@@ -76,6 +76,7 @@ if [ -n "$PI_IP" ]; then
     UUID=$(cat /proc/sys/kernel/random/uuid)
     mkdir -p "$ROOT/etc/NetworkManager/system-connections"
     {
+        GW_SUFFIX=${PI_GW:+,$PI_GW}
         cat << EOF
 [connection]
 id=eth0-static
@@ -89,11 +90,13 @@ autoconnect-priority=10
 
 [ipv4]
 method=manual
-addresses=$PI_IP/$PI_PREFIX
+address1=$PI_IP/${PI_PREFIX}${GW_SUFFIX}
+address2=192.168.0.2/24
+dns=8.8.8.8;1.1.1.1;
+
+[ipv6]
+method=disabled
 EOF
-        [ -n "$PI_GW" ] && echo "gateway=$PI_GW"
-        echo "dns=8.8.8.8;1.1.1.1;"
-        printf '\n[ipv6]\nmethod=disabled\n'
     } > "$ROOT/etc/NetworkManager/system-connections/eth0-static.nmconnection"
     # NM ignores connection files that aren't 600
     chmod 600 "$ROOT/etc/NetworkManager/system-connections/eth0-static.nmconnection"
@@ -121,6 +124,9 @@ EOF
 echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"
+
+# Ensure /usr/sbin (iptables, etc.) is in PATH for all sessions
+echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > "$ROOT/etc/environment"
 
 # Passwordless sudo (dev/test machine only)
 echo "${PI_USER} ALL=(ALL) NOPASSWD: ALL" > "$ROOT/etc/sudoers.d/90-wpa3-dev"

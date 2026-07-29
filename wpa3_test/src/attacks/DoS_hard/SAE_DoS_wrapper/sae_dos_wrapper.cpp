@@ -36,15 +36,16 @@ void setup_attack(RunStatus &rs){
 	const string suite = get_suite_path();
 	hw_capabilities::git_clone_or_pull("https://github.com/Omelug/WPA3-SAE-DoS-Research-Suite", suite);
 
-	if(system("python3.10 --version > /dev/null 2>&1") != 0){
+	if(system("python--version > /dev/null 2>&1") != 0){
 		log(LogLevel::INFO, "python3.10 not found, installing...");
-		hw_capabilities::run_cmd({"apt-get", "install", "-y", "python3.10"});
+		//FIXME  3.10 worked, but dont wokns on rapsberry
+		hw_capabilities::run_cmd({"apt-get", "install", "-y", "python3"});
 	}
 
 	const string req = suite + "/requirements.txt"; //TODO move requirement and python3.10  to fork
 	if(exists(req)){
 		log(LogLevel::INFO, "Installing python dependencies from {}...", req);
-		hw_capabilities::run_cmd({"python3.10", "-m", "pip", "install", "-r" + req});
+		hw_capabilities::run_cmd({"python3", "-m", "pip", "install", "-r" + req});
 	}
 
 	log(LogLevel::INFO, "SAE DoS Research Suite ready at {}", suite);
@@ -115,7 +116,7 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 	log(LogLevel::INFO, "Starting WPA3-SAE-DoS-Research-Suite orchestrator...");
 
-	rs.process_manager.run("attacker", {/*"setsid", */"python3.10", get_suite_path() + "/orchestator_master_en.py"},
+	rs.process_manager.run("attacker", {/*"setsid", */"python3", get_suite_path() + "/orchestator_master_en.py"},
 							rs.run_folder());
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();

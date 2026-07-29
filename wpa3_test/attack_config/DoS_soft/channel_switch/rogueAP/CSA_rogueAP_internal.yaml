@@ -35,7 +35,7 @@ actors:
   # sniff_iface: r_ap
 
 attack_config:
-  attack_time: 30
+  attack_time: 40
   ms_interval: 100
   new_channel: 1
   sleep_before_sec: 10

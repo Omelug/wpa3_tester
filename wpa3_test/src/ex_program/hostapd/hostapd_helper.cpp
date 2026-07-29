@@ -162,8 +162,12 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 		hw_capabilities::run_in("git clean -fd", repo_path);
 		hw_capabilities::run_in("git checkout " + tag, repo_path);
 	} else{
-		try{ hw_capabilities::run_in("git fetch", repo_path); } catch(const run_err &){
-			log(LogLevel::WARNING, "git fetch failed (offline?), using local version");
+		if(!cfg.pinned_commit.empty()){
+			hw_capabilities::run_in("git fetch origin", repo_path);
+		} else{
+			try{ hw_capabilities::run_in("git fetch", repo_path); } catch(const run_err &){
+				log(LogLevel::WARNING, "git fetch failed (offline?), using local version");
+			}
 		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
 		hw_capabilities::run_in("git clean -fd", repo_path);

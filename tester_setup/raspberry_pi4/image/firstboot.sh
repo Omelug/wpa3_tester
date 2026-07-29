@@ -43,8 +43,9 @@ dkms_install() {
     dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
 }
 
-dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"   /tmp/rtw88-src
-dkms_install "8188gu"    "https://github.com/morrownr/8188gu"  /tmp/8188gu-src
+dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"            /tmp/rtw88-src
+dkms_install "8188gu"    "https://github.com/morrownr/8188gu"           /tmp/8188gu-src
+dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210118"  /tmp/8821cu-src
 
 echo "[firstboot] Building mausezahn from source..."
 git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng

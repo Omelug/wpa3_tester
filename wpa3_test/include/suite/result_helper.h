@@ -32,7 +32,7 @@ described_bool get_client_ocv(const RunStatus &rs);
 described_str get_client_mfp(const RunStatus &rs, TimeWindow window = {});
 described_str get_client_WPA_support(const RunStatus &rs, TimeWindow window = {});
 described_str get_conn_WPA_version(const RunStatus &rs, TimeWindow window = {});
-described_str get_client_disconnected(const RunStatus &rs, TimeWindow window);
+described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window);
 described_str get_ap_WPA_support(const RunStatus &rs);
 
 

@@ -308,32 +308,28 @@ std::string to_hex(const uint8_t* data, size_t len) {
 }
 
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
-	if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0){
-		// TODO if rs.run_config_intall _req (maybe add to requirements, before test run)
+	if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
 		throw config_err("hcxpmktool not found in PATH - install hcxtools package");
-	}
 	log(LogLevel::INFO, "hcxpmktool: {}", hw_capabilities::run_cmd_output({"hcxpmktool", "--version"}, nullopt));
 
-    if(!exists(creds_file)){
-       log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
-       return {0, 0};
-    }
+	if(!exists(creds_file)){
+		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
+		return {0, 0};
+	}
 
-    ifstream f(creds_file);
-    int total = 0, cracked = 0;
-    string line;
-    while(getline(f, line)){
-       const auto tab_pos = line.find('\t');
-       const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
-       if(!hash.starts_with("WPA*")) continue;
-       total++;
-
-       if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, true) == 0) {
-           cracked++;
-       }
-    }
-    log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
-    return {total, cracked};
+	ifstream f(creds_file);
+	int total = 0, cracked = 0;
+	string line;
+	while(getline(f, line)){
+		const auto tab_pos = line.find('\t');
+		const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
+		if(!hash.starts_with("WPA*")) continue;
+		total++;
+		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, true) == 0)
+			cracked++;
+	}
+	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
+	return {total, cracked};
 }
 
 
@@ -377,34 +373,53 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
+
 string akm_from_ap_log(const path &log_path, const TimeWindow window){
-	ifstream f(log_path);
-	string line;
-	string akm_fallback;
-	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
-	while(getline(f, line)){
-		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
-		const auto pos = line.find("AKM suite ");
-		if(pos != string::npos){
-			const auto start = pos + string("AKM suite ").size();
-			const auto end = line.find_first_of(" \t\n\r]", start);
-			string suite = line.substr(start, end == string::npos ? string::npos : end - start);
-			if(suite.empty()) continue;
-			if(suite.ends_with(":8")) return suite + "\n(WPA3)";
-			if(suite.ends_with(":2")) return suite + "\n(WPA2)";
-			return suite;
-		}
-		// fallback: "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)"
-		if(akm_fallback.empty()){
-			const auto akm_pos = line.find("(AKM-defined - ");
-			if(akm_pos != string::npos){
-				const auto start = akm_pos + string("(AKM-defined - ").size();
-				const auto end = line.find(')', start);
-				if(end != string::npos) akm_fallback = line.substr(start, end - start);
-			}
-		}
-	}
-	return akm_fallback;
+    ifstream f(log_path);
+    string line;
+    string akm_fallback;
+    const bool bounded = window.start_tp.time_since_epoch().count() != 0;
+
+    while(getline(f, line)){
+       if(bounded){
+           const auto tp = log_time_to_epoch_ns(line);
+           if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break;
+       }
+
+       // 1. Explicitní textová AKM suita (pokud v logu je)
+       const auto pos = line.find("AKM suite ");
+       if(pos != string::npos){
+          const auto start = pos + string("AKM suite ").size();
+          const auto end = line.find_first_of(" \t\n\r]", start);
+          string suite = line.substr(start, end == string::npos ? string::npos : end - start);
+          if(suite.empty()) continue;
+          if(suite.ends_with(":8")) return suite + "\n(WPA3)";
+          if(suite.ends_with(":2")) return suite + "\n(WPA2)";
+          return suite;
+       }
+
+       // 2. Detekce podle textového fallbacku (např. SAE / PSK)
+       if(akm_fallback.empty()){
+          const auto akm_pos = line.find("(AKM-defined - ");
+          if(akm_pos != string::npos){
+             const auto start = akm_pos + string("(AKM-defined - ").size();
+             const auto end = line.find(')', start);
+             if(end != string::npos) {
+                 string val = line.substr(start, end - start);
+                 if(val.find("SAE") != string::npos) return "00-0f-ac:8\n(WPA3)";
+                 if(val.find("PSK") != string::npos) return "00-0f-ac:2\n(WPA2)";
+             }
+          }
+       }
+
+       // 3. Zpracování RSN IE, ale IGNORUJEME řádky s Beacon tail (abychom netahali globální nabídku AP)
+       if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos) {
+           // Hledáme specificky WPA3 (:8) nebo WPA2 (:2) uvnitř EAPOL-Key výměny
+           if(line.find("00 0f ac 08") != string::npos) return "00-0f-ac:8\n(WPA3)";
+           if(line.find("00 0f ac 02") != string::npos) return "00-0f-ac:2\n(WPA2)";
+       }
+    }
+    return akm_fallback;
 }
 
 // RSN IE layout: tag(1) len(1) version(2) group_cipher(4)

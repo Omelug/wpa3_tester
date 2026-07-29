@@ -154,6 +154,18 @@ TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
     CHECK_EQ(akm, "SAE");
 }
 
+TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){
+	const path tmp = temp_directory_path() / "wpa3_test_akm_text_fallback.log";
+	{
+		ofstream f(tmp);
+		f << "2026-07-29T02:18:08.483153688+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
+	}
+	const string akm = hostapd::akm_from_ap_log(tmp, {});
+	remove(tmp);
+
+	CHECK_EQ(akm, "00-0f-ac:8\n(WPA3)");
+}
+
 // ------- get_conf_value
 
 TEST_CASE("get_conf_value - returns value for matching key"){

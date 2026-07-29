@@ -20,11 +20,12 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump \
+    iproute2 iw tcpdump iptables \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
+    libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     avahi-daemon quilt \
-    dkms linux-headers-$(uname -r)
+    dkms "linux-headers-$(uname -r)"
 
 dkms_install() {
     local label=$1 url=$2 tmp=$3
@@ -45,7 +46,7 @@ dkms_install() {
 
 dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"            /tmp/rtw88-src
 dkms_install "8188gu"    "https://github.com/morrownr/8188gu"           /tmp/8188gu-src
-dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210118"  /tmp/8821cu-src
+dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210916"  /tmp/8821cu-src
 
 echo "[firstboot] Building mausezahn from source..."
 git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
@@ -58,7 +59,7 @@ git clone --depth=1 https://gitlab.com/kalilinux/packages/hostapd-mana /tmp/host
     cd /tmp/hostapd-mana
     QUILT_PATCHES=debian/patches quilt push -a
     cd hostapd
-    make -j$(nproc)
+    make "-j$(nproc)"
     install -m 755 hostapd     /usr/sbin/hostapd-mana
     install -m 755 hostapd_cli /usr/sbin/hostapd-mana_cli
     mkdir -p /etc/hostapd-mana
@@ -74,7 +75,10 @@ chmod +x /usr/bin/dumpcap
 cat > /etc/usb_modeswitch.d/0bda:1a2b << 'EOF'
 DefaultVendor=0x0bda
 DefaultProduct=0x1a2b
+TargetVendor=0x0bda
+TargetProduct=0xb711
 StandardEject=1
+CheckSuccess=20
 EOF
 
 # -- WiFi region

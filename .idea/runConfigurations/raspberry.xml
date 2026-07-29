@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="raspberry" type="CLion_Remote" activateToolWindowBeforeRun="false" version="1" remoteCommand="10.0.0.2:1234" symbolFile="$PROJECT_DIR$/build-cross/bin/wpa3_tester" sysroot="">
+  <configuration default="false" name="raspberry" type="CLion_Remote" activateToolWindowBeforeRun="false" version="1" remoteCommand="10.0.0.2:1234" symbolFile="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/build-cross/bin/wpa3_tester" sysroot="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/cross-sysroot">
     <debugger kind="GDB" isBundled="true" />
     <method v="2">
       <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_raspberry make run-debug" />

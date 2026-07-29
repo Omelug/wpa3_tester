@@ -228,7 +228,7 @@ bool RunStatus::config_requirement(){
 	firmware::disable_custom_drivers();
 	check_local_requirements();
 
-	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME make generic
+	//hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME make generic
 
 	cleanup_all_namespaces();
 	parse_requirements();
@@ -246,7 +246,8 @@ bool RunStatus::config_requirement(){
 			this_thread::sleep_for(chrono::milliseconds(100));
 	}
 
-	reset_usb_ifaces();
+	//FIXME nefunguje to s tím ne
+	//reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");

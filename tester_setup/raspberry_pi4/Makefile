@@ -51,7 +51,10 @@ PI_IFACE     ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i
 HOST_IP      ?= $(PI_GW)
 NETCAT_PORT  ?= 6666
 
-.PHONY: help image flash bootstrap deploy run run-debug deploy-debug clean_image sysroot deploy-cross test-cross clean_cross internet internet-off check-internet debug_netcat gdbserver-start
+GDB_VER          := $(shell gdb --version 2>/dev/null | grep -oP '\d+\.\d+' | head -1)
+GDBSERVER_CACHE  := run/cache/gdbserver-$(GDB_VER)-aarch64
+
+.PHONY: help image flash bootstrap deploy run run-debug deploy-debug clean_image sysroot deploy-cross test-cross clean_cross internet internet-off check-internet debug_netcat gdbserver-start gdbserver-build results
 
 help:
 	@echo ""
@@ -197,16 +200,43 @@ run-debug: deploy-debug
 	@echo "    Connect with:"
 	@echo "      gdb-multiarch $(CROSS_BUILD)/bin/wpa3_tester"
 	@echo "      (gdb) target remote $(PI):$(GDB_PORT)"
-	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG)"
+	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
 
 
-gdbserver-start:
-	$(SSH) "command -v gdbserver >/dev/null 2>&1 || sudo apt-get install -y gdbserver"
+# ── gdbserver cross-build (cached) ────────────────────────────────────────────
+# Compiles gdbserver matching the host GDB version once; result lives in
+# run/cache/gdbserver-<ver>-aarch64 and is reused on subsequent calls.
+$(GDBSERVER_CACHE):
+	@echo "==> Cross-compiling gdbserver $(GDB_VER) for aarch64 (one-time)..."
+	@test -n "$(GDB_VER)" || { echo "ERROR: gdb not found on host"; exit 1; }
+	sudo apt-get install -y gcc-aarch64-linux-gnu libexpat1-dev texinfo
+	mkdir -p run/cache run/gdb-build
+	curl -fsSL "https://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VER).tar.xz" \
+	    | tar xJ -C run/gdb-build --strip-components=1
+	mkdir -p run/gdb-build/build
+	cd run/gdb-build/build && ../configure \
+	    --host=aarch64-linux-gnu \
+	    --prefix=/usr/local \
+	    CC=aarch64-linux-gnu-gcc \
+	    CFLAGS="-O2 -static" \
+	    --enable-gdbserver \
+	    --disable-gdb \
+	    --disable-inprocess-agent --disable-nls
+	$(MAKE) -C run/gdb-build/build -j$(shell nproc)
+	find run/gdb-build/build -maxdepth 3 -name gdbserver -type f -executable \
+	    -exec cp {} $(GDBSERVER_CACHE) \;
+	rm -rf run/gdb-build
+	@echo "==> Cached: $(GDBSERVER_CACHE)"
+
+gdbserver-build: $(GDBSERVER_CACHE)
+
+gdbserver-start: $(GDBSERVER_CACHE)
 	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
-	$(SSH) "nohup sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG) </dev/null > /tmp/gdbserver.log 2>&1 &"
+	scp $(GDBSERVER_CACHE) $(PI_USER)@$(PI):/tmp/gdbserver
+	$(SSH) "nohup sudo /tmp/gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG) </dev/null > /tmp/gdbserver.log 2>&1 &"
 	@sleep 1
 	$(SSH) "pgrep -x gdbserver > /dev/null || { echo 'ERROR: gdbserver failed to start:'; cat /tmp/gdbserver.log; exit 1; }"
-	@echo "==> gdbserver running on $(PI):$(GDB_PORT)"
+	@echo "==> gdbserver $(GDB_VER) running on $(PI):$(GDB_PORT)"
 
 # ── Cross-compilation ──────────────────────────────────────────────────────────
 # Requires on host (one-time):
@@ -308,8 +338,34 @@ debug_netcat:
 	@echo "==> Listening on UDP :$(NETCAT_PORT)  (Ctrl+C to stop)"
 	nc -u -l -p $(NETCAT_PORT)
 
-# ── Cleanup ────────────────────────────────────────────────────────────────────
+# ── Result overview ────────────────────────────────────────────────────────────
+# Syncs test data from Pi (mirrors exactly — deletes local files absent on Pi)
+# then generates the HTML result overview.
+#   make results PI=<addr>
+#
+# Output:
+#   run/data/   — mirror of Pi's ~/wpa3_tester/data/
+#   run/html/   — generated HTML site
 
+RESULTS_DIR     := $(CURDIR)/run
+RESULTS_DATA    := $(RESULTS_DIR)/data
+RESULTS_HTML    := $(RESULTS_DIR)/html
+RESULT_OVERVIEW := $(SRC_ROOT)/build/bin/result_overview
+
+results:
+	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make results PI=<address>"; exit 1; }
+	$(MAKE) -C $(SRC_ROOT) build_overview
+	mkdir -p $(RESULTS_DATA)
+	rsync -az --delete --info=progress2 \
+		$(PI_USER)@$(PI):$(REMOTE_ABS)/data/ \
+		$(RESULTS_DATA)/
+	rm -rf $(RESULTS_HTML)
+	$(RESULT_OVERVIEW) \
+		--data_dir   $(RESULTS_DATA) \
+		--output_dir $(RESULTS_HTML)
+	@echo "==> Results generated: $(RESULTS_HTML)/index.html"
+
+# ----------- cleanup
 clean_image:
 	rm -f $(CUSTOM_IMAGE)
 	@echo "Base image cache kept in run/cache/. Remove manually if needed."

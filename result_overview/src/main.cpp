@@ -22,6 +22,39 @@ static path project_root() {
     return path(buf).parent_path().parent_path().parent_path();
 }
 
+static void print_usage(const char* argv0) {
+    fprintf(stderr,
+        "Usage: %s [--data_dir <path>] [--output_dir <path>]\n"
+        "  --data_dir    path to data directory (default: <project_root>/data)\n"
+        "  --output_dir  path to output directory (default: <project_root>/build/result_overview)\n",
+        argv0);
+}
+
+struct Args {
+    path data_dir;
+    path output_dir;
+};
+
+static Args parse_args(int argc, char* argv[]) {
+    const path root = project_root();
+    Args a{ root / "data", root / "build" / "result_overview" };
+    for (int i = 1; i < argc; ++i) {
+        const string_view arg = argv[i];
+        if ((arg == "--data_dir" || arg == "--output_dir") && i + 1 < argc) {
+            path& target = (arg == "--data_dir") ? a.data_dir : a.output_dir;
+            target = argv[++i];
+        } else if (arg == "--help" || arg == "-h") {
+            print_usage(argv[0]);
+            exit(0);
+        } else {
+            fprintf(stderr, "Unknown argument: %s\n", string(arg).c_str());
+            print_usage(argv[0]);
+            exit(1);
+        }
+    }
+    return a;
+}
+
 static string html_page() {
     ostringstream out;
     out << R"html(<!DOCTYPE html>
@@ -63,13 +96,17 @@ static string html_page() {
     return out.str();
 }
 
-int main() {
-    const path root        = project_root();
-    const path output_dir  = root / "build" / "result_overview";
-    const path data_dir    = root / "data";
-    const path attacks_dir = root / "wpa3_test" / "src" / "attacks";
+int main(int argc, char* argv[]) {
+    const Args args        = parse_args(argc, argv);
+    const path output_dir  = args.output_dir;
+    const path data_dir    = args.data_dir;
+    const path attacks_dir = project_root() / "wpa3_test" / "src" / "attacks";
 
     wpa3_tester::create_public_dirs(output_dir);
+
+    const path static_src = project_root() / "result_overview" / "static";
+    if (exists(static_src))
+        copy(static_src, output_dir, copy_options::recursive | copy_options::overwrite_existing);
 
     const path index = output_dir / "index.html";
     ofstream f(index);

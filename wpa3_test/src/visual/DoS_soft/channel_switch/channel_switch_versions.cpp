@@ -77,13 +77,5 @@ void generate_report(RunSuiteStatus &rss){
 			<< e.hostapd_version << " | "
 			<< /*result_link*/ "" << " |\n";
 	}
-
-	/*report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed; });
-	report << "- Total Tests: " << entries.size() << "\n";
-	report << "- Passed: " << passed_count << "\n";
-	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * passed_count / entries.size()) << "%\n";
-	*/
 }
 }

@@ -136,7 +136,7 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 
 	vector<string> gen_cmd = {
 		"tshark", "-l", "-t", "ad", "-r", pcap_path.string(), "-T", "fields", "-e", "frame.number", "-e", "frame.time",
-		"-e", "frame.len", "-E", "separator=,"
+		"-e", "frame.len", "-E", "separator=|"
 	};
 
 	if(!tshark_filter.empty()){
@@ -167,7 +167,7 @@ pair<vector<LogTimePoint>,vector<double>> times_packet_sizes_from_csv(const path
 	while(getline(file, line)){
 		stringstream ss(line);
 		string frame_num_str, t_str, s_str;
-		if(getline(ss, frame_num_str, ',') && getline(ss, t_str, ',') && getline(ss, s_str, ',')){
+		if(getline(ss, frame_num_str, '|') && getline(ss, t_str, '|') && getline(ss, s_str, '|')){
 			try{
 				const LogTimePoint tp = log_time_to_epoch_ns(t_str);
 				if(tp.time_since_epoch().count() == 0) continue;
@@ -264,7 +264,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	transform_to_relative(times, start_time);
 
 	if(times.empty() || sizes.empty() || times.size() != sizes.size()){
-		log(LogLevel::ERROR, "Invalid traffic data");
+		log(LogLevel::ERROR, "Invalid traffic data {}", csv_path);
 		return "";
 	}
 

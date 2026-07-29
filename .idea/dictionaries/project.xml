@@ -53,10 +53,13 @@
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
+      <w>dkms</w>
       <w>dlinkroot</w>
       <w>dmesg</w>
       <w>dragondrain</w>
+      <w>dtoverlay</w>
       <w>eapol</w>
+      <w>earlyprintk</w>
       <w>efchatz</w>
       <w>endl</w>
       <w>eopnotsupp</w>
@@ -69,6 +72,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>firstboot</w>
       <w>fmtloc</w>
       <w>fprintf</w>
       <w>frametype</w>
@@ -83,6 +87,7 @@
       <w>hccapx</w>
       <w>hcpx</w>
       <w>hcxpmktool</w>
+      <w>hcxtools</w>
       <w>hostap</w>
       <w>htmode</w>
       <w>hwhsim</w>
@@ -101,6 +106,7 @@
       <w>iperf</w>
       <w>iwinfo</w>
       <w>iwlwifi</w>
+      <w>journalctl</w>
       <w>jsonfilter</w>
       <w>keydatalen</w>
       <w>keyver</w>
@@ -121,6 +127,7 @@
       <w>mfacaddr</w>
       <w>mfpc</w>
       <w>mfpr</w>
+      <w>modeswitch</w>
       <w>modinfo</w>
       <w>mscha</w>
       <w>msdu</w>
@@ -130,12 +137,16 @@
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>ninline</w>
+      <w>nmconnection</w>
+      <w>nmethod</w>
       <w>noborder</w>
       <w>nocapture</w>
       <w>nohead</w>
       <w>nomatch</w>
       <w>nomirror</w>
       <w>nooutput</w>
+      <w>nopasswd</w>
+      <w>noptions</w>
       <w>noscan</w>
       <w>noseq</w>
       <w>notitle</w>
@@ -174,6 +185,7 @@
       <w>readlink</w>
       <w>reassoc</w>
       <w>recv</w>
+      <w>regdomain</w>
       <w>reproc</w>
       <w>retrans</w>
       <w>reuseaddr</w>
@@ -216,6 +228,7 @@
       <w>txop</w>
       <w>txpower</w>
       <w>udevadm</w>
+      <w>usbcore</w>
       <w>vline</w>
       <w>vprintf</w>
       <w>vuln</w>

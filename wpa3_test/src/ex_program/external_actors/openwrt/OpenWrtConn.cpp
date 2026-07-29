@@ -5,6 +5,7 @@
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 #include "system/ip.h"
+#include <chrono>
 
 namespace wpa3_tester{
 using namespace std;
@@ -84,11 +85,9 @@ void OpenWrtConn::forward_internet(const string &remote_ip) const{
 }
 
 void OpenWrtConn::time_fix() const{
-	exec("/etc/init.d/sysntpd stop");
-	int ret = 0;
-	exec("ntpd -q -n -p 0.openwrt.pool.ntp.org", false, &ret);
-	if(ret != 0) throw ex_conn_err("Failed to sync time with NTP");
-	exec("/etc/init.d/sysntpd start");
+	const auto ts = chrono::duration_cast<chrono::seconds>(
+		chrono::system_clock::now().time_since_epoch()).count();
+	exec("date -s @" + to_string(ts));
 }
 
 void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const nlohmann::json &config){

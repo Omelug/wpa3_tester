@@ -51,7 +51,7 @@ void render_table(overview::HtmlGuard &f, const vector<path> &folders, const pat
 	  << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
 	  << "<th>Attacker (driver)</th>"
 	  << "<th>Disconnected?</th>"
-	  << "<th>Rogue AP?</th>"
+	  << "<th>Rogue WPA2 AP?</th>"
 	  << "<th>Client MFP</th>"
 	  << "<th>Scanning</th>"
 	  << "</tr></thead>\n            <tbody>\n";

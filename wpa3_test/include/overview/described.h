@@ -13,7 +13,9 @@ struct described_bool {
     };
     std::vector<pair_t> pairs;
 
-    described_bool &operator+=(pair_t p) { pairs.push_back(std::move(p)); return *this; }
+    described_bool &operator+=(pair_t p){
+	    if(p.value.has_value()){pairs.push_back(std::move(p));} return *this;
+    }
 
     [[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
     [[nodiscard]] const pair_t &last() const { return pairs.back(); }
@@ -29,7 +31,7 @@ struct described_str {
     };
     std::vector<pair_t> pairs;
 
-    described_str &operator+=(pair_t p) { pairs.push_back(std::move(p)); return *this; }
+    described_str &operator+=(pair_t p) { if(!p.value.empty()){pairs.push_back(std::move(p));} return *this; }
 
     [[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
     [[nodiscard]] const pair_t &last() const { return pairs.back(); }

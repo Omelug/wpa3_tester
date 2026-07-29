@@ -70,6 +70,40 @@ TEST_CASE("formatter - filesystem::path formats as string"){
     CHECK_EQ(format("prefix/{}", filesystem::path("foo/bar")), "prefix/foo/bar");
 }
 
+TEST_CASE("get_tag_time - returns timestamp of first matching line"){
+    const filesystem::path tmp = "/tmp/wpa3_test_tag_time.txt";
+    {
+        ofstream f(tmp);
+        f << "2024-03-15T10:30:45.123456789+0000 INFO some noise\n";
+        f << "2024-03-15T10:30:46.000000000+0000 INFO MY_TAG event\n";
+        f << "2024-03-15T10:30:47.000000000+0000 INFO MY_TAG second occurrence\n";
+    }
+
+    const LogTimePoint tp = wpa3_tester::get_tag_time(tmp, "MY_TAG");
+    filesystem::remove(tmp);
+
+    const LogTimePoint expected = wpa3_tester::log_time_to_epoch_ns("2024-03-15T10:30:46.000000000+0000");
+    CHECK_EQ(tp, expected);
+}
+
+TEST_CASE("get_tag_time - returns epoch-zero when tag not found"){
+    const filesystem::path tmp = "/tmp/wpa3_test_tag_notfound.txt";
+    {
+        ofstream f(tmp);
+        f << "2024-03-15T10:30:45.000000000+0000 INFO no match here\n";
+    }
+
+    const LogTimePoint tp = wpa3_tester::get_tag_time(tmp, "MISSING_TAG");
+    filesystem::remove(tmp);
+
+    CHECK_EQ(tp, LogTimePoint{});
+}
+
+TEST_CASE("get_tag_time - returns epoch-zero when file does not exist"){
+    const LogTimePoint tp = wpa3_tester::get_tag_time("/tmp/wpa3_nonexistent_file.txt", "ANY_TAG");
+    CHECK_EQ(tp, LogTimePoint{});
+}
+
 TEST_CASE("log - escape_tex replaces underscores"){
     CHECK_EQ(wpa3_tester::escape_tex("hello_world"),   "hello\\_world");
     CHECK_EQ(wpa3_tester::escape_tex("a_b_c"),         "a\\_b\\_c");

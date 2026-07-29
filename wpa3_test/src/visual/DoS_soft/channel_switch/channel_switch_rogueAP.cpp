@@ -27,6 +27,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
 	e.client_mac = client->get(SK::mac);
 	e.client_source = client->get(SK::source);
+	e.client_driver = client->get(SK::driver_name);
 
 	const auto att = rs->get_actor("attacker");
 	e.attacker_mac = att->get(SK::mac);

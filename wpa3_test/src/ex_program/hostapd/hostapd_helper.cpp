@@ -450,6 +450,7 @@ static string akm_suite_name(uint8_t type){
 	}
 }
 
+//TODO test
 string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
@@ -479,7 +480,7 @@ string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 	}
 	return mfp_fallback;
 }
-
+//TODO test
 string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
@@ -503,6 +504,7 @@ string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
 	return {};
 }
 
+//TODO test
 string get_mfp_from_supplicant(const path &conf){
 	if(!exists(conf)) return {};
 	const string val = get_conf_value(conf, {"ieee80211w"});
@@ -518,6 +520,7 @@ string owe_trans_bssid(const string &primary_mac){
 				addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
 }
 
+//TODO test
 string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
 	string line;
@@ -574,6 +577,7 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	return binary_path;
 }
 
+//TODO test
 string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
 	if(!exists(ap_log) || client_mac.empty()) return {};
 	ifstream f(ap_log);

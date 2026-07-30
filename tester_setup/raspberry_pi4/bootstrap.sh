@@ -25,7 +25,7 @@ sudo apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump iptables \
+    iproute2 iw tcpdump iptables socat dnsmasq \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
@@ -111,6 +111,37 @@ sudo raspi-config nonint do_wifi_country CZ
 echo "==> Configuring passwordless sudo for $USER (dev/test machine)..."
 echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-wpa3-dev > /dev/null
 sudo chmod 440 /etc/sudoers.d/90-wpa3-dev
+
+echo "==> Enabling IP forwarding + NAT (wlan* → eth0 for dnsmasq clients)..."
+echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/10-ip-forward.conf > /dev/null
+sudo sysctl -p /etc/sysctl.d/10-ip-forward.conf
+
+sudo tee /usr/local/sbin/wpa3-nat.sh << 'EOF' > /dev/null
+#!/usr/bin/env bash
+/usr/sbin/iptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE 2>/dev/null || \
+    /usr/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+/usr/sbin/iptables -C FORWARD -i wlan+ -o eth0 -j ACCEPT 2>/dev/null || \
+    /usr/sbin/iptables -A FORWARD -i wlan+ -o eth0 -j ACCEPT
+/usr/sbin/iptables -C FORWARD -o wlan+ -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || \
+    /usr/sbin/iptables -A FORWARD -o wlan+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+EOF
+sudo chmod +x /usr/local/sbin/wpa3-nat.sh
+
+sudo tee /etc/systemd/system/wpa3-nat.service << 'EOF' > /dev/null
+[Unit]
+Description=NAT wlan* → eth0 for WPA3 tester dnsmasq clients
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/wpa3-nat.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl enable wpa3-nat.service
+sudo systemctl start wpa3-nat.service
 
 echo "==> Configuring static IPs on eth0 (10.0.0.2 + 192.168.0.2)..."
 # Modify or create the eth0 NM connection with both static addresses

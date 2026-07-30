@@ -71,15 +71,15 @@ json yaml_to_json_with_marks(const YNode &node, const string &current_path,
 }
 
 void deep_merge(json &base, const json &patch){
-	for(auto it = patch.begin(); it != patch.end(); ++it){
-		if(it.key() == "$DELETE"){
-			if(it.value().is_string()) base.erase(it.value().get<string>());
-			else if(it.value().is_array())
-				for(const auto &k: it.value()) if(k.is_string()) base.erase(k.get<string>());
-		} else if(it.value().is_object() && base.contains(it.key()) && base[it.key()].is_object()){
-			deep_merge(base[it.key()], it.value());
+	for (const auto& [key, val] : patch.items()) {
+		if(key == "$DELETE"){
+			if(val.is_string()) base.erase(val.get<string>());
+			else if(val.is_array())
+				for(const auto &k: val) if(k.is_string()) base.erase(k.get<string>());
+		} else if(val.is_object() && base.contains(key) && base[key].is_object()){
+			deep_merge(base[key], val);
 		} else{
-			base[it.key()] = it.value();
+			base[key] = val;
 		}
 	}
 }

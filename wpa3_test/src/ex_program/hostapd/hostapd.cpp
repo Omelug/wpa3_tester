@@ -87,10 +87,10 @@ static string hostapd_owe_trans_config(RunStatus &rs, const string &actor_name){
 	if(!out) throw run_err("hostapd_owe_trans_config: unable to open config file");
 
 	// ---- primary (open) BSS
-	for(auto it = pc.begin(); it != pc.end(); ++it){
-		if(owe_trans_skip.contains(it.key()) || owe_bss_only.contains(it.key())) continue;
-		out << it.key() << "=";
-		if(it.value().is_string()) out << it.value().get<string>(); else out << it.value().dump();
+	for (const auto& [key, val] : pc.items()) {
+		if(owe_trans_skip.contains(key) || owe_bss_only.contains(key)) continue;
+		out << key << "=";
+		if(val.is_string()) out << val.get<string>(); else out << val.dump();
 		out << "\n";
 	}
 	out << "ssid=" << open_ssid << "\n"
@@ -101,10 +101,10 @@ static string hostapd_owe_trans_config(RunStatus &rs, const string &actor_name){
 	out << "bss=" << secondary_iface << "\n"
 		<< "bssid=" << secondary_bssid << "\n"
 		<< "ssid=" << owe_ssid << "\n";
-	for(auto it = pc.begin(); it != pc.end(); ++it){
-		if(!owe_bss_only.contains(it.key())) continue;
-		out << it.key() << "=";
-		if(it.value().is_string()) out << it.value().get<string>(); else out << it.value().dump();
+	for (const auto& [key, val] : pc.items()) {
+		if(!owe_bss_only.contains(key)) continue;
+		out << key << "=";
+		if(val.is_string()) out << val.get<string>(); else out << val.dump();
 		out << "\n";
 	}
 	out << "owe_transition_bssid=" << primary_mac << "\n"
@@ -172,28 +172,28 @@ static string wpa_network_fmt(const string &key, const json &val){
 }
 
 static void write_wpa_global_kv(ofstream &out, const json &setup){
-	for(auto it = setup.begin(); it != setup.end(); ++it){
-		if(!wpa_global_keys.contains(it.key())) continue;
-		out << it.key() << "=" << it.value().dump() << "\n";
+	for (const auto& [key, val] : setup.items()) {
+		if(!wpa_global_keys.contains(key)) continue;
+		out << key << "=" << val.dump() << "\n";
 	}
 }
 
 static void write_wpa_network_block(ofstream &out, const json &setup){
 	out << "network={\n";
-	for(auto it = setup.begin(); it != setup.end(); ++it){
-		if(wpa_skip_keys.contains(it.key())) continue;
-		if(wpa_global_keys.contains(it.key())) continue;
-		out << "\t" << it.key() << "=" << wpa_network_fmt(it.key(), it.value()) << "\n";
+	for (const auto& [key, val] : setup.items()) {
+		if(wpa_skip_keys.contains(key)) continue;
+		if(wpa_global_keys.contains(key)) continue;
+		out << "\t" << key << "=" << wpa_network_fmt(key, val) << "\n";
 	}
 	out << "}\n";
 }
 
 void apply_wpa_overrides(const path &cfg, const json &overrides){
 	map<string,string> global_ov, network_ov;
-	for(auto it = overrides.begin(); it != overrides.end(); ++it){
-		if(wpa_skip_keys.contains(it.key())) continue;
-		if(wpa_global_keys.contains(it.key())) global_ov[it.key()] = it.value().dump();
-		else network_ov[it.key()] = wpa_network_fmt(it.key(), it.value());
+	for (const auto& [key, val] : overrides.items()) {
+		if(wpa_skip_keys.contains(key)) continue;
+		if(wpa_global_keys.contains(key)) global_ov[key] = val.dump();
+		else network_ov[key] = wpa_network_fmt(key, val);
 	}
 	if(global_ov.empty() && network_ov.empty()) return;
 

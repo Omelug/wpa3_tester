@@ -17,11 +17,12 @@ using namespace nlohmann;
 
 static void write_hostapd_kv(ofstream &out, const json &setup){
 	static const set<string> skip = {"hostapd_path", "hostapd-mana_path", "version", "openssl", "other_options"};
-	for(auto it = setup.begin(); it != setup.end(); ++it){
-		if(skip.contains(it.key())) continue;
-		out << it.key() << "=";
-		if(it.value().is_string()) out << it.value().get<string>();
-		else out << it.value().dump();
+	for (const auto& [key, val] : setup.items()) {
+		if (skip.contains(key)) continue;
+    
+		out << key << "=";
+		if (val.is_string()) out << val.get<string>();
+		else out << val.dump();
 		out << "\n";
 	}
 }
@@ -85,7 +86,7 @@ static string hostapd_owe_trans_config(RunStatus &rs, const string &actor_name){
 	ofstream out(cfg_path);
 	if(!out) throw run_err("hostapd_owe_trans_config: unable to open config file");
 
-	// ─── primary (open) BSS ──────────────────────────────────────────
+	// ---- primary (open) BSS
 	for(auto it = pc.begin(); it != pc.end(); ++it){
 		if(owe_trans_skip.contains(it.key()) || owe_bss_only.contains(it.key())) continue;
 		out << it.key() << "=";
@@ -96,7 +97,7 @@ static string hostapd_owe_trans_config(RunStatus &rs, const string &actor_name){
 		<< "owe_transition_bssid=" << secondary_bssid << "\n"
 		<< "owe_transition_ssid=\"" << owe_ssid << "\"\n\n";
 
-	// ─── secondary (OWE) BSS ─────────────────────────────────────────
+	// ---- secondary (OWE) BSS
 	out << "bss=" << secondary_iface << "\n"
 		<< "bssid=" << secondary_bssid << "\n"
 		<< "ssid=" << owe_ssid << "\n";

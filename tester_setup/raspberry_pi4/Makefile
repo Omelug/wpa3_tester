@@ -184,7 +184,7 @@ deploy:
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
-TEST_SUITE  ?= CSA_rogueAP_Dlink_filler
+TEST_SUITE  ?= CSA_external_client_filler
 
 run: deploy-cross internet
 	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"

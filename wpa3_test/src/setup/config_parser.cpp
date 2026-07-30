@@ -62,8 +62,8 @@ json yaml_to_json_with_marks(const YNode &node, const string &current_path,
 	if(node.IsMap()){
 		auto j = json::object();
 		for(auto it = node.begin(); it != node.end(); ++it){
-			string key = it->first.as<string>();
-			j[key] = yaml_to_json_with_marks(it->second, current_path + "/" + key, line_map);
+			auto key = it->first.as<string>();
+			j[key] = yaml_to_json_with_marks(it->second, "/" + current_path + key, line_map);
 		}
 		return j;
 	}

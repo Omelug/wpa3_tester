@@ -12,12 +12,12 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 	size_t block_index = 0;
 
 	map<string,size_t> label_slots;
-	for(auto &element: elements){
+	for(const auto &element : elements){
 		if(element->type == GraphElement_t::EVENT_LINES){
 			const string &lbl = element->label;
 			if(!label_slots.contains(lbl)){
 				const size_t slot = label_slots.size();
-				label_slots.emplace(lbl, slot);
+				label_slots[lbl] = slot;
 			}
 		}
 	}

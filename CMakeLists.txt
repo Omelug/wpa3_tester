@@ -47,12 +47,10 @@ if (UNIX)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
 endif ()
 
-
 if (ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)
     add_link_options(--coverage)
 endif ()
-
 
 enable_testing()
 add_subdirectory(wpa3_test)

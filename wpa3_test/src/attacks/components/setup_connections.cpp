@@ -55,7 +55,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 			const string iface = ap.get(SK::iface);
 			const string pfx   = ip.substr(0, ip.rfind('.'));
 
-			hw_capabilities::run_cmd({"ip", "addr", "add", ip + "/24", "dev", iface}, std::nullopt, false);
+			hw_capabilities::run_cmd({"ip", "addr", "replace", ip + "/24", "dev", iface}, std::nullopt, false);
 			ap->set_iface_up();
 			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 			//TODO  add dnsmasq to nix/ requirements 

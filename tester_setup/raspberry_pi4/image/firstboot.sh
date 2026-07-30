@@ -20,7 +20,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump iptables \
+    iproute2 iw tcpdump iptables socat dnsmasq \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \

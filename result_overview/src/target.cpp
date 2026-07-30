@@ -190,18 +190,18 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 
 void generate_targets(const path &output_dir, const path &data_dir) {
     const path targets_data = data_dir / "wpa3_suites" / "target";
-    if (!is_directory(targets_data)) return;
 
     vector<string> names;
-    for (const auto &entry : directory_iterator(targets_data)) {
-        if (!entry.is_directory()) continue;
-        const string name = entry.path().filename().string();
-        names.push_back(name);
-        generate_target_page(output_dir, name, entry.path());
+    if (is_directory(targets_data)) {
+        for (const auto &entry : directory_iterator(targets_data)) {
+            if (!entry.is_directory()) continue;
+            const string name = entry.path().filename().string();
+            names.push_back(name);
+            generate_target_page(output_dir, name, entry.path());
+        }
     }
 
-    if (!names.empty())
-        generate_target_index(output_dir, names);
+    generate_target_index(output_dir, names);
 }
 
 } // namespace wpa3_tester::overview

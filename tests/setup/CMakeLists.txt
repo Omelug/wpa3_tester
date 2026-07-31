@@ -1,5 +1,7 @@
 file(COPY config_validation DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
         PATTERN "run_out" EXCLUDE)
+file(COPY ${CMAKE_SOURCE_DIR}/wpa3_test/attack_config
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../../wpa3_test)
 
 add_doctest_exe(run_validation_tests SOURCES test_config_validation.cpp TEST_NAME ValidationTests)
 target_compile_definitions(run_validation_tests PRIVATE

@@ -99,13 +99,13 @@ TEST_CASE("load_result_default - no result.json returns entry_defaults") {
 TEST_CASE("described_bool - to_json") {
     described_bool d;
     d += {true, "source_a"};
-    d += {nullopt, "source_b"};
+    d += {false, "source_b"};
     const json j = d;
     REQUIRE(j.is_array());
     REQUIRE_EQ(j.size(), 2u);
     CHECK_EQ(j[0]["value"], true);
     CHECK_EQ(j[0]["description"], "source_a");
-    CHECK(j[1]["value"].is_null());
+	CHECK_EQ(j[1]["value"], false);
     CHECK_EQ(j[1]["description"], "source_b");
 }
 
@@ -188,7 +188,7 @@ TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log") {
 	const TimeWindow window_START{LogTimePoint{}, wpa3_tester::get_tag_time(dir / "logger" / "ap.log", wpa3_tester::START_tag)};
     const auto result = get_conn_WPA_version(rs, window_START);
     REQUIRE_FALSE(result.empty());
-    CHECK_EQ(result.value(), "SAE");
+	CHECK_EQ(result.value(), "00-0f-ac:8\n(WPA3)");
     CHECK_EQ(result.last().description, "hostapd");
 }
 

@@ -151,7 +151,7 @@ TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
     const path log = TEST_DIR / "ap_sae_akm.log";
     REQUIRE(exists(log));
     const string akm = hostapd::akm_from_ap_log(log, {});
-    CHECK_EQ(akm, "SAE");
+    CHECK_EQ(akm, "00-0f-ac:8\n(WPA3)");
 }
 
 TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){

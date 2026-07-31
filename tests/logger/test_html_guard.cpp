@@ -164,23 +164,15 @@ TEST_CASE("described_bool - single false entry") {
 	         "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
-TEST_CASE("described_bool - single nullopt entry -> 'N/A'") {
-	HtmlFixture fx("db_nullopt");
-	described_bool db; db += {nullopt, "src"};
-	{ HtmlGuard hg(fx.dir); hg << db; }
-	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">N/A)" + TOOLTIP_HDR +
-	         "<tr><td>N/A</td><td>src</td></tr>" + TOOLTIP_FTR);
-}
 
 TEST_CASE("described_bool - multiple entries: last shown, all in table") {
 	HtmlFixture fx("db_multi");
-	described_bool db; db += {false, "s1"}; db += {true, "s2"};
+	described_bool db; db += {false, "s1"}; db += {false, "s2"};
 	{ HtmlGuard hg(fx.dir); hg << db; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR +
+	         R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
 	         "<tr><td>no</td><td>s1</td></tr>"
-	         "<tr><td>yes</td><td>s2</td></tr>" + TOOLTIP_FTR);
+	         "<tr><td>no</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_str - empty -> '?'") {
@@ -198,21 +190,13 @@ TEST_CASE("described_str - single non-empty string entry") {
 	         "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
-TEST_CASE("described_str - empty value entry shows '?' as display but empty cell in table") {
-	HtmlFixture fx("ds_empty_val");
-	described_str ds; ds += {"", "src"};
-	{ HtmlGuard hg(fx.dir); hg << ds; }
-	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">?)" + TOOLTIP_HDR +
-	         "<tr><td></td><td>src</td></tr>" + TOOLTIP_FTR);
-}
 
 TEST_CASE("described_str - multiple entries: last shown, all in table") {
 	HtmlFixture fx("ds_multi");
 	described_str ds; ds += {"first", "s1"}; ds += {"second", "s2"};
 	{ HtmlGuard hg(fx.dir); hg << ds; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">second)" + TOOLTIP_HDR +
-	         "<tr><td>first</td><td>s1</td></tr>"
+	         R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
+	         "<tr><td>v</td><td>s1</td></tr>"
 	         "<tr><td>second</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }

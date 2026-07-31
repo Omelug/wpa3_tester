@@ -167,6 +167,9 @@ if(CMAKE_CROSSCOMPILING AND TARGET radiotap_check)
     set_target_properties(radiotap_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif()
 
+# Suppress packed member warning from radiotap library
+target_compile_options(radiotap PRIVATE -Wno-address-of-packed-member)
+
 target_compile_options(tins PRIVATE -Wno-deprecated-declarations)
 
 add_library(radiotap_lib STATIC "${radiotap_SOURCE_DIR}/radiotap.c")

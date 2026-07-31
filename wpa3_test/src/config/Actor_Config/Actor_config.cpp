@@ -7,6 +7,7 @@
 #include "config/Actor_Config/actor_keys.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
+#include "default.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
@@ -37,7 +38,7 @@ Actor_config::Actor_config(const json &j, string source){
 			} else if(sel[name].is_array() && k == SK::driver_name){
 				string joined;
 				for(const auto &v: sel[name]){
-					if(!joined.empty()) joined += '|';
+					if(!joined.empty()) joined += CSV_SEP;
 					joined += v.get<string>();
 				}
 				this->set(k, joined);
@@ -75,13 +76,15 @@ bool Actor_config::matches(const Actor_config &offer) const{
 		if(!required.has_value()) continue;
 		const auto &offered = offer[k];
 		if(!offered.has_value()) continue;
-		if(k == SK::driver_name && required->contains('|')){
+		if(k == SK::driver_name && required->contains(CSV_SEP)){
 			bool any = false;
 			stringstream ss(*required);
 			string tok;
-			while(getline(ss, tok, '|')) if(tok == *offered){
-				any = true;
-				break;
+			while(getline(ss, tok, CSV_SEP)){
+				if(tok == *offered){
+					any = true;
+					break;
+				}
 			}
 			if(!any) return false;
 		} else{

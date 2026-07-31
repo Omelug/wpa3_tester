@@ -1,5 +1,7 @@
 #pragma once
 
+inline char CSV_SEP = '|';
+
 inline std::string REPORT_NAME = "report.md";
 inline std::string INDEX_HTML = "index.html";
 inline std::string RESULT_NAME = "result.json";

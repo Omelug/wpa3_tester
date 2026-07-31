@@ -8,4 +8,3 @@ target_compile_definitions(run_validation_tests PRIVATE
 
 add_doctest_exe(run_cleanup_tests SOURCES test_cleanup_namespaces.cpp TEST_NAME CleanupTests)
 add_doctest_exe(run_scan_tests SOURCES test_scan.cpp TEST_NAME ScanTests)
-sudo -E ctest --test-dir

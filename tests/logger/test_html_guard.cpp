@@ -197,6 +197,6 @@ TEST_CASE("described_str - multiple entries: last shown, all in table") {
 	{ HtmlGuard hg(fx.dir); hg << ds; }
 	CHECK_EQ(fx.read_index(),
 	         R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
-	         "<tr><td>v</td><td>s1</td></tr>"
+	         "<tr><td>first</td><td>s1</td></tr>"
 	         "<tr><td>second</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }

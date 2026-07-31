@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "default.h"
 #include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
@@ -130,8 +131,8 @@ TEST_CASE("masked_mac_filter_5 - two actors joined with or"){
 
 TEST_CASE("times_packet_sizes_from_csv - two valid rows"){
     TempCsv tmp(
-        "1,2026-02-21T13:12:45.844734691+0100,149\n"
-        "2,2026-02-21T13:12:46.433775945+0100,200\n"
+        "1|2026-02-21T13:12:45.844734691+0100|149\n"
+        "2|2026-02-21T13:12:46.433775945+0100|200\n"
     );
 
     auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
@@ -145,8 +146,8 @@ TEST_CASE("times_packet_sizes_from_csv - two valid rows"){
 
 TEST_CASE("times_packet_sizes_from_csv - invalid timestamp rows are skipped"){
     TempCsv tmp(
-        "1,INVALID_TIME,100\n"
-        "2,2026-02-21T13:12:46.433775945+0100,200\n"
+        "1|INVALID_TIME|100\n"
+        "2|2026-02-21T13:12:46.433775945+0100|200\n"
     );
 
     auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
@@ -191,7 +192,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
     while(getline(f, line)){
         if(line.empty()) continue;
         ++count;
-        CHECK(line.contains(','));
+        CHECK(line.contains(CSV_SEP));
     }
     CHECK_GE(count, 1);
 

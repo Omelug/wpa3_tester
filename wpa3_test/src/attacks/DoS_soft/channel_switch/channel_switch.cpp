@@ -7,7 +7,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "overview/described.h"
 #include "suite/result_helper.h"
 #include "attacks/components/setup_connections.h"

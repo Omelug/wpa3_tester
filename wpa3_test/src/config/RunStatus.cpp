@@ -5,7 +5,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "default.h"
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "attacks/attacks.h"
 #include "config/global_config.h"
 #include "config/Observer_config.h"

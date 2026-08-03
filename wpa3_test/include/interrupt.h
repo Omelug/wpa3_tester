@@ -8,6 +8,13 @@
 
 #include "logger/error_log.h"
 
+// Debug macro - only active in Debug builds
+#ifdef DEBUG
+#  define DEBUG(x) do { x; } while(0)
+#else
+#  define DEBUG(x) do {} while(0)
+#endif
+
 struct InterruptPipe{
 	int read_fd, write_fd;
 

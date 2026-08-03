@@ -2,7 +2,7 @@
 #include <chrono>
 #include <doctest.h>
 #include <thread>
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/ProcessManager.h"

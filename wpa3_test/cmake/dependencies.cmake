@@ -34,14 +34,13 @@ target_include_directories(wpa3_deps INTERFACE
 
 target_link_libraries(wpa3_deps INTERFACE
         doctest_headers
-        yaml-cpp
+        yaml-cpp_lib
         nlohmann_json_schema_validator
         nlohmann_json::nlohmann_json
         argparse::argparse
         doctest
-        tins
-        reproc++
-        nl-3 nl-genl-3
+        tins_lib
+        reproc_lib
         ${LIBNL_LIBRARIES}
         ${LIBSSH_LIBRARIES}
         OpenSSL::SSL OpenSSL::Crypto

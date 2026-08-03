@@ -39,7 +39,7 @@ class typed_error: public tester_error{
 public:
 	explicit typed_error(const std::string &msg, const std::source_location loc = std::source_location::current())
 	: tester_error(msg, loc){
-		log(Level, "{}", std::runtime_error::what());
+		log(Level, "{}", what());
 	}
 
 	// Implicit conversion from string literal allows: throw some_err("format {}", arg);

@@ -9,7 +9,7 @@
 #include <system_error>
 #include <thread>
 #include <unistd.h>
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "system/utils.h"

@@ -1,5 +1,5 @@
 #include "config/RunSuiteStatus.h"
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "system/utils.h"
 
 #include <string>

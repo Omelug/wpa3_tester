@@ -12,6 +12,7 @@ namespace wpa3_tester::hostapd{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
+using namespace wpa3_tester;
 
 // --------------- HOSTAPD -----------------------
 

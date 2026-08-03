@@ -2,7 +2,7 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log_util.h"

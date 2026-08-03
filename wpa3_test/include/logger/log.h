@@ -49,11 +49,11 @@ std::decay_t<T> clean_arg(T &&arg){
 	return std::forward<T>(arg);
 }
 
-template<typename...Args>
-void log(const LogLevel level, std::format_string<std::remove_cvref_t<Args>...> fmt, Args &&...args){
+template<typename... Args>
+void log(LogLevel level, std::format_string<Args...> fmt, Args&&... args) {
 	auto cleaned = std::make_tuple(clean_arg(std::forward<Args>(args))...);
-	const std::string msg = [&]<size_t...Is>(std::index_sequence<Is...>){
-		return std::vformat(fmt.get(), std::make_format_args(std::get<Is>(cleaned)...));
+	const std::string msg = [&]<size_t... Is>(std::index_sequence<Is...>) {
+		return std::vformat(fmt, std::make_format_args(std::get<Is>(cleaned)...));
 	}(std::index_sequence_for<Args...>{});
 	write_log_message(level, msg);
 }
@@ -67,7 +67,7 @@ using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 struct TimeWindow {
 	LogTimePoint start_tp{};
 	LogTimePoint end_tp{};
-	bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
+	[[nodiscard]] bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
 };
 
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)

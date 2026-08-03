@@ -5,7 +5,7 @@
 #include <utility>
 #include <tins/tins.h>
 
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "ex_program/external_actors/ExternalConn.h"

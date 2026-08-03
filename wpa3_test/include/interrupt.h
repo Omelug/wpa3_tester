@@ -10,9 +10,9 @@
 
 // Debug macro - only active in Debug builds
 #ifdef IF_DEBUG
-#  define IF_DEBUG(x) do { x; } while(0)
+#  define IF_DEBUG(x) do { x; } while(0);
 #else
-#  define IF_DEBUG(x) do {} while(0)
+#  define IF_DEBUG(x) do {} while(0);
 #endif
 
 struct InterruptPipe{

@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"

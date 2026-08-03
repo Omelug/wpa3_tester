@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <chrono>
 #include <thread>
-#include "inteprrupt.h"
+#include "interrupt.h"
 
 using namespace std::chrono;
 

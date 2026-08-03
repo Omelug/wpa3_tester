@@ -3,7 +3,7 @@
 #include <pcap/pcap.h>
 #include <sys/poll.h>
 #include <tins/pdu.h>
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "system/hw_capabilities.h"
 
 #include "logger/error_log.h"

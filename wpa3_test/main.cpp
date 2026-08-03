@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
 
-#include "inteprrupt.h"
+#include "interrupt.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"

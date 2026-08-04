@@ -324,4 +324,23 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		run_cmd(cmd, netns);
 	}
 }
+
+// TX power control
+int hw_capabilities::get_tx_power(const string &iface, const optional<string> &netns){
+	const string output = run_cmd_output({"iw", "dev", iface, "info"}, netns);
+	if(output.empty()) throw run_err("Failed to get interface info for: " + iface);
+
+	smatch match;
+	if(regex_search(output, match, regex(R"(txpower ([0-9.]+) dBm)"))){
+		return stoi(match[1].str());
+	}
+	throw run_err("Could not find TX power for interface: " + iface);
+}
+
+void hw_capabilities::set_tx_power(const string &iface, const int power_dbm, const optional<string> &netns){
+	const vector<string> cmd = {"iw", "dev", iface, "set", "txpower", "fixed", to_string(power_dbm)};
+	if(run_cmd(cmd, netns) != 0){
+		throw run_err("Failed to set TX power for interface " + iface + " to " + to_string(power_dbm) + " dBm");
+	}
+}
 }

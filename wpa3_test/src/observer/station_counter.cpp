@@ -139,7 +139,7 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 }
 
 void create_station_graph(const RunStatus &rs, const string &actor_name, const G_elms &elements) {
-	const path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
+	path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
 	set_public_perms(log_path);
 	const path output = log_path.replace_extension(".png");
 	remove(output);

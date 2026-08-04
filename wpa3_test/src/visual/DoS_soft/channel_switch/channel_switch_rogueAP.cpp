@@ -56,10 +56,10 @@ void render_table(overview::HtmlGuard &f, const vector<path> &folders, const pat
 		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
 		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
 		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-
-		col("Disconnected?",        &CsaTestEntry::client_disconnected);
-		col("Rogue WPA2 AP?",       &CsaTestEntry::rogue_ap_connected);
-		col("Client MFP",           &CsaTestEntry::client_mfp);
+		COL("Disconnected?",        &CsaTestEntry::client_disconnected);
+		COL("Rogue WPA2 AP?",       &CsaTestEntry::rogue_ap_connected);
+		COL("Client MFP",           &CsaTestEntry::client_mfp);
+		COL("Scanning",             &CsaTestEntry::client_scanning);
 	});
 
 	#undef COL

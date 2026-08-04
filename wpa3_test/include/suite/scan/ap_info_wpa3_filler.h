@@ -21,8 +21,8 @@ struct ApInfoWpa3TestEntry{
 
 	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-	                         const std::vector<std::filesystem::path> &folders,
-	                         const std::filesystem::path &page_dir);
+							const std::vector<std::filesystem::path> &folders
+	);
 };
 
 std::vector<ApInfoWpa3TestEntry> get_results(const std::filesystem::path &run_dir);

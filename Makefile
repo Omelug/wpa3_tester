@@ -131,6 +131,8 @@ build_overview:
 
 make_overview: build_overview
 	./$(BUILD_DIR)/bin/result_overview
+	@echo ""
+	@echo "./$(BUILD_DIR)/result_overview/index.html"
 
 # clear
 clean_build:

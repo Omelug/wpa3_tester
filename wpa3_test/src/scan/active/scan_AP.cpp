@@ -65,26 +65,35 @@ string ScanAP::to_str() const{
 	return ss.str();
 }
 
-static optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, ScanAP &scan_ap, const optional<path> &beacon_pcap){
+void ScanAP::load(const std::unique_ptr<Dot11Beacon> &beacon){
+	ssid = beacon->ssid();
+	bssid = beacon->addr2();
+	this->beacon = *beacon->clone();
+	rsn = beacon->rsn_information();
+}
+
+optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap){
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
 	if(!beacon) return nullopt;
 
-	scan_ap.ssid = beacon->ssid();
-	try{ scan_ap.rsn = beacon->rsn_information(); } catch(const option_not_found &){}
-
+	try{
+		if(ap_mac != beacon->addr2()) return nullopt;
+	}catch(...){
+		return nullopt;
+	}
 	if(beacon_pcap) PacketWriter(beacon_pcap->string(), DataLinkType<RadioTap>()).write(pdu);
 
 	return unique_ptr<Dot11Beacon>(beacon->clone());
 }
 
-unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, ScanAP &scan_ap,
+unique_ptr<Dot11Beacon> RSN_scan(const string &interface, int timeout_sec, const Tins::HWAddress<6> &ap_mac,
 								const optional<path> &beacon_pcap
 ){
-	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + scan_ap.bssid.
+	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.
 			to_string();
 
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
-		[&](PDU &pdu){ return handle_beacon(pdu, scan_ap, beacon_pcap); }, interface, filter, seconds(timeout_sec));
+		[&](PDU &pdu){ return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
 	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;

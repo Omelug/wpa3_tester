@@ -115,14 +115,11 @@ void McMitm::configure_interfaces(){
 }
 
 void McMitm::setup_real_AP_RSN_frames(){
-	scan::ScanAP scan_ap{};
-	scan_ap.bssid = ap_mac;
-
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
-	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, scan_ap); //TODO hardcoded tscan_timeout
+	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, HWAddress<6>(ap_mac)); //TODO hardcoded tscan_timeout
 	if(!beacon){
 		log(LogLevel::ERROR,
 			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ssid);

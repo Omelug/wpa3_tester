@@ -124,7 +124,7 @@ TEST_CASE("hw_capabilities::read_sysfs - nonexistent file throws"){
 
 // get_driver_name
 TEST_CASE("hw_capabilities::get_driver_name - loopback has no driver symlink"){
-	// 'lo' has no device/driver symlink → should throw config_err
+	// 'lo' has no device/driver symlink -> should throw config_err
 	CHECK_THROWS_AS(hw_capabilities::get_driver_name("lo"), config_err);
 }
 
@@ -292,7 +292,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - two rules distinct options o
 }
 
 TEST_CASE("hw_capabilities::check_all_req_options - two rules two interchangeable options two solutions"){
-	// Both options match both rules → two distinct assignments
+	// Both options match both rules -> two distinct assignments
 	ActorPtr rule1 = make_actor({{BK::AP, true}});
 	ActorPtr rule2 = make_actor({{BK::AP, true}});
 	ActorPtr opt1 = make_actor({{BK::AP, true}});

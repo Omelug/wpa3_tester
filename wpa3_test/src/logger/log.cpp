@@ -84,7 +84,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	const char *p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
 	if(p == nullptr) return LogTimePoint{};
 
-	// parse fractional seconds ".310201504" → nanoseconds
+	// parse fractional seconds ".310201504" -> nanoseconds
 	int64_t frac_ns = 0;
 	if(*p == '.'){
 		++p;

@@ -101,7 +101,7 @@ TEST_CASE("masked_mac_filter_5 - single valid MAC produces link[] filter"){
     rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
     const string f = masked_mac_filter_5(rs);
-    // First 5 bytes: aa bb cc dd ee → aabbccddee
+    // First 5 bytes: aa bb cc dd ee -> aabbccddee
     CHECK(f.contains("0xaabbccdd"));
     CHECK(f.contains("0xee"));
     CHECK(f.contains("link[4:4]"));

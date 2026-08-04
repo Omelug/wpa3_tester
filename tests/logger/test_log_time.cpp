@@ -15,7 +15,7 @@ using namespace std;
 using wpa3_tester::LogTimePoint;
 
 TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
-    // 2026-02-20T14:38:08.000000000+0100  →  UTC 13:38:08
+    // 2026-02-20T14:38:08.000000000+0100  ->  UTC 13:38:08
     const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100");
     REQUIRE_NE(tp, LogTimePoint{});
 
@@ -25,7 +25,7 @@ TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
     CHECK_EQ(utc.tm_year + 1900, 2026);
     CHECK_EQ(utc.tm_mon + 1, 2);
     CHECK_EQ(utc.tm_mday, 20);
-    CHECK_EQ(utc.tm_hour, 13);   // 14:38 CET → 13:38 UTC
+    CHECK_EQ(utc.tm_hour, 13);   // 14:38 CET -> 13:38 UTC
     CHECK_EQ(utc.tm_min, 38);
     CHECK_EQ(utc.tm_sec, 8);
 
@@ -35,7 +35,7 @@ TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
 }
 
 TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5"){
-    // 2026-02-20T08:38:08-0500  →  UTC 13:38:08
+    // 2026-02-20T08:38:08-0500  ->  UTC 13:38:08
     const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T08:38:08.000000000-0500");
     const time_t t = chrono::system_clock::to_time_t(tp);
     tm utc{};
@@ -132,7 +132,7 @@ TEST_CASE("get_time_logs - window filters to matching range"){
     const time_t t = chrono::system_clock::to_time_t(times[0]);
     tm utc{};
     gmtime_r(&t, &utc);
-    CHECK_EQ(utc.tm_sec, 9);  // UTC: 14:38:09+0100 → 13:38:09 UTC
+    CHECK_EQ(utc.tm_sec, 9);  // UTC: 14:38:09+0100 -> 13:38:09 UTC
 }
 
 TEST_CASE("get_time_logs - returns all events including those around markers"){

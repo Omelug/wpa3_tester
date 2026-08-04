@@ -15,13 +15,13 @@ TEST_CASE("log - debug message with actor name"){
     const string actor_name = "test_actor";
     const string expected_message = "DEBUG: Created and registered ExternalConn for actor: "+actor_name;
 
-    // Redirect stderr to capture log output
+    // redirect stderr to capture log output
     ostringstream captured_output;
     streambuf* original_cerr = cerr.rdbuf(captured_output.rdbuf());
 
     wpa3_tester::log(wpa3_tester::LogLevel::DEBUG, "Created and registered ExternalConn for actor: {}", actor_name);
 
-    // Restore original cerr
+    // restore original cerr
     cerr.rdbuf(original_cerr);
 
     CHECK(captured_output.str().contains(expected_message));
@@ -33,7 +33,7 @@ TEST_CASE("log - set_log_file writes messages to file"){
 
     wpa3_tester::set_log_file(tmp);
     wpa3_tester::log(wpa3_tester::LogLevel::INFO, "file_log_test");
-    wpa3_tester::set_log_file("");  // close
+    wpa3_tester::set_log_file("");  // close old log file
 
     ifstream f(tmp);
     const string content((istreambuf_iterator(f)), istreambuf_iterator<char>());

@@ -71,7 +71,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 	const HWAddress<6> dst(serialization.data() + 4);
 
 	if(src == ap_mac && client_state.get_mac() == dst){
-		log(LogLevel::DEBUG, "Real channel: Action(cat={}) → rogue channel", category);
+		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
 		send_to_rogue(pdu);
 		return true;
 	}
@@ -80,7 +80,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 
 bool McMitm::handle_eapol_real(const HWAddress<6> addr2, PDU &pdu) const{
 	if(addr2 == ap_mac){
-		// EAPOL od AP → forward na rogue channel
+		// EAPOL od AP -> forward na rogue channel
 		if(is_eapol(pdu)){
 			int eapol_msg = get_eapol_msg_num(pdu);
 			log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);

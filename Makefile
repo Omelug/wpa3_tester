@@ -45,6 +45,10 @@ run_release: compile_release
 	sudo ./$(BUILD_DIR_RELEASE)/bin/$(TARGET) --test_suite CSA_rogueAP_internal_filler
 	#--config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
+help: compile
+	@echo "binary of tester is ./$(BUILD_DIR_RELEASE)/bin/$(TARGET)"
+	@sudo ./$(BUILD_DIR)/bin/$(TARGET) --help
+
 # debug visualization
 RUN_CALLGRAPH := doc/callgraph/callgraph.out
 MY_CODE_FILTER = wpa3_test|main|hw_capabilities|requirement

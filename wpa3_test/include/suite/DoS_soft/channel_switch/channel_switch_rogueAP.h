@@ -17,7 +17,7 @@ struct CsaTestEntry{
 
 	std::string client_mac;
 	std::string client_source;
-	std::string client_driver;
+	std::optional<std::string> client_driver;
 
 	std::string attacker_mac;
 	std::string attacker_driver;

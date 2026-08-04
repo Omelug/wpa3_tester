@@ -18,10 +18,8 @@ set<string> wifi_iface_names(){
 }
 
 TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface"){
-    // isolates root_dir() (and the process-wide global_config cache) to a temp fixture, so
-    // internal_options()'s hw_cache write and the ignore_interfaces lookup never touch real project data.
-    const test_helpers::IsolatedRootDir isolated("internal_options_test");
 
+	const test_helpers::IsolatedRootDir isolated("internal_options_test");
     const auto before = wifi_iface_names();
 
     if(hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=1"}, nullopt, false) != 0){
@@ -44,8 +42,9 @@ TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface")
 
     const auto options = RunStatus::internal_options();
 
-    const auto it = find_if(options.begin(), options.end(),
-        [&](const ActorPtr &opt){ return opt.get(SK::iface) == new_iface; });
+    const auto it = ranges::find_if(options,[&](const ActorPtr &opt){
+	    return opt.get(SK::iface) == new_iface;
+    });
     REQUIRE_NE(it, options.end());
 
     const ActorPtr &opt = *it;

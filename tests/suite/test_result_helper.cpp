@@ -87,7 +87,7 @@ TEST_CASE("load_result_default - no result.json returns entry_defaults") {
     remove(dir / RESULT_NAME);
 
     const auto [name, count, flag, opt_flag, opt_name] = load_result_default<TestEntry>(dir);
-    CHECK_EQ(name,  "");   // no result.json → Entry{} not entry_default
+    CHECK_EQ(name,  "");   // no result.json -> Entry{} not entry_default
     CHECK_EQ(count, 0);
     CHECK_EQ(flag,  false);
     CHECK_FALSE(opt_flag.has_value());
@@ -201,7 +201,7 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
     }
     {
         ofstream f(dir / "logger" / "ap.log");
-        //  RSN caps=0x008c → MFPC=1, MFPR=0 → OPTIONAL
+        //  RSN caps=0x008c -> MFPC=1, MFPR=0 -> OPTIONAL
         f << "2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
     }
     RunStatus rs;

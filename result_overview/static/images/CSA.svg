@@ -59,7 +59,7 @@
     <path d="M 120 280 Q 180 250 230 215" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
     <path d="M 230 215 Q 180 250 120 280" stroke-width="2.5" fill="#4A5568" marker-end="url(#arrowhead)" />
 
-    <!-- phase 1: attacker → client (CSA beacon) -->
+    <!-- phase 1: attacker -> client (CSA beacon) -->
     <line x1="360" y1="455" x2="140" y2="340" stroke="#E53E3E" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#attackhead)" />
 
     <g transform="translate(250, 390)">
@@ -68,7 +68,7 @@
         <text x="0" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" fill="#E53E3E" font-weight="bold">CSA beacon</text>
     </g>
 
-    <!-- phase 2: client switches channel (left → right) -->
+    <!-- phase 2: client switches channel (left -> right) -->
     <path d="M 160 330 Q 400 340 670 450" stroke="#4A5568" stroke-width="4" stroke-dasharray="12,6" marker-end="url(#arrowhead)" fill="none" />
 
     <g transform="translate(400, 310)">
@@ -88,7 +88,7 @@
         <text x="50" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="16px" font-weight="bold" fill="#2D3748">client</text>
     </g>
 
-    <!-- phase 3: rogue_ap → client (arrow pointing at client, solid) -->
+    <!-- phase 3: rogue_ap -> client (arrow pointing at client, solid) -->
     <path d="M 755 430 Q 880 290 730 200" stroke="#E53E3E" stroke-width="3" marker-end="url(#attackhead)" fill="none" />
 
     <g transform="translate(795, 305)">

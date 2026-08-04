@@ -341,7 +341,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 			this_thread::sleep_for(chrono::milliseconds(500));
 			(void)killpg(mp->pgid, SIGKILL);
 		}
-		// mp->proc path: reproc::stop(operations) below handles SIGTERM→wait→SIGKILL
+		// mp->proc path: reproc::stop(operations) below handles SIGTERM->wait->SIGKILL
 	}
 
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();

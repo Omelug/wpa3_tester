@@ -275,7 +275,7 @@ bool do_assoc(EAP_Att &eap_att){
 		eap_att.decrease_timeout(start_time);
 
 		if(result.has_value()) return *result;
-		// poll_sniffer timed out → retransmit
+		// poll_sniffer timed out -> retransmit
 	}
 	log(LogLevel::WARNING, "Assoc timeout");
 	return false;

@@ -112,7 +112,7 @@ echo "==> Configuring passwordless sudo for $USER (dev/test machine)..."
 echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-wpa3-dev > /dev/null
 sudo chmod 440 /etc/sudoers.d/90-wpa3-dev
 
-echo "==> Enabling IP forwarding + NAT (wlan* → eth0 for dnsmasq clients)..."
+echo "==> Enabling IP forwarding + NAT (wlan* -> eth0 for dnsmasq clients)..."
 echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/10-ip-forward.conf > /dev/null
 sudo sysctl -p /etc/sysctl.d/10-ip-forward.conf
 
@@ -129,7 +129,7 @@ sudo chmod +x /usr/local/sbin/wpa3-nat.sh
 
 sudo tee /etc/systemd/system/wpa3-nat.service << 'EOF' > /dev/null
 [Unit]
-Description=NAT wlan* → eth0 for WPA3 tester dnsmasq clients
+Description=NAT wlan* -> eth0 for WPA3 tester dnsmasq clients
 After=network.target
 
 [Service]

@@ -14,6 +14,7 @@ using namespace std;
 using namespace wpa3_tester;
 
 namespace{
+
 // mirrors device_path() in devices.cpp (data/devices lives next to wpa3_test/); not exposed via devices.h
 // must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const.
 filesystem::path device_root(){ return root_dir().parent_path() / "data" / "devices"; }

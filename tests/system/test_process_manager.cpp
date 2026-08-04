@@ -351,7 +351,7 @@ TEST_CASE("ProcessManager - drain thread natural exit path") {
     pm.init_logging(test_dir);
 
     SUBCASE("silent exit: poll() returns broken_pipe, no output, naturally_exited set") {
-        // No stdout/stderr → pure EPOLLHUP → reproc returns broken_pipe -> if(ec) branch
+        // No stdout/stderr -> pure EPOLLHUP -> reproc returns broken_pipe -> if(ec) branch
         pm.run("silent", {"sleep", "0"});
         this_thread::sleep_for(400ms);
         // stop() must not deadlock or throw even though process is already gone

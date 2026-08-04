@@ -105,8 +105,6 @@ TEST_CASE("setup_actor - only set options"){
 	actor_rule->set(SK::iface, actor_hw_sim.get(SK::iface));
 	actor_rule->set(SK::actor_name, "actor_name_test");
 	actor_rule->set({
-		//BK::AP, BK::STA, /*BK::injection_selftest,*/ BK::monitor, BK::managed, //TODO
-		//BK::active_monitor, BK::control_monitor,
 		BK::GHz2_4, BK::GHz5, BK::GHz6,
 		BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
 		BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE},

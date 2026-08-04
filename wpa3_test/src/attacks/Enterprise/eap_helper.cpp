@@ -287,7 +287,7 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol){
 	llc.type(LLC::UNNUMBERED);
 	llc.modifier_function(LLC::UI);
 
-	Dot11Data dot11(eap_att.ap_mac), eap_att.att_mac));
+	Dot11Data dot11(eap_att.ap_mac, eap_att.att_mac);
 	dot11.addr3(eap_att.ap_mac);
 	dot11.to_ds(1);
 	dot11.from_ds(0);

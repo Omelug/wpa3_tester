@@ -9,7 +9,7 @@
 #include "logger/error_log.h"
 
 // Debug macro - only active in Debug builds
-#ifdef IF_DEBUG
+#ifdef DEBUG_FN
 #  define IF_DEBUG(x) do { x; } while(0);
 #else
 #  define IF_DEBUG(x) do {} while(0);

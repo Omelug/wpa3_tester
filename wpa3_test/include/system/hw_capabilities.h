@@ -218,5 +218,9 @@ public:
 													Tins::HWAddress<6>("00:11:22:33:44:55"),
 													bool skip_mf = false, bool testack = true
 	);
+
+	// TX power control
+	static int get_tx_power(const std::string &iface, const std::optional<std::string> &netns = std::nullopt);
+	static void set_tx_power(const std::string &iface, int power_dbm, const std::optional<std::string> &netns = std::nullopt);
 };
 }

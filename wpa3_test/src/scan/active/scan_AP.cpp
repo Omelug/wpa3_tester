@@ -86,7 +86,7 @@ optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, const HWAddress<6> &ap
 	return unique_ptr<Dot11Beacon>(beacon->clone());
 }
 
-unique_ptr<Dot11Beacon> RSN_scan(const string &interface, int timeout_sec, const Tins::HWAddress<6> &ap_mac,
+unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, const HWAddress<6> &ap_mac,
 								const optional<path> &beacon_pcap
 ){
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.

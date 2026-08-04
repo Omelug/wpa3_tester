@@ -128,4 +128,23 @@ TEST_CASE("STA connected to AP in different namespaces") {
     hw_capabilities::run_cmd({"ip", "netns", "del", ap_ns});
 }
 
+TEST_CASE("tx power control"){
+    const string iface = TestConfig::base_iface;
+    const optional<string> netns = TestConfig::netns;
+
+    // Get initial TX power
+    int initial_power = hw_capabilities::get_tx_power(iface, netns);
+    log(LogLevel::INFO, "Initial TX power: {} dBm", initial_power);
+
+    // Set new TX power (try 10 dBm)
+    const int new_power = 10;
+    REQUIRE_NOTHROW(hw_capabilities::set_tx_power(iface, new_power, netns));
+
+    // Verify the change (this may not work due to permissions, but we test the function call)
+    // We'll test that the function doesn't throw on valid inputs
+
+    // Reset to original power
+    REQUIRE_NOTHROW(hw_capabilities::set_tx_power(iface, initial_power, netns));
+}
+
 

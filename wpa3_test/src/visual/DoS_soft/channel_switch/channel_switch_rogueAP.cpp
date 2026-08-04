@@ -6,6 +6,7 @@
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -27,7 +28,7 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
 	e.client_mac = client->get(SK::mac);
 	e.client_source = client->get(SK::source);
-	e.client_driver = client->get(SK::driver_name);
+	e.client_driver = client[SK::driver_name];
 
 	const auto att = rs->get_actor("attacker");
 	e.attacker_mac = att->get(SK::mac);
@@ -45,30 +46,25 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	return e;
 }
 
-void render_table(overview::HtmlGuard &f, const vector<path> &folders, const path &page_dir) {
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
-	  << "<th>Attacker (driver)</th>"
-	  << "<th>Disconnected?</th>"
-	  << "<th>Rogue WPA2 AP?</th>"
-	  << "<th>Client MFP</th>"
-	  << "<th>Scanning</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for (const auto &p : folders) {
-		const auto e = parse_test_folder(p);
-		f << "                <tr>\n"
-		  << "                    <td>" << overview::test_name_cell(p, e.name, page_dir) << "</td>\n"
-		  << "                    <td>" << overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
-		  << "                    <td>" << overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
-		  << "                    <td>" << overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-		  << "                    <td>" << e.client_disconnected << "</td>\n"
-		  << "                    <td>" << e.rogue_ap_connected << "</td>\n"
-		  << "                    <td>" << e.client_mfp << "</td>\n"
-		  << "                    <td>" << e.client_scanning << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+void render_table(overview::HtmlGuard &f, const vector<path> &folders, const path &page_dir){
+	HtmlPathTable<CsaTestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
+		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+
+		col("Disconnected?",        &CsaTestEntry::client_disconnected);
+		col("Rogue WPA2 AP?",       &CsaTestEntry::rogue_ap_connected);
+		col("Client MFP",           &CsaTestEntry::client_mfp);
+	});
+
+	#undef COL
+
+	t.render(parse_test_folder);
 }
 
 void generate_report(RunSuiteStatus &rss){
@@ -85,28 +81,33 @@ void generate_report(RunSuiteStatus &rss){
 	report << "# CSA Rogue AP Test Suite Report\n\n";
 	report << "Summary of Channel Switch + Rogue AP downgrade attack tests.\n\n";
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
+	if(entries.empty()){
+		report << "No test results found.\n";
+		return;
+	}
 
 	report << "## Test Results\n\n";
-	report << "| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
-	report << "|------|-----------------|---------------------|-----------------------|--------------------------------|-----------|---------------------|------------|--------|\n";
+	report <<
+			"| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
+	report <<
+			"|------|-----------------|---------------------|-----------------------|--------------------------------|-----------|---------------------|------------|--------|\n";
 
 	for(const auto &e: entries){
 		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
-			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver + ")";
+			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.
+					rogue_ap_driver + ")";
 		const string result_text = e.rogue_ap_connected ? (*e.rogue_ap_connected ? "PASSED" : "FAILED") : "N/A";
 
 		report << "| " << report::link(e.name, e.rel_path / REPORT_NAME) << " | "
-			<< e.ap_mac << " (" << e.ap_source << ") | "
-			<< e.client_mac << " (" << e.client_source << ") | "
-			<< attacker_cell << " | "
-			<< e.client_disconnected << " (" << e.ap_disconnected << ") | "
-			<< e.rogue_ap_connected << " | "
-			<< e.ap_ocv << " / " << e.client_ocv << " | "
-			<< e.client_mfp << " | "
-			<< report::link(result_text, e.rel_path / RESULT_NAME) << " |\n";
+				<< e.ap_mac << " (" << e.ap_source << ") | "
+				<< e.client_mac << " (" << e.client_source << ") | "
+				<< attacker_cell << " | "
+				<< e.client_disconnected << " (" << e.ap_disconnected << ") | "
+				<< e.rogue_ap_connected << " | "
+				<< e.ap_ocv << " / " << e.client_ocv << " | "
+				<< e.client_mfp << " | "
+				<< report::link(result_text, e.rel_path / RESULT_NAME) << " |\n";
 	}
-
 }
 }

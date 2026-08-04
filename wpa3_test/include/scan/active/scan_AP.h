@@ -12,8 +12,12 @@ public:
 
 	static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
 	static void print_AKM(std::stringstream &ss, Tins::RSNInformation::AKMSuites akm);
-	std::string to_str() const;
+	[[nodiscard]] std::string to_str() const;
 };
+
+static std::optional<std::unique_ptr<Tins::Dot11Beacon>> handle_beacon(Tins::PDU &pdu, ScanAP &scan_ap,
+																const std::optional<std::filesystem::path> &beacon_pcap
+);
 
 std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int timeout_sec, ScanAP &scan_ap,
 											const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt

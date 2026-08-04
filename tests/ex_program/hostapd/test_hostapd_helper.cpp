@@ -238,8 +238,8 @@ TEST_CASE("client_scanning_from_ap_log - extracts scanned channels from DS Param
     const path tmp = temp_directory_path() / "wpa3_test_scanning.log";
     {
         ofstream f(tmp);
-        // probe 1: next line is send_mlme (no DS mismatch) → falls back to freq=2437 → ch 6
-        // probe 2: next line is DS mismatch ds.chan=7 → ch 7
+        // probe 1: next line is send_mlme (no DS mismatch) -> falls back to freq=2437 -> ch 6
+        // probe 2: next line is DS mismatch ds.chan=7 -> ch 7
         f << "@START\n"
           << "2026-07-29T01:24:46.213618042+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5\n"
           << "2026-07-29T01:24:46.281390097+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan3\n"

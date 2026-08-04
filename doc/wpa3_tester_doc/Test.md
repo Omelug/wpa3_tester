@@ -12,7 +12,7 @@ are paths for external programs, link to path of external whitebox actors etc.
   - compile_external (false/true) - compilation of external programs
   - install_req (false/true)  - install external programs
 
-if not compile_external/install_req and something have to be compilated/installed → req_err
+if not compile_external/install_req and something have to be compilated/installed -> req_err
 
 ### Test
 - defined by a YAML configuration file. 

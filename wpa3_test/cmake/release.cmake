@@ -17,5 +17,5 @@ add_custom_target(release
     VERBATIM
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     USES_TERMINAL
-    COMMENT "Release binary → ${_RELEASE_BUILD_DIR}/bin/wpa3_tester"
+    COMMENT "Release binary -> ${_RELEASE_BUILD_DIR}/bin/wpa3_tester"
 )

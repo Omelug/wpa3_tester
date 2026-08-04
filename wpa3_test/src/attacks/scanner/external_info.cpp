@@ -75,7 +75,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 		return false;
 	}
 
-	// data frames: addr2==BSSID → STA is addr1; addr1==BSSID → STA is addr2
+	// data frames: addr2==BSSID -> STA is addr1; addr1==BSSID -> STA is addr2
 	if(const auto *data = pdu.find_pdu<Dot11Data>()){
 		const HWAddress<6> a1 = data->addr1();
 		const HWAddress<6> a2 = data->addr2();

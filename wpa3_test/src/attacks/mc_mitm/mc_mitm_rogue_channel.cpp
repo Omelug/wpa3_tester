@@ -28,7 +28,7 @@ bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 
 bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1){
-			// Open System Auth seq=1 →  seq=2 success
+			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp;
 			resp.addr1(addr2);  // client
 			resp.addr2(ap_mac); // rogue AP

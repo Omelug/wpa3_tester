@@ -72,7 +72,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	bool two_iface = cap_iface != actor_tx.get(SK::iface);;
 	if(two_iface && testack){
 		if(rx_has_vif){
-			// receiver's main iface (managed/AP) HW-ACKs frames → no nearby AP needed
+			// receiver's main iface (managed/AP) HW-ACKs frames -> no nearby AP needed
 			const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
 			add(test_injection_retrans(s_out, s_in, rx_mac, tx_mac, ch));
 			add(test_injection_txack(s_out, s_in, rx_mac, tx_mac, ch));

@@ -15,8 +15,8 @@ static constexpr auto PCAP_MULTI     = "test_data/monitor_socket/radiotap_multi.
 
 // beacon_test.pcapng: AP 24:ec:99:bf:b0:a1, SSID "mc_mitm_test", ch6/2437MHz, -28dBm, 2.4GHz
 // probe_res.pcapng:   AP 24:ec:99:bf:e0:cd (probe response)
-// assoc_req.pcapng:   STA 24:ec:99:bf:e0:cd → AP 78:98:e8:55:3e:8d
-// data_qos.pcapng:    to_ds=1, STA 24:ec:99:bf:e0:cd → AP 78:98:e8:55:3e:8d
+// assoc_req.pcapng:   STA 24:ec:99:bf:e0:cd -> AP 78:98:e8:55:3e:8d
+// data_qos.pcapng:    to_ds=1, STA 24:ec:99:bf:e0:cd -> AP 78:98:e8:55:3e:8d
 
 TEST_SUITE("solve_new_pdu beacon") {
 

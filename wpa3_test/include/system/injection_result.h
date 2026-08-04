@@ -70,5 +70,4 @@ public:
 	}
 };
 
-std::string print_injection_result(const InjectionSuiteResult &suite);
 }

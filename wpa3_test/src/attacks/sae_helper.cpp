@@ -125,12 +125,8 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params){
 	if(!sae_params.is_valid()) throw run_err("invalid combinations of sae params");
 
-	Dot11Authentication auth;
-	auth.addr1(ap_mac);
-	auth.addr2(sta_mac);
+	Dot11Authentication auth(ap_mac, sta_mac);
 	auth.addr3(ap_mac);
-	auth.type(Dot11::MANAGEMENT);
-	auth.subtype(Dot11::AUTH);
 	auth.auth_algorithm(3); // SAE
 	auth.auth_seq_number(1);
 	auth.status_code(sae_params.status);

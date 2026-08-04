@@ -29,9 +29,7 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1){
 			// Open System Auth seq=1 ->  seq=2 success
-			Dot11Authentication resp;
-			resp.addr1(addr2);  // client
-			resp.addr2(ap_mac); // rogue AP
+			Dot11Authentication resp(addr2, ap_mac);// client <- rogue AP
 			resp.addr3(ap_mac);
 			resp.auth_seq_number(2);
 			resp.auth_algorithm(0); // Open System
@@ -59,19 +57,14 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11){
 	};
 
 	if(const auto *assoc = dot11.find_pdu<Dot11AssocRequest>()){
-		Dot11AssocResponse resp;
-		resp.addr1(addr2);
-		resp.addr2(ap_mac);
-		resp.addr3(ap_mac);
+		Dot11AssocResponse resp(addr2, ap_mac);
 		resp.status_code(0);
 		resp.capabilities() = assoc->capabilities();
 		resp.aid(1);
 		resp.supported_rates(rates);
 		send_to_rogue(resp);
 	} else if(const auto *reassoc = dot11.find_pdu<Dot11ReAssocRequest>()){
-		Dot11ReAssocResponse resp; // correct subtype
-		resp.addr1(addr2);
-		resp.addr2(ap_mac);
+		Dot11ReAssocResponse resp(addr2, ap_mac); // correct subtype
 		resp.addr3(ap_mac);
 		resp.status_code(0);
 		resp.capabilities() = reassoc->capabilities();

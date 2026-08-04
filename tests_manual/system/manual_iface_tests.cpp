@@ -17,13 +17,13 @@ using namespace Tins;
 using namespace wpa3_tester;
 
 struct TestConfig{
-    static inline string base_iface = "wlan1";
+    static inline string base_iface = "wlan1"; // HARDCODED
     static inline optional<string> netns = nullopt;
     static inline int channel = 4;
-    static inline HWAddress<6> mac_addr = HWAddress<6>("00:11:22:33:44:55");
+    static inline auto mac_addr = HWAddress<6>("00:11:22:33:44:55");
 };
 
-TEST_CASE("iface mac address change") {
+TEST_CASE("iface mac address change - to fake and back") {
     HWAddress<6> target_mac = TestConfig::mac_addr;
     HWAddress<6> original_mac = hw_capabilities::get_mac_address(TestConfig::base_iface, TestConfig::netns);
 
@@ -78,7 +78,7 @@ TEST_CASE("set wifi type"){
 TEST_CASE("start ap test"){
     const string base_iface = TestConfig::base_iface;
     const string ap_iface = "ap_" + base_iface;
-    const string pcap_path = root_dir().string() + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
+    const filesystem::path pcap_path = root_dir().parent_path().string() + "/tests/test_data/beacon_test.pcapng";
     log(LogLevel::INFO, "Running test on iface: {}", base_iface);
 
     const auto raw = test_helpers::read_pcap_file(pcap_path);
@@ -108,7 +108,7 @@ TEST_CASE("STA connected to AP in different namespaces") {
     REQUIRE_NOTHROW(hw_capabilities::create_ns(ap_ns));
     REQUIRE_NOTHROW(hw_capabilities::move_to_netns(ap_phys_iface, ap_ns));
 
-    const string pcap_path = root_dir().string() + "/../tests/attacks/mc_mitm/beacon_test.pcapng";
+	const filesystem::path pcap_path = root_dir().parent_path().string() + "/tests/test_data/beacon_test.pcapng";
     const auto raw = test_helpers::read_pcap_file(pcap_path);
     RadioTap rt(raw.data(), raw.size());
     const Dot11Beacon beacon = rt.rfind_pdu<Dot11Beacon>();
@@ -127,4 +127,5 @@ TEST_CASE("STA connected to AP in different namespaces") {
     }
     hw_capabilities::run_cmd({"ip", "netns", "del", ap_ns});
 }
+
 

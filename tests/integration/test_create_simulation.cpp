@@ -7,11 +7,10 @@
 using namespace std;
 using namespace wpa3_tester;
 
-TEST_CASE("RunStatus::create_simulation - loads hwsim and returns simulation actor options"){
-    // isolates root_dir() (and the global_config cache) so the ignore_interfaces lookup inside
-    // list_interfaces() never depends on real project config.
-    const test_helpers::IsolatedRootDir isolated("create_simulation_test");
+//linux dont need to have mac80211_hwsim module -> skip tests with log
 
+TEST_CASE("RunStatus::create_simulation - loads hwsim and returns simulation actor options"){
+    const test_helpers::IsolatedRootDir isolated("create_simulation_test");
     const auto options = RunStatus::create_simulation(1);
 
     if(options.empty()){

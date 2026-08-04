@@ -74,8 +74,8 @@ string ExternalConn::get_mac_address(const string &iface) const{
 }
 
 string ExternalConn::get_driver(const string &radio) const{
-	// radio0 → phy0 → /sys/class/ieee80211/phy0/device/driver
-	const string phy = "phy" + radio.substr(5); // "radio0" → "phy0"
+	// radio0 -> phy0 -> /sys/class/ieee80211/phy0/device/driver
+	const string phy = "phy" + radio.substr(5); // "radio0" -> "phy0"
 	return exec("basename $(readlink /sys/class/ieee80211/" + phy + "/device/driver) 2>/dev/null | tr -d '\\n'");
 }
 

@@ -27,9 +27,7 @@ void run_attack(RunStatus &rs){
 	for(int i = 0; i < test_count; ++i){
 		auto ath_mac = firmware::get_random_ath_masker_mac(att.get(SK::mac));
 
-		Dot11ProbeRequest probe;
-		probe.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
-		probe.addr2(ath_mac);
+		Dot11ProbeRequest probe(HWAddress<6>("ff:ff:ff:ff:ff:ff"), ath_mac);
 		probe.addr3(ap.get(SK::mac));
 		probe.ssid("");
 		probe.supported_rates({1.0f, 2.0f, 5.5f, 11.0f});

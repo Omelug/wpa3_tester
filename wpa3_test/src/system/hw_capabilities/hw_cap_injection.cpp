@@ -14,6 +14,7 @@ using namespace std;
 using namespace Tins;
 using namespace chrono;
 
+// label to identification  in result
 static vector<uint8_t> make_label(){
 	static mt19937 rng{random_device{}()};
 	uniform_int_distribution<uint32_t> dist;
@@ -66,12 +67,7 @@ void hw_capabilities::flush_socket(MonitorSocket &s){
 	while(s.recv());
 }
 
-optional<pair < HWAddress < 6>
-,
-string
->
->
-hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){
+optional<pair<HWAddress<6>,string>> hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){
 	struct Entry{
 		int8_t rssi;
 		HWAddress<6> mac;
@@ -141,13 +137,12 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(MonitorSocket
 	return {"injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED};
 }
 
-InjectionTestResult hw_capabilities::test_packet_injection(MonitorSocket & sout, MonitorSocket & sin, PDU & pdu,
-const function<bool(const vector<uint8_t> &)> &test_func,
-const string &name,
-const string &msgfail,
-const Channel &ch
-)
-{
+InjectionTestResult hw_capabilities::test_packet_injection(MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
+															const function<bool(const vector<uint8_t> &)> &test_func,
+															const string &name,
+															const string &msgfail,
+															const Channel &ch
+){
 	const auto packets = inject_and_capture(sout, sin, pdu, ch, 1);
 	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
 	if(!ranges::all_of(packets, test_func)) return {name, FAIL, msgfail};
@@ -176,13 +171,13 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 		}
 	};
 
-	// 1. Delivery
+	// delivery
 	Dot11Data p1;
 	apply(p1);
 	p1.seq_num(30);
 	run(p1, [](const vector<uint8_t> &){ return true; }, "eapol", "not captured");
 
-	// 2. Seq num preserved
+	// seq num preserved
 	Dot11Data p2;
 	apply(p2);
 	p2.seq_num(31);
@@ -194,7 +189,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 		} catch(...){ return false; }
 	}, "seq_num", "sequence number overwritten");
 
-	// 3. Frag num preserved
+	// frag num preserved
 	Dot11Data p3;
 	apply(p3);
 	p3.seq_num(32);
@@ -207,7 +202,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 		} catch(...){ return false; }
 	}, "frag_num", "fragment number overwritten");
 
-	// 4. QoS TID preserved
+	// QoS TID preserved
 	Dot11QoSData p4;
 	apply(p4);
 	p4.seq_num(33);
@@ -220,7 +215,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 		} catch(...){ return false; }
 	}, "qos_tid", "QoS TID overwritten");
 
-	// 5. A-MSDU bit + TID preserved
+	// A-MSDU bit + TID preserved
 	Dot11QoSData p5;
 	apply(p5);
 	p5.seq_num(33);
@@ -283,9 +278,9 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 		tid_str += to_string(tids[k]);
 	}
 	auto test_name = "injection_fields_order_" + strtype;
-	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)) return {
-		test_name, NOCAPTURE, "tids=[" + tid_str + "]"
-	};
+	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)){
+		return {test_name, NOCAPTURE, "tids=[" + tid_str + "]"};
+	}
 
 	auto sorted_tids = tids;
 	ranges::sort(sorted_tids);
@@ -340,9 +335,7 @@ InjectionTestResult hw_capabilities::test_injection_txack(MonitorSocket &sout, M
 														const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac,
 														const Channel &ch
 ){
-	Dot11ProbeRequest probe;
-	probe.addr1(dest_mac);
-	probe.addr2(own_mac);
+	Dot11ProbeRequest probe(dest_mac,own_mac);
 	probe.addr3(dest_mac);
 	probe.seq_num(33);
 

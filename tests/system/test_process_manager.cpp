@@ -12,7 +12,6 @@ using namespace filesystem;
 using namespace wpa3_tester;
 using namespace chrono_literals;
 
-namespace wpa3_tester{
 TEST_CASE("ProcessManager run and stop simple process"){
         {
             ProcessManager pm;
@@ -390,5 +389,4 @@ TEST_CASE("ProcessManager - discard_history"){
         CHECK_NOTHROW(pm.discard_history("proc"));
     }
     remove_all(test_dir);
-}
 }

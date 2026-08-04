@@ -9,8 +9,6 @@ using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-namespace wpa3_tester{
-
 TEST_CASE("beacon_to_probe_resp"){
     Dot11Beacon beacon;
     beacon.addr2("aa:bb:cc:dd:ee:ff");
@@ -139,6 +137,4 @@ TEST_SUITE("get_eapol_msg_num") {
         IP ip("1.2.3.4", "5.6.7.8");
         CHECK_EQ(get_eapol_msg_num(ip), -1);
     }
-}
-
 }

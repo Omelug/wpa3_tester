@@ -214,8 +214,9 @@ public:
 	// peermac: fallback peer used for retrans test when no nearby AP is found.
 	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
 	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx,
-													const Tins::HWAddress<6> &peermac = Tins::HWAddress < 6 > (
-														"00:11:22:33:44:55"), bool skip_mf = false, bool testack = true
+													const Tins::HWAddress<6> &peermac =
+													Tins::HWAddress<6>("00:11:22:33:44:55"),
+													bool skip_mf = false, bool testack = true
 	);
 };
 }

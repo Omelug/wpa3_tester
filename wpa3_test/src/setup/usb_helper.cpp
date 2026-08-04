@@ -75,12 +75,9 @@ void reset_usb_ifaces(){
 	while(!waiting.empty() && retries > 0 && !g_interrupted.load()){
 		interruptible_sleep(chrono::milliseconds(100));
 		retries--;
-		waiting.erase(
-			ranges::remove_if(waiting, [](const string &iface){
-				return exists(path("/sys/class/net") / iface);
-			}).begin(),
-			waiting.end()
-		);
+		std::erase_if(waiting, [](const string &iface) {
+			return exists(path("/sys/class/net") / iface);
+		});
 	}
 	interruptible_sleep(chrono::milliseconds(5000));
 }

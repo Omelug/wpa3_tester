@@ -7,6 +7,7 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -27,21 +28,21 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 
 void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
                                           const vector<path> &folders,
-                                          const path & /*page_dir*/) {
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>AP Driver</th><th>Attacker Driver</th><th>Passed?</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for (const auto &p : folders) {
-		const auto e = parse(p);
-		f << "                <tr>\n"
-		  << "                    <td>" << e.test_name << "</td>\n"
-		  << "                    <td>" << e.ap_driver << "</td>\n"
-		  << "                    <td>" << e.attacker_driver << "</td>\n"
-		  << "                    <td>" << e.passed << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+                                          const path &page_dir) {
+	HtmlPathTable<InvalidCurveTestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 &InvalidCurveTestEntry::test_name);
+		COL("AP Driver",            &InvalidCurveTestEntry::ap_driver);
+		COL("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
+		COL("Passed?",              &InvalidCurveTestEntry::passed);
+	});
+
+	#undef COL
+
+	t.render(parse);
 }
 
 void generate_report(const RunSuiteStatus &rss){

@@ -4,6 +4,7 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -18,24 +19,24 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
 }
 
 void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f,
-                                       const vector<path> &folders,
-                                       const path & /*page_dir*/) {
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>MAC</th><th>SSID</th><th>MFP</th><th>AKM</th><th>ACM triggered</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for (const auto &p : folders) {
-		const auto e = parse(p);
-		f << "                <tr>\n"
-		  << "                    <td>" << e.test_name << "</td>\n"
-		  << "                    <td>" << e.mac << "</td>\n"
-		  << "                    <td>" << e.ssid << "</td>\n"
-		  << "                    <td>" << e.mfp << "</td>\n"
-		  << "                    <td>" << e.akm << "</td>\n"
-		  << "                    <td>" << e.acm_triggered << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+										const vector<path> &folders
+) {
+	HtmlPathTable<ApInfoWpa3TestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 &ApInfoWpa3TestEntry::test_name);
+		COL("MAC",                  &ApInfoWpa3TestEntry::mac);
+		COL("SSID",                 &ApInfoWpa3TestEntry::ssid);
+		COL("MFP",                  &ApInfoWpa3TestEntry::mfp);
+		COL("AKM",                  &ApInfoWpa3TestEntry::akm);
+		COL("ACM triggered",        &ApInfoWpa3TestEntry::acm_triggered);
+	});
+
+	#undef COL
+
+	t.render(parse);
 }
 
 void generate_report(RunSuiteStatus &rss){

@@ -91,11 +91,11 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     using namespace suite;
     emit_section_header(f, module);
 
-    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, folders, page_dir);
+    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, folders);
     else if (module == "bl0ck")             bl0ck_test_suites::Bl0ckTestEntry::render_table(f, folders, page_dir);
     else if (module == "channel_switch")    channel_switch_rogueAP::render_table(f, folders, page_dir);
     else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, folders, page_dir);
-    else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders, page_dir);
+    else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, folders);
     else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
     else if (module == "wpa3_trans_downgrade") wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::render_table(f, folders, page_dir);
     else if (module == "owe_trans") owe_trans_filler::OweTransTestEntry::render_table(f, folders, page_dir);

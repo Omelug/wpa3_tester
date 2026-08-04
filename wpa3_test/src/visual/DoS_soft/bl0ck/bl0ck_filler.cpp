@@ -8,6 +8,7 @@
 #include "logger/log.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
@@ -51,23 +52,22 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f,
                                    const vector<path> &folders,
                                    const path &page_dir) {
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>AP MAC (source)</th><th>Client MAC (source)</th>"
-	  << "<th>Attacker (driver)</th><th>Variant</th><th>Disconnected?</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for (const auto &p : folders) {
-		const auto e = parse(p);
-		f << "                <tr>\n"
-		  << "                    <td>" << overview::test_name_cell(p, e.name, page_dir) << "</td>\n"
-		  << "                    <td>" << overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")</td>\n"
-		  << "                    <td>" << overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")</td>\n"
-		  << "                    <td>" << overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")</td>\n"
-		  << "                    <td>" << e.attack_variant << "</td>\n"
-		  << "                    <td>" << (e.disconnect_count > 0) << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+	HtmlPathTable<Bl0ckTestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
+		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+		COL("Variant",              &Bl0ckTestEntry::attack_variant);
+		COL("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
+	});
+
+	#undef COL
+
+	t.render(parse);
 }
 
 void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){

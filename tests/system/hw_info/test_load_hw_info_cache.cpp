@@ -107,7 +107,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty module_hash in cache is not set
 
 // -----------------
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - wrong perm_mac in cache does not pollute actor") {
-    // Cache contains an unrelated MAC; lo's 00:00:00:00:00:00 won't match → cache miss
+    // Cache contains an unrelated MAC; lo's 00:00:00:00:00:00 won't match -> cache miss
     const path cache_file = write_cache(tmp, "ff:ff:ff:ff:ff:ff", {
         {"driver",   "should_not_load"},
         {"permanent_mac", "ff:ff:ff:ff:ff:ff"},
@@ -115,7 +115,7 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - wrong perm_mac in cache does not poll
 
     const auto actor = make_shared<Actor_Config_internal>();
     actor->set(SK::iface, "lo");
-    // Cache miss → falls through to hw detection; loopback may throw — that's OK
+    // Cache miss -> falls through to hw detection; loopback may throw — that's OK
     try { actor->load_hw_info(cache_file); } catch(...) {}
 
     CHECK_NE((*actor)[SK::driver_name].value_or(""), "should_not_load");

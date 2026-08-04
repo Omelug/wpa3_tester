@@ -17,9 +17,9 @@ struct ReportFixture {
 	explicit ReportFixture(const string &name) : dir(temp_directory_path() / name) {
 		create_directories(dir);
 	}
-	string read_report() const {
+	[[nodiscard]] string read_report() const {
 		ifstream f(dir / REPORT_NAME);
-		return {istreambuf_iterator<char>(f), istreambuf_iterator<char>()};
+		return {istreambuf_iterator(f), istreambuf_iterator<char>()};
 	}
 	~ReportFixture() { remove_all(dir); }
 };
@@ -62,13 +62,13 @@ TEST_CASE("ReportGuard - bool false -> 'no'") {
 
 TEST_CASE("ReportGuard - optional<bool> true -> 'yes'") {
 	ReportFixture fx("rg_opt_true");
-	{ ReportGuard rg(fx.dir); rg << optional<bool>{true}; }
+	{ ReportGuard rg(fx.dir); rg << optional{true}; }
 	CHECK_EQ(fx.read_report(), "yes");
 }
 
 TEST_CASE("ReportGuard - optional<bool> false -> 'no'") {
 	ReportFixture fx("rg_opt_false");
-	{ ReportGuard rg(fx.dir); rg << optional<bool>{false}; }
+	{ ReportGuard rg(fx.dir); rg << optional{false}; }
 	CHECK_EQ(fx.read_report(), "no");
 }
 

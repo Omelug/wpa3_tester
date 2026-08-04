@@ -68,7 +68,7 @@ bool parse_beacon_protection(const Dot11ManagementFrame &mgmt) {
 void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
 	using OT = Dot11ManagementFrame::OptionTypes;
 
-	// HT Capabilities (IE 45) → 802.11n
+	// HT Capabilities (IE 45) -> 802.11n
 	const bool has_ht = mgmt.search_option(OT::HT_CAPABILITY) != nullptr;
 	cfg.set(BK::w80211n, has_ht);
 
@@ -90,10 +90,10 @@ void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cf
 		}
 	}
 
-	// VHT Capabilities (IE 191) → 802.11ac
+	// VHT Capabilities (IE 191) -> 802.11ac
 	cfg.set(BK::w80211ac, mgmt.search_option(OT::VHT_CAP) != nullptr);
 
-	// HE Capabilities: extension element (IE 255, ext ID 35) → 802.11ax
+	// HE Capabilities: extension element (IE 255, ext ID 35) -> 802.11ax
 	// Iterate all options to find the multi-occurrence extension element.
 	bool has_he = false;
 	for(const auto &opt: mgmt.options()){

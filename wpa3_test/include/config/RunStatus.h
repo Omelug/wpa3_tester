@@ -48,7 +48,7 @@ class GraphElements;
 
 using ActorMap    = std::unordered_map<std::string, ActorPtr>;
 using ActorMACMap = std::unordered_map<Tins::HWAddress<6>, ActorPtr>;
-using AssocMap    = std::unordered_map<Tins::HWAddress<6>, Tins::HWAddress<6>>; // STA → AP BSSID
+using AssocMap    = std::unordered_map<Tins::HWAddress<6>, Tins::HWAddress<6>>; // STA -> AP BSSID
 using EntityInfo  = std::pair<ActorPtr, std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>>; // (actor, (own_mac, peer_mac))
 using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 

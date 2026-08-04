@@ -74,7 +74,7 @@ help:
 	@echo "    make test-cross   PI=<addr>        build all tests for aarch64, deploy, run ctest on Pi"
 	@echo ""
 	@echo "  Internet sharing (Pi has no direct internet):"
-	@echo "    make internet     PI=<addr>        NAT host internet → Pi"
+	@echo "    make internet     PI=<addr>        NAT host internet -> Pi"
 	@echo "    make internet-off                  remove NAT rules"
 	@echo ""
 	@echo "  Remote debugging:"
@@ -146,12 +146,12 @@ flash: $(CUSTOM_IMAGE)
 	@echo "    When complete:"
 	@echo "      make deploy PI=$(PI_HOSTNAME).local"
 
-# ── Internet sharing host → Pi (NAT via iptables) ─────────────────────────────
+# ── Internet sharing host -> Pi (NAT via iptables) ─────────────────────────────
 
 internet:
 	@test -n "$(HOST_IFACE)" || { echo "Error: cannot detect host internet interface"; exit 1; }
 	@test -n "$(PI_IFACE)"   || { echo "Error: cannot detect Pi interface (is PI_IP reachable?)"; exit 1; }
-	@echo "==> Sharing internet: $(HOST_IFACE) → $(PI_IFACE) (Pi=$(PI_IP))"
+	@echo "==> Sharing internet: $(HOST_IFACE) -> $(PI_IFACE) (Pi=$(PI_IP))"
 	sudo sysctl -w net.ipv4.ip_forward=1
 	sudo iptables -t nat -C POSTROUTING -o $(HOST_IFACE) -j MASQUERADE 2>/dev/null || \
 	    sudo iptables -t nat -A POSTROUTING -o $(HOST_IFACE) -j MASQUERADE
@@ -333,7 +333,7 @@ debug_netcat:
 	@test -n "$(PI_IFACE)" || { echo "Error: cannot detect Pi interface (is PI_IP=$(PI_IP) reachable?)"; exit 1; }
 	@HOST_MAC=$$(ip link show $(PI_IFACE) | awk '/ether/{print $$2}') && \
 	    test -n "$$HOST_MAC" || { echo "Error: cannot read MAC of $(PI_IFACE)"; exit 1; } && \
-	    echo "==> netconsole: Pi $(PI_IP)/eth0 → $(HOST_IP):$(NETCAT_PORT)  host-MAC $$HOST_MAC" && \
+	    echo "==> netconsole: Pi $(PI_IP)/eth0 -> $(HOST_IP):$(NETCAT_PORT)  host-MAC $$HOST_MAC" && \
 	    $(SSH) "sudo modprobe netconsole netconsole=$(NETCAT_PORT)@$(PI_IP)/eth0,$(NETCAT_PORT)@$(HOST_IP)/$$HOST_MAC"
 	@echo "==> Listening on UDP :$(NETCAT_PORT)  (Ctrl+C to stop)"
 	nc -u -l -p $(NETCAT_PORT)

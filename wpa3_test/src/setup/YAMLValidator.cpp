@@ -91,7 +91,7 @@ std::vector<std::string> DetailedSchemaErrorHandler::extract_deep_errors(
     if(!instance.is_object() || !instance.contains(prop_name)) return results;
     const json &prop_value = instance[prop_name];
 
-    // Build schema path: /actors → /properties/actors/additionalProperties
+    // Build schema path: /actors -> /properties/actors/additionalProperties
     std::string schema_path;
     {
         std::string ptr_str = ptr.to_string();

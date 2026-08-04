@@ -401,7 +401,7 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 		"-Y", "(" + frame_filter + ") && wlan.rsn.rsnxcaps",
 		"-T", "fields", "-e", "wlan.rsn.rsnxcaps", "-c", "1"
 	}, nullopt));
-	if(caps_raw.empty()) return false; // frame found, RSNXE absent → no OCV
+	if(caps_raw.empty()) return false; // frame found, RSNXE absent -> no OCV
 	try{ return (stoul(caps_raw, nullptr, 16) & 0x40u) != 0; } // bit 6 = OCVC
 	catch(...){ return nullopt; }
 }

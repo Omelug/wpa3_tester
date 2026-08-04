@@ -220,12 +220,12 @@ void print_external_entities(const vector<EntityInfo> &entities){
 	Actor_config::print_ActorCMap("Access points", aps);
 	Actor_config::print_ActorCMap("Stations:", stas);
 
-	cout << "\n--- Associations (STA → AP) ---\n";
+	cout << "\n--- Associations (STA -> AP) ---\n";
 	bool any_assoc = false;
 	for(const auto &[actor, macs]: entities){
 		const auto &[own_mac, peer_mac] = macs;
 		if(peer_mac != no_peer){
-			cout << "  " << own_mac << " → " << peer_mac << "\n";
+			cout << "  " << own_mac << " -> " << peer_mac << "\n";
 			any_assoc = true;
 		}
 	}

@@ -6,6 +6,7 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 
@@ -28,26 +29,24 @@ OweTransTestEntry OweTransTestEntry::parse(const path &test_folder){
 void OweTransTestEntry::render_table(overview::HtmlGuard &f,
                                      const vector<path> &folders,
                                      const path &page_dir){
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>AP Driver</th><th>Client Driver</th><th>Attacker Driver</th>"
-	  << "<th>BC probes</th><th>SSID probes</th><th>Disconnected</th><th>Vulnerable</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for(const auto &p : folders){
-		const auto e = parse(p);
-		const bool vuln = e.ssid_probe_count > 0;
-		f << "                <tr>\n"
-		  << "                    <td>" << overview::test_name_cell(p, e.test_name, page_dir) << "</td>\n"
-		  << "                    <td>" << e.ap_driver << "</td>\n"
-		  << "                    <td>" << e.client_driver << "</td>\n"
-		  << "                    <td>" << e.attacker_driver << "</td>\n"
-		  << "                    <td>" << e.broadcast_probe_count << "</td>\n"
-		  << "                    <td>" << e.ssid_probe_count << "</td>\n"
-		  << "                    <td>" << e.disconnected << "</td>\n"
-		  << "                    <td>" << vuln << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+	HtmlPathTable<OweTransTestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+		COL("AP Driver",            &OweTransTestEntry::ap_driver);
+		COL("Client Driver",        &OweTransTestEntry::client_driver);
+		COL("Attacker Driver",      &OweTransTestEntry::attacker_driver);
+		COL("BC probes",            &OweTransTestEntry::broadcast_probe_count);
+		COL("SSID probes",          &OweTransTestEntry::ssid_probe_count);
+		COL("Disconnected",         &OweTransTestEntry::disconnected);
+		COL("Vulnerable",           (e.ssid_probe_count > 0));
+	});
+
+	#undef COL
+
+	t.render(parse);
 }
 
 void generate_report(RunSuiteStatus &rss){

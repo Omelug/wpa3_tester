@@ -7,6 +7,7 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -29,22 +30,21 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f,
                                                const vector<path> &folders,
                                                const path &page_dir){
-	f << "        <table class=\"aggregate\">\n"
-	  << "            <thead><tr>"
-	  << "<th>Test</th><th>AP Driver</th><th>Client Driver</th>"
-	  << "<th>Disconnected</th><th>Downgrade Seen</th>"
-	  << "</tr></thead>\n            <tbody>\n";
-	for(const auto &p : folders){
-		const auto e = parse(p);
-		f << "                <tr>\n"
-		  << "                    <td>" << overview::test_name_cell(p, e.test_name, page_dir) << "</td>\n"
-		  << "                    <td>" << e.ap_driver << "</td>\n"
-		  << "                    <td>" << e.client_driver << "</td>\n"
-		  << "                    <td>" << e.disconnected << "</td>\n"
-		  << "                    <td>" << e.downgrade_seen << "</td>\n"
-		  << "                </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+	HtmlPathTable<Wpa3TransDowngradeTestEntry, path> t(f, folders);
+
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+
+	t.build([&](auto col) {
+		COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+		COL("AP Driver",            &Wpa3TransDowngradeTestEntry::ap_driver);
+		COL("Client Driver",        &Wpa3TransDowngradeTestEntry::client_driver);
+		COL("Disconnected",         &Wpa3TransDowngradeTestEntry::disconnected);
+		COL("Downgrade Seen",       &Wpa3TransDowngradeTestEntry::downgrade_seen);
+	});
+
+	#undef COL
+
+	t.render(parse);
 }
 
 void setup_suite(const RunSuiteStatus &rss){
@@ -73,7 +73,6 @@ void generate_report(RunSuiteStatus &rss){
 		report << "| " <<  report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
 			<< e.client_driver
-			//<< " | " << e.rogue_4way_count
 			<< " | " << e.downgrade_seen << " |\n";
 	}
 

@@ -179,9 +179,7 @@ bool eap_pwd_wait_for_success(EAP_Att &eap_att){
 }
 
 bool do_auth(EAP_Att &eap_att){
-	Dot11Authentication auth;
-	auth.addr1(eap_att.ap_mac);
-	auth.addr2(eap_att.att_mac);
+	Dot11Authentication auth(eap_att.ap_mac, eap_att.att_mac);
 	auth.addr3(eap_att.ap_mac);
 	auth.auth_algorithm(0); // Open System
 	auth.auth_seq_number(1);
@@ -233,9 +231,7 @@ bool do_assoc(EAP_Att &eap_att){
 		0x00, 0x00              // RSN capabilities
 	};
 
-	Dot11AssocRequest assoc;
-	assoc.addr1(eap_att.ap_mac);
-	assoc.addr2(eap_att.att_mac);
+	Dot11AssocRequest assoc(eap_att.ap_mac, eap_att.att_mac);
 	assoc.addr3(eap_att.ap_mac);
 	assoc.capabilities().ess(true);
 	assoc.capabilities().short_preamble(true);
@@ -291,9 +287,7 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol){
 	llc.type(LLC::UNNUMBERED);
 	llc.modifier_function(LLC::UI);
 
-	Dot11Data dot11;
-	dot11.addr1(eap_att.ap_mac);
-	dot11.addr2(eap_att.att_mac);
+	Dot11Data dot11(eap_att.ap_mac), eap_att.att_mac));
 	dot11.addr3(eap_att.ap_mac);
 	dot11.to_ds(1);
 	dot11.from_ds(0);

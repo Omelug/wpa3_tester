@@ -175,8 +175,7 @@ vector<uint8_t> RunStatus::get_external_BB_channels(){
 				log(LogLevel::WARNING, "Actor {} missing channel configuration", actor_name);
 			}
 		}
-		ranges::sort(all_channels);
-		all_channels.erase(ranges::unique(all_channels).begin(), all_channels.end());
+		all_channels = std::ranges::to<std::vector>(std::set(all_channels.begin(), all_channels.end()));
 	}
 
 	if(all_channels.empty()){

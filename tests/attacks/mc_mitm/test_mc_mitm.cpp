@@ -8,7 +8,6 @@ using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-namespace wpa3_tester{
 TEST_CASE("MonitorSocket receives all auth frames from pcap"){
     const string pcap_path = "./test_data/rogue_client_capture.pcapng";
 
@@ -119,5 +118,4 @@ TEST_CASE("patch_channel_raw - edge cases"){
     vector<uint8_t> original_small = small_data;
     McMitm::patch_channel_raw(small_data, 6);
     CHECK_EQ(small_data, original_small);
-}
 }

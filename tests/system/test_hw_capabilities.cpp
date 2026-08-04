@@ -35,7 +35,6 @@ struct GlobalConfigFixture{
 	~GlobalConfigFixture(){ remove_all(dir); }
 };
 
-namespace wpa3_tester{
 TEST_CASE("hw_capabilities::freq_to_channel"){
 	SUBCASE("2.4 GHz band"){
 		CHECK_EQ(hw_capabilities::freq_to_channel(2412), 1);
@@ -104,7 +103,7 @@ TEST_CASE("freq_to_channel and channel_to_freq roundtrip"){
 		}
 	}
 }
-}
+
 
 // -------read_sysfs  (uses always-present loopback sysfs entries)
 TEST_CASE("hw_capabilities::read_sysfs - loopback type"){

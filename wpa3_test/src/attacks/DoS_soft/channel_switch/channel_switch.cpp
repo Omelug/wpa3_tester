@@ -88,9 +88,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	PacketSender sender{iface_name};
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	scan::ScanAP scan_ap{};
-	scan_ap.bssid = ap_mac;
-	const unique_ptr<Dot11Beacon> beacon = nullptr; // scan::RSN_scan(iface_name, 20, scan_ap); //TODO hardcoded tscan_timeout
+	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac); //TODO hardcoded tscan_timeout
 	if(beacon) log(LogLevel::ERROR, "not found beacon for reproduce");
 	cout << "check_vulnerable called with:\n"
 			<< "AP MAC: " << ap_mac << "\n"
@@ -103,7 +101,6 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
-
 }
 
 // ----------------- MODULE functions ------------------

@@ -5,7 +5,7 @@
 namespace wpa3_tester::CSA_attack{
 Tins::RadioTap get_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const std::string &ssid, const Channel &ap_channel,
 							const Channel &new_channel, int switch_count = 3,
-							const Tins::Dot11Beacon *beacon = nullptr
+							const Tins::Dot11Beacon *src_beacon = nullptr
 );
 
 void check_vulnerable(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,

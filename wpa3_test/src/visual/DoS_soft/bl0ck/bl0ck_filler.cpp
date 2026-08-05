@@ -50,27 +50,27 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 }
 
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f,
-                                   const vector<path> &folders,
+                                   const vector<Bl0ckTestEntry> & entries,
                                    const path &page_dir) {
-	HtmlPathTable<Bl0ckTestEntry, path> t(f, folders);
+	HtmlPathTable t(f, entries);
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 
 	t.build([&](auto col) {
-		COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
+		//COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
 		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
 		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
 		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-		COL("Variant",              &Bl0ckTestEntry::attack_variant);
-		COL("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
+		col("Variant",              &Bl0ckTestEntry::attack_variant);
+		col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
 	});
 
 	#undef COL
 
-	t.render(parse);
+	t.render();
 }
 
-void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss){
+void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){
 	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
 	auto run_dir = rss.run_folder();
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);

@@ -6,50 +6,50 @@
 
 #include "html_guard.h"
 
-template <typename EntryType, typename FolderPath = std::string>
+template <typename EntryType>
 class HtmlPathTable {
 public:
-    explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, std::vector<FolderPath> folders)
-        : hg_(hg), folders_(std::move(folders)) {}
+    explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, const std::vector<EntryType>& entries)
+        : hg_(hg), entries_(entries) {}
 
-    void add_column(std::string header, std::function<void(const FolderPath&, const EntryType&)> eval) {
+    void add_column(std::string header, std::function<void(const EntryType&)> eval) {
         columns_.push_back({std::move(header), std::move(eval)});
     }
 
+	// add with entry function
     template <typename Func>
     void add_column(std::string header, Func&& func)
         requires std::is_invocable_v<Func, const EntryType&> {
         columns_.push_back({
             std::move(header),
-            [f = std::forward<Func>(func)](const FolderPath&, const EntryType& e) {
+            [f = std::forward<Func>(func)](const EntryType& e) {
                 f(e);
             }
         });
     }
 
+	// add entry param directly
     template <typename T>
     void add_column(std::string header, T EntryType::*member) {
         columns_.push_back({
             std::move(header),
-            [member, this](const FolderPath&, const EntryType& e) {
+            [member, this](const EntryType& e) {
                 hg_ << (e.*member);
             }
         });
     }
 
-    template <typename ParserFunc>
-    void render(ParserFunc&& parser, const std::string& table_class = "aggregate") const {
+    void render(const std::string& table_class = "aggregate") const {
         hg_ << "        <table class=\"" << table_class << "\">\n"
             << "            <thead><tr>";
         for (const auto& col : columns_) hg_ << "<th>" << col.header << "</th>";
         hg_ << "</tr></thead>\n            <tbody>\n";
 
-        for (const auto& path : folders_) {
-            const EntryType entry = parser(path);
+        for (const auto& entry : entries_) {
             hg_ << "                <tr>\n";
             for (const auto& col : columns_) {
                 hg_ << "                    <td>";
-                col.evaluator(path, entry);
+                col.evaluator(entry);
                 hg_ << "</td>\n";
             }
             hg_ << "                </tr>\n";
@@ -60,12 +60,12 @@ public:
 	struct Helper {
     	HtmlPathTable& self;
 
-    	void operator()(std::string name, std::function<void(const FolderPath&, const EntryType&)> eval) {
+    	void operator()(std::string name, std::function<void(const EntryType&)> eval) {
     		self.add_column(std::move(name), std::move(eval));
     	}
 
     	template <typename Func>
-		requires std::is_invocable_v<Func, const EntryType&>
+		requires std::is_invocable_v<const EntryType&>
 		void operator()(std::string name, Func&& func) {
     		self.add_column(std::move(name), std::forward<Func>(func));
     	}
@@ -84,10 +84,10 @@ public:
 private:
     struct Column {
         std::string header;
-        std::function<void(const FolderPath&, const EntryType&)> evaluator;
+        std::function<void(const EntryType&)> evaluator;
     };
 
     wpa3_tester::overview::HtmlGuard& hg_;
-    std::vector<FolderPath> folders_;
+    std::vector<EntryType> entries_;
     std::vector<Column> columns_;
 };

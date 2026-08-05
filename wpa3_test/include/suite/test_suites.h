@@ -30,7 +30,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 
 /* map of test_suite_name->post-run callback function */
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
-	{"bl0ck_filler", bl0ck_test_suites::generate_bl0ck_mac_gen_report},
+	{"bl0ck_filler", bl0ck_test_suites::Bl0ckTestEntry::generate_report},
 	{"channel_switch_versions", channel_switch_filler::generate_report},
 	{"malformed_eapol1_filler", malformed_eapol1_filler::generate_report},
 	{"reflection_attack_filler", reflection_attack_filler::generate_report},
@@ -41,8 +41,8 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"injection_test_filler", injection_test_filler::generate_report},
 	{"iface_info_filler", iface_info_filler::generate_report},
 	{"ap_info_wpa3_filler", ap_info_wpa3_filler::generate_report},
-	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::generate_report},
-	{"CSA_ex_filler", channel_switch_rogueAP::generate_report},
+	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::CsaTestEntry::generate_report},
+	{"CSA_ex_filler", channel_switch_rogueAP::CsaTestEntry::generate_report},
 	//{"malformed_eapol1_basic_suite", malformed_eapol1_basic_suite::generate_report},
 };
 }

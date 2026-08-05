@@ -27,22 +27,18 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 }
 
 void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
-                                          const vector<path> &folders,
+                                          const vector<InvalidCurveTestEntry> &entries,
                                           const path &page_dir) {
-	HtmlPathTable<InvalidCurveTestEntry, path> t(f, folders);
-
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	HtmlPathTable t(f, entries);
 
 	t.build([&](auto col) {
-		COL("Test",                 &InvalidCurveTestEntry::test_name);
-		COL("AP Driver",            &InvalidCurveTestEntry::ap_driver);
-		COL("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
-		COL("Passed?",              &InvalidCurveTestEntry::passed);
+		col("Test",                 &InvalidCurveTestEntry::test_name);
+		col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
+		col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
+		col("Passed?",              &InvalidCurveTestEntry::passed);
 	});
 
-	#undef COL
-
-	t.render(parse);
+	t.render();
 }
 
 void generate_report(const RunSuiteStatus &rss){

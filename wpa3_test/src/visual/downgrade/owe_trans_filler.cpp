@@ -27,26 +27,26 @@ OweTransTestEntry OweTransTestEntry::parse(const path &test_folder){
 }
 
 void OweTransTestEntry::render_table(overview::HtmlGuard &f,
-                                     const vector<path> &folders,
+                                     const vector<OweTransTestEntry> &entries,
                                      const path &page_dir){
-	HtmlPathTable<OweTransTestEntry, path> t(f, folders);
+	HtmlPathTable t(f, entries);
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 
 	t.build([&](auto col) {
-		COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
-		COL("AP Driver",            &OweTransTestEntry::ap_driver);
-		COL("Client Driver",        &OweTransTestEntry::client_driver);
-		COL("Attacker Driver",      &OweTransTestEntry::attacker_driver);
-		COL("BC probes",            &OweTransTestEntry::broadcast_probe_count);
-		COL("SSID probes",          &OweTransTestEntry::ssid_probe_count);
-		COL("Disconnected",         &OweTransTestEntry::disconnected);
+		//COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+		col("AP Driver",            &OweTransTestEntry::ap_driver);
+		col("Client Driver",        &OweTransTestEntry::client_driver);
+		col("Attacker Driver",      &OweTransTestEntry::attacker_driver);
+		col("BC probes",            &OweTransTestEntry::broadcast_probe_count);
+		col("SSID probes",          &OweTransTestEntry::ssid_probe_count);
+		col("Disconnected",         &OweTransTestEntry::disconnected);
 		COL("Vulnerable",           (e.ssid_probe_count > 0));
 	});
 
 	#undef COL
 
-	t.render(parse);
+	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

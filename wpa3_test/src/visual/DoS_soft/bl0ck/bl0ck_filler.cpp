@@ -49,25 +49,26 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void Bl0ckTestEntry::render_table(overview::HtmlGuard &f,
-                                   const vector<Bl0ckTestEntry> & entries,
-                                   const path &page_dir) {
-	HtmlPathTable t(f, entries);
+void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir, const path &page_dir){
 
-	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
+	helper::div_card<Bl0ckTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<Bl0ckTestEntry>& entries) {
 
-	t.build([&](auto col) {
-		//COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
-		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-		col("Variant",              &Bl0ckTestEntry::attack_variant);
-		col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
+		HtmlPathTable t(hg, entries);
+
+		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
+
+		t.build([&](auto col) {
+			//COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
+			COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+			COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+			COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+			col("Variant",              &Bl0ckTestEntry::attack_variant);
+			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
+		})->render();
+		#undef COL
 	});
-
-	#undef COL
-
-	t.render();
 }
 
 void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){

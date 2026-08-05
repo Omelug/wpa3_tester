@@ -27,18 +27,22 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 	return e;
 }
 
-void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f,
-											const vector<ReflectionAttackTestEntry> &entries
-) {
-	HtmlPathTable t(f, entries);
+void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir, const path &){
 
-	t.build([&](auto col) {
-		col("Test",                 &ReflectionAttackTestEntry::test_name);
-		col("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
-		col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
-		col("Passed?",              &ReflectionAttackTestEntry::passed);
+	helper::div_card<ReflectionAttackTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<ReflectionAttackTestEntry>& entries) {
+
+		HtmlPathTable t(hg, entries);
+
+		t.build([&](auto col) {
+			col("Test",                 &ReflectionAttackTestEntry::test_name);
+			col("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
+			col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
+			col("Passed?",              &ReflectionAttackTestEntry::passed);
+		});
+		t.render();
 	});
-	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

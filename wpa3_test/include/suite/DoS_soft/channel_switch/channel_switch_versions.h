@@ -19,9 +19,8 @@ struct CsaVersionTestEntry{
 
 	std::filesystem::path client_graph;
 	std::filesystem::path ap_graph;
+
+	static CsaVersionTestEntry parse(const std::filesystem::path &test_folder);
+	static void generate_report(RunSuiteStatus & rss);
 };
-
-CsaVersionTestEntry parse(const std::filesystem::path &test_folder);
-
-void generate_report(RunSuiteStatus & rss);
 }

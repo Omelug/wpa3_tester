@@ -26,19 +26,23 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f,
-                                          const vector<InvalidCurveTestEntry> &entries,
-                                          const path &page_dir) {
-	HtmlPathTable t(f, entries);
+void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &title,
+										const path &suite_data_dir, const path &){
 
-	t.build([&](auto col) {
-		col("Test",                 &InvalidCurveTestEntry::test_name);
-		col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
-		col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
-		col("Passed?",              &InvalidCurveTestEntry::passed);
+	helper::div_card<InvalidCurveTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<InvalidCurveTestEntry>& entries) {
+
+		HtmlPathTable t(hg, entries);
+
+		t.build([&](auto col) {
+			col("Test",                 &InvalidCurveTestEntry::test_name);
+			col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
+			col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
+			col("Passed?",              &InvalidCurveTestEntry::passed);
+		});
+
+		t.render();
 	});
-
-	t.render();
 }
 
 void generate_report(const RunSuiteStatus &rss){

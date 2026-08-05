@@ -26,27 +26,27 @@ OweTransTestEntry OweTransTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void OweTransTestEntry::render_table(overview::HtmlGuard &f,
-                                     const vector<OweTransTestEntry> &entries,
-                                     const path &page_dir){
-	HtmlPathTable t(f, entries);
+void OweTransTestEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir, const path &){
 
-	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
+	helper::div_card<OweTransTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<OweTransTestEntry>& entries) {
+		HtmlPathTable t(f, entries);
 
-	t.build([&](auto col) {
-		//COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
-		col("AP Driver",            &OweTransTestEntry::ap_driver);
-		col("Client Driver",        &OweTransTestEntry::client_driver);
-		col("Attacker Driver",      &OweTransTestEntry::attacker_driver);
-		col("BC probes",            &OweTransTestEntry::broadcast_probe_count);
-		col("SSID probes",          &OweTransTestEntry::ssid_probe_count);
-		col("Disconnected",         &OweTransTestEntry::disconnected);
-		COL("Vulnerable",           (e.ssid_probe_count > 0));
+		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
+
+		t.build([&](auto col) {
+			//COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+			col("AP Driver",            &OweTransTestEntry::ap_driver);
+			col("Client Driver",        &OweTransTestEntry::client_driver);
+			col("Attacker Driver",      &OweTransTestEntry::attacker_driver);
+			col("BC probes",            &OweTransTestEntry::broadcast_probe_count);
+			col("SSID probes",          &OweTransTestEntry::ssid_probe_count);
+			col("Disconnected",         &OweTransTestEntry::disconnected);
+			COL("Vulnerable",           (e.ssid_probe_count > 0));
+		})->render();
+		#undef COL
 	});
-
-	#undef COL
-
-	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

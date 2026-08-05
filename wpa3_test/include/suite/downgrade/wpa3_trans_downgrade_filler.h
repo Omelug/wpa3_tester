@@ -16,11 +16,11 @@ struct Wpa3TransDowngradeTestEntry{
 
 	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-							const std::vector<Wpa3TransDowngradeTestEntry> &entries, const std::filesystem::path &page_dir
+							const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir
 	);
 };
 
-std::vector<Wpa3TransDowngradeTestEntry> get_results(const std::filesystem::path &run_dir);
+std::vector<Wpa3TransDowngradeTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
 void generate_report(RunSuiteStatus & rss);

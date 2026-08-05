@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
+#include "suite/suite_helper.h"
 
 namespace wpa3_tester::suite::sae_dos {
 using namespace std;
@@ -16,25 +18,26 @@ SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {
     return e;
 }
 
-void SaeDosFolderEntry::render_table(overview::HtmlGuard &f,
-                                     const vector<path> &folders,
-                                     const path &page_dir) {
-    f << "        <table>\n"
-      << "            <thead><tr><th>Test</th><th>AP Resources</th></tr></thead>\n"
-      << "            <tbody>\n";
-    for (const auto &p : folders) {
-        const auto e = parse(p);
-        f << "                <tr>\n"
-          << "                    <td>" << overview::test_name_cell(p, e.name, page_dir) << "</td>\n"
-          << "                    <td>";
-        if (!e.ap_res_png.empty())
-            f << R"(<img src=")" << e.ap_res_png << R"(" style="max-height:160px;">)";
-        else
-            f << "—";
-        f << "</td>\n"
-          << "                </tr>\n";
-    }
-    f << "            </tbody>\n        </table>\n";
+void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir, const path &page_dir){
+
+	helper::div_card<SaeDosFolderEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<SaeDosFolderEntry>& entries) {
+
+			HtmlPathTable t(hg, entries);
+			#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { body; })
+			t.build([&](auto col) {
+				COL("Test",	f << overview::test_name_cell(e.folder, e.name, page_dir));
+				COL("AP Resources",
+				if (!e.ap_res_png.empty()){
+					hg << R"(<img src=")" << e.ap_res_png << R"(" style="max-height:160px;">)";
+				}else{
+					hg << "—";
+				};
+			);
+			})->render();
+			#undef COL
+	});
 }
 
 }

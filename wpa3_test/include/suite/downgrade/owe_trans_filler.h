@@ -20,11 +20,11 @@ struct OweTransTestEntry{
 
 	static OweTransTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-							const std::vector<OweTransTestEntry> &entries, const std::filesystem::path &page_dir
+							const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir
 	);
 };
 
-std::vector<OweTransTestEntry> get_results(const std::filesystem::path &run_dir);
+std::vector<OweTransTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus & rss);
 }

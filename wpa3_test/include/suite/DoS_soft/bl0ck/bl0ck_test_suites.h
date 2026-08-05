@@ -22,8 +22,8 @@ struct Bl0ckTestEntry{
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-	                         const std::vector<Bl0ckTestEntry> &entries,
-	                         const std::filesystem::path &page_dir);
+							const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir
+	);
 	static void generate_report(RunSuiteStatus &rss);
 };
 

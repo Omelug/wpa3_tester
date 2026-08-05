@@ -13,7 +13,7 @@ namespace wpa3_tester::suite::channel_switch_filler{
 using namespace std;
 using namespace filesystem;
 
-CsaVersionTestEntry parse(const path &test_folder){
+CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<CsaVersionTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
 
@@ -50,7 +50,7 @@ CsaVersionTestEntry parse(const path &test_folder){
 	return e;
 }
 
-void generate_report(RunSuiteStatus &rss){
+void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<CsaVersionTestEntry>(run_dir);
 

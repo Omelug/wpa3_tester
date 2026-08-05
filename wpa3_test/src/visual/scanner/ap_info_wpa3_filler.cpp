@@ -20,11 +20,12 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
 
 void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f, const string &title,
 	const path &suite_data_dir , const path &){
-	helper::div_card<ApInfoWpa3TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg, const std::vector<path>& entries) {
+	helper::div_card<ApInfoWpa3TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+		const std::vector<ApInfoWpa3TestEntry>& entries) {
+
 		HtmlPathTable t(hg, entries);
 
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
-
 		t.build([&](auto col) {
 			COL("Test",                 &ApInfoWpa3TestEntry::test_name);
 			COL("MAC",                  &ApInfoWpa3TestEntry::mac);

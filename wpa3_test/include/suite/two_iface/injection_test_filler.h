@@ -19,7 +19,7 @@ struct InjectionTestEntry{
 	static InjectionTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-std::vector<InjectionTestEntry> get_results(const std::filesystem::path &run_dir);
+std::vector<InjectionTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus & rss);
 }

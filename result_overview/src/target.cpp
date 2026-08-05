@@ -86,22 +86,38 @@ static void emit_section_header(HtmlGuard &f, const string &module) {
     f << "</h2>\n";
 }
 
-static void render_attack_section(HtmlGuard &f, const string &module,
-                                  const vector<path> &folders, const path &page_dir) {
+static void render_attack_section(HtmlGuard &f, const std::string &module,
+                                  const path &suite_data_dir,
+                                  const path &page_dir) {
     using namespace suite;
+
+    // Static registry mapping module strings to their corresponding render function
+    static const std::unordered_map<std::string, RenderFunc> registry = {
+        { "ap_info",              make_renderer<ap_info_wpa3_filler::ApInfoWpa3TestEntry>() },
+        { "bl0ck",                make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
+        { "invalid_curve",        make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
+        { "reflection_attack",    make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
+        { "wpa3_trans_downgrade", make_renderer<wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
+        { "owe_trans",            make_renderer<owe_trans_filler::OweTransTestEntry>() },
+		{ "channel_switch",		  make_renderer<channel_switch_rogueAP::CsaTestEntry>() }
+    };
+
     emit_section_header(f, module);
 
-    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, TODO, TODO, TODO);
-    else if (module == "bl0ck")             bl0ck_test_suites::Bl0ckTestEntry::render_table(f, folders, page_dir);
-    else if (module == "channel_switch")    channel_switch_rogueAP::render_table(f, folders, page_dir);
-    else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, TODO, page_dir);
-    else if (module == "reflection_attack") reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, TODO);
-    else if (k_sae_dos_modules.contains(module)) sae_dos::SaeDosFolderEntry::render_table(f, folders, page_dir);
-    else if (module == "wpa3_trans_downgrade") wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::render_table(f, TODO, page_dir);
-    else if (module == "owe_trans") owe_trans_filler::OweTransTestEntry::render_table(f, TODO, page_dir);
-    else f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
+    if (const auto it = registry.find(module); it != registry.end()) {
+        it->second(f, module, suite_data_dir, page_dir);
+    }
+    else if (k_sae_dos_modules.contains(module)) {
+        // Fallback dynamic handling for module sets
+        sae_dos::SaeDosFolderEntry::render_table(f, "sae_dos_modules", suite_data_dir, page_dir);
+    }
+    else {
+        f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
+    }
+
     f << "    </div>\n";
 }
+
 
 static void generate_target_page(const path &output_dir,
                                   const string &target_name,
@@ -137,8 +153,8 @@ static void generate_target_page(const path &output_dir,
     for (const auto &suite_entry : directory_iterator(suites_dir)) {
         if (!suite_entry.is_directory()) continue;
         const string suite_name = suite_entry.path().filename().string();
-        const auto test_folders = collect_test_folders(suite_entry.path());
-        if (test_folders.empty()) continue;
+        const auto test_suites_folders = collect_test_folders(suite_entry.path());
+    	if (test_suites_folders.empty()) continue;
         any = true;
 
         f << "    <div class=\"card\">\n"
@@ -146,14 +162,14 @@ static void generate_target_page(const path &output_dir,
           << "    </div>\n";
 
         map<string, vector<path>> groups;
-        for (const auto &tf : test_folders) {
+        for (const auto &tf : test_suites_folders) {
             const auto mod = read_attacker_module(tf);
             if (!mod.empty())
                 groups[mod].push_back(tf);
         }
 
-        for (const auto &[mod, folders] : groups)
-            render_attack_section(f, mod, folders, page_dir);
+        for (const auto &mod: groups | views::keys)
+            render_attack_section(f, mod, suite_entry.path() , page_dir);
     }
 
     if (!any)

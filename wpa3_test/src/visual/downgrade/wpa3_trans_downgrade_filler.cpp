@@ -28,23 +28,23 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 }
 
 void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f,
-                                               const vector<path> &folders,
+                                               const vector<Wpa3TransDowngradeTestEntry> &entries,
                                                const path &page_dir){
-	HtmlPathTable<Wpa3TransDowngradeTestEntry, path> t(f, folders);
+	HtmlPathTable t(f, entries);
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 
 	t.build([&](auto col) {
-		COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
-		COL("AP Driver",            &Wpa3TransDowngradeTestEntry::ap_driver);
-		COL("Client Driver",        &Wpa3TransDowngradeTestEntry::client_driver);
-		COL("Disconnected",         &Wpa3TransDowngradeTestEntry::disconnected);
-		COL("Downgrade Seen",       &Wpa3TransDowngradeTestEntry::downgrade_seen);
+		//COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+		col("AP Driver",            &Wpa3TransDowngradeTestEntry::ap_driver);
+		col("Client Driver",        &Wpa3TransDowngradeTestEntry::client_driver);
+		col("Disconnected",         &Wpa3TransDowngradeTestEntry::disconnected);
+		col("Downgrade Seen",       &Wpa3TransDowngradeTestEntry::downgrade_seen);
 	});
 
 	#undef COL
 
-	t.render(parse);
+	t.render();
 }
 
 void setup_suite(const RunSuiteStatus &rss){

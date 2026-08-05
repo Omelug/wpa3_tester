@@ -56,7 +56,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
     <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../../../index.html" class="back-link">← Overview</a>
+    <a href="../../../index.html" class="back-link"><- Overview</a>
     <h1>OWE Transition — Probe Request Leak</h1>
 
     <div class="card">

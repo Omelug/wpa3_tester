@@ -28,22 +28,17 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 }
 
 void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f,
-											const vector<path> &folders
+											const vector<ReflectionAttackTestEntry> &entries
 ) {
-	HtmlPathTable<ReflectionAttackTestEntry, path> t(f, folders);
-
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	HtmlPathTable t(f, entries);
 
 	t.build([&](auto col) {
-		COL("Test",                 &ReflectionAttackTestEntry::test_name);
-		COL("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
-		COL("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
-		COL("Passed?",              &ReflectionAttackTestEntry::passed);
+		col("Test",                 &ReflectionAttackTestEntry::test_name);
+		col("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
+		col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
+		col("Passed?",              &ReflectionAttackTestEntry::passed);
 	});
-
-	#undef COL
-
-	t.render(parse);
+	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

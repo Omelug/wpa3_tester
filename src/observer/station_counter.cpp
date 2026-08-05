@@ -55,4 +55,4 @@ void StationCounter::start(RunStatus &rs) const {
     add_graph_elements(move(elements));
 }
 
-} // namespace wpa3_tester::observer
+}

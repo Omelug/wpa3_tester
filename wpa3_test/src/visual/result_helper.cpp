@@ -51,7 +51,7 @@ described_bool get_ap_ocv(const RunStatus &rs){
 		ap_ocv += {*v, "pcap (beacon)"};
 	return ap_ocv;
 }
-
+//TODO test
 described_bool get_client_ocv(const RunStatus &rs){
 	described_bool client_ocv;
 	if(exists(rs.run_folder() / "client_wpa_supplicant.conf"))

@@ -19,11 +19,11 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
 }
 
 void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f,
-										const vector<path> &folders
+										const vector<ApInfoWpa3TestEntry> &entries
 ) {
-	HtmlPathTable<ApInfoWpa3TestEntry, path> t(f, folders);
+	HtmlPathTable t(f, entries);
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 
 	t.build([&](auto col) {
 		COL("Test",                 &ApInfoWpa3TestEntry::test_name);
@@ -36,7 +36,7 @@ void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f,
 
 	#undef COL
 
-	t.render(parse);
+	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

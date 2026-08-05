@@ -22,9 +22,9 @@ struct Bl0ckTestEntry{
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-	                         const std::vector<std::filesystem::path> &folders,
+	                         const std::vector<Bl0ckTestEntry> &entries,
 	                         const std::filesystem::path &page_dir);
+	static void generate_report(RunSuiteStatus &rss);
 };
 
-void generate_bl0ck_mac_gen_report(RunSuiteStatus &rss);
 }

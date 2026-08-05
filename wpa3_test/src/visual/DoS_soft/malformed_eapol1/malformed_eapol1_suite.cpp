@@ -8,6 +8,7 @@
 #include "suite/result_helper.h"
 #include "suite/suite_helper.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "overview/html_utils.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{
 using namespace std;
@@ -28,7 +29,29 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	return e;
 }
 
-void generate_report(RunSuiteStatus &rss){
+void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::string &title,
+	const path &suite_data_dir, const path &){
+	helper::div_card<MalformedEapol1TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
+			const std::vector<MalformedEapol1TestEntry>& entries) {
+
+			HtmlPathTable t(hg, entries);
+
+			#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
+
+			t.build([&](auto col) {
+				col("Test",				&MalformedEapol1TestEntry::test_name);
+				col("AP driver",		&MalformedEapol1TestEntry::ap_driver);
+				col("Client Driver",	&MalformedEapol1TestEntry::client_driver);
+				col("Client wpa_supplicant version",	&MalformedEapol1TestEntry::client_version);
+				col("Attacker driver",	&MalformedEapol1TestEntry::attacker_driver);
+				COL("Disconnected? (count)",	(e.disconnect_count > 0) << " (" << e.disconnect_count << ")");
+				col("Rogue AP?",        &MalformedEapol1TestEntry::rogue_ap_connected);
+			})->render();
+			#undef COL
+		});
+}
+
+void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss){
 	const auto entries = helper::get_results_default<MalformedEapol1TestEntry>(rss.run_folder());
 
 	const auto report_path =  rss.run_folder() / REPORT_NAME;
@@ -67,12 +90,5 @@ void generate_report(RunSuiteStatus &rss){
 			<< e.rogue_ap_connected << " | "
 			<< graphs << " |\n";
 	}
-
-	/*report << "\n## Summary\n\n";
-	report << "- Total: " << entries.size() << "\n";
-	report << "- Disconnected (passed): " << passed_count << "\n";
-	report << "- Not disconnected: " << (entries.size() - passed_count) << "\n";
-	report << "- Success rate: " << fixed << setprecision(1) << (100.0 * passed_count /
-			static_cast<double>(entries.size())) << "%\n";*/
 }
 }

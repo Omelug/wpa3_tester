@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include "config/RunSuiteStatus.h"
+#include "overview/html_guard.h"
 
 namespace wpa3_tester::suite::malformed_eapol1_filler{
 struct MalformedEapol1TestEntry{
@@ -19,7 +20,8 @@ struct MalformedEapol1TestEntry{
 	std::filesystem::path ap_graph;
 
 	static MalformedEapol1TestEntry parse(const std::filesystem::path &test_folder);
+	static void render_table(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::
+							path &page_dir);
+	static void generate_report(RunSuiteStatus & rss);
 };
-
-void generate_report(RunSuiteStatus & rss);
 }

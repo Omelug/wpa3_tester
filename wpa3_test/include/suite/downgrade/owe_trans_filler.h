@@ -8,6 +8,7 @@ namespace wpa3_tester::overview { struct HtmlGuard; }
 
 namespace wpa3_tester::suite::owe_trans_filler{
 struct OweTransTestEntry{
+	std::string test_folder;
 	std::string test_name;
 	std::string ap_driver;
 	std::string client_driver;

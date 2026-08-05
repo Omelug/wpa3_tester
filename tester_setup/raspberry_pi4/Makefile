@@ -3,7 +3,7 @@
 #
 # WORKFLOW — automated image:
 #   1. make image                        build customized RPi OS image
-#   2. make flash DISK=/dev/sdX          write to SD card  ← ERASES the card
+#   2. make flash DISK=/dev/sdX          write to SD card  <- ERASES the card
 #   3. Insert SD, connect ethernet, power on
 #      Pi installs packages on first boot (~3 min). Follow with:
 #        ssh pi@wpa3-tester.local 'journalctl -u wpa3-firstboot -f'

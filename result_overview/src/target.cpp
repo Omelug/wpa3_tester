@@ -23,9 +23,9 @@ using namespace std;
 using namespace filesystem;
 
 static const map<string, string> k_attack_page = {
-    {"bl0ck",            "../../attacks/dos_soft/bl0ck/index.html"},
-    {"channel_switch",   "../../attacks/dos_soft/channel_switch/index.html"},
-    {"malformed_eapol1", "../../attacks/dos_soft/malformed_eapol1/index.html"},
+    {"bl0ck",            "../../attacks/DoS_soft/bl0ck/index.html"},
+    {"channel_switch",   "../../attacks/DoS_soft/channel_switch/index.html"},
+    {"malformed_eapol1", "../../attacks/DoS_soft/malformed_eapol1/index.html"},
 };
 
 static const map<string, string> k_attack_title = {

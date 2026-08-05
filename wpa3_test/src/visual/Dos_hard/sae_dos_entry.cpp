@@ -11,6 +11,7 @@ using namespace filesystem;
 
 SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {
     SaeDosFolderEntry e;
+	e.test_folder = test_folder;
     e.name = test_folder.filename().string();
     const auto png = test_folder / "observer" / "resource_checker" / "ap_res.png";
     if (exists(png))
@@ -27,7 +28,7 @@ void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &title
 			HtmlPathTable t(hg, entries);
 			#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { body; })
 			t.build([&](auto col) {
-				COL("Test",	f << overview::test_name_cell(e.folder, e.name, page_dir));
+				COL("Test",	f << overview::test_name_cell(e.test_folder, e.name, page_dir));
 				COL("AP Resources",
 				if (!e.ap_res_png.empty()){
 					hg << R"(<img src=")" << e.ap_res_png << R"(" style="max-height:160px;">)";

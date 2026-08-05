@@ -19,7 +19,7 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	e.name = test_folder.filename().string();
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
-	const auto rs = helper::load_test_rs(test_folder); //FIXME error on currupted test, stop (checkall load_test_rs)
+	const auto rs = helper::load_test_rs(test_folder); //FIXME error on corrupted test, stop (checkall load_test_rs)
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
 	e.ap_source = ap->get(SK::source);
@@ -46,31 +46,63 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void CsaTestEntry::render_table(overview::HtmlGuard &f, const vector<CsaTestEntry> &entries, const path &page_dir){
-	HtmlPathTable t(f, entries);
+vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& e) { f << body; })
-
-	t.build([&](auto col) {
-		//COL("Test",                     overview::test_name_cell(p, e.name, page_dir));
-		COL("AP MAC (source)",          overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-		COL("Client MAC (source)",      overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-		COL("Attacker (driver)<br> RogueAP MAC (driver)",
-			overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")<br>"
-			<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
-			);
-		COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
-		col("Rogue WPA2 AP?",				&CsaTestEntry::rogue_ap_connected);
-		COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
-		col("Client MFP",					&CsaTestEntry::client_mfp);
-		COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
-		col("Connected WPA version",		&CsaTestEntry::conn_WPA_version);
-		col("client scanning",				&CsaTestEntry::client_scanning);
+	auto entries = helper::collect_entries_nested(test_data_dir, [&test_data_dir](const path &p){
+		auto e = parse(p);
+		e.rel_path = relative(p, test_data_dir);
+		return e;
 	});
 
-	#undef COL
+	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
+		const string sta_mac_a = a.client_mac;
+		const string sta_mac_b = b.client_mac;
+		if (sta_mac_a != sta_mac_b) return sta_mac_a < sta_mac_b;
 
-	t.render();
+		auto opt_rank = [](const optional<bool>& v) -> int {
+		   return v.has_value() ? (*v ? 0 : 1) : 2;
+		};
+		//if (a.rel_path != b.rel_path) return a.rel_path < b.rel_path;
+
+		const int ocv_a = opt_rank(a.ap_ocv.value()) + finite(opt_rank(a.client_ocv.value()));
+		const int ocv_b = opt_rank(b.ap_ocv.value()) + opt_rank(b.client_ocv.value());
+		if (ocv_a != ocv_b) return ocv_a < ocv_b;
+
+		const int disc_a = opt_rank(a.client_disconnected.value());
+		const int disc_b = opt_rank(b.client_disconnected.value());
+		if (disc_a != disc_b) return disc_a < disc_b;
+
+		return opt_rank(a.rogue_ap_connected) < opt_rank(b.rogue_ap_connected);
+	});
+
+	return entries;
+}
+
+void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir , const path &page_dir){
+
+	helper::div_card<CsaTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg, const std::vector<path>& entries) {
+		HtmlPathTable t(hg, entries);
+
+		#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& e) { f << body; })
+		t.build([&](auto col) {
+			COL("Test",                     overview::test_name_cell(e.rel_path, e.name, page_dir));
+			COL("AP MAC (source)",          overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+			COL("Client MAC (source)",      overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+			COL("Attacker (driver)<br> RogueAP MAC (driver)",
+				overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")<br>"
+				<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
+				);
+			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
+			col("Rogue WPA2 AP?",				&CsaTestEntry::rogue_ap_connected);
+			COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
+			col("Client MFP",					&CsaTestEntry::client_mfp);
+			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
+			col("Connected WPA version",		&CsaTestEntry::conn_WPA_version);
+			col("client scanning",				&CsaTestEntry::client_scanning);
+		})->render();
+		#undef COL
+	});
 }
 
 void CsaTestEntry::generate_report(RunSuiteStatus &rss){

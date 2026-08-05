@@ -18,25 +18,23 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f,
-										const vector<ApInfoWpa3TestEntry> &entries
-) {
-	HtmlPathTable t(f, entries);
+void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f, const string &title,
+	const path &suite_data_dir , const path &){
+	helper::div_card<ApInfoWpa3TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg, const std::vector<path>& entries) {
+		HtmlPathTable t(hg, entries);
 
-	#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
+		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 
-	t.build([&](auto col) {
-		COL("Test",                 &ApInfoWpa3TestEntry::test_name);
-		COL("MAC",                  &ApInfoWpa3TestEntry::mac);
-		COL("SSID",                 &ApInfoWpa3TestEntry::ssid);
-		COL("MFP",                  &ApInfoWpa3TestEntry::mfp);
-		COL("AKM",                  &ApInfoWpa3TestEntry::akm);
-		COL("ACM triggered",        &ApInfoWpa3TestEntry::acm_triggered);
+		t.build([&](auto col) {
+			COL("Test",                 &ApInfoWpa3TestEntry::test_name);
+			COL("MAC",                  &ApInfoWpa3TestEntry::mac);
+			COL("SSID",                 &ApInfoWpa3TestEntry::ssid);
+			COL("MFP",                  &ApInfoWpa3TestEntry::mfp);
+			COL("AKM",                  &ApInfoWpa3TestEntry::akm);
+			COL("ACM triggered",        &ApInfoWpa3TestEntry::acm_triggered);
+		})->render();
+		#undef COL
 	});
-
-	#undef COL
-
-	t.render();
 }
 
 void generate_report(RunSuiteStatus &rss){

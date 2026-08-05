@@ -77,8 +77,9 @@ public:
     };
 
 	template <typename BuilderFunc>
-	void build(BuilderFunc&& builder) {
+	HtmlPathTable* build(BuilderFunc&& builder) {
 		builder(Helper{*this});
+		return this;
 	}
 
 private:

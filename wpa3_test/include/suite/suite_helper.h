@@ -6,6 +6,7 @@
 
 #include "default.h"
 #include "config/RunStatus.h"
+#include "overview/html_guard.h"
 
 namespace wpa3_tester::suite::helper{
 
@@ -29,9 +30,25 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
 	return entries;
 }
 
+// parsing with Entry::parse (some results needs test_folder inf)
 template<typename Entry>
 std::vector<Entry> get_results_default(const std::filesystem::path &run_dir){
 	return collect_entries_nested(run_dir, Entry::parse);
+}
+
+// card with table
+template<typename Entry>
+void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir,
+    const std::function<void(overview::HtmlGuard&, const std::vector<std::filesystem::path>&)> &render_func){
+    f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
+    	<< "        <h2>"<< title << "</h2>\n";
+		const auto entries = Entry::collect_results(suite_data_dir);
+    	if(entries.empty()){
+      		f << "<p>No test results found.</p>";
+      	}else{
+      	    render_func(f, entries);
+      	}
+    f << "    </div>\n";
 }
 
 }

@@ -91,7 +91,7 @@ static void render_attack_section(HtmlGuard &f, const string &module,
     using namespace suite;
     emit_section_header(f, module);
 
-    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, TODO);
+    if      (module == "ap_info")           ap_info_wpa3_filler::ApInfoWpa3TestEntry::render_table(f, TODO, TODO, TODO);
     else if (module == "bl0ck")             bl0ck_test_suites::Bl0ckTestEntry::render_table(f, folders, page_dir);
     else if (module == "channel_switch")    channel_switch_rogueAP::render_table(f, folders, page_dir);
     else if (module == "invalid_curve")     invalid_curve_filler::InvalidCurveTestEntry::render_table(f, TODO, page_dir);

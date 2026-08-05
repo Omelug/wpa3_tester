@@ -1,11 +1,8 @@
 #include "attacks/downgrade/owe_trans.h"
 #include <filesystem>
 #include <string>
-#include <vector>
-#include "html_guard.h"
-#include "logger/log.h"
-#include "suite/downgrade/owe_trans_filler.h"
 #include "suite/suite_helper.h"
+#include "suite/downgrade/owe_trans_filler.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -13,32 +10,7 @@ using namespace std;
 using namespace filesystem;
 using suite::owe_trans_filler::OweTransTestEntry;
 
-struct TaggedEntry {
-    string tag;
-    path folder;
-    OweTransTestEntry e;
-};
-
-static vector<TaggedEntry> collect_results(const path &data_dir) {
-    const path suite_dir = data_dir / "wpa3_suites" / "downgrade" / "owe_trans" / "owe_trans_filler";
-
-    vector<TaggedEntry> results;
-    for (const auto &src_dir : suite::helper::get_suite_test_folders(suite_dir)) {
-        const string tag = src_dir.filename().string();
-        for (const auto &entry : directory_iterator(src_dir)) {
-            if (!entry.is_directory()) continue;
-        	if(!exists(path(entry)/DONE_FILE)){
-        		log(LogLevel::ERROR, "{} not found", DONE_FILE);
-        		continue;
-        	}
-            results.push_back({tag, entry.path(), OweTransTestEntry::parse(entry.path())});
-        }
-    }
-    return results;
-}
-
 void generate_owe_trans(const path &output_dir, const path &data_dir) {
-    const auto results = collect_results(data_dir);
 
     const path page_dir = output_dir / "attacks" / "downgrade" / "owe_trans";
     create_public_dirs(page_dir);
@@ -74,49 +46,13 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
         </ul>
     </div>
 )html";
+	const path suite_dir = data_dir / "wpa3_suites" / "downgrade" / "owe_trans" / "owe_trans_filler";
 
-    auto emit_table = [&](const string &title, const string &table_id, const string &tag_filter) {
-        vector<const TaggedEntry*> rows;
-        for (const auto &te : results)
-            if (te.tag == tag_filter) rows.push_back(&te);
-        if (rows.empty()) return;
+	auto emit_table = [&](const string &title, const path &suite_data_dir){
+		OweTransTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	};
 
-        f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-          << "        <h2>" << title << "</h2>\n"
-          << "        <table id=\"" << table_id << "\" class=\"aggregate\">\n"
-          << "            <thead><tr>\n"
-          << "                <th>Test</th>\n"
-          << "                <th>AP Driver</th>\n"
-          << "                <th>Client Driver</th>\n"
-          << "                <th>Attacker Driver</th>\n"
-          << "                <th>BC probes</th>\n"
-          << "                <th>SSID probes</th>\n"
-          << "                <th>Disconnected</th>\n"
-          << "                <th>Vulnerable</th>\n"
-          << "            </tr></thead>\n"
-          << "            <tbody>\n";
-        for (const auto *te : rows) {
-            const auto &e = te->e;
-            const bool vuln = e.ssid_probe_count > 0;
-            f << "                <tr>\n"
-              << "                    <td>" << test_name_cell(te->folder, e.test_name, page_dir) << "</td>\n"
-              << "                    <td>" << e.ap_driver << "</td>\n"
-              << "                    <td>" << e.client_driver << "</td>\n"
-              << "                    <td>" << e.attacker_driver << "</td>\n"
-              << "                    <td>" << e.broadcast_probe_count << "</td>\n"
-              << "                    <td>" << e.ssid_probe_count << "</td>\n"
-              << "                    <td>" << e.disconnected << "</td>\n"
-              << "                    <td>" << vuln << "</td>\n"
-              << "                </tr>\n";
-        }
-        f << "            </tbody>\n        </table>\n    </div>\n";
-    };
-
-    if (results.empty()) {
-        f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
-    } else {
-        emit_table("All Actors", "tAllActors", "all_actors");
-    }
+	emit_table("Test Results",  suite_dir);
 
     f << "</body>\n</html>\n";
 }

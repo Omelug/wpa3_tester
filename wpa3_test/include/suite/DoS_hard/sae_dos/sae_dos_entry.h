@@ -6,7 +6,7 @@ namespace wpa3_tester::overview { struct HtmlGuard; }
 namespace wpa3_tester::suite::sae_dos {
 
 struct SaeDosFolderEntry {
-	std::string folder;
+	std::string test_folder;
     std::string name;
     std::filesystem::path ap_res_png;
 

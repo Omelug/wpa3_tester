@@ -1,10 +1,6 @@
 #include <array>
 #include <filesystem>
 #include <string>
-#include <utility>
-#include <vector>
-#include "html_guard.h"
-#include "logger/log.h"
 #include "suite/suite_helper.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "system/utils.h"
@@ -14,43 +10,7 @@ using namespace std;
 using namespace filesystem;
 using suite::bl0ck_test_suites::Bl0ckTestEntry;
 
-using TaggedEntry = pair<string, Bl0ckTestEntry>;
-
-static vector<TaggedEntry> collect_results(const path &data_dir) {
-    const path bl0ck_base = data_dir / "wpa3_suites" / "DoS_soft" / "bl0ck";
-    const array<string, 3> suite_fillers = {"BA_filler", "BAR_filler", "BARS_filler"};
-
-    vector<TaggedEntry> results;
-
-    for (const auto &filler : suite_fillers) {
-        for (const auto &src_dir : suite::helper::get_suite_test_folders(bl0ck_base / "suite" / filler)) {
-            for (const auto &entry : directory_iterator(src_dir)) {
-                if (!entry.is_directory()) continue;
-            	if(!exists(path(entry)/DONE_FILE)){
-            		log(LogLevel::ERROR, "{} not found", DONE_FILE);
-            		continue;
-            	}
-                results.emplace_back("suite", Bl0ckTestEntry::parse(entry.path()));
-            }
-        }
-    }
-
-    for (const auto &src_dir : suite::helper::get_suite_test_folders(bl0ck_base / "Dlink" / "bl0ck_Dlink_suite")) {
-        for (const auto &entry : directory_iterator(src_dir)) {
-            if (!entry.is_directory()) continue;
-        	if(!exists(path(entry)/DONE_FILE)){
-        		log(LogLevel::ERROR, "{} not found", DONE_FILE);
-        		continue;
-        	}
-            results.emplace_back("Dlink", Bl0ckTestEntry::parse(entry.path()));
-        }
-    }
-
-    return results;
-}
-
 void generate_bl0ck(const path &output_dir, const path &data_dir) {
-    const auto results = collect_results(data_dir);
 
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "bl0ck";
     create_public_dirs(page_dir);
@@ -94,41 +54,17 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
     </div>
 )html"; //FIXME client-AP nesmí být na jedné straně spolu, bl0ck jinak asi nemá dost času -> nějaký WARRNING  ?
 
-    auto emit_table = [&](const string &title, const string &table_id, const string &variant_filter) {
-        vector<const Bl0ckTestEntry*> rows;
-        for (const auto &[tag, e] : results)
-            if (tag == variant_filter) rows.push_back(&e);
-        if (rows.empty()) return;
+	auto emit_table = [&](const string &title, const path &suite_data_dir){
+		Bl0ckTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	};
 
-        f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-          << "        <h2>" << title << "</h2>\n"
-          << "        <table id=\"" << table_id << "\" class=\"aggregate\">\n"
-          << "            <thead><tr>\n"
-          << "                <th>AP MAC (source)</th>\n"
-          << "                <th>Client MAC (source)</th>\n"
-          << "                <th>Attacker MAC (driver)</th>\n"
-          << "                <th>Variant</th>\n"
-          << "                <th>Disconnected?</th>\n"
-          << "            </tr></thead>\n"
-          << "            <tbody>\n";
-        for (const auto *e : rows) {
-            f << "                <tr>\n";
-            f << "                    <td>" << device(e->ap_mac, page_dir)       << " (" << e->ap_source       << ")</td>\n";
-            f << "                    <td>" << device(e->client_mac, page_dir)   << " (" << e->client_source   << ")</td>\n";
-            f << "                    <td>" << device(e->attacker_mac, page_dir) << " (" << e->attacker_driver << ")</td>\n";
-            f << "                    <td>" << e->attack_variant << "</td>\n";
-            f << "                    <td>" << (e->disconnect_count > 0) << "</td>\n";
-            f << "                </tr>\n";
-        }
-        f << "            </tbody>\n        </table>\n    </div>\n";
-    };
+	const path bl0ck_base = data_dir / "wpa3_suites" / "DoS_soft" / "bl0ck";
+	const array<string, 3> suite_fillers = {"BA_filler", "BAR_filler", "BARS_filler"};
 
-    if (results.empty()) {
-        f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
-    } else {
-        emit_table("Test Results", "resultsTable", "suite");
-        emit_table("Dlink", "resultsTableDlink", "Dlink");
-    }
+	for (const auto &filler : suite_fillers){
+		emit_table("Test Results", bl0ck_base / "suite" / filler);
+	}
+	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite");
 
     f << "</body>\n</html>\n";
 }

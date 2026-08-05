@@ -13,7 +13,7 @@ struct IfaceInfoTestEntry{
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };
 
-std::vector<IfaceInfoTestEntry> get_results(const std::filesystem::path &run_dir);
+std::vector<IfaceInfoTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void generate_report(RunSuiteStatus & rss);
 }

@@ -14,7 +14,7 @@ namespace wpa3_tester::suite::channel_switch_rogueAP{
 using namespace std;
 using namespace filesystem;
 
-CsaTestEntry parse_test_folder(const path &test_folder){
+CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<CsaTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
 
@@ -46,31 +46,37 @@ CsaTestEntry parse_test_folder(const path &test_folder){
 	return e;
 }
 
-void render_table(overview::HtmlGuard &f, const vector<path> &folders, const path &page_dir){
-	HtmlPathTable<CsaTestEntry, path> t(f, folders);
+void CsaTestEntry::render_table(overview::HtmlGuard &f, const vector<CsaTestEntry> &entries, const path &page_dir){
+	HtmlPathTable t(f, entries);
 
-	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& p, [[maybe_unused]] const auto& e) { f << body; })
+	#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& e) { f << body; })
 
 	t.build([&](auto col) {
-		COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
-		COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-		COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-		COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-		COL("Disconnected?",        &CsaTestEntry::client_disconnected);
-		COL("Rogue WPA2 AP?",       &CsaTestEntry::rogue_ap_connected);
-		COL("Client MFP",           &CsaTestEntry::client_mfp);
-		COL("Scanning",             &CsaTestEntry::client_scanning);
+		//COL("Test",                     overview::test_name_cell(p, e.name, page_dir));
+		COL("AP MAC (source)",          overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+		COL("Client MAC (source)",      overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+		COL("Attacker (driver)<br> RogueAP MAC (driver)",
+			overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")<br>"
+			<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
+			);
+		COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
+		col("Rogue WPA2 AP?",				&CsaTestEntry::rogue_ap_connected);
+		COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
+		col("Client MFP",					&CsaTestEntry::client_mfp);
+		COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
+		col("Connected WPA version",		&CsaTestEntry::conn_WPA_version);
+		col("client scanning",				&CsaTestEntry::client_scanning);
 	});
 
 	#undef COL
 
-	t.render(parse_test_folder);
+	t.render();
 }
 
-void generate_report(RunSuiteStatus &rss){
+void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::collect_entries_nested(run_dir, [&run_dir](const path &p){
-		auto e = parse_test_folder(p);
+		auto e = parse(p);
 		e.rel_path = relative(p, run_dir);
 		return e;
 	});

@@ -16,8 +16,7 @@ struct ReflectionAttackTestEntry{
 	std::optional<bool> passed;
 
 	static ReflectionAttackTestEntry parse(const std::filesystem::path &test_folder);
-	static void render_table(overview::HtmlGuard &f,
-							const std::vector<std::filesystem::path> &folders
+	static void render_table(overview::HtmlGuard &f, const std::vector<ReflectionAttackTestEntry> &entries
 	);
 };
 

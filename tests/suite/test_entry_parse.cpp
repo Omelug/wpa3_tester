@@ -58,7 +58,7 @@ void write_config(const path &d, initializer_list<string_view> actors) {
     for (auto a : actors) f << "  " << a << ":\n    source: internal\n";
 }
 
-} // namespace
+}
 
 // -----------------
 TEST_CASE("SaeDosFolderEntry::parse - sets name, no png") {

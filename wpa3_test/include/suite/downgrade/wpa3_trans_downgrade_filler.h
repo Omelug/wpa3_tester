@@ -16,8 +16,8 @@ struct Wpa3TransDowngradeTestEntry{
 
 	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f,
-	                         const std::vector<std::filesystem::path> &folders,
-	                         const std::filesystem::path &page_dir);
+							const std::vector<Wpa3TransDowngradeTestEntry> &entries, const std::filesystem::path &page_dir
+	);
 };
 
 std::vector<Wpa3TransDowngradeTestEntry> get_results(const std::filesystem::path &run_dir);

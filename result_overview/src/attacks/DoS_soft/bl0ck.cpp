@@ -52,7 +52,7 @@ static vector<TaggedEntry> collect_results(const path &data_dir) {
 void generate_bl0ck(const path &output_dir, const path &data_dir) {
     const auto results = collect_results(data_dir);
 
-    const path page_dir = output_dir / "attacks" / "dos_soft" / "bl0ck";
+    const path page_dir = output_dir / "attacks" / "DoS_soft" / "bl0ck";
     create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);

@@ -128,7 +128,7 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	const path dev_dir = fx.dir / "devices" / mac_str;
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
-	const path nested = fx.dir / "attacks" / "dos_soft" / "channel_switch";
+	const path nested = fx.dir / "attacks" / "DoS_soft" / "channel_switch";
 	CHECK_EQ(device(mac, nested),
 	         "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
 }

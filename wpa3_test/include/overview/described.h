@@ -63,4 +63,4 @@ inline void from_json(const nlohmann::json &j, described_str::pair_t &p){
 inline void to_json(nlohmann::json &j, const described_str &d){ j = d.pairs; }
 inline void from_json(const nlohmann::json &j, described_str &d){ d.pairs = j.get<std::vector<described_str::pair_t>>(); }
 
-} // namespace wpa3_tester
+}

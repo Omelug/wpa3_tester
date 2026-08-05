@@ -7,7 +7,6 @@
 #include "overview/described.h"
 
 namespace wpa3_tester::overview { struct HtmlGuard; }
-
 namespace wpa3_tester::suite::channel_switch_rogueAP{
 
 struct CsaTestEntry{
@@ -40,13 +39,12 @@ struct CsaTestEntry{
 	//std::filesystem::path client_graph;
 	//std::filesystem::path ap_graph;
 	std::filesystem::path rel_path;
+
+	static CsaTestEntry parse(const std::filesystem::path &test_folder);
+	static void render_table(overview::HtmlGuard &f,
+				  const std::vector<CsaTestEntry> &entries,
+				  const std::filesystem::path &page_dir);
+	static void generate_report(RunSuiteStatus &rss);
 };
 
-CsaTestEntry parse_test_folder(const std::filesystem::path &test_folder);
-
-void render_table(overview::HtmlGuard &f,
-                  const std::vector<std::filesystem::path> &folders,
-                  const std::filesystem::path &page_dir);
-
-void generate_report(RunSuiteStatus &rss);
 }

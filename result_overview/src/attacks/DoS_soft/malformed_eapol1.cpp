@@ -68,7 +68,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
     const auto results       = collect_results(data_dir);
     const auto results_dlink = collect_dlink_results(data_dir);
 
-    const path page_dir = output_dir / "attacks" / "dos_soft" / "malformed_eapol1";
+    const path page_dir = output_dir / "attacks" / "DoS_soft" / "malformed_eapol1";
     create_public_dirs(page_dir);
 
     HtmlGuard f(page_dir);

@@ -1,49 +1,14 @@
 #include "attacks/DoS_soft/channel_switch.h"
-#include <algorithm>
 #include <filesystem>
 #include <string>
-#include <vector>
-#include "suite/suite_helper.h"
+#include "overview/html_utils.h"
 #include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
-#include "overview/html_utils.h"
 
 namespace wpa3_tester::overview{
 using namespace std;
 using namespace filesystem;
 using suite::channel_switch_rogueAP::CsaTestEntry;
-
-static vector<CsaTestEntry> collect_results(const path &test_data_dir) {
-
-	auto entries = suite::helper::collect_entries_nested(test_data_dir, [&test_data_dir](const path &p){
-		auto e = CsaTestEntry::parse(p);
-		e.rel_path = relative(p, test_data_dir);
-		return e;
-	});
-
-	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
-		const string sta_mac_a = a.client_mac;
-		const string sta_mac_b = b.client_mac;
-		if (sta_mac_a != sta_mac_b) return sta_mac_a < sta_mac_b;
-
-		auto opt_rank = [](const optional<bool>& v) -> int {
-		   return v.has_value() ? (*v ? 0 : 1) : 2;
-		};
-		//if (a.rel_path != b.rel_path) return a.rel_path < b.rel_path;
-
-		const int ocv_a = opt_rank(a.ap_ocv.value()) + finite(opt_rank(a.client_ocv.value()));
-		const int ocv_b = opt_rank(b.ap_ocv.value()) + opt_rank(b.client_ocv.value());
-		if (ocv_a != ocv_b) return ocv_a < ocv_b;
-
-		const int disc_a = opt_rank(a.client_disconnected.value());
-		const int disc_b = opt_rank(b.client_disconnected.value());
-		if (disc_a != disc_b) return disc_a < disc_b;
-
-		return opt_rank(a.rogue_ap_connected) < opt_rank(b.rogue_ap_connected);
-	});
-
-	return entries;
-}
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "channel_switch";
@@ -86,15 +51,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 )html";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		f	<< "	<div class=\"card\" style=\"overflow-x: auto;\">\n"
-			<< "        <h2>"<< title << "</h2>\n";
-
-		const auto results = collect_results(suite_data_dir);
-		if(results.empty()){
-			f << "<p>No test results found.</p>";
-		}
-		CsaTestEntry::render_table(f, results, page_dir);
-		f << "    </div>\n";
+		CsaTestEntry::render_table(f, title, suite_data_dir, page_dir);
 	};
 
 	// emit tables for each variant

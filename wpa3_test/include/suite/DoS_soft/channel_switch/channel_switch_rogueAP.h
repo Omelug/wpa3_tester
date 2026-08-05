@@ -41,9 +41,10 @@ struct CsaTestEntry{
 	std::filesystem::path rel_path;
 
 	static CsaTestEntry parse(const std::filesystem::path &test_folder);
+	static std::vector<CsaTestEntry> collect_results(const std::filesystem::path &test_data_dir);
 	static void render_table(overview::HtmlGuard &f,
-				  const std::vector<CsaTestEntry> &entries,
-				  const std::filesystem::path &page_dir);
+							const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir
+	);
 	static void generate_report(RunSuiteStatus &rss);
 };
 

@@ -16,11 +16,12 @@ struct ReflectionAttackTestEntry{
 	std::optional<bool> passed;
 
 	static ReflectionAttackTestEntry parse(const std::filesystem::path &test_folder);
-	static void render_table(overview::HtmlGuard &f, const std::vector<ReflectionAttackTestEntry> &entries
+	static void render_table(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::
+							path &page_dir
 	);
 };
 
-std::vector<ReflectionAttackTestEntry> get_results(const std::filesystem::path &run_dir);
+std::vector<ReflectionAttackTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
 void generate_report(RunSuiteStatus & rss);

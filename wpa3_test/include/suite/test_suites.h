@@ -31,7 +31,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 /* map of test_suite_name->post-run callback function */
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
 	{"bl0ck_filler", bl0ck_test_suites::Bl0ckTestEntry::generate_report},
-	{"channel_switch_versions", channel_switch_filler::generate_report},
+	{"channel_switch_versions", channel_switch_filler::CsaVersionTestEntry::generate_report},
 	{"malformed_eapol1_filler", malformed_eapol1_filler::generate_report},
 	{"reflection_attack_filler", reflection_attack_filler::generate_report},
 	{"invalid_curve_filler", invalid_curve_filler::generate_report},
@@ -45,4 +45,5 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"CSA_ex_filler", channel_switch_rogueAP::CsaTestEntry::generate_report},
 	//{"malformed_eapol1_basic_suite", malformed_eapol1_basic_suite::generate_report},
 };
+
 }

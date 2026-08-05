@@ -46,6 +46,10 @@ template <typename Entry>
 void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir,
 	const std::function<void(overview::HtmlGuard&, const std::vector<Entry>&)> &render_func)
 {
+	if(!std::filesystem::exists(suite_data_dir)){
+		//TODO
+		return;
+	}
 	f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
 		<< "        <h2>" << title << "</h2>\n";
 

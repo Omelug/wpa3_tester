@@ -32,7 +32,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
 	{"bl0ck_filler", bl0ck_test_suites::Bl0ckTestEntry::generate_report},
 	{"channel_switch_versions", channel_switch_filler::CsaVersionTestEntry::generate_report},
-	{"malformed_eapol1_filler", malformed_eapol1_filler::generate_report},
+	{"malformed_eapol1_filler", malformed_eapol1_filler::MalformedEapol1TestEntry::generate_report},
 	{"reflection_attack_filler", reflection_attack_filler::generate_report},
 	{"invalid_curve_filler", invalid_curve_filler::generate_report},
 	{"owe_trans_filler", owe_trans_filler::generate_report},

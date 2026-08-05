@@ -17,6 +17,7 @@ using namespace nlohmann;
 
 OweTransTestEntry OweTransTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<OweTransTestEntry>(test_folder);
+	e.test_folder  = test_folder;
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
@@ -36,7 +37,7 @@ void OweTransTestEntry::render_table(overview::HtmlGuard &f, const string &title
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 
 		t.build([&](auto col) {
-			//COL("Test",                 overview::test_name_cell(p, e.test_name, page_dir));
+			//COL("Test",                 overview::test_name_cell(e.folder, e.test_name, page_dir));
 			col("AP Driver",            &OweTransTestEntry::ap_driver);
 			col("Client Driver",        &OweTransTestEntry::client_driver);
 			col("Attacker Driver",      &OweTransTestEntry::attacker_driver);

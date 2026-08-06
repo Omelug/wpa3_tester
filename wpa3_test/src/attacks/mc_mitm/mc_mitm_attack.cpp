@@ -22,11 +22,11 @@ void setup_attack(RunStatus &rs){
 	//const auto rogue_ap = rs.get_actor("rogue_ap");
 
 	/*
-    //TODO only for  2.4 GHz
-    rogue_client->set(SK::channel, ap["channel"]);
-    // rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
-    rogue_ap->set(SK::channel, to_string((stoi(ap["channel"]) >= 6) ? 1 : 11));
-    */
+	//TODO only for  2.4 GHz
+	rogue_client->set(SK::channel, ap["channel"]);
+	// rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
+	rogue_ap->set(SK::channel, to_string((stoi(ap["channel"]) >= 6) ? 1 : 11));
+	*/
 }
 
 void start_strict_tsharks(RunStatus &rs, const string &ap_mac, const string &client_mac){

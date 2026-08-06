@@ -33,7 +33,7 @@ std::string client_akm_from_ap_log(const std::filesystem::path &log_path, TimeWi
 // Find Probe Requests from client_mac in ap_log after start_tag until END_tag/END_STOP_tag.
 // Returns "ch: X Y Z" (scanned channels from DS Params or freq), empty if none found.
 std::string client_scanning_from_ap_log(const std::filesystem::path &ap_log,
-                                         const std::string &client_mac);
+										 const std::string &client_mac);
 
 // computes secondary BSSID for OWE transition mode (flips LSB of last octet)
 std::string owe_trans_bssid(const std::string &primary_mac);

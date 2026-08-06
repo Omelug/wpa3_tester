@@ -23,201 +23,201 @@ using namespace std;
 using namespace filesystem;
 
 static const map<string, string> k_attack_page = {
-    {"bl0ck",            "../../attacks/DoS_soft/bl0ck/index.html"},
-    {"channel_switch",   "../../attacks/DoS_soft/channel_switch/index.html"},
-    {"malformed_eapol1", "../../attacks/DoS_soft/malformed_eapol1/index.html"},
+	{"bl0ck",            "../../attacks/DoS_soft/bl0ck/index.html"},
+	{"channel_switch",   "../../attacks/DoS_soft/channel_switch/index.html"},
+	{"malformed_eapol1", "../../attacks/DoS_soft/malformed_eapol1/index.html"},
 };
 
 static const map<string, string> k_attack_title = {
-    {"ap_info",           "AP Info (Scanner)"},
-    {"bl0ck",             "Bl0ck — Block ACK DoS"},
-    {"channel_switch",    "Channel Switch (CSA) DoS"},
-    {"malformed_eapol1",  "Malformed EAPOL-1 DoS"},
-    {"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
-    {"reflection_attack", "Reflection Attack (EAP-PWD)"},
-    {"sae_dos_wrapper",   "SAE DoS (generic variants)"},
-    {"cookie_guzzler",    "Cookie Guzzler DoS"},
-    {"memory_omnivore",   "Memory Omnivore DoS"},
-    {"pmk_gobbler",          "PMK Gobbler DoS"},
-    {"wpa3_trans_downgrade", "WPA3 Transition Downgrade"},
+	{"ap_info",           "AP Info (Scanner)"},
+	{"bl0ck",             "Bl0ck — Block ACK DoS"},
+	{"channel_switch",    "Channel Switch (CSA) DoS"},
+	{"malformed_eapol1",  "Malformed EAPOL-1 DoS"},
+	{"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
+	{"reflection_attack", "Reflection Attack (EAP-PWD)"},
+	{"sae_dos_wrapper",   "SAE DoS (generic variants)"},
+	{"cookie_guzzler",    "Cookie Guzzler DoS"},
+	{"memory_omnivore",   "Memory Omnivore DoS"},
+	{"pmk_gobbler",          "PMK Gobbler DoS"},
+	{"wpa3_trans_downgrade", "WPA3 Transition Downgrade"},
 };
 
 static const set<string> k_sae_dos_modules = {
-    "sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler",
+	"sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler",
 };
 
 static string read_attacker_module(const path &test_folder) {
-    const auto cfg = test_folder / "test_config.yaml";
-    if (!exists(cfg)) return "";
-    try {
-        const auto node = YAML::LoadFile(cfg.string());
-        if (node["attacker_module"])
-            return node["attacker_module"].as<string>();
-    } catch (...) {}
-    return "";
+	const auto cfg = test_folder / "test_config.yaml";
+	if (!exists(cfg)) return "";
+	try {
+		const auto node = YAML::LoadFile(cfg.string());
+		if (node["attacker_module"])
+			return node["attacker_module"].as<string>();
+	} catch (...) {}
+	return "";
 }
 
 // last_run/{attack_dir}/{test_dir}/test_config.yaml
 static vector<path> collect_test_folders(const path &run_dir) {
-    vector<path> result;
-    if (!is_directory(run_dir)) return result;
-    for (const auto &attack_dir : directory_iterator(run_dir)) {
-        if (!attack_dir.is_directory()) continue;
-        for (const auto &test_dir : directory_iterator(attack_dir.path())) {
-            if (!test_dir.is_directory()) continue;
-            if (exists(test_dir.path() / "test_config.yaml"))
-                result.push_back(test_dir.path());
-        }
-    }
-    return result;
+	vector<path> result;
+	if (!is_directory(run_dir)) return result;
+	for (const auto &attack_dir : directory_iterator(run_dir)) {
+		if (!attack_dir.is_directory()) continue;
+		for (const auto &test_dir : directory_iterator(attack_dir.path())) {
+			if (!test_dir.is_directory()) continue;
+			if (exists(test_dir.path() / "test_config.yaml"))
+				result.push_back(test_dir.path());
+		}
+	}
+	return result;
 }
 
 static void emit_section_header(HtmlGuard &f, const string &module) {
-    const auto title_it = k_attack_title.find(module);
-    const auto title = (title_it != k_attack_title.end()) ? title_it->second : module;
-    const auto page_it = k_attack_page.find(module);
+	const auto title_it = k_attack_title.find(module);
+	const auto title = (title_it != k_attack_title.end()) ? title_it->second : module;
+	const auto page_it = k_attack_page.find(module);
 
-    f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-      << "        <h2>";
-    if (page_it != k_attack_page.end())
-        f << "<a href=\"" << page_it->second << "\">" << title << "</a>";
-    else
-        f << title;
-    f << "</h2>\n";
+	f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
+	  << "        <h2>";
+	if (page_it != k_attack_page.end())
+		f << "<a href=\"" << page_it->second << "\">" << title << "</a>";
+	else
+		f << title;
+	f << "</h2>\n";
 }
 
 static void render_attack_section(HtmlGuard &f, const std::string &module,
-                                  const path &suite_data_dir,
-                                  const path &page_dir) {
-    using namespace suite;
+								  const path &suite_data_dir,
+								  const path &page_dir) {
+	using namespace suite;
 
-    // Static registry mapping module strings to their corresponding render function
-    static const std::unordered_map<std::string, RenderFunc> registry = {
-        { "ap_info",              make_renderer<ap_info_wpa3_filler::ApInfoWpa3TestEntry>() },
-        { "bl0ck",                make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
-        { "invalid_curve",        make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
-        { "reflection_attack",    make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
-        { "wpa3_trans_downgrade", make_renderer<wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
-        { "owe_trans",            make_renderer<owe_trans_filler::OweTransTestEntry>() },
+	// Static registry mapping module strings to their corresponding render function
+	static const std::unordered_map<std::string, RenderFunc> registry = {
+		{ "ap_info",              make_renderer<ap_info_wpa3_filler::ApInfoWpa3TestEntry>() },
+		{ "bl0ck",                make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
+		{ "invalid_curve",        make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
+		{ "reflection_attack",    make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
+		{ "wpa3_trans_downgrade", make_renderer<wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
+		{ "owe_trans",            make_renderer<owe_trans_filler::OweTransTestEntry>() },
 		{ "channel_switch",		  make_renderer<channel_switch_rogueAP::CsaTestEntry>() }
-    };
+	};
 
-    emit_section_header(f, module);
+	emit_section_header(f, module);
 
-    if (const auto it = registry.find(module); it != registry.end()) {
-        it->second(f, module, suite_data_dir, page_dir);
-    }
-    else if (k_sae_dos_modules.contains(module)) {
-        // Fallback dynamic handling for module sets
-        sae_dos::SaeDosFolderEntry::render_table(f, "sae_dos_modules", suite_data_dir, page_dir);
-    }
-    else {
-        f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
-    }
+	if (const auto it = registry.find(module); it != registry.end()) {
+		it->second(f, module, suite_data_dir, page_dir);
+	}
+	else if (k_sae_dos_modules.contains(module)) {
+		// Fallback dynamic handling for module sets
+		sae_dos::SaeDosFolderEntry::render_table(f, "sae_dos_modules", suite_data_dir, page_dir);
+	}
+	else {
+		f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
+	}
 
-    f << "    </div>\n";
+	f << "    </div>\n";
 }
 
 
 static void generate_target_page(const path &output_dir,
-                                  const string &target_name,
-                                  const path &target_data_dir) {
-    const path page_dir = output_dir / "target" / target_name;
-    create_public_dirs(page_dir);
+								  const string &target_name,
+								  const path &target_data_dir) {
+	const path page_dir = output_dir / "target" / target_name;
+	create_public_dirs(page_dir);
 
-    HtmlGuard f(page_dir);
-    if (!f) return;
+	HtmlGuard f(page_dir);
+	if (!f) return;
 
-    f << R"html(<!DOCTYPE html>
+	f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>)html" << target_name << R"html( — WPA3 Target Report</title>
-    <link rel="stylesheet" href="../../style.css">
-    <script src="../../table_aggregate.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>)html" << target_name << R"html( — WPA3 Target Report</title>
+	<link rel="stylesheet" href="../../style.css">
+	<script src="../../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../../index.html" class="back-link"><- Overview</a>
-    <h1>)html" << target_name << R"html(</h1>
+	<a href="../../index.html" class="back-link"><- Overview</a>
+	<h1>)html" << target_name << R"html(</h1>
 )html";
 
-    const path suites_dir = target_data_dir / "suite";
-    if (!is_directory(suites_dir)) {
-        f << "    <div class=\"card\"><p>No suites found.</p></div>\n"
-          << "</body>\n</html>\n";
-        return;
-    }
+	const path suites_dir = target_data_dir / "suite";
+	if (!is_directory(suites_dir)) {
+		f << "    <div class=\"card\"><p>No suites found.</p></div>\n"
+		  << "</body>\n</html>\n";
+		return;
+	}
 
-    bool any = false;
-    for (const auto &suite_entry : directory_iterator(suites_dir)) {
-        if (!suite_entry.is_directory()) continue;
-        const string suite_name = suite_entry.path().filename().string();
-        const auto test_suites_folders = collect_test_folders(suite_entry.path());
-    	if (test_suites_folders.empty()) continue;
-        any = true;
+	bool any = false;
+	for (const auto &suite_entry : directory_iterator(suites_dir)) {
+		if (!suite_entry.is_directory()) continue;
+		const string suite_name = suite_entry.path().filename().string();
+		const auto test_suites_folders = collect_test_folders(suite_entry.path());
+		if (test_suites_folders.empty()) continue;
+		any = true;
 
-        f << "    <div class=\"card\">\n"
-          << "        <h2>Suite: " << suite_name << "</h2>\n"
-          << "    </div>\n";
+		f << "    <div class=\"card\">\n"
+		  << "        <h2>Suite: " << suite_name << "</h2>\n"
+		  << "    </div>\n";
 
-        map<string, vector<path>> groups;
-        for (const auto &tf : test_suites_folders) {
-            const auto mod = read_attacker_module(tf);
-            if (!mod.empty())
-                groups[mod].push_back(tf);
-        }
+		map<string, vector<path>> groups;
+		for (const auto &tf : test_suites_folders) {
+			const auto mod = read_attacker_module(tf);
+			if (!mod.empty())
+				groups[mod].push_back(tf);
+		}
 
-        for (const auto &mod: groups | views::keys)
-            render_attack_section(f, mod, suite_entry.path() , page_dir);
-    }
+		for (const auto &mod: groups | views::keys)
+			render_attack_section(f, mod, suite_entry.path() , page_dir);
+	}
 
-    if (!any)
-        f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
+	if (!any)
+		f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
 
-    f << "</body>\n</html>\n";
+	f << "</body>\n</html>\n";
 }
 
 static void generate_target_index(const path &output_dir, const vector<string> &targets) {
-    const path idx_dir = output_dir / "target";
-    create_public_dirs(idx_dir);
+	const path idx_dir = output_dir / "target";
+	create_public_dirs(idx_dir);
 
-    HtmlGuard f(idx_dir);
-    if (!f) return;
+	HtmlGuard f(idx_dir);
+	if (!f) return;
 
-    f << R"html(<!DOCTYPE html>
+	f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Targets — WPA3 Tester</title>
-    <link rel="stylesheet" href="../style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Targets — WPA3 Tester</title>
+	<link rel="stylesheet" href="../style.css">
 </head>
 <body>
-    <a href="../index.html" class="back-link"><- Overview</a>
-    <h1>Targets</h1>
-    <div class="card">
-        <ul>
+	<a href="../index.html" class="back-link"><- Overview</a>
+	<h1>Targets</h1>
+	<div class="card">
+		<ul>
 )html";
-    for (const auto &t : targets)
-        f << "            <li><a href=\"" << t << "/index.html\">" << t << "</a></li>\n";
-    f << "        </ul>\n    </div>\n</body>\n</html>\n";
+	for (const auto &t : targets)
+		f << "            <li><a href=\"" << t << "/index.html\">" << t << "</a></li>\n";
+	f << "        </ul>\n    </div>\n</body>\n</html>\n";
 }
 
 void generate_targets(const path &output_dir, const path &data_dir) {
-    const path targets_data = data_dir / "wpa3_suites" / "target";
+	const path targets_data = data_dir / "wpa3_suites" / "target";
 
-    vector<string> names;
-    if (is_directory(targets_data)) {
-        for (const auto &entry : directory_iterator(targets_data)) {
-            if (!entry.is_directory()) continue;
-            const string name = entry.path().filename().string();
-            names.push_back(name);
-            generate_target_page(output_dir, name, entry.path());
-        }
-    }
+	vector<string> names;
+	if (is_directory(targets_data)) {
+		for (const auto &entry : directory_iterator(targets_data)) {
+			if (!entry.is_directory()) continue;
+			const string name = entry.path().filename().string();
+			names.push_back(name);
+			generate_target_page(output_dir, name, entry.path());
+		}
+	}
 
-    generate_target_index(output_dir, names);
+	generate_target_index(output_dir, names);
 }
 
 }

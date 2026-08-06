@@ -8,7 +8,7 @@
 #include "overview/described.h"
 #include "system/utils.h"
 
-inline std::ostream &operator<<(std::ostream &os, std::optional<bool> val){
+inline std::ostream &operator<<(std::ostream &os, const std::optional<bool> val){
 	return os << (val ? (*val ? "yes" : "no") : "N/A");
 }
 
@@ -92,14 +92,14 @@ struct HtmlGuard {
 	}
 	template<typename T>
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::optional<bool>, std::string>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-	          !std::same_as<std::remove_cvref_t<T>, described_bool> &&
-	          !std::same_as<std::remove_cvref_t<T>, described_str>)
+			  !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::string> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::pair<std::optional<bool>, std::string>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+			  !std::same_as<std::remove_cvref_t<T>, described_bool> &&
+			  !std::same_as<std::remove_cvref_t<T>, described_str>)
 	HtmlGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:
@@ -121,8 +121,8 @@ inline std::string device(const Tins::HWAddress<6> mac, const std::filesystem::p
 
 // Returns test name as HTML, linked to report.md if it exists.
 inline std::string test_name_cell(const std::filesystem::path &test_folder,
-                                  const std::string &name,
-                                  const std::filesystem::path &page_dir) {
+								  const std::string &name,
+								  const std::filesystem::path &page_dir) {
 	const auto report = test_folder / REPORT_NAME;
 	if (!std::filesystem::exists(report)) return name;
 	return "<a href=\"" + report.lexically_relative(page_dir).string() + "\">" + name + "</a>";

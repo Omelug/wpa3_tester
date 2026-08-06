@@ -29,7 +29,7 @@ TEST_CASE("get_global_config - normal loading"){
 	f.write(R"(
 paths:
   hostapd:
-	hostapd_build_folder: "/test/hostapd"
+    hostapd_build_folder: "/test/hostapd"
 actors:
   conn_table: "./test_table.csv"
   ignore_interfaces: [wlan0, wlan1]

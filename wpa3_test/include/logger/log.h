@@ -67,6 +67,7 @@ using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 struct TimeWindow {
 	LogTimePoint start_tp{};
 	LogTimePoint end_tp{};
+	bool operator==(const TimeWindow&) const = default;
 	[[nodiscard]] bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
 };
 

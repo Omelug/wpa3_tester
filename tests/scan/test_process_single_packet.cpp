@@ -12,8 +12,8 @@ using namespace wpa3_tester;
 // beacon_test.pcapng: AP 24:ec:99:bf:b0:a1, SSID "mc_mitm_test", ch6, 2.4GHz
 // data_qos.pcapng:    to_ds=1, STA 24:ec:99:bf:e0:cd -> AP 78:98:e8:55:3e:8d (assoc map filled)
 
-static constexpr auto PCAP_BEACON   = "test_data/beacon_test.pcapng";
-static constexpr auto PCAP_DATA_QOS = "test_data/wifi_util/data_qos.pcapng";
+static constexpr auto PCAP_BEACON   = "../test_data/beacon_test.pcapng";
+static constexpr auto PCAP_DATA_QOS = "../test_data/wifi_util/data_qos.pcapng";
 
 static ActorCMap make_ap_req(const string &ssid){
 	const auto cfg = make_shared<Actor_Config_external>();

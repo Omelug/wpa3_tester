@@ -232,193 +232,209 @@ TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf"){
 	CHECK_EQ(result.last().description, "hostapd_conf");
 }
 
-  // ---- hostapd_mana_crack tests ----
+// ---- hostapd_mana_crack tests ----
 
-  TEST_CASE("hostapd_mana_crack - rogue_ap does not exist") {
-	  const path dir = temp_directory_path() / "wpa3_mana_crack_test_no_rogue";
-	  create_directories(dir);
+TEST_CASE("hostapd_mana_crack - rogue_ap does not exist"){
+	const path dir = temp_directory_path() / "wpa3_mana_crack_test_no_rogue";
+	create_directories(dir);
 
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
 
-	  std::vector<std::unique_ptr<wpa3_tester::GraphElements>> elements;
+	std::vector<std::unique_ptr<wpa3_tester::GraphElements>> elements;
 
-	  const auto result = hostapd_mana_crack(rs, elements);
+	const auto result = hostapd_mana_crack(rs, elements);
 
-	  REQUIRE_FALSE(result.first.has_value());
-	  REQUIRE_FALSE(result.second.has_value());
-  }
+	REQUIRE_FALSE(result.first.has_value());
+	REQUIRE_FALSE(result.second.has_value());
+}
 
-  // ---- get_ap_ocv tests ----
+// ---- get_ap_ocv tests ----
 
-  TEST_CASE("get_ap_ocv - from hostapd_conf") {
-	  const path dir = temp_directory_path() / "wpa3_ap_ocv_test";
-	  create_directories(dir);
+TEST_CASE("get_ap_ocv - from hostapd_conf"){
+	const path dir = temp_directory_path() / "wpa3_ap_ocv_test";
+	create_directories(dir);
 
-	  // ap_hostapd.conf with okc value
-	  ofstream f(dir / "ap_hostapd.conf");
-	  f << "okc=1\n";
-	  f.close();
+	// ap_hostapd.conf with okc value
+	ofstream f(dir / "ap_hostapd.conf");
+	f << "okc=1\n";
+	f.close();
 
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
 
-	  const auto result = get_ap_ocv(rs);
-	  REQUIRE_FALSE(result.empty());
-	  CHECK_EQ(result.value(), true);
-	  CHECK_EQ(result.last().description, "hostapd_conf");
-  }
-
-  TEST_CASE("get_ap_ocv - from pcap") {
-	  const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
-	  create_directories(dir);
-	  create_directories(dir / "tshark");
-
-	  // Create tshark folder with pcap file
-	  ofstream f(dir / "tshark" / "attacker_capture.pcap");
-	  f << "fake pcap data";
-	  f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"attacker", {{"setup", {{"program", "hostapd"}}}}}}}});
-
-	  const auto result = get_ap_ocv(rs);
-
-	  // Verify that the function handled the pcap case correctly
-	  // (We can't easily test the actual pcap parsing without a real pcap file)
-	  REQUIRE_FALSE(result.empty());
-  }
-
-  // ---- get_client_scanning tests ----
-
-  TEST_CASE("get_client_scanning - from attacker pcap") {
-	  const path dir = temp_directory_path() / "wpa3_client_scanning_test";
-	  create_directories(dir);
-	  create_directories(dir / "tshark");
-
-	  // Create tshark folder with pcap file
-	  ofstream f(dir / "tshark" / "attacker_capture.pcap");
-	  f << "fake pcap data";
-	  f.close();
-
-	  // Create ap.log with client scanning info
-	  create_directories(dir / "logger");
-	  ofstream log_f(dir / "logger" / "ap.log");
-	  log_f << "Client scanning info\n";
-	  log_f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({"actors", {{"client", {{"setup", {{"program", "hostapd"}}}},
-							  {"attacker", {{"setup", {{"program", "hostapd"}}}}}}}});
-
-	  const auto result = get_client_scanning(rs, {});
-
-	  // Verify that the function handled the pcap case correctly
-	  REQUIRE_FALSE(result.empty());
-  }
-
-  TEST_CASE("get_client_scanning - from ap log") {
-	  const path dir = temp_directory_path() / "wpa3_client_scanning_ap_test";
-	  create_directories(dir);
-	  create_directories(dir / "logger");
-
-	  // Create ap.log with client scanning info
-	  ofstream f(dir / "logger" / "ap.log");
-	  f << "Channel 6\n";
-	  f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({"actors", {{"client", {{"setup", {{"program", "hostapd"}}}},
-							  {"attacker", {{"setup", {{"program", "hostapd"}}}}}}}});
-
-	  const auto result = get_client_scanning(rs, {});
-	  REQUIRE_FALSE(result.empty());
-  }
-
-  // ---- get_client_WPA_support tests ----
-
-  TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf") {
-	  const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test";
-	  create_directories(dir);
-
-	  ofstream f(dir / "client_wpa_supplicant.conf");
-	  f << "key_mgmt=WPA-PSK\n";
-	  f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
-
-	  const auto result = get_client_WPA_support(rs, {});
-
-	  REQUIRE_FALSE(result.empty());
-	  CHECK_EQ(result.value(), "WPA-PSK");
-	  CHECK_EQ(result.last().description, "wpa_supplicant_conf");
-  }
-
-  /* TODO can I get info from AKM-defined message (bad info from multiple connections?)
-   *TEST_CASE("get_client_WPA_support - from hostapd log") {
-	  const path dir = temp_directory_path() / "wpa3_client_wpa_hostapd_test";
-	  create_directories(dir);
-	  create_directories(dir / "logger");
-
-	  // ap.log with client WPA support info
-	  ofstream f(dir / "logger" / "ap.log");
-	  f << "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
-	  f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
-
-	  const auto result = get_client_WPA_support(rs, {});
+	const auto result = get_ap_ocv(rs);
 	REQUIRE_FALSE(result.empty());
-  }*/
+	CHECK_EQ(result.value(), true);
+	CHECK_EQ(result.last().description, "hostapd_conf");
+}
 
-  // ---- get_client_disconnected tests ----
+TEST_CASE("get_ap_ocv - from pcap"){
+	const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
+	create_directories(dir);
+	create_directories(dir / "tshark");
 
-  TEST_CASE("get_client_disconnected - WB client with log") {
-	  const path dir = temp_directory_path() / "wpa3_client_disconnect_wb_test";
-	  create_directories(dir);
-	  create_directories(dir / "logger");
+	const path src_pcap = "../../../tests/test_data/beacon_test.pcapng";
+	const path dst_pcap = dir / "tshark" / "attacker_capture.pcap";
+	copy_file(src_pcap, dst_pcap);
 
-	  ofstream f(dir / "logger" / "client.log");
-	  f << "CTRL-EVENT-DISCONNECTED\n";
-	  f.close();
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"attacker", {{"setup", {{"program", "hostapd"}}}}}}}});
 
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"client", {{"setup", {{"program", "hostapd"}}}}}}}});
+	const auto result = get_ap_ocv(rs);
 
-	  auto& client_actor = rs.get_actor("client");
-	  client_actor->set(wpa3_tester::SK::source, "internal");
+	REQUIRE_FALSE(result.empty());
+	REQUIRE_EQ(result.pairs.size(), 1u);
+	CHECK_EQ(result.pairs[0].value, false);
+}
+
+// ---- get_client_scanning tests ----
+
+TEST_CASE("get_client_scanning - from attacker pcap"){
+	const path dir = temp_directory_path() / "wpa3_client_scanning_test";
+	create_directories(dir);
+	create_directories(dir / "tshark");
+
+	const path src_pcap = "../../../tests/test_data/beacon_test.pcapng";
+	const path dst_pcap = dir / "tshark" / "attacker_capture.pcap";
+	if (exists(dst_pcap)) remove(dst_pcap);
+	copy_file(src_pcap, dst_pcap);
+
+	// Create ap.log with client scanning info
+	create_directories(dir / "logger");
+	ofstream log_f(dir / "logger" / "ap.log");
+	log_f << "2026-07-28T15:25:12.548921485+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5\n";
+	log_f.close();
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {
+		{"client", {{"setup", {{"program", "hostapd"}}}}},
+		{"attacker", {{"setup", {{"program", "hostapd"}}}}}
+	}}});
+
+	const auto result = get_client_scanning(rs, {});
+	REQUIRE_FALSE(result.empty());
+	REQUIRE_EQ(result.pairs.size(), 2u);
+	CHECK_EQ(result.pairs[0].value, "6");
+	CHECK_EQ(result.pairs[0].description, "attacker pcap");
+	CHECK_EQ(result.pairs[1].value, "6");
+	CHECK_EQ(result.pairs[1].description, "ap log");
+}
+
+TEST_CASE("get_client_scanning - from ap log"){
+	const path dir = temp_directory_path() / "wpa3_client_scanning_ap_test";
+	create_directories(dir);
+	create_directories(dir / "logger");
+
+	ofstream f(dir / "logger" / "ap.log");
+	f << "Channel 6\n";
+	f.close();
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({
+		"actors", {
+			{
+				"client", {{"setup", {{"program", "hostapd"}}}},
+				{"attacker", {{"setup", {{"program", "hostapd"}}}}}
+			}
+		}
+	});
+
+	const auto result = get_client_scanning(rs, {});
+	REQUIRE_FALSE(result.empty());
+}
+
+// ---- get_client_WPA_support tests ----
+
+TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf"){
+	const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test";
+	create_directories(dir);
+
+
+	ofstream f(dir / "client_wpa_supplicant.conf");
+	f << "key_mgmt=WPA-PSK\n";
+	f.close();
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
+
+	const auto result = get_client_WPA_support(rs, {});
+
+	REQUIRE_FALSE(result.empty());
+	CHECK_EQ(result.value(), "WPA-PSK");
+	CHECK_EQ(result.last().description, "wpa_supplicant_conf");
+}
+
+/* TODO can I get info from AKM-defined message (bad info from multiple connections?)
+*TEST_CASE("get_client_WPA_support - from hostapd log") {
+	const path dir = temp_directory_path() / "wpa3_client_wpa_hostapd_test";
+	create_directories(dir);
+	create_directories(dir / "logger");
+
+	// ap.log with client WPA support info
+	ofstream f(dir / "logger" / "ap.log");
+	f << "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
+	f.close();
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"ap", {{"setup", {{"program", "hostapd"}}}}}}}});
+
+	const auto result = get_client_WPA_support(rs, {});
+REQUIRE_FALSE(result.empty());
+}*/
+
+// ---- get_client_disconnected tests ----
+
+TEST_CASE("get_client_disconnected - WB client with log"){
+	const path dir = temp_directory_path() / "wpa3_client_disconnect_wb_test";
+	create_directories(dir);
+	create_directories(dir / "logger");
+
+	ofstream f(dir / "logger" / "client.log");
+	f << "CTRL-EVENT-DISCONNECTED\n";
+	f.close();
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"client", {{"setup", {{"program", "hostapd"}}}}}}}});
+
+	auto &client_actor = rs.get_actor("client");
+	client_actor->set(wpa3_tester::SK::source, "internal");
 	const auto result = get_client_disconnected(rs, {});
-
-	  REQUIRE_FALSE(result.empty());
-	  CHECK_EQ(result.value(), true);
-	  CHECK_EQ(result.last().description, "log");
-  }
-
-  TEST_CASE("get_client_disconnected - non-WB client with pcap") {
-	  const path dir = temp_directory_path() / "wpa3_client_disconnect_pcap_test";
-	  create_directories(dir);
-	  create_directories(dir / "tshark");
-
-		ofstream f(dir / "tshark" / "attacker_capture.pcap");
-	  f << "fake pcap data";
-	  f.close();
-
-	  RunStatus rs;
-	  rs.run_folder(dir);
-	  rs.config({{"actors", {{"client", {{"setup", {{"program", "hostapd"}}}}}},
-				  {"attacker", {{"setup", {{"program", "hostapd"}}}}}}});
-
-	  const auto result = get_client_disconnected(rs, {});
+	//FIXME SIG in debugger
 	REQUIRE_FALSE(result.empty());
-  }
+	CHECK_EQ(result.value(), true);
+	CHECK_EQ(result.last().description, "log");
+}
+
+TEST_CASE("get_client_disconnected - non-WB client with pcap"){
+	const path dir = temp_directory_path() / "wpa3_client_disconnect_pcap_test";
+	create_directories(dir);
+	create_directories(dir / "tshark");
+
+	const path src_pcap = "../test_data/deauth.pcapng";
+	const path dst_pcap = dir / "tshark" / "attacker_capture.pcap";
+	copy_file(src_pcap, dst_pcap);
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({
+		{
+			"actors", {{"client", {{"setup", {{"program", "hostapd"}}}}}},
+			{"attacker", {{"setup", {{"program", "hostapd"}}}}}
+		}
+	});
+	auto &client_actor = rs.get_actor("client");
+	client_actor->set(wpa3_tester::SK::source, "external");
+	const auto result = get_client_disconnected(rs, {});
+	REQUIRE_FALSE(result.empty());
+	CHECK_EQ(result.value(), true);
+}
 

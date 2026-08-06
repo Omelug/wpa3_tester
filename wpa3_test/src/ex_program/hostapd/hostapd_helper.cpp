@@ -536,7 +536,6 @@ string owe_trans_bssid(const string &primary_mac){
 				addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
 }
 
-//TODO test
 string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
 	string line;
@@ -627,7 +626,6 @@ string client_scanning_from_ap_log(const path &ap_log, const string &client_mac)
 				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));
 		}
 	}
-	if(prev_was_probe && prev_backup_ch > 0) channels.insert(prev_backup_ch);
 
 	if(channels.empty()) return {};
 	string result = "ch:";

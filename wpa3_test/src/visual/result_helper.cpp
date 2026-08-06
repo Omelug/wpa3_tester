@@ -55,7 +55,7 @@ described_bool get_ap_ocv(const RunStatus &rs){
 		ap_ocv += {*v, "pcap (beacon)"};
 	return ap_ocv;
 }
-//TODO test
+
 described_bool get_client_ocv(const RunStatus &rs){
 	described_bool client_ocv;
 	if(exists(rs.run_folder() / "client_wpa_supplicant.conf"))
@@ -159,7 +159,6 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 	return conn_WPA_version;
 }
 
-//TODO test
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 	described_bool client_disconnected{};
 	const string sta_mac = rs.get_actor("client").get(SK::mac);

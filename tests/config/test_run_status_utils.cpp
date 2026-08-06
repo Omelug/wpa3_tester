@@ -28,7 +28,7 @@ TEST_CASE("RunStatus constructor - missing name field"){
 attacker_module: "test_module"
 actors:
   test_actor:
-	source: internal
+    source: internal
 )";
 	config.close();
 
@@ -48,7 +48,7 @@ name: "default_name"
 attacker_module: "test_module"
 actors:
   test_actor:
-	source: internal
+    source: internal
 )";
 	config.close();
 
@@ -71,9 +71,9 @@ name: "test_validation"
 attacker_module: "test_module"
 actors:
   test_actor:
-	source: internal
-	selection:
-	  iface: "wlan0"
+    source: internal
+    selection:
+      iface: "wlan0"
 )";
 	config.close();
 

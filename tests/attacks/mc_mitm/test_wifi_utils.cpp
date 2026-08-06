@@ -10,38 +10,38 @@ using namespace Tins;
 using namespace wpa3_tester;
 
 TEST_CASE("beacon_to_probe_resp"){
-    Dot11Beacon beacon;
-    beacon.addr2("aa:bb:cc:dd:ee:ff");
-    beacon.addr3("aa:bb:cc:dd:ee:ff");
-    beacon.interval(100);
-    beacon.ds_parameter_set(6);
-    beacon.ssid("TestNet");
+	Dot11Beacon beacon;
+	beacon.addr2("aa:bb:cc:dd:ee:ff");
+	beacon.addr3("aa:bb:cc:dd:ee:ff");
+	beacon.interval(100);
+	beacon.ds_parameter_set(6);
+	beacon.ssid("TestNet");
 
 	Channel ch{11, WifiBand::BAND_2_4_or_5, nullopt};
-    Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, ch));
+	Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, ch));
 
-    CHECK_EQ(probe.addr2(), beacon.addr2());
-    CHECK_EQ(probe.addr3(), beacon.addr3());
-    CHECK_EQ(probe.interval(), beacon.interval());
-    CHECK_EQ(probe.ds_parameter_set(), 11);
-    CHECK_NE(probe.search_option(Dot11::SSID), nullptr);
-    CHECK_EQ(probe.search_option(Dot11::TIM), nullptr);
+	CHECK_EQ(probe.addr2(), beacon.addr2());
+	CHECK_EQ(probe.addr3(), beacon.addr3());
+	CHECK_EQ(probe.interval(), beacon.interval());
+	CHECK_EQ(probe.ds_parameter_set(), 11);
+	CHECK_NE(probe.search_option(Dot11::SSID), nullptr);
+	CHECK_EQ(probe.search_option(Dot11::TIM), nullptr);
 }
 
 TEST_CASE("patch_channel_raw - beacon frame"){
-    vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
-    vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
+	vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
+	vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
-    McMitm::patch_channel_raw(beacon_data, 11);
-    PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());
-    RawPDU raw_pdu(beacon_data);
-    writer.write(raw_pdu);
+	McMitm::patch_channel_raw(beacon_data, 11);
+	PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());
+	RawPDU raw_pdu(beacon_data);
+	writer.write(raw_pdu);
 
-    // verify data was modified
-    REQUIRE_NE(beacon_data, original_data);
+	// verify data was modified
+	REQUIRE_NE(beacon_data, original_data);
 
-    INFO("Beacon frame size before: " << original_data.size());
-    INFO("Beacon frame size after: " << beacon_data.size());
+	INFO("Beacon frame size before: " << original_data.size());
+	INFO("Beacon frame size after: " << beacon_data.size());
 }
 
 // ------ get_addrs
@@ -58,41 +58,41 @@ static HWAddress<6> ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in ra
 static HWAddress<6> ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
 
 TEST_SUITE("get_addrs") {
-    TEST_CASE("management frame: addr2 resolved via Dot11ManagementFrame") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
-        const auto [addr1, addr2] = get_addrs(rt, raw);
+	TEST_CASE("management frame: addr2 resolved via Dot11ManagementFrame") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
+		const auto [addr1, addr2] = get_addrs(rt, raw);
 
-        CHECK_EQ(addr1, BEACON_ADDR1);
-        CHECK_EQ(addr2, BEACON_ADDR2);
-    }
+		CHECK_EQ(addr1, BEACON_ADDR1);
+		CHECK_EQ(addr2, BEACON_ADDR2);
+	}
 
-    TEST_CASE("data frame: addr2 resolved via Dot11Data") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_DATA_QOS);
-        const auto [addr1, addr2] = get_addrs(rt, raw);
+	TEST_CASE("data frame: addr2 resolved via Dot11Data") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_DATA_QOS);
+		const auto [addr1, addr2] = get_addrs(rt, raw);
 
-        CHECK_EQ(addr1, DATA_ADDR1);
-        CHECK_EQ(addr2, DATA_ADDR2);
-    }
+		CHECK_EQ(addr1, DATA_ADDR1);
+		CHECK_EQ(addr2, DATA_ADDR2);
+	}
 
-    TEST_CASE("control frame: addr2 resolved from raw bytes fallback") {
-        // RTS frame: libtins exposes no Dot11ManagementFrame/Dot11Data,
-        // so addr2 falls back to raw[rt_len + 10]
-        auto [rt, raw] = test_helpers::load_frame(PCAP_CTRL_ACTION_PROTECTED);
-        const auto addrs = get_addrs(rt, raw);
+	TEST_CASE("control frame: addr2 resolved from raw bytes fallback") {
+		// RTS frame: libtins exposes no Dot11ManagementFrame/Dot11Data,
+		// so addr2 falls back to raw[rt_len + 10]
+		auto [rt, raw] = test_helpers::load_frame(PCAP_CTRL_ACTION_PROTECTED);
+		const auto addrs = get_addrs(rt, raw);
 
-        CHECK_EQ(addrs.addr1, ACTION_ADDR1);
-        CHECK_EQ(addrs.addr2, ACTION_ADDR2);
-    }
+		CHECK_EQ(addrs.addr1, ACTION_ADDR1);
+		CHECK_EQ(addrs.addr2, ACTION_ADDR2);
+	}
 
-    TEST_CASE("non-Dot11 PDU returns zero addresses") {
-        // plain IP packet — no Dot11 layer at all
-        IP ip("1.2.3.4", "5.6.7.8");
-        const auto raw = ip.serialize();
-        const auto addrs = get_addrs(ip, raw);
+	TEST_CASE("non-Dot11 PDU returns zero addresses") {
+		// plain IP packet — no Dot11 layer at all
+		IP ip("1.2.3.4", "5.6.7.8");
+		const auto raw = ip.serialize();
+		const auto addrs = get_addrs(ip, raw);
 
-        CHECK_EQ(addrs.addr1, HWAddress<6>());
-        CHECK_EQ(addrs.addr2, HWAddress<6>());
-    }
+		CHECK_EQ(addrs.addr1, HWAddress<6>());
+		CHECK_EQ(addrs.addr2, HWAddress<6>());
+	}
 }
 
 // --- get_eapol_msg_num
@@ -103,38 +103,38 @@ static constexpr auto PCAP_EAPOL_M4  = "test_data/wifi_util/eapol_m4.pcapng";
 
 TEST_SUITE("get_eapol_msg_num") {
 
-    TEST_CASE("M1: key_ack=1 key_mic=0 install=0 secure=0") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M1);
-        REQUIRE(is_eapol(rt));
-        CHECK_EQ(get_eapol_msg_num(rt), 1);
-    }
+	TEST_CASE("M1: key_ack=1 key_mic=0 install=0 secure=0") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M1);
+		REQUIRE(is_eapol(rt));
+		CHECK_EQ(get_eapol_msg_num(rt), 1);
+	}
 
-    TEST_CASE("M2: key_mic=1 key_ack=0 install=0 secure=0") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M2);
-        REQUIRE(is_eapol(rt));
-        CHECK_EQ(get_eapol_msg_num(rt), 2);
-    }
+	TEST_CASE("M2: key_mic=1 key_ack=0 install=0 secure=0") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M2);
+		REQUIRE(is_eapol(rt));
+		CHECK_EQ(get_eapol_msg_num(rt), 2);
+	}
 
-    TEST_CASE("M3: key_mic=1 key_ack=1 install=1 secure=1") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M3);
-        REQUIRE(is_eapol(rt));
-        CHECK_EQ(get_eapol_msg_num(rt), 3);
-    }
+	TEST_CASE("M3: key_mic=1 key_ack=1 install=1 secure=1") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M3);
+		REQUIRE(is_eapol(rt));
+		CHECK_EQ(get_eapol_msg_num(rt), 3);
+	}
 
-    TEST_CASE("M4: key_mic=1 key_ack=0 install=0 secure=1") {
-        auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M4);
-        REQUIRE(is_eapol(rt));
-        CHECK_EQ(get_eapol_msg_num(rt), 4);
-    }
+	TEST_CASE("M4: key_mic=1 key_ack=0 install=0 secure=1") {
+		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M4);
+		REQUIRE(is_eapol(rt));
+		CHECK_EQ(get_eapol_msg_num(rt), 4);
+	}
 
-    TEST_CASE("non-EAPOL frame returns -1") {
-        // Beacon has no RSNEAPOL layer
-        auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
-        CHECK_EQ(get_eapol_msg_num(rt), -1);
-    }
+	TEST_CASE("non-EAPOL frame returns -1") {
+		// Beacon has no RSNEAPOL layer
+		auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
+		CHECK_EQ(get_eapol_msg_num(rt), -1);
+	}
 
-    TEST_CASE("plain PDU with no RSNEAPOL returns -1") {
-        IP ip("1.2.3.4", "5.6.7.8");
-        CHECK_EQ(get_eapol_msg_num(ip), -1);
-    }
+	TEST_CASE("plain PDU with no RSNEAPOL returns -1") {
+		IP ip("1.2.3.4", "5.6.7.8");
+		CHECK_EQ(get_eapol_msg_num(ip), -1);
+	}
 }

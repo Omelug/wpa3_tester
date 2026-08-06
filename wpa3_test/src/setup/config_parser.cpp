@@ -42,7 +42,7 @@ json yaml_to_json(const YNode &node){
 }
 
 json yaml_to_json_with_marks(const YNode &node, const string &current_path,
-                              unordered_map<string, YAML::Mark> &line_map){
+							  unordered_map<string, YAML::Mark> &line_map){
 	line_map[current_path.empty() ? "/" : current_path] = node.Mark();
 
 	if(node.IsScalar()){

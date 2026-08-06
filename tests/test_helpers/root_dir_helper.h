@@ -7,10 +7,10 @@ namespace wpa3_tester::test_helpers{
 // cache to match, so code paths that touch data/cache, attack_config/, etc. don't read
 // or write real project files during a test. Restores both on destruction.
 struct IsolatedRootDir{
-    std::filesystem::path dir;
-    std::filesystem::path real_root;
+	std::filesystem::path dir;
+	std::filesystem::path real_root;
 
-    explicit IsolatedRootDir(const std::string &name);
-    ~IsolatedRootDir();
+	explicit IsolatedRootDir(const std::string &name);
+	~IsolatedRootDir();
 };
 }

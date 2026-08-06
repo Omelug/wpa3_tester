@@ -33,8 +33,8 @@ void run_attack(RunStatus &rs){
 	scanner->load_hw_info(hw_cache);
 
 	/* FIXME injection tests
-    MonitorSocket sock(iface);
-    const auto suite = hw_capabilities::run_injection_tests(scanner, scanner,
+	MonitorSocket sock(iface);
+	const auto suite = hw_capabilities::run_injection_tests(scanner, scanner,
 		Tins::HWAddress<6>("00:11:22:33:44:55"), false, false);
 	*/
 

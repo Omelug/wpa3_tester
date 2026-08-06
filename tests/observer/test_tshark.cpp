@@ -23,223 +23,223 @@ using namespace wpa3_tester::observer::tshark;
 
 namespace{
 bool tshark_available(){
-    return system("tshark --version > /dev/null 2>&1") == 0;
+	return system("tshark --version > /dev/null 2>&1") == 0;
 }
 
 ActorPtr make_actor(const string &mac){
-    auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
-    cfg->set(SK::mac, mac);
-    return cfg;
+	auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
+	cfg->set(SK::mac, mac);
+	return cfg;
 }
 
 struct TempCsv{
-    path p;
-    explicit TempCsv(const string &content){
-        p = temp_directory_path() / ("wpa3_test_csv_" +
-            to_string(chrono::system_clock::now().time_since_epoch().count()) + ".csv");
-        ofstream f(p);
-        f << content;
-    }
-    ~TempCsv(){ remove(p); }
+	path p;
+	explicit TempCsv(const string &content){
+		p = temp_directory_path() / ("wpa3_test_csv_" +
+			to_string(chrono::system_clock::now().time_since_epoch().count()) + ".csv");
+		ofstream f(p);
+		f << content;
+	}
+	~TempCsv(){ remove(p); }
 };
 }
 
 // ---- or_filter ----
 
 TEST_CASE("or_filter - empty vector returns empty string"){
-    CHECK_EQ(or_filter({}), "");
+	CHECK_EQ(or_filter({}), "");
 }
 
 TEST_CASE("or_filter - single element wrapped in parens"){
-    CHECK_EQ(or_filter({"ether host aa:bb:cc:dd:ee:ff"}), "(ether host aa:bb:cc:dd:ee:ff)");
+	CHECK_EQ(or_filter({"ether host aa:bb:cc:dd:ee:ff"}), "(ether host aa:bb:cc:dd:ee:ff)");
 }
 
 TEST_CASE("or_filter - multiple elements joined with ' or '"){
-    const string result = or_filter({"A", "B", "C"});
-    CHECK_EQ(result, "(A or B or C)");
+	const string result = or_filter({"A", "B", "C"});
+	CHECK_EQ(result, "(A or B or C)");
 }
 
 // ---- all_actors_mac_filter ----
 
 TEST_CASE("all_actors_mac_filter - single actor no broadcast"){
-    RunStatus rs;
-    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+	RunStatus rs;
+	rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
-    const string f = all_actors_mac_filter(rs, false);
-    CHECK_EQ(f, "(wlan host aa:bb:cc:dd:ee:ff)");
+	const string f = all_actors_mac_filter(rs, false);
+	CHECK_EQ(f, "(wlan host aa:bb:cc:dd:ee:ff)");
 }
 
 TEST_CASE("all_actors_mac_filter - single actor with broadcast"){
-    RunStatus rs;
-    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+	RunStatus rs;
+	rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
-    const string f = all_actors_mac_filter(rs, true);
-    CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
-    CHECK(f.contains("wlan host ff:ff:ff:ff:ff:ff"));
+	const string f = all_actors_mac_filter(rs, true);
+	CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
+	CHECK(f.contains("wlan host ff:ff:ff:ff:ff:ff"));
 }
 
 TEST_CASE("all_actors_mac_filter - two actors both present"){
-    RunStatus rs;
-    rs.actors["sta1"] = make_actor("11:22:33:44:55:66");
-    rs.actors["sta2"] = make_actor("aa:bb:cc:dd:ee:ff");
+	RunStatus rs;
+	rs.actors["sta1"] = make_actor("11:22:33:44:55:66");
+	rs.actors["sta2"] = make_actor("aa:bb:cc:dd:ee:ff");
 
-    const string f = all_actors_mac_filter(rs, false);
-    CHECK(f.contains("wlan host 11:22:33:44:55:66"));
-    CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
-    CHECK(f.contains(" or "));
+	const string f = all_actors_mac_filter(rs, false);
+	CHECK(f.contains("wlan host 11:22:33:44:55:66"));
+	CHECK(f.contains("wlan host aa:bb:cc:dd:ee:ff"));
+	CHECK(f.contains(" or "));
 }
 
 TEST_CASE("all_actors_mac_filter - empty actors returns empty string"){
-    RunStatus rs;
-    CHECK_EQ(all_actors_mac_filter(rs), "");
+	RunStatus rs;
+	CHECK_EQ(all_actors_mac_filter(rs), "");
 }
 
 // ---- masked_mac_filter_5 ----
 
 TEST_CASE("masked_mac_filter_5 - single valid MAC produces link[] filter"){
-    RunStatus rs;
-    rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
+	RunStatus rs;
+	rs.actors["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
-    const string f = masked_mac_filter_5(rs);
-    // First 5 bytes: aa bb cc dd ee -> aabbccddee
-    CHECK(f.contains("0xaabbccdd"));
-    CHECK(f.contains("0xee"));
-    CHECK(f.contains("link[4:4]"));
-    CHECK(f.contains("link[10:4]"));
+	const string f = masked_mac_filter_5(rs);
+	// First 5 bytes: aa bb cc dd ee -> aabbccddee
+	CHECK(f.contains("0xaabbccdd"));
+	CHECK(f.contains("0xee"));
+	CHECK(f.contains("link[4:4]"));
+	CHECK(f.contains("link[10:4]"));
 }
 
 TEST_CASE("masked_mac_filter_5 - MAC shorter than 10 hex chars is skipped"){
-    RunStatus rs;
-    rs.actors["sta"] = make_actor("aa:bb");  // only 4 hex chars after colon removal
+	RunStatus rs;
+	rs.actors["sta"] = make_actor("aa:bb");  // only 4 hex chars after colon removal
 
-    const string f = masked_mac_filter_5(rs);
-    CHECK_EQ(f, "");
+	const string f = masked_mac_filter_5(rs);
+	CHECK_EQ(f, "");
 }
 
 TEST_CASE("masked_mac_filter_5 - two actors joined with or"){
-    RunStatus rs;
-    rs.actors["sta1"] = make_actor("aa:bb:cc:dd:ee:ff");
-    rs.actors["sta2"] = make_actor("11:22:33:44:55:66");
+	RunStatus rs;
+	rs.actors["sta1"] = make_actor("aa:bb:cc:dd:ee:ff");
+	rs.actors["sta2"] = make_actor("11:22:33:44:55:66");
 
-    const string f = masked_mac_filter_5(rs);
-    CHECK(f.contains("0xaabbccdd"));
-    CHECK(f.contains("0x11223344"));
-    CHECK(f.contains(" or "));
+	const string f = masked_mac_filter_5(rs);
+	CHECK(f.contains("0xaabbccdd"));
+	CHECK(f.contains("0x11223344"));
+	CHECK(f.contains(" or "));
 }
 
 // ---- times_packet_sizes_from_csv ----
 
 TEST_CASE("times_packet_sizes_from_csv - two valid rows"){
-    TempCsv tmp(
-        "1|2026-02-21T13:12:45.844734691+0100|149\n"
-        "2|2026-02-21T13:12:46.433775945+0100|200\n"
-    );
+	TempCsv tmp(
+		"1|2026-02-21T13:12:45.844734691+0100|149\n"
+		"2|2026-02-21T13:12:46.433775945+0100|200\n"
+	);
 
-    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
 
-    CHECK_EQ(times.size(), 2u);
-    CHECK_EQ(sizes.size(), 2u);
-    CHECK_EQ(sizes[0], doctest::Approx(149.0));
-    CHECK_EQ(sizes[1], doctest::Approx(200.0));
-    CHECK_LT(times[0], times[1]);
+	CHECK_EQ(times.size(), 2u);
+	CHECK_EQ(sizes.size(), 2u);
+	CHECK_EQ(sizes[0], doctest::Approx(149.0));
+	CHECK_EQ(sizes[1], doctest::Approx(200.0));
+	CHECK_LT(times[0], times[1]);
 }
 
 TEST_CASE("times_packet_sizes_from_csv - invalid timestamp rows are skipped"){
-    TempCsv tmp(
-        "1|INVALID_TIME|100\n"
-        "2|2026-02-21T13:12:46.433775945+0100|200\n"
-    );
+	TempCsv tmp(
+		"1|INVALID_TIME|100\n"
+		"2|2026-02-21T13:12:46.433775945+0100|200\n"
+	);
 
-    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
 
-    CHECK_EQ(sizes.size(), 1u);
-    CHECK_EQ(sizes[0], doctest::Approx(200.0));
+	CHECK_EQ(sizes.size(), 1u);
+	CHECK_EQ(sizes[0], doctest::Approx(200.0));
 }
 
 TEST_CASE("times_packet_sizes_from_csv - empty file returns empty vectors"){
-    TempCsv tmp("");
+	TempCsv tmp("");
 
-    auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
 
-    CHECK(times.empty());
-    CHECK(sizes.empty());
+	CHECK(times.empty());
+	CHECK(sizes.empty());
 }
 
 // ---- extract_pcap_to_csv  /  get_pcap_start_time  (require tshark) ----
 
 TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns"){
-    if(!tshark_available()){
-        MESSAGE("tshark not found, skipping");
-        return;
-    }
+	if(!tshark_available()){
+		MESSAGE("tshark not found, skipping");
+		return;
+	}
 
-    const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
-    REQUIRE(exists(pcapng));
+	const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
+	REQUIRE(exists(pcapng));
 
-    const path out_dir = temp_directory_path() / ("wpa3_pcap_" +
-        to_string(chrono::system_clock::now().time_since_epoch().count()));
-    create_directories(out_dir);
+	const path out_dir = temp_directory_path() / ("wpa3_pcap_" +
+		to_string(chrono::system_clock::now().time_since_epoch().count()));
+	create_directories(out_dir);
 
-    const string actor = "test_actor";
-    copy_f(pcapng, out_dir / (actor + "_capture.pcap"));
+	const string actor = "test_actor";
+	copy_f(pcapng, out_dir / (actor + "_capture.pcap"));
 
-    const path csv = extract_pcap_to_csv(actor, out_dir);
-    REQUIRE(exists(csv));
+	const path csv = extract_pcap_to_csv(actor, out_dir);
+	REQUIRE(exists(csv));
 
-    ifstream f(csv);
-    string line;
-    int count = 0;
-    while(getline(f, line)){
-        if(line.empty()) continue;
-        ++count;
-        CHECK(line.contains(CSV_SEP));
-    }
-    CHECK_GE(count, 1);
+	ifstream f(csv);
+	string line;
+	int count = 0;
+	while(getline(f, line)){
+		if(line.empty()) continue;
+		++count;
+		CHECK(line.contains(CSV_SEP));
+	}
+	CHECK_GE(count, 1);
 
-    remove_all(out_dir);
+	remove_all(out_dir);
 }
 
 TEST_CASE("get_pcap_start_time - returns nonzero time for known pcap"){
-    if(!tshark_available()){
-        MESSAGE("tshark not found, skipping");
-        return;
-    }
+	if(!tshark_available()){
+		MESSAGE("tshark not found, skipping");
+		return;
+	}
 
-    const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
-    REQUIRE(exists(pcapng));
+	const path pcapng = path(TEST_PCAP_DIR) / "test_tshark_minimal.pcapng";
+	REQUIRE(exists(pcapng));
 
-    const LogTimePoint tp = get_pcap_start_time(pcapng);
-    CHECK_NE(tp.time_since_epoch().count(), 0);
+	const LogTimePoint tp = get_pcap_start_time(pcapng);
+	CHECK_NE(tp.time_since_epoch().count(), 0);
 
-    const time_t t = chrono::system_clock::to_time_t(tp);
-    tm utc{};
-    gmtime_r(&t, &utc);
-    CHECK_EQ(utc.tm_year + 1900, 2026);
-    CHECK_EQ(utc.tm_mon + 1, 2);
-    CHECK_EQ(utc.tm_mday, 21);
+	const time_t t = chrono::system_clock::to_time_t(tp);
+	tm utc{};
+	gmtime_r(&t, &utc);
+	CHECK_EQ(utc.tm_year + 1900, 2026);
+	CHECK_EQ(utc.tm_mon + 1, 2);
+	CHECK_EQ(utc.tm_mday, 21);
 }
 
 // ---- transform_to_relative ----
 
 TEST_CASE("transform_to_relative - converts absolute timestamps to relative"){
-    using namespace chrono;
+	using namespace chrono;
 
-    const auto start = system_clock::now();
-    const LogTimePoint start_tp = time_point_cast<nanoseconds>(start);
+	const auto start = system_clock::now();
+	const LogTimePoint start_tp = time_point_cast<nanoseconds>(start);
 
-    vector<LogTimePoint> times;
-    times.push_back(start_tp + seconds(1));
-    times.push_back(start_tp + seconds(2));
-    times.push_back(start_tp + milliseconds(3500));
+	vector<LogTimePoint> times;
+	times.push_back(start_tp + seconds(1));
+	times.push_back(start_tp + seconds(2));
+	times.push_back(start_tp + milliseconds(3500));
 
-    observer::transform_to_relative(times, start_tp);
+	observer::transform_to_relative(times, start_tp);
 
-    CHECK_EQ(duration_cast<seconds>(times[0].time_since_epoch()).count(), 1);
-    CHECK_EQ(duration_cast<seconds>(times[1].time_since_epoch()).count(), 2);
-    CHECK_EQ(duration_cast<milliseconds>(times[2].time_since_epoch()).count(), 3500);
+	CHECK_EQ(duration_cast<seconds>(times[0].time_since_epoch()).count(), 1);
+	CHECK_EQ(duration_cast<seconds>(times[1].time_since_epoch()).count(), 2);
+	CHECK_EQ(duration_cast<milliseconds>(times[2].time_since_epoch()).count(), 3500);
 
-    vector<LogTimePoint> empty_times;
-    observer::transform_to_relative(empty_times, start_tp);
-    CHECK(empty_times.empty());
+	vector<LogTimePoint> empty_times;
+	observer::transform_to_relative(empty_times, start_tp);
+	CHECK(empty_times.empty());
 
 }

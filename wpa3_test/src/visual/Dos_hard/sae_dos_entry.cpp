@@ -10,13 +10,13 @@ using namespace std;
 using namespace filesystem;
 
 SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {
-    SaeDosFolderEntry e;
+	SaeDosFolderEntry e;
 	e.test_folder = test_folder;
-    e.name = test_folder.filename().string();
-    const auto png = test_folder / "observer" / "resource_checker" / "ap_res.png";
-    if (exists(png))
-        e.ap_res_png = png;
-    return e;
+	e.name = test_folder.filename().string();
+	const auto png = test_folder / "observer" / "resource_checker" / "ap_res.png";
+	if (exists(png))
+		e.ap_res_png = png;
+	return e;
 }
 
 void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &title,

@@ -118,7 +118,7 @@ TEST_CASE("device() - device page at root -> returns relative link") {
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	CHECK_EQ(device(mac, fx.dir),
-	         "<a href=\"devices/aa:bb:cc:dd:ee:ff/index.html\">aa:bb:cc:dd:ee:ff</a>");
+			 "<a href=\"devices/aa:bb:cc:dd:ee:ff/index.html\">aa:bb:cc:dd:ee:ff</a>");
 }
 
 TEST_CASE("device() - device page found via ancestor -> link uses correct depth") {
@@ -130,7 +130,7 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	const path nested = fx.dir / "attacks" / "DoS_soft" / "channel_switch";
 	CHECK_EQ(device(mac, nested),
-	         "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
+			 "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
 }
 
 using wpa3_tester::described_bool;
@@ -151,8 +151,8 @@ TEST_CASE("described_bool - single true entry") {
 	described_bool db; db += {true, "src"};
 	{ HtmlGuard hg(fx.dir); hg << db; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR +
-	         "<tr><td>yes</td><td>src</td></tr>" + TOOLTIP_FTR);
+			 R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR +
+			 "<tr><td>yes</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_bool - single false entry") {
@@ -160,8 +160,8 @@ TEST_CASE("described_bool - single false entry") {
 	described_bool db; db += {false, "src"};
 	{ HtmlGuard hg(fx.dir); hg << db; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
-	         "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
+			 R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
+			 "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 
@@ -170,9 +170,9 @@ TEST_CASE("described_bool - multiple entries: last shown, all in table") {
 	described_bool db; db += {false, "s1"}; db += {false, "s2"};
 	{ HtmlGuard hg(fx.dir); hg << db; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
-	         "<tr><td>no</td><td>s1</td></tr>"
-	         "<tr><td>no</td><td>s2</td></tr>" + TOOLTIP_FTR);
+			 R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
+			 "<tr><td>no</td><td>s1</td></tr>"
+			 "<tr><td>no</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_str - empty -> '?'") {
@@ -186,8 +186,8 @@ TEST_CASE("described_str - single non-empty string entry") {
 	described_str ds; ds += {"hello", "src"};
 	{ HtmlGuard hg(fx.dir); hg << ds; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip">hello)" + TOOLTIP_HDR +
-	         "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
+			 R"(<span class="has-tooltip">hello)" + TOOLTIP_HDR +
+			 "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 
@@ -196,7 +196,7 @@ TEST_CASE("described_str - multiple entries: last shown, all in table") {
 	described_str ds; ds += {"first", "s1"}; ds += {"second", "s2"};
 	{ HtmlGuard hg(fx.dir); hg << ds; }
 	CHECK_EQ(fx.read_index(),
-	         R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
-	         "<tr><td>first</td><td>s1</td></tr>"
-	         "<tr><td>second</td><td>s2</td></tr>" + TOOLTIP_FTR);
+			 R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
+			 "<tr><td>first</td><td>s1</td></tr>"
+			 "<tr><td>second</td><td>s2</td></tr>" + TOOLTIP_FTR);
 }

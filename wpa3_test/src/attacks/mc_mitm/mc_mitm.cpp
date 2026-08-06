@@ -45,10 +45,10 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 		// followed by one with a value of 1. When starting with 1 it errors out.
 		//TODO proč to nejde takhle? (asi jedno, ale bylo bylep39 vycházet z beacon_copy)
 		/*auto csa2 = append_csa(*beacon_copy, netconfig.rogue_channel, 2);
-        send_to_real(csa2);
+		send_to_real(csa2);
 
-        auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
-        send_to_real(csa1);*/
+		auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
+		send_to_real(csa1);*/
 
 		this_thread::sleep_for(milliseconds(100)); //TODO from config
 	}
@@ -66,18 +66,18 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 }
 
 /*void McMitm::queue_disas(const HWAddress<6> &macaddr){
-    const bool already_queued = ranges::any_of(disas_queue,
-        [&](const auto &entry){ return entry.second == macaddr; });
-    if(already_queued) return;
+	const bool already_queued = ranges::any_of(disas_queue,
+		[&](const auto &entry){ return entry.second == macaddr; });
+	if(already_queued) return;
 
-    const auto sched_time = steady_clock::now() + milliseconds(500);
-    disas_queue.emplace_back(sched_time, macaddr);
-    ranges::sort(disas_queue); // sort by time
+	const auto sched_time = steady_clock::now() + milliseconds(500);
+	disas_queue.emplace_back(sched_time, macaddr);
+	ranges::sort(disas_queue); // sort by time
 }
 
 void McMitm::try_channel_switch(const HWAddress<6> &macaddr){
-    send_csa_beacon();
-    queue_disas(macaddr);
+	send_csa_beacon();
+	queue_disas(macaddr);
 }*/
 
 void McMitm::send_deauth_as_ap() const{
@@ -237,9 +237,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
 		/*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
-            send_disas(disas_queue.front().second);
-            disas_queue.erase(disas_queue.begin());
-        }*/
+			send_disas(disas_queue.front().second);
+			disas_queue.erase(disas_queue.begin());
+		}*/
 
 		if(next_beacon <= steady_clock::now()){
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;

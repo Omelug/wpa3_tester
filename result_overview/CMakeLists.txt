@@ -3,8 +3,7 @@ file(GLOB_RECURSE RESULT_OVERVIEW_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
-add_executable(result_overview ${RESULT_OVERVIEW_SOURCES}
-        include/html_guard.h)
+add_executable(result_overview ${RESULT_OVERVIEW_SOURCES})
 
 target_include_directories(result_overview PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include

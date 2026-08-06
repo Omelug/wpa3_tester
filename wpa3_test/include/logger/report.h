@@ -9,8 +9,8 @@
 namespace wpa3_tester::report{
 
 struct Link {
-    std::string text;
-    std::filesystem::path link_path;
+	std::string text;
+	std::filesystem::path link_path;
 };
 
 // open report.md for write
@@ -28,24 +28,24 @@ struct ReportGuard {
 	ReportGuard &operator=(const ReportGuard &) = delete;
 
 	explicit operator bool() const { return stream_.is_open(); }
-    ReportGuard &operator<<(const std::filesystem::path &p){
-	    const auto rel = p.is_absolute() ? p.lexically_relative(run_dir_) : p;
-	    stream_ << rel.string(); return *this;
+	ReportGuard &operator<<(const std::filesystem::path &p){
+		const auto rel = p.is_absolute() ? p.lexically_relative(run_dir_) : p;
+		stream_ << rel.string(); return *this;
 	}
-    ReportGuard &operator<<(const Link &l){
-        const auto resolved = l.link_path.is_absolute() ? l.link_path : run_dir_ / l.link_path;
-        if(std::filesystem::exists(resolved)){
-            const auto rel = l.link_path.is_absolute()
-                ? l.link_path.lexically_relative(run_dir_)
-                : l.link_path;
-            stream_ << '[' << l.text << "](" << rel.string() << ')';
-        } else {
-            stream_ << l.text;
-        }
-        return *this;
-    }
+	ReportGuard &operator<<(const Link &l){
+		const auto resolved = l.link_path.is_absolute() ? l.link_path : run_dir_ / l.link_path;
+		if(std::filesystem::exists(resolved)){
+			const auto rel = l.link_path.is_absolute()
+				? l.link_path.lexically_relative(run_dir_)
+				: l.link_path;
+			stream_ << '[' << l.text << "](" << rel.string() << ')';
+		} else {
+			stream_ << l.text;
+		}
+		return *this;
+	}
 
-    ReportGuard &operator<<(const bool val){ stream_ << (val ? "yes" : "no"); return *this; }
+	ReportGuard &operator<<(const bool val){ stream_ << (val ? "yes" : "no"); return *this; }
 	ReportGuard &operator<<(const std::pair<bool, std::string> &val){
 		stream_ << (val.first ? "yes" : "no");
 		if(!val.second.empty()) stream_ << " (" << val.second << ')';
@@ -57,7 +57,7 @@ struct ReportGuard {
 		if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		return *this;
 	}
-    ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
+	ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
 
 	ReportGuard &operator<<(const std::string &val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
 	ReportGuard &operator<<(const std::pair<std::string, std::string> &val){
@@ -89,14 +89,14 @@ struct ReportGuard {
 
 	template<typename T>
 	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::string> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
-	          !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-	          !std::same_as<std::remove_cvref_t<T>, Link> &&
-	          !std::same_as<std::remove_cvref_t<T>, described_bool> &&
-	          !std::same_as<std::remove_cvref_t<T>, described_str>)
+			  !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::string> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
+			  !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+			  !std::same_as<std::remove_cvref_t<T>, Link> &&
+			  !std::same_as<std::remove_cvref_t<T>, described_bool> &&
+			  !std::same_as<std::remove_cvref_t<T>, described_str>)
 	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
 private:

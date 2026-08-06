@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include "html_guard.h"
+
+#include "overview/html_guard.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -114,14 +115,14 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	f << "        </table>\n    </div>\n"
 	  << "    <div class=\"card\">\n        <h2>Capabilities</h2>\n        <table>\n"
 	  << "            <tr><th>Mode</th><td>"
-	     << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
-	     << "</td></tr>\n"
+		 << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
+		 << "</td></tr>\n"
 	  << "            <tr><th>Bands</th><td>"
-	     << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
-	     << "</td></tr>\n"
+		 << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
+		 << "</td></tr>\n"
 	  << "            <tr><th>Standards</th><td>"
-	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
-	     << "</td></tr>\n"
+		 << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
+		 << "</td></tr>\n"
 	  << "            <tr><th>Beacon protection</th><td>" << d.caps.beacon_prot << "</td></tr>\n"
 	  << "            <tr><th>CSA</th><td>"    << d.caps.CSA     << "</td></tr>\n"
 	  << "            <tr><th>OCV</th><td>"    << d.caps.OCV     << "</td></tr>\n"
@@ -142,14 +143,14 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 	}
 
 	f << R"html(        <table class="aggregate">
-            <thead><tr>
-                <th>MAC</th><th>Driver</th>
-                <th>AP</th><th>STA</th><th>Mon</th>
-                <th>2.4G</th><th>5G</th><th>6G</th>
-                <th>n</th><th>ac</th><th>ax</th>
-                <th>Bcn</th><th>CSA</th><th>OCV</th><th>MFP</th><th>PSK</th><th>SAE</th>
-            </tr></thead>
-            <tbody>
+			<thead><tr>
+				<th>MAC</th><th>Driver</th>
+				<th>AP</th><th>STA</th><th>Mon</th>
+				<th>2.4G</th><th>5G</th><th>6G</th>
+				<th>n</th><th>ac</th><th>ax</th>
+				<th>Bcn</th><th>CSA</th><th>OCV</th><th>MFP</th><th>PSK</th><th>SAE</th>
+			</tr></thead>
+			<tbody>
 )html";
 	for(const auto *d : rows){
 		const string label = d->name.empty() ? d->mac : d->name;
@@ -204,15 +205,15 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devices</title>
-    <link rel="stylesheet" href="../style.css">
-    <script src="../table_aggregate.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Devices</title>
+	<link rel="stylesheet" href="../style.css">
+	<script src="../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../index.html" class="back-link">&#8592; Overview</a>
-    <h1>Devices</h1>
+	<a href="../index.html" class="back-link">&#8592; Overview</a>
+	<h1>Devices</h1>
 )html";
 
 	constexpr array<pair<string_view, string_view>, 3> sections = {{

@@ -7,43 +7,43 @@
 namespace wpa3_tester {
 
 struct described_bool {
-    struct pair_t {
-        std::optional<bool> value;
-        std::string description;
-    };
-    std::vector<pair_t> pairs;
+	struct pair_t {
+		std::optional<bool> value;
+		std::string description;
+	};
+	std::vector<pair_t> pairs;
 
-    described_bool &operator+=(pair_t p){
-	    if(p.value.has_value()){pairs.push_back(std::move(p));} return *this;
-    }
+	described_bool &operator+=(pair_t p){
+		if(p.value.has_value()){pairs.push_back(std::move(p));} return *this;
+	}
 
-    [[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
-    [[nodiscard]] const pair_t &last() const { return pairs.back(); }
-    [[nodiscard]] std::optional<bool> value() const {
-        return pairs.empty() ? std::nullopt : pairs.back().value;
-    }
+	[[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
+	[[nodiscard]] const pair_t &last() const { return pairs.back(); }
+	[[nodiscard]] std::optional<bool> value() const {
+		return pairs.empty() ? std::nullopt : pairs.back().value;
+	}
 };
 
 struct described_str {
-    struct pair_t {
-        std::string value;
-        std::string description;
-    };
-    std::vector<pair_t> pairs;
+	struct pair_t {
+		std::string value;
+		std::string description;
+	};
+	std::vector<pair_t> pairs;
 
-    described_str &operator+=(pair_t p) { if(!p.value.empty()){pairs.push_back(std::move(p));} return *this; }
+	described_str &operator+=(pair_t p) { if(!p.value.empty()){pairs.push_back(std::move(p));} return *this; }
 
-    [[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
-    [[nodiscard]] const pair_t &last() const { return pairs.back(); }
-    [[nodiscard]] const std::string &value() const {
-        static const std::string empty_s;
-        return pairs.empty() ? empty_s : pairs.back().value;
-    }
+	[[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
+	[[nodiscard]] const pair_t &last() const { return pairs.back(); }
+	[[nodiscard]] const std::string &value() const {
+		static const std::string empty_s;
+		return pairs.empty() ? empty_s : pairs.back().value;
+	}
 };
 
 inline void to_json(nlohmann::json &j, const described_bool::pair_t &p){
 	j = {{"value",       p.value.has_value() ? nlohmann::json(*p.value) : nlohmann::json(nullptr)},
-	     {"description", p.description}};
+		 {"description", p.description}};
 }
 inline void from_json(const nlohmann::json &j, described_bool::pair_t &p){
 	j.at("description").get_to(p.description);

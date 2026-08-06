@@ -376,51 +376,51 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 
 
 string akm_from_ap_log(const path &log_path, const TimeWindow window){
-    ifstream f(log_path);
-    string line;
-    string akm_fallback;
-    const bool bounded = window.start_tp.time_since_epoch().count() != 0;
+	ifstream f(log_path);
+	string line;
+	string akm_fallback;
+	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
 
-    while(getline(f, line)){
-       if(bounded){
-           const auto tp = log_time_to_epoch_ns(line);
-           if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break;
-       }
+	while(getline(f, line)){
+	   if(bounded){
+		   const auto tp = log_time_to_epoch_ns(line);
+		   if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break;
+	   }
 
-       // 1. Explicitní textová AKM suita (pokud v logu je)
-       const auto pos = line.find("AKM suite ");
-       if(pos != string::npos){
-          const auto start = pos + string("AKM suite ").size();
-          const auto end = line.find_first_of(" \t\n\r]", start);
-          string suite = line.substr(start, end == string::npos ? string::npos : end - start);
-          if(suite.empty()) continue;
-          if(suite.ends_with(":8")) return suite + "\n(WPA3)";
-          if(suite.ends_with(":2")) return suite + "\n(WPA2)";
-          return suite;
-       }
+	   // 1. Explicitní textová AKM suita (pokud v logu je)
+	   const auto pos = line.find("AKM suite ");
+	   if(pos != string::npos){
+		  const auto start = pos + string("AKM suite ").size();
+		  const auto end = line.find_first_of(" \t\n\r]", start);
+		  string suite = line.substr(start, end == string::npos ? string::npos : end - start);
+		  if(suite.empty()) continue;
+		  if(suite.ends_with(":8")) return suite + "\n(WPA3)";
+		  if(suite.ends_with(":2")) return suite + "\n(WPA2)";
+		  return suite;
+	   }
 
-       // 2. Detekce podle textového fallbacku (např. SAE / PSK)
-       if(akm_fallback.empty()){
-          const auto akm_pos = line.find("(AKM-defined - ");
-          if(akm_pos != string::npos){
-             const auto start = akm_pos + string("(AKM-defined - ").size();
-             const auto end = line.find(')', start);
-             if(end != string::npos) {
-                 string val = line.substr(start, end - start);
-                 if(val.find("SAE") != string::npos) return "00-0f-ac:8\n(WPA3)";
-                 if(val.find("PSK") != string::npos) return "00-0f-ac:2\n(WPA2)";
-             }
-          }
-       }
+	   // 2. Detekce podle textového fallbacku (např. SAE / PSK)
+	   if(akm_fallback.empty()){
+		  const auto akm_pos = line.find("(AKM-defined - ");
+		  if(akm_pos != string::npos){
+			 const auto start = akm_pos + string("(AKM-defined - ").size();
+			 const auto end = line.find(')', start);
+			 if(end != string::npos) {
+				 string val = line.substr(start, end - start);
+				 if(val.find("SAE") != string::npos) return "00-0f-ac:8\n(WPA3)";
+				 if(val.find("PSK") != string::npos) return "00-0f-ac:2\n(WPA2)";
+			 }
+		  }
+	   }
 
-       // 3. Zpracování RSN IE, ale IGNORUJEME řádky s Beacon tail (abychom netahali globální nabídku AP)
-       if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos) {
-           // Hledáme specificky WPA3 (:8) nebo WPA2 (:2) uvnitř EAPOL-Key výměny
-           if(line.find("00 0f ac 08") != string::npos) return "00-0f-ac:8\n(WPA3)";
-           if(line.find("00 0f ac 02") != string::npos) return "00-0f-ac:2\n(WPA2)";
-       }
-    }
-    return akm_fallback;
+	   // 3. Zpracování RSN IE, ale IGNORUJEME řádky s Beacon tail (abychom netahali globální nabídku AP)
+	   if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos) {
+		   // Hledáme specificky WPA3 (:8) nebo WPA2 (:2) uvnitř EAPOL-Key výměny
+		   if(line.find("00 0f ac 08") != string::npos) return "00-0f-ac:8\n(WPA3)";
+		   if(line.find("00 0f ac 02") != string::npos) return "00-0f-ac:2\n(WPA2)";
+	   }
+	}
+	return akm_fallback;
 }
 
 // RSN IE layout: tag(1) len(1) version(2) group_cipher(4)

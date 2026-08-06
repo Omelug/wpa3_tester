@@ -149,20 +149,20 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 				display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 			}
 		} /*else if(
-            // auth/assoc what rogue AP cant generate
-            dot11->find_pdu<Dot11Authentication>() ||
-            dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<Dot11ReAssocRequest>() ||
-            dot11->type() == Dot11::DATA){
+			// auth/assoc what rogue AP cant generate
+			dot11->find_pdu<Dot11Authentication>() ||
+			dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<Dot11ReAssocRequest>() ||
+			dot11->type() == Dot11::DATA){
 
-            print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-            auto new_client = ClientState(addr2);
-            add_client(new_client);
-            will_forward = true;
+			print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
+			auto new_client = ClientState(addr2);
+			add_client(new_client);
+			will_forward = true;
 
-        }
-        else if(client_state.get_mac() == addr2){
-            display_traffic(*pdu, "Rogue channel", "**");
-        }*/
+		}
+		else if(client_state.get_mac() == addr2){
+			display_traffic(*pdu, "Rogue channel", "**");
+		}*/
 
 		// remove sleep option
 		if(will_forward){

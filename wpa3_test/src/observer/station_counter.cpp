@@ -19,7 +19,7 @@ using namespace filesystem;
 const string program_name = "station_counter";
 
 static string build_count_script(const string &iface, const string &log_file, int interval_sec, bool append) {
-	string write_cmd = append ? ">> " + log_file : "";
+	const string write_cmd = append ? ">> " + log_file : "";
 	return "while true; do count=$(iw dev " + iface + " station dump 2>/dev/null"
 		   "| grep -c '^Station' || echo 0); "
 		   "echo \"$(date +%s) $count\" " + write_cmd + "; "
@@ -69,7 +69,7 @@ void start_local(RunStatus &rs, const string &actor_name, const string &iface, i
 	rs.process_manager.run(actor_name + SUFFIX_sta, {"sh", "-c", script}, {}, log_dir);
 }
 
-void start_station_monitoring(RunStatus &rs, const string &actor_name, int interval_sec) {
+void start_station_monitoring(RunStatus &rs, const string &actor_name, const int interval_sec) {
 	const auto actor = rs.get_actor(actor_name);
 	const string local_log = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
 	const string iface = actor.get(SK::iface);

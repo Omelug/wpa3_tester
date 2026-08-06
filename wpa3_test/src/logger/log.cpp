@@ -129,7 +129,8 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 	while(getline(file, line)){
 		if(regex_search(line, match, re)){
 			const LogTimePoint tp = log_time_to_epoch_ns(match[1].str());
-			if(tp.time_since_epoch().count() != 0 && (!window || window->contains(tp)))
+			if(tp.time_since_epoch().count() != 0 &&
+				(window == nullopt || window == TimeWindow{} || window->contains(tp)))
 				timestamps.push_back(tp);
 		}
 	}

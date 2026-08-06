@@ -32,7 +32,7 @@ TEST_CASE("YAMLValidator - basic validation passes"){
 type: object
 properties:
   name:
-	type: string
+    type: string
 required: [name]
 )");
 	nlohmann::json config = {{"name", "test"}};
@@ -46,7 +46,7 @@ TEST_CASE("YAMLValidator - validation fails on wrong type"){
 type: object
 properties:
   channel:
-	type: integer
+    type: integer
 required: [channel]
 )");
 	nlohmann::json config = {{"channel", "not_an_int"}};
@@ -60,11 +60,11 @@ TEST_CASE("YAMLValidator - defaults fills missing fields"){
 type: object
 properties:
   ieee80211w:
-	type: integer
-	default: 1
+    type: integer
+    default: 1
   channel:
-	type: integer
-	default: 6
+    type: integer
+    default: 6
 )");
 	nlohmann::json config = nlohmann::json::object();
 	YAMLValidator validator(f.schema());
@@ -80,8 +80,8 @@ TEST_CASE("YAMLValidator - defaults does not overwrite existing values"){
 type: object
 properties:
   channel:
-	type: integer
-	default: 6
+    type: integer
+    default: 6
 )");
 	nlohmann::json config = {{"channel", 11}};
 	YAMLValidator validator(f.schema());
@@ -96,11 +96,11 @@ TEST_CASE("YAMLValidator - defaults nested object"){
 type: object
 properties:
   setup:
-	type: object
-	properties:
-	  ieee80211w:
-		type: integer
-		default: 2
+    type: object
+    properties:
+      ieee80211w:
+        type: integer
+        default: 2
 )");
 	nlohmann::json config = {{"setup", nlohmann::json::object()}};
 	YAMLValidator validator(f.schema());
@@ -115,10 +115,10 @@ TEST_CASE("YAMLValidator - defaults object default value"){
 type: object
 properties:
   options:
-	type: object
-	default:
-	  retries: 3
-	  timeout: 30
+    type: object
+    default:
+      retries: 3
+      timeout: 30
 )");
 	nlohmann::json config = nlohmann::json::object();
 	YAMLValidator validator(f.schema());
@@ -134,14 +134,14 @@ TEST_CASE("YAMLValidator - external schema ref"){
 type: object
 properties:
   ssid:
-	type: string
+    type: string
 required: [ssid]
 )");
 	f.write("schema.yaml", R"(
 type: object
 properties:
   network:
-	$ref: './base.yaml'
+    $ref: './base.yaml'
 )");
 	nlohmann::json config = {{"network", {{"ssid", "test"}}}};
 	YAMLValidator validator(f.schema());
@@ -154,7 +154,7 @@ TEST_CASE("YAMLValidator - missing required field throws"){
 type: object
 properties:
   ssid:
-	type: string
+    type: string
 required: [ssid]
 )");
 	nlohmann::json config = nlohmann::json::object();

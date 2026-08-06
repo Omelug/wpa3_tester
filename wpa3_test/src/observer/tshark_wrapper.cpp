@@ -455,10 +455,12 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 		filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
 
 	const string output = hw_capabilities::run_cmd_output({
-															"tshark", "-r", pcap_path.string(),
-															"-Y", filter,
-															"-T", "fields", "-e", "wlan.ds.current_channel", "-e", "radiotap.channel.number"
-														}, nullopt);
+		"tshark", "-r", pcap_path.string(),
+		"-Y", filter,
+		"-T", "fields",
+		"-e", "wlan_radio.channel",
+		"-e", "wlan.ds.current_channel"
+	}, nullopt);
 
 	if(trim(output).empty()) return {};
 

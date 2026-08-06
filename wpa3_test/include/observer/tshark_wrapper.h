@@ -45,6 +45,6 @@ std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
 // Returns "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap), "yes" if
 // probe requests found but no channel info, or empty string if no scanning detected.
 std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
-                                       const std::string &client_mac,
-                                       TimeWindow window = {});
+									   const std::string &client_mac,
+									   TimeWindow window = {});
 }

@@ -38,7 +38,7 @@ static void validate_interface(const string &iface) {
 
 	const string output(buf);
 	if (output.find("No such device") != string::npos || 
-	    output.find("command failed") != string::npos) {
+		output.find("command failed") != string::npos) {
 		throw run_err("station_counter: interface '" + iface + "' not found or not an AP interface.");
 	}
 }

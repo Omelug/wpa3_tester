@@ -48,6 +48,7 @@ template<typename T> T entry_default(){ return T{}; }
 template<> inline std::string                   entry_default<std::string>()                   { return "-";   }
 template<> inline std::optional<std::string>    entry_default<std::optional<std::string>>()    { return "N/A"; }
 
+// load names with same name to Entry Structure
 template<typename Entry>
 Entry load_result_default(const std::filesystem::path &test_folder){
 	Entry e;

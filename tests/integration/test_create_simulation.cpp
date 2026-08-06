@@ -10,35 +10,35 @@ using namespace wpa3_tester;
 //linux dont need to have mac80211_hwsim module -> skip tests with log
 
 TEST_CASE("RunStatus::create_simulation - loads hwsim and returns simulation actor options"){
-    const test_helpers::IsolatedRootDir isolated("create_simulation_test");
-    const auto options = RunStatus::create_simulation(1);
+	const test_helpers::IsolatedRootDir isolated("create_simulation_test");
+	const auto options = RunStatus::create_simulation(1);
 
-    if(options.empty()){
-        MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
-        return;
-    }
+	if(options.empty()){
+		MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
+		return;
+	}
 
-    REQUIRE_GE(options.size(), 1);
-    for(const auto &opt: options){
-        CHECK_EQ(opt.get(SK::source), "simulation");
-        CHECK(opt.get(SK::iface).starts_with(HWSIM_IFACE_PREFIX));
-        CHECK_FALSE(opt.get(SK::radio).empty());
-    }
+	REQUIRE_GE(options.size(), 1);
+	for(const auto &opt: options){
+		CHECK_EQ(opt.get(SK::source), "simulation");
+		CHECK(opt.get(SK::iface).starts_with(HWSIM_IFACE_PREFIX));
+		CHECK_FALSE(opt.get(SK::radio).empty());
+	}
 
-    hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 }
 
 TEST_CASE("RunStatus::create_simulation - creates one interface per requested radio"){
-    const test_helpers::IsolatedRootDir isolated("create_simulation_multi_test");
+	const test_helpers::IsolatedRootDir isolated("create_simulation_multi_test");
 
-    const auto options = RunStatus::create_simulation(2);
+	const auto options = RunStatus::create_simulation(2);
 
-    if(options.empty()){
-        MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
-        return;
-    }
+	if(options.empty()){
+		MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
+		return;
+	}
 
-    CHECK_EQ(options.size(), 2);
+	CHECK_EQ(options.size(), 2);
 
-    hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 }

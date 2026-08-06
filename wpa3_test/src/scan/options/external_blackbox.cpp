@@ -161,7 +161,7 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 }
 
 vector<uint8_t> RunStatus::get_external_BB_channels(){
-    vector<uint8_t> all_channels;
+	vector<uint8_t> all_channels;
 
 	if(_config.contains("scan_channels")){
 		all_channels = _config.at("scan_channels").get<vector<uint8_t>>();
@@ -247,8 +247,8 @@ bool RunStatus::process_single_packet(
 }
 
 vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels,
-                                              const ActorCMap &actors,
-                                              const vector<pair<string,string>> &conn_conds
+											  const ActorCMap &actors,
+											  const vector<pair<string,string>> &conn_conds
 ){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);

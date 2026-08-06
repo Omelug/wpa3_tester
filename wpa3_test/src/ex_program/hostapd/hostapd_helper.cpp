@@ -593,7 +593,7 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	return binary_path;
 }
 
-//TODO test
+
 string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
 	if(!exists(ap_log) || client_mac.empty()) return {};
 	ifstream f(ap_log);

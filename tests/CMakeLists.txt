@@ -1,3 +1,5 @@
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 add_subdirectory(test_helpers)
 add_subdirectory(scan)
 add_subdirectory(logger)

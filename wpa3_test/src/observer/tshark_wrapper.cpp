@@ -406,6 +406,28 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 	catch(...){ return nullopt; }
 }
 
+//TODO tests for these functions  with real pcap/logs
+string akm_from_pcap(const path &pcap_path){
+	if(!exists(pcap_path)) return {};
+
+	// Association Request (wlan.fc.type_subtype == 0x0000)
+	// tshark need to filtered for actors mac only
+	const string output = hw_capabilities::run_cmd_output({
+															"tshark", "-r", pcap_path.string(),
+															"-Y", "wlan.fc.type_subtype == 0x0000 && wlan.rsn.akms.type",
+															"-T", "fields", "-e", "wlan.rsn.akms.type",
+															"-c", "1"
+														}, nullopt);
+
+	const string type = trim(output);
+
+	if(type == "8") return "00-0F-AC:8(WPA3)";
+	if(type == "2") return "00-0F-AC:2(WPA2)";
+	if(type == "6") return "00-0F-AC:6(WPA2-SHA256)";
+	if(!type.empty()) return "00-0F-AC:" + type;
+	return {};
+}
+
 optional<bool> client_ocv_from_pcap(const path &pcap_path){
 	// Probe Request (0x0004) or Association Request (0x0000) carry client's RSNXE
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000");
@@ -424,7 +446,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 		return format("{:.6f}", static_cast<double>(ns) / 1e9);
 	};
 
-	string filter = "wlan.fc.type_subtype == 0x0004";
+	string filter = "wlan.fc.type_subtype == 0x0004"; //probe request
 	if(!client_mac.empty())
 		filter += " && wlan.sa == " + client_mac;
 	if(window.start_tp.time_since_epoch().count() != 0)
@@ -433,10 +455,10 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 		filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
 
 	const string output = hw_capabilities::run_cmd_output({
-		"tshark", "-r", pcap_path.string(),
-		"-Y", filter,
-		"-T", "fields", "-e", "wlan.ds.current_channel", "-e", "radiotap.channel.number"
-	}, nullopt);
+															"tshark", "-r", pcap_path.string(),
+															"-Y", filter,
+															"-T", "fields", "-e", "wlan.ds.current_channel", "-e", "radiotap.channel.number"
+														}, nullopt);
 
 	if(trim(output).empty()) return {};
 
@@ -458,28 +480,6 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	string result = "ch:";
 	for(const int ch: channels) result += " " + to_string(ch);
 	return result;
-}
-
-//TODO tests for these functions  with real pcap/logs
-string akm_from_pcap(const path &pcap_path){
-	if(!exists(pcap_path)) return {};
-
-	// Association Request (wlan.fc.type_subtype == 0x0000)
-	// tshark need to filtered for actors mac only
-	const string output = hw_capabilities::run_cmd_output({
-	   "tshark", "-r", pcap_path.string(),
-	   "-Y", "wlan.fc.type_subtype == 0x0000 && wlan.rsn.akms.type",
-	   "-T", "fields", "-e", "wlan.rsn.akms.type",
-	   "-c", "1"
-	}, nullopt);
-
-	const string type = trim(output);
-
-	if(type == "8") return "00-0F-AC:8(WPA3)";
-	if(type == "2") return "00-0F-AC:2(WPA2)";
-	if(type == "6") return "00-0F-AC:6(WPA2-SHA256)";
-	if(!type.empty()) return "00-0F-AC:" + type;
-	return {};
 }
 
 }

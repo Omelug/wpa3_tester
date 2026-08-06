@@ -43,6 +43,7 @@ pair<optional<bool>,optional<hostapd::CrackResult>> hostapd_mana_crack(const Run
 	return {nullopt, nullopt};
 }
 
+// have to be prefiltered with acotors only
 described_bool get_ap_ocv(const RunStatus &rs){
 	// at least one possible source
 	assert(rs.actor("attacker") || rs.actor("ap"));
@@ -67,7 +68,8 @@ described_bool get_client_ocv(const RunStatus &rs){
 
 described_str get_client_scanning(const RunStatus &rs, const TimeWindow window){
 	// at least one possible source
-	assert(rs.actor("client") && (rs.actor("attacker") || rs.actor("ap")));
+	assert(rs.actor("client"));
+	assert(rs.actor("attacker") || rs.actor("ap"));
 
 	described_str client_scanning;
 	const path attacker_pcap = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";

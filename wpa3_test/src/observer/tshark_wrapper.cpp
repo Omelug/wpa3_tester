@@ -239,7 +239,8 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 			string frame_num_str, time_str;
 			if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)){
 				const LogTimePoint tp = log_time_to_epoch_ns(time_str);
-				if(tp.time_since_epoch().count() != 0 && (!window || window->contains(tp)))
+				if(tp.time_since_epoch().count() != 0 &&
+				    (window == nullopt || window == TimeWindow{} || window->contains(tp)))
 					timestamps.push_back(tp);
 			}
 		} catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '{}': {}", line, e.what()); }

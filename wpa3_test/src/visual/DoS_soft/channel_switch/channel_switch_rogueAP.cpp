@@ -102,7 +102,7 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
 			col("Connected WPA version",		&CsaTestEntry::conn_WPA_version);
 			col("client scanning",				&CsaTestEntry::client_scanning);
-		})->render();
+		})->render({"Test"});
 		#undef COL
 	});
 }

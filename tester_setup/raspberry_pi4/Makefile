@@ -1,3 +1,4 @@
+#TODO simplify comments
 # ─────────────────────────────────────────────────────────────────────────────
 # Raspberry Pi 4B — image creation and deploy automation
 #
@@ -20,7 +21,6 @@ PI_HOSTNAME ?= wpa3-tester
 PI_PASSWORD ?= wpa3tester
 SSH_KEY     ?= $(HOME)/.ssh/id_rsa.pub
 DISK        ?=
-#CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml
 CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml
 
 # Static IP baked into the image — also used as SSH target (PI defaults to PI_IP)
@@ -359,6 +359,9 @@ results:
 	rsync -az --delete --info=progress2 \
 		$(PI_USER)@$(PI):$(REMOTE_ABS)/data/ \
 		$(RESULTS_DATA)/
+	$(MAKE) results_gen_only
+
+results_gen_only:
 	rm -rf $(RESULTS_HTML)
 	$(RESULT_OVERVIEW) \
 		--data_dir   $(RESULTS_DATA) \

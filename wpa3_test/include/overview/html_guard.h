@@ -102,8 +102,8 @@ struct HtmlGuard {
 			  !std::same_as<std::remove_cvref_t<T>, described_str>)
 	HtmlGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
 
-private:
 	std::ofstream stream_;
+private:
 	std::filesystem::path page_dir_;
 };
 

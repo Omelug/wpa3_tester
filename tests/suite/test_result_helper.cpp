@@ -275,9 +275,9 @@ TEST_CASE("get_ap_ocv - from hostapd_conf"){
 TEST_CASE("get_ap_ocv - from pcap"){
 	const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
 	create_directories(dir);
-	create_directories(dir / "tshark");
+	create_directories(dir / "observer" / "tshark");
 
-	const path src_pcap = "../../../tests/test_data/beacon_test.pcapng";
+	const path src_pcap = "../test_data/beacon_test.pcapng";
 	const path dst_pcap = dir / "observer" / "tshark" / "attacker_capture.pcap";
 	wpa3_tester::copy_f(src_pcap, dst_pcap);
 
@@ -297,11 +297,11 @@ TEST_CASE("get_ap_ocv - from pcap"){
 TEST_CASE("get_client_scanning - from attacker pcap"){
 	const path dir = temp_directory_path() / "wpa3_client_scanning_test";
 	create_directories(dir);
-	create_directories(dir / "tshark");
+	create_directories(dir / "observer" / "tshark");
 
-	const path src_pcap = "../../../tests/test_data/probe_req.pcapng";
+	const path src_pcap = "../test_data/probe_req.pcapng";
 	const path dst_pcap = dir /"observer" / "tshark" / "attacker_capture.pcap";
-	wpa3_tester::copy_f(src_pcap, dst_pcap);
+	wpa3_tester::copy_f(absolute(src_pcap), dst_pcap);
 
 	// Create ap.log with client scanning info
 	create_directories(dir / "logger");

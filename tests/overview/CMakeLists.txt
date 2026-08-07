@@ -1,0 +1,1 @@
+add_doctest_exe(test_html_utils SOURCES test_html_utils.cpp TEST_NAME test_html_utils)

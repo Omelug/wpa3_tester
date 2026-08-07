@@ -174,7 +174,7 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 		if(exists(pcap_path)){
 			const string filter = "wlan.fc.type_subtype == 0x000c && wlan.sa == " + sta_mac;
 			const auto ev = observer::tshark::get_tshark_events(rs, "attacker", filter, "DISCONNECTED", window);
-			client_disconnected += {!ev.empty(), "pcap"};
+			client_disconnected += {!ev.empty(), "att pcap"};
 		}
 	}
 	return client_disconnected;

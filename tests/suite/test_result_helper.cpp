@@ -274,7 +274,6 @@ TEST_CASE("get_ap_ocv - from hostapd_conf"){
 
 TEST_CASE("get_ap_ocv - from pcap"){
 	const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
-	create_directories(dir);
 	create_directories(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/beacon_test.pcapng";
@@ -296,7 +295,7 @@ TEST_CASE("get_ap_ocv - from pcap"){
 
 TEST_CASE("get_client_scanning - from attacker pcap"){
 	const path dir = temp_directory_path() / "wpa3_client_scanning_test";
-	create_directories(dir);
+	wpa3_tester::create_public_dirs(dir);
 	create_directories(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/probe_req.pcapng";
@@ -396,22 +395,24 @@ TEST_CASE("get_client_disconnected - WB client with log"){
 TEST_CASE("get_client_disconnected - non-WB client with pcap"){
 	const path dir = temp_directory_path() / "wpa3_client_disconnect_pcap_test";
 	create_directories(dir);
-	create_directories(dir / "tshark");
+	create_directories(dir / "tshark"/ "observer");
 
 	const path src_pcap = "../test_data/deauth.pcapng";
-	const path dst_pcap = dir / "tshark" / "attacker_capture.pcap";
+	const path dst_pcap = dir / "observer"/ "tshark" / "attacker_capture.pcap";
 	wpa3_tester::copy_f(src_pcap, dst_pcap);
 
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({{"actors", {
-		{"client", {{"source","external"},{"setup", {{"program", "hostapd"}}}}}},
-		{"attacker", {{"setup", {{"source","internal"},{"program", "hostapd"}}}}}
-	}});
+		//78:98:e8:55:3e:8d is AP, ubt I need only id source is client
+		{"client", {{"source","external"},{"selection", {{"mac", "78:98:e8:55:3e:8d"}}},{"setup", {{"program", "hostapd"}}}}},
+		{"attacker", {{"source","internal"}, {"setup",{"program", "hostapd"}}}}
+	}}});
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
 	REQUIRE_FALSE(result.empty());
-	CHECK_EQ(result.value(), true);
+	CHECK_EQ(result.pairs[0].value, true);
+	CHECK_EQ(result.pairs[0].description, "att pcap");
 }
 

@@ -43,7 +43,7 @@ pair<optional<bool>,optional<hostapd::CrackResult>> hostapd_mana_crack(const Run
 	return {nullopt, nullopt};
 }
 
-// have to be prefiltered with acotors only
+// have to be prefiltered with actors only
 described_bool get_ap_ocv(const RunStatus &rs){
 	// at least one possible source
 	assert(rs.actor("attacker") || rs.actor("ap"));

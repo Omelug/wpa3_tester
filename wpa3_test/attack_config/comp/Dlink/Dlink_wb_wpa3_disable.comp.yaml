@@ -5,6 +5,7 @@ selection:
 setup:
   program: openwrt
   program_config:
+    version: 2_11
     ssid: OpenWrt_2_4GHz
     channel: 6
     key: password123

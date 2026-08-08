@@ -1,9 +1,0 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
-name: wpa3_trans_downgrade_filler_wpa3_disable
-suite_functions: wpa3_trans_downgrade_filler
-config_type: test_suite
-tests:
-  all_actors:
-    type: actor_filler
-    config: ./downgrade_wpa3_disable.yaml
-delete_old: true

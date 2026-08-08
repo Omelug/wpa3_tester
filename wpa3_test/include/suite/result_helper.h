@@ -19,8 +19,6 @@ namespace wpa3_tester::suite::helper{
 std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test_folder);
 
 TimeWindow get_run_window(const RunStatus &rs);
-described_bool get_ap_ocv(const RunStatus &rs);
-described_str get_client_scanning(const RunStatus &rs, TimeWindow window = {});
 
 std::pair<std::optional<bool>, std::optional<hostapd::CrackResult>>
 
@@ -34,7 +32,7 @@ described_str get_client_WPA_support(const RunStatus &rs, TimeWindow window = {}
 described_str get_conn_WPA_version(const RunStatus &rs, TimeWindow window = {});
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window = {});
 described_str get_ap_WPA_support(const RunStatus &rs);
-
+described_str get_client_scanning(const RunStatus &rs, TimeWindow window = {});
 
 // Entry templeate
 template<typename T> inline constexpr bool is_optional_field = false;

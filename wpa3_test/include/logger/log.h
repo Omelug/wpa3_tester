@@ -2,6 +2,7 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <istream>
 #include <string>
 #include <tins/tins.h>
 
@@ -69,9 +70,31 @@ struct TimeWindow {
 	LogTimePoint end_tp{};
 	bool operator==(const TimeWindow&) const = default;
 	[[nodiscard]] bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
+	[[nodiscard]] bool has_start() const { return start_tp.time_since_epoch().count() != 0; }
+	[[nodiscard]] bool has_end() const { return end_tp.time_since_epoch().count() != 0; }
 };
 
 // Returns a nanosecond-precision time_point (system_clock epoch on parse error)
 LogTimePoint log_time_to_epoch_ns(const std::string &time_str);
 std::string escape_tex(std::string text);
+
+
+inline bool get_line_before_window(std::istream &f, std::string &line, const TimeWindow &window){
+	if(!std::getline(f, line)) return false;
+	if(!window.has_start()) return true;
+	const auto tp = log_time_to_epoch_ns(line);
+	return tp.time_since_epoch().count() == 0 || tp < window.start_tp;
+}
+
+inline bool get_line_in_window(std::istream &f, std::string &line, const TimeWindow &window){
+	while(std::getline(f, line)){
+		if(!window.has_start() && !window.has_end()) return true;
+		const auto tp = log_time_to_epoch_ns(line);
+		if(tp.time_since_epoch().count() == 0) return true;
+		if(window.has_start() && tp < window.start_tp) continue;
+		if(window.has_end() && tp > window.end_tp) return false;
+		return true;
+	}
+	return false;
+}
 }

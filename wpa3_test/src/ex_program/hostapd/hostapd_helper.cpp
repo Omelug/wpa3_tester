@@ -1,4 +1,5 @@
 #include "ex_program/hostapd/hostapd_helper.h"
+#include <array>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -15,10 +16,8 @@ namespace wpa3_tester::hostapd{
 using namespace std;
 using namespace filesystem;
 using namespace wpa3_tester;
+using namespace Tins;
 
-//FIXME this file
-// - tests for mac filtering
-// - add filtering for client, where possible
 namespace{
 struct RepoConfig{
 	string repo_name;       // "hostapd", "hostapd-mana"
@@ -374,51 +373,39 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 }
 
 
-string akm_from_ap_log(const path &log_path, const TimeWindow window){
-	ifstream f(log_path);
-	string line;
-	string akm_fallback;
-	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
+static optional<HWAddress<6>> extract_mac_from_line(const string &line) {
+	// "STA", "from", "WPA: <MAC>", "dest=", "A2=" (Supplicant in PTK)
+	static const regex client_mac_re(
+		R"((?:STA|from|dest=|A2=)\s*([0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})|WPA:\s*([0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})\s+WPA_PTK)"
+	);
 
-	while(getline(f, line)){
-	   if(bounded){
-		   const auto tp = log_time_to_epoch_ns(line);
-		   if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break;
-	   }
-
-	   // text AKM suite
-	   const auto pos = line.find("AKM suite ");
-	   if(pos != string::npos){
-		  const auto start = pos + string("AKM suite ").size();
-		  const auto end = line.find_first_of(" \t\n\r]", start);
-		  string suite = line.substr(start, end == string::npos ? string::npos : end - start);
-		  if(suite.empty()) continue;
-		  if(suite.ends_with(":8")) return suite + "\n(WPA3)";
-		  if(suite.ends_with(":2")) return suite + "\n(WPA2)";
-		  return suite;
-	   }
-
-	   // text (SAE / PSK etc.)
-	   if(akm_fallback.empty()){
-		  const auto akm_pos = line.find("(AKM-defined - ");
-		  if(akm_pos != string::npos){
-			 const auto start = akm_pos + string("(AKM-defined - ").size();
-			 const auto end = line.find(')', start);
-			 if(end != string::npos) {
-				 string val = line.substr(start, end - start);
-				 if(val.find("SAE") != string::npos) return "00-0f-ac:8\n(WPA3)";
-				 if(val.find("PSK") != string::npos) return "00-0f-ac:2\n(WPA2)";
-			 }
-		  }
-	   }
-
-	   if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos) {
-		   // Hledáme specificky WPA3 (:8) nebo WPA2 (:2) uvnitř EAPOL-Key výměny
-		   if(line.find("00 0f ac 08") != string::npos) return "00-0f-ac:8\n(WPA3)";
-		   if(line.find("00 0f ac 02") != string::npos) return "00-0f-ac:2\n(WPA2)";
-	   }
+	smatch m;
+	if (regex_search(line, m, client_mac_re)) {
+		const string mac_str = m[1].matched ? m[1].str() : m[2].str();
+		return HWAddress<6>(mac_str);
 	}
-	return akm_fallback;
+	return nullopt;
+}
+
+template<typename LineReader>
+static vector<string> read_all_lines(const path &p, LineReader read_line, const TimeWindow &window){
+	vector<string> lines;
+	ifstream f(p);
+	string line;
+	while(read_line(f, line, window)) lines.push_back(std::move(line));
+	return lines;
+}
+
+static optional<HWAddress<6>> nearest_associated_mac(const vector<string> &lines, size_t idx, size_t max_distance = 15){
+	const size_t limit = (idx >= max_distance) ? (idx - max_distance) : 0;
+
+	for (size_t i = idx; ; --i) {
+		if (const auto mac = extract_mac_from_line(lines[i])) {
+			return mac;
+		}
+		if (i == limit) break;
+	}
+	return nullopt;
 }
 
 namespace{
@@ -430,6 +417,13 @@ struct RsnIe {
 	size_t   akm_off   = 0; // offset of akm_count field
 	uint16_t akm_count = 0;
 	size_t   caps_off  = 0; // offset of rsn_caps field (2 bytes)
+
+	// Suite OUI+type at index i, or nullopt if out of range.
+	[[nodiscard]] optional<array<uint8_t, 4>> akm_suite(uint16_t i) const{
+		const size_t off = akm_off + 2 + static_cast<size_t>(i * 4);
+		if(raw.size() < off + 4) return nullopt;
+		return array{raw[off], raw[off + 1], raw[off + 2], raw[off + 3]};
+	}
 };
 }
 
@@ -466,6 +460,46 @@ static string akm_suite_name(uint8_t type){
 	}
 }
 
+static string format_akm_suite(const array<uint8_t, 4> &suite){
+	const auto &[o0, o1, o2, type] = suite;
+	if(o0 == 0x00 && o1 == 0x0f && o2 == 0xac) return akm_suite_name(type);
+	return format("{:02x}-{:02x}-{:02x}:{}", o0, o1, o2, type);
+}
+
+static string classify_akm_from_rsn_ie(const RsnIe &ie){
+	for(uint16_t i = 0; i < ie.akm_count; ++i){
+		const auto suite = ie.akm_suite(i);
+		if(!suite) break;
+		const auto &[o0, o1, o2, type] = *suite;
+		if(o0 != 0x00 || o1 != 0x0f || o2 != 0xac) continue;
+		return format("00-0f-ac:{}\n({})", type, akm_suite_name(type));
+	}
+	return {};
+}
+
+static optional<uint8_t> akm_type_from_text(const string &text){
+	static const regex suite_re(R"(00-0f-ac:(\d+))");
+	if(smatch m; regex_search(text, m, suite_re))
+		return static_cast<uint8_t>(stoi(m[1].str()));
+
+	static const vector<pair<string, uint8_t>> names = {
+		{"WPA-PSK-SHA256", 6},
+		{"FT-PSK",         4},
+		{"FT-EAP",         3},
+		{"FT-SAE",        11},
+		{"WPA-PSK",        2},
+		{"WPA-EAP",        1},
+		{"SAE",            8},
+		{"OWE",           18},
+		{"PSK",            2}, // bare aliases, checked last so e.g. "FT-PSK" wins above
+		{"EAP",            1},
+	};
+	for(const auto &[name, type]: names)
+		if(text.find(name) != string::npos) return type;
+
+	return nullopt;
+}
+
 string get_mfp_from_supplicant(const path &conf){
 	if(!exists(conf)) return {};
 	const string val = get_conf_value(conf, {"ieee80211w"});
@@ -475,17 +509,72 @@ string get_mfp_from_supplicant(const path &conf){
 	return {};
 }
 
-//TODO test
-//FIXME add client mac filtering
-string mfp_from_ap_log(const path &log_path, const TimeWindow window){
-	ifstream f(log_path);
-	string line;
-	string mfp_fallback; // from older MFPC=/MFPR= log lines
-	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
-	while(getline(f, line)){
-		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
+string akm_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, const TimeWindow window){
+	const vector<string> lines = read_all_lines(log_path, get_line_before_window, window);
+	string akm_fallback;
+	const bool has_filter = client_mac != HWAddress<6>();
 
-		if(line.find("WPA: RSN IE in EAPOL-Key") != string::npos){
+	// Only computed for lines that actually matched one of the patterns below.
+	const auto mac_ok_at = [&](size_t i){
+		if(!has_filter) return true;
+		const auto assoc_mac = nearest_associated_mac(lines, i);
+		return assoc_mac && *assoc_mac == client_mac;
+	};
+
+	for(size_t i = 0; i < lines.size(); ++i){
+		const string &line = lines[i];
+
+		// text AKM suite: "AKM suite 00-0f-ac:N" or a short name
+		const auto pos = line.find("AKM suite ");
+		if(pos != string::npos && mac_ok_at(i)){
+			const auto start = pos + string("AKM suite ").size();
+			const auto end = line.find_first_of(" \t\n\r]", start);
+			string suite_text = line.substr(start, end == string::npos ? string::npos : end - start);
+			if(!suite_text.empty()){
+				if(const auto type = akm_type_from_text(suite_text))
+					return format("00-0f-ac:{}\n({})", *type, akm_suite_name(type.value()));
+				return suite_text; // unrecognized text - report as-is rather than dropping it
+			}
+		}
+
+		// text (SAE / PSK / ... in "(AKM-defined - X)")
+		if(akm_fallback.empty()){
+			const auto akm_pos = line.find("(AKM-defined - ");
+			if(akm_pos != string::npos && mac_ok_at(i)){
+				const auto start = akm_pos + string("(AKM-defined - ").size();
+				const auto end = line.find(')', start);
+				if(end != string::npos) {
+					const string val = line.substr(start, end - start);
+					if(const auto type = akm_type_from_text(val))
+						return format("00-0f-ac:{}\n({})", *type,  akm_suite_name(type.value()));
+				}
+			}
+		}
+
+		if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos && mac_ok_at(i)) {
+			if(const auto ie = parse_rsn_ie_line(line)){
+				if(const string akm = classify_akm_from_rsn_ie(*ie); !akm.empty()) return akm;
+			}
+		}
+	}
+	return akm_fallback;
+}
+
+string mfp_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, const TimeWindow window){
+	const vector<string> lines = read_all_lines(log_path, get_line_before_window, window);
+	string mfp_fallback; // from older MFPC=/MFPR= log lines
+	const bool has_filter = client_mac != HWAddress<6>();
+
+	const auto mac_ok_at = [&](size_t i){
+		if(!has_filter) return true;
+		const auto assoc_mac = nearest_associated_mac(lines, i);
+		return assoc_mac && *assoc_mac == client_mac;
+	};
+
+	for(size_t i = 0; i < lines.size(); ++i){
+		const string &line = lines[i];
+
+		if(line.find("WPA: RSN IE in EAPOL-Key") != string::npos && mac_ok_at(i)){
 			const auto ie = parse_rsn_ie_line(line);
 			if(!ie || ie->raw.size() < ie->caps_off + 2) continue;
 			const uint16_t caps = ie->raw[ie->caps_off] | (static_cast<uint16_t>(ie->raw[ie->caps_off + 1]) << 8);
@@ -495,7 +584,7 @@ string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 
 		if(mfp_fallback.empty()){
 			const auto mfpc_pos = line.find("MFPC=");
-			if(mfpc_pos != string::npos){
+			if(mfpc_pos != string::npos && mac_ok_at(i)){
 				const char mfpc = line.size() > mfpc_pos + 5 ? line[mfpc_pos + 5] : '0';
 				if(mfpc != '1'){ mfp_fallback = "OFF"; continue; }
 				const auto mfpr_pos = line.find("MFPR=");
@@ -507,46 +596,47 @@ string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 	return mfp_fallback;
 }
 
-//FIXME add client filtering if possible
-string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
-	ifstream f(log_path);
-	string line;
-	const bool bounded = window.start_tp.time_since_epoch().count() != 0;
-	while(getline(f, line)){
-		if(bounded){ const auto tp = log_time_to_epoch_ns(line); if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break; }
-		if(line.find("WPA: RSN IE in EAPOL-Key") == string::npos) continue;
-		const auto ie = parse_rsn_ie_line(line);
-		if(!ie || ie->akm_count == 0) continue;
-		string result;
-		for(uint16_t i = 0; i < ie->akm_count; ++i){
-			const size_t suite_off = ie->akm_off + 2 + static_cast<size_t>(i * 4);
-			if(ie->raw.size() < suite_off + 4) break;
-			// only handle 00-0f-ac OUI
-			if(ie->raw[suite_off] != 0x00 || ie->raw[suite_off+1] != 0x0f || ie->raw[suite_off+2] != 0xac) continue;
-			if(!result.empty()) result += ' ';
-			result += akm_suite_name(ie->raw[suite_off + 3]);
+string client_akm_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, const TimeWindow window) {
+	const vector<string> lines = read_all_lines(log_path, get_line_in_window, window);
+	const bool has_filter = client_mac != HWAddress<6>();
+
+	for (size_t i = 0; i < lines.size(); ++i) {
+		const string &line = lines[i];
+		if (line.find("WPA: RSN IE in EAPOL-Key") == string::npos) continue;
+
+		if (has_filter) {
+			const auto assoc_mac = nearest_associated_mac(lines, i);
+			if (!assoc_mac || *assoc_mac != client_mac) continue;
 		}
-		if(!result.empty()) return result;
+
+		const auto ie = parse_rsn_ie_line(line);
+		if (!ie || ie->akm_count == 0) continue;
+
+		// Report every suite, standard (00-0f-ac) or vendor-specific - see
+		string result;
+		for (uint16_t j = 0; j < ie->akm_count; ++j) {
+			const auto suite = ie->akm_suite(j);
+			if (!suite) break;
+			if (!result.empty()) result += ' ';
+			result += format_akm_suite(*suite);
+		}
+
+		if (!result.empty()) return result;
 	}
 	return {};
 }
 
-string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
-	if(!exists(ap_log) || client_mac.empty()) return {};
-	ifstream f(ap_log);
-	string line;
-	bool in_window = false;
+string client_scanning_from_ap_log(const path &ap_log, const HWAddress<6> &client_mac, const TimeWindow window){
+	const vector<string> lines = read_all_lines(ap_log, get_line_in_window, window);
+	const string mac_str = client_mac.to_string();
+
 	bool prev_was_probe = false;
 	int prev_backup_ch = 0;
 	set<int> channels;
 	const regex freq_re(R"(freq=(\d+))");
 	const regex ds_ch_re(R"(ds\.chan=(\d+))");
 	smatch match;
-	while(getline(f, line)){
-		if(!in_window){
-			if(line.contains(START_tag)) in_window = true;
-			continue;
-		}
+	for(const string &line: lines){
 		if(line.contains(END_tag) || line.contains(END_STOP_tag)) break;
 
 		if(prev_was_probe){
@@ -558,7 +648,7 @@ string client_scanning_from_ap_log(const path &ap_log, const string &client_mac)
 			prev_backup_ch = 0;
 		}
 
-		if(line.contains(client_mac) && line.contains("WLAN_FC_STYPE_PROBE_REQ")){
+		if(line.contains(mac_str) && line.contains("WLAN_FC_STYPE_PROBE_REQ")){
 			prev_was_probe = true;
 			if(regex_search(line, match, freq_re))
 				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));
@@ -570,6 +660,7 @@ string client_scanning_from_ap_log(const path &ap_log, const string &client_mac)
 	for(const int ch: channels) result += " " + to_string(ch);
 	return result;
 }
+
 
 string owe_trans_bssid(const string &primary_mac){
 	const auto addr = Tins::HWAddress<6>(primary_mac);

@@ -179,17 +179,24 @@ TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log"){
 	create_directories(dir / "logger");
 	{
 		ofstream f(dir / "logger" / "ap.log");
+		f << "2026-07-27T18:36:55.386354254+0200 [ap] [stdout] wlan1: STA 24:ec:99:bf:b0:a1 WPA: sending 1/4 msg of 4-Way Handshake\n";
 		f << "2026-07-27T18:36:55.386364254+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
 		f << wpa3_tester::START_tag << "\n";
 	}
 	RunStatus rs;
+	rs.config({{"actors", {
+		{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}},
+		{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}},
+		{"attacker", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}
+	}}});
+	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 	const TimeWindow window_START{
 		LogTimePoint{}, wpa3_tester::get_tag_time(dir / "logger" / "ap.log", wpa3_tester::START_tag)
 	};
 	const auto result = get_conn_WPA_version(rs, window_START);
 	REQUIRE_FALSE(result.empty());
-	CHECK_EQ(result.value(), "00-0f-ac:8\n(WPA3)");
+	CHECK_EQ(result.value(), "00-0f-ac:8\n(SAE)");
 	CHECK_EQ(result.last().description, "hostapd");
 }
 
@@ -203,11 +210,18 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
 	{
 		ofstream f(dir / "logger" / "ap.log");
 		//  RSN caps=0x008c -> MFPC=1, MFPR=0 -> OPTIONAL
-		f <<
-				"2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
+		f << "2026-07-27T18:36:55.100000000+0200 [ap] [stdout] wlan0: STA 24:ec:99:bf:b0:a1 IEEE 802.11: associated\n";
+		// 2. RSN IE log
+		f << "2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
 	}
 	RunStatus rs;
+	rs.config({{"actors", {
+		{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}},
+		{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}},
+	}}});
+	rs.parse_requirements();
 	setup_test_rs(rs, dir);
+
 	const auto result = get_client_mfp(rs, {});
 	REQUIRE_EQ(result.pairs.size(), 2u);
 	CHECK_EQ(result.pairs[0].value, "OPTIONAL");
@@ -274,7 +288,7 @@ TEST_CASE("get_ap_ocv - from hostapd_conf"){
 
 TEST_CASE("get_ap_ocv - from pcap"){
 	const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
-	create_directories(dir / "observer" / "tshark");
+	wpa3_tester::create_public_dirs(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/beacon_test.pcapng";
 	const path dst_pcap = dir / "observer" / "tshark" / "attacker_capture.pcap";
@@ -295,8 +309,7 @@ TEST_CASE("get_ap_ocv - from pcap"){
 
 TEST_CASE("get_client_scanning - from attacker pcap"){
 	const path dir = temp_directory_path() / "wpa3_client_scanning_test";
-	wpa3_tester::create_public_dirs(dir);
-	create_directories(dir / "observer" / "tshark");
+	wpa3_tester::create_public_dirs(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/probe_req.pcapng";
 	const path dst_pcap = dir /"observer" / "tshark" / "attacker_capture.pcap";
@@ -333,7 +346,6 @@ TEST_CASE("get_client_scanning - from attacker pcap"){
 TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf"){
 	const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test"/ "observer";
 	create_directories(dir);
-
 
 	ofstream f(dir / "client_wpa_supplicant.conf");
 	f << "key_mgmt=WPA-PSK\n";
@@ -374,8 +386,7 @@ REQUIRE_FALSE(result.empty());
 
 TEST_CASE("get_client_disconnected - WB client with log"){
 	const path dir = temp_directory_path() / "wpa3_client_disconnect_wb_test";
-	create_directories(dir);
-	create_directories(dir / "logger");
+	wpa3_tester::create_public_dirs(dir / "logger");
 
 	ofstream f(dir / "logger" / "client.log");
 	f << "2026-07-28T15:25:23.705566498+0200 [client] [stdout] wlan4: CTRL-EVENT-DISCONNECTED bssid=24:ec:99:bf:c7:cf reason=3 locally_generated=1\n";
@@ -383,7 +394,7 @@ TEST_CASE("get_client_disconnected - WB client with log"){
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"client", {{"source","internal"},{"selection", {{"mac", "78:98:E8:55:3E:8D"}}}, {"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({{"actors", {{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:c7:cf "}}}, {"setup", {{"program", "hostapd"}}}}}}}});
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
@@ -394,12 +405,11 @@ TEST_CASE("get_client_disconnected - WB client with log"){
 
 TEST_CASE("get_client_disconnected - non-WB client with pcap"){
 	const path dir = temp_directory_path() / "wpa3_client_disconnect_pcap_test";
-	create_directories(dir);
-	create_directories(dir / "tshark"/ "observer");
+	wpa3_tester::create_public_dirs(dir /  "observer" / "tshark");
 
 	const path src_pcap = "../test_data/deauth.pcapng";
 	const path dst_pcap = dir / "observer"/ "tshark" / "attacker_capture.pcap";
-	wpa3_tester::copy_f(src_pcap, dst_pcap);
+	wpa3_tester::copy_f(absolute(src_pcap), dst_pcap);
 
 	RunStatus rs;
 	rs.run_folder(dir);

@@ -147,11 +147,33 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
 */
 // ------- akm_from_ap_log
 
+// Real snippet from ap.log (STA 28:87:ba:a3:cf:16, WPA3-SAE 4-way handshake).
+static void write_sae_handshake_log(const path &p){
+	ofstream f(p);
+	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	  << "2026-07-28T15:25:13.046448925+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
+	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
+}
+
+// Two distinct, real-shaped STA handshakes in one log - STA1 (28:87:ba:a3:cf:16)
+// is WPA3-SAE with MFP OPTIONAL, STA2 (9c:b6:d0:12:34:56) is WPA2-PSK with MFP
+// REQUIRED. Used to prove MAC filtering actually picks the right STA's data
+// rather than just failing to find a MAC that isn't in the log at all.
+static void write_two_client_handshake_log(const path &p){
+	ofstream f(p);
+	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	  << "2026-07-28T15:25:13.046448925+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
+	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n"
+	  << "2026-07-28T15:25:40.198423543+0200 [ap] [stdout] wlan1: STA 9c:b6:d0:12:34:56 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	  << "2026-07-28T15:25:40.200196067+0200 [ap] [stdout] WPA: EAPOL-Key MIC using HMAC-SHA1-AES\n"
+	  << "2026-07-28T15:25:40.200205408+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 02 cc 00 00 00 00 0f ac 06\n";
+}
+
 TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
 	const path log = TEST_DIR / "ap_sae_akm.log";
 	REQUIRE(exists(log));
 	const string akm = hostapd::akm_from_ap_log(log, {});
-	CHECK_EQ(akm, "00-0f-ac:8\n(WPA3)");
+	CHECK_EQ(akm, "00-0f-ac:8\n(SAE)");
 }
 
 TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){
@@ -163,7 +185,53 @@ TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){
 	const string akm = hostapd::akm_from_ap_log(tmp, {});
 	remove(tmp);
 
-	CHECK_EQ(akm, "00-0f-ac:8\n(WPA3)");
+	CHECK_EQ(akm, "00-0f-ac:8\n(SAE)");
+}
+
+TEST_CASE("akm_from_ap_log - MAC filter picks the right STA's handshake"){
+	const path tmp = temp_directory_path() / "wpa3_test_akm_mac_filter.log";
+	write_two_client_handshake_log(tmp);
+
+	CHECK_EQ(hostapd::akm_from_ap_log(tmp, "28:87:ba:a3:cf:16"), "00-0f-ac:8\n(SAE)");
+	CHECK_EQ(hostapd::akm_from_ap_log(tmp, "9c:b6:d0:12:34:56"), "00-0f-ac:2\n(WPA-PSK)");
+	CHECK_EQ(hostapd::akm_from_ap_log(tmp, "aa:bb:cc:dd:ee:ff"), "");
+
+	remove(tmp);
+}
+
+// ------- mfp_from_ap_log
+
+TEST_CASE("mfp_from_ap_log - returns OPTIONAL from RSN IE capabilities"){
+	const path tmp = temp_directory_path() / "wpa3_test_mfp.log";
+	write_sae_handshake_log(tmp);
+
+	const string mfp = hostapd::mfp_from_ap_log(tmp, {});
+	remove(tmp);
+
+	CHECK_EQ(mfp, "OPTIONAL");
+}
+
+TEST_CASE("mfp_from_ap_log - MAC filter picks the right STA's capabilities"){
+	const path tmp = temp_directory_path() / "wpa3_test_mfp_mac_filter.log";
+	write_two_client_handshake_log(tmp);
+
+	CHECK_EQ(hostapd::mfp_from_ap_log(tmp, "28:87:ba:a3:cf:16"), "OPTIONAL");
+	CHECK_EQ(hostapd::mfp_from_ap_log(tmp, "9c:b6:d0:12:34:56"), "REQUIRED");
+	CHECK_EQ(hostapd::mfp_from_ap_log(tmp, "aa:bb:cc:dd:ee:ff"), "");
+
+	remove(tmp);
+}
+
+TEST_CASE("mfp_from_ap_log - falls back to MFPC/MFPR text pattern"){
+	const path tmp = temp_directory_path() / "wpa3_test_mfp_text_fallback.log";
+	{
+		ofstream f(tmp);
+		f << "2026-07-29T02:18:08.483153688+0200 [ap] [stdout] MFPC=1 MFPR=1\n";
+	}
+	const string mfp = hostapd::mfp_from_ap_log(tmp, {});
+	remove(tmp);
+
+	CHECK_EQ(mfp, "REQUIRED");
 }
 
 // ------- get_conf_value
@@ -210,31 +278,25 @@ TEST_CASE("get_conf_value - returns empty for missing file"){
 
 // ------- client_akm_from_ap_log
 
-TEST_CASE("client_akm_from_ap_log - returns SAE from RSN IE in 4-Way Handshake log"){
+TEST_CASE("client_akm_from_ap_log - MAC filter picks the right STA's suite"){
 	const path tmp = temp_directory_path() / "wpa3_test_client_akm.log";
-	{
-		ofstream f(tmp);
-		f << "2026-07-29T01:24:34.109715456+0200 [ap] [stdout] WPA: KEK - hexdump(len=16): [REMOVED]\n"
-		  << "2026-07-29T01:24:34.109737104+0200 [ap] [stdout] WPA: TK - hexdump(len=16): [REMOVED]\n"
-		  << "2026-07-29T01:24:34.109758827+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
-		  << "2026-07-29T01:24:34.109780715+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 cc 00 00 00 00 0f ac 06\n"
-		  << "2026-07-29T01:24:34.109802641+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKCALCNEGOTIATING2\n"
-		  << "2026-07-29T01:24:34.109824382+0200 [ap] [stdout] WPA: 00:c0:ca:b5:e1:58 WPA_PTK entering state PTKINITNEGOTIATING\n"
-		  << "2026-07-29T01:24:34.109846123+0200 [ap] [stdout] wlan3: STA 00:c0:ca:b5:e1:58 WPA: sending 3/4 msg of 4-Way Handshake\n";
-	}
-	const string akm = hostapd::client_akm_from_ap_log(tmp);
+	write_two_client_handshake_log(tmp);
+
+	CHECK_EQ(hostapd::client_akm_from_ap_log(tmp, "28:87:ba:a3:cf:16"), "SAE");
+	CHECK_EQ(hostapd::client_akm_from_ap_log(tmp, "9c:b6:d0:12:34:56"), "WPA-PSK");
+	CHECK_EQ(hostapd::client_akm_from_ap_log(tmp, "aa:bb:cc:dd:ee:ff"), "");
+
 	remove(tmp);
-	CHECK_EQ(akm, "SAE");
 }
 
 TEST_CASE("client_akm_from_ap_log - returns empty for missing file"){
-	const string akm = hostapd::client_akm_from_ap_log("/tmp/wpa3_nonexistent_client_akm.log");
+	const string akm = hostapd::client_akm_from_ap_log("/tmp/wpa3_nonexistent_client_akm.log", {});
 	CHECK_EQ(akm, "");
 }
 
 // ------- client_scanning_from_ap_log
 
-TEST_CASE("client_scanning_from_ap_log - extracts scanned channels from DS Params mismatch lines"){
+TEST_CASE("client_scanning_from_ap_log - extracts scanned channels for matching MAC, empty for a different MAC"){
 	const path tmp = temp_directory_path() / "wpa3_test_scanning.log";
 	{
 		ofstream f(tmp);
@@ -253,39 +315,15 @@ TEST_CASE("client_scanning_from_ap_log - extracts scanned channels from DS Param
 		  << "2026-07-29T01:24:46.349650504+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7\n"
 		  << "@END\n";
 	}
-	const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
-	remove(tmp);
-	CHECK_EQ(result, "ch: 6 7");
-}
 
-TEST_CASE("client_scanning_from_ap_log - returns empty when no START_tag in log"){
-	const path tmp = temp_directory_path() / "wpa3_test_scanning_nostart.log";
-	{
-		ofstream f(tmp);
-		f << "nl80211: RX frame sa=00:c0:ca:b5:e1:58 freq=2437 (WLAN_FC_STYPE_PROBE_REQ)\n"
-		  << "Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=11\n";
-	}
-	const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
+	CHECK_EQ(hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58"), "ch: 6 7");
+	CHECK_EQ(hostapd::client_scanning_from_ap_log(tmp, "aa:bb:cc:dd:ee:ff"), "");
+
 	remove(tmp);
-	CHECK_EQ(result, "");
 }
 
 TEST_CASE("client_scanning_from_ap_log - returns empty for missing file"){
 	CHECK_EQ(hostapd::client_scanning_from_ap_log("/tmp/wpa3_nonexistent_scan.log", "00:c0:ca:b5:e1:58"), "");
-}
-
-TEST_CASE("client_scanning_from_ap_log - returns empty when client MAC not in log"){
-	const path tmp = temp_directory_path() / "wpa3_test_scanning_nomac.log";
-	{
-		ofstream f(tmp);
-		f << "@START\n"
-		  << "nl80211: RX frame sa=aa:bb:cc:dd:ee:ff freq=2437 (WLAN_FC_STYPE_PROBE_REQ)\n"
-		  << "Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=11\n"
-		  << "@END\n";
-	}
-	const string result = hostapd::client_scanning_from_ap_log(tmp, "00:c0:ca:b5:e1:58");
-	remove(tmp);
-	CHECK_EQ(result, "");
 }
 
 /*TEST_CASE("crack_pmk_hashes - correct PSK cracks all hashes"

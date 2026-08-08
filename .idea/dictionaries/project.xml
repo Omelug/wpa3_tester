@@ -8,6 +8,7 @@
       <w>Kbit</w>
       <w>Kbits</w>
       <w>Mitm</w>
+      <w>PTKCALCNEGOTIATING</w>
       <w>Reasso</w>
       <w>aabbccddee</w>
       <w>acces</w>
@@ -231,6 +232,7 @@
       <w>txop</w>
       <w>txpower</w>
       <w>udevadm</w>
+      <w>unassoc</w>
       <w>usbcore</w>
       <w>vline</w>
       <w>vprintf</w>

@@ -78,7 +78,7 @@ described_str get_client_scanning(const RunStatus &rs, const TimeWindow window){
 	if(const string ch = observer::tshark::client_scanning_from_pcap(attacker_pcap, sta_mac, window); !ch.empty())
 		client_scanning += {ch, "attacker pcap"};
 
-	if(const string ch = hostapd::client_scanning_from_ap_log(rs.run_folder() / "logger" / "ap.log", sta_mac); !ch.empty())
+	if(const string ch = hostapd::client_scanning_from_ap_log(rs.run_folder() / "logger" / "ap.log", sta_mac, window); !ch.empty())
 		client_scanning += {ch, "ap log"};
 
 	return client_scanning;
@@ -95,10 +95,10 @@ described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
 	if(exists(ap_log)){
 		if(program_str == "hostapd"){
-			client_mfp += {hostapd::mfp_from_ap_log(ap_log, window), "hostapd"};
+			client_mfp += {hostapd::mfp_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
 		}
 		if(program_str == "openwrt"){
-			client_mfp += {openwrt::mfp_from_openwrt_log(ap_log, window), "openwrt"};
+			client_mfp += {openwrt::mfp_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt"};
 		}
 	}
 	return client_mfp;
@@ -116,7 +116,7 @@ described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow windo
 	if(exists(ap_log)){
 		if(program_str == "hostapd"){
 			if(client_WPA_support.value().empty())
-				client_WPA_support += {hostapd::client_akm_from_ap_log(ap_log, window), "hostapd"};
+				client_WPA_support += {hostapd::client_akm_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
 		}
 		//TODO openwrt
 	}
@@ -146,10 +146,10 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 
 	if(exists(ap_log)){
 		if(program_str == "hostapd"){
-			conn_WPA_version += {hostapd::akm_from_ap_log(ap_log, window), "hostapd"};
+			conn_WPA_version += {hostapd::akm_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
 		}
 		if(program_str == "openwrt"){
-			conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, window), "openwrt"};
+			conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt"};
 		}
 	}
 	const path attacker_pcap =  observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";

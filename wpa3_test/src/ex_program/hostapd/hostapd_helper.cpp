@@ -16,6 +16,10 @@ using namespace std;
 using namespace filesystem;
 using namespace wpa3_tester;
 
+//FIXME this file
+// - tests for mac filtering
+// - add filtering for client, where possible
+namespace{
 struct RepoConfig{
 	string repo_name;       // "hostapd", "hostapd-mana"
 	string git_url;         // https://git.w1.fi/hostap.git, etc.
@@ -25,6 +29,7 @@ struct RepoConfig{
 	string pinned_commit;   // if set, always checkout this commit (ignores version)
 	string no_version_name; // "hostapd"/"hostapd-mana" installed
 };
+}
 
 static const RepoConfig HOSTAPD_CONFIG = {
 	"hostapd", "https://git.w1.fi/hostap.git", "hostapd", true, "hostap_", "", "hostapd",
@@ -36,7 +41,7 @@ static const RepoConfig HOSTAPD_MANA_CONFIG = {
 	false, "hostapd-mana_", "490fc93b177f525bf8a479d122ded1844a68e510", "hostapd-mana"
 };
 
-void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
+static void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
 	const path repo_path = base_folder / cfg.repo_name;
 	if(exists(repo_path)){ return; }
 
@@ -51,7 +56,7 @@ void ensure_git_repo_cloned(const path &base_folder, const RepoConfig &cfg){
 	log(LogLevel::INFO, "{} repository cloned successfully", cfg.repo_name);
 }
 
-string find_matching_tag(const path &repo_dir, const string &version, const RepoConfig &cfg){
+static string find_matching_tag(const path &repo_dir, const string &version, const RepoConfig &cfg){
 	string version_normalized = version;
 	ranges::replace(version_normalized, '.', '_');
 	const string target_tag = cfg.tag_prefix + version_normalized;
@@ -85,8 +90,8 @@ static string get_extra_cflags(){
 	#endif
 }
 
-void build_hostapd_like(const string &version, const path &build_folder, const path &target, const RepoConfig &cfg,
-						const optional<OpenSSLPaths> &openssl = nullopt
+static void build_hostapd_like(const string &version, const path &build_folder, const path &target, const RepoConfig &cfg,
+								const optional<OpenSSLPaths> &openssl = nullopt
 ){
 	path repo_path = build_folder / cfg.repo_name;
 	path source_dir = repo_path / "hostapd";
@@ -125,8 +130,8 @@ void build_hostapd_like(const string &version, const path &build_folder, const p
 	copy_f(source_dir / cfg.binary_name, target);
 }
 
-string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg,
-				const optional<OpenSSLPaths> &openssl = nullopt
+static string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg,
+						const optional<OpenSSLPaths> &openssl = nullopt
 ){
 	const string folder_key = (cfg.repo_name == "hostapd_mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
@@ -179,10 +184,13 @@ string get_binary(const string &bin_prefix, const string &version, const RepoCon
 
 	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);
 	copy(repo_path / "hostapd" / cfg.binary_name, binary_path, copy_options::overwrite_existing);
+	permissions(binary_path,
+				perms::owner_exec | perms::group_exec | perms::others_exec,
+				perm_options::add);
 	return binary_path;
 }
 
-void build_wpa_supplicant_version(const string &version, const path &build_folder, const path &target){
+static void build_wpa_supplicant_version(const string &version, const path &build_folder, const path &target){
 	path repo_path = build_folder / "hostapd";
 	path wpa_supp_dir = repo_path / "wpa_supplicant";
 
@@ -209,7 +217,7 @@ void build_wpa_supplicant_version(const string &version, const path &build_folde
 // --------- OPENSSL ---------
 
 static const string OPENSSL_GIT_URL = "https://github.com/openssl/openssl.git";
-static const string OPENSSL_REPO_NAME = "openssl";
+static constexpr string OPENSSL_REPO_NAME = "openssl";
 
 static path get_openssl_build_folder(){
 	return get_global_config().at("paths").at("openssl").at("openssl_vuln_build_folder").get<string>();
@@ -299,15 +307,6 @@ string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
-std::string to_hex(const uint8_t* data, size_t len) {
-	std::stringstream ss;
-	ss << std::hex << std::setfill('0');
-	for (size_t i = 0; i < len; ++i) {
-		ss << std::setw(2) << static_cast<int>(data[i]);
-	}
-	return ss.str();
-}
-
 CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 	if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
 		throw config_err("hcxpmktool not found in PATH - install hcxtools package");
@@ -387,7 +386,7 @@ string akm_from_ap_log(const path &log_path, const TimeWindow window){
 		   if(tp.time_since_epoch().count() != 0 && tp >= window.start_tp) break;
 	   }
 
-	   // 1. Explicitní textová AKM suita (pokud v logu je)
+	   // text AKM suite
 	   const auto pos = line.find("AKM suite ");
 	   if(pos != string::npos){
 		  const auto start = pos + string("AKM suite ").size();
@@ -399,7 +398,7 @@ string akm_from_ap_log(const path &log_path, const TimeWindow window){
 		  return suite;
 	   }
 
-	   // 2. Detekce podle textového fallbacku (např. SAE / PSK)
+	   // text (SAE / PSK etc.)
 	   if(akm_fallback.empty()){
 		  const auto akm_pos = line.find("(AKM-defined - ");
 		  if(akm_pos != string::npos){
@@ -413,7 +412,6 @@ string akm_from_ap_log(const path &log_path, const TimeWindow window){
 		  }
 	   }
 
-	   // 3. Zpracování RSN IE, ale IGNORUJEME řádky s Beacon tail (abychom netahali globální nabídku AP)
 	   if(line.find("RSN IE in EAPOL-Key - hexdump") != string::npos) {
 		   // Hledáme specificky WPA3 (:8) nebo WPA2 (:2) uvnitř EAPOL-Key výměny
 		   if(line.find("00 0f ac 08") != string::npos) return "00-0f-ac:8\n(WPA3)";
@@ -423,6 +421,7 @@ string akm_from_ap_log(const path &log_path, const TimeWindow window){
 	return akm_fallback;
 }
 
+namespace{
 // RSN IE layout: tag(1) len(1) version(2) group_cipher(4)
 //   pw_count(2) pw_suites(pw_count*4) akm_count(2) akm_suites(akm_count*4) rsn_caps(2) ...
 struct RsnIe {
@@ -432,6 +431,7 @@ struct RsnIe {
 	uint16_t akm_count = 0;
 	size_t   caps_off  = 0; // offset of rsn_caps field (2 bytes)
 };
+}
 
 static optional<RsnIe> parse_rsn_ie_line(const string &line){
 	const auto colon = line.rfind("): ");
@@ -466,7 +466,17 @@ static string akm_suite_name(uint8_t type){
 	}
 }
 
+string get_mfp_from_supplicant(const path &conf){
+	if(!exists(conf)) return {};
+	const string val = get_conf_value(conf, {"ieee80211w"});
+	if(val == "1") return "OPTIONAL";
+	if(val == "2") return "REQUIRED";
+	if(val == "0") return "OFF";
+	return {};
+}
+
 //TODO test
+//FIXME add client mac filtering
 string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
@@ -479,7 +489,7 @@ string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 			const auto ie = parse_rsn_ie_line(line);
 			if(!ie || ie->raw.size() < ie->caps_off + 2) continue;
 			const uint16_t caps = ie->raw[ie->caps_off] | (static_cast<uint16_t>(ie->raw[ie->caps_off + 1]) << 8);
-			if(!(caps & 0x0080)) return "OFF";            // MFPC
+			if(!(caps & 0x0080)) return "OFF";                // MFPC
 			return (caps & 0x0040) ? "REQUIRED" : "OPTIONAL"; // MFPR
 		}
 
@@ -490,13 +500,14 @@ string mfp_from_ap_log(const path &log_path, const TimeWindow window){
 				if(mfpc != '1'){ mfp_fallback = "OFF"; continue; }
 				const auto mfpr_pos = line.find("MFPR=");
 				mfp_fallback = (mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1')
-					? "REQUIRED" : "OPTIONAL";
+								? "REQUIRED" : "OPTIONAL";
 			}
 		}
 	}
 	return mfp_fallback;
 }
-//TODO test
+
+//FIXME add client filtering if possible
 string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
@@ -520,14 +531,44 @@ string client_akm_from_ap_log(const path &log_path, const TimeWindow window){
 	return {};
 }
 
-//TODO test
-string get_mfp_from_supplicant(const path &conf){
-	if(!exists(conf)) return {};
-	const string val = get_conf_value(conf, {"ieee80211w"});
-	if(val == "1") return "OPTIONAL";
-	if(val == "2") return "REQUIRED";
-	if(val == "0") return "OFF";
-	return {};
+string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
+	if(!exists(ap_log) || client_mac.empty()) return {};
+	ifstream f(ap_log);
+	string line;
+	bool in_window = false;
+	bool prev_was_probe = false;
+	int prev_backup_ch = 0;
+	set<int> channels;
+	const regex freq_re(R"(freq=(\d+))");
+	const regex ds_ch_re(R"(ds\.chan=(\d+))");
+	smatch match;
+	while(getline(f, line)){
+		if(!in_window){
+			if(line.contains(START_tag)) in_window = true;
+			continue;
+		}
+		if(line.contains(END_tag) || line.contains(END_STOP_tag)) break;
+
+		if(prev_was_probe){
+			if(line.contains("DS Params mismatch") && regex_search(line, match, ds_ch_re))
+				channels.insert(stoi(match[1].str()));
+			else if(prev_backup_ch > 0)
+				channels.insert(prev_backup_ch);
+			prev_was_probe = false;
+			prev_backup_ch = 0;
+		}
+
+		if(line.contains(client_mac) && line.contains("WLAN_FC_STYPE_PROBE_REQ")){
+			prev_was_probe = true;
+			if(regex_search(line, match, freq_re))
+				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));
+		}
+	}
+
+	if(channels.empty()) return {};
+	string result = "ch:";
+	for(const int ch: channels) result += " " + to_string(ch);
+	return result;
 }
 
 string owe_trans_bssid(const string &primary_mac){
@@ -535,6 +576,7 @@ string owe_trans_bssid(const string &primary_mac){
 	return format("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
 				addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
 }
+
 
 string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
@@ -590,46 +632,5 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
 	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path, copy_options::overwrite_existing);
 	return binary_path;
-}
-
-
-string client_scanning_from_ap_log(const path &ap_log, const string &client_mac){
-	if(!exists(ap_log) || client_mac.empty()) return {};
-	ifstream f(ap_log);
-	string line;
-	bool in_window = false;
-	bool prev_was_probe = false;
-	int prev_backup_ch = 0;
-	set<int> channels;
-	const regex freq_re(R"(freq=(\d+))");
-	const regex ds_ch_re(R"(ds\.chan=(\d+))");
-	smatch match;
-	while(getline(f, line)){
-		if(!in_window){
-			if(line.contains(START_tag)) in_window = true;
-			continue;
-		}
-		if(line.contains(END_tag) || line.contains(END_STOP_tag)) break;
-
-		if(prev_was_probe){
-			if(line.contains("DS Params mismatch") && regex_search(line, match, ds_ch_re))
-				channels.insert(stoi(match[1].str()));
-			else if(prev_backup_ch > 0)
-				channels.insert(prev_backup_ch);
-			prev_was_probe = false;
-			prev_backup_ch = 0;
-		}
-
-		if(line.contains(client_mac) && line.contains("WLAN_FC_STYPE_PROBE_REQ")){
-			prev_was_probe = true;
-			if(regex_search(line, match, freq_re))
-				prev_backup_ch = hw_capabilities::freq_to_channel(stoi(match[1].str()));
-		}
-	}
-
-	if(channels.empty()) return {};
-	string result = "ch:";
-	for(const int ch: channels) result += " " + to_string(ch);
-	return result;
 }
 }

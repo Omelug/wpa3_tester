@@ -21,6 +21,7 @@
       <w>arphrd</w>
       <w>attackhead</w>
       <w>bigtk</w>
+      <w>blackboc</w>
       <w>bmargin</w>
       <w>bprot</w>
       <w>capabilies</w>
@@ -127,11 +128,13 @@
       <w>mfacaddr</w>
       <w>mfpc</w>
       <w>mfpr</w>
+      <w>mipsel</w>
       <w>modeswitch</w>
       <w>modinfo</w>
       <w>mscha</w>
       <w>msdu</w>
       <w>msgfail</w>
+      <w>musleabihf</w>
       <w>nbytes</w>
       <w>netns</w>
       <w>newlink</w>

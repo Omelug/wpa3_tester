@@ -1,25 +1,30 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: wpa3_transition_downgrade
+name: wpa3_transition_downgrade_wpa3_disable
 attacker_module: wpa3_trans_downgrade
+$extends: [
+  ../../comp/rogue_ap/rogue_ap_6.comp.yaml
+]
 actors:
   ap:
     source: internal
     selection:
       condition: [ AP ]
-      driver: rtw88_8821cu
+      #driver: rtw88_8821cu #TODO proč ?
     setup:
       program: hostapd
       program_config:
         driver: nl80211
-        ssid: TestNetwork
+        ssid: test_wpa3_tester
         hw_mode: g
         channel: 6
         ieee80211n: 1
         ieee80211w: 2
         wpa: 2
-        wpa_key_mgmt: SAE
+        wpa_key_mgmt: SAE #WPA-PSK
         rsn_pairwise: CCMP
         sae_password: password123
+        #wpa_passphrase: password123
+        transition_disable: "0x01"
     ip_addr: "172.16.100.1"
   client:
     source: internal
@@ -28,9 +33,9 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        #other_options: "-d"
-        ssid: TestNetwork
-        ieee80211w: 1
+        other_options: "-d"
+        ssid: test_wpa3_tester
+        ieee80211w: 2 #Needed for WPA3 disable
         proto: RSN
         key_mgmt: SAE WPA-PSK
         pairwise: CCMP
@@ -38,16 +43,6 @@ actors:
         psk: password123
     netns: sta
     ip_addr: "172.16.100.2"
-  rogue_ap:
-    source: internal
-    selection:
-      condition: [ AP ]
-      #mac: "78:98:E8:55:3E:8D"
-    setup:
-      program: hostapd-mana
-      program_config:
-        # custom conf overrides the default hostapd-mana.conf - WPA2-PSK only, no SAE
-        hostapd-mana_path: config/hostapd-mana.conf
   attacker:
     source: internal
     selection:

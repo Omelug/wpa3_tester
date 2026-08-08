@@ -1,10 +1,13 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 name: wpa3_trans_downgrade_filler
-suite_functions: wpa3_trans_downgrade_filler
+suite_functions: wpa3_downgrade_filler
 config_type: test_suite
 tests:
-  all_actors:
+  simple_disconnect:
     type: actor_filler
-    config: ./downgrade_wpa3_vuln.yaml
+    config: ./downgrade_vuln.yaml
+  wpa3_disable:
+    type: actor_filler
+    config: ./downgrade_wpa3_disable.yaml
 delete_old: true
 rewrite: "errors"

@@ -31,7 +31,7 @@ TEST_CASE("RunStatus::solve_new_pdu - Beacon frame"){
 		auto actor = seen.at("00:11:22:33:44:55");
 		CHECK_EQ(actor[SK::mac], "00:11:22:33:44:55");
 		CHECK_EQ(actor[SK::source], "external");
-		CHECK_EQ(actor[SK::ssid], "test_wpa3_tester");
+		CHECK_EQ(actor[SK::ssid], "TestNetwork");
 		CHECK_EQ(actor[SK::channel], "6");
 		CHECK_EQ(actor[SK::signal], "-45");
 		CHECK(actor[BK::AP]);

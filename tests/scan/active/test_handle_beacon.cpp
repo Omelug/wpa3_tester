@@ -22,7 +22,7 @@ TEST_SUITE("handle_beacon") {
 		beacon.rsn_information(rsn_info);
 
 		auto result = handle_beacon(beacon, HWAddress<6>("00:11:22:33:44:55"), nullopt);
-		CHECK_NE(result, nullopt);
+		CHECK_NE(result, nullopt); //TODO Dadd more chacks
 	}
 
 	TEST_CASE("handle_beacon rejects different MAC") {

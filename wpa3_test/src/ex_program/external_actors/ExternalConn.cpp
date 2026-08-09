@@ -317,7 +317,7 @@ static const map<string, string> ARCH_TO_TRIPLE = {
 
 static path injector_source_path(){
 	return read_symlink("/proc/self/exe").parent_path().parent_path().parent_path()
-		   / "wpa3_test" / "remote_injector" / "main.c";
+		   / DATA_TEST / "remote_injector" / "main.c";
 }
 
 static void build_inject_binary(const string &arch, const path &out_path){

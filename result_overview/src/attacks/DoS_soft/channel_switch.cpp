@@ -55,7 +55,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 	};
 
 	// emit tables for each variant
-	const path base = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch";
+	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
 
 	emit_table("RogueAP ",  base / "rogueAP" / "CSA_rogueAP_internal_filler");
 	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler");

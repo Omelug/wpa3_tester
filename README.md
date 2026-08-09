@@ -12,7 +12,11 @@ Supported attacks: [attacks.md](doc/wpa3_tester_doc/attacks/attacks.md)
 
 Development: [development.md](doc/wpa3_tester_doc/development/development.md) (check for adding new test/ test suite)
 
-Usage:
+### Results
+Results of test are stored in [data](data) folder 
+(same trees as [attack_config](wpa3_test/attack_config), but separated to wpa3_test_suites).
+
+### Usage:
 - most of program needs sudo, should be required, but for sure...
 - `make compile` - compile & run 
 - [attack_config](wpa3_test/attack_config) - folder for config attacks
@@ -25,4 +29,4 @@ Usage:
 
 - if are connected 2 mt76x2u interfaces (90:de:80:6c:90:92, //TODO ) kernel do in some tests weird thing,
   it stop all network programs (NetworkManager) and I have to reboot for check even dmesg, so don't do that.
-  maybe some too many open files bug, but it's terrible for debugging
+  maybe some too many open files bug, but it's terrible for debuggin

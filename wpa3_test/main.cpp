@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <argparse/argparse.hpp>
 #include <yaml-cpp/yaml.h>
+
+#include "default.h"
 #include "config/RunStatus.h"
 
 #include "interrupt.h"
@@ -112,7 +114,7 @@ int main(const int argc, char *argv[]){
 		return 1;
 	}
 
-	argparse::ArgumentParser program("WPA3_tester", "1.0");
+	argparse::ArgumentParser program(TESTER_NAME, "1.0");
 	parse_arguments(program, argc, argv);
 	solve_arguments(program);
 	return 0;

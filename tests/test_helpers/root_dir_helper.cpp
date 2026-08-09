@@ -1,5 +1,7 @@
 #include "root_dir_helper.h"
 #include <fstream>
+
+#include "default.h"
 #include "config/global_config.h"
 #include "system/utils.h"
 
@@ -8,12 +10,12 @@ using namespace std;
 namespace fs = filesystem;
 
 IsolatedRootDir::IsolatedRootDir(const string &name): real_root(root_dir()){
-	const fs::path test_root = fs::temp_directory_path() / ("wpa3_tester_" + name);
+	const fs::path test_root = fs::temp_directory_path() / (TESTER_NAME + "_" + name);
 	fs::remove_all(test_root);
 	// mirrors the real layout (<repo>/wpa3_test is root_dir()) so root_dir().parent_path()
 	// lands under test_root too -> anything under data/... that code-under-test creates
 	// stays isolated and is removed in one shot below.
-	dir = test_root / "wpa3_test";
+	dir = test_root / DATA_TEST;
 	fs::create_directories(dir / "attack_config");
 
 	ofstream(dir / "attack_config" / "global_config.yaml") << "actors: {}\n";

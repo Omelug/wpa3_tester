@@ -75,7 +75,8 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-actor_config:
+attack_config:
   ms_interval: 100
   sleep_before_sec: 5
   sleep_after_sec: 5
+rewrite: errors

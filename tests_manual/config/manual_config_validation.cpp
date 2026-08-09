@@ -25,10 +25,12 @@ int main(){
 
         const string rel = relative(entry.path(), ATTACK_CONFIG()).string();
         try{
-            if(is_suite(entry.path()))
-                RunSuiteStatus::config_validation(entry.path());
-            else
-                RunStatus::config_validation(entry.path());
+            if(is_suite(entry.path())){
+	            RunSuiteStatus::config_validation(entry.path());
+
+            }else{
+	            RunStatus::config_validation(entry.path());
+            }
             cout << "[OK]   " << rel << "\n";
             passed++;
         } catch(const exception &e){

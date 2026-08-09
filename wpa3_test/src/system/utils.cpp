@@ -156,9 +156,14 @@ void create_public_dirs(const path &p, error_code &ec){
 	}
 }
 
-void set_public_perms(const path &p){
+void set_public_perms(const path &p) {
 	error_code ec;
-	const auto mode = is_directory(p, ec) ? perms::all : PUBLIC_FILE_PERMS;
+	constexpr auto exec_bits = perms::owner_exec | perms::group_exec | perms::others_exec;
+
+	const auto mode = is_directory(p, ec)
+		? perms::all
+		: (PUBLIC_FILE_PERMS | exec_bits);
+
 	permissions(p, mode, ec);
 }
 

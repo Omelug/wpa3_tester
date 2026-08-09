@@ -1,6 +1,5 @@
-
 ### report.md
-- for all info for test
+- for all info from test
 - mainly for debugging
 - ReportGuard
 

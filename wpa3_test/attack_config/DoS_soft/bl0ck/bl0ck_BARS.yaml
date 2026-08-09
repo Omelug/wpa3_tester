@@ -16,9 +16,10 @@ actors:
     source: internal
     selection:
       #ht_mode: "80MHz" #FIXME hostapd/client jsou na HT20, ale sniffer to jinek nerozparsuje, bůh ví proč
-      driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu]
+      driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu, mt76x2u]
 attack_config:
   attack_time_sec: 25
+  ms_interval: 100
   attack_variant: "BARS"
   random: false
   frame_in_batch: 50

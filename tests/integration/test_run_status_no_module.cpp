@@ -50,7 +50,7 @@ TEST_CASE("RunStatus::execute - attacker_module not present in any map still com
 	const test_helpers::IsolatedRootDir isolated("no_module_test");
 	const fs::path config_path = write_config(isolated.dir);
 	// mirrors RunStatus::BASE_FOLDER() (data/wpa3_test next to root_dir()); private, so can't call it directly
-	const fs::path run_folder = root_dir().parent_path() / "data" / "wpa3_test" / test_name;
+	const fs::path run_folder = root_dir().parent_path() / "data" / DATA_TEST / test_name;
 
 	RunStatus rs(config_path);
 

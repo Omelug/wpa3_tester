@@ -42,12 +42,12 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	};
 
 	// emit tables for each variant
-	const path base = data_dir / "wpa3_suites" / "DoS_soft" / "channel_switch";
+	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
 
 	emit_table("Test Results",
-		data_dir / "wpa3_suites" / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite");
 	emit_table("Dlink",
-		data_dir / "wpa3_suites" / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1__rogueAP_Dlink_filler");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1__rogueAP_Dlink_filler");
 
 
 	f << "</body>\n</html>\n";

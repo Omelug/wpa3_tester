@@ -31,7 +31,7 @@ public: // getters and setters
 	bool only_stats = false;
 	int wait_between_tests = 0;
 	Run_Config run_config{};
-	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / "data" / "wpa3_suites"; }
+	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / "data" / DATA_SUITE; }
 
 	static void print_test_suite_list();
 	static void print_tests_in_suite(const std::string &ts_name);

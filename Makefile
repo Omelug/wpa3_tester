@@ -8,7 +8,7 @@ SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile
-.PHONY: all compile compile_debug compile_release run run_debug run_release clean_build asan_build asan tester_setup
+.PHONY: all rssi_wizard compile compile_debug compile_release run run_debug run_release clean_build asan_build asan tester_setup
 
 tester_setup:
 	@echo "Disabling ath9k_hw ANI for driver stability..."
@@ -48,6 +48,18 @@ run_release: compile_release
 help: compile
 	@echo "binary of tester is ./$(BUILD_DIR_RELEASE)/bin/$(TARGET)"
 	@sudo ./$(BUILD_DIR)/bin/$(TARGET) --help
+
+#rssi wizard
+rssi_wizard: compile_rssi_wizard
+	sudo ./"$(BUILD_DIR)/bin/rssi_wizard"
+
+compile_rssi_wizard:
+	@mkdir -p $(BUILD_DIR)
+	@if [ ! -f $(BUILD_DIR)/build.ninja ] && [ ! -f $(BUILD_DIR)/Makefile ]; then \
+		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR) -G Ninja \
+			-DCMAKE_BUILD_TYPE=Debug; \
+	fi
+	cmake --build $(BUILD_DIR) --target rssi_wizard -j $(NPROC)
 
 # debug visualization
 RUN_CALLGRAPH := doc/callgraph/callgraph.out

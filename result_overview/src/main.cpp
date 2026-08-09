@@ -4,6 +4,7 @@
 #include <string>
 #include <unistd.h>
 
+#include "default.h"
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/DoS_soft/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"

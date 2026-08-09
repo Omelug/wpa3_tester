@@ -66,7 +66,6 @@ json RunSuiteStatus::config_validation(const path &config_path){
 		const path global_schema_path = root_dir() / "attack_config" / "validator" /
 				"test_suite_validator.schema.yaml";
 		const YAMLValidator global_validator(global_schema_path.string());
-		//global_validator.set_root_schema(yaml_to_json(YAML::LoadFile()));
 		global_validator.validate(config_json);
 		return config_json;
 	} catch(const domain_error &e){

@@ -182,10 +182,7 @@ static string get_binary(const string &bin_prefix, const string &version, const 
 	}
 
 	build_hostapd_like(version, hostapd_folder, binary_path, cfg, openssl);
-	copy(repo_path / "hostapd" / cfg.binary_name, binary_path, copy_options::overwrite_existing);
-	permissions(binary_path,
-				perms::owner_exec | perms::group_exec | perms::others_exec,
-				perm_options::add);
+	copy_f(repo_path / "hostapd" / cfg.binary_name, binary_path);
 	return binary_path;
 }
 
@@ -291,10 +288,13 @@ string get_wpa_supplicant(const string &version){
 	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
 		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
 	}
+	//cleanup
+	hw_capabilities::run_in("git reset --hard HEAD", repo_path);
+	hw_capabilities::run_in("git clean -fd", repo_path);
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	build_wpa_supplicant_version(version, hostapd_folder, wpa_supp_bin);
-	copy(repo_path / "wpa_supplicant" / "wpa_supplicant", wpa_supp_bin, copy_options::overwrite_existing);
+	copy_f(repo_path / "wpa_supplicant" / "wpa_supplicant", wpa_supp_bin);
 	return wpa_supp_bin;
 }
 

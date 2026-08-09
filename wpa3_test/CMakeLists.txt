@@ -79,3 +79,16 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests" "${CMAKE_BINARY_DIR}/tes
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../tests_manual" "${CMAKE_BINARY_DIR}/tests_manual")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../result_overview" "${CMAKE_BINARY_DIR}/result_overview_build")
 include(CPack)
+
+# rssi_wizard
+add_executable(rssi_wizard
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/wizard/rssi_wizard.cpp"
+)
+target_compile_definitions(rssi_wizard PRIVATE MAIN_TARGET_BUILD)
+target_link_libraries(rssi_wizard PRIVATE
+        -Wl,--whole-archive wpa3_core -Wl,--no-whole-archive
+        wpa3_deps
+)
+set_target_properties(rssi_wizard PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)

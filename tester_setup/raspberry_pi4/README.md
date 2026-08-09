@@ -13,7 +13,7 @@ Target OS: **Raspberry Pi OS Lite 64-bit (Bookworm)**
 
 ##### Build image:  ```make image```
 
-After download, it customize image: 
+After download, it customizes image: 
 - creates user `pi` / `wpa3tester`
 - enables SSH
 - injects `~/.ssh/id_rsa.pub` for key-based login

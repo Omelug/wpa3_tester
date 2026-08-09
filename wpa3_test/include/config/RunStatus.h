@@ -122,11 +122,9 @@ public:
 														const std::vector<unsigned char> &channels
 	);
 	// ----------- log_events
-	// base
 	void log_events(G_elms &elements,
 		std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d
 	) const;
-
 	void log_events(G_elms &elements, const std::set<EVENT_SET> &event_sets) const;
 private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);

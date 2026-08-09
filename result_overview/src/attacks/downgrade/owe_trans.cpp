@@ -46,7 +46,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 		</ul>
 	</div>
 )html";
-	const path suite_dir = data_dir / "wpa3_suites" / "downgrade" / "owe_trans" / "owe_trans_filler";
+	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "owe_trans" / "owe_trans_filler";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir){
 		OweTransTestEntry::render_table(f, title, suite_data_dir, page_dir);

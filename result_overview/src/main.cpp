@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 	const Args args        = parse_args(argc, argv);
 	const path output_dir  = args.output_dir;
 	const path data_dir    = args.data_dir;
-	const path attacks_dir = project_root() / "wpa3_test" / "src" / "attacks";
+	const path attacks_dir = project_root() / DATA_TEST / "src" / "attacks";
 
 	wpa3_tester::create_public_dirs(output_dir);
 

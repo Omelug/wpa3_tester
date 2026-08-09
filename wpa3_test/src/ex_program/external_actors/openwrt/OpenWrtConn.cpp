@@ -7,6 +7,8 @@
 #include "system/ip.h"
 #include <chrono>
 
+#include "default.h"
+
 namespace wpa3_tester{
 using namespace std;
 
@@ -107,7 +109,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 			break; // reuse existing
 		}
 	}
-	if(section.empty()) section = "wpa3_tester_" + radio_name; // create new
+	if(section.empty()) section = TESTER_NAME+"_" + radio_name; // create new
 	log(LogLevel::DEBUG, "Setting up wifi-iface {} for {}", section, radio_name);
 
 	exec("uci delete wireless." + section + "_open 2>/dev/null; true");
@@ -261,7 +263,7 @@ auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void
 
 	string iface_safe = iface;
 	ranges::replace(iface_safe, '-', '_');
-	const string wpa3_section = "wpa3_tester_" + iface_safe;
+	const string wpa3_section = TESTER_NAME + "_" + iface_safe;
 
 	int rc;
 	exec("uci get network." + wpa3_section + " 2>/dev/null", false, &rc);

@@ -1,0 +1,24 @@
+name: Check Documentation Links
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'doc/**/*.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'doc/**/*.md'
+
+jobs:
+  link-checker:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Local Markdown Links in /doc
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --verbose --no-progress --root-dir . "doc/**/*.md"
+          fail: true

@@ -74,6 +74,19 @@ graphviz:
 	cat ./doc/callgraph/callgraph.dot | dot -Tsvg -o ./doc/callgraph/callgraph.svg
 	@echo "--- Saved to callgraph.svg ---"
 
+define AWK_LYCHEE
+/^\[.*\]:$$/ { file=substr($$0, 2, length($$0)-3) }
+/\(at [0-9]+:[0-9]+\)/ {
+    match($$0, /\(at ([0-9]+):([0-9]+)\)/, arr)
+    match($$0, /\| (.*)$$/, msg)
+    print file ":" arr[1] ":" arr[2] ": error: " msg[1]
+}
+endef
+export AWK_LYCHEE
+
+doc_test:
+	@lychee --offline --root-dir . "doc/**/*.md" | awk "$$AWK_LYCHEE"
+
 # test
 test_build:
 	cmake --build $(BUILD_DIR) -j $(shell nproc --ignore=2)

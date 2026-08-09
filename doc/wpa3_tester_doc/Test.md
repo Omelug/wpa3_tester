@@ -16,10 +16,10 @@ if not compile_external/install_req and something have to be compilated/installe
 
 ### Test
 - defined by a YAML configuration file. 
+- have to pass validation through the main [validator](../../wpa3_test/attack_config/validator/test_validator.schema.yaml).
+- can use [yaml_validation.md](yaml_validation.md)
 
-All tests must pass validation through the main [validator](../../wpa3_test/attack_config/validator/test_validator.schema.yaml).
-
-### Software Requirements for the Test:
+### Software requirements for the Test:
 In the validator, requirement program for main test machine have to be in list `actors/<actor_name>/setup/requirements`
   (doesn't matter what actor, only for clear config)
 
@@ -30,11 +30,3 @@ Some programs need folder config in [global_config](../../wpa3_test/attack_confi
 
 External:
 The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml).
-
-### Active and injection tests (TwoIface)
-- these test are needed to be run before with real (because some drivers lies about compatibility)
-- cache is used to not run before very test (for details check [cache.md](cache.md))
-- active and injection are children of [TwoIface](../../wpa3_test/src/attacks/two_iface/TwoIface.cpp) 
-( in cache id are important keys for finding in cache)
-- [two_iface](../../wpa3_test/src/attacks/two_iface) can be added to test config `requirements/two_iface: <two_iface_key>: [<actor_tx>, <actor_rx>]`
-  (check [test_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_validator.schema.yaml) for two_iface_key)

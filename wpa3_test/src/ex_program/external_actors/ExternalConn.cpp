@@ -11,6 +11,8 @@
 
 #include <ranges>
 
+#include "default.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;

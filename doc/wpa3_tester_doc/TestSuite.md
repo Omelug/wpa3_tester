@@ -2,6 +2,7 @@
 - have tbe in format [test_suite_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_suite_validator.schema.yaml)
 - config_type: test_suite
 - path/generatros/permutation
+- can use [yaml_validation.md](yaml_validation.md) (for now not tested much on suite generation)
 
 ##### name
 - test if found from root with by test name

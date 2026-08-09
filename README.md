@@ -14,7 +14,7 @@ Development: [development.md](doc/wpa3_tester_doc/development/development.md) (c
 
 ### Results
 Results of test are stored in [data](data) folder 
-(same trees as [attack_config](wpa3_test/attack_config), but separated to wpa3_test_suites).
+(same trees as [attack_config](wpa3_test/attack_config), but separated to test_data / suite_data).
 
 ### Usage:
 - most of program needs sudo, should be required, but for sure...

@@ -14,7 +14,7 @@
       <file path="$PROJECT_DIR$/.claude" />
       <file path="$PROJECT_DIR$/build" />
       <file path="$PROJECT_DIR$/data" />
-      <file path="$PROJECT_DIR$/data/wpa3_test/run" />
+      <file path="$PROJECT_DIR$/data/test_data/run" />
       <file path="$PROJECT_DIR$/debug" />
       <file path="$PROJECT_DIR$/doc/test_hardware/RT_AX89X_B1/TFTPRouterFlasher" />
       <file path="$PROJECT_DIR$/doc/test_hardware/RT_AX89X_B1/facinstall" />

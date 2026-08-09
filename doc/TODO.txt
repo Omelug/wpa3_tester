@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+d: rapsberry
 ch: limitovat klienty na známé stringy, kde to jde, pak limitace ve validatorech
 +: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
 f: reset usb
@@ -12,7 +13,7 @@ CSA - upravit report pro external BB
 +: wizard v tester_stup pro external lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 d+: scan_until_success
 ?f: asan je podezřelej, nehlásí leaky
-t?: - test validation i na test suites ? (testuje, že vygenerované tsty jsou ok?)
+t? - test validation - testat i vygenerované testy?
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
 +: do channel switch overview dát cracked
 +: doc/rtw_8821cu_crach.txt (zkusit na nixOS, mělo by být v kernelu)

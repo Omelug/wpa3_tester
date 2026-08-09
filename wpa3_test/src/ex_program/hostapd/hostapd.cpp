@@ -368,11 +368,9 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const path run_folder_path(rs.run_folder());
 	const path log_path = run_folder_path / "logger" / (actor_name + ".log");
 	const path output_path = run_folder_path / "captured_hashes.txt";
-	const path hccapx_path = run_folder_path / "mana_handshakes.hccapx";
-	const path mana_22000 = run_folder_path / "hostapd-mana.22000";
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	rs.process_manager.after_stop(actor_name, [log_path, output_path, hccapx_path, mana_22000, run_folder_path](){
+	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
 		ofstream out(output_path);
 		set<string> seen;
 		auto add = [&](const string &hash){
@@ -381,22 +379,6 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 				log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
 			}
 		};
-
-		//FIXME crackable from different sources(not priority now )
-		/*if(exists(mana_22000)){
-			ifstream f(mana_22000);
-			string line;
-			while(getline(f, line)){
-			   if(line.starts_with("WPA*")){
-					add(line);
-				}
-			}
-		}
-		if(exists(hccapx_path)){
-		   for(const auto &h: hccapx_to_wpa_hashes(hccapx_path)){
-			   add(h);
-		   }
-		}*/
 		if(exists(log_path)) {
 		   ifstream log_file(log_path);
 		   string line;

@@ -1,9 +1,14 @@
 ### Code culture
 
 This folder describe only possibilities what needs code change.
-If you dont need change code, only config, check [Test.md](../Test.md) / [TestSuite.md](../TestSuite.md).
+If you don't need change code, only attacks configs, check [Test.md](../Test.md) / [TestSuite.md](../TestSuite.md).
 
 - [attacks](../../../wpa3_test/src/attacks), [attack_config](../../../wpa3_test/attack_config) and [tests](../../../tests) have same folder structure
+
+You can change some default paths/names before compilation in  [default.h](../../../wpa3_test/include/default.h)
+(Should be auto changed everywhere, except of doc folder).
+
+### Development FAQ
 
 #### How to add new attack?
 
@@ -22,4 +27,4 @@ Add parsing with libpcap first, libtins only for simplification what can be test
 - check Test suite types in [TestSuite.md](../TestSuite.md)
 - Test suite setup/test_report
   - set suite_function key and register it in [test_suites.h](../../../wpa3_test/include/suite/test_suites.h)
-  - add code for setup/test_report to  [include/suite](../../../wpa3_test/include/suite) and [src/suite](../../../wpa3_test/src/suite)
+  - add code for setup/test_report to  [include/suite](../../../wpa3_test/include/suite)

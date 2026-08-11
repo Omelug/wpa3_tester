@@ -210,7 +210,7 @@ TEST_SUITE("solve_new_pdu edge cases") {
 	}
 
 	TEST_CASE("broadcast and multicast MACs are filtered out") {
-		// Beacon addr1 is ff:ff:ff:ff:ff:ff — must not appear in seen
+		// beacon addr1 is ff:ff:ff:ff:ff:ff — must not appear in seen
 		auto frames = test_helpers::read_all_frames(PCAP_BEACON);
 		REQUIRE_FALSE(frames.empty());
 		ActorMACMap seen;

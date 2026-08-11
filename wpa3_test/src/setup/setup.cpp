@@ -11,7 +11,7 @@ using namespace std;
 using namespace filesystem;
 
 void RunStatus::setup_test(){
-	// Recreate last_run directory empty
+	// recreate last_run directory empty
 	error_code ec;
 	if(exists(_run_folder, ec)){
 		remove_all(_run_folder, ec);

@@ -19,7 +19,7 @@ TEST_CASE("parse_acm_response - valid ACM commit packet from pcap"){
 		HWAddress<6> expected_sta_mac("78:98:e8:55:3e:8d");
 		CHECK_EQ(cookie.sta_mac, expected_sta_mac);
 		REQUIRE(!cookie.token.empty());
-		// Anti-Clogging Token: 0001d5e6fdae673642ddbb59598404fbf768f848820e3dcaaeffefa1c6d3ace7
+		// anti-Clogging Token: 0001d5e6fdae673642ddbb59598404fbf768f848820e3dcaaeffefa1c6d3ace7
 		vector<uint8_t> expected_token = {
 			0x00, 0x01, 0xd5, 0xe6, 0xfd, 0xae, 0x67, 0x36,
 			0x42, 0xdd, 0xbb, 0x59, 0x59, 0x84, 0x04, 0xfb,

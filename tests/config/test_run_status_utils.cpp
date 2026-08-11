@@ -88,8 +88,7 @@ actors:
 	remove_all(test_dir);
 }
 
-// -----------------
-// RunStatus::should_skip
+// ------- RunStatus::should_skip
 
 TEST_CASE("should_skip - schema and component files are skipped regardless of location"){
 	CHECK(RunStatus::should_skip(ATTACK_CONFIG() / "foo" / "bar.schema.yaml"));

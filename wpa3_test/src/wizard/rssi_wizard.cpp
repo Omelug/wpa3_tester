@@ -1,24 +1,24 @@
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <pcap.h>
+#include <radiotap.h>
+#include <string>
+#include <thread>
 #include <unistd.h>
+#include <utility>
+#include <vector>
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <sys/socket.h>
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <cstdio>
-#include <map>
-#include <memory>
-#include <string>
-#include <thread>
-#include <utility>
-#include <vector>
-#include <atomic>
-#include <mutex>
-#include <pcap.h>
-#include <radiotap.h>
 
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "system/hw_capabilities.h"
@@ -30,7 +30,7 @@ extern "C" {
 static FILE* g_gnuplot_pipe = nullptr;
 static volatile bool g_running = true;
 
-void signal_handler(int signum) {
+void signal_handler(const int signum) {
 	if (!g_running) {
 		std::cerr << "\n[!] Force exiting..." << std::endl;
 		std::exit(128 + signum);
@@ -45,9 +45,8 @@ struct Node2D {
     double vy{0.0};
 };
 
-// Normalizace MAC adresy na malá písmena pro spolehlivou práci v mapě
 std::string normalize_mac(std::string mac) {
-    std::transform(mac.begin(), mac.end(), mac.begin(), ::tolower);
+    std::ranges::transform(mac, mac.begin(), ::tolower);
     return mac;
 }
 
@@ -59,13 +58,13 @@ struct WifiSender {
         sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if (sock_fd < 0) return;
 
-        struct sockaddr_ll sa{};
+		sockaddr_ll sa{};
         std::memset(&sa, 0, sizeof(sa));
         sa.sll_family = AF_PACKET;
         sa.sll_ifindex = if_nametoindex(iface_name.c_str());
         sa.sll_protocol = htons(ETH_P_ALL);
 
-        bind(sock_fd, reinterpret_cast<struct sockaddr*>(&sa), sizeof(sa));
+        bind(sock_fd, reinterpret_cast<sockaddr*>(&sa), sizeof(sa));
     }
 
     ~WifiSender() {
@@ -90,21 +89,21 @@ struct WifiSender {
         return *this;
     }
 
-    bool send_frame(const uint8_t* frame, size_t len) {
+    bool send_frame(const uint8_t* frame, const size_t len) const{
         if (sock_fd < 0) return false;
-        ssize_t sent = send(sock_fd, frame, len, 0);
+        const ssize_t sent = send(sock_fd, frame, len, 0);
         return sent == static_cast<ssize_t>(len);
     }
 };
 
-// Správné odvysílání včetně 8-bajtové Radiotap hlavičky
-void transmit_beacon_or_probe(WifiSender& sender, const std::string& mac_str) {
+
+void transmit_beacon_or_probe(const WifiSender& sender, const std::string& mac_str) {
     uint8_t mac_bytes[6]{0};
     std::sscanf(mac_str.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
                 &mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
                 &mac_bytes[3], &mac_bytes[4], &mac_bytes[5]);
 
-    uint8_t frame[] = {
+    const uint8_t frame[] = {
         // Radiotap Header (8 bytes)
         0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
         // IEEE 802.11 Probe Request
@@ -120,7 +119,7 @@ void transmit_beacon_or_probe(WifiSender& sender, const std::string& mac_str) {
     sender.send_frame(frame, sizeof(frame));
 }
 
-int8_t extract_rssi(const uint8_t* packet, uint32_t caplen) {
+int8_t extract_rssi(const uint8_t* packet, const uint32_t caplen) {
 	ieee80211_radiotap_iterator iter{};
 
 	auto* header = reinterpret_cast<struct ieee80211_radiotap_header*>(
@@ -143,20 +142,19 @@ int8_t extract_rssi(const uint8_t* packet, uint32_t caplen) {
 }
 
 class RssiCache {
-private:
     mutable std::mutex mutex_;
     std::map<std::pair<std::string, std::string>, double> cache_;
 
 public:
-    void update(const std::string& src_mac, const std::string& rx_iface, double rssi) {
-        std::lock_guard<std::mutex> lock(mutex_);
+    void update(const std::string& src_mac, const std::string& rx_iface, const double rssi) {
+        std::lock_guard lock(mutex_);
         cache_[{normalize_mac(src_mac), rx_iface}] = rssi;
     }
 
     double get(const std::string& src_mac, const std::string& rx_iface) const {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto it = cache_.find({normalize_mac(src_mac), rx_iface});
-        return (it != cache_.end()) ? it->second : -90.0;
+        std::lock_guard lock(mutex_);
+        const auto it = cache_.find({normalize_mac(src_mac), rx_iface});
+        return it != cache_.end() ? it->second : -90.0;
     }
 };
 
@@ -172,7 +170,7 @@ private:
         char buf[18];
         std::snprintf(buf, sizeof(buf), "%02x:%02x:%02x:%02x:%02x:%02x",
                       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-        return std::string(buf);
+        return buf;
     }
 
     void sniffer_loop() {
@@ -198,22 +196,22 @@ private:
     	}
 
     	while (running_.load(std::memory_order_relaxed)) {
-    		struct pcap_pkthdr* header;
+			pcap_pkthdr* header;
     		const uint8_t* packet;
-    		int res = pcap_next_ex(handle_, &header, &packet);
+    		const int res = pcap_next_ex(handle_, &header, &packet);
 
-    		if (res == -2) break; // pcap_breakloop() byl zavolán -> ukončujeme smyčku
+    		if (res == -2) break; // loop end
     		if (res <= 0) continue;
 
-    		int8_t rssi_dbm = extract_rssi(packet, header->caplen);
-    		uint16_t radiotap_len = packet[2] | (packet[3] << 8);
+    		const int8_t rssi_dbm = extract_rssi(packet, header->caplen);
+    		const uint16_t radiotap_len = packet[2] | (packet[3] << 8);
 
     		if (header->caplen >= radiotap_len + 24) {
     			const uint8_t* ieee_hdr = packet + radiotap_len;
     			const uint8_t* src_mac_bytes = ieee_hdr + 10;
     			std::string src_mac = format_mac(src_mac_bytes);
 
-    			cache_ref_->update(src_mac, rx_iface_, static_cast<double>(rssi_dbm));
+    			cache_ref_->update(src_mac, rx_iface_, rssi_dbm);
     		}
     	}
 
@@ -235,10 +233,10 @@ public:
 	void stop() {
     	if (running_.exchange(false)) {
     		if (handle_) {
-    			pcap_breakloop(handle_); // Přeruší blokované pcap_next_ex()
+    			pcap_breakloop(handle_);
     		}
     		if (worker_.joinable()) {
-    			worker_.join(); // Nyní se vlákno bezpečně a hned ukončí
+    			worker_.join();
     		}
     	}
     }
@@ -291,7 +289,7 @@ using RssiMatrix = std::map<std::pair<std::string, std::string>, double>;
 
 RssiMatrix collect_rssi_measurements(
     const std::vector<wpa3_tester::ActorPtr>& actors,
-    std::vector<WifiSender>& senders,
+    const std::vector<WifiSender>& senders,
     const std::vector<std::string>& iface_names,
     const RssiCache& cache)
 {
@@ -310,7 +308,7 @@ RssiMatrix collect_rssi_measurements(
         for (size_t j = 0; j < actors.size(); ++j) {
             if (i == j) continue;
 
-            double rssi = cache.get(src_mac, iface_names[j]);
+            const double rssi = cache.get(src_mac, iface_names[j]);
             rssi_matrix[{iface_names[i], iface_names[j]}] = rssi;
         }
     }
@@ -323,34 +321,34 @@ void update_physics(
     const std::vector<std::string>& iface_names,
     const RssiMatrix& rssi_matrix)
 {
-    size_t n = iface_names.size();
+    const size_t n = iface_names.size();
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = i + 1; j < n; ++j) {
             const auto& nameA = iface_names[i];
             const auto& nameB = iface_names[j];
 
             auto it = rssi_matrix.find({nameA, nameB});
-            double rssi = (it != rssi_matrix.end()) ? it->second : -90.0;
+            const double rssi = it != rssi_matrix.end() ? it->second : -90.0;
 
-            double target_dist = std::clamp((std::abs(rssi) - 30.0) / 7.0, 1.0, 9.0);
+            const double target_dist = std::clamp((std::abs(rssi) - 30.0) / 7.0, 1.0, 9.0);
 
             auto& nodeA = nodes[nameA];
             auto& nodeB = nodes[nameB];
 
-            double dx = nodeB.x - nodeA.x;
-            double dy = nodeB.y - nodeA.y;
-            double dist = std::sqrt(dx * dx + dy * dy) + 0.001;
+            const double dx = nodeB.x - nodeA.x;
+            const double dy = nodeB.y - nodeA.y;
+            const double dist = std::sqrt(dx * dx + dy * dy) + 0.001;
 
-            double force = 0.1 * (dist - target_dist);
-            double fx = (dx / dist) * force;
-            double fy = (dy / dist) * force;
+            const double force = 0.1 * (dist - target_dist);
+            const double fx = dx / dist * force;
+            const double fy = dy / dist * force;
 
             nodeA.vx += fx; nodeA.vy += fy;
             nodeB.vx -= fx; nodeB.vy -= fy;
         }
     }
 
-    for (auto& [name, node] : nodes) {
+    for (auto &node: nodes | std::views::values) {
         node.x += node.vx;
         node.y += node.vy;
         node.vx *= 0.5;
@@ -358,7 +356,6 @@ void update_physics(
     }
 }
 
-// Zobrazení rozhraní, MAC adresy a RSSI spojnic v Gnuplotu
 void render_gnuplot(
     FILE* pipe,
     const std::map<std::string, Node2D>& nodes,
@@ -371,9 +368,9 @@ void render_gnuplot(
                   "'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
                   "'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
 
-    size_t n = iface_names.size();
+    const size_t n = iface_names.size();
 
-    // 1. Spojovací čáry
+    // connections
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = i + 1; j < n; ++j) {
             auto itA = nodes.find(iface_names[i]);
@@ -387,17 +384,17 @@ void render_gnuplot(
     }
     fprintf(pipe, "e\n");
 
-    // 2. Hodnoty RSSI v dBm uprostřed čar
+    // 2. RSSI values
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = i + 1; j < n; ++j) {
             auto itA = nodes.find(iface_names[i]);
             auto itB = nodes.find(iface_names[j]);
             if (itA != nodes.end() && itB != nodes.end()) {
-                double mid_x = (itA->second.x + itB->second.x) / 2.0;
-                double mid_y = (itA->second.y + itB->second.y) / 2.0;
+                const double mid_x = (itA->second.x + itB->second.x) / 2.0;
+                const double mid_y = (itA->second.y + itB->second.y) / 2.0;
 
                 auto rssi_it = rssi_matrix.find({iface_names[i], iface_names[j]});
-                double rssi = (rssi_it != rssi_matrix.end()) ? rssi_it->second : -90.0;
+                const double rssi = rssi_it != rssi_matrix.end() ? rssi_it->second : -90.0;
 
                 fprintf(pipe, "%f %f '%.0f dBm'\n", mid_x, mid_y, rssi);
             }
@@ -405,7 +402,7 @@ void render_gnuplot(
     }
     fprintf(pipe, "e\n");
 
-    // 3. Body uzlů
+    // points
     for (const auto& name : iface_names) {
         auto it = nodes.find(name);
         if (it != nodes.end()) {
@@ -414,7 +411,7 @@ void render_gnuplot(
     }
     fprintf(pipe, "e\n");
 
-    // 4. Popisky s Nápaditým rozhraním a MAC adresou (dvouřádkové)
+    // labels
     for (size_t i = 0; i < n; ++i) {
         auto it = nodes.find(iface_names[i]);
         if (it != nodes.end()) {
@@ -441,9 +438,9 @@ FILE* init_gnuplot() {
 
 std::map<std::string, Node2D> initialize_node_positions(const std::vector<std::string>& iface_names) {
     std::map<std::string, Node2D> nodes;
-    size_t n = iface_names.size();
+    const size_t n = iface_names.size();
     for (size_t i = 0; i < n; ++i) {
-        const double angle = 2.0 * M_PI * i / n;
+        const double angle = 2.0 * M_PI * static_cast<double>(i) / static_cast<double>(n);
         nodes[iface_names[i]] = { 5.0 * std::cos(angle), 5.0 * std::sin(angle), 0.0, 0.0 };
     }
     return nodes;
@@ -453,7 +450,7 @@ void run_rssi_wizard() {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
-    auto setup = initialize_network();
+    const auto setup = initialize_network();
     if (setup.actors.empty()) return;
 
     g_gnuplot_pipe = init_gnuplot();

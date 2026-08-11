@@ -99,7 +99,7 @@ void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 
 		constexpr uint32_t NL80211_FEATURE_SAE_MASK = (1 << 5);
 		if(feature_flags & NL80211_FEATURE_SAE_MASK){
-			caps->wpa3_sae = true; //STA WPA3
+			caps->wpa3_sae = true; //STA WPA3 supported by driver (old interface)
 		}
 	}
 	if(attrs[NL80211_ATTR_EXT_FEATURES]){
@@ -112,7 +112,7 @@ void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 		if(ext_features_len > STA_BYTE_INDEX){
 			const uint8_t target_byte = static_cast<uint8_t *>(ext_features_data)[STA_BYTE_INDEX];
 			if(target_byte & STA_BIT_MASK){
-				caps->wpa3_sae = true; //STA offload
+				caps->wpa3_sae = true; //SAE supported by hardware (can be accelerated with chip)
 			}
 		}
 
@@ -122,7 +122,7 @@ void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 		if(ext_features_len > AP_BYTE_INDEX){
 			if(const uint8_t target_byte = static_cast<uint8_t *>(ext_features_data)[AP_BYTE_INDEX]; target_byte &
 				AP_BIT_MASK){
-				caps->wpa3_sae = true; // AP WPA3
+				caps->wpa3_sae = true; // AP can use WPA3 //FIXME separate? 
 			}
 		}
 	}
@@ -183,7 +183,7 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 				if(mhz >= 5925 && mhz <= 7125) caps->no_ir_6ghz++;
 			}
 
-			// NO_IR = passive-scan only until a beacon is heard, not "unsupported" — band is still usable.
+			//TODO  NO_IR = passive-scan only until a beacon is heard, not "unsupported" — band is still usable.
 			if(mhz >= 2412 && mhz <= 2484) caps->band24 = true;
 			if(mhz >= 5180 && mhz <= 5885) caps->band5 = true;
 			if(mhz >= 5925 && mhz <= 7125) caps->band6 = true;

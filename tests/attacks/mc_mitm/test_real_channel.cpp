@@ -13,7 +13,7 @@ namespace wpa3_tester{
 TEST_SUITE("handle_action_real") {
 
 	TEST_CASE("non-Action management frame returns false"){
-		// Beacon is management but subtype=8, not 13
+		// beacon is management but subtype=8, not 13
 		auto [rt, raw] = test_helpers::load_frame("./test_data/wifi_util/beacon.pcapng");
 		auto *dot11 = rt.find_pdu<Dot11>();
 		REQUIRE_NE(dot11, nullptr);

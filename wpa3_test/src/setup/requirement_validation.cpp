@@ -86,7 +86,7 @@ void kill_process_in_ns_name(const string &ns_name){
 		}
 	}
 
-	// Wait for SIGKILL to take effect — kernel needs a moment
+	// wait for SIGKILL to take effect — kernel needs a moment
 	for(const pid_t p: pids){
 		const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(200);
 		while(exists("/proc/" + to_string(static_cast<long>(p))) && chrono::steady_clock::now() <

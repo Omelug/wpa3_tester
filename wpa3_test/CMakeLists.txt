@@ -83,6 +83,7 @@ include(CPack)
 # rssi_wizard
 add_executable(rssi_wizard
         "${CMAKE_CURRENT_SOURCE_DIR}/src/wizard/rssi_wizard.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/wizard/rssi_condition.cpp"
 )
 target_compile_definitions(rssi_wizard PRIVATE MAIN_TARGET_BUILD)
 target_link_libraries(rssi_wizard PRIVATE

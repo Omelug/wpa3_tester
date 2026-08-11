@@ -5,51 +5,62 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <linux/if_packet.h>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <net/ethernet.h>
+#include <net/if.h>
+#include <optional>
 #include <pcap.h>
 #include <radiotap.h>
+#include <set>
 #include <string>
+#include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
 #include <utility>
 #include <vector>
-#include <linux/if_packet.h>
-#include <net/ethernet.h>
-#include <net/if.h>
-#include <sys/socket.h>
 
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "system/hw_capabilities.h"
+#include "wizard/rssi_condition.h"
 
 extern "C" {
 #include <radiotap_iter.h>
 }
+
 using namespace std;
+
+// ---- globals ----
 
 static FILE* g_gnuplot_pipe = nullptr;
 static volatile bool g_running = true;
+static atomic<bool>  g_paused{false};
 
 void signal_handler(const int signum) {
-	if (!g_running) {
-		cerr << "\n[!] Force exiting..." << endl;
-		exit(128 + signum);
-	}
-	g_running = false;
+    if (!g_running) {
+        cerr << "\n[!] Force exiting...\n";
+        exit(128 + signum);
+    }
+    g_running = false;
 }
 
+static void pause_handler(int) { g_paused = !g_paused; }
+
+// ---- basic types ----
+
 struct Node2D {
-    double x{0.0};
-    double y{0.0};
-    double vx{0.0};
-    double vy{0.0};
+    double x{0.0}, y{0.0};
+    double vx{0.0}, vy{0.0};
 };
 
-string normalize_mac(string mac) {
+static string normalize_mac(string mac) {
     ranges::transform(mac, mac.begin(), ::tolower);
     return mac;
 }
+
+// ---- WifiSender ----
 
 struct WifiSender {
     string iface_name;
@@ -59,9 +70,9 @@ struct WifiSender {
         sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if (sock_fd < 0) return;
 
-		sockaddr_ll sa{};
-        sa.sll_family = AF_PACKET;
-        sa.sll_ifindex = static_cast<int>(if_nametoindex(iface_name.c_str()));
+        sockaddr_ll sa{};
+        sa.sll_family   = AF_PACKET;
+        sa.sll_ifindex  = static_cast<int>(if_nametoindex(iface_name.c_str()));
         sa.sll_protocol = htons(ETH_P_ALL);
 
         if (bind(sock_fd, reinterpret_cast<sockaddr*>(&sa), sizeof(sa)) < 0) {
@@ -70,423 +81,427 @@ struct WifiSender {
         }
     }
 
-    ~WifiSender() {
-        if (sock_fd >= 0) close(sock_fd);
-    }
+    ~WifiSender() { if (sock_fd >= 0) close(sock_fd); }
 
-    WifiSender(const WifiSender&) = delete;
+    WifiSender(const WifiSender&)            = delete;
     WifiSender& operator=(const WifiSender&) = delete;
 
-    WifiSender(WifiSender&& other) noexcept
-        : iface_name(move(other.iface_name)), sock_fd(other.sock_fd) {
-        other.sock_fd = -1;
-    }
+    WifiSender(WifiSender&& o) noexcept
+        : iface_name(move(o.iface_name)), sock_fd(o.sock_fd) { o.sock_fd = -1; }
 
-    WifiSender& operator=(WifiSender&& other) noexcept {
-        if (this != &other) {
+    WifiSender& operator=(WifiSender&& o) noexcept {
+        if (this != &o) {
             if (sock_fd >= 0) close(sock_fd);
-            iface_name = move(other.iface_name);
-            sock_fd = other.sock_fd;
-            other.sock_fd = -1;
+            iface_name = move(o.iface_name);
+            sock_fd    = o.sock_fd;
+            o.sock_fd  = -1;
         }
         return *this;
     }
 
-    bool send_frame(const uint8_t* frame, const size_t len) const{
+    bool send_frame(const uint8_t* frame, size_t len) const {
         if (sock_fd < 0) return false;
-        const ssize_t sent = send(sock_fd, frame, len, 0);
-        return sent == static_cast<ssize_t>(len);
+        return send(sock_fd, frame, len, 0) == static_cast<ssize_t>(len);
     }
 };
 
-
-void transmit_beacon_or_probe(const WifiSender& sender, const string& mac_str) {
-    uint8_t mac_bytes[6]{};
+static void transmit_probe(const WifiSender& sender, const string& mac_str) {
+    uint8_t mac[6]{};
     const char* p = mac_str.c_str();
     for (int i = 0; i < 6; ++i) {
         char* end;
-        mac_bytes[i] = static_cast<uint8_t>(strtoul(p, &end, 16));
+        mac[i] = static_cast<uint8_t>(strtoul(p, &end, 16));
         p = end + 1;
     }
 
     const uint8_t frame[] = {
-        // Radiotap Header (8 bytes)
-        0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-        // IEEE 802.11 Probe Request
-        0x40, 0x00,                         // Frame Control
-        0x00, 0x00,                         // Duration
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // DA: Broadcast
-        mac_bytes[0], mac_bytes[1], mac_bytes[2],
-        mac_bytes[3], mac_bytes[4], mac_bytes[5], // SA
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // BSSID: Broadcast
-        0x00, 0x00                          // Sequence Control
+        0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,  // Radiotap header (8 bytes)
+        0x40, 0x00,                                        // Frame control: Probe Request
+        0x00, 0x00,                                        // Duration
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff,               // DA: broadcast
+        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],   // SA
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff,               // BSSID: broadcast
+        0x00, 0x00,                                        // Sequence control
+        0x00, 0x00,                                        // SSID IE: tag=0, len=0 (wildcard)
     };
-
     sender.send_frame(frame, sizeof(frame));
 }
 
-constexpr int8_t DEFAULT_DB = -90;
+// ---- RSSI extraction ----
 
-int8_t extract_rssi(const uint8_t* packet, const uint32_t caplen) {
-	ieee80211_radiotap_iterator iter{};
+constexpr int8_t DEFAULT_RSSI = -242;
 
-	auto* header = reinterpret_cast<struct ieee80211_radiotap_header*>(
-		const_cast<uint8_t*>(packet)
-	);
-
-	if (ieee80211_radiotap_iterator_init(&iter, header, static_cast<int>(caplen), nullptr) != 0) {
-		return DEFAULT_DB;
-	}
-
-	while (ieee80211_radiotap_iterator_next(&iter) == 0) {
-		if (iter.is_radiotap_ns && iter.this_arg_index == IEEE80211_RADIOTAP_DBM_ANTSIGNAL) {
-			if (iter.this_arg != nullptr) {
-				return *reinterpret_cast<const int8_t*>(iter.this_arg);
-			}
-		}
-	}
-
-	return DEFAULT_DB;
+static int8_t extract_rssi(const uint8_t* packet, uint32_t caplen) {
+    ieee80211_radiotap_iterator iter{};
+    auto* hdr = reinterpret_cast<ieee80211_radiotap_header*>(const_cast<uint8_t*>(packet));
+    if (ieee80211_radiotap_iterator_init(&iter, hdr, static_cast<int>(caplen), nullptr) != 0)
+        return DEFAULT_RSSI;
+    while (ieee80211_radiotap_iterator_next(&iter) == 0) {
+        if (iter.is_radiotap_ns
+            && iter.this_arg_index == IEEE80211_RADIOTAP_DBM_ANTSIGNAL
+            && iter.this_arg)
+            return *reinterpret_cast<const int8_t*>(iter.this_arg);
+    }
+    return DEFAULT_RSSI;
 }
 
+// ---- RSSI cache ----
+
 class RssiCache {
-    mutable mutex mutex_;
-    map<pair<string, string>, double> cache_;
-
+    mutable mutex mtx_;
+    map<pair<string,string>, double> data_;  // {src_mac, rx_iface} → dBm
 public:
-    void update(const string& src_mac, const string& rx_iface, const double rssi) {
-        lock_guard lock(mutex_);
-        cache_[{normalize_mac(src_mac), rx_iface}] = rssi;
+    void update(const string& src_mac, const string& rx_iface, double rssi) {
+        lock_guard lock(mtx_);
+        data_[{normalize_mac(src_mac), rx_iface}] = rssi;
     }
-
     double get(const string& src_mac, const string& rx_iface) const {
-        lock_guard lock(mutex_);
-        const auto it = cache_.find({normalize_mac(src_mac), rx_iface});
-        return it != cache_.end() ? it->second : -90.0;
+        lock_guard lock(mtx_);
+		const auto it = data_.find({normalize_mac(src_mac), rx_iface});
+        return it != data_.end() ? it->second : DEFAULT_RSSI;
     }
 };
+
+// ---- PcapSniffer ----
 
 class PcapSniffer {
     string rx_iface_;
-    shared_ptr<RssiCache> cache_ref_;
+    shared_ptr<RssiCache> cache_;
     atomic<bool> running_{false};
     thread worker_;
-	pcap_t* handle_{nullptr};
+    pcap_t* handle_{nullptr};
 
-    static string format_mac(const uint8_t* mac) {
+    static string format_mac(const uint8_t* m) {
         char buf[18];
         snprintf(buf, sizeof(buf), "%02x:%02x:%02x:%02x:%02x:%02x",
-                      mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+                 m[0], m[1], m[2], m[3], m[4], m[5]);
         return buf;
     }
 
-    void sniffer_loop() {
-    	char errbuf[PCAP_ERRBUF_SIZE];
-    	handle_ = pcap_create(rx_iface_.c_str(), errbuf);
-    	if (!handle_) return;
+    void loop() {
+        char errbuf[PCAP_ERRBUF_SIZE];
+        handle_ = pcap_create(rx_iface_.c_str(), errbuf);
+        if (!handle_) return;
+        pcap_set_snaplen(handle_, 2048);
+        pcap_set_promisc(handle_, 1);
+        pcap_set_timeout(handle_, 100);
+        pcap_set_immediate_mode(handle_, 1);
+        if (pcap_activate(handle_) < 0) { pcap_close(handle_); handle_ = nullptr; return; }
 
-    	pcap_set_snaplen(handle_, 2048);
-    	pcap_set_promisc(handle_, 1);
-    	pcap_set_timeout(handle_, 100);
-    	pcap_set_immediate_mode(handle_, 1);
+        bpf_program fp{};
+        if (pcap_compile(handle_, &fp, "type mgt subtype probe-req", 1, PCAP_NETMASK_UNKNOWN) == 0) {
+            pcap_setfilter(handle_, &fp);
+            pcap_freecode(&fp);
+        }
 
-    	if (pcap_activate(handle_) < 0) {
-    		pcap_close(handle_);
-    		handle_ = nullptr;
-    		return;
-    	}
+        while (running_.load(memory_order_relaxed)) {
+            pcap_pkthdr* hdr; const uint8_t* pkt;
+            const int res = pcap_next_ex(handle_, &hdr, &pkt);
+            if (res == -2) break;
+            if (res <= 0) continue;
 
-    	bpf_program fp{};
-    	if (pcap_compile(handle_, &fp, "type mgt subtype probe-req", 1, PCAP_NETMASK_UNKNOWN) == 0) {
-    		pcap_setfilter(handle_, &fp);
-    		pcap_freecode(&fp);
-    	}
-
-    	while (running_.load(memory_order_relaxed)) {
-			pcap_pkthdr* header;
-    		const uint8_t* packet;
-    		const int res = pcap_next_ex(handle_, &header, &packet);
-
-    		if (res == -2) break; // loop end
-    		if (res <= 0) continue;
-
-    		const int8_t rssi_dbm = extract_rssi(packet, header->caplen);
-    		const auto radiotap_len = static_cast<uint16_t>(packet[2] | (packet[3] << 8));
-
-    		if (header->caplen >= radiotap_len + 24) {
-    			const uint8_t* ieee_hdr = packet + radiotap_len;
-    			const uint8_t* src_mac_bytes = ieee_hdr + 10;
-    			string src_mac = format_mac(src_mac_bytes);
-
-    			cache_ref_->update(src_mac, rx_iface_, rssi_dbm);
-    		}
-    	}
-
-    	pcap_close(handle_);
-    	handle_ = nullptr;
+            const int8_t rssi = extract_rssi(pkt, hdr->caplen);
+            const auto rlen = static_cast<uint16_t>(pkt[2] | (pkt[3] << 8));
+            if (hdr->caplen >= static_cast<uint32_t>(rlen) + 24)
+                cache_->update(format_mac(pkt + rlen + 10), rx_iface_, rssi);
+        }
+        pcap_close(handle_); handle_ = nullptr;
     }
 
 public:
-    PcapSniffer(string rx_iface, shared_ptr<RssiCache> cache)
-        : rx_iface_(move(rx_iface)), cache_ref_(move(cache)) {}
-
+    PcapSniffer(string iface, shared_ptr<RssiCache> c)
+        : rx_iface_(move(iface)), cache_(move(c)) {}
     ~PcapSniffer() { stop(); }
 
-	void start() {
-    	running_ = true;
-    	worker_ = thread(&PcapSniffer::sniffer_loop, this);
+    void start() { running_ = true; worker_ = thread(&PcapSniffer::loop, this); }
+    void stop() {
+        if (running_.exchange(false)) {
+            if (handle_) pcap_breakloop(handle_);
+            if (worker_.joinable()) worker_.join();
+        }
     }
+};
 
-	void stop() {
-    	if (running_.exchange(false)) {
-    		if (handle_) {
-    			pcap_breakloop(handle_);
-    		}
-    		if (worker_.joinable()) {
-    			worker_.join();
-    		}
-    	}
-    }
+// ---- Dynamic network setup ----
+
+struct AdapterInfo {
+    WifiSender sender;
+    unique_ptr<PcapSniffer> sniffer;
+    string iface_name;
+    string mac;  // normalized
 };
 
 struct NetworkSetup {
-    vector<wpa3_tester::ActorPtr> actors;
-    vector<WifiSender> senders;
-    vector<unique_ptr<PcapSniffer>> sniffers;
-    vector<string> iface_names;
-    vector<string> mac_addrs;
+    mutex mtx;
+    vector<AdapterInfo> adapters;
+    map<string, Node2D> nodes;  // keyed by normalized MAC (persists across reconnects)
     shared_ptr<RssiCache> rssi_cache{make_shared<RssiCache>()};
 };
 
-NetworkSetup initialize_network() {
-    NetworkSetup setup;
-    const auto ifaces = wpa3_tester::hw_capabilities::list_interfaces(
-        wpa3_tester::InterfaceType::Wifi, nullopt
-    );
+// Caller must hold setup.mtx (or call before threads start).
+static void add_adapter(NetworkSetup& setup, const string& iface_name) {
+    try {
+		const auto cfg = make_shared<wpa3_tester::Actor_Config_internal>();
+        cfg->set(wpa3_tester::SK::iface, iface_name);
+        string mac = wpa3_tester::hw_capabilities::get_mac_address(iface_name, nullopt).to_string();
+        cfg->set(wpa3_tester::SK::mac, mac);
+        cfg->set_monitor_mode();
+        cfg->set_iface_up();
+    	cfg->set_channel({6}); //FIXME hardcoded
 
-    for (const auto& iface : ifaces) {
-        try {
-            auto config = make_shared<wpa3_tester::Actor_Config_internal>();
-            config->set(wpa3_tester::SK::iface, iface.name);
-
-            string mac = wpa3_tester::hw_capabilities::get_mac_address(iface.name, nullopt).to_string();
-            config->set(wpa3_tester::SK::mac, mac);
-            config->set_monitor_mode();
-            config->set_iface_up();
-
-            wpa3_tester::ActorPtr actor(config);
-
-            setup.actors.push_back(actor);
-            setup.senders.emplace_back(iface.name);
-            setup.iface_names.push_back(iface.name);
-            setup.mac_addrs.push_back(normalize_mac(mac));
-
-            auto sniffer = make_unique<PcapSniffer>(iface.name, setup.rssi_cache);
-            sniffer->start();
-            setup.sniffers.push_back(move(sniffer));
-
-        } catch (const exception& e) {
-            cerr << "  [!] Error initializing " << iface.name << ": " << e.what() << endl;
+        const string norm = normalize_mac(mac);
+        if (!setup.nodes.contains(norm)) {
+            const size_t idx = setup.adapters.size();
+            const double angle = 2.0 * M_PI * static_cast<double>(idx)
+                                 / static_cast<double>(max(idx + 1, size_t{1}));
+            setup.nodes[norm] = {5.0 * cos(angle), 5.0 * sin(angle), 0.0, 0.0};
         }
+
+        wpa3_tester::ActorPtr{cfg};  // sets monitor mode; side effects persist in OS state
+        WifiSender sender(iface_name);
+        auto sniffer = make_unique<PcapSniffer>(iface_name, setup.rssi_cache);
+        sniffer->start();
+        setup.adapters.push_back({move(sender), move(sniffer), iface_name, norm});
+    } catch (const exception& e) {
+        cerr << "[!] Failed to add adapter " << iface_name << ": " << e.what() << "\n";
     }
+}
+
+static unique_ptr<NetworkSetup> initialize_network() {
+    auto setup = make_unique<NetworkSetup>();
+    for (const auto& iface : wpa3_tester::hw_capabilities::list_interfaces(
+            wpa3_tester::InterfaceType::Wifi, nullopt))
+        add_adapter(*setup, iface.name);
     return setup;
 }
 
-using RssiMatrix = map<pair<string, string>, double>;
+// Background thread: detects plug/unplug every 3 s.
+static thread start_watcher(NetworkSetup& setup) {
+    return thread([&setup]() {
+        while (g_running) {
+            this_thread::sleep_for(chrono::seconds(3));
 
-RssiMatrix collect_rssi_measurements(
-    const vector<wpa3_tester::ActorPtr>& actors,
-    const vector<WifiSender>& senders,
-    const vector<string>& iface_names,
-    const RssiCache& cache)
-{
-    RssiMatrix rssi_matrix;
+            const auto ifaces = wpa3_tester::hw_capabilities::list_interfaces(
+                wpa3_tester::InterfaceType::Wifi, nullopt);
+            set<string> live;
+            for (const auto& i : ifaces) live.insert(i.name);
 
-    for (size_t i = 0; i < senders.size(); ++i) {
-        string src_mac = actors[i]->get(wpa3_tester::SK::mac);
-        transmit_beacon_or_probe(senders[i], src_mac);
-    }
+            lock_guard lock(setup.mtx);
 
-    this_thread::sleep_for(chrono::milliseconds(100));
+            for (auto it = setup.adapters.begin(); it != setup.adapters.end(); ) {
+                if (!live.contains(it->iface_name)) {
+                    cerr << "[*] Adapter removed: " << it->iface_name << "\n";
+                    it->sniffer->stop();
+                    setup.nodes.erase(it->mac);
+                    it = setup.adapters.erase(it);
+                } else {
+                    ++it;
+                }
+            }
 
-    for (size_t i = 0; i < actors.size(); ++i) {
-        string src_mac = actors[i]->get(wpa3_tester::SK::mac);
-
-        for (size_t j = 0; j < actors.size(); ++j) {
-            if (i == j) continue;
-
-            const double rssi = cache.get(src_mac, iface_names[j]);
-            rssi_matrix[{iface_names[i], iface_names[j]}] = rssi;
-        }
-    }
-
-    return rssi_matrix;
-}
-
-void update_physics(
-    map<string, Node2D>& nodes,
-    const vector<string>& iface_names,
-    const RssiMatrix& rssi_matrix)
-{
-    const size_t n = iface_names.size();
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i + 1; j < n; ++j) {
-            const auto& nameA = iface_names[i];
-            const auto& nameB = iface_names[j];
-
-            auto it = rssi_matrix.find({nameA, nameB});
-            const double rssi = it != rssi_matrix.end() ? it->second : -90.0;
-
-            const double target_dist = clamp((abs(rssi) - 30.0) / 7.0, 1.0, 9.0);
-
-            auto& nodeA = nodes[nameA];
-            auto& nodeB = nodes[nameB];
-
-            const double dx = nodeB.x - nodeA.x;
-            const double dy = nodeB.y - nodeA.y;
-            const double dist = sqrt(dx * dx + dy * dy) + 0.001;
-
-            const double force = 0.1 * (dist - target_dist);
-            const double fx = dx / dist * force;
-            const double fy = dy / dist * force;
-
-            nodeA.vx += fx; nodeA.vy += fy;
-            nodeB.vx -= fx; nodeB.vy -= fy;
-        }
-    }
-
-    for (auto &node: nodes | views::values) {
-        node.x += node.vx;
-        node.y += node.vy;
-        node.vx *= 0.5;
-        node.vy *= 0.5;
-    }
-}
-
-void render_gnuplot(
-    FILE* pipe,
-    const map<string, Node2D>& nodes,
-    const vector<string>& iface_names,
-    const vector<string>& mac_addrs,
-    const RssiMatrix& rssi_matrix)
-{
-    fprintf(pipe, "plot '-' with vectors nohead lc rgb '#888888' lw 1.5 title '', "
-                  "'-' with labels center tc rgb '#0066cc' font ',9' title '', "
-                  "'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
-                  "'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
-
-    const size_t n = iface_names.size();
-
-    // connections
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i + 1; j < n; ++j) {
-            auto itA = nodes.find(iface_names[i]);
-            auto itB = nodes.find(iface_names[j]);
-            if (itA != nodes.end() && itB != nodes.end()) {
-				const double x1 = itA->second.x;
-				const double y1 = itA->second.y;
-				const double x2 = itB->second.x;
-				const double y2 = itB->second.y;
-                fprintf(pipe, "%f %f %f %f\n", x1, y1, x2 - x1, y2 - y1);
+            set<string> present;
+            for (const auto& a : setup.adapters) present.insert(a.iface_name);
+            for (const auto& iface : ifaces) {
+                if (!present.contains(iface.name)) {
+                    cerr << "[*] Adapter added: " << iface.name << "\n";
+                    add_adapter(setup, iface.name);
+                }
             }
         }
-    }
-    fprintf(pipe, "e\n");
+    });
+}
 
-    // 2. RSSI values
+// ---- Measurement ----
+
+// Caller must hold setup.mtx.
+static RssiMatrix collect_rssi(const NetworkSetup & setup) {
+    for (const auto& a : setup.adapters)
+        transmit_probe(a.sender, a.mac);
+
+    RssiMatrix m;
+    for (const auto& src : setup.adapters)
+        for (const auto& rx : setup.adapters)
+            if (src.mac != rx.mac)
+                m[{src.mac, rx.mac}] = setup.rssi_cache->get(src.mac, rx.iface_name);
+    return m;
+}
+
+// ---- Physics ----
+
+static void update_physics(map<string, Node2D>& nodes,
+                           const vector<AdapterInfo>& adapters,
+                           const RssiMatrix& m) {
+    const size_t n = adapters.size();
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = i + 1; j < n; ++j) {
-            auto itA = nodes.find(iface_names[i]);
-            auto itB = nodes.find(iface_names[j]);
-            if (itA != nodes.end() && itB != nodes.end()) {
-                const double mid_x = (itA->second.x + itB->second.x) / 2.0;
-                const double mid_y = (itA->second.y + itB->second.y) / 2.0;
+            const string& mi = adapters[i].mac;
+            const string& mj = adapters[j].mac;
 
-                auto rssi_it = rssi_matrix.find({iface_names[i], iface_names[j]});
-                const double rssi = rssi_it != rssi_matrix.end() ? rssi_it->second : -90.0;
-
-                fprintf(pipe, "%f %f '%.0f dBm'\n", mid_x, mid_y, rssi);
+            // Use the stronger of the two directions for spring distance
+            double rssi = DEFAULT_RSSI;
+            for (const auto& key : {make_pair(mi,mj), make_pair(mj,mi)}) {
+                auto it = m.find(key);
+                if (it != m.end() && it->second > rssi) rssi = it->second;
             }
+
+            const double target = clamp((abs(rssi) - 30.0) / 7.0, 1.0, 9.0);
+            auto& A = nodes[mi]; auto& B = nodes[mj];
+            const double dx = B.x - A.x, dy = B.y - A.y;
+            const double dist = sqrt(dx*dx + dy*dy) + 0.001;
+            const double f = 0.1 * (dist - target);
+            const double fx = dx/dist * f, fy = dy/dist * f;
+            A.vx += fx; A.vy += fy;
+            B.vx -= fx; B.vy -= fy;
         }
     }
+    for (auto &node : nodes | views::values) {
+        node.x += node.vx; node.y += node.vy;
+        node.vx *= 0.5;    node.vy *= 0.5;
+    }
+}
+
+// ---- Rendering ----
+
+static bool render(FILE* pipe,
+                   const map<string, Node2D>& nodes,
+                   const vector<AdapterInfo>& adapters,
+                   const RssiMatrix& m,
+                   const string& status) {
+    fprintf(pipe, "set title 'Wi-Fi RSSI Wizard — %s'\n", status.c_str());
+    fprintf(pipe,
+        "plot '-' with vectors arrowstyle 1 title '', "
+             "'-' with labels center tc rgb '#0066cc' font ',8' title '', "
+             "'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
+             "'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
+
+    // Each ordered pair (i,j) draws one directional arrow, offset perpendicularly.
+    // Because the perpendicular flips with direction, i→j and j→i land on opposite sides.
+    constexpr double OFFSET = 0.15;
+    const size_t n = adapters.size();
+
+    auto for_pairs = [&](auto fn) {
+        for (size_t i = 0; i < n; ++i)
+            for (size_t j = 0; j < n; ++j) {
+                if (i == j) continue;
+                auto ni = nodes.find(adapters[i].mac);
+                auto nj = nodes.find(adapters[j].mac);
+                if (ni == nodes.end() || nj == nodes.end()) continue;
+                const double dx   = nj->second.x - ni->second.x;
+                const double dy   = nj->second.y - ni->second.y;
+                const double dist = sqrt(dx*dx + dy*dy) + 0.001;
+                const double px   = -dy/dist * OFFSET;
+                const double py   =  dx/dist * OFFSET;
+                fn(i, j, ni->second, nj->second, dx, dy, px, py);
+            }
+    };
+
+    // Dataset 1: arrows
+    for_pairs([&](size_t, size_t, const Node2D& ni, const Node2D&, double dx, double dy, double px, double py) {
+        fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy);
+    });
     fprintf(pipe, "e\n");
 
-    // points
-    for (const auto& name : iface_names) {
-        auto it = nodes.find(name);
-        if (it != nodes.end()) {
+    // Dataset 2: RSSI labels at midpoint of each directed arrow
+    for_pairs([&](size_t i, size_t j, const Node2D& ni, const Node2D& nj, double, double, double px, double py) {
+        const double mx = (ni.x + nj.x) / 2.0 + px;
+        const double my = (ni.y + nj.y) / 2.0 + py;
+		const auto it = m.find({adapters[i].mac, adapters[j].mac});
+        const double rssi = it != m.end() ? it->second : static_cast<double>(DEFAULT_RSSI);
+        fprintf(pipe, "%f %f '%.0f'\n", mx, my, rssi);
+    });
+    fprintf(pipe, "e\n");
+
+    // Dataset 3: node points
+    for (const auto& a : adapters) {
+        auto it = nodes.find(a.mac);
+        if (it != nodes.end())
             fprintf(pipe, "%f %f\n", it->second.x, it->second.y);
-        }
     }
     fprintf(pipe, "e\n");
 
-    // labels
-    for (size_t i = 0; i < n; ++i) {
-        auto it = nodes.find(iface_names[i]);
-        if (it != nodes.end()) {
-            fprintf(pipe, "%f %f '%s\\n%s'\n", it->second.x, it->second.y, iface_names[i].c_str(), mac_addrs[i].c_str());
-        }
+    // Dataset 4: node labels (iface + MAC)
+    for (const auto& a : adapters) {
+        auto it = nodes.find(a.mac);
+        if (it != nodes.end())
+            fprintf(pipe, "%f %f '%s\\n%s'\n",
+                    it->second.x, it->second.y, a.iface_name.c_str(), a.mac.c_str());
     }
     fprintf(pipe, "e\n");
-
-    fflush(pipe);
+    return fflush(pipe) == 0;
 }
 
-FILE* init_gnuplot() {
-    FILE* pipe = popen("gnuplot -persist", "w");
-    if (!pipe) return nullptr;
+// ---- Gnuplot init ----
 
-    fprintf(pipe, "set title 'Wi-Fi RSSI Spring-Force Visualization'\n");
-    fprintf(pipe, "set key off\n");
-    fprintf(pipe, "set xrange [-10:10]\n");
-    fprintf(pipe, "set yrange [-10:10]\n");
-    fprintf(pipe, "set grid\n");
-    fflush(pipe);
-    return pipe;
+static FILE* init_gnuplot() {
+    FILE* p = popen("gnuplot", "w");  // no -persist: window closes when pipe closes
+    if (!p) return nullptr;
+    fprintf(p, "set key off\n");
+    fprintf(p, "set xrange [-10:10]\n");
+    fprintf(p, "set yrange [-10:10]\n");
+    fprintf(p, "set grid\n");
+    fprintf(p, "set style arrow 1 head filled size graph 0.02,15 lc rgb '#888888' lw 1.5\n");
+    // Key bindings: route Ctrl+C and P back to our process via signals
+    const int pid = getpid();
+    fprintf(p, "bind \"ctrl-c\" \"system('kill -INT %d'); exit\"\n", pid);
+    fprintf(p, "bind \"p\" \"system('kill -USR1 %d')\"\n", pid);
+    fflush(p);
+    return p;
 }
 
-map<string, Node2D> initialize_node_positions(const vector<string>& iface_names) {
-    map<string, Node2D> nodes;
-    const size_t n = iface_names.size();
-    for (size_t i = 0; i < n; ++i) {
-        const double angle = 2.0 * M_PI * static_cast<double>(i) / static_cast<double>(n);
-        nodes[iface_names[i]] = { 5.0 * cos(angle), 5.0 * sin(angle), 0.0, 0.0 };
-    }
-    return nodes;
-}
+// ---- Main wizard ----
 
-void run_rssi_wizard() {
-    signal(SIGINT, signal_handler);
+void run_rssi_wizard(const string& condition_str = "") {
+    signal(SIGINT,  signal_handler);
     signal(SIGTERM, signal_handler);
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGUSR1, pause_handler);
 
-    const auto setup = initialize_network();
-    if (setup.actors.empty()) return;
+    ExprPtr cond;
+    try { cond = parse_condition(condition_str); }
+    catch (const exception& e) { cerr << "[!] Condition parse error: " << e.what() << "\n"; return; }
+
+	const auto setup = initialize_network();
+    if (setup->adapters.empty()) { cerr << "[!] No Wi-Fi adapters found\n"; return; }
 
     g_gnuplot_pipe = init_gnuplot();
-    if (!g_gnuplot_pipe) return;
+    if (!g_gnuplot_pipe) { cerr << "[!] Failed to open gnuplot\n"; return; }
 
-    auto nodes = initialize_node_positions(setup.iface_names);
+    auto watcher = start_watcher(*setup);
 
     while (g_running) {
-        auto rssi_matrix = collect_rssi_measurements(
-            setup.actors,
-            setup.senders,
-            setup.iface_names,
-            *setup.rssi_cache
-        );
-
-        update_physics(nodes, setup.iface_names, rssi_matrix);
-        render_gnuplot(g_gnuplot_pipe, nodes, setup.iface_names, setup.mac_addrs, rssi_matrix);
-
+        {
+            lock_guard lock(setup->mtx);
+            if (!setup->adapters.empty()) {
+                auto m = collect_rssi(*setup);
+                update_physics(setup->nodes, setup->adapters, m);
+                const string status = cond
+                    ? (cond->eval(m) ? "CONDITION MET" : "CONDITION NOT MET")
+                    : (g_paused ? "PAUSED — P to resume" : "running");
+                if (!g_paused) {
+                    if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status))
+                        g_running = false;
+                }
+            }
+        }
         this_thread::sleep_for(chrono::milliseconds(1000));
     }
 
-    if (g_gnuplot_pipe) pclose(g_gnuplot_pipe);
+    watcher.join();
+    if (g_gnuplot_pipe) { pclose(g_gnuplot_pipe); g_gnuplot_pipe = nullptr; }
+    cerr << "\n[*] Stopped. Press Enter to exit...\n";
+    cin.get();
 }
 
 #ifdef MAIN_TARGET_BUILD
 int main() {
-    run_rssi_wizard();
+    // Condition: link A↔B must be stronger than -70 dBm
+    //        AND stronger than link C↔B,
+    //        AND NOT weaker than -90 dBm on the A↔B link
+    const string condition =
+        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -70 && "
+        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > (00:c0:ca:b7:69:2a <-> 90:de:80:6c:90:92) && "
+        "!(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) < -90";
+    run_rssi_wizard(condition);
     return 0;
 }
 #endif

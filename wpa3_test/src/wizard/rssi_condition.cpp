@@ -1,6 +1,7 @@
 #include "wizard/rssi_condition.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
@@ -53,10 +54,10 @@ static vector<Token> tokenize(const string& s) {
         // Number (including negative)
         if (c == '-' || isdigit(static_cast<unsigned char>(c))) {
             char* end;
-			const double val = strtod(s.c_str() + i, &end);
+            const double val = strtod(s.c_str() + i, &end);
             if (end != s.c_str() + i) {
                 toks.push_back({TokKind::Number, string(s.c_str()+i, static_cast<const char*>(end)), val});
-                i = static_cast<size_t>(end - s.c_str()); continue;
+            	i = static_cast<size_t>(end - s.c_str()); continue;
             }
         }
 
@@ -86,26 +87,92 @@ struct Value {
 };
 
 struct CmpExpr : Expr {
-    Value lhs, rhs; bool lt;
-    CmpExpr(const Value &l, const Value &r, const bool lt_) : lhs(l), rhs(r), lt(lt_) {}
+    Value lhs, rhs;
+    bool lt;
+    string orig_text;
+
+    CmpExpr(Value l, Value r, const bool lt_)
+        : lhs(std::move(l)), rhs(std::move(r)), lt(lt_) {
+
+        auto val_to_str = [](const Value& v) {
+            if (v.is_const) {
+                char buf[32];
+                snprintf(buf, sizeof(buf), "%.0f", v.constant);
+                return string(buf);
+            }
+            return "(" + v.mac_pair.first + " <-> " + v.mac_pair.second + ")";
+        };
+
+        orig_text = val_to_str(lhs) + (lt ? " < " : " > ") + val_to_str(rhs);
+    }
+
     bool eval(const RssiMatrix& m) const override {
         return lt ? lhs.resolve(m) < rhs.resolve(m) : lhs.resolve(m) > rhs.resolve(m);
     }
+
+    vector<pair<string, string>> to_colored_parts(const RssiMatrix& m) const override {
+        bool is_true = eval(m);
+        string color = is_true ? "#00FF00" : "#555555";
+        return { {orig_text, color} };
+    }
 };
+
 struct AndExpr : Expr {
     ExprPtr l, r;
     AndExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
-    bool eval(const RssiMatrix& m) const override { return l->eval(m) && r->eval(m); }
+
+    bool eval(const RssiMatrix& m) const override {
+        return l->eval(m) && r->eval(m);
+    }
+
+    vector<pair<string, string>> to_colored_parts(const RssiMatrix& m) const override {
+        auto left_parts = l->to_colored_parts(m);
+        auto right_parts = r->to_colored_parts(m);
+
+        string op_color = eval(m) ? "#00FF00" : "#555555";
+
+        left_parts.push_back({ " && ", op_color });
+        left_parts.insert(left_parts.end(), right_parts.begin(), right_parts.end());
+        return left_parts;
+    }
 };
+
 struct OrExpr : Expr {
     ExprPtr l, r;
     OrExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
-    bool eval(const RssiMatrix& m) const override { return l->eval(m) || r->eval(m); }
+
+    bool eval(const RssiMatrix& m) const override {
+        return l->eval(m) || r->eval(m);
+    }
+
+    vector<pair<string, string>> to_colored_parts(const RssiMatrix& m) const override {
+        auto left_parts = l->to_colored_parts(m);
+        auto right_parts = r->to_colored_parts(m);
+
+        string op_color = eval(m) ? "#00FF00" : "#555555";
+
+        left_parts.push_back({ " || ", op_color });
+        left_parts.insert(left_parts.end(), right_parts.begin(), right_parts.end());
+        return left_parts;
+    }
 };
+
 struct NotExpr : Expr {
     ExprPtr c;
     explicit NotExpr(ExprPtr x) : c(move(x)) {}
-    bool eval(const RssiMatrix& m) const override { return !c->eval(m); }
+
+    bool eval(const RssiMatrix& m) const override {
+        return !c->eval(m);
+    }
+
+    vector<pair<string, string>> to_colored_parts(const RssiMatrix& m) const override {
+        string op_color = eval(m) ? "#00FF00" : "#555555";
+
+        vector<pair<string, string>> parts = { { "!", op_color } };
+        auto child_parts = c->to_colored_parts(m);
+        parts.insert(parts.end(), child_parts.begin(), child_parts.end());
+        return parts;
+    }
 };
 
 // ---- Parser ----
@@ -182,11 +249,32 @@ struct Parser {
     }
 };
 
-// ---- Public API ----
+void render_condition_status(FILE* pipe, const ExprPtr& root_expr, const RssiMatrix& matrix) {
+    if (!root_expr) return;
 
+    auto parts = root_expr->to_colored_parts(matrix);
+
+    double x_pos = 0.05; // Začátek na levé straně obrazovky (5 % šířky)
+    int label_id = 100;
+
+    for (const auto& [text, color] : parts) {
+        constexpr double y_pos = 0.03; // Dolní okraj (3 % výšky)
+        fprintf(pipe, "set label %d '%s' at screen %f, %f tc rgb '%s' font 'Monospace,10' left\n",
+                label_id++,
+                text.c_str(),
+                x_pos,
+                y_pos,
+                color.c_str());
+
+        // Posuneme X pozici pro další podřetězec podle jeho délky
+        x_pos += static_cast<double>(text.length()) * 0.009;
+    }
+}
+
+// ---- Public API ----
 ExprPtr parse_condition(const string& s) {
     if (s.empty()) return nullptr;
-	const auto toks = tokenize(s);
+    const auto toks = tokenize(s);
     Parser p{toks};
     return p.parse_expr();
 }

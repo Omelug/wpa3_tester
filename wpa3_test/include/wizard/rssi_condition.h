@@ -8,9 +8,12 @@
 using RssiMatrix = std::map<std::pair<std::string, std::string>, double>;
 
 struct Expr {
-    virtual ~Expr() = default;
-    virtual bool eval(const RssiMatrix&) const = 0;
+	virtual ~Expr() = default;
+	virtual bool eval(const RssiMatrix& m) const = 0;
+
+	virtual std::vector<std::pair<std::string, std::string>> to_colored_parts(const RssiMatrix& m) const = 0;
 };
+
 using ExprPtr = std::unique_ptr<Expr>;
 
 // Parse a condition string into an evaluable expression tree.

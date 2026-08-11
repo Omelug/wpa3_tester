@@ -128,7 +128,7 @@ TEST_SUITE("get_eapol_msg_num") {
 	}
 
 	TEST_CASE("non-EAPOL frame returns -1") {
-		// Beacon has no RSNEAPOL layer
+		// beacon has no RSNEAPOL layer
 		auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
 		CHECK_EQ(get_eapol_msg_num(rt), -1);
 	}

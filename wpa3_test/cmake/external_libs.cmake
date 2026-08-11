@@ -68,9 +68,8 @@ FetchContent_Declare(argparse
         GIT_SHALLOW TRUE
 )
 FetchContent_Declare(json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.12.0
-        GIT_SHALLOW TRUE
+        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+        URL_HASH SHA256=42f6e95cad6ec532fd372391373363b62a14af6d771056dbfc86160e6dfff7aa
 )
 FetchContent_Declare(json_schema_validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git

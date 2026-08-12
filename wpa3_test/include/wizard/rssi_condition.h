@@ -10,7 +10,7 @@
 // Sentinel: no measurement available
 inline constexpr double RSSI_NO_DATA = -90.0;
 
-// {src_mac, rx_mac} → dBm
+// {src_mac, rx_mac} -> dBm
 using RssiMatrix = std::map<std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>, double>;
 
 struct Expr {

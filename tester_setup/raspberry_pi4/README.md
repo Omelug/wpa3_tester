@@ -36,7 +36,7 @@ Set a static IP to always reach the Pi on the same address:
 # Home network (router as gateway)
 make image PI_IP=192.168.1.100 PI_GW=192.168.1.1
 
-# Direct cable PC ↔ Pi (no router, no gateway needed)
+# Direct cable PC <-> Pi (no router, no gateway needed)
 make image PI_IP=10.0.0.2
 ```
 

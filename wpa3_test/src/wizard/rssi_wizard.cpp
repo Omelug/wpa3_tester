@@ -488,7 +488,7 @@ static FILE* init_gnuplot() {
     return p;
 }
 
-void run_rssi_wizard(const string& condition_str = "") {
+void run_rssi_wizard(const string& condition_str) {
     signal(SIGINT,  signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGPIPE, SIG_IGN);
@@ -535,9 +535,6 @@ void run_rssi_wizard(const string& condition_str = "") {
 
 #ifdef MAIN_TARGET_BUILD
 int main() {
-    // Condition: link A<->B must be stronger than -70 dBm
-    //        AND stronger than link C<->B,
-    //        AND NOT weaker -90 an dBm on the A↔B link
     const string condition =
         "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -90 && "
 		"(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90 && "

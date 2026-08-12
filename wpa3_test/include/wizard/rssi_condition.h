@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdio>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,8 +14,8 @@ using RssiMatrix = std::map<std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>, d
 
 struct Expr {
     virtual ~Expr() = default;
-    virtual bool eval(const RssiMatrix&) const = 0;
-    virtual std::vector<std::pair<std::string, std::string>> to_colored_parts(const RssiMatrix&) const = 0;
+    [[nodiscard]] virtual bool eval(const RssiMatrix&) const = 0;
+    [[nodiscard]] virtual std::vector<std::pair<std::string, std::string>> to_colored_parts(const RssiMatrix&) const = 0;
 };
 using ExprPtr = std::unique_ptr<Expr>;
 
@@ -36,3 +35,4 @@ using ExprPtr = std::unique_ptr<Expr>;
 //   "(aa:bb:cc:dd:ee:ff <-> 11:22:33:44:55:66) > -70"
 ExprPtr parse_condition(const std::string& s);
 void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& m);
+void run_rssi_wizard(const std::string& condition_str = "");

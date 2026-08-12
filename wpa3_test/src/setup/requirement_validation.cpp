@@ -16,6 +16,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
+#include "wizard/rssi_condition.h"
 #include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
@@ -237,13 +238,14 @@ bool RunStatus::config_requirement(){
 	// set the regulatory domain before loading the driver so ath9k_htc (user_regd=1)
 	// picks it up from the kernel on init instead of falling back to EEPROM.
 	auto &gcfg = get_global_config();
-	if(gcfg.contains("regulatory_domain")){
+	if(gcfg.contains("regulatory_domain")) {
 		const string reg = gcfg.at("regulatory_domain").get<string>();
 		log(LogLevel::INFO, "Setting regulatory domain pre-USB-reset: iw reg set {}", reg);
-		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0)
+		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0) {
 			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
-		else
+		}else{
 			this_thread::sleep_for(chrono::milliseconds(100));
+		}
 	}
 
 	//FIXME nefunguje to s tím ne
@@ -284,7 +286,10 @@ bool RunStatus::config_requirement(){
 		bool cache_dead = false;
 		if(_hw_option_cache.external_wb_opts.has_value()){
 			for(const auto &opt : *_hw_option_cache.external_wb_opts){
-				if(opt->conn && !opt->conn->is_connected()){ cache_dead = true; break; }
+				if(opt->conn && !opt->conn->is_connected()) {
+					cache_dead = true;
+					break;
+				}
 			}
 		}
 		if(!_hw_option_cache.external_wb_opts.has_value() || cache_dead)
@@ -297,6 +302,12 @@ bool RunStatus::config_requirement(){
 	if(!simulation_actors.empty()){
 		const auto simulation_options = create_simulation(simulation_actors.size());
 		simulation_mapping = hw_capabilities::check_req_options(simulation_actors, simulation_options);
+	}
+
+	//wizard rssi
+	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
+		auto conditions = _config["requirements"]["rssi_setup"].get<std::vector<std::string>>();
+		run_rssi_wizard(join(conditions, " && "));
 	}
 
 	// SETUP ACTORS

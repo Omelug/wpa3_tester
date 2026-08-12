@@ -44,7 +44,7 @@ public:
 		// ReSharper disable once CppNonExplicitConvertingConstructor
 		consteval MacSK(const SK k): key(k){
 			if(k != SK::mac && k != SK::permanent_mac){
-				throw "Only SK::mac or SK::permanent_mac!";
+				throw "Only SK::mac or SK::permanent_mac!"; // NOLINT(*-exception-baseclass)
 			}
 		}
 	};

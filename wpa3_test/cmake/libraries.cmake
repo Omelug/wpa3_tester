@@ -25,6 +25,7 @@ glob_src(EX_PROG_SRC "src/ex_program")
 glob_src(SETUP_SRC "src/setup")
 glob_src(SUITE_SRC "src/visual")
 glob_src(SCAN_SRC "src/scan")
+glob_src(WIZARD_SRC "src/wizard")
 
 file(GLOB_RECURSE ATT_SHARED_SRC CONFIGURE_DEPENDS "src/attacks/*.cpp")
 
@@ -52,6 +53,7 @@ wpa3_library(wpa3_ex_program ${EX_PROG_SRC})
 wpa3_library(wpa3_setup ${SETUP_SRC})
 wpa3_library(wpa3_suite ${SUITE_SRC})
 wpa3_library(wpa3_scan ${SCAN_SRC})
+wpa3_library(wpa3_wizard ${WIZARD_SRC})
 # attacks
 wpa3_library(wpa3_attack_shared ${ATT_SHARED_SRC})
 wpa3_library(wpa3_attack_scanner ${SCANNER_SRC})

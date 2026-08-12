@@ -103,6 +103,9 @@ printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions at
     | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
 echo "==> Disabling USB autosuspend..."
 echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
+echo "==> Disabling USB 3.0 (reduces 2.4 GHz interference)..."
+grep -qxF "dtoverlay=disable-usb3" /boot/firmware/config.txt \
+    || echo "dtoverlay=disable-usb3" | sudo tee -a /boot/firmware/config.txt > /dev/null
 sudo update-initramfs -u
 
 echo "==> Setting WiFi region CZ..." # TODO hardcoded change

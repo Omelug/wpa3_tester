@@ -14,6 +14,7 @@ target_link_libraries(wpa3_core INTERFACE
         wpa3_suite
         wpa3_system
         wpa3_scan
+        wpa3_wizard
 
         # attacks
         wpa3_attack_shared

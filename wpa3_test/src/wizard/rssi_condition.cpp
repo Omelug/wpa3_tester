@@ -10,7 +10,6 @@
 #include <tins/hw_address.h>
 
 using namespace std;
-using HWAddr = Tins::HWAddress<6>;
 
 // ---- Tokenizer ----
 
@@ -65,9 +64,9 @@ static vector<Token> tokenize(const string& s) {
 struct Value {
     bool is_const{true};
     double constant{};
-    pair<HWAddr, HWAddr> mac_pair;
+    pair<Tins::HWAddress<6>, Tins::HWAddress<6>> mac_pair;
 
-    double resolve(const RssiMatrix& m) const {
+    [[nodiscard]] double resolve(const RssiMatrix& m) const {
         if (is_const) return constant;
         double sum = 0; int n = 0;
         for (const auto& key : {mac_pair, {mac_pair.second, mac_pair.first}}) {
@@ -76,14 +75,17 @@ struct Value {
         return n > 0 ? sum / n : RSSI_NO_DATA;
     }
 
-    bool valid(const RssiMatrix& m) const {
-        if (is_const) return true;
-        for (const auto& key : {mac_pair, {mac_pair.second, mac_pair.first}})
-            if (auto it = m.find(key); it != m.end() && it->second > RSSI_NO_DATA) return true;
-        return false;
+	[[nodiscard]] bool valid(const RssiMatrix& m) const {
+    	if (is_const) return true;
+
+    	const auto keys = {mac_pair, std::pair{mac_pair.second, mac_pair.first}};
+    	return std::ranges::any_of(keys, [&m](const auto& key) {
+			const auto it = m.find(key);
+			return it != m.end() && it->second > RSSI_NO_DATA;
+		});
     }
 
-    string to_str() const {
+    [[nodiscard]] string to_str() const {
         if (is_const) {
             char buf[32]; snprintf(buf, sizeof(buf), "%.0f", constant);
             return buf;
@@ -94,13 +96,13 @@ struct Value {
 
 struct CmpExpr : Expr {
     Value lhs, rhs; bool lt; string label;
-    CmpExpr(Value l, Value r, bool lt_)
+    CmpExpr(Value l, Value r, const bool lt_)
         : lhs(move(l)), rhs(move(r)), lt(lt_),
           label(lhs.to_str() + (lt ? " < " : " > ") + rhs.to_str()) {}
-    bool eval(const RssiMatrix& m) const override {
+    [[nodiscard]] bool eval(const RssiMatrix& m) const override {
         return lt ? lhs.resolve(m) < rhs.resolve(m) : lhs.resolve(m) > rhs.resolve(m);
     }
-    vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
+    [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         if (!lhs.valid(m) || !rhs.valid(m))
             return {{label + " (no data)", "#FFA500"}};
         return {{label, eval(m) ? "#00FF00" : "#555555"}};
@@ -110,10 +112,10 @@ struct CmpExpr : Expr {
 struct AndExpr : Expr {
     ExprPtr l, r;
     AndExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
-    bool eval(const RssiMatrix& m) const override { return l->eval(m) && r->eval(m); }
-    vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
+    [[nodiscard]] bool eval(const RssiMatrix& m) const override { return l->eval(m) && r->eval(m); }
+    [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = l->to_colored_parts(m);
-        parts.push_back({" && ", eval(m) ? "#00FF00" : "#555555"});
+        parts.emplace_back(" && ", eval(m) ? "#00FF00" : "#555555");
         auto rp = r->to_colored_parts(m);
         parts.insert(parts.end(), rp.begin(), rp.end());
         return parts;
@@ -123,10 +125,10 @@ struct AndExpr : Expr {
 struct OrExpr : Expr {
     ExprPtr l, r;
     OrExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
-    bool eval(const RssiMatrix& m) const override { return l->eval(m) || r->eval(m); }
-    vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
+    [[nodiscard]] bool eval(const RssiMatrix& m) const override { return l->eval(m) || r->eval(m); }
+    [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = l->to_colored_parts(m);
-        parts.push_back({" || ", eval(m) ? "#00FF00" : "#555555"});
+        parts.emplace_back(" || ", eval(m) ? "#00FF00" : "#555555");
         auto rp = r->to_colored_parts(m);
         parts.insert(parts.end(), rp.begin(), rp.end());
         return parts;
@@ -136,8 +138,8 @@ struct OrExpr : Expr {
 struct NotExpr : Expr {
     ExprPtr c;
     explicit NotExpr(ExprPtr x) : c(move(x)) {}
-    bool eval(const RssiMatrix& m) const override { return !c->eval(m); }
-    vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
+    [[nodiscard]] bool eval(const RssiMatrix& m) const override { return !c->eval(m); }
+    [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = vector<pair<string,string>>{{"!", eval(m) ? "#00FF00" : "#555555"}};
         auto cp = c->to_colored_parts(m);
         parts.insert(parts.end(), cp.begin(), cp.end());
@@ -151,9 +153,9 @@ struct Parser {
     const vector<Token>& toks;
     size_t pos{0};
 
-    const Token& peek() const { return toks[pos]; }
+    [[nodiscard]] const Token& peek() const { return toks[pos]; }
     Token consume() { return toks[pos++]; }
-    void expect(TokKind k) {
+    void expect(const TokKind k) {
         if (peek().kind != k) throw runtime_error("parse error near '" + peek().text + "'");
         consume();
     }
@@ -164,10 +166,10 @@ struct Parser {
         if (peek().kind == TokKind::LParen) {
             consume();
             if (peek().kind != TokKind::Mac) throw runtime_error("expected MAC after '('");
-            HWAddr m1(consume().text);
+            Tins::HWAddress<6> m1(consume().text);
             expect(TokKind::Arrow);
             if (peek().kind != TokKind::Mac) throw runtime_error("expected MAC after '<->'");
-            HWAddr m2(consume().text);
+            Tins::HWAddress<6> m2(consume().text);
             expect(TokKind::RParen);
             return {false, 0.0, {m1, m2}};
         }

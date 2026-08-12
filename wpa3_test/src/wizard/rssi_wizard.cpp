@@ -24,7 +24,9 @@
 
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/ActorPtr.h"
+#include "setup/requirement_validation.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_guards.h"
 #include "wizard/rssi_condition.h"
 
 extern "C" {
@@ -37,7 +39,7 @@ using namespace std;
 
 static FILE* g_gnuplot_pipe = nullptr;
 static volatile bool g_running = true;
-static atomic<bool>  g_paused{false};
+static atomic  g_paused{false};
 
 void signal_handler(const int signum) {
     if (!g_running) {
@@ -64,9 +66,12 @@ static string normalize_mac(string mac) {
 
 struct WifiSender {
     string iface_name;
+    string netns_;
     int sock_fd{-1};
 
-    explicit WifiSender(string name) : iface_name(move(name)) {
+    explicit WifiSender(string name, string netns = "")
+        : iface_name(move(name)), netns_(move(netns)) {
+        wpa3_tester::netlink_helper::NetNSContext ns(netns_.empty() ? nullopt : optional<string>{netns_});
         sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if (sock_fd < 0) return;
 
@@ -87,19 +92,20 @@ struct WifiSender {
     WifiSender& operator=(const WifiSender&) = delete;
 
     WifiSender(WifiSender&& o) noexcept
-        : iface_name(move(o.iface_name)), sock_fd(o.sock_fd) { o.sock_fd = -1; }
+        : iface_name(move(o.iface_name)), netns_(move(o.netns_)), sock_fd(o.sock_fd) { o.sock_fd = -1; }
 
     WifiSender& operator=(WifiSender&& o) noexcept {
         if (this != &o) {
             if (sock_fd >= 0) close(sock_fd);
             iface_name = move(o.iface_name);
+            netns_     = move(o.netns_);
             sock_fd    = o.sock_fd;
             o.sock_fd  = -1;
         }
         return *this;
     }
 
-    bool send_frame(const uint8_t* frame, size_t len) const {
+    bool send_frame(const uint8_t* frame, const size_t len) const {
         if (sock_fd < 0) return false;
         return send(sock_fd, frame, len, 0) == static_cast<ssize_t>(len);
     }
@@ -151,14 +157,15 @@ class RssiCache {
     mutable mutex mtx_;
     map<pair<string,string>, double> data_;  // {src_mac, rx_iface} → dBm
 public:
-    void update(const string& src_mac, const string& rx_iface, double rssi) {
+    void update(const string& src_mac, const string& rx_iface,
+			  const double rssi) {
         lock_guard lock(mtx_);
         data_[{normalize_mac(src_mac), rx_iface}] = rssi;
     }
     double get(const string& src_mac, const string& rx_iface) const {
         lock_guard lock(mtx_);
 		const auto it = data_.find({normalize_mac(src_mac), rx_iface});
-        return it != data_.end() ? it->second : DEFAULT_RSSI;
+        return it != data_.end() ? it->second : RSSI_NO_DATA;
     }
 };
 
@@ -166,6 +173,7 @@ public:
 
 class PcapSniffer {
     string rx_iface_;
+    string netns_;
     shared_ptr<RssiCache> cache_;
     atomic<bool> running_{false};
     thread worker_;
@@ -179,6 +187,7 @@ class PcapSniffer {
     }
 
     void loop() {
+        wpa3_tester::netlink_helper::NetNSContext ns(netns_.empty() ? nullopt : optional<string>{netns_});
         char errbuf[PCAP_ERRBUF_SIZE];
         handle_ = pcap_create(rx_iface_.c_str(), errbuf);
         if (!handle_) return;
@@ -199,7 +208,7 @@ class PcapSniffer {
             const int res = pcap_next_ex(handle_, &hdr, &pkt);
             if (res == -2) break;
         	if (res <= 0) {
-        		this_thread::sleep_for(chrono::milliseconds(10));
+        		this_thread::sleep_for(chrono::milliseconds(200));
         		continue;
         	}
             const int8_t rssi = extract_rssi(pkt, hdr->caplen);
@@ -211,8 +220,8 @@ class PcapSniffer {
     }
 
 public:
-    PcapSniffer(string iface, shared_ptr<RssiCache> c)
-        : rx_iface_(move(iface)), cache_(move(c)) {}
+    PcapSniffer(string iface, shared_ptr<RssiCache> c, string netns = "")
+        : rx_iface_(move(iface)), netns_(move(netns)), cache_(move(c)) {}
     ~PcapSniffer() { stop(); }
 
     void start() { running_ = true; worker_ = thread(&PcapSniffer::loop, this); }
@@ -235,7 +244,7 @@ struct AdapterInfo {
 struct NetworkSetup {
     mutex mtx;
     vector<AdapterInfo> adapters;
-    map<string, Node2D> nodes;  // keyed by normalized MAC (persists across reconnects)
+    map<Tins::HWAddress<6>, Node2D> nodes;  // keyed by MAC (persists across reconnects)
     shared_ptr<RssiCache> rssi_cache{make_shared<RssiCache>()};
 };
 
@@ -249,9 +258,16 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         cfg->set_monitor_mode();
         cfg->set_iface_up();
         cfg->set_channel({6}); //FIXME hardcoded
-
+        const string netns_name = "rssi_" + iface_name;
+        wpa3_tester::hw_capabilities::create_ns(netns_name);
+        wpa3_tester::hw_capabilities::move_to_netns(iface_name, netns_name);
+        cfg->set(wpa3_tester::SK::netns, netns_name);
+        // netns move resets interface state — re-apply inside the new ns
+        cfg->set_monitor_mode();
+        cfg->set_iface_up();
+        cfg->set_channel({6}); //FIXME hardcoded
         wpa3_tester::ActorPtr actor{cfg};
-        const string mac = actor.get(wpa3_tester::SK::mac);
+        const Tins::HWAddress<6> mac(actor.get(wpa3_tester::SK::mac));
 
         if (!setup.nodes.contains(mac)) {
             const size_t idx = setup.adapters.size();
@@ -260,8 +276,8 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
             setup.nodes[mac] = {5.0 * cos(angle), 5.0 * sin(angle)};
         }
 
-        WifiSender sender(iface_name);
-        auto sniffer = make_unique<PcapSniffer>(iface_name, setup.rssi_cache);
+        WifiSender sender(iface_name, netns_name);
+        auto sniffer = make_unique<PcapSniffer>(iface_name, setup.rssi_cache, netns_name);
         sniffer->start();
         setup.adapters.push_back({move(actor), move(sender), move(sniffer)});
     } catch (const exception& e) {
@@ -283,25 +299,29 @@ static thread start_watcher(NetworkSetup& setup) {
         while (g_running) {
             this_thread::sleep_for(chrono::seconds(3));
 
-            const auto ifaces = wpa3_tester::hw_capabilities::list_interfaces(
-                wpa3_tester::InterfaceType::Wifi, nullopt);
-            set<string> live;
-            for (const auto& i : ifaces) live.insert(i.name);
-
             lock_guard lock(setup.mtx);
 
+            // Each adapter lives in its own netns — check liveness there, not in default ns.
             for (auto it = setup.adapters.begin(); it != setup.adapters.end(); ) {
                 const string iface = it->actor.get(wpa3_tester::SK::iface);
-                if (!live.contains(iface)) {
+                const optional<string> netns = it->actor[wpa3_tester::SK::netns];
+                const bool alive = wpa3_tester::hw_capabilities::run_cmd(
+                    {"ip", "link", "show", iface}, netns, false) == 0;
+                if (!alive) {
                     cerr << "[*] Adapter removed: " << iface << "\n";
                     it->sniffer->stop();
-                    setup.nodes.erase(it->actor.get(wpa3_tester::SK::mac));
+                    setup.nodes.erase(Tins::HWAddress<6>(it->actor.get(wpa3_tester::SK::mac)));
                     it = setup.adapters.erase(it);
+                    wpa3_tester::hw_capabilities::run_cmd(
+                        {"ip", "netns", "del", "rssi_" + iface}, nullopt, false);
                 } else {
                     ++it;
                 }
             }
 
+            // New adapters plug into the default netns.
+            const auto ifaces = wpa3_tester::hw_capabilities::list_interfaces(
+                wpa3_tester::InterfaceType::Wifi, nullopt);
             set<string> present;
             for (const auto& a : setup.adapters) present.insert(a.actor.get(wpa3_tester::SK::iface));
             for (const auto& iface : ifaces) {
@@ -324,11 +344,11 @@ static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     RssiMatrix m;
     for (const auto& src : setup.adapters)
         for (const auto& rx : setup.adapters) {
-            const string src_mac = src.actor.get(wpa3_tester::SK::mac);
-            const string rx_mac  = rx.actor.get(wpa3_tester::SK::mac);
-            if (src_mac != rx_mac)
-                m[{src_mac, rx_mac}] = setup.rssi_cache->get(
-                    src_mac, rx.actor.get(wpa3_tester::SK::iface));
+            const string src_str = src.actor.get(wpa3_tester::SK::mac);
+            const string rx_str  = rx.actor.get(wpa3_tester::SK::mac);
+            if (src_str != rx_str)
+                m[{Tins::HWAddress<6>(src_str), Tins::HWAddress<6>(rx_str)}] =
+                    setup.rssi_cache->get(src_str, rx.actor.get(wpa3_tester::SK::iface));
         }
     return m;
 }
@@ -336,7 +356,7 @@ static RssiMatrix collect_rssi(const NetworkSetup& setup) {
 // ---- SMACOF layout ----
 
 static double rssi_to_target(double rssi) {
-	if (rssi <= DEFAULT_RSSI) return 10.0;  // Bez měření -> daleko
+    if (rssi <= RSSI_NO_DATA) return 10.0;  // no measurement → push far
 
 	// Pokud ovladač poslal kladné číslo (SNR / RSSI bez znaménka), převedeme na záporné
 	if (rssi > 0) rssi = -rssi;
@@ -350,8 +370,8 @@ static double rssi_to_target(double rssi) {
 }
 
 // One Guttman (SMACOF) iteration — monotonically minimises layout stress.
-static void smacof_step(map<string, Node2D>& nodes,
-                        const vector<string>& macs,
+static void smacof_step(map<Tins::HWAddress<6>, Node2D>& nodes,
+                        const vector<Tins::HWAddress<6>>& macs,
                         const RssiMatrix& m) {
     const size_t n = macs.size();
     vector<pair<double, double>> next(n);
@@ -365,11 +385,10 @@ static void smacof_step(map<string, Node2D>& nodes,
             const double dist = sqrt(dx*dx + dy*dy) + 1e-6;
             double rssi_sum = 0; int rssi_n = 0;
             for (const auto& key : {make_pair(macs[i], macs[j]), make_pair(macs[j], macs[i])}) {
-                auto it = m.find(key);
-                if (it != m.end() && it->second > DEFAULT_RSSI) { rssi_sum += it->second; ++rssi_n; }
+                if (auto it = m.find(key); it != m.end() && it->second > RSSI_NO_DATA)
+                    { rssi_sum += it->second; ++rssi_n; }
             }
-            const double rssi = rssi_n > 0 ? rssi_sum / rssi_n : DEFAULT_RSSI;
-            const double d = rssi_to_target(rssi);
+            const double d = rssi_to_target(rssi_n > 0 ? rssi_sum / rssi_n : RSSI_NO_DATA);
             sx += nj.x + d * dx / dist;
             sy += nj.y + d * dy / dist;
         }
@@ -381,21 +400,21 @@ static void smacof_step(map<string, Node2D>& nodes,
     }
 }
 
-static void update_positions(map<string, Node2D>& nodes,
+static void update_positions(map<Tins::HWAddress<6>, Node2D>& nodes,
                              const vector<AdapterInfo>& adapters,
                              const RssiMatrix& m) {
     if (adapters.size() < 2) return;
-    vector<string> macs(adapters.size());
+    vector<Tins::HWAddress<6>> macs(adapters.size());
     for (size_t i = 0; i < adapters.size(); ++i)
-        macs[i] = adapters[i].actor.get(wpa3_tester::SK::mac);
-    for (int i = 0; i < 5; ++i)   // 5 iterations/tick — fast convergence for small N
+        macs[i] = Tins::HWAddress<6>(adapters[i].actor.get(wpa3_tester::SK::mac));
+    for (int i = 0; i < 5; ++i)
         smacof_step(nodes, macs, m);
 }
 
 // ---- Rendering ----
 
 static bool render(FILE* pipe,
-                   const map<string, Node2D>& nodes,
+                   const map<Tins::HWAddress<6>, Node2D>& nodes,
                    const vector<AdapterInfo>& adapters,
                    const RssiMatrix& m,
                    const string& status) {
@@ -411,55 +430,57 @@ static bool render(FILE* pipe,
     constexpr double OFFSET = 0.15;
     const size_t n = adapters.size();
 
+    // Iterates only directed pairs where that specific direction has a valid RSSI measurement.
+    // Passes the measured rssi value to fn so callers don't need to re-look it up.
     auto for_pairs = [&](auto fn) {
         for (size_t i = 0; i < n; ++i)
             for (size_t j = 0; j < n; ++j) {
                 if (i == j) continue;
-                auto ni = nodes.find(adapters[i].actor.get(wpa3_tester::SK::mac));
-                auto nj = nodes.find(adapters[j].actor.get(wpa3_tester::SK::mac));
+                const Tins::HWAddress<6> mi(adapters[i].actor.get(wpa3_tester::SK::mac));
+                const Tins::HWAddress<6> mj(adapters[j].actor.get(wpa3_tester::SK::mac));
+                const auto data = m.find({mi, mj});
+                if (data == m.end() || data->second <= RSSI_NO_DATA) continue;
+                auto ni = nodes.find(mi);
+                auto nj = nodes.find(mj);
                 if (ni == nodes.end() || nj == nodes.end()) continue;
                 const double dx   = nj->second.x - ni->second.x;
                 const double dy   = nj->second.y - ni->second.y;
                 const double dist = sqrt(dx*dx + dy*dy) + 0.001;
                 const double px   = -dy/dist * OFFSET;
                 const double py   =  dx/dist * OFFSET;
-                fn(i, j, ni->second, nj->second, dx, dy, px, py);
+                fn(ni->second, nj->second, dx, dy, px, py, data->second);
             }
     };
 
     // Dataset 1: arrows
-    for_pairs([&](size_t, size_t, const Node2D& ni, const Node2D&, double dx, double dy, double px, double py) {
+    for_pairs([&](const Node2D& ni, const Node2D&,
+                  const double dx, const double dy, const double px, const double py, double) {
         fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy);
     });
     fprintf(pipe, "e\n");
 
     // Dataset 2: RSSI labels at midpoint of each directed arrow
-    for_pairs([&](size_t i, size_t j, const Node2D& ni, const Node2D& nj, double, double, double px, double py) {
-        const double mx = (ni.x + nj.x) / 2.0 + px;
-        const double my = (ni.y + nj.y) / 2.0 + py;
-        const auto it = m.find({adapters[i].actor.get(wpa3_tester::SK::mac),
-                                 adapters[j].actor.get(wpa3_tester::SK::mac)});
-        const double rssi = it != m.end() ? it->second : static_cast<double>(DEFAULT_RSSI);
-        fprintf(pipe, "%f %f '%.0f'\n", mx, my, rssi);
+    for_pairs([&](const Node2D& ni, const Node2D& nj, double, double,
+                  const double px, const double py, const double rssi) {
+        fprintf(pipe, "%f %f '%.0f'\n", (ni.x+nj.x)/2.0+px, (ni.y+nj.y)/2.0+py, rssi);
     });
     fprintf(pipe, "e\n");
 
     // Dataset 3: node points
     for (const auto& a : adapters) {
-        auto it = nodes.find(a.actor.get(wpa3_tester::SK::mac));
-        if (it != nodes.end())
+        const Tins::HWAddress<6> mac(a.actor.get(wpa3_tester::SK::mac));
+        if (auto it = nodes.find(mac); it != nodes.end())
             fprintf(pipe, "%f %f\n", it->second.x, it->second.y);
     }
     fprintf(pipe, "e\n");
 
     // Dataset 4: node labels (iface + MAC)
     for (const auto& a : adapters) {
-        const string mac   = a.actor.get(wpa3_tester::SK::mac);
+        const Tins::HWAddress<6> mac(a.actor.get(wpa3_tester::SK::mac));
         const string iface = a.actor.get(wpa3_tester::SK::iface);
-        auto it = nodes.find(mac);
-        if (it != nodes.end())
+        if (auto it = nodes.find(mac); it != nodes.end())
             fprintf(pipe, "%f %f '%s\\n%s'\n",
-                    it->second.x, it->second.y, iface.c_str(), mac.c_str());
+                    it->second.x, it->second.y, iface.c_str(), mac.to_string().c_str());
     }
     fprintf(pipe, "e\n");
     return fflush(pipe) == 0;
@@ -491,6 +512,8 @@ void run_rssi_wizard(const string& condition_str = "") {
     signal(SIGPIPE, SIG_IGN);
     signal(SIGUSR1, pause_handler);
 
+    wpa3_tester::cleanup_all_namespaces();
+
     ExprPtr cond;
     try { cond = parse_condition(condition_str); }
     catch (const exception& e) { cerr << "[!] Condition parse error: " << e.what() << "\n"; return; }
@@ -509,10 +532,10 @@ void run_rssi_wizard(const string& condition_str = "") {
             if (!setup->adapters.empty()) {
                 auto m = collect_rssi(*setup);
                 update_positions(setup->nodes, setup->adapters, m);
-                const string status = cond
-                    ? (cond->eval(m) ? "CONDITION MET" : "CONDITION NOT MET")
-                    : (g_paused ? "PAUSED — P to resume" : "running");
                 if (!g_paused) {
+                    const string status = g_paused ? "PAUSED — P to resume" : "running";
+                    fprintf(g_gnuplot_pipe, "unset label\n");
+                    render_condition_status(g_gnuplot_pipe, cond, m);
                     if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status))
                         g_running = false;
                 }
@@ -531,11 +554,12 @@ void run_rssi_wizard(const string& condition_str = "") {
 int main() {
     // Condition: link A↔B must be stronger than -70 dBm
     //        AND stronger than link C↔B,
-    //        AND NOT weaker than -90 dBm on the A↔B link
+    //        AND NOT weaker<<<<<<<<<<<<<< th-90	an dBm on the A↔B link
     const string condition =
-        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -70 && "
-        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > (00:c0:ca:b7:69:2a <-> 90:de:80:6c:90:92) && "
-        "!(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) < -90";
+        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -90 && "
+		"(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90 && "
+        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) < (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
+	;
     run_rssi_wizard(condition);
     return 0;
 }

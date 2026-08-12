@@ -109,7 +109,9 @@ fi
 printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
     > "$ROOT/etc/modprobe.d/ath9k.conf"
 # USB — disable autosuspend (prevents Wi-Fi adapter disconnects under load)
+# disable USB 3.0 (xhci) to eliminate 2.4 GHz interference from USB 3 devices
 echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
+echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
 
 # NetworkManager — leave all WiFi interfaces unmanaged
 # tester can control them directly via nl80211, ethernet stays managed for SSH

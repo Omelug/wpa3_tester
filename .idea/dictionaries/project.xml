@@ -5,6 +5,7 @@
       <w>Disassoc</w>
       <w>Dlink</w>
       <w>Exch</w>
+      <w>Guttman</w>
       <w>Kbit</w>
       <w>Kbits</w>
       <w>Mitm</w>
@@ -210,6 +211,7 @@
       <w>setsid</w>
       <w>siocgifflags</w>
       <w>siocsifflags</w>
+      <w>smacof</w>
       <w>sout</w>
       <w>srcversion</w>
       <w>srcversions</w>

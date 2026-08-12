@@ -75,6 +75,11 @@ properties:
           enum:
             - ath_masker
             - ath9k_noorder_change
+      rssi_setup:
+        type: array
+        items:
+          type: string
+        description: "should be parsable parts of rssi_condition.cpp parser (there are connected with && in code, dont need write it)"
       two_iface:
         type: object
         description: Two-interface requirement

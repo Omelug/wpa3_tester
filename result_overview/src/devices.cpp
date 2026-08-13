@@ -15,11 +15,13 @@ using namespace std;
 using namespace filesystem;
 using json = nlohmann::json;
 
+//TODO rewrite this ti Html Guard / deafulet json
+
 struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
 	optional<bool> ghz2_4, ghz5, ghz6;
 	optional<bool> n80211n, n80211ac, n80211ax;
-	optional<bool> beacon_prot, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
+	optional<bool> netns_change, beacon_prot, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
 };
 
 struct DeviceInfo {
@@ -66,6 +68,7 @@ static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	d.caps.n80211n    = json_bool(caps, "80211n");
 	d.caps.n80211ac   = json_bool(caps, "80211ac");
 	d.caps.n80211ax   = json_bool(caps, "80211ax");
+	d.caps.netns_change    = json_bool(caps,"netns_change");
 	d.caps.beacon_prot = json_bool(caps, "beacon_prot");
 	d.caps.CSA        = json_bool(caps, "CSA");
 	d.caps.OCV        = json_bool(caps, "OCV");
@@ -148,7 +151,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 				<th>AP</th><th>STA</th><th>Mon</th>
 				<th>2.4G</th><th>5G</th><th>6G</th>
 				<th>n</th><th>ac</th><th>ax</th>
-				<th>Bcn</th><th>CSA</th><th>OCV</th><th>MFP</th><th>PSK</th><th>SAE</th>
+				<th>netns change</th><th>Bcn</th><th>CSA</th><th>OCV</th><th>MFP</th><th>PSK</th><th>SAE</th>
 			</tr></thead>
 			<tbody>
 )html";
@@ -166,6 +169,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 		  << "                <td>" << d->caps.n80211n   << "</td>\n"
 		  << "                <td>" << d->caps.n80211ac  << "</td>\n"
 		  << "                <td>" << d->caps.n80211ax  << "</td>\n"
+			<< "              <td>" << d->caps.netns_change << "</td>\n"
 		  << "                <td>" << d->caps.beacon_prot << "</td>\n"
 		  << "                <td>" << d->caps.CSA       << "</td>\n"
 		  << "                <td>" << d->caps.OCV       << "</td>\n"

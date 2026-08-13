@@ -77,6 +77,7 @@ struct NlCaps{
 	bool _80211ac = false; // 802.11ac (VHT)
 	bool _80211ax = false; // 802.11ax
 
+	bool netns_change = false;
 	bool beacon_prot = false; // NL80211_EXT_FEATURE_BEACON_PROTECTION
 	bool csa = false; // NL80211_CMD_CHANNEL_SWITCH supported
 	bool ocv = false; // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION

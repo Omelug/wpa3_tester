@@ -23,7 +23,7 @@ void Actor_config::cleanup() const{
 		log(LogLevel::ERROR, "cleanup() called with empty interface name");
 		return;
 	}
-
+	//FIXME changein netns not allowed? -> error
 	if(netns.has_value()){
 		hw_capabilities::move_to_netns(iface, netns.value());
 	} else{

@@ -194,6 +194,26 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 	}
 }
 
+uint32_t parse_phy_index(const std::string& phy_name) {
+	if (phy_name.rfind("phy", 0) == 0) {
+		return std::stoul(phy_name.substr(3));
+	}
+	return std::stoul(phy_name);
+}
+
+void check_netns_support(nlattr **attrs, NlCaps *caps) {
+	if (!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
+
+	nlattr *cmd;
+	int rem;
+	nla_for_each_nested(cmd, attrs[NL80211_ATTR_SUPPORTED_COMMANDS], rem) {
+		if (nla_get_u32(cmd) == NL80211_CMD_SET_WIPHY_NETNS) {
+			caps->netns_change = true;
+			return;
+		}
+	}
+}
+
 int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	auto *caps = static_cast<NlCaps *>(arg);
 	const auto *gnlh = static_cast<genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
@@ -207,6 +227,8 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 	check_monitor(attrs, caps);
 	check_active_monitor(attrs, caps);
 	check_band_caps(attrs, caps);
+
+	check_netns_support(attrs, caps);
 	check_beacon_prot(attrs, caps);
 	check_CSA(attrs, caps);
 	check_OCV(attrs, caps);
@@ -220,38 +242,6 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 	ifstream file(path);
 	if(uint32_t idx = 0; file >> idx) return idx;
 	return 0;
-}
-
-static int netns_probe_err_cb(sockaddr_nl *, nlmsgerr *err, void *arg){
-	*static_cast<int *>(arg) = err->error;
-	return NL_STOP;
-}
-
-static bool probe_netns_change(const uint32_t phy_idx, const int nl80211_id){
-	nl_sock *sock = nl_socket_alloc();
-	if(!sock) return false;
-
-	bool result = false;
-	if(genl_connect(sock) == 0){
-		int kern_err = 0;
-		nl_socket_modify_err_cb(sock, NL_CB_CUSTOM, netns_probe_err_cb, &kern_err);
-		nl_msg *msg = nlmsg_alloc();
-		if(msg){
-			genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
-			nla_put_u32(msg, NL80211_ATTR_WIPHY, phy_idx);
-			const int nsfd = open("/proc/self/ns/net", O_RDONLY);
-			if(nsfd >= 0){
-				nla_put_u32(msg, NL80211_ATTR_NETNS_FD, nsfd);
-				nl_send_auto(sock, msg);
-				nl_recvmsgs_default(sock);
-				close(nsfd);
-				result = (kern_err != -EOPNOTSUPP);
-			}
-			nlmsg_free(msg);
-		}
-	}
-	nl_socket_free(sock);
-	return result;
 }
 
 void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
@@ -308,7 +298,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(BK::w80211ac, caps._80211ac);
 	cfg->set(BK::w80211ax, caps._80211ax);
 
-	cfg->set(BK::netns_change, probe_netns_change(phy_idx, nl80211_id));
+	cfg->set(BK::netns_change, caps.netns_change);
 	cfg->set(BK::beacon_prot, caps._80211ax);
 	cfg->set(BK::CSA, caps.csa);
 	cfg->set(BK::OCV, caps.ocv);

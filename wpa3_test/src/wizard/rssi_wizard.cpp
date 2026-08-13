@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <functional>
 #include <linux/if_packet.h>
 #include <map>
 #include <memory>
@@ -22,8 +23,9 @@
 #include <utility>
 #include <vector>
 
-#include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "logger/log.h"
 #include "setup/requirement_validation.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
@@ -39,12 +41,12 @@ using namespace Tins;
 
 // ---- globals ----
 static FILE* g_gnuplot_pipe = nullptr;
-static volatile bool g_running = true;
-static atomic  g_paused{false};
+static atomic<bool> g_running{true};
+static atomic<bool> g_paused{false};
 
 void signal_handler(const int signum) {
     if (!g_running) {
-        cerr << "\n[!] Force exiting...\n";
+        log(LogLevel::ERROR, "\n[!] Force exiting...");
         exit(128 + signum);
     }
     g_running = false;
@@ -53,7 +55,8 @@ void signal_handler(const int signum) {
 static void pause_handler(int) { g_paused = !g_paused; }
 
 // ---- basic types ----
-struct Node2D {double x{0.0}, y{0.0};};
+struct Node2D { double x{0.0}, y{0.0}; };
+
 struct WifiSender {
     string iface_name;
     string netns_;
@@ -102,25 +105,31 @@ struct WifiSender {
 };
 
 static void transmit_probe(const WifiSender& sender, const string& mac_str) {
-    uint8_t mac[6]{};
-    const char* p = mac_str.c_str();
-    for (unsigned char & i : mac) {
-        char* end;
-        i = static_cast<uint8_t>(strtoul(p, &end, 16));
-        p = end + 1;
-    }
+	uint8_t mac[6]{};
+	const char* p = mac_str.c_str();
+	for (unsigned char & i : mac) {
+		char* end;
+		i = static_cast<uint8_t>(strtoul(p, &end, 16));
+		p = end + 1;
+	}
 
-    const uint8_t frame[] = {
-        0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,  // Radiotap header (8 bytes)
-        0x40, 0x00,                                      // Frame control: Probe Request
-        0x00, 0x00,                                      // Duration
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // DA: broadcast
-        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],  // SA
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // BSSID: broadcast
-        0x00, 0x00,                                      // Sequence control
-        0x00, 0x00,                                      // SSID IE: tag=0, len=0 (wildcard)
-    };
-    sender.send_frame(frame, sizeof(frame));
+	const uint8_t frame[] = {
+		// Radiotap header (10 bytů)
+		0x00, 0x00,             // Header revision & pad
+		0x0a, 0x00,             // Header length: 10 bytes
+		0x04, 0x00, 0x00, 0x00, // Present flags: IEEE80211_RADIOTAP_RATE (bit 2)
+		0x0c, 0x00,             // Rate: 12 (12 * 500 kbps = 6 Mbps OFDM pro 5GHz)
+
+		// 802.11 MAC Header (Probe Request)
+		0x40, 0x00,                                      // Frame control
+		0x00, 0x00,                                      // Duration
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // DA: broadcast
+		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],  // SA
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // BSSID: broadcast
+		0x00, 0x00,                                      // Sequence control
+		0x00, 0x00,                                      // SSID IE
+	};
+	sender.send_frame(frame, sizeof(frame));
 }
 
 // ---- RSSI extraction ----
@@ -145,14 +154,13 @@ class RssiCache {
     mutable mutex mtx_;
     map<pair<HWAddress<6>,string>, double> data_;  // {src_mac, rx_iface} -> dBm
 public:
-    void update(const HWAddress<6>& src_mac, const string& rx_iface,
-			  const double rssi) {
+    void update(const HWAddress<6>& src_mac, const string& rx_iface, const double rssi) {
         lock_guard lock(mtx_);
         data_[{src_mac, rx_iface}] = rssi;
     }
     double get(const HWAddress<6>& src_mac, const string& rx_iface) const {
         lock_guard lock(mtx_);
-		const auto it = data_.find({src_mac, rx_iface});
+        const auto it = data_.find({src_mac, rx_iface});
         return it != data_.end() ? it->second : RSSI_NO_DATA;
     }
 };
@@ -185,25 +193,19 @@ class PcapSniffer {
         pcap_set_immediate_mode(handle_, 1);
         if (pcap_activate(handle_) < 0) { pcap_close(handle_); handle_ = nullptr; return; }
 
-        /*bpf_program fp{};
-        if (pcap_compile(handle_, &fp, "type mgt subtype probe-req", 1, PCAP_NETMASK_UNKNOWN) == 0) {
-            pcap_setfilter(handle_, &fp);
-            pcap_freecode(&fp);
-        }*/
-
         while (running_.load(memory_order_relaxed)) {
             pcap_pkthdr* hdr; const uint8_t* pkt;
             const int res = pcap_next_ex(handle_, &hdr, &pkt);
             if (res == -2) break;
-        	if (res <= 0) {
-        		this_thread::sleep_for(chrono::milliseconds(200));
-        		continue;
-        	}
+            if (res <= 0) {
+                this_thread::sleep_for(chrono::milliseconds(200));
+                continue;
+            }
             const optional<int8_t> rssi = extract_rssi(pkt, hdr->caplen);
             const auto rlen = static_cast<uint16_t>(pkt[2] | (pkt[3] << 8));
             if (hdr->caplen >= static_cast<uint32_t>(rlen) + 16 && rssi.has_value()) {
-        		cache_->update(format_mac(pkt + rlen + 10), rx_iface_, rssi.value());
-        	}
+                cache_->update(format_mac(pkt + rlen + 10), rx_iface_, rssi.value());
+            }
         }
         pcap_close(handle_); handle_ = nullptr;
     }
@@ -240,20 +242,25 @@ struct NetworkSetup {
 // Caller must hold setup.mtx (or call before threads start).
 static void add_adapter(NetworkSetup& setup, const string& iface_name) {
     try {
+        string mac_str = hw_capabilities::get_mac_address(iface_name, nullopt).to_string();
+
+        string mac_clean = mac_str;
+        mac_clean.erase(ranges::remove(mac_clean, ':').begin(), mac_clean.end());
+        const string netns_name = "rssi_" + mac_clean;
+
         const auto cfg = make_shared<Actor_Config_internal>();
         cfg->set(SK::iface, iface_name);
-        cfg->set(SK::mac,
-            hw_capabilities::get_mac_address(iface_name, nullopt));
-    	const string netns_name = "rssi_" + iface_name;
-    	cfg->set(SK::netns, netns_name);
-    	hw_capabilities::create_ns(netns_name);
-    	cfg->cleanup();
-    	this_thread::sleep_for(chrono::milliseconds(1500));
+        cfg->set(SK::mac, mac_str);
+        cfg->set(SK::netns, netns_name);
+
+        hw_capabilities::create_ns(netns_name);
+        cfg->cleanup();
+        this_thread::sleep_for(chrono::milliseconds(1500));
 
         // netns move resets interface state — re-apply inside the new ns
         cfg->set_monitor_mode();
         cfg->set_iface_up();
-        cfg->set_channel(Channel{6, WifiBand::BAND_2_4, nullopt}); //FIXME hardcoded
+        cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt}); // FIXME: hardcoded channel
         ActorPtr actor{cfg};
 
         const HWAddress<6> mac(actor.get(SK::mac));
@@ -269,57 +276,69 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         sniffer->start();
         setup.adapters.push_back({move(actor), move(sender), move(sniffer)});
     } catch (const exception& e) {
-        cerr << "[!] Failed to add adapter " << iface_name << ": " << e.what() << "\n";
+        log(LogLevel::ERROR, "[!] Failed to add adapter {}: {}", iface_name, e.what());
     }
 }
 
 static unique_ptr<NetworkSetup> initialize_network() {
     auto setup = make_unique<NetworkSetup>();
-    for (const auto& iface : hw_capabilities::list_interfaces(
-            InterfaceType::Wifi, nullopt))
-        add_adapter(*setup, iface.name);
+    for (const auto& iface : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)) {
+	    add_adapter(*setup, iface.name);
+    	this_thread::sleep_for(chrono::milliseconds(1000));
+    }
     return setup;
+}
+
+// Background watcher execution function (prevents GCC 15 consteval escalation)
+static void watcher_loop(NetworkSetup& setup) {
+    while (g_running) {
+        this_thread::sleep_for(chrono::seconds(3));
+        lock_guard lock(setup.mtx);
+
+        for (auto it = setup.adapters.begin(); it != setup.adapters.end(); ) {
+            const string iface = it->actor.get(SK::iface);
+            const optional<string> netns = it->actor[SK::netns];
+            const bool alive = hw_capabilities::run_cmd({"ip", "link", "show", iface}, netns, false) == 0;
+
+            if (!alive) {
+                log(LogLevel::INFO, "[*] Adapter removed: {} (netns: {})", iface, netns.value_or("-"));
+                it->sniffer->stop();
+                setup.nodes.erase(it->actor.get(SK::mac));
+
+                if (netns.has_value()) {
+                    hw_capabilities::run_cmd({"ip", "netns", "del", *netns}, nullopt, false);
+                }
+                it = setup.adapters.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        const auto ifaces = hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt);
+
+        set<HWAddress<6>> present_macs;
+        for (const auto& a : setup.adapters) {
+            present_macs.insert(a.actor.get(SK::mac));
+        }
+
+        for (const auto& iface : ifaces) {
+            try {
+                HWAddress<6> mac = hw_capabilities::get_mac_address(iface.name, nullopt);
+                if (!present_macs.contains(mac)) {
+                    log(LogLevel::INFO, "[*] New adapter added: {} [{}]", iface.name, mac.to_string());
+                    this_thread::sleep_for(chrono::milliseconds(500));
+                    add_adapter(setup, iface.name);
+                }
+            } catch (...) {
+                // Ignore transient interfaces or errors when reading MAC address
+            }
+        }
+    }
 }
 
 // Background thread: detects plug/unplug every 3 s.
 static thread start_watcher(NetworkSetup& setup) {
-    return thread([&setup]() {
-        while (g_running) {
-            this_thread::sleep_for(chrono::seconds(3));
-
-            lock_guard lock(setup.mtx);
-
-            // Each adapter lives in its own netns — check liveness there, not in default ns.
-            for (auto it = setup.adapters.begin(); it != setup.adapters.end(); ) {
-                const string iface = it->actor.get(SK::iface);
-                const optional<string> netns = it->actor[SK::netns];
-                const bool alive = hw_capabilities::run_cmd({"ip", "link", "show", iface}, netns, false) == 0;
-                if (!alive) {
-                    cerr << "[*] Adapter removed: " << iface << "\n";
-                    it->sniffer->stop();
-                    setup.nodes.erase(Tins::HWAddress<6>(it->actor.get(SK::mac)));
-                    it = setup.adapters.erase(it);
-                    hw_capabilities::run_cmd(
-                        {"ip", "netns", "del", "rssi_" + iface}, nullopt, false);
-                } else {
-                    ++it;
-                }
-            }
-
-            // New adapters plug into the default netns.
-            const auto ifaces = hw_capabilities::list_interfaces(
-                InterfaceType::Wifi, nullopt);
-            set<string> present;
-            for (const auto& a : setup.adapters) present.insert(a.actor.get(SK::iface));
-            for (const auto& iface : ifaces) {
-                if (!present.contains(iface.name)) {
-                    cerr << "[*] Adapter added: " << iface.name << "\n";
-                	this_thread::sleep_for(chrono::milliseconds(500)); // wait for adapter to init
-                    add_adapter(setup, iface.name);
-                }
-            }
-        }
-    });
+    return thread(watcher_loop, std::ref(setup));
 }
 
 // ---- Measurement ----
@@ -327,29 +346,30 @@ static thread start_watcher(NetworkSetup& setup) {
 // Caller must hold setup.mtx.
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     for (const auto& a : setup.adapters) {
-	    transmit_probe(a.sender, a.actor.get(SK::mac));
+        transmit_probe(a.sender, a.actor.get(SK::mac));
+    	this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
     }
 
-	this_thread::sleep_for(chrono::milliseconds(50)); //time for receive
+    this_thread::sleep_for(chrono::milliseconds(50)); // Allow time for packet reception
 
     RssiMatrix m;
-    for (const auto& src : setup.adapters)
+    for (const auto& src : setup.adapters) {
         for (const auto& rx : setup.adapters) {
-            const HWAddress<6>src_mac(src.actor.get(SK::mac));
-            const HWAddress<6>rx_mac(rx.actor.get(SK::mac));
+            const HWAddress<6> src_mac(src.actor.get(SK::mac));
+            const HWAddress<6> rx_mac(rx.actor.get(SK::mac));
             if (src_mac != rx_mac)
-                m[{src_mac, rx_mac}] =
-                    setup.rssi_cache->get(src_mac, rx.actor.get(SK::iface));
+                m[{src_mac, rx_mac}] = setup.rssi_cache->get(src_mac, rx.actor.get(SK::iface));
         }
+    }
     return m;
 }
 
 static double rssi_to_target(const double rssi) {
-	if (rssi <= RSSI_NO_DATA || rssi > 0.0) {
-		return 10.0; // error value for visualization
-	}
-	const double dist = (abs(rssi) - 20.0) / 10.0;
-	return std::clamp(dist, 0.25, 25.0);
+    if (rssi <= RSSI_NO_DATA || rssi > 0.0) {
+        return 10.0; // Fallback distance value for visualization
+    }
+    const double dist = (abs(rssi) - 20.0) / 10.0;
+    return std::clamp(dist, 0.25, 25.0);
 }
 
 // One Guttman (SMACOF) iteration — monotonically minimises layout stress.
@@ -368,8 +388,10 @@ static void smacof_step(map<HWAddress<6>, Node2D>& nodes,
             const double dist = sqrt(dx*dx + dy*dy) + 1e-6;
             double rssi_sum = 0; int rssi_n = 0;
             for (const auto& key : {make_pair(macs[i], macs[j]), make_pair(macs[j], macs[i])}) {
-                if (auto it = m.find(key); it != m.end() && it->second > RSSI_NO_DATA)
-                    { rssi_sum += it->second; ++rssi_n; }
+                if (auto it = m.find(key); it != m.end() && it->second > RSSI_NO_DATA) {
+                    rssi_sum += it->second;
+                    ++rssi_n;
+                }
             }
             const double d = rssi_to_target(rssi_n > 0 ? rssi_sum / rssi_n : RSSI_NO_DATA);
             sx += nj.x + d * dx / dist;
@@ -414,9 +436,8 @@ static bool render(FILE* pipe,
     const size_t n = adapters.size();
 
     // Iterates only directed pairs where that specific direction has a valid RSSI measurement.
-    // Passes the measured rssi value to fn so callers don't need to re-look it up.
     auto for_pairs = [&](auto fn) {
-        for (size_t i = 0; i < n; ++i)
+        for (size_t i = 0; i < n; ++i) {
             for (size_t j = 0; j < n; ++j) {
                 if (i == j) continue;
                 const HWAddress<6> mi(adapters[i].actor.get(SK::mac));
@@ -433,9 +454,10 @@ static bool render(FILE* pipe,
                 const double py   =  dx/dist * OFFSET;
                 fn(ni->second, nj->second, dx, dy, px, py, data->second);
             }
+        }
     };
 
-    // arrows
+    // Directional arrows
     for_pairs([&](const Node2D& ni, const Node2D&,
                   const double dx, const double dy, const double px, const double py, double) {
         fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy);
@@ -449,14 +471,14 @@ static bool render(FILE* pipe,
     });
     fprintf(pipe, "e\n");
 
-    // node points
+    // Node points
     for (const auto& a : adapters) {
         if (auto it = nodes.find(a.actor.get(SK::mac)); it != nodes.end())
             fprintf(pipe, "%f %f\n", it->second.x, it->second.y);
     }
     fprintf(pipe, "e\n");
 
-    // node labels (iface + MAC)
+    // Node labels (iface + MAC)
     for (const auto& a : adapters) {
         const HWAddress<6> mac(a.actor.get(SK::mac));
         const string iface = a.actor.get(SK::iface);
@@ -479,35 +501,50 @@ static FILE* init_gnuplot() {
     fprintf(p, "set grid\n");
     fprintf(p, "set style arrow 1 head filled size graph 0.02,15 lc rgb '#888888' lw 1.5\n");
 
-	// key bindings: route Ctrl+C and P back to our process via signals
+    // Key bindings: route Ctrl+C and P back to our process via signals
     const int pid = getpid();
     fprintf(p, "bind \"ctrl-c\" \"system('kill -INT %d'); exit\"\n", pid);
     fprintf(p, "bind \"p\" \"system('kill -USR1 %d')\"\n", pid);
 
-	fflush(p);
+    fflush(p);
     return p;
 }
 
-void run_rssi_wizard(const string& condition_str = "") {
+constexpr int REQUIRED_SUCCESS_STEPS = 5;
+
+bool run_rssi_wizard(const string& condition_str) {
     signal(SIGINT,  signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGPIPE, SIG_IGN);
     signal(SIGUSR1, pause_handler);
 
     cleanup_all_namespaces();
-	this_thread::sleep_for(chrono::milliseconds(500));
+    this_thread::sleep_for(chrono::milliseconds(500));
 
     ExprPtr cond;
-    try { cond = parse_condition(condition_str); }
-    catch (const exception& e) { cerr << "[!] Condition parse error: " << e.what() << "\n"; return; }
+    try {
+        cond = parse_condition(condition_str);
+    } catch (const exception& e) {
+        log(LogLevel::ERROR, "[!] Condition parse error: {}", e.what());
+        return false;
+    }
 
-	const auto setup = initialize_network();
-    if (setup->adapters.empty()) { cerr << "[!] No Wi-Fi adapters found\n"; return; }
+    const auto setup = initialize_network();
+    if (setup->adapters.empty()) {
+        log(LogLevel::ERROR, "[!] No Wi-Fi adapters found");
+        return false;
+    }
 
     g_gnuplot_pipe = init_gnuplot();
-    if (!g_gnuplot_pipe) { cerr << "[!] Failed to open gnuplot\n"; return; }
+    if (!g_gnuplot_pipe) {
+        log(LogLevel::ERROR, "[!] Failed to open gnuplot");
+        return false;
+    }
 
     auto watcher = start_watcher(*setup);
+
+    int success_counter = 0;
+    bool condition_fulfilled = false;
 
     while (g_running) {
         {
@@ -515,34 +552,51 @@ void run_rssi_wizard(const string& condition_str = "") {
             if (!setup->adapters.empty()) {
                 auto m = collect_rssi(*setup);
                 update_positions(setup->nodes, setup->adapters, m);
+
+                if (cond ? cond->eval(m) : false) {
+                    ++success_counter;
+                } else {
+                    success_counter = 0;
+                }
+
+                if (success_counter >= REQUIRED_SUCCESS_STEPS) {
+                    condition_fulfilled = true;
+                    g_running = false;
+                    break;
+                }
+
                 if (!g_paused) {
-                    const string status = g_paused ? "PAUSED — P to resume" : "running";
+                    const string status = "running (" + to_string(success_counter) + "/" +
+                                           to_string(REQUIRED_SUCCESS_STEPS) + " ok)";
                     fprintf(g_gnuplot_pipe, "unset label\n");
                     render_condition_status(g_gnuplot_pipe, cond, m);
-                    if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status))
+
+                    if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status)) {
                         g_running = false;
+                    }
                 }
             }
         }
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        if (g_running) {
+            this_thread::sleep_for(chrono::milliseconds(1000));
+        }
     }
 
     watcher.join();
-    if (g_gnuplot_pipe) { pclose(g_gnuplot_pipe); g_gnuplot_pipe = nullptr; }
-    cerr << "\n[*] Stopped. Press Enter to exit...\n";
-    cin.get();
+    if (g_gnuplot_pipe) {
+        pclose(g_gnuplot_pipe);
+        g_gnuplot_pipe = nullptr;
+    }
+    return condition_fulfilled;
 }
 
 #ifdef MAIN_TARGET_BUILD
 int main() {
-    // Condition: link A<->B must be stronger than -70 dBm
-    //        AND stronger than link C<->B,
-    //        AND NOT weaker -90 an dBm on the A↔B link
     const string condition =
         "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -90 && "
-		"(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90 && "
-        "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) < (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
-	;
+        "(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90 && "
+        "(90:de:80:6c:90:92 <-> 00:c0:ca:b7:69:2a) > (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
+    ;
     run_rssi_wizard(condition);
     return 0;
 }

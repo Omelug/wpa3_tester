@@ -30,3 +30,11 @@ Some programs need folder config in [global_config](../../wpa3_test/attack_confi
 
 External:
 The OpenWrt program has its own specific configuration for requirements, check [openwrt_validator](../../wpa3_test/attack_config/validator/programs/actor/openwrt.yaml).
+
+Other requirements are described in requirements under [test_validator.schema.yaml](../../wpa3_test/attack_config/validator/test_validator.schema.yaml)
+They are loaded where needed in setup phase
+- simple - ath_masker
+- two_iface - check connection tests before
+- rssi_setup
+
+DISCLAIMER: Some rssi cant change 

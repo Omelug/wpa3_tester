@@ -28,7 +28,7 @@ enum class BK : uint8_t{
 	active_monitor, control_monitor,
 	//THIS IS ONLY SUPPORT, NOT ACTIVE/USAGE
 	GHz2_4, GHz5, GHz6,
-	w80211n, w80211ac, w80211ax, beacon_prot,
+	w80211n, w80211ac, w80211ax, netns_change, beacon_prot,
 	CSA, OCV, MFP, WPA_PSK, WPA3_SAE,
 	COUNT_
 };
@@ -43,7 +43,7 @@ inline constexpr std::array<std::string_view,static_cast<size_t>(SK::COUNT_)> SK
 
 inline constexpr std::array<std::string_view,static_cast<size_t>(BK::COUNT_)> BK_NAMES = {
 	"AP", "STA", "injection_selftest", "monitor", "managed", "active_monitor", "control_monitor", "2_4GHz", "5GHz",
-	"6GHz", "80211n", "80211ac", "80211ax", "beacon_prot", "CSA", "OCV", "MFP", "WPA-PSK", "WPA3-SAE",
+	"6GHz", "80211n", "80211ac", "80211ax", "netns_change", "beacon_prot", "CSA", "OCV", "MFP", "WPA-PSK", "WPA3-SAE",
 };
 
 constexpr std::string_view sk_name(SK k){

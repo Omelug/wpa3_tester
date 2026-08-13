@@ -23,6 +23,7 @@ struct HwInfo{
 		case BK::w80211n:
 		case BK::w80211ac:
 		case BK::w80211ax:
+		case BK::netns_change:
 		case BK::beacon_prot:
 		case BK::CSA:
 		case BK::OCV:

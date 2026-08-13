@@ -38,6 +38,7 @@ void check_type(nlattr **attrs, NlCaps *caps){
 	if(iftypes[NL80211_IFTYPE_AP]){ caps->ap = true; }
 }
 
+// probably useless because can be falsely possitive/negative
 void check_CSA(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
 	nlattr *cmd;

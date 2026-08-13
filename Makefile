@@ -15,6 +15,10 @@ tester_setup:
 	echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
 	@echo " Disabling USB autosuspend..."
 	echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
+	#disable self regulation on driver
+	echo "options rtw88_core disable_lps_deep=y" | sudo tee /etc/modprobe.d/rtw88.conf
+	#diable  Scatter-Gather support (https://github.com/morrownr/7612u)
+	echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.conf
 	sudo update-initramfs -u
 	@echo "Done. Reboot recommended."
 

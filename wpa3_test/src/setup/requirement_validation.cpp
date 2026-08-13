@@ -17,7 +17,6 @@
 #include "logger/error_log.h"
 #include "logger/log_util.h"
 #include "wizard/rssi_condition.h"
-#include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
 
@@ -306,9 +305,18 @@ bool RunStatus::config_requirement(){
 
 	//wizard rssi
 	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
+		//FIXME globally allow/disable wizards , if disabled -> warning
 		auto conditions = _config["requirements"]["rssi_setup"].get<std::vector<std::string>>();
+		//TODO rewrite acttor names to mac adresses
 		run_rssi_wizard(join(conditions, " && "));
 	}
+	//FIXME cant change iface name etc if changed usb position
+
+	cleanup_all_namespaces();
+	this_thread::sleep_for(1500ms); ///TODO useless ?
+	//TODO step back to parse_requirements to work with resetup interfaces?
+	// asi setekovat jstli se něco přepojilo  (u external to bude pomalém, neo cache?)
+
 
 	// SETUP ACTORS
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());

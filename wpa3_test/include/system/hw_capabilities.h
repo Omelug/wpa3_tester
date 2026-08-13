@@ -77,7 +77,7 @@ struct NlCaps{
 	bool _80211ac = false; // 802.11ac (VHT)
 	bool _80211ax = false; // 802.11ax
 
-	bool beacon_prot = false;
+	bool beacon_prot = false; // NL80211_EXT_FEATURE_BEACON_PROTECTION
 	bool csa = false; // NL80211_CMD_CHANNEL_SWITCH supported
 	bool ocv = false; // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
 	bool mfp = false; // BIP cipher suite (hardware IGTK/BIGTK support)
@@ -148,7 +148,7 @@ public:
 	static int channel_to_freq(const Channel &ch);
 
 	static void create_ns(const std::string &ns_name);
-	static void move_to_netns(const std::string &iface, const std::string &netns);
+	static bool move_to_netns(const std::string &iface, const std::string &netns);
 	static Tins::HWAddress<6> rand_mac();
 
 	// working with interfaces

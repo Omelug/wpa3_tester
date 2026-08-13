@@ -35,4 +35,5 @@ using ExprPtr = std::unique_ptr<Expr>;
 //   "(aa:bb:cc:dd:ee:ff <-> 11:22:33:44:55:66) > -70"
 ExprPtr parse_condition(const std::string& s);
 void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& m);
-void run_rssi_wizard(const std::string& condition_str = "");
+//return true if found valid
+bool run_rssi_wizard(const std::string& condition_str = "");

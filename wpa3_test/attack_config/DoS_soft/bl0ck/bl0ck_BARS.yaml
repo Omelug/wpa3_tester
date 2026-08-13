@@ -7,13 +7,13 @@ requirements:
   rssi_setup: [
     "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -90",
     "(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90",
-    "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) < (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
+    "(90:de:80:6c:90:92 <-> 00:c0:ca:b7:69:2a) > (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
   ]
 actors:
   ap:
     source: internal
-    selection:
-      driver: [ rtw_8821au, rtw88_8821au ]
+    #selection:
+    #  driver: [ rtw_8821au, rtw88_8821au ]
   client:
     selection:
       permanent_mac: "00:c0:ca:b7:69:2a"

@@ -36,3 +36,5 @@ They are loaded where needed in setup phase
 - simple - ath_masker
 - two_iface - check connection tests before
 - rssi_setup
+
+DISCLAIMER: Some rssi cant change 

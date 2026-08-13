@@ -176,7 +176,7 @@ void hw_capabilities::create_ns(const string &ns_name){
 	run_cmd({"ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
 }
 
-void hw_capabilities::move_to_netns(const string &iface, const string &netns){
+bool hw_capabilities::move_to_netns(const string &iface, const string &netns){
 	log(LogLevel::INFO, "Moving interface {} to netns {}", iface, netns);
 
 	string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
@@ -185,10 +185,10 @@ void hw_capabilities::move_to_netns(const string &iface, const string &netns){
 
 	if(phy_name.empty()){
 		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);
-		return;
+		return false;
 	}
 	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);
-	run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, nullopt);
+	return run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, nullopt) == 0;
 }
 
 string hw_capabilities::get_iface(const string &ip_address, const optional<string> &netns){

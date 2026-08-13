@@ -4,7 +4,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 #include <functional>
 #include <linux/if_packet.h>
 #include <map>
@@ -41,8 +40,8 @@ using namespace Tins;
 
 // ---- globals ----
 static FILE* g_gnuplot_pipe = nullptr;
-static atomic<bool> g_running{true};
-static atomic<bool> g_paused{false};
+static atomic g_running{true};
+static atomic g_paused{false};
 
 void signal_handler(const int signum) {
     if (!g_running) {
@@ -114,7 +113,7 @@ static void transmit_probe(const WifiSender& sender, const string& mac_str) {
 	}
 
 	const uint8_t frame[] = {
-		// Radiotap header (10 bytů)
+		// Radiotap header (10 bytes)
 		0x00, 0x00,             // Header revision & pad
 		0x0a, 0x00,             // Header length: 10 bytes
 		0x04, 0x00, 0x00, 0x00, // Present flags: IEEE80211_RADIOTAP_RATE (bit 2)
@@ -149,7 +148,6 @@ static optional<int8_t> extract_rssi(const uint8_t* packet, const uint32_t caple
 }
 
 // ---- RSSI cache ----
-
 class RssiCache {
     mutable mutex mtx_;
     map<pair<HWAddress<6>,string>, double> data_;  // {src_mac, rx_iface} -> dBm
@@ -237,30 +235,39 @@ struct NetworkSetup {
     vector<AdapterInfo> adapters;
     map<HWAddress<6>, Node2D> nodes;
     shared_ptr<RssiCache> rssi_cache{make_shared<RssiCache>()};
+	bool default_netns_used = false;
 };
 
 // Caller must hold setup.mtx (or call before threads start).
 static void add_adapter(NetworkSetup& setup, const string& iface_name) {
     try {
-        string mac_str = hw_capabilities::get_mac_address(iface_name, nullopt).to_string();
+	    string mac_str = hw_capabilities::get_mac_address(iface_name, nullopt).to_string();
 
-        string mac_clean = mac_str;
-        mac_clean.erase(ranges::remove(mac_clean, ':').begin(), mac_clean.end());
-        const string netns_name = "rssi_" + mac_clean;
+    	string mac_clean = mac_str;
+    	mac_clean.erase(ranges::remove(mac_clean, ':').begin(), mac_clean.end());
+    	string netns_name;
 
-        const auto cfg = make_shared<Actor_Config_internal>();
-        cfg->set(SK::iface, iface_name);
-        cfg->set(SK::mac, mac_str);
-        cfg->set(SK::netns, netns_name);
-
-        hw_capabilities::create_ns(netns_name);
+    	const auto cfg = make_shared<Actor_Config_internal>();
+    	cfg->set(SK::iface, iface_name);
+    	cfg->set(SK::mac, mac_str);
+    	cfg->load_hw_info();
+    	if (cfg->get(BK::netns_change)){
+    		netns_name = "rssi_" + mac_clean;
+    		cfg->set(SK::netns, netns_name);
+    		hw_capabilities::create_ns(netns_name);
+		}else {
+			if (setup.default_netns_used) {
+				log(LogLevel::ERROR, "\n Default netns already used, ");
+			}
+			setup.default_netns_used = true;
+		}
         cfg->cleanup();
-        this_thread::sleep_for(chrono::milliseconds(1500));
+        this_thread::sleep_for(chrono::milliseconds(1000));
 
         // netns move resets interface state — re-apply inside the new ns
         cfg->set_monitor_mode();
         cfg->set_iface_up();
-        cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt}); // FIXME: hardcoded channel
+        cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt}); // FIXME: hardcoded channel
         ActorPtr actor{cfg};
 
         const HWAddress<6> mac(actor.get(SK::mac));
@@ -457,37 +464,40 @@ static bool render(FILE* pipe,
         }
     };
 
-    // Directional arrows
-    for_pairs([&](const Node2D& ni, const Node2D&,
-                  const double dx, const double dy, const double px, const double py, double) {
-        fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy);
-    });
-    fprintf(pipe, "e\n");
+	// arrows
+	for_pairs([&](const Node2D& ni, const Node2D&,
+				  const double dx, const double dy, const double px, const double py, double) {
+		fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy);
+	});
+	fprintf(pipe, "e\n");
 
-    // RSSI labels at midpoint of each directed arrow
-    for_pairs([&](const Node2D& ni, const Node2D& nj, double, double,
-                  const double px, const double py, const double rssi) {
-        fprintf(pipe, "%f %f '%.0f'\n", (ni.x+nj.x)/2.0+px, (ni.y+nj.y)/2.0+py, rssi);
-    });
-    fprintf(pipe, "e\n");
+	// arrow labels
+	for_pairs([&](const Node2D& ni, const Node2D& nj, double, double,
+				  const double px, const double py, const double rssi) {
+		fprintf(pipe, "%f %f \"%.0f dBm\"\n", (ni.x + nj.x) / 2.0 + px, (ni.y + nj.y) / 2.0 + py, rssi);
+	});
+	fprintf(pipe, "e\n");
 
-    // Node points
-    for (const auto& a : adapters) {
-        if (auto it = nodes.find(a.actor.get(SK::mac)); it != nodes.end())
-            fprintf(pipe, "%f %f\n", it->second.x, it->second.y);
-    }
-    fprintf(pipe, "e\n");
+	// nodes
+	for (const auto& a : adapters) {
+		if (auto it = nodes.find(a.actor.get(SK::mac)); it != nodes.end()) {
+			fprintf(pipe, "%f %f\n", it->second.x, it->second.y);
+		}
+	}
+	fprintf(pipe, "e\n");
 
-    // Node labels (iface + MAC)
-    for (const auto& a : adapters) {
-        const HWAddress<6> mac(a.actor.get(SK::mac));
-        const string iface = a.actor.get(SK::iface);
-        if (auto it = nodes.find(mac); it != nodes.end())
-            fprintf(pipe, "%f %f '%s\\n%s'\n",
-                    it->second.x, it->second.y, iface.c_str(), mac.to_string().c_str());
-    }
-    fprintf(pipe, "e\n");
-    return fflush(pipe) == 0;
+	// nodes labels
+	for (const auto& a : adapters) {
+		const HWAddress<6> mac(a.actor.get(SK::mac));
+		const string iface = a.actor.get(SK::iface);
+		if (auto it = nodes.find(mac); it != nodes.end()) {
+			fprintf(pipe, "%f %f \"%s\\n%s\"\n",
+					it->second.x, it->second.y, iface.c_str(), mac.to_string().c_str());
+		}
+	}
+	fprintf(pipe, "e\n");
+
+	return fflush(pipe) == 0;
 }
 
 // ---- Gnuplot init ----

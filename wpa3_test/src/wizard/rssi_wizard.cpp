@@ -103,7 +103,7 @@ struct WifiSender {
     }
 };
 
-static void transmit_probe(const WifiSender& sender, const string& mac_str) {
+static void transmit_probe(const WifiSender& sender, const string& mac_str, bool is_5ghz = false) {
 	uint8_t mac[6]{};
 	const char* p = mac_str.c_str();
 	for (unsigned char & i : mac) {
@@ -112,21 +112,25 @@ static void transmit_probe(const WifiSender& sender, const string& mac_str) {
 		p = end + 1;
 	}
 
+	// Pro 5 GHz: 6 Mbps OFDM (0x0c)
+	// Pro 2.4 GHz: 1 Mbps CCK (0x02)
+	const uint8_t rate = is_5ghz ? 0x0c : 0x02;
+
 	const uint8_t frame[] = {
 		// Radiotap header (10 bytes)
-		0x00, 0x00,             // Header revision & pad
-		0x0a, 0x00,             // Header length: 10 bytes
-		0x04, 0x00, 0x00, 0x00, // Present flags: IEEE80211_RADIOTAP_RATE (bit 2)
-		0x0c, 0x00,             // Rate: 12 (12 * 500 kbps = 6 Mbps OFDM pro 5GHz)
+		0x00, 0x00,
+		0x0a, 0x00,
+		0x04, 0x00, 0x00, 0x00, // Present flags: IEEE80211_RADIOTAP_RATE
+		rate, 0x00,             // valid rate
 
 		// 802.11 MAC Header (Probe Request)
-		0x40, 0x00,                                      // Frame control
-		0x00, 0x00,                                      // Duration
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // DA: broadcast
-		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],  // SA
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,              // BSSID: broadcast
-		0x00, 0x00,                                      // Sequence control
-		0x00, 0x00,                                      // SSID IE
+		0x40, 0x00,
+		0x00, 0x00,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0x00, 0x00,
+		0x00, 0x00,
 	};
 	sender.send_frame(frame, sizeof(frame));
 }
@@ -267,7 +271,9 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         // netns move resets interface state — re-apply inside the new ns
         cfg->set_monitor_mode();
         cfg->set_iface_up();
-        cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt}); // FIXME: hardcoded channel
+    	//cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt});
+    	// FIXME: hardcoded channelt , dont change withnoutransmit_probe cheenge
+        cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt});
         ActorPtr actor{cfg};
 
         const HWAddress<6> mac(actor.get(SK::mac));
@@ -353,7 +359,7 @@ static thread start_watcher(NetworkSetup& setup) {
 // Caller must hold setup.mtx.
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     for (const auto& a : setup.adapters) {
-        transmit_probe(a.sender, a.actor.get(SK::mac));
+        transmit_probe(a.sender, a.actor.get(SK::mac), false); //FIXME hardcoded 2_4 (dont change withnout set_channel change
     	this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
     }
 

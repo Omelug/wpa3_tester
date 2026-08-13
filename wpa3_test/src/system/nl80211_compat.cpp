@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <fstream>
 #include <nl80211.h>
 #include <string>
@@ -6,6 +7,7 @@
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
+#include <unistd.h>
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
 
@@ -219,6 +221,38 @@ uint32_t get_wiphy_idx_by_ifname(const string &ifname){
 	return 0;
 }
 
+static int netns_probe_err_cb(sockaddr_nl *, nlmsgerr *err, void *arg){
+	*static_cast<int *>(arg) = err->error;
+	return NL_STOP;
+}
+
+static bool probe_netns_change(const uint32_t phy_idx, const int nl80211_id){
+	nl_sock *sock = nl_socket_alloc();
+	if(!sock) return false;
+
+	bool result = false;
+	if(genl_connect(sock) == 0){
+		int kern_err = 0;
+		nl_socket_modify_err_cb(sock, NL_CB_CUSTOM, netns_probe_err_cb, &kern_err);
+		nl_msg *msg = nlmsg_alloc();
+		if(msg){
+			genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
+			nla_put_u32(msg, NL80211_ATTR_WIPHY, phy_idx);
+			const int nsfd = open("/proc/self/ns/net", O_RDONLY);
+			if(nsfd >= 0){
+				nla_put_u32(msg, NL80211_ATTR_NETNS_FD, nsfd);
+				nl_send_auto(sock, msg);
+				nl_recvmsgs_default(sock);
+				close(nsfd);
+				result = (kern_err != -EOPNOTSUPP);
+			}
+			nlmsg_free(msg);
+		}
+	}
+	nl_socket_free(sock);
+	return result;
+}
+
 void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(SK::mac, read_sysfs(cfg->get(SK::iface), "address"));
 	cfg->set(SK::driver_name, get_driver_name(cfg->get(SK::iface), cfg[SK::netns]));
@@ -248,7 +282,8 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, NLM_F_DUMP, NL80211_CMD_GET_WIPHY, 0);
 
 	// query by wiphy index — ensures full physical radio attributes (incl. ext_features) are returned
-	nla_put_u32(msg, NL80211_ATTR_WIPHY, get_wiphy_idx_by_ifname(cfg->get(SK::iface)));
+	const uint32_t phy_idx = get_wiphy_idx_by_ifname(cfg->get(SK::iface));
+	nla_put_u32(msg, NL80211_ATTR_WIPHY, phy_idx);
 	// without split dump, the kernel silently truncates large replies (e.g. 6GHz band HE iftype data)
 	// instead of fragmenting them, so unsplit dumps can drop bands entirely.
 	nla_put_flag(msg, NL80211_ATTR_SPLIT_WIPHY_DUMP);
@@ -272,6 +307,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	cfg->set(BK::w80211ac, caps._80211ac);
 	cfg->set(BK::w80211ax, caps._80211ax);
 
+	cfg->set(BK::netns_change, probe_netns_change(phy_idx, nl80211_id));
 	cfg->set(BK::beacon_prot, caps._80211ax);
 	cfg->set(BK::CSA, caps.csa);
 	cfg->set(BK::OCV, caps.ocv);

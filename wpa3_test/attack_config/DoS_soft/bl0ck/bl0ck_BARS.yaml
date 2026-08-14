@@ -5,9 +5,9 @@ $validator: ./bl0ck.schema.yaml
 $extends: ./bl0ck.yaml
 requirements:
   rssi_setup: [
-    "(00:c0:ca:b5:e1:58 <-> 90:de:80:6c:90:92) > -90",
-    "(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90",
-    "(90:de:80:6c:90:92 <-> 00:c0:ca:b7:69:2a) > (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
+    "(ap <-> attacker) > -90",
+    "(ap <-> client) > -90",
+    "(attacker <-> client) > (ap <-> client)"
   ]
 actors:
   ap:

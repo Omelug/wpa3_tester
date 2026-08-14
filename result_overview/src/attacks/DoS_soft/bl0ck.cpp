@@ -62,7 +62,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 	const array<string, 3> suite_fillers = {"BA_filler", "BAR_filler", "BARS_filler"};
 
 	for (const auto &filler : suite_fillers){
-		emit_table("Test Results", bl0ck_base / "suite" / filler);
+		emit_table(filler, bl0ck_base / "suite" / filler);
 	}
 	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite");
 

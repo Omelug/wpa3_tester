@@ -3,12 +3,6 @@ name: bl0ck_BARS
 attacker_module: bl0ck
 $validator: ./bl0ck.schema.yaml
 $extends: ./bl0ck.yaml
-requirements:
-  rssi_setup: [
-    "(ap <-> attacker) > -90",
-    "(ap <-> client) > -90",
-    "(attacker <-> client) > (ap <-> client)"
-  ]
 actors:
   ap:
     source: internal

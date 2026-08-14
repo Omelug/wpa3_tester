@@ -1,6 +1,7 @@
 #include "wizard/rssi_condition.h"
 
 #include "config/Actor_Config/ActorPtr.h"
+#include "logger/log.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -223,6 +224,7 @@ struct Parser {
 // ---- Public API ----
 
 ExprPtr parse_condition(const string& s) {
+	log(wpa3_tester::LogLevel::INFO, "Parsing {}", s);
     if (s.empty()) return nullptr;
     const auto toks = tokenize(s);
     Parser p{toks};
@@ -248,19 +250,23 @@ void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& 
         }
     }
 }
+
 string actor_names_to_mac(const string &actor_names_cond,
-							   const wpa3_tester::ActorCMap &actors) {
+	const vector<wpa3_tester::ActorCMap> &actors_maps) {
 	string result = actor_names_cond;
 
-	for (const auto &pair : actors) {
-		const string &name = pair.first;
-		string mac = Tins::HWAddress<6>(pair.second.get(wpa3_tester::SK::mac)).to_string();
-		size_t pos = 0;
-		while ((pos = result.find(name, pos)) != string::npos) {
-			result.replace(pos, name.length(), mac);
-			pos += mac.length();
+	for (const auto &actors : actors_maps) {
+		for (const auto &pair : actors) {
+			const string &name = pair.first;
+            
+			if (result.contains(name)) continue;
+			string mac = Tins::HWAddress<6>(pair.second->get(wpa3_tester::SK::permanent_mac)).to_string();
+			size_t pos = 0;
+			while ((pos = result.find(name, pos)) != string::npos) {
+				result.replace(pos, name.length(), mac);
+				pos += mac.length();
+			}
 		}
 	}
-
 	return result;
 }

@@ -303,13 +303,16 @@ bool RunStatus::config_requirement(){
 		simulation_mapping = hw_capabilities::check_req_options(simulation_actors, simulation_options);
 	}
 
-	//wizard rssi
+	//RSSI wizard rssi
 	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
 		auto conditions = _config["requirements"]["rssi_setup"].get<std::vector<std::string>>();
 
 		string cond_str = join(conditions, " && ");
-		cond_str = actor_names_to_mac(cond_str, actors);
+		cond_str = actor_names_to_mac(cond_str, {
+			internal_mapping, external_wb_mapping,
+			external_bb_mapping, simulation_mapping
+		});
 
 		run_rssi_wizard(cond_str);
 	}
@@ -319,7 +322,6 @@ bool RunStatus::config_requirement(){
 	this_thread::sleep_for(1500ms); ///TODO useless ?
 	//TODO step back to parse_requirements to work with resetup interfaces?
 	// asi setekovat jstli se něco přepojilo  (u external to bude pomalém, neo cache?)
-
 
 	// SETUP ACTORS
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
@@ -335,6 +337,7 @@ bool RunStatus::config_requirement(){
 	setup_by_map(external_bb_actors, external_bb_mapping);
 	log(LogLevel::DEBUG, "Setup simulation");
 	setup_by_map(simulation_actors, simulation_mapping);
+
 
 	// --------------- POST-BACKTRACKING REQUIREMENTS
 	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")){

@@ -1,13 +1,15 @@
 #include "wizard/rssi_condition.h"
 
+#include "config/Actor_Config/ActorPtr.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <tins/hw_address.h>
 #include <utility>
 #include <vector>
-#include <tins/hw_address.h>
 
 using namespace std;
 
@@ -78,8 +80,8 @@ struct Value {
 	[[nodiscard]] bool valid(const RssiMatrix& m) const {
     	if (is_const) return true;
 
-    	const auto keys = {mac_pair, std::pair{mac_pair.second, mac_pair.first}};
-    	return std::ranges::any_of(keys, [&m](const auto& key) {
+    	const auto keys = {mac_pair, pair{mac_pair.second, mac_pair.first}};
+    	return ranges::any_of(keys, [&m](const auto& key) {
 			const auto it = m.find(key);
 			return it != m.end() && it->second > RSSI_NO_DATA;
 		});
@@ -245,4 +247,20 @@ void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& 
             x += static_cast<double>(text.size()) * 0.010;
         }
     }
+}
+string actor_names_to_mac(const string &actor_names_cond,
+							   const wpa3_tester::ActorCMap &actors) {
+	string result = actor_names_cond;
+
+	for (const auto &pair : actors) {
+		const string &name = pair.first;
+		string mac = Tins::HWAddress<6>(pair.second.get(wpa3_tester::SK::mac)).to_string();
+		size_t pos = 0;
+		while ((pos = result.find(name, pos)) != string::npos) {
+			result.replace(pos, name.length(), mac);
+			pos += mac.length();
+		}
+	}
+
+	return result;
 }

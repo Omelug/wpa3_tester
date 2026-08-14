@@ -259,7 +259,7 @@ string actor_names_to_mac(const string &actor_names_cond,
 		for (const auto &pair : actors) {
 			const string &name = pair.first;
             
-			if (result.contains(name)) continue;
+			if (!result.contains(name)) continue;
 			string mac = Tins::HWAddress<6>(pair.second->get(wpa3_tester::SK::permanent_mac)).to_string();
 			size_t pos = 0;
 			while ((pos = result.find(name, pos)) != string::npos) {

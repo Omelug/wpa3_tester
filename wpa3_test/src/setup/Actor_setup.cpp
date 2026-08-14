@@ -60,7 +60,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 			SK::iface, SK::radio,
 			SK::ht_mode, SK::ssid
 		},{
-			BK::w80211n, BK::w80211ac, BK::w80211ax, BK::beacon_prot,
+			BK::w80211n, BK::w80211ac, BK::w80211ax, BK::netns_change, BK::beacon_prot,
 			BK::CSA, BK::OCV, BK::MFP, BK::WPA_PSK, BK::WPA3_SAE
 		}
 	});

@@ -2,12 +2,17 @@ $schema: https://json-schema.org/draft/2020-12/schema
 name: bl0ck
 attacker_module: bl0ck
 
-#requirements:
-#  two_iface:
-#    injection_more_fragments_spoofed: [transceiver, receiver]
-#    injection_more_fragments_valid: [transceiver, receiver]
-#    injection_fields_order_spoofed: [transceiver, receiver]
-#    injection_fields_order_valid: [transceiver, receiver]
+requirements:
+  two_iface:
+    injection_more_fragments_spoofed: [attacker, client]
+    injection_more_fragments_valid: [attacker, client]
+    injection_fields_order_spoofed: [attacker, client]
+    injection_fields_order_valid: [attacker, client]
+  rssi_setup: [
+    "(ap <-> attacker) > -90",
+    "(ap <-> client) > -90",
+    "(attacker <-> client) > (ap <-> client)"
+  ]
 
 actors:
   ap:

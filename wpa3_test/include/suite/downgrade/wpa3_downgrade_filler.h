@@ -6,7 +6,7 @@
 
 namespace wpa3_tester::overview { struct HtmlGuard; }
 
-namespace wpa3_tester::suite::wpa3_trans_downgrade_filler{
+namespace wpa3_tester::suite::wpa3_downgrade_filler{
 struct Wpa3TransDowngradeTestEntry{
 	std::string test_name;
 	std::string ap_driver;

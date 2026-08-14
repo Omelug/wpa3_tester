@@ -42,7 +42,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 	<div class="card">
 		<h2>Mitigations</h2>
 		<ul>
-			<li>MAC address randomisation/li>
+			<li> MAC address randomisation </li>
 		</ul>
 	</div>
 )html";

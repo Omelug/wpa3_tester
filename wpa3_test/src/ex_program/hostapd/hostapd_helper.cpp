@@ -396,7 +396,8 @@ static vector<string> read_all_lines(const path &p, LineReader read_line, const 
 	return lines;
 }
 
-static optional<HWAddress<6>> nearest_associated_mac(const vector<string> &lines, size_t idx, size_t max_distance = 15){
+static optional<HWAddress<6>> nearest_associated_mac(const vector<string> &lines, const size_t idx,
+					   const size_t max_distance = 15){
 	const size_t limit = (idx >= max_distance) ? (idx - max_distance) : 0;
 
 	for (size_t i = idx; ; --i) {
@@ -419,7 +420,7 @@ struct RsnIe {
 	size_t   caps_off  = 0; // offset of rsn_caps field (2 bytes)
 
 	// Suite OUI+type at index i, or nullopt if out of range.
-	[[nodiscard]] optional<array<uint8_t, 4>> akm_suite(uint16_t i) const{
+	[[nodiscard]] optional<array<uint8_t, 4>> akm_suite(const uint16_t i) const{
 		const size_t off = akm_off + 2 + static_cast<size_t>(i * 4);
 		if(raw.size() < off + 4) return nullopt;
 		return array{raw[off], raw[off + 1], raw[off + 2], raw[off + 3]};
@@ -515,7 +516,7 @@ string akm_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, con
 	const bool has_filter = client_mac != HWAddress<6>();
 
 	// Only computed for lines that actually matched one of the patterns below.
-	const auto mac_ok_at = [&](size_t i){
+	const auto mac_ok_at = [&](const size_t i){
 		if(!has_filter) return true;
 		const auto assoc_mac = nearest_associated_mac(lines, i);
 		return assoc_mac && *assoc_mac == client_mac;
@@ -565,7 +566,7 @@ string mfp_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, con
 	string mfp_fallback; // from older MFPC=/MFPR= log lines
 	const bool has_filter = client_mac != HWAddress<6>();
 
-	const auto mac_ok_at = [&](size_t i){
+	const auto mac_ok_at = [&](const size_t i){
 		if(!has_filter) return true;
 		const auto assoc_mac = nearest_associated_mac(lines, i);
 		return assoc_mac && *assoc_mac == client_mac;
@@ -661,13 +662,11 @@ string client_scanning_from_ap_log(const path &ap_log, const HWAddress<6> &clien
 	return result;
 }
 
-
 string owe_trans_bssid(const string &primary_mac){
 	const auto addr = Tins::HWAddress<6>(primary_mac);
 	return format("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
 				addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] ^ 1);
 }
-
 
 string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	ifstream f(cfg);
@@ -686,7 +685,6 @@ string get_conf_value(const path &cfg, initializer_list<string_view> keys){
 	}
 	return {};
 }
-
 
 string get_hostapd_with_openssl(const string &hostapd_version, const string &openssl_version){
 	const OpenSSLPaths ssl = get_openssl_paths(openssl_version);
@@ -721,7 +719,7 @@ string get_hostapd_with_openssl(const string &hostapd_version, const string &ope
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	build_hostapd_like(hostapd_version, hostapd_folder, binary_path, HOSTAPD_CONFIG, ssl);
-	copy(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path, copy_options::overwrite_existing);
+	copy_f(repo_path / "hostapd" / HOSTAPD_CONFIG.binary_name, binary_path);
 	return binary_path;
 }
 }

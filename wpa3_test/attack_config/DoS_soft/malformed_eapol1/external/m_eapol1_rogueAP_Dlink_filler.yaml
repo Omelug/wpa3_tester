@@ -1,5 +1,5 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
-name: m_eapol1__rogueAP_Dlink_filler
+name: m_eapol1_rogueAP_Dlink_filler
 suite_functions: m_eapol1_rogueAP_Dlink_filler
 config_type: test_suite
 tests:

@@ -1,31 +1,12 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 name: wpa3_transition_downgrade_wpa3_disable
 attacker_module: wpa3_trans_downgrade
-$extends: [
-  ../../comp/rogue_ap/rogue_ap_6.comp.yaml
-]
+$extends: [ ./downgrade_vuln.yaml ]
 actors:
   ap:
-    source: internal
-    selection:
-      condition: [ AP ]
-      #driver: rtw88_8821cu #TODO proč ?
     setup:
-      program: hostapd
-      program_config:
-        driver: nl80211
-        ssid: test_wpa3_tester
-        hw_mode: g
-        channel: 6
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa: 2
-        wpa_key_mgmt: SAE #WPA-PSK
-        rsn_pairwise: CCMP
-        sae_password: password123
         #wpa_passphrase: password123
         transition_disable: "0x01"
-    ip_addr: "172.16.100.1"
   client:
     source: internal
     selection:
@@ -33,29 +14,5 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
-        other_options: "-d"
-        ssid: test_wpa3_tester
         ieee80211w: 2 #Needed for WPA3 disable
-        proto: RSN
         key_mgmt: SAE WPA-PSK
-        pairwise: CCMP
-        group: CCMP
-        psk: password123
-    netns: sta
-    ip_addr: "172.16.100.2"
-  attacker:
-    source: internal
-    selection:
-      condition: [ monitor, 2_4GHz ]
-      channel: 6
-observers:
-  attacker_tshark:
-    actor: attacker
-    program: tshark
-    program_config:
-      filter: "special_filter:actors"
-attack_config:
-  # seconds to wait after legitimate AP is stopped for client to reconnect to rogue AP
-  wait_after_stop: 30
-
-rewrite: errors

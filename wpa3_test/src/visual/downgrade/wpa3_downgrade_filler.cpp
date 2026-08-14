@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/downgrade/wpa3_trans_downgrade_filler.h"
+#include "suite/downgrade/wpa3_downgrade_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
@@ -12,7 +12,7 @@
 #include "suite/suite_helper.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::suite::wpa3_trans_downgrade_filler{
+namespace wpa3_tester::suite::wpa3_downgrade_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
@@ -24,6 +24,8 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
+	//TODO rogue_ap/attacker  mac
+	//TODO WPA3 disable
 	return e;
 }
 

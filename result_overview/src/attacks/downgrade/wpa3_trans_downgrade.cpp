@@ -2,13 +2,13 @@
 #include <filesystem>
 #include <string>
 #include "suite/suite_helper.h"
-#include "suite/downgrade/wpa3_trans_downgrade_filler.h"
+#include "suite/downgrade/wpa3_downgrade_filler.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry;
+using suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
 
 void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir) {
 
@@ -33,9 +33,9 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 
 	<div class="card">
 		<p><b>Prerequisites:</b> client connected to a WPA3-Transition AP (SAE+PSK).</p>
-		<p>After the legitimate AP is stopped, a rogue WPA2-PSK-only AP with the same SSID is running.
-		   A vulnerable client automatically associates using WPA2-PSK, completing a downgrade attack.</p>
-		<p><b>Success:</b> client completes a 4-way handshake with the rogue WPA2-PSK AP.</p>
+		<p>A rogue WPA2-PSK-only AP with the same SSID is running</p>
+		<p>After the legitimate AP is stopped, a vulnerable client automatically associates using WPA2-PSK, completing a downgrade attack.</p>
+		<p><b>Success:</b> client send valid hash to rogue WPA2-PSK AP.</p>
 	</div>
 
 	<div class="card">
@@ -46,13 +46,13 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 		</ul>
 	</div>
 )html";
-	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "wpa3_down" / "wpa3_trans_downgrade_filler";
+	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "wpa3_down" / "wpa3_downgrade_filler";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir){
 		Wpa3TransDowngradeTestEntry::render_table(f, title, suite_data_dir, page_dir);
 	};
 
-	emit_table("Test Results", suite_dir);
+	emit_table("filler", suite_dir);
 
 	f << "</body>\n</html>\n";
 }

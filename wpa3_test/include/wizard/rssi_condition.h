@@ -39,5 +39,5 @@ ExprPtr parse_condition(const std::string& s);
 void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& m);
 //return true if found valid
 bool run_rssi_wizard(const std::string& condition_str = "");
-std::string actor_names_to_mac(std::string &actor_names_cond,
-							   wpa3_tester::ActorCMap actors);
+std::string actor_names_to_mac(const std::string &actor_names_cond,
+	const std::vector<wpa3_tester::ActorCMap> &actors_maps);

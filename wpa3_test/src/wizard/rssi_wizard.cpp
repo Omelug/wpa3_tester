@@ -269,7 +269,7 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         this_thread::sleep_for(chrono::milliseconds(1000));
 
         // netns move resets interface state — re-apply inside the new ns
-        cfg->set_monitor_mode();
+        cfg->set_monitor_mode(false);
         cfg->set_iface_up();
     	cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt});
     	// FIXME: hardcoded channelt , dont change withnou transmit_probe cheenge

@@ -74,7 +74,7 @@ void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss){
 		string graphs;
 		if(exists(e.sta_graph)) graphs += "[STA](" + e.sta_graph.string() + ")";
 		if(exists(e.ap_graph)){
-			if(!graphs.empty()) graphs += " ";
+			if(!graphs.empty()) graphs += ' ';
 			graphs += "[AP](" + e.ap_graph.string() + ")";
 		}
 		if(graphs.empty()) graphs = "-";

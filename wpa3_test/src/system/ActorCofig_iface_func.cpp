@@ -129,22 +129,21 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	}
 }
 
-void Actor_config::set_monitor_mode() const{
+void Actor_config::set_monitor_mode(bool add_flags) const{
 	const string &iface = get(SK::iface);
 	if(conn != nullptr){
 		conn->set_monitor_mode(iface);
 		return;
 	}
 
-	vector<string> monitor_flags = {"fcsfail", "otherbss"};
-	if((*this)[BK::active_monitor]) monitor_flags.emplace_back("active");
-	if((*this)[BK::control_monitor]) monitor_flags.emplace_back("control");
 
-	string flags_str;
-	for(const auto &f: monitor_flags){
-		if(!flags_str.empty()) flags_str += ' ';
-		flags_str += f;
+	vector<string> monitor_flags = {"fcsfail", "otherbss"};
+
+	if (add_flags) {
+		if((*this)[BK::active_monitor]) monitor_flags.emplace_back("active");
+		if((*this)[BK::control_monitor]) monitor_flags.emplace_back("control");
 	}
+	string flags_str = join(monitor_flags, " ");
 	log(LogLevel::INFO, "Setting interface {} to monitor mode with flags {}", iface, flags_str);
 
 	set_iface_down();

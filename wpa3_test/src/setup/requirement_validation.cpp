@@ -1,24 +1,25 @@
+#include "attacks/two_iface/TwoIfaceActive.h"
+#include "attacks/two_iface/TwoIfaceInject.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/Observer_config.h"
+#include "config/RunStatus.h"
+#include "config/global_config.h"
+#include "ex_program/external_actors/ExternalConn.h"
+#include "logger/error_log.h"
+#include "logger/log_util.h"
+#include "setup/usb_helper.h"
+#include "system/firmware/ath9k_htc.h"
+#include "system/hw_capabilities.h"
+#include "wizard/rssi_condition.h"
 #include <chrono>
 #include <csignal>
 #include <filesystem>
 #include <sstream>
-#include <thread>
-#include <unordered_set>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include "attacks/two_iface/TwoIfaceActive.h"
-#include "attacks/two_iface/TwoIfaceInject.h"
-#include "config/global_config.h"
-#include "config/Observer_config.h"
-#include "config/RunStatus.h"
-#include "config/Actor_Config/Actor_config.h"
-#include "ex_program/external_actors/ExternalConn.h"
-#include "logger/error_log.h"
-#include "logger/log_util.h"
-#include "wizard/rssi_condition.h"
-#include "system/hw_capabilities.h"
-#include "system/firmware/ath9k_htc.h"
+#include <thread>
+#include <unordered_set>
 
 using namespace std;
 using namespace filesystem;
@@ -248,7 +249,7 @@ bool RunStatus::config_requirement(){
 	}
 
 	//FIXME nefunguje to s tím ne
-	//reset_usb_ifaces();
+	reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");

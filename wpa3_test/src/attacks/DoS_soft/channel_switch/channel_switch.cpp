@@ -58,7 +58,8 @@ static Dot11Beacon with_sorted_ies(const Dot11Beacon &src) {
 	return result;
 }
 
-RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &ssid, const Channel &ap_channel,
+//FIXME unused ssid, ap_cahnnel
+RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, const Channel &/*ap_channel*/,
 						const Channel &new_channel, const int switch_count,
 						const Dot11Beacon *src_beacon
 ){

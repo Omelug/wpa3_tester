@@ -8,6 +8,8 @@
 #include <nlohmann/json.hpp>
 
 #include "overview/html_guard.h"
+#include "overview/html_utils.h"
+#include "suite/result_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -39,42 +41,31 @@ static optional<bool> json_bool(const json &j, const string &key){
 	return nullopt;
 }
 
-static string json_str(const json &j, const string &key){
-	if(j.contains(key) && j.at(key).is_string()) return j.at(key).get<string>();
-	return {};
-}
-
 static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	ifstream f(p);
 	if(!f.is_open()) return nullopt;
 	json j;
 	try{ j = json::parse(f); } catch(const json::exception &){ return nullopt; }
 
-	DeviceInfo d;
-	d.mac    = mac;
-	d.source = json_str(j, "source");
-	d.name   = json_str(j, "actor_name");
-
 	const json &caps = j.contains("caps") ? j.at("caps") : j;
-	d.driver       = json_str(caps, "driver");
-	d.driver_hash  = json_str(caps, "driver_hash");
-	d.module_hash  = json_str(caps, "module_hash");
-	d.caps.AP         = json_bool(caps, "AP");
-	d.caps.STA        = json_bool(caps, "STA");
-	d.caps.monitor    = json_bool(caps, "monitor");
-	d.caps.ghz2_4     = json_bool(caps, "2_4GHz");
-	d.caps.ghz5       = json_bool(caps, "5GHz");
-	d.caps.ghz6       = json_bool(caps, "6GHz");
-	d.caps.n80211n    = json_bool(caps, "80211n");
-	d.caps.n80211ac   = json_bool(caps, "80211ac");
-	d.caps.n80211ax   = json_bool(caps, "80211ax");
-	d.caps.netns_change    = json_bool(caps,"netns_change");
-	d.caps.beacon_prot = json_bool(caps, "beacon_prot");
-	d.caps.CSA        = json_bool(caps, "CSA");
-	d.caps.OCV        = json_bool(caps, "OCV");
-	d.caps.MFP        = json_bool(caps, "MFP");
-	d.caps.WPA_PSK    = json_bool(caps, "WPA-PSK");
-	d.caps.WPA3_SAE   = json_bool(caps, "WPA3-SAE");
+	DeviceInfo d;
+	d.mac         = mac;
+	d.source      = j.value("source", string{});
+	d.name        = j.value("actor_name", string{});
+	d.driver      = caps.value("driver", string{});
+	d.driver_hash = caps.value("driver_hash", string{});
+	d.module_hash = caps.value("module_hash", string{});
+	d.caps        = suite::helper::load_result_default<DeviceCaps>(caps);
+
+	// JSON keys here aren't valid C++ identifiers so pfr can't map them by name
+	d.caps.ghz2_4  = json_bool(caps, "2_4GHz");
+	d.caps.ghz5    = json_bool(caps, "5GHz");
+	d.caps.ghz6    = json_bool(caps, "6GHz");
+	d.caps.n80211n  = json_bool(caps, "80211n");
+	d.caps.n80211ac = json_bool(caps, "80211ac");
+	d.caps.n80211ax = json_bool(caps, "80211ax");
+	d.caps.WPA_PSK  = json_bool(caps, "WPA-PSK");
+	d.caps.WPA3_SAE = json_bool(caps, "WPA3-SAE");
 	return d;
 }
 
@@ -136,49 +127,40 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 }
 
 static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source){
-	vector<const DeviceInfo *> rows;
-	for(const auto &d : devices)
-		if(d.source == source) rows.push_back(&d);
+	vector<DeviceInfo> rows;
+	ranges::copy_if(devices, back_inserter(rows), [&](const auto &d){ return d.source == source; });
 
 	if(rows.empty()){
 		f << "        <p>No " << source << " devices recorded.</p>\n";
 		return;
 	}
 
-	f << R"html(        <table class="aggregate">
-			<thead><tr>
-				<th>MAC</th><th>Driver</th>
-				<th>AP</th><th>STA</th><th>Mon</th>
-				<th>2.4G</th><th>5G</th><th>6G</th>
-				<th>n</th><th>ac</th><th>ax</th>
-				<th>netns change</th><th>Bcn</th><th>CSA</th><th>OCV</th><th>MFP</th><th>PSK</th><th>SAE</th>
-			</tr></thead>
-			<tbody>
-)html";
-	for(const auto *d : rows){
-		const string label = d->name.empty() ? d->mac : d->name;
-		f << "            <tr>\n"
-		  << "                <td><a href=\"" << d->mac << "/index.html\">" << label << "</a></td>\n"
-		  << "                <td>" << d->driver		 << "</td>\n"
-		  << "                <td>" << d->caps.AP        << "</td>\n"
-		  << "                <td>" << d->caps.STA       << "</td>\n"
-		  << "                <td>" << d->caps.monitor   << "</td>\n"
-		  << "                <td>" << d->caps.ghz2_4    << "</td>\n"
-		  << "                <td>" << d->caps.ghz5      << "</td>\n"
-		  << "                <td>" << d->caps.ghz6      << "</td>\n"
-		  << "                <td>" << d->caps.n80211n   << "</td>\n"
-		  << "                <td>" << d->caps.n80211ac  << "</td>\n"
-		  << "                <td>" << d->caps.n80211ax  << "</td>\n"
-			<< "              <td>" << d->caps.netns_change << "</td>\n"
-		  << "                <td>" << d->caps.beacon_prot << "</td>\n"
-		  << "                <td>" << d->caps.CSA       << "</td>\n"
-		  << "                <td>" << d->caps.OCV       << "</td>\n"
-		  << "                <td>" << d->caps.MFP       << "</td>\n"
-		  << "                <td>" << d->caps.WPA_PSK   << "</td>\n"
-		  << "                <td>" << d->caps.WPA3_SAE  << "</td>\n"
-		  << "            </tr>\n";
-	}
-	f << "            </tbody>\n        </table>\n";
+	#define COL(h, expr) col(h, [&]([[maybe_unused]] const DeviceInfo &d){ f << (expr); })
+
+	HtmlPathTable(f, rows).build([&](auto col){
+		col("MAC", [&](const DeviceInfo &d){
+			const string label = d.name.empty() ? d.mac : d.name;
+			f << "<a href=\"" << d.mac << "/index.html\">" << label << "</a>";
+		});
+		COL("Driver",      d.driver);
+		COL("AP",          d.caps.AP);
+		COL("STA",         d.caps.STA);
+		COL("Mon",         d.caps.monitor);
+		COL("2.4G",        d.caps.ghz2_4);
+		COL("5G",          d.caps.ghz5);
+		COL("6G",          d.caps.ghz6);
+		COL("n",           d.caps.n80211n);
+		COL("ac",          d.caps.n80211ac);
+		COL("ax",          d.caps.n80211ax);
+		COL("netns change",d.caps.netns_change);
+		COL("Bcn",         d.caps.beacon_prot);
+		COL("CSA",         d.caps.CSA);
+		COL("OCV",         d.caps.OCV);
+		COL("MFP",         d.caps.MFP);
+		COL("PSK",         d.caps.WPA_PSK);
+		COL("SAE",         d.caps.WPA3_SAE);
+	})->render();
+#undef COL
 }
 
 void generate_devices(const path &output_dir, const path &data_dir){

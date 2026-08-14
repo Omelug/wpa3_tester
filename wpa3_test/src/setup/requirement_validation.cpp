@@ -307,8 +307,11 @@ bool RunStatus::config_requirement(){
 	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
 		auto conditions = _config["requirements"]["rssi_setup"].get<std::vector<std::string>>();
-		//TODO rewrite acttor names to mac adresses
-		run_rssi_wizard(join(conditions, " && "));
+
+		string cond_str = join(conditions, " && ");
+		cond_str = actor_names_to_mac(cond_str, actors);
+
+		run_rssi_wizard(cond_str);
 	}
 	//FIXME cant change iface name etc if changed usb position
 

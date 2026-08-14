@@ -1,10 +1,12 @@
 #pragma once
+#include "config/Actor_Config/actor_keys.h"
+
 #include <map>
 #include <memory>
 #include <string>
+#include <tins/hw_address.h>
 #include <utility>
 #include <vector>
-#include <tins/hw_address.h>
 
 // Sentinel: no measurement available
 inline constexpr double RSSI_NO_DATA = -90.0;
@@ -37,3 +39,5 @@ ExprPtr parse_condition(const std::string& s);
 void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& m);
 //return true if found valid
 bool run_rssi_wizard(const std::string& condition_str = "");
+std::string actor_names_to_mac(std::string &actor_names_cond,
+							   wpa3_tester::ActorCMap actors);

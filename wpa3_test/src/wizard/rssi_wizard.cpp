@@ -240,6 +240,7 @@ struct NetworkSetup {
     map<HWAddress<6>, Node2D> nodes;
     shared_ptr<RssiCache> rssi_cache{make_shared<RssiCache>()};
 	bool default_netns_used = false;
+	Channel channel = {6, WifiBand::BAND_2_4, nullopt};
 };
 
 // Caller must hold setup.mtx (or call before threads start).
@@ -269,12 +270,11 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         this_thread::sleep_for(chrono::milliseconds(1000));
 
         // netns move resets interface state — re-apply inside the new ns
+    	//TODO tady se nesmí dát active, ale proč když hlásí podporu?
         cfg->set_monitor_mode(false);
         cfg->set_iface_up();
-    	cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt});
-    	// FIXME: hardcoded channelt , dont change withnou transmit_probe cheenge
-        //cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt});
-        ActorPtr actor{cfg};
+    	cfg->set_channel(setup.channel);
+    	ActorPtr actor{cfg};
 
         const HWAddress<6> mac(actor.get(SK::mac));
         if (!setup.nodes.contains(mac)) {
@@ -293,8 +293,9 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
     }
 }
 
-static unique_ptr<NetworkSetup> initialize_network() {
+static unique_ptr<NetworkSetup> initialize_network(const Channel &ch) {
     auto setup = make_unique<NetworkSetup>();
+	setup->channel = ch;
     for (const auto& iface : hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)) {
 	    add_adapter(*setup, iface.name);
     	this_thread::sleep_for(chrono::milliseconds(1000));
@@ -323,7 +324,7 @@ static void watcher_loop(NetworkSetup& setup) {
                 }
                 it = setup.adapters.erase(it);
             } else {
-                ++it;
+            	++it;
             }
         }
 
@@ -335,23 +336,19 @@ static void watcher_loop(NetworkSetup& setup) {
         }
 
         for (const auto& iface : ifaces) {
-            try {
-                HWAddress<6> mac = hw_capabilities::get_mac_address(iface.name, nullopt);
-                if (!present_macs.contains(mac)) {
-                    log(LogLevel::INFO, "[*] New adapter added: {} [{}]", iface.name, mac.to_string());
-                    this_thread::sleep_for(chrono::milliseconds(500));
-                    add_adapter(setup, iface.name);
-                }
-            } catch (...) {
-                // Ignore transient interfaces or errors when reading MAC address
-            }
+			HWAddress<6> mac = hw_capabilities::get_mac_address(iface.name, nullopt);
+			if (!present_macs.contains(mac)) {
+				log(LogLevel::INFO, "[*] New adapter added: {} [{}]", iface.name, mac.to_string());
+				this_thread::sleep_for(chrono::milliseconds(500));
+				add_adapter(setup, iface.name);
+			}
         }
     }
 }
 
 // Background thread: detects plug/unplug every 3 s.
 static thread start_watcher(NetworkSetup& setup) {
-    return thread(watcher_loop, std::ref(setup));
+    return thread(watcher_loop, ref(setup));
 }
 
 // ---- Measurement ----
@@ -359,7 +356,7 @@ static thread start_watcher(NetworkSetup& setup) {
 // Caller must hold setup.mtx.
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     for (const auto& a : setup.adapters) {
-        transmit_probe(a.sender, a.actor.get(SK::mac), true); //FIXME hardcoded band(dont change withnout set_channel change
+        transmit_probe(a.sender, a.actor.get(SK::mac), setup.channel.band == WifiBand::BAND_2_4);
     	this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
     }
 
@@ -528,7 +525,7 @@ static FILE* init_gnuplot() {
 
 constexpr int REQUIRED_SUCCESS_STEPS = 5;
 
-bool run_rssi_wizard(const string& condition_str) {
+bool run_rssi_wizard(const string& condition_str, const Channel &ch) {
     signal(SIGINT,  signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGPIPE, SIG_IGN);
@@ -537,15 +534,9 @@ bool run_rssi_wizard(const string& condition_str) {
     cleanup_all_namespaces();
     this_thread::sleep_for(chrono::milliseconds(500));
 
-    ExprPtr cond;
-    //try {
-        cond = parse_condition(condition_str);
-    /*} catch (const exception& e) {
-        log(LogLevel::ERROR, "[!] Condition parse error: {}", e.what());
-        return false;
-    }*/
+	const ExprPtr cond = parse_condition(condition_str);
 
-    const auto setup = initialize_network();
+    const auto setup = initialize_network(ch);
     if (setup->adapters.empty()) {
         log(LogLevel::ERROR, "[!] No Wi-Fi adapters found");
         return false;
@@ -613,7 +604,7 @@ int main() {
         "(00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a) > -90 && "
         "(90:de:80:6c:90:92 <-> 00:c0:ca:b7:69:2a) > (00:c0:ca:b5:e1:58 <-> 00:c0:ca:b7:69:2a)"
     ;
-    run_rssi_wizard(condition);
+    run_rssi_wizard(condition, Channel{6, WifiBand::BAND_2_4, nullopt});
     return 0;
 }
 #endif

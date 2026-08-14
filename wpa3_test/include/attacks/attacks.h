@@ -1,24 +1,21 @@
 #pragma once
-#include <functional>
-#include <map>
-#include <string>
-#include "attacks/components/setup_connections.h"
+#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
+#include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
 #include "attacks/DoS_hard/ath_masker/ath_masker_test.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
 #include "attacks/DoS_hard/dragondrain/dragondrain.h"
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
-#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
-#include "attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
-#include "attacks/downgrade/owe_trans.h"
-#include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include "attacks/Enterprise/invalid_curve.h"
 #include "attacks/Enterprise/invalid_curve_dragonslayer.h"
 #include "attacks/Enterprise/reflection_attack.h"
+#include "attacks/components/setup_connections.h"
+#include "attacks/downgrade/owe_trans.h"
+#include "attacks/downgrade/wpa3_downgrade_filler.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
 #include "attacks/two_iface/active_test.h"
@@ -28,6 +25,9 @@
 #include "scanner/external_info.h"
 #include "scanner/iface_info.h"
 #include "scanner/sta_info.h"
+#include <functional>
+#include <map>
+#include <string>
 
 namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/

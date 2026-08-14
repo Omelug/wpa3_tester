@@ -16,7 +16,7 @@
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
 #include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
 #include "suite/downgrade/owe_trans_filler.h"
-#include "suite/downgrade/wpa3_trans_downgrade_filler.h"
+#include "suite/downgrade/wpa3_downgrade_filler.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -97,7 +97,7 @@ static void render_attack_section(HtmlGuard &f, const std::string &module,
 		{ "bl0ck",                make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
 		{ "invalid_curve",        make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
 		{ "reflection_attack",    make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
-		{ "wpa3_trans_downgrade", make_renderer<wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
+		{ "wpa3_trans_downgrade", make_renderer<wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
 		{ "owe_trans",            make_renderer<owe_trans_filler::OweTransTestEntry>() },
 		{ "channel_switch",		  make_renderer<channel_switch_rogueAP::CsaTestEntry>() }
 	};

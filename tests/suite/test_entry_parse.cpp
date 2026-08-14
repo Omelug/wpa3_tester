@@ -16,7 +16,7 @@
 #include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/two_iface/active_test_filler.h"
 #include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
-#include "suite/downgrade/wpa3_trans_downgrade_filler.h"
+#include "suite/downgrade/wpa3_downgrade_filler.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 
 using namespace std;
@@ -243,7 +243,7 @@ TEST_CASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen
 		{"ap", "ath9k",  "dd:00:00:00:00:01"},
 		{"client",       "rt2800", "dd:00:00:00:00:02"},
 	});
-	const auto e = suite::wpa3_trans_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
+	const auto e = suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,      "ath9k");
 	CHECK_EQ(e.client_driver,  "rt2800");
 	CHECK_EQ(e.downgrade_seen, true);

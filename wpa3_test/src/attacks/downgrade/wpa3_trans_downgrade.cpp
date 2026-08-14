@@ -1,4 +1,4 @@
-#include "attacks/downgrade/wpa3_trans_downgrade.h"
+#include "attacks/downgrade/wpa3_downgrade_filler.h"
 #include <chrono>
 #include <nlohmann/json.hpp>
 
@@ -55,10 +55,10 @@ void stats_attack(const RunStatus &rs){
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 	//const auto rogue_sta_times = get_time_logs(rs, "rogue_ap", "AP-STA-CONNECTED", true);
-	const auto rogue_4way_times = get_time_logs(rs, "rogue_ap", "EAPOL-4WAY-HS-COMPLETED");
+	const auto rogue_mana_times = get_time_logs(rs, "rogue_ap", "MANA");
 
 	const bool disconnected = !disc_times.empty();
-	const bool downgrade_seen = !rogue_4way_times.empty();
+	const bool downgrade_seen = !rogue_mana_times.empty();
 	rs.save_result({{"disconnected", disconnected}, {"downgrade_seen", downgrade_seen},});
 
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
@@ -93,17 +93,6 @@ void stats_attack(const RunStatus &rs){
 		report << "![Attacker graph](" << att_graph << ")\n\n";
 	}
 
-	/*optional<hostapd::CrackResult> crack_result;
-	if(rs.actor("rogue_ap")){
-		crack_result = hostapd::hostapd_mana_crack(rs.run_folder() / "captured_hashes.txt");
-	}
-	if(crack_result.has_value()){
-		report << "## Credential Cracking (hcxpmktool)\n";
-		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
-		report << "| Metric | Value |\n|--------|-------|\n";
-		report << "| Captured handshakes | " << crack_result->total << " |\n";
-		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";
-	}*/
 	report << "---\n";
 }
 }

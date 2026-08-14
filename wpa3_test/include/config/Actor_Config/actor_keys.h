@@ -28,7 +28,7 @@ enum class BK : uint8_t{
 	active_monitor, control_monitor,
 	//THIS IS ONLY SUPPORT, NOT ACTIVE/USAGE
 	GHz2_4, GHz5, GHz6,
-	w80211n, w80211ac, w80211ax, netns_change, beacon_prot,
+	w80211n, w80211ac, w80211ax,  netns_change, beacon_prot,
 	CSA, OCV, MFP, WPA_PSK, WPA3_SAE,
 	COUNT_
 };

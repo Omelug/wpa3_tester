@@ -99,6 +99,7 @@ path TwoIface::cache_path() const{
 json TwoIface::make_selection(const ActorPtr &a) const{
 	auto sel = a->to_json(&cache_id)["selection"];
 	sel["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
+	sel["condition"] = {"2_4GHz", "monitor"};
 	return sel;
 }
 }

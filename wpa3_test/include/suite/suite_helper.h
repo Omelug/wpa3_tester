@@ -53,7 +53,7 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 	f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
 		<< "        <h2>" << title << "</h2>\n";
 
-	//preffered collect_results, if not
+	//preferred collect_results, if not
 	auto entries = [suite_data_dir]() {
 		if constexpr (HasCollectResults<Entry>) {
 			return Entry::collect_results(suite_data_dir);
@@ -63,6 +63,7 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 	}();
 
 	render_func(f, entries);
+	f << "</div>";
 }
 
 }

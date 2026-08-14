@@ -1,18 +1,14 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: wpa3_transition_downgrade_wpa3_disable
+name: wpa3_transition_downgrade_wpa3_only
 attacker_module: wpa3_trans_downgrade
 $extends: [ ./downgrade_vuln.yaml ]
 actors:
-  ap:
-    setup:
-        #wpa_passphrase: password123
-        transition_disable: "0x01"
   client:
     source: internal
-    #selection:
-    #  driver: rtl8xxxu
+    selection:
+      driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:
         ieee80211w: 2 #Needed for WPA3 disable
-        key_mgmt: SAE WPA-PSK
+        key_mgmt: SAE

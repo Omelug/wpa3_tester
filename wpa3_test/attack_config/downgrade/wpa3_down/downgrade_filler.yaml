@@ -6,9 +6,11 @@ tests:
   simple_disconnect:
     type: actor_filler
     config: ./downgrade_vuln.yaml
-  # extends config from downgrade_vuln
-  #wpa3_disable:
-  #  type: actor_filler
-  #  config: ./downgrade_wpa3_disable.yaml
+  wpa3_disable:
+    type: actor_filler
+    config: ./downgrade_wpa3_disable.yaml
+  wpa3_only:
+    type: actor_filler
+    config: ./downgrade_wpa3_only.yaml
 delete_old: true
 rewrite: "errors"

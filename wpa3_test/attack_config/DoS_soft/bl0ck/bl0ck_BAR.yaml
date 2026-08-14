@@ -9,9 +9,9 @@ attack_config:
   random: true
   frame_in_batch: 50
 actors:
-  ap:
-    selection:
-      driver: [ rtw_8821au, rtw88_8821au]
+  #ap:
+  #  selection:
+  #    driver: [ rtw_8821au, rtw88_8821au]
   client:
     selection:
       permanent_mac: "00:c0:ca:b7:69:2a"

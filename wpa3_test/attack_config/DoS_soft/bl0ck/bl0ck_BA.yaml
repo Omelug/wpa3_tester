@@ -4,14 +4,17 @@ $extends: ./bl0ck.yaml
 name: bl0ck_BA
 attacker_module: bl0ck
 actors:
-  ap:
-    selection:
-      driver: [ rtw_8821au, rtw88_8821au ]
+  #ap:
+  #  selection:
+  #    driver: [ rtw_8821au, rtw88_8821au ]
   client:
     selection:
       # je tam stejný driver i firmware, ale funguje jen na ALFA mediatek
       permanent_mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
+  attacker:
+    selection:
+      driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu, mt76x2u ]
 attack_config:
   attack_time_sec: 25
   attack_variant: "BA"

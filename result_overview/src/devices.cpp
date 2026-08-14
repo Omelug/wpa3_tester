@@ -91,6 +91,10 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	if(!f) return;
 
 	const string title = d.name.empty() ? d.mac : d.name;
+	auto tr = [&](string_view key, const auto &val){
+		f << "            <tr><th>" << key << "</th><td>" << val << "</td></tr>\n";
+	};
+
 	f << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n"
 	  << "    <meta charset=\"UTF-8\">\n"
 	  << "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
@@ -100,30 +104,30 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	  << "</head>\n<body>\n"
 	  << "    <a href=\"../index.html\" class=\"back-link\">\xe2\x86\x90 Devices</a>\n"
 	  << "    <h1>" << title << "</h1>\n"
-	  << "    <div class=\"card\">\n        <h2>Identity</h2>\n        <table>\n"
-	  << "            <tr><th>Permanent MAC</th><td>" << d.mac << "</td></tr>\n"
-	  << "            <tr><th>Source</th><td>" << d.source << "</td></tr>\n"
-	  << "            <tr><th>Driver</th><td>" << d.driver<< "</td></tr>\n";
-	if(!d.driver_hash.empty()) f << "            <tr><th>Driver hash</th><td>" << d.driver_hash << "</td></tr>\n";
-	if(!d.module_hash.empty()) f << "            <tr><th>Module hash</th><td>" << d.module_hash << "</td></tr>\n";
+	  << "    <div class=\"card\">\n        <h2>Identity</h2>\n        <table>\n";
+	tr("Permanent MAC", d.mac);
+	tr("Source",        d.source);
+	tr("Driver",        d.driver);
+	if(!d.driver_hash.empty()) tr("Driver hash", d.driver_hash);
+	if(!d.module_hash.empty()) tr("Module hash", d.module_hash);
 	f << "        </table>\n    </div>\n"
 	  << "    <div class=\"card\">\n        <h2>Capabilities</h2>\n        <table>\n"
 	  << "            <tr><th>Mode</th><td>"
-		 << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
-		 << "</td></tr>\n"
+	     << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
+	     << "</td></tr>\n"
 	  << "            <tr><th>Bands</th><td>"
-		 << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
-		 << "</td></tr>\n"
+	     << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
+	     << "</td></tr>\n"
 	  << "            <tr><th>Standards</th><td>"
-		 << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
-		 << "</td></tr>\n"
-	  << "            <tr><th>Beacon protection</th><td>" << d.caps.beacon_prot << "</td></tr>\n"
-	  << "            <tr><th>CSA</th><td>"    << d.caps.CSA     << "</td></tr>\n"
-	  << "            <tr><th>OCV</th><td>"    << d.caps.OCV     << "</td></tr>\n"
-	  << "            <tr><th>MFP</th><td>"    << d.caps.MFP     << "</td></tr>\n"
-	  << "            <tr><th>WPA-PSK</th><td>"  << d.caps.WPA_PSK  << "</td></tr>\n"
-	  << "            <tr><th>WPA3-SAE</th><td>" << d.caps.WPA3_SAE << "</td></tr>\n"
-	  << "        </table>\n    </div>\n</body>\n</html>\n";
+	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
+	     << "</td></tr>\n";
+	tr("Beacon protection", d.caps.beacon_prot);
+	tr("CSA",              d.caps.CSA);
+	tr("OCV",              d.caps.OCV);
+	tr("MFP",              d.caps.MFP);
+	tr("WPA-PSK",          d.caps.WPA_PSK);
+	tr("WPA3-SAE",         d.caps.WPA3_SAE);
+	f << "        </table>\n    </div>\n</body>\n</html>\n";
 }
 
 static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source){

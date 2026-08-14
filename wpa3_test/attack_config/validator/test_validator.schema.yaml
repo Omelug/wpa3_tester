@@ -301,6 +301,19 @@ $defs:
                 - simulation
           required: [ source ]
           errorMessage: "netns can only be used with source: internal"
+      # netns requires netns_change in selection.condition
+      - if:
+          required: [ netns ]
+        then:
+          properties:
+            selection:
+              properties:
+                condition:
+                  contains:
+                    const: "netns_change"
+              required: [ condition ]
+          required: [ selection ]
+          errorMessage: "netns_change must be in selection.condition when netns is set"
       # ex_WB_programs only allowed for source: external
       - if:
           not:

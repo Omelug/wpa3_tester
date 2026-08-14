@@ -1,7 +1,7 @@
 #include "attacks/DoS_soft/malformed_eapol1.h"
-#include <filesystem>
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "system/utils.h"
+#include <filesystem>
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -47,7 +47,9 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	emit_table("Test Results",
 		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite");
 	emit_table("Dlink",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1__rogueAP_Dlink_filler");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1_rogueAP_Dlink_filler");
+	emit_table("Malfomred eapol1 filler",
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "malformed_eapol1_filler");
 
 
 	f << "</body>\n</html>\n";

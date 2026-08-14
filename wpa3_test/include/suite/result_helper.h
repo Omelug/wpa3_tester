@@ -46,29 +46,32 @@ template<typename T> T entry_default(){ return T{}; }
 template<> inline std::string                   entry_default<std::string>()                   { return "-";   }
 template<> inline std::optional<std::string>    entry_default<std::optional<std::string>>()    { return "N/A"; }
 
-// load names with same name to Entry Structure
+// load field values by matching field name to JSON key
 template<typename Entry>
-Entry load_result_default(const std::filesystem::path &test_folder){
+Entry load_result_default(const nlohmann::json &result){
 	Entry e;
-	const auto result = load_result_json(test_folder);
-	if(!result) return e;
-
 	boost::pfr::for_each_field(e, [&]<typename param_type, std::size_t I>(param_type &field, std::integral_constant<std::size_t, I>){
 		constexpr std::string_view param_name = boost::pfr::get_name<I, Entry>();
 		using F = std::decay_t<param_type>;
-		if constexpr(!is_pair_field<F>){ // pair fields are display-only, never in result.json
-			if(result->contains(param_name)){
+		if constexpr(!is_pair_field<F>){
+			if(result.contains(param_name)){
 				if constexpr(is_optional_field<F>)
-					field = result->at(param_name).get<typename F::value_type>();
+					field = result.at(param_name).get<typename F::value_type>();
 				else
-					result->at(param_name).get_to(field);
+					result.at(param_name).get_to(field);
 			} else {
 				field = entry_default<F>();
 			}
 		}
 	});
-
 	return e;
+}
+
+template<typename Entry>
+Entry load_result_default(const std::filesystem::path &test_folder){
+	const auto result = load_result_json(test_folder);
+	if(!result) return Entry{};
+	return load_result_default<Entry>(*result);
 }
 
 }

@@ -271,9 +271,9 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         // netns move resets interface state — re-apply inside the new ns
         cfg->set_monitor_mode();
         cfg->set_iface_up();
-    	//cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt});
-    	// FIXME: hardcoded channelt , dont change withnoutransmit_probe cheenge
-        cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt});
+    	cfg->set_channel(Channel{36, WifiBand::BAND_5, nullopt});
+    	// FIXME: hardcoded channelt , dont change withnou transmit_probe cheenge
+        //cfg->set_channel(Channel{6, WifiBand::BAND_2_4_or_5, nullopt});
         ActorPtr actor{cfg};
 
         const HWAddress<6> mac(actor.get(SK::mac));
@@ -359,7 +359,7 @@ static thread start_watcher(NetworkSetup& setup) {
 // Caller must hold setup.mtx.
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     for (const auto& a : setup.adapters) {
-        transmit_probe(a.sender, a.actor.get(SK::mac), false); //FIXME hardcoded 2_4 (dont change withnout set_channel change
+        transmit_probe(a.sender, a.actor.get(SK::mac), true); //FIXME hardcoded band(dont change withnout set_channel change
     	this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
     }
 
@@ -538,12 +538,12 @@ bool run_rssi_wizard(const string& condition_str) {
     this_thread::sleep_for(chrono::milliseconds(500));
 
     ExprPtr cond;
-    try {
+    //try {
         cond = parse_condition(condition_str);
-    } catch (const exception& e) {
+    /*} catch (const exception& e) {
         log(LogLevel::ERROR, "[!] Condition parse error: {}", e.what());
         return false;
-    }
+    }*/
 
     const auto setup = initialize_network();
     if (setup->adapters.empty()) {

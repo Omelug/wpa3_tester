@@ -26,6 +26,7 @@ actors:
         group: CCMP
     selection:
       channel: 6
+      condition: [ managed, 2_4GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
   attacker:

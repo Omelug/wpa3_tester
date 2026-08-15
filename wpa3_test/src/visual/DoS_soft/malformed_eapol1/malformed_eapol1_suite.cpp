@@ -70,7 +70,7 @@ void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::s
 			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
 			col("Connected WPA version",		&MalformedEapol1TestEntry::conn_WPA_version);
 			col("client scanning",				&MalformedEapol1TestEntry::client_scanning);
-		})->render();
+		})->render({"Test"});
 		#undef COL
 	});
 }

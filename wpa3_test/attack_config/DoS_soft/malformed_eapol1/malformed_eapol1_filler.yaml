@@ -8,7 +8,10 @@ tests:
     config: ./malformed_eapol1_rogueAP.yaml
   wpa3_mixed:
     type: actor_filler
-    config: ./malformed_eapol1_rogueAP.yaml
+    config: ./malformed_eapol1_rogueAP_mixed.yaml
+  wpa3_mixed_MFPo:
+    type: actor_filler
+    config: ./malformed_eapol1_rogueAP_mixed_MFPo.yaml
   wpa3_patched:
     type: actor_filler
     config: ./malformed_eapol1_2_11_patched.yaml

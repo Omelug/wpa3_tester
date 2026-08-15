@@ -3,7 +3,8 @@ actors:
     source: internal
     selection:
       channel: 1
-      condition: [ AP, 2_4GHz ]
+      #netns_change]
+      condition: [ AP, 2_4GHz]
       driver: ath9k_htc
     setup:
       program: hostapd-mana
@@ -34,3 +35,4 @@ actors:
         #mana_wpaout: wpa.creds
         #mana_outfile: hostapd.manaout
         #mana_wpaout:wpa.creds
+    #netns: rog

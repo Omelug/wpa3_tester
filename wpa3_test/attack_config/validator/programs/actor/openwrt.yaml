@@ -144,7 +144,7 @@ properties:
   wds:
     type: boolean
 
-  # --- WPA Enterprise ---
+  # --- WPA enterprise ---
   wpa:
     type: [ string, integer ]
   wpa_key_mgmt:

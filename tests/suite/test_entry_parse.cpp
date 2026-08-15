@@ -13,9 +13,9 @@
 #include "suite/two_iface/injection_test_filler.h"
 #include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "suite/downgrade/owe_trans_filler.h"
-#include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
+#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/two_iface/active_test_filler.h"
-#include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
+#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
 #include "suite/downgrade/wpa3_downgrade_filler.h"
 #include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 

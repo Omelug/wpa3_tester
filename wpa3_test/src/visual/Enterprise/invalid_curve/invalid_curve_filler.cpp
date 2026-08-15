@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
+#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"

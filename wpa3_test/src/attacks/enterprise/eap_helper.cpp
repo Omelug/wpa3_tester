@@ -1,4 +1,4 @@
-#include "attacks/Enterprise/eap_helper.h"
+#include "attacks/enterprise/eap_helper.h"
 
 #include <chrono>
 #include <tins/llc.h>
@@ -6,7 +6,7 @@
 
 #include "attacks/sae_helper.h"
 #include "attacks/components/sniffer_helper.h"
-#include "attacks/Enterprise/eap_defs.h"
+#include "attacks/enterprise/eap_defs.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "logger/log.h"
 

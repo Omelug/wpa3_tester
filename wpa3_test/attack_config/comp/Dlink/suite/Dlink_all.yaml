@@ -23,7 +23,7 @@ tests:
   channel_switch_Dlink_MFP_req:
     test_name: channel_switch_Dlink_MFP_req
 
-  # ------ Enterprise
+  # ------ enterprise
   reflection_attack_Dlink:
     test_name: reflection_attack_Dlink
   invalid_curve_attack_Dlink:

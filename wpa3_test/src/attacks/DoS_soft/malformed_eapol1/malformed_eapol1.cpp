@@ -153,7 +153,10 @@ void stats(const RunStatus &rs){
 	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
 	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
 	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
-	result["rogue_ap_connected"] = rogue_ap_connected;
+
+	if (rogue_ap_connected) {
+		result["rogue_ap_connected"] = rogue_ap_connected.value();
+	}
 	if(crack_result) {
 		result["cracked"] = crack_result.value().cracked != 0;
 	}

@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [ AP, 2_4GHz ]
+      condition: [ AP, 2_4GHz, netns_change]
     setup:
       program: hostapd
       program_config:

@@ -227,7 +227,7 @@ void stats_chs_attack(const RunStatus &rs){
 	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
 
 	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
-	result["rogue_ap_connected"] = rogue_ap_connected;
+	result["rogue_ap_connected"] = rogue_ap_connected.value();
 	if(crack_result) {
 		result["cracked"] = crack_result.value().cracked != 0;
 	}

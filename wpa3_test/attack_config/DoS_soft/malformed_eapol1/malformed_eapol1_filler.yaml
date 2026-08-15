@@ -3,7 +3,13 @@ name: malformed_eapol1_filler
 suite_functions: malformed_eapol1_filler
 config_type: test_suite
 tests:
-  all_actors:
+  wpa3_only:
     type: actor_filler
     config: ./malformed_eapol1_rogueAP.yaml
+  wpa3_mixed:
+    type: actor_filler
+    config: ./malformed_eapol1_rogueAP.yaml
+  wpa3_patched:
+    type: actor_filler
+    config: ./malformed_eapol1_2_11_patched.yaml
 rewrite: "errors"

@@ -212,7 +212,7 @@ void stats_chs_attack(const RunStatus &rs){
 	// ---------- result
 	nlohmann::json result{};
 	const auto window = suite::helper::get_run_window(rs);
-	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED").empty();
+	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 
 	result["client_disconnected"] =  suite::helper::get_client_disconnected(rs, window);
 	result["ap_ocv"] = suite::helper::get_ap_ocv(rs);
@@ -228,7 +228,9 @@ void stats_chs_attack(const RunStatus &rs){
 
 	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
 	result["rogue_ap_connected"] = rogue_ap_connected;
-
+	if(crack_result) {
+		result["cracked"] = crack_result.value().cracked != 0;
+	}
 
 	/*FIXME add beacon protection column
 	 *if(){

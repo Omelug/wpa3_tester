@@ -30,10 +30,13 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 </head>
 <body>
 	<a href="../../../index.html" class="back-link"><- Overview</a>
-	<h1>Invalid curve</h1>
+	<h1>Reflection at</h1>
 
 	<div class="card">
-		<p> Some STAs accept same - but still dont crack the password</p>
+
+#TODO info about both directions
+
+		<p> Some APs accept same PWE what is send by them - but still dont crack the password</p>
 		<p><b>Success:</b> attacker connected </p>
 	</div>
 

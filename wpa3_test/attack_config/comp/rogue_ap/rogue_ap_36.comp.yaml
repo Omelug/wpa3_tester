@@ -1,0 +1,24 @@
+actors:
+  rogue_ap:
+    source: internal
+    selection:
+      channel: 6
+      condition: [ AP, 2_4GHz ]
+      driver: ath9k_htc
+    setup:
+      program: hostapd-mana
+      program_config:
+        driver: nl80211
+        ssid: test_wpa3_tester
+        hw_mode: a
+        channel: 36
+        ieee80211n: 1
+        ieee80211w: 0
+        group_mgmt_cipher: AES-128-CMAC
+        wpa_key_mgmt: WPA-PSK
+        wpa: 2
+        wpa_passphrase: wrong_password
+        rsn_pairwise: CCMP
+        wpa_pairwise: CCMP
+        macaddr_acl: 0
+        mana_loud: 1

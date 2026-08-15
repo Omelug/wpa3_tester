@@ -21,8 +21,9 @@ actors:
     source: internal
     selection:
       driver: mt76x2u
-      condition: [ monitor, 2_4GHz ]
+      condition: [ monitor, 2_4GHz, netns_change]
       channel: 6
+    #netns: att
 
 attack_config:
   attack_time: 30

@@ -33,7 +33,7 @@ CSA:
     +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
 f: špatně se resetuje scan_ip (ap_info)
 +: HT IE cahnnel switch (similiar to CSA attack)
-f: tshark nefachá (alespoň u Enterprise nezobrazuje EAP rámce)
+f: tshark nefachá (alespoň u enterprise nezobrazuje EAP rámce)
 t: save_log to documentation/pdf
 +: add git results repository
     - +: add ocumentation
@@ -78,7 +78,7 @@ rd: zjednodušit README v rapberry
 +: simulation test setup
 +: možnost do global_config nepoužívat cache
 f: external wb negeneruje QoS provoz, BL0ck, u BB by byla dobrá podmínka
-+: external for Enterprise
++: external for enterprise
 +: filler for channel_switch
 +: heuristic requirements error logs
 +: filler for downgrade

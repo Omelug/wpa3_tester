@@ -12,8 +12,8 @@
 #include <tins/hw_address.h>
 
 #include "attacks/components/sniffer_helper.h"
-#include "attacks/Enterprise/eap_defs.h"
-#include "attacks/Enterprise/eap_helper.h"
+#include "attacks/enterprise/eap_defs.h"
+#include "attacks/enterprise/eap_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"

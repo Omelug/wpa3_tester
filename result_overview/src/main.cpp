@@ -10,6 +10,8 @@
 #include "attacks/DoS_soft/malformed_eapol1.h"
 #include "attacks/downgrade/owe_trans.h"
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
+#include "attacks/enterprise/invalid_curve.h"
+#include "attacks/enterprise/reflection_attack.h"
 #include "devices.h"
 #include "target.h"
 #include "system/utils.h"
@@ -126,6 +128,8 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);
 	wpa3_tester::overview::generate_wpa3_trans_downgrade(output_dir, data_dir);
 	wpa3_tester::overview::generate_targets(output_dir, data_dir);
+	wpa3_tester::overview::generate_invalid_curve_attack(output_dir, data_dir);
+	wpa3_tester::overview::generate_reflection_attack(output_dir, data_dir);
 
 	return 0;
 }

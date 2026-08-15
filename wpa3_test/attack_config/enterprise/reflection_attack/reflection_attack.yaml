@@ -14,21 +14,21 @@ actors:
         other_options: "-d" #FIXME hostapd_path
         hostapd_path: "./config/hostapd.conf"
   # TODO po deugu odstranit, pokud není potřba
-  client:
-    source: internal
-    setup:
-      program: wpa_supplicant
-      program_config:
-        version: 2_10
-        wpa_supplicant_path: "./config/valid_client.conf"
-    selection:
-      channel: 6
-      condition: [ managed, 2_4GHz, netns_change ]
-    netns: sta
+  #client:
+  #  source: internal
+  #  setup:
+  #    program: wpa_supplicant
+  #    program_config:
+  #      version: 2_10
+  #      wpa_supplicant_path: "./config/valid_client.conf"
+  #  selection:
+  #    channel: 6
+  #    condition: [ managed, 2_4GHz, netns_change ]
+  #  netns: sta
   attacker:
     source: internal
     selection:
-      condition: [ monitor, 2_4GHz ] #active_monitor
+      condition: [ monitor, 2_4GHz, netns_change ] #active_monitor
       channel: 6
     netns: att
 observers:

@@ -1,5 +1,3 @@
-#include "attacks/downgrade/owe_trans.h"
-#include "suite/downgrade/owe_trans_filler.h"
 #include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -32,7 +30,7 @@ void generate_invalid_curve_attack(const path &output_dir, const path &data_dir)
 	<h1>Invalid curve</h1>
 
 	<div class="card">
-		<p> #TODO invalid curve</p>
+		<p> #TODO invalid curve from pdf </p>
 		<p><b>Success:</b> attacker connected </p>
 	</div>
 

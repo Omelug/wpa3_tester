@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PAGES_REPO="git@github.com:TorShell/wpa3_tester_overview.git"
+PAGES_LOCAL="${HOME}/wpa3_tester_overview_pages"   # persistent local clone
+
+usage() {
+    echo "Usage: $0 <target>"
+    echo "  target  subdirectory in pages repo, e.g. laptop or raspberry"
+    exit 1
+}
+
+[[ $# -eq 1 ]] || usage
+TARGET="$1"
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+BINARY="${REPO_ROOT}/build/bin/result_overview"
+OUTPUT="${REPO_ROOT}/build/result_overview"
+
+if [[ ! -x "${BINARY}" ]]; then
+    echo "error: ${BINARY} not found — build result_overview first"
+    exit 1
+fi
+
+echo "==> generating HTML (target: ${TARGET})..."
+"${BINARY}" --data_dir "${REPO_ROOT}/data" --output_dir "${OUTPUT}"
+
+# clone once, pull on subsequent runs
+if [[ ! -d "${PAGES_LOCAL}/.git" ]]; then
+    echo "==> cloning pages repo..."
+    git clone "${PAGES_REPO}" "${PAGES_LOCAL}"
+else
+    echo "==> pulling pages repo..."
+    git -C "${PAGES_LOCAL}" pull --ff-only
+fi
+
+echo "==> syncing output -> ${TARGET}/..."
+rsync -a --delete "${OUTPUT}/" "${PAGES_LOCAL}/${TARGET}/"
+
+touch "${PAGES_LOCAL}/.nojekyll"
+
+cd "${PAGES_LOCAL}"
+git add -A
+
+if git diff --cached --quiet; then
+    echo "==> nothing changed, skipping push"
+    exit 0
+fi
+
+git commit -m "deploy ${TARGET} $(date -Iseconds)"
+git push
+
+echo "==> done — https://torshell.github.io/wpa3_tester_overview/${TARGET}/"

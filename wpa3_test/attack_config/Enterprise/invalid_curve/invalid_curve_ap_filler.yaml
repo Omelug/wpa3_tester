@@ -1,9 +1,0 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
-name: invalid_curve_ap_filler
-suite_functions: invalid_curve_ap_filler
-config_type: test_suite
-tests:
-  all_actors:
-    type: actor_filler
-    config: ./invalid_curve_ap_attack.yaml
-delete_old: true

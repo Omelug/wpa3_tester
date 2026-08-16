@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/Enterprise/invalid_curve/invalid_curve_filler.h"
+#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
@@ -21,6 +21,7 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
+	e.ap_openssl_version = hostapd::get_openssl_version(*rs, "ap");
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
@@ -38,6 +39,7 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &t
 			col("Test",                 &InvalidCurveTestEntry::test_name);
 			col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
 			col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
+			col("AP openssl version",   &InvalidCurveTestEntry::ap_openssl_version);
 			col("Passed?",              &InvalidCurveTestEntry::passed);
 		});
 

@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/Enterprise/reflection_attack/reflection_attack_filler.h"
+#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
 
 #include "default.h"
 #include "config/RunSuiteStatus.h"

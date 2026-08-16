@@ -89,11 +89,11 @@ TEST_CASE("relative_from - base not found"){
 
 TEST_CASE("relative_from - complex nested structure"){
 	path test_base = current_path() / "test_relative_complex";
-	path attack_config = test_base / "project" / "attack_config" / "Enterprise" / "reflection_attack" / "test.yaml";
+	path attack_config = test_base / "project" / "attack_config" / "enterprise" / "reflection_attack" / "test.yaml";
 	create_directories(attack_config.parent_path());
 
 	string result = relative_from("attack_config", attack_config);
-	CHECK_EQ(result, "Enterprise/reflection_attack");
+	CHECK_EQ(result, "enterprise/reflection_attack");
 	remove_all(test_base);
 }
 

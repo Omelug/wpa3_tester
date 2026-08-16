@@ -355,6 +355,7 @@ static thread start_watcher(NetworkSetup& setup) {
 
 // Caller must hold setup.mtx.
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
+    log(LogLevel::INFO, "[~] Scanning {} adapter(s) on ch {}...", setup.adapters.size(), setup.channel.ch_num);
     for (const auto& a : setup.adapters) {
         transmit_probe(a.sender, a.actor.get(SK::mac), setup.channel.band == WifiBand::BAND_2_4);
     	this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
@@ -503,6 +504,41 @@ static bool render(FILE* pipe,
 	return fflush(pipe) == 0;
 }
 
+// ---- Text fallback rendering ----
+
+static void render_text(const vector<AdapterInfo>& adapters,
+                        const RssiMatrix& m,
+                        const ExprPtr& cond,
+                        const string& status) {
+    printf("\033[2J\033[H");
+    printf("Wi-Fi RSSI Wizard — %s\n", status.c_str());
+    printf("─────────────────────────────────\n");
+    for (const auto& src : adapters) {
+        for (const auto& rx : adapters) {
+            const HWAddress<6> sm(src.actor.get(SK::mac));
+            const HWAddress<6> rm(rx.actor.get(SK::mac));
+            if (sm == rm) continue;
+            const auto it = m.find({sm, rm});
+            const double rssi = (it != m.end()) ? it->second : RSSI_NO_DATA;
+            if (rssi > RSSI_NO_DATA)
+                printf("  %s -> %s : %.0f dBm\n",
+                       src.actor.get(SK::iface).c_str(),
+                       rx.actor.get(SK::iface).c_str(), rssi);
+            else
+                printf("  %s -> %s : no data\n",
+                       src.actor.get(SK::iface).c_str(),
+                       rx.actor.get(SK::iface).c_str());
+        }
+    }
+    if (cond) {
+        printf("─────────────────────────────────\n");
+        for (const auto& [text, _] : cond->to_colored_parts(m))
+            printf("%s", text.c_str());
+        printf("\nCondition: %s\n", cond->eval(m) ? "PASS ✓" : "FAIL ✗");
+    }
+    fflush(stdout);
+}
+
 // ---- Gnuplot init ----
 // no -persist: window closes when pipe closes
 static FILE* init_gnuplot() {
@@ -543,10 +579,8 @@ bool run_rssi_wizard(const string& condition_str, const Channel &ch) {
     }
 
     g_gnuplot_pipe = init_gnuplot();
-    if (!g_gnuplot_pipe) {
-        log(LogLevel::ERROR, "[!] Failed to open gnuplot");
-        return false;
-    }
+    if (!g_gnuplot_pipe)
+        log(LogLevel::WARNING, "[!] gnuplot not available — using text output");
 
     auto watcher = start_watcher(*setup);
 
@@ -575,11 +609,13 @@ bool run_rssi_wizard(const string& condition_str, const Channel &ch) {
                 if (!g_paused) {
                     const string status = "running (" + to_string(success_counter) + "/" +
                                            to_string(REQUIRED_SUCCESS_STEPS) + " ok)";
-                    fprintf(g_gnuplot_pipe, "unset label\n");
-                    render_condition_status(g_gnuplot_pipe, cond, m);
-
-                    if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status)) {
-                        g_running = false;
+                    if (g_gnuplot_pipe) {
+                        fprintf(g_gnuplot_pipe, "unset label\n");
+                        render_condition_status(g_gnuplot_pipe, cond, m);
+                        if (!render(g_gnuplot_pipe, setup->nodes, setup->adapters, m, status))
+                            g_running = false;
+                    } else {
+                        render_text(setup->adapters, m, cond, status);
                     }
                 }
             }

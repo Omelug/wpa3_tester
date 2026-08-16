@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PAGES_REPO="git@github.com:TorShell/wpa3_tester_overview.git"
+PAGES_REPO="git@github.com:Omelug/wpa3_tester_overview.git"
 PAGES_LOCAL="${HOME}/wpa3_tester_overview_pages"   # persistent local clone
 
 # GitHub Pages setup: go to repo Settings -> Pages -> Source, pick "Deploy from a branch",

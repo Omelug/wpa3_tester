@@ -4,26 +4,36 @@ set -euo pipefail
 PAGES_REPO="git@github.com:TorShell/wpa3_tester_overview.git"
 PAGES_LOCAL="${HOME}/wpa3_tester_overview_pages"   # persistent local clone
 
+# GitHub Pages setup: go to repo Settings -> Pages -> Source, pick "Deploy from a branch",
+# select branch "main" (or whatever branch this pushes to) and folder "/ (root)".
+# Change
 usage() {
-    echo "Usage: $0 <target>"
-    echo "  target  subdirectory in pages repo, e.g. laptop or raspberry"
+    echo "Usage: $0 <target> [data_dir]"
+    echo "  target    subdirectory in pages repo, e.g. laptop or raspberry"
+    echo "  data_dir  path to data directory (default: <repo_root>/data)"
     exit 1
 }
 
-[[ $# -eq 1 ]] || usage
+[[ $# -ge 1 ]] || usage
 TARGET="$1"
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BINARY="${REPO_ROOT}/build/bin/result_overview"
 OUTPUT="${REPO_ROOT}/build/result_overview"
+DATA_DIR="${2:-${REPO_ROOT}/data}"
+
+echo "WARNING: This will overwrite the '${TARGET}' directory on GitHub Pages."
+echo "         Any files previously in that directory will be deleted."
+read -r -p "Continue? [y/N] " confirm
+[[ "${confirm}" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 
 if [[ ! -x "${BINARY}" ]]; then
     echo "error: ${BINARY} not found — build result_overview first"
     exit 1
 fi
 
-echo "==> generating HTML (target: ${TARGET})..."
-"${BINARY}" --data_dir "${REPO_ROOT}/data" --output_dir "${OUTPUT}"
+echo "==> generating HTML (target: ${TARGET}, data: ${DATA_DIR})..."
+"${BINARY}" --data_dir "${DATA_DIR}" --output_dir "${OUTPUT}"
 
 # clone once, pull on subsequent runs
 if [[ ! -d "${PAGES_LOCAL}/.git" ]]; then
@@ -38,6 +48,17 @@ echo "==> syncing output -> ${TARGET}/..."
 rsync -a --delete "${OUTPUT}/" "${PAGES_LOCAL}/${TARGET}/"
 
 touch "${PAGES_LOCAL}/.nojekyll"
+
+echo "==> generating root index.html..."
+{
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>wpa3_tester results</title></head><body>'
+    echo '<h1>wpa3_tester — overview pages for tester setups: </h1><ul>'
+    for dir in "${PAGES_LOCAL}"/*/; do
+        name="$(basename "${dir}")"
+        echo "  <li><a href=\"${name}/\">${name}</a></li>"
+    done
+    echo '</ul></body></html>'
+} > "${PAGES_LOCAL}/index.html"
 
 cd "${PAGES_LOCAL}"
 git add -A

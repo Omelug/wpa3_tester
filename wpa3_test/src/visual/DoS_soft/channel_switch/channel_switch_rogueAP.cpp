@@ -96,7 +96,7 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 				<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
 				);
 			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
-			col("Rogue WPA2 AP?",				&CsaTestEntry::rogue_ap_connected);
+			COL("Rogue WPA2 AP?",				e.rogue_ap_connected << " (" << e.cracked << ")");
 			COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
 			col("Client MFP",					&CsaTestEntry::client_mfp);
 			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);

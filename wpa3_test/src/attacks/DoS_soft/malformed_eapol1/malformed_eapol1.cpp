@@ -5,12 +5,13 @@
 #include <tins/packet_sender.h>
 #include <tins/rawpdu.h>
 
-#include "interrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "interrupt.h"
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
+#include "suite/result_helper.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::eapol_logoff{
@@ -132,20 +133,34 @@ void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
-	optional<bool> rogue_ap_connected;
-	if(rs.actor("rogue_ap")){
-		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
-		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
-		rogue_ap_connected = !mana_events.empty();
-	}
+	auto [rogue_ap_connected, crack_result] = suite::helper::hostapd_mana_crack(rs, elements);
 
 	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "ap", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
-	nlohmann::json result = {{"disconnect_count", static_cast<int>(disc_times.size())}};
-	if(rogue_ap_connected.has_value()) result["rogue_ap_connected"] = rogue_ap_connected.value();
+	nlohmann::json result;
+	const auto window = suite::helper::get_run_window(rs);
+	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	result["client_disconnected"] =  suite::helper::get_client_disconnected(rs, window);
+
+	result["client_mfp"] = suite::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = suite::helper::get_ap_WPA_support(rs);
+
+	const path combined_log = rs.run_folder() / "logger" / "combined.log";
+	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
+	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
+	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
+	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
+
+	if (rogue_ap_connected) {
+		result["rogue_ap_connected"] = rogue_ap_connected.value();
+	}
+	if(crack_result) {
+		result["cracked"] = crack_result.value().cracked != 0;
+	}
+
 	rs.save_result(result);
 
 	generate_report(rs, STA_graph_path, AP_graph_path, rogue_graph_path);

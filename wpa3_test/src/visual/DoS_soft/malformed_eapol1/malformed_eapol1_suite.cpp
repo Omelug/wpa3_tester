@@ -19,10 +19,31 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	auto e = helper::load_result_default<MalformedEapol1TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 	const auto rs = helper::load_test_rs(test_folder);
+
+	const auto ap = rs->get_actor("ap");
+	e.ap_mac = ap->get(SK::mac);
+	e.ap_source = ap->get(SK::source);
+	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
+
+	const auto client = rs->get_actor("client");
+	//FIXME add mac to config/mapping to get it here in report (if client is external)
+	e.client_mac = client->get(SK::mac);
+	e.client_source = client->get(SK::source);
+	e.client_driver = client[SK::driver_name];
+
+	const auto att = rs->get_actor("attacker");
+	e.attacker_mac = att->get(SK::mac);
+	e.attacker_driver = att->get(SK::driver_name);
+
+	if(const auto rogue = rs->actor("rogue_ap")){ //optional
+		e.rogue_ap_mac = rogue->get(SK::mac);
+		e.rogue_ap_driver = rogue->get(SK::driver_name);
+	}
+
+
 	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph = test_folder / "observer" / "tshark" / "ap_graph.png";
-	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	e.client_version = hostapd::get_version(*rs, "client");
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
@@ -30,25 +51,28 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 }
 
 void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::string &title,
-	const path &suite_data_dir, const path &){
+	const path &suite_data_dir, const path &page_dir){
+
 	helper::div_card<MalformedEapol1TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
-			const std::vector<MalformedEapol1TestEntry>& entries) {
+		const std::vector<MalformedEapol1TestEntry>& entries) {
 
-			HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries);
 
-			#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
-
-			t.build([&](auto col) {
-				col("Test",				&MalformedEapol1TestEntry::test_name);
-				col("AP driver",		&MalformedEapol1TestEntry::ap_driver);
-				col("Client Driver",	&MalformedEapol1TestEntry::client_driver);
-				col("Client wpa_supplicant version",	&MalformedEapol1TestEntry::client_version);
-				col("Attacker driver",	&MalformedEapol1TestEntry::attacker_driver);
-				COL("Disconnected? (count)",	(e.disconnect_count > 0) << " (" << e.disconnect_count << ")");
-				col("Rogue AP?",        &MalformedEapol1TestEntry::rogue_ap_connected);
-			})->render();
-			#undef COL
-		});
+		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
+		t.build([&](auto col) {
+			col("Test",				&MalformedEapol1TestEntry::test_name);
+			COL("AP MAC (source)",  overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+			COL("Client MAC (source)",      overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+			col("Client wpa_supplicant version",	&MalformedEapol1TestEntry::client_version);
+			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
+			COL("Rogue WPA2 AP?",				e.rogue_ap_connected << " (" << e.cracked << ")");
+			col("Client MFP",					&MalformedEapol1TestEntry::client_mfp);
+			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
+			col("Connected WPA version",		&MalformedEapol1TestEntry::conn_WPA_version);
+			col("client scanning",				&MalformedEapol1TestEntry::client_scanning);
+		})->render({"Test"});
+		#undef COL
+	});
 }
 
 void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss){
@@ -79,14 +103,14 @@ void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss){
 		}
 		if(graphs.empty()) graphs = "-";
 
-		const string disc_link = "[" + string((e.disconnect_count > 0) ? "yes" : "no") + "]"
+		const string disc_link = "[" + string((e.client_disconnected.value()) ? "yes" : "no") + "]"
 			"(" + e.test_name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
 			<< e.client_driver << " | "
 			<< e.client_version << " | "
 			<< e.attacker_driver << " | "
-			<< disc_link << "(" << e.disconnect_count << ")" << " | "
+			<< disc_link << " | "
 			<< e.rogue_ap_connected << " | "
 			<< graphs << " |\n";
 	}

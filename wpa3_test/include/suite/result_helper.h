@@ -54,11 +54,16 @@ Entry load_result_default(const nlohmann::json &result){
 		constexpr std::string_view param_name = boost::pfr::get_name<I, Entry>();
 		using F = std::decay_t<param_type>;
 		if constexpr(!is_pair_field<F>){
-			if(result.contains(param_name)){
-				if constexpr(is_optional_field<F>)
-					field = result.at(param_name).get<typename F::value_type>();
-				else
+			if(result.contains(param_name)) {
+				if constexpr(is_optional_field<F>){
+					if (!result.at(param_name).is_null()) {
+						field = result.at(param_name).get<typename F::value_type>();
+					} else {
+						field = std::nullopt;
+					}
+				}else {
 					result.at(param_name).get_to(field);
+				}
 			} else {
 				field = entry_default<F>();
 			}

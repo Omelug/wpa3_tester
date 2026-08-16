@@ -1,5 +1,5 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 $validator: ../bl0ck.schema.yaml
-name: bl0ck_BA_rogue_AP
+name: bl0ck_BARS_rogue_AP
 attacker_module: bl0ck
-$extends: [ ../bl0ck_BA.yaml , ./../../../comp/rogue_ap/rogue_ap_36.comp.yaml ]
+$extends: [ ../bl0ck_BAR.yaml , ./../../../comp/rogue_ap/rogue_ap_36.comp.yaml ]

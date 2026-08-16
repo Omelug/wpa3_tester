@@ -366,6 +366,14 @@ string get_version(const RunStatus &rs, const string &actor_name){
 	return s.at("program_config").value("version", "default");
 }
 
+string get_openssl_version(const RunStatus &rs, const string &actor_name){
+	const auto &a = rs.config().at("actors").at(actor_name);
+	if(!a.contains("setup")) return "default";
+	const auto &s = a.at("setup");
+	if(!s.contains("program_config")) return "default";
+	return s.at("program_config").value("openssl", "default");
+}
+
 string get_channel(const nlohmann::json &program_config, const string &config_path){
 	if(program_config.contains("channel")) return to_string(program_config["channel"].get<int>());
 	if(!config_path.empty()) if(const auto v = get_conf_value(config_path, {"channel"}); !v.empty()) return v;

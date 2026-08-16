@@ -10,6 +10,7 @@ namespace wpa3_tester::overview { struct HtmlGuard; }
 namespace wpa3_tester::suite::invalid_curve_filler{
 struct InvalidCurveTestEntry{
 	std::string test_name;
+	std::string ap_openssl_version;
 	std::string ap_driver;
 	std::string attacker_driver;
 	//result params

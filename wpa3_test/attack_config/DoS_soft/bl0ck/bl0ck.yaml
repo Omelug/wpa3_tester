@@ -52,7 +52,7 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      condition: [ monitor, 80211ac, 5GHz ]
+      condition: [ monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
     sniff_iface: client_mon

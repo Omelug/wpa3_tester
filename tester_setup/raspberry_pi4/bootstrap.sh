@@ -69,16 +69,6 @@ source /tmp/wpa3-drivers.sh
 
 sudo chmod +x /usr/bin/dumpcap
 
-echo "==> Adding RTL8188GU USB modeswitch rule..."
-sudo tee /etc/usb_modeswitch.d/0bda:1a2b << 'EOF' > /dev/null
-DefaultVendor=0x0bda
-DefaultProduct=0x1a2b
-TargetVendor=0x0bda
-TargetProduct=0xb711
-StandardEject=1
-CheckSuccess=20
-EOF
-
 echo "==> Configuring ath9k: disable ANI, enable user regulatory domain override..."
 printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
     | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null

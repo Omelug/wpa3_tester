@@ -52,16 +52,6 @@ rm -rf /tmp/hostapd-mana
 
 chmod +x /usr/bin/dumpcap
 
-# RTL8188GU: switch from USB CD-ROM mode (0bda:1a2b) to WiFi mode on plug-in
-cat > /etc/usb_modeswitch.d/0bda:1a2b << 'EOF'
-DefaultVendor=0x0bda
-DefaultProduct=0x1a2b
-TargetVendor=0x0bda
-TargetProduct=0xb711
-StandardEject=1
-CheckSuccess=20
-EOF
-
 # -- WiFi region
 #TODO hardcoded region
 raspi-config nonint do_wifi_country CZ

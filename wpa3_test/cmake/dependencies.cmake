@@ -50,8 +50,18 @@ target_link_libraries(wpa3_deps INTERFACE
 if(NOT DEFINED WPA3_PROJECT_ROOT)
     set(WPA3_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
+execute_process(
+        COMMAND git -C "${WPA3_PROJECT_ROOT}" rev-parse --short HEAD
+        OUTPUT_VARIABLE _GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+)
+if(NOT _GIT_HASH)
+    set(_GIT_HASH "unknown")
+endif()
 target_compile_definitions(wpa3_deps INTERFACE
         PROJECT_ROOT_DIR="${WPA3_PROJECT_ROOT}"
+        GIT_COMMIT_HASH="${_GIT_HASH}"
 )
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)
 target_precompile_headers(wpa3_deps INTERFACE

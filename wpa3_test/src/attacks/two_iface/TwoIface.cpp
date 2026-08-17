@@ -89,7 +89,9 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 }
 
 path TwoIface::cache_folder() const{
-	return root_dir().parent_path() / "data" / "cache" / "two_iface" / cache_name;
+	auto cache_f = root_dir().parent_path() / "data" / "cache" / "two_iface" / cache_name;
+	set_public_perms(cache_f);
+	return cache_f;
 }
 
 path TwoIface::cache_path() const{

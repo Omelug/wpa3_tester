@@ -19,7 +19,7 @@ TwoIfaceActive::TwoIfaceActive()
 json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2){
 	// Generate config to data/two_iface/active_test/config/<file>
 	const json config = {
-		{"name", "active_test"}, {"attacker_module", "active_test"}, {"delete_old", true}, {"rewrite", "all"},
+		{"name", "active_test"}, {"attacker_module", "active_test"}, {"delete_old", false}, {"rewrite", "all"},
 		{
 			"actors",
 			{

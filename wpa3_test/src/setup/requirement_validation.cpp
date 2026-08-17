@@ -249,7 +249,7 @@ bool RunStatus::config_requirement(){
 	}
 
 	//FIXME nefunguje to s tím ne
-	reset_usb_ifaces();
+	//reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");
@@ -307,7 +307,8 @@ bool RunStatus::config_requirement(){
 	//RSSI wizard rssi
 	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
-		auto conditions = _config["requirements"]["rssi_setup"].get<std::vector<std::string>>();
+		//TODO add to validator badn / conditions
+		auto conditions = _config["requirements"]["rssi_setup"]["conditions"].get<std::vector<std::string>>();
 
 		string cond_str = join(conditions, " && ");
 		cond_str = actor_names_to_mac(cond_str, {
@@ -315,7 +316,15 @@ bool RunStatus::config_requirement(){
 			external_bb_mapping, simulation_mapping
 		});
 
-		run_rssi_wizard(cond_str);
+		auto band = _config["requirements"]["rssi_setup"]["band"].get<std::string>();
+		Channel channel;
+		if (band == "5Ghz") {
+			channel = Channel{36, WifiBand::BAND_5, std::nullopt};
+		}
+		if (band == "2_4GHz") {
+			channel = Channel{6, WifiBand::BAND_2_4, std::nullopt};
+		}
+		run_rssi_wizard(cond_str, channel);
 	}
 	//FIXME cant change iface name etc if changed usb position
 

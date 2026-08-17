@@ -6,6 +6,7 @@
 
 #include "default.h"
 #include "attacks/DoS_soft/bl0ck.h"
+#include "attacks/two_iface/injection_overview.h"
 #include "attacks/DoS_soft/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"
 #include "attacks/downgrade/owe_trans.h"
@@ -82,6 +83,7 @@ static string html_page() {
 			<li><a href="attacks/downgrade/wpa3_trans_downgrade/index.html">downgrade - WPA3 Transition to WPA2-PSK</a></li>
 			<li><a href="attacks/enterprise/invalid_curve/index.html">enterprise - invalid curve</a></li>
 			<li><a href="attacks/enterprise/reflection_attack/index.html">enterprise - reflection attack</a></li>
+			<li><a href="attacks/two_iface/injection/index.html">two_iface - injection test cache</a></li>
 		</ul>
 	</div>
 
@@ -130,6 +132,7 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_targets(output_dir, data_dir);
 	wpa3_tester::overview::generate_invalid_curve_attack(output_dir, data_dir);
 	wpa3_tester::overview::generate_reflection_attack(output_dir, data_dir);
+	wpa3_tester::overview::generate_injection_overview(output_dir, data_dir);
 
 	return 0;
 }

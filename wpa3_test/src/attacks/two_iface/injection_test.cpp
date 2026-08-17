@@ -48,11 +48,14 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	suite.iface_out = actor_tx.get(SK::iface);
 	suite.iface_in = cap_iface;
 	suite.channel = ch;
-	suite.driver = actor_tx.get(SK::driver_name);
+	suite.driver    = actor_tx.get(SK::driver_name);
+	suite.tx_mac    = actor_tx.get(SK::mac);
+	suite.rx_mac    = actor_rx.get(SK::mac);
+	suite.rx_driver = actor_rx[SK::driver_name].value_or("");
 
 	s_out.mf_workaround = driver_needs_mf_workaround(suite.driver);
 
-	const auto tx_mac = actor_tx.get(SK::mac); //get_mac_address(, actor_tx[SK::netns]);
+	const auto tx_mac = suite.tx_mac;
 	const auto spoofed = make_spoofed_frame();
 	const auto valid = make_valid_frame(peermac, tx_mac);
 

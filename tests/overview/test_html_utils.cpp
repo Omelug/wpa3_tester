@@ -142,6 +142,28 @@ TEST_CASE("HtmlPathTable with builder pattern") {
 	remove_all(test_dir);
 }
 
+TEST_CASE("HtmlPathTable add_rotated_column renders th.rotated") {
+	path test_dir = temp_directory_path() / "html_utils_test_rotated";
+	create_directories(test_dir);
+	{
+		overview::HtmlGuard hg(test_dir);
+		struct E { string name; string val; };
+		vector<E> entries = {{"A", "x"}, {"B", "y"}};
+		HtmlPathTable<E> table(hg, entries);
+		table.add_column("Name", &E::name);
+		table.add_rotated_column("Val", &E::val);
+		table.render();
+	}
+	ifstream file(test_dir / "index.html");
+	ostringstream oss; oss << file.rdbuf();
+	const string result = oss.str();
+	CHECK(result.contains("<th>Name</th>"));
+	CHECK(result.contains("<th class=\"rotated\">Val</th>"));
+	CHECK(result.contains("<td>A</td>"));
+	CHECK(result.contains("<td>x</td>"));
+	remove_all(test_dir);
+}
+
 TEST_CASE("HtmlPathTable prefix grouping functionality") {
 	path test_dir = temp_directory_path() / "html_utils_test_prefix";
 	create_directories(test_dir);

@@ -32,3 +32,7 @@ tr:nth-child(even) { background: #f7fafc; }
 .tooltip-content table { border-collapse: collapse; width: auto; margin: 0; }
 .tooltip-content td, .tooltip-content th { padding: 2px 8px; border: 1px solid #ddd; white-space: nowrap; background: #fff; }
 .tooltip-content th { background: #edf2f7; }
+th.rotated { writing-mode: vertical-rl; transform: rotate(180deg); height: 9em; white-space: nowrap; padding: 6px 4px; font-size: 0.82em; vertical-align: bottom; }
+.it-pass { color: #276749; font-weight: bold; }
+.it-fail { color: #c53030; font-weight: bold; }
+.it-nc   { color: #c05621; }

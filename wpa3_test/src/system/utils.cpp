@@ -30,19 +30,7 @@ string current_time_string(){
 	return oss.str();
 }
 
-string git_commit_hash(){
-	FILE *pipe = popen("git rev-parse --short HEAD 2>/dev/null", "r");
-	if(!pipe){ return "unknown"; }
-	char buf[16]{};
-	if(fgets(buf, sizeof(buf), pipe) == nullptr){
-		pclose(pipe);
-		return "unknown";
-	}
-	pclose(pipe);
-	string result(buf);
-	if(!result.empty() && result.back() == '\n'){ result.pop_back(); }
-	return result.empty() ? "unknown" : result;
-}
+string git_commit_hash(){ return GIT_COMMIT_HASH; }
 
 string kernel_version(){
 	utsname uts{};

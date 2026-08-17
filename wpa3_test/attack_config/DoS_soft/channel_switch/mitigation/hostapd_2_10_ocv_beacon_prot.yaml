@@ -18,5 +18,5 @@ actors:
         beacon_prot: 1
         okc: 1
     selection:
-      condition: [ monitor, OCV, MFP, 2_4GHz ]
+      condition: [ monitor, OCV, MFP, 2_4GHz, netns_change ]
 rewrite: "errors"

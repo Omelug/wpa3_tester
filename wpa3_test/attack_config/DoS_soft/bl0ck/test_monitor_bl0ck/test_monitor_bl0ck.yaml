@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 1
-      condition: [ monitor, 2_4GHz ]
+      condition: [ monitor, 2_4GHz, netns_change ]
       driver: mt76x2u
     netns: rx
   transceiver:

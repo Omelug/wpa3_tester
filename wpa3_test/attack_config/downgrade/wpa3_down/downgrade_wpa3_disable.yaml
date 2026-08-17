@@ -5,10 +5,13 @@ $extends: [ ./downgrade_vuln.yaml ]
 actors:
   ap:
     setup:
-        #wpa_passphrase: password123
-        transition_disable: "0x01"
+        program_config:
+          #wpa_passphrase: password123
+          transition_disable: "0x01"
   client:
     source: internal
+    selection:
+      condition: [ managed, 2_4GHz, netns_change ]
     #selection:
     #  driver: rtl8xxxu
     setup:

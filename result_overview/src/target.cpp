@@ -205,7 +205,7 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 }
 
 void generate_targets(const path &output_dir, const path &data_dir) {
-	const path targets_data = data_dir / DATA_SUITE / "target";
+	const path targets_data = data_dir / DATA_SUITE / "comp";
 
 	vector<string> names;
 	if (is_directory(targets_data)) {

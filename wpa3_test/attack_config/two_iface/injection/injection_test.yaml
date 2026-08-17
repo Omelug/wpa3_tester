@@ -10,7 +10,7 @@ actors:
   transceiver:
     selection:
       channel: 11
-      condition: [ monitor, 2_4GHz ]
+      condition: [ monitor, 2_4GHz, netns_change ]
       #driver: ath9k_htc
     netns: tx
     source: internal

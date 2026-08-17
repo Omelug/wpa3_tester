@@ -100,7 +100,7 @@ struct Value {
 struct CmpExpr : Expr {
     Value lhs, rhs; bool lt; string label;
     CmpExpr(Value l, Value r, const bool lt_)
-        : lhs(move(l)), rhs(move(r)), lt(lt_),
+        : lhs(std::move(l)), rhs(std::move(r)), lt(lt_),
           label(lhs.to_str() + (lt ? " < " : " > ") + rhs.to_str()) {}
     [[nodiscard]] bool eval(const RssiMatrix& m) const override {
         return lt ? lhs.resolve(m) < rhs.resolve(m) : lhs.resolve(m) > rhs.resolve(m);
@@ -114,7 +114,7 @@ struct CmpExpr : Expr {
 
 struct AndExpr : Expr {
     ExprPtr l, r;
-    AndExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
+    AndExpr(ExprPtr a, ExprPtr b) : l(std::move(a)), r(std::move(b)) {}
     [[nodiscard]] bool eval(const RssiMatrix& m) const override { return l->eval(m) && r->eval(m); }
     [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = l->to_colored_parts(m);
@@ -127,7 +127,7 @@ struct AndExpr : Expr {
 
 struct OrExpr : Expr {
     ExprPtr l, r;
-    OrExpr(ExprPtr a, ExprPtr b) : l(move(a)), r(move(b)) {}
+    OrExpr(ExprPtr a, ExprPtr b) : l(std::move(a)), r(std::move(b)) {}
     [[nodiscard]] bool eval(const RssiMatrix& m) const override { return l->eval(m) || r->eval(m); }
     [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = l->to_colored_parts(m);
@@ -140,7 +140,7 @@ struct OrExpr : Expr {
 
 struct NotExpr : Expr {
     ExprPtr c;
-    explicit NotExpr(ExprPtr x) : c(move(x)) {}
+    explicit NotExpr(ExprPtr x) : c(std::move(x)) {}
     [[nodiscard]] bool eval(const RssiMatrix& m) const override { return !c->eval(m); }
     [[nodiscard]] vector<pair<string,string>> to_colored_parts(const RssiMatrix& m) const override {
         auto parts = vector<pair<string,string>>{{"!", eval(m) ? "#00FF00" : "#555555"}};
@@ -211,12 +211,12 @@ struct Parser {
     }
     ExprPtr parse_and() {
         auto lhs = parse_not();
-        while (peek().kind == TokKind::And) { consume(); lhs = make_unique<AndExpr>(move(lhs), parse_not()); }
+        while (peek().kind == TokKind::And) { consume(); lhs = make_unique<AndExpr>(std::move(lhs), parse_not()); }
         return lhs;
     }
     ExprPtr parse_expr() {
         auto lhs = parse_and();
-        while (peek().kind == TokKind::Or) { consume(); lhs = make_unique<OrExpr>(move(lhs), parse_and()); }
+        while (peek().kind == TokKind::Or) { consume(); lhs = make_unique<OrExpr>(std::move(lhs), parse_and()); }
         return lhs;
     }
 };

@@ -21,6 +21,7 @@ actors:
         wpa_supplicant_path: "./config/valid_client.conf"
     selection:
       channel: 6
+      condition: [ managed, 2_4GHz, netns_change ]
     netns: sta
   attacker:
     source: internal

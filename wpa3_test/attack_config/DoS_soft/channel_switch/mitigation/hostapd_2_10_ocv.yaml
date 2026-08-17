@@ -15,4 +15,4 @@ actors:
       program_config:
         version: 2_10
     selection:
-      condition: [ monitor, OCV, 2_4GHz ]
+      condition: [ monitor, OCV, 2_4GHz, netns_change ]

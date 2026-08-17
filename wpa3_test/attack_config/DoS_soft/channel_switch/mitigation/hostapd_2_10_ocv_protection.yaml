@@ -17,4 +17,4 @@ actors:
         okc: 1
         #ignore_assoc_disallowed: 1
     selection:
-      condition: [ monitor, OCV, 2_4GHz ]
+      condition: [ monitor, OCV, 2_4GHz, netns_change ]

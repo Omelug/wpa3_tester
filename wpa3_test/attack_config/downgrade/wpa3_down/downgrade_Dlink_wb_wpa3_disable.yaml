@@ -6,6 +6,8 @@ actors:
   ap:
     $extends: ../../comp/Dlink/Dlink_wb_wpa3_disable.comp.yaml
   client:
+    selection:
+      condition: [ managed, 2_4GHz, netns_change ]
     source: internal
     setup:
       program: wpa_supplicant

@@ -24,6 +24,7 @@ actors:
   client:
     source: internal
     selection:
+      condition: [ 2_4GHz, netns_change ]
       driver: mt76x2u
     setup:
       program: wpa_supplicant

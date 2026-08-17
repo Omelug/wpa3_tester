@@ -17,7 +17,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ monitor, 5GHz ]
+      condition: [ monitor, 5GHz, netns_change]
   attacker:
     source: internal
     selection:

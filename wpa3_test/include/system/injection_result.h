@@ -50,7 +50,10 @@ class InjectionSuiteResult{
 public:
 	std::string iface_out;
 	std::string iface_in; // == iface_out for self-test
-	std::string driver;
+	std::string driver;   // tx driver
+	std::string rx_driver;
+	std::string tx_mac;
+	std::string rx_mac;
 	Channel channel;
 	std::vector<InjectionTestResult> tests;
 
@@ -66,7 +69,7 @@ public:
 		for(const auto &t: tests) map[t.test_name()] = {
 			{"result", t.result()}, {"detail", t.detail()}
 		};
-		return {{"tests", map}};
+		return {{"tx_mac", tx_mac}, {"rx_mac", rx_mac}, {"driver", driver}, {"rx_driver", rx_driver}, {"tests", map}};
 	}
 };
 

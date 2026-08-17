@@ -41,10 +41,35 @@ public:
         });
     }
 
+    // Like add_column but renders the <th> with class="rotated" (vertical writing-mode via CSS).
+    void add_rotated_column(std::string header, std::function<void(const EntryType&)> eval) {
+        columns_.push_back({std::move(header), std::move(eval), true});
+    }
+
+    template <typename Func>
+    void add_rotated_column(std::string header, Func&& func)
+        requires std::is_invocable_v<Func, const EntryType&> {
+        columns_.push_back({
+            std::move(header),
+            [f = std::forward<Func>(func), this](const EntryType& e) { hg_ << f(e); },
+            true
+        });
+    }
+
+    template <typename T>
+    void add_rotated_column(std::string header, T EntryType::*member) {
+        columns_.push_back({
+            std::move(header),
+            [member, this](const EntryType& e) { hg_ << (e.*member); },
+            true
+        });
+    }
+
 private:
     struct Column {
         std::string header;
         std::function<void(const EntryType&)> evaluator{};
+        bool rotated = false;
     };
 
     wpa3_tester::overview::HtmlGuard& hg_;
@@ -102,10 +127,11 @@ private:
     void render_header(const std::vector<std::string>& prefixes) const {
         hg_ << "            <thead><tr>";
         for (size_t i = 0; i < columns_.size(); ++i) {
+            const char* th_open = columns_[i].rotated ? "<th class=\"rotated\">" : "<th>";
             if (!prefixes[i].empty()) {
-                hg_ << "<th>" << prefixes[i] << "*</th>";
+                hg_ << th_open << prefixes[i] << "*</th>";
             } else {
-                hg_ << "<th>" << columns_[i].header << "</th>";
+                hg_ << th_open << columns_[i].header << "</th>";
             }
         }
         hg_ << "</tr></thead>\n";

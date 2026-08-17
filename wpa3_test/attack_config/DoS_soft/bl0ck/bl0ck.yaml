@@ -7,8 +7,8 @@ requirements:
   two_iface:
     injection_more_fragments_spoofed: [attacker, client]
     injection_more_fragments_valid: [attacker, client]
-    injection_fields_order_spoofed: [attacker, client]
-    injection_fields_order_valid: [attacker, client]
+    injection_fields_spoofed: [attacker, client]
+    injection_fields_valid: [attacker, client]
   rssi_setup:
     band: "5Ghz"
     conditions: [
@@ -21,7 +21,7 @@ actors:
   ap:
     source: internal
     selection:
-      condition: [ AP, 80211ac, 5GHz ]
+      condition: [ AP, 80211ac, 5GHz, netns_change ]
     setup:
       program: hostapd
       program_config:
@@ -39,6 +39,7 @@ actors:
         wpa: 2
         wpa_key_mgmt: SAE
     ip_addr: "172.16.100.1"
+    netns: ap
   client:
     source: internal
     setup:
@@ -65,7 +66,8 @@ actors:
       channel: 36
       condition: [ #injection, #TODO má tu být injection?
         monitor,
-        5GHz ]
+        5GHz
+      ]
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
   ap_mausezahn:

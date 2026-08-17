@@ -5,20 +5,23 @@ requirements:
   two_iface:
     injection_more_fragments_spoofed: [ transceiver, receiver ]
     injection_more_fragments_valid: [ transceiver, receiver ]
-    injection_fields_order_spoofed: [ transceiver, receiver ]
-    injection_fields_order_valid: [ transceiver, receiver ]
+    injection_fields_spoofed: [ transceiver, receiver ]
+    injection_fields_valid: [ transceiver, receiver ]
+    injection_order_spoofed: [ transceiver, receiver ]
+    injection_order_valid: [ transceiver, receiver ]
 
 actors:
   transceiver:
     source: internal
     selection:
-      driver: ath9k_htc
-      condition: [ monitor, 2_4GHz ]
-
+      #driver: ath9k_htc
+      condition: [ monitor, 2_4GHz, netns_change]
+    netns: tx
   receiver:
     source: internal
     selection:
       condition: [ monitor, 2_4GHz]
+
 
 delete_old: true
 rewrite: all

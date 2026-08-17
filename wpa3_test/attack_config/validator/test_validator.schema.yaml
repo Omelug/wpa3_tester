@@ -120,12 +120,12 @@ properties:
             items:
               type: string
             minItems: 2
-          injection_fields_order_spoofed:
+          injection_order_spoofed:
             type: array
             items:
               type: string
             minItems: 2
-          injection_fields_order_valid:
+          injection_order_valid:
             type: array
             items:
               type: string

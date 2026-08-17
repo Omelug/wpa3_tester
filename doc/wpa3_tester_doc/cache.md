@@ -8,5 +8,5 @@
 #### two_iface 
 - cache results of two_iface tests (active_test, injection_* tests)
 - these test are run directly like another RunStatus test -> slow
-- run in cache folder
-- if you will run this test manually,  cache will be not used
+- run in [cache](../../data/cache) folder
+- if you will run this test manually, cache will not be used

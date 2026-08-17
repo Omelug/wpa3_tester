@@ -30,18 +30,18 @@ public:
 		explicit operator bool() const{ return pdu != nullptr || !raw.empty(); }
 	};
 
-	void send(Tins::PDU &pdu, const Channel &ch);
+	void send(Tins::PDU &pdu, const Channel &ch) const;
 	static std::vector<uint8_t> build_inject_frame(const std::vector<uint8_t> &raw, const Channel &ch,
 													bool detect_injected = false
 	);
-	void send(const std::vector<unsigned char> &raw, const Channel &ch);
+	void send(const std::vector<unsigned char> &raw, const Channel &ch) const;
 	static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
 	RecvResult recv();
 	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_packet);
 	pcap_t *get_pcap_handle(){ return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
 	Tins::Sniffer &sniffer(){ return *sniffer_; }
 
-	void set_filter(const std::string &bpf);
+	void set_filter(const std::string &bpf) const;
 private:
 	static Tins::SnifferConfiguration make_sniff_cfg();
 	bool detect_injected_;

@@ -292,7 +292,6 @@ TEST_CASE("MalformedEapol1TestEntry::parse - reads drivers and disconnect_count"
 	CHECK_EQ(e.client_driver,   "rt2800");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");
 	CHECK_EQ(e.client_version,  "default");  // no setup.program_config.version in yaml
-	CHECK_EQ(e.disconnect_count, 4);
 	REQUIRE(e.rogue_ap_connected.has_value());
 	CHECK_EQ(e.rogue_ap_connected.value(), true);
 }

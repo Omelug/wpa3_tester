@@ -3,7 +3,10 @@ name: injection_test_filler
 suite_functions: injection_test_filler
 config_type: test_suite
 tests:
-  all_actors:
+  #all_actors:
+  #  type: actor_filler
+  #  config: ./injection_test.yaml
+  injection_cache_filler:
     type: actor_filler
-    config: ./injection_test.yaml
+    config: ./injection_test_requirements.yaml
 

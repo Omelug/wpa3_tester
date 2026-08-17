@@ -19,7 +19,7 @@ TwoIfaceActive::TwoIfaceActive()
 json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2){
 	// Generate config to data/two_iface/active_test/config/<file>
 	const json config = {
-		{"name", "active_test"}, {"attacker_module", "active_test"}, {"delete_old", false}, {"rewrite", "all"},
+		{"name", "active_test"}, {"attacker_module", "active_test"}, {"delete_old", true}, {"rewrite", "all"},
 		{
 			"actors",
 			{
@@ -30,13 +30,12 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2){
 	};
 
 	const path config_dir = cache_folder() / "config";
-	const path lr_dir = cache_folder() ;
 	create_directories(config_dir);
 	const path config_path = config_dir / "last_run_config.yaml";
 	save_yaml(config, config_path);
 
 	RunStatus rs(config_path.string(), "active_test", "two_iface/active_test");
-	rs.run_folder(lr_dir);
+	rs.run_folder(cache_folder() / "run");
 	rs.execute();
 
 	// Read back result.json written by run_attack

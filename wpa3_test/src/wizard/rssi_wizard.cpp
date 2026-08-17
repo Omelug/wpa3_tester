@@ -62,7 +62,7 @@ struct WifiSender {
     int sock_fd{-1};
 
     explicit WifiSender(string name, string netns = "")
-        : iface_name(move(name)), netns_(move(netns)) {
+        : iface_name(std::move(name)), netns_(std::move(netns)) {
         netlink_helper::NetNSContext ns(netns_.empty() ? nullopt : optional{netns_});
         sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if (sock_fd < 0) return;
@@ -84,13 +84,13 @@ struct WifiSender {
     WifiSender& operator=(const WifiSender&) = delete;
 
     WifiSender(WifiSender&& o) noexcept
-        : iface_name(move(o.iface_name)), netns_(move(o.netns_)), sock_fd(o.sock_fd) { o.sock_fd = -1; }
+        : iface_name(std::move(o.iface_name)), netns_(std::move(o.netns_)), sock_fd(o.sock_fd) { o.sock_fd = -1; }
 
     WifiSender& operator=(WifiSender&& o) noexcept {
         if (this != &o) {
             if (sock_fd >= 0) close(sock_fd);
-            iface_name = move(o.iface_name);
-            netns_     = move(o.netns_);
+            iface_name = std::move(o.iface_name);
+            netns_     = std::move(o.netns_);
             sock_fd    = o.sock_fd;
             o.sock_fd  = -1;
         }
@@ -214,7 +214,7 @@ class PcapSniffer {
 
 public:
     PcapSniffer(string iface, shared_ptr<RssiCache> c, string netns = "")
-        : rx_iface_(move(iface)), netns_(move(netns)), cache_(move(c)) {}
+        : rx_iface_(std::move(iface)), netns_(std::move(netns)), cache_(std::move(c)) {}
     ~PcapSniffer() { stop(); }
 
     void start() { running_ = true; worker_ = thread(&PcapSniffer::loop, this); }
@@ -287,7 +287,7 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         WifiSender sender(iface_name, netns_name);
         auto sniffer = make_unique<PcapSniffer>(iface_name, setup.rssi_cache, netns_name);
         sniffer->start();
-        setup.adapters.push_back({move(actor), move(sender), move(sniffer)});
+        setup.adapters.push_back({std::move(actor), std::move(sender), std::move(sniffer)});
     } catch (const exception& e) {
         log(LogLevel::ERROR, "[!] Failed to add adapter {}: {}", iface_name, e.what());
     }
@@ -511,6 +511,8 @@ static void render_text(const vector<AdapterInfo>& adapters,
                         const ExprPtr& cond,
                         const string& status) {
     printf("\033[2J\033[H");
+	fflush(stdout);
+
     printf("Wi-Fi RSSI Wizard — %s\n", status.c_str());
     printf("─────────────────────────────────\n");
     for (const auto& src : adapters) {
@@ -542,6 +544,10 @@ static void render_text(const vector<AdapterInfo>& adapters,
 // ---- Gnuplot init ----
 // no -persist: window closes when pipe closes
 static FILE* init_gnuplot() {
+	// no display (for example on raspberry)
+	if (getenv("DISPLAY") == nullptr) {
+		return nullptr;
+	}
     FILE* p = popen("gnuplot", "w");
     if (!p) return nullptr;
     fprintf(p, "set key off\n");

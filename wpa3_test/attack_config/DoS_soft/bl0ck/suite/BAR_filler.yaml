@@ -6,7 +6,7 @@ tests:
   all_actors:
     type: actor_filler
     config: ../bl0ck_BAR.yaml
-  BAR_rogue:
-    type: actor_filler
-    config: ../rogueAP/BAR_rogue_AP.yaml
+  #BAR_rogue:
+  #  type: actor_filler
+  #  config: ../rogueAP/BAR_rogue_AP.yaml
 delete_old: true

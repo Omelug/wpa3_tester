@@ -54,14 +54,14 @@ rx_ch_(exchange(o.rx_ch_, nullptr)), tx_ch_(exchange(o.tx_ch_, nullptr)),
 rx_buf_(std::move(o.rx_buf_)),
 rx_head_(o.rx_head_), pcap_hdr_done_(o.pcap_hdr_done_), mf_workaround(o.mf_workaround){}
 
-static void write_to_inject_channel(ssh_channel ch, const vector<uint8_t> &bytes){
+static void write_to_inject_channel(const ssh_channel ch, const vector<uint8_t> &bytes){
 	const uint16_t len_be = htons(static_cast<uint16_t>(bytes.size()));
 	ssh_channel_write(ch, &len_be, 2);
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
 }
 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
-void MonitorSocket::send(PDU &pdu, const Channel &){
+void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 	if(detect_injected_){
 		// Set More Data flag so we can detect injected frames
@@ -132,7 +132,7 @@ vector<uint8_t> MonitorSocket::build_inject_frame(const vector<uint8_t> &raw, co
 	return out;
 }
 
-void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch){
+void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 	const auto out = build_inject_frame(raw, ch, detect_injected_);
 	if(out.empty()) return;
@@ -194,7 +194,7 @@ void MonitorSocket::recv_loop(const chrono::steady_clock::time_point deadline,
 	}
 }
 
-void MonitorSocket::set_filter(const string &bpf){
+void MonitorSocket::set_filter(const string &bpf) const {
 	if(sniffer_) sniffer_->set_filter(bpf);
 }
 

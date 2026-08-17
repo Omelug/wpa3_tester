@@ -228,7 +228,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 		} catch(...){ return false; }
 	}, "a-msdu", "A-MSDU not properly injected");
 
-	return {"injection_fields_order_" + strtype, result, failed};
+	return {"injection_fields_" + strtype, result, failed};
 }
 
 InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
@@ -277,7 +277,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 		if(k) tid_str += ',';
 		tid_str += to_string(tids[k]);
 	}
-	auto test_name = "injection_fields_order_" + strtype;
+	auto test_name = "injection_order_" + strtype;
 	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)){
 		return {test_name, NOCAPTURE, "tids=[" + tid_str + "]"};
 	}

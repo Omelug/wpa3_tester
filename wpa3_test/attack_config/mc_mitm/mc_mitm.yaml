@@ -28,6 +28,7 @@ actors:
   client:
     source: internal
     selection:
+      condition: [ managed, 2_4GHz, netns_change]
       #TODO driver: rtw_8821cu save BSSID in formware -> not reset on test start
       driver: ath9k_htc
       channel: 11

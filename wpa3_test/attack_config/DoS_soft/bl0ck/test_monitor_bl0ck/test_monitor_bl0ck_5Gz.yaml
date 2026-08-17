@@ -6,7 +6,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ 5GHz, monitor ]
+      condition: [ 5GHz, monitor, netns_change ]
     netns: rx
   transceiver:
     source: internal

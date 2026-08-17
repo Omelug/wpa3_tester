@@ -21,6 +21,7 @@ actors:
   client:
     source: internal
     selection:
+      condition: [ managed, 2_4GHz, netns_change ]
       driver: rtl8xxxu
     setup:
       program: wpa_supplicant

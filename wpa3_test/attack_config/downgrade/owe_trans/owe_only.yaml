@@ -22,6 +22,8 @@ actors:
     ip_addr: "172.16.100.1"
   client:
     source: internal
+    selection:
+      condition: [ managed, 2_4GHz, netns_change ]
     #selection:
     #  driver: rtl8xxxu
     setup:

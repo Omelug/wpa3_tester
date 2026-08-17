@@ -62,15 +62,15 @@ void generate_report(RunSuiteStatus &rss){
 		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
 								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
 								: e.test_name;
-		const string pass_link = "[" + string(e.passed.value() ? "yes" : "no") + "](" + e.test_name + "/" +
-				RESULT_NAME + ")";
+		const string pass_link = "(" + e.test_name + "/" + RESULT_NAME + ")";
+
 		r << "| "
 			<< name_cell << " | "
 			<< e.tx_driver << " | "
 			<< e.rx_driver << " | "
 			<< e.tests_passed << " | "
 			<< e.tests_total << " | "
-			<< pass_link << " |\n";
+			<< "[" << e.passed << "]" << pass_link << " |\n";
 	}
 
 	bool any_failures = false;
@@ -83,11 +83,5 @@ void generate_report(RunSuiteStatus &rss){
 			r << "| " << name << " | " << (detail.empty() ? "-" : detail) << " |\n";
 		r << "\n";
 	}
-
-	r << "\n## Summary\n\n";
-	const size_t all_passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value(); });
-	r << "- Total Tests: " << entries.size() << "\n";
-	r << "- All sub-tests passed: " << all_passed_count << "\n";
-	r << "- Partial/full failures: " << (entries.size() - all_passed_count) << "\n";
 }
 }

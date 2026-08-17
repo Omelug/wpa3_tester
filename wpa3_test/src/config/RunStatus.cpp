@@ -256,7 +256,7 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 				t_map[name] = path.string();
 			} else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")){
 				if(t_map.contains(name)){
-					throw config_err("Configs {} and {} have same name!", t_map[name], path);
+					throw config_err("Configs {} and {} have same name! ({})", t_map[name], path, name);
 				}
 				t_map[name] = path.string();
 			}

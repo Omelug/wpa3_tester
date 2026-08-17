@@ -6,5 +6,4 @@ tests:
   all_actors:
     type: actor_filler
     config: ./injection_test.yaml
-delete_old: true
 

@@ -269,7 +269,7 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	const unique_ptr<nl_msg,void(*)(nl_msg *)> msg(nlmsg_alloc(), nlmsg_free);
 	if(!msg) return make_error_code(errc::not_enough_memory);
 
-	const uint32_t freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
+	const auto freq = static_cast<uint32_t>(hw_capabilities::channel_to_freq(ch));
 
 	uint32_t chan_width = NL80211_CHAN_WIDTH_20_NOHT;
 	uint32_t center1   = freq;

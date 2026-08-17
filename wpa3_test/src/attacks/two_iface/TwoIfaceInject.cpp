@@ -20,7 +20,7 @@ TwoIfaceInject::TwoIfaceInject()
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	const json config = {
-		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", true}, {"rewrite", "all"},
+		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", false}, {"rewrite", "all"},
 		{
 			"actors",
 			{

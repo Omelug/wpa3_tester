@@ -1,5 +1,5 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-name: malformed_eapol1_rogueAP+mixed
+name: malformed_eapol1_rogueAP_mixed
 attacker_module: malformed_eapol1
 $extends: [./malformed_eapol1.yaml, ./../../comp/rogue_ap/rogue_ap_6.comp.yaml]
 actors:

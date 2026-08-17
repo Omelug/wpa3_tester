@@ -12,13 +12,14 @@ actors:
   transceiver:
     source: internal
     selection:
-      driver: ath9k_htc
-      condition: [ monitor, 2_4GHz ]
-
+      #driver: ath9k_htc
+      condition: [ monitor, 2_4GHz, netns_change]
+    netns: tx
   receiver:
     source: internal
     selection:
       condition: [ monitor, 2_4GHz]
+
 
 delete_old: true
 rewrite: all

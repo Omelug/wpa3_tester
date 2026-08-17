@@ -21,7 +21,7 @@ actors:
   ap:
     source: internal
     selection:
-      condition: [ AP, 80211ac, 5GHz ]
+      condition: [ AP, 80211ac, 5GHz, netns_change ]
     setup:
       program: hostapd
       program_config:
@@ -39,6 +39,7 @@ actors:
         wpa: 2
         wpa_key_mgmt: SAE
     ip_addr: "172.16.100.1"
+    netns: ap
   client:
     source: internal
     setup:
@@ -65,7 +66,8 @@ actors:
       channel: 36
       condition: [ #injection, #TODO má tu být injection?
         monitor,
-        5GHz ]
+        5GHz
+      ]
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
   ap_mausezahn:

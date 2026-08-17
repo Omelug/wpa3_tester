@@ -20,7 +20,7 @@ TwoIfaceInject::TwoIfaceInject()
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	const json config = {
-		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", false}, {"rewrite", "all"},
+		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", true}, {"rewrite", "all"},
 		{
 			"actors",
 			{
@@ -36,7 +36,7 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	save_yaml(config, config_path);
 
 	RunStatus rs(config_path, "injection_test", "two_iface/injection_test");
-	rs.run_folder(cache_folder());
+	rs.run_folder(cache_folder()/ "run" );
 	rs.execute();
 
 	const path result_path = rs.run_folder() / RESULT_NAME;

@@ -4,18 +4,17 @@ attacker_module: bl0ck
 
 requirements:
   #TODO injectiont cache fail (not hash in name -> cant works)
-  two_iface:
-    injection_more_fragments_spoofed: [attacker, client]
-    injection_more_fragments_valid: [attacker, client]
-    injection_fields_spoofed: [attacker, client]
-    injection_fields_valid: [attacker, client]
+  # FIXME nechápu, proč to není potřeba (NOCAPTURE)
+  #two_iface:
+    #injection_fields_spoofed: [attacker, ap]
+    #injection_fields_valid: [attacker, ap]
   rssi_setup:
     band: "5Ghz"
     conditions: [
       "(ap <-> attacker) > -90",
       "(ap <-> client) > -90",
       "(attacker <-> ap) > (ap <-> client)"
-    ]
+  ]
 
 actors:
   ap:
@@ -59,7 +58,7 @@ actors:
       condition: [ monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
-    sniff_iface: client_mon
+    sniff_iface: client
   attacker:
     source: internal
     selection:
@@ -71,10 +70,10 @@ actors:
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
   ap_mausezahn:
-    actor: ap
+    actor: client
     program: mausezahn
     program_config:
-      target_actor: client
+      target_actor: ap
   att_tshark:
     actor: attacker
     program: tshark
@@ -86,7 +85,7 @@ observers:
     program_config:
       filter: "special_filter:actors"
 attack_config:
-  ms_interval: 100
+  ms_interval: 1
   sleep_before_sec: 5
   sleep_after_sec: 5
 rewrite: errors

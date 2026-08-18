@@ -1,6 +1,6 @@
-#include <filesystem>
 #include "config/RunStatus.h"
 #include "observer/observers.h"
+#include <filesystem>
 
 namespace wpa3_tester::observer{
 using namespace std;

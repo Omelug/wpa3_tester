@@ -2,6 +2,7 @@
 
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "observer/iperf_wrapper.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
@@ -29,6 +30,12 @@ void Observer_config::start(RunStatus &rs) const{
 	if(program == "mausezahn"){
 		const auto target_actor = program_config.at("target_actor").get<string>();
 		start_mausezahn(rs, actor_name + "_mz_gen", actor_name, target_actor);
+		return;
+	}
+	if(program == "iperf3"){
+		const auto target_actor = program_config.at("target_actor").get<string>();
+		start_iperf3_server(rs, actor_name+"_iperf3_server", target_actor);
+		start_iperf3(rs, actor_name + "_iperf3_gen", actor_name, target_actor);
 		return;
 	}
 	if(program == "resource_checker"){

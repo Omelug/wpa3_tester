@@ -92,7 +92,7 @@ void run_attack(RunStatus &rs){
 	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 
-	rs.save_result({{"passed", vulnerable}});
+	rs.save_result({{"connected", vulnerable}});
 	log(LogLevel::INFO, "Reflection attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
 }

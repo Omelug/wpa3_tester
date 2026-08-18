@@ -32,7 +32,7 @@ vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(con
 	auto entries = helper::get_results_default<ReflectionAttackTestEntry>(test_data_dir);
 
 	ranges::sort(entries, [](const ReflectionAttackTestEntry& a, const ReflectionAttackTestEntry& b) {
-		if (a.passed != b.passed) {return a.passed < b.passed; }
+		if (a.connected != b.connected) {return a.connected < b.connected; }
 		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
 		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
 		if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
@@ -55,7 +55,7 @@ void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const strin
 			col("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
 			col("Hostapd version",      &ReflectionAttackTestEntry::ap_hostapd_version);
 			col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
-			col("Connected?",              &ReflectionAttackTestEntry::passed);
+			col("Connected?",           &ReflectionAttackTestEntry::connected);
 		})->render({"Test"});
 	});
 }
@@ -76,20 +76,12 @@ void generate_report(RunSuiteStatus &rss){
 	report << "|------|-----------|-----------------|--------|\n";
 
 	for(const auto &e: entries){
-		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
+		const string result_link = "[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
 		report << "| " <<  report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
 			<< e.attacker_driver << " | "
 			<< result_link << " |\n";
 	}
-
-	report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value(); });
-	report << "- Total Tests: " << entries.size() << "\n";
-	report << "- Passed: " << passed_count << "\n";
-	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) /
-			static_cast<double>(entries.size())) << "%\n";
 }
 }

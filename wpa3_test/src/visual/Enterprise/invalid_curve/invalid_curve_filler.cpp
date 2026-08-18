@@ -27,6 +27,20 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 	return e;
 }
 
+vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path &test_data_dir) {
+	auto entries = helper::get_results_default<InvalidCurveTestEntry>(test_data_dir);
+
+	ranges::sort(entries, [](const InvalidCurveTestEntry& a, const InvalidCurveTestEntry& b) {
+		if (a.connected != b.connected) {return a.connected < b.connected; }
+		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
+		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
+		//if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
+		return false;
+	});
+
+	return entries;
+}
+
 void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 										const path &suite_data_dir, const path &){
 
@@ -40,7 +54,7 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &t
 			col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
 			col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
 			col("AP openssl version",   &InvalidCurveTestEntry::ap_openssl_version);
-			col("Passed?",              &InvalidCurveTestEntry::passed);
+			col("Connected?",              &InvalidCurveTestEntry::connected);
 		});
 
 		t.render();
@@ -64,7 +78,7 @@ void generate_report(const RunSuiteStatus &rss){
 	report << "|------|-----------|-----------------|--------|\n";
 
 	for(const auto &e: entries){
-		const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
+		const string result_link = "[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
 				RESULT_NAME + ")";
 		report << "| " << report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
 			<< e.ap_driver << " | "
@@ -73,7 +87,7 @@ void generate_report(const RunSuiteStatus &rss){
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.passed.value(); });
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.connected.value(); });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";

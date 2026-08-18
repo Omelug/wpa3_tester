@@ -120,7 +120,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 
 			log(LogLevel::DEBUG, "Sending batch {}", iteration);
 			for(int i = 0; i < frame_in_batch; ++i) sender.send(block_frame, iface_obj);
-			this_thread::sleep_for(microseconds(ms_interval));
+			this_thread::sleep_for(milliseconds(ms_interval));
 			iteration++;
 		} catch(const exception &e){
 			log(LogLevel::ERROR, "Error sending frame at iteration {}: {}", iteration, e.what());

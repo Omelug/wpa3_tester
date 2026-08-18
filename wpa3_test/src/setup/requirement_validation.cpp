@@ -232,6 +232,10 @@ bool RunStatus::config_requirement(){
 	//hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME make generic
 
 	cleanup_all_namespaces();
+
+	//FIXME nefunguje to s tím ne
+	//reset_usb_ifaces();
+
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
@@ -242,14 +246,11 @@ bool RunStatus::config_requirement(){
 		const string reg = gcfg.at("regulatory_domain").get<string>();
 		log(LogLevel::INFO, "Setting regulatory domain pre-USB-reset: iw reg set {}", reg);
 		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0) {
-			log(LogLevel::WARNING, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
+			log(LogLevel::ERROR, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
 		}else{
 			this_thread::sleep_for(chrono::milliseconds(100));
 		}
 	}
-
-	//FIXME nefunguje to s tím ne
-	//reset_usb_ifaces();
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");

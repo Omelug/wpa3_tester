@@ -8,6 +8,7 @@ Get as many important logs, as possible and dont show useless messages.
 Project was build like implementation part of bachelor thesis. #TODO link to pdf  
 
 In this file is only general info for whole project, for specific topic:
+- setup issues (read it, important) [setup_issues.md](tester_setup/setup_issues.md)
 - TODO list is in [TODO.txt](doc/TODO.txt)
 - Supported attacks: [attacks.md](doc/wpa3_tester_doc/attacks/attacks.md)
 - Development: [development.md](doc/wpa3_tester_doc/development/development.md) (check for adding new test/ test suite)

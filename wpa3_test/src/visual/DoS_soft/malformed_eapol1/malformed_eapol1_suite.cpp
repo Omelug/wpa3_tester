@@ -50,6 +50,20 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	return e;
 }
 
+vector<MalformedEapol1TestEntry> MalformedEapol1TestEntry::collect_results(const path &test_data_dir) {
+	auto entries = helper::get_results_default<MalformedEapol1TestEntry>(test_data_dir);
+
+	ranges::sort(entries, [](const MalformedEapol1TestEntry& a, const MalformedEapol1TestEntry& b) {
+		if (a.client_version != b.client_version){ return a.client_version < b.client_version;}
+		if (a.client_mfp != b.client_mfp) {return a.client_mfp < b.client_mfp; }
+		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
+		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
+		return false;
+	});
+
+	return entries;
+}
+
 void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::string &title,
 	const path &suite_data_dir, const path &page_dir){
 
@@ -65,11 +79,10 @@ void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::s
 			COL("Client MAC (source)",      overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
 			col("Client wpa_supplicant version",	&MalformedEapol1TestEntry::client_version);
 			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
-			COL("Rogue WPA2 AP?",				e.rogue_ap_connected << " (" << e.cracked << ")");
+			COL("Rogue WPA2 AP,same channel?\n(cracked)",	 e.rogue_ap_connected << " (" << e.cracked << ")");
 			col("Client MFP",					&MalformedEapol1TestEntry::client_mfp);
 			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);
 			col("Connected WPA version",		&MalformedEapol1TestEntry::conn_WPA_version);
-			col("client scanning",				&MalformedEapol1TestEntry::client_scanning);
 		})->render({"Test"});
 		#undef COL
 	});

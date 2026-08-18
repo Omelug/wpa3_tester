@@ -22,6 +22,7 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_openssl_version = hostapd::get_openssl_version(*rs, "ap");
+	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
@@ -32,9 +33,10 @@ vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path 
 
 	ranges::sort(entries, [](const InvalidCurveTestEntry& a, const InvalidCurveTestEntry& b) {
 		if (a.connected != b.connected) {return a.connected < b.connected; }
+		if (a.ap_openssl_version != b.ap_openssl_version) {return a.ap_openssl_version < b.ap_openssl_version; }
 		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
 		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
-		//if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
+		if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
 		return false;
 	});
 
@@ -52,6 +54,7 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &t
 		t.build([&](auto col) {
 			col("Test",                 &InvalidCurveTestEntry::test_name);
 			col("AP Driver",            &InvalidCurveTestEntry::ap_driver);
+			col("Hostapd version",      &InvalidCurveTestEntry::ap_hostapd_version);
 			col("Attacker Driver",      &InvalidCurveTestEntry::attacker_driver);
 			col("AP openssl version",   &InvalidCurveTestEntry::ap_openssl_version);
 			col("Connected?",              &InvalidCurveTestEntry::connected);

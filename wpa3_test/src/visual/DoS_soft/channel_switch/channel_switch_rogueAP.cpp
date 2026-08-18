@@ -54,25 +54,10 @@ vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 		return e;
 	});
 
+
 	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
-		const string sta_mac_a = a.client_mac;
-		const string sta_mac_b = b.client_mac;
-		if (sta_mac_a != sta_mac_b) return sta_mac_a < sta_mac_b;
-
-		auto opt_rank = [](const optional<bool>& v) -> int {
-		   return v.has_value() ? (*v ? 0 : 1) : 2;
-		};
-		//if (a.rel_path != b.rel_path) return a.rel_path < b.rel_path;
-
-		const int ocv_a = opt_rank(a.ap_ocv.value()) + finite(opt_rank(a.client_ocv.value()));
-		const int ocv_b = opt_rank(b.ap_ocv.value()) + opt_rank(b.client_ocv.value());
-		if (ocv_a != ocv_b) return ocv_a < ocv_b;
-
-		const int disc_a = opt_rank(a.client_disconnected.value());
-		const int disc_b = opt_rank(b.client_disconnected.value());
-		if (disc_a != disc_b) return disc_a < disc_b;
-
-		return opt_rank(a.rogue_ap_connected) < opt_rank(b.rogue_ap_connected);
+		return tie(a.client_mac, a.ap_ocv, a.client_disconnected, a.client_mfp, a.conn_WPA_version, a.attacker_driver, a.rogue_ap_driver) <
+		   tie(b.client_mac, b.ap_ocv, b.client_disconnected, b.client_mfp, b.conn_WPA_version, b.attacker_driver, b.rogue_ap_driver);
 	});
 
 	return entries;

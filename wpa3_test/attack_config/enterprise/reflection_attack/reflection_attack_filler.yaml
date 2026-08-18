@@ -5,5 +5,5 @@ config_type: test_suite
 tests:
   all_actors:
     type: actor_filler
-    config: ./reflection_attack_rogueAP.yaml
+    config: ./reflection_attack.yaml
 delete_old: true

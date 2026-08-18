@@ -22,9 +22,24 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
+	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
+}
+
+vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(const path &test_data_dir) {
+	auto entries = helper::get_results_default<ReflectionAttackTestEntry>(test_data_dir);
+
+	ranges::sort(entries, [](const ReflectionAttackTestEntry& a, const ReflectionAttackTestEntry& b) {
+		if (a.passed != b.passed) {return a.passed < b.passed; }
+		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
+		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
+		if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
+		return false;
+	});
+
+	return entries;
 }
 
 void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const string &title,
@@ -38,10 +53,10 @@ void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const strin
 		t.build([&](auto col) {
 			col("Test",                 &ReflectionAttackTestEntry::test_name);
 			col("AP Driver",            &ReflectionAttackTestEntry::ap_driver);
+			col("Hostapd version",      &ReflectionAttackTestEntry::ap_hostapd_version);
 			col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
-			col("Passed?",              &ReflectionAttackTestEntry::passed);
-		});
-		t.render();
+			col("Connected?",              &ReflectionAttackTestEntry::passed);
+		})->render({"Test"});
 	});
 }
 

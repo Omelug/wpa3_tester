@@ -1,6 +1,3 @@
-#include "attacks/downgrade/owe_trans.h"
-#include "suite/downgrade/owe_trans_filler.h"
-#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
 #include "suite/suite_helper.h"
 #include "system/utils.h"
@@ -30,7 +27,7 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 </head>
 <body>
 	<a href="../../../index.html" class="back-link"><- Overview</a>
-	<h1>Reflection at</h1>
+	<h1>Reflection attack</h1>
 
 	<div class="card">
 

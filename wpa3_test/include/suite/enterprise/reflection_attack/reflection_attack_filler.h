@@ -14,7 +14,7 @@ struct ReflectionAttackTestEntry{
 	std::string ap_hostapd_version;
 	std::string attacker_driver;
 	//results params
-	std::optional<bool> passed;
+	std::optional<bool> connected;
 
 	static ReflectionAttackTestEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<ReflectionAttackTestEntry> collect_results(const std::filesystem::path &test_data_dir);
@@ -23,8 +23,5 @@ struct ReflectionAttackTestEntry{
 	);
 };
 
-std::vector<ReflectionAttackTestEntry> collect_results(const std::filesystem::path &run_dir);
-
-void setup_suite(const RunSuiteStatus &rss);
 void generate_report(RunSuiteStatus & rss);
 }

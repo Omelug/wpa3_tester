@@ -288,7 +288,7 @@ void run_attack(RunStatus &rs){
 	};
 	const bool vulnerable = run_invalid_curve_exchange(eap_att);
 
-	rs.save_result({{"passed", vulnerable}});
+	rs.save_result({{"connected", vulnerable}});
 	log(LogLevel::INFO, "Invalid curve attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");
 }
 }

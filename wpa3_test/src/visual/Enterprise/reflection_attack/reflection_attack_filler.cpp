@@ -32,11 +32,8 @@ vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(con
 	auto entries = helper::get_results_default<ReflectionAttackTestEntry>(test_data_dir);
 
 	ranges::sort(entries, [](const ReflectionAttackTestEntry& a, const ReflectionAttackTestEntry& b) {
-		if (a.connected != b.connected) {return a.connected < b.connected; }
-		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
-		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
-		if (a.ap_hostapd_version != b.ap_hostapd_version){ return a.ap_hostapd_version < b.ap_hostapd_version;}
-		return false;
+		return tie(a.connected, a.ap_driver, a.attacker_driver, a.ap_hostapd_version) <
+		   tie(b.connected, b.ap_driver, b.attacker_driver, b.ap_hostapd_version);
 	});
 
 	return entries;

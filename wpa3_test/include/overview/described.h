@@ -22,6 +22,11 @@ struct described_bool {
 	[[nodiscard]] std::optional<bool> value() const {
 		return pairs.empty() ? std::nullopt : pairs.back().value;
 	}
+
+	bool operator<(const described_bool& other) const { return value() < other.value();}
+	bool operator>(const described_bool& other) const { return value() > other.value();}
+	bool operator!=(const described_bool& other) const { return value() != other.value();}
+	bool operator==(const described_bool& other) const {return value() == other.value();}
 };
 
 struct described_str {
@@ -39,6 +44,11 @@ struct described_str {
 		static const std::string empty_s;
 		return pairs.empty() ? empty_s : pairs.back().value;
 	}
+
+	bool operator<(const described_str& other) const { return value() < other.value();}
+	bool operator>(const described_str& other) const { return value() > other.value();}
+	bool operator!=(const described_str& other) const { return value() != other.value();}
+	bool operator==(const described_str& other) const {return value() == other.value();}
 };
 
 inline void to_json(nlohmann::json &j, const described_bool::pair_t &p){

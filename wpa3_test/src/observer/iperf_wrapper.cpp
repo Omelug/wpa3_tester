@@ -32,7 +32,9 @@ IperfData parse_iperf_log(const path &log_path, const string &actor_tag){
 			double bw = stod(line.substr(start, end - start));
 			data.bandwidths.push_back(bw);
 			data.intervals.push_back(static_cast<double>(data.bandwidths.size()));
-		} catch(...){}
+		} catch(...) {
+			log(LogLevel::ERROR, "iperf parsing error");
+		}
 	}
 	return data;
 }

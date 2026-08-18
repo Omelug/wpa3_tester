@@ -71,7 +71,7 @@ actors:
 observers:
   ap_mausezahn:
     actor: client
-    program: mausezahn
+    program: iperf3
     program_config:
       target_actor: ap
   att_tshark:

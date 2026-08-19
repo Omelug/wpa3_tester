@@ -14,7 +14,6 @@ CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: wizard v tester_stup pro external lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 d+: scan_until_success
-?f: asan je podezřelej, nehlásí leaky
 t? - test validation - testat i vygenerované testy?
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
 +: do channel switch overview dát cracked
@@ -177,6 +176,7 @@ f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
 +: testy pro qemu s mým raspberry image
+?f: asan je podezřelej, nehlásí leaky
 
 // new attacks?
 +: State Poisoning (2025_SACRED)

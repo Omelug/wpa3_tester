@@ -13,6 +13,8 @@ SSH_KEY=${5:-}
 PI_IP=${6:-}
 PI_GW=${7:-}
 PI_PREFIX=${8:-24}
+KERNEL_IMAGE=${9:-}
+KERNEL_MODULES=${10:-}
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
@@ -112,6 +114,11 @@ printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions at
 # disable USB 3.0 (xhci) to eliminate 2.4 GHz interference from USB 3 devices
 echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
 echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
+# rtw88 / rtw89 — disable deep power save (stability) + enable debug logging
+printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
+    > "$ROOT/etc/modprobe.d/rtw88.conf"
+printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
+    > "$ROOT/etc/modprobe.d/rtw89.conf"
 
 # NetworkManager — leave all WiFi interfaces unmanaged
 # tester can control them directly via nl80211, ethernet stays managed for SSH
@@ -174,8 +181,19 @@ mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 ln -sf /etc/systemd/system/wpa3-firstboot.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/wpa3-firstboot.service"
 
+# Debug kernel — baked in if built (make kernel); firstboot uses stock kernel otherwise
+if [ -n "$KERNEL_IMAGE" ] && [ -f "$KERNEL_IMAGE" ]; then
+    echo "==> Baking debug kernel: $KERNEL_IMAGE -> $BOOT/kernel8.img"
+    cp "$KERNEL_IMAGE" "$BOOT/kernel8.img"
+fi
+if [ -n "$KERNEL_MODULES" ] && [ -d "$KERNEL_MODULES" ]; then
+    echo "==> Installing debug kernel modules -> $ROOT/lib/modules/"
+    cp -a "$KERNEL_MODULES"/. "$ROOT/lib/modules/"
+fi
+
 echo ""
 echo "==> Image customized:"
 echo "    hostname : $PI_HOSTNAME  (reach via $PI_HOSTNAME.local after firstboot)"
 echo "    user     : $PI_USER / $PI_PASSWORD"
 echo "    ssh key  : ${SSH_KEY:-none}"
+[ -n "$KERNEL_IMAGE" ] && echo "    kernel   : debug ($(basename $(dirname $KERNEL_IMAGE)))" || echo "    kernel   : stock Raspbian"

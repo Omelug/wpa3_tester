@@ -182,12 +182,10 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	}
 
 	ranges::sort(devices, [](const DeviceInfo &a, const DeviceInfo &b){
-		if(a.source != b.source) return a.source < b.source;
-		return a.name < b.name;
+		return tie(a.name, a.source) < tie(b.name,  b.source);
 	});
 
-	for(const auto &d : devices)
-		generate_device_page(devices_dir, d);
+	for(const auto &d : devices) generate_device_page(devices_dir, d);
 
 	HtmlGuard f(devices_dir);
 	if(!f) return;

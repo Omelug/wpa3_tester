@@ -53,22 +53,20 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 vector<MalformedEapol1TestEntry> MalformedEapol1TestEntry::collect_results(const path &test_data_dir) {
 	auto entries = helper::get_results_default<MalformedEapol1TestEntry>(test_data_dir);
 
+	//TODO tie on all sort in collect_results
 	ranges::sort(entries, [](const MalformedEapol1TestEntry& a, const MalformedEapol1TestEntry& b) {
-		if (a.client_version != b.client_version){ return a.client_version < b.client_version;}
-		if (a.client_mfp != b.client_mfp) {return a.client_mfp < b.client_mfp; }
-		if (a.ap_driver != b.ap_driver){ return a.ap_driver < b.ap_driver;}
-		if (a.attacker_driver != b.attacker_driver) { return a.attacker_driver < b.attacker_driver;}
-		return false;
+	return tie(a.client_version, a.client_mfp, a.rogue_ap_connected, a.ap_mac, a.attacker_mac) <
+		   tie(b.client_version, b.client_mfp, b.rogue_ap_connected, b.ap_mac, b.attacker_mac);
 	});
 
 	return entries;
 }
 
-void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const std::string &title,
+void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const string &title,
 	const path &suite_data_dir, const path &page_dir){
 
 	helper::div_card<MalformedEapol1TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
-		const std::vector<MalformedEapol1TestEntry>& entries) {
+		const vector<MalformedEapol1TestEntry>& entries) {
 
 		HtmlPathTable t(hg, entries);
 

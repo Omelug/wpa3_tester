@@ -21,9 +21,17 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	auto e = helper::load_result_default<Wpa3TransDowngradeTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
+	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	const auto rs = helper::load_test_rs(test_folder);
-	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
-	e.client_driver = rs->get_actor("client").get(SK::driver_name);
+
+	const auto ap = rs->get_actor("ap");
+	e.ap_mac = ap->get(SK::mac);
+	e.ap_driver = ap->get(SK::driver_name);
+
+	const auto client = rs->get_actor("client");
+	e.client_mac = client->get(SK::mac);
+	e.client_driver = client->get(SK::driver_name);
+
 	//TODO rogue_ap/attacker  mac
 	//TODO WPA3 disable
 	return e;
@@ -40,8 +48,8 @@ void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const str
 
 		t.build([&](auto col) {
 			//COL("Test",               overview::test_name_cell(p, e.test_name, page_dir));
-			col("AP Driver",            &Wpa3TransDowngradeTestEntry::ap_driver);
-			col("Client Driver",        &Wpa3TransDowngradeTestEntry::client_driver);
+			COL("AP ",				e.ap_mac << "(" << e.ap_driver << ")");
+			COL("Client",			e.client_mac << "(" << e.client_driver << ")");
 			col("Disconnected",         &Wpa3TransDowngradeTestEntry::disconnected);
 			col("Downgrade Seen",       &Wpa3TransDowngradeTestEntry::downgrade_seen);
 		})->render();

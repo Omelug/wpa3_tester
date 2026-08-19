@@ -19,13 +19,17 @@ TwoIfaceInject::TwoIfaceInject()
 			"two_iface_inject"){}
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
+	auto sel_rx = r->to_json(&cache_id)["selection"];
+	sel_rx["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
+	sel_rx["condition"] = {"2_4GHz", "monitor"};
+
 	const json config = {
 		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", true}, {"rewrite", "all"},
 		{
 			"actors",
 			{
 				{"transceiver", {{"source", "internal"}, {"selection", make_selection(t)}, {"netns", "tx"}}},
-				{"receiver", {{"source", "internal"}, {"selection", make_selection(r)}, {"sniff_iface", "rx"},}},
+				{"receiver", {{"source", "internal"}, {"selection", sel_rx}, {"sniff_iface", "rx"},}},
 			}
 		},
 	};

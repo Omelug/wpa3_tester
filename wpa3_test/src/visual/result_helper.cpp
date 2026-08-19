@@ -167,7 +167,7 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 		const path client_log = rs.run_folder() / "logger" / "client.log";
 		if(exists(client_log)){
 			const auto ev = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
-			client_disconnected += {!ev.empty(), "log"};
+			client_disconnected += {!ev.empty(), "client log"};
 		}
 	} else {
 		const path pcap_path = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";

@@ -63,9 +63,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 			rs.process_manager.run("dnsmasq_ap", {
 				"dnsmasq", "--no-daemon",
 				"-C", "/dev/null",
-				"--listen-address=" + ip,
 				"--interface=" + iface,
-				"--bind-interfaces",
 				"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h"
 			}, rs.run_folder());
 			log(LogLevel::INFO, "dnsmasq DHCP started on {} ({})", iface, ip);

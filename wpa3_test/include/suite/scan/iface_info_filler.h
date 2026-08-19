@@ -11,6 +11,8 @@ struct IfaceInfoTestEntry{
 	std::filesystem::path report_md;
 
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
+	std::vector<IfaceInfoTestEntry>
+	collect_results(const std::filesystem::path &test_data_dir) const;
 };
 
 std::vector<IfaceInfoTestEntry> collect_results(const std::filesystem::path &run_dir);

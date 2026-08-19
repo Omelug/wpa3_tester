@@ -5,8 +5,8 @@ $extends: [ ./downgrade_vuln.yaml ]
 actors:
   client:
     source: internal
-    selection:
-      driver: rtl8xxxu
+    #selection:
+    #  driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:

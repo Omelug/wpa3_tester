@@ -9,6 +9,9 @@ namespace wpa3_tester::overview { struct HtmlGuard; }
 namespace wpa3_tester::suite::wpa3_downgrade_filler{
 struct Wpa3TransDowngradeTestEntry{
 	std::string test_name;
+	std::string ap_mac;
+	std::string client_mac;
+
 	std::string ap_driver;
 	std::string client_driver;
 	bool disconnected = false;

@@ -25,6 +25,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     avahi-daemon quilt \
+    iperf3 \
     dkms "linux-headers-$(uname -r)"
 
 source /usr/local/bin/wpa3-drivers.sh

@@ -18,12 +18,13 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	//FIXME this dont work with external logread  (some issue with buffering?)
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
-	std::this_thread::sleep_for(std::chrono::seconds(2));
+	std::this_thread::sleep_for(seconds(2));
 
 	log(LogLevel::INFO, "{} is running", actor_name);
 	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
 	}
+	rs.get_actor("ap")->set_iface_up();
 }
 
 void stop_AP(RunStatus &rs, const string &actor_name){
@@ -42,6 +43,7 @@ void setup_STA(RunStatus &rs, const string &actor_name){
 	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
 	}
+	rs.get_actor("client")->set_iface_up();
 }
 
 void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
@@ -57,7 +59,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 
 			hw_capabilities::run_cmd({"ip", "addr", "replace", ip + "/24", "dev", iface}, std::nullopt, false);
 			ap->set_iface_up();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+			std::this_thread::sleep_for(milliseconds(1500));
 			//TODO  add dnsmasq to nix/ requirements
 			hw_capabilities::run_cmd({"pkill", "dnsmasq"}, std::nullopt, false);
 			rs.process_manager.run("dnsmasq_ap", {

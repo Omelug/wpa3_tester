@@ -32,9 +32,9 @@ void Observer_config::start(RunStatus &rs) const{
 		start_mausezahn(rs, actor_name + "_mz_gen", actor_name, target_actor);
 		return;
 	}
-	if(program == "iperf3"){
+	if(program == "iperf3") {
 		const auto target_actor = program_config.at("target_actor").get<string>();
-		start_iperf3_server(rs, actor_name+"_iperf3_server", target_actor);
+		start_iperf3_server(rs, target_actor+"_iperf3_server", target_actor);
 		start_iperf3(rs, actor_name + "_iperf3_gen", actor_name, target_actor);
 		return;
 	}

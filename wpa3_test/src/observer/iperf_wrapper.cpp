@@ -101,7 +101,8 @@ void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_nam
 						//"-u", //dát do observer config
 						"-b", "10M", "-t", "0" // infinity
 					});
-	rs.process_manager.run(actor_name, command, get_observer_folder(rs, program_name));
+	const path obs = get_observer_folder(rs, program_name);
+	rs.process_manager.run(actor_name, command, obs, obs);
 }
 
 void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &server_name){
@@ -113,7 +114,7 @@ void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &
 						"-p", "5201",           // port
 						//"--one-off"
 					});
-
-	rs.process_manager.run(actor_name, command, get_observer_folder(rs, actor_name));
+	const path obs = get_observer_folder(rs, program_name);
+	rs.process_manager.run(actor_name, command, obs, obs);
 }
 }

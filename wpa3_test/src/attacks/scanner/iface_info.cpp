@@ -2,10 +2,11 @@
 
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
+#include "config/global_config.h"
 #include "default.h"
 #include "logger/devices.h"
 #include "logger/report.h"
-#include "config/global_config.h"
+#include "system/driver_diagnostics.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
 #include "system/ip.h"
@@ -47,6 +48,9 @@ void run_attack(RunStatus &rs){
 	try{ result["phy"]         = hw_capabilities::get_phy(iface, nullopt); }                    catch(...){ result["phy"] = "n/a"; }
 	try{ result["ip_addr"]     = ip::get_ip(iface); }                                           catch(...){ result["ip_addr"] = "n/a"; }
 	try{ result["iw_info"]     = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"}); } catch(...){ result["iw_info"] = ""; }
+	result["driver_specific"] =
+	driver_diag::collect_driver_specific(scanner->get(SK::driver_name), result.value("phy", ""));
+
 	rs.save_result(result);
 
 	ofstream result_txt(rs.run_folder() / "result.txt");
@@ -135,6 +139,11 @@ void generate_report(const RunStatus &rs){
 		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n\n";
 		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
+
+		if(result.contains("driver_specific")){
+			md << "## Driver-Specific Diagnostics (debugfs)\n\n";
+			md << "```json\n" << result["driver_specific"].dump(2) << "\n```\n\n";
+		}
 
 		md << "## `iw dev " << iface << " info`\n\n";
 		md << "```\n" << iw_info << "```\n";

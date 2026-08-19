@@ -127,7 +127,7 @@ json collect_ath9k_htc(const string &phy){
 	return j;
 }
 
-// rtw88 family (Realtek 802.11ac: RTL8821C/8822B/8822C/8723D)
+// rtw88 family
 // Covers rtl8821cu
 // USB support (rtw_8821cu + rtw_usb glue) from kernel 6.2
 

@@ -74,8 +74,12 @@ printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions at
     | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
 echo "==> Disabling USB autosuspend..."
 echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
-echo "==> Disabling rtw88 deep power save (driver stability)..."
-echo "options rtw88_core disable_lps_deep=y" | sudo tee /etc/modprobe.d/rtw88.conf > /dev/null
+echo "==> Configuring rtw88 (disable deep power save, enable debug logging)..."
+printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
+    | sudo tee /etc/modprobe.d/rtw88.conf > /dev/null
+echo "==> Configuring rtw89 (disable deep power save, enable debug logging)..."
+printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
+    | sudo tee /etc/modprobe.d/rtw89.conf > /dev/null
 echo "==> Disabling mt76 USB scatter-gather (https://github.com/morrownr/7612u)..."
 echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.conf > /dev/null
 echo "==> Disabling USB 3.0 (reduces 2.4 GHz interference)..."

@@ -25,7 +25,7 @@ sudo apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq \
+    iproute2 iw tcpdump iptables socat dnsmasq fish \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \

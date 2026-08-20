@@ -7,7 +7,6 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
-#include "setup/usb_helper.h"
 #include "system/firmware/ath9k_htc.h"
 #include "system/hw_capabilities.h"
 #include "wizard/rssi_condition.h"
@@ -306,7 +305,7 @@ bool RunStatus::config_requirement(){
 	}
 
 	//RSSI wizard rssi
-	if(_config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
+	if(!rssi_checked && _config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
 		//TODO add to validator badn / conditions
 		auto conditions = _config["requirements"]["rssi_setup"]["conditions"].get<std::vector<std::string>>();
@@ -326,6 +325,8 @@ bool RunStatus::config_requirement(){
 			channel = Channel{6, WifiBand::BAND_2_4, std::nullopt};
 		}
 		run_rssi_wizard(cond_str, channel);
+		rssi_checked = true;
+		return true;
 	}
 	//FIXME cant change iface name etc if changed usb position
 

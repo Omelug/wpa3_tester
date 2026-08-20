@@ -78,6 +78,9 @@ protected:
 	ActorCMap external_bb_mapping{};
 	ActorCMap simulation_mapping{};
 	HwOptionCache _hw_option_cache{};
+
+	// help flags
+	bool rssi_checked = false;
 public:
 	[[nodiscard]] const HwOptionCache &hw_option_cache() const{ return _hw_option_cache; }
 	void hw_option_cache(const HwOptionCache &c){ _hw_option_cache = c; }

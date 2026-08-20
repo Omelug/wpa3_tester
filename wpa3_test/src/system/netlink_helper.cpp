@@ -1,6 +1,7 @@
 #include "system/netlink_helper.h"
 #include <nl80211.h>
 #include <unistd.h>
+#include <chrono>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <net/if.h>
@@ -8,8 +9,13 @@
 #include <netlink/netlink.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
+#include <poll.h>
 #include <sys/ioctl.h>
+#include <sys/mount.h>
 #include <sys/socket.h>
+#include <unordered_set>
+#include <vector>
+#include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 
@@ -301,5 +307,81 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 
 	if(err < 0) return {-err, system_category()};
 	return {};
+}
+
+void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
+                        const chrono::milliseconds timeout)
+{
+	const string ns_path = "/var/run/netns/" + ns_name;
+
+	// Open and bind netlink socket BEFORE touching the ns — umount2 alone can
+	// drop the last reference and immediately return interfaces to root ns,
+	// firing RTM_NEWLINK before we'd have a chance to subscribe.
+	const int nl_fd = ifaces.empty() ? -1 : socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);
+	if(!ifaces.empty()){
+		if(nl_fd < 0){
+			log(LogLevel::WARNING, "netlink socket failed: {}", strerror(errno));
+		} else{
+			sockaddr_nl sa{};
+			sa.nl_family = AF_NETLINK;
+			sa.nl_groups = RTMGRP_LINK;
+			if(bind(nl_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) != 0){
+				log(LogLevel::WARNING, "netlink bind failed: {}", strerror(errno));
+				close(nl_fd);
+			}
+		}
+	}
+
+	if(umount2(ns_path.c_str(), MNT_DETACH) != 0)
+		log(LogLevel::WARNING, "umount2 {} failed: {}", ns_path, strerror(errno));
+
+	if(unlink(ns_path.c_str()) != 0)
+		log(LogLevel::WARNING, "unlink {} failed: {}", ns_path, strerror(errno));
+
+	if(ifaces.empty() || nl_fd < 0){
+		if(nl_fd >= 0) close(nl_fd);
+		return;
+	}
+
+	unordered_set waiting(ifaces.begin(), ifaces.end());
+	for(auto it = waiting.begin(); it != waiting.end();)
+		exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
+
+	const auto deadline = chrono::steady_clock::now() + timeout;
+	char buf[8192];
+
+	while(!waiting.empty() && chrono::steady_clock::now() < deadline){
+		pollfd pfd{nl_fd, POLLIN, 0};
+		const auto remaining = chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now());
+		if(remaining.count() <= 0) break;
+		if(poll(&pfd, 1, static_cast<int>(remaining.count())) <= 0) break;
+
+		ssize_t len = recv(nl_fd, buf, sizeof(buf), 0);
+		if(len <= 0) continue;
+
+		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf);
+			NLMSG_OK(nh, static_cast<uint32_t>(len)); nh = NLMSG_NEXT(nh, len))
+		{
+			if(nh->nlmsg_type != RTM_NEWLINK) continue;
+
+			int attr_len = static_cast<int>(nh->nlmsg_len - NLMSG_SPACE(sizeof(ifinfomsg)));
+			auto *attr = reinterpret_cast<rtattr *>(
+				static_cast<char *>(NLMSG_DATA(nh)) + NLMSG_ALIGN(sizeof(ifinfomsg)));
+
+			while(RTA_OK(attr, attr_len)){
+				if(attr->rta_type == IFLA_IFNAME){
+					const string name = static_cast<char *>(RTA_DATA(attr));
+					if(waiting.contains(name) && exists("/sys/class/net/" + name)){
+						log(LogLevel::DEBUG, "Interface {} returned to root ns", name);
+						waiting.erase(name);
+					}
+				}
+				attr = RTA_NEXT(attr, attr_len);
+			}
+		}
+	}
+	close(nl_fd);
+	for(const auto &name: waiting)
+		log(LogLevel::WARNING, "Interface {} did not return to root netns in time", name);
 }
 }

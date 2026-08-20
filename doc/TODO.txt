@@ -18,8 +18,7 @@ CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: wizard v tester_stup pro external lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 d+: scan_until_success
-t? - test validation - testat i vygenerované testy?
-+: doc/rtw_8821cu_crach.txt (zkusit na nixOS, mělo by být v kernelu)
+t? - test validation - testovat i vygenerované testy?
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 t: external info/iface_info parsing tests
@@ -29,7 +28,7 @@ t: external info/iface_info parsing tests
 CSA:
     +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
 f: špatně se resetuje scan_ip (ap_info)
-+: HT IE cahnnel switch (similiar to CSA attack)
++: HT IE channel switch (similiar to CSA attack)
 f: tshark nefachá (alespoň u enterprise nezobrazuje EAP rámce)
 t: save_log to documentation/pdf
 +: add git results repository

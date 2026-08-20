@@ -150,14 +150,16 @@ void generate_report(const RunStatus &rs){
 		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
 
-		if(usb_info.value("is_usb", false)){
-			md << "## USB Device\n\n";
-			md << "| Field | Value |\n";
-			md << "|-------|-------|\n";
-			md << "| Vendor | " << usb_info.value("manufacturer", "n/a") << " (" << usb_info.value("id_vendor", "?") << ") |\n";
-			md << "| Product | " << usb_info.value("product", "n/a") << " (" << usb_info.value("id_product", "?") << ") |\n";
-			md << "| Serial | " << usb_info.value("serial", "n/a") << " |\n";
-			md << "| Authorized | " << (usb_info.value("authorized", false) ? "yes" : "no") << " |\n\n";
+		if (result.contains("usb_info") && !result["usb_info"].is_null()) {
+			if (result["usb_info"].value("is_usb", false)) {
+				md << "## USB Device\n\n";
+				md << "| Field | Value |\n";
+				md << "|-------|-------|\n";
+				md << "| Vendor | " << usb_info.value("manufacturer", "n/a") << " (" << usb_info.value("id_vendor", "?") << ") |\n";
+				md << "| Product | " << usb_info.value("product", "n/a") << " (" << usb_info.value("id_product", "?") << ") |\n";
+				md << "| Serial | " << usb_info.value("serial", "n/a") << " |\n";
+				md << "| Authorized | " << (usb_info.value("authorized", false) ? "yes" : "no") << " |\n\n";
+			}
 		}
 
 		if(!regulatory.empty()){

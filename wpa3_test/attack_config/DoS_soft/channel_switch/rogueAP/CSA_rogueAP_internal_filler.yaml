@@ -3,6 +3,7 @@ name: CSA_rogueAP_internal_filler
 suite_functions: CSA_rogueAP_internal_filler
 config_type: test_suite
 tests:
+  #FIXME cant first eror stop all
   all_actors:
     type: actor_filler
     config: ./CSA_rogueAP_internal.yaml

@@ -352,9 +352,10 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 	if(solutions.empty()){
 		Actor_config::print_ActorCMap("Actor rules", rules);
 		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
-		throw req_err(
+		log(LogLevel::ERROR,
 			"actor_filler: no valid hardware assignments found, {}",
 			hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
+		return;
 	}
 
 	const path gen_folder = test_config_folder / source_name;

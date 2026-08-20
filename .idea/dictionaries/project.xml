@@ -134,6 +134,7 @@
       <w>libtins</w>
       <w>libwifi</w>
       <w>logread</w>
+      <w>lsblk</w>
       <w>m'ing</w>
       <w>macaddr</w>
       <w>mausezahn</w>
@@ -200,6 +201,7 @@
       <w>promisc</w>
       <w>psk</w>
       <w>radiotap</w>
+      <w>raspbian</w>
       <w>rawpdu</w>
       <w>readlink</w>
       <w>reassoc</w>

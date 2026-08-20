@@ -27,7 +27,7 @@ $(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG)
 kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make kernel-deploy PI=<addr>"; exit 1; }
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-	    INSTALL_MOD_PATH=$(KERNEL_MODS) modules_install
+	    INSTALL_MOD_PATH=$(KERNEL_MODS) -j$(shell nproc) modules_install
 	rsync -az --delete --info=progress2 $(KERNEL_MODS)/lib/modules/ $(PI_USER)@$(PI):/tmp/new-modules/
 	$(SSH) "sudo rsync -a /tmp/new-modules/. /lib/modules/ && sudo depmod -a"
 	scp $(KERNEL_OUT)/arch/arm64/boot/Image $(PI_USER)@$(PI):/tmp/kernel8.img

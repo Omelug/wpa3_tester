@@ -16,6 +16,7 @@ deploy:
 		--exclude='build/' \
 		--exclude='data/' \
 		--exclude='tools/' \
+		--exclude='tester_setup/raspberry_pi4/run' \
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 

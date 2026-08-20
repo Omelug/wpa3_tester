@@ -1,4 +1,4 @@
-TEST_SUITE ?= CSA_rogueAP_internal_filler
+TEST_SUITE ?= iface_info_filler
 
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap deploy run run-debug deploy-debug deploy-cross internet gdbserver-start
@@ -25,6 +25,7 @@ run: deploy-cross internet
 deploy-debug: deploy-cross gdbserver-start
 
 run-debug: deploy-debug internet
+	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
 	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"
 	@echo "    Connect with:"
 	@echo "      gdb-multiarch $(CROSS_BUILD)/bin/wpa3_tester"

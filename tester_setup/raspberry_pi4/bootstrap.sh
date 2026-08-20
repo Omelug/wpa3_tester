@@ -29,7 +29,7 @@ sudo apt-get install -y \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    quilt \
+    quilt trace-cmd \
     dkms "linux-headers-$(uname -r)"
 
 #echo "==> Installing hcxtools from source (latest git)..."

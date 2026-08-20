@@ -7,6 +7,7 @@
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
 #include "observer/tcpdump_wrapper.h"
+#include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
 using namespace std;
@@ -46,6 +47,15 @@ void Observer_config::start(RunStatus &rs) const{
 	if(program == "station_counter"){
 		const auto interval = program_config.at("interval").get<int>();
 		station_counter::start_station_monitoring(rs, actor_name, interval);
+		return;
+	}
+	if(program == "trace_cmd"){
+		const auto events = program_config.at("events").get<std::vector<std::string>>();
+		trace_cmd::start_trace_cmd(rs, actor_name, events);
+		return;
+	}
+	if(program == "dmesg"){
+		trace_cmd::start_dmesg(rs, actor_name);
 		return;
 	}
 	throw run_err("Invalid observer program: " + program);

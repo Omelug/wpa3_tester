@@ -11,6 +11,7 @@ pkgs.mkShell {
     # Tools
     iproute2 iw hostapd-mana
     netsniff-ng tcpdump wireshark-cli gnuplot hcxtools
+    trace-cmd
     bmaptool
     
     # Libraries

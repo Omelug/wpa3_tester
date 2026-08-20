@@ -1,0 +1,7 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: dmesg observer program_config
+type: object
+properties:
+  $validator:
+    type: string
+additionalProperties: false

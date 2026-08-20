@@ -1,0 +1,15 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: trace-cmd observer program_config
+type: object
+required:
+  - events
+properties:
+  $validator:
+    type: string
+  events:
+    type: array
+    items:
+      type: string
+    minItems: 1
+    description: "ftrace event groups, e.g. mac80211, ath9k, cfg80211"
+additionalProperties: false

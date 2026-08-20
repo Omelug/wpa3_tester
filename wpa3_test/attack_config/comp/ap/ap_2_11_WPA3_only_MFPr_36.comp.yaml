@@ -1,0 +1,22 @@
+actors:
+  ap:
+    source: internal
+    selection:
+      channel: 36
+      condition: [ AP, 5GHz ]
+    setup:
+      program: hostapd
+      program_config:
+        version: 2_11
+        driver: nl80211
+        ssid: test_wpa3_tester
+        hw_mode: g
+        auth_algs: 1
+        wpa: 2
+        ieee80211n: 1
+        ieee80211w: 2
+        wpa_key_mgmt: SAE
+        rsn_pairwise: CCMP
+        sae_password: password123
+        channel: 36
+    ip_addr: "172.16.100.1"

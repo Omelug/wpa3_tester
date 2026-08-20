@@ -12,5 +12,8 @@ tests:
   all_actors_WPA2_MFP_req:
     type: actor_filler
     config: ./CSA_rogueAP_WPA2_internal_MFPr.yaml
+  all_actors_WPA2_MFP_req_5GHz:
+    type: actor_filler
+    config: ./CSA_rogueAP_internal_MFP_req_5GHz.yaml
 delete_old: true
 rewrite: "errors"

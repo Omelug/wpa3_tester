@@ -12,4 +12,9 @@ properties:
       type: string
     minItems: 1
     description: "ftrace event groups, e.g. mac80211, ath9k, cfg80211"
+  kprobes:
+    type: array
+    items:
+      type: string
+    description: "kprobe definitions: [NAME=]FUNC[+OFFSET] [ARGS], e.g. 'rtw88_tx iface=%di:string'"
 additionalProperties: false

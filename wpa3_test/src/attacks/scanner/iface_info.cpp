@@ -6,6 +6,8 @@
 #include "default.h"
 #include "logger/devices.h"
 #include "logger/report.h"
+#include "observer/dmesg_wrapper.h"
+#include "observer/observers.h"
 #include "system/driver_diagnostics.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
@@ -20,8 +22,11 @@ using namespace filesystem;
 
 void run_attack(RunStatus &rs){
 	rs.start_observers();
+	observer::dmesg::start_dmesg(rs, "scanner");
 
-	const string iface = rs.get_actor("scanner").get(SK::iface);
+	auto scanner = rs.get_actor("scanner");
+	const string iface = scanner.get(SK::iface);
+	const optional<string> netns = scanner[SK::netns];
 
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
@@ -29,7 +34,6 @@ void run_attack(RunStatus &rs){
 		? optional{root_dir().parent_path() / "data" / "cache" / "scan" / "internal_iface.json"}
 		: nullopt;
 
-	auto scanner = rs.get_actor("scanner");
 	scanner->set(SK::iface, iface);
 	scanner->load_hw_info(hw_cache);
 
@@ -41,22 +45,19 @@ void run_attack(RunStatus &rs){
 
 	rs.save_actor_interface_mapping();
 
-	// ----- save live system snapshot -----
+	// ----- live system snapshot -----
 	nlohmann::json result;
-	try{ result["current_mac"] = hw_capabilities::get_mac_address(iface, nullopt).to_string(); } catch(...){ result["current_mac"] = "n/a"; }
-	try{ result["is_up"]       = netlink_helper::iface_is_up(iface, nullopt); }                 catch(...){ result["is_up"] = false; }
-	try{ result["phy"]         = hw_capabilities::get_phy(iface, nullopt); }                    catch(...){ result["phy"] = "n/a"; }
-	try{ result["ip_addr"]     = ip::get_ip(iface); }                                           catch(...){ result["ip_addr"] = "n/a"; }
-	try{ result["iw_info"]     = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"}); } catch(...){ result["iw_info"] = ""; }
-	result["driver_specific"] =
-	driver_diag::collect_driver_specific(scanner->get(SK::driver_name), result.value("phy", ""));
+	try{ result["current_mac"] = hw_capabilities::get_mac_address(iface, netns).to_string(); } catch(...){ result["current_mac"] = "n/a"; }
+	try{ result["is_up"]       = netlink_helper::iface_is_up(iface, netns); }                  catch(...){ result["is_up"] = false; }
+	try{ result["phy"]         = hw_capabilities::get_phy(iface, netns); }                     catch(...){ result["phy"] = "n/a"; }
+	try{ result["ip_addr"]     = ip::get_ip(iface); }                                          catch(...){ result["ip_addr"] = "n/a"; }
+	try{ result["iw_info"]     = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"}, netns); } catch(...){ result["iw_info"] = ""; }
 
-	//TODO
-	// move to netns, return after netns remove
-	// change of channel
-	// reguratory internal - > infor from driver specific?/ phy
-	// serial number
-	// usb reset?
+	const string phy = result.value("phy", "");
+	result["driver_specific"] = driver_diag::collect_driver_specific(scanner->get(SK::driver_name), phy);
+	result["regulatory"]      = driver_diag::collect_regulatory(phy, netns);
+	result["usb_info"]        = driver_diag::collect_usb_info(iface);
+	//TODO change of channel: set monitor + channel from selection before snapshot, restore after
 
 	rs.save_result(result);
 
@@ -82,6 +83,8 @@ void generate_report(const RunStatus &rs){
 	const string phy         = result.value("phy",         "n/a");
 	const string ip_addr     = result.value("ip_addr",     "n/a");
 	const string iw_info     = result.value("iw_info",     "");
+	const auto   usb_info    = result.value("usb_info",    nlohmann::json{});
+	const auto   regulatory  = result.value("regulatory",  nlohmann::json{});
 
 	const string perm_mac = scanner->get_or(SK::permanent_mac, "");
 	string mac_slug = perm_mac.empty() ? current_mac : perm_mac;
@@ -146,6 +149,22 @@ void generate_report(const RunStatus &rs){
 		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n\n";
 		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
+
+		if(usb_info.value("is_usb", false)){
+			md << "## USB Device\n\n";
+			md << "| Field | Value |\n";
+			md << "|-------|-------|\n";
+			md << "| Vendor | " << usb_info.value("manufacturer", "n/a") << " (" << usb_info.value("id_vendor", "?") << ") |\n";
+			md << "| Product | " << usb_info.value("product", "n/a") << " (" << usb_info.value("id_product", "?") << ") |\n";
+			md << "| Serial | " << usb_info.value("serial", "n/a") << " |\n";
+			md << "| Authorized | " << (usb_info.value("authorized", false) ? "yes" : "no") << " |\n\n";
+		}
+
+		if(!regulatory.empty()){
+			md << "## Regulatory\n\n";
+			if(regulatory.contains("iw_reg_get"))
+				md << "```\n" << regulatory["iw_reg_get"].get<string>() << "```\n\n";
+		}
 
 		if(result.contains("driver_specific")){
 			md << "## Driver-Specific Diagnostics (debugfs)\n\n";

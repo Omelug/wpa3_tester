@@ -56,8 +56,8 @@ vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 
 
 	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
-		return tie(a.client_mac, a.ap_ocv, a.client_disconnected, a.client_mfp, a.conn_WPA_version, a.attacker_driver, a.rogue_ap_driver) <
-		   tie(b.client_mac, b.ap_ocv, b.client_disconnected, b.client_mfp, b.conn_WPA_version, b.attacker_driver, b.rogue_ap_driver);
+		return tie(a.client_mac, a.ap_ocv, a.client_disconnected, a.client_mfp, a.conn_WPA_version, a.attacker_driver, a.rogue_ap_driver, a.name) <
+		   tie(b.client_mac, b.ap_ocv, b.client_disconnected, b.client_mfp, b.conn_WPA_version, b.attacker_driver, b.rogue_ap_driver, b.name);
 	});
 
 	return entries;
@@ -81,7 +81,7 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 				<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
 				);
 			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
-			COL("Rogue WPA2 AP?",				e.rogue_ap_connected << " (" << e.cracked << ")");
+			COL("Rogue WPA2 AP?\n(cracked)",				e.rogue_ap_connected << " (" << e.cracked << ")");
 			COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
 			col("Client MFP",					&CsaTestEntry::client_mfp);
 			COL("AP/Client WPA support",		e.ap_WPA_support << "<br>" << e.client_WPA_support);

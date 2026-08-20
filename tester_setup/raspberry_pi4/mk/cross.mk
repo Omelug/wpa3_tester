@@ -119,8 +119,9 @@ gdbserver-build: $(GDBSERVER_CACHE)
 
 gdbserver-start: $(GDBSERVER_CACHE)
 	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
-	scp $(GDBSERVER_CACHE) $(PI_USER)@$(PI):/tmp/gdbserver
-	$(SSH) "nohup sudo /tmp/gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG) </dev/null > /tmp/gdbserver.log 2>&1 &"
+	scp $(GDBSERVER_CACHE) $(PI_USER)@$(PI):/home/pi/gdbserver
+	$(SSH) "chmod +x /home/pi/gdbserver"
+	$(SSH) "nohup /home/pi/gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --config $(REMOTE)/$(CONFIG) </dev/null > /tmp/gdbserver.log 2>&1 &"
 	@sleep 1
 	$(SSH) "pgrep -x gdbserver > /dev/null || { echo 'ERROR: gdbserver failed to start:'; cat /tmp/gdbserver.log; exit 1; }"
 	@echo "==> gdbserver $(GDB_VER) running on $(PI):$(GDB_PORT)"

@@ -128,6 +128,7 @@
       <w>konfiguration</w>
       <w>kprobes</w>
       <w>krack</w>
+      <w>libelf</w>
       <w>libgcc</w>
       <w>libssh</w>
       <w>libtins</w>
@@ -150,6 +151,7 @@
       <w>musleabi</w>
       <w>musleabihf</w>
       <w>nbytes</w>
+      <w>netconsole</w>
       <w>netns</w>
       <w>newlink</w>
       <w>nextbeacon</w>

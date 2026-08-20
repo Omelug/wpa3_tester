@@ -1,10 +1,13 @@
 #include "system/driver_diagnostics.h"
 
+#include "system/hw_capabilities.h"
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <system_error>
+
+#include <nlohmann/json_fwd.hpp>
 
 namespace wpa3_tester::driver_diag{
 using namespace std;
@@ -256,6 +259,50 @@ json collect_driver_specific(const string &driver_name, const string &phy){
 		j["error"] = string("driver_specific collection failed: ") + e.what();
 	}
 
+	return j;
+}
+
+json collect_regulatory(const string &phy, const optional<string> &netns) {
+	json j;
+	try{ j["iw_reg_get"] = hw_capabilities::run_cmd_output({"iw", "reg", "get"}, netns); } catch(...){}
+	if(!phy.empty()){
+		const string phy_name = phy.rfind("phy", 0) == 0 ? phy : "phy" + phy;
+		try{ j["phy_reg_get"] = hw_capabilities::run_cmd_output({"iw", "phy", phy_name, "reg", "get"}, netns); } catch(...){}
+		if(auto v = read_file(phy_debugfs_dir(phy, "") / "regdom")) j["debugfs_regdom"] = *v;
+	}
+	return j;
+}
+
+//  --------- USB device info
+
+static string trim_ws(string s){
+	const auto last = s.find_last_not_of(" \t\n\r\f\v");
+	return last == string::npos ? "" : s.substr(0, last + 1);
+}
+
+json collect_usb_info(const string &iface){
+	json j;
+	const path net_dev = path("/sys/class/net") / iface / "device";
+	if(!dir_exists(net_dev)){ j["is_usb"] = false; return j; }
+
+	// walk up sysfs to find USB device dir (has idVendor)
+	error_code ec;
+	const path real = canonical(net_dev, ec);
+	if(ec){ j["is_usb"] = false; return j; }
+
+	for(path p = real; p != p.root_path(); p = p.parent_path()){
+		if(!dir_exists(p / "idVendor")) continue;
+		j["is_usb"] = true;
+		j["usb_path"] = p.string();
+		if(auto v = read_file(p / "idVendor"))    j["id_vendor"]    = trim_ws(*v);
+		if(auto v = read_file(p / "idProduct"))   j["id_product"]   = trim_ws(*v);
+		if(auto v = read_file(p / "manufacturer")) j["manufacturer"] = trim_ws(*v);
+		if(auto v = read_file(p / "product"))      j["product"]      = trim_ws(*v);
+		if(auto v = read_file(p / "serial"))       j["serial"]       = trim_ws(*v);
+		if(auto v = read_file(p / "authorized"))   j["authorized"]   = trim_ws(*v) == "1";
+		return j;
+	}
+	j["is_usb"] = false;
 	return j;
 }
 

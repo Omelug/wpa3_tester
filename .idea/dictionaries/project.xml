@@ -126,6 +126,7 @@
       <w>killpg</w>
       <w>kname</w>
       <w>konfiguration</w>
+      <w>kprobes</w>
       <w>krack</w>
       <w>libgcc</w>
       <w>libssh</w>
@@ -201,6 +202,7 @@
       <w>readlink</w>
       <w>reassoc</w>
       <w>recv</w>
+      <w>regdom</w>
       <w>regdomain</w>
       <w>regidx</w>
       <w>regval</w>

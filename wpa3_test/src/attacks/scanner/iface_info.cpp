@@ -51,6 +51,13 @@ void run_attack(RunStatus &rs){
 	result["driver_specific"] =
 	driver_diag::collect_driver_specific(scanner->get(SK::driver_name), result.value("phy", ""));
 
+	//TODO
+	// move to netns, return after netns remove
+	// change of channel
+	// reguratory internal - > infor from driver specific?/ phy
+	// serial number
+	// usb reset?
+
 	rs.save_result(result);
 
 	ofstream result_txt(rs.run_folder() / "result.txt");

@@ -4,7 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+: trace-cmd
++: dmesg observer
 
 +: rogue AP into Bl0ck
 +: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth

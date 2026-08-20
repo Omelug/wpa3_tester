@@ -1,4 +1,4 @@
-TEST_SUITE ?= BARS_filler
+TEST_SUITE ?= CSA_rogueAP_internal_filler
 
 .PHONY: bootstrap deploy run run-debug deploy-debug
 

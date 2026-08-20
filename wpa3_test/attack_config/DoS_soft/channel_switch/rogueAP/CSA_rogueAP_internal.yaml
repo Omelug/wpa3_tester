@@ -42,4 +42,3 @@ attack_config:
   sleep_after_sec: 10
 #only_stats: true
 delete_old: false
-rewrite: all

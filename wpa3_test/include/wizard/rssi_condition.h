@@ -40,6 +40,6 @@ ExprPtr parse_condition(const std::string& s);
 void render_condition_status(FILE* pipe, const ExprPtr& expr, const RssiMatrix& m);
 
 //return true if found valid
-bool run_rssi_wizard(const std::string& condition_str = "", const wpa3_tester::Channel &ch = {6, wpa3_tester::WifiBand::BAND_2_4, std::nullopt}, bool &position_changed);
+bool run_rssi_wizard(const std::string& condition_str = "", const wpa3_tester::Channel &ch = {6, wpa3_tester::WifiBand::BAND_2_4, std::nullopt});
 std::string actor_names_to_mac(const std::string &actor_names_cond,
 	const std::vector<wpa3_tester::ActorCMap> &actors_maps);

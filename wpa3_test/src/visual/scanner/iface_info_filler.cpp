@@ -10,6 +10,7 @@
 #include "logger/devices.h"
 #include "logger/report.h"
 #include "suite/suite_helper.h"
+#include "system/driver_diagnostics.h"
 
 namespace wpa3_tester::suite::iface_info_filler{
 using namespace std;
@@ -31,6 +32,13 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder){
 		ifstream f(test_folder / "result.txt");
 		if(f.is_open()) e.hw_summary = string{istreambuf_iterator(f), {}};
 		else e.hw_summary = "?";
+
+		try{
+			const auto result = rs.load_result();
+			e.driver_summary = driver_diag::summarize_driver_specific(
+				result.value("driver_specific", nlohmann::json::object()));
+		} catch(...){ e.driver_summary = "?"; }
+
 	} else{
 		e.hw_summary = "?";
 	}

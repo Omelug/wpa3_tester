@@ -35,7 +35,7 @@ struct CsaTestEntry{
 	described_str conn_WPA_version;
 	described_str client_scanning;
 	std::optional<bool> rogue_ap_connected;
-	bool cracked;
+	std::optional<bool> cracked;
 
 	//std::filesystem::path client_graph;
 	//std::filesystem::path ap_graph;

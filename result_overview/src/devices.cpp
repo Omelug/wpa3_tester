@@ -26,6 +26,13 @@ struct DeviceCaps {
 	optional<bool> netns_change, beacon_prot, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
 };
 
+struct IfaceData {
+	string phy;
+	string iw_info;
+	string ip_addr;
+	json driver_specific;
+};
+
 struct DeviceInfo {
 	string mac;
 	string source;
@@ -34,6 +41,7 @@ struct DeviceInfo {
 	string driver_hash;
 	string module_hash;
 	DeviceCaps caps;
+	optional<IfaceData> iface;
 };
 
 static optional<bool> json_bool(const json &j, const string &key){
@@ -67,6 +75,28 @@ static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	d.caps.WPA_PSK  = json_bool(caps, "WPA-PSK");
 	d.caps.WPA3_SAE = json_bool(caps, "WPA3-SAE");
 	return d;
+}
+
+static optional<IfaceData> find_iface_run(const path &all_actors, const string &mac){
+	if(!exists(all_actors)) return nullopt;
+	string slug = mac;
+	ranges::replace(slug, ':', '_');
+	const string report_name = "iface_report_" + slug + ".md";
+	for(const auto &e : directory_iterator(all_actors)){
+		if(!e.is_directory() || !exists(e.path() / report_name)) continue;
+		const path rj = e.path() / "result.json";
+		if(!exists(rj)) continue;
+		ifstream f(rj);
+		json j;
+		try{ j = json::parse(f); } catch(...){ continue; }
+		IfaceData d;
+		d.phy     = j.value("phy",     string{});
+		d.iw_info = j.value("iw_info", string{});
+		d.ip_addr = j.value("ip_addr", string{});
+		if(j.contains("driver_specific")) d.driver_specific = j["driver_specific"];
+		return d;
+	}
+	return nullopt;
 }
 
 static optional<DeviceInfo> read_device(const path &dev_dir){
@@ -127,7 +157,34 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	tr("MFP",              d.caps.MFP);
 	tr("WPA-PSK",          d.caps.WPA_PSK);
 	tr("WPA3-SAE",         d.caps.WPA3_SAE);
-	f << "        </table>\n    </div>\n</body>\n</html>\n";
+	f << "        </table>\n    </div>\n";
+
+	if(d.iface){
+		const auto &iface = *d.iface;
+		f << "    <div class=\"card\">\n        <h2>System Snapshot</h2>\n        <table>\n";
+		if(!iface.phy.empty())                              tr("PHY", iface.phy);
+		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
+		f << "        </table>\n";
+		if(!iface.iw_info.empty()){
+			f << "        <h3><code>iw dev info</code></h3>\n"
+			  << "        <pre>" << iface.iw_info << "</pre>\n";
+		}
+		if(!iface.driver_specific.is_null() && !iface.driver_specific.empty()){
+			auto ds = iface.driver_specific.dump(2);
+			auto unescape = [&](string_view seq, string_view rep){
+				for(auto p = ds.find(seq); p != string::npos; p = ds.find(seq, p))
+					ds.replace(p, seq.size(), rep);
+			};
+			unescape("\\n", "\n");
+			unescape("\\t", "\t");
+			unescape("\\r", "");
+			f << "        <h3>Driver Diagnostics</h3>\n"
+			  << "        <pre>" << ds << "</pre>\n";
+		}
+		f << "    </div>\n";
+	}
+
+	f << "</body>\n</html>\n";
 }
 
 static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source){
@@ -147,6 +204,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 			f << "<a href=\"" << d.mac << "/index.html\">" << label << "</a>";
 		});
 		COL("Driver",      d.driver);
+		col("PHY", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->phy : ""); });
 		COL("AP",          d.caps.AP);
 		COL("STA",         d.caps.STA);
 		COL("Mon",         d.caps.monitor);
@@ -180,6 +238,10 @@ void generate_devices(const path &output_dir, const path &data_dir){
 				devices.push_back(std::move(*d));
 		}
 	}
+
+	const path iface_all_actors = data_dir / "suite_data" / "scanner" / "iface_info" / "iface_info_filler" / "all_actors";
+	for(auto &d : devices)
+		d.iface = find_iface_run(iface_all_actors, d.mac);
 
 	ranges::sort(devices, [](const DeviceInfo &a, const DeviceInfo &b){
 		return tie(a.name, a.source) < tie(b.name,  b.source);

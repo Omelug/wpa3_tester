@@ -11,6 +11,7 @@
       <w>Mitm</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
+      <w>Realtek</w>
       <w>Reasso</w>
       <w>SMACOF</w>
       <w>aabbccddee</w>
@@ -20,6 +21,7 @@
       <w>addr</w>
       <w>addrs</w>
       <w>algs</w>
+      <w>ampdu</w>
       <w>angriff</w>
       <w>anonce</w>
       <w>arphrd</w>
@@ -50,6 +52,8 @@
       <w>cwmax</w>
       <w>cwmin</w>
       <w>ddwrt</w>
+      <w>debugfs</w>
+      <w>debugfsdir</w>
       <w>defconfig</w>
       <w>defs</w>
       <w>defualt</w>
@@ -66,6 +70,7 @@
       <w>dtoverlay</w>
       <w>eapol</w>
       <w>earlyprintk</w>
+      <w>edcca</w>
       <w>efchatz</w>
       <w>emitterutils</w>
       <w>endl</w>
@@ -79,6 +84,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>firmaware</w>
       <w>firstboot</w>
       <w>fmtloc</w>
       <w>fprintf</w>
@@ -196,6 +202,8 @@
       <w>reassoc</w>
       <w>recv</w>
       <w>regdomain</w>
+      <w>regidx</w>
+      <w>regval</w>
       <w>reproc</w>
       <w>retrans</w>
       <w>reuseaddr</w>
@@ -206,6 +214,7 @@
       <w>rsneapol</w>
       <w>rsnxcaps</w>
       <w>rsnxe</w>
+      <w>rsvd</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>
       <w>rwxrwxrwx</w>
@@ -238,6 +247,7 @@
       <w>txack</w>
       <w>txop</w>
       <w>txpower</w>
+      <w>txpwr</w>
       <w>udevadm</w>
       <w>unassoc</w>
       <w>usbcore</w>
@@ -252,6 +262,7 @@
       <w>wpaout</w>
       <w>writerd</w>
       <w>xlabel</w>
+      <w>xmit</w>
       <w>xtics</w>
       <w>ylabel</w>
       <w>ymax</w>

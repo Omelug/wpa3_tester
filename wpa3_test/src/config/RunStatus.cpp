@@ -101,6 +101,7 @@ void RunStatus::execute(){
 		return;
 	}
 
+	rssi_checked = false;
 	while(config_requirement()){
 		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 	} //include req validation

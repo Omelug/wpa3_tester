@@ -2,15 +2,15 @@ actors:
   rogue_ap:
     source: internal
     selection:
-      channel: 36
-      condition: [ AP, 2_4GHz ]
+      channel: 40
+      condition: [ AP, 5GHz ]
     setup:
       program: hostapd-mana
       program_config:
         driver: nl80211
         ssid: test_wpa3_tester
         hw_mode: a
-        channel: 36
+        channel: 40
         ieee80211n: 1
         ieee80211w: 0
         group_mgmt_cipher: AES-128-CMAC

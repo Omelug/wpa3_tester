@@ -1,4 +1,6 @@
+#include <chrono>
 #include <filesystem>
+#include <vector>
 
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
@@ -57,7 +59,41 @@ void run_attack(RunStatus &rs){
 	result["driver_specific"] = driver_diag::collect_driver_specific(scanner->get(SK::driver_name), phy);
 	result["regulatory"]      = driver_diag::collect_regulatory(phy, netns);
 	result["usb_info"]        = driver_diag::collect_usb_info(iface);
-	//TODO change of channel: set monitor + channel from selection before snapshot, restore after
+
+	// ----- channel switch timing -----
+	{
+		using namespace chrono;
+		Channel test_ch{6, WifiBand::BAND_2_4};
+		const auto t0 = steady_clock::now();
+		const auto ec = netlink_helper::set_channel_nl(iface, netns, test_ch);
+		if(!ec) netlink_helper::wait_for_channel(iface, netns, test_ch);
+		const auto ms = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		result["channel_switch"]["ok"] = !ec;
+		result["channel_switch"]["ms"] = ms;
+		if(ec) result["channel_switch"]["error"] = ec.message();
+	}
+
+	// ----- netns round-trip timing (move + wait via nl, then delete + wait for return) -----
+	try{
+		using namespace chrono;
+		const string test_ns = "iface_info_bench";
+		hw_capabilities::create_ns(test_ns);
+
+		const auto t0 = steady_clock::now();
+		const bool moved = hw_capabilities::move_to_netns(iface, test_ns);
+		// wait_for_iface_appear listens via RTMGRP_LINK in target ns — no iw polling needed
+		const auto ec_appear = moved
+			? netlink_helper::wait_for_iface_appear(iface, test_ns)
+			: error_code{EINVAL, system_category()};
+		result["netns_move"]["ok"] = !ec_appear;
+		result["netns_move"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+
+		const auto t2 = steady_clock::now();
+		netlink_helper::delete_ns_and_wait(test_ns, vector<string>{iface});
+		result["netns_return"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t2).count();
+	} catch(...){
+		result["netns_move"]["ok"] = false;
+	}
 
 	rs.save_result(result);
 

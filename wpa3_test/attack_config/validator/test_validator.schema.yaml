@@ -460,7 +460,6 @@ $defs:
         description: Actor to observe
       program:
         type: string
-        enum: [ "iperf3", "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter", "trace_cmd", "dmesg" ]
         description: Program to use for observation
       program_config:
         type: object

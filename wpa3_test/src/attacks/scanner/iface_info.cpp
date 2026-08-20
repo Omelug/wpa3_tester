@@ -63,7 +63,7 @@ void run_attack(RunStatus &rs){
 	// ----- channel switch timing -----
 	{
 		using namespace chrono;
-		Channel test_ch{6, WifiBand::BAND_2_4};
+		Channel test_ch{6, WifiBand::BAND_2_4, nullopt};
 		const auto t0 = steady_clock::now();
 		const auto ec = netlink_helper::set_channel_nl(iface, netns, test_ch);
 		if(!ec) netlink_helper::wait_for_channel(iface, netns, test_ch);

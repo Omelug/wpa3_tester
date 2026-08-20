@@ -2,18 +2,15 @@
 
 # ── Kernel cross-compilation with debug config ─────────────────────────────────
 # Builds the official Pi kernel (bcm2711_defconfig) with kernel/debug.config merged in.
-# Enables *_DEBUGFS for ath9k_htc, rtw88, rtw89, mac80211, cfg80211 — flags that
-# can't be injected into in-kernel drivers at runtime or via DKMS EXTRA_CFLAGS.
 #
 # Prereqs (one-time):  sudo apt install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc
-# Build time:          ~20 min first run, incremental rebuilds are fast
 
 kernel: $(KERNEL_OUT)/arch/arm64/boot/Image
 
 $(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG)
 	@command -v aarch64-linux-gnu-gcc >/dev/null 2>&1 \
 	    || { echo "Error: install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc"; exit 1; }
-	[ -d $(KERNEL_SRC)/.git ] || git clone --depth=1 $(KERNEL_REPO) $(KERNEL_SRC)
+	[ -d $(KERNEL_SRC)/.git ] || git clone --depth=1 --branch rpi-6.6.y $(KERNEL_REPO) $(KERNEL_SRC)
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2711_defconfig
 	grep -E '^CONFIG_[A-Z0-9_]+=[yn]' $(DEBUG_CONFIG) | while IFS='=' read -r k v; do \
 	    case "$$v" in \

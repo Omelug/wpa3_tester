@@ -1,4 +1,4 @@
-TEST_SUITE ?= BARS_filler
+TEST_SUITE ?= CSA_rogueAP_internal_filler
 
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap deploy run run-debug deploy-debug deploy-cross internet gdbserver-start

@@ -1,6 +1,7 @@
 TEST_SUITE ?= BARS_filler
 
-.PHONY: bootstrap deploy run run-debug deploy-debug
+# forward-declare targets from sibling mk files so CLion resolves them
+.PHONY: bootstrap deploy run run-debug deploy-debug deploy-cross internet gdbserver-start
 
 bootstrap:
 	@test -n "$(PI)" || { echo "Error: PI is not set. Usage: make bootstrap PI=<address>"; exit 1; }

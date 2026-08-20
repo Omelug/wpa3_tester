@@ -1,5 +1,8 @@
 .PHONY: image flash clean_image
 
+# source files — exist in repo, no recipe needed; declared so CLion resolves them as prerequisites
+image/customize.sh image/firstboot.sh image/firstboot.service: ;
+
 image: $(CUSTOM_IMAGE)
 	@echo ""
 	@echo "==> Image ready: $(CUSTOM_IMAGE)"

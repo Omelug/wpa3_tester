@@ -5,7 +5,12 @@ v: visualization
 
 Version v 0.0.0.0:
 +: trace-cmd
+
 +: rogue AP into Bl0ck
++: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
++: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
+???+: requirement, žw u bl0ck musí být attacker mezi AP a client - musí být nějak vzálené?
+
 d: rapsberry
 ch: limitovat klienty na známé stringy, kde to jde, pak limitace ve validatorech
 +: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
@@ -14,18 +19,10 @@ CSA - upravit report pro external BB
 +: přidat dhp na Openwrt (některé mobily potřebují IP, aby se neodpojily, maskují tak)
 +: wizard v tester_stup pro external lab (spustit nalaptopu, pro tester na raspberry to bude čistě externí)
 d+: scan_until_success
-?f: asan je podezřelej, nehlásí leaky
 t? - test validation - testat i vygenerované testy?
-+: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
-+: do channel switch overview dát cracked
 +: doc/rtw_8821cu_crach.txt (zkusit na nixOS, mělo by být v kernelu)
-+: sudo nano /etc/udev/rules.d/40-realtek-wifi.rules pro mass storage USB adaptéry ()
-???+: requirement, žw u bl0ck musí být attacker mezi AP a client
-nebo proč BARS někdy klienta odpojí a někdy ne?
-+: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
-?: proč je /home/kali/ClionProjects/wpa3_tester/data/suite_data/target/Dlink/suite/Dlink_all/downgrade_Dlink_wb_wpa3_disable/downgrade_Dlink_wb_wpa3_disable/observer/tshark/attacker_capture.pcap prádný?
 t: external info/iface_info parsing tests
 +: injection test for openwrt (tried, openwrt crash)
 
@@ -69,6 +66,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: do channel switch overview dát cracked
 +: test_suite - source by test_name
 r: co jde v suite, sjednotit
 r: Makefile structure
@@ -177,6 +175,7 @@ f: all process have to killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
 +: testy pro qemu s mým raspberry image
+?f: asan je podezřelej, nehlásí leaky
 
 // new attacks?
 +: State Poisoning (2025_SACRED)

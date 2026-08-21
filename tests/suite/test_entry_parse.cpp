@@ -164,134 +164,132 @@ TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {
 }
 
 // ----- tests that call load_test_rs -> config_validation (need IsolatedRootDir) -----
+// ponytail: one static IsolatedRootDir shared across all subcases — 7 constructions → 1
 
-TEST_CASE("OweTransTestEntry::parse - reads drivers and probe counts") {
-	const test_helpers::IsolatedRootDir iso("ep_owe");
-	const auto d = setup_dir("owe_full");
-	write_result(d, {{"broadcast_probe_count", 5}, {"ssid_probe_count", 2}, {"disconnected", true}});
-	write_config(d, {"ap", "client", "attacker"});
-	write_mapping(d, {
-		{"ap", "ath9k",   "aa:00:00:00:00:01"},
-		{"client",       "rt2800",  "aa:00:00:00:00:02"},
-		{"attacker",     "mt76x2u", "aa:00:00:00:00:03"},
-	});
-	const auto e = suite::owe_trans_filler::OweTransTestEntry::parse(d);
-	CHECK_EQ(e.test_name,              d.filename().string());
-	CHECK_EQ(e.ap_driver,              "ath9k");
-	CHECK_EQ(e.client_driver,          "rt2800");
-	CHECK_EQ(e.attacker_driver,        "mt76x2u");
-	CHECK_EQ(e.broadcast_probe_count,  5);
-	CHECK_EQ(e.ssid_probe_count,       2);
-	CHECK_EQ(e.disconnected,           true);
-}
+TEST_CASE("entry parse - config_validation tests") {
+	static test_helpers::IsolatedRootDir iso("ep_shared");
 
-TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and passed") {
-	const test_helpers::IsolatedRootDir iso("ep_invcurve");
-	const auto d = setup_dir("invcurve_full");
-	write_result(d, {{"passed", true}});
-	write_config(d, {"ap", "attacker"});
-	write_mapping(d, {
-		{"ap", "ath9k",   "aa:00:00:00:01:01"},
-		{"attacker",     "mt76x2u", "aa:00:00:00:01:02"},
-	});
-	const auto e = suite::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
-	CHECK_EQ(e.ap_driver,       "ath9k");
-	CHECK_EQ(e.attacker_driver, "mt76x2u");
-	REQUIRE(e.passed.has_value());
-	CHECK_EQ(e.passed.value(), true);
-}
+	SUBCASE("OweTransTestEntry::parse - reads drivers and probe counts") {
+		const auto d = setup_dir("owe_full");
+		write_result(d, {{"broadcast_probe_count", 5}, {"ssid_probe_count", 2}, {"disconnected", true}});
+		write_config(d, {"ap", "client", "attacker"});
+		write_mapping(d, {
+			{"ap", "ath9k",   "aa:00:00:00:00:01"},
+			{"client",       "rt2800",  "aa:00:00:00:00:02"},
+			{"attacker",     "mt76x2u", "aa:00:00:00:00:03"},
+		});
+		const auto e = suite::owe_trans_filler::OweTransTestEntry::parse(d);
+		CHECK_EQ(e.test_name,              d.filename().string());
+		CHECK_EQ(e.ap_driver,              "ath9k");
+		CHECK_EQ(e.client_driver,          "rt2800");
+		CHECK_EQ(e.attacker_driver,        "mt76x2u");
+		CHECK_EQ(e.broadcast_probe_count,  5);
+		CHECK_EQ(e.ssid_probe_count,       2);
+		CHECK_EQ(e.disconnected,           true);
+	}
 
-TEST_CASE("ActiveTestEntry::parse - reads drivers and acked counts") {
-	const test_helpers::IsolatedRootDir iso("ep_active");
-	const auto d = setup_dir("active_full");
-	write_result(d, {{"acked", 10}, {"not_acked", 2}, {"success", true}});
-	write_config(d, {"transceiver", "receiver"});
-	write_mapping(d, {
-		{"transceiver", "ath9k",  "bb:00:00:00:00:01"},
-		{"receiver",    "rt2800", "bb:00:00:00:00:02"},
-	});
-	const auto e = suite::active_test_filler::ActiveTestEntry::parse(d);
-	CHECK_EQ(e.tx_driver,  "ath9k");
-	CHECK_EQ(e.rx_driver,  "rt2800");
-	CHECK_EQ(e.acked,      10);
-	CHECK_EQ(e.not_acked,  2);
-	CHECK_EQ(e.success,    true);
-}
+	SUBCASE("InvalidCurveTestEntry::parse - reads drivers and passed") {
+		const auto d = setup_dir("invcurve_full");
+		write_result(d, {{"passed", true}});
+		write_config(d, {"ap", "attacker"});
+		write_mapping(d, {
+			{"ap", "ath9k",   "aa:00:00:00:01:01"},
+			{"attacker",     "mt76x2u", "aa:00:00:00:01:02"},
+		});
+		const auto e = suite::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
+		CHECK_EQ(e.ap_driver,       "ath9k");
+		CHECK_EQ(e.attacker_driver, "mt76x2u");
+		REQUIRE(e.passed.has_value());
+		CHECK_EQ(e.passed.value(), true);
+	}
 
-TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and passed") {
-	const test_helpers::IsolatedRootDir iso("ep_refl");
-	const auto d = setup_dir("refl_full");
-	write_result(d, {{"passed", false}});
-	write_config(d, {"ap", "attacker"});
-	write_mapping(d, {
-		{"ap", "ath9k",   "cc:00:00:00:00:01"},
-		{"attacker",     "mt76x2u", "cc:00:00:00:00:02"},
-	});
-	const auto e = suite::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
-	CHECK_EQ(e.ap_driver,       "ath9k");
-	CHECK_EQ(e.attacker_driver, "mt76x2u");
-	REQUIRE(e.passed.has_value());
-	CHECK_EQ(e.passed.value(), false);
-}
+	SUBCASE("ActiveTestEntry::parse - reads drivers and acked counts") {
+		const auto d = setup_dir("active_full");
+		write_result(d, {{"acked", 10}, {"not_acked", 2}, {"success", true}});
+		write_config(d, {"transceiver", "receiver"});
+		write_mapping(d, {
+			{"transceiver", "ath9k",  "bb:00:00:00:00:01"},
+			{"receiver",    "rt2800", "bb:00:00:00:00:02"},
+		});
+		const auto e = suite::active_test_filler::ActiveTestEntry::parse(d);
+		CHECK_EQ(e.tx_driver,  "ath9k");
+		CHECK_EQ(e.rx_driver,  "rt2800");
+		CHECK_EQ(e.acked,      10);
+		CHECK_EQ(e.not_acked,  2);
+		CHECK_EQ(e.success,    true);
+	}
 
-TEST_CASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen") {
-	const test_helpers::IsolatedRootDir iso("ep_wpa3dn");
-	const auto d = setup_dir("wpa3dn_full");
-	write_result(d, {{"downgrade_seen", true}, {"disconnected", true}});
-	write_config(d, {"ap", "client"});
-	write_mapping(d, {
-		{"ap", "ath9k",  "dd:00:00:00:00:01"},
-		{"client",       "rt2800", "dd:00:00:00:00:02"},
-	});
-	const auto e = suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
-	CHECK_EQ(e.ap_driver,      "ath9k");
-	CHECK_EQ(e.client_driver,  "rt2800");
-	CHECK_EQ(e.downgrade_seen, true);
-	CHECK_EQ(e.disconnected,   true);
-}
+	SUBCASE("ReflectionAttackTestEntry::parse - reads drivers and passed") {
+		const auto d = setup_dir("refl_full");
+		write_result(d, {{"passed", false}});
+		write_config(d, {"ap", "attacker"});
+		write_mapping(d, {
+			{"ap", "ath9k",   "cc:00:00:00:00:01"},
+			{"attacker",     "mt76x2u", "cc:00:00:00:00:02"},
+		});
+		const auto e = suite::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
+		CHECK_EQ(e.ap_driver,       "ath9k");
+		CHECK_EQ(e.attacker_driver, "mt76x2u");
+		REQUIRE(e.passed.has_value());
+		CHECK_EQ(e.passed.value(), false);
+	}
 
-TEST_CASE("InjectionTestEntry::parse - counts sub-tests and records failures") {
-	const test_helpers::IsolatedRootDir iso("ep_inject");
-	const auto d = setup_dir("inject_full");
-	write_result(d, {
-		{"tests", {
-			{"inject_basic", {{"result", "PASSED"}}},
-			{"inject_qos",   {{"result", "PASSED"}}},
-			{"inject_retry", {{"result", "FAILED"}, {"detail", "no ack"}}},
-		}},
-	});
-	write_config(d, {"transceiver", "receiver"});
-	write_mapping(d, {
-		{"transceiver", "ath9k",  "ee:00:00:00:00:01"},
-		{"receiver",    "rt2800", "ee:00:00:00:00:02"},
-	});
-	const auto e = suite::injection_test_filler::InjectionTestEntry::parse(d);
-	CHECK_EQ(e.tx_driver,    "ath9k");
-	CHECK_EQ(e.rx_driver,    "rt2800");
-	CHECK_EQ(e.tests_total,  3);
-	CHECK_EQ(e.tests_passed, 2);
-	REQUIRE(e.passed.has_value());
-	CHECK_EQ(e.passed.value(), false);
-	REQUIRE_EQ(e.failures.size(), 1);
-	CHECK_EQ(e.failures[0].first,  "inject_retry");
-	CHECK_EQ(e.failures[0].second, "no ack");
-}
+	SUBCASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen") {
+		const auto d = setup_dir("wpa3dn_full");
+		write_result(d, {{"downgrade_seen", true}, {"disconnected", true}});
+		write_config(d, {"ap", "client"});
+		write_mapping(d, {
+			{"ap", "ath9k",  "dd:00:00:00:00:01"},
+			{"client",       "rt2800", "dd:00:00:00:00:02"},
+		});
+		const auto e = suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
+		CHECK_EQ(e.ap_driver,      "ath9k");
+		CHECK_EQ(e.client_driver,  "rt2800");
+		CHECK_EQ(e.downgrade_seen, true);
+		CHECK_EQ(e.disconnected,   true);
+	}
 
-TEST_CASE("MalformedEapol1TestEntry::parse - reads drivers and disconnect_count") {
-	const test_helpers::IsolatedRootDir iso("ep_meapol");
-	const auto d = setup_dir("meapol_full");
-	write_result(d, {{"disconnect_count", 4}, {"rogue_ap_connected", true}});
-	write_config(d, {"ap", "client", "attacker"});
-	write_mapping(d, {
-		{"ap", "ath9k",   "ff:00:00:00:00:01"},
-		{"client",       "rt2800",  "ff:00:00:00:00:02"},
-		{"attacker",     "mt76x2u", "ff:00:00:00:00:03"},
-	});
-	const auto e = suite::malformed_eapol1_filler::MalformedEapol1TestEntry::parse(d);
-	CHECK_EQ(e.ap_driver,       "ath9k");
-	CHECK_EQ(e.client_driver,   "rt2800");
-	CHECK_EQ(e.attacker_driver, "mt76x2u");
-	CHECK_EQ(e.client_version,  "default");  // no setup.program_config.version in yaml
-	REQUIRE(e.rogue_ap_connected.has_value());
-	CHECK_EQ(e.rogue_ap_connected.value(), true);
+	SUBCASE("InjectionTestEntry::parse - counts sub-tests and records failures") {
+		const auto d = setup_dir("inject_full");
+		write_result(d, {
+			{"tests", {
+				{"inject_basic", {{"result", "PASSED"}}},
+				{"inject_qos",   {{"result", "PASSED"}}},
+				{"inject_retry", {{"result", "FAILED"}, {"detail", "no ack"}}},
+			}},
+		});
+		write_config(d, {"transceiver", "receiver"});
+		write_mapping(d, {
+			{"transceiver", "ath9k",  "ee:00:00:00:00:01"},
+			{"receiver",    "rt2800", "ee:00:00:00:00:02"},
+		});
+		const auto e = suite::injection_test_filler::InjectionTestEntry::parse(d);
+		CHECK_EQ(e.tx_driver,    "ath9k");
+		CHECK_EQ(e.rx_driver,    "rt2800");
+		CHECK_EQ(e.tests_total,  3);
+		CHECK_EQ(e.tests_passed, 2);
+		REQUIRE(e.passed.has_value());
+		CHECK_EQ(e.passed.value(), false);
+		REQUIRE_EQ(e.failures.size(), 1);
+		CHECK_EQ(e.failures[0].first,  "inject_retry");
+		CHECK_EQ(e.failures[0].second, "no ack");
+	}
+
+	SUBCASE("MalformedEapol1TestEntry::parse - reads drivers and disconnect_count") {
+		const auto d = setup_dir("meapol_full");
+		write_result(d, {{"disconnect_count", 4}, {"rogue_ap_connected", true}});
+		write_config(d, {"ap", "client", "attacker"});
+		write_mapping(d, {
+			{"ap", "ath9k",   "ff:00:00:00:00:01"},
+			{"client",       "rt2800",  "ff:00:00:00:00:02"},
+			{"attacker",     "mt76x2u", "ff:00:00:00:00:03"},
+		});
+		const auto e = suite::malformed_eapol1_filler::MalformedEapol1TestEntry::parse(d);
+		CHECK_EQ(e.ap_driver,       "ath9k");
+		CHECK_EQ(e.client_driver,   "rt2800");
+		CHECK_EQ(e.attacker_driver, "mt76x2u");
+		CHECK_EQ(e.client_version,  "default");  // no setup.program_config.version in yaml
+		REQUIRE(e.rogue_ap_connected.has_value());
+		CHECK_EQ(e.rogue_ap_connected.value(), true);
+	}
 }

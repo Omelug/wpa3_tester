@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include <filesystem>
+#include <map>
 #include <yaml-cpp/node/parse.h>
 #include "config/global_config.h"
 #include "config/ObserverPtr.h"
@@ -23,6 +24,8 @@ struct ConfigTestCase{
 };
 
 void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
+	// ponytail: static cache — expected files are read-only fixtures, several are shared across subcases
+	static map<path, nlohmann::json> yaml_cache;
 	for(const auto &[description, input_yaml, expected_yaml, should_pass]: tests){
 		SUBCASE(description.c_str()){
 			path input_path = test_base / input_yaml;
@@ -33,12 +36,13 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
 				REQUIRE_NOTHROW(rs.config(RunStatus::config_validation(rs.config_path())));
 
 				path expected_path = test_base / expected_yaml;
-				nlohmann::json expected_json = yaml_to_json(YAML::LoadFile(expected_path));
+				if(!yaml_cache.count(expected_path))
+					yaml_cache[expected_path] = yaml_to_json(YAML::LoadFile(expected_path));
 
-				auto diff = nlohmann::json::diff(expected_json, rs.config());
+				auto diff = nlohmann::json::diff(yaml_cache[expected_path], rs.config());
 				INFO("Diff (expected vs actual): " << diff.dump(4));
 				INFO("Actual JSON from RunStatus: " << rs.config().dump(4));
-				CHECK_EQ(rs.config(), expected_json);
+				CHECK_EQ(rs.config(), yaml_cache[expected_path]);
 			} else{
 				CHECK_THROWS_AS(rs.config(RunStatus::config_validation(rs.config_path())), wpa3_tester::config_err);
 			}
@@ -276,12 +280,8 @@ TEST_CASE("RunStatus - Test suite test generation"){
 			CAPTURE(actual_dir.string());
 			CAPTURE(expected_dir.string());
 
-			SUBCASE("Recursive YAML comparison") {
-				check_recursive_yaml(expected_dir, actual_dir);
-			}
-			SUBCASE("Directory tree structure comparison") {
-				check_dir_tree_structure(expected_dir, actual_dir);
-			}
+			check_recursive_yaml(expected_dir, actual_dir);
+			check_dir_tree_structure(expected_dir, actual_dir);
 		}
 	}
 }

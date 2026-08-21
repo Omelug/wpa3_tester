@@ -37,6 +37,18 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder){
 			const auto result = rs.load_result();
 			e.driver_summary = driver_diag::summarize_driver_specific(
 				result.value("driver_specific", nlohmann::json::object()));
+			if(result.contains("channel_switch")){
+				const auto &cs = result["channel_switch"];
+				e.channel_switch_ok = cs.value("ok", false);
+				e.channel_switch_ms = cs.value("ms", -1);
+			}
+			if(result.contains("netns_move")){
+				const auto &nm = result["netns_move"];
+				e.netns_move_ok = nm.value("ok", false);
+				e.netns_move_ms = nm.value("ms", -1);
+			}
+			if(result.contains("netns_return"))
+				e.netns_return_ms = result["netns_return"].value("ms", -1);
 		} catch(...){ e.driver_summary = "?"; }
 
 	} else{
@@ -65,13 +77,26 @@ void generate_report(RunSuiteStatus &rss){
 
 	if(entries.empty()){ r << "No test results found.\n"; return; }
 
-	r << "| Test | Info  | Report |\n";
-	r << "|------|-------|--------|\n";
+	r << "| Test | Info | Ch Switch | NetNS Move | Report |\n";
+	r << "|------|------|-----------|------------|--------|\n";
 
 	for(const auto &e: entries){
+		string ch = "n/a";
+		if(e.channel_switch_ok.has_value())
+			ch = (e.channel_switch_ok.value() ? "ok " : "fail ") + to_string(e.channel_switch_ms.value_or(-1)) + "ms";
+
+		string ns = "n/a";
+		if(e.netns_move_ok.has_value()){
+			ns = (e.netns_move_ok.value() ? "ok " : "fail ") + to_string(e.netns_move_ms.value_or(-1)) + "ms";
+			if(e.netns_return_ms.has_value())
+				ns += " / " + to_string(e.netns_return_ms.value()) + "ms";
+		}
+
 		r << "| "
 			<< e.test_name << " | "
 			<< e.hw_summary << " | "
+			<< ch << " | "
+			<< ns << " | "
 			<< report::link("report", e.report_md) << " |\n";
 	}
 }

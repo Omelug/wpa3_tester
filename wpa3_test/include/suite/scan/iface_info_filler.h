@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
@@ -10,6 +11,11 @@ struct IfaceInfoTestEntry{
 	std::string hw_summary;
 	std::string driver_summary;
 	std::filesystem::path report_md;
+	std::optional<bool> channel_switch_ok;
+	std::optional<int>  channel_switch_ms;
+	std::optional<bool> netns_move_ok;
+	std::optional<int>  netns_move_ms;
+	std::optional<int>  netns_return_ms;
 
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };

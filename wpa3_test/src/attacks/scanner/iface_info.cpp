@@ -28,7 +28,7 @@ void run_attack(RunStatus &rs){
 
 	auto scanner = rs.get_actor("scanner");
 	const string iface = scanner.get(SK::iface);
-	const optional<string> netns = scanner[SK::netns];
+	const optional<string>& netns = scanner[SK::netns];
 
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);

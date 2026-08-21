@@ -78,7 +78,7 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else{
-		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO pročNOACK flag??????
+		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO proč NOACK flag??????
 		bytes = pdu.serialize();
 	}
 	if(tx_ch_){

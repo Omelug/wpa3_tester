@@ -27,7 +27,11 @@ results of test are stored in [data](data) folder
 
 `make make_overview` for show of collected data on HTMl page
 
- 
+### Tester setup
+
+Raspberry 4b -  to run it on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md)
+
+
 ### Weird things of the code
 
 - if are connected 2 mt76x2u interfaces (90:de:80:6c:90:92, //TODO ) kernel do in some tests weird thing,

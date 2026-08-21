@@ -1,5 +1,7 @@
 # Raspberry Pi 4B 
 
+#TODO simplify 
+
 Target OS: **Raspberry Pi OS Lite 64-bit (Bookworm)**
  #TODO zkontrolovat, 6e 
 ! on kernel 6.6 

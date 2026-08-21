@@ -32,4 +32,9 @@ void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_a
 			int dtim_period = 1
 );
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
+
+Tins::Dot11Beacon make_confused_beacon(const Tins::Dot11Beacon &real, const std::string &confused_ssid, bool strip_rsn);
+Tins::Dot11ProbeResponse make_confused_probe_resp(const Tins::Dot11ProbeResponse &real, const std::string &confused_ssid, bool strip_rsn);
+Tins::Dot11AssocRequest  make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
+
 }

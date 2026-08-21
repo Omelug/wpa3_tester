@@ -1,12 +1,12 @@
 #include "attacks/DoS_soft/malformed_eapol1.h"
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "system/utils.h"
 #include <filesystem>
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::malformed_eapol1_filler::MalformedEapol1TestEntry;
+using visual::malformed_eapol1_filler::MalformedEapol1TestEntry;
 
 void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "malformed_eapol1";

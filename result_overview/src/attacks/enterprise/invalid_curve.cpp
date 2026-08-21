@@ -1,5 +1,5 @@
-#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
-#include "suite/suite_helper.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/suite_helper.h"
 #include "system/utils.h"
 #include <filesystem>
 #include <string>
@@ -38,7 +38,7 @@ void generate_invalid_curve_attack(const path &output_dir, const path &data_dir)
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "invalid_curve" / "invalid_curve_filler";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir) {
-		suite::invalid_curve_filler::InvalidCurveTestEntry::render_table(f, title, suite_data_dir, page_dir);
+		visual::invalid_curve_filler::InvalidCurveTestEntry::render_table(f, title, suite_data_dir, page_dir);
 	};
 
 	emit_table("Test Results",  suite_dir);

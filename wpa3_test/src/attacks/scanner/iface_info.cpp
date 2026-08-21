@@ -66,7 +66,9 @@ void run_attack(RunStatus &rs){
 		Channel from_ch{11, WifiBand::BAND_2_4, nullopt};
 		Channel test_ch{6,  WifiBand::BAND_2_4, nullopt};
 		// pre-switch so we're guaranteed to measure a real transition
-		netlink_helper::set_channel_nl(iface, netns, from_ch);
+		if (!netlink_helper::set_channel_nl(iface, netns, from_ch)) {
+			log(LogLevel::ERROR, "set_channel_nl failed");
+		}
 		netlink_helper::wait_for_channel(iface, netns, from_ch);
 
 		const auto t0 = steady_clock::now();

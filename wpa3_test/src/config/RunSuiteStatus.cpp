@@ -18,7 +18,7 @@
 #include "setup/config_parser.h"
 #include "setup/requirement_validation.h"
 #include "setup/YAMLValidator.h"
-#include "suite/test_suites.h"
+#include "visual/test_suites.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester{
@@ -439,7 +439,7 @@ void RunSuiteStatus::execute(){
 
 	if(config.contains("suite_functions")){
 		const string module_name = config.at("suite_functions").get<string>();
-		if(const auto it = suite::test_suite_setup_map.find(module_name); it != suite::test_suite_setup_map.end()){
+		if(const auto it = visual::test_suite_setup_map.find(module_name); it != visual::test_suite_setup_map.end()){
 			it->second(*this);
 		} else{
 			log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_setup_map", module_name);
@@ -469,7 +469,7 @@ void RunSuiteStatus::execute(){
 
 	if(config.contains("suite_functions")){
 		const string module_name = config.at("suite_functions").get<string>();
-		if(const auto it = suite::test_suite_report_map.find(module_name); it != suite::test_suite_report_map.end()){
+		if(const auto it = visual::test_suite_report_map.find(module_name); it != visual::test_suite_report_map.end()){
 			it->second(*this);
 		} else{
 			log(LogLevel::WARNING, "suite_functions '{}' not found in test_suite_report_map", module_name);

@@ -2,13 +2,13 @@
 #include <filesystem>
 #include <string>
 #include "overview/html_utils.h"
-#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview{
 using namespace std;
 using namespace filesystem;
-using suite::channel_switch_rogueAP::CsaTestEntry;
+using visual::channel_switch_rogueAP::CsaTestEntry;
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "channel_switch";

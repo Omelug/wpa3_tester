@@ -1,14 +1,14 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include <filesystem>
 #include <string>
-#include "suite/suite_helper.h"
-#include "suite/downgrade/wpa3_downgrade_filler.h"
+#include "visual/suite_helper.h"
+#include "visual/downgrade/wpa3_downgrade_filler.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
+using visual::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
 
 void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir) {
 

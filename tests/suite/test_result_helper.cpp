@@ -10,11 +10,11 @@
 #include "default.h"
 #include "logger/log_util.h"
 #include "overview/described.h"
-#include "suite/result_helper.h"
+#include "visual/result_helper.h"
 
 using namespace std;
 using namespace filesystem;
-using namespace wpa3_tester::suite::helper;
+using namespace wpa3_tester::visual::helper;
 using json = nlohmann::json;
 using wpa3_tester::described_bool;
 using wpa3_tester::described_str;

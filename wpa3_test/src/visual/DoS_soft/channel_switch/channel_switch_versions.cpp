@@ -1,15 +1,15 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 
-#include "suite/DoS_soft/channel_switch/channel_switch_versions.h"
+#include "visual/DoS_soft/channel_switch/channel_switch_versions.h"
 
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::channel_switch_filler{
+namespace wpa3_tester::visual::channel_switch_filler{
 using namespace std;
 using namespace filesystem;
 

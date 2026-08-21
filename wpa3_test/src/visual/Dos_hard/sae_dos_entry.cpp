@@ -1,11 +1,11 @@
-#include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
 
 #include <filesystem>
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/suite_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::sae_dos {
+namespace wpa3_tester::visual::sae_dos {
 using namespace std;
 using namespace filesystem;
 

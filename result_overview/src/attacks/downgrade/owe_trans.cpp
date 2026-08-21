@@ -1,14 +1,14 @@
 #include "attacks/downgrade/owe_trans.h"
 #include <filesystem>
 #include <string>
-#include "suite/suite_helper.h"
-#include "suite/downgrade/owe_trans_filler.h"
+#include "visual/suite_helper.h"
+#include "visual/downgrade/owe_trans_filler.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::owe_trans_filler::OweTransTestEntry;
+using visual::owe_trans_filler::OweTransTestEntry;
 
 void generate_owe_trans(const path &output_dir, const path &data_dir) {
 

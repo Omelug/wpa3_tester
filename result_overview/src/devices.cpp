@@ -187,8 +187,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 			tr("Channel switch", val);
 		}
 		if(iface.netns_move_ok.has_value()){
-			string val = (iface.netns_move_ok.value() ? "&#10003; " : "&#10007; ")
-				+ to_string(iface.netns_move_ms.value_or(-1)) + " ms";
+			string val = "to netns: " + to_string(iface.netns_move_ms.value_or(-1)) + " ms";
 			if(iface.netns_return_ms.has_value())
 				val += " &nbsp; return: " + to_string(iface.netns_return_ms.value()) + " ms";
 			tr("NetNS move", val);

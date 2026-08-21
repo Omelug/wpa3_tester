@@ -536,7 +536,7 @@ static void render_text(const vector<AdapterInfo>& adapters,
         printf("─────────────────────────────────\n");
         for (const auto& [text, _] : cond->to_colored_parts(m))
             printf("%s", text.c_str());
-        printf("\nCondition: %s\n", cond->eval(m) ? "PASS ✓" : "FAIL ✗");
+        printf("\nCondition: %s\n", cond->eval(m) ? "PASS " : "FAIL");
     }
     fflush(stdout);
 }

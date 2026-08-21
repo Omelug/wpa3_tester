@@ -71,7 +71,11 @@ void run_attack(RunStatus &rs){
 
 		const auto t0 = steady_clock::now();
 		const auto ec = netlink_helper::set_channel_nl(iface, netns, test_ch);
-		if(!ec) netlink_helper::wait_for_channel(iface, netns, test_ch);
+		if(!ec) {
+			if (!netlink_helper::wait_for_channel(iface, netns, test_ch)) {
+				log(LogLevel::ERROR, "wait_for_channel failed");
+			}
+		}
 		const auto us = duration_cast<microseconds>(steady_clock::now() - t0).count();
 		result["channel_switch"]["ok"] = !ec;
 		result["channel_switch"]["us"] = us;

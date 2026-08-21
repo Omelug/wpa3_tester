@@ -13,6 +13,8 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include "attacks/enterprise/invalid_curve.h"
 #include "attacks/enterprise/reflection_attack.h"
+#include "attacks/mc_mitm/mc_mitm.h"
+#include "attacks/mc_mitm/ssid_confusion.h"
 #include "devices.h"
 #include "target.h"
 #include "system/utils.h"
@@ -84,6 +86,8 @@ static string html_page() {
 			<li><a href="attacks/enterprise/invalid_curve/index.html">enterprise - invalid curve</a></li>
 			<li><a href="attacks/enterprise/reflection_attack/index.html">enterprise - reflection attack</a></li>
 			<li><a href="attacks/two_iface/injection/index.html">two_iface - injection test cache</a></li>
+			<li><a href="attacks/mc_mitm/mc_mitm/index.html">mc_mitm - multi-channel MitM</a></li>
+			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">mc_mitm - SSID confusion (CVE-2023-52424)</a></li>
 		</ul>
 	</div>
 
@@ -133,6 +137,8 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_invalid_curve_attack(output_dir, data_dir);
 	wpa3_tester::overview::generate_reflection_attack(output_dir, data_dir);
 	wpa3_tester::overview::generate_injection_overview(output_dir, data_dir);
+	wpa3_tester::overview::generate_mc_mitm(output_dir, data_dir);
+	wpa3_tester::overview::generate_ssid_confusion(output_dir, data_dir);
 
 	return 0;
 }

@@ -9,11 +9,11 @@
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
+#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 
-namespace wpa3_tester::suite::bl0ck_test_suites{
+namespace wpa3_tester::visual::bl0ck_test_suites{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;

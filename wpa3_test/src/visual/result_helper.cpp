@@ -8,7 +8,7 @@
 #include "observer/tshark_wrapper.h"
 #include "overview/described.h"
 
-namespace wpa3_tester::suite::helper{
+namespace wpa3_tester::visual::helper{
 using namespace std;
 using namespace filesystem;
 using json = nlohmann::json;

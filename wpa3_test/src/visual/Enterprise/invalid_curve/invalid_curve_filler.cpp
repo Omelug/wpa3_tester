@@ -2,16 +2,16 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::invalid_curve_filler{
+namespace wpa3_tester::visual::invalid_curve_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;

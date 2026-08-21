@@ -1,16 +1,16 @@
 #include <filesystem>
 #include <nlohmann/json.hpp>
 
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/report.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::malformed_eapol1_filler{
+namespace wpa3_tester::visual::malformed_eapol1_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;

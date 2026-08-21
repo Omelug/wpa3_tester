@@ -2,6 +2,7 @@
 # First-time setup for Raspberry Pi 4B running Raspberry Pi OS Lite (64-bit / Debian Bookworm).
 # Run via: make bootstrap PI=<address>
 set -euo pipefail
+
 #TODO napsat o usb switch/napájen9 do [pdf / dokumentace s odkazy
 echo "==> Checking internet connectivity..."
 for i in 1 2 3; do
@@ -29,8 +30,8 @@ sudo apt-get install -y \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    quilt trace-cmd \
-    dkms "linux-headers-$(uname -r)"
+    quilt trace-cmd tshark \
+    dkms linux-headers-rpi-v8
 
 #echo "==> Installing hcxtools from source (latest git)..."
 #sudo rm -rf /tmp/hcxtools

@@ -1,4 +1,4 @@
-TEST_SUITE ?= iface_info_filler
+TEST_SUITE ?= mc_mitm_test_internal
 
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap deploy run run-debug deploy-debug deploy-cross internet gdbserver-start
@@ -16,11 +16,12 @@ deploy:
 		--exclude='build/' \
 		--exclude='data/' \
 		--exclude='tools/' \
+		--exclude='tester_setup/raspberry_pi4/run' \
 		$(SRC_ROOT)/ $(PI_USER)@$(PI):$(REMOTE)/
 	$(SSH) "make -C $(REMOTE) -j$$(nproc) compile"
 
 run: deploy-cross internet
-	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
+	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test $(TEST_SUITE)"
 
 deploy-debug: deploy-cross gdbserver-start
 

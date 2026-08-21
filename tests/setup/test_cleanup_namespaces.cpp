@@ -1,4 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "system/hw_capabilities.h"
+#include "system/netlink_helper.h"
 #include <chrono>
 #include <cstdlib>
 #include <doctest.h>
@@ -7,19 +9,16 @@
 #include <fstream>
 #include <sched.h>
 #include <string>
-#include <unistd.h>
-#include <utility>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "system/hw_capabilities.h"
+#include <unistd.h>
+#include <utility>
 
 namespace wpa3_tester{
 using namespace std;
 
 void cleanup_all_namespaces();
 void kill_process_in_ns_name(const string &ns_name);
-void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
-	chrono::milliseconds timeout = chrono::milliseconds(3000));
 }
 
 using namespace std;
@@ -207,7 +206,7 @@ TEST_CASE("delete_ns_and_wait - hwsim interface returns to root ns"){
 	REQUIRE_FALSE(exists("/sys/class/net/" + hwsim_iface));
 
 	const auto t0 = steady_clock::now();
-	delete_ns_and_wait(ns, {hwsim_iface}, milliseconds(3000));
+	netlink_helper::delete_ns_and_wait(ns, {hwsim_iface}, milliseconds(3000));
 	const auto elapsed = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 
 	CHECK_FALSE(netns_exists(ns));

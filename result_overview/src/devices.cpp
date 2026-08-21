@@ -9,7 +9,7 @@
 
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
+#include "visual/result_helper.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
@@ -68,7 +68,7 @@ static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	d.driver      = caps.value("driver", string{});
 	d.driver_hash = caps.value("driver_hash", string{});
 	d.module_hash = caps.value("module_hash", string{});
-	d.caps        = suite::helper::load_result_default<DeviceCaps>(caps);
+	d.caps        = visual::helper::load_result_default<DeviceCaps>(caps);
 
 	// JSON keys here aren't valid C++ identifiers so pfr can't map them by name
 	d.caps.ghz2_4  = json_bool(caps, "2_4GHz");

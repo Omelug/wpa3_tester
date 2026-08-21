@@ -1,5 +1,5 @@
-#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "suite/suite_helper.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
+#include "visual/suite_helper.h"
 #include "system/utils.h"
 #include <filesystem>
 #include <string>
@@ -41,7 +41,7 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "reflection_attack" / "reflection_attack_filler";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir) {
-		suite::reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, title, suite_data_dir, page_dir);
+		visual::reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, title, suite_data_dir, page_dir);
 	};
 
 	emit_table("Test Results",  suite_dir);

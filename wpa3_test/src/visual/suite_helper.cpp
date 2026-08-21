@@ -1,4 +1,4 @@
-#include "suite/suite_helper.h"
+#include "visual/suite_helper.h"
 
 #include <memory>
 
@@ -6,7 +6,7 @@
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 
-namespace wpa3_tester::suite::helper{
+namespace wpa3_tester::visual::helper{
 using namespace std;
 using namespace filesystem;
 

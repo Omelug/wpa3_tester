@@ -9,7 +9,7 @@
 
 #include "interrupt.h"
 #include "overview/described.h"
-#include "suite/result_helper.h"
+#include "visual/result_helper.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
@@ -206,27 +206,27 @@ void stats_chs_attack(const RunStatus &rs){
 								}
 							});
 
-	auto [rogue_ap_connected, crack_result] = suite::helper::hostapd_mana_crack(rs, elements);
+	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 	generate_report(rs, elements, crack_result);
 
 	// ---------- result
 	nlohmann::json result{};
-	const auto window = suite::helper::get_run_window(rs);
+	const auto window = visual::helper::get_run_window(rs);
 	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 
-	result["client_disconnected"] =  suite::helper::get_client_disconnected(rs, window);
-	result["ap_ocv"] = suite::helper::get_ap_ocv(rs);
-	result["client_ocv"] = suite::helper::get_client_ocv(rs);
+	result["client_disconnected"] =  visual::helper::get_client_disconnected(rs, window);
+	result["ap_ocv"] = visual::helper::get_ap_ocv(rs);
+	result["client_ocv"] = visual::helper::get_client_ocv(rs);
 
-	result["client_mfp"] = suite::helper::get_client_mfp(rs, window);
-	result["ap_WPA_support"] = suite::helper::get_ap_WPA_support(rs);
-	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
+	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
+	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
 
 	const path combined_log = rs.run_folder() / "logger" / "combined.log";
 	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
-	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
+	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
 
-	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
+	result["client_scanning"] = visual::helper::get_client_scanning(rs, window);
 	result["rogue_ap_connected"] = rogue_ap_connected.value();
 	if(crack_result) {
 		result["cracked"] = crack_result.value().cracked != 0;

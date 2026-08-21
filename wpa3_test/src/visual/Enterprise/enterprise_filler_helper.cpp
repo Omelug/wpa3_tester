@@ -2,7 +2,7 @@
 #include "config/RunSuiteStatus.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::suite::enterprise_filler_helper{
+namespace wpa3_tester::visual::enterprise_filler_helper{
 void setup_suite(const RunSuiteStatus &rss){
 
 	const auto base_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR;

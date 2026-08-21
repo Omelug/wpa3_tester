@@ -7,17 +7,17 @@
 #include "default.h"
 #include "root_dir_helper.h"
 
-#include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
-#include "suite/scan/ap_info_wpa3_filler.h"
-#include "suite/scan/iface_info_filler.h"
-#include "suite/two_iface/injection_test_filler.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
-#include "suite/downgrade/owe_trans_filler.h"
-#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
-#include "suite/two_iface/active_test_filler.h"
-#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "suite/downgrade/wpa3_downgrade_filler.h"
-#include "suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "visual/scan/ap_info_wpa3_filler.h"
+#include "visual/scan/iface_info_filler.h"
+#include "visual/two_iface/injection_test_filler.h"
+#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "visual/downgrade/owe_trans_filler.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/two_iface/active_test_filler.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
+#include "visual/downgrade/wpa3_downgrade_filler.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 
 using namespace std;
 using namespace filesystem;
@@ -63,7 +63,7 @@ void write_config(const path &d, initializer_list<string_view> actors) {
 // -----------------
 TEST_CASE("SaeDosFolderEntry::parse - sets name, no png") {
 	const auto d = setup_dir("sae_no_png");
-	const auto e = suite::sae_dos::SaeDosFolderEntry::parse(d);
+	const auto e = visual::sae_dos::SaeDosFolderEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK(e.ap_res_png.empty());
 }
@@ -73,14 +73,14 @@ TEST_CASE("SaeDosFolderEntry::parse - detects existing png") {
 	const auto png = d / "observer" / "resource_checker" / "ap_res.png";
 	create_directories(png.parent_path());
 	ofstream(png) << "";
-	const auto e = suite::sae_dos::SaeDosFolderEntry::parse(d);
+	const auto e = visual::sae_dos::SaeDosFolderEntry::parse(d);
 	CHECK_EQ(e.ap_res_png, png);
 }
 
 // -----------------
 TEST_CASE("ApInfoWpa3TestEntry::parse - no result.json returns empty strings") {
 	const auto d = setup_dir("apinfo_no_result");
-	const auto e = suite::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
+	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK(e.mac.empty());
 	CHECK(e.ssid.empty());
@@ -97,7 +97,7 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
 		{"acm_triggered", false},
 		{"stations",      json::array({"11:22:33:44:55:66"})},
 	});
-	const auto e = suite::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
+	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK_EQ(e.mac,  "aa:bb:cc:dd:ee:ff");
 	CHECK_EQ(e.ssid, "TestNet");
@@ -113,7 +113,7 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
 TEST_CASE("IfaceInfoTestEntry::parse - no config sets hw_summary to ?") {
 	const auto d = setup_dir("iface_no_cfg");
 	// no test_config.yaml -> early branch sets hw_summary = "?"
-	const auto e = suite::iface_info_filler::IfaceInfoTestEntry::parse(d);
+	const auto e = visual::iface_info_filler::IfaceInfoTestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK_EQ(e.hw_summary, "?");
 }
@@ -122,7 +122,7 @@ TEST_CASE("IfaceInfoTestEntry::parse - no config sets hw_summary to ?") {
 TEST_CASE("InjectionTestEntry::parse - no result.json returns zero counts") {
 	const auto d = setup_dir("inject_no_result");
 	// no result.json -> early return before load_test_rs
-	const auto e = suite::injection_test_filler::InjectionTestEntry::parse(d);
+	const auto e = visual::injection_test_filler::InjectionTestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK_EQ(e.tests_passed, 0);
 	CHECK_EQ(e.tests_total, 0);
@@ -135,7 +135,7 @@ TEST_CASE("InjectionTestEntry::parse - no result.json returns zero counts") {
 TEST_CASE("Bl0ckTestEntry::parse - no config uses result.json only") {
 	const auto d = setup_dir("bl0ck_no_cfg");
 	write_result(d, {{"disconnect_count", 3}});
-	const auto e = suite::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
+	const auto e = visual::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK_EQ(e.disconnect_count, 3);
 	CHECK_EQ(e.ap_mac, "-");
@@ -153,7 +153,7 @@ TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {
 		ofstream f(d / TEST_CONFIG_NAME);
 		f << "attack_config:\n  attack_variant: deauth_flood\n";
 	}
-	const auto e = suite::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
+	const auto e = visual::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK_EQ(e.disconnect_count, 2);
 	CHECK_EQ(e.ap_mac,         "aa:bb:cc:00:00:01");
@@ -175,7 +175,7 @@ TEST_CASE("OweTransTestEntry::parse - reads drivers and probe counts") {
 		{"client",       "rt2800",  "aa:00:00:00:00:02"},
 		{"attacker",     "mt76x2u", "aa:00:00:00:00:03"},
 	});
-	const auto e = suite::owe_trans_filler::OweTransTestEntry::parse(d);
+	const auto e = visual::owe_trans_filler::OweTransTestEntry::parse(d);
 	CHECK_EQ(e.test_name,              d.filename().string());
 	CHECK_EQ(e.ap_driver,              "ath9k");
 	CHECK_EQ(e.client_driver,          "rt2800");
@@ -194,7 +194,7 @@ TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and connected") {
 		{"ap", "ath9k",   "aa:00:00:00:01:01"},
 		{"attacker",     "mt76x2u", "aa:00:00:00:01:02"},
 	});
-	const auto e = suite::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
+	const auto e = visual::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,       "ath9k");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");
 	REQUIRE(e.connected.has_value());
@@ -210,7 +210,7 @@ TEST_CASE("ActiveTestEntry::parse - reads drivers and acked counts") {
 		{"transceiver", "ath9k",  "bb:00:00:00:00:01"},
 		{"receiver",    "rt2800", "bb:00:00:00:00:02"},
 	});
-	const auto e = suite::active_test_filler::ActiveTestEntry::parse(d);
+	const auto e = visual::active_test_filler::ActiveTestEntry::parse(d);
 	CHECK_EQ(e.tx_driver,  "ath9k");
 	CHECK_EQ(e.rx_driver,  "rt2800");
 	CHECK_EQ(e.acked,      10);
@@ -227,7 +227,7 @@ TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and connected") {
 		{"ap", "ath9k",   "cc:00:00:00:00:01"},
 		{"attacker",     "mt76x2u", "cc:00:00:00:00:02"},
 	});
-	const auto e = suite::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
+	const auto e = visual::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,       "ath9k");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");
 	REQUIRE(e.connected.has_value());
@@ -243,7 +243,7 @@ TEST_CASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen
 		{"ap", "ath9k",  "dd:00:00:00:00:01"},
 		{"client",       "rt2800", "dd:00:00:00:00:02"},
 	});
-	const auto e = suite::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
+	const auto e = visual::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,      "ath9k");
 	CHECK_EQ(e.client_driver,  "rt2800");
 	CHECK_EQ(e.downgrade_seen, true);
@@ -265,7 +265,7 @@ TEST_CASE("InjectionTestEntry::parse - counts sub-tests and records failures") {
 		{"transceiver", "ath9k",  "ee:00:00:00:00:01"},
 		{"receiver",    "rt2800", "ee:00:00:00:00:02"},
 	});
-	const auto e = suite::injection_test_filler::InjectionTestEntry::parse(d);
+	const auto e = visual::injection_test_filler::InjectionTestEntry::parse(d);
 	CHECK_EQ(e.tx_driver,    "ath9k");
 	CHECK_EQ(e.rx_driver,    "rt2800");
 	CHECK_EQ(e.tests_total,  3);
@@ -287,7 +287,7 @@ TEST_CASE("MalformedEapol1TestEntry::parse - reads drivers and disconnect_count"
 		{"client",       "rt2800",  "ff:00:00:00:00:02"},
 		{"attacker",     "mt76x2u", "ff:00:00:00:00:03"},
 	});
-	const auto e = suite::malformed_eapol1_filler::MalformedEapol1TestEntry::parse(d);
+	const auto e = visual::malformed_eapol1_filler::MalformedEapol1TestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,       "ath9k");
 	CHECK_EQ(e.client_driver,   "rt2800");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");

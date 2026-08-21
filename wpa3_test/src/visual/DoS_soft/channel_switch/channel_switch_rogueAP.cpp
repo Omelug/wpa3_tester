@@ -1,4 +1,4 @@
-#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include <filesystem>
 #include "default.h"
 #include "config/RunStatus.h"
@@ -7,10 +7,10 @@
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::channel_switch_rogueAP{
+namespace wpa3_tester::visual::channel_switch_rogueAP{
 using namespace std;
 using namespace filesystem;
 

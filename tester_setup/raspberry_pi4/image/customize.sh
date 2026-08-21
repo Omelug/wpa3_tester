@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Customizes a Raspberry Pi OS Lite (64-bit, Bookworm) image for wpa3-tester.
+
+# Customizes a Raspberry Pi OS Lite (64-bit, Bookworm) image for wpa3-tester
 # Must be run as root
-# Args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
+# args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
 
 set -euo pipefail
 
@@ -61,9 +62,12 @@ fi
 # UART serial console on GPIO14 (TX) / GPIO15 (RX) — kernel messages go to
 # a USB-UART adapter even during a kernel panic
 echo "enable_uart=1" >> "$BOOT/config.txt"
+
 # Pstore — saves the panic log into a reserved RAM region that survives a soft
 # reboot; after restart the log appears in /sys/fs/pstore/
+# (some drivers crashed kernel)
 echo "dtoverlay=pstore" >> "$BOOT/config.txt"
+
 # earlyprintk — emit pre-console kernel messages on the serial line
 sed -i 's/$/ earlyprintk/' "$BOOT/cmdline.txt"
 
@@ -176,7 +180,7 @@ install -m 755 "$SCRIPT_DIR/drivers.sh"        "$ROOT/usr/local/bin/wpa3-drivers
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"
 install -m 644 "$SCRIPT_DIR/firstboot.service" "$ROOT/etc/systemd/system/wpa3-firstboot.service"
 
-# Enable service (equivalent to systemctl enable, but without chroot/systemctl)
+# enable service (equivalent to systemctl enable, but without chroot/systemctl)
 mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 ln -sf /etc/systemd/system/wpa3-firstboot.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/wpa3-firstboot.service"

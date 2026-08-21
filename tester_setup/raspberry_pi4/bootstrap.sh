@@ -2,6 +2,7 @@
 # First-time setup for Raspberry Pi 4B running Raspberry Pi OS Lite (64-bit / Debian Bookworm).
 # Run via: make bootstrap PI=<address>
 set -euo pipefail
+
 #TODO napsat o usb switch/napájen9 do [pdf / dokumentace s odkazy
 echo "==> Checking internet connectivity..."
 for i in 1 2 3; do

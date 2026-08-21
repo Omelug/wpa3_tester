@@ -13,6 +13,7 @@
       <w>PTKCALCNEGOTIATING</w>
       <w>Realtek</w>
       <w>Reasso</w>
+      <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
       <w>aabbccddee</w>
       <w>acces</w>
@@ -267,6 +268,7 @@
       <w>wpad</w>
       <w>wpaout</w>
       <w>writerd</w>
+      <w>xhci</w>
       <w>xlabel</w>
       <w>xmit</w>
       <w>xtics</w>

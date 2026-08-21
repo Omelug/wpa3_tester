@@ -257,7 +257,6 @@ Result wait_for_channel(const string_view iface_name, const optional<string> &ne
 	return make_error_code(errc::timed_out);
 }
 
-//TODO add channeel switching to iface_info
 Result set_channel_nl(const string_view iface, const optional<string> &netns, const Channel &ch){
 	NetNSContext ns_guard(netns);
 

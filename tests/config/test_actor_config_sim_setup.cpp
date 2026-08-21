@@ -22,7 +22,7 @@ public:
 	void up_sniff_iface()                        const override { calls.emplace_back("up_sniff_iface"); }
 	void set_ap_mode()                           const override { calls.emplace_back("set_ap_mode"); }
 	void set_managed_mode()                      const override { calls.emplace_back("set_managed_mode"); }
-	void set_monitor_mode(bool add_flags) const override { calls.emplace_back("set_monitor_mode"); }
+	void set_monitor_mode(bool /*add_flags*/)		 const override { calls.emplace_back("set_monitor_mode"); }
 	void create_sniff_iface()                    const override { calls.emplace_back("create_sniff_iface"); }
 	void set_mac_address(const Tins::HWAddress<6> &mac) const override {
 		calls.push_back("set_mac_address:" + mac.to_string());

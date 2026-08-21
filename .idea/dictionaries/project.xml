@@ -13,6 +13,7 @@
       <w>PTKCALCNEGOTIATING</w>
       <w>Realtek</w>
       <w>Reasso</w>
+      <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
       <w>aabbccddee</w>
       <w>acces</w>
@@ -134,9 +135,11 @@
       <w>libtins</w>
       <w>libwifi</w>
       <w>logread</w>
+      <w>lsblk</w>
       <w>m'ing</w>
       <w>macaddr</w>
       <w>mausezahn</w>
+      <w>meapol</w>
       <w>meminfo</w>
       <w>memorycheck</w>
       <w>mfacaddr</w>
@@ -200,6 +203,7 @@
       <w>promisc</w>
       <w>psk</w>
       <w>radiotap</w>
+      <w>raspbian</w>
       <w>rawpdu</w>
       <w>readlink</w>
       <w>reassoc</w>
@@ -265,6 +269,7 @@
       <w>wpad</w>
       <w>wpaout</w>
       <w>writerd</w>
+      <w>xhci</w>
       <w>xlabel</w>
       <w>xmit</w>
       <w>xtics</w>

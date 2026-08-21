@@ -3,12 +3,20 @@ attacker_module: test_module
 actors:
   ap:
     source: internal
+    selection:
+      condition: [AP, 2_4GHz, netns_change ]
     netns: ap_namespace
     setup:
       program: hostapd
+      program_config:
+        wpa_supplicant_path: "./config/hostapd.conf"
   client:
     source: internal
+    selection:
+      condition: [  managed, 2_4GHz, netns_change ]
     netns: client_namespace
     setup:
       program: wpa_supplicant
+      program_config:
+        wpa_supplicant_path: "./config/wpa_supplicant.conf"
 

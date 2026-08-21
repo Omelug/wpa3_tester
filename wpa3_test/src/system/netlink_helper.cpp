@@ -345,7 +345,7 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 
 	unordered_set waiting(ifaces.begin(), ifaces.end());
 	for(auto it = waiting.begin(); it != waiting.end();)
-		exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
+		filesystem::exists("/sys/class/net/" + *it) ? it = waiting.erase(it) : ++it;
 
 	const auto deadline = chrono::steady_clock::now() + timeout;
 	char buf[8192];
@@ -371,7 +371,8 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 			while(RTA_OK(attr, attr_len)){
 				if(attr->rta_type == IFLA_IFNAME){
 					const string name = static_cast<char *>(RTA_DATA(attr));
-					if(waiting.contains(name) && exists("/sys/class/net/" + name)){
+					if(waiting.contains(name) &&
+						filesystem::exists("/sys/class/net/" + name)){
 						log(LogLevel::DEBUG, "Interface {} returned to root ns", name);
 						waiting.erase(name);
 					}

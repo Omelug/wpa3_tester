@@ -4,9 +4,10 @@ set -euo pipefail
 PAGES_REPO="git@github.com:Omelug/wpa3_tester_overview.git"
 PAGES_LOCAL="${HOME}/wpa3_tester_overview_pages"   # persistent local clone
 
-# GitHub Pages setup: go to repo Settings -> Pages -> Source, pick "Deploy from a branch",
-# select branch "main" (or whatever branch this pushes to) and folder "/ (root)".
-# Change
+# GitHub Pages setup:
+# go to repo Settings -> Pages -> Source, pick "Deploy from a branch",
+# select branch "main" (or whatever branch this pushes to) and folder "/ (root)"
+
 usage() {
     echo "Usage: $0 <target> [data_dir]"
     echo "  target    subdirectory in pages repo, e.g. laptop or raspberry"
@@ -46,10 +47,9 @@ fi
 
 echo "==> syncing output -> ${TARGET}/..."
 rsync -a --delete "${OUTPUT}/" "${PAGES_LOCAL}/${TARGET}/"
-
 touch "${PAGES_LOCAL}/.nojekyll"
 
-echo "==> generating root index.html..."
+echo "==> generating tester device index.html..."
 {
     echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>wpa3_tester results</title></head><body>'
     echo '<h1>wpa3_tester — overview pages for tester setups: </h1><ul>'
@@ -71,4 +71,4 @@ fi
 git commit -m "deploy ${TARGET} $(date -Iseconds)"
 git push
 
-echo "==> done — https://torshell.github.io/wpa3_tester_overview/${TARGET}/"
+echo "==> done — ${PAGES_REPO}"

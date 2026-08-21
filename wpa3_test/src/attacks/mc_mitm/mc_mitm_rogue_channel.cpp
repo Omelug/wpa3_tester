@@ -17,7 +17,12 @@ bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 
 		if(ap_mac != dot11.addr1()) return true;
 		client_state.update_state(ClientState::Finding);
 		probe_resp->addr1(addr2);
-		send_to_rogue(*probe_resp);
+
+		const auto resp = probe_resp->clone();
+		resp->addr1(addr2);
+		if(hooks) hooks->on_probe_response(*resp->find_pdu<Dot11ProbeResponse>());
+		send_to_rogue(*resp);
+
 		display_traffic(*pdu, "Rogue channel", " -- Replied");
 		return true;
 	}
@@ -45,6 +50,8 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 }
 
 bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11){
+	if(hooks && hooks->on_assoc_request(*this, dot11, addr2))
+		return true;
 	const Dot11ManagementFrame::rates_type rates = {
 		static_cast<Dot11ManagementFrame::rates_type::value_type>(82),
 		static_cast<Dot11ManagementFrame::rates_type::value_type>(84),
@@ -103,6 +110,7 @@ bool McMitm::handle_eapol_rogue(const HWAddress<6> addr2, PDU &pdu){
 			if(eapol_msg == 2 || eapol_msg == 4) send_to_real(pdu);
 			if(eapol_msg == 4){
 				client_state.update_state(ClientState::GotMitm);
+				if(hooks) hooks->on_client_connected(*this);
 				if(only_to_mitm) stop_mitm = true;
 			}
 			return true;

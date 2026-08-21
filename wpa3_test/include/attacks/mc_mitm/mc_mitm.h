@@ -1,19 +1,21 @@
 #pragma once
-#include <memory>
-#include <queue>
-#include <string>
-#include <tins/tins.h>
-#include "client_state.h"
 #include "MonitorSocket.h"
+#include "client_state.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "logger/log.h"
+#include "mc_mitm_hooks.h"
+#include <memory>
+#include <string>
+#include <tins/tins.h>
 
 namespace wpa3_tester{
 class McMitm{
+	friend class McMitmHooks;
 protected:
 	ActorPtr rogue_sta, rogue_ap;
 	std::string nic_real_ap, nic_rogue_ap;
 	std::string ssid;
+public:
 	Tins::HWAddress<6> ap_mac;
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
@@ -25,10 +27,14 @@ public:
 	);
 	virtual ~McMitm();
 
+	// hooks for changing behaviour for different attacks
+	std::unique_ptr<McMitmHooks> hooks; // nullptr -> defualt behavior
+	void set_hooks(std::unique_ptr<McMitmHooks> h){ hooks = std::move(h); }
+
 	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt) const;
 	void send_disas(const Tins::HWAddress<6> &macaddr) const;
 	void send_deauth_as_ap() const;
-	bool should_check_rogue_beacons() const;
+	[[nodiscard]] bool should_check_rogue_beacons() const;
 	void configure_interfaces();
 
 	void setup_real_AP_RSN_frames();
@@ -68,7 +74,7 @@ public:
 	bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 	bool handle_eapol_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
-	bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
+	[[nodiscard]] bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
 	bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const std::vector<unsigned char> &raw,
 							const Tins::Dot11 &dot11
@@ -77,7 +83,7 @@ public:
 	void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
 							const Tins::HWAddress<6> &addr1
 	);
-protected:
+public:
 	void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	virtual void send_to_real(Tins::PDU &pdu) const;
 	virtual void send_to_real(const std::vector<uint8_t> &raw) const;

@@ -9,18 +9,19 @@
 
 #include "overview/html_guard.h"
 #include "system/utils.h"
-#include "suite/scan/ap_info_wpa3_filler.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
-#include "suite/DoS_soft/channel_switch/channel_switch_rogueAP.h"
-#include "suite/enterprise/invalid_curve/invalid_curve_filler.h"
-#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "suite/DoS_hard/sae_dos/sae_dos_entry.h"
-#include "suite/downgrade/owe_trans_filler.h"
-#include "suite/downgrade/wpa3_downgrade_filler.h"
+#include "visual/scan/ap_info_wpa3_filler.h"
+#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
+#include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "visual/downgrade/owe_trans_filler.h"
+#include "visual/downgrade/wpa3_downgrade_filler.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
+using namespace visual;
 
 static const map<string, string> k_attack_page = {
 	{"bl0ck",            "../../attacks/DoS_soft/bl0ck/index.html"},
@@ -89,7 +90,7 @@ static void emit_section_header(HtmlGuard &f, const string &module) {
 static void render_attack_section(HtmlGuard &f, const std::string &module,
 								  const path &suite_data_dir,
 								  const path &page_dir) {
-	using namespace suite;
+	using namespace visual;
 
 	// Static registry mapping module strings to their corresponding render function
 	static const std::unordered_map<std::string, RenderFunc> registry = {

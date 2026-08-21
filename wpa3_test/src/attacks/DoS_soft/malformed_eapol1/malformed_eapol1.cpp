@@ -11,7 +11,7 @@
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
-#include "suite/result_helper.h"
+#include "visual/result_helper.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::eapol_logoff{
@@ -133,7 +133,7 @@ void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
-	auto [rogue_ap_connected, crack_result] = suite::helper::hostapd_mana_crack(rs, elements);
+	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 
 	const path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements);
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "ap", elements);
@@ -141,18 +141,18 @@ void stats(const RunStatus &rs){
 
 	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 	nlohmann::json result;
-	const auto window = suite::helper::get_run_window(rs);
+	const auto window = visual::helper::get_run_window(rs);
 	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
-	result["client_disconnected"] =  suite::helper::get_client_disconnected(rs, window);
+	result["client_disconnected"] =  visual::helper::get_client_disconnected(rs, window);
 
-	result["client_mfp"] = suite::helper::get_client_mfp(rs, window);
-	result["ap_WPA_support"] = suite::helper::get_ap_WPA_support(rs);
+	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
 
 	const path combined_log = rs.run_folder() / "logger" / "combined.log";
 	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
-	result["conn_WPA_version"] = suite::helper::get_conn_WPA_version(rs, window_START);
-	result["client_WPA_support"] = suite::helper::get_client_WPA_support(rs, window);
-	result["client_scanning"] = suite::helper::get_client_scanning(rs, window);
+	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
+	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
+	result["client_scanning"] = visual::helper::get_client_scanning(rs, window);
 
 	if (rogue_ap_connected) {
 		result["rogue_ap_connected"] = rogue_ap_connected.value();

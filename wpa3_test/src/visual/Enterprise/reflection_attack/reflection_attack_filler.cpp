@@ -2,17 +2,17 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/enterprise/reflection_attack/reflection_attack_filler.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
 
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::reflection_attack_filler{
+namespace wpa3_tester::visual::reflection_attack_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;

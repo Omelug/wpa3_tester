@@ -1,14 +1,14 @@
 #include <array>
 #include <filesystem>
 #include <string>
-#include "suite/suite_helper.h"
-#include "suite/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "visual/suite_helper.h"
+#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
-using suite::bl0ck_test_suites::Bl0ckTestEntry;
+using visual::bl0ck_test_suites::Bl0ckTestEntry;
 
 void generate_bl0ck(const path &output_dir, const path &data_dir) {
 

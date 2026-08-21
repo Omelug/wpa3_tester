@@ -2,15 +2,15 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "suite/two_iface/active_test_filler.h"
+#include "visual/two_iface/active_test_filler.h"
 
 #include "default.h"
 #include "config/RunSuiteStatus.h"
 #include "logger/report.h"
-#include "suite/result_helper.h"
-#include "suite/suite_helper.h"
+#include "visual/result_helper.h"
+#include "visual/suite_helper.h"
 
-namespace wpa3_tester::suite::active_test_filler{
+namespace wpa3_tester::visual::active_test_filler{
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;

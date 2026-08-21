@@ -1,4 +1,4 @@
-#include "suite/scan/iface_info_filler.h"
+#include "visual/scan/iface_info_filler.h"
 
 #include <filesystem>
 #include <fstream>
@@ -9,10 +9,10 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/devices.h"
 #include "logger/report.h"
-#include "suite/suite_helper.h"
+#include "visual/suite_helper.h"
 #include "system/driver_diagnostics.h"
 
-namespace wpa3_tester::suite::iface_info_filler{
+namespace wpa3_tester::visual::iface_info_filler{
 using namespace std;
 using namespace filesystem;
 

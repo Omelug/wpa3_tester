@@ -8,7 +8,7 @@
 #include "logger/report.h"
 #include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
-#include "suite/suite_helper.h"
+#include "visual/suite_helper.h"
 
 using namespace std;
 using namespace Tins;

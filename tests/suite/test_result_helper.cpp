@@ -292,7 +292,7 @@ TEST_CASE("get_ap_ocv - from pcap"){
 
 	const path src_pcap = "../test_data/beacon_test.pcapng";
 	const path dst_pcap = dir / "observer" / "tshark" / "attacker_capture.pcap";
-	wpa3_tester::copy_f(src_pcap, dst_pcap);
+	wpa3_tester::copy_f(absolute(src_pcap), dst_pcap);
 
 	RunStatus rs;
 	rs.run_folder(dir);

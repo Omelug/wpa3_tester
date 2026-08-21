@@ -47,7 +47,6 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 	const std::function<void(overview::HtmlGuard&, const std::vector<Entry>&)> &render_func)
 {
 	if(!std::filesystem::exists(suite_data_dir)){
-		//TODO
 		return;
 	}
 	f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"

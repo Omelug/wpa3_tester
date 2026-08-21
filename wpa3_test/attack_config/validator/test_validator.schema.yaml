@@ -461,6 +461,7 @@ $defs:
       program:
         type: string
         description: Program to use for observation
+        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter", "iperf3", "trace_cmd", "dmesg" ]
       program_config:
         type: object
     allOf:

@@ -1,0 +1,34 @@
+name: Clang-Tidy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-deps
+
+      - name: Install clang-tidy
+        run: sudo apt-get install -y clang-tidy-18 python3-yaml
+
+      - name: Configure
+        env:
+          CC: clang-18
+          CXX: clang++-18
+        run: cmake -S . -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy
+        run: |
+          CHECKS=$(python3 -c "
+          import yaml, sys
+          for doc in yaml.safe_load_all(open('.clangd')):
+              ct = (doc or {}).get('Diagnostics', {}).get('ClangTidy', {})
+              if 'Checks' in ct:
+                  print(','.join(ct['Checks']))
+                  sys.exit(0)
+          ")
+          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter='wpa3_test/.*'

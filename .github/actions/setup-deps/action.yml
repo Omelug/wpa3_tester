@@ -20,6 +20,7 @@ runs:
           flex bison \
           clang-18 \
           libstdc++-13-dev \
+          tshark \
           iw \
           linux-modules-extra-$(uname -r)
 

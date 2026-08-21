@@ -185,10 +185,10 @@ TEST_CASE("OweTransTestEntry::parse - reads drivers and probe counts") {
 	CHECK_EQ(e.disconnected,           true);
 }
 
-TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and passed") {
+TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and connected") {
 	const test_helpers::IsolatedRootDir iso("ep_invcurve");
 	const auto d = setup_dir("invcurve_full");
-	write_result(d, {{"passed", true}});
+	write_result(d, {{"connected", true}});
 	write_config(d, {"ap", "attacker"});
 	write_mapping(d, {
 		{"ap", "ath9k",   "aa:00:00:00:01:01"},
@@ -197,8 +197,8 @@ TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and passed") {
 	const auto e = suite::invalid_curve_filler::InvalidCurveTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,       "ath9k");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");
-	REQUIRE(e.passed.has_value());
-	CHECK_EQ(e.passed.value(), true);
+	REQUIRE(e.connected.has_value());
+	CHECK_EQ(e.connected.value(), true);
 }
 
 TEST_CASE("ActiveTestEntry::parse - reads drivers and acked counts") {
@@ -218,10 +218,10 @@ TEST_CASE("ActiveTestEntry::parse - reads drivers and acked counts") {
 	CHECK_EQ(e.success,    true);
 }
 
-TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and passed") {
+TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and connected") {
 	const test_helpers::IsolatedRootDir iso("ep_refl");
 	const auto d = setup_dir("refl_full");
-	write_result(d, {{"passed", false}});
+	write_result(d, {{"connected", false}});
 	write_config(d, {"ap", "attacker"});
 	write_mapping(d, {
 		{"ap", "ath9k",   "cc:00:00:00:00:01"},
@@ -230,8 +230,8 @@ TEST_CASE("ReflectionAttackTestEntry::parse - reads drivers and passed") {
 	const auto e = suite::reflection_attack_filler::ReflectionAttackTestEntry::parse(d);
 	CHECK_EQ(e.ap_driver,       "ath9k");
 	CHECK_EQ(e.attacker_driver, "mt76x2u");
-	REQUIRE(e.passed.has_value());
-	CHECK_EQ(e.passed.value(), false);
+	REQUIRE(e.connected.has_value());
+	CHECK_EQ(e.connected.value(), false);
 }
 
 TEST_CASE("Wpa3TransDowngradeTestEntry::parse - reads drivers and downgrade_seen") {

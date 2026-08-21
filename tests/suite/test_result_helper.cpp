@@ -400,7 +400,7 @@ TEST_CASE("get_client_disconnected - WB client with log"){
 	const auto result = get_client_disconnected(rs, {});
 	REQUIRE_FALSE(result.empty());
 	CHECK_EQ(result.value(), true);
-	CHECK_EQ(result.last().description, "log");
+	CHECK_EQ(result.last().description, "client log");
 }
 
 TEST_CASE("get_client_disconnected - non-WB client with pcap"){

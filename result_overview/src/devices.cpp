@@ -31,6 +31,11 @@ struct IfaceData {
 	string iw_info;
 	string ip_addr;
 	json driver_specific;
+	optional<bool> channel_switch_ok;
+	optional<int>  channel_switch_ms;
+	optional<bool> netns_move_ok;
+	optional<int>  netns_move_ms;
+	optional<int>  netns_return_ms;
 };
 
 struct DeviceInfo {
@@ -94,6 +99,18 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		d.iw_info = j.value("iw_info", string{});
 		d.ip_addr = j.value("ip_addr", string{});
 		if(j.contains("driver_specific")) d.driver_specific = j["driver_specific"];
+		if(j.contains("channel_switch")){
+			const auto &cs = j["channel_switch"];
+			d.channel_switch_ok = cs.value("ok", false);
+			d.channel_switch_ms = cs.value("ms", -1);
+		}
+		if(j.contains("netns_move")){
+			const auto &nm = j["netns_move"];
+			d.netns_move_ok = nm.value("ok", false);
+			d.netns_move_ms = nm.value("ms", -1);
+		}
+		if(j.contains("netns_return"))
+			d.netns_return_ms = j["netns_return"].value("ms", -1);
 		return d;
 	}
 	return nullopt;
@@ -164,6 +181,18 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 		f << "    <div class=\"card\">\n        <h2>System Snapshot</h2>\n        <table>\n";
 		if(!iface.phy.empty())                              tr("PHY", iface.phy);
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
+		if(iface.channel_switch_ok.has_value()){
+			const string val = (iface.channel_switch_ok.value() ? "&#10003; " : "&#10007; ")
+				+ to_string(iface.channel_switch_ms.value_or(-1)) + " ms";
+			tr("Channel switch", val);
+		}
+		if(iface.netns_move_ok.has_value()){
+			string val = (iface.netns_move_ok.value() ? "&#10003; " : "&#10007; ")
+				+ to_string(iface.netns_move_ms.value_or(-1)) + " ms";
+			if(iface.netns_return_ms.has_value())
+				val += " &nbsp; return: " + to_string(iface.netns_return_ms.value()) + " ms";
+			tr("NetNS move", val);
+		}
 		f << "        </table>\n";
 		if(!iface.iw_info.empty()){
 			f << "        <h3><code>iw dev info</code></h3>\n"

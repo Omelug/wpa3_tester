@@ -12,7 +12,7 @@ struct IfaceInfoTestEntry{
 	std::string driver_summary;
 	std::filesystem::path report_md;
 	std::optional<bool> channel_switch_ok;
-	std::optional<int>  channel_switch_ms;
+	std::optional<int>  channel_switch_us;
 	std::optional<bool> netns_move_ok;
 	std::optional<int>  netns_move_ms;
 	std::optional<int>  netns_return_ms;

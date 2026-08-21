@@ -63,13 +63,18 @@ void run_attack(RunStatus &rs){
 	// ----- channel switch timing -----
 	{
 		using namespace chrono;
-		Channel test_ch{6, WifiBand::BAND_2_4, nullopt};
+		Channel from_ch{11, WifiBand::BAND_2_4, nullopt};
+		Channel test_ch{6,  WifiBand::BAND_2_4, nullopt};
+		// pre-switch so we're guaranteed to measure a real transition
+		netlink_helper::set_channel_nl(iface, netns, from_ch);
+		netlink_helper::wait_for_channel(iface, netns, from_ch);
+
 		const auto t0 = steady_clock::now();
 		const auto ec = netlink_helper::set_channel_nl(iface, netns, test_ch);
 		if(!ec) netlink_helper::wait_for_channel(iface, netns, test_ch);
-		const auto ms = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		const auto us = duration_cast<microseconds>(steady_clock::now() - t0).count();
 		result["channel_switch"]["ok"] = !ec;
-		result["channel_switch"]["ms"] = ms;
+		result["channel_switch"]["us"] = us;
 		if(ec) result["channel_switch"]["error"] = ec.message();
 	}
 

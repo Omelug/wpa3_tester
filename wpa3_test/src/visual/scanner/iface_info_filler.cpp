@@ -40,7 +40,7 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder){
 			if(result.contains("channel_switch")){
 				const auto &cs = result["channel_switch"];
 				e.channel_switch_ok = cs.value("ok", false);
-				e.channel_switch_ms = cs.value("ms", -1);
+				e.channel_switch_us = cs.value("us", -1);
 			}
 			if(result.contains("netns_move")){
 				const auto &nm = result["netns_move"];
@@ -83,7 +83,7 @@ void generate_report(RunSuiteStatus &rss){
 	for(const auto &e: entries){
 		string ch = "n/a";
 		if(e.channel_switch_ok.has_value())
-			ch = (e.channel_switch_ok.value() ? "ok " : "fail ") + to_string(e.channel_switch_ms.value_or(-1)) + "ms";
+			ch = (e.channel_switch_ok.value() ? "ok " : "fail ") + to_string(e.channel_switch_us.value_or(-1)) + "us";
 
 		string ns = "n/a";
 		if(e.netns_move_ok.has_value()){

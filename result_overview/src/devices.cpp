@@ -32,7 +32,7 @@ struct IfaceData {
 	string ip_addr;
 	json driver_specific;
 	optional<bool> channel_switch_ok;
-	optional<int>  channel_switch_ms;
+	optional<int>  channel_switch_us;
 	optional<bool> netns_move_ok;
 	optional<int>  netns_move_ms;
 	optional<int>  netns_return_ms;
@@ -102,7 +102,7 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		if(j.contains("channel_switch")){
 			const auto &cs = j["channel_switch"];
 			d.channel_switch_ok = cs.value("ok", false);
-			d.channel_switch_ms = cs.value("ms", -1);
+			d.channel_switch_us = cs.value("us", -1);
 		}
 		if(j.contains("netns_move")){
 			const auto &nm = j["netns_move"];
@@ -183,7 +183,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
 		if(iface.channel_switch_ok.has_value()){
 			const string val = (iface.channel_switch_ok.value() ? "&#10003; " : "&#10007; ")
-				+ to_string(iface.channel_switch_ms.value_or(-1)) + " ms";
+				+ to_string(iface.channel_switch_us.value_or(-1)) + " &micro;s";
 			tr("Channel switch", val);
 		}
 		if(iface.netns_move_ok.has_value()){

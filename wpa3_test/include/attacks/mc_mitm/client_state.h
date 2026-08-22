@@ -50,7 +50,7 @@ public:
 			const bool is_new = !std::filesystem::exists(path);
 			if(std::ofstream f(path, std::ios::app); f){
 				if(is_new) set_public_perms(path);
-				f << "[STATE] " << macaddr << " : " << state2str(state) << " -> " << state2str(s) << std::endl;
+				f << current_time_string() << " [STATE] " << macaddr << " : " << state2str(state) << " -> " << state2str(s) << std::endl;
 			}
 		}
 		state = s;

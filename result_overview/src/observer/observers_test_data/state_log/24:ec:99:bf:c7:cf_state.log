@@ -1,0 +1,10 @@
+[STATE] 24:ec:99:bf:c7:cf : Unknown -> Sent_to_rogue
+[STATE] 24:ec:99:bf:c7:cf : Sent_to_rogue -> Sent_to_rogue
+[STATE] 24:ec:99:bf:c7:cf : Sent_to_rogue -> Authenticated
+[STATE] 24:ec:99:bf:c7:cf : Authenticated -> Associated
+[STATE] 24:ec:99:bf:c7:cf : Associated -> GotMitm
+[STATE] 24:ec:99:bf:c7:cf : GotMitm -> Associated
+[STATE] 24:ec:99:bf:c7:cf : Associated -> GotMitm
+[STATE] 24:ec:99:bf:c7:cf : GotMitm -> Associated
+[STATE] 24:ec:99:bf:c7:cf : Associated -> GotMitm
+[STATE] 24:ec:99:bf:c7:cf : GotMitm -> GotMitm

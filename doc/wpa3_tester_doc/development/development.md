@@ -10,6 +10,11 @@ You can change some default paths/names before compilation in  [default.h](../..
 
 ### Development FAQ
 
+#### How to add new observer?
+- add code to [observer .cpp files](../../../wpa3_test/src/observer), headers to  [observer headeers](../../../wpa3_test/include/observer)
+- add validation to [test_validator.schema.yaml](../../../wpa3_test/attack_config/validator/test_validator.schema.yaml) with [observer specific validator](../../../wpa3_test/attack_config/validator/programs/observer)
+- optionally add showcase of observer render functions to [observer](../../../result_overview/src/observer)
+
 #### How to add new attack?
 
 - strictly recommended add wrapper first when PoC is available

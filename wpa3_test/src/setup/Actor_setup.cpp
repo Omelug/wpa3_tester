@@ -97,7 +97,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(actor_json.contains("sniff_iface")) set(SK::sniff_iface,
 												MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
 
-	if(monitor_needed() && !(*this)[SK::sniff_iface].has_value()) set_monitor_mode();
+	if(monitor_needed() /*&& !(*this)[SK::sniff_iface].has_value()*/) set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)){
 		const ActorPtr self(shared_from_this());
 		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
@@ -109,8 +109,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set_iface_up();
 
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
-	if(channel_num != 0 && monitor_needed()) set_channel(
-		Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
+	if(channel_num != 0 && monitor_needed()) {
+		//set_iface_down();
+		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
+	}
 
 	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();
 	up_sniff_iface();

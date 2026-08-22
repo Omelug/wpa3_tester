@@ -15,6 +15,7 @@
 #include "attacks/enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion.h"
+#include "observer/observers_showcase.h"
 #include "devices.h"
 #include "target.h"
 #include "system/utils.h"
@@ -93,6 +94,12 @@ static string html_page() {
 
 	<div class="card">
 		<h2>
+			<a href="observer/showcase/index.html">Observer Graphs — Showcase</a>
+		</h2>
+	</div>
+
+	<div class="card">
+		<h2>
 			<a href="devices/index.html">Devices</a>
 		</h2>
 	</div>
@@ -139,6 +146,7 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_injection_overview(output_dir, data_dir);
 	wpa3_tester::overview::generate_mc_mitm(output_dir, data_dir);
 	wpa3_tester::overview::generate_ssid_confusion(output_dir, data_dir);
+	wpa3_tester::overview::generate_observers_showcase(output_dir, data_dir);
 
 	return 0;
 }

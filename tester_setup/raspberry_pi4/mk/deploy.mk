@@ -1,4 +1,4 @@
-TEST_SUITE ?= mc_mitm_filler
+TEST_SUITE ?= ssid_confusion_filler
 
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap run run_debug deploy-debug deploy-cross internet gdbserver-start

@@ -2,9 +2,9 @@ GDB_PORT        ?= 1234
 
 .PHONY: sysroot deploy-cross test-cross clean_cross
 
-# ── Sysroot sync ───────────────────────────────────────────────────────────────
-# One-time pull of Pi headers + libs for cross-compilation.
-# Re-run after installing new packages on Pi.
+# --- sysroot sync
+# one-time pull of Pi headers + libs for cross-compilation
+# re-run after installing new packages on Pi
 
 sysroot:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
@@ -20,9 +20,9 @@ sysroot:
 	ln -sf aarch64-linux-gnu/ld-linux-aarch64.so.1 $(SYSROOT)/lib/ld-linux-aarch64.so.1
 	@echo "==> Sysroot ready: $(SYSROOT)"
 
-# --- Cross-compile + deploy binary
-# cmake flags live in CMakePresets.json (cross-rpi4 preset).
-# On NixOS: run inside nix-shell with pkgsCross.aarch64-multiplatform.
+# -- cross-compile + deploy binary
+# requires on host (one-time):
+# sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
 deploy-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }

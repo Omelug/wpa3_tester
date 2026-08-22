@@ -1,9 +1,9 @@
 .PHONY: debug_netcat
 
 # Streams kernel dmesg over UDP to this host via netconsole.
-# Ethernet survives most Wi-Fi driver panics — last kernel words arrive even when dead.
-# UART (GPIO14/15) and pstore are baked in by customize.sh — no make target needed.
-
+# Ethernet survives most Wi-Fi driver panics — last kernel words arrive even when dead
+# UART (GPIO14/15) and pstore are baked in by customize.sh — no make target needed
+#TODO try or remove
 debug_netcat:
 	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make debug_netcat PI=<addr>"; exit 1; }
 	@test -n "$(PI_IFACE)" || { echo "Error: cannot detect Pi interface (is PI_IP=$(PI_IP) reachable?)"; exit 1; }

@@ -1,7 +1,7 @@
 TEST_SUITE ?= mc_mitm_filler
 
 # forward-declare targets from sibling mk files so CLion resolves them
-.PHONY: bootstrap deploy run run-debug deploy-debug deploy-cross internet gdbserver-start
+.PHONY: bootstrap run run_debug deploy-debug deploy-cross internet gdbserver-start
 
 bootstrap:
 	@test -n "$(PI)" || { echo "Error: PI is not set. Usage: make bootstrap PI=<address>"; exit 1; }

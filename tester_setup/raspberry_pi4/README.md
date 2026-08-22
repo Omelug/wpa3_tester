@@ -144,7 +144,7 @@ Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
 5. Cleanup `make clean_cross`   # remove build-cross/ directory
 
 ### Remote debugging (CLion)
-- start gdbserver on Pi:  ```make run-debug PI=10.0.0.2``` (run on tester laptop)
+- start gdbserver on Pi:  ```make run_debug PI=10.0.0.2``` (run on tester laptop)
 - `make deploy-cross`
 - in CLion select **raspberry** and click Debug — connects to `10.0.0.2:1234`.
 - TODO - no Clion way

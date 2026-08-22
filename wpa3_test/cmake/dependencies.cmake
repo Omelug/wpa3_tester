@@ -3,6 +3,15 @@ find_package(OpenSSL REQUIRED)
 add_library(wpa3_deps INTERFACE)
 target_link_libraries(wpa3_deps INTERFACE radiotap_lib)
 
+# NixOS cross-gcc only knows its own nix-store lib dirs; the Debian Pi sysroot uses FHS paths
+# (usr/lib/aarch64-linux-gnu).  Tell the linker where to search for bare -l<name> flags.
+if(CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
+    target_link_directories(wpa3_deps INTERFACE
+        ${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+        ${CMAKE_SYSROOT}/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+    )
+endif()
+
 
 target_include_directories(wpa3_deps INTERFACE
         ${linux_headers_wifi_SOURCE_DIR}
@@ -41,7 +50,6 @@ target_link_libraries(wpa3_deps INTERFACE
         doctest
         tins
         reproc++
-        nl-3 nl-genl-3
         ${LIBNL_LIBRARIES}
         ${LIBSSH_LIBRARIES}
         OpenSSL::SSL OpenSSL::Crypto

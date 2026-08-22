@@ -20,20 +20,16 @@ sysroot:
 	ln -sf aarch64-linux-gnu/ld-linux-aarch64.so.1 $(SYSROOT)/lib/ld-linux-aarch64.so.1
 	@echo "==> Sysroot ready: $(SYSROOT)"
 
-# ── Cross-compile + deploy binary ─────────────────────────────────────────────
-# Requires on host (one-time):
-#   sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+# --- Cross-compile + deploy binary
+# cmake flags live in CMakePresets.json (cross-rpi4 preset).
+# On NixOS: run inside nix-shell with pkgsCross.aarch64-multiplatform.
 
 deploy-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
 	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing — run 'make sysroot' first"; exit 1; }
-	PKG_CONFIG_SYSROOT_DIR=$(SYSROOT) \
-	PKG_CONFIG_PATH=$(SYSROOT)/usr/lib/aarch64-linux-gnu/pkgconfig:$(SYSROOT)/usr/share/pkgconfig \
-	cmake -S $(SRC_ROOT) -B $(CROSS_BUILD) -G Ninja \
-		-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) \
-		-DCMAKE_SYSROOT=$(SYSROOT) \
-		-DCMAKE_BUILD_TYPE=Debug \
-		-DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
+	# allow if needed
+	# rm -f $(CROSS_BUILD)/CMakeCache.txt
+	cmake -S $(SRC_ROOT) --preset cross-rpi4 -DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) --target wpa3_tester -j$(shell nproc)
 	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"
 	rsync -az --info=progress2 \
@@ -44,17 +40,11 @@ deploy-cross:
 		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
 	@echo "==> Binary deployed. Run: make run"
 
-#  --- Cross-compile + run all tests on Pi
 test-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
 	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing — run 'make sysroot' first"; exit 1; }
-	PKG_CONFIG_SYSROOT_DIR=$(SYSROOT) \
-	PKG_CONFIG_PATH=$(SYSROOT)/usr/lib/aarch64-linux-gnu/pkgconfig:$(SYSROOT)/usr/share/pkgconfig \
-	cmake -S $(SRC_ROOT) -B $(CROSS_BUILD) -G Ninja \
-		-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) \
-		-DCMAKE_SYSROOT=$(SYSROOT) \
-		-DCMAKE_BUILD_TYPE=Debug \
-		-DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
+	rm -f $(CROSS_BUILD)/CMakeCache.txt
+	cmake -S $(SRC_ROOT) --preset cross-rpi4 -DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) -j$(shell nproc)
 	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"
 	$(SSH) "sudo rm -rf $(REMOTE)/build/tests/setup/config_validation/test_suite/run_out 2>/dev/null; true"

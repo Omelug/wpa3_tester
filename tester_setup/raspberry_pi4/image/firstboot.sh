@@ -20,7 +20,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libssh-dev \
     libyaml-cpp-dev \
     libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq \
+    iproute2 iw tcpdump iptables socat dnsmasq fish \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
@@ -56,6 +56,10 @@ chmod +x /usr/bin/dumpcap
 # -- WiFi region
 #TODO hardcoded region
 raspi-config nonint do_wifi_country CZ
+
+# --- Default shell: fish
+PI_USER_1000=$(getent passwd 1000 | cut -d: -f1)
+chsh -s /usr/bin/fish "$PI_USER_1000"
 
 # --- SSH key
 # /boot/firmware is where RPi OS Bookworm mounts the FAT boot partition

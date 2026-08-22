@@ -8,9 +8,8 @@
   </component>
   <component name="CMakeSharedSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="$PROJECT_DIR$/build" CONFIG_NAME="Debug" BUILD_OPTIONS="-j 6" />
-      <configuration PROFILE_NAME="raspberry" ENABLED="true" CONFIG_NAME="Debug" TOOLCHAIN_NAME="raspberry remote" />
-      <configuration PROFILE_NAME="raspberry setup" ENABLED="true" GENERATION_DIR="tester_setup/raspberry_pi4/run/build-cross" CONFIG_NAME="RelWithDebInfo" />
+      <configuration PROFILE_NAME="raspberry" ENABLED="false" CONFIG_NAME="Debug" TOOLCHAIN_NAME="raspberry remote" />
+      <configuration PROFILE_NAME="raspberry setup" ENABLED="false" GENERATION_DIR="tester_setup/raspberry_pi4/run/build-cross" CONFIG_NAME="RelWithDebInfo" />
     </configurations>
   </component>
 </project>

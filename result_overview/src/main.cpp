@@ -87,7 +87,7 @@ static string html_page() {
 			<li><a href="attacks/enterprise/reflection_attack/index.html">enterprise - reflection attack</a></li>
 			<li><a href="attacks/two_iface/injection/index.html">two_iface - injection test cache</a></li>
 			<li><a href="attacks/mc_mitm/mc_mitm/index.html">mc_mitm - multi-channel MitM</a></li>
-			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">mc_mitm - SSID confusion (CVE-2023-52424)</a></li>
+			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">mc_mitm - SSID confusion</a></li>
 		</ul>
 	</div>
 

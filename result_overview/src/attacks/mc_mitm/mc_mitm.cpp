@@ -31,19 +31,18 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
     <h1>Multi-Channel MitM (mc-mitm)</h1>
 
     <div class="card">
-        <p><b>Prerequisites:</b> client connected to a legitimate AP.</p>
-        <p>The attacker uses two wireless interfaces: <b>rogue_client</b> monitors the real channel
-           and <b>rogue_ap</b> runs a rogue AP on a different channel. CSA beacons and deauth frames
-           move the target client from the real AP to the rogue channel.
-           Once the client associates with the rogue AP, traffic is forwarded through the attacker,
-           achieving a transparent MitM position without breaking connectivity.</p>
+        <p><b>Prerequisites:</b> client connected to a legitimate AP, working CSA attack</p>
+        <p>The attacker uses two wireless interfaces:
+			<b>rogue_client</b> monitors the real channel and <b>rogue_ap</b> runs a rogue AP on a different channel.
+			CSA beacons and deauth frames move the target client from the real AP to the rogue channel.
+            Once the client associates with the rogue AP, traffic is forwarded through the attacker,
+            achieving a transparent MitM position without breaking connectivity.</p>
         <p><b>Success:</b> client associates with the rogue AP (ClientState == GotMitm).</p>
     </div>
 
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li>Management Frame Protection (MFP / 802.11w) — prevents unauthenticated deauth/CSA</li>
             <li>Operating Channel Validation (OCV) — client verifies channel matches negotiated OCI</li>
         </ul>
     </div>

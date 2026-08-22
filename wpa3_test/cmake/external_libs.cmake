@@ -137,8 +137,9 @@ FetchContent_Declare(reproc
         OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(linux_headers_wifi
-        URL https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/nl80211.h
+        URL https://raw.githubusercontent.com/torvalds/linux/v7.2/include/uapi/linux/nl80211.h
         DOWNLOAD_NO_EXTRACT TRUE
+        DOWNLOAD_NAME nl80211.h
 )
 
 FetchContent_Declare(

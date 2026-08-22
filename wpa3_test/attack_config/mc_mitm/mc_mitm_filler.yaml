@@ -1,0 +1,8 @@
+name: mc_mitm_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./mc_mitm_internal.yaml
+delete_old: true
+rewrite: errors

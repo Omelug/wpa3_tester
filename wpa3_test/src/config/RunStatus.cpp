@@ -68,8 +68,8 @@ void RunStatus::execute(){
 				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(_run_folder / ERROR_FILE) || !exists(
-				_run_folder / DONE_FILE))){
+			if(_run_config.get_rewrite() == RewriteMode::errors && (!(exists(_run_folder / ERROR_FILE) || !exists(
+				_run_folder / DONE_FILE)))){
 				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}

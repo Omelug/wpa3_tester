@@ -115,7 +115,7 @@ void McMitm::configure_interfaces(){
 }
 
 void McMitm::setup_real_AP_RSN_frames(){
-	rogue_sta->set_iface_down();//FIXME nechtj9 nějaké interface up pro změnu kanálu? není ttu už dwn?
+	rogue_sta->set_iface_up();//FIXME nechtj9 nějaké interface up pro změnu kanálu? není ttu už dwn?
 	rogue_sta->set_channel(netconfig.real_channel);
 	rogue_sta->set_iface_up();
 

@@ -248,8 +248,8 @@ void hw_capabilities::set_channel(const string &iface, const Channel &ch, const 
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
 	// monitor-mode channel changes require the vif to already be up (cfg80211 needs a running
 	// monitor iface to apply the channel immediately) — callers bring the iface up beforehand.
-	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res) throw run_err(
-		"Failed to set '" + iface + "' to channel " + to_string(ch.ch_num) + ": " + res.message());
+	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
+		throw run_err("Failed to set '" + iface + "' to channel " + to_string(ch.ch_num) + ": " + res.message());
 }
 
 string get_iface_type(const string &iface, const optional<string> &netns){

@@ -1,9 +1,8 @@
-#include "attacks/mc_mitm/ssid_confusion.h"
+#include "overview/html_utils.h"
+#include "system/utils.h"
+#include "visual/mc_mitm/ssid_confusion_filler.h"
 #include <filesystem>
 #include <string>
-#include "overview/html_utils.h"
-#include "visual/mc_mitm/ssid_confusion_filler.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -31,19 +30,20 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
     <h1>SSID Confusion Attack (CVE-2023-52424)</h1>
 
     <div class="card">
-        <p><b>Prerequisites:</b> client connected to AP with SSID-A; client has SSID-B in its profile.</p>
-        <p>The rogue AP clones the BSSID of the real AP but advertises SSID-B instead of SSID-A.
-           Optionally the RSN IE is stripped so the network appears open.
-           A client that auto-connects to SSID-B ends up associated with a network it did not intend to join,
-           while believing it is on a trusted network.</p>
+        <p><b>Prerequisites:</b>
+			- client connected to AP with trusted ssid (SSID-A), client has untrusted ssid (SSID-B) in its profile
+			- working mitm attack to move client
+		</p>
+        <p>- the rogue AP clones the BSSID of the real AP but advertises SSID-B instead of SSID-A
+           - optionally the RSN IE is stripped so the network appears open
+           - client that auto-connects to SSID-B ends up associated with a network it did not intend to join,  believing it is on a trusted network./p>
         <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (ClientState == GotMitm).</p>
     </div>
 
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li>IEEE 802.11 REVme amendment — SSID is included in the 4-way handshake (fixes CVE-2023-52424)</li>
-            <li>Management Frame Protection (MFP / 802.11w) — prevents unauthenticated CSA/deauth used to move the client</li>
+            <li>SSID is included in the 4-way handshake </li>
             <li>Beacon Protection — detects spoofed beacons with a different SSID</li>
         </ul>
     </div>

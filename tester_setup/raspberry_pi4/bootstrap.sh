@@ -30,7 +30,7 @@ sudo apt-get install -y \
     libcurl4-openssl-dev \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    quilt trace-cmd tshark \
+    quilt trace-cmd tshark gdbserver \
     dkms linux-headers-rpi-v8
 
 #echo "==> Installing hcxtools from source (latest git)..."

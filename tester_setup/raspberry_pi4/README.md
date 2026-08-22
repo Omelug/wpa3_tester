@@ -144,17 +144,7 @@ Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
 5. Cleanup `make clean_cross`   # remove build-cross/ directory
 
 ### Remote debugging (CLion)
-
-Host requirement: `sudo apt install gdb-multiarch` 
-
-1. Start gdbserver on Pi:
-   ```make run-debug PI=10.0.0.2```
-
-2. In CLion select **"Pi: GDB debug"** and click Debug —
-   automatically runs `make deploy-cross` then connects to `10.0.0.2:1234`.
-
-
-   If the config doesn't load: *Run > Edit Configurations > + > GDB Remote Debug*,
-   set symbol file to `tester_setup/raspberry_pi4/run/build-cross/bin/wpa3_tester`, host `10.0.0.2`, port `1234`,
-   GDB path `gdb-multiarch`.
-
+- start gdbserver on Pi:  ```make run-debug PI=10.0.0.2``` (run on tester laptop)
+- `make deploy-cross`
+- in CLion select **raspberry** and click Debug — connects to `10.0.0.2:1234`.
+- TODO - no Clion way

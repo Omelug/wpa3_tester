@@ -28,8 +28,10 @@ set(DISABLE_TC ON CACHE BOOL "" FORCE)
 set(ENABLE_PROFILING OFF CACHE BOOL "" FORCE)
 
 find_package(PkgConfig REQUIRED)
-# NixOS: dbus-1.pc has libsystemd as a transitive dep; add system profile pkgconfig so the probe doesn't warn
-if(EXISTS "/run/current-system/sw/lib/pkgconfig")
+# NixOS: dbus-1.pc has libsystemd as a transitive dep; add system profile pkgconfig so the probe doesn't warn.
+# Skip during cross-compilation: host pkgconfig paths pollute the sysroot pkg-config search and return
+# nix store paths that the sysroot directory doesn't contain.
+if(NOT CMAKE_CROSSCOMPILING AND EXISTS "/run/current-system/sw/lib/pkgconfig")
     set(ENV{PKG_CONFIG_PATH} "/run/current-system/sw/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 endif()
 
@@ -156,6 +158,14 @@ FetchContent_Declare(yaml-cpp
         GIT_SHALLOW TRUE
         PATCH_COMMAND sed -i "/#include <algorithm>/a #include <cstdint>" src/emitterutils.cpp
 )
+
+# Debian multiarch: arch-specific generated headers (e.g. openssl/opensslconf.h) live in
+# usr/include/<arch>/.  The NixOS cross-gcc doesn't add this automatically unlike Debian's
+# aarch64-linux-gnu-g++.  Set it here, before FetchContent_MakeAvailable, so FetchContent
+# subprojects (libtins, etc.) that compile against OpenSSL also get the path.
+if(CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
+    include_directories(SYSTEM "${CMAKE_SYSROOT}/usr/include/${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
 
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
         json_schema_validator linux_headers_wifi radiotap boost_pfr)

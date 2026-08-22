@@ -143,6 +143,8 @@ else
 fi
 # Note: not calling 'nmcli connection up' here to avoid dropping the SSH session
 
+sudo chsh -s "$(which fish)" "$USER"
+
 PI_IP=$(hostname -I | awk '{print $1}')
 echo ""
 echo "==> Bootstrap complete."

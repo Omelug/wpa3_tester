@@ -86,7 +86,7 @@ help:
 	@echo "    make internet-off                  remove NAT rules"
 	@echo ""
 	@echo "  Remote debugging:"
-	@echo "    make run-debug    PI=<addr>        start gdbserver on Pi"
+	@echo "    make run_debug    PI=<addr>        start gdbserver on Pi"
 	@echo "      then: gdb-multiarch build-cross/bin/wpa3_tester"
 	@echo "            (gdb) target remote <addr>:1234"
 	@echo "    make debug_netcat PI=<addr>        netconsole crash log (Ctrl+C to stop)"

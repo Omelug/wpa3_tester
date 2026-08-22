@@ -1,6 +1,6 @@
 .PHONY: kernel kernel-deploy driver-builtin driver-dkms
 
-# ── Kernel cross-compilation with debug config ─────────────────────────────────
+# -- Kernel cross-compilation with debug config
 # Builds the official Pi kernel (bcm2711_defconfig) with kernel/debug.config merged in.
 #
 # Prereqs (one-time):  sudo apt install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc
@@ -33,7 +33,7 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Kernel deployed. Pi rebooting — reconnect in ~30 s."
 	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
 
-# ── Driver switching: DKMS vs in-kernel ───────────────────────────────────────
+# -- Driver switching: DKMS vs in-kernel
 # DKMS modules shadow in-kernel ones when installed; removing them restores in-kernel.
 # Source stays on disk so driver-dkms can reinstall without re-downloading.
 

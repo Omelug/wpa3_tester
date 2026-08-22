@@ -1,0 +1,36 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "cross-rpi4",
+      "displayName": "RPi4 aarch64 cross-compile",
+      "description": "Build for Raspberry Pi 4 (aarch64). Requires: make sysroot PI=<addr>",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/tester_setup/raspberry_pi4/run/build-cross",
+      "toolchainFile": "${sourceDir}/tester_setup/raspberry_pi4/aarch64-toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_SYSROOT": "${sourceDir}/tester_setup/raspberry_pi4/run/cross-sysroot",
+        "FETCHCONTENT_UPDATES_DISCONNECTED": "ON",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "ON"
+      },
+      "environment": {
+        "PKG_CONFIG_SYSROOT_DIR": "${sourceDir}/tester_setup/raspberry_pi4/run/cross-sysroot",
+        "PKG_CONFIG_PATH": "${sourceDir}/tester_setup/raspberry_pi4/run/cross-sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:${sourceDir}/tester_setup/raspberry_pi4/run/cross-sysroot/usr/share/pkgconfig"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "cross-rpi4",
+      "configurePreset": "cross-rpi4",
+      "displayName": "RPi4: build all"
+    },
+    {
+      "name": "cross-rpi4-tester",
+      "configurePreset": "cross-rpi4",
+      "displayName": "RPi4: wpa3_tester binary only",
+      "targets": ["wpa3_tester"]
+    }
+  ]
+}

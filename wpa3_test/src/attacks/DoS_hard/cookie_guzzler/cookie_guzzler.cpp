@@ -38,7 +38,7 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const optional<sae_helper::SAEPair> sae_params = get_commit_values(rs, attacker.get(SK::iface),
-																		attacker.get(SK::sniff_iface),
+																		attacker.get_mon_iface(),
 																		ap.get(SK::ssid),
 																		ap.get(SK::mac), 30);
 

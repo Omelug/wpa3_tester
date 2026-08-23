@@ -32,8 +32,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 														const HWAddress<6> &peermac, const bool skip_mf,
 														const bool testack
 ){
-	const bool rx_has_vif = actor_rx[SK::sniff_iface].has_value();
-	const string cap_iface = rx_has_vif ? actor_rx.get(SK::sniff_iface) : actor_rx.get(SK::iface);
+	const string cap_iface = actor_rx[BK::sniff_iface] ? actor_rx.get_mon_iface() : actor_rx.get(SK::iface);
 
 	MonitorSocket s_out = actor_tx->conn
 		? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)), MonitorSocket::tag_tx_t{})
@@ -74,7 +73,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(ActorPtr actor_tx, Act
 	// retrans + txack only make sense with two distinct interfaces
 	bool two_iface = cap_iface != actor_tx.get(SK::iface);;
 	if(two_iface && testack){
-		if(rx_has_vif){
+		if(actor_rx[BK::sniff_iface]){
 			// receiver's main iface (managed/AP) HW-ACKs frames -> no nearby AP needed
 			const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
 			add(test_injection_retrans(s_out, s_in, rx_mac, tx_mac, ch));

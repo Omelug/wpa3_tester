@@ -1,11 +1,12 @@
 #include "scan/active/scan_AP.h"
 
-#include <future>
-#include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
-#include "config/RunStatus.h"
+#include "attacks/components/sniffer_helper.h"
 #include "config/Actor_Config/Actor_Config_external.h"
+#include "config/RunStatus.h"
 #include "scan/active/scan_active.h"
+#include "system/netlink_guards.h"
+#include <future>
 
 namespace wpa3_tester::scan{
 
@@ -87,11 +88,12 @@ optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, const HWAddress<6> &ap
 }
 
 unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, const HWAddress<6> &ap_mac,
-								const optional<path> &beacon_pcap
+								const optional<path> &beacon_pcap, const optional<string> &netns
 ){
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.
 			to_string();
 
+	netlink_helper::NetNSContext ns_guard(netns);
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
 		[&](PDU &pdu){ return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 

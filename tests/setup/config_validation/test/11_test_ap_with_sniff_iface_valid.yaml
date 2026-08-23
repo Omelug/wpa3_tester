@@ -3,7 +3,7 @@ attacker_module: test_module
 actors:
   ap:
     source: internal
-    sniff_iface: mon0
+    sniff_iface: true
     setup:
       program: hostapd
   attacker:

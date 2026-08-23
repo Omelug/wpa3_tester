@@ -72,9 +72,9 @@ void run_attack(RunStatus &rs){
 	bool acm_triggered = false;
 	if(att_cfg.value("ACM_trigger", false)){
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-			rs, scanner.get(SK::iface), scanner.get(SK::sniff_iface), scan_ap.ssid, target_ap.get(SK::mac), 30);
+			rs, scanner.get(SK::iface), scanner.get_mon_iface(), scan_ap.ssid, target_ap.get(SK::mac), 30);
 		const auto [cookie, count] =
-			pmk_gobbler::trigger_acm(scanner.get(SK::sniff_iface),scanner.get(SK::mac),
+			pmk_gobbler::trigger_acm(scanner.get_mon_iface(),scanner.get(SK::mac),
 															target_ap.get(SK::mac),
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());

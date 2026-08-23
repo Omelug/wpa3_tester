@@ -23,7 +23,8 @@ std::optional<std::unique_ptr<Tins::Dot11Beacon>> handle_beacon(Tins::PDU &pdu, 
 );
 
 std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int timeout_sec, const Tins::HWAddress<6> &ap_mac,
-											const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt
+											const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt,
+											const std::optional<std::string> &netns = std::nullopt
 );
 
 //TODO scan

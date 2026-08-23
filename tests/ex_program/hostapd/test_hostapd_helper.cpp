@@ -55,7 +55,7 @@ TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available
 	remove_all(test_folder);
 }
 
-// ── hccapx_to_wpa_hashes ────────────────────────────────────────────────────
+// --- hccapx_to_wpa_hashes
 //TODO refactor stess (tests passs bet format helper not )
 /*TEST_CASE("hccapx_to_wpa_hashes - missing file returns empty"){
 	const auto result = hostapd::hccapx_to_wpa_hashes("/nonexistent/path.hccapx");
@@ -110,7 +110,7 @@ TEST_CASE("hccapx_to_wpa_hashes - SSID is test_channel_switch"){
 	}
 }
 
-// ── crac c k_pmk_hashes ────────────────────────────────────────────────────────
+// --- crac c k_pmk_hashes
 
 TEST_CASE("crack_pmk_hashes - missing file returns zero"){
 	const auto r = hostapd::crack_pmk_hashes("/nonexistent/captured_hashes.txt", "anypassword");

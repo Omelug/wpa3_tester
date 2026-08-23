@@ -30,7 +30,7 @@ actors:
       condition: [ monitor, 2_4GHz ]
       channel: 6
   rogue_ap:
-    sniff_iface: rogue
+    sniff_iface: true
     setup:
       program_config:
         ssid: OpenWrt_2_4GHz

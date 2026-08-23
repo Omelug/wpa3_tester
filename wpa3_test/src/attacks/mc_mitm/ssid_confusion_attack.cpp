@@ -29,6 +29,7 @@ void run_attack(RunStatus &rs){
 	attack.set_hooks(make_unique<SsidConfusionHooks>(real_ssid, confused_ssid, strip_rsn));
 
 	rogue_client->set_iface_up();
+	rogue_client->up_sniff_iface();
 	rogue_ap->set_iface_up();
 	rs.start_observers();
 

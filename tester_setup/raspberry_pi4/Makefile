@@ -1,4 +1,4 @@
-# ─────────────────────────────────────────────────────────────────────────────
+#
 # Raspberry Pi 4B — image creation and deploy automation
 #
 # WORKFLOW — automated image:
@@ -13,7 +13,7 @@
 # WORKFLOW — stock image (manual alternative to steps 1–3):
 #   Flash "Raspberry Pi OS Lite (64-bit)" via rpi-imager, enable SSH,
 #   boot, then: make bootstrap PI=<ip>
-# ─────────────────────────────────────────────────────────────────────────────
+#
 
 PI_USER     ?= pi
 PI_HOSTNAME ?= wpa3-tester

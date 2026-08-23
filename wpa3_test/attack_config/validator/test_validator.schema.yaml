@@ -289,8 +289,8 @@ $defs:
         type: boolean
         description: Exclude this actor from BB scanning (MAC resolved at runtime, e.g. via AP-STA-CONNECTED)
       sniff_iface:
-        type: string
-        description: Name of interface for monitoring (will create like associated on iface in selection)
+        type: boolean
+        description: Interface for monitoring (will create like associated on iface in selection)
     # Validation rules
     allOf:
       # netns can only be used with source: internal

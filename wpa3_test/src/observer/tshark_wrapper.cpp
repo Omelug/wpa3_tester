@@ -99,8 +99,7 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	add_nets_header(rs, command, node_name);
 
 	string pcap_path = get_observer_folder(rs, program_name) / (node_name + "_capture.pcap");
-	const optional<string>& iface = actor[SK::sniff_iface];
-	const string iface_str = iface ? iface.value() : actor.get(SK::iface);
+	const string iface_str = actor[BK::sniff_iface] ? actor->get_mon_iface() : actor.get(SK::iface);
 
 	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
 	command.insert(command.end(), {program_name, "-i", iface_str, "-w", temp_pcap_path});

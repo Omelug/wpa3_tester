@@ -58,7 +58,7 @@ actors:
       condition: [ monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
-    sniff_iface: client
+    sniff_iface: true
   attacker:
     source: internal
     selection:

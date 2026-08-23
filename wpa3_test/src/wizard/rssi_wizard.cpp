@@ -514,7 +514,7 @@ static void render_text(const vector<AdapterInfo>& adapters,
 	fflush(stdout);
 
     printf("Wi-Fi RSSI Wizard — %s\n", status.c_str());
-    printf("─────────────────────────────────\n");
+    printf("---------------------------\n");
     for (const auto& src : adapters) {
         for (const auto& rx : adapters) {
             const HWAddress<6> sm(src.actor.get(SK::mac));
@@ -533,7 +533,7 @@ static void render_text(const vector<AdapterInfo>& adapters,
         }
     }
     if (cond) {
-        printf("─────────────────────────────────\n");
+        printf("---------------------------\n");
         for (const auto& [text, _] : cond->to_colored_parts(m))
             printf("%s", text.c_str());
         printf("\nCondition: %s\n", cond->eval(m) ? "PASS " : "FAIL");

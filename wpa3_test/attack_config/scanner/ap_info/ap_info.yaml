@@ -15,7 +15,7 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6
-    #sniff_iface: scanner
+    #sniff_iface: true
 
 observers:
   tshark_client:

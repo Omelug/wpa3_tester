@@ -196,6 +196,10 @@ bool Actor_config::get(const BK key) const{
 	return *v;
 }
 
+//helper
+string Actor_config::get_ap_iface() const{ return AP_IFACE_PREFIX + get(SK::iface); }
+string Actor_config::get_mon_iface() const{ return MONITOR_IFACE_PREFIX + get(SK::iface); }
+
 auto Actor_config::is(const SK key, const std::string &str_value) const->bool{
 	if(key == SK::source && str_value != "internal" && str_value != "external" && str_value != "simulation"){
 		log(LogLevel::ERROR, "is(source): invalid value '{}'", str_value);

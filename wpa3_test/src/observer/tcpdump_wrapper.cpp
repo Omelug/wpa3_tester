@@ -51,8 +51,7 @@ void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter
 	}
 
 	const auto obs_folder = get_observer_folder(rs, program_name);
-	const optional<string> &sniff = actor[SK::sniff_iface];
-	const string iface = sniff ? MONITOR_IFACE_PREFIX + *sniff : actor.get(SK::iface);
+	const string iface = actor[BK::sniff_iface] ? actor->get_mon_iface() : actor.get(SK::iface);
 
 	vector<string> command;
 	add_nets_header(rs, command, actor_name);

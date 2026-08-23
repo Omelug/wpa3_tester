@@ -9,7 +9,7 @@ actors:
       driver: ath9k_htc
       channel: 1
     netns: rx
-    sniff_iface: rx
+    sniff_iface: true
   transceiver:
     source: internal
     selection:

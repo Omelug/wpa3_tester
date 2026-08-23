@@ -62,6 +62,8 @@ public:
 
 	[[nodiscard]] std::string get(SK key) const;
 	[[nodiscard]] bool get(BK key) const;
+	std::string get_ap_iface() const;
+	std::string get_mon_iface() const;
 	[[nodiscard]] bool is(SK key, const std::string &str_value) const;
 
 	[[nodiscard]] std::string get_or(SK key, std::string default_val) const;

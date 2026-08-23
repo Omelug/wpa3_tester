@@ -11,7 +11,7 @@ actors:
     $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
     #selection:
     #  driver: mt76x2u
-    sniff_iface: client
+    sniff_iface: true
 
   attacker:
     source: internal
@@ -19,7 +19,7 @@ actors:
       driver: ath9k_htc
       condition: [ monitor, 2_4GHz ] #injection_selftest #TODO add condition for injection?
       channel: 6
-    sniff_iface: att
+    sniff_iface: true
 #observers: #FIXME mausezahn nefunguje, nic nezachytává
   #client_mausezahn:
   #  actor: client

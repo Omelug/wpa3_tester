@@ -8,7 +8,7 @@ actors:
     selection:
       condition: [ AP ]
       #channel: 6
-    sniff_iface: scanner
+    sniff_iface: true
     setup:
       program: hostapd
       program_config:

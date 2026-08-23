@@ -16,9 +16,16 @@ using namespace std;
 namespace wpa3_tester::observer{
 void Observer_config::start(RunStatus &rs) const{
 	const auto program = observer_config.at("program").get<string>();
-	const auto actor_name = observer_config.value("actor", observer_name);
-	const auto program_config = observer_config.at("program_config");
+	const nlohmann::json program_config = observer_config.contains("program_config")
+		? observer_config.at("program_config") : nlohmann::json::object();
+	if(program == "dmesg"){
+		const string level = program_config.value("level", "");
+		dmesg::start_dmesg(rs, level);
+		return;
+	}
 
+	// ---- observers needs actor_name
+	const auto actor_name = observer_config.at("actor").get<string>();
 	if(program == "tshark"){
 		const string filter = program_config.value("filter", "");
 		tshark::start_tshark(rs, actor_name, filter);
@@ -54,11 +61,6 @@ void Observer_config::start(RunStatus &rs) const{
 		const auto events  = program_config.at("events").get<std::vector<std::string>>();
 		const auto kprobes = program_config.value("kprobes", std::vector<std::string>{});
 		trace_cmd::start_trace_cmd(rs, actor_name, events, kprobes);
-		return;
-	}
-	if(program == "dmesg"){
-		const string level = program_config.value("level", "");
-		dmesg::start_dmesg(rs, actor_name, level);
 		return;
 	}
 	throw run_err("Invalid observer program: " + program);

@@ -38,14 +38,14 @@ actors:
         group: CCMP
     netns: sta
     ip_addr: "172.16.100.2"
-    sniff_iface: client
+    sniff_iface: true
   attacker:
     source: internal
     selection:
       driver: ath9k_htc
       condition: [ monitor, 2_4GHz ] #injection_selftest
       channel: 6
-    sniff_iface: att
+    sniff_iface: true
 observers:
   tshark_attacker:
     actor: attacker

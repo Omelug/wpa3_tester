@@ -137,7 +137,7 @@ TEST_SUITE("process_single_packet requirements") {
 	}
 }
 
-// ── connection conditions ───────────────────────────────────────────────────
+// --- connection conditions
 
 TEST_SUITE("process_single_packet conn_conds") {
 

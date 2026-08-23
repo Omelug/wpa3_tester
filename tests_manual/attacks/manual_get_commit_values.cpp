@@ -17,11 +17,11 @@ void manual_get_commit_values_test(){
     const auto iface_opt = manual_tests::get_iface_wizard();
     const string &iface_name = *iface_opt;
     // Create Actor_config to manage interface
-    Actor_config iface_config;
-    iface_config.set(SK::iface, iface_name);
-    iface_config.set(SK::sniff_iface, MONITOR_IFACE_PREFIX + "test");
-    iface_config.set_monitor_mode();
-    iface_config.create_sniff_iface();
+    ActorPtr iface_config(std::make_shared<Actor_Config_internal>());
+    iface_config->set(SK::iface, iface_name);
+    iface_config->set(BK::sniff_iface, true);
+    iface_config->set_monitor_mode();
+    iface_config->create_sniff_iface();
 
     // Get channel selection
     const Channel channel{manual_tests::get_2_4_channel_wizard(), WifiBand::BAND_2_4, nullopt};
@@ -50,7 +50,7 @@ void manual_get_commit_values_test(){
     const HWAddress<6> ap_mac(ap_mac_str);
     RunStatus rs;
     const optional<sae_helper::SAEPair> sae_params =
-            cookie_guzzler::get_commit_values(rs, iface_name, iface_config["sniff_iface"], ssid, ap_mac, timeout);
+            cookie_guzzler::get_commit_values(rs, iface_name, iface_config->get_mon_iface();, ssid, ap_mac, timeout);
 
     if(sae_params.has_value()){
         cout << "\n=== CAPTURE SUCCESSFUL ===\n";

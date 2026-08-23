@@ -16,7 +16,7 @@ struct Driver{
 // String keys
 enum class SK : uint8_t{
 	actor_name, source, iface, mac, permanent_mac, ssid, channel,
-	signal, ht_mode, driver_name, driver_hash, module_hash, netns, sniff_iface,
+	signal, ht_mode, driver_name, driver_hash, module_hash, netns,
 	radio, whitebox_host, whitebox_ip, ip_addr,
 	ssh_user, ssh_port, ssh_password, external_OS,
 	COUNT_
@@ -25,7 +25,7 @@ enum class SK : uint8_t{
 // Bool keys
 enum class BK : uint8_t{
 	AP, STA, injection_selftest, monitor, managed,
-	active_monitor, control_monitor,
+	active_monitor, control_monitor, sniff_iface,
 	//THIS IS ONLY SUPPORT, NOT ACTIVE/USAGE
 	GHz2_4, GHz5, GHz6,
 	w80211n, w80211ac, w80211ax,  netns_change, beacon_prot,
@@ -37,12 +37,12 @@ enum class BK : uint8_t{
 
 inline constexpr std::array<std::string_view,static_cast<size_t>(SK::COUNT_)> SK_NAMES = {
 	"actor_name", "source", "iface", "mac", "permanent_mac", "ssid", "channel", "signal", "ht_mode", "driver",
-	"driver_hash", "module_hash", "netns", "sniff_iface", "radio", "whitebox_host", "whitebox_ip", "ip_addr",
+	"driver_hash", "module_hash", "netns", "radio", "whitebox_host", "whitebox_ip", "ip_addr",
 	"ssh_user", "ssh_port", "ssh_password", "external_OS"
 };
 
 inline constexpr std::array<std::string_view,static_cast<size_t>(BK::COUNT_)> BK_NAMES = {
-	"AP", "STA", "injection_selftest", "monitor", "managed", "active_monitor", "control_monitor", "2_4GHz", "5GHz",
+	"AP", "STA", "injection_selftest", "monitor", "managed", "active_monitor", "control_monitor", "sniff_iface", "2_4GHz", "5GHz",
 	"6GHz", "80211n", "80211ac", "80211ax", "netns_change", "beacon_prot", "CSA", "OCV", "MFP", "WPA-PSK", "WPA3-SAE",
 };
 

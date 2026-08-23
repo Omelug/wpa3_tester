@@ -14,7 +14,7 @@ actors:
       program_config:
         version: 2_10
         hostapd_path: "./simple_hostapd.conf"
-    sniff_iface: ap
+    sniff_iface: true
   attacker:
     source: internal
     selection:

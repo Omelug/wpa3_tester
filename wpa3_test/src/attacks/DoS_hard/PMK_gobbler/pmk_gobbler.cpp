@@ -139,7 +139,7 @@ void run_attack(RunStatus &rs){
 
 	//TODO zkotrolovat, že tu je ssid ([předtím bylohardcoded)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, att.get(SK::iface), att.get(SK::sniff_iface), ap.get(SK::ssid), ap.get(SK::mac), 30);
+		rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	att->set_monitor_mode();
 	att->set_iface_up();
 
@@ -153,7 +153,7 @@ void run_attack(RunStatus &rs){
 	CookieStore store;
 	thread capture_thread([&](){
 		try{
-			capture_cookies(att.get(SK::sniff_iface), ap.get(SK::mac), store);
+			capture_cookies(att.get_mon_iface(), ap.get(SK::mac), store);
 		} catch(const exception &e){
 			log(LogLevel::ERROR, "Capture thread: {}", e.what());
 			store.stop.store(true);

@@ -53,7 +53,7 @@ void run_attack(RunStatus &rs){
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker.get(SK::iface), attacker.get(SK::sniff_iface), hostapd::get_ssid(rs, "ap"),
+		rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"),
 		ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");

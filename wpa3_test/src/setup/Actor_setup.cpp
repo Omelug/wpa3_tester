@@ -94,8 +94,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	else if(const auto &c = real_actor[SK::channel]) channel_num = stoi(c.value());
 
 	// Set sniff_iface key early so monitor check below knows a VIF will handle capturing
-	if(actor_json.contains("sniff_iface")) set(SK::sniff_iface,
-												MONITOR_IFACE_PREFIX + actor_json.at("sniff_iface").get<string>());
+	if(actor_json.contains("sniff_iface"))
+		set(BK::sniff_iface,actor_json.at("sniff_iface").get<bool>());
 
 	if(monitor_needed() /*&& !(*this)[SK::sniff_iface].has_value()*/) set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)){
@@ -114,7 +114,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 	}
 
-	if((*this)[SK::sniff_iface].has_value()) create_sniff_iface();
+	if((*this)[BK::sniff_iface]) create_sniff_iface();
 	up_sniff_iface();
 	set_iface_up();
 }

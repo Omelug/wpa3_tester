@@ -17,6 +17,7 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
+
 McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid, const string &ap_mac,
 				const string &client_mac, optional<filesystem::path> log_folder, const bool only_to_mitm
 )
@@ -120,7 +121,7 @@ void McMitm::setup_real_AP_RSN_frames(){
 	rogue_sta->set_iface_up();
 
 	// get real AP beacon
-	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, HWAddress(ap_mac)); //TODO hardcoded tscan_timeout
+	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, HWAddress(ap_mac), std::nullopt, rogue_sta[SK::netns]); //TODO hardcoded tscan_timeout
 	if(!beacon){
 		log(LogLevel::ERROR,
 			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ssid);

@@ -14,7 +14,7 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6
-    #FIXME ACM trigger sniff_iface: scanner
+    #FIXME ACM trigger sniff_iface: true
 
 attack_config:
   beacon_scan: true

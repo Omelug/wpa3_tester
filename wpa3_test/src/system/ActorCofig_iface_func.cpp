@@ -35,8 +35,8 @@ void Actor_config::cleanup() const{
 	run({"pkill", "-f", "dnsmasq.*" + iface}, false);
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
-	if((*this)[SK::sniff_iface].has_value()){
-		run({"iw", "dev", get(SK::sniff_iface), "del"});
+	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){
+		run({"iw", "dev", get_mon_iface(), "del"});
 
 		run({"pkill", "-f", "wpa_supplicant.*-i" + iface}, false);
 		run({"pkill", "-f", "hostapd.*" + iface}, false);
@@ -50,7 +50,7 @@ void Actor_config::cleanup() const{
 
 void Actor_config::create_sniff_iface() const{
 	const string &iface = get(SK::iface);
-	const string &sniff_iface = get(SK::sniff_iface);
+	const string &sniff_iface = get_mon_iface();
 	if(conn != nullptr){
 		throw not_implemented_err("External cant have sniff_iface");
 		//conn->create_sniff_iface(iface, sniff_iface); return;
@@ -95,8 +95,8 @@ void Actor_config::set_ap_mode() const{
 }
 
 void Actor_config::up_sniff_iface() const{
-	if(!(*this)[SK::sniff_iface].has_value()) return;
-	const string &sniff_iface = get(SK::sniff_iface);
+	if((*this)[BK::sniff_iface]) return;
+	const string &sniff_iface = get_mon_iface();
 
 	if(is_interface_up(sniff_iface)){
 		log(LogLevel::DEBUG, "{} is already UP, skipping.", sniff_iface);
@@ -124,8 +124,8 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
 	hw_capabilities::set_mac_address(iface, mac, (*this)[SK::netns]);
 
-	if((*this)[SK::sniff_iface].has_value()){
-		hw_capabilities::set_mac_address(get(SK::sniff_iface), mac, (*this)[SK::netns]);
+	if((*this)[BK::sniff_iface]){
+		hw_capabilities::set_mac_address(get_mon_iface(), mac, (*this)[SK::netns]);
 	}
 }
 
@@ -135,7 +135,6 @@ void Actor_config::set_monitor_mode(bool add_flags) const{
 		conn->set_monitor_mode(iface);
 		return;
 	}
-
 
 	vector<string> monitor_flags = {"fcsfail", "otherbss"};
 

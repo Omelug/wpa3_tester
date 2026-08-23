@@ -9,6 +9,11 @@ Actor_config *ActorPtr::operator->() const{ return ptr.get(); }
 Actor_config &ActorPtr::operator*() const{ return *ptr; }
 Actor_config *ActorPtr::get() const{ return ptr.get(); }
 string ActorPtr::get(const SK key) const{ return ptr.get()->get(key); }
+
+// helper links for VIF
+string ActorPtr::get_ap_iface() const{ return AP_IFACE_PREFIX + ptr.get()->get_ap_iface(); }
+string ActorPtr::get_mon_iface() const{ return MONITOR_IFACE_PREFIX + ptr.get()->get_mon_iface();}
+
 bool ActorPtr::is(const SK key, const std::string &str_value) const{ return ptr.get()->is(key, str_value);}
 bool ActorPtr::get(const BK key) const{ return ptr.get()->get(key); }
 shared_ptr<Actor_config> ActorPtr::shared() const{ return ptr; }

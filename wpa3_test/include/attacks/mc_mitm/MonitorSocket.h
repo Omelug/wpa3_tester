@@ -11,7 +11,6 @@
 namespace wpa3_tester{
 class MonitorSocket{
 public:
-	explicit MonitorSocket(const std::string &iface, bool detect_injected = false);
 	MonitorSocket(const std::string &iface, const std::optional<std::string> &netns, bool detect_injected = false);
 	// Remote capture: persistent SSH channel from open_capture_channel().
 	explicit MonitorSocket(ssh_channel rx_ch, bool detect_injected = false);

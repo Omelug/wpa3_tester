@@ -23,8 +23,6 @@ McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid,
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
-nic_real_ap(AP_IFACE_PREFIX + rogue_sta.get(SK::iface)),
-nic_rogue_ap(AP_IFACE_PREFIX + rogue_ap.get(SK::iface)),
 ssid(std::move(ssid)),
 // TODO fallback to info from actors
 ap_mac(ap_mac),
@@ -111,8 +109,8 @@ void McMitm::configure_interfaces(){
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 
 	//FIXME useless?
-	rogue_sta->run({"iw", "dev", nic_real_ap, "del"});
-	rogue_ap->run({"iw", "dev", nic_rogue_ap, "del"});
+	//rogue_sta->run({"iw", "dev", nic_real_ap, "del"});
+	//rogue_ap->run({"iw", "dev", rogue_ap->get_ap_iface(), "del"});
 }
 
 void McMitm::setup_real_AP_RSN_frames(){
@@ -147,7 +145,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	configure_interfaces();
 	setup_real_AP_RSN_frames();
 
-	log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, netconfig.rogue_channel.ch_num);
+	log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", rogue_ap->get_mon_iface(), netconfig.rogue_channel.ch_num);
 
 	// Now that we know the AP channel, put the monitor interface in active ACK mode
 	// for ACK back to AP
@@ -155,6 +153,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	//FIXME set_monitor_active ničí channel ()
 	// const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta.get(SK::iface), netconfig.real_channel);
 	const bool start_nic_real_ap = true;
+
+	const string nic_real_ap = AP_IFACE_PREFIX + "ap"; //FIXME hardcoded
 	if(start_nic_real_ap){
 		rogue_sta->set_mac_address(client_state.get_mac());
 		start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
@@ -177,18 +177,18 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			to_string() + ")";
 	bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
 
-	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface));
+	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
-	log(LogLevel::INFO, "Setting MAC address of {} to {}", nic_rogue_ap, ap_mac);
+	log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_ap->get_ap_iface(), ap_mac);
 	rogue_ap->set_iface_up();
 	rogue_ap->set_mac_address(ap_mac);
 	// Set up a rogue AP that clones the target network -> ACK back to client
-	start_ap(rs, nic_rogue_ap, rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
+	start_ap(rs, rogue_ap->get_ap_iface(), rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
 	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
-	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface));
+	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
 	sock_rogue->set_filter(bpf);
 
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
@@ -270,8 +270,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 void McMitm::stop(){
 	log(LogLevel::INFO, "Cleaning up MitM...");
-	stop_ap(nic_real_ap, nullopt);
-	stop_ap(nic_rogue_ap, nullopt);
+	stop_ap(AP_IFACE_PREFIX+"ap", nullopt); //FIXME hardcoded
+	stop_ap(rogue_ap->get_ap_iface(), nullopt);
 	sock_real.reset();
 	sock_rogue.reset();
 }

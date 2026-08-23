@@ -13,7 +13,6 @@ class McMitm{
 	friend class McMitmHooks;
 protected:
 	ActorPtr rogue_sta, rogue_ap;
-	std::string nic_real_ap, nic_rogue_ap;
 	std::string ssid;
 public:
 	Tins::HWAddress<6> ap_mac;
@@ -35,7 +34,7 @@ public:
 	void send_disas(const Tins::HWAddress<6> &macaddr) const;
 	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;
-	void configure_interfaces();
+	static void configure_interfaces();
 
 	void setup_real_AP_RSN_frames();
 	void run(RunStatus &rs, int timeout_sec);

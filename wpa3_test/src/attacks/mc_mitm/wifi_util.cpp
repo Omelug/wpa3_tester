@@ -127,7 +127,7 @@ Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, co
 void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
 			const Dot11Beacon &beacon, optional<HWAddress<6>> mac, int interval, int dtim_period
 ){
-	// In order of priority: provided ssid, ssid from beacon, or default
+	// in order of priority: provided ssid, ssid from beacon, or default
 	const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
 	if(!ssid_ie || ssid_ie->data_size() <= 0) throw run_err("invalid beacon for start ap");
 	auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
@@ -164,14 +164,16 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	for(const auto b: head_bytes) head_hex << hex << setw(2) << setfill('0') << static_cast<int>(b);
 
 	//TODO some drivers drop kernel if  const optional<string>& ssid = nullopt, up during subiface cchange to __ap ?  - maybe only ath_htc/mt7 ?
-	//(weird af but I will not debug it if I need restart notebook for run)
+	//(weird af but I will not debug it if I need restart notebook fortail_bytes run)
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);
 	base_actor->set_iface_down();
+
+	/* should be in tester setup
 	hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, true);
 	if(netlink_helper::wait_for_iface_disappear(ap_iface, netns))
 		throw setup_err("Interface " + ap_iface + " did not disappear");
-
+	*/
 	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
 
 	// --- step 2: add AP virtual interface
@@ -179,7 +181,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 							netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
 		throw setup_err("Interface " + ap_iface + " did not appear");
-	this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, ale asi to funguje aspo+n nějak stabilně
+	this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, _fakeale asi to funguje aspo+n nějak stabilně
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
 	hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
@@ -199,8 +201,10 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 		cmd.push_back(tail_hex.str());
 	}
 
+	if(netns.has_value())
+		cmd.insert(cmd.begin(), {"ip", "netns", "exec", *netns});
 	this_thread::sleep_for(chrono::milliseconds(200)); // firmware need some time to up ?
-	rs.process_manager.run(ap_iface + "_fake", cmd);
+	rs.process_manager.run(ap_iface + "_start_ap", cmd);
 
 	// With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
 	// acknowledge received frames and send ACKs

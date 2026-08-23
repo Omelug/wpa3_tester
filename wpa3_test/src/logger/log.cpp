@@ -1,12 +1,11 @@
 #include "logger/log.h"
+#include "config/RunStatus.h"
+#include "system/utils.h"
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <regex>
 #include <vector>
-#include "config/RunStatus.h"
-#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -135,14 +134,9 @@ vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_na
 LogTimePoint get_tag_time(const path &log_path, const string &tag){
 	if(!exists(log_path)) return LogTimePoint{};
 	ifstream file(log_path);
-	string line;
-	const regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}))");
-	smatch match;
-	while(getline(file, line)){
+	for(string line; getline(file, line); )
 		if(line.contains(tag))
-			if(regex_search(line, match, re))
-				return log_time_to_epoch_ns(match[1].str());
-	}
+			return log_time_to_epoch_ns(line);
 	return LogTimePoint{};
 }
 

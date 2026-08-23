@@ -33,28 +33,6 @@ bool ProcessManager::process_exists(const string &process_name) const{
 	return processes.contains(process_name);
 }
 
-// tshark like -t ad timestamp
-string ProcessManager::current_timestamp(){
-	using clock = system_clock;
-	const auto now = clock::now();
-	const time_t t = clock::to_time_t(now);
-	tm buf{};
-	localtime_r(&t, &buf);
-
-	// nanoseconds sub-second part
-	const auto ns = duration_cast<nanoseconds>(now.time_since_epoch()) % 1'000'000'000;
-
-	// timezone offset (+HHMM)
-	char tz[8];
-	strftime(tz, sizeof(tz), "%z", &buf);
-
-	char datetime[32];
-	strftime(datetime, sizeof(datetime), "%Y-%m-%dT%H:%M:%S", &buf);
-
-	char out[64];
-	snprintf(out, sizeof(out), "%s.%09lld%s", datetime, static_cast<long long>(ns.count()), tz);
-	return out;
-}
 
 void ProcessManager::init_logging(const path &run_folder){
 	scoped_lock lock(logger_mtx);

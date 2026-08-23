@@ -5,8 +5,10 @@
 namespace wpa3_tester::observer::dmesg{
 using namespace std;
 
-void start_dmesg(RunStatus &rs, const string &actor_name){
+void start_dmesg(RunStatus &rs, const string &actor_name, const string &level){
 	const string obs_folder = get_observer_folder(rs, "dmesg");
-	rs.process_manager.run(actor_name + "_dmesg", {"dmesg", "-W"}, {}, obs_folder);
+	vector<string> args = {"dmesg", "-W"};
+	if(!level.empty()) args.push_back("--level=" + level);
+	rs.process_manager.run(actor_name + "_dmesg", args, {}, obs_folder);
 }
 }

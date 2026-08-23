@@ -4,4 +4,6 @@ type: object
 properties:
   $validator:
     type: string
+  level:
+    type: string
 additionalProperties: false

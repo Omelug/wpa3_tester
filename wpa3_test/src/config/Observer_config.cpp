@@ -16,7 +16,7 @@ using namespace std;
 namespace wpa3_tester::observer{
 void Observer_config::start(RunStatus &rs) const{
 	const auto program = observer_config.at("program").get<string>();
-	const auto actor_name = observer_config.at("actor").get<string>();
+	const auto actor_name = observer_config.value("actor", observer_name);
 	const auto program_config = observer_config.at("program_config");
 
 	if(program == "tshark"){
@@ -57,7 +57,8 @@ void Observer_config::start(RunStatus &rs) const{
 		return;
 	}
 	if(program == "dmesg"){
-		dmesg::start_dmesg(rs, actor_name);
+		const string level = program_config.value("level", "");
+		dmesg::start_dmesg(rs, actor_name, level);
 		return;
 	}
 	throw run_err("Invalid observer program: " + program);

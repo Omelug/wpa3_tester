@@ -78,8 +78,9 @@ observers: #(allow start_observers if used )
   #    filter: ""
 
   client_dmesg:
-    actor: client
     program: dmesg
+    program_config:
+      level: "err,warn"
 
   channel1_tshark:
     actor: rogue_ap

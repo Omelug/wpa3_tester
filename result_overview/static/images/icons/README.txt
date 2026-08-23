@@ -1,0 +1,1 @@
+Icons are only for future use, not directly used because rendering on html page would be uselessly complicated

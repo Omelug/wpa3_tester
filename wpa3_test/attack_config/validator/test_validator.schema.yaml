@@ -451,9 +451,7 @@ $defs:
     type: object
     additionalProperties: false
     required:
-      - actor
       - program
-      - program_config
     properties:
       actor:
         type: string
@@ -465,6 +463,13 @@ $defs:
       program_config:
         type: object
     allOf:
+      - if:
+          not:
+            properties:
+              program:
+                const: dmesg
+        then:
+          required: [ actor ]
       - if:
           properties:
             program:

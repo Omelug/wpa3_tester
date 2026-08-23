@@ -11,6 +11,7 @@ actors:
     setup:
       program: hostapd
       program_config:
+        other_options: "-d"
         version: 2_10
         driver: nl80211
         ssid: SafeNet
@@ -33,6 +34,7 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        other_options: "-d"
         version: 2_11
         ssid: SafeNet
         sae_password: password123
@@ -55,6 +57,7 @@ actors:
   rogue_ap:
     source: internal
     selection:
+      driver: mt76x2u
       condition: [ monitor, 2_4GHz ]
       channel: 1
     sniff_iface: "att_rogue"
@@ -65,9 +68,19 @@ attack_config:
   strip_rsn: true
   attack_time_sec: 30
 observers:
+  client_dmesg:
+    program: dmesg
+    program_config:
+      level: "err,warn"
   rogue_tshark:
     actor: rogue_ap
     program: tshark
     program_config:
-      filter: "type mgt subtype beacon or type mgt subtype auth or type mgt subtype assoc-req"
+      filter: "special_filter:actors"
+      #filter: "type mgt subtype beacon or type mgt subtype auth or type mgt subtype assoc-req"
+  rogue_sta_tshark:
+    actor: rogue_client
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
 rewrite: errors

@@ -145,6 +145,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 	configure_interfaces();
 	setup_real_AP_RSN_frames();
+
 	log(LogLevel::INFO, "Will use {} to create rogue AP on channel {}", nic_rogue_ap, netconfig.rogue_channel.ch_num);
 
 	// Now that we know the AP channel, put the monitor interface in active ACK mode
@@ -163,9 +164,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		this_thread::sleep_for(seconds(15));
 		rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 	}
-	rogue_sta->set_iface_down(); //TODO chenge to set_channel
-	rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
+
+	/*rogue_sta->set_iface_down(); //TODO chenge to set_channel
+	rogue_sta->set_channel(Channel{netconfig.real_channel.ch_num, WifiBand::BAND_2_4, nullopt});
 	rogue_sta->set_iface_up();
+	*/
 
 	//FIXME change to wlan host or add comment
 	string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";

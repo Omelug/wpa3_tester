@@ -5,38 +5,11 @@
 #include "config/RunStatus.h"
 #include "observer/state_log_graph.h"
 
-#include <tins/tins.h>
-
 using namespace std;
 using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ssid_confusion{
-unique_ptr<Dot11Beacon> make_confused_beacon(const Dot11Beacon &real, const string &, const bool){
-	auto b = make_unique<Dot11Beacon>();
-	b->addr1(real.addr1()); // broadcast
-	b->addr2(real.addr2()); // BSSID (kept identical to real AP — key to the attack)
-	b->addr3(real.addr3());
-	b->timestamp(real.timestamp());
-	b->interval(real.interval());
-	b->capabilities() = real.capabilities();
-
-	/*FIXME for (const auto& opt : real.options()) {
-			if (opt.option() == IEEE_TLV_TYPE_SSID) {
-				// Advertise a different SSID than the real AP
-				b->add_option(Dot11::option(
-					IEEE_TLV_TYPE_SSID,
-					confused_ssid.size(),
-					reinterpret_cast<const uint8_t*>(confused_ssid.data())));
-			} else if (strip_rsn && opt.option() == IEEE_TLV_TYPE_RSN) {
-				// Drop RSN IE — rogue AP appears as an open network
-			} else {
-				b->add_option(opt);
-			}
-		}*/
-	return b;
-}
-
 void run_attack(RunStatus &rs){
 	const auto rogue_client = rs.get_actor("rogue_client");
 	const auto rogue_ap     = rs.get_actor("rogue_ap");
@@ -67,7 +40,7 @@ void run_attack(RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs) {
-	string mac_str = rs.get_actor("rogue_client").get(SK::mac);
+	const string mac_str = rs.get_actor("rogue_client").get(SK::mac);
 	const filesystem::path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + ".log");
 	const filesystem::path out_log = rs.run_folder() / "observer" / "client_state" / "rogue_client.png";
 	observer::state_log_graph::create_state_log_graph(state_log,out_log);

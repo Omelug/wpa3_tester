@@ -18,15 +18,18 @@ const path &root_dir(const optional<path> &set_to){
 	return dir;
 }
 
-string current_time_string(){
-	const auto now = chrono::system_clock::now();
-	const auto timer = chrono::system_clock::to_time_t(now);
-	tm bt{};
-	localtime_r(&timer, &bt);
-
-	ostringstream oss;
-	oss << put_time(&bt, "%Y-%m-%d %H:%M:%S");
-	return oss.str();
+string current_timestamp(){
+	using clock = chrono::system_clock;
+	const auto now = clock::now();
+	const time_t t = clock::to_time_t(now);
+	tm buf{};
+	localtime_r(&t, &buf);
+	const auto ns = chrono::duration_cast<chrono::nanoseconds>(now.time_since_epoch()) % 1'000'000'000;
+	char tz[8], datetime[32], out[64];
+	strftime(tz, sizeof(tz), "%z", &buf);
+	strftime(datetime, sizeof(datetime), "%Y-%m-%dT%H:%M:%S", &buf);
+	snprintf(out, sizeof(out), "%s.%09lld%s", datetime, static_cast<long long>(ns.count()), tz);
+	return out;
 }
 
 //TODO can add dirty if not commited?

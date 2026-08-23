@@ -204,7 +204,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	if(netns.has_value())
 		cmd.insert(cmd.begin(), {"ip", "netns", "exec", *netns});
 	this_thread::sleep_for(chrono::milliseconds(200)); // firmware need some time to up ?
-	rs.process_manager.run(ap_iface + "_start_ap", cmd);
+	rs.process_manager.run(ap_iface + "_start", cmd);
 
 	// With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
 	// acknowledge received frames and send ACKs

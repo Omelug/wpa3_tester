@@ -21,14 +21,14 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
 		return true;
 	}
 	if(dot11.find_pdu<Dot11ProbeResponse>()){
-		if(addr2 == ap_mac) display_traffic(dot11, "Real channel");
+		if(addr2 == ap.get(SK::mac)) display_traffic(dot11, "Real channel");
 		return true;
 	}
 	return false;
 }
 
 bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
-	if(addr1 != ap_mac) return false;
+	if(addr1 != ap.get(SK::mac)) return false;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();
 		display_traffic(dot11, "Real channel");
@@ -51,7 +51,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 ) const{
 	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
 	if(dot11.wep()){
-		if(addr2 == ap_mac){
+		if(addr2 == ap.get(SK::mac)){
 			display_traffic(dot11, "Real channel", " -- MitM");
 			send_to_rogue(raw);
 			return true;
@@ -70,7 +70,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 	const HWAddress<6> src(serialization.data() + 10);
 	const HWAddress<6> dst(serialization.data() + 4);
 
-	if(src == ap_mac && client_state.get_mac() == dst){
+	if(src == ap.get(SK::mac) && client_state.get_mac() == dst){
 		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
 		send_to_rogue(pdu);
 		return true;
@@ -79,7 +79,7 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 }
 
 bool McMitm::handle_eapol_real(const HWAddress<6> addr2, PDU &pdu) const{
-	if(addr2 == ap_mac){
+	if(addr2 == ap.get(SK::mac)){
 		// EAPOL od AP -> forward na rogue channel
 		if(is_eapol(pdu)){
 			int eapol_msg = get_eapol_msg_num(pdu);
@@ -119,16 +119,16 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 }
 
 void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
-	if(dot11.addr1() == ap_mac){
+	if(dot11.addr1() == ap.get(SK::mac)){
 		// Sleep mode detection
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
 			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
 			Dot11Data null_frame{};
 			null_frame.type(Dot11::DATA);
 			null_frame.subtype(Dot11::DATA_NULL);
-			null_frame.addr1(ap_mac);
+			null_frame.addr1(ap.get(SK::mac));
 			null_frame.addr2(addr2);
-			null_frame.addr3(ap_mac);
+			null_frame.addr3(ap.get(SK::mac));
 			sock_real->send(null_frame, netconfig.real_channel);
 		}
 	}
@@ -163,12 +163,12 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	if(handle_eapol_real(addr1, *dot11)) return;
 	if(handle_auth_from_client_real(addr1, *dot11)) return;
 
-	if(dot11->addr1() == ap_mac){
+	if(dot11->addr1() == ap.get(SK::mac)){
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
 			client_state.update_state(ClientState::Target);
-	} else if(addr2 == ap_mac){ // AP -> STA
+	} else if(addr2 == ap.get(SK::mac)){ // AP -> STA
 		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);
 	} else if(client_state.get_mac() == dot11->addr1() || client_state.get_mac() == addr2){

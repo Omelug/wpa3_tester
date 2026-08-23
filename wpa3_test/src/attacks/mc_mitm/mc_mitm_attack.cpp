@@ -38,11 +38,11 @@ void start_strict_tsharks(RunStatus &rs, const string &ap_mac, const string &cli
 void run_attack(RunStatus &rs){
 	const auto rogue_client = rs.get_actor("rogue_client");
 	const auto rogue_ap = rs.get_actor("rogue_ap");
+	const auto ap = rs.get_actor("ap");
 
 	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
 
 	// get macs for faking
-	const auto ap_mac = rs.get_actor("ap").get(SK::mac);
 	const auto client_mac = rs.get_actor("client").get(SK::mac);
 
 	rs.start_observers();
@@ -52,7 +52,8 @@ void run_attack(RunStatus &rs){
 		only_to_mitm = rs.config().at("attack_config").at("only_to_mitm").get<bool>();
 	}
 
-	McMitm attack(rogue_client, rogue_ap, ap_ssid, ap_mac, client_mac, rs.run_folder() / "logger", only_to_mitm);
+	McMitm attack(rogue_client, rogue_ap, ap,
+		client_mac, rs.run_folder() / "logger", only_to_mitm);
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();

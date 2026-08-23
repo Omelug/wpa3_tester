@@ -12,15 +12,13 @@ namespace wpa3_tester{
 class McMitm{
 	friend class McMitmHooks;
 protected:
-	ActorPtr rogue_sta, rogue_ap;
-	std::string ssid;
+	ActorPtr rogue_sta, rogue_ap, ap;
 public:
-	Tins::HWAddress<6> ap_mac;
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
-public:
+
 	// AP <-> rogue_sta <-> rogue AP <-> client
-	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, std::string ssid, const std::string &ap_mac,
+	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &ap,
 			const std::string &client_mac, std::optional<std::filesystem::path> log_folder = std::nullopt,
 			bool only_to_mitm = false
 	);

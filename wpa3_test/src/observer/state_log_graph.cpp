@@ -1,6 +1,6 @@
 #include "observer/state_log_graph.h"
 #include <algorithm>
-#include <ctime>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -17,16 +17,8 @@ using namespace filesystem;
 
 struct Transition {
     string from, to;
-    optional<time_t> ts;  // nullopt when line has no timestamp prefix
+    optional<LogTimePoint> ts;
 };
-
-// Tries to parse "YYYY-MM-DD HH:MM:SS" from the start of the line.
-static optional<time_t> try_parse_ts(const string &line) {
-    struct tm t = {};
-    const char *end = strptime(line.c_str(), "%Y-%m-%d %H:%M:%S", &t);
-    if (end == nullptr || *end != ' ') return nullopt;
-    return mktime(&t);
-}
 
 static vector<Transition> parse_state_log(const path &p) {
     vector<Transition> result;
@@ -35,10 +27,11 @@ static vector<Transition> parse_state_log(const path &p) {
         const auto colon = line.find(" : ");
         const auto arrow = line.find(" -> ");
         if (colon == string::npos || arrow == string::npos || arrow < colon) continue;
+        const LogTimePoint tp = log_time_to_epoch_ns(line);
         result.push_back({
             line.substr(colon + 3, arrow - colon - 3),
             line.substr(arrow + 4),
-            try_parse_ts(line)
+            tp.time_since_epoch().count() != 0 ? optional{tp} : nullopt
         });
     }
     return result;
@@ -59,15 +52,15 @@ void create_state_log_graph(const path &state_log_path, const path &output_png) 
     for (const auto &[f, t, _] : transitions) { add(f); add(t); }
 
     auto state_idx = [&](const string &s) {
-        return (int)(ranges::find(states, s) - states.begin());
+        return static_cast<int>(ranges::find(states, s) - states.begin());
     };
 
-    // Use real timestamps when all transitions have them, otherwise fall back to index.
     const bool has_times = ranges::all_of(transitions, [](const Transition &t){ return t.ts.has_value(); });
-    const time_t t0 = has_times ? *transitions.front().ts : 0;
+    const LogTimePoint t0 = has_times ? *transitions.front().ts : LogTimePoint{};
 
     auto x_val = [&](size_t i) -> double {
-        if (has_times) return static_cast<double>(*transitions[i].ts - t0);
+        if (has_times)
+            return chrono::duration_cast<chrono::duration<double>>(*transitions[i].ts - t0).count();
         return static_cast<double>(i);
     };
 
@@ -78,16 +71,11 @@ void create_state_log_graph(const path &state_log_path, const path &output_png) 
     fprintf(gp, "set output '%s'\n", output_png.c_str());
     fprintf(gp, "set grid\n");
     fprintf(gp, "set key outside right top\n");
-    fprintf(gp, "set xlabel '%s'\n", has_times ? "Time (s from start)" : "Transition #");
-    fprintf(gp, "set yrange [-0.5:%f]\n", (double)states.size() - 0.5);
+    fprintf(gp, "set xlabel 'Time (s from start)'\n");
+    fprintf(gp, "set yrange [-0.5:%f]\n", static_cast<double>(states.size()) - 0.5);
 
-    if (has_times) {
-        const double duration = x_val(transitions.size() - 1);
-        fprintf(gp, "set xrange [%f:%f]\n", -0.5, duration + 0.5);
-    } else {
-        fprintf(gp, "set xrange [-0.5:%f]\n", (double)transitions.size() - 0.5);
-        fprintf(gp, "set xtics 1\n");
-    }
+    const double duration = x_val(transitions.size() - 1);
+    fprintf(gp, "set xrange [%f:%f]\n", -0.5, duration + 0.5);
 
     // Y-axis: state name labels
     fprintf(gp, "set ytics (");

@@ -3,6 +3,8 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion_hooks.h"
 #include "config/RunStatus.h"
+#include "observer/state_log_graph.h"
+
 #include <tins/tins.h>
 
 using namespace std;
@@ -63,4 +65,12 @@ void run_attack(RunStatus &rs){
 
 	attack.run(rs, timeout);
 }
+
+void stats_attack(const RunStatus &rs) {
+	string mac_str = rs.get_actor("rogue_client").get(SK::mac);
+	const filesystem::path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + ".log");
+	const filesystem::path out_log = rs.run_folder() / "observer" / "client_state" / "rogue_client.png";
+	observer::state_log_graph::create_state_log_graph(state_log,out_log);
+}
+
 }

@@ -187,7 +187,6 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 }
 
 void stats_chs_attack(const RunStatus &rs){
-	log(LogLevel::INFO, "CSA attack stats");
 	const string client_mac = rs.get_actor("client").get(SK::mac);
 
 	// --------------- report

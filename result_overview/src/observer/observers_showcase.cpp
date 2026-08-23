@@ -101,12 +101,12 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Observer Graphs — Showcase</title>
+    <title>observer graphs showcase</title>
     <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
     <a href="../../index.html" class="back-link">&lt;- Overview</a>
-    <h1>Observer Graphs — Showcase</h1>
+    <h1>observer graphs — showcase</h1>
 
     <div class="card">
         <p>Visual output of the <code>*_graph</code> observer functions using real captured test data.

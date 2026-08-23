@@ -10,7 +10,7 @@ namespace wpa3_tester{
 // point at a temp fixture dir instead of the real wpa3_test/ source tree).
 const std::filesystem::path &root_dir(const std::optional<std::filesystem::path> &set_to = std::nullopt);
 
-std::string current_time_string();
+std::string current_timestamp();
 std::string git_commit_hash();
 std::string kernel_version();
 std::string relative_from(const std::string &base_dir_name, const std::filesystem::path &config_path);

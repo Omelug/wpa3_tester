@@ -77,6 +77,10 @@ observers: #(allow start_observers if used )
   #  program_config:
   #    filter: ""
 
+  client_dmesg:
+    actor: client
+    program: dmesg
+
   channel1_tshark:
     actor: rogue_ap
     program: tshark

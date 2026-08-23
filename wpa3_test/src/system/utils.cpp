@@ -1,13 +1,12 @@
 #include "system/utils.h"
+#include "logger/error_log.h"
 #include <chrono>
-#include <cstdio>
 #include <filesystem>
 #include <iomanip>
-#include <sstream>
-#include <vector>
 #include <nlohmann/json.hpp>
+#include <sstream>
 #include <sys/utsname.h>
-#include "logger/error_log.h"
+#include <vector>
 
 namespace wpa3_tester{
 using namespace std;
@@ -66,7 +65,7 @@ string relative_from(const string &base_dir_name, const path &config_path){
 
 string trim(string s){
 	s.erase(0, s.find_first_not_of(" \t\r\n"));
-	if(auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
+	if (const auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
 	else s.clear();
 	return s;
 }

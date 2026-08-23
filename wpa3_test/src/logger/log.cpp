@@ -112,27 +112,22 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	const auto total_ns = static_cast<int64_t>(epoch_sec) * 1'000'000'000LL + frac_ns;
 	return LogTimePoint{nanoseconds{total_ns}};
 }
-//TODO effective  if called multimple times in log_events ?
+
 vector<LogTimePoint> get_time_logs(const RunStatus &rs, const string &process_name, const string &pattern,
 									optional<TimeWindow> window){
-	vector<LogTimePoint> timestamps;
-	const string actor_log = rs.run_folder() / "logger" / (process_name + ".log");
+	const path actor_log = rs.run_folder() / "logger" / (process_name + ".log");
 	if(!exists(actor_log)){
 		log(LogLevel::ERROR, "Could not find file '{}'", actor_log);
 		return {};
 	}
+	vector<LogTimePoint> timestamps;
 	ifstream file(actor_log);
-	string line;
-	regex re(R"(^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}).*)" + pattern);
-	smatch match;
-
-	while(getline(file, line)){
-		if(regex_search(line, match, re)){
-			const LogTimePoint tp = log_time_to_epoch_ns(match[1].str());
-			if(tp.time_since_epoch().count() != 0 &&
-				(window == nullopt || window == TimeWindow{} || window->contains(tp)))
-				timestamps.push_back(tp);
-		}
+	for(string line; getline(file, line); ){
+		if(!line.contains(pattern)) continue;
+		const LogTimePoint tp = log_time_to_epoch_ns(line);
+		if(tp.time_since_epoch().count() == 0) continue;
+		if(window && *window != TimeWindow{} && !window->contains(tp)) continue;
+		timestamps.push_back(tp);
 	}
 	return timestamps;
 }

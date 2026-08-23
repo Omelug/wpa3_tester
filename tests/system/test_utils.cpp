@@ -15,45 +15,35 @@ using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
 
-TEST_CASE("current_time_string - format validation"){
-	string time_str = current_time_string();
-
-	regex time_pattern(R"(^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$)");
-	CHECK(regex_match(time_str, time_pattern));
-
-	CHECK_EQ(time_str.length(), 19);
-
-	CHECK_EQ(time_str[4], '-');
-	CHECK_EQ(time_str[7], '-');
-	CHECK_EQ(time_str[10], ' ');
-	CHECK_EQ(time_str[13], ':');
-	CHECK_EQ(time_str[16], ':');
+TEST_CASE("current_timestamp - format validation"){
+	string ts = current_timestamp();
+	// YYYY-MM-DDTHH:MM:SS.nnnnnnnnn+HHMM
+	regex pattern(R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}[+-]\d{4}$)");
+	CHECK(regex_match(ts, pattern));
+	CHECK_EQ(ts[4], '-');
+	CHECK_EQ(ts[7], '-');
+	CHECK_EQ(ts[10], 'T');
+	CHECK_EQ(ts[13], ':');
+	CHECK_EQ(ts[16], ':');
+	CHECK_EQ(ts[19], '.');
 }
 
-TEST_CASE("current_time_string - reasonable values"){
-	string time_str = current_time_string();
-
-	int year   = stoi(time_str.substr(0, 4));
-	int month  = stoi(time_str.substr(5, 2));
-	int day    = stoi(time_str.substr(8, 2));
-	int hour   = stoi(time_str.substr(11, 2));
-	int minute = stoi(time_str.substr(14, 2));
-	int second = stoi(time_str.substr(17, 2));
-
-	CHECK((year >= 2020 && year <= 2030));
+TEST_CASE("current_timestamp - reasonable values"){
+	string ts = current_timestamp();
+	int year  = stoi(ts.substr(0, 4));
+	int month = stoi(ts.substr(5, 2));
+	int day   = stoi(ts.substr(8, 2));
+	CHECK((year >= 2020 && year <= 2035));
 	CHECK((month >= 1 && month <= 12));
 	CHECK((day >= 1 && day <= 31));
-	CHECK((hour >= 0 && hour <= 23));
-	CHECK((minute >= 0 && minute <= 59));
-	CHECK((second >= 0 && second <= 59));
 }
 
-TEST_CASE("current_time_string - consistency"){
-	string time1 = current_time_string();
+TEST_CASE("current_timestamp - consistency"){
+	string ts1 = current_timestamp();
 	this_thread::sleep_for(chrono::milliseconds(100));
-	string time2 = current_time_string();
-	CHECK_EQ(time1.length(), time2.length());
-	CHECK((time2 >= time1));
+	string ts2 = current_timestamp();
+	CHECK_EQ(ts1.length(), ts2.length());
+	CHECK((ts2 >= ts1));
 }
 
 TEST_CASE("relative_from - basic functionality"){

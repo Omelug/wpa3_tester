@@ -135,7 +135,7 @@ void RunStatus::execute(){
 	ofstream done_log(done_file, ios::out | ios::trunc);
 	if(done_log.is_open()){
 		done_log << "commit: " << git_commit_hash() << endl;
-		done_log << "date:   " << current_time_string() << endl;
+		done_log << "date:   " << current_timestamp() << endl;
 		done_log << "kernel: " << kernel_version() << endl;
 		done_log.close();
 		set_public_perms(done_file);
@@ -146,7 +146,7 @@ void RunStatus::execute(){
 		const path error_file = run_folder() / ERROR_FILE;
 		ofstream error_log(error_file, ios::out | ios::app);
 		if (error_log.is_open()) {
-			error_log << "=== Error occurred at " << current_time_string() << " ===" << endl;
+			error_log << "=== Error occurred at " << current_timestamp() << " ===" << endl;
 			error_log << "Exception type: " << typeid(e).name() << endl;
 			error_log << "Message: " << e.what() << endl;
 

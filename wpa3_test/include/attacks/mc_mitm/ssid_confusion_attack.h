@@ -3,4 +3,5 @@
 
 namespace wpa3_tester::ssid_confusion{
 void run_attack(RunStatus & rs);
+void stats_attack(const RunStatus &rs);
 }

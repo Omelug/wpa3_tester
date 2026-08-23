@@ -109,7 +109,7 @@ static string html_page() {
 
 	<div class="card">
 		<h2>
-			<a href="observer/showcase/index.html">Observer Graphs — Showcase</a>
+			<a href="observer/showcase/index.html">observer graphs showcase</a>
 		</h2>
 	</div>
 

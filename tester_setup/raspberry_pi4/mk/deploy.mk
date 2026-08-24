@@ -18,7 +18,7 @@ FORCE:
 # I setup it with: (same as raspberry)
 #~ % gdb-multiarch --version
 #     GNU gdb (Debian 16.3-1) 16.3
-run_debug:  deploy-cross internet FORCE
+run_debug: deploy-cross internet FORCE
 	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
 	@echo "==> gdbserver listening on $(PI):$(GDB_PORT)"
 	@echo "    Connect with:"

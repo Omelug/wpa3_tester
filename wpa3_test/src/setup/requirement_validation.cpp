@@ -7,6 +7,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
+#include "setup/usb_helper.h"
 #include "system/firmware/ath9k_htc.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"

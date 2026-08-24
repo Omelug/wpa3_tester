@@ -12,14 +12,15 @@ namespace wpa3_tester{
 class McMitm{
 	friend class McMitmHooks;
 protected:
-	ActorPtr rogue_sta, rogue_ap, ap;
+	ActorPtr rogue_sta, rogue_ap, sta, ap;
 public:
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
 
 	// AP <-> rogue_sta <-> rogue AP <-> client
-	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &ap,
-			const std::string &client_mac, std::optional<std::filesystem::path> log_folder = std::nullopt,
+	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap,
+			const ActorPtr &sta, const ActorPtr &ap,
+			const std::optional<std::filesystem::path> &run_folder = std::nullopt,
 			bool only_to_mitm = false
 	);
 	virtual ~McMitm();
@@ -62,6 +63,11 @@ public:
 
 	static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
+	virtual void send_to_real(Tins::PDU &pdu) const;
+	virtual void send_to_real(const std::vector<uint8_t> &raw) const;
+	virtual void send_to_rogue(Tins::PDU &pdu) const;
+	virtual void send_to_rogue(const std::vector<uint8_t> &raw) const;
+
 	//TODO protected + fixture
 	// for handle function is return -> end pdu processing
 	//bool handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
@@ -69,24 +75,21 @@ public:
 	bool handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
 	bool handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
 	bool handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-	bool handle_eapol_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu);
+	bool handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2,
+							Tins::PDU &pdu);
 
 	[[nodiscard]] bool handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	bool handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
 	bool handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const std::vector<unsigned char> &raw,
 							const Tins::Dot11 &dot11
 	) const;
-	bool handle_eapol_real(Tins::HWAddress<6> addr2, Tins::PDU &pdu) const;
+	bool handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2,
+						   Tins::PDU &pdu) const;
 	void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
 							const Tins::HWAddress<6> &addr1
 	);
 public:
 	void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-	virtual void send_to_real(Tins::PDU &pdu) const;
-	virtual void send_to_real(const std::vector<uint8_t> &raw) const;
-	//virtual void send_to_real(const std::vector<uint8_t> &raw) const;
-	virtual void send_to_rogue(Tins::PDU &pdu) const;
-	virtual void send_to_rogue(const std::vector<uint8_t> &raw) const;
 public:
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);

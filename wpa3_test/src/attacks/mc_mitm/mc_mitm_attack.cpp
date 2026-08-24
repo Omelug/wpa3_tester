@@ -39,6 +39,7 @@ void start_strict_tsharks(RunStatus &rs, const string &ap_mac, const string &cli
 void run_attack(RunStatus &rs){
 	const auto rogue_client = rs.get_actor("rogue_client");
 	const auto rogue_ap = rs.get_actor("rogue_ap");
+	const auto client = rs.get_actor("client");
 	const auto ap = rs.get_actor("ap");
 
 	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
@@ -46,24 +47,15 @@ void run_attack(RunStatus &rs){
 	// get macs for faking
 	const auto client_mac = rs.get_actor("client").get(SK::mac);
 
-	rs.start_observers();
-
 	bool only_to_mitm = false;
 	if(rs.config().at("attack_config").contains("only_to_mitm")){
 		only_to_mitm = rs.config().at("attack_config").at("only_to_mitm").get<bool>();
 	}
 
-	McMitm attack(rogue_client, rogue_ap, ap,
-		client_mac, rs.run_folder(), only_to_mitm);
+	McMitm attack(rogue_client, rogue_ap, client, ap, rs.run_folder(), only_to_mitm);
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();
-
-	// FIXME tshark chenge results of attack?
-	//start_strict_tsharks(rs, ap_mac, client_mac);
-
-	//log(LogLevel::INFO, "Giving rogue AP one second to initialize ...");
-	//this_thread::sleep_for(seconds(1));
 
 	//TODO move to constructor
 	attack.netconfig.real_channel = rogue_client->get_channel();

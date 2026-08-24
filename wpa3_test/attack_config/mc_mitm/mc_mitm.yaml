@@ -89,7 +89,7 @@ observers: #(allow start_observers if used )
       #filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
 
 attack_config:
-  attack_time: 50
+  attack_time: 150
   only_to_mitm: true
   #target_ap_mac: 78:98:e8:55:3e:8d
   #target_client_mac: a0:d7:68:10:25:6d

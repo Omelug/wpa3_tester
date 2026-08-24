@@ -59,13 +59,13 @@ public:
 	[[nodiscard]] bool is_state(const State s) const{ return this->state == s; }
 
 	// By default, everything is forwarded.
-	[[nodiscard]] virtual bool should_forward(const Tins::PDU &) const{ return true; }
+	//[[nodiscard]] virtual bool should_forward(const Tins::PDU &) const{ return true; }
 	// By default, frames are not modified.
 	virtual void modify_packet(Tins::PDU &) const{}
-protected:
+public:
 	static std::string state2str(const State state){
-		static const char *names[] = {
-			"Unknown", "Target", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"
+		static const std::string names[] = {
+			"Unknown", "Target", escape_tex("Sent_to_rogue"), "Finding", "Authenticated", "Associated", "GotMitm"
 		};
 		const int idx = static_cast<int>(state) + 1; // Unknown=-1 maps to index 0
 		if(idx < 0 || idx >= static_cast<int>(std::size(names))) return "Invalid";

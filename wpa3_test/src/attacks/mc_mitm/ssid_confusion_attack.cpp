@@ -21,8 +21,7 @@ void run_attack(RunStatus &rs){
 	const bool   strip_rsn     = att_cfg.value("strip_rsn", false);
 	const int    timeout       = att_cfg.value("attack_time_sec", 30);
 
-	McMitm attack(rogue_client, rogue_ap, ap,
-				client.get(SK::mac), rs.run_folder() / "logger");
+	McMitm attack(rogue_client, rogue_ap, client, ap, rs.run_folder() / "logger");
 
 	attack.set_hooks(make_unique<SsidConfusionHooks>(ap.get(SK::ssid), confused_ssid, strip_rsn));
 

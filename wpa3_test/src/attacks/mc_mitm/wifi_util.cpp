@@ -106,6 +106,17 @@ int get_eapol_msg_num(const PDU &pdu){
 	const uint8_t key_mic = rsneapol->key_mic();
 	const uint8_t install = rsneapol->install();
 	const uint8_t secure = rsneapol->secure();
+	const uint8_t key_type = rsneapol->key_t();
+
+	log(LogLevel::DEBUG,
+	"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
+	key_type, key_mic, key_ack, install, secure);
+
+	// group Key handshake  FIXME ignore, is forwarded?
+	if(key_type == 0){
+		log(LogLevel::DEBUG, "EAPOL: Group Key Handshake frame, ignoring");
+		return -1;
+	}
 
 	if(key_mic && !key_ack && !install && !secure) return 2; // M2
 	if(key_mic && key_ack && install && secure) return 3;    // M3
@@ -135,9 +146,10 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	// Split beacon into head (before TIM) and tail (after TIM)
 
 	Dot11Beacon head;
+	const auto bssid = mac.has_value() ? HWAddress<6>(*mac) : beacon.addr2();
 	head.addr1(beacon.addr1());
-	head.addr2(beacon.addr2());
-	head.addr3(beacon.addr3());
+	head.addr2(bssid);
+	head.addr3(bssid);
 	head.interval(beacon.interval());
 	head.capabilities() = beacon.capabilities();
 	vector<uint8_t> tail_bytes;

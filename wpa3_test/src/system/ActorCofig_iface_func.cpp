@@ -127,6 +127,7 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	if((*this)[BK::sniff_iface]){
 		hw_capabilities::set_mac_address(get_mon_iface(), mac, (*this)[SK::netns]);
 	}
+	//TODO co ap_ifface?
 }
 
 void Actor_config::set_monitor_mode(const bool add_flags) const{

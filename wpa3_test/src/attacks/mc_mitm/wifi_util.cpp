@@ -180,15 +180,9 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);
 	base_actor->set_iface_down();
+	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {}); //FIXME duplicate?
 
-	/* should be in tester setup
-	hw_capabilities::run_cmd({"iw", "dev", ap_iface, "del"}, netns, true);
-	if(netlink_helper::wait_for_iface_disappear(ap_iface, netns))
-		throw setup_err("Interface " + ap_iface + " did not disappear");
-	*/
-	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
-
-	// --- step 2: add AP virtual interface
+	// add AP virtual interface
 	hw_capabilities::run_cmd({"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"},
 							netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
@@ -233,9 +227,7 @@ void stop_ap(const string &iface, const optional<string> &netns){
 }
 
 Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid){
-	auto req = Dot11AssocRequest();
-	req.addr1(assoc.addr1());
-	req.addr2(assoc.addr2());
+	auto req = Dot11AssocRequest(assoc.addr1(),assoc.addr2());
 	req.addr3(assoc.addr3());
 	req.capabilities() = assoc.capabilities();
 	req.listen_interval(assoc.listen_interval());

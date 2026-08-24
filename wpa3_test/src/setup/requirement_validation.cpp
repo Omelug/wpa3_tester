@@ -7,7 +7,6 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
-#include "setup/usb_helper.h"
 #include "system/firmware/ath9k_htc.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
@@ -155,7 +154,9 @@ bool RunStatus::config_requirement(){
 
 	for(const auto &iface: hw_capabilities::list_interfaces()){
 		if(iface.type == InterfaceType::WifiVirtualMon || iface.type == InterfaceType::WifiVirtualAP){
-			log(LogLevel::INFO, "Removing stale {} interface: {}", iface_to_string(iface.type), iface.name);
+			//log(LogLevel::INFO, "Removing stale {} interface: {}", iface_to_string(iface.type), iface.name);
+			//if(iface.type == InterfaceType::WifiVirtualAP)
+			//	hw_capabilities::run_cmd({"iw", "dev", iface.name, "ap", "stop"}, nullopt, false);
 			hw_capabilities::run_cmd({"iw", "dev", iface.name, "del"}, nullopt, false);
 		}
 	}

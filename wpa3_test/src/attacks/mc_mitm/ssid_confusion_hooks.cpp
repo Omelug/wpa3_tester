@@ -62,7 +62,7 @@ void SsidConfusionHooks::on_probe_response(Dot11ProbeResponse &resp) {
 bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
 	auto b = make_confused_beacon(*m.beacon, confused_ssid_, strip_rsn_);
 	m.send_to_rogue(b);
-	return false; // still send CSA cwitch beacon on real
+	return false; // still send CSA switch beacon on real
 }
 
 bool SsidConfusionHooks::on_assoc_request(McMitm &/*m*/, Dot11 &/*dot11*/,

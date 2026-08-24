@@ -65,6 +65,9 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		}
 	});
 
+	if(get_or(BK::active_monitor, false)) set(real_actor, BK::active_monitor);
+	if(get_or(BK::control_monitor, false)) set(real_actor, BK::control_monitor);
+
 	if(get_or(BK::GHz2_4, false)) set(real_actor, BK::GHz2_4);
 	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
 	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);

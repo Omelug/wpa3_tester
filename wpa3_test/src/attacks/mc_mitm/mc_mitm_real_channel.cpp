@@ -139,11 +139,8 @@ void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
 		// Sleep mode detection
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
 			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
-			Dot11Data null_frame{};
-			null_frame.type(Dot11::DATA);
+			Dot11Data null_frame(ap.get(SK::mac), addr2);
 			null_frame.subtype(Dot11::DATA_NULL);
-			null_frame.addr1(ap.get(SK::mac));
-			null_frame.addr2(addr2);
 			null_frame.addr3(ap.get(SK::mac));
 			sock_real->send(null_frame, netconfig.real_channel);
 		}
@@ -174,16 +171,14 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	if(handle_eapol_real(addr1, addr2, *dot11)) return;
 	if(handle_auth_from_client_real(addr1, *dot11)) return;
 
-	if(dot11->addr1() == ap.get(SK::mac)){ // receiver is AP
+	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
 			client_state.update_state(ClientState::Target);
-	} else if(addr2 == ap.get(SK::mac)){ // AP -> STA
+	} else if(addr2 == ap.get(SK::mac)){ // AP ->
 		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);
-	} else if( dot11->addr1() == client_state.get_mac() || client_state.get_mac() == addr2){
-		display_traffic(*dot11, "Real channel", "_");
 	}
 }
 }

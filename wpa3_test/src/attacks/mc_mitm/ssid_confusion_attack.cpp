@@ -28,12 +28,12 @@ void run_attack(RunStatus &rs){
 	rogue_client->up_sniff_iface();
 	rogue_ap->set_iface_up();
 	rogue_client->set_iface_up();
-	rs.start_observers();
 
 	attack.netconfig.real_channel  = rogue_client->get_channel();
 	attack.netconfig.rogue_channel = rogue_ap->get_channel();
 	attack.netconfig.ssid          = ap[SK::mac] ? ap.get(SK::mac) : "";
 
+	// rs.start_observer in attack.ru
 	attack.run(rs, timeout);
 }
 

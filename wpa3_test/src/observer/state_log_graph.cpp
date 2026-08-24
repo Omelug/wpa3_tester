@@ -7,6 +7,7 @@
 #include <ranges>
 #include <string>
 #include <vector>
+#include "attacks/mc_mitm/client_state.h"
 #include "config/RunStatus.h"
 #include "logger/log.h"
 #include "system/utils.h"
@@ -44,15 +45,17 @@ void create_state_log_graph(const path &state_log_path, const path &output_png) 
         return;
     }
 
-    // Unique states in first-appearance order (from then to)
-    vector<string> states;
-    auto add = [&](const string &s) {
-        if (ranges::find(states, s) == states.end()) states.push_back(s);
-    };
-    for (const auto &[f, t, _] : transitions) { add(f); add(t); }
+    // Fixed enum order, names from state2str (single source of truth)
+    static const auto ALL_STATES = [](){
+        vector<string> v;
+        for (int i = static_cast<int>(ClientState::Unknown); i <= static_cast<int>(ClientState::GotMitm); ++i)
+            v.push_back(ClientState::state2str(static_cast<ClientState::State>(i)));
+        return v;
+    }();
 
-    auto state_idx = [&](const string &s) {
-        return static_cast<int>(ranges::find(states, s) - states.begin());
+    auto state_idx = [](const string &s) {
+        const auto it = ranges::find(ALL_STATES, s);
+        return it == ALL_STATES.end() ? 0 : static_cast<int>(it - ALL_STATES.begin());
     };
 
     const bool has_times = ranges::all_of(transitions, [](const Transition &t){ return t.ts.has_value(); });
@@ -72,16 +75,16 @@ void create_state_log_graph(const path &state_log_path, const path &output_png) 
     fprintf(gp, "set grid\n");
     fprintf(gp, "set key outside right top\n");
     fprintf(gp, "set xlabel 'Time (s from start)'\n");
-    fprintf(gp, "set yrange [-0.5:%f]\n", static_cast<double>(states.size()) - 0.5);
+    fprintf(gp, "set yrange [-0.5:%f]\n", static_cast<double>(ALL_STATES.size()) - 0.5);
 
     const double duration = x_val(transitions.size() - 1);
     fprintf(gp, "set xrange [%f:%f]\n", -0.5, duration + 0.5);
 
     // Y-axis: state name labels
     fprintf(gp, "set ytics (");
-    for (size_t i = 0; i < states.size(); ++i) {
+    for (size_t i = 0; i < ALL_STATES.size(); ++i) {
         if (i > 0) fprintf(gp, ", ");
-        fprintf(gp, "'%s' %zu", states[i].c_str(), i);
+        fprintf(gp, "'%s' %zu", ALL_STATES[i].c_str(), i);
     }
     fprintf(gp, ")\n");
 

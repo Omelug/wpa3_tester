@@ -129,7 +129,7 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	}
 }
 
-void Actor_config::set_monitor_mode(bool add_flags) const{
+void Actor_config::set_monitor_mode(const bool add_flags) const{
 	const string &iface = get(SK::iface);
 	if(conn != nullptr){
 		conn->set_monitor_mode(iface);

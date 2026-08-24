@@ -36,7 +36,7 @@ actors:
       program: wpa_supplicant
       program_config:
         version: 2_10
-        other_options: -d #d
+        other_options: -d
         group: CCMP
         ieee80211w: 2
         key_mgmt: SAE

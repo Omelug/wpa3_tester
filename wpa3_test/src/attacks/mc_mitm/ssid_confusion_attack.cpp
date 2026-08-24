@@ -39,8 +39,8 @@ void run_attack(RunStatus &rs){
 }
 
 void stats_attack(const RunStatus &rs) {
-	const string mac_str = rs.get_actor("rogue_client").get(SK::mac);
-	const filesystem::path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + ".log");
+	const string mac_str = rs.get_actor("client").get(SK::mac);
+	const filesystem::path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
 	const filesystem::path out_log = rs.run_folder() / "observer" / "client_state" / "rogue_client.png";
 	observer::state_log_graph::create_state_log_graph(state_log,out_log);
 }

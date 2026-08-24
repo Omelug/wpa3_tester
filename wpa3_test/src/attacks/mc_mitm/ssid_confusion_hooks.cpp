@@ -65,7 +65,7 @@ bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
 	return false; // still send CSA cwitch beacon on real
 }
 
-bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11,
+bool SsidConfusionHooks::on_assoc_request(McMitm &/*m*/, Dot11 &/*dot11*/,
 										  HWAddress<6>) {
 	return false;
 	/*const auto *assoc = dot11.find_pdu<Dot11AssocRequest>();

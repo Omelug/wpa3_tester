@@ -13,6 +13,7 @@ actors:
     setup:
       program: hostapd
       program_config:
+        other_options: -d
         version: 2_11
         driver: nl80211
         ssid: test_mc_mitm

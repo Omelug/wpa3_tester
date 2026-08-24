@@ -3,6 +3,7 @@
 #include "config/RunStatus.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "observer/state_log_graph.h"
 
 using namespace std;
 using namespace filesystem;
@@ -53,7 +54,7 @@ void run_attack(RunStatus &rs){
 	}
 
 	McMitm attack(rogue_client, rogue_ap, ap,
-		client_mac, rs.run_folder() / "logger", only_to_mitm);
+		client_mac, rs.run_folder(), only_to_mitm);
 
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();
@@ -75,6 +76,11 @@ void run_attack(RunStatus &rs){
 void stats(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+
+	const string mac_str = rs.get_actor("client").get(SK::mac);
+	const path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
+	const path out_log = rs.run_folder() / "observer" / "client_state" / "rogue_client.png";
+	observer::state_log_graph::create_state_log_graph(state_log,out_log);
 
 	vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);;
 	observer::tshark::pcap_events(rs, elements_ap, {

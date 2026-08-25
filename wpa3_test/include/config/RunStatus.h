@@ -133,7 +133,7 @@ private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
 protected:
-	std::vector<uint8_t> get_external_BB_channels();
+	std::vector<uint8_t> get_external_bb_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorCMap &ex_bb_actors = {});
 	static bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
 									std::set<Tins::HWAddress<6>> &reported, const ActorCMap &actors,

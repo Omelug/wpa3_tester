@@ -9,7 +9,7 @@ actors:
     selection:
       channel: 6
       whitebox_host: OpenWrt
-      condition: [ AP, 2_4GHz, OCV ] #FIXME nefuguje, Dlink neppodporuje 
+      condition: [ AP, 2_4GHz, OCV ] # Dlink dont support OCV (checked both 2_4/5Ghz )
     setup:
       program: openwrt
       program_config:

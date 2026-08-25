@@ -160,7 +160,7 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 	return result;
 }
 
-vector<uint8_t> RunStatus::get_external_BB_channels(){
+vector<uint8_t> RunStatus::get_external_bb_channels(){
 	vector<uint8_t> all_channels;
 
 	if(_config.contains("scan_channels")){
@@ -190,7 +190,7 @@ vector<uint8_t> RunStatus::get_external_BB_channels(){
 }
 
 vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
-	const vector<uint8_t> channels = get_external_BB_channels();
+	const vector<uint8_t> channels = get_external_bb_channels();
 	if(channels.empty()) return {};
 	const string iface = _config.at("scan_iface");
 	const int timeout = get_global_config().at("timeout_external_bb_scan_sec").get<int>();

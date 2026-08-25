@@ -9,6 +9,9 @@ tests:
   all_MFP_required:
     type: actor_filler
     config: ./CSA_Dlink_client_MFP_req.yaml
+  #all_ocv: OCV not supported by DLink hardware
+  #  type: actor_filler
+  #  config: ./CSA_Dlink_ocv.yaml
   # connection error with this Dlink config
   #all_MFP_disabled:
   #  type: actor_filler

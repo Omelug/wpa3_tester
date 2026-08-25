@@ -431,6 +431,7 @@ void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &out
 	actor->set(BK::w80211ac, has("VHT"));
 	actor->set(BK::w80211ax, has("HE"));
 
+	actor->set(BK::netns_change, has("set_wiphy_netns"));
 	actor->set(BK::CSA,         has("channel_switch"));
 	actor->set(BK::OCV,         has("operating channel validation"));
 	actor->set(BK::beacon_prot, has("beacon protection"));

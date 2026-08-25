@@ -132,7 +132,7 @@ void McMitm::setup_real_AP_RSN_frames(){
 	//if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
 	//netconfig.find_rogue_channel(); //TODO
 
-	// Get a probe response for fast replying
+	// get a probe response for fast replying
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
 		const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));

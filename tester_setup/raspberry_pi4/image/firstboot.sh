@@ -57,6 +57,22 @@ chmod +x /usr/bin/dumpcap
 #TODO hardcoded region
 raspi-config nonint do_wifi_country CZ
 
+# --- Secondary IP on eth0 so LAN router (192.168.1.1) is reachable without changing default route
+#FIXME hardcoded ip adresss (load script for external whiteboxes?)
+cat > /etc/systemd/system/eth0-lab-addr.service << 'EOF'
+[Unit]
+Description=Add lab LAN address to eth0
+After=network-pre.target
+Before=network.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/ip addr add 192.168.1.100/24 dev eth0
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable eth0-lab-addr.service
+
 # --- Default shell: fish
 PI_USER_1000=$(getent passwd 1000 | cut -d: -f1)
 chsh -s /usr/bin/fish "$PI_USER_1000"

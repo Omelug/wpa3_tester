@@ -131,13 +131,13 @@ echo "==> Configuring static IPs on eth0 (10.0.0.2 + 192.168.0.2)..."
 if sudo nmcli connection show eth0-static &>/dev/null; then
     sudo nmcli connection modify eth0-static \
         ipv4.method manual \
-        ipv4.addresses "10.0.0.2/24,192.168.0.2/24" \
+        ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
         ipv4.gateway "10.0.0.1" \
         ipv4.dns "8.8.8.8,1.1.1.1"
 else
     sudo nmcli connection add type ethernet ifname eth0 con-name eth0-static \
         ipv4.method manual \
-        ipv4.addresses "10.0.0.2/24,192.168.0.2/24" \
+        ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
         ipv4.gateway "10.0.0.1" \
         ipv4.dns "8.8.8.8,1.1.1.1"
 fi

@@ -98,6 +98,7 @@ autoconnect-priority=10
 method=manual
 address1=$PI_IP/${PI_PREFIX}${GW_SUFFIX}
 address2=192.168.0.2/24
+address3=192.168.1.100/24
 dns=8.8.8.8;1.1.1.1;
 
 [ipv6]

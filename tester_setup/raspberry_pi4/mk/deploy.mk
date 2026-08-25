@@ -1,3 +1,4 @@
+TEST ?= unknown_test
 TEST_SUITE ?= ssid_confusion_filler
 
 # forward-declare targets from sibling mk files so CLion resolves them
@@ -26,3 +27,7 @@ run_debug: deploy-cross internet FORCE
 	@echo "      (gdb) target remote $(PI):$(GDB_PORT)"
 	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
 	@echo "==> gdbserver running on $(PI):$(GDB_PORT)"
+
+run_debug_test: deploy-cross internet FORCE
+	$(SSH) "sudo pkill gdbserver 2>/dev/null || true"
+	$(SSH) -t "sudo gdbserver :$(GDB_PORT) $(REMOTE)/build/bin/wpa3_tester --test $(TEST)"

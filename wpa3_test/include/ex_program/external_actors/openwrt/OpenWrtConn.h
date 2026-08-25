@@ -29,6 +29,7 @@ public:
 	void setup_ap(const RunStatus &rs, ActorPtr &actor) override;
 	void logger(RunStatus &rs, const std::string &actor_name) override;
 	void get_hw_capabilities(const ActorPtr &actor) override;
+	void get_info(RunStatus &rs, const std::string &actor_name) override;
 	static void parse_hw_capabilities(const ActorPtr &actor, const std::string &output);
 };
 }

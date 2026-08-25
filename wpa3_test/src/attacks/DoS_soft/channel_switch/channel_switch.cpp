@@ -90,7 +90,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
 	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac); //TODO hardcoded tscan_timeout
-	if(beacon) log(LogLevel::ERROR, "not found beacon for reproduce");
+	if(!beacon) log(LogLevel::ERROR, "not found beacon for reproduce");
 	cout << "check_vulnerable called with:\n"
 			<< "AP MAC: " << ap_mac << "\n"
 			<< "STA MAC: " << sta_mac << "\n"

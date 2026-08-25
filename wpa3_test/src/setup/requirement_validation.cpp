@@ -272,7 +272,7 @@ bool RunStatus::config_requirement(){
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
 
 	auto setup_by_map = [&](ActorCMap &actor_map, const ActorMap &mapping){
-		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name));
+		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name), this);
 	};
 	log(LogLevel::DEBUG, "Setup internal");
 	setup_by_map(internal_actors, internal_mapping);

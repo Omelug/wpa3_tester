@@ -1,6 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 name: CSA_rogueAP_Dlink_filler
-suite_functions: CSA_rogueAP_internal_filler
+suite_functions: CSA_rogueAP_Dlink_filler
 config_type: test_suite
 tests:
   all_actors:

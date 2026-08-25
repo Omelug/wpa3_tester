@@ -101,7 +101,8 @@ public:
 	virtual void set_monitor_mode(bool add_flags = true) const;
 	void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
 
-	virtual void setup_actor(const nlohmann::json &, const ActorPtr &);
+	void setup_actor(const nlohmann::json &j, const ActorPtr &a){ setup_actor(j, a, nullptr); }
+	virtual void setup_actor(const nlohmann::json &, const ActorPtr &, RunStatus *);
 
 	static std::shared_ptr<Actor_config> create(const nlohmann::json &j);
 private:

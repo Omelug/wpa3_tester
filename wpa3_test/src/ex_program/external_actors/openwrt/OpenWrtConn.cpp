@@ -1,5 +1,6 @@
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "config/global_config.h"
+#include <fstream>
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
@@ -374,6 +375,22 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	ap->conn->on_disconnect([this, actor_name](){
 		exec("kill $(cat /tmp/logread_" + actor_name + ".pid); rm /tmp/logread_" + actor_name + ".pid");
 	});
+}
+
+void OpenWrtConn::get_info(RunStatus &rs, const std::string &actor_name){
+	const auto dir = rs.run_folder();
+	if(dir.empty()) return;
+
+	auto save = [&](const std::string &cmd, const std::string &filename){
+		int ret = 0;
+		const std::string out = exec(cmd, false, &ret);
+		if(ret == 0 && !out.empty()){
+			std::ofstream f(dir / filename);
+			f << out;
+		}
+	};
+	save("uci show wireless", actor_name + "_uci_wireless.txt");
+	save("uci show network",  actor_name + "_uci_network.txt");
 }
 
 void OpenWrtConn::get_hw_capabilities(const ActorPtr &actor){

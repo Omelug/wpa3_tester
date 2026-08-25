@@ -11,6 +11,6 @@ public:
 		set(SK::source, "external");
 	}
 
-	void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor) override;
+	void setup_actor(const nlohmann::json &config, const ActorPtr &real_actor, RunStatus *rs) override;
 };
 }

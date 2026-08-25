@@ -24,7 +24,10 @@ void setup_AP(RunStatus &rs, const string &actor_name){
 	if(rs.get_actor(actor_name)[SK::ip_addr]){
 		ip::set_ip(rs, actor_name);
 	}
-	rs.get_actor("ap")->set_iface_up();
+	if(rs.get_actor("ap").is(SK::source, "internal")){
+		//FIXME opewrt dont need set up?
+		rs.get_actor("ap")->set_iface_up();
+	}
 }
 
 void stop_AP(RunStatus &rs, const string &actor_name){

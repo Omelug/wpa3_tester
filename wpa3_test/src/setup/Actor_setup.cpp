@@ -51,7 +51,7 @@ Channel Actor_config::get_channel() const{
 }
 
 // Only simulation/internal,external have specific
-void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor){
+void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor, RunStatus *){
 	conn = real_actor->conn;
 
 	set(real_actor, {

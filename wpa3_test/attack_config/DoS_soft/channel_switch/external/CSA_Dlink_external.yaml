@@ -9,14 +9,15 @@ actors:
     source: external
     selection:
       channel: 6
+      permanent_mac: "78:98:e8:55:3e:8d"
       condition: [ AP, 2_4GHz ]
   client:
     source: external
     selection:
       channel: 6
-      permanent_mac: "28:87:ba:a3:cf:16"
+      #permanent_mac: "28:87:ba:a3:cf:16"
       #permanent_mac: "90:de:80:6c:90:92"
-      #permanent_mac: "00:03:7f:c2:00:43"
+      permanent_mac: "00:03:7f:c2:00:43"
       #Samsung dad
       #permanent_mac: "6c:ac:c2:cb:69:2f"
   attacker:

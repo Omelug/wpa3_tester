@@ -363,7 +363,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 
 	if(mp->proc){
 		if(mp->naturally_exited){
-			// Collect exit status so reproc destructor doesn't attempt a redundant stop/close.
+			// collect exit status so reproc destructor doesn't attempt a redundant stop/close.
 			reproc::stop_actions wait_only{};
 			wait_only.first = {reproc::stop::wait, reproc::milliseconds(100)};
 			(void)mp->proc->stop(wait_only);

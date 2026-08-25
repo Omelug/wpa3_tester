@@ -26,6 +26,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     usb-modeswitch usb-modeswitch-data \
     avahi-daemon quilt \
     iperf3 gnuplot \
+    hcxtools \
     dkms "linux-headers-$(uname -r)"
 
 source /usr/local/bin/wpa3-drivers.sh

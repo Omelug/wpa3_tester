@@ -24,6 +24,7 @@ actors:
         htmode: HT20
         ieee80211w: 2
         log_level: 1
+        ocv: false
       ex_WB_programs: [ tcpdump ]
     ip_addr: "172.16.100.1"
   client:

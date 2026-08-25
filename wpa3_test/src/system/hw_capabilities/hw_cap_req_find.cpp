@@ -195,7 +195,9 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 				if(actors.size() <= supply) continue;
 				const string kname{bk_name(k)};
 				msg += format("{} '{}' needed by {} actors (", kname, val ? "true" : "false", actors.size());
-				for(size_t i = 0; i < actors.size(); i++){ if(i) msg += ", "; msg += actors[i]; }
+				for(size_t i = 1; i < actors.size(); i++) {
+					msg += actors[i];
+				}
 				msg += format(") but only {} option(s) provide it; ", supply);
 			}
 		}

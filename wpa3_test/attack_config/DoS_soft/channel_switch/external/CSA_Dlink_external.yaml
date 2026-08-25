@@ -4,11 +4,14 @@ attacker_module: channel_switch
 $validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
 scan_channels: [ 6 ]
+requirements:
+  ex_BB_connection : [[ap, client]]
 actors:
   ap:
     source: external
     selection:
       channel: 6
+      ssid: test_wpa3_tester
       permanent_mac: "78:98:e8:55:3e:8d"
       condition: [ AP, 2_4GHz ]
   client:

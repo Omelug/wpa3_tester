@@ -16,6 +16,8 @@ using namespace Tins;
 
 #define INVALID_VALUE (0)
 
+//TODO integration tests?
+
 void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 	int8_t signal = INVALID_VALUE;
 	uint16_t freq = INVALID_VALUE;
@@ -23,6 +25,12 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 		try{ signal = rt->dbm_signal(); } catch(...){}
 		try{ freq = rt->channel_freq(); } catch(...){}
 	}
+
+	const auto add_conn = [&](const HWAddress<6> &sta, const HWAddress<6> &ap){
+		if(assoc.contains(sta)) return;
+		log(LogLevel::DEBUG, "Connection: {} -> AP {}", sta, ap);
+		assoc[sta] = ap;
+	};
 
 	const auto add_entity = [&](const HWAddress<6> &mac, const bool is_ap, const string &ssid = ""){
 		if(mac.is_multicast() || mac.is_broadcast()) return;
@@ -53,7 +61,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 		string ssid;
 		try{ ssid = beacon->ssid(); } catch(...){}
 		add_entity(beacon->addr2(), true, ssid);
-	} else if(const auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()){
+	} else if (const auto *probe_resp = pdu.find_pdu<Dot11ProbeResponse>()) {
 		string ssid;
 		try{ ssid = probe_resp->ssid(); } catch(...){}
 		add_entity(probe_resp->addr2(), true, ssid);
@@ -61,33 +69,41 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 		string ssid;
 		try{ ssid = probe_req->ssid(); } catch(...){}
 		add_entity(probe_req->addr2(), false, ssid);
-	} else if(const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()){
-		if(mgmt->subtype() == Dot11::ManagementSubtypes::ASSOC_REQ ||
-			mgmt->subtype() == Dot11::ManagementSubtypes::REASSOC_REQ){
+	} else if (const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>()) {
+		if (mgmt->subtype() == Dot11::ManagementSubtypes::ASSOC_REQ ||
+			mgmt->subtype() == Dot11::ManagementSubtypes::REASSOC_REQ) {
 			const HWAddress<6> sta_mac = mgmt->addr2();
-			if(sta_mac.is_unicast()){
-				if(!seen.contains(sta_mac)) seen.emplace(sta_mac, ActorPtr(make_shared<Actor_Config_external>()));
-				if(auto *ext = dynamic_cast<Actor_Config_external *>(seen.at(sta_mac).get())){
+			if (sta_mac.is_unicast()) {
+				if (!seen.contains(sta_mac))
+					seen.emplace(
+						sta_mac,
+						ActorPtr(make_shared<Actor_Config_external>()));
+				if (auto *ext = dynamic_cast<Actor_Config_external *>(
+						seen.at(sta_mac).get())) {
 					scan::fill_actor_caps_from_assoc_req(pdu, *ext);
 					ext->set(SK::permanent_mac, sta_mac);
 				}
 				const HWAddress<6> ap_bssid = mgmt->addr1();
-				if(ap_bssid.is_unicast()) assoc[sta_mac] = ap_bssid;
+				if (ap_bssid.is_unicast()) {
+					add_conn(sta_mac, ap_bssid);
+				}
 			}
 		}
-	} else if(const auto *data = pdu.find_pdu<Dot11Data>()){
+	} else if (const auto *data = pdu.find_pdu<Dot11Data>()) {
 		const bool to_ds = data->to_ds();
 		const bool from_ds = data->from_ds();
-		if(to_ds && !from_ds){
+		if (to_ds && !from_ds) {
 			add_entity(data->addr2(), false);
 			add_entity(data->addr1(), true);
-			if(data->addr2().is_unicast() && data->addr1().is_unicast())
-				assoc[data->addr2()] = data->addr1();
-		} else if(!to_ds && from_ds){
+			if (data->addr2().is_unicast() && data->addr1().is_unicast()) {
+				add_conn(data->addr2(), data->addr1());
+			}
+		} else if (!to_ds && from_ds) {
 			add_entity(data->addr1(), false);
 			add_entity(data->addr2(), true);
-			if(data->addr1().is_unicast() && data->addr2().is_unicast())
-				assoc[data->addr1()] = data->addr2();
+			if (data->addr1().is_unicast() && data->addr2().is_unicast()) {
+				add_conn(data->addr1(), data->addr2());
+			}
 		}
 	}
 }
@@ -230,17 +246,20 @@ bool RunStatus::process_single_packet(
 		const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 		try {
 			const ActorMap assignment = hw_capabilities::check_req_options(actors, opts, false);
-			bool conns_ok = true;
-			for (const auto &[sta_name, ap_name] : conn_conds) {
-				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) { conns_ok = false; break; }
+			for (const auto &[ap_name, sta_name] : conn_conds) {
+				// both (STA and AP) have to nbe scanned
+				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) {
+					return false;
+				}
 				const HWAddress<6> sta_mac(assignment.at(sta_name)->get(SK::mac));
 				const HWAddress<6> ap_mac(assignment.at(ap_name)->get(SK::mac));
+
+				// STA not connected or not connected to AP
 				if (!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac) {
-					conns_ok = false;
-					break;
+					return false;
 				}
 			}
-			if (conns_ok) return true;
+			return true; // all condition passed
 		} catch (const req_err &) {} // ignore invalid requires
 	}
 	return false;

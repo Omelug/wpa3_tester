@@ -85,11 +85,12 @@ described_str get_client_scanning(const RunStatus &rs, const TimeWindow window){
 }
 
 described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
-	described_str client_mfp;
+	described_str client_mfp{};
 	const auto wpa_config = rs.run_folder() / "client_wpa_supplicant.conf";
 	if(exists(wpa_config))
 		client_mfp += {hostapd::get_mfp_from_supplicant(wpa_config), "wpa_supplicant_conf"};
 
+	if (!rs.get_actor("ap").is(SK::source, "internal")) return client_mfp;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
@@ -105,11 +106,12 @@ described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
 };
 
 described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow window){
-	described_str client_WPA_support;
+	described_str client_WPA_support{};
 	const auto wpa_config = rs.run_folder() / "client_wpa_supplicant.conf";
 	if(exists(wpa_config)){
 		client_WPA_support += {hostapd::get_conf_value(wpa_config, {"key_mgmt"}), "wpa_supplicant_conf"};
 	}
+	if (!rs.get_actor("ap").is(SK::source, "internal")) return client_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
 
@@ -124,8 +126,9 @@ described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow windo
 };
 
 described_str get_ap_WPA_support(const RunStatus &rs){
-	described_str ap_WPA_support;
+	described_str ap_WPA_support{};
 
+	if (!rs.get_actor("ap").is(SK::source, "internal")) return ap_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 	const auto hostapd_config = rs.run_folder() / "ap_hostapd.conf";
 	if(exists(hostapd_config)){
@@ -142,6 +145,8 @@ described_str get_ap_WPA_support(const RunStatus &rs){
 described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window){
 	described_str conn_WPA_version{};
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
+
+	if (!rs.get_actor("ap").is(SK::source, "internal")) return conn_WPA_version;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 
 	if(exists(ap_log)){

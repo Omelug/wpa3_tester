@@ -67,10 +67,32 @@ execute_process(
 if(NOT _GIT_HASH)
     set(_GIT_HASH "unknown")
 endif()
+
+# Get the standard git commit hash
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${WPA3_PROJECT_ROOT}
+        OUTPUT_VARIABLE _GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Check if the working tree is dirty
+execute_process(
+        COMMAND git status --porcelain
+        WORKING_DIRECTORY ${WPA3_PROJECT_ROOT}
+        OUTPUT_VARIABLE _GIT_STATUS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(NOT "${_GIT_STATUS}" STREQUAL "")
+    set(_GIT_HASH "${_GIT_HASH}-dirty")
+endif()
+
 target_compile_definitions(wpa3_deps INTERFACE
         PROJECT_ROOT_DIR="${WPA3_PROJECT_ROOT}"
         GIT_COMMIT_HASH="${_GIT_HASH}"
 )
+
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)
 target_precompile_headers(wpa3_deps INTERFACE
         <vector> <string> <map> <unordered_map> <set>

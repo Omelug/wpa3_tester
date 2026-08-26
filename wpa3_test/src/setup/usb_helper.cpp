@@ -44,6 +44,7 @@ void connect_usb_device(const string& iface_name) {
 	connect_usb_device(get_usb_auth_path(iface_name));
 }
 
+// add manual test
 void reset_usb_ifaces(){
 	vector<pair<string, path>> reset_targets;
 	for(const auto &[iface_name, radio, type]: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
@@ -56,7 +57,7 @@ void reset_usb_ifaces(){
 		connect_usb_device(auth_file);
 	}
 
-	interruptible_sleep(chrono::milliseconds(500));
+	interruptible_sleep(chrono::milliseconds(500)); //FIXME hardcoded
 
 	for(const auto &auth_file: reset_targets | views::values) {
 		ofstream out(auth_file);
@@ -65,7 +66,7 @@ void reset_usb_ifaces(){
 		}
 	}
 
-	hw_capabilities::run_cmd({"modprobe", "ath9k_htc"}, nullopt, false); //FIXME make generic
+	hw_capabilities::run_cmd({"modprobe", "ath9k_htc"}, nullopt, false); //FIXME make generic and comment why
 
 	vector<string> waiting;
 	for(const auto &iface_name: reset_targets | views::keys)
@@ -73,13 +74,13 @@ void reset_usb_ifaces(){
 
 	int retries = 100; // max 10 secs (100 * 100ms)
 	while(!waiting.empty() && retries > 0 && !g_interrupted.load()){
-		interruptible_sleep(chrono::milliseconds(100));
+		interruptible_sleep(chrono::milliseconds(100)); //FIXME hardcoded
 		retries--;
 		std::erase_if(waiting, [](const string &iface) {
 			return exists(path("/sys/class/net") / iface);
 		});
 	}
-	interruptible_sleep(chrono::milliseconds(5000));
+	interruptible_sleep(chrono::milliseconds(5000)); //FIXME hardcoded
 }
 
 }

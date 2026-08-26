@@ -173,9 +173,9 @@ bool RunStatus::config_requirement(){
 
 	// set the regulatory domain before loading the driver so ath9k_htc (user_regd=1)
 	// picks it up from the kernel on init instead of falling back to EEPROM.
-	auto &gcfg = get_global_config();
-	if(gcfg.contains("regulatory_domain")) {
-		const string reg = gcfg.at("regulatory_domain").get<string>();
+	auto &g_config = get_global_config();
+	if(g_config.contains("regulatory_domain")) {
+		const string reg = g_config.at("regulatory_domain").get<string>();
 		log(LogLevel::INFO, "Setting regulatory domain pre-USB-reset: iw reg set {}", reg);
 		if(hw_capabilities::run_cmd({"iw", "reg", "set", reg}, nullopt, false) != 0) {
 			log(LogLevel::ERROR, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
@@ -200,8 +200,8 @@ bool RunStatus::config_requirement(){
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	// before internal, because need clean interface for scanning
 	if(!external_bb_actors.empty()){
-		external_bb_mapping = hw_capabilities::check_req_options(external_bb_actors,
-																external_bb_options(external_bb_actors));
+		external_bb_mapping = hw_capabilities::check_req_options(
+			external_bb_actors, external_bb_options(external_bb_actors));
 	}
 
 	// ------------------ INTERNAL ---------------------------
@@ -216,7 +216,8 @@ bool RunStatus::config_requirement(){
 		if(!_hw_option_cache.external_wb_opts.has_value()) _hw_option_cache.external_wb_opts = external_wb_options();
 		external_wb_mapping =
 				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
-		bool cache_dead = false;
+
+		bool cache_dead = false; //  chcek if cache need reset
 		if(_hw_option_cache.external_wb_opts.has_value()){
 			for(const auto &opt : *_hw_option_cache.external_wb_opts){
 				if(opt->conn && !opt->conn->is_connected()) {
@@ -259,6 +260,7 @@ bool RunStatus::config_requirement(){
 		}
 		run_rssi_wizard(cond_str, channel);
 		rssi_checked = true;
+
 		return true;
 	}
 	//FIXME cant change iface name etc if changed usb position

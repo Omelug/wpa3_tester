@@ -290,7 +290,5 @@ void stats_chs_attack(const RunStatus &rs){
 	}*/
 
 	rs.save_result(result);
-
-
 }
 }

@@ -32,7 +32,6 @@ string current_timestamp(){
 	return out;
 }
 
-//TODO can add dirty if not commited?
 string git_commit_hash(){ return GIT_COMMIT_HASH; }
 
 string kernel_version(){

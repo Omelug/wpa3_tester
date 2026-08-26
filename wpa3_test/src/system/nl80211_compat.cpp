@@ -125,7 +125,7 @@ void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 		if(ext_features_len > AP_BYTE_INDEX){
 			if(const uint8_t target_byte = static_cast<uint8_t *>(ext_features_data)[AP_BYTE_INDEX]; target_byte &
 				AP_BIT_MASK){
-				caps->wpa3_sae = true; // AP can use WPA3 //FIXME separate? 
+				caps->wpa3_sae = true; // AP can use WPA3, STA not //FIXME separate?
 			}
 		}
 	}

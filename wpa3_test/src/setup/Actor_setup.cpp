@@ -117,8 +117,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		set_channel(Channel{channel_num, get_channel().band, (*this)[SK::ht_mode]});
 	}
 
-	if((*this)[BK::sniff_iface]) create_sniff_iface();
-	up_sniff_iface();
+	if((*this)[BK::sniff_iface]) {
+		create_sniff_iface();
+		up_sniff_iface();
+	}
 	set_iface_up();
 }
 }

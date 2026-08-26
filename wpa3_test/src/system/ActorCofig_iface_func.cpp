@@ -104,7 +104,7 @@ void Actor_config::up_sniff_iface() const{
 	}
 	log(LogLevel::INFO, "Bringing {} UP...", sniff_iface);
 	run({"ip", "link", "set", sniff_iface, "up"});
-	if(const auto res = netlink_helper::wait_for_link_flags(sniff_iface, netns, true); res) {
+	if(const auto res = netlink_helper::wait_for_link_flags(sniff_iface, (*this)[SK::netns], true); res) {
 		throw timeout_err("Timeout waiting for '" + sniff_iface + "' to go UP:" + res.message());
 	}
 }

@@ -26,9 +26,9 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 		try{ freq = rt->channel_freq(); } catch(...){}
 	}
 
-	const auto add_conn = [&](const HWAddress<6> &sta, const HWAddress<6> &ap){
+	const auto add_conn = [&](const HWAddress<6> &sta, const HWAddress<6> &ap, const string &reason){
 		if(assoc.contains(sta)) return;
-		log(LogLevel::DEBUG, "Connection: {} -> AP {}", sta, ap);
+		log(LogLevel::DEBUG, "Connection: {} -> AP {} ({})", sta, ap, reason);
 		assoc[sta] = ap;
 	};
 
@@ -85,7 +85,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 				}
 				const HWAddress<6> ap_bssid = mgmt->addr1();
 				if (ap_bssid.is_unicast()) {
-					add_conn(sta_mac, ap_bssid);
+					add_conn(sta_mac, ap_bssid, mgmt->subtype() == Dot11::ManagementSubtypes::ASSOC_REQ ? "assoc-req" : "reassoc-req");
 				}
 			}
 		}
@@ -96,13 +96,13 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 			add_entity(data->addr2(), false);
 			add_entity(data->addr1(), true);
 			if (data->addr2().is_unicast() && data->addr1().is_unicast()) {
-				add_conn(data->addr2(), data->addr1());
+				add_conn(data->addr2(), data->addr1(), "data-to-ds");
 			}
 		} else if (!to_ds && from_ds) {
 			add_entity(data->addr1(), false);
 			add_entity(data->addr2(), true);
 			if (data->addr1().is_unicast() && data->addr2().is_unicast()) {
-				add_conn(data->addr1(), data->addr2());
+				add_conn(data->addr1(), data->addr2(), "data-from-ds");
 			}
 		}
 	}

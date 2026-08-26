@@ -135,8 +135,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 }
 
 void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
-	if(dot11.addr1() == ap.get(SK::mac)){
-		// Sleep mode detection
+	if(dot11.addr1() == ap.get(SK::mac)){ // ->AP
+		// Sleep mode detection for keep wake up
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
 			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
 			Dot11Data null_frame(ap.get(SK::mac), addr2);

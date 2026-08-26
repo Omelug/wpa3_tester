@@ -34,7 +34,7 @@ static Dot11Beacon with_sorted_ies(const Dot11Beacon &src) {
 	// ID 61 (HT Operation) excluded — contains primary channel, conflicts with CSA IE
 	//TODO reuse in mitm
 
-	erase_if(sorted_opts, [](const auto &o) {
+	erase_if(sorted_opts, [](const auto &o) { //FIXME  Sleeep mode ()
 		const auto id = static_cast<uint8_t>(o.option());
 		return id != 0 && id != 1 && id != 3 && id != 5
 			&& id != 37 && id != 42 && id != 45 //&& id != 48 //FIXME to bez tagu 48/61 ho aspoň odpojilo.
@@ -109,6 +109,10 @@ void setup_chs_attack(RunStatus &rs){
 	// only setup if can
 	components::client_ap_setup(rs, false);
 	components::setup_rogue_ap(rs);
+	if (rs.get_actor("rogue_ap").is(BK::sniff_iface)) {
+		rs.get_actor("rogue_ap")->up_sniff_iface();
+	}
+
 }
 
 void run_chs_attack(RunStatus &rs){

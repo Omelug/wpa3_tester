@@ -1,6 +1,7 @@
-#include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/RunStatus.h"
 #include "config/global_config.h"
+#include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/hw_info.h"
 #include "system/utils.h"
@@ -19,9 +20,11 @@ vector<ActorPtr> RunStatus::internal_options(){
 		create_public_dirs(hw_cache_dir);
 		hw_cache = hw_cache_dir / "internal_iface.json";
 	}
+	const auto ifaces = hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt);
+	log(LogLevel::DEBUG, "internal_options: {} wifi interface(s) visible", ifaces.size());
 	vector<ActorPtr> options;
-	for(const auto &[iface_name, radio_name, iface_type]:
-		hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)){
+	for(const auto &[iface_name, radio_name, iface_type]: ifaces){
+		log(LogLevel::DEBUG, "internal_options: interface {}", iface_name);
 		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
 		cfg->set(SK::iface, iface_name);
 		cfg->set(SK::radio, radio_name);

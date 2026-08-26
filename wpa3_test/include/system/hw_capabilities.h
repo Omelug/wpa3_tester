@@ -171,7 +171,7 @@ public:
 
 	// ----- injection utilities -----
 	// inject pdu, capture frames containing the unique label, count=0 = no limit.
-	static std::vector<std::vector<uint8_t>> inject_and_capture(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
+	static std::vector<std::vector<uint8_t>> inject_and_capture(const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 																const Channel &ch, int count = 0, int retries = 1
 	);
 	static void flush_socket(MonitorSocket &s);
@@ -181,17 +181,19 @@ public:
 	>
 	>
 	get_nearby_ap_addr(MonitorSocket &sin);
-	static ProbeCapture capture_probe_response_ack(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req,
+	static ProbeCapture capture_probe_response_ack(const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req,
 													const Channel &ch, int retries = 1
 	);
 
 	// ----- injection tests —-----
-	static InjectionTestResult test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
+	static InjectionTestResult test_injection_more_fragments(
+		const MonitorSocket &sout, MonitorSocket &sin,
 															const Dot11Ref &ref, const std::string &strtype,
 															const Channel &ch
 	);
 
-	static InjectionTestResult test_packet_injection(MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
+	static InjectionTestResult test_packet_injection(
+		const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 													const std::function<bool(const std::vector<uint8_t> &)> &test_func,
 													const std::string &name, const std::string &msgfail,
 													const Channel &ch
@@ -202,11 +204,11 @@ public:
 	static InjectionTestResult test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
 													const std::string &strtype, const Channel &ch, int retries = 1
 	);
-	static InjectionTestResult test_injection_retrans(MonitorSocket &sout, MonitorSocket &sin,
+	static InjectionTestResult test_injection_retrans(const MonitorSocket &sout, MonitorSocket &sin,
 													const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2,
 													const Channel &ch
 	);
-	static InjectionTestResult test_injection_txack(MonitorSocket &sout, MonitorSocket &sin,
+	static InjectionTestResult test_injection_txack(const MonitorSocket &sout, MonitorSocket &sin,
 													const Tins::HWAddress<6> &dest_mac,
 													const Tins::HWAddress<6> &own_mac, const Channel &ch
 	);

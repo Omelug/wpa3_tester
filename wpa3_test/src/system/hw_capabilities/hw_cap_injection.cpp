@@ -24,8 +24,9 @@ static vector<uint8_t> make_label(){
 	return label;
 }
 
-vector<vector<uint8_t>> hw_capabilities::inject_and_capture(MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-															const Channel &ch, const int count, const int retries
+vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
+	const Channel &ch, const int count, const int retries
 ){
 	const auto label = make_label();
 
@@ -89,8 +90,9 @@ optional<pair<HWAddress<6>,string>> hw_capabilities::get_nearby_ap_addr(MonitorS
 	return pair{best->mac, best->ssid};
 }
 
-ProbeCapture hw_capabilities::capture_probe_response_ack(MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
-														const Channel &ch, const int retries
+ProbeCapture hw_capabilities::capture_probe_response_ack(
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
+	const Channel &ch, const int retries
 ){
 	const auto [addr1, addr2] = get_addrs(probe_req, {});
 	if(addr2 == HWAddress<6>()) return {};
@@ -120,13 +122,11 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(MonitorSocket &sout, Mo
 	return result;
 }
 
-InjectionTestResult hw_capabilities::test_injection_more_fragments(MonitorSocket &sout, MonitorSocket &sin,
-																	const Dot11Ref &ref, const string &strtype,
-																	const Channel &ch
+InjectionTestResult hw_capabilities::test_injection_more_fragments(
+	const MonitorSocket &sout, MonitorSocket &sin,
+	const Dot11Ref &ref, const string &strtype, const Channel &ch
 ){
-	Dot11QoSData p;
-	p.addr1(ref.addr1);
-	p.addr2(ref.addr2);
+	Dot11QoSData p(ref.addr1, ref.addr2);
 	if(ref.from_ds) p.from_ds(1);
 	if(ref.to_ds) p.to_ds(1);
 	p.seq_num(33);
@@ -137,11 +137,10 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(MonitorSocket
 	return {"injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED};
 }
 
-InjectionTestResult hw_capabilities::test_packet_injection(MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-															const function<bool(const vector<uint8_t> &)> &test_func,
-															const string &name,
-															const string &msgfail,
-															const Channel &ch
+InjectionTestResult hw_capabilities::test_packet_injection(
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
+	const function<bool(const vector<uint8_t> &)> &test_func,
+	const string &name, const string &msgfail, const Channel &ch
 ){
 	const auto packets = inject_and_capture(sout, sin, pdu, ch, 1);
 	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
@@ -238,9 +237,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 	// (ath9k_htc retransmits until ACK, can take >2.5 s) won't match the new label
 	// and won't pollute the ordering check.
 	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) ->Dot11QoSData{
-		Dot11QoSData p;
-		p.addr1(ref.addr1);
-		p.addr2(ref.addr2);
+		Dot11QoSData p(ref.addr1, ref.addr2);
 		if(ref.from_ds) p.from_ds(1);
 		if(ref.to_ds) p.to_ds(1);
 		p.seq_num(33);
@@ -289,19 +286,17 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 	return {test_name, PASSED, "tids=[" + tid_str + "]"};
 }
 
-InjectionTestResult hw_capabilities::test_injection_retrans(MonitorSocket &sout, MonitorSocket &sin,
-															const HWAddress<6> &addr1, const HWAddress<6> &addr2,
-															const Channel &ch
+InjectionTestResult hw_capabilities::test_injection_retrans(
+	const MonitorSocket &sout, MonitorSocket &sin,
+	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel &ch
 ){
 	it_test_result result = PASSED;
 	string detail;
 
 	auto make_frame = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) ->Dot11Data{
-		Dot11Data p;
+		Dot11Data p(a1, a2);
 		p.to_ds(1);
-		p.addr1(a1);
-		p.addr2(a2);
-		p.seq_num(33);
+		p.seq_num(33); //FIXME magic number
 		return p;
 	};
 
@@ -331,9 +326,10 @@ InjectionTestResult hw_capabilities::test_injection_retrans(MonitorSocket &sout,
 	return {"injection_fields_retrans", result, detail};
 }
 
-InjectionTestResult hw_capabilities::test_injection_txack(MonitorSocket &sout, MonitorSocket &sin,
-														const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac,
-														const Channel &ch
+InjectionTestResult hw_capabilities::test_injection_txack(
+	const MonitorSocket &sout, MonitorSocket &sin,
+	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac,
+	const Channel &ch
 ){
 	Dot11ProbeRequest probe(dest_mac,own_mac);
 	probe.addr3(dest_mac);

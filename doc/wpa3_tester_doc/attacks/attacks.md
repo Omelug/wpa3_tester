@@ -2,7 +2,7 @@
 To get more info about attacks, `make make_overview`, it
 will generate basic descriptions in HTML pages, path to index will be printed. 
 
-(After run you have to run `make make_overview` again, it's logically separated from rest of program)
+(After run you have to run `make make_overview` again)
 
 - DoS_hard 
   - [cookie_guzzler](../../../wpa3_test/attack_config/DoS_hard/cookie_guzzler)

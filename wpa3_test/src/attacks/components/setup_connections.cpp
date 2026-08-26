@@ -122,6 +122,9 @@ void setup_rogue_ap(RunStatus &rs){
 		program::start(rs, "rogue_ap");
 		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
 		log(LogLevel::INFO, "Rogue AP up");
+		if (rs.get_actor("rogue_ap")[BK::sniff_iface]) {
+			rs.get_actor("rogue_ap")->up_sniff_iface();
+		}
 	}
 };
 

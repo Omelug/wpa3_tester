@@ -5,6 +5,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_helper.h"
 
 namespace wpa3_tester{
 using namespace std;

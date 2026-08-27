@@ -164,6 +164,26 @@ TEST_CASE("HtmlPathTable add_rotated_column renders th.rotated") {
 	remove_all(test_dir);
 }
 
+TEST_CASE("HtmlPathTable t_name footer on non-empty entries") {
+	path test_dir = temp_directory_path() / "html_utils_test_tname";
+	create_directories(test_dir);
+	{
+		overview::HtmlGuard hg(test_dir);
+		struct E { string name; };
+		vector<E> entries = {{"Alice"}};
+		HtmlPathTable<E> table(hg, entries, "my_suite");
+		table.add_column("Name", &E::name);
+		table.render();
+	}
+	ifstream file(test_dir / "index.html");
+	ostringstream oss; oss << file.rdbuf();
+	const string result = oss.str();
+	CHECK(result.contains("<table"));
+	CHECK(result.contains("Data from my_suite"));
+	CHECK(result.contains("<small>"));
+	remove_all(test_dir);
+}
+
 TEST_CASE("HtmlPathTable not_data_msg on empty entries") {
 	path test_dir = temp_directory_path() / "html_utils_test_not_data";
 	create_directories(test_dir);

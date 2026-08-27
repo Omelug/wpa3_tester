@@ -222,7 +222,7 @@ TEST_CASE("hwsim setup_actor - create sniff iface"){
 	HwsimFixture f;
 	if(f.skip()) return;
 
-	const string sniff = MONITOR_IFACE_PREFIX + "test";
+	const string sniff = MONITOR_IFACE_PREFIX + f.iface;
 	auto actor = f.make_actor();
 
 	actor->setup_actor(HwsimFixture::cfg("test", {{"sniff_iface", true}}), f.base);

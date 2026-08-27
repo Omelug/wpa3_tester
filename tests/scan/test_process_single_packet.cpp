@@ -159,7 +159,7 @@ TEST_SUITE("process_single_packet conn_conds") {
 
 		CHECK(TestableRunStatus::process_single_packet(
 			frames[0].data(), frames[0].size(), seen, assoc, reported,
-			actors, {{"sta", "ap"}}));
+			actors, {{"ap", "sta"}}));
 	}
 
 	TEST_CASE("conn_cond referencing absent actor returns false") {

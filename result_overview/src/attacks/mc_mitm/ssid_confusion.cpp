@@ -31,13 +31,18 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 
     <div class="card">
         <p><b>Prerequisites:</b>
-			- client connected to AP with trusted ssid (SSID-A), client has untrusted ssid (SSID-B) in its profile
-			- working mitm attack to move client
+			<ul>
+				<li>client connected to AP with trusted ssid (SSID-A), client has untrusted ssid (SSID-B) in its profile</li>
+				<li>working mitm attack to move client</li>
+			</ul>
 		</p>
-        <p>- the rogue AP clones the BSSID of the real AP but advertises SSID-B instead of SSID-A
-           - optionally the RSN IE is stripped so the network appears open
-           - client that auto-connects to SSID-B ends up associated with a network it did not intend to join,  believing it is on a trusted network./p>
-        <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (ClientState == GotMitm).</p>
+        <p>
+		  <ul>
+			<li> the rogue AP clones the BSSID of the real AP but advertises SSID-B instead of SSID-A</li>
+			<li> optionally the RSN IE is stripped so the network appears open</li>
+			<li> client that auto-connects to SSID-B ends up associated with a network it did not intend to join,  believing it is on a trusted network.</li>
+		</p>
+        <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (ClientState == GotMitm)</p>
     </div>
 
     <div class="card">

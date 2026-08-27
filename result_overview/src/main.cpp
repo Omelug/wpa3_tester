@@ -105,7 +105,7 @@ static string html_page() {
 	</div>
 
 	<hr style="margin: 32px 0; border: none; border-top: 2px solid #3498db;">
-	<h2 style="color: #2c3e50;">Tester Info</h2>
+	<h2> Tester Info</h2>
 
 	<div class="card">
 		<h2>

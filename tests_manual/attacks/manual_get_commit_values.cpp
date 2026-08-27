@@ -1,10 +1,11 @@
+#include "../manual_test_core/manual_test_wizards.h"
+#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "logger/error_log.h"
+#include "logger/log.h"
 #include <iostream>
 #include <memory>
 #include <string>
-#include "../manual_test_core/manual_test_wizards.h"
-#include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
-#include "logger/error_log.h"
-#include "logger/log.h"
 
 using namespace std;
 using namespace wpa3_tester;
@@ -25,7 +26,7 @@ void manual_get_commit_values_test(){
 
     // Get channel selection
     const Channel channel{manual_tests::get_2_4_channel_wizard(), WifiBand::BAND_2_4, nullopt};
-    iface_config.set_channel(channel);
+    iface_config->set_channel(channel);
     log(LogLevel::INFO, "Interface set to channel {}", channel.ch_num);
 
     // Get target selection
@@ -50,7 +51,7 @@ void manual_get_commit_values_test(){
     const HWAddress<6> ap_mac(ap_mac_str);
     RunStatus rs;
     const optional<sae_helper::SAEPair> sae_params =
-            cookie_guzzler::get_commit_values(rs, iface_name, iface_config->get_mon_iface();, ssid, ap_mac, timeout);
+            cookie_guzzler::get_commit_values(rs, iface_name, iface_config->get_mon_iface(), ssid, ap_mac, timeout);
 
     if(sae_params.has_value()){
         cout << "\n=== CAPTURE SUCCESSFUL ===\n";

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -17,7 +18,7 @@ using namespace std;
 using namespace filesystem;
 using json = nlohmann::json;
 
-//TODO rewrite this ti Html Guard / deafulet json
+//TODO rewrite this ti Html Guard / default json
 
 struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
@@ -215,12 +216,12 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	f << "</body>\n</html>\n";
 }
 
-static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source){
+static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source, const string &t_name){
 	vector<DeviceInfo> rows;
 	ranges::copy_if(devices, back_inserter(rows), [&](const auto &d){ return d.source == source; });
 
 	if(rows.empty()){
-		f << "        <p>No " << source << " devices recorded.</p>\n";
+		f << "        <p>No " << source << " devices recorded. Run " << t_name << "</p>\n";
 		return;
 	}
 
@@ -294,14 +295,14 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	<h1>Devices</h1>
 )html";
 
-	constexpr array<pair<string_view, string_view>, 3> sections = {{
-		{"External",   "external"},
-		{"Internal",   "internal"},
-		{"Simulation", "simulation"},
+	constexpr array<tuple<string_view, string_view, string_view>, 3> sections = {{
+		{"External",   "external", "external_info"},
+		{"Internal",   "internal", "iface_info_filler"},
+		{"Simulation", "simulation", "TODO-simulation test"},
 	}};
-	for(const auto &[label, src] : sections){
+	for(const auto &[label, src, t_name] : sections){
 		f << "    <div class=\"card\">\n        <h2>" << label << "</h2>\n";
-		emit_section(f, devices, string(src));
+		emit_section(f, devices, string(src), string(t_name));
 		f << "    </div>\n";
 	}
 

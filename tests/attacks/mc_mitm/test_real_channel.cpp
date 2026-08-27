@@ -33,7 +33,7 @@ TEST_SUITE("handle_action_real") {
 
 		auto m = make_fixture();
 		auto frame_ap_mac  = HWAddress<6>("24:ec:99:bf:e0:cd");
-		m->ap_mac = frame_ap_mac;
+		m->set_ap_mac(frame_ap_mac);
 		CHECK(m->handle_action_real(frame_ap_mac, rt, raw, *dot11));
 		CHECK_EQ(m->rogue_send_count, 1);
 		CHECK_EQ(m->real_send_count, 0);

@@ -67,13 +67,12 @@ void Actor_config::create_sniff_iface() const{
 	const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"), filesystem::directory_iterator{});
 	log(LogLevel::DEBUG, "Current open FDs: {} {} {}", fd_count, iface, sniff_iface.c_str());
 
-	string monitor_flags;
-	vector<string> cmd = {
-		"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor", "flags", "fcsfail", "otherbss"
-	};
-	if((*this)[BK::active_monitor]) cmd.emplace_back("active");
-	if((*this)[BK::control_monitor]) cmd.emplace_back("control");
-	run(cmd);
+	run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
+
+	vector<string> flags_cmd = {"iw", "dev", sniff_iface, "set", "monitor", "fcsfail", "otherbss"};
+	if((*this)[BK::active_monitor]) flags_cmd.emplace_back("active");
+	if((*this)[BK::control_monitor]) flags_cmd.emplace_back("control");
+	run(flags_cmd);
 	set_iface_up();
 }
 
@@ -96,7 +95,7 @@ void Actor_config::set_ap_mode() const{
 }
 
 void Actor_config::up_sniff_iface() const{
-	if((*this)[BK::sniff_iface]) return;
+	if(!(*this)[BK::sniff_iface]) return;
 	const string &sniff_iface = get_mon_iface();
 
 	if(is_interface_up(sniff_iface)){

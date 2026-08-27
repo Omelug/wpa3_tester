@@ -12,7 +12,7 @@ template <typename EntryType>
 class HtmlPathTable {
 public:
     explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, const std::vector<EntryType>& entries, const std::optional<std::string> &t_name = std::nullopt)
-        : hg_(hg), entries_(entries) {
+        : hg_(hg), entries_(entries), t_name_(t_name) {
     	if (t_name) {
     		not_data_msg("Run " + t_name.value() + " to get data first");
     	}
@@ -80,6 +80,7 @@ private:
     std::vector<EntryType> entries_;
     std::vector<Column> columns_;
     std::string not_data_msg_;
+    std::optional<std::string> t_name_;
 
     std::string capture_evaluator_output(const Column& col, const EntryType& entry) const {
         std::ostringstream oss;
@@ -108,8 +109,8 @@ private:
 		return len >= MINIMAL_PREFIX ? first : "";
 	}
 
-    [[nodiscard]] bool is_prefix_requested(const std::string& header, const std::vector<std::string>& prefix_columns) const {
-        return std::find(prefix_columns.begin(), prefix_columns.end(), header) != prefix_columns.end();
+    [[nodiscard]] static bool is_prefix_requested(const std::string& header, const std::vector<std::string>& prefix_columns) {
+        return std::ranges::find(prefix_columns, header) != prefix_columns.end();
     }
 
     std::string compute_column_prefix(const Column& col) const {
@@ -174,6 +175,9 @@ public:
         hg_ << "        <table class=\"" << table_class << "\">\n";
         render_header(prefixes);
         render_body(prefixes);
+        if (t_name_)
+            hg_ << "            <tfoot><tr><td colspan=\"" << columns_.size()
+                << "\"><small>Data from " << *t_name_ << "</small></td></tr></tfoot>\n";
         hg_ << "        </table>\n";
     }
 

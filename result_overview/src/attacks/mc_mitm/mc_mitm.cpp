@@ -34,7 +34,7 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
         <p><b>Prerequisites:</b> client connected to a legitimate AP, working CSA attack</p>
         <p>The attacker uses two wireless interfaces:
 			<b>rogue_client</b> monitors the real channel and <b>rogue_ap</b> runs a rogue AP on a different channel.
-			CSA beacons and deauth frames move the target client from the real AP to the rogue channel.
+			CSA beacons and deauth frames move the target client from the real AP to the rogue channel. (check CSA attack for more details)
             Once the client associates with the rogue AP, traffic is forwarded through the attacker,
             achieving a transparent MitM position without breaking connectivity.</p>
         <p><b>Success:</b> client associates with the rogue AP (ClientState == GotMitm).</p>
@@ -43,7 +43,7 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li>Operating Channel Validation (OCV) — client verifies channel matches negotiated OCI</li>
+            <li> Mitigation of CSA attacks </li>
         </ul>
     </div>
 

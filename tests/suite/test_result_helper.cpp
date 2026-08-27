@@ -239,6 +239,8 @@ TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf"){
 		f << "wpa_key_mgmt=SAE\n";
 	}
 	RunStatus rs;
+	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 	const auto result = get_ap_WPA_support(rs);
 	REQUIRE_FALSE(result.empty());

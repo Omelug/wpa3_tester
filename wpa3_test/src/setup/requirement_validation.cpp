@@ -263,12 +263,6 @@ bool RunStatus::config_requirement(){
 
 		return true;
 	}
-	//FIXME cant change iface name etc if changed usb position
-
-	cleanup_all_namespaces();
-	this_thread::sleep_for(1500ms); ///TODO useless ?
-	//TODO step back to parse_requirements to work with resetup interfaces?
-	// asi setekovat jstli se něco přepojilo  (u external to bude pomalém, neo cache?)
 
 	// SETUP ACTORS
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());

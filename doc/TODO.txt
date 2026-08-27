@@ -5,6 +5,7 @@ v: visualization
 
 Version v 0.0.0.0:
 
++: add empty attack for tests
 +: rogue AP into Bl0ck
 +: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)

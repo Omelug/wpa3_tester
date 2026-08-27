@@ -40,8 +40,8 @@ using namespace Tins;
 
 // ---- globals ----
 static FILE* g_gnuplot_pipe = nullptr;
-static atomic g_running{true};
-static atomic g_paused{false};
+static atomic<bool> g_running{true};
+static atomic<bool> g_paused{false};
 
 void signal_handler(const int signum) {
     if (!g_running) {

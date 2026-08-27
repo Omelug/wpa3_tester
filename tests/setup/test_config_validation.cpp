@@ -24,7 +24,6 @@ struct ConfigTestCase{
 };
 
 void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
-	// ponytail: static cache — expected files are read-only fixtures, several are shared across subcases
 	static map<path, nlohmann::json> yaml_cache;
 	for(const auto &[description, input_yaml, expected_yaml, should_pass]: tests){
 		SUBCASE(description.c_str()){

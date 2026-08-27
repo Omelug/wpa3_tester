@@ -12,6 +12,7 @@
 #include "overview/html_utils.h"
 #include "visual/result_helper.h"
 #include "system/utils.h"
+#include "manuf_parser.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -132,13 +133,14 @@ static optional<DeviceInfo> read_device(const path &dev_dir){
 	return parse_device_file(jsons.back(), mac);
 }
 
-static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
+static void generate_device_page(const path &devices_dir, const DeviceInfo &d, const path &manuf_file){
 	const path page_dir = devices_dir / d.mac;
 	create_public_dirs(page_dir);
 	HtmlGuard f(page_dir);
 	if(!f) return;
 
-	const string title = d.name.empty() ? d.mac : d.name;
+	const string title  = d.name.empty() ? d.mac : d.name;
+	const string vendor = lookup_vendor(manuf_file, d.mac);
 	auto tr = [&](string_view key, const auto &val){
 		f << "            <tr><th>" << key << "</th><td>" << val << "</td></tr>\n";
 	};
@@ -156,6 +158,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d){
 	tr("Permanent MAC", d.mac);
 	tr("Source",        d.source);
 	tr("Driver",        d.driver);
+	if(!vendor.empty())         tr("Vendor (from wireshark manuf database)",      vendor);
 	if(!d.driver_hash.empty()) tr("Driver hash", d.driver_hash);
 	if(!d.module_hash.empty()) tr("Module hash", d.module_hash);
 	f << "        </table>\n    </div>\n"
@@ -276,7 +279,8 @@ void generate_devices(const path &output_dir, const path &data_dir){
 		return tie(a.name, a.source) < tie(b.name,  b.source);
 	});
 
-	for(const auto &d : devices) generate_device_page(devices_dir, d);
+	const path manuf_file = MANUF_FILE_PATH;
+	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
 
 	HtmlGuard f(devices_dir);
 	if(!f) return;

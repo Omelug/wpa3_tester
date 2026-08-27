@@ -80,12 +80,8 @@ struct Value {
 
 	[[nodiscard]] bool valid(const RssiMatrix& m) const {
     	if (is_const) return true;
-
-    	const auto keys = {mac_pair, pair{mac_pair.second, mac_pair.first}};
-    	return ranges::any_of(keys, [&m](const auto& key) {
-			const auto it = m.find(key);
-			return it != m.end() && it->second > RSSI_NO_DATA;
-		});
+    	auto has = [&](const auto& k) { const auto it = m.find(k); return it != m.end() && it->second > RSSI_NO_DATA; };
+    	return has(mac_pair) || has(make_pair(mac_pair.second, mac_pair.first));
     }
 
     [[nodiscard]] string to_str() const {

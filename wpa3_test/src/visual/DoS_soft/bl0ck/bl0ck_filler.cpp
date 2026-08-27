@@ -50,12 +50,12 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 }
 
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &page_dir){
+	const path &suite_data_dir, const path &page_dir, const string &t_name){
 
 	helper::div_card<Bl0ckTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<Bl0ckTestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries, t_name);
 
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 

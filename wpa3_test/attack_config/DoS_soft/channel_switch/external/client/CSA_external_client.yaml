@@ -21,9 +21,9 @@ actors:
       program_config:
         other_options: "-d"
         country_code: CZ
-        # s ieee80211w: 1 OnePlus funguje (i když je to nevalidní podle WPA3, nejspíš to není vyjímečné - dohledat zdroj)
-        #ieee80211w: 1
-        #wpa_key_mgmt: SAE WPA-PSK
+        # s ieee80211w: 1 OnePlus 3 funguje
+        ieee80211w: 1
+        wpa_key_mgmt: SAE WPA-PSK
   client:
     source: external
     scan_ignore: yes

@@ -63,12 +63,12 @@ vector<MalformedEapol1TestEntry> MalformedEapol1TestEntry::collect_results(const
 }
 
 void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &page_dir){
+	const path &suite_data_dir, const path &page_dir, const string &t_name){
 
 	helper::div_card<MalformedEapol1TestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const vector<MalformedEapol1TestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries, t_name);
 
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 		t.build([&](auto col) {

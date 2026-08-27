@@ -40,12 +40,12 @@ vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path 
 }
 
 void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-										const path &suite_data_dir, const path &){
+										const path &suite_data_dir, const path &, const std::string & t_name){
 
 	helper::div_card<InvalidCurveTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<InvalidCurveTestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries, t_name);
 
 		t.build([&](auto col) {
 			col("Test",                 &InvalidCurveTestEntry::test_name);

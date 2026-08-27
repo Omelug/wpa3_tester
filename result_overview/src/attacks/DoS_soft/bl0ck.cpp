@@ -54,17 +54,17 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 	</div>
 )html"; //FIXME client-AP nesmí být na jedné straně spolu, bl0ck jinak asi nemá dost času -> nějaký WARRNING  ?
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		Bl0ckTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
+		Bl0ckTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
 	};
 
 	const path bl0ck_base = data_dir / DATA_SUITE / "DoS_soft" / "bl0ck";
 	const array<string, 3> suite_fillers = {"BA_filler", "BAR_filler", "BARS_filler"};
 
 	for (const auto &filler : suite_fillers){
-		emit_table(filler, bl0ck_base / "suite" / filler);
+		emit_table(filler, bl0ck_base / "suite" / filler, filler);
 	}
-	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite");
+	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite", "bl0ck_Dlink_suite");
 
 	f << "</body>\n</html>\n";
 }

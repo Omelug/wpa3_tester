@@ -48,11 +48,11 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "owe_trans" / "owe_trans_filler";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		OweTransTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
+		OweTransTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
 	};
 
-	emit_table("Test Results",  suite_dir);
+	emit_table("Test Results",  suite_dir, "owe_trans_filler");
 
 	f << "</body>\n</html>\n";
 }

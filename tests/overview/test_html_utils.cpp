@@ -164,6 +164,26 @@ TEST_CASE("HtmlPathTable add_rotated_column renders th.rotated") {
 	remove_all(test_dir);
 }
 
+TEST_CASE("HtmlPathTable not_data_msg on empty entries") {
+	path test_dir = temp_directory_path() / "html_utils_test_not_data";
+	create_directories(test_dir);
+	{
+		overview::HtmlGuard hg(test_dir);
+		struct E { string name; };
+		vector<E> entries;
+		HtmlPathTable<E> table(hg, entries);
+		table.not_data_msg("No data available");
+		table.add_column("Name", &E::name);
+		table.render();
+	}
+	ifstream file(test_dir / "index.html");
+	ostringstream oss; oss << file.rdbuf();
+	const string result = oss.str();
+	CHECK(result.contains("No data available"));
+	CHECK_FALSE(result.contains("<table"));
+	remove_all(test_dir);
+}
+
 TEST_CASE("HtmlPathTable prefix grouping functionality") {
 	path test_dir = temp_directory_path() / "html_utils_test_prefix";
 	create_directories(test_dir);

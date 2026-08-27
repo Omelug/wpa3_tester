@@ -51,8 +51,10 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 )html";
 
     SsidConfusionEntry::render_table(f, "ssid_confusion",
-        data_dir / DATA_SUITE / "mc_mitm" / "ssid_confusion" / "ssid_confusion_filler",
-        page_dir);
+									 data_dir / DATA_SUITE / "mc_mitm" /
+										 "ssid_confusion" /
+										 "ssid_confusion_filler",
+									 page_dir,  "ssid_confusion_filler");
 
     f << "</body>\n</html>\n";
 }

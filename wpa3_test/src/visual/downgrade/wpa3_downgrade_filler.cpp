@@ -38,12 +38,12 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 }
 
 void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &){
+	const path &suite_data_dir, const path &, const string &t_name){
 
 	helper::div_card<Wpa3TransDowngradeTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<Wpa3TransDowngradeTestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries, t_name);
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 
 		t.build([&](auto col) {

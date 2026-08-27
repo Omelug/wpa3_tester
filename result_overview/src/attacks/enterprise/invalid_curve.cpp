@@ -37,11 +37,12 @@ void generate_invalid_curve_attack(const path &output_dir, const path &data_dir)
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "invalid_curve" / "invalid_curve_filler";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir) {
-		visual::invalid_curve_filler::InvalidCurveTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name) {
+		visual::invalid_curve_filler::InvalidCurveTestEntry::render_table(
+			f, title, suite_data_dir, page_dir, t_name);
 	};
 
-	emit_table("Test Results",  suite_dir);
+	emit_table("Test Results",  suite_dir, "invalid_curve_filler");
 
 	f << "</body>\n</html>\n";
 }

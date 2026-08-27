@@ -40,11 +40,11 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "reflection_attack" / "reflection_attack_filler";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir) {
-		visual::reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name) {
+		visual::reflection_attack_filler::ReflectionAttackTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
 	};
 
-	emit_table("Test Results",  suite_dir);
+	emit_table("Test Results",  suite_dir,  "reflection_attack_filler");
 
 	f << "</body>\n</html>\n";
 }

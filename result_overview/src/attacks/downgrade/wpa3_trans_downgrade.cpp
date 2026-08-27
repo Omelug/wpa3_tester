@@ -48,11 +48,12 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "wpa3_down" / "wpa3_downgrade_filler";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		Wpa3TransDowngradeTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
+		Wpa3TransDowngradeTestEntry::render_table(f, title, suite_data_dir,
+												  page_dir, t_name);
 	};
 
-	emit_table("filler", suite_dir);
+	emit_table("filler", suite_dir, "wpa3_downgrade_filler");
 
 	f << "</body>\n</html>\n";
 }

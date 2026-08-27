@@ -60,12 +60,12 @@ vector<McMitmEntry> McMitmEntry::collect_results(const path &suite_data_dir) {
 }
 
 void McMitmEntry::render_table(overview::HtmlGuard &f, const string &title,
-    const path &suite_data_dir, const path &) {
+    const path &suite_data_dir, const path &, const string &t_name) {
 
     helper::div_card<McMitmEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard &hg,
         const vector<McMitmEntry> &entries) {
 
-        HtmlPathTable t(hg, entries);
+        HtmlPathTable t(hg, entries, t_name);
         #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
         t.build([&](auto col) {
             col("AP MAC",               &McMitmEntry::ap_mac);

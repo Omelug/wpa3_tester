@@ -37,19 +37,19 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
 )html";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		MalformedEapol1TestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
+		MalformedEapol1TestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
 	};
 
 	// emit tables for each variant
 	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
 
 	emit_table("Test Results",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite", "malformed_eapol1_basic_suite");
 	emit_table("Dlink",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1_rogueAP_Dlink_filler");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1_rogueAP_Dlink_filler", "m_eapol1_rogueAP_Dlink_filler");
 	emit_table("Malformed eapol1 filler",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_filler");
+		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_filler", "malformed_eapol1_filler");
 
 
 	f << "</body>\n</html>\n";

@@ -352,7 +352,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 		processes.erase(process_name);
 	}
 
-	// Call on_stop callback if registered
+	// call on_stop callback if registered
 	if(mp->before_stop_callback){
 		try{
 			mp->before_stop_callback();
@@ -373,7 +373,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 	}
 	log(LogLevel::DEBUG, "proc->stop done for {}", process_name);
 
-	// Call on_stop callback if registered
+	// call on_stop callback if registered
 	if(mp->after_stop_callback){
 		try{
 			mp->after_stop_callback();

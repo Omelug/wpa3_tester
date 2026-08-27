@@ -64,12 +64,12 @@ vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite
 }
 
 void SsidConfusionEntry::render_table(overview::HtmlGuard &f, const string &title,
-    const path &suite_data_dir, const path &) {
+    const path &suite_data_dir, const path &, const string &t_name) {
 
     helper::div_card<SsidConfusionEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard &hg,
         const vector<SsidConfusionEntry> &entries) {
 
-        HtmlPathTable t(hg, entries);
+        HtmlPathTable t(hg, entries, t_name);
         #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
         t.build([&](auto col) {
             col("AP MAC",              &SsidConfusionEntry::ap_mac);

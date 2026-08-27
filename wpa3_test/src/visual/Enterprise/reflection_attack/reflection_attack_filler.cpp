@@ -40,12 +40,12 @@ vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(con
 }
 
 void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &){
+	const path &suite_data_dir, const path &, const string &t_name){
 
 	helper::div_card<ReflectionAttackTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<ReflectionAttackTestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
+		HtmlPathTable t(hg, entries, t_name);
 
 		t.build([&](auto col) {
 			col("Test",                 &ReflectionAttackTestEntry::test_name);

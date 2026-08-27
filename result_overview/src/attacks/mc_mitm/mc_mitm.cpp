@@ -50,8 +50,9 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
 )html";
 
     McMitmEntry::render_table(f, "mc-mitm",
-        data_dir / DATA_SUITE / "mc_mitm" / "mc_mitm" / "mc_mitm_filler",
-        page_dir);
+							  data_dir / DATA_SUITE / "mc_mitm" / "mc_mitm" /
+								  "mc_mitm_filler",
+							  page_dir, "mc_mitm_filler");
 
     f << "</body>\n</html>\n";
 }

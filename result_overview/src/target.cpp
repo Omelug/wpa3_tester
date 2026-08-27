@@ -106,7 +106,7 @@ static void render_attack_section(HtmlGuard &f, const std::string &module,
 	emit_section_header(f, module);
 
 	if (const auto it = registry.find(module); it != registry.end()) {
-		it->second(f, module, suite_data_dir, page_dir);
+		it->second(f, module, suite_data_dir, page_dir, module);
 	}
 	else if (k_sae_dos_modules.contains(module)) {
 		// Fallback dynamic handling for module sets

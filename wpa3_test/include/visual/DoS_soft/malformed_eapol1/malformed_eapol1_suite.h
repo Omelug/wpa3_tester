@@ -40,7 +40,7 @@ struct MalformedEapol1TestEntry{
 	static MalformedEapol1TestEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<MalformedEapol1TestEntry> collect_results(const std::filesystem::path &test_data_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::
-							path &page_dir);
+							path &page_dir, const std::string & string);
 	static void generate_report(RunSuiteStatus & rss);
 };
 }

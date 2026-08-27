@@ -50,16 +50,16 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 
 )html";
 
-	auto emit_table = [&](const string &title, const path &suite_data_dir){
-		CsaTestEntry::render_table(f, title, suite_data_dir, page_dir);
+	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &suite_name){
+		CsaTestEntry::render_table(f, title, suite_data_dir, page_dir, suite_name);
 	};
 
 	// emit tables for each variant
 	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
 
-	emit_table("RogueAP internal",  base / "rogueAP" / "CSA_rogueAP_internal_filler");
-	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler");
-	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler");
+	emit_table("RogueAP internal",  base / "rogueAP" / "CSA_rogueAP_internal_filler", "CSA_rogueAP_internal_filler");
+	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler", "CSA_rogueAP_Dlink_filler");
+	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 
 	f << "</body>\n</html>\n";
 

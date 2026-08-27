@@ -64,13 +64,12 @@ vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 }
 
 void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &page_dir){
+	const path &suite_data_dir, const path &page_dir,  const string &t_name){
 
 	helper::div_card<CsaTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<CsaTestEntry>& entries) {
 
-		HtmlPathTable t(hg, entries);
-
+		HtmlPathTable t(hg, entries, t_name);
 		#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& e) { f << body; })
 		t.build([&](auto col) {
 			COL("Test",                     overview::test_name_cell(e.rel_path, e.name, page_dir));

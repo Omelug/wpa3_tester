@@ -11,8 +11,12 @@ constexpr int MINIMAL_PREFIX = 5;
 template <typename EntryType>
 class HtmlPathTable {
 public:
-    explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, const std::vector<EntryType>& entries)
-        : hg_(hg), entries_(entries) {}
+    explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, const std::vector<EntryType>& entries, const std::optional<std::string> &t_name = std::nullopt)
+        : hg_(hg), entries_(entries) {
+    	if (t_name) {
+    		not_data_msg("Run " + t_name.value() + " to get data first");
+    	}
+    }
 
     void add_column(std::string header, std::function<void(const EntryType&)> eval) {
         columns_.push_back({std::move(header), std::move(eval)});
@@ -75,6 +79,7 @@ private:
     wpa3_tester::overview::HtmlGuard& hg_;
     std::vector<EntryType> entries_;
     std::vector<Column> columns_;
+    std::string not_data_msg_;
 
     std::string capture_evaluator_output(const Column& col, const EntryType& entry) const {
         std::ostringstream oss;
@@ -157,9 +162,15 @@ private:
         hg_ << "            </tbody>\n";
     }
 public:
-    void render(const std::vector<std::string>& prefix_columns = {}, const std::string& table_class = "aggregate") const {
-        std::vector<std::string> prefixes = prepare_prefixes(prefix_columns);
+    void not_data_msg(std::string msg) { not_data_msg_ = std::move(msg); }
 
+    void render(const std::vector<std::string>& prefix_columns = {}, const std::string& table_class = "aggregate") const {
+        if (entries_.empty()) {
+            if (!not_data_msg_.empty())
+                hg_ << "<p>" << not_data_msg_ << "</p>\n";
+            return;
+        }
+		const std::vector<std::string> prefixes = prepare_prefixes(prefix_columns);
         hg_ << "        <table class=\"" << table_class << "\">\n";
         render_header(prefixes);
         render_body(prefixes);

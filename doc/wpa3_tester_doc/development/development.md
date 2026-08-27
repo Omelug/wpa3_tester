@@ -31,5 +31,5 @@ Add parsing with libpcap first, libtins only for simplification what can be test
 - add config to [attack_config](../../../wpa3_test/attack_config) with ```config_type: test_suite ```
 - check Test suite types in [TestSuite.md](../TestSuite.md)
 - Test suite setup/test_report
-  - set suite_function key and register it in [test_suites.h](../../../wpa3_test/include/suite/test_suites.h)
-  - add code for setup/test_report to  [include/suite](../../../wpa3_test/include/suite)
+  - set suite_function key and register it in [test_suites.h](../../../wpa3_test/include/visual/test_suites.h)
+  - add code for setup/test_report to  [include/visual](../../../wpa3_test/include/visual)

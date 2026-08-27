@@ -119,5 +119,5 @@ TEST_CASE("setup_actor sim - create sniff iface"){
 	actor.setup_actor(make_cfg("sniffer", {{"sniff_iface", "true"}}), make_real());
 
 	CHECK(actor.called("create_sniff_iface"));
-	CHECK_EQ(actor.get(BK::sniff_iface), "true");
+	CHECK_EQ(actor.get(BK::sniff_iface), true);
 }

@@ -219,7 +219,7 @@ TEST_CASE("hw_capabilities::check_req_options - two rules one option throws"){
 	ActorPtr rule2 = make_actor({{BK::AP, true}});
 	ActorPtr opt = make_actor({{BK::AP, true}});
 
-	// Two rules but only one option — second rule can't be satisfied
+	// Two rules but only one option - second rule can't be satisfied
 	ActorCMap rules{{"r1", rule1}, {"r2", rule2}};
 	vector options{opt};
 	CHECK_THROWS_AS(hw_capabilities::check_req_options(rules, options), req_err);

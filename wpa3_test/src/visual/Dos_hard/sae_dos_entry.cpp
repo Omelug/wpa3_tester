@@ -33,7 +33,7 @@ void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &title
 				if (!e.ap_res_png.empty()){
 					hg << R"(<img src=")" << e.ap_res_png << R"(" style="max-height:160px;">)";
 				}else{
-					hg << "—";
+					hg << "-";
 				};
 			);
 			})->render();

@@ -62,7 +62,7 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	}
 
 	// wrap in RadioTap if not already present.
-	// keep the header minimal (only TXFlags) — matching Python behavior.
+	// keep the header minimal (only TXFlags) - matching Python behavior.
 	// adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()){
@@ -222,7 +222,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_remote_recv(){
 	if(avail < 16 + caplen) return {};
 	auto r = parse_frame(buf + 16, caplen);
 	rx_head_ += 16 + caplen;
-	// Compact once head grows large — one memcpy beats per-packet erase
+	// Compact once head grows large - one memcpy beats per-packet erase
 	if(rx_head_ > 65536){
 		rx_buf_.erase(rx_buf_.begin(), rx_buf_.begin() + static_cast<ptrdiff_t>(rx_head_));
 		rx_head_ = 0;

@@ -166,7 +166,7 @@ TEST_CASE("nl80211_cb - ocv via EXT_FEATURES bit") {
 TEST_CASE("nl80211_cb - EXT_FEATURES too short does not set beacon_prot") {
 	Msg msg;
 	constexpr int feat = NL80211_EXT_FEATURE_BEACON_PROTECTION;
-	uint8_t ext[feat / 8] = {};  // exactly feat/8 bytes — index feat/8 out of range
+	uint8_t ext[feat / 8] = {};  // exactly feat/8 bytes - index feat/8 out of range
 	nla_put(msg.m, NL80211_ATTR_EXT_FEATURES, sizeof(ext), ext);
 	CHECK_FALSE(call_cb(msg.m).beacon_prot);
 }

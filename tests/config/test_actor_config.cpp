@@ -221,7 +221,7 @@ TEST_CASE("Actor_config::is - source valid values"){
 }
 
 TEST_CASE("Actor_config::is - invalid source aborts" * doctest::skip(true)){
-	// assert(false) fires on bogus source — process aborts, not catchable here
+	// assert(false) fires on bogus source - process aborts, not catchable here
 	Actor_config actor;
 	actor.set(SK::source, "internal");
 	(void)actor.is(SK::source, "bogus");

@@ -36,7 +36,7 @@ void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_na
 			exec("opkg install " + pkg, false, &ret);
 			if(ret){ throw config_err("Cannot install " + pkg + " after opkg update"); }
 			exec("reboot", false, &ret);
-			throw config_err("Rebooting router to activate " + pkg + " — re-run the test after reboot");
+			throw config_err("Rebooting router to activate " + pkg + " - re-run the test after reboot");
 		}
 	}
 }
@@ -205,13 +205,13 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 }
 
 void OpenWrtConn::setup_monitor_iface(const string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const{
-	// Bypass UCI/wifi for monitor mode — wpa_supplicant fights with netifd and prevents interface creation.
+	// Bypass UCI/wifi for monitor mode - wpa_supplicant fights with netifd and prevents interface creation.
 	// Use iw directly to create the monitor interface on the phy.
 	const string phy = "phy" + radio_name.substr(5); // "radio0" -> "phy0"
 	const string ifname = phy + "-mon0";
 
 	exec("wifi down " + radio_name + " 2>/dev/null; true");
-	// delete ALL vifs on this phy — driver limits concurrent interfaces
+	// delete ALL vifs on this phy - driver limits concurrent interfaces
 	exec("for dev in $(iw dev | awk '/phy#" + phy.substr(3) + "/{p=1} p && /Interface/{print $2; p=0}'); do iw dev $dev del 2>/dev/null; done; true");
 	exec("iw phy " + phy + " interface add " + ifname + " type monitor");
 
@@ -343,7 +343,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	exec("uci commit wireless");
 	int ret = 0;
 	exec("wifi reload 2>&1", false, &ret);
-	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap — AP may not be configured correctly", ret);
+	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap - AP may not be configured correctly", ret);
 
 	const string actor_name = actor.get(SK::actor_name);
 	auto try_download = [&](const filesystem::path &remote, const filesystem::path &local){

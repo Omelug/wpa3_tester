@@ -269,7 +269,7 @@ static void add_adapter(NetworkSetup& setup, const string& iface_name) {
         cfg->cleanup();
         this_thread::sleep_for(chrono::milliseconds(1000));
 
-        // netns move resets interface state — re-apply inside the new ns
+        // netns move resets interface state - re-apply inside the new ns
     	//TODO tady se nesmí dát active, ale proč když hlásí podporu?
         cfg->set_monitor_mode(false);
         cfg->set_iface_up();
@@ -383,7 +383,7 @@ static double rssi_to_target(const double rssi) {
     return std::clamp(dist, 0.25, 25.0);
 }
 
-// One Guttman (SMACOF) iteration — monotonically minimises layout stress.
+// One Guttman (SMACOF) iteration - monotonically minimises layout stress.
 static void smacof_step(map<HWAddress<6>, Node2D>& nodes,
                         const vector<HWAddress<6>>& macs,
                         const RssiMatrix& m) {
@@ -434,7 +434,7 @@ static bool render(FILE* pipe,
                    const vector<AdapterInfo>& adapters,
                    const RssiMatrix& m,
                    const string& status) {
-    fprintf(pipe, "set title 'Wi-Fi RSSI Wizard — %s'\n", status.c_str());
+    fprintf(pipe, "set title 'Wi-Fi RSSI Wizard - %s'\n", status.c_str());
     fprintf(pipe,
         "plot '-' with vectors arrowstyle 1 title '', "
              "'-' with labels center tc rgb '#0066cc' font ',8' title '', "
@@ -513,7 +513,7 @@ static void render_text(const vector<AdapterInfo>& adapters,
     printf("\033[2J\033[H");
 	fflush(stdout);
 
-    printf("Wi-Fi RSSI Wizard — %s\n", status.c_str());
+    printf("Wi-Fi RSSI Wizard - %s\n", status.c_str());
     printf("---------------------------\n");
     for (const auto& src : adapters) {
         for (const auto& rx : adapters) {
@@ -586,7 +586,7 @@ bool run_rssi_wizard(const string& condition_str, const Channel &ch) {
 
     g_gnuplot_pipe = init_gnuplot();
     if (!g_gnuplot_pipe)
-        log(LogLevel::WARNING, "[!] gnuplot not available — using text output");
+        log(LogLevel::WARNING, "[!] gnuplot not available - using text output");
 
     auto watcher = start_watcher(*setup);
 

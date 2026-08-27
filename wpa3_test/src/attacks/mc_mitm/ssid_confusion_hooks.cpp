@@ -9,7 +9,7 @@ using namespace std;
 Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid, const bool strip_rsn){
 	auto b = Dot11Beacon();
 	b.addr1(real.addr1());
-	b.addr2(real.addr2()); // BSSID kept identical to real AP — key to the attack
+	b.addr2(real.addr2()); // BSSID kept identical to real AP - key to the attack
 	b.addr3(real.addr3());
 	b.timestamp(real.timestamp());
 	b.interval(real.interval());
@@ -21,7 +21,7 @@ Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused
 				static_cast<uint8_t>(confused_ssid.size()),
 				reinterpret_cast<const uint8_t*>(confused_ssid.data())});
 		} else if(strip_rsn && opt.option() == Dot11::RSN){
-			continue; // drop RSN IE — rogue beacon appears as an open network
+			continue; // drop RSN IE - rogue beacon appears as an open network
 		} else{
 			b.add_option(opt);
 		}

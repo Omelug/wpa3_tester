@@ -26,7 +26,7 @@ sysroot:
 
 deploy-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
-	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing — run 'make sysroot' first"; exit 1; }
+	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing - run 'make sysroot' first"; exit 1; }
 	# allow if needed
 	# rm -f $(CROSS_BUILD)/CMakeCache.txt
 	cmake -S $(SRC_ROOT) --preset cross-rpi4 -DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
@@ -42,7 +42,7 @@ deploy-cross:
 
 test-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
-	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing — run 'make sysroot' first"; exit 1; }
+	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing - run 'make sysroot' first"; exit 1; }
 	rm -f $(CROSS_BUILD)/CMakeCache.txt
 	cmake -S $(SRC_ROOT) --preset cross-rpi4 -DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) -j$(shell nproc)

@@ -50,7 +50,7 @@ private:
 	// Remote TX injection channel (null sniffer_ when set):
 	ssh_channel tx_ch_ = nullptr;
 	std::vector<uint8_t> rx_buf_;
-	std::size_t rx_head_ = 0; // read offset into rx_buf_ — no per-packet erase
+	std::size_t rx_head_ = 0; // read offset into rx_buf_ - no per-packet erase
 	bool pcap_hdr_done_ = false;
 
 	void fill_rx_buf();

@@ -91,7 +91,7 @@ void create_state_log_graph(const path &state_log_path, const path &output_png) 
     string label = state_log_path.stem().string();
     if (label.ends_with(SUFFIX_state))
         label.resize(label.size() - SUFFIX_state.size());
-    fprintf(gp, "set title 'State Transitions — %s'\n", label.c_str());
+    fprintf(gp, "set title 'State Transitions - %s'\n", label.c_str());
 
     fprintf(gp,
         "plot '-' with steps lw 2 lc rgb 'steelblue' title '%s', "

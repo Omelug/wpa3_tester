@@ -100,7 +100,7 @@ bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr
 }
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
-	// Beacon from real AP — update timestamp
+	// Beacon from real AP - update timestamp
 	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
 		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
 		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num)
@@ -120,7 +120,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 
 	// Forward na rogue channel
 	if(might_forward){
-		// Auth(seq=2) from real AP must NOT be forwarded — rogue side already sent a synthetic
+		// Auth(seq=2) from real AP must NOT be forwarded - rogue side already sent a synthetic
 		// Auth(seq=2) in handle_open_auth. Forwarding it triggers a second assoc cycle at the
 		// real AP ("Multiple EAP reauth attempts without 4-way handshake completion").
 		if(const auto *auth = dot11.find_pdu<Dot11Authentication>(); auth && auth->auth_seq_number() == 2){

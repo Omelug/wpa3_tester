@@ -30,7 +30,7 @@ public:
 	void send_to_rogue(const std::vector<uint8_t> &raw) const override;
 
   private:
-	// rewrites the entire file each time — guarantees no stale data across test cases
+	// rewrites the entire file each time - guarantees no stale data across test cases
 	void append_to_pcap(const std::string &path) const;
 };
 

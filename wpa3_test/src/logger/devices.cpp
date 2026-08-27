@@ -28,7 +28,7 @@ bool add_device(const ActorPtr &actor){
 	const path symlink_path = dev_dir / "last.json";
 
 	for(const auto &entry: directory_iterator(dev_dir)){
-		if(entry.is_symlink()) continue;  // is_symlink() uses symlink_status — does not follow
+		if(entry.is_symlink()) continue;  // is_symlink() uses symlink_status - does not follow
 		if(!entry.is_regular_file()) continue;
 		if(entry.path().extension() != ".json") continue;
 		try{

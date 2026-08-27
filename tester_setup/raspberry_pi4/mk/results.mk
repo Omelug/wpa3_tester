@@ -5,8 +5,8 @@ RESULT_OVERVIEW := $(SRC_ROOT)/build/bin/result_overview
 .PHONY: results results_gen_only
 
 # Syncs test data from Pi (mirrors exactly) then generates the HTML result overview.
-# Output:  run/data/  — mirror of Pi's ~/wpa3_tester/data/
-#          run/html/  — generated HTML site
+# Output:  run/data/  - mirror of Pi's ~/wpa3_tester/data/
+#          run/html/  - generated HTML site
 
 results:
 	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make results PI=<address>"; exit 1; }

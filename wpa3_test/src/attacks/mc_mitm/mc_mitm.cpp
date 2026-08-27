@@ -212,7 +212,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			break;
 		}
 
-		// wait up to 100ms for data on either socket — mirrors Python select(..., 0.1)
+		// wait up to 100ms for data on either socket - mirrors Python select(..., 0.1)
 		const int fd_real = pcap_get_selectable_fd(sock_real->get_pcap_handle());
 		const int fd_rogue = pcap_get_selectable_fd(sock_rogue->get_pcap_handle());
 

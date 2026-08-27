@@ -92,7 +92,7 @@ void run_attack(RunStatus &rs){
 
 		const auto t0 = steady_clock::now();
 		const bool moved = hw_capabilities::move_to_netns(iface, test_ns);
-		// wait_for_iface_appear listens via RTMGRP_LINK in target ns — no iw polling needed
+		// wait_for_iface_appear listens via RTMGRP_LINK in target ns - no iw polling needed
 		const auto ec_appear = moved
 			? netlink_helper::wait_for_iface_appear(iface, test_ns)
 			: error_code{EINVAL, system_category()};

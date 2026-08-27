@@ -354,7 +354,7 @@ static path injector_local_path(const string &remote_arch){
 	if(exists(arch_binary)) return arch_binary;
 
 	if(!get_global_run_config().get_install_req()) //FIXME global (but it makes ssence here)
-		throw ex_conn_err("No remote_injector binary for arch '{}' — place it at {} "
+		throw ex_conn_err("No remote_injector binary for arch '{}' - place it at {} "
 						  "or set install_req: true to build automatically", remote_arch, arch_binary);
 
 	build_inject_binary(remote_arch, arch_binary);

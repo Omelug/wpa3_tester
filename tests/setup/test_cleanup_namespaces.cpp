@@ -193,7 +193,7 @@ TEST_CASE("delete_ns_and_wait - hwsim interface returns to root ns"){
 	}
 
 	if(hwsim_iface.empty()){
-		MESSAGE("No new wifi interface appeared after loading mac80211_hwsim — skipping");
+		MESSAGE("No new wifi interface appeared after loading mac80211_hwsim - skipping");
 		hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
 		return;
 	}
@@ -211,7 +211,7 @@ TEST_CASE("delete_ns_and_wait - hwsim interface returns to root ns"){
 
 	CHECK_FALSE(netns_exists(ns));
 	CHECK(exists("/sys/class/net/" + hwsim_iface));
-	// Kernel moves the interface synchronously on ns deletion — should be well under 1 s
+	// Kernel moves the interface synchronously on ns deletion - should be well under 1 s
 	CHECK_LT(elapsed, 1000);
 
 	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);

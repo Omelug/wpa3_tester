@@ -377,7 +377,7 @@ void RunStatus::load_actor_interface_mapping(){
 	while(getline(ifs, line)){
 		if(line.empty()) continue;
 
-		// json_obj (field 7) may contain commas — locate only the first 6
+		// json_obj (field 7) may contain commas - locate only the first 6
 		auto npos = string::npos;
 		auto next = [&](const size_t from){ return line.find(',', from); };
 		size_t c1 = next(0);

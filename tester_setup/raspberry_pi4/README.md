@@ -74,7 +74,7 @@ sudo nmcli connection up pi-direct
 
 #### Internet sharing (required for firstboot apt install)
 
-The Pi has no router — the notebook must NAT its internet connection to the Pi.
+The Pi has no router - the notebook must NAT its internet connection to the Pi.
 Run once per notebook session (not persistent across reboots):
 
 ```bash
@@ -122,7 +122,7 @@ make run PI=10.0.0.2 CONFIG=wpa3_test/attack_config/DoS_soft/channel_switch/chan
 
 Then proceed with `make deploy` / `make run` as above.
 
-> `bootstrap.sh` also disables USB autosuspend and ath9k_hw ANI — for stability
+> `bootstrap.sh` also disables USB autosuspend and ath9k_hw ANI - for stability
 
 ---
 
@@ -146,5 +146,5 @@ Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
 ### Remote debugging (CLion)
 - start gdbserver on Pi:  ```make run_debug PI=10.0.0.2``` (run on tester laptop)
 - `make deploy-cross`
-- in CLion select **raspberry** and click Debug — connects to `10.0.0.2:1234`.
+- in CLion select **raspberry** and click Debug - connects to `10.0.0.2:1234`.
 - TODO - no Clion way

@@ -7,7 +7,7 @@ let
   crossPkgs = pkgs.pkgsCross.aarch64-multiplatform;
 
   internetHook = ''
-    # eth0 static IP — host side of direct notebook↔Pi cable
+    # eth0 static IP - host side of direct notebook↔Pi cable
     if ! ip addr show eth0 2>/dev/null | grep -q "10\.0\.0\.1/24"; then
       sudo ip addr add 10.0.0.1/24 dev eth0 2>/dev/null || true
     fi
@@ -51,7 +51,7 @@ pkgs.mkShell {
   ] ++ pkgs.lib.optionals cross [
     crossPkgs.buildPackages.gcc
     crossPkgs.buildPackages.binutils
-    pkgs.gdb   # multiarch on nixpkgs — debugs aarch64 from x86_64 host
+    pkgs.gdb   # multiarch on nixpkgs - debugs aarch64 from x86_64 host
   ];
 
   shellHook = ''

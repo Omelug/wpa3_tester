@@ -21,7 +21,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSID Confusion Attack — Results</title>
+    <title>SSID Confusion Attack - Results</title>
     <link rel="stylesheet" href="../../../style.css">
     <script src="../../../table_aggregate.js"></script>
 </head>
@@ -50,7 +50,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
         <h2>Mitigations</h2>
         <ul>
             <li>SSID is included in the 4-way handshake </li>
-            <li>Beacon Protection — detects spoofed beacons with a different SSID</li>
+            <li>Beacon Protection - detects spoofed beacons with a different SSID</li>
         </ul>
     </div>
 

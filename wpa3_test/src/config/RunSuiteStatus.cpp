@@ -481,7 +481,7 @@ void RunSuiteStatus::execute(const string &test_name){
 	auto tests_paths = get_test_paths();
 	const auto it = ranges::find_if(tests_paths, [&](const auto &p){ return get < 1 > (p) == test_name; });
 	if(it == tests_paths.end()){
-		log(LogLevel::WARNING, "Test '{}' not found — run the full suite first to generate test configs", test_name);
+		log(LogLevel::WARNING, "Test '{}' not found - run the full suite first to generate test configs", test_name);
 		for(const auto &[src, name, cfg_path]: tests_paths) log(LogLevel::WARNING, "  available: {}/{}", src, name);
 		throw config_err("Test '" + test_name + "' not found in suite");
 	}

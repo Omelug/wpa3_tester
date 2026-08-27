@@ -30,7 +30,7 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	scp $(KERNEL_OUT)/arch/arm64/boot/Image $(PI_USER)@$(PI):/tmp/kernel8.img
 	$(SSH) "sudo cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.bak \
 	    && sudo cp /tmp/kernel8.img /boot/firmware/kernel8.img && sudo reboot"
-	@echo "==> Kernel deployed. Pi rebooting — reconnect in ~30 s."
+	@echo "==> Kernel deployed. Pi rebooting - reconnect in ~30 s."
 	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
 
 # -- Driver switching: DKMS vs in-kernel
@@ -42,7 +42,7 @@ driver-builtin:
 	$(SSH) "sudo dkms status 2>/dev/null \
 	    | grep -oP '^[\w-]+/[\d.]+' | sort -u \
 	    | xargs -rI{} sudo dkms remove {} --all 2>/dev/null; sudo depmod -a"
-	@echo "==> DKMS removed — in-kernel drivers active after adapter reinsertion"
+	@echo "==> DKMS removed - in-kernel drivers active after adapter reinsertion"
 	@echo "    Restore: make driver-dkms PI=$(PI)"
 
 driver-dkms:

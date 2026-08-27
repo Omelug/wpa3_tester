@@ -29,7 +29,7 @@ read -r -p "Continue? [y/N] " confirm
 [[ "${confirm}" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 
 if [[ ! -x "${BINARY}" ]]; then
-    echo "error: ${BINARY} not found — build result_overview first"
+    echo "error: ${BINARY} not found - build result_overview first"
     exit 1
 fi
 
@@ -52,7 +52,7 @@ touch "${PAGES_LOCAL}/.nojekyll"
 echo "==> generating tester device index.html..."
 {
     echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>wpa3_tester results</title></head><body>'
-    echo '<h1>wpa3_tester — overview pages for tester setups: </h1><ul>'
+    echo '<h1>wpa3_tester - overview pages for tester setups: </h1><ul>'
     for dir in "${PAGES_LOCAL}"/*/; do
         name="$(basename "${dir}")"
         echo "  <li><a href=\"${name}/\">${name}</a></li>"
@@ -71,4 +71,4 @@ fi
 git commit -m "deploy ${TARGET} $(date -Iseconds)"
 git push
 
-echo "==> done — ${PAGES_REPO}"
+echo "==> done - ${PAGES_REPO}"

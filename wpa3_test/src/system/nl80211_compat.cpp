@@ -79,7 +79,7 @@ void check_MFP(nlattr **attrs, NlCaps *caps){
 	const auto *ciphers = static_cast<uint32_t *>(nla_data(attrs[NL80211_ATTR_CIPHER_SUITES]));
 	const ulong num = nla_len(attrs[NL80211_ATTR_CIPHER_SUITES]) / sizeof(uint32_t);
 	for(ulong i = 0; i < num; i++){
-		if(ciphers[i] == 0x000FAC06){ // BIP-CMAC-128 — hardware IGTK/BIGTK support
+		if(ciphers[i] == 0x000FAC06){ // BIP-CMAC-128 - hardware IGTK/BIGTK support
 			caps->mfp = true;
 			return;
 		}
@@ -186,7 +186,7 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 				if(mhz >= 5925 && mhz <= 7125) caps->no_ir_6ghz++;
 			}
 
-			//TODO  NO_IR = passive-scan only until a beacon is heard, not "unsupported" — band is still usable.
+			//TODO  NO_IR = passive-scan only until a beacon is heard, not "unsupported" - band is still usable.
 			if(mhz >= 2412 && mhz <= 2484) caps->band24 = true;
 			if(mhz >= 5180 && mhz <= 5885) caps->band5 = true;
 			if(mhz >= 5925 && mhz <= 7125) caps->band6 = true;
@@ -272,7 +272,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 	}
 	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, NLM_F_DUMP, NL80211_CMD_GET_WIPHY, 0);
 
-	// query by wiphy index — ensures full physical radio attributes (incl. ext_features) are returned
+	// query by wiphy index - ensures full physical radio attributes (incl. ext_features) are returned
 	const uint32_t phy_idx = get_wiphy_idx_by_ifname(cfg->get(SK::iface));
 	nla_put_u32(msg, NL80211_ATTR_WIPHY, phy_idx);
 	// without split dump, the kernel silently truncates large replies (e.g. 6GHz band HE iftype data)
@@ -312,12 +312,12 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 
 	if(caps.no_ir_5ghz > 0 && !caps.band5){
 		log(LogLevel::WARNING,
-			"{}: {} 5 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml",
+			"{}: {} 5 GHz channel(s) excluded by regulatory (NO_IR) - set regulatory_domain in global_config.yaml",
 			cfg->get(SK::iface), caps.no_ir_5ghz);
 	}
 	if(caps.no_ir_6ghz > 0 && !caps.band6){
 		log(LogLevel::WARNING,
-			"{}: {} 6 GHz channel(s) excluded by regulatory (NO_IR) — set regulatory_domain in global_config.yaml",
+			"{}: {} 6 GHz channel(s) excluded by regulatory (NO_IR) - set regulatory_domain in global_config.yaml",
 			cfg->get(SK::iface), caps.no_ir_6ghz);
 	}
 	if(caps.no_ir_24ghz > 0 && !caps.band24){

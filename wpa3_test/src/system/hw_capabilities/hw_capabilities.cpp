@@ -91,7 +91,7 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 	}
 	if(combined.empty()) return nullopt;
 
-	// Write to tmp file and hash — avoids shell injection
+	// Write to tmp file and hash - avoids shell injection
 	const auto tmp = temp_directory_path() / ("wpa3_mod_hash_" + driver_name);
 	{
 		ofstream f(tmp);
@@ -247,7 +247,7 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
 	// monitor-mode channel changes require the vif to already be up (cfg80211 needs a running
-	// monitor iface to apply the channel immediately) — callers bring the iface up beforehand.
+	// monitor iface to apply the channel immediately) - callers bring the iface up beforehand.
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
 		throw run_err("Failed to set '" + iface + "' to channel " + to_string(ch.ch_num) + ": " + res.message());
 }
@@ -308,7 +308,7 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 
 	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0){
 		if(type != NL80211_IFTYPE_AP) throw run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
-		// hwsim (and some drivers) reject in-place type change to AP — del + recreate on the same phy
+		// hwsim (and some drivers) reject in-place type change to AP - del + recreate on the same phy
 		const string phy = get_phy(string(iface), netns);
 		run_cmd({"iw", "dev", iface.data(), "del"}, netns);
 		if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0) throw run_err(

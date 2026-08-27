@@ -80,7 +80,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
 	} else if(rs.get_actor("client").is(SK::source, "external") &&
 			  rs.get_actor("ap").is(SK::source, "internal")){
-		log(LogLevel::INFO, "Connect external client to AP — ssid='{}' password='{}'",
+		log(LogLevel::INFO, "Connect external client to AP - ssid='{}' password='{}'",
 			hostapd::get_ssid(rs, "ap"),
 			hostapd::get_password(rs, "ap"));
 

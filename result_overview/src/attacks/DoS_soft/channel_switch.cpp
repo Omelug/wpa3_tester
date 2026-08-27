@@ -22,7 +22,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>CSA DoS Attack — Results</title>
+	<title>CSA DoS Attack - Results</title>
 	<link rel="stylesheet" href="../../../style.css">
 	<script src="../../../table_aggregate.js"></script>
 </head>

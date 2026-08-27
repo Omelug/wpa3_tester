@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Download Wireshark manuf DB once at configure time
-set(MANUF_FILE "${CMAKE_BINARY_DIR}/manuf")
+set(MANUF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/static/manuf")
 if(NOT EXISTS "${MANUF_FILE}")
     message(STATUS "Downloading Wireshark manuf database...")
     file(DOWNLOAD
@@ -12,7 +12,7 @@ if(NOT EXISTS "${MANUF_FILE}")
     )
     list(GET _manuf_status 0 _manuf_code)
     if(NOT _manuf_code EQUAL 0)
-        message(WARNING "manuf download failed — vendor lookup will return empty strings")
+        message(WARNING "manuf download failed - vendor lookup will return empty strings")
         file(WRITE "${MANUF_FILE}" "")
     endif()
 endif()

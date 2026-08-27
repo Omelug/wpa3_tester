@@ -31,7 +31,7 @@ static const map<string, string> k_attack_page = {
 
 static const map<string, string> k_attack_title = {
 	{"ap_info",           "AP Info (Scanner)"},
-	{"bl0ck",             "Bl0ck — Block ACK DoS"},
+	{"bl0ck",             "Bl0ck - Block ACK DoS"},
 	{"channel_switch",    "Channel Switch (CSA) DoS"},
 	{"malformed_eapol1",  "Malformed EAPOL-1 DoS"},
 	{"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
@@ -134,7 +134,7 @@ static void generate_target_page(const path &output_dir,
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>)html" << target_name << R"html( — WPA3 Target Report</title>
+	<title>)html" << target_name << R"html( - WPA3 Target Report</title>
 	<link rel="stylesheet" href="../../style.css">
 	<script src="../../table_aggregate.js"></script>
 </head>
@@ -191,7 +191,7 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Targets — WPA3 Tester</title>
+	<title>Targets - WPA3 Tester</title>
 	<link rel="stylesheet" href="../style.css">
 </head>
 <body>

@@ -3,7 +3,7 @@ if(NOT ENABLE_ASAN)
 endif()
 
 if(CMAKE_CROSSCOMPILING)
-    message(WARNING "ASan is not supported for cross-compilation — skipping")
+    message(WARNING "ASan is not supported for cross-compilation - skipping")
     return()
 endif()
 

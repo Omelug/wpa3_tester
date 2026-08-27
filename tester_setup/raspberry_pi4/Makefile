@@ -1,7 +1,7 @@
 #
-# Raspberry Pi 4B — image creation and deploy automation
+# Raspberry Pi 4B - image creation and deploy automation
 #
-# WORKFLOW — automated image:
+# WORKFLOW - automated image:
 #   1. make image                        build customized RPi OS image
 #   2. make flash DISK=/dev/sdX          write to SD card  <- ERASES the card
 #   3. Insert SD, connect ethernet, power on
@@ -10,7 +10,7 @@
 #   4. make deploy PI=wpa3-tester.local  push code + build on Pi
 #   5. make run    PI=wpa3-tester.local  deploy + launch tester
 #
-# WORKFLOW — stock image (manual alternative to steps 1–3):
+# WORKFLOW - stock image (manual alternative to steps 1–3):
 #   Flash "Raspberry Pi OS Lite (64-bit)" via rpi-imager, enable SSH,
 #   boot, then: make bootstrap PI=<ip>
 #
@@ -22,7 +22,7 @@ SSH_KEY     ?= $(HOME)/.ssh/id_rsa.pub
 DISK        ?=
 CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml
 
-# Static IP baked into the image — also used as SSH target (PI defaults to PI_IP)
+# Static IP baked into the image - also used as SSH target (PI defaults to PI_IP)
 # Direct PC–Pi cable:  PI_IP=10.0.0.2  PI_GW=10.0.0.1
 # Home network:        PI_IP=192.168.1.100  PI_GW=192.168.1.1
 # Leave empty to use DHCP (PI will then default to PI_HOSTNAME.local)

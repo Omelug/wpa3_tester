@@ -23,13 +23,13 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>OWE Transition Probe Leak — Results</title>
+	<title>OWE Transition Probe Leak - Results</title>
 	<link rel="stylesheet" href="../../../style.css">
 	<script src="../../../table_aggregate.js"></script>
 </head>
 <body>
 	<a href="../../../index.html" class="back-link"><- Overview</a>
-	<h1>OWE Transition — Probe Request Leak</h1>
+	<h1>OWE Transition - Probe Request Leak</h1>
 
 	<div class="card">
 		<p><b>Prerequisites:</b> client connected to an OWE transition-mode AP (open + OWE BSS pair).</p>

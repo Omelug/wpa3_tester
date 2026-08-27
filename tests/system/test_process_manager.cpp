@@ -312,7 +312,7 @@ TEST_CASE("ProcessManager - wait_for returns false on Ctrl+C"){
 	pm.run("sleeper", {"sleep", "60"});
 	pm.allow_history("sleeper");
 
-	// set flag after 150 ms — simulates Ctrl+C
+	// set flag after 150 ms - simulates Ctrl+C
 	thread interrupter([]{ this_thread::sleep_for(150ms); g_interrupted.store(true); });
 
 	const auto start = chrono::steady_clock::now();

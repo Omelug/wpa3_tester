@@ -185,7 +185,7 @@ public:
 													const Channel &ch, int retries = 1
 	);
 
-	// ----- injection tests —-----
+	// ----- injection tests ------
 	static InjectionTestResult test_injection_more_fragments(
 		const MonitorSocket &sout, MonitorSocket &sin,
 															const Dot11Ref &ref, const std::string &strtype,

@@ -48,36 +48,36 @@ touch "$BOOT/ssh"
 PW_HASH=$(echo "$PI_PASSWORD" | openssl passwd -6 -stdin)
 echo "${PI_USER}:${PW_HASH}" > "$BOOT/userconf.txt"
 
-# SSH public key — firstboot.sh installs it from this location on the Pi
+# SSH public key - firstboot.sh installs it from this location on the Pi
 if [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
     cp "$SSH_KEY" "$BOOT/authorized_key.pub"
     echo "    SSH key: $SSH_KEY"
 else
-    echo "    SSH key: not found at '$SSH_KEY' — password login only"
+    echo "    SSH key: not found at '$SSH_KEY' - password login only"
 fi
 
 # --- Debug / crash logging
 
 #TODO not tried yet, i dont have 3.3 UART<->USB cable
-# UART serial console on GPIO14 (TX) / GPIO15 (RX) — kernel messages go to
+# UART serial console on GPIO14 (TX) / GPIO15 (RX) - kernel messages go to
 # a USB-UART adapter even during a kernel panic
 echo "enable_uart=1" >> "$BOOT/config.txt"
 
-# Pstore — saves the panic log into a reserved RAM region that survives a soft
+# Pstore - saves the panic log into a reserved RAM region that survives a soft
 # reboot; after restart the log appears in /sys/fs/pstore/
 # (some drivers crashed kernel)
 echo "dtoverlay=pstore" >> "$BOOT/config.txt"
 
-# earlyprintk — emit pre-console kernel messages on the serial line
+# earlyprintk - emit pre-console kernel messages on the serial line
 sed -i 's/$/ earlyprintk/' "$BOOT/cmdline.txt"
 
 # --- Root partition
 
 echo "$PI_HOSTNAME" > "$ROOT/etc/hostname"
-# Update /etc/hosts (may not exist in minimal image — ignore failure)
+# Update /etc/hosts (may not exist in minimal image - ignore failure)
 sed -i "s/raspberrypi/$PI_HOSTNAME/g" "$ROOT/etc/hosts" 2>/dev/null || true
 
-# ethernet static IP — create NM connection profile if PI_IP is set
+# ethernet static IP - create NM connection profile if PI_IP is set
 if [ -n "$PI_IP" ]; then
     UUID=$(cat /proc/sys/kernel/random/uuid)
     mkdir -p "$ROOT/etc/NetworkManager/system-connections"
@@ -112,20 +112,20 @@ else
     echo "    static IP: DHCP"
 fi
 
-# ath9k_hw — disable ANI + let the kernel regulatory domain override EEPROM
+# ath9k_hw - disable ANI + let the kernel regulatory domain override EEPROM
 printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
     > "$ROOT/etc/modprobe.d/ath9k.conf"
-# USB — disable autosuspend (prevents Wi-Fi adapter disconnects under load)
+# USB - disable autosuspend (prevents Wi-Fi adapter disconnects under load)
 # disable USB 3.0 (xhci) to eliminate 2.4 GHz interference from USB 3 devices
 echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
 echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
-# rtw88 / rtw89 — disable deep power save (stability) + enable debug logging
+# rtw88 / rtw89 - disable deep power save (stability) + enable debug logging
 printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
     > "$ROOT/etc/modprobe.d/rtw88.conf"
 printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
     > "$ROOT/etc/modprobe.d/rtw89.conf"
 
-# NetworkManager — leave all WiFi interfaces unmanaged
+# NetworkManager - leave all WiFi interfaces unmanaged
 # tester can control them directly via nl80211, ethernet stays managed for SSH
 mkdir -p "$ROOT/etc/NetworkManager/conf.d"
 cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
@@ -133,7 +133,7 @@ cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
 unmanaged-devices=interface-name:wlan*
 EOF
 
-# Region CZ — WiFi regulatory domain + timezone
+# Region CZ - WiFi regulatory domain + timezone
 # TODO hardcoded change
 echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
@@ -146,12 +146,12 @@ echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > "$R
 echo "${PI_USER} ALL=(ALL) NOPASSWD: ALL" > "$ROOT/etc/sudoers.d/90-wpa3-dev"
 chmod 440 "$ROOT/etc/sudoers.d/90-wpa3-dev"
 
-# avahi-daemon — enables hostname.local reachability
+# avahi-daemon - enables hostname.local reachability
 mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 ln -sf /lib/systemd/system/avahi-daemon.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/avahi-daemon.service"
 
-# rfkill — unblock WiFi on every boot (RPi OS soft-blocks it by default)
+# rfkill - unblock WiFi on every boot (RPi OS soft-blocks it by default)
 mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 cat > "$ROOT/etc/systemd/system/rfkill-unblock-wifi.service" << 'EOF'
 [Unit]
@@ -186,7 +186,7 @@ mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 ln -sf /etc/systemd/system/wpa3-firstboot.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/wpa3-firstboot.service"
 
-# Debug kernel — baked in if built (make kernel); firstboot uses stock kernel otherwise
+# Debug kernel - baked in if built (make kernel); firstboot uses stock kernel otherwise
 if [ -n "$KERNEL_IMAGE" ] && [ -f "$KERNEL_IMAGE" ]; then
     echo "==> Baking debug kernel: $KERNEL_IMAGE -> $BOOT/kernel8.img"
     cp "$KERNEL_IMAGE" "$BOOT/kernel8.img"

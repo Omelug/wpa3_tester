@@ -70,7 +70,7 @@ static vector<ShowcaseGraph> graphs_from_csv_dir(const path &csv_dir, const stri
         string stem = csv.stem().string();
         ranges::replace(stem, ' ', '_');  // spaces -> underscores for PNG filename
         const string png   = prefix + "_" + stem + ".png";
-        const string title = prefix + " — " + csv.stem().string();
+        const string title = prefix + " - " + csv.stem().string();
         const bool ok = draw_csv_traffic_graph(csv, page_dir / png, title);
         result.push_back({png, title, ok});
     }
@@ -84,7 +84,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     const auto tshark_graphs  = graphs_from_csv_dir(TEST_DATA / "tshark",  "tshark",  page_dir);
     const auto tcpdump_graphs = graphs_from_csv_dir(TEST_DATA / "tcpdump", "tcpdump", page_dir);
 
-    // state_log graph — real state log from observers_test_data/state_log/
+    // state_log graph - real state log from observers_test_data/state_log/
     const path state_log_path = TEST_DATA / "state_log" / "24:ec:99:bf:c7:cf_state.log";
     const path state_png      = page_dir / "state_log.png";
     const bool state_ok       = [&]{
@@ -106,7 +106,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 </head>
 <body>
     <a href="../../index.html" class="back-link">&lt;- Overview</a>
-    <h1>observer graphs — showcase</h1>
+    <h1>observer graphs - showcase</h1>
 
     <div class="card">
         <p>Visual output of the <code>*_graph</code> observer functions using real captured test data.
@@ -151,7 +151,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
         <p>Client state transitions logged by <code>ClientState::update_state()</code> into
            <code>logger/&lt;mac&gt;_state.log</code>.
            X axis: transition index, Y axis: state name (first-appearance order).
-           Call at the <em>end</em> of a test — no runtime overhead.</p>
+           Call at the <em>end</em> of a test - no runtime overhead.</p>
 )html";
 
     if (state_ok)

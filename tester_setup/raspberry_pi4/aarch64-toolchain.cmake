@@ -2,7 +2,7 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 set(CMAKE_LIBRARY_ARCHITECTURE aarch64-linux-gnu)   # makes find_package search lib/aarch64-linux-gnu/cmake/
 
-# Use the aarch64 cross gcc/g++ directly — avoids clang cc-wrapper issues on NixOS
+# Use the aarch64 cross gcc/g++ directly - avoids clang cc-wrapper issues on NixOS
 # PATH sources:
 #   NixOS cross shell : aarch64-unknown-linux-gnu-{gcc,g++}  (crossPkgs.buildPackages.gcc)
 #   Debian/Kali       : aarch64-linux-gnu-{gcc,g++}          (gcc-aarch64-linux-gnu)
@@ -13,7 +13,7 @@ find_program(CMAKE_CXX_COMPILER
     NAMES aarch64-linux-gnu-g++ aarch64-unknown-linux-gnu-g++
     DOC "aarch64 C++ cross-compiler" REQUIRED)
 
-# prefer mold (faster), fall back to lld — both are multiarch
+# prefer mold (faster), fall back to lld - both are multiarch
 find_program(MOLD_EXE mold NO_CMAKE_FIND_ROOT_PATH)
 if(MOLD_EXE)
     set(_LD "-fuse-ld=mold")

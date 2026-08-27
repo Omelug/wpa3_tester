@@ -25,7 +25,7 @@
       crossTools = with pkgs; [
         crossPkgs.buildPackages.gcc
         crossPkgs.buildPackages.binutils
-        gdb   # multiarch on nixpkgs — debugs aarch64 from x86_64 host
+        gdb   # multiarch on nixpkgs - debugs aarch64 from x86_64 host
       ];
 
       # Mirrors `make internet` from internet.mk + sets eth0=10.0.0.1/24

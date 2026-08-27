@@ -133,8 +133,10 @@ static optional<DeviceInfo> read_device(const path &dev_dir){
 	return parse_device_file(jsons.back(), mac);
 }
 
+static string mac_slug(const string &mac) { string s = mac; ranges::replace(s, ':', '_'); return s; }
+
 static void generate_device_page(const path &devices_dir, const DeviceInfo &d, const path &manuf_file){
-	const path page_dir = devices_dir / d.mac;
+	const path page_dir = devices_dir / mac_slug(d.mac);
 	create_public_dirs(page_dir);
 	HtmlGuard f(page_dir);
 	if(!f) return;
@@ -233,7 +235,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 	HtmlPathTable(f, rows, t_name).build([&](auto col){
 		col("MAC", [&](const DeviceInfo &d){
 			const string label = d.name.empty() ? d.mac : d.name;
-			f << "<a href=\"" << d.mac << "/index.html\">" << label << "</a>";
+			f << "<a href=\"" << mac_slug(d.mac) << "/index.html\">" << label << "</a>";
 		});
 		COL("Driver",      d.driver);
 		col("PHY", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->phy : ""); });

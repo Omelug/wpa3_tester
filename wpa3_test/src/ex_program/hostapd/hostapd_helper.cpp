@@ -143,7 +143,7 @@ static string get_binary(const string &bin_prefix, const string &version, const 
 		return cfg.no_version_name;
 	}
 
-	// pinned repos always build the same commit — name binary by short hash, not version
+	// pinned repos always build the same commit - name binary by short hash, not version
 	string bin_name = cfg.pinned_commit.empty()
 		? bin_prefix + version
 		: bin_prefix + cfg.pinned_commit.substr(0, 12);

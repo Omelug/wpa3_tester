@@ -84,7 +84,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs){
 							? chrono::duration<double>(n->first.time_since_epoch()).count()
 							: t_start + 1.0; // extend last step by 1s
 
-		// Two points per step — horizontal hold
+		// Two points per step - horizontal hold
 		ostringstream a, b;
 		a << fixed << setprecision(9) << t_start << " " << y;
 		b << fixed << setprecision(9) << t_end << " " << y;

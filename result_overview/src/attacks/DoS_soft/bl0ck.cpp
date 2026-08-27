@@ -23,13 +23,13 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Bl0ck BA DoS Attack — Results</title>
+	<title>Bl0ck BA DoS Attack - Results</title>
 	<link rel="stylesheet" href="../../../style.css">
 	<script src="../../../table_aggregate.js"></script>
 </head>
 <body>
 	<a href="../../../index.html" class="back-link"><- Overview</a>
-	<h1>Bl0ck — Block ACK (BA) DoS</h1>
+	<h1>Bl0ck - Block ACK (BA) DoS</h1>
 
 	<div class="card">
 		<p><b>prerequisites:</b> client connected to access point, QoS data used 802.11ac or 802.11ax, attacker needs to be physically between AP and client</p>
@@ -39,9 +39,9 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 		   Source/python implementation: <a href="https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file" target="_blank">efchatz/Bl0ck</a></p>
 		<p><b>variants:</b></p>
 		<ul>
-			<li><b>BA</b> — attacker sends BA frames spoofing connected STA's MAC with an invalid SSN; the AP stops sending QoS Data frames to all< connected STAs for the duration of the attack. After the attack ends the AP typically recovers.</li>
-			<li><b>BAR</b> — attacker sends BAR frames spoofing a connected STA's MAC with an invalid SSN; the AP stops responding with QoS Data to that specific spoofed MAC. The legitimate STA stays connected but cannot receive QoS Data even after the attack ends — requires manual reconnection to recover.</li>
-			<li><b>BARS</b> — special case of BAR using a valid SSN instead of an invalid one; the resulting AP behaviour is identical to BAR.</li>
+			<li><b>BA</b> - attacker sends BA frames spoofing connected STA's MAC with an invalid SSN; the AP stops sending QoS Data frames to all< connected STAs for the duration of the attack. After the attack ends the AP typically recovers.</li>
+			<li><b>BAR</b> - attacker sends BAR frames spoofing a connected STA's MAC with an invalid SSN; the AP stops responding with QoS Data to that specific spoofed MAC. The legitimate STA stays connected but cannot receive QoS Data even after the attack ends - requires manual reconnection to recover.</li>
+			<li><b>BARS</b> - special case of BAR using a valid SSN instead of an invalid one; the resulting AP behaviour is identical to BAR.</li>
 		</ul>
 		<p><b>success:</b> client disconnected from access point</p>
 	</div>

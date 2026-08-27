@@ -233,7 +233,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
 														const string &strtype, const Channel &ch, const int retries
 ){
-	// New label per retry round — frames from a previous round that arrive late
+	// New label per retry round - frames from a previous round that arrive late
 	// (ath9k_htc retransmits until ACK, can take >2.5 s) won't match the new label
 	// and won't pollute the ordering check.
 	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) ->Dot11QoSData{

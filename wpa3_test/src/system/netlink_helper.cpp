@@ -313,7 +313,7 @@ void delete_ns_and_wait(const string &ns_name, const vector<string> &ifaces,
 {
 	const string ns_path = "/var/run/netns/" + ns_name;
 
-	// Open and bind netlink socket BEFORE touching the ns — umount2 alone can
+	// Open and bind netlink socket BEFORE touching the ns - umount2 alone can
 	// drop the last reference and immediately return interfaces to root ns,
 	// firing RTM_NEWLINK before we'd have a chance to subscribe.
 	const int nl_fd = ifaces.empty() ? -1 : socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK, NETLINK_ROUTE);

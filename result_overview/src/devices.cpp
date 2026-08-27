@@ -227,7 +227,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 
 	#define COL(h, expr) col(h, [&]([[maybe_unused]] const DeviceInfo &d){ f << (expr); })
 
-	HtmlPathTable(f, rows).build([&](auto col){
+	HtmlPathTable(f, rows, t_name).build([&](auto col){
 		col("MAC", [&](const DeviceInfo &d){
 			const string label = d.name.empty() ? d.mac : d.name;
 			f << "<a href=\"" << d.mac << "/index.html\">" << label << "</a>";

@@ -41,7 +41,8 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 			<li> the rogue AP clones the BSSID of the real AP but advertises SSID-B instead of SSID-A</li>
 			<li> optionally the RSN IE is stripped so the network appears open</li>
 			<li> client that auto-connects to SSID-B ends up associated with a network it did not intend to join,  believing it is on a trusted network.</li>
-		</p>
+		  </ul>
+	    </p>
         <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (ClientState == GotMitm)</p>
     </div>
 

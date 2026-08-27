@@ -14,7 +14,7 @@ public:
     explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard& hg, const std::vector<EntryType>& entries, const std::optional<std::string> &t_name = std::nullopt)
         : hg_(hg), entries_(entries), t_name_(t_name) {
     	if (t_name) {
-    		not_data_msg("Run " + t_name.value() + " to get data first");
+    		not_data_msg("Run " + t_name.value() + " first to get data");
     	}
     }
 
@@ -175,10 +175,9 @@ public:
         hg_ << "        <table class=\"" << table_class << "\">\n";
         render_header(prefixes);
         render_body(prefixes);
-        if (t_name_)
-            hg_ << "            <tfoot><tr><td colspan=\"" << columns_.size()
-                << "\"><small>Data from " << *t_name_ << "</small></td></tr></tfoot>\n";
         hg_ << "        </table>\n";
+    	if (t_name_)
+    		hg_ << "<small>data from " << *t_name_ << "</small>";
     }
 
     struct Helper {

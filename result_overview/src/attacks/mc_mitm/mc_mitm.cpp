@@ -37,16 +37,8 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
 			CSA beacons and deauth frames move the target client from the real AP to the rogue channel. (check CSA attack for more details)
             Once the client associates with the rogue AP, traffic is forwarded through the attacker,
             achieving a transparent MitM position without breaking connectivity.</p>
-        <p><b>Success:</b> client associates with the rogue AP (ClientState == GotMitm).</p>
+        <p><b>Success:</b> client associates with the rogue AP (ClientState == GotMitm)</p>
     </div>
-
-    <div class="card">
-        <h2>Mitigations</h2>
-        <ul>
-            <li> Mitigation of CSA attacks </li>
-        </ul>
-    </div>
-
 )html";
 
     McMitmEntry::render_table(f, "mc-mitm",

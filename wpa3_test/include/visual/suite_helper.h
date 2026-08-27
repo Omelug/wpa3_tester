@@ -46,11 +46,14 @@ template <typename Entry>
 void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir,
 	const std::function<void(overview::HtmlGuard&, const std::vector<Entry>&)> &render_func)
 {
-	if(!std::filesystem::exists(suite_data_dir)){
-		return;
-	}
 	f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
 		<< "        <h2>" << title << "</h2>\n";
+
+	if(!std::filesystem::exists(suite_data_dir)){
+		render_func(f, {});
+		f << "</div>";
+		return;
+	}
 
 	//preferred collect_results, if not
 	auto entries = [suite_data_dir]() {

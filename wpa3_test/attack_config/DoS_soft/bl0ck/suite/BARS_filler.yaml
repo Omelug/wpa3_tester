@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: BARS_filler
 suite_functions: bl0ck_filler
 config_type: test_suite

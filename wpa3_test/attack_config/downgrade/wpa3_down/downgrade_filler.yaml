@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: wpa3_downgrade_filler
 suite_functions: wpa3_downgrade_filler
 config_type: test_suite

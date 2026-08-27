@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: owe_trans_filler
 suite_functions: owe_trans_filler
 config_type: test_suite

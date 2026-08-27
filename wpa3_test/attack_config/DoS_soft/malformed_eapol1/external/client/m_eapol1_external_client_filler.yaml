@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: m_eapol1_external_client_filler
 suite_functions: CSA_ex_filler
 config_type: test_suite

@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: generic_dos_attacks_suite
 suite_functions: ap_res_list
 config_type: test_suite

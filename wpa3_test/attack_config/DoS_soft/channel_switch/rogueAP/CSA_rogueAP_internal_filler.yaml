@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: CSA_rogueAP_internal_filler
 suite_functions: CSA_rogueAP_internal_filler
 config_type: test_suite

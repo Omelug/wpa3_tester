@@ -1,4 +1,5 @@
 ---
+If:
   PathMatch: [".*/_deps/.*", ".*/boost/pfr/.*"]
 Diagnostics:
   Suppress: "*"

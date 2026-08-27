@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 title: mausezahn program_config
 type: object
 properties:

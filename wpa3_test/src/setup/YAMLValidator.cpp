@@ -126,7 +126,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 	for(const auto &item : (*resolved)["allOf"]){
 		try{
 			json_schema::json_validator temp_v(item);
-			json copy = prop_value;
+			const json& copy = prop_value;
 			basic_error_handler eh;
 			temp_v.validate(copy, eh);
 			if(!eh) continue;

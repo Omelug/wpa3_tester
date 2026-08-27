@@ -1,4 +1,6 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
+$schema:
+  type: string
+  default:  https://json-schema.org/draft/2020-12/schema
 title: Validator pro WPA3 Test Suite
 type: object
 

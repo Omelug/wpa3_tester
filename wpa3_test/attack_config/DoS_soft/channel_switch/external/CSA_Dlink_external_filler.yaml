@@ -1,4 +1,3 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
 name: CSA_Dlink_external_filler
 config_type: test_suite
 tests:

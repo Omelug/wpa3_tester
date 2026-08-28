@@ -33,6 +33,7 @@
       <w>blackboc</w>
       <w>bmargin</w>
       <w>bprot</w>
+      <w>busnum</w>
       <w>capabilies</w>
       <w>caplen</w>
       <w>cassert</w>
@@ -62,6 +63,8 @@
       <w>delba</w>
       <w>dellink</w>
       <w>destmac</w>
+      <w>devfs</w>
+      <w>devnum</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
@@ -261,6 +264,7 @@
       <w>txpower</w>
       <w>txpwr</w>
       <w>udevadm</w>
+      <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
       <w>vline</w>

@@ -23,7 +23,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     iproute2 iw tcpdump iptables socat dnsmasq fish \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     libcurl4-openssl-dev \
-    usb-modeswitch usb-modeswitch-data \
+    usb-modeswitch usb-modeswitch-data uhubctl \
     avahi-daemon quilt \
     iperf3 gnuplot \
     hcxtools \

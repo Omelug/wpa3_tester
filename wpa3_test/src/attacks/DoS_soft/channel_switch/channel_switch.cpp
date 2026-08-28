@@ -51,7 +51,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	erase_if(sorted_opts, [](const auto &o) {
 		const auto id = static_cast<uint8_t>(o.option());
 
-		static constexpr std::array kept_ids = {
+		static constexpr array kept_ids = {
 			static_cast<uint8_t>(Dot11::OptionTypes::SSID),
 			static_cast<uint8_t>(Dot11::OptionTypes::SUPPORTED_RATES),
 			static_cast<uint8_t>(Dot11::OptionTypes::DS_SET),
@@ -77,13 +77,13 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 		// allow only  00:50:F2 (type 1 - Microsoft Qos, type 2- WMM/WME)
 		if (id == static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC)) {
 			// OUI (3B) + type (1B) - Microsoft/WiFi Alliance WPA/WMM
-			static constexpr std::array<uint8_t, 3> ms_oui = {0x00, 0x50, 0xF2};
+			static constexpr array<uint8_t, 3> ms_oui = {0x00, 0x50, 0xF2};
 
 			const auto *data = o.data_ptr();
 			const auto len = o.data_size();
 			if (len < 4) return true;
 
-			const bool oui_match = std::equal(ms_oui.begin(), ms_oui.end(), data);
+			const bool oui_match = equal(ms_oui.begin(), ms_oui.end(), data);
 			const uint8_t type = data[3];
 
 			// type 1 = WPA IE, type 2 = WMM/WME
@@ -110,7 +110,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	return result;
 }
 
-//FIXME unused ssid, ap_cahnnel
+//FIXME unused ssid, ap_channel
 RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, const Channel &ap_channel,
 						const Channel &new_channel, const int switch_count,
 						const Dot11Beacon *src_beacon
@@ -161,7 +161,6 @@ void setup_chs_attack(RunStatus &rs){
 	// only setup if can
 	components::client_ap_setup(rs, false);
 	components::setup_rogue_ap(rs);
-
 }
 
 void run_chs_attack(RunStatus &rs){
@@ -174,7 +173,8 @@ void run_chs_attack(RunStatus &rs){
 	const string essid = ap_actor.get(SK::ssid);
 	const Channel old_channel = ap_actor->get_channel();
 	const Channel new_channel{
-		att_cfg.at("new_channel").get<uint8_t>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]
+		att_cfg.at("new_channel").get<uint8_t>(),
+		ap_actor->get_channel().band, ap_actor[SK::ht_mode]
 	};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");

@@ -4,18 +4,16 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+r: usb reset hardcoded timeouts
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3
 +?: add empty attack for tests
 +: rogue AP into Bl0ck
 +: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
-???+: requirement, žw u bl0ck musí být attacker mezi AP a client - musí být nějak vzálené?
-
-f: reset usb
 CSA - upravit report pro external BB
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
-t? - test validation - testovat i vygenerované testy?
+t? test validation - testovat i vygenerované testy?
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 t: external info/iface_info parsing tests
@@ -45,7 +43,6 @@ PDF:
 ?: move driver after check if is needed
 
 ?: works cache correctly with external WB?
-v?: get some visualizations from caches
 r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 t: Stress tests
@@ -56,6 +53,8 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
+f: reset usb (I hope)
++: requirement, žw u bl0ck musí být attacker mezi AP a client
 +: ClientState observer use in mitm
 d+: scan_until_match
 +: README.md -> rozcestník pro /doc

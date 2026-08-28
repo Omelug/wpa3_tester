@@ -168,11 +168,13 @@ pair<vector<LogTimePoint>,vector<double>> times_packet_sizes_from_csv(const path
 		string frame_num_str, t_str, s_str;
 		if(getline(ss, frame_num_str, '|') && getline(ss, t_str, '|') && getline(ss, s_str, '|')){
 			try{
-				const LogTimePoint tp = log_time_to_epoch_ns(t_str);
-				if(tp.time_since_epoch().count() == 0) continue;
-				times.push_back(tp);
-				sizes.push_back(stod(s_str));
-			} catch(...){}
+			const LogTimePoint tp = log_time_to_epoch_ns(t_str);
+			if(tp.time_since_epoch().count() == 0) continue;
+			times.push_back(tp);
+			sizes.push_back(stod(s_str));
+			} catch (YAML::Exception &e) {
+				log(LogLevel::ERROR, "Failed to parse log time: {} with {}", t_str, e.what());
+			}
 		}
 	}
 	return {times, sizes};

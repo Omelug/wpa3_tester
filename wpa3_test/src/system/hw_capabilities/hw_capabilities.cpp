@@ -236,6 +236,7 @@ string hw_capabilities::get_permanent_mac(const string &iface, const optional<st
 	return {};
 }
 
+//synchronous
 void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress<6> &new_mac,
 									const optional<string> &netns
 ){
@@ -257,8 +258,8 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 	if(output.empty()) throw run_err("Failed to get interface info for: " + iface);
 
 	smatch match;
-	if(!regex_search(output, match, regex(R"(type (\w+))"))) throw run_err(
-		"Could not determine interface type for: " + iface);
+	if(!regex_search(output, match, regex(R"(type (\w+))")))
+		throw run_err("Could not determine interface type for: " + iface);
 
 	return match[1].str();
 }

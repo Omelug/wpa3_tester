@@ -86,12 +86,11 @@ vector<ActorPtr> get_actors_conn_table(const path &conn_table){
 }
 
 void RunStatus::add_actors_by_radio(vector<ActorPtr> &options, const ActorPtr &cfg){
-	//cfg->conn->ensure_wifi_ifaces();
 	for(const auto radios = cfg->conn->get_radio_list(); const string &radio_name: radios){
 		auto actor_cfg = ActorPtr(make_shared<Actor_Config_external>(*cfg));
 		actor_cfg->set(SK::radio, radio_name);
 		cfg->conn->get_hw_capabilities(actor_cfg);
-		cerr << actor_cfg->to_str() << endl;
+		log(LogLevel::DEBUG, actor_cfg->to_str());
 		options.emplace_back(actor_cfg);
 	}
 }

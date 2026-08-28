@@ -1,5 +1,7 @@
 #include "target.h"
 
+#include "logger/log.h"
+
 #include <filesystem>
 #include <map>
 #include <set>
@@ -54,7 +56,9 @@ static string read_attacker_module(const path &test_folder) {
 		const auto node = YAML::LoadFile(cfg.string());
 		if (node["attacker_module"])
 			return node["attacker_module"].as<string>();
-	} catch (...) {}
+	} catch (YAML::Exception &e) {
+		log(LogLevel::ERROR, "Failed to load attacker module: {}", e.what());
+	}
 	return "";
 }
 

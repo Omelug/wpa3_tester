@@ -265,7 +265,6 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 
 	if(times.empty() || sizes.empty() || times.size() != sizes.size()){
 		log(LogLevel::ERROR, "Invalid traffic data {}", csv_path);
-		return "";
 	}
 
 	auto g = Graph();

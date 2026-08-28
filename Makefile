@@ -17,7 +17,7 @@ tester_setup:
 	echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
 	#disable self regulation on driver
 	echo "options rtw88_core disable_lps_deep=y" | sudo tee /etc/modprobe.d/rtw88.conf
-	#diable  Scatter-Gather support (https://github.com/morrownr/7612u)
+	#disable  Scatter-Gather support (https://github.com/morrownr/7612u)
 	echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.conf
 	sudo update-initramfs -u
 	@echo "Done. Reboot recommended."
@@ -100,7 +100,7 @@ define AWK_LYCHEE
 endef
 export AWK_LYCHEE
 
-doc_test:
+doc_test: #check for invalid links
 	@lychee --offline --root-dir . "doc/**/*.md" | awk "$$AWK_LYCHEE"
 
 # test

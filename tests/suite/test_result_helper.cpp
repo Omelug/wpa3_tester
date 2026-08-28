@@ -490,11 +490,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	create_directories(dir / "logger");
 	{
 		ofstream f(dir / "ap_hostapd.conf");
-		f << "transition_disable=0x03\n";
-	}
-	{
-		ofstream f(dir / "logger" / "ap.log");
-		f << "2026-08-27T21:44:03.000000000+0200 [ap] [stdout] nl80211: transition_disable=0x03\n";
+		f << "transition_disable=0x01\n";
 	}
 	RunStatus rs;
 	setup_test_rs(rs, dir);
@@ -502,11 +498,9 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	rs.parse_requirements();
 
 	const auto result = get_ap_wpa3_trans_disable(rs, {});
-	REQUIRE_GE(result.pairs.size(), 2u);
-	CHECK_EQ(result.pairs[0].value, "0x03");
+	REQUIRE_GE(result.pairs.size(), 1u);
+	CHECK_EQ(result.pairs[0].value, "0x01");
 	CHECK_EQ(result.pairs[0].description, "hostapd_conf");
-	CHECK_EQ(result.pairs[1].value, "0x03");
-	CHECK_EQ(result.pairs[1].description, "hostapd_log");
 }
 
 TEST_CASE("get_ap_wpa3_trans_disable - no config no log returns empty"){

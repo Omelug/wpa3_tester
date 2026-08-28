@@ -149,7 +149,7 @@ TEST_CASE("HtmlPathTable add_rotated_column renders th.rotated") {
 		overview::HtmlGuard hg(test_dir);
 		struct E { string name; string val; };
 		vector<E> entries = {{"A", "x"}, {"B", "y"}};
-		HtmlPathTable<E> table(hg, entries);
+		HtmlPathTable table(hg, entries);
 		table.add_column("Name", &E::name);
 		table.add_rotated_column("Val", &E::val);
 		table.render();
@@ -171,7 +171,7 @@ TEST_CASE("HtmlPathTable t_name footer on non-empty entries") {
 		overview::HtmlGuard hg(test_dir);
 		struct E { string name; };
 		vector<E> entries = {{"Alice"}};
-		HtmlPathTable<E> table(hg, entries, "my_suite");
+		HtmlPathTable table(hg, entries, "my_suite");
 		table.add_column("Name", &E::name);
 		table.render();
 	}
@@ -179,7 +179,7 @@ TEST_CASE("HtmlPathTable t_name footer on non-empty entries") {
 	ostringstream oss; oss << file.rdbuf();
 	const string result = oss.str();
 	CHECK(result.contains("<table"));
-	CHECK(result.contains("Data from my_suite"));
+	CHECK(result.contains("data from my_suite"));
 	CHECK(result.contains("<small>"));
 	remove_all(test_dir);
 }
@@ -191,7 +191,7 @@ TEST_CASE("HtmlPathTable not_data_msg on empty entries") {
 		overview::HtmlGuard hg(test_dir);
 		struct E { string name; };
 		vector<E> entries;
-		HtmlPathTable<E> table(hg, entries);
+		HtmlPathTable table(hg, entries);
 		table.not_data_msg("No data available");
 		table.add_column("Name", &E::name);
 		table.render();
@@ -255,7 +255,7 @@ TEST_CASE("HtmlPathTable prefix grouping skipped for single entry") {
 		overview::HtmlGuard hg(test_dir);
 		struct E { string name; string status; };
 		vector<E> entries = {{"channel_switch_rogueAP_internal_34e1cfeb", "pass"}};
-		HtmlPathTable<E> table(hg, entries);
+		HtmlPathTable table(hg, entries);
 		table.add_column("Test Name", &E::name);
 		table.add_column("Status", &E::status);
 		table.render({"Test Name"}, "aggregate");

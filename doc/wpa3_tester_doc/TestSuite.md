@@ -14,8 +14,6 @@
 - generate all combinations
 - if var have more values than used, values are rotated
 - var_{var_name} placeholders
-
 #### actor_filler 
-- only for internal for now #TODO 
 - actors are declared by test, but it tries all possible options for available connected actors
-  - fixed permanent_mac  for all possible combinations
+  - fixed permanent_mac for all possible combinations (dont override fixed permanent_mac selection)

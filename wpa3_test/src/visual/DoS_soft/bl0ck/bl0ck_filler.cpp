@@ -60,13 +60,13 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 
 		t.build([&](auto col) {
-			//COL("Test",                 overview::test_name_cell(p, e.name, page_dir));
+			COL("Test",                 e.name);
 			COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
 			COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
 			COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
 			col("Variant",              &Bl0ckTestEntry::attack_variant);
 			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
-		})->render();
+		})->render({"Test"});
 		#undef COL
 	});
 }

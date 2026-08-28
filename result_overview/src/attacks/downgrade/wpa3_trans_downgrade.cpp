@@ -41,19 +41,20 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	<div class="card">
 		<h2>Mitigations</h2>
 		<ul>
-			<li>Enforce SAE-only association (disable PSK fallback)</li>
+			<li>Enforce SAE-only association with wpa3 disable (disable PSK fallback, client needs to save it to some list)</li>
 			<li>WPA3-only mode (no transition mode)</li>
 		</ul>
 	</div>
 )html";
-	const path suite_dir = data_dir / DATA_SUITE / "downgrade" / "wpa3_down" / "wpa3_downgrade_filler";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
 		Wpa3TransDowngradeTestEntry::render_table(f, title, suite_data_dir,
 												  page_dir, t_name);
 	};
 
-	emit_table("filler", suite_dir, "wpa3_downgrade_filler");
+	const path downgrade_dir = data_dir / DATA_SUITE / "downgrade";
+	emit_table("Internal filler", downgrade_dir / "wpa3_down" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
+	emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 
 	f << "</body>\n</html>\n";
 }

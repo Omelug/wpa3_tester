@@ -2,12 +2,13 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
-#include "interrupt.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "interrupt.h"
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
+#include "visual/result_helper.h"
 
 namespace wpa3_tester::wpa3_trans_downgrade{
 using namespace std;
@@ -17,6 +18,7 @@ using namespace chrono;
 using nlohmann::json;
 
 void setup_attack(RunStatus &rs){
+	rs.start_observers(); // here, because I want check WPA3 diable bit before start
 	components::client_ap_setup_t(rs);
 	components::setup_rogue_ap(rs);
 }
@@ -25,7 +27,6 @@ void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
 
-	rs.start_observers();
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
 	components::stop_AP(rs, "ap");
@@ -59,7 +60,21 @@ void stats_attack(const RunStatus &rs){
 
 	const bool disconnected = !disc_times.empty();
 	const bool downgrade_seen = !rogue_mana_times.empty();
-	rs.save_result({{"disconnected", disconnected}, {"downgrade_seen", downgrade_seen},});
+
+	json result{};
+	result["disconnected"] = disconnected;
+	result["downgrade_seen"] = downgrade_seen;
+
+	const path combined_log = rs.run_folder() / "logger" / "combined.log";
+	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
+	result["ap_wpa3_trans_disable"] =
+		visual::helper::get_ap_wpa3_trans_disable(rs, window_START, hostapd::get_password(rs, "ap"));
+	rs.save_result(result);
+
+	//TODO
+	// addd ctrl_iface first
+	// sudo wpa_cli list_networks
+	// wpa_cli network_status <id_sítě>;
 
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);

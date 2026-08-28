@@ -12,3 +12,4 @@ actors:
       program_config:
         ieee80211w: 2 #Needed for WPA3 disable
         key_mgmt: SAE
+        psk: password123

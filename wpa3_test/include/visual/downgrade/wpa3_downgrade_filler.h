@@ -1,8 +1,9 @@
 #pragma once
+#include "config/RunSuiteStatus.h"
+#include "overview/described.h"
 #include <filesystem>
 #include <string>
 #include <vector>
-#include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::overview { struct HtmlGuard; }
 
@@ -17,7 +18,10 @@ struct Wpa3TransDowngradeTestEntry{
 	bool disconnected = false;
 	bool downgrade_seen = false;
 
+	described_str ap_wpa3_trans_disable;
+
 	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
+	static std::vector<Wpa3TransDowngradeTestEntry> collect_results(const std::filesystem::path &test_data_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
 							 const std::filesystem::path &suite_data_dir,
 							 const std::filesystem::path &page_dir,

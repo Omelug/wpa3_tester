@@ -81,6 +81,7 @@
       <w>epollhup</w>
       <w>errbuf</w>
       <w>essid</w>
+      <w>ethernet</w>
       <w>exch</w>
       <w>fcommon</w>
       <w>fcsfail</w>

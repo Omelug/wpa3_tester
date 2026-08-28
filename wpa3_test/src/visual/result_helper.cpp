@@ -1,12 +1,13 @@
-#include <fstream>
-#include "default.h"
 #include "config/RunStatus.h"
+#include "default.h"
 #include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log_util.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "overview/described.h"
+#include "system/hw_capabilities.h"
+#include <fstream>
 
 namespace wpa3_tester::visual::helper{
 using namespace std;
@@ -183,6 +184,24 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 		}
 	}
 	return client_disconnected;
+}
+
+described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
+										TimeWindow /*time_window*/, string /*password*/) {
+	described_str result;
+
+	// transition_disable=0xNN bitmask
+	//  Bit 0: WPA3-Personal, Bit 1: SAE-PK, Bit 2: WPA3-Enterprise, Bit 3: Enhanced Open
+	const path config = rs.run_folder() / "ap_hostapd.conf";
+	if (exists(config)) {
+		const string val = hostapd::get_conf_value(config, {"transition_disable"});
+		if (!val.empty())
+			result += {val, "hostapd_conf"};
+	}
+
+	//TODO get from tshark (need to be decrypted with password)
+
+	return result;
 }
 
 }

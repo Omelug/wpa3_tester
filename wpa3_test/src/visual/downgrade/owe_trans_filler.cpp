@@ -36,7 +36,7 @@ void OweTransTestEntry::render_table(overview::HtmlGuard &f, const string &title
 
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 		t.build([&](auto col) {
-			//COL("Test",                 overview::test_name_cell(e.folder, e.test_name, page_dir));
+			COL("Test",                 e.test_name);
 			col("AP Driver",            &OweTransTestEntry::ap_driver);
 			col("Client Driver",        &OweTransTestEntry::client_driver);
 			col("Attacker Driver",      &OweTransTestEntry::attacker_driver);
@@ -44,7 +44,7 @@ void OweTransTestEntry::render_table(overview::HtmlGuard &f, const string &title
 			col("SSID probes",          &OweTransTestEntry::ssid_probe_count);
 			col("Disconnected",         &OweTransTestEntry::disconnected);
 			COL("Vulnerable",           (e.ssid_probe_count > 0));
-		})->render();
+		})->render({"Test"});
 		#undef COL
 	});
 }

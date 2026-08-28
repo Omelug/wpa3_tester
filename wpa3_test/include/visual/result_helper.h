@@ -33,8 +33,9 @@ described_str get_conn_WPA_version(const RunStatus &rs, TimeWindow window = {});
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window = {});
 described_str get_ap_WPA_support(const RunStatus &rs);
 described_str get_client_scanning(const RunStatus &rs, TimeWindow window = {});
+described_str get_ap_wpa3_trans_disable(const RunStatus & rs, TimeWindow time_window = {}, std::string password = {});
 
-// Entry templeate
+// Entry template
 template<typename T> inline constexpr bool is_optional_field = false;
 template<typename T> inline constexpr bool is_optional_field<std::optional<T>> = true;
 

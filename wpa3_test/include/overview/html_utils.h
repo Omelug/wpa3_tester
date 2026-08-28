@@ -123,6 +123,7 @@ private:
     }
     [[nodiscard]] std::vector<std::string> prepare_prefixes(const std::vector<std::string>& prefix_columns) const {
         std::vector<std::string> prefixes(columns_.size());
+        if (entries_.size() <= 1) return prefixes;
         for (size_t i = 0; i < columns_.size(); ++i) {
             if (is_prefix_requested(columns_[i].header, prefix_columns)) {
                 prefixes[i] = compute_column_prefix(columns_[i]);

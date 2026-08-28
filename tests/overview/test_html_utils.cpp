@@ -247,3 +247,24 @@ TEST_CASE("HtmlPathTable prefix grouping functionality") {
 
 	remove_all(test_dir);
 }
+
+TEST_CASE("HtmlPathTable prefix grouping skipped for single entry") {
+	path test_dir = temp_directory_path() / "html_utils_test_prefix_single";
+	create_directories(test_dir);
+	{
+		overview::HtmlGuard hg(test_dir);
+		struct E { string name; string status; };
+		vector<E> entries = {{"channel_switch_rogueAP_internal_34e1cfeb", "pass"}};
+		HtmlPathTable<E> table(hg, entries);
+		table.add_column("Test Name", &E::name);
+		table.add_column("Status", &E::status);
+		table.render({"Test Name"}, "aggregate");
+	}
+	ifstream file(test_dir / "index.html");
+	ostringstream oss; oss << file.rdbuf();
+	const string result = oss.str();
+	CHECK(result.contains("<th>Test Name</th>"));
+	CHECK(result.contains("<td>channel_switch_rogueAP_internal_34e1cfeb</td>"));
+	CHECK_FALSE(result.contains("*"));
+	remove_all(test_dir);
+}

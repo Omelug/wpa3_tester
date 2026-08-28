@@ -4,18 +4,40 @@ attacker_module: wpa3_trans_downgrade
 $extends: [ ./downgrade_vuln.yaml ]
 actors:
   ap:
-    setup:
-        program_config:
-          #wpa_passphrase: password123
-          transition_disable: "0x01"
-  client:
-    source: internal
     selection:
-      condition: [ managed, 2_4GHz, netns_change ]
+      condition: [ managed, 5GHz, netns_change ]
+      channel: 36
+    setup:
+      program_config:
+        hw_mode: a #TODO needed for correctly transition_disable?
+        channel: 36
+        other_options: -d
+        transition_disable: "0x01"
+        wpa_key_mgmt: SAE
+        sae_pwe: 1 #compatible for hash to element, need for use transition_disable
+  client:
+    selection:
+      condition: [ managed, 5GHz, netns_change ]
+      channel: 36
     #selection:
     #  driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:
+        other_options: -d
+        sae_pwe: 1
         ieee80211w: 2 #Needed for WPA3 disable
         key_mgmt: SAE WPA-PSK
+        psk: password123 #needed for connect to transition (at least rtw89_8852au)
+  attacker:
+    source: internal
+    selection:
+      $DELETE: [permanent_mac, driver]
+      condition: [ monitor, 5GHz ]
+      channel: 36
+  rogue_ap:
+    source: internal
+    selection:
+      $DELETE: [permanent_mac, driver]
+      condition: [ monitor, 5GHz ]
+      channel: 36

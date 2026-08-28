@@ -37,6 +37,17 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	return e;
 }
 
+vector<Wpa3TransDowngradeTestEntry> Wpa3TransDowngradeTestEntry::collect_results(const path &test_data_dir) {
+	auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(test_data_dir);
+
+	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry& a, const Wpa3TransDowngradeTestEntry& b) {
+	return tie(a.ap_driver, a.ap_mac, a.client_driver, a.client_mac, a.test_name, a.disconnected, a.downgrade_seen) <
+		   tie(b.ap_driver, b.ap_mac, b.client_driver, b.client_mac, b.test_name,  b.disconnected, b.downgrade_seen);
+	});
+
+	return entries;
+}
+
 void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 	const path &suite_data_dir, const path &, const string &t_name){
 
@@ -47,12 +58,13 @@ void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const str
 		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
 
 		t.build([&](auto col) {
-			//COL("Test",               overview::test_name_cell(p, e.test_name, page_dir));
+			COL("Test",             e.test_name);
 			COL("AP ",				e.ap_mac << "(" << e.ap_driver << ")");
 			COL("Client",			e.client_mac << "(" << e.client_driver << ")");
-			col("Disconnected",         &Wpa3TransDowngradeTestEntry::disconnected);
-			col("Downgrade Seen",       &Wpa3TransDowngradeTestEntry::downgrade_seen);
-		})->render();
+			col("Disconnected",     &Wpa3TransDowngradeTestEntry::disconnected);
+			col("Downgrade Seen",   &Wpa3TransDowngradeTestEntry::downgrade_seen);
+			col("WPA3 disable",     &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
+		})->render({"Test"});
 		#undef COL
 	});
 }

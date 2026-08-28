@@ -4,7 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+o: usb reset
 r: usb reset hardcoded timeouts
+
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3
 +?: add empty attack for tests
@@ -20,7 +22,7 @@ t: external info/iface_info parsing tests
 
 +: external Dlink for malformed eapol
 CSA:
-    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, kernel version, OCV hostapd
+    +: suite for one client - 2_4GHz, 6Ghz,5Ghz, OCV hostapd
 f: špatně se resetuje scan_iface (ap_info)
 +: HT IE channel switch (similiar to CSA attack)
 f: tshark nefachá u enterprise (nezobrazuje EAP rámce)

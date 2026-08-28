@@ -85,7 +85,7 @@ observers:
       filter: "special_filter:actors"
   tracer:
     program: trace_cmd
-    actor: ap
+    actor: attack
     program_config:
       events: [ "mac80211"]
   tracer_client:
@@ -93,6 +93,8 @@ observers:
     actor: client
     program_config:
       events: [ "mac80211" ]
+  dmesg:
+    program: dmesg
 attack_config:
   ms_interval: 1
   sleep_before_sec: 5

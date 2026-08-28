@@ -9,7 +9,7 @@
 
       commonDeps = with pkgs; [
         cmake ninja ccache mold clang gnumake pkg-config flex bison
-        clang-tools cppcheck valgrind
+        clang-tools cppcheck valgrind trace-cmd
       ];
 
       libDeps = with pkgs; [

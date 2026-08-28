@@ -26,7 +26,6 @@ CSA:
 f: špatně se resetuje scan_iface (ap_info)
 +: HT IE channel switch (similiar to CSA attack)
 f: tshark nefachá u enterprise (nezobrazuje EAP rámce)
-t: save_log to documentation/pdf
 +: add git results repository
     +: add to documentation
 d: clion plugin

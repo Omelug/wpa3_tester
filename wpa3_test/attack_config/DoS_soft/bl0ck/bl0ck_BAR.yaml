@@ -8,7 +8,7 @@ attack_config:
   random: true
   #FIXME
   ms_interval: 100
-  frame_in_batch: 16
+  frame_in_batch: 50
 actors:
   #ap:
   #  selection:

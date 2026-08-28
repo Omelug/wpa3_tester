@@ -9,10 +9,10 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
-#include "default.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
+#include "default.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
@@ -21,8 +21,10 @@
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "visual/result_helper.h"
 
-// rewrite from python https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file
+// rewrite from python
+// https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file
 namespace wpa3_tester::bl0ck_attack{
 using namespace std;
 using namespace filesystem;
@@ -132,10 +134,11 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 
 static Bl0ckResult compute_result(const RunStatus &rs){
 	Bl0ckResult r{};
+	const auto window = visual::helper::get_run_window(rs);
 	if(rs.get_actor("client")->is_WB()){
-		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
+		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
 		r.disconnect_count = static_cast<int>(disc_times.size());
-		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED");
+		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", window);
 		for(const auto &disc: disc_times){
 			for(const auto &conn: conn_times){
 				if(conn > disc){
@@ -146,7 +149,7 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 			}
 		}
 	} else if(rs.get_actor("ap")->is_WB()){
-		r.ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED").empty();
+		r.ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 	}
 
 	if(	r.disconnect_count > 0 || r.ap_disconnected){

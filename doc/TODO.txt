@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+f: data_run+sir v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3
 +: add empty attack for tests
 +: rogue AP into Bl0ck

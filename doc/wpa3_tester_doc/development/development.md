@@ -1,5 +1,4 @@
 ### Code culture
-
 This folder describe only possibilities what needs code change.
 If you don't need change code, only attacks configs, check [Test.md](../Test.md) / [TestSuite.md](../TestSuite.md).
 
@@ -8,10 +7,15 @@ If you don't need change code, only attacks configs, check [Test.md](../Test.md)
 You can change some default paths/names before compilation in  [default.h](../../../wpa3_test/include/default.h)
 (Should be auto changed everywhere, except of doc folder).
 
+### Structure decisions 
+
+- I use JetBrain IDE Clion, so if you want easy setup, use it as well, run configs are part of [.idea](../../../.idea) 
+- I created plugin for link test paths. #TODOlink to forgejo / add mirror ton github
+
 ### Development FAQ
 
 #### How to add new observer?
-- add code to [observer .cpp files](../../../wpa3_test/src/observer), headers to  [observer headeers](../../../wpa3_test/include/observer)
+- add code to [observer .cpp files](../../../wpa3_test/src/observer), headers to [observer headers](../../../wpa3_test/include/observer)
 - add validation to [test_validator.schema.yaml](../../../wpa3_test/attack_config/validator/test_validator.schema.yaml) with [observer specific validator](../../../wpa3_test/attack_config/validator/programs/observer)
 - optionally add showcase of observer render functions to [observer](../../../result_overview/src/observer)
 

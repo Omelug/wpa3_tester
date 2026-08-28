@@ -1,0 +1,14 @@
+actors:
+  ap:
+    selection:
+      permanent_mac: "90:de:80:de:ff:a1"
+      driver: mt76x2u
+  client:
+    selection:
+      permanent_mac: "90:de:80:4e:31:e6"
+      driver: mt76x2u
+  attacker:
+    selection:
+      permanent_mac: "90:de:80:de:fd:b2"
+      driver: mt76x2u
+

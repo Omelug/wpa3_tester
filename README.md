@@ -11,7 +11,7 @@ In this file is only general info for whole project, for specific topic:
 - setup issues (read it, important) [setup_issues.md](tester_setup/setup_issues.md)
 - TODO list is in [TODO.txt](doc/TODO.txt)
 - Supported attacks: [attacks.md](doc/wpa3_tester_doc/attacks/attacks.md)
-- Development: [development.md](doc/wpa3_tester_doc/development/development.md) (check for adding new test/ test suite)
+- Development: [development.md](doc/wpa3_tester_doc/development/development.md) (check for adding new test/test suite)
 - check other files in [wpa3_tester_doc](doc/wpa3_tester_doc)
 
 ### Usage:
@@ -29,11 +29,4 @@ results of test are stored in [data](data) folder
 
 ### Tester setup
 
-Raspberry 4b -  to run it on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md)
-
-
-### Weird things of the code
-
-- if are connected 2 mt76x2u interfaces (90:de:80:6c:90:92, //TODO ) kernel do in some tests weird thing,
-  it stop all network programs (NetworkManager) and I have to reboot for check even dmesg, so don't do that.
-  maybe some too many open files bug, but it's terrible for debuggin
+Raspberry 4b - can be run from laptop on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md)

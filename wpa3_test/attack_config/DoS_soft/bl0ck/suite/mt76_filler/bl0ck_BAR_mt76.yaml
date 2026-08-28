@@ -1,0 +1,10 @@
+name: bl0ck_BAR_mt76
+$extends: [../../bl0ck.yaml, ./mt76_adapters_fixed.comp.yaml]
+$validator: ../../bl0ck.schema.yaml
+attack_config:
+  attack_time_sec: 25
+  attack_variant: "BAR"
+  random: true
+  #FIXME
+  ms_interval: 100
+  frame_in_batch: 16

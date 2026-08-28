@@ -1,0 +1,8 @@
+name: bl0ck_BA_mt76
+$extends: [../../bl0ck.yaml, ./mt76_adapters_fixed.comp.yaml]
+$validator: ../../bl0ck.schema.yaml
+attack_config:
+  attack_time_sec: 25
+  attack_variant: "BA"
+  random: false
+  frame_in_batch: 50

@@ -1,6 +1,6 @@
 name: bl0ck_BAR
 attacker_module: bl0ck
-$extends: ./bl0ck.yaml
+$extends: [./bl0ck.yaml, ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml] #TODO
 $validator: ./bl0ck.schema.yaml
 attack_config:
   attack_time_sec: 25
@@ -15,8 +15,8 @@ actors:
   #    driver: [ rtw_8821au, rtw88_8821au]
   client:
     selection:
-      permanent_mac: "00:c0:ca:b7:69:2a"
+      #permanent_mac: "00:c0:ca:b7:69:2a"
       driver: mt76x2u
-  attacker:
-    selection:
-      driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu, mt76x2u]
+  #attacker:
+   # selection:
+      #driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu, mt76x2u]

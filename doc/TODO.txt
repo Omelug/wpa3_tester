@@ -6,7 +6,7 @@ v: visualization
 Version v 0.0.0.0:
 f: data_run+sir v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3
-+: add empty attack for tests
++?: add empty attack for tests
 +: rogue AP into Bl0ck
 +: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
@@ -35,7 +35,7 @@ t: save_log to documentation/pdf
 +: add git results repository
     - +: add ocumentation
 d: how run program
-d: clion setup
+d: clion setup, clion plugin
 
 PDF:
     +: reflection attack na EAP-pwd - útočník se nedkáže připojit na AP, pouze na EAP

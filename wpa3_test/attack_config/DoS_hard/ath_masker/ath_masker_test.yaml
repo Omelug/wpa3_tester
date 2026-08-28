@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: ath_masker_test
 attacker_module: ath_masker_test
 requirements:

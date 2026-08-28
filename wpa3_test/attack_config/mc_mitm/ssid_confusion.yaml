@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: ssid_confusion_test
 attacker_module: ssid_confusion
 actors:

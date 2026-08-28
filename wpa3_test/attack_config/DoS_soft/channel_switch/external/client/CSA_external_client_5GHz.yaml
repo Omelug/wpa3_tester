@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: CSA_external_client_5GHz
 attacker_module: channel_switch
 #FIXME delete strict rules ffrom CSA_external_client (mac ) for 5Ghz supported

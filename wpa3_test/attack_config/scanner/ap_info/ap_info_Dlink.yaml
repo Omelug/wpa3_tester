@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: ap_info_Dlink
 $validator: "./ap_info.yaml"
 attacker_module: ap_info

@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: channel_switch_Dlink_5GHz
 attacker_module: channel_switch
 $validator: ../../channel_switch.schema.yaml

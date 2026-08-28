@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 attacker_module: bl0ck
 scan_iface: wlan1
 actors:

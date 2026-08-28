@@ -1,4 +1,3 @@
-$schema: https://json-schema.org/draft/2020-12/schema
 name: wpa3_transition_downgrade_wpa3_only
 attacker_module: wpa3_trans_downgrade
 $extends: [ ./downgrade_vuln.yaml ]

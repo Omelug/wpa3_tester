@@ -217,7 +217,7 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
 			conn_conds.emplace_back(p[0].get<string>(), p[1].get<string>());
 	}
 
-	if(_config.value("scan_until_success", false) && !ex_bb_actors.empty())
+	if(_config.value("scan_until_match", false) && !ex_bb_actors.empty())
 		return scan_until_match(iface, channels, ex_bb_actors, conn_conds);
 
 	const auto entities = list_external_entities(iface, timeout, channels);

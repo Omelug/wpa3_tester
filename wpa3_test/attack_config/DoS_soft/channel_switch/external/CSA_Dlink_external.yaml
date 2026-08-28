@@ -3,7 +3,7 @@ attacker_module: channel_switch
 $validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
 scan_channels: [ 6 ]
-scan_until_success: true
+scan_until_match: true
 requirements:
   ex_BB_connection : [[ap, client]]
 $extends: [

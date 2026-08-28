@@ -15,7 +15,6 @@ f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s
 f: reset usb
 CSA - upravit report pro external BB
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
-d+: scan_until_success
 t? - test validation - testovat i vygenerované testy?
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
@@ -45,7 +44,6 @@ PDF:
     +: RunConfig description
 
 ?: move driver after check if is needed
-+: ClientState observer use in mitm
 
 ?: works cache correctly with external WB?
 v?: get some visualizations from caches
@@ -59,6 +57,8 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: ClientState observer use in mitm
+d+: scan_until_match
 +: README.md -> rozcestník pro /doc
 +: external_blackbox - nefungje dobře  filtrování, najde to asi náhodnou STA (nebo to přijímá i něco jiného než data frames)
 d: rapsberry

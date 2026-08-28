@@ -18,7 +18,7 @@ if not compile_external/install_req and something have to be compilated/installe
 - defined by a YAML configuration file. 
 - have to pass validation through the main [validator](../../wpa3_test/attack_config/validator/test_validator.schema.yaml).
 - can use [yaml_validation.md](yaml_validation.md)
-
+- 
 ### Software requirements for the Test:
 In the validator, requirement program for main test machine have to be in list `actors/<actor_name>/setup/requirements`
   (doesn't matter what actor, only for clear config)

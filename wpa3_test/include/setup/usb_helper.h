@@ -15,11 +15,6 @@ struct UsbResetInfo {
 // Covers all cfg80211 drivers: mac80211 and out-of-tree
 // only misses pre-cfg80211 WEXT-only drivers (effectively extinct).
 std::vector<UsbResetInfo> collect_all_usb_wifi_ifaces();
-
-std::filesystem::path get_usb_auth_path(const std::string& iface_name);
-void disconnect_usb_device(const std::string& iface_name);
-void connect_usb_device(const std::string& iface_name);
-void connect_usb_device(const std::filesystem::path& auth_file);
 void reset_usb_ifaces();
 void reset_usb_ifaces(const std::vector<UsbResetInfo>& ifaces);
 

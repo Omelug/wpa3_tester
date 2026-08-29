@@ -123,11 +123,10 @@ AP_MAX_INACTIVITY (stejné jako v 2022_)
 f: scan EAP dont work?
 
 Documentation:
-+: get LateX from english (or link it form altex git )
++: get LateX from english (or link it from latex git )
 
 Better code:
 t: projít testy a vyházet ty nepodstatné
-r: vymazat github copilota z hstorie
 ?: (maybe general NL80211_{} boolean conditions?>)
 f: FetchContent_MakeAvailable  paralel downlading should be improved
 prerequisities tested versions

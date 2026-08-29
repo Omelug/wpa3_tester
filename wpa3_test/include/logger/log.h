@@ -69,7 +69,7 @@ struct TimeWindow {
 	LogTimePoint start_tp{};
 	LogTimePoint end_tp{};
 	bool operator==(const TimeWindow&) const = default;
-	[[nodiscard]] bool contains(const LogTimePoint &t) const { return t >= start_tp && t <= end_tp; }
+	[[nodiscard]] bool contains(const LogTimePoint &t) const { return t >= start_tp && (!has_end() || t <= end_tp); }
 	[[nodiscard]] bool has_start() const { return start_tp.time_since_epoch().count() != 0; }
 	[[nodiscard]] bool has_end() const { return end_tp.time_since_epoch().count() != 0; }
 };

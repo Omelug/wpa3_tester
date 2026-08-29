@@ -117,7 +117,7 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 
 
 void cleanup_all_namespaces(){
-	log(LogLevel::INFO, "Global cleanup: performing scorched earth recovery...");
+	log(LogLevel::INFO, "Cleanup all bnamespaces...");
 
 	const path netns_dir = "/var/run/netns";
 	if(!exists(netns_dir)){
@@ -219,7 +219,7 @@ bool RunStatus::config_requirement(){
 		external_wb_mapping =
 				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 
-		bool cache_dead = false; //  chcek if cache need reset
+		bool cache_dead = false; // check if cache need reset
 		if(_hw_option_cache.external_wb_opts.has_value()){
 			for(const auto &opt : *_hw_option_cache.external_wb_opts){
 				if(opt->conn && !opt->conn->is_connected()) {

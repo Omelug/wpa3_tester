@@ -221,7 +221,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
 	log(LogLevel::INFO, "Block Attack END");
 
-	//rs.process_manager.stop_all();
+	rs.process_manager.stop_all();
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);
 	rs.save_result({
 		{"disconnect_count", disconnect_count}, {"ap_disconnected", ap_disconnected},
@@ -238,19 +238,14 @@ void stats_bl0ck_attack(const RunStatus &rs){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 	}
 
+	// BA/BAR are injected by attacker — mt76x2u does not loopback injected frames,
+	// so they don't appear in attacker_capture.pcap. Use client sniff_iface instead.
+	const string ba_src = rs.actor("client") ? "client" : "attacker";
 	observer::tshark::pcap_events(rs, elements, {
 									{"attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA", "blue"},
 									{"attacker", "wlan.fixed.action_code == 0x02", "DELBA", "blue"},
-									{
-										"attacker",
-										"(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4",
-										"cyan"
-									},
-									{
-										"attacker",
-										"(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4",
-										"purple"
-									},
+									{ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan"},
+									{ba_src, "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple"},
 								});
 
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);

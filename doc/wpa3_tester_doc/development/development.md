@@ -9,8 +9,9 @@ You can change some default paths/names before compilation in  [default.h](../..
 
 ### Structure decisions 
 
-- I use JetBrain IDE Clion, so if you want easy setup, use it as well, run configs are part of [.idea](../../../.idea) 
+- I use JetBrain IDE Clion, so if you want easy setup, use it as well, run configs and dictionaries are part of [.idea](../../../.idea) 
 - I created plugin for link test paths. #TODOlink to forgejo / add mirror ton github
+- I try write all in english, but some //TODO are in czech, sorry
 
 ### Development FAQ
 

@@ -1,6 +1,6 @@
-### Wifi injection
+### Wi-Fi injection
 
-- most of information are from https://github.com/vanhoefm/wifi-injection (check for more injection problems or better description)
+- most information are from https://github.com/vanhoefm/wifi-injection (check for more injection problems or better description)
 - injection - possibility to send raw PDU
 - some packets are overwritten  by kernel, some with hardware/devices
 - radiotap has NOSEQ and ORDER TXFlags to not change seq and ORDER of fragments

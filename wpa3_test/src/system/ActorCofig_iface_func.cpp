@@ -24,7 +24,7 @@ void Actor_config::cleanup() const{
 		log(LogLevel::ERROR, "cleanup() called with empty interface name");
 		return;
 	}
-	//FIXME changein netns not allowed? -> error
+	//FIXME change in netns not allowed? -> error
 	if(netns.has_value()){
 		hw_capabilities::move_to_netns(iface, netns.value());
 	} else{
@@ -54,7 +54,6 @@ void Actor_config::create_sniff_iface() const{
 	const string &sniff_iface = get_mon_iface();
 	if(conn != nullptr){
 		throw not_implemented_err("External cant have sniff_iface");
-		//conn->create_sniff_iface(iface, sniff_iface); return;
 	}
 
 	if(run({"ip", "link", "show", sniff_iface}) == 0){
@@ -130,7 +129,7 @@ void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	if((*this)[BK::sniff_iface]){
 		hw_capabilities::set_mac_address(get_mon_iface(), mac, (*this)[SK::netns]);
 	}
-	//TODO co ap_ifface?
+	//TODO co ap_iface?
 }
 
 void Actor_config::set_monitor_mode(const bool add_flags) const{

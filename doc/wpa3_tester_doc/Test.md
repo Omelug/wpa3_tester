@@ -1,4 +1,4 @@
-## Test / Test suite
+## Test
 - in [global_config.yaml](../../wpa3_test/attack_config/global_config.yaml) 
 are paths for external programs, link to path of external whitebox actors etc.
 ### Finding of test

@@ -2,9 +2,9 @@
 
 <!-- TODO change line height -->
 
-Automatization of wifi attack testing.
+Automatization of Wi-Fi attack testing.
 The main goal of this tester is make everything what can be automated, automatic.
-Get as many important logs, as possible and dont show useless messages.
+Get as many important logs, as possible and don't show useless messages.
 Project was build like implementation part of bachelor thesis. #TODO link to pdf  
 
 In this file is only general info for whole project, for specific topic:
@@ -29,4 +29,4 @@ results of test are stored in [data](data) folder
 
 ### Tester setup
 
-Raspberry 4b - can be run from laptop on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md)
+Raspberry 4b - can be run from laptop on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md) (raspberry kernel can be compiled and setup like .img)

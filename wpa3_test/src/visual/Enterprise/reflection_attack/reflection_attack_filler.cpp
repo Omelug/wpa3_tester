@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <iomanip>
 #include <nlohmann/json.hpp>
 
 #include "visual/enterprise/reflection_attack/reflection_attack_filler.h"

@@ -296,7 +296,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 			if(found || g_interrupted.load()) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
-			//FIXME needed , should be in set_cahnnel?
+			//FIXME needed , should be in set_channel?
 			interruptible_sleep(chrono::milliseconds(200));
 			//TODO hardcoded timers
 			auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);

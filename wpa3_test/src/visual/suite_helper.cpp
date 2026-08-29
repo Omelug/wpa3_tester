@@ -10,7 +10,6 @@ namespace wpa3_tester::visual::helper{
 using namespace std;
 using namespace filesystem;
 
-//TODO skip non existing configs?
 unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 	const auto config_path = test_folder / TEST_CONFIG_NAME;
 	if(!exists(config_path)) throw run_err("test config {} file does not exist", config_path);
@@ -30,7 +29,10 @@ vector<path> get_suite_test_folders(const path &suite_dir){
 	for(const auto &entry: directory_iterator(suite_dir, ec)){
 		if(!entry.is_directory()) continue;
 		if(entry.path().filename() == TEST_SUITE_CONFIG_DIR) continue;
-		//FIXME ? if(!exists(entry.path() / DONE_FILE)) continue;
+		if(!exists(entry.path() / DONE_FILE)) {
+			log(LogLevel::ERROR, "Test {} not done ", entry.path());
+			continue;
+		}
 		folders.push_back(entry.path());
 	}
 	return folders;

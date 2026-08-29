@@ -40,7 +40,6 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 		e.rogue_ap_driver = rogue->get(SK::driver_name);
 	}
 
-
 	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph = test_folder / "observer" / "tshark" / "ap_graph.png";
@@ -53,7 +52,6 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 vector<MalformedEapol1TestEntry> MalformedEapol1TestEntry::collect_results(const path &test_data_dir) {
 	auto entries = helper::get_results_default<MalformedEapol1TestEntry>(test_data_dir);
 
-	//TODO tie on all sort in collect_results
 	ranges::sort(entries, [](const MalformedEapol1TestEntry& a, const MalformedEapol1TestEntry& b) {
 	return tie(a.client_version, a.client_mfp, a.rogue_ap_connected, a.ap_mac, a.attacker_mac) <
 		   tie(b.client_version, b.client_mfp, b.rogue_ap_connected, b.ap_mac, b.attacker_mac);
@@ -102,9 +100,7 @@ void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss){
 	report << "| Test | AP Driver | Client Driver | Client Version | Attacker Driver | Disconnected (count) | Rogue AP | Graphs |\n";
 	report << "|------|-----------|---------------|----------------|-----------------|:--------------------:|:--------:|:------:|\n";
 
-	//int passed_count = 0;
 	for(const auto &e: entries){
-		//if(e.disconnect_count > 0) ++passed_count;
 
 		string graphs;
 		if(exists(e.sta_graph)) graphs += "[STA](" + e.sta_graph.string() + ")";

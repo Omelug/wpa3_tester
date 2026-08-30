@@ -192,7 +192,7 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 }
 
 described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
-										TimeWindow /*time_window*/, const string& /*password*/) {
+										TimeWindow /*time_window*/, string /*password*/) {
 	assert(rs.actor("ap"));
 	described_str result;
 	// transition_disable=0xNN bitmask

@@ -20,6 +20,7 @@ In this file is only general info for whole project, for specific topic:
 - [attack_config](wpa3_test/attack_config) - folder for config attacks
 - `make help`
 - check Makefile for more info
+- dont run multiple instances at once 
 
 ### Results
 results of test are stored in [data](data) folder

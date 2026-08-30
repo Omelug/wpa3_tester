@@ -54,15 +54,11 @@ void close_log_file(){
 void write_log_message(const LogLevel level, const string &msg){
 	const string formatted = string(levelToString(level)) + ": " + msg;
 
-	// Write to stderr
+	scoped_lock lock(log_mutex);
 	cerr << formatted << endl;
-
-	// Write to log file if enabled
-	{
-		scoped_lock lock(log_mutex);
-		if(log_file_ptr && log_file_ptr->is_open()){
-			*log_file_ptr << formatted << endl;
-		}
+	// write to log file if enabled
+	if(log_file_ptr && log_file_ptr->is_open()){
+		*log_file_ptr << formatted << endl;
 	}
 }
 

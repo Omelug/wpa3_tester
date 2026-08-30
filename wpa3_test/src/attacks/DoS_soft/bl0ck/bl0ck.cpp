@@ -250,11 +250,11 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
 	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
-	const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements,
-		observer::get_observer_folder(rs, "tcpdump"));
+	/*const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements,
+		observer::get_observer_folder(rs, "tcpdump"));*/
 
 	const Bl0ckResult result = load_result(rs);
-	generate_report(rs, result, attacker_graph, client_graph, ap_graph);
+	generate_report(rs, result, attacker_graph, client_graph/*, ap_graph*/);
 
 	log(LogLevel::INFO, "Bl0ck attack stats done");
 }

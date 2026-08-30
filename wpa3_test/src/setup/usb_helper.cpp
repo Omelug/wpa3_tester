@@ -17,7 +17,6 @@ using namespace filesystem;
 using nlohmann::json;
 
 namespace wpa3_tester{
-
 vector<UsbResetInfo> collect_all_usb_wifi_ifaces() {
 	vector<UsbResetInfo> result;
 	const path usb_devs = "/sys/bus/usb/devices";
@@ -78,6 +77,7 @@ static size_t count_usb_wifi_phys(){
 // add manual test
 void reset_usb_ifaces(){
 	reset_usb_ifaces(collect_all_usb_wifi_ifaces());
+	interruptible_sleep(chrono::milliseconds(1500)); // **** usb rest, just wait
 }
 
 static bool hard_reset_usb_device(const path& sysfs_auth_file) {
@@ -103,9 +103,10 @@ static bool hard_reset_usb_device(const path& sysfs_auth_file) {
 
 void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 	if (ifaces.empty()) return;
-
+	log(LogLevel::INFO, "reset_usb_ifaces: expecting {} interface(s) after reset", ifaces.size());
 	set<string> root_hubs;
 	for (const auto &info : ifaces) {
+		log(LogLevel::DEBUG, "reset_usb_ifaces: tracking {}", info.auth_file.string());
 		const string dev_name = info.auth_file.parent_path().filename().string();
 		const size_t first_dot = dev_name.find('.');
 		if (first_dot != string::npos)
@@ -164,6 +165,10 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 		if(count_usb_wifi_phys() >= expected) break;
 		interruptible_sleep(chrono::milliseconds(100));
 	}
+
+	//renaming of interfaces
+	hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=5"}, nullopt, false);
+
 	auto t5 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "wait for phys: {}ms", chrono::duration_cast<chrono::milliseconds>(t5-t4).count());
 

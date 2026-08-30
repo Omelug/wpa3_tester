@@ -5,6 +5,7 @@
 #include "config/RunStatus.h"
 #include "config/global_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
+#include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
 #include "setup/usb_helper.h"
@@ -86,13 +87,8 @@ void kill_process_in_ns_name(const string &ns_name){
 		}
 	}
 
-	// wait for SIGKILL to take effect - kernel needs a moment
 	for(const pid_t p: pids){
-		const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(200);
-		while(exists("/proc/" + to_string(static_cast<long>(p))) && chrono::steady_clock::now() <
-			kill_deadline) this_thread::sleep_for(chrono::milliseconds(5));
-
-		waitpid(p, nullptr, WNOHANG);
+		waitpid(p, nullptr, 0);
 		log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
 	}
 }
@@ -117,7 +113,7 @@ static vector<string> psy_if_in_ns(const string &ns_name){
 
 
 void cleanup_all_namespaces(){
-	log(LogLevel::INFO, "Cleanup all bnamespaces...");
+	log(LogLevel::INFO, "Cleanup all namespaces...");
 
 	const path netns_dir = "/var/run/netns";
 	if(!exists(netns_dir)){
@@ -167,6 +163,7 @@ bool RunStatus::config_requirement(){
 	//FIXME collect while phys are still registered — namespace phys are destroyed
 	// by cleanup_all_namespaces() and disappear from /sys/class/ieee80211/ afterwards.
 	//const auto usb_ifaces = collect_all_usb_wifi_ifaces();
+
 	cleanup_all_namespaces();
 	reset_usb_ifaces();
 

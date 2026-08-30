@@ -56,7 +56,7 @@ vector<McMitmEntry> McMitmEntry::collect_results(const path &suite_data_dir) {
         auto e = parse(p);
         e.rel_path = relative(p, suite_data_dir);
         return e;
-    });
+    }, "mc_mitm");
 }
 
 void McMitmEntry::render_table(overview::HtmlGuard &f, const string &title,

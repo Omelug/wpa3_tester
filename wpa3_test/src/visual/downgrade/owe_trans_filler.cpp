@@ -46,7 +46,7 @@ void OweTransTestEntry::render_table(overview::HtmlGuard &f, const string &title
 			COL("Vulnerable",           (e.ssid_probe_count > 0));
 		})->render({"Test"});
 		#undef COL
-	});
+	}, t_name);
 }
 
 void generate_report(RunSuiteStatus &rss){

@@ -29,7 +29,7 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder){
 }
 
 vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path &test_data_dir) {
-	auto entries = helper::get_results_default<InvalidCurveTestEntry>(test_data_dir);
+	auto entries = helper::get_results_default<InvalidCurveTestEntry>(test_data_dir, "invalid_curve");
 
 	ranges::sort(entries, [](const InvalidCurveTestEntry& a, const InvalidCurveTestEntry& b) {
 	return tie(a.ap_openssl_version, a.connected, a.attacker_driver, a.ap_driver, a.ap_hostapd_version) <
@@ -57,7 +57,7 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &t
 		});
 
 		t.render();
-	});
+	}, t_name);
 }
 
 void generate_report(const RunSuiteStatus &rss){

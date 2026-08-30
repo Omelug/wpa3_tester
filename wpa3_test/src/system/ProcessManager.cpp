@@ -315,7 +315,6 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 }
 
 void ProcessManager::stop(const string &process_name) noexcept{
-	//log(LogLevel::DEBUG, "stop() called for "+process_name);
 	shared_ptr<ManagedProcess> mp;
 	{
 		std::scoped_lock lock(logger_mtx);

@@ -60,7 +60,7 @@ vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite
         auto e = parse(p);
         e.rel_path = relative(p, suite_data_dir);
         return e;
-    });
+    }, "ssid_confusion");
 }
 
 void SsidConfusionEntry::render_table(overview::HtmlGuard &f, const string &title,

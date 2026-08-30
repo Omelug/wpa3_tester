@@ -8,4 +8,4 @@ actors:
   client:
     setup:
       program_config:
-        ssid: OpenWrt_2_4GHz
+        ssid: test_wpa3_tester

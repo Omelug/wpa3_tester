@@ -52,7 +52,7 @@ vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 		auto e = parse(p);
 		e.rel_path = relative(p, test_data_dir);
 		return e;
-	});
+	}, "channel_switch");
 
 
 	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
@@ -88,7 +88,7 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			col("client scanning",				&CsaTestEntry::client_scanning);
 		})->render({"Test"});
 		#undef COL
-	});
+	}, t_name);
 }
 
 void CsaTestEntry::generate_report(RunSuiteStatus &rss){

@@ -68,7 +68,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
 		})->render({"Test"});
 		#undef COL
-	});
+	}, t_name);
 }
 
 void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){

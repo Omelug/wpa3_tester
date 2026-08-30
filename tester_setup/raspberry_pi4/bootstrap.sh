@@ -31,7 +31,7 @@ sudo apt-get install -y \
     usb-modeswitch usb-modeswitch-data \
     libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
     quilt trace-cmd tshark gdbserver \
-    dkms linux-headers-rpi-v8
+    dkms linux-headers-rpi-v8 bc
 
 #echo "==> Installing hcxtools from source (latest git)..."
 #sudo rm -rf /tmp/hcxtools

@@ -27,7 +27,14 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     avahi-daemon quilt \
     iperf3 gnuplot \
     hcxtools \
-    dkms "linux-headers-$(uname -r)"
+    dkms linux-headers-rpi-v8
+
+# symlink headers if kernel minor-bumped ahead of apt Why?
+KVER=$(uname -r)
+if [ ! -d "/lib/modules/$KVER/build" ]; then
+    AVAIL=$(find /usr/src -maxdepth 1 -name "linux-headers-*v8*" -type d | sort -V | tail -1)
+    [ -n "$AVAIL" ] && mkdir -p "/lib/modules/$KVER" && ln -sf "$AVAIL" "/lib/modules/$KVER/build"
+fi
 
 source /usr/local/bin/wpa3-drivers.sh
 

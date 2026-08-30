@@ -11,5 +11,4 @@ actors:
       program: wpa_supplicant
       program_config:
         ieee80211w: 2
-        ocv: false
 $extends: ./CSA_Dlink.yaml

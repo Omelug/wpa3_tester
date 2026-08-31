@@ -203,6 +203,17 @@ described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 		if (!val.empty())
 			result += {val, "hostapd_conf"};
 	}
+	if (rs.get_actor("ap")->is_external_WB()) {
+		const path uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
+		if (exists(uci_conf)) {
+			const string radio = rs.get_actor("ap").get(SK::radio);
+			if (!radio.empty()) {
+				const string val = openwrt::uci_get_option(uci_conf, "wifi-device", radio, "transition_disable");
+				if (!val.empty())
+					result += {val, "uci_conf"};
+			}
+		}
+	}
 
 	//TODO get from tshark (need to be decrypted with password)
 

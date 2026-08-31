@@ -6,9 +6,9 @@
 namespace wpa3_tester{
 
 struct UsbResetInfo {
-	std::filesystem::path auth_file;
-	std::string iface_id;    // USB interface id, e.g. "2-1.3:1.0"
-	std::string driver_name; // e.g. "mt76x2u"
+	std::filesystem::path dev_path;  // e.g. /sys/bus/usb/devices/1-1.4.4.3
+	std::string iface_id;            // e.g. "1-1.4.4.3"
+	std::string driver_name;         // e.g. "mt76x2u"
 };
 
 // Scans /sys/class/ieee80211/ for USB-backed WiFi phys.

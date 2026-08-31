@@ -264,7 +264,7 @@ void ExternalConn::download_file(const path &remote_path, const path &local_path
 	char buffer[4096];
 	size_t downloaded = 0;
 	while(downloaded < size){
-		int to_read = static_cast<int>((size - downloaded > sizeof(buffer)) ? sizeof(buffer) : (size - downloaded));
+		int to_read = static_cast<int>(size - downloaded > sizeof(buffer) ? sizeof(buffer) : size - downloaded);
 		int nbytes = ssh_scp_read(scp, buffer, to_read);
 
 		if(nbytes == SSH_ERROR){

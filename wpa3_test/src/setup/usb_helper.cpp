@@ -20,23 +20,20 @@ namespace wpa3_tester{
 vector<UsbResetInfo> collect_all_usb_wifi_ifaces() {
 	vector<UsbResetInfo> result;
 	const path usb_devs = "/sys/bus/usb/devices";
-	if (!exists(usb_devs))
+	if (!exists(usb_devs)) // not have usb at all
 		return result;
 
+	//
 	for (const auto &entry : directory_iterator(usb_devs)) {
 		const path& dev_path = entry.path();
 		const string name = dev_path.filename().string();
 
-		// skip interface nodes (e.g. "1-1.2:1.0")
+		// skip interface nodes (<device>:<config>.<interface>, e.g. "1-1.2:1.0")
 		if (name.find(':') != string::npos)
 			continue;
-		// skip virtual root hubs ("usb1", "usb2", ...) — they have
-		// an "authorized" file too but aren't real devices to reset
-		if (name.rfind("usb", 0) == 0)
-			continue;
 
-		const path auth_file = dev_path / "authorized";
-		if (!exists(auth_file))
+		// skip virtual root hubs (e.g. "usb2")
+		if (name.rfind("usb", 0) == 0)
 			continue;
 
 		// only keep devices that actually expose a wifi interface,
@@ -48,14 +45,20 @@ vector<UsbResetInfo> collect_all_usb_wifi_ifaces() {
 				path drv_link = sub_e.path() / "driver";
 				if (is_symlink(drv_link))
 					driver_name = canonical(drv_link).filename().string();
-				if (exists(sub_e.path() / "net") || exists(sub_e.path() / "ieee80211"))
-					is_wifi = true;
+
+				// filter out hubs
+				if (driver_name == "hub") continue;
+
+				// DISCLAIMER - this will reset ethernet interfaces on etc
+				// it don't check if is device loaded - have selected driver etc.
+				// Because some interfaces are not in stable state after cleanup
+				log(LogLevel::DEBUG, "driver_path name : {} {}", sub_e.path(), driver_name);
+				is_wifi = true;
 			}
 		}
-		if (!is_wifi)
-			continue;
+		if (!is_wifi) continue;
 
-		result.push_back({auth_file, name, driver_name});
+		result.push_back({dev_path, name, driver_name});
 	}
 	return result;
 }
@@ -80,11 +83,9 @@ void reset_usb_ifaces(){
 	interruptible_sleep(chrono::milliseconds(1500)); // **** usb rest, just wait
 }
 
-static bool hard_reset_usb_device(const path& sysfs_auth_file) {
-	path dev_dir = sysfs_auth_file.parent_path();
-
-	ifstream bus_file(dev_dir / "busnum");
-	ifstream dev_file(dev_dir / "devnum");
+static bool hard_reset_usb_device(const path& sysfs_dev_path) {
+	ifstream bus_file(sysfs_dev_path / "busnum");
+	ifstream dev_file(sysfs_dev_path / "devnum");
 
 	int busnum = -1, devnum = -1;
 	if (!(bus_file >> busnum) || !(dev_file >> devnum)) return false;
@@ -106,17 +107,18 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 	log(LogLevel::INFO, "reset_usb_ifaces: expecting {} interface(s) after reset", ifaces.size());
 	set<string> root_hubs;
 	for (const auto &info : ifaces) {
-		log(LogLevel::DEBUG, "reset_usb_ifaces: tracking {}", info.auth_file.string());
-		const string dev_name = info.auth_file.parent_path().filename().string();
+		log(LogLevel::DEBUG, "reset_usb_ifaces: tracking {}", info.dev_path.string());
+		const string dev_name = info.dev_path.filename().string();
 		const size_t first_dot = dev_name.find('.');
 		if (first_dot != string::npos)
-			root_hubs.insert(dev_name.substr(0, first_dot));
+			root_hubs.insert(dev_name.substr(0, first_dot)); // "1-1.4.4.3" → "1-1"
 		else
-			root_hubs.insert(dev_name);
+			root_hubs.insert(dev_name.substr(0, dev_name.find('-'))); // "2-2" → "2" (root hub)
 	}
-	auto t0 = chrono::steady_clock::now();
+	const auto t0 = chrono::steady_clock::now();
 	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false);
-	auto t1 = chrono::steady_clock::now();
+	hw_capabilities::run_cmd({"modprobe", "-r", "mt76x2u"}, nullopt, false);
+	const auto t1 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "modprobe -r: {}ms", chrono::duration_cast<chrono::milliseconds>(t1-t0).count());
 
 
@@ -140,21 +142,23 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 		futures.reserve(ifaces.size());
 		for (const auto &info : ifaces) {
 			futures.push_back(async(launch::async, [&info]() {
-				if (!hard_reset_usb_device(info.auth_file))
+				if (!hard_reset_usb_device(info.dev_path))
 					log(LogLevel::WARNING, "USB ioctl reset failed for {} — needs root or udev rule for /dev/bus/usb",
-						info.auth_file.string());
+						info.dev_path.string());
 			}));
 		}
 		for (auto &f : futures) f.get();
 	}
 
-	auto t2 = chrono::steady_clock::now();
+	const auto t2 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "uhubctl cycle: {}ms", chrono::duration_cast<chrono::milliseconds>(t2-t1).count());
 
 	interruptible_sleep(chrono::milliseconds(200));
-	auto t3 = chrono::steady_clock::now();
+	const auto t3 = chrono::steady_clock::now();
+	//TODO resetnout all what have been collected (dont need to be all needed)
 	hw_capabilities::run_cmd({"modprobe", "ath9k_htc"}, nullopt, false);
-	auto t4 = chrono::steady_clock::now();
+	hw_capabilities::run_cmd({"modprobe", "mt76x2u"}, nullopt, false);
+	const auto t4 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "modprobe insert: {}ms", chrono::duration_cast<chrono::milliseconds>(t4-t3).count());
 
 
@@ -169,7 +173,7 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 	//renaming of interfaces
 	hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=5"}, nullopt, false);
 
-	auto t5 = chrono::steady_clock::now();
+	const auto t5 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "wait for phys: {}ms", chrono::duration_cast<chrono::milliseconds>(t5-t4).count());
 
 }

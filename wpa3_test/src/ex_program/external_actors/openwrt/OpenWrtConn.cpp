@@ -356,8 +356,8 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		}
 	};
 
-	try_download("/var/run/hostapd-" + actor.get(SK::radio) + ".conf",
-				 rs.run_folder() / (actor_name + "_hostapd.conf"));
+	//try_download("/var/run/hostapd-" + actor.get(SK::iface) + ".conf",
+	//			 rs.run_folder() / (actor_name + "_hostapd.conf"));
 	try_download("/etc/config/wireless",
 				 rs.run_folder() / (actor_name + "_wireless_uci.conf"));
 }

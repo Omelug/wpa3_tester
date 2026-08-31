@@ -64,7 +64,8 @@ actors:
       channel: 36
       condition: [ #injection, #TODO má tu být injection?
         monitor,
-        5GHz
+        5GHz,
+        control_monitor
       ]
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:

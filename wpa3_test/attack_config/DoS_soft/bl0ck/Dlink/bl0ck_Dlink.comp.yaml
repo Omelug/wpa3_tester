@@ -23,7 +23,7 @@ actors:
       #permanent_mac: "00:c0:ca:b7:69:2a"
       condition: [ monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
-    sniff_iface: true
+    #sniff_iface: true
   attacker:
     source: internal
     selection:
@@ -31,13 +31,16 @@ actors:
       #driver: rtw_8821cu #TODO rtw_8821au nefunguje, proč?
       condition: [
         monitor,
-        5GHz ]
+        5GHz,
+        control_monitor
+      ]
 observers:
-  #mausezahn:
-  #  actor: client
-  #  program: mausezahn
-  #  program_config:
-  #    target_actor: ap
+  #NOT ONLy for view, important for bl0ck  QoS generation
+  mausezahn:
+    actor: client
+    program: mausezahn
+    program_config:
+      target_actor: ap
   ap_mausezahn:
     actor: client
     program: iperf3
@@ -48,14 +51,14 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-  client_tshark:
-    actor: client
-    program: tshark
-    program_config:
-      filter: "special_filter:actors"
-
-  ap_tcpdump:
-    actor: ap
-    program: tcpdump
-    program_config:
-      filter: "udp port 5201"
+  #client_tshark:
+  #  actor: client
+  #  program: tshark
+  #  program_config:
+  #    filter: "special_filter:actors"
+  #TODO created only empty file
+  #ap_tcpdump:
+  #  actor: ap
+  #  program: tcpdump
+  #  program_config:
+  #    filter: "udp port 5201"

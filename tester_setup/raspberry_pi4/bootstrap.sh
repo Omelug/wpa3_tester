@@ -16,22 +16,9 @@ for i in 1 2 3; do
 done
 
 echo "==> Installing build dependencies..."
+source /tmp/wpa3-packages.sh
 sudo apt-get update -qq
-sudo apt-get install -y \
-    build-essential cmake ninja-build ccache \
-    clang lld mold pkg-config flex bison git \
-    libssl-dev \
-    libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
-    libpcap-dev \
-    libssh-dev \
-    libyaml-cpp-dev \
-    libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq fish \
-    libcurl4-openssl-dev \
-    usb-modeswitch usb-modeswitch-data \
-    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    quilt trace-cmd tshark gdbserver \
-    dkms linux-headers-rpi-v8 bc
+sudo apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
 #echo "==> Installing hcxtools from source (latest git)..."
 #sudo rm -rf /tmp/hcxtools

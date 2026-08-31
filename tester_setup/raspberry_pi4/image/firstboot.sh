@@ -10,24 +10,9 @@ DONE_FLAG=/var/lib/wpa3-firstboot.done
 echo "[firstboot] Starting at $(date)"
 
 # --- Build dependencies
+source /usr/local/bin/wpa3-packages.sh
 apt-get update -qq
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake ninja-build ccache tshark tcpdump \
-    clang lld mold pkg-config flex bison git g++-14 \
-    libssl-dev \
-    libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
-    libpcap-dev \
-    libssh-dev \
-    libyaml-cpp-dev \
-    libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq fish \
-    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    libcurl4-openssl-dev \
-    usb-modeswitch usb-modeswitch-data uhubctl \
-    avahi-daemon quilt \
-    iperf3 gnuplot \
-    hcxtools \
-    dkms linux-headers-rpi-v8
+DEBIAN_FRONTEND=noninteractive apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
 # symlink headers if kernel minor-bumped ahead of apt Why?
 KVER=$(uname -r)

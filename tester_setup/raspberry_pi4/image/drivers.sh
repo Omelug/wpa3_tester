@@ -13,6 +13,11 @@ _dkms_install() {
     local PKG VER
     PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' "${tmp}/dkms.conf")
     VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' "${tmp}/dkms.conf")
+    if dkms status -m "${PKG}" -v "${VER}" 2>/dev/null | grep -q "installed"; then
+        echo "==> ${label} already installed, skipping"
+        sudo rm -rf "${tmp}"
+        return 0
+    fi
     if [ ! -d "/usr/src/${PKG}-${VER}" ]; then
         sudo mv "${tmp}" "/usr/src/${PKG}-${VER}"
     else

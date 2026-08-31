@@ -31,3 +31,7 @@ results of test are stored in [data](data) folder
 ### Tester setup
 
 Raspberry 4b - can be run from laptop on raspberry (connected on ethernet), check [raspberry README.md](tester_setup/raspberry_pi4/README.md) (raspberry kernel can be compiled and setup like .img)
+
+
+## Known issues:
+-  usb hub dont work with bl0ck attacks (mt76x2u second adapter didnt load)

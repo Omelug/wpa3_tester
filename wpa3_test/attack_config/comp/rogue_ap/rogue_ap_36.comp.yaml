@@ -3,7 +3,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ AP, 2_4GHz ]
+      condition: [ AP, 5GHz ]
     setup:
       program: hostapd-mana
       program_config:

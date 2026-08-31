@@ -367,9 +367,10 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	const ActorPtr &ap_actor = rs.get_actor(actor_name);
 	const string remote_ip = ap_actor[SK::whitebox_ip].value();
 	const string kali_ip = ip::get_ip(hw_capabilities::get_iface(remote_ip, nullopt));
+	//kill what use port
+	hw_capabilities::run_cmd({"fuser", "-k", to_string(port) + "/tcp"}, nullopt, false);
 	rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
-	exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name +
-		".pid");
+	exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name + ".pid");
 
 	const auto ap = rs.get_actor(actor_name);
 	ap->conn->on_disconnect([this, actor_name](){

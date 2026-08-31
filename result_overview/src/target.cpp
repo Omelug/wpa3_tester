@@ -77,7 +77,8 @@ static void render_attack_section(HtmlGuard &f, const std::string &module,
 		{ "cookie_guzzler",		 make_renderer<sae_dos::SaeDosFolderEntry>() },
 		{ "memory_omnivore",     make_renderer<sae_dos::SaeDosFolderEntry>() },
 		{ "pmk_gobbler",	     make_renderer<sae_dos::SaeDosFolderEntry>() },
-		{ "sae_dos_wrapper",	 make_renderer<sae_dos::SaeDosFolderEntry>() }
+		//FIXME scapy on rapsbeery
+		//{ "sae_dos_wrapper",	 make_renderer<sae_dos::SaeDosFolderEntry>() }
 	};
 
 	if (const auto it = registry.find(module); it != registry.end()) {

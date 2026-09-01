@@ -19,6 +19,7 @@ namespace wpa3_tester::visual::helper{
 std::optional<nlohmann::json> load_result_json(const std::filesystem::path &test_folder);
 
 TimeWindow get_run_window(const RunStatus &rs);
+TimeWindow get_run_window(const RunStatus &rs, const ActorPtr &actor);
 
 std::pair<std::optional<bool>, std::optional<hostapd::CrackResult>>
 

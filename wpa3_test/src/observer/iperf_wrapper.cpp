@@ -91,7 +91,17 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 constexpr string program_name = "iperf3";
 
+static void kill_iperf3_port(RunStatus &rs, const string &actor_name){
+	vector<string> kill_cmd;
+	add_nets_header(rs, kill_cmd, actor_name);
+	kill_cmd.insert(kill_cmd.end(), {"fuser", "-k", "5201/tcp"});
+	string cmd;
+	for (const auto &p : kill_cmd) cmd += p + " ";
+	system((cmd + "2>/dev/null").c_str());
+}
+
 void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_name, const string &dst_name){
+	kill_iperf3_port(rs, src_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, src_name);
 	command.insert(command.end(), {
@@ -106,6 +116,7 @@ void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_nam
 }
 
 void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &server_name){
+	kill_iperf3_port(rs, server_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, server_name);
 	command.insert(command.end(), {

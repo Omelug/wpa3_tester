@@ -21,6 +21,13 @@ TimeWindow get_run_window(const RunStatus &rs){
 	return {get_tag_time(combined_log, START_tag), get_tag_time(combined_log, END_tag)};
 }
 
+TimeWindow get_run_window(const RunStatus &rs, const ActorPtr &actor){
+	const path actor_log = rs.run_folder() / "logger" / (actor.get(SK::actor_name) + ".log");
+	if(!exists(actor_log)) return {};
+	//first @END preferred (included @END_STOP)
+	return {get_tag_time(actor_log, START_tag), get_tag_time(actor_log, END_tag)};
+}
+
 optional<json> load_result_json(const path &test_folder){
 	const auto result_json = test_folder / RESULT_NAME;
 	if(!exists(result_json)) return nullopt;

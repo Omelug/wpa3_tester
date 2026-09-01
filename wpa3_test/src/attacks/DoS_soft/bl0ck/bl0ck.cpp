@@ -153,8 +153,8 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 
 static Bl0ckResult compute_result(const RunStatus &rs){
 	Bl0ckResult r{};
-	const auto window = visual::helper::get_run_window(rs);
 	if(rs.get_actor("client")->is_WB()){
+		const auto window = visual::helper::get_run_window(rs, rs.get_actor("client"));
 		const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window);
 		r.disconnect_count = static_cast<int>(disc_times.size());
 		const auto conn_times = get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", window);
@@ -168,6 +168,7 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 			}
 		}
 	} else if(rs.get_actor("ap")->is_WB()){
+		const auto window = visual::helper::get_run_window(rs, rs.get_actor("ap"));
 		r.ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 	}
 
@@ -220,6 +221,7 @@ void run_bl0ck_attack(RunStatus &rs){
 	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
 	log(LogLevel::INFO, "Block Attack END");
+
 
 	rs.process_manager.stop_all();
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);

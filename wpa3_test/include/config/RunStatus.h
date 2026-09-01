@@ -38,6 +38,7 @@ inline std::string START_tag = "@START";
 //some function se only check for "@END" (can be prefix )
 inline std::string END_tag = "@END";
 inline std::string END_STOP_tag = "@END_STOP";
+inline std::string END_STOP_ALL_tag = "@END_STOP_ALL";
 
 inline std::string ATTACK_START_tag ="@attack_start";
 inline std::string ATTACK_STOP_tag ="@attack_stop";

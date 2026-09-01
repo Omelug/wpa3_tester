@@ -119,7 +119,7 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 	}
 	const auto t0 = chrono::steady_clock::now();
 	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false);
-	hw_capabilities::run_cmd({"modprobe", "-r", "mt76x2u"}, nullopt, false);
+	//hw_capabilities::run_cmd({"modprobe", "-r", "mt76x2u"}, nullopt, false);
 	const auto t1 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "modprobe -r: {}ms", chrono::duration_cast<chrono::milliseconds>(t1-t0).count());
 
@@ -159,7 +159,7 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 	const auto t3 = chrono::steady_clock::now();
 	//TODO resetnout all what have been collected (dont need to be all needed)
 	hw_capabilities::run_cmd({"modprobe", "ath9k_htc"}, nullopt, false);
-	hw_capabilities::run_cmd({"modprobe", "mt76x2u"}, nullopt, false);
+	//hw_capabilities::run_cmd({"modprobe", "mt76x2u"}, nullopt, false);
 	const auto t4 = chrono::steady_clock::now();
 	log(LogLevel::INFO, "modprobe insert: {}ms", chrono::duration_cast<chrono::milliseconds>(t4-t3).count());
 

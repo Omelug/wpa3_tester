@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
+#include "overview/described.h"
 
 namespace wpa3_tester::overview { struct HtmlGuard; }
 
@@ -19,6 +20,7 @@ struct Bl0ckTestEntry{
 
 	//result params
 	int disconnect_count = 0;
+	described_bool bl0ck_iperf;
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,

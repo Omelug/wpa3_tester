@@ -12,6 +12,7 @@
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "observer/iperf_wrapper.h"
 
 namespace wpa3_tester::visual::bl0ck_test_suites{
 using namespace std;
@@ -44,8 +45,9 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 		const auto cfg = YAML::LoadFile(cfg_path);
 		if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
 			e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
-	}
 
+		e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
+	}
 	return e;
 }
 
@@ -66,6 +68,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
 			col("Variant",              &Bl0ckTestEntry::attack_variant);
 			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
+			col("Iperf blocked?",        &Bl0ckTestEntry::bl0ck_iperf);
 		})->render({"Test"});
 		#undef COL
 	});

@@ -231,10 +231,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)){
-			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_real->recv())
+				handle_rx_real_chan(recv_res.pdu, recv_res.raw);
 		}
 		if(FD_ISSET(fd_rogue, &read_fds)){
-			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_rogue->recv())
+				handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
 		/*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
 			send_disas(disas_queue.front().second);
@@ -245,7 +247,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
 			if(!client_associated) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);
-				if(!custom) send_csa_beacon(1);
+				if(!custom)
+					send_csa_beacon(1);
 			}
 			next_beacon += milliseconds(10); //TODO add to attack config
 		}

@@ -38,14 +38,14 @@ static vector<Transition> parse_state_log(const path &p) {
 
 void create_state_log_graph(const RunStatus &rs, const string &mac_str) {
 	const path log_path =
-		rs.run_folder() / "logger" / (mac_str + string(SUFFIX_state) + ".log");
+		rs.run_folder() / "observer" / "client_state" / (mac_str + SUFFIX_state + ".log");
 	if (!exists(log_path)) {
 		log(LogLevel::WARNING, "state_log_graph: not found: {}", log_path);
 		return;
 	}
 	create_state_log_graph(log_path,
 						   log_path.parent_path() /
-							   (mac_str + string(SUFFIX_state) + ".png"));
+							   (mac_str + SUFFIX_state + ".png"));
 }
 
 void create_state_log_graph(const path &state_log_path,
@@ -60,7 +60,7 @@ void create_state_log_graph(const path &state_log_path,
 	static const auto ALL_STATES = []() {
 		vector<string> v;
 		for (int i = ClientState::Unknown; i <= static_cast<int>(ClientState::GotMitm); ++i)
-			v.push_back(escape_tex(ClientState::state2str(static_cast<ClientState::State>(i))));
+			v.push_back(ClientState::state2str(static_cast<ClientState::State>(i)));
 		return v;
 	}();
 
@@ -74,11 +74,11 @@ void create_state_log_graph(const path &state_log_path,
 	const LogTimePoint t0 =
 		has_times ? *transitions.front().ts : LogTimePoint{};
 
-	auto x_val = [&](size_t i) -> double {
-		if (has_times)
-			return chrono::duration_cast<chrono::duration<double>>(
-					   *transitions[i].ts - t0)
-				.count();
+	auto x_val = [&](const size_t i) -> double {
+		if (has_times) {
+			return chrono::duration_cast<chrono::duration<double>>
+						(*transitions[i].ts - t0).count();
+		}
 		return static_cast<double>(i);
 	};
 
@@ -105,7 +105,7 @@ void create_state_log_graph(const path &state_log_path,
 	for (size_t i = 0; i < ALL_STATES.size(); ++i) {
 		if (i > 0)
 			fprintf(gp, ", ");
-		fprintf(gp, "'%s' %zu", ALL_STATES[i].c_str(), i);
+		fprintf(gp, "'%s' %zu", escape_tex(ALL_STATES[i]).c_str(), i);
 	}
 	fprintf(gp, ")\n");
 

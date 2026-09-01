@@ -1,10 +1,10 @@
-#include <chrono>
-#include <tins/tins.h>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include <chrono>
+#include <tins/tins.h>
 
 namespace wpa3_tester{
 using namespace std;
@@ -166,7 +166,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
-		log(LogLevel::DEBUG, "Unknown frame type");
+		log(LogLevel::DEBUG, "Real channel: Unknown frame type");
 		return;
 	}
 

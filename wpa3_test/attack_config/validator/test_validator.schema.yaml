@@ -81,6 +81,9 @@ properties:
         band:
           type: string
           description: band
+          enum:
+            - 2_4GHz
+            - 5GHz
         conditions:
           type: array
           items:

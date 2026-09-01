@@ -27,9 +27,10 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 </head>
 <body>
     <a href="../../../index.html" class="back-link"><- Overview</a>
-    <h1>SSID Confusion Attack (CVE-2023-52424)</h1>
+    <h1>SSID Confusion Attack</h1>
 
     <div class="card">
+		<p><b>Info</b> <a href="https://nvd.nist.gov/vuln/detail/cve-2023-52424" >CVE-2023-52424</a></p>
         <p><b>Prerequisites:</b>
 			<ul>
 				<li>client connected to AP with trusted ssid (SSID-A), client has untrusted ssid (SSID-B) in its profile</li>
@@ -49,7 +50,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li>SSID is included in the 4-way handshake </li>
+            <li>SSID included in the 4-way handshake </li>
             <li>Beacon Protection - detects spoofed beacons with a different SSID</li>
         </ul>
     </div>

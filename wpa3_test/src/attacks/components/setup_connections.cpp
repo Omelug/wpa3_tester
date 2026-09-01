@@ -12,21 +12,21 @@ using namespace std;
 using namespace chrono;
 
 namespace wpa3_tester::components{
-void setup_AP(RunStatus &rs, const string &actor_name){
-	program::start(rs, actor_name);
+void setup_AP(RunStatus &rs, const string &ap_actor_name){
+	program::start(rs, ap_actor_name);
 
 	//FIXME this dont work with external logread  (some issue with buffering?)
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
 	std::this_thread::sleep_for(seconds(2));
 
-	log(LogLevel::INFO, "{} is running", actor_name);
-	if(rs.get_actor(actor_name)[SK::ip_addr]){
-		ip::set_ip(rs, actor_name);
+	log(LogLevel::INFO, "{} is running", ap_actor_name);
+	if(rs.get_actor(ap_actor_name)[SK::ip_addr]){
+		ip::set_ip(rs, ap_actor_name);
 	}
-	if(rs.get_actor("ap").is(SK::source, "internal")){
+	if(rs.get_actor(ap_actor_name).is(SK::source, "internal")){
 		//FIXME opewrt dont need set up?
-		rs.get_actor("ap")->set_iface_up();
+		rs.get_actor(ap_actor_name)->set_iface_up();
 	}
 }
 

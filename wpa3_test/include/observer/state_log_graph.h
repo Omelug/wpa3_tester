@@ -5,7 +5,7 @@
 
 namespace wpa3_tester::observer::state_log_graph {
 
-inline constexpr std::string_view SUFFIX_state = "_state";
+inline constexpr std::string SUFFIX_state = "_state";
 
 // parse <mac>_state.log in rs.run_folder()/logger/ and write staircase PNG beside it
 // call at the END of a test, after state transitions logging have been finished

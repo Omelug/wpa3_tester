@@ -437,6 +437,7 @@ void RunSuiteStatus::execute(){
 	HwOptionCache hw_cache;
 
 	//TODO need for fillers in get_test_paths (before execute in RunStatus), but slow
+	//FIXME can be skipped for some test suites
 	cleanup_all_namespaces();
 	reset_usb_ifaces();
 

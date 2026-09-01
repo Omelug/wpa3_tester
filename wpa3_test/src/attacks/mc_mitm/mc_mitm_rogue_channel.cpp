@@ -26,7 +26,8 @@ bool McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 
 
 		const auto resp = probe_resp->clone();
 		resp->addr1(addr2);
-		if(hooks) hooks->on_probe_response(*resp->find_pdu<Dot11ProbeResponse>());
+		if(hooks)
+			hooks->on_probe_response(*resp->find_pdu<Dot11ProbeResponse>());
 		send_to_rogue(*resp);
 
 		display_traffic(*pdu, "Rogue channel", " -- Replied");
@@ -143,7 +144,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
-		log(LogLevel::DEBUG, "Unknown frame type");
+		log(LogLevel::DEBUG, "Rogue_cannel: Unknown frame type");
 		return;
 	}
 

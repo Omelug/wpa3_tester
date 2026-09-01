@@ -251,7 +251,7 @@ bool RunStatus::config_requirement(){
 
 		auto band = _config["requirements"]["rssi_setup"]["band"].get<std::string>();
 		Channel channel;
-		if (band == "5Ghz") {
+		if (band == "5GHz") {
 			channel = Channel{36, WifiBand::BAND_5, std::nullopt};
 		}
 		if (band == "2_4GHz") {

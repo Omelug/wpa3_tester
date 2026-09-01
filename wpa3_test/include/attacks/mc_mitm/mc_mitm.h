@@ -11,9 +11,8 @@
 namespace wpa3_tester{
 class McMitm{
 	friend class McMitmHooks;
-protected:
-	ActorPtr rogue_sta, rogue_ap, sta, ap;
 public:
+	ActorPtr rogue_sta, rogue_ap, sta, ap;
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
 

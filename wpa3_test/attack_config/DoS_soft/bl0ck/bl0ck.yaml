@@ -8,7 +8,7 @@ requirements:
     #injection_fields_spoofed: [attacker, ap]
     #injection_fields_valid: [attacker, ap]
   rssi_setup:
-    band: "5Ghz"
+    band: "5GHz"
     conditions: [
       "(ap <-> attacker) > -90",
       "(ap <-> client) > -90",

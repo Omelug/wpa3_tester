@@ -31,7 +31,7 @@ void run_attack(RunStatus &rs){
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder() / (target_ap.get(SK::actor_name) + ".pcap");
 		set_public_perms(beacon_pcap);
-		scan_ap.load(scan::RSN_scan(scanner.get(SK::iface), timeout, target_ap.get(SK::mac), beacon_pcap));
+		scan_ap.load(scan::RSN_scan(scanner.get(SK::iface), timeout, target_ap.get(SK::permanent_mac), beacon_pcap));
 		{
 			const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
 			ofstream ofs(beacon_txt);

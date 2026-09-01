@@ -28,7 +28,7 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 }
 
 vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(const path &test_data_dir) {
-	auto entries = helper::get_results_default<ReflectionAttackTestEntry>(test_data_dir, "reflection_attack");
+	auto entries = helper::get_results_default<ReflectionAttackTestEntry>(test_data_dir);
 
 	ranges::sort(entries, [](const ReflectionAttackTestEntry& a, const ReflectionAttackTestEntry& b) {
 		return tie(a.connected, a.ap_driver, a.attacker_driver, a.ap_hostapd_version) <
@@ -53,7 +53,7 @@ void ReflectionAttackTestEntry::render_table(overview::HtmlGuard &f, const strin
 			col("Attacker Driver",      &ReflectionAttackTestEntry::attacker_driver);
 			col("Connected?",           &ReflectionAttackTestEntry::connected);
 		})->render({"Test"});
-	}, t_name);
+	});
 }
 
 void generate_report(RunSuiteStatus &rss){

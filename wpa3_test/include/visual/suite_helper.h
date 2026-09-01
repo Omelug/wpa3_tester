@@ -34,8 +34,7 @@ inline std::string read_attacker_module_field(const std::filesystem::path &test_
 }
 
 template<typename ParseFn>
-auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_fn,
-							const std::string &module_filter = ""){
+auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_fn){
 	using E = decltype(parse_fn(std::declval<const std::filesystem::path&>()));
 	std::vector<E> entries;
 	for(const auto &src_dir: std::filesystem::directory_iterator(run_dir)){
@@ -43,7 +42,7 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
 		for(const auto &entry: std::filesystem::directory_iterator(src_dir.path())){
 			if(!entry.is_directory()) continue;
 			if(!std::filesystem::exists(entry.path() / TEST_CONFIG_NAME)) continue;
-			if(!module_filter.empty() && read_attacker_module_field(entry.path()) != module_filter) continue;
+			if(!std::filesystem::exists(entry.path() / DONE_FILE)) continue;
 			entries.push_back(parse_fn(entry.path()));
 		}
 	}
@@ -52,9 +51,8 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
 
 // parsing with Entry::parse (some results needs test_folder inf)
 template<typename Entry>
-std::vector<Entry> get_results_default(const std::filesystem::path &run_dir,
-									   const std::string &module_filter = ""){
-	return collect_entries_nested(run_dir, Entry::parse, module_filter);
+std::vector<Entry> get_results_default(const std::filesystem::path &run_dir){
+	return collect_entries_nested(run_dir, Entry::parse);
 }
 
 // card with table
@@ -69,26 +67,27 @@ concept HasCollectResults = requires(const std::filesystem::path& p) {
 };
 
 template <typename Entry>
-void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir,
-	const std::function<void(overview::HtmlGuard&, const std::vector<Entry>&)> &render_func,
-	const std::string &module_filter = "")
+void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &t_data_dir,
+	const std::function<void(overview::HtmlGuard&, const std::vector<Entry>&)> &render_func)
 {
 	f   << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
 		<< "        <h2>" << title << "</h2>\n";
 
-	if(!std::filesystem::exists(suite_data_dir)){
+	if(!std::filesystem::exists(t_data_dir)){
 		render_func(f, {});
 		f << "</div>";
 		return;
 	}
 
-	auto entries = [suite_data_dir, &module_filter]() {
-		if constexpr (HasCollectResultsFiltered<Entry>) {
-			return Entry::collect_results(suite_data_dir, module_filter);
-		} else if constexpr (HasCollectResults<Entry>) {
-			return Entry::collect_results(suite_data_dir);
+	auto entries = [t_data_dir]() {
+		// is test folder
+		if (std::filesystem::exists(t_data_dir / DONE_FILE)) {
+			return std::vector<Entry>{Entry::parse(t_data_dir)};
+		}
+		if constexpr (HasCollectResults<Entry>) {
+			return Entry::collect_results(t_data_dir);
 		} else {
-			return helper::get_results_default<Entry>(suite_data_dir, module_filter);
+			return helper::get_results_default<Entry>(t_data_dir);
 		}
 	}();
 

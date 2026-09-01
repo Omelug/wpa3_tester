@@ -66,7 +66,7 @@ void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &modul
 			);
 		})->render({"Test"});
 		#undef COL
-	}, t_name);
+	});
 }
 
 }

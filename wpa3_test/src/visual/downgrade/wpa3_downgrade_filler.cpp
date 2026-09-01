@@ -39,7 +39,7 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 }
 
 vector<Wpa3TransDowngradeTestEntry> Wpa3TransDowngradeTestEntry::collect_results(const path &test_data_dir) {
-	auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(test_data_dir, "wpa3_trans_downgrade");
+	auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(test_data_dir);
 
 	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry& a, const Wpa3TransDowngradeTestEntry& b) {
 	return tie(a.ap_driver, a.ap_mac, a.client_driver, a.client_mac, a.test_name, a.disconnected, a.downgrade_seen, a.ap_wpa3_trans_disable) <
@@ -67,7 +67,7 @@ void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const str
 			col("WPA3 disable",     &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
 		})->render({"Test"});
 		#undef COL
-	}, t_name);
+	});
 }
 
 void setup_suite(const RunSuiteStatus &rss){

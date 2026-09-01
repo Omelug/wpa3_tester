@@ -35,7 +35,7 @@ void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f, const string &tit
 			});
 			col("ACM triggered", &ApInfoWpa3TestEntry::acm_triggered);
 		})->render();
-	}, t_name);
+	});
 }
 
 void generate_report(RunSuiteStatus &rss){

@@ -103,6 +103,7 @@ static bool hard_reset_usb_device(const path& sysfs_dev_path) {
 }
 
 void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
+	//TODO rapsberry reset (hardware specific? - all except ethernet )
 	if (ifaces.empty()) return;
 	log(LogLevel::INFO, "reset_usb_ifaces: expecting {} interface(s) after reset", ifaces.size());
 	set<string> root_hubs;
@@ -110,10 +111,11 @@ void reset_usb_ifaces(const vector<UsbResetInfo> &ifaces) {
 		log(LogLevel::DEBUG, "reset_usb_ifaces: tracking {}", info.dev_path.string());
 		const string dev_name = info.dev_path.filename().string();
 		const size_t first_dot = dev_name.find('.');
-		if (first_dot != string::npos)
+		if (first_dot != string::npos) {
 			root_hubs.insert(dev_name.substr(0, first_dot)); // "1-1.4.4.3" → "1-1"
-		else
+		}else{
 			root_hubs.insert(dev_name.substr(0, dev_name.find('-'))); // "2-2" → "2" (root hub)
+		}
 	}
 	const auto t0 = chrono::steady_clock::now();
 	hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false);

@@ -17,4 +17,5 @@ WPA3_APT_PACKAGES=(
     hcxtools
     dkms linux-headers-rpi-v8
     sshpass
+    python3-pip
 )

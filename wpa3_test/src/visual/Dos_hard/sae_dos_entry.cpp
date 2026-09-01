@@ -30,6 +30,8 @@ std::vector<SaeDosFolderEntry> SaeDosFolderEntry::collect_results(const path &su
 	vector<SaeDosFolderEntry> entries;
 	for (const auto &attack_dir : directory_iterator(suite_data_dir)) {
 		if (!attack_dir.is_directory()) continue;
+		if (module_filter == "sae_dos_wrapper" && attack_dir.path().filename() != "dos_attacks_gen")
+			continue;
 		for (const auto &entry : directory_iterator(attack_dir.path())) {
 			if (!entry.is_directory()) continue;
 			if (!exists(entry.path() / TEST_CONFIG_NAME)) continue;

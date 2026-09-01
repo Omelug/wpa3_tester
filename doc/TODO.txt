@@ -4,6 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+bl0ck - zkontrolovat opravdu správnost framů (přímo v pcap)
+bl0ck -logy z OpenWrt (co nejvíce)
+
 o: usb reset
 r: usb reset hardcoded timeouts
 

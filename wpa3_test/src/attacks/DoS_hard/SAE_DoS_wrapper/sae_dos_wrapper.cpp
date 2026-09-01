@@ -45,7 +45,7 @@ void setup_attack(RunStatus &rs){
 	const string req = suite + "/requirements.txt"; //TODO move requirement and python3.10  to fork
 	if(exists(req)){
 		log(LogLevel::INFO, "Installing python dependencies from {}...", req);
-		hw_capabilities::run_cmd({"python3", "-m", "pip", "install", "-r" + req});
+		hw_capabilities::run_cmd({"python3", "-m", "pip", "install", "--break-system-packages", "-r", req});
 	}
 
 	log(LogLevel::INFO, "SAE DoS Research Suite ready at {}", suite);
@@ -121,7 +121,6 @@ void run_attack(RunStatus &rs){
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	this_thread::sleep_for(seconds(attack_time));
-	//rs.process_manager.stop("attacker");
 	ap->conn->disconnect();
 }
 

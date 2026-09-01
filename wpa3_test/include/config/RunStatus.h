@@ -116,6 +116,9 @@ public:
 	const ActorPtr &get_actor(const std::string &actor_name) const;
 	static void get_or_create_connection(const ActorPtr &actor);
 	static void print_test_list();
+
+	// start all observers in config
+	// manual because some tests have needs preparation in the run functions)
 	void start_observers();
 	static std::string findConfigByTestName(const std::string &name);
 
@@ -156,7 +159,7 @@ public:
 	void check_local_requirements();
 	// use cache for options of actors
 
-	//return true if re-reload
+	//return true if should re-reload
 	bool config_requirement();
 	void setup_test();
 	void run_test();

@@ -188,7 +188,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
 	this_thread::sleep_for(seconds(1));
 
-	rs.start_observers(); //after preparation for mc_mitm
+	rs.start_observers(); //after mc_mitm preparation
 
 	// first disconnect
 	send_csa_beacon(4);

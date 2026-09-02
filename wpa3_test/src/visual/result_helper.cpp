@@ -195,7 +195,7 @@ described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 	const path config = rs.run_folder() / "ap_hostapd.conf";
 	if (exists(config)) {
 		const string val = hostapd::get_conf_value(config, {"transition_disable"});
-		if (!val.empty())
+		if (!val.empty() && stoul(val, nullptr, 0) != 0)
 			result += {val, "hostapd_conf"};
 	}
 

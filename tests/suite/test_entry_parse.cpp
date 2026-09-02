@@ -79,7 +79,7 @@ TEST_CASE("SaeDosFolderEntry::parse - detects existing png") {
 
 // -----------------
 TEST_CASE("ApInfoWpa3TestEntry::parse - no result.json returns empty strings") {
-	const auto d = setup_dir("apinfo_no_result");
+	const auto d = setup_dir("ap_info_no_result");
 	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK(e.mac.empty());
@@ -87,7 +87,7 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - no result.json returns empty strings") {
 }
 
 TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
-	const auto d = setup_dir("apinfo_with_result");
+	const auto d = setup_dir("ap_info_with_result");
 	write_result(d, {
 		{"mac",           "aa:bb:cc:dd:ee:ff"},
 		{"ssid",          "TestNet"},
@@ -186,8 +186,8 @@ TEST_CASE("OweTransTestEntry::parse - reads drivers and probe counts") {
 }
 
 TEST_CASE("InvalidCurveTestEntry::parse - reads drivers and connected") {
-	const test_helpers::IsolatedRootDir iso("ep_invcurve");
-	const auto d = setup_dir("invcurve_full");
+	const test_helpers::IsolatedRootDir iso("ep_inv_curve");
+	const auto d = setup_dir("inv_curve_full");
 	write_result(d, {{"connected", true}});
 	write_config(d, {"ap", "attacker"});
 	write_mapping(d, {

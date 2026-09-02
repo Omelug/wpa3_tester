@@ -241,6 +241,7 @@
       <w>srcversions</w>
       <w>ssid</w>
       <w>sstream</w>
+      <w>stdbuf</w>
       <w>stoi</w>
       <w>strtype</w>
       <w>suiteb</w>

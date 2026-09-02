@@ -175,7 +175,6 @@ static Bl0ckResult compute_result(const RunStatus &rs){
 	if(	r.disconnect_count > 0 || r.ap_disconnected){
 		log(LogLevel::INFO, "Client disconnected");
 	}
-	//FIXME log if passed
 	return r;
 }
 
@@ -224,6 +223,7 @@ void run_bl0ck_attack(RunStatus &rs){
 
 
 	rs.process_manager.stop_all();
+
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);
 	rs.save_result({
 		{"disconnect_count", disconnect_count}, {"ap_disconnected", ap_disconnected},

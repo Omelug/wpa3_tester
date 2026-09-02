@@ -33,18 +33,31 @@ void pcap_events(const RunStatus &rs, G_elms &elements,
 				std::initializer_list<std::tuple<std::string,std::string,std::string,std::string>> event_def
 );
 
-// Extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark).
-// Returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", or empty string if not found.
+// --------- SPECIFIC HELPERS -----------
+// extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark)
+// returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", empty string if not found
 std::string akm_from_pcap(const std::filesystem::path &pcap_path);
-// Extract OCV (OCVC bit of RSNXE) from client frames (Probe Req / Assoc Req).
-// Returns true/false if a frame is found, nullopt if no relevant frame exists in the pcap.
+// extract OCV (OCVC bit of RSNXE) from client frames (Probe Req / Assoc Req) in pcap
+
+// returns true if a frame is found, nullopt if no relevant frame exists
 std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
-// Extract OCV (OCVC bit of RSNXE) from AP frames (Beacon / Probe Resp).
+// extract OCV (OCVC bit of RSNXE) from AP frames (Beacon / Probe Resp)
 std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
-// Detect client scanning via Probe Requests in pcap_path within [start_time, end_time].
-// Returns "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap), "yes" if
-// probe requests found but no channel info, or empty string if no scanning detected.
+
+// detect client scanning via Probe Requests in pcap_path within [start_time, end_time]
+// return "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap),
+// return "yes" if probe requests found but no channel info
+// return empty string if no scanning detected
 std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
 									   const std::string &client_mac,
 									   TimeWindow window = {});
+
+// detect ADDBA Request/Response (Block Ack action cat=3, action=0/1) in pcap
+// returns true if seen, false if pcap exists but none found, nullopt if pcap missing
+std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
+
+// PBAC (Protected Block Ack Agreement Capable, RSN caps bit 12) from AP Beacon / Probe Response
+std::optional<bool> pbac_from_pcap_ap(const std::filesystem::path &pcap_path);
+// PBAC from client Probe Request or Association Request frames
+std::optional<bool> pbac_from_pcap_client(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
 }

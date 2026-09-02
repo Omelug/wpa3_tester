@@ -13,6 +13,8 @@
 #include "visual/suite_helper.h"
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "observer/iperf_wrapper.h"
+#include "observer/observers.h"
+#include "observer/tshark_wrapper.h"
 
 namespace wpa3_tester::visual::bl0ck_test_suites{
 using namespace std;
@@ -47,11 +49,11 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 
 	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
 
-	//e.ADDBA_seen  = only true/false (seen request/response)
-	//FIXME TODO
-	// get info from attacker pcap if possile (but maybe not, because bl0ck consume all resources)
-	//e.client_PBAC = get_pbac(client.get(SK::mac));
-	//e.ap_PBAC = get_pbac(client.get(SK::mac));;
+	//FIXME check if attacker pcap is better for this (bl0ck may starve attacker capture resources)
+	const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
+	e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
+	e.ap_PBAC     += {observer::tshark::pbac_from_pcap_ap(client_pcap),              "client pcap (beacon/probe resp)"};
+	e.client_PBAC += {observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac)), "client pcap (probe/assoc req)"};
 	return e;
 }
 
@@ -72,7 +74,10 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
 			col("Variant",              &Bl0ckTestEntry::attack_variant);
 			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
-			col("Iperf blocked?",        &Bl0ckTestEntry::bl0ck_iperf);
+			col("Iperf blocked?",       &Bl0ckTestEntry::bl0ck_iperf);
+			col("ADDBA seen?",          &Bl0ckTestEntry::ADDBA_seen);
+			col("AP PBAC",              &Bl0ckTestEntry::ap_PBAC);
+			col("Client PBAC",          &Bl0ckTestEntry::client_PBAC);
 		})->render({"Test"});
 		#undef COL
 	});

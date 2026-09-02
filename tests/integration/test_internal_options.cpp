@@ -17,8 +17,7 @@ set<string> wifi_iface_names(){
 }
 }
 
-TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface"){
-
+TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface") {
 	const test_helpers::IsolatedRootDir isolated("internal_options_test");
 	const auto before = wifi_iface_names();
 
@@ -28,11 +27,16 @@ TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface")
 	}
 	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
 
-	// deliberately not renamed to hwsim_* here: internal_options() scans plain InterfaceType::Wifi,
-	// which is exactly what a freshly loaded, unrenamed hwsim radio shows up as.
+	// deliberately not renamed to hwsim_* here:
+	// internal_options() scans plain InterfaceType::Wifi,
+	// which is exactly what a freshly loaded, unrenamed hwsim radio shows up as
 	const auto after = wifi_iface_names();
 	string new_iface;
-	for(const auto &name: after) if(!before.contains(name)) new_iface = name;
+	for(const auto &name: after){
+		if(!before.contains(name)) {
+			new_iface = name;
+		}
+	}
 
 	if(new_iface.empty()){
 		MESSAGE("Skipping: no new Wifi interface appeared after loading mac80211_hwsim");

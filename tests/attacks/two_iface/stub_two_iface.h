@@ -8,7 +8,7 @@
 
 namespace wpa3_tester {
 
-// Concrete stub: redirects cache to temp dir and records run() calls.
+// concrete stub: redirects cache to temp dir and records run() calls
 struct StubTwoIface : TwoIface {
 	nlohmann::json run_result = {{"ok", true}};
 	int            run_count  = 0;
@@ -21,7 +21,7 @@ struct StubTwoIface : TwoIface {
 		return run_result;
 	}
 
-	std::filesystem::path cache_folder() const override;
+	[[nodiscard]] std::filesystem::path cache_folder() const override;
 
 	using TwoIface::make_cache_key;
 	using TwoIface::lookup_cache;
@@ -40,7 +40,7 @@ inline ActorPtr make_stub_actor(const std::string &driver, const std::string &ma
 	return ActorPtr(ac);
 }
 
-// RAII fixture: fresh temp cache dir per test case.
+// RAII fixture: fresh temp cache dir per test case
 struct TwoIfaceCacheFixture {
 	StubTwoIface iface{"test_two_iface_cache_unit"};
 	ActorPtr a1 = make_stub_actor("ath9k",   "aa:bb:cc:dd:ee:01");

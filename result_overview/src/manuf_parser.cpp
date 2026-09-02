@@ -12,7 +12,8 @@ using namespace filesystem;
 
 struct ManufEntry { uint64_t prefix48; int bits; string vendor; };
 
-// returns prefix left-aligned in 48 bits; sets *out_parsed_bits = byte_count * 8.
+// returns prefix left-aligned in 48 bits;
+// sets *out_parsed_bits = byte_count * 8
 static uint64_t parse_prefix48(const string& s, int* out_parsed_bits) {
     uint64_t v = 0; int bytes = 0;
     const char* p = s.c_str();

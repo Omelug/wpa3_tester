@@ -1,6 +1,7 @@
 #include "observer/observers_showcase.h"
 #include <algorithm>
 #include <filesystem>
+#include <format>
 #include "logger/log.h"
 #include "observer/graph/graph_elements.h"
 #include "observer/observers.h"
@@ -15,7 +16,7 @@ using namespace filesystem;
 
 static const path TEST_DATA = root_dir().parent_path() / "result_overview" / "src" / "observer" / "observers_test_data";
 
-// Parses a pre-extracted CSV (frame_num|timestamp|size), renders a packet-size-over-time PNG.
+// parses a pre-extracted CSV (frame_num|timestamp|size), renders a packet-size-over-time .png
 static bool draw_csv_traffic_graph(const path &csv_path, const path &png_path, const string &title) {
     auto [times, sizes] = observer::tshark::times_packet_sizes_from_csv(csv_path);
     if (times.empty()) return false;
@@ -33,13 +34,13 @@ static bool draw_csv_traffic_graph(const path &csv_path, const path &png_path, c
     if (!g.file) return false;
 
     g.gpcmd("set terminal pngcairo size 1600,600 enhanced font 'Arial,10'");
-    g.gpcmd("set output '" + png_path.string() + "'");
+    g.gpcmd(format("set output '{}'", png_path.string()));
     g.gpcmd("set xlabel 'Time (s)'");
     g.gpcmd("set ylabel 'Packet size (bytes)'");
     g.gpcmd("set grid");
     g.gpcmd("set tmargin 5");
     g.gpcmd("set key outside");
-    g.gpcmd(escape_tex("set title '" + title + "'"));
+    g.gpcmd(escape_tex(format("set title '{}'", title)));
 
     G_elms elms;
     elms.push_back(make_unique<GraphXYPoints>(times, sizes, "packets", "steelblue"));
@@ -55,7 +56,7 @@ struct ShowcaseGraph {
     bool ok = false;
 };
 
-// Scan dir for *.csv, render a graph per file via times_packet_sizes_from_csv.
+// scan dir for *.csv, render a graph per file via times_packet_sizes_from_csv
 static vector<ShowcaseGraph> graphs_from_csv_dir(const path &csv_dir, const string &prefix,
                                                   const path &page_dir) {
     vector<ShowcaseGraph> result;
@@ -68,9 +69,9 @@ static vector<ShowcaseGraph> graphs_from_csv_dir(const path &csv_dir, const stri
 
     for (const auto &csv : csvs) {
         string stem = csv.stem().string();
-        ranges::replace(stem, ' ', '_');  // spaces -> underscores for PNG filename
-        const string png   = prefix + "_" + stem + ".png";
-        const string title = prefix + " - " + csv.stem().string();
+        ranges::replace(stem, ' ', '_');  // spaces -> underscores for .png filename
+        const string png   = format("{}_{}.png", prefix, stem);
+        const string title = format("{} - {}", prefix, csv.stem().string());
         const bool ok = draw_csv_traffic_graph(csv, page_dir / png, title);
         result.push_back({png, title, ok});
     }

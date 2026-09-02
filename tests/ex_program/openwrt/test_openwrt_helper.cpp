@@ -43,7 +43,8 @@ TEST_CASE("akm_from_openwrt_log - returns raw algorithm name for non-SAE auth_al
 	remove(tmp);
 
 	// auth_alg=0 (Open System) doesn't by itself imply WPA2 or WPA3 - actual
-	// key management (e.g. PSK) is negotiated later in the 4-way handshake.
+	// key management is negotiated later in the 4-way handshake
+	//FIXME can be tester sure thaht it is open System ?
 	CHECK_EQ(akm, "Open System");
 }
 
@@ -102,7 +103,7 @@ TEST_CASE("akm_from_openwrt_log - only reads lines before window.start_tp"){
 	remove(tmp);
 
 	// The "Add associated STA" line's own timestamp (23:10:05) is at/after
-	// window.start_tp (23:10:02), so it's never read.
+	// window.start_tp (23:10:02), so it's never read
 	CHECK_EQ(akm, "");
 }
 

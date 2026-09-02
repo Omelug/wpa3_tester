@@ -147,7 +147,7 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
 */
 // ------- akm_from_ap_log
 
-// Real snippet from ap.log (STA 28:87:ba:a3:cf:16, WPA3-SAE 4-way handshake).
+// real snippet from ap.log (STA 28:87:ba:a3:cf:16, WPA3-SAE 4-way handshake)
 static void write_sae_handshake_log(const path &p){
 	ofstream f(p);
 	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"
@@ -155,10 +155,10 @@ static void write_sae_handshake_log(const path &p){
 	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
 }
 
-// Two distinct, real-shaped STA handshakes in one log - STA1 (28:87:ba:a3:cf:16)
-// is WPA3-SAE with MFP OPTIONAL, STA2 (9c:b6:d0:12:34:56) is WPA2-PSK with MFP
-// REQUIRED. Used to prove MAC filtering actually picks the right STA's data
-// rather than just failing to find a MAC that isn't in the log at all.
+// two distinct, real-shaped STA handshakes in one log - STA1 (28:87:ba:a3:cf:16)
+// is WPA3-SAE with MFP OPTIONAL
+// STA2 (9c:b6:d0:12:34:56) is WPA2-PSK with MFP REQUIRED
+// Used to prove MAC filtering actually picks the right STA's data rather than just failing to find a MAC that isn't in the log at all
 static void write_two_client_handshake_log(const path &p){
 	ofstream f(p);
 	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"

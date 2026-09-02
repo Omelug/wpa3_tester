@@ -131,7 +131,7 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 			log(LogLevel::DEBUG, "Real channel: dropping Auth(seq=2) relay to rogue (synthetic already sent)");
 			return;
 		}
-		client_state.modify_packet(*pdu);
+		//client_state.modify_packet(*pdu);
 		send_to_rogue(*pdu);
 	}
 

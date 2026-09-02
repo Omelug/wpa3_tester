@@ -243,7 +243,7 @@ struct NetworkSetup {
 	Channel channel = {6, WifiBand::BAND_2_4, nullopt};
 };
 
-// Caller must hold setup.mtx (or call before threads start).
+// Caller must hold NetworkSetup .mtx (or call before threads start).
 static void add_adapter(NetworkSetup& setup, const string& iface_name) {
     try {
 	    string mac_str = hw_capabilities::get_mac_address(iface_name, nullopt).to_string();
@@ -353,7 +353,7 @@ static thread start_watcher(NetworkSetup& setup) {
 
 // ---- Measurement ----
 
-// Caller must hold setup.mtx.
+// Caller must hold NetworkSetup .mtx
 static RssiMatrix collect_rssi(const NetworkSetup& setup) {
     log(LogLevel::INFO, "[~] Scanning {} adapter(s) on ch {}...", setup.adapters.size(), setup.channel.ch_num);
     for (const auto& a : setup.adapters) {
@@ -383,7 +383,8 @@ static double rssi_to_target(const double rssi) {
     return std::clamp(dist, 0.25, 25.0);
 }
 
-// One Guttman (SMACOF) iteration - monotonically minimises layout stress.
+// One Guttman (SMACOF) iteration - monotonically minimises layout stress
+//FIXME source
 static void smacof_step(map<HWAddress<6>, Node2D>& nodes,
                         const vector<HWAddress<6>>& macs,
                         const RssiMatrix& m) {
@@ -441,12 +442,12 @@ static bool render(FILE* pipe,
              "'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
              "'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
 
-    // Each ordered pair (i,j) draws one directional arrow, offset perpendicularly.
-    // Because the perpendicular flips with direction, i->j and j->i land on opposite sides.
+    // each ordered pair (i,j) draws one directional arrow, offset perpendicularly
+    // because the perpendicular flips with direction, i->j and j->i land on opposite sides
     constexpr double OFFSET = 0.05;
     const size_t n = adapters.size();
 
-    // Iterates only directed pairs where that specific direction has a valid RSSI measurement.
+    // iterates only directed pairs, where that specific direction has a valid RSSI measurement
     auto for_pairs = [&](auto fn) {
         for (size_t i = 0; i < n; ++i) {
             for (size_t j = 0; j < n; ++j) {

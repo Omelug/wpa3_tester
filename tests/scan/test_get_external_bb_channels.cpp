@@ -5,8 +5,6 @@
 using namespace std;
 using namespace wpa3_tester;
 
-// All tests exercise only JSON config parsing - no hardware access.
-
 TEST_SUITE("get_external_BB_channels - scan_channels key") {
 
 	TEST_CASE("explicit scan_channels list is returned as-is") {

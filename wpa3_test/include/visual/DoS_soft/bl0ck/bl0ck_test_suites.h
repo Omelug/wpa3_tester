@@ -21,6 +21,9 @@ struct Bl0ckTestEntry{
 	//result params
 	int disconnect_count = 0;
 	described_bool bl0ck_iperf;
+	described_bool ADDBA_seen;
+	described_bool ap_PBAC;
+	described_bool client_PBAC;
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,

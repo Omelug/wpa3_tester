@@ -8,6 +8,7 @@
       <w>Guttman</w>
       <w>Kbit</w>
       <w>Kbits</w>
+      <w>Manuf</w>
       <w>Mitm</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
@@ -54,6 +55,7 @@
       <w>cstdint</w>
       <w>cstdlib</w>
       <w>cstring</w>
+      <w>csvs</w>
       <w>cwmax</w>
       <w>cwmin</w>
       <w>czech</w>
@@ -150,6 +152,7 @@
       <w>lsblk</w>
       <w>m'ing</w>
       <w>macaddr</w>
+      <w>manuf</w>
       <w>mausezahn</w>
       <w>meapol</w>
       <w>meminfo</w>
@@ -158,6 +161,7 @@
       <w>mfpc</w>
       <w>mfpr</w>
       <w>mipsel</w>
+      <w>mitm</w>
       <w>modeswitch</w>
       <w>modinfo</w>
       <w>mscha</w>
@@ -199,6 +203,7 @@
       <w>outputpath</w>
       <w>ownmac</w>
       <w>pbac</w>
+      <w>pcapng</w>
       <w>peap</w>
       <w>peermac</w>
       <w>permaddr</w>

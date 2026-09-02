@@ -2,8 +2,7 @@
 #include "config/RunStatus.h"
 
 namespace wpa3_tester {
-// Exposes protected scanning methods so they can be exercised in unit tests
-// without modifying production logic.
+// protected scanning methods so they can be exercised in unit tests
 class TestableRunStatus : public RunStatus {
 public:
 	void set_config(const nlohmann::json &j){ _config = j; }

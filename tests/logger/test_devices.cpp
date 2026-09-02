@@ -1,22 +1,22 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <chrono>
-#include <fstream>
-#include <filesystem>
-#include <thread>
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "logger/devices.h"
 #include "logger/error_log.h"
 #include "root_dir_helper.h"
 #include "system/utils.h"
+#include <chrono>
+#include <doctest.h>
+#include <filesystem>
+#include <fstream>
+#include <thread>
 
 using namespace std;
 using namespace wpa3_tester;
 
 namespace{
 
-// mirrors device_path() in devices.cpp (data/devices lives next to wpa3_test/); not exposed via devices.h
-// must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const.
+// mirrors device_path() in devices.cpp; not exposed via devices.h
+// must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const
 filesystem::path device_root(){ return root_dir().parent_path() / "data" / "devices"; }
 
 ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){

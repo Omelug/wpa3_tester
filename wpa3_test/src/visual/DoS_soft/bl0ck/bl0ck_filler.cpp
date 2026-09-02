@@ -24,30 +24,34 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	e.name = test_folder.filename().string();
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
-	if(exists(cfg_path)){
-		RunStatus rs{};
-		rs.config_path(cfg_path);
-		rs.run_folder(test_folder);
-		rs.load_actor_interface_mapping();
+	RunStatus rs{};
+	rs.config_path(cfg_path);
+	rs.run_folder(test_folder);
+	rs.load_actor_interface_mapping();
 
-		const auto ap = rs.get_actor("ap");
-		e.ap_mac = ap->get(SK::mac);
-		e.ap_source = ap->get(SK::source);
+	const auto ap = rs.get_actor("ap");
+	e.ap_mac = ap->get(SK::mac);
+	e.ap_source = ap->get(SK::source);
 
-		const auto client = rs.get_actor("client");
-		e.client_mac = client->get(SK::mac);
-		e.client_source = client->get(SK::source);
+	const auto client = rs.get_actor("client");
+	e.client_mac = client->get(SK::mac);
+	e.client_source = client->get(SK::source);
 
-		const auto att = rs.get_actor("attacker");
-		e.attacker_mac = att->get(SK::mac);
-		e.attacker_driver = att->get(SK::driver_name);
+	const auto att = rs.get_actor("attacker");
+	e.attacker_mac = att->get(SK::mac);
+	e.attacker_driver = att->get(SK::driver_name);
 
-		const auto cfg = YAML::LoadFile(cfg_path);
-		if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
-			e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
+	const auto cfg = YAML::LoadFile(cfg_path);
+	if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
+		e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 
-		e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
-	}
+	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
+
+	//e.ADDBA_seen  = only true/false (seen request/response)
+	//FIXME TODO
+	// get info from attacker pcap if possile (but maybe not, because bl0ck consume all resources)
+	//e.client_PBAC = get_pbac(client.get(SK::mac));
+	//e.ap_PBAC = get_pbac(client.get(SK::mac));;
 	return e;
 }
 

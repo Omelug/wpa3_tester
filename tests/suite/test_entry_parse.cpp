@@ -102,7 +102,7 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
 	CHECK_EQ(e.mac,  "aa:bb:cc:dd:ee:ff");
 	CHECK_EQ(e.ssid, "TestNet");
 	CHECK_EQ(e.mfp,  "required");
-	CHECK_EQ(e.akm,  "WPA3-SAE");
+	CHECK_EQ(e.akm, std::vector<std::string>{"WPA3-SAE"});
 	CHECK_EQ(e.beacon_found,  true);
 	CHECK_EQ(e.acm_triggered, false);
 	REQUIRE_EQ(e.stations.size(), 1);

@@ -54,7 +54,7 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      condition: [ monitor, 80211ac, 5GHz, netns_change ]
+      condition: [ control_monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
     sniff_iface: true
@@ -69,7 +69,7 @@ actors:
       ]
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
-  ap_mausezahn:
+  ap_iperf3:
     actor: client
     program: iperf3
     program_config:

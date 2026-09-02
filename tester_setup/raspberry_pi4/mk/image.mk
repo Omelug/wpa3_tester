@@ -76,5 +76,5 @@ ssh_first:
 		ssh-keygen -t rsa -b 4096 -f $(HOME)/.ssh/id_rsa -N ""; \
 	fi
 	@echo "==> Copying SSH key to $(PI_USER)@$(PI)... (you will need to enter the password ONE last time)"
-	ssh-copy-id -o StrictHostKeyChecking=no -i $(SSH_KEY) $(PI_USER)@$(PI)
-	@echo "==> Done! You can now log in without a password: make ssh"
+	ssh-copy-id -f -o StrictHostKeyChecking=no -i $(SSH_KEY) $(PI_USER)@$(PI)
+	@echo "==> Done! You can now log in without a password"

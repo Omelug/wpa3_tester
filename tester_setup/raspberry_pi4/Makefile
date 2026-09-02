@@ -34,7 +34,10 @@ PI          ?= $(or $(PI_IP),$(PI_HOSTNAME).local)
 SRC_ROOT    := $(realpath ../..)
 REMOTE      := ~/wpa3_tester
 REMOTE_ABS   = /home/$(PI_USER)/wpa3_tester
-SSH          = ssh -o StrictHostKeyChecking=no $(PI_USER)@$(PI)
+_REAL_USER   := $(or $(SUDO_USER),$(USER))
+SSH_KEY_PRIV ?= /home/$(_REAL_USER)/.ssh/id_rsa
+SSH          = ssh -o StrictHostKeyChecking=no -i $(SSH_KEY_PRIV) $(PI_USER)@$(PI)
+RSYNC        = rsync -e "ssh -o StrictHostKeyChecking=no -i $(SSH_KEY_PRIV)"
 SYSROOT     := $(CURDIR)/run/cross-sysroot
 CROSS_BUILD := $(CURDIR)/run/build-cross
 TOOLCHAIN   := $(CURDIR)/aarch64-toolchain.cmake

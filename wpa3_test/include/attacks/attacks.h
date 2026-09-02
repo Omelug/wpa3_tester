@@ -40,7 +40,7 @@ inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"reflection_attack", reflection::setup_attack}, {"invalid_curve", invalid_curve::setup_attack},
 	{"invalid_curve_dragonslayer", invalid_curve_dragonslayer::setup_attack},
 	{"dragondrain", dragondrain::setup_attack}, {"dragondrain", dragondrain::setup_attack},
-	{"mc_mitm", mc_mitm::setup_attack}, {"ssid_confusion", mc_mitm::setup_attack},
+	{"mc_mitm", mc_mitm::setup_attack}, {"ssid_confusion", ssid_confusion::setup_attack},
 	{"ath_masker_test", ath_masker_test::setup_attack}, {"sae_dos_wrapper", sae_dos_wrapper::setup_attack},
 	{"owe_trans", owe_trans::setup_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::setup_attack},
 	{"sta_info", sta_info::setup_attack},
@@ -75,7 +75,7 @@ inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = 
 	//{"reflection_attack", reflection::stats}
 	//{"invalid_curve", invalid_curve::run_attack}
 	{"dragondrain", dragondrain::stats_attack}, {"mc_mitm", mc_mitm::stats},
-	/*{"mc_mitm", mc_mitm::stats}, */ {"ssid_confusion", ssid_confusion::stats_attack},
+{"ssid_confusion", ssid_confusion::stats_attack},
 	{"ath_masker_test", ath_masker_test::stats}, {"sae_dos_wrapper", sae_dos_wrapper::stats_attack},
 	{"owe_trans", owe_trans::stats_attack}, {"wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack},
 	{"iface_info", iface_info::stats_attack},

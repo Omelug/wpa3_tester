@@ -16,22 +16,9 @@ for i in 1 2 3; do
 done
 
 echo "==> Installing build dependencies..."
+source /tmp/wpa3-packages.sh
 sudo apt-get update -qq
-sudo apt-get install -y \
-    build-essential cmake ninja-build ccache \
-    clang lld mold pkg-config flex bison git \
-    libssl-dev \
-    libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
-    libpcap-dev \
-    libssh-dev \
-    libyaml-cpp-dev \
-    libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq fish \
-    libcurl4-openssl-dev \
-    usb-modeswitch usb-modeswitch-data \
-    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    quilt trace-cmd tshark gdbserver \
-    dkms linux-headers-rpi-v8
+sudo apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
 #echo "==> Installing hcxtools from source (latest git)..."
 #sudo rm -rf /tmp/hcxtools
@@ -39,7 +26,7 @@ sudo apt-get install -y \
 #(cd /tmp/hcxtools && make && sudo make install)
 #sudo rm -rf /tmp/hcxtools
 
-if ! command -v mausezahn &>/dev/null; then
+if ! command -v mausezahn &>/dev/null && [ ! -x /usr/local/sbin/mausezahn ]; then
     echo "==> Building mausezahn from source (not in RPi OS repos)..."
     sudo rm -rf /tmp/netsniff-ng
     git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
@@ -86,6 +73,9 @@ echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.con
 echo "==> Disabling USB 3.0 (reduces 2.4 GHz interference)..."
 grep -qxF "dtoverlay=disable-usb3" /boot/firmware/config.txt \
     || echo "dtoverlay=disable-usb3" | sudo tee -a /boot/firmware/config.txt > /dev/null
+echo "==> Adding xhci_hcd quirks for USB adapter stability..."
+sudo sed -i 's/ xhci_hcd\.quirks=[0-9]*//' /boot/firmware/cmdline.txt
+sudo sed -i 's/$/ xhci_hcd.quirks=270336/' /boot/firmware/cmdline.txt
 sudo update-initramfs -u
 
 echo "==> Setting WiFi region CZ..." # TODO hardcoded change

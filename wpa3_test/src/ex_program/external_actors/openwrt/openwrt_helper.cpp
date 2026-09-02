@@ -51,6 +51,42 @@ string auth_alg_name(const int code){
 }
 }
 
+string uci_get_option(const path &uci_file, string_view block_type, string_view block_name, string_view key) {
+	ifstream f(uci_file);
+	string line;
+	bool in_block = false;
+	while (getline(f, line)) {
+		const auto start = line.find_first_not_of(" \t");
+		if (start == string::npos) continue;
+		string_view sv(line.data() + start, line.size() - start);
+		if (sv.starts_with("config ")) {
+			sv.remove_prefix(7);
+			const auto sp = sv.find(' ');
+			const string_view type = sp == string_view::npos ? sv : sv.substr(0, sp);
+			string_view name;
+			if (sp != string_view::npos) {
+				const auto q1 = sv.find('\'', sp);
+				const auto q2 = q1 != string_view::npos ? sv.find('\'', q1 + 1) : string_view::npos;
+				if (q1 != string_view::npos && q2 != string_view::npos)
+					name = sv.substr(q1 + 1, q2 - q1 - 1);
+			}
+			in_block = (type == block_type && name == block_name);
+		} else if (in_block && sv.starts_with("option ")) {
+			sv.remove_prefix(7);
+			const auto sp = sv.find(' ');
+			if (sp == string_view::npos || sv.substr(0, sp) != key) continue;
+			const auto rest = sv.substr(sp + 1);
+			if (rest.starts_with('\'')) {
+				const auto q2 = rest.find('\'', 1);
+				if (q2 != string_view::npos) return string(rest.substr(1, q2 - 1));
+			} else {
+				return string(rest.substr(0, rest.find_first_of(" \t\r\n")));
+			}
+		}
+	}
+	return {};
+}
+
 string akm_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){
 	ifstream f(log_path);
 	string line;

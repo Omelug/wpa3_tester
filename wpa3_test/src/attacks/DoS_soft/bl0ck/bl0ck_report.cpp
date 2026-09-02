@@ -15,7 +15,7 @@ using namespace Tins;
 using namespace chrono;
 
 void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path &attacker_graph,
-					const path &client_graph, const path &ap_graph
+					const path &client_graph/*, const path &ap_graph*/
 ){
 	report::ReportGuard report(rs.run_folder());
 	if(!report) return;
@@ -58,10 +58,10 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path 
 	if(exists(client_graph)){
 		report << "![Client graph](" << client_graph << ")\n\n";
 	}
-	if(exists(ap_graph)){
+	/*if(exists(ap_graph)){
 		report << "### AP capture\n";
 		report << "![AP graph](" << ap_graph << ")\n\n";
-	}
+	}*/
 	report << "---\n";
 }
 }

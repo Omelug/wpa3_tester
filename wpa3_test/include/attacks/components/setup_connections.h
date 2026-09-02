@@ -4,7 +4,7 @@
 using namespace std;
 
 namespace wpa3_tester::components{
-void setup_AP(RunStatus &rs, const string &actor_name);
+void setup_AP(RunStatus &rs, const string &ap_actor_name);
 void stop_AP(RunStatus &rs, const string &actor_name);
 void setup_STA(RunStatus &rs, const string &actor_name);
 void client_ap_setup(RunStatus & rs, bool check_way_eapol);

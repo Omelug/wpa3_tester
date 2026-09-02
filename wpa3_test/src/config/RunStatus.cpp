@@ -82,11 +82,10 @@ void RunStatus::execute(){
 
 	create_public_dirs(_run_folder);
 
-	// Initialize log file if save_log is enabled
-	if(_run_config.get_save_log()){
-		const path log_file = _run_folder / "logger" / "tester.log";
-		set_log_file(log_file);
-	}
+	// Initialize log file
+	const path log_file = _run_folder / "logger" / "tester.log";
+	set_log_file(log_file);
+
 	struct LogGuard{
 		~LogGuard(){ close_log_file(); }
 	} log_guard;
@@ -336,8 +335,8 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 
 		log_events(elements, {
 			{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-			{"client", ATTACK_START_tag, "attack_start", "black"},
-			{"client", ATTACK_STOP_tag, "attack_stop", "black"},
+			{"client", ATTACK_START_tag, escape_tex("attack_start"), "black"},
+			{"client", ATTACK_STOP_tag, escape_tex("attack_stop"), "black"},
 		});
 	}
 }

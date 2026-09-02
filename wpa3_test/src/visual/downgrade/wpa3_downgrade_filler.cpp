@@ -32,8 +32,9 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	e.client_mac = client->get(SK::mac);
 	e.client_driver = client->get(SK::driver_name);
 
-	//TODO rogue_ap/attacker  mac
-	//TODO WPA3 disable
+	const auto window = helper::get_run_window(*rs);
+	e.ap_wpa3_trans_disable = helper::get_ap_wpa3_trans_disable(*rs, window, "TODO"); //TODO
+
 	return e;
 }
 
@@ -41,8 +42,8 @@ vector<Wpa3TransDowngradeTestEntry> Wpa3TransDowngradeTestEntry::collect_results
 	auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(test_data_dir);
 
 	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry& a, const Wpa3TransDowngradeTestEntry& b) {
-	return tie(a.ap_driver, a.ap_mac, a.client_driver, a.client_mac, a.test_name, a.disconnected, a.downgrade_seen) <
-		   tie(b.ap_driver, b.ap_mac, b.client_driver, b.client_mac, b.test_name,  b.disconnected, b.downgrade_seen);
+	return tie(a.ap_driver, a.ap_mac, a.client_driver, a.client_mac, a.test_name, a.disconnected, a.downgrade_seen, a.ap_wpa3_trans_disable) <
+		   tie(b.ap_driver, b.ap_mac, b.client_driver, b.client_mac, b.test_name,  b.disconnected, b.downgrade_seen, b.ap_wpa3_trans_disable);
 	});
 
 	return entries;

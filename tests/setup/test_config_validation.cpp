@@ -184,8 +184,6 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
 		CHECK_EQ(rc.test_report.value(), false);
 		REQUIRE(rc.rewrite.has_value());
 		CHECK_EQ(rc.rewrite.value(), RewriteMode::errors);
-		REQUIRE(rc.save_log.has_value());
-		CHECK_EQ(rc.save_log.value(), true);
 	}
 
 	SUBCASE("2. minimal config - no run_config fields") {
@@ -195,7 +193,6 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
 		CHECK_FALSE(rc.delete_old.has_value());
 		CHECK_FALSE(rc.test_report.has_value());
 		CHECK_FALSE(rc.rewrite.has_value());
-		CHECK_FALSE(rc.save_log.has_value());
 	}
 
 	SUBCASE("3. error - invalid type for run_config field") {

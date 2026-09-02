@@ -25,16 +25,16 @@ void ApInfoWpa3TestEntry::render_table(overview::HtmlGuard &f, const string &tit
 
 		HtmlPathTable t(hg, entries, t_name);
 
-		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { f << body; })
 		t.build([&](auto col) {
-			COL("Test",                 &ApInfoWpa3TestEntry::test_name);
-			COL("MAC",                  &ApInfoWpa3TestEntry::mac);
-			COL("SSID",                 &ApInfoWpa3TestEntry::ssid);
-			COL("MFP",                  &ApInfoWpa3TestEntry::mfp);
-			COL("AKM",                  &ApInfoWpa3TestEntry::akm);
-			COL("ACM triggered",        &ApInfoWpa3TestEntry::acm_triggered);
+			col("Test",          &ApInfoWpa3TestEntry::test_name);
+			col("MAC",           &ApInfoWpa3TestEntry::mac);
+			col("SSID",          &ApInfoWpa3TestEntry::ssid);
+			col("MFP",           &ApInfoWpa3TestEntry::mfp);
+			col("AKM", [&](const auto& e){
+				for(size_t i = 0; i < e.akm.size(); ++i){ if(i) hg << ", "; hg << e.akm[i]; }
+			});
+			col("ACM triggered", &ApInfoWpa3TestEntry::acm_triggered);
 		})->render();
-		#undef COL
 	});
 }
 
@@ -54,13 +54,15 @@ void generate_report(RunSuiteStatus &rss){
 
 		string stas;
 		for(const auto &s: e.stations) stas += (stas.empty() ? "" : "<br>") + s;
+		string akm_str;
+		for(const auto &a: e.akm) akm_str += (akm_str.empty() ? "" : ", ") + a;
 
 		r << "| "
 		<< e.test_name << " | "
 		<< report::device(e.mac) << " | "
 		<< e.ssid << " | "
 		<< e.mfp << " | "
-		<< e.akm << " | "
+		<< akm_str << " | "
 		<< e.acm_triggered << " | "
 		<< stas << " |\n";
 	}

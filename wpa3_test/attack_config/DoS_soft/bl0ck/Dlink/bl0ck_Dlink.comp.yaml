@@ -17,24 +17,33 @@ actors:
         scan_freq: 5180
         ssid: test_wpa3_tester_5GHz
         version: 2_10
+    ip_addr: "172.16.100.2"
     selection:
       channel: 36
-      permanent_mac: "00:c0:ca:b7:69:2a"
-      condition: [ monitor, 80211ac, 5GHz, netns_change ]
+      #permanent_mac: "00:c0:ca:b7:69:2a"
+      condition: [ control_monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
-    sniff_iface: true
+    #sniff_iface: true
   attacker:
     source: internal
     selection:
       channel: 36
-      driver: rtw_8821cu #TODO rtw_8821au nefunguje, proč?
+      #driver: rtw_8821cu #TODO rtw_8821au nefunguje, proč?
       condition: [
         monitor,
-        5GHz ]
+        5GHz,
+        control_monitor
+      ]
 observers:
-  mausezahn:
+  #NOT ONLy for view, important for bl0ck  QoS generation
+  mausezahn: #FIXME only one direction traffic
     actor: client
     program: mausezahn
+    program_config:
+      target_actor: ap
+  ap_mausezahn:
+    actor: client
+    program: iperf3
     program_config:
       target_actor: ap
   att_tshark:
@@ -47,8 +56,9 @@ observers:
     program: tshark
     program_config:
       filter: "special_filter:actors"
-  ap_tcpdump:
-    actor: ap
-    program: tcpdump
-    program_config:
-      filter: "udp port 5201"
+  #TODO created only empty file
+  #ap_tcpdump:
+  #  actor: ap
+  #  program: tcpdump
+  #  program_config:
+  #    filter: "udp port 5201"

@@ -67,15 +67,14 @@ TEST_CASE ("Info OpenWrt"){
         long expected = stol(conn->exec("date +%s"));
         cout << "Expected time: " << expected << " (" << conn->exec("date") << ")" << endl;
 
-        // Mess up the time
+        // mess up the time
         conn->exec("date -s '2020-01-01 00:00:00'");
         long wrong = stol(conn->exec("date +%s"));
         cout << "Wrong time: " << wrong << " (" << conn->exec("date") << ")" << endl;
 
         // time is wrong
-        CHECK((abs(wrong - expected) > 3600 * 24 * 365)); // More than a year off
+        CHECK((abs(wrong - expected) > 3600 * 24 * 365)); // more than a year off
 
-        // Call time_fix, expect success
         CHECK_NOTHROW(conn->time_fix());
 
         long fixed = stol(conn->exec("date +%s"));

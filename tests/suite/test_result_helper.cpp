@@ -18,6 +18,7 @@ using namespace wpa3_tester::visual::helper;
 using json = nlohmann::json;
 using wpa3_tester::described_bool;
 using wpa3_tester::described_str;
+using wpa3_tester::SK;
 using wpa3_tester::RunStatus;
 using wpa3_tester::TimeWindow;
 using wpa3_tester::LogTimePoint;
@@ -449,42 +450,6 @@ TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero"){
 	CHECK_EQ(result.last().description, "hostapd_conf");
 }
 
-TEST_CASE("get_ap_wpa3_trans_disable - conf=0 ignored"){
-	const path dir = temp_directory_path() / "wpa3_trans_disable_conf_zero";
-	create_directories(dir);
-	{
-		ofstream f(dir / "ap_hostapd.conf");
-		f << "transition_disable=0\n";
-	}
-	RunStatus rs;
-	setup_test_rs(rs, dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
-	rs.parse_requirements();
-
-	const auto result = get_ap_wpa3_trans_disable(rs);
-	// conf=0 means disabled; no sources should fire
-	for (const auto &p : result.pairs)
-		CHECK_NE(p.description, "hostapd_conf");
-}
-
-TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_log"){
-	const path dir = temp_directory_path() / "wpa3_trans_disable_log_test";
-	create_directories(dir / "logger");
-	{
-		ofstream f(dir / "logger" / "ap.log");
-		f << "2026-08-27T21:44:01.762288754+0200 [ap] [stdout] nl80211: transition_disable=0x01\n";
-	}
-	RunStatus rs;
-	setup_test_rs(rs, dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
-	rs.parse_requirements();
-
-	const auto result = get_ap_wpa3_trans_disable(rs, {});
-	REQUIRE_FALSE(result.empty());
-	CHECK_EQ(result.value(), "enabled");
-	CHECK_EQ(result.last().description, "hostapd_log");
-}
-
 TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	const path dir = temp_directory_path() / "wpa3_trans_disable_both_test";
 	create_directories(dir / "logger");
@@ -501,6 +466,38 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	REQUIRE_GE(result.pairs.size(), 1u);
 	CHECK_EQ(result.pairs[0].value, "0x01");
 	CHECK_EQ(result.pairs[0].description, "hostapd_conf");
+}
+
+TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)"){
+	const path dir = temp_directory_path() / "wpa3_trans_disable_uci_test";
+	create_directories(dir);
+	{
+		ofstream f(dir / "ap_wireless_uci.conf");
+		f << "config wifi-device 'radio0'\n"
+		  << "\toption transition_disable '0x01'\n"
+		  << "\toption ocv '1'\n"
+		  << "\n"
+		  << "config wifi-device 'radio1'\n"
+		  << "\toption transition_disable '0x02'\n"
+		  << "\n"
+		  << "config wifi-iface 'default_radio0'\n"
+		  << "\toption device 'radio0'\n"
+		  << "\toption ssid 'test_wpa3_tester'\n";
+	}
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.config({{"actors", {{"ap", {
+		{"source", "external"},
+		{"selection", {{"whitebox_host", "openwrt_host"}, {"channel", 36}}},
+		{"setup", {{"program", "openwrt"}}}
+	}}}}});
+	rs.parse_requirements();
+	rs.get_actor("ap")->set(SK::radio, "radio0");
+
+	const auto result = get_ap_wpa3_trans_disable(rs);
+	REQUIRE_FALSE(result.empty());
+	CHECK_EQ(result.value(), "0x01");
+	CHECK_EQ(result.last().description, "uci_conf");
 }
 
 TEST_CASE("get_ap_wpa3_trans_disable - no config no log returns empty"){

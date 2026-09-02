@@ -54,15 +54,11 @@ void close_log_file(){
 void write_log_message(const LogLevel level, const string &msg){
 	const string formatted = string(levelToString(level)) + ": " + msg;
 
-	// Write to stderr
+	scoped_lock lock(log_mutex);
 	cerr << formatted << endl;
-
-	// Write to log file if enabled
-	{
-		scoped_lock lock(log_mutex);
-		if(log_file_ptr && log_file_ptr->is_open()){
-			*log_file_ptr << formatted << endl;
-		}
+	// write to log file if enabled
+	if(log_file_ptr && log_file_ptr->is_open()){
+		*log_file_ptr << formatted << endl;
 	}
 }
 
@@ -81,6 +77,7 @@ void log_actor_map(const string &name, const ActorCMap &m){
 LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	tm t = {};
 	const char *p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+	if(p == nullptr) p = strptime(time_str.c_str(), "%Y-%m-%d %H:%M:%S", &t);
 	if(p == nullptr) return LogTimePoint{};
 
 	// parse fractional seconds ".310201504" -> nanoseconds

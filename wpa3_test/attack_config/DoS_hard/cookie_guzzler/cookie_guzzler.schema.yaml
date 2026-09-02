@@ -19,6 +19,7 @@ properties:
       attack_time_sec:
         type: integer
         description: time of sending cookie guzzler packets
+        default: 5
         minimum: 1
       regeneration_time_sec:
         type: integer

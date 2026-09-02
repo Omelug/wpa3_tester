@@ -8,7 +8,7 @@ requirements:
     #injection_fields_spoofed: [attacker, ap]
     #injection_fields_valid: [attacker, ap]
   rssi_setup:
-    band: "5Ghz"
+    band: "5GHz"
     conditions: [
       "(ap <-> attacker) > -90",
       "(ap <-> client) > -90",
@@ -54,7 +54,7 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      condition: [ monitor, 80211ac, 5GHz, netns_change ]
+      condition: [ control_monitor, 80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
     sniff_iface: true
@@ -64,11 +64,12 @@ actors:
       channel: 36
       condition: [ #injection, #TODO má tu být injection?
         monitor,
-        5GHz
+        5GHz,
+        control_monitor
       ]
       driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu ]
 observers:
-  ap_mausezahn:
+  ap_iperf3:
     actor: client
     program: iperf3
     program_config:
@@ -85,7 +86,7 @@ observers:
       filter: "special_filter:actors"
   tracer:
     program: trace_cmd
-    actor: ap
+    actor: attack
     program_config:
       events: [ "mac80211"]
   tracer_client:
@@ -93,6 +94,8 @@ observers:
     actor: client
     program_config:
       events: [ "mac80211" ]
+  dmesg:
+    program: dmesg
 attack_config:
   ms_interval: 1
   sleep_before_sec: 5

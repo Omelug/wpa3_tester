@@ -11,6 +11,9 @@ $(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG)
 	@command -v aarch64-linux-gnu-gcc >/dev/null 2>&1 \
 	    || { echo "Error: install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc"; exit 1; }
 	[ -d $(KERNEL_SRC)/.git ] || git clone --depth=1 --branch rpi-6.6.y $(KERNEL_REPO) $(KERNEL_SRC)
+	grep -q 'reset_resume' $(KERNEL_SRC)/drivers/net/wireless/mediatek/mt76/mt76x2/usb.c || \
+	    sed -i '/\.resume\s*=\s*mt76x2u_resume/a\\t.reset_resume\t= mt76x2u_resume,' \
+	    $(KERNEL_SRC)/drivers/net/wireless/mediatek/mt76/mt76x2/usb.c
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2711_defconfig
 	grep -E '^CONFIG_[A-Z0-9_]+=[yn]' $(DEBUG_CONFIG) | while IFS='=' read -r k v; do \
 	    case "$$v" in \

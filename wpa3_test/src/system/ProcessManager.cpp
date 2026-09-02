@@ -315,7 +315,6 @@ bool ProcessManager::wait_for(const string &actor_name, const string &pattern, c
 }
 
 void ProcessManager::stop(const string &process_name) noexcept{
-	//log(LogLevel::DEBUG, "stop() called for "+process_name);
 	shared_ptr<ManagedProcess> mp;
 	{
 		std::scoped_lock lock(logger_mtx);
@@ -400,6 +399,7 @@ void ProcessManager::after_stop(const string &process_name, const function<void(
 
 void ProcessManager::stop_all(){
 	vector<string> process_names;
+	write_log_all(END_STOP_ALL_tag);
 	{
 		std::scoped_lock lock(logger_mtx);
 		process_names.reserve(processes.size());

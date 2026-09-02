@@ -1,5 +1,14 @@
 name: channel_switch_Dlink_5GHz
 attacker_module: channel_switch
+$extends: [
+  ./CSA_Dlink.yaml,
+  #TODO  rogue_ap is useless now, not get hash on 5Ghz, maybe update hostapd (not 2_11 in kali yet, need forom orignal + apply patches?)
+  #2026-08-31T17:33:30.057396077+0200 [rogue_ap] [stdout] handle_auth_cb: STA 90:de:80:de:ff:a1 not found
+  #2026-08-31T17:33:30.057499946+0200 [rogue_ap] [stdout] handle_assoc_cb: STA 90:de:80:de:ff:a1 not found
+  #2026-08-31T17:33:53.893173574+0200 [rogue_ap] [stdout] handle_auth_cb: STA 90:de:80:de:ff:a1 not found
+  #2026-08-31T17:33:53.893273757+0200 [rogue_ap] [stdout] handle_assoc_cb: STA 90:de:80:de:ff:a1 not found
+  #../../../../comp/rogue_ap/rogue_ap_36.comp.yaml
+]
 $validator: ../../channel_switch.schema.yaml
 actors:
   ap:
@@ -13,6 +22,11 @@ actors:
         channel: 36
         htmode: HT20
   client:
+    setup:
+      program_config:
+        #TODO log ukazuje, že pokud openwrt vysílá na 2_4GHz, tak klient downgrande na 2_4Ghz (asi jako první  možnost????)
+        scan_freq: 5180
+        other_options: "-dd"
     source: internal
     selection:
       channel: 36
@@ -22,7 +36,10 @@ actors:
     selection:
       channel: 36
       condition: [ monitor, 5GHz ]
-$extends: [ ./CSA_Dlink.yaml ]
+  #TODO chelkk up
+  #rogue_ap:
+  #  selection:
+  #    $DELETE: [permanent_mac, driver]
 attack_config:
   attack_time: 60
   ms_interval: 100

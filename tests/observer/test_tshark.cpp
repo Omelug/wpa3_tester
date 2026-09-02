@@ -131,16 +131,16 @@ TEST_CASE("masked_mac_filter_5 - two actors joined with or"){
 
 TEST_CASE("times_packet_sizes_from_csv - two valid rows"){
 	TempCsv tmp(
-		"1|2026-02-21T13:12:45.844734691+0100|149\n"
-		"2|2026-02-21T13:12:46.433775945+0100|200\n"
+		"104|1788004476.874694487|1602\n"
+		"105|1788004476.874822189|1650\n"
 	);
 
 	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
 
 	CHECK_EQ(times.size(), 2u);
 	CHECK_EQ(sizes.size(), 2u);
-	CHECK_EQ(sizes[0], doctest::Approx(149.0));
-	CHECK_EQ(sizes[1], doctest::Approx(200.0));
+	CHECK_EQ(sizes[0], doctest::Approx(1602.0));
+	CHECK_EQ(sizes[1], doctest::Approx(1650.0));
 	CHECK_LT(times[0], times[1]);
 }
 

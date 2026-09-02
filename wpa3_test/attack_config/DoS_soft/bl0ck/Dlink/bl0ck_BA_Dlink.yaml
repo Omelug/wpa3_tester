@@ -1,7 +1,17 @@
 name: bl0ck_BA_Dlink
 $extends: ./bl0ck_Dlink.comp.yaml
+$validator: ../bl0ck.schema.yaml
+actors:
+  client:
+    setup:
+      program_config:
+        other_options: "-dd"
+  attacker:
+    selection:
+      permanent_mac: "90:de:80:de:ff:a1"
 attack_config:
   attack_time_sec: 15
   attack_variant: "BA"
   random: false
   frame_in_batch: 50
+  ms_interval: 100

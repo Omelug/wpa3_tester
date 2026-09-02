@@ -8,11 +8,16 @@ _dkms_install() {
     echo "==> Installing ${label} driver (DKMS)..."
     sudo rm -rf "${tmp}"
     sudo GIT_TERMINAL_PROMPT=0 git clone "${url}" "${tmp}"
-    # ponytail: append EXTRA_CFLAGS at end of Makefile - works for any driver using #ifdef CONFIG_*
+    # append EXTRA_CFLAGS at end of Makefile - works for any driver using #ifdef CONFIG_*
     [ -n "${extra_cflags}" ] && echo "EXTRA_CFLAGS += ${extra_cflags}" | sudo tee -a "${tmp}/Makefile" > /dev/null
     local PKG VER
     PKG=$(sed -n 's/^PACKAGE_NAME="\(.*\)"/\1/p' "${tmp}/dkms.conf")
     VER=$(sed -n 's/^PACKAGE_VERSION="\(.*\)"/\1/p' "${tmp}/dkms.conf")
+    if dkms status -m "${PKG}" -v "${VER}" 2>/dev/null | grep -q "installed"; then
+        echo "==> ${label} already installed, skipping"
+        sudo rm -rf "${tmp}"
+        return 0
+    fi
     if [ ! -d "/usr/src/${PKG}-${VER}" ]; then
         sudo mv "${tmp}" "/usr/src/${PKG}-${VER}"
     else

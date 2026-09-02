@@ -17,10 +17,18 @@ public:
 	enum State{
 		Unknown = -1,
 		Target  = 0,
+		// target send frame to disconnected
+		// tester don't know channel because forwarding can catch fake frames
+		Target_disconnected,
+		// tester send CSA frames to move
 		Sent_to_rogue,
+		// Probe requests in Drogue channel
 		Finding,
+		// Auth on rogue channel
 		Authenticated,
+		// Assoc on rogue channel
 		Associated,
+		// EAPOl 4 found on rogue chanel
 		GotMitm
 	};
 protected:
@@ -50,7 +58,12 @@ public:
 			const bool is_new = !std::filesystem::exists(path);
 			if(std::ofstream f(path, std::ios::app); f){
 				if(is_new) set_public_perms(path);
-				f << current_timestamp() << " [STATE] " << macaddr << " : " << state2str(state) << " -> " << state2str(s) << std::endl;
+				std::stringstream ss;
+				ss << current_timestamp();
+				ss << " [STATE] " << macaddr << " : ";
+				ss << state2str(state) << " -> " << state2str(s) << std::endl;
+				f << ss.str();
+				log(LogLevel::INFO, ss.str());
 			}
 		}
 		state = s;
@@ -65,7 +78,7 @@ public:
 public:
 	static std::string state2str(const State state){
 		static const std::string names[] = {
-			"Unknown", "Target", escape_tex("Sent_to_rogue"), "Finding", "Authenticated", "Associated", "GotMitm"
+			"Unknown", "Target",  "Target_disconnected", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"
 		};
 		const int idx = static_cast<int>(state) + 1; // Unknown=-1 maps to index 0
 		if(idx < 0 || idx >= static_cast<int>(std::size(names))) return "Invalid";

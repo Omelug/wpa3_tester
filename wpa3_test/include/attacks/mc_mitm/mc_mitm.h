@@ -11,9 +11,8 @@
 namespace wpa3_tester{
 class McMitm{
 	friend class McMitmHooks;
-protected:
-	ActorPtr rogue_sta, rogue_ap, sta, ap;
 public:
+	ActorPtr rogue_sta, rogue_ap, sta, ap;
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
 
@@ -38,8 +37,6 @@ public:
 	void setup_real_AP_RSN_frames();
 	void run(RunStatus &rs, int timeout_sec);
 	void stop();
-
-	//static void setup_ifaces(const ActorPtr &att_real, const std::string &client_mac, const ActorPtr &att_rogue, const std::string &ap_mac);
 
 	// ---- state ----
 	NetworkConfig netconfig;
@@ -88,9 +85,7 @@ public:
 	void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
 							const Tins::HWAddress<6> &addr1
 	);
-public:
 	void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-public:
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 

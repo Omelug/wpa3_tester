@@ -9,17 +9,18 @@
 #include <sstream>
 #include <thread>
 
-#include "default.h"
-#include "config/global_config.h"
-#include "config/RunStatus.h"
-#include "config/Actor_Config/Actor_config.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "config/RunStatus.h"
+#include "config/global_config.h"
+#include "default.h"
 #include "logger/error_log.h"
+#include "setup/YAMLValidator.h"
 #include "setup/config_parser.h"
 #include "setup/requirement_validation.h"
-#include "setup/YAMLValidator.h"
-#include "visual/test_suites.h"
+#include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
+#include "visual/test_suites.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -331,7 +332,6 @@ void RunSuiteStatus::defined_by_permutation(basic_json<> source_info, const stri
 void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const string &source_name,
 											const path &test_config_folder, config_paths &test_map
 ){
-	cleanup_all_namespaces();
 	const path rel = source_info.at("config").get<string>();
 	path src = absolute(_config_path.parent_path() / rel);
 	if(!exists(src)) throw config_err("actor_filler: config not found: " + src.string());
@@ -435,6 +435,12 @@ config_paths RunSuiteStatus::get_test_paths(){
 
 void RunSuiteStatus::execute(){
 	HwOptionCache hw_cache;
+
+	//TODO need for fillers in get_test_paths (before execute in RunStatus), but slow
+	//FIXME can be skipped for some test suites
+	cleanup_all_namespaces();
+	reset_usb_ifaces();
+
 	auto tests_paths = get_test_paths();
 
 	if(config.contains("suite_functions")){

@@ -100,13 +100,12 @@ private:
 
 		for (; len < first.size(); ++len) {
 			for (const auto& str : strings) {
-				if (len >= str.size() || str[len] != first[len]) {
-					return len >= MINIMAL_PREFIX ? first.substr(0, len) : "";
-				}
+				if (len >= str.size() || str[len] != first[len]) break;
 			}
 		}
-
-		return len >= MINIMAL_PREFIX ? first : "";
+		const size_t sep = first.rfind('_', len);
+		len = (sep != std::string::npos) ? sep + 1 : len;
+		return len >= MINIMAL_PREFIX ? first.substr(0, len) : "";
 	}
 
     [[nodiscard]] static bool is_prefix_requested(const std::string& header, const std::vector<std::string>& prefix_columns) {

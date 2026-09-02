@@ -14,4 +14,4 @@
 - in [result_overview](../../result_overview) (separated target, `make `)
 - HtmlGuard
 - have same entry parsing like report in [visual](../../wpa3_test/src/visual)
-- more info in [README.md](../../result_overview/README.md)
+- more info in overview [README.md](../../result_overview/README.md)

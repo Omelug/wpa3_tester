@@ -67,8 +67,10 @@ properties:
         minimum: 1
       sleep_before_sec:
         type: integer
+        default: 5
         description: time before test for get valid traffic before
       sleep_after_sec:
         type: integer
+        default: 5
         description: time after to check if situation will be ok again
     additionalProperties: false

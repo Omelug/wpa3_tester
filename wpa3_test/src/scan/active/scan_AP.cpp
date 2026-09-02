@@ -66,11 +66,11 @@ string ScanAP::to_str() const{
 	return ss.str();
 }
 
-void ScanAP::load(const std::unique_ptr<Dot11Beacon> &beacon){
-	ssid = beacon->ssid();
-	bssid = beacon->addr2();
-	this->beacon = *beacon->clone();
-	rsn = beacon->rsn_information();
+void ScanAP::load(const unique_ptr<Dot11Beacon> &beacon_to_load){
+	ssid = beacon_to_load->ssid();
+	bssid = beacon_to_load->addr2();
+	this->beacon = *beacon_to_load->clone();
+	rsn = beacon_to_load->rsn_information();
 }
 
 optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap){

@@ -39,12 +39,6 @@ void run_attack(RunStatus &rs){
 	scanner->set(SK::iface, iface);
 	scanner->load_hw_info(hw_cache);
 
-	/* FIXME injection tests
-	MonitorSocket sock(iface);
-	const auto suite = hw_capabilities::run_injection_tests(scanner, scanner,
-		Tins::HWAddress<6>("00:11:22:33:44:55"), false, false);
-	*/
-
 	rs.save_actor_interface_mapping();
 
 	// ----- live system snapshot -----

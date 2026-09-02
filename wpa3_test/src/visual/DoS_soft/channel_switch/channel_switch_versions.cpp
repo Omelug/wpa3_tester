@@ -41,7 +41,7 @@ CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder){
 				if(cfg["attack_config"]["attack_time"]) e.attack_time = to_string(
 					cfg["attack_config"]["attack_time"].as<int>());
 			}
-		} catch(...){}
+		} catch(...){} //FIXME
 	}
 
 	const path tshark = test_folder / "observer" / "tshark";
@@ -74,8 +74,8 @@ void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss){
 			<< e.ap_driver << " | "
 			<< e.client_driver << " | "
 			<< e.attacker_driver << " | "
-			<< e.hostapd_version << " | "
-			<< /*result_link*/ "" << " |\n";
+			<< e.hostapd_version << /*" | "
+			<< result_link*/ "" << " |\n";
 	}
 }
 }

@@ -10,6 +10,6 @@ actors:
     setup:
       program: wpa_supplicant
       program_config:
+        other_options: "-d"
         ieee80211w: 2
-        ocv: false
 $extends: ./CSA_Dlink.yaml

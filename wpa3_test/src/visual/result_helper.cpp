@@ -17,8 +17,15 @@ using json = nlohmann::json;
 TimeWindow get_run_window(const RunStatus &rs){
 	const path combined_log = rs.run_folder() / "logger" / "combined.log";
 	if(!exists(combined_log)) return {};
-	//first @END preferred
+	//first @END preferred (included @END_STOP)
 	return {get_tag_time(combined_log, START_tag), get_tag_time(combined_log, END_tag)};
+}
+
+TimeWindow get_run_window(const RunStatus &rs, const ActorPtr &actor){
+	const path actor_log = rs.run_folder() / "logger" / (actor.get(SK::actor_name) + ".log");
+	if(!exists(actor_log)) return {};
+	//first @END preferred (included @END_STOP)
+	return {get_tag_time(actor_log, START_tag), get_tag_time(actor_log, END_tag)};
 }
 
 optional<json> load_result_json(const path &test_folder){
@@ -86,6 +93,7 @@ described_str get_client_scanning(const RunStatus &rs, const TimeWindow window){
 }
 
 described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
+	assert(rs.actor("ap") && rs.actor("client"));
 	described_str client_mfp{};
 	const auto wpa_config = rs.run_folder() / "client_wpa_supplicant.conf";
 	if(exists(wpa_config))
@@ -107,6 +115,7 @@ described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
 };
 
 described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow window){
+	assert(rs.actor("ap") && rs.actor("client"));
 	described_str client_WPA_support{};
 	const auto wpa_config = rs.run_folder() / "client_wpa_supplicant.conf";
 	if(exists(wpa_config)){
@@ -127,8 +136,9 @@ described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow windo
 };
 
 described_str get_ap_WPA_support(const RunStatus &rs){
-	described_str ap_WPA_support{};
+	assert(rs.actor("ap"));
 
+	described_str ap_WPA_support{};
 	if (!rs.get_actor("ap").is(SK::source, "internal")) return ap_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 	const auto hostapd_config = rs.run_folder() / "ap_hostapd.conf";
@@ -144,9 +154,10 @@ described_str get_ap_WPA_support(const RunStatus &rs){
 };
 
 described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window){
+	assert(rs.actor("ap"));
+
 	described_str conn_WPA_version{};
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
-
 	if (!rs.get_actor("ap").is(SK::source, "internal")) return conn_WPA_version;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 
@@ -166,6 +177,7 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 }
 
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
+	assert(rs.actor("client"));
 	described_bool client_disconnected{};
 	const string sta_mac = rs.get_actor("client").get(SK::mac);
 
@@ -188,8 +200,8 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 
 described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 										TimeWindow /*time_window*/, string /*password*/) {
+	assert(rs.actor("ap"));
 	described_str result;
-
 	// transition_disable=0xNN bitmask
 	//  Bit 0: WPA3-Personal, Bit 1: SAE-PK, Bit 2: WPA3-Enterprise, Bit 3: Enhanced Open
 	const path config = rs.run_folder() / "ap_hostapd.conf";
@@ -197,6 +209,17 @@ described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 		const string val = hostapd::get_conf_value(config, {"transition_disable"});
 		if (!val.empty() && stoul(val, nullptr, 0) != 0)
 			result += {val, "hostapd_conf"};
+	}
+	if (rs.get_actor("ap")->is_external_WB()) {
+		const path uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
+		if (exists(uci_conf)) {
+			const string radio = rs.get_actor("ap").get(SK::radio);
+			if (!radio.empty()) {
+				const string val = openwrt::uci_get_option(uci_conf, "wifi-device", radio, "transition_disable");
+				if (!val.empty())
+					result += {val, "uci_conf"};
+			}
+		}
 	}
 
 	//TODO get from tshark (need to be decrypted with password)

@@ -10,24 +10,16 @@ DONE_FLAG=/var/lib/wpa3-firstboot.done
 echo "[firstboot] Starting at $(date)"
 
 # --- Build dependencies
+source /usr/local/bin/wpa3-packages.sh
 apt-get update -qq
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake ninja-build ccache tshark tcpdump \
-    clang lld mold pkg-config flex bison git g++-14 \
-    libssl-dev \
-    libnl-3-dev libnl-genl-3-dev libnl-route-3-dev \
-    libpcap-dev \
-    libssh-dev \
-    libyaml-cpp-dev \
-    libtins-dev \
-    iproute2 iw tcpdump iptables socat dnsmasq fish \
-    libgeoip-dev liburcu-dev libcli-dev libsodium-dev libnet1-dev \
-    libcurl4-openssl-dev \
-    usb-modeswitch usb-modeswitch-data \
-    avahi-daemon quilt \
-    iperf3 gnuplot \
-    hcxtools \
-    dkms "linux-headers-$(uname -r)"
+DEBIAN_FRONTEND=noninteractive apt-get install -y "${WPA3_APT_PACKAGES[@]}"
+
+# symlink headers if kernel minor-bumped ahead of apt Why?
+KVER=$(uname -r)
+if [ ! -d "/lib/modules/$KVER/build" ]; then
+    AVAIL=$(find /usr/src -maxdepth 1 -name "linux-headers-*v8*" -type d | sort -V | tail -1)
+    [ -n "$AVAIL" ] && mkdir -p "/lib/modules/$KVER" && ln -sf "$AVAIL" "/lib/modules/$KVER/build"
+fi
 
 source /usr/local/bin/wpa3-drivers.sh
 
@@ -57,6 +49,10 @@ chmod +x /usr/bin/dumpcap
 # -- WiFi region
 #TODO hardcoded region
 raspi-config nonint do_wifi_country CZ
+
+# -- xhci quirks for USB adapter stability (keeps adapters on USB 2 speed)
+sed -i 's/ xhci_hcd\.quirks=[0-9]*//' /boot/firmware/cmdline.txt
+sed -i 's/$/ xhci_hcd.quirks=270336/' /boot/firmware/cmdline.txt
 
 # --- Secondary IP on eth0 so LAN router (192.168.1.1) is reachable without changing default route
 #FIXME hardcoded ip address

@@ -27,6 +27,12 @@ static optional<bool> read_mitm_achieved(const path &test_folder, const string &
     return false;
 }
 
+void setup_suite(const RunSuiteStatus &rss) {
+	const auto config_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
+	create_public_dirs(config_dir);
+	copy_f(rss.config_path().parent_path() / "config"/ "SafeNet_WrongNet.conf", config_dir / "SafeNet_WrongNet.conf");
+}
+
 SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
     SsidConfusionEntry e;
     e.test_name = test_folder.filename().string();
@@ -107,7 +113,7 @@ void SsidConfusionEntry::generate_report(RunSuiteStatus &rss) {
                << e.client_mac << " | "
                << e.real_ssid << " | "
                << e.confused_ssid << " | "
-               << (e.strip_rsn ? "yes" : "no") << " | "
+               << e.strip_rsn << " | "
                << e.mitm_achieved << " |\n";
     }
 }

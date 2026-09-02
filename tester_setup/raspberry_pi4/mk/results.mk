@@ -18,6 +18,7 @@ results:
 	$(MAKE) results_gen_only
 
 results_gen_only:
+	$(MAKE) -C $(SRC_ROOT) build_overview
 	rm -rf $(RESULTS_HTML)
 	$(RESULT_OVERVIEW) \
 		--data_dir   $(RESULTS_DATA) \

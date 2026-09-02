@@ -9,6 +9,8 @@ namespace wpa3_tester::overview { struct HtmlGuard; }
 
 namespace wpa3_tester::visual::ssid_confusion_filler {
 
+void setup_suite(const RunSuiteStatus &rss);
+
 struct SsidConfusionEntry {
     std::string test_name;
     std::string ap_mac;

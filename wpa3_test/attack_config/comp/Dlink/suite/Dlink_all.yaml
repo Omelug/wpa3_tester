@@ -3,7 +3,6 @@ config_type: test_suite
 tests:
 
   # add Dos_hard suite
-
   # --------- bl0ck -----------
   bl0ck_BA_Dlink:
     test_name: bl0ck_BA_Dlink
@@ -22,6 +21,14 @@ tests:
   channel_switch_Dlink_MFP_req:
     test_name: channel_switch_Dlink_MFP_req
 
+
+  # ---------malformed_eapol_1 --------
+  #FIXME client side
+  #malformed_eapol1_Dlink:
+  #  test_name: malformed_eapol1_Dlink
+  #malformed_eapol1_patched_Dlink:
+  #  test_name: malformed_eapol1_patched_Dlink
+
   # ------ enterprise
   reflection_attack_Dlink:
     test_name: reflection_attack_Dlink
@@ -30,8 +37,9 @@ tests:
 
   # ------- downgrade -------------
 
-  owe_transition_probe_leak_Dlink:
-    test_name: owe_transition_probe_leak_Dlink
+  #FIXME client side
+  #owe_transition_probe_leak_Dlink:
+  #  test_name: owe_transition_probe_leak_Dlink
 
   # client settings
   wpa3_trans_downgrade_Dlink:

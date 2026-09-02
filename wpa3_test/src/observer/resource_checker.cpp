@@ -1,5 +1,6 @@
 #include "observer/resource_checker.h"
 #include <filesystem>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "config/RunStatus.h"
@@ -63,34 +64,30 @@ vector<ResourceRecord> parse_resource_log(const string &filepath){
 	string line;
 	int n_cores = -1;
 
+	auto parse_line = [&](istringstream &iss) -> optional<ResourceRecord> {
+		ResourceRecord r;
+		if(!(iss >> r.timestamp)) return nullopt;
+		r.core_percents.resize(n_cores);
+		for(int i = 0; i < n_cores; ++i)
+			if(!(iss >> r.core_percents[i])) return nullopt;
+		if(!(iss >> r.mem_free_kb)) return nullopt;
+		if(!(iss >> r.airtime_pct)) return nullopt;
+		if(!(iss >> r.rx_drops)) return nullopt;
+		return r;
+	};
+
 	while(getline(file, line)){
 		if(line.empty()) continue;
-
-		// Parse header to get core count
 		if(line[0] == '#'){
-			// count "cpu" prefixed tokens
 			istringstream h(line);
 			string tok;
 			n_cores = 0;
 			while(h >> tok) if(tok.starts_with("cpu")) ++n_cores;
 			continue;
 		}
-
-		if(n_cores < 0) continue; // no header yet
-
+		if(n_cores < 0) continue;
 		istringstream iss(line);
-		ResourceRecord record;
-		if(!(iss >> record.timestamp)) continue;
-
-		record.core_percents.resize(n_cores);
-		for(int i = 0; i < n_cores; ++i) if(!(iss >> record.core_percents[i])) goto skip;
-
-		if(!(iss >> record.mem_free_kb)) continue;
-		if(!(iss >> record.airtime_pct)) continue;
-		if(!(iss >> record.rx_drops)) continue;
-
-		records.push_back(record);
-	skip:;
+		if(auto rec = parse_line(iss)) records.push_back(*rec);
 	}
 	return records;
 }

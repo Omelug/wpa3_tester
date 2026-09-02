@@ -1,22 +1,24 @@
 #include "target.h"
 
+#include "logger/log.h"
+
 #include <filesystem>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
 #include "overview/html_guard.h"
 #include "system/utils.h"
-#include "visual/scan/ap_info_wpa3_filler.h"
+#include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
-#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
-#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "visual/downgrade/owe_trans_filler.h"
 #include "visual/downgrade/wpa3_downgrade_filler.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
+#include "visual/scan/ap_info_wpa3_filler.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -29,24 +31,6 @@ static const map<string, string> k_attack_page = {
 	{"malformed_eapol1", "../../attacks/DoS_soft/malformed_eapol1/index.html"},
 };
 
-static const map<string, string> k_attack_title = {
-	{"ap_info",           "AP Info (Scanner)"},
-	{"bl0ck",             "Bl0ck - Block ACK DoS"},
-	{"channel_switch",    "Channel Switch (CSA) DoS"},
-	{"malformed_eapol1",  "Malformed EAPOL-1 DoS"},
-	{"invalid_curve",     "Invalid Curve Attack (EAP-PWD)"},
-	{"reflection_attack", "Reflection Attack (EAP-PWD)"},
-	{"sae_dos_wrapper",   "SAE DoS (generic variants)"},
-	{"cookie_guzzler",    "Cookie Guzzler DoS"},
-	{"memory_omnivore",   "Memory Omnivore DoS"},
-	{"pmk_gobbler",          "PMK Gobbler DoS"},
-	{"wpa3_trans_downgrade", "WPA3 Transition Downgrade"},
-};
-
-static const set<string> k_sae_dos_modules = {
-	"sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler",
-};
-
 static string read_attacker_module(const path &test_folder) {
 	const auto cfg = test_folder / "test_config.yaml";
 	if (!exists(cfg)) return "";
@@ -54,7 +38,9 @@ static string read_attacker_module(const path &test_folder) {
 		const auto node = YAML::LoadFile(cfg.string());
 		if (node["attacker_module"])
 			return node["attacker_module"].as<string>();
-	} catch (...) {}
+	} catch (YAML::Exception &e) {
+		log(LogLevel::ERROR, "Failed to load attacker module: {}", e.what());
+	}
 	return "";
 }
 
@@ -73,26 +59,12 @@ static vector<path> collect_test_folders(const path &run_dir) {
 	return result;
 }
 
-static void emit_section_header(HtmlGuard &f, const string &module) {
-	const auto title_it = k_attack_title.find(module);
-	const auto title = (title_it != k_attack_title.end()) ? title_it->second : module;
-	const auto page_it = k_attack_page.find(module);
-
-	f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-	  << "        <h2>";
-	if (page_it != k_attack_page.end())
-		f << "<a href=\"" << page_it->second << "\">" << title << "</a>";
-	else
-		f << title;
-	f << "</h2>\n";
-}
-
 static void render_attack_section(HtmlGuard &f, const std::string &module,
+								  const std::string &attack_name,
 								  const path &suite_data_dir,
 								  const path &page_dir) {
 	using namespace visual;
 
-	// Static registry mapping module strings to their corresponding render function
 	static const std::unordered_map<std::string, RenderFunc> registry = {
 		{ "ap_info",              make_renderer<ap_info_wpa3_filler::ApInfoWpa3TestEntry>() },
 		{ "bl0ck",                make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
@@ -100,23 +72,20 @@ static void render_attack_section(HtmlGuard &f, const std::string &module,
 		{ "reflection_attack",    make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
 		{ "wpa3_trans_downgrade", make_renderer<wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
 		{ "owe_trans",            make_renderer<owe_trans_filler::OweTransTestEntry>() },
-		{ "channel_switch",		  make_renderer<channel_switch_rogueAP::CsaTestEntry>() }
+		{ "channel_switch",		  make_renderer<channel_switch_rogueAP::CsaTestEntry>() },
+		{ "malformed_eapol1",     make_renderer<malformed_eapol1_filler::MalformedEapol1TestEntry>() },
+		// DoS hard
+		{ "cookie_guzzler",		 make_renderer<sae_dos::SaeDosFolderEntry>() },
+		{ "memory_omnivore",     make_renderer<sae_dos::SaeDosFolderEntry>() },
+		{ "pmk_gobbler",	     make_renderer<sae_dos::SaeDosFolderEntry>() },
+		//{ "sae_dos_wrapper",	 make_renderer<sae_dos::SaeDosFolderEntry>() },
 	};
 
-	emit_section_header(f, module);
-
 	if (const auto it = registry.find(module); it != registry.end()) {
-		it->second(f, module, suite_data_dir, page_dir, module);
-	}
-	else if (k_sae_dos_modules.contains(module)) {
-		// Fallback dynamic handling for module sets
-		sae_dos::SaeDosFolderEntry::render_table(f, "sae_dos_modules", suite_data_dir, page_dir);
-	}
-	else {
+		it->second(f, attack_name, suite_data_dir/attack_name, page_dir, module);
+	} else {
 		f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
 	}
-
-	f << "    </div>\n";
 }
 
 
@@ -162,20 +131,16 @@ static void generate_target_page(const path &output_dir,
 		  << "        <h2>Suite: " << suite_name << "</h2>\n"
 		  << "    </div>\n";
 
-		map<string, vector<path>> groups;
 		for (const auto &tf : test_suites_folders) {
 			const auto mod = read_attacker_module(tf);
-			if (!mod.empty())
-				groups[mod].push_back(tf);
+			if (mod.empty()) continue;
+			const string attack_name = tf.parent_path().filename().string();
+			render_attack_section(f, mod, attack_name, tf.parent_path(), page_dir);
 		}
-
-		for (const auto &mod: groups | views::keys)
-			render_attack_section(f, mod, suite_entry.path() , page_dir);
 	}
 
 	if (!any)
 		f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
-
 	f << "</body>\n</html>\n";
 }
 

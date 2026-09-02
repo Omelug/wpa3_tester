@@ -1,23 +1,22 @@
 #include "observer/state_log_graph.h"
+#include "attacks/mc_mitm/client_state.h"
+#include "config/RunStatus.h"
+#include "logger/log.h"
+#include "system/utils.h"
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <optional>
-#include <ranges>
 #include <string>
 #include <vector>
-#include "attacks/mc_mitm/client_state.h"
-#include "config/RunStatus.h"
-#include "logger/log.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::observer::state_log_graph {
 using namespace std;
 using namespace filesystem;
 
 struct Transition {
-    string from, to;
+    string to;
     optional<LogTimePoint> ts;
 };
 
@@ -30,8 +29,7 @@ static vector<Transition> parse_state_log(const path &p) {
         if (colon == string::npos || arrow == string::npos || arrow < colon) continue;
         const LogTimePoint tp = log_time_to_epoch_ns(line);
         result.push_back({
-            line.substr(colon + 3, arrow - colon - 3),
-            line.substr(arrow + 4),
+        	line.substr(arrow + 4),
             tp.time_since_epoch().count() != 0 ? optional{tp} : nullopt
         });
     }
@@ -40,15 +38,14 @@ static vector<Transition> parse_state_log(const path &p) {
 
 void create_state_log_graph(const RunStatus &rs, const string &mac_str) {
 	const path log_path =
-		rs.run_folder() / "logger" / (mac_str + string(SUFFIX_state) + ".log");
+		rs.run_folder() / "observer" / "client_state" / (mac_str + SUFFIX_state + ".log");
 	if (!exists(log_path)) {
-		log(LogLevel::WARNING, "state_log_graph: not found: {}",
-			log_path.string());
+		log(LogLevel::WARNING, "state_log_graph: not found: {}", log_path);
 		return;
 	}
 	create_state_log_graph(log_path,
 						   log_path.parent_path() /
-							   (mac_str + string(SUFFIX_state) + ".png"));
+							   (mac_str + SUFFIX_state + ".png"));
 }
 
 void create_state_log_graph(const path &state_log_path,
@@ -56,25 +53,20 @@ void create_state_log_graph(const path &state_log_path,
 	const auto transitions = parse_state_log(state_log_path);
 	if (transitions.empty()) {
 		log(LogLevel::WARNING, "state_log_graph: empty or unparseable: {}",
-			state_log_path.string());
+			state_log_path);
 		return;
 	}
 
-	// Fixed enum order, names from state2str (single source of truth)
 	static const auto ALL_STATES = []() {
 		vector<string> v;
-		for (int i = ClientState::Unknown;
-			 i <= static_cast<int>(ClientState::GotMitm); ++i)
-			v.push_back(
-				ClientState::state2str(static_cast<ClientState::State>(i)));
+		for (int i = ClientState::Unknown; i <= static_cast<int>(ClientState::GotMitm); ++i)
+			v.push_back(ClientState::state2str(static_cast<ClientState::State>(i)));
 		return v;
 	}();
 
 	auto state_idx = [](const string &s) {
 		const auto it = ranges::find(ALL_STATES, s);
-		return it == ALL_STATES.end()
-				   ? 0
-				   : static_cast<int>(it - ALL_STATES.begin());
+		return it == ALL_STATES.end() ? 0 : static_cast<int>(it - ALL_STATES.begin());
 	};
 
 	const bool has_times = ranges::all_of(
@@ -82,11 +74,11 @@ void create_state_log_graph(const path &state_log_path,
 	const LogTimePoint t0 =
 		has_times ? *transitions.front().ts : LogTimePoint{};
 
-	auto x_val = [&](size_t i) -> double {
-		if (has_times)
-			return chrono::duration_cast<chrono::duration<double>>(
-					   *transitions[i].ts - t0)
-				.count();
+	auto x_val = [&](const size_t i) -> double {
+		if (has_times) {
+			return chrono::duration_cast<chrono::duration<double>>
+						(*transitions[i].ts - t0).count();
+		}
 		return static_cast<double>(i);
 	};
 
@@ -113,7 +105,7 @@ void create_state_log_graph(const path &state_log_path,
 	for (size_t i = 0; i < ALL_STATES.size(); ++i) {
 		if (i > 0)
 			fprintf(gp, ", ");
-		fprintf(gp, "'%s' %zu", ALL_STATES[i].c_str(), i);
+		fprintf(gp, "'%s' %zu", escape_tex(ALL_STATES[i]).c_str(), i);
 	}
 	fprintf(gp, ")\n");
 

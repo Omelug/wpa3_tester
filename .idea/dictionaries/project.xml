@@ -15,6 +15,7 @@
       <w>Reasso</w>
       <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
+      <w>Xclang</w>
       <w>aabbccddee</w>
       <w>acces</w>
       <w>acks</w>
@@ -33,6 +34,7 @@
       <w>blackboc</w>
       <w>bmargin</w>
       <w>bprot</w>
+      <w>busnum</w>
       <w>capabilies</w>
       <w>caplen</w>
       <w>cassert</w>
@@ -43,6 +45,7 @@
       <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>
+      <w>conn</w>
       <w>cout</w>
       <w>cpuinfo</w>
       <w>credout</w>
@@ -53,6 +56,7 @@
       <w>cstring</w>
       <w>cwmax</w>
       <w>cwmin</w>
+      <w>czech</w>
       <w>ddwrt</w>
       <w>debugfs</w>
       <w>debugfsdir</w>
@@ -62,12 +66,15 @@
       <w>delba</w>
       <w>dellink</w>
       <w>destmac</w>
+      <w>devfs</w>
+      <w>devnum</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
       <w>dkms</w>
       <w>dlinkroot</w>
       <w>dmesg</w>
+      <w>dontwait</w>
       <w>dragondrain</w>
       <w>dtoverlay</w>
       <w>eapol</w>
@@ -90,6 +97,7 @@
       <w>firmaware</w>
       <w>firstboot</w>
       <w>fmtloc</w>
+      <w>fpch</w>
       <w>fprintf</w>
       <w>frametype</w>
       <w>freqs</w>
@@ -135,6 +143,7 @@
       <w>libelf</w>
       <w>libgcc</w>
       <w>libssh</w>
+      <w>libstdc</w>
       <w>libtins</w>
       <w>libwifi</w>
       <w>logread</w>
@@ -262,6 +271,7 @@
       <w>txpower</w>
       <w>txpwr</w>
       <w>udevadm</w>
+      <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
       <w>vline</w>

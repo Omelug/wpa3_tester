@@ -1,0 +1,68 @@
+[ 9749.585418] usb 1-1.2: new high-speed USB device number 10 using xhci_hcd
+[ 9749.674439] usb 1-1.2: New USB device found, idVendor=0e8d, idProduct=7612, bcdDevice= 1.00
+[ 9749.674454] usb 1-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 9749.674459] usb 1-1.2: Product: 802.11ac WLAN
+[ 9749.674463] usb 1-1.2: Manufacturer: MediaTek Inc.
+[ 9749.674468] usb 1-1.2: SerialNumber: 000000000
+[ 9749.769915] usb 1-1.3: reset high-speed USB device number 9 using xhci_hcd
+[ 9749.862577] mt76x2u 1-1.3:1.0: ASIC revision: 76120044
+[ 9749.883256] mt76x2u 1-1.3:1.0: ROM patch build: 20141115060606a
+[ 9750.925839] mt76x2u 1-1.3:1.0: firmware upload failed: -110
+[ 9752.404236] mt76x2u 1-1.3:1.0: probe with driver mt76x2u failed with error -5
+[ 9752.474028] usb 1-1.2: reset high-speed USB device number 10 using xhci_hcd
+[ 9752.567672] mt76x2u 1-1.2:1.0: ASIC revision: 76120044
+[ 9752.589825] mt76x2u 1-1.2:1.0: ROM patch build: 20141115060606a
+[ 9752.757624] mt76x2u 1-1.2:1.0: Firmware Version: 0.0.00
+[ 9752.757655] mt76x2u 1-1.2:1.0: Build: 1
+[ 9752.757667] mt76x2u 1-1.2:1.0: Build Time: 201507311614____
+[ 9752.816342] usb 1-1.2: USB disconnect, device number 10
+[ 9752.821203] mt76x2u 1-1.2:1.0: firmware upload failed: -19
+[ 9752.851574] mt76x2u 1-1.2:1.0: probe with driver mt76x2u failed with error -5
+[ 9752.851800] usbcore: registered new interface driver mt76x2u
+[ 9753.262355] usb 1-1.3: USB disconnect, device number 9
+[ 9757.837566] usb 1-1.2: new high-speed USB device number 11 using xhci_hcd
+[ 9757.926546] usb 1-1.2: New USB device found, idVendor=0e8d, idProduct=2870, bcdDevice= 0.01
+[ 9757.926576] usb 1-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 9757.926591] usb 1-1.2: Product: Љ
+[ 9757.926603] usb 1-1.2: Manufacturer: Љ
+[ 9757.926614] usb 1-1.2: SerialNumber: Љ
+[ 9757.928915] usb-storage 1-1.2:1.0: USB Mass Storage device detected
+[ 9757.929500] scsi host0: usb-storage 1-1.2:1.0
+[ 9758.749553] usb 1-1.3: new high-speed USB device number 12 using xhci_hcd
+[ 9758.838534] usb 1-1.3: New USB device found, idVendor=0e8d, idProduct=2870, bcdDevice= 0.01
+[ 9758.838548] usb 1-1.3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 9758.838553] usb 1-1.3: Product: Љ
+[ 9758.838557] usb 1-1.3: Manufacturer: Љ
+[ 9758.838561] usb 1-1.3: SerialNumber: Љ
+[ 9758.840375] usb-storage 1-1.3:1.0: USB Mass Storage device detected
+[ 9758.840680] scsi host0: usb-storage 1-1.3:1.0
+[ 9758.844755] usb 1-1.2: USB disconnect, device number 11
+[ 9759.198357] ath9k_htc: unknown parameter 'user_regd' ignored
+[ 9759.198581] usbcore: registered new interface driver ath9k_htc
+[ 9759.393824] usb 2-2: new SuperSpeed USB device number 51 using xhci_hcd
+[ 9759.411617] usb 2-2: New USB device found, idVendor=0e8d, idProduct=7612, bcdDevice= 1.00
+[ 9759.411630] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 9759.411635] usb 2-2: Product: 802.11ac WLAN
+[ 9759.411640] usb 2-2: Manufacturer: MediaTek Inc.
+[ 9759.411644] usb 2-2: SerialNumber: 000000000
+[ 9759.542190] usb 2-2: reset SuperSpeed USB device number 51 using xhci_hcd
+[ 9759.567998] mt76x2u 2-2:1.0: ASIC revision: 76120044
+[ 9759.586144] usb 1-1.3: USB disconnect, device number 12
+[ 9759.602813] mt76x2u 2-2:1.0: ROM patch build: 20141115060606a
+[ 9759.754182] mt76x2u 2-2:1.0: Firmware Version: 0.0.00
+[ 9759.754200] mt76x2u 2-2:1.0: Build: 1
+[ 9759.754203] mt76x2u 2-2:1.0: Build Time: 201507311614____
+[ 9760.433576] usb 1-1.3: new high-speed USB device number 13 using xhci_hcd
+[ 9760.516656] ieee80211 phy115: Selected rate control algorithm 'minstrel_ht'
+[ 9760.522965] usb 1-1.3: New USB device found, idVendor=0e8d, idProduct=7612, bcdDevice= 1.00
+[ 9760.522998] usb 1-1.3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 9760.523003] usb 1-1.3: Product: 802.11ac WLAN
+[ 9760.523008] usb 1-1.3: Manufacturer: MediaTek Inc.
+[ 9760.523012] usb 1-1.3: SerialNumber: 000000000
+[ 9760.601919] usb 1-1.3: reset high-speed USB device number 13 using xhci_hcd
+[ 9760.694242] mt76x2u 1-1.3:1.0: ASIC revision: 76120044
+[ 9760.722382] mt76x2u 1-1.3:1.0: ROM patch build: 20141115060606a
+[ 9760.882278] mt76x2u 1-1.3:1.0: Firmware Version: 0.0.00
+[ 9760.882293] mt76x2u 1-1.3:1.0: Build: 1
+[ 9760.882296] mt76x2u 1-1.3:1.0: Build Time: 201507311614____
+[ 9761.624621] ieee80211 phy116: Selected rate control algorithm 'minstrel_ht

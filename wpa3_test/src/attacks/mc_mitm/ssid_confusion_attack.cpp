@@ -1,6 +1,8 @@
 #include "attacks/mc_mitm/ssid_confusion_attack.h"
 
+#include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
+#include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion_hooks.h"
 #include "config/RunStatus.h"
 #include "observer/state_log_graph.h"
@@ -9,7 +11,15 @@ using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::ssid_confusion{
+namespace wpa3_tester::ssid_confusion {
+
+void setup_attack(RunStatus &rs) {
+	const auto conf = rs.config_path().parent_path() / "config" / "SafeNet_WrongNet.conf";
+	if(exists(conf)){ copy_f(conf, rs.run_folder() / "SafeNet_WrongNet.conf");}
+	components::client_ap_setup_t(rs);
+	components::setup_AP(rs, "wrong_ap");
+}
+
 void run_attack(RunStatus &rs){
 	const auto rogue_client = rs.get_actor("rogue_client");
 	const auto rogue_ap     = rs.get_actor("rogue_ap");
@@ -21,7 +31,7 @@ void run_attack(RunStatus &rs){
 	const bool   strip_rsn     = att_cfg.value("strip_rsn", false);
 	const int    timeout       = att_cfg.value("attack_time_sec", 30);
 
-	McMitm attack(rogue_client, rogue_ap, client, ap, rs.run_folder() / "logger");
+	McMitm attack(rogue_client, rogue_ap, client, ap, rs.run_folder());
 
 	attack.set_hooks(make_unique<SsidConfusionHooks>(ap.get(SK::ssid), confused_ssid, strip_rsn));
 
@@ -37,11 +47,9 @@ void run_attack(RunStatus &rs){
 	attack.run(rs, timeout);
 }
 
+//TODO
 void stats_attack(const RunStatus &rs) {
-	const string mac_str = rs.get_actor("client").get(SK::mac);
-	const filesystem::path state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
-	const filesystem::path out_log = rs.run_folder() / "observer" / "client_state" / "rogue_client.png";
-	observer::state_log_graph::create_state_log_graph(state_log,out_log);
+	mc_mitm::stats(rs);
 }
 
 }

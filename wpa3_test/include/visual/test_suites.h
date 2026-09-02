@@ -7,13 +7,14 @@
 #include "DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "DoS_soft/channel_switch/channel_switch_versions.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
-#include "enterprise/enterprise_filler_helper.h"
-#include "enterprise/invalid_curve/invalid_curve_filler.h"
-#include "enterprise/reflection_attack/reflection_attack_filler.h"
 #include "attacks/enterprise/eap_helper.h"
 #include "config/RunSuiteStatus.h"
 #include "downgrade/owe_trans_filler.h"
 #include "downgrade/wpa3_downgrade_filler.h"
+#include "enterprise/enterprise_filler_helper.h"
+#include "enterprise/invalid_curve/invalid_curve_filler.h"
+#include "enterprise/reflection_attack/reflection_attack_filler.h"
+#include "mc_mitm/ssid_confusion_filler.h"
 #include "scan/ap_info_wpa3_filler.h"
 #include "scan/iface_info_filler.h"
 #include "two_iface/active_test_filler.h"
@@ -22,9 +23,10 @@
 namespace wpa3_tester::visual{
 /* map of test_suite_name->post-run callback function */
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_setup_map = {
+	{"wpa3_downgrade_filler", wpa3_downgrade_filler::setup_suite},
 	{"reflection_attack_filler", enterprise_filler_helper::setup_suite},
 	{"invalid_curve_filler", enterprise_filler_helper::setup_suite},
-	{"wpa3_downgrade_filler", wpa3_downgrade_filler::setup_suite},
+	{"ssid_confusion_filler", ssid_confusion_filler::setup_suite},
 	//{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::setup_suite},
 };
 

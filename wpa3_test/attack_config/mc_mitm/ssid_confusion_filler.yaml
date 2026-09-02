@@ -1,8 +1,9 @@
 name: ssid_confusion_filler
 config_type: test_suite
+suite_functions: ssid_confusion_filler
 tests:
   all_actors:
     type: actor_filler
-    config: ./ssid_confusion.yaml
+    config: ./ssid_confusion_internal.yaml
 delete_old: true
 rewrite: errors

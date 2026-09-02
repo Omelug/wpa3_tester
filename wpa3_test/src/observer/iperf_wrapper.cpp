@@ -1,10 +1,15 @@
 #include "observer/iperf_wrapper.h"
-#include <cassert>
-#include <filesystem>
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
+#include "overview/described.h"
 #include "system/hw_capabilities.h"
+#include "visual/result_helper.h"
+
+#include <cassert>
+#include <filesystem>
+#include <fstream>
+#include <optional>
 
 namespace wpa3_tester::observer{
 using namespace std;
@@ -91,7 +96,17 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 constexpr string program_name = "iperf3";
 
+static void kill_iperf3_port(const RunStatus &rs, const string &actor_name){
+	vector<string> kill_cmd;
+	add_nets_header(rs, kill_cmd, actor_name);
+	kill_cmd.insert(kill_cmd.end(), {"fuser", "-k", "5201/tcp"});
+	string cmd;
+	for (const auto &p : kill_cmd) cmd += p + " ";
+	system((cmd + "2>/dev/null").c_str());
+}
+
 void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_name, const string &dst_name){
+	kill_iperf3_port(rs, src_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, src_name);
 	command.insert(command.end(), {
@@ -106,6 +121,8 @@ void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_nam
 }
 
 void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &server_name){
+
+	kill_iperf3_port(rs, server_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, server_name);
 	command.insert(command.end(), {
@@ -116,5 +133,27 @@ void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &
 					});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
+}
+
+described_bool iperf_was_down(RunStatus &rs, const path &test_folder){
+	const auto window = visual::helper::get_run_window(rs, rs.get_actor("client"));
+	described_bool result;
+	const path dir = test_folder / "observer" / "iperf3";
+	const path ap  = dir / "ap_iperf3_server.log";
+	const path cl  = dir / "client_iperf3_gen.log";
+	if(!exists(ap) && !exists(cl)) return {};
+
+	auto has_zero = [&window](const path &p, const string &actor_name) -> described_bool::pair_t {
+		if(!exists(p)) return {nullopt, actor_name + " iperf3"};
+		ifstream f(p);
+		string line;
+		while(get_line_in_window(f, line, window))
+			if(line.find("0.00 Bytes") != string::npos)
+				return {true, actor_name + " iperf3"};
+		return {false, actor_name + " iperf3"};
+	};
+	result += has_zero(ap, "ap");
+	result += has_zero(cl, "client");
+	return result;
 }
 }

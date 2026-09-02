@@ -129,12 +129,27 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter){
 	});
 }
 
+static LogTimePoint epoch_str_to_tp(const string &s){
+	if(s.empty()) return LogTimePoint{};
+	try{
+		const auto dot = s.find('.');
+		const int64_t sec_ns = stoll(s) * 1'000'000'000LL;
+		int64_t frac_ns = 0;
+		if(dot != string::npos){
+			string frac = s.substr(dot + 1);
+			frac.resize(9, '0');
+			frac_ns = stoll(frac);
+		}
+		return LogTimePoint(chrono::nanoseconds(sec_ns + frac_ns));
+	} catch(...){ return LogTimePoint{}; }
+}
+
 path extract_pcap_to_csv(const string &actor_name, const path &real_folder, const string &tshark_filter){
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const path csv_path = real_folder / (actor_name + ".csv");
 
 	vector<string> gen_cmd = {
-		"tshark", "-l", "-t", "ad", "-r", pcap_path.string(), "-T", "fields", "-e", "frame.number", "-e", "frame.time",
+		"tshark", "-r", pcap_path.string(), "-T", "fields", "-e", "frame.number", "-e", "frame.time_epoch",
 		"-e", "frame.len", "-E", "separator=|"
 	};
 
@@ -167,39 +182,20 @@ pair<vector<LogTimePoint>,vector<double>> times_packet_sizes_from_csv(const path
 		stringstream ss(line);
 		string frame_num_str, t_str, s_str;
 		if(getline(ss, frame_num_str, '|') && getline(ss, t_str, '|') && getline(ss, s_str, '|')){
-			try{
-				const LogTimePoint tp = log_time_to_epoch_ns(t_str);
-				if(tp.time_since_epoch().count() == 0) continue;
-				times.push_back(tp);
-				sizes.push_back(stod(s_str));
-			} catch(...){}
+			const LogTimePoint tp = epoch_str_to_tp(trim(t_str));
+			if(tp.time_since_epoch().count() == 0) continue;
+			try{ sizes.push_back(stod(s_str)); } catch(...){ continue; }
+			times.push_back(tp);
 		}
 	}
 	return {times, sizes};
 }
 
 LogTimePoint get_pcap_start_time(const string &pcap_path){
-	const vector<string> get_start_cmd = {
+	const string s = trim(hw_capabilities::run_cmd_output({
 		"tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1"
-	};
-
-	string s = hw_capabilities::run_cmd_output(get_start_cmd);
-	s = trim(s);
-	if(s.empty()) return LogTimePoint{};
-
-	try{
-		const auto dot = s.find('.');
-		const int64_t sec_ns = stoll(s) * 1'000'000'000LL;
-		int64_t frac_ns = 0;
-		if(dot != string::npos){
-			string frac = s.substr(dot + 1);
-			frac.resize(9, '0');
-			frac_ns = stoll(frac);
-		}
-		return LogTimePoint(chrono::nanoseconds(sec_ns + frac_ns));
-	} catch(...){
-		return LogTimePoint{};
-	}
+	}));
+	return epoch_str_to_tp(s);
 }
 
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,
@@ -213,8 +209,8 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	}
 
 	const vector<string> gen_cmd = {
-		"tshark", "-l", "-t", "ad", "-r", pcap_path.string(), "-Y", tshark_filter, "-T", "fields", "-e", "frame.number",
-		"-e", "frame.time"
+		"tshark", "-r", pcap_path.string(), "-Y", tshark_filter, "-T", "fields", "-e", "frame.number",
+		"-e", "frame.time_epoch"
 	};
 
 	const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
@@ -233,16 +229,14 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		line = trim(line);
 		if(line.empty()) continue;
 
-		try{
-			stringstream ss(line);
-			string frame_num_str, time_str;
-			if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)){
-				const LogTimePoint tp = log_time_to_epoch_ns(time_str);
-				if(tp.time_since_epoch().count() != 0 &&
-				    (window == nullopt || window == TimeWindow{} || window->contains(tp)))
-					timestamps.push_back(tp);
-			}
-		} catch(const exception &e){ log(LogLevel::WARNING, "Failed to parse timestamp '{}': {}", line, e.what()); }
+		stringstream ss(line);
+		string frame_num_str, time_str;
+		if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)){
+			const LogTimePoint tp = epoch_str_to_tp(trim(time_str));
+			if(tp.time_since_epoch().count() != 0 &&
+			    (window == nullopt || window == TimeWindow{} || window->contains(tp)))
+				timestamps.push_back(tp);
+		}
 	}
 
 	log(LogLevel::INFO, "Extracted {} timestamps matching filter '{}'", timestamps.size(), tshark_filter);
@@ -265,6 +259,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 
 	if(times.empty() || sizes.empty() || times.size() != sizes.size()){
 		log(LogLevel::ERROR, "Invalid traffic data {}", csv_path);
+		return "";
 	}
 
 	auto g = Graph();
@@ -283,9 +278,14 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	g.gpcmd("set xlabel 'Time (s)'");
 	g.gpcmd("set ylabel 'Packet Size'");
 
-	auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
-	g.ymin = *min_it;
-	g.ymax = *max_it;
+	if(sizes.empty()){
+		//TODO default min/max hardcoded
+		g.ymin = 0; g.ymax = 1500;
+	} else {
+		auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
+		g.ymin = *min_it;
+		g.ymax = *max_it;
+	}
 
 	double pad = (g.ymax - g.ymin) * 0.5;
 	if(pad == 0) pad = 1.0;

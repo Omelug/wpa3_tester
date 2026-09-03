@@ -53,15 +53,20 @@ public:
 enum class YAxis{ Y1, Y2 };
 
 class GraphXYPoints: public GraphElements{
-	//YAxis axis = YAxis::Y1;
 public:
+	YAxis axis = YAxis::Y1;
+	double y2_min = 0.0;
+	double y2_max = 100.0;
 	std::vector<LogTimePoint> x_times;
 	std::vector<double> y_values;
 
 	GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
-				const std::string &label, const std::string &color = "green"
+				const std::string &label, const std::string &color = "green",
+				const YAxis axis = YAxis::Y1,
+				const double y2_min = 0.0, const double y2_max = 100.0
 	)
-	: GraphElements(label, color), x_times(x_times), y_values(y_values){
+	: GraphElements(label, color), axis(axis), y2_min(y2_min), y2_max(y2_max),
+	  x_times(x_times), y_values(y_values){
 		type = GraphElement_t::GRAPH_XY_POINTS;
 	}
 

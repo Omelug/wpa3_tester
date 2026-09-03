@@ -19,11 +19,29 @@ void Graph::add_XY_points(const GraphXYPoints &xy_points){
 		line << fixed << setprecision(9) << t << " " << xy_points.y_values[i];
 		gpcmd(line.str());
 	}
-	ostringstream part;
-	part << "$" + xy_points.label << " using 1:2" << " with points pt 7 ps 0.7" << " lc rgb '" << xy_points.color << "'"
-			<< " title '" << xy_points.label << "'";
-	plot_parts.push_back(part.str());
 	gpcmd("EOD");
+
+	if(xy_points.axis == YAxis::Y2){
+		gpcmd("set ytics nomirror");
+		gpcmd("set y2tics");
+		gpcmd("set y2range [" + to_string(xy_points.y2_min) + ":" + to_string(xy_points.y2_max) + "]");
+		gpcmd("set y2label 'Throughput (Mbits/sec)'");
+	}
+
+	ostringstream part;
+	if(xy_points.axis == YAxis::Y2){
+		part << "$" << xy_points.label << " using 1:2"
+		     << " with linespoints lw 2 pt 7 ps 0.5"
+		     << " lc rgb '" << xy_points.color << "'"
+		     << " axes x1y2"
+		     << " title '" << xy_points.label << "'";
+	} else {
+		part << "$" << xy_points.label << " using 1:2"
+		     << " with points pt 7 ps 0.7"
+		     << " lc rgb '" << xy_points.color << "'"
+		     << " title '" << xy_points.label << "'";
+	}
+	plot_parts.push_back(part.str());
 }
 
 void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot,
@@ -32,7 +50,7 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
 	if(event_lines.event_times.empty()) return;
 
 	const string block_name = "$ev" + to_string(event_block_index++);
-	gpcmd(block_name + " << EOD");
+	gpcmd(escape_tex(block_name) + " << EOD");
 
 	const double y_center = (ymin + ymax) / 2.0;
 	const double step = 10.0 * static_cast<double>(label_slot) * (1.0 / static_cast<double>(num_label_slots));
@@ -54,15 +72,15 @@ void Graph::add_event_lines(EventLines &event_lines, size_t &event_block_index, 
 		if(y < ymin) ymin = y - pad;
 		if(y > ymax) ymax = y + pad;
 
-		fprintf(file, "%s %f %f \"%s\"\n", t_str.c_str(), y, (ymax + ymin) / 2, event_lines.label.c_str());
+		fprintf(file, "%s %f %f \"%s\"\n", t_str.c_str(), y, (ymax + ymin) / 2, escape_tex(event_lines.label).c_str());
 	}
 	gpcmd("EOD");
 
 	ostringstream part;
 	part << block_name << " using 1:2:(0):($3-$2) with vectors nohead" << " lc rgb '" << event_lines.color <<
 			"' dt 2 notitle, " << block_name << " using 1:2 with points pt 7 ps 1.2" << " lc rgb '" << event_lines.color
-			<< "' notitle, " << block_name << " using 1:2:4 with labels tc rgb '" << event_lines.color << "' " << (
-				label_index % 2 == 0 ? "offset 0,1" : "offset 0,-1") << " rotate by 45 notitle";
+			<< "' notitle, " << block_name << " using 1:2:4 with labels tc rgb '" << event_lines.color << "' "
+			<< (label_index % 2 == 0 ? "offset 0,1" : "offset 0,-1") << " rotate by 45 notitle";
 
 	plot_parts.push_back(part.str());
 	label_index++;

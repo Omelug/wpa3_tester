@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include "config/RunStatus.h"
+#include "overview/described.h"
 #include "graph/graph_elements.h"
 #include "logger/log.h"
 
@@ -57,7 +58,7 @@ std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
 std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
 
 // PBAC (Protected Block Ack Agreement Capable, RSN caps bit 12) from AP Beacon / Probe Response
-std::optional<bool> pbac_from_pcap_ap(const std::filesystem::path &pcap_path);
+described_bool pbac_from_pcap_ap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});
 // PBAC from client Probe Request or Association Request frames
-std::optional<bool> pbac_from_pcap_client(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
+described_bool pbac_from_pcap_client(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
 }

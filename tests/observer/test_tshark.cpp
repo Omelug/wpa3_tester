@@ -243,3 +243,17 @@ TEST_CASE("transform_to_relative - converts absolute timestamps to relative"){
 	CHECK(empty_times.empty());
 
 }
+
+// ---- pbac_from_pcap_ap ----
+
+TEST_CASE("pbac_from_pcap_ap - beacon with no PBAC bit returns false"){
+	if(!tshark_available()){ MESSAGE("tshark not found, skipping"); return; }
+
+	const path pcap = path(TEST_PCAP_DIR) / "beacon_test.pcapng";
+	REQUIRE(exists(pcap));
+
+	const described_bool result = pbac_from_pcap_ap(pcap, "24:ec:99:bf:b0:a1");
+	REQUIRE_FALSE(result.empty());
+	CHECK_EQ(result.last().value, optional(false));
+	CHECK_EQ(result.last().description, "client_pcap");
+}

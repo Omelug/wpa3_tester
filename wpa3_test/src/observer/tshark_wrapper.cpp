@@ -448,6 +448,7 @@ optional<bool> addba_seen_from_pcap(const path &pcap_path){
 	}, nullopt));
 	return !out.empty();
 }
+//TODO tests for parsing with al packets
 
 // RSN Capabilities bit 12 = PBAC (Protected Block Ack Agreement Capable), 802.11-2020 Table 9-264
 static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_filter){
@@ -467,15 +468,20 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 	catch(...){ return nullopt; }
 }
 
-optional<bool> pbac_from_pcap_ap(const path &pcap_path){
-	return pbac_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
+described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac){
+	string filter = "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005";
+	if(!ap_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + ap_mac;
+	described_bool result;
+	result += {pbac_from_pcap(pcap_path, filter), "client_pcap"};
+	return result;
 }
 
-optional<bool> pbac_from_pcap_client(const path &pcap_path, const string &client_mac){
-	// Assoc Request (0x0000) carries RSN IE; probe requests (0x0004) often don't but checked too
+described_bool pbac_from_pcap_client(const path &pcap_path, const string &client_mac){
 	string filter = "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0004";
 	if(!client_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + client_mac;
-	return pbac_from_pcap(pcap_path, filter);
+	described_bool result;
+	result += {pbac_from_pcap(pcap_path, filter), "client_pcap"};
+	return result;
 }
 
 // ----- scanning -----

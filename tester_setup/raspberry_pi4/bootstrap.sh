@@ -26,13 +26,6 @@ sudo apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 #(cd /tmp/hcxtools && make && sudo make install)
 #sudo rm -rf /tmp/hcxtools
 
-if ! command -v mausezahn &>/dev/null && [ ! -x /usr/local/sbin/mausezahn ]; then
-    echo "==> Building mausezahn from source (not in RPi OS repos)..."
-    sudo rm -rf /tmp/netsniff-ng
-    git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
-    (cd /tmp/netsniff-ng && sudo ./configure && sudo make mausezahn && sudo make install_mausezahn)
-    sudo rm -rf /tmp/netsniff-ng
-fi
 #TODO musí tam být defaultně (spíč jo)
 if ! command -v hostapd-mana &>/dev/null; then
     echo "==> Building hostapd-mana from source..."

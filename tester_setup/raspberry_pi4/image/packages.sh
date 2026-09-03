@@ -15,6 +15,7 @@ WPA3_APT_PACKAGES=(
     avahi-daemon quilt trace-cmd gdbserver bc
     tshark iperf3 gnuplot
     hcxtools
+    netsniff-ng
     dkms linux-headers-rpi-v8
     sshpass
     python3-pip

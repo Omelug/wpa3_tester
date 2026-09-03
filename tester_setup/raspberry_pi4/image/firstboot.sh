@@ -23,11 +23,6 @@ fi
 
 source /usr/local/bin/wpa3-drivers.sh
 
-echo "[firstboot] Building mausezahn from source..."
-git clone --depth=1 https://github.com/netsniff-ng/netsniff-ng /tmp/netsniff-ng
-(cd /tmp/netsniff-ng && ./configure && make mausezahn && make install_mausezahn)
-rm -rf /tmp/netsniff-ng
-
 echo "[firstboot] Building hostapd-mana from source..."
 git clone --depth=1 https://gitlab.com/kalilinux/packages/hostapd-mana /tmp/hostapd-mana
 (

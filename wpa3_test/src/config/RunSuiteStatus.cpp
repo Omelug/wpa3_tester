@@ -334,7 +334,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 ){
 	const path rel = source_info.at("config").get<string>();
 	path src = absolute(_config_path.parent_path() / rel);
-	if(!exists(src)) throw config_err("actor_filler: config not found: " + src.string());
+	if(!exists(src)) throw config_err("actor_filler: config not found: {}", src);
 
 	const json template_config = RunStatus::config_validation(src);
 
@@ -344,7 +344,7 @@ void RunSuiteStatus::defined_by_actor_filler(basic_json<> source_info, const str
 		if(!actor_j.contains("source") || actor_j.at("source").get<string>() != "internal") continue;
 		rules.emplace(actor_name, ActorPtr(make_shared<Actor_Config_internal>(actor_j)));
 	}
-	if(rules.empty()) throw config_err("actor_filler: no internal actors in " + src.string());
+	if(rules.empty()) throw config_err("actor_filler: no internal actors in {}", src);
 
 	if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = RunStatus::internal_options();
 

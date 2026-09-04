@@ -21,7 +21,7 @@ struct Bl0ckTestEntry{
 	//result params
 	int disconnect_count = 0;
 	std::vector<double> reconnection;
-	described_bool bl0ck_iperf;
+	described_str bl0ck_iperf;
 	described_bool ADDBA_seen;
 	described_bool ap_PBAC;
 	described_bool client_PBAC;

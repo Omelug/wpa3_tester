@@ -57,8 +57,10 @@ std::string client_scanning_from_pcap(const std::filesystem::path &pcap_path,
 // returns true if seen, false if pcap exists but none found, nullopt if pcap missing
 std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
 
-// PBAC (Protected Block Ack Agreement Capable, RSN caps bit 12) from AP Beacon / Probe Response
-described_bool pbac_from_pcap_ap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});
+// PBAC (Protected Block Ack Agreement Capable, RSN caps bit 12) from AP Beacon / Probe Response.
+// Optionally pass run_folder + actor_name to also read saved OpenWrt UCI config (ieee80211w).
+described_bool pbac_from_pcap_ap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {},
+                                  const std::filesystem::path &run_folder = {}, const std::string &actor_name = {});
 // PBAC from client Probe Request or Association Request frames
 described_bool pbac_from_pcap_client(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
 }

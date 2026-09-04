@@ -52,6 +52,7 @@ public:
 	// log for whole test
 	static void write_log_line(std::ofstream &os, const std::string &line);
 	void write_log_all(const std::string &line);
+	size_t processes_size() const;
 	bool process_exists(const std::string &process_name) const;
 	int get_pid(const std::string &process_name);
 private:

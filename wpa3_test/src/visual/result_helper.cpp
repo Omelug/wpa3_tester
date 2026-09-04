@@ -115,7 +115,7 @@ described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
 };
 
 described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow window){
-	assert(rs.actor("ap") && rs.actor("client"));
+	assert(rs.actor("ap") || rs.actor("client"));
 	described_str client_WPA_support{};
 	const auto wpa_config = rs.run_folder() / "client_wpa_supplicant.conf";
 	if(exists(wpa_config)){

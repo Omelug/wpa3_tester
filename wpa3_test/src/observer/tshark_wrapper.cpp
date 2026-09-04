@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
 #include <set>
 #include <sstream>
 
@@ -468,11 +469,28 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 	catch(...){ return nullopt; }
 }
 
-described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac){
+described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac,
+                                  const path &run_folder, const string &actor_name){
 	string filter = "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005";
 	if(!ap_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + ap_mac;
 	described_bool result;
 	result += {pbac_from_pcap(pcap_path, filter), "client_pcap"};
+
+	if(!run_folder.empty() && !actor_name.empty()){
+		const path uci_file = run_folder / (actor_name + "_uci_wireless.txt");
+		if(exists(uci_file)){
+			ifstream f(uci_file);
+			for(string line; getline(f, line);){
+				const auto pos = line.find("ieee80211w=");
+				if(pos == string::npos) continue;
+				string val = line.substr(pos + 11);
+				erase_if(val, [](char c){ return c=='\'' || c=='"' || c=='\r' || c=='\n'; });
+				try{ result += {stoi(val) > 0, "openwrt_uci(ieee80211w=" + val + ")"}; }
+				catch(...) {}
+				break;
+			}
+		}
+	}
 	return result;
 }
 

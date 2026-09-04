@@ -13,7 +13,11 @@ using namespace std;
 using namespace filesystem;
 
 ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder){
-	auto e = helper::load_result_default<ApInfoWpa3TestEntry>(test_folder);
+	auto result = helper::load_result_json(test_folder);
+	// backward-compat: akm was stored as a plain string before becoming vector<string>
+	if(result && result->contains("akm") && (*result)["akm"].is_string())
+		(*result)["akm"] = nlohmann::json::array({(*result)["akm"].get<string>()});
+	auto e = result ? helper::load_result_default<ApInfoWpa3TestEntry>(*result) : ApInfoWpa3TestEntry{};
 	e.test_name = test_folder.filename().string();
 	return e;
 }

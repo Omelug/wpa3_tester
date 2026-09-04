@@ -23,6 +23,10 @@ void ProcessManager::write_log_all(const string &line){
 	}
 }
 
+size_t ProcessManager::processes_size() const{
+	scoped_lock lock(logger_mtx);
+	return processes.size();
+}
 
 bool ProcessManager::process_exists(const string &process_name) const{
 	scoped_lock lock(logger_mtx);

@@ -19,10 +19,11 @@ void start_iperf3(RunStatus &rs, const std::string &actor_name, const std::strin
 );
 
 void start_iperf3_server(RunStatus &rs, const std::string &actor_name, const std::string &server_name);
-described_bool iperf_was_down(RunStatus &rs, const std::filesystem::path &test_folder);
+described_str iperf_was_down(RunStatus &rs, const std::filesystem::path &test_folder);
 
-// Plain scan: no-timestamp log (external WB AP daemon log). Exposed for testing.
-bool iperf_log_has_zero_plain(const std::filesystem::path &log_path);
+// Returns "down" if >=5 consecutive zero-byte intervals, "unstable" if any zeros, empty if clean.
+// Threshold constant ZERO_STREAK_THRESHOLD = 5 (intervals = seconds in normal iperf3 output).
+described_str iperf_log_has_zero_plain(const std::filesystem::path &log_path, const TimeWindow &window = {});
 
 // parse an iperf3 log file
 // return a GraphXYPoints on Y2 axis (0–15 Mbits/sec)

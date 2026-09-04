@@ -93,15 +93,14 @@ private:
     }
 
 	static std::string find_common_prefix(const std::vector<std::string>& strings){
-		if (strings.empty()) return "";
-
+		if(strings.empty()) return "";
 		const std::string& first = strings[0];
 		size_t len = 0;
-
-		for (; len < first.size(); ++len) {
-			for (const auto& str : strings) {
-				if (len >= str.size() || str[len] != first[len]) break;
-			}
+		for(; len < first.size(); ++len){
+			bool mismatch = false;
+			for(const auto& str : strings)
+				if(len >= str.size() || str[len] != first[len]){ mismatch = true; break; }
+			if(mismatch) break;
 		}
 		const size_t sep = first.rfind('_', len);
 		len = (sep != std::string::npos) ? sep + 1 : len;

@@ -5,6 +5,7 @@
 #include "default.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/error_log.h"
 #include "logger/log.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
@@ -35,6 +36,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
 
+
 	const auto ap = rs.get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
 	e.ap_source = ap->get(SK::source);
@@ -47,8 +49,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	e.attacker_mac = att->get(SK::mac);
 	e.attacker_driver = att->get(SK::driver_name);
 
-	const auto cfg = YAML::LoadFile(cfg_path);
-	if(cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
+	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
 		e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 
 	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
@@ -58,8 +59,9 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
 	e.ADDBA_seen  += observer::trace_cmd::addba_seen(rs);
 
-	e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
+	e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac), test_folder, "ap");
 	e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
+
 	return e;
 }
 

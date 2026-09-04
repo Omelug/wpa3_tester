@@ -78,6 +78,9 @@ void deep_merge(json &base, const json &patch){
 				for(const auto &k: val) if(k.is_string()) base.erase(k.get<string>());
 		} else if(val.is_object() && base.contains(key) && base[key].is_object()){
 			deep_merge(base[key], val);
+		} else if(val.is_null() && base.contains(key) && !base[key].is_null()){
+			// YAML empty block (key:\n  # all commented) parses as null — keep inherited
+			// value; explicit removal uses $DELETE
 		} else{
 			base[key] = val;
 		}

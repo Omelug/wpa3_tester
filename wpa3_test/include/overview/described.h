@@ -16,6 +16,9 @@ struct described_bool {
 	described_bool &operator+=(pair_t p){
 		if(p.value.has_value()){pairs.push_back(std::move(p));} return *this;
 	}
+	described_bool &operator+=(const described_bool &other){
+		pairs.insert(pairs.end(), other.pairs.begin(), other.pairs.end()); return *this;
+	}
 
 	[[nodiscard]] bool empty() const noexcept { return pairs.empty(); }
 	[[nodiscard]] const pair_t &last() const { return pairs.back(); }

@@ -62,7 +62,7 @@ void Actor_config::create_sniff_iface() const{
 		return;
 	}
 
-	log(LogLevel::DEBUG, "Interface {} not found, creating new one.", sniff_iface);
+	log(LogLevel::DEBUG, "Creating new sniff interface {}", sniff_iface);
 	const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"), filesystem::directory_iterator{});
 	log(LogLevel::DEBUG, "Current open FDs: {} {} {}", fd_count, iface, sniff_iface.c_str());
 
@@ -139,7 +139,7 @@ void Actor_config::set_monitor_mode(const bool add_flags) const{
 		return;
 	}
 
-	vector<string> monitor_flags = {"fcsfail", "otherbss"};
+	vector<string> monitor_flags = {"fcsfail", "otherbss"}; //TODO not indeal fcsfail (issues for parsing, but important for injection dbugging)
 
 	if (add_flags) {
 		if((*this)[BK::active_monitor]) monitor_flags.emplace_back("active");

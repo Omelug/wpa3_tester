@@ -3,8 +3,8 @@ attacker_module: bl0ck
 $validator: ./bl0ck.schema.yaml
 $extends: [./bl0ck.yaml, ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml] #TODO
 actors:
-  ap:
-    source: internal
+  #ap:
+    #source: internal
     #selection:
     #  driver: [ rtw_8821au, rtw88_8821au ]
   #client:

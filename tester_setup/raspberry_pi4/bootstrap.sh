@@ -84,12 +84,21 @@ sudo sysctl -p /etc/sysctl.d/10-ip-forward.conf
 
 sudo tee /usr/local/sbin/wpa3-nat.sh << 'EOF' > /dev/null
 #!/usr/bin/env bash
-/usr/sbin/iptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE 2>/dev/null || \
-    /usr/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-/usr/sbin/iptables -C FORWARD -i wlan+ -o eth0 -j ACCEPT 2>/dev/null || \
-    /usr/sbin/iptables -A FORWARD -i wlan+ -o eth0 -j ACCEPT
-/usr/sbin/iptables -C FORWARD -o wlan+ -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || \
-    /usr/sbin/iptables -A FORWARD -o wlan+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+add() { /usr/sbin/iptables "$@" 2>/dev/null || true; }
+check_add() { /usr/sbin/iptables -C "$@" 2>/dev/null || /usr/sbin/iptables -A "$@"; }
+check_add_nat() { /usr/sbin/iptables -t nat -C "$@" 2>/dev/null || /usr/sbin/iptables -t nat -A "$@"; }
+
+# Masquerade all outgoing on eth0 (covers wlan clients + eth0 subnets like 192.168.1.0/24)
+check_add_nat POSTROUTING -o eth0 -j MASQUERADE
+
+# Forward: wlan clients -> internet
+check_add FORWARD -i wlan+ -o eth0 -j ACCEPT
+
+# Forward: eth0 subnets (e.g. router at 192.168.1.1) -> internet via eth0
+check_add FORWARD -i eth0 -s 192.168.1.0/24 -j ACCEPT
+
+# Return traffic for all forwarded connections
+check_add FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
 EOF
 sudo chmod +x /usr/local/sbin/wpa3-nat.sh
 

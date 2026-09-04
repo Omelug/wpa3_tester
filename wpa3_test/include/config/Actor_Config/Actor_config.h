@@ -98,7 +98,8 @@ public:
 	virtual void up_sniff_iface() const;
 	virtual void set_managed_mode() const;
 	virtual void set_mac_address(const Tins::HWAddress<6> &mac) const;
-	virtual void set_monitor_mode(bool add_flags = true) const;
+	virtual void set_monitor_mode(bool add_flags) const;
+	void set_monitor_mode() const { set_monitor_mode(true);}
 	void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
 
 	void setup_actor(const nlohmann::json &j, const ActorPtr &a){ setup_actor(j, a, nullptr); }

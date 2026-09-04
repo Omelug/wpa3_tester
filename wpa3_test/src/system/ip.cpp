@@ -22,7 +22,7 @@ void set_ip(RunStatus &rs, const string &actor_name){
 	} else{
 		vector<string> command = {};
 		observer::add_nets_header(rs, command, actor_name);
-		command.insert(command.end(), {"ip", "addr", "add", ip_addr + "/24", "dev", actor.get(SK::iface)});
+		command.insert(command.end(), {"ip", "addr", "replace", ip_addr + "/24", "dev", actor.get(SK::iface)});
 		hw_capabilities::run_cmd(command);
 	}
 }

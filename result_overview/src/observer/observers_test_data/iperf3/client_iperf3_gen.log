@@ -1,0 +1,91 @@
+2026-09-03T18:37:20.504042032+0200 [client_iperf3_gen] [cmd] ip netns exec sta stdbuf -oL -eL iperf3 -B 172.16.100.2 -c 172.16.100.1 --bidir -b 10M -t 0
+2026-09-03T18:37:20.550183739+0200 [client_iperf3_gen] [stdout] Connecting to host 172.16.100.1, port 5201
+2026-09-03T18:37:20.554375903+0200 [client_iperf3_gen] [stdout] [  5] local 172.16.100.2 port 54341 connected to 172.16.100.1 port 5201
+2026-09-03T18:37:20.557612400+0200 [client_iperf3_gen] [stdout] [  7] local 172.16.100.2 port 40663 connected to 172.16.100.1 port 5201
+2026-09-03T18:37:21.559741527+0200 [client_iperf3_gen] [stdout] [ ID][Role] Interval           Transfer     Bitrate         Retr  Cwnd
+2026-09-03T18:37:21.559820898+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   0.00-1.00   sec  1.25 MBytes  10.5 Mbits/sec    0    107 KBytes       
+2026-09-03T18:37:21.559841842+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   0.00-1.00   sec  1.12 MBytes  9.43 Mbits/sec                  
+2026-09-03T18:37:22.559725248+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   1.00-2.00   sec  1.25 MBytes  10.5 Mbits/sec    0    133 KBytes       
+2026-09-03T18:37:22.559784582+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   1.00-2.00   sec  1.25 MBytes  10.5 Mbits/sec                  
+2026-09-03T18:37:23.559735710+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   2.00-3.00   sec  1.12 MBytes  9.44 Mbits/sec    1    133 KBytes       
+2026-09-03T18:37:23.559777433+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   2.00-3.00   sec  1.25 MBytes  10.5 Mbits/sec                  
+2026-09-03T18:37:24.559725876+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   3.00-4.00   sec  1.25 MBytes  10.5 Mbits/sec    0    133 KBytes       
+2026-09-03T18:37:24.559803191+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   3.00-4.00   sec   512 KBytes  4.20 Mbits/sec                  
+2026-09-03T18:37:25.559865653+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   4.00-5.00   sec   128 KBytes  1.05 Mbits/sec    3   1.41 KBytes       
+2026-09-03T18:37:25.560111578+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   4.00-5.00   sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:26.559813170+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   5.00-6.00   sec  0.00 Bytes  0.00 bits/sec    1   1.41 KBytes       
+2026-09-03T18:37:26.559907188+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   5.00-6.00   sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:27.559823224+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   6.00-7.00   sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:27.559916539+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   6.00-7.00   sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:28.559785798+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   7.00-8.00   sec  0.00 Bytes  0.00 bits/sec    1   1.41 KBytes       
+2026-09-03T18:37:28.559865223+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   7.00-8.00   sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:29.559808611+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   8.00-9.00   sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:29.559899889+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   8.00-9.00   sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:30.559824092+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   9.00-10.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:30.559915647+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   9.00-10.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:31.559792424+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  10.00-11.00  sec  0.00 Bytes  0.00 bits/sec    1   1.41 KBytes       
+2026-09-03T18:37:31.559921442+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  10.00-11.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:32.559449108+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  11.00-12.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:32.559659090+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  11.00-12.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:33.559837607+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  12.00-13.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:33.559950866+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  12.00-13.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:34.559837698+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  13.00-14.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:34.559926643+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  13.00-14.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:35.559800827+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  14.00-15.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:35.559912882+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  14.00-15.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:36.559808048+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  15.00-16.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:36.559901937+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  15.00-16.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:37.562128453+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  16.00-17.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:37.562252156+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  16.00-17.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:38.559429546+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  17.00-18.00  sec  0.00 Bytes  0.00 bits/sec    1   1.41 KBytes       
+2026-09-03T18:37:38.559612676+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  17.00-18.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:39.559814804+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  18.00-19.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:39.559921582+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  18.00-19.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:40.559158452+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  19.00-20.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:40.559326970+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  19.00-20.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:41.559432858+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  20.00-21.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:41.559613321+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  20.00-21.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:42.559818356+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  21.00-22.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:42.559924301+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  21.00-22.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:43.559437745+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  22.00-23.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:43.559611485+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  22.00-23.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:44.559813299+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  23.00-24.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:44.559911336+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  23.00-24.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:45.559806687+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  24.00-25.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:45.559891075+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  24.00-25.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:46.559808334+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  25.00-26.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:46.559896482+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  25.00-26.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:47.559797962+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  26.00-27.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:47.559904629+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  26.00-27.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:48.559661646+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  27.00-28.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:48.559738887+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  27.00-28.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:49.559811108+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  28.00-29.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:49.559896182+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  28.00-29.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:50.559807329+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  29.00-30.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:50.559897700+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  29.00-30.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:51.559789421+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  30.00-31.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:51.559887421+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  30.00-31.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:52.559849920+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  31.00-32.00  sec  0.00 Bytes  0.00 bits/sec    1   1.41 KBytes       
+2026-09-03T18:37:52.559964790+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  31.00-32.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:53.559453919+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  32.00-33.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:53.559688789+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  32.00-33.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:54.559804029+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  33.00-34.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:54.559898732+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  33.00-34.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:55.559809120+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  34.00-35.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:55.559900231+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  34.00-35.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:55.561317304+0200 [client_iperf3_gen] [write_log_all] @END_STOP_ALL
+2026-09-03T18:37:56.559854323+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  35.00-36.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:56.559987675+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  35.00-36.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:57.559782896+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  36.00-37.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:57.559889081+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  36.00-37.00  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:58.559936173+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  37.00-38.00  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:58.560105339+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  37.00-38.00  sec  0.00 Bytes  0.00 bits/sec                  
+@END_STOP
+2026-09-03T18:37:59.009307959+0200 [client_iperf3_gen] [stdout] [  5][TX-C]  38.00-38.45  sec  0.00 Bytes  0.00 bits/sec    0   1.41 KBytes       
+2026-09-03T18:37:59.009366366+0200 [client_iperf3_gen] [stdout] [  7][RX-C]  38.00-38.45  sec  0.00 Bytes  0.00 bits/sec                  
+2026-09-03T18:37:59.009404903+0200 [client_iperf3_gen] [stdout] - - - - - - - - - - - - - - - - - - - - - - - - -
+2026-09-03T18:37:59.009426570+0200 [client_iperf3_gen] [stdout] [ ID][Role] Interval           Transfer     Bitrate         Retr
+2026-09-03T18:37:59.009447273+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   0.00-38.45  sec  5.00 MBytes  1.09 Mbits/sec    9            sender
+2026-09-03T18:37:59.009489070+0200 [client_iperf3_gen] [stdout] [  5][TX-C]   0.00-38.45  sec  0.00 Bytes  0.00 bits/sec                  receiver
+2026-09-03T18:37:59.009508051+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   0.00-38.45  sec  0.00 Bytes  0.00 bits/sec                  sender
+2026-09-03T18:37:59.009524514+0200 [client_iperf3_gen] [stdout] [  7][RX-C]   0.00-38.45  sec  4.12 MBytes   900 Kbits/sec                  receiver

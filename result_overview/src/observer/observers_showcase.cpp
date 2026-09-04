@@ -4,6 +4,7 @@
 #include <format>
 #include "logger/log.h"
 #include "observer/graph/graph_elements.h"
+#include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
 #include "observer/state_log_graph.h"
 #include "observer/tshark_wrapper.h"
@@ -85,14 +86,47 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     const auto tshark_graphs  = graphs_from_csv_dir(TEST_DATA / "tshark",  "tshark",  page_dir);
     const auto tcpdump_graphs = graphs_from_csv_dir(TEST_DATA / "tcpdump", "tcpdump", page_dir);
 
+    // iperf3 graph — two streams (AP-server RX + client TX) on Y2 (Mbits/sec)
+    const path iperf_png = page_dir / "iperf.png";
+    const bool iperf_ok = [&]{
+        const path iperf_dir = TEST_DATA / "iperf3";
+        G_elms elms;
+        if(auto xy = observer::iperf_log_to_xy(iperf_dir / "ap_iperf3_server.log",  "AP-RX", "red"))
+            elms.push_back(make_unique<GraphXYPoints>(std::move(*xy)));
+        if(auto xy = observer::iperf_log_to_xy(iperf_dir / "client_iperf3_gen.log", "CL-TX", "blue"))
+            elms.push_back(make_unique<GraphXYPoints>(std::move(*xy)));
+        if(elms.empty()) return false;
+
+        LogTimePoint start{};
+        for(const auto &e : elms){
+            const auto &xy = static_cast<const GraphXYPoints &>(*e);
+            if(!xy.x_times.empty() && (start.time_since_epoch().count() == 0 || xy.x_times.front() < start))
+                start = xy.x_times.front();
+        }
+
+        auto g = Graph();
+        g.start_time = start;
+        g.axis = TimeAxis::RELATIVE;
+        g.ymin = 0; g.ymax = 1;
+        g.file = popen("gnuplot", "w");
+        if(!g.file) return false;
+
+        g.gpcmd("set terminal pngcairo size 1600,600 enhanced font 'Arial,10'");
+        g.gpcmd(format("set output '{}'", iperf_png.string()));
+        g.gpcmd("set xlabel 'Time (s)'");
+        g.gpcmd("set grid");
+        g.gpcmd("set tmargin 5");
+        g.gpcmd("set key outside");
+        g.gpcmd("set title 'iperf3 throughput — bl0ck BAR attack (bidir 10M)'");
+        g.add_graph_elements(elms);
+        g.render();
+        if(exists(iperf_png)) set_public_perms(iperf_png);
+        return exists(iperf_png);
+    }();
+
     // state_log graph - real state log from observers_test_data/state_log/
     const path state_log_path = TEST_DATA / "state_log" / "24:ec:99:bf:c7:cf_state.log";
     const path state_png      = page_dir / "state_log.png";
-    const bool state_ok       = [&]{
-        if (!exists(state_log_path)) return false;
-        observer::state_log_graph::create_state_log_graph(state_log_path, state_png);
-        return exists(state_png);
-    }();
 
     HtmlGuard f(page_dir);
     if (!f) return;
@@ -148,12 +182,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     f << R"html(    </div>
 
     <div class="card">
-        <h2>state_log_graph &mdash; <code>create_state_log_graph</code></h2>
-        <p>Client state transitions logged by <code>ClientState::update_state()</code> into
-           <code>logger/&lt;mac&gt;_state.log</code>.
-           X axis: transition index, Y axis: state name (first-appearance order).
-           Call at the <em>end</em> of a test - no runtime overhead.</p>
-)html";
+
 
     if (state_ok)
         f << "        <img src=\"state_log.png\" alt=\"state log staircase\" style=\"max-width:100%\">\n";
@@ -175,10 +204,16 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     </div>
 
     <div class="card">
-        <h2>iperf_wrapper &mdash; <code>iperf3_graph</code></h2>
-        <p>Per-interval throughput (Kbit/s) from an iperf3 client session.</p>
-        <p><em>TODO: get real data</em></p>
-    </div>
+        <h2>iperf_wrapper &mdash; <code>iperf_log_to_xy</code></h2>
+        <p>Bidirectional throughput (Mbits/sec) from a real bl0ck BAR attack run.
+           AP-server RX (red) and client TX (blue) on Y2 axis (0&ndash;15 Mbits/sec).
+           The drop to zero marks when the BAR attack disrupted the Block ACK session.</p>
+)html";
+    if(iperf_ok)
+        f << "        <img src=\"iperf.png\" alt=\"iperf throughput\" style=\"max-width:100%\">\n";
+    else
+        f << "        <p><em>Graph not available (gnuplot missing or iperf log not found).</em></p>\n";
+    f << R"html(    </div>
 
 </body>
 </html>

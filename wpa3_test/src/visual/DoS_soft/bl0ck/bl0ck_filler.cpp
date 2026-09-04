@@ -14,6 +14,7 @@
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
+#include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
 
 namespace wpa3_tester::visual::bl0ck_test_suites{
@@ -24,6 +25,9 @@ using namespace nlohmann;
 Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<Bl0ckTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
+	if (const auto result = helper::load_result_json(test_folder))
+		if (result->contains("reconnect_times_ms"))
+			e.reconnection = result->at("reconnect_times_ms").get<std::vector<double>>();
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	RunStatus rs{};
@@ -49,11 +53,13 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 
 	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
 
-	//FIXME check if attacker pcap is better for this (bl0ck may starve attacker capture resources)
+	// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
 	const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
 	e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
-	e.ap_PBAC     += {observer::tshark::pbac_from_pcap_ap(client_pcap),              "client pcap (beacon/probe resp)"};
-	e.client_PBAC += {observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac)), "client pcap (probe/assoc req)"};
+	e.ADDBA_seen  += observer::trace_cmd::addba_seen(rs);
+
+	e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
+	e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
 	return e;
 }
 
@@ -76,8 +82,8 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
 			col("Iperf blocked?",       &Bl0ckTestEntry::bl0ck_iperf);
 			col("ADDBA seen?",          &Bl0ckTestEntry::ADDBA_seen);
-			COL("AP PBAC\nClient PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
-			col("Client PBAC",          &Bl0ckTestEntry::client_PBAC);
+			COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
+			COL("Reconnected?",        e.reconnection.empty());
 		})->render({"Test"});
 		#undef COL
 	});

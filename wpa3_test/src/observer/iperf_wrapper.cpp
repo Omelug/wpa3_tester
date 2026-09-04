@@ -1,4 +1,5 @@
 #include "observer/iperf_wrapper.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
@@ -96,6 +97,53 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 constexpr string program_name = "iperf3";
 
+//TODO check on overview
+optional<GraphXYPoints> iperf_log_to_xy(const path &log_path, const string &label, const string &color){
+	if(!exists(log_path)) return nullopt;
+
+	ifstream f(log_path);
+	string line;
+	vector<LogTimePoint> x_times;
+	vector<double> y_vals;
+
+	while(getline(f, line)){
+		if(line.find("- - - -") != string::npos) break;
+		if(line.find("sender") != string::npos || line.find("receiver") != string::npos) continue;
+		if(line.find("sec") == string::npos) continue;
+
+		const auto bracket = line.find(']');
+		if(bracket == string::npos) continue;
+		float iv_start = 0;
+		if(sscanf(line.c_str() + bracket + 1, " %f-", &iv_start) != 1) continue;
+
+		auto extract_bw = [&](const size_t  unit_pos) -> double {
+			size_t end = unit_pos;
+			while(end > 0 && isspace(static_cast<unsigned char>(line[end - 1]))) --end;
+			size_t start = end;
+			while(start > 0 && (isdigit(static_cast<unsigned char>(line[start - 1])) || line[start - 1] == '.')) --start;
+			if(start == end) return -1.0;
+			try{ return stod(line.substr(start, end - start)); } catch(...){ return -1.0; }
+		};
+
+		double bw_mbits;
+		if(const auto pos = line.rfind("Mbits/sec"); pos != string::npos){
+			bw_mbits = extract_bw(pos);
+		} else if(const auto unit_pos = line.rfind("Kbits/sec"); unit_pos != string::npos){
+			const double v = extract_bw(unit_pos);
+			bw_mbits = (v < 0) ? v : v / 1000.0;
+		} else continue;
+
+		if(bw_mbits < 0) continue;
+
+		const auto dur = chrono::duration_cast<chrono::nanoseconds>(chrono::duration<double>(iv_start));
+		x_times.emplace_back(dur);
+		y_vals.push_back(bw_mbits);
+	}
+
+	if(x_times.empty()) return nullopt;
+	return GraphXYPoints(x_times, y_vals, label, color, YAxis::Y2, 0.0, 15.0);
+}
+
 static void kill_iperf3_port(const RunStatus &rs, const string &actor_name){
 	vector<string> kill_cmd;
 	add_nets_header(rs, kill_cmd, actor_name);
@@ -114,46 +162,79 @@ void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_nam
 						program_name, "-B", rs.config().at("actors").at(src_name).at("ip_addr"), "-c",
 						rs.config().at("actors").at(dst_name).at("ip_addr"),
 						//"-u", //dát do observer config
-						"-b", "10M", "-t", "0" // infinity
+						"--bidir", "-b", "10M", "-t", "0" // infinity
 					});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
 }
 
 void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &server_name){
-
+	const auto server_actor = rs.get_actor(server_name);
+	if(server_actor->is_external_WB()){
+		// process_manager is local-only; start iperf3 daemon on remote via existing SSH conn
+		server_actor->conn->exec("killall iperf3 2>/dev/null; rm -f /tmp/iperf3_ap_server.log; iperf3 -s -p 5201 -D --logfile /tmp/iperf3_ap_server.log 2>&1");
+		log(LogLevel::DEBUG, "iperf3 server daemon started on {} via SSH", server_name);
+		const path log_file = get_observer_folder(rs, program_name) / (actor_name + ".log");
+		auto conn = server_actor->conn;
+		// Register dummy so stop_all() triggers after_stop while SSH is still alive
+		rs.process_manager.run_dummy(actor_name);
+		rs.process_manager.after_stop(actor_name, [conn, log_file](){
+			conn->exec("killall iperf3 2>/dev/null");
+			conn->download_file("/tmp/iperf3_ap_server.log", log_file);
+		});
+		return;
+	}
 	kill_iperf3_port(rs, server_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, server_name);
 	command.insert(command.end(), {
-						"stdbuf", "-oL", "-eL", // disable buffering for immediate output
-						program_name, "-s",     // server
-						"-p", "5201",           // port
-						//"--one-off"
+						"stdbuf", "-oL", "-eL",
+						program_name, "-s",
+						"-p", "5201",
 					});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
 }
 
+bool iperf_log_has_zero_plain(const path &log_path){
+	if(!exists(log_path)) return false;
+	ifstream f(log_path);
+	string line;
+	while(getline(f, line)){
+		if(line.find("- - - -") != string::npos) break;
+		if(line.find("0.00 Bytes") != string::npos) return true;
+	}
+	return false;
+}
+
 described_bool iperf_was_down(RunStatus &rs, const path &test_folder){
-	const auto window = visual::helper::get_run_window(rs, rs.get_actor("client"));
 	described_bool result;
 	const path dir = test_folder / "observer" / "iperf3";
 	const path ap  = dir / "ap_iperf3_server.log";
 	const path cl  = dir / "client_iperf3_gen.log";
 	if(!exists(ap) && !exists(cl)) return {};
 
-	auto has_zero = [&window](const path &p, const string &actor_name) -> described_bool::pair_t {
+	// Stop before "- - - -" summary: bidir summary always has "0.00 Bytes" for the reverse direction.
+	auto has_zero_windowed = [](const path &p, const string &actor_name, const TimeWindow &w) -> described_bool::pair_t {
 		if(!exists(p)) return {nullopt, actor_name + " iperf3"};
 		ifstream f(p);
 		string line;
-		while(get_line_in_window(f, line, window))
+		while(get_line_in_window(f, line, w)){
+			if(line.find("- - - -") != string::npos) break;
 			if(line.find("0.00 Bytes") != string::npos)
 				return {true, actor_name + " iperf3"};
+		}
 		return {false, actor_name + " iperf3"};
 	};
-	result += has_zero(ap, "ap");
-	result += has_zero(cl, "client");
+
+	const auto ap_actor = rs.get_actor("ap");
+	if(ap_actor && ap_actor->is_external_WB()){
+		// External WB AP daemon log has no timestamps → plain scan
+		result += {exists(ap) ? optional(iperf_log_has_zero_plain(ap)) : nullopt, "ap iperf3"};
+	} else {
+		result += has_zero_windowed(ap, "ap", visual::helper::get_run_window(rs, ap_actor));
+	}
+	result += has_zero_windowed(cl, "client", visual::helper::get_run_window(rs, rs.get_actor("client")));
 	return result;
 }
 }

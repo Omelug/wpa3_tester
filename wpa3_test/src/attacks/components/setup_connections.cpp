@@ -43,9 +43,6 @@ void stop_AP(RunStatus &rs, const string &actor_name){
 void setup_STA(RunStatus &rs, const string &actor_name){
 	program::start(rs, actor_name);
 	rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", seconds(10));
-	if(rs.get_actor(actor_name)[SK::ip_addr]){
-		ip::set_ip(rs, actor_name);
-	}
 	rs.get_actor("client")->set_iface_up();
 }
 
@@ -78,6 +75,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol){
 	if(rs.get_actor("client")->is_WB()){
 		setup_STA(rs, "client");
 		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+		if(rs.get_actor("client")[SK::ip_addr]) ip::set_ip(rs, "client");
 	} else if(rs.get_actor("client").is(SK::source, "external") &&
 			  rs.get_actor("ap").is(SK::source, "internal")){
 		log(LogLevel::INFO, "Connect external client to AP - ssid='{}' password='{}'",
@@ -139,6 +137,7 @@ void client_ap_attacker_setup_enterprise(RunStatus &rs){
 	setup_STA(rs, "client");
 
 	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+	if(rs.get_actor("client")[SK::ip_addr]) ip::set_ip(rs, "client");
 	log(LogLevel::INFO, "client is connected");
 }
 }

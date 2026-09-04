@@ -100,7 +100,9 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if(actor_json.contains("sniff_iface"))
 		set(BK::sniff_iface,actor_json.at("sniff_iface").get<bool>());
 
-	if(monitor_needed() /*&&!(*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value()*/) set_monitor_mode();
+	if(monitor_needed() &&
+		(!(*this)[BK::sniff_iface].has_value() || ((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value())))
+		set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)){
 		const ActorPtr self(shared_from_this());
 		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;

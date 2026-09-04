@@ -68,23 +68,22 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 }
 
 void OpenWrtConn::forward_internet(const string &remote_ip) const{
-	hw_capabilities::run_cmd({"bash", "-c", "echo 1 | tee /proc/sys/net/ipv4/ip_forward"});
-	auto internet_iface = get_global_config().at("internet_interface").get<string>();
-
-	// default netns
+	//TODO hardcoded DNS server
+	// Pi-side ip_forward and iptables NAT/FORWARD rules are set up by wpa3-nat.service (bootstrap.sh).
+	// Here we only configure the router: give it a default route pointing to the Pi.
 	const string local_iface = hw_capabilities::get_iface(remote_ip, nullopt);
-	hw_capabilities::run_cmd({"iptables", "-A", "FORWARD", "-i", local_iface, "-o", internet_iface, "-j", "ACCEPT"});
-	hw_capabilities::run_cmd({
-		"iptables", "-A", "FORWARD", "-i", internet_iface, "-o", local_iface, "-m", "state", "--state",
-		"RELATED,ESTABLISHED", "-j", "ACCEPT"
-	});
+	const string local_ip    = ip::get_ip(local_iface);
 
-	const string local_ip = ip::get_ip(local_iface);
+	// ip route replace is not available on busybox ip; del+add is idempotent
+	int rc;
+	exec("ip route del default 2>/dev/null; ip route add default via " + local_ip, false, &rc);
+	exec("echo 'nameserver 8.8.8.8' > /etc/resolv.conf");
 
+	// Persist via UCI so the route survives netifd reloads and router reboots
 	exec("uci set network.lan.gateway=" + local_ip);
 	exec("uci set network.lan.dns=8.8.8.8");
 	exec("uci commit network");
-	exec("/etc/init.d/network restart");
+	log(LogLevel::INFO, "Internet forwarded to router: default via {} ({})", local_ip, local_iface);
 }
 
 void OpenWrtConn::time_fix() const{
@@ -101,6 +100,10 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 
 	// enable disabled radio
 	if(radio.value("disabled", false)) exec("uci set wireless." + radio_name + ".disabled=0");
+
+	// Remove stale sections left by old setup_ap runs (named phy\d+_ap\d+ or wpa3_tester_*).
+	// These pollute UCI ordering and cause subsequent wifi up to assign the wrong AP slot.
+	exec("for s in $(uci show wireless | grep '=wifi-iface' | sed 's/wireless\\.//;s/=.*//' | grep -E '^(phy[0-9]+_ap|wpa3_tester_)'); do uci delete wireless.$s 2>/dev/null; done; uci commit wireless 2>/dev/null; true");
 
 	// find existing section or create new
 	string section;
@@ -260,33 +263,23 @@ void OpenWrtConn::set_managed_mode(const string &iface) const{
 }
 
 auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void{
-	const auto j = nlohmann::json::parse(exec("wifi status 2>/dev/null"));
-
-	string iface_safe = iface;
-	ranges::replace(iface_safe, '-', '_');
-	const string wpa3_section = TESTER_NAME + "_" + iface_safe;
-
+	// Find which bridge owns this wireless interface (usually br-lan on OpenWrt).
+	// We add the IP there directly rather than wrestling with UCI bridge creation +
+	// wifi reload — wifi reload only restarts wireless, not netifd network config,
+	// so a new UCI interface (br-phy1_ap0) would never actually get created.
 	int rc;
-	exec("uci get network." + wpa3_section + " 2>/dev/null", false, &rc);
-	if(rc != 0){
-		exec("uci set network." + wpa3_section + "=interface");
-		exec("uci set network." + wpa3_section + ".proto=static");
-
-		for(const auto &[radio_name, radio]: j.items()){
-			for(const auto &wifi_iface: radio.at("interfaces")){
-				if(wifi_iface.value("ifname", "") == iface){
-					const string wifi_section = wifi_iface.at("section").get<string>();
-					exec(format("uci set wireless.{}.network={}", wifi_section, wpa3_section));
-				}
-			}
+	string master = exec("ip link show dev " + iface + " 2>/dev/null", false, &rc);
+	string target = iface;
+	if(rc == 0){
+		const auto pos = master.find("master ");
+		if(pos != string::npos){
+			target = master.substr(pos + 7);
+			target = target.substr(0, target.find_first_of(" \t\n\r"));
 		}
-		exec("uci commit wireless");
 	}
-
-	exec("uci set network." + wpa3_section + ".ipaddr=" + ip_addr);
-	exec("uci set network." + wpa3_section + ".netmask=255.255.255.0");
-	exec("uci commit network");
-	exec("/etc/init.d/network restart");
+	// del+add: del is a no-op if absent; add sets the address immediately
+	exec("ip addr del " + ip_addr + "/24 dev " + target + " 2>/dev/null; ip addr add " + ip_addr + "/24 dev " + target);
+	log(LogLevel::INFO, "set_ip: added {}/24 to {} (master of {})", ip_addr, target, iface);
 }
 
 string OpenWrtConn::get_radio(const string &iface) const{
@@ -299,7 +292,13 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 	for(const auto &[radio_name, radio]: j.items()){
 		if(!radio.contains("interfaces")) continue;
 		for(const auto &wifi_iface: radio.at("interfaces")){
-			if(wifi_iface.value("ifname", "") == iface && wifi_iface.contains("section"))
+			// OpenWrt <21.02: "ifname" string; >=21.02: "ifnames" array
+			bool match = wifi_iface.value("ifname", "") == iface;
+			if(!match && wifi_iface.contains("ifnames") && wifi_iface.at("ifnames").is_array()){
+				for(const auto &n: wifi_iface.at("ifnames"))
+					if(n.get<string>() == iface){ match = true; break; }
+			}
+			if(match && wifi_iface.contains("section"))
 				return wifi_iface.at("section").get<string>();
 		}
 	}
@@ -321,11 +320,19 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	};
 	const string wifi_iface = actor.get(SK::iface);
 
-	// reset section to avoid stale options from previous test runs bleeding in
-	exec("uci delete wireless." + wifi_iface);
-	exec("uci set wireless." + wifi_iface + "=wifi-iface");
+	// Find the UCI section that actually controls this ifname — don't create a new one,
+	// or wifi reload would assign it a different slot (e.g., phy1-ap4 instead of phy1-ap0).
+	string section;
+	try{
+		section = get_wifi_iface_section(wifi_iface);
+	} catch(const ex_conn_err &e){
+		section = wifi_iface;
+		ranges::replace(section, '-', '_');
+		log(LogLevel::WARNING, "setup_ap: section not found for {}: {} — falling back to {}", wifi_iface, e.what(), section);
+	}
+	log(LogLevel::DEBUG, "setup_ap: configuring UCI section '{}' for iface '{}'", section, wifi_iface);
+
 	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
-	exec("uci set wireless." + wifi_iface + ".device=" + actor.get(SK::radio));
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 
@@ -333,15 +340,17 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 			const filesystem::path local = rs.config_path().parent_path() / value;
 			constexpr string_view remote = "/etc/hostapd.eap_user";
 			upload_file(local, remote);
-			exec(format("uci set wireless.{}.eap_user_file={}", wifi_iface, remote));
+			exec(format("uci set wireless.{}.eap_user_file={}", section, remote));
 		} else if(radio_keys.contains(key)){
 			exec(format("uci set wireless.{}.{}={}", actor.get(SK::radio), key, value));
 		} else{
-			exec(format("uci set wireless.{}.{}={}", wifi_iface, key, value));
+			exec(format("uci set wireless.{}.{}={}", section, key, value));
 		}
 	}
-	exec("uci commit wireless");
 	int ret = 0;
+	const string commit_out = exec("uci commit wireless 2>&1", false, &ret);
+	if(ret != 0) log(LogLevel::WARNING, "setup_ap uci commit wireless failed (rc={}): {}", ret, commit_out);
+	ret = 0;
 	exec("wifi reload 2>&1", false, &ret);
 	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap - AP may not be configured correctly", ret);
 

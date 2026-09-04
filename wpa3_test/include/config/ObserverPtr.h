@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+namespace wpa3_tester{ class RunStatus; }
+
 namespace wpa3_tester::observer{
 class Observer_config;
 
@@ -15,6 +17,7 @@ public:
 	Observer_config &operator*() const;
 	Observer_config *get() const;
 	std::shared_ptr<Observer_config> shared() const;
+	void start(RunStatus &rs) const;
 
 	friend bool operator<(const ObserverPtr &lhs, const ObserverPtr &rhs);
 	friend bool operator==(const ObserverPtr &lhs, const ObserverPtr &rhs){ return lhs.ptr == rhs.ptr; }

@@ -14,7 +14,7 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path &attacker_graph,
+void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const path &attacker_graph,*/
 					const path &client_graph/*, const path &ap_graph*/
 ){
 	report::ReportGuard report(rs.run_folder());
@@ -48,13 +48,13 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result, const path 
 	report << "\n";
 
 	// ----- graphs
-	if(exists(attacker_graph)){
+	/*if(exists(attacker_graph)){
 		report << "### Attacker capture\n";
 		report << "![Attacker graph](" << attacker_graph << ")\n\n";
 		report << "### Client capture (wpa\\_supplicant " << rs.config().at("actors").at("client").at("setup").
 																at("program_config").value("version", "default") <<
 				")\n";
-	}
+	}*/
 	if(exists(client_graph)){
 		report << "![Client graph](" << client_graph << ")\n\n";
 	}

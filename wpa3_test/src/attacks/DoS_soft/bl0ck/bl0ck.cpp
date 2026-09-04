@@ -1,21 +1,19 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 
-#include <arpa/inet.h>
 #include <cassert>
 #include <cerrno>
 #include <chrono>
 #include <condition_variable>
-#include <cstring>
 #include <fstream>
 #include <linux/if_packet.h>
 #include <memory>
 #include <net/if.h>
+#include <nlohmann/json.hpp>
 #include <random>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
-#include <nlohmann/json.hpp>
 
 #include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
@@ -27,6 +25,7 @@
 #include "logger/log_util.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
+#include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "visual/result_helper.h"
@@ -242,21 +241,31 @@ void stats_bl0ck_attack(const RunStatus &rs){
 
 	// BA/BAR are injected by attacker — mt76x2u does not loopback injected frames,
 	// so they don't appear in attacker_capture.pcap. Use client sniff_iface instead.
-	const string ba_src = rs.actor("client") ? "client" : "attacker";
+	const string ba_src = rs.actor("client") && rs.get_actor("client")->is_WB() ? "client" : "attacker";
 	observer::tshark::pcap_events(rs, elements, {
-									{"attacker", "wlan.fc.type_subtype == 0x000d", "ADDBA", "blue"},
-									{"attacker", "wlan.fixed.action_code == 0x02", "DELBA", "blue"},
+									{ba_src, "wlan.fc.type_subtype == 0x000d", "ADDBA", "blue"},
+									{ba_src, "wlan.fixed.action_code == 0x02", "DELBA", "blue"},
 									{ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan"},
 									{ba_src, "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple"},
 								});
 
-	const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
+	if(auto ampdu = observer::trace_cmd::get_bl0ck_logs(rs, "ap"); !ampdu.empty())
+		elements.push_back(make_unique<GraphStairs<observer::trace_cmd::AmpduAction>>(
+			ampdu, observer::trace_cmd::ampdu_action_labels(), "AMPDU", "purple", YAxis::Y2));
+
+	const path iperf_dir = observer::get_observer_folder(rs, "iperf3");
+	if(auto xy = observer::iperf_log_to_xy(iperf_dir / "ap_iperf3_server.log", "AP-RX", "red"))
+		elements.push_back(make_unique<GraphXYPoints>(std::move(*xy)));
+	if(auto xy = observer::iperf_log_to_xy(iperf_dir / "client_iperf3_gen.log", "CL-TX", "blue"))
+		elements.push_back(make_unique<GraphXYPoints>(std::move(*xy)));
+
+	//const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	/*const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements,
 		observer::get_observer_folder(rs, "tcpdump"));*/
 
 	const Bl0ckResult result = load_result(rs);
-	generate_report(rs, result, attacker_graph, client_graph/*, ap_graph*/);
+	generate_report(rs, result, /*attacker_graph,*/ client_graph/*, ap_graph*/);
 
 	log(LogLevel::INFO, "Bl0ck attack stats done");
 }

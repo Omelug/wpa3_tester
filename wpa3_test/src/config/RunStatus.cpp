@@ -280,6 +280,21 @@ const ActorPtr &RunStatus::get_actor(const string &actor_name) const{
 	throw config_err("Actor {} not found in actors map", actor_name);
 }
 
+optional<observer::ObserverPtr> RunStatus::observer(const string &observer_name) const{
+	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+	return nullopt;
+}
+
+observer::ObserverPtr &RunStatus::get_observer(const string &observer_name){
+	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+	throw config_err("Observer {} not found in observers map", observer_name);
+}
+
+const observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) const{
+	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+	throw config_err("Observer {} not found in observers map", observer_name);
+}
+
 void RunStatus::print_test_list(){
 	auto tests = scan_attack_configs(TEST);
 	if(tests.empty()){
@@ -291,9 +306,13 @@ void RunStatus::print_test_list(){
 	}
 }
 
-void RunStatus::start_observers(){
+void RunStatus::start_observers(const ObserverRunPolicy policy){
 	for(const auto &observer: observers | views::values){
-		observer->start(*this);
+		try{
+			observer->start(*this);
+		} catch(const run_err &){
+			if(policy == ObserverRunPolicy::THROW) throw;
+		}
 	}
 }
 

@@ -138,7 +138,7 @@ map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs,
 //TODO test
 described_bool addba_seen(const RunStatus &rs) {
 	described_bool result;
-	for (const string &actor_name : {"ap", "client"}) {
+	for (const string actor_name : {"ap", "client"}) {
 		const auto opt = rs.actor(actor_name);
 		if (!opt || !opt.value()->is_WB())
 			continue;

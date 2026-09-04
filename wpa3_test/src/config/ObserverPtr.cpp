@@ -1,6 +1,7 @@
 #include "config/ObserverPtr.h"
 #include <memory>
 #include "config/Observer_config.h"
+#include "config/RunStatus.h"
 
 using namespace std;
 
@@ -10,4 +11,5 @@ Observer_config *ObserverPtr::operator->() const{ return ptr.get(); }
 Observer_config &ObserverPtr::operator*() const{ return *ptr; }
 Observer_config *ObserverPtr::get() const{ return ptr.get(); }
 shared_ptr<Observer_config> ObserverPtr::shared() const{ return ptr; }
+void ObserverPtr::start(RunStatus &rs) const{ ptr->start(rs); }
 }

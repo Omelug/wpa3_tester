@@ -65,6 +65,11 @@ enum EVENT_SET{
 	TESTER_TAGS
 };
 
+enum class ObserverRunPolicy{
+	THROW, // default: throw if observer already running
+	SKIP   // silently skip already-running observers
+};
+
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
@@ -115,12 +120,16 @@ public:
 	std::optional<ActorPtr> actor(const std::string &actor_name) const;
 	ActorPtr &get_actor(const std::string &actor_name);
 	const ActorPtr &get_actor(const std::string &actor_name) const;
+
+	std::optional<observer::ObserverPtr> observer(const std::string &observer_name) const;
+	observer::ObserverPtr &get_observer(const std::string &observer_name);
+	const observer::ObserverPtr &get_observer(const std::string &observer_name) const;
 	static void get_or_create_connection(const ActorPtr &actor);
 	static void print_test_list();
 
 	// start all observers in config
 	// manual because some tests have needs preparation in the run functions)
-	void start_observers();
+	void start_observers(ObserverRunPolicy policy = ObserverRunPolicy::THROW);
 	static std::string findConfigByTestName(const std::string &name);
 
 	// get external options

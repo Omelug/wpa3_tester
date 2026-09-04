@@ -217,10 +217,9 @@ void run_bl0ck_attack(RunStatus &rs){
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_before_sec")));
 	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
+
+	rs.process_manager.write_log_all("Block Attack END");
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
-	log(LogLevel::INFO, "Block Attack END");
-
-
 	rs.process_manager.stop_all();
 
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);
@@ -243,8 +242,11 @@ void stats_bl0ck_attack(const RunStatus &rs){
 	// so they don't appear in attacker_capture.pcap. Use client sniff_iface instead.
 	const string ba_src = rs.actor("client") && rs.get_actor("client")->is_WB() ? "client" : "attacker";
 	observer::tshark::pcap_events(rs, elements, {
-									{ba_src, "wlan.fc.type_subtype == 0x000d", "ADDBA", "blue"},
+									// ----- protected with MFP (action frames)
+									{ba_src, "wlan.fixed.action_code == 0x00", "ADDBA req", "blue"},
+									{ba_src, "wlan.fixed.action_code == 0x01", "ADDBA res", "blue"},
 									{ba_src, "wlan.fixed.action_code == 0x02", "DELBA", "blue"},
+
 									{ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan"},
 									{ba_src, "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple"},
 								});

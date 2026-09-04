@@ -3,6 +3,7 @@ scan_iface: wlan1
 actors:
   ap:
     $extends: ../../../comp/Dlink/Dlink_wb_5Ghz.comp.yaml
+    ex_WB_programs: [ iperf3 ]
   client:
     source: internal
     setup:
@@ -66,6 +67,6 @@ observers:
     program: dmesg
 attack_config:
   attack_time_sec: 30
-  random: true
+  random: false
   frame_in_batch: 50
-  ms_interval: 100
+  ms_interval: 10<<<<<<<<

@@ -21,7 +21,6 @@ enum class AmpduAction : int {
 	UNKNOWN             = -1,
 };
 
-// Y-axis labels for GraphStairs<AmpduAction>
 const std::vector<std::pair<AmpduAction, std::string>>& ampdu_action_labels();
 
 // kernel-wide ftrace tracepoints

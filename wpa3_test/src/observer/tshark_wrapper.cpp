@@ -440,6 +440,7 @@ optional<bool> ap_ocv_from_pcap(const path &pcap_path){
 
 // ----- ADDBA / PBAC -----
 
+//TODO tests
 optional<bool> addba_seen_from_pcap(const path &pcap_path){
 	if(!exists(pcap_path)) return nullopt;
 	const string out = trim(hw_capabilities::run_cmd_output({
@@ -454,19 +455,35 @@ optional<bool> addba_seen_from_pcap(const path &pcap_path){
 // RSN Capabilities bit 12 = PBAC (Protected Block Ack Agreement Capable), 802.11-2020 Table 9-264
 static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_filter){
 	if(!exists(pcap_path)) return nullopt;
-	const string frame_check = trim(hw_capabilities::run_cmd_output({
-		"tshark", "-r", pcap_path.string(), "-Y", frame_filter,
-		"-T", "fields", "-e", "frame.number", "-c", "1"
-	}, nullopt));
-	if(frame_check.empty()) return nullopt;
-	const string caps_raw = trim(hw_capabilities::run_cmd_output({
+
+	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities";
+
+	const string caps_raw = hw_capabilities::run_cmd_output({
 		"tshark", "-r", pcap_path.string(),
-		"-Y", "(" + frame_filter + ") && wlan.rsn.capabilities",
-		"-T", "fields", "-e", "wlan.rsn.capabilities", "-c", "1"
-	}, nullopt));
-	if(caps_raw.empty()) return false;
-	try{ return (stoul(caps_raw, nullptr, 0) & 0x1000u) != 0; }
-	catch(...){ return nullopt; }
+		"-Y", full_filter,
+		"-T", "fields", "-e", "wlan.rsn.capabilities"
+	}, nullopt);
+
+	// '-c', '1' show empty output, get first line manually
+	stringstream ss(caps_raw);
+	string first_line;
+	while(getline(ss, first_line)) {
+		first_line = trim(first_line);
+		if(!first_line.empty()) {
+			break;
+		}
+	}
+
+	if(first_line.empty()) return nullopt;
+
+	try {
+		const uint32_t caps = stoul(first_line, nullptr, 0);
+		// 0x1000 = Protected Block Ack (PBAC)
+		return (caps & 0x1000u) != 0; 
+	}
+	catch(...){ 
+		return nullopt; 
+	}
 }
 
 described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac) {

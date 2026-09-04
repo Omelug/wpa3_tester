@@ -37,7 +37,6 @@ actors:
         vht_oper_chwidth: 0
         wpa: 2
         wpa_key_mgmt: SAE
-      ex_WB_programs: [ iperf3 ]
     ip_addr: "172.16.100.1"
     netns: ap
   client:

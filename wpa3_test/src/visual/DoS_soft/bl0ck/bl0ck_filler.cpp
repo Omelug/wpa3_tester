@@ -86,7 +86,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 			col("Iperf blocked?",       &Bl0ckTestEntry::bl0ck_iperf);
 			col("ADDBA seen?",          &Bl0ckTestEntry::ADDBA_seen);
 			COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
-			COL("Reconnected?",        e.reconnection.empty());
+			COL("Reconnected?",        !e.reconnection.empty());
 		})->render({"Test"});
 		#undef COL
 	});

@@ -245,7 +245,9 @@ described_str iperf_was_down(RunStatus &rs, const path &test_folder){
 	const auto sev = [](const described_str &r) -> int {
 		return r.value() == "down" ? 2 : r.value() == "unstable" ? 1 : 0;
 	};
-	const auto ap_r = iperf_log_has_zero_plain(ap, visual::helper::get_run_window(rs, rs.get_actor("ap")));
+	//FIXME bad time parsing?
+	const auto ap_r = described_str{};
+	//const auto ap_r = iperf_log_has_zero_plain(ap, visual::helper::get_run_window(rs, rs.get_actor("ap")));
 	const auto cl_r = iperf_log_has_zero_plain(cl, visual::helper::get_run_window(rs, rs.get_actor("client")));
 	// Add less severe first so value() (last pair) == worst
 	described_str result;

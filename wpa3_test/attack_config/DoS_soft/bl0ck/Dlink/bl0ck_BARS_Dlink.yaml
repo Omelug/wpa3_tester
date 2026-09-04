@@ -6,8 +6,4 @@ actors:
     selection:
       permanent_mac: "90:de:80:de:ff:a1"
 attack_config:
-  attack_time_sec: 15
   attack_variant: "BARS"
-  random: false
-  frame_in_batch: 50
-  ms_interval: 100

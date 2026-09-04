@@ -121,8 +121,32 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 		}
 	}
 
-	if(!resolved->contains("allOf")) return results;
+	// re-validate prop_value to recover the specific failing field path
+	// embed $defs so internal $refs resolve
+	// external $refs may throw — caught below
+	struct collecting_err : error_handler {
+		struct entry { json::json_pointer ptr; string message; };
+		vector<entry> errors;
+		void error(const json::json_pointer &p, const json &, const string &m) override {
+			errors.push_back({p, m});
+		}
+	} ceh;
+	try {
+		json combined = *resolved;
+		if(root_schema_.contains("$defs")) combined["$defs"] = root_schema_["$defs"];
+		json_schema::json_validator temp_v(combined, YAMLValidator::make_loader(schema_dir_));
+		const json copy = prop_value;
+		temp_v.validate(copy, ceh);
+	} catch(...) {}
 
+	for(const auto &e : ceh.errors){
+		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) — handled below
+		results.push_back("In '" + prop_name + "' at " + e.ptr.to_string() + ": " + e.message);
+	}
+	if(!results.empty()) return results;
+
+	// fallback: allOf errorMessage rules (user-facing messages for semantic constraints)
+	if(!resolved->contains("allOf")) return results;
 	for(const auto &item : (*resolved)["allOf"]){
 		try{
 			json_schema::json_validator temp_v(item);
@@ -147,26 +171,25 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 }
 
 YAMLValidator::YAMLValidator(const path &schema_path){
-	const auto schema_dir = schema_path.parent_path();
+	schema_dir_ = schema_path.parent_path();
 	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
+	validator = json_validator(r_schema, make_loader(schema_dir_));
+}
 
-	const json_schema::schema_loader loader = [&schema_dir](const json_uri &uri, json &schema){
+json_schema::schema_loader YAMLValidator::make_loader(const path &schema_dir){
+	return [schema_dir](const json_uri &uri, json &schema){
 		const string &p = uri.path();
 		const string clean_p = !p.empty() && p[0] == '/' ? p.substr(1) : p;
 		const path ref_path = weakly_canonical(schema_dir / clean_p);
-
 		if(!exists(ref_path)) throw wpa3_tester::run_err("Schema not found: " + ref_path.string());
-
 		schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
 	};
-
-	validator = json_validator(r_schema, loader);
 }
 
 void YAMLValidator::validate(json &current_node,
 							  const unordered_map<string, YAML::Mark> &line_map,
 							  const string &filename) const {
-	DetailedSchemaErrorHandler err_handler(r_schema, filename, line_map);
+	DetailedSchemaErrorHandler err_handler(r_schema, filename, line_map, schema_dir_);
 	const auto patch = validator.validate(current_node, err_handler);
 	if(err_handler){
 		throw wpa3_tester::setup_err("Config error: {} \n", err_handler.get_summary());

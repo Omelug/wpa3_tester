@@ -57,7 +57,8 @@ actors:
         ssid: wpa3_tester_AP
         version: 2_10
     selection:
-      condition: [ monitor, control_monitor, 80211ac, 5GHz, netns_change ]
+      condition: [ monitor, control_monitor,
+                   80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
     sniff_iface: true
@@ -96,12 +97,12 @@ observers:
     program: trace_cmd
     actor: ap
     program_config:
-      #events: [ "mac80211", "ath9k", "ath10k" ]
+      #events: [ "mac80211", "ath9k", "ath10k" ]pcap not good decode, bl0ck consume all sources
       events: [ "mac80211", "mt76" ]
   dmesg:
     program: dmesg
 attack_config:
-  ms_interval: 1
+  ms_interval: 100
   sleep_before_sec: 5
-  sleep_after_sec: 5
+  sleep_after_sec: 30
 rewrite: errors

@@ -256,6 +256,7 @@ described_str iperf_was_down(RunStatus &rs, const path &test_folder){
 		if(!cl_r.empty()) result += cl_r.last();
 		if(!ap_r.empty()) result += ap_r.last();
 	}
+	if(result.empty()) result += {"ok", "iperf3 ok"};
 	return result;
 }
 }

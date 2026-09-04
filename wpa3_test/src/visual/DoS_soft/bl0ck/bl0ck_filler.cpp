@@ -17,6 +17,7 @@
 #include "observer/observers.h"
 #include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 
 namespace wpa3_tester::visual::bl0ck_test_suites{
 using namespace std;
@@ -36,32 +37,32 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
 
+	try{
+		const auto ap = rs.get_actor("ap");
+		e.ap_mac = ap->get(SK::mac);
+		e.ap_source = ap->get(SK::source);
 
-	const auto ap = rs.get_actor("ap");
-	e.ap_mac = ap->get(SK::mac);
-	e.ap_source = ap->get(SK::source);
+		const auto client = rs.get_actor("client");
+		e.client_mac = client->get(SK::mac);
+		e.client_source = client->get(SK::source);
 
-	const auto client = rs.get_actor("client");
-	e.client_mac = client->get(SK::mac);
-	e.client_source = client->get(SK::source);
+		const auto att = rs.get_actor("attacker");
+		e.attacker_mac = att->get(SK::mac);
+		e.attacker_driver = att->get(SK::driver_name);
 
-	const auto att = rs.get_actor("attacker");
-	e.attacker_mac = att->get(SK::mac);
-	e.attacker_driver = att->get(SK::driver_name);
+		if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
+			e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
 
-	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"] && cfg["attack_config"]["attack_variant"])
-		e.attack_variant = cfg["attack_config"]["attack_variant"].as<string>();
+		e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
 
-	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
+		// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
+		const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
+		e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
+		e.ADDBA_seen  += observer::trace_cmd::addba_seen(rs);
 
-	// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
-	const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
-	e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
-	e.ADDBA_seen  += observer::trace_cmd::addba_seen(rs);
-
-	e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac), test_folder, "ap");
-	e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
-
+		e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
+		e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
+	} catch(const tester_error &){}
 	return e;
 }
 

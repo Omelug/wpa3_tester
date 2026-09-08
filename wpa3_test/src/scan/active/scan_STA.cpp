@@ -105,6 +105,7 @@ void fill_actor_caps_from_assoc_req(PDU &pdu, Actor_Config_external &cfg){
 	if(!mgmt || (mgmt->subtype() != 0 && mgmt->subtype() != 2)) return;
 
 	cfg.set(SK::mac, mgmt->addr2());
+	cfg.set(SK::permanent_mac, mgmt->addr2());
 
 	apply_radiotap(pdu, cfg);
 	apply_ht_vht_he(*mgmt, cfg);

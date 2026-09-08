@@ -21,6 +21,7 @@ static void try_add_sta(ApInfoMap &ap_map, StaInfoMap &sta_map, const HWAddress<
 	if(!sta_map.contains(mac)){
 		Actor_Config_external cfg;
 		cfg.set(SK::mac, mac);
+		cfg.set(SK::permanent_mac, mac);
 		sta_map.emplace(mac, std::move(cfg));
 	}
 }
@@ -50,6 +51,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 		case Dot11::PROBE_REQ:{ // HT/VHT/HE caps + signal, no RSN
 			auto &cfg = sta_map[sta];
 			cfg.set(SK::mac, sta);
+			cfg.set(SK::permanent_mac, sta);
 			scan::apply_radiotap(pdu, cfg);
 			scan::apply_ht_vht_he(*mgmt, cfg);
 			cfg.set(BK::STA, true);
@@ -60,6 +62,7 @@ static bool parse_frame(PDU &pdu, ApInfoMap &ap_map, StaInfoMap &sta_map){
 		case Dot11::AUTH:{ // auth: signal + SAE detection from algorithm field
 			auto &cfg = sta_map[sta];
 			cfg.set(SK::mac, sta);
+			cfg.set(SK::permanent_mac, sta);
 			scan::apply_radiotap(pdu, cfg);
 			if(const auto *auth = pdu.find_pdu<Dot11Authentication>()){
 				if(auth->auth_algorithm() == 3) // SAE

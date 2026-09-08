@@ -106,7 +106,7 @@ bool McMitm::should_check_rogue_beacons() const{
 }
 
 void McMitm::configure_interfaces(){
-	log(LogLevel::INFO, "Note: disable Wi-Fi in your network manager so it doesn't interfere with this script");
+	//log(LogLevel::INFO, "Note: disable Wi-Fi in your network manager so it doesn't interfere with this script");
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 

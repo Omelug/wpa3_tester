@@ -80,8 +80,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 		set(SK::mac, real_actor.get(SK::mac));
 	}
 
-	if(!(*this)[SK::permanent_mac].has_value()){
-		const auto perm = hw_capabilities::get_permanent_mac(get(SK::iface), (*this)[SK::netns]);
+	if(real_actor[SK::permanent_mac].has_value()){
+		const auto perm = hw_capabilities::get_permanent_mac(real_actor.get(SK::iface), (*this)[SK::netns]);
 		if(!perm.empty()) set(SK::permanent_mac, perm);
 	}
 

@@ -183,7 +183,9 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 		wait_for_ifname(section);
 
 		actor->set(SK::iface, owe_ifname);
-		actor->set(SK::mac, get_mac_address(owe_ifname));
+		Tins::HWAddress<6> m = get_mac_address(owe_ifname);
+		actor->set(SK::mac, m);
+		actor->set(SK::permanent_mac, m);
 		actor->set(SK::radio, radio_name);
 		return;
 	}

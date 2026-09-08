@@ -22,7 +22,7 @@ public:
 	std::string real_pcap_path = "/tmp/mc_mitm_.pcap";
 	std::string rogue_pcap_path = "/tmp/mc_mitm_test_rogue.pcap";
 
-	void set_ap_mac(const Tins::HWAddress<6>& mac) { ap->set(SK::mac, mac.to_string()); }
+	void set_ap_mac(const Tins::HWAddress<6>& mac) const { ap->set(SK::mac, mac.to_string()); }
 
 	void send_to_real(Tins::PDU &pdu) const override;
 	void send_to_real(const std::vector<uint8_t> &raw) const override;

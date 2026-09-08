@@ -1,6 +1,7 @@
 #include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/RunStatus.h"
+#include "observer/dmesg_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "observer/state_log_graph.h"
@@ -11,7 +12,10 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::mc_mitm{
+
+
 void setup_attack(RunStatus &rs){
+	observer::dmesg::start_dmesg(rs, "err");
 	components::client_ap_setup_t(rs);
 	//components::client_ap_attacker_setup(rs);
 
@@ -110,5 +114,11 @@ void stats(const RunStatus &rs){
 									{"rogue_client", "eapol", "EAPOL", "dark-green"},
 								});
 	observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
+
+	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg_log.log", "over-current");
+	if (!oc.empty()) {
+		log(LogLevel::ERROR, "USB over-current detected ({} events) — timestamps are kernel uptime, not wall-clock:", oc.size());
+		for (const auto &line : oc) log(LogLevel::ERROR, "  {}", line);
+	}
 }
 }

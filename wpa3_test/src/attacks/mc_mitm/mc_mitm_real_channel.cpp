@@ -20,7 +20,8 @@ void McMitm::send_to_real(const vector<uint8_t> &raw) const{
 }
 
 PProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
-	if(dot11.find_pdu<Dot11ProbeRequest>()){
+	// TODO needed ?
+	/*if(dot11.find_pdu<Dot11ProbeRequest>()){
 		probe_resp->addr1(addr2);
 		RadioTap rt;
 		rt.inner_pdu(probe_resp->clone());
@@ -31,7 +32,7 @@ PProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11)
 	if(dot11.find_pdu<Dot11ProbeResponse>()){
 		if(addr2 == ap.get(SK::mac)) display_traffic(dot11, "Real channel");
 		return STOP;
-	}
+	}*/
 	return CONTINUE;
 }
 
@@ -83,8 +84,8 @@ PProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const v
 	const HWAddress<6> dst(serialization.data() + 4);
 
 	if(src == ap.get(SK::mac) && client_state.get_mac() == dst){
-		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
 		send_to_rogue(pdu);
+		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
 		return STOP;
 	}
 	return CONTINUE;
@@ -95,8 +96,8 @@ PProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> 
 	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){
 		int eapol_msg = get_eapol_msg_num(pdu);
 		if(eapol_msg == 1 || eapol_msg == 3) {
-			log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
 			send_to_rogue(pdu);
+			log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
 		}
 		return STOP;
 	}

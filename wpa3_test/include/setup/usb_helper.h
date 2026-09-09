@@ -16,6 +16,5 @@ struct UsbResetInfo {
 // only misses pre-cfg80211 WEXT-only drivers (effectively extinct).
 std::vector<UsbResetInfo> collect_all_usb_wifi_ifaces();
 void reset_usb_ifaces();
-void reset_usb_ifaces(const std::vector<UsbResetInfo>& ifaces);
 
 }

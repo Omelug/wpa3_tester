@@ -90,7 +90,8 @@ public:
 	void handle_from_ap_real(const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11,
 							const Tins::HWAddress<6> &addr1
 	);
-	void power_mgmt_response(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
+	void power_mgmt_response_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
+	void power_mgmt_response_rogue(Tins::HWAddress<6> addr2, Tins::Dot11 &dot11) const;
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 

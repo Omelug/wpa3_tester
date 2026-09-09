@@ -71,10 +71,6 @@ public:
 
 	[[nodiscard]] bool is_state(const State s) const{ return this->state == s; }
 
-	// By default, everything is forwarded
-	//[[nodiscard]] virtual bool should_forward(const Tins::PDU &) const{ return true; }
-	// By default, frames are not modified
-	//virtual void modify_packet(Tins::PDU &) const{}
 	static std::string state2str(const State state){
 		static const std::string names[] = {
 			"Unknown", "Target",  "Target_disconnected", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"

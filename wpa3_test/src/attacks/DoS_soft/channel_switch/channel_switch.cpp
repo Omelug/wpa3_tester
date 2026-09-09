@@ -40,7 +40,7 @@ static uint8_t get_operating_class(const Channel &ch) {
 }
 
 static uint8_t vht_center_ch(const uint8_t ch) {
-	// 80 MHz primary channel → center channel
+	// 80 MHz primary channel -> center channel
 	static constexpr array<pair<uint8_t,uint8_t>, 6> groups{{
 		{36,42},{52,58},{100,106},{116,122},{132,138},{149,155}
 	}};
@@ -58,7 +58,10 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	// patch HT_OPERATION primary channel + VHT_OPERATION center channel
 	for (auto &o : sorted_opts) {
 		const auto id = o.option();
-		if (id == static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION)) {
+		if (id == static_cast<uint8_t>(Dot11::OptionTypes::DS_SET)) {
+			const uint8_t ch = ap_channel.ch_num;
+			o = Dot11::option(Dot11::OptionTypes::DS_SET, 1, &ch);
+		} else if (id == static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION)) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if (!data.empty())
 				data[0] = static_cast<uint8_t>(ap_channel.ch_num);
@@ -115,7 +118,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			const bool wanted_type = (type == 1 || type == 2);
 			return !(oui_match && wanted_type);
 		}
-		return ranges::find(kept_ids, id) == kept_ids.end();
+		return false;
 	});
 
 	ranges::sort(sorted_opts, [](const auto &a, const auto &b) {

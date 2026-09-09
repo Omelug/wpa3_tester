@@ -1,6 +1,6 @@
 { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {}
-, cross    ? false   # nix-shell --arg cross true     → adds aarch64 cross-toolchain
-, internet ? false   # nix-shell --arg internet true  → sets eth0=10.0.0.1/24 + NAT to Pi
+, cross    ? false   # nix-shell --arg cross true     -> adds aarch64 cross-toolchain
+, internet ? false   # nix-shell --arg internet true  -> sets eth0=10.0.0.1/24 + NAT to Pi
 }:
 
 let

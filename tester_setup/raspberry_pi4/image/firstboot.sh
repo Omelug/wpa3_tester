@@ -45,10 +45,6 @@ chmod +x /usr/bin/dumpcap
 #TODO hardcoded region
 raspi-config nonint do_wifi_country CZ
 
-# -- xhci quirks for USB adapter stability (keeps adapters on USB 2 speed)
-sed -i 's/ xhci_hcd\.quirks=[0-9]*//' /boot/firmware/cmdline.txt
-sed -i 's/$/ xhci_hcd.quirks=270336/' /boot/firmware/cmdline.txt
-
 # --- Secondary IP on eth0 so LAN router (192.168.1.1) is reachable without changing default route
 #FIXME hardcoded ip address
 nmcli connection modify eth0-static +ipv4.addresses "192.168.1.100/24" 2>/dev/null || true

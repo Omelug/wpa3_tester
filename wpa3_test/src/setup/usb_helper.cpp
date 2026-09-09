@@ -60,13 +60,17 @@ void reset_usb_ifaces() {
 	}
 
 	// Unload wifi drivers before power cycle — prevents ath9k_htc ANI workqueue
-	// from firing after USB disconnect but before driver cleanup)
+	// from firing after USB disconnect but before driver cleanup.
 	const auto wifi_ifaces = collect_all_usb_wifi_ifaces();
+	size_t expected_with_driver = 0;
 	set<string> drivers;
-	for (const auto &iface : wifi_ifaces)
-		if (iface.driver_name != "unknown") drivers.insert(iface.driver_name);
+	for (const auto &iface : wifi_ifaces) {
+		if (iface.driver_name != "unknown") {
+			drivers.insert(iface.driver_name);
+			++expected_with_driver;
+		}
+	}
 	for (const auto &drv : drivers) {
-		// NOTE: Only drivers in valid status
 		hw_capabilities::run_cmd({"modprobe", "-r", drv}, nullopt, false);
 		log(LogLevel::DEBUG, "reset_usb_ifaces: unloaded driver {}", drv);
 	}
@@ -92,8 +96,9 @@ void reset_usb_ifaces() {
 		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found");
 		return;
 	}
-	// uhubctl -a cycle hangs on
-	// power-on because the libusb handle opened before the delay goes stale
+
+	// ponytail: split off/on into two invocations — uhubctl -a cycle hangs on
+	// power-on because the libusb handle opened before the delay goes stale.
 	for (const auto &loc : locs) {
 		hw_capabilities::run_cmd({"uhubctl", "-l", loc, "-a", "off"}, nullopt, false);
 		log(LogLevel::INFO, "reset_usb_ifaces: powered off hub {}", loc);
@@ -103,7 +108,23 @@ void reset_usb_ifaces() {
 		hw_capabilities::run_cmd({"uhubctl", "-l", loc, "-a", "on"}, nullopt, false);
 		log(LogLevel::INFO, "reset_usb_ifaces: powered on hub {}", loc);
 	}
-	this_thread::sleep_for(chrono::seconds(8)); // ponytail: must not be interruptible — g_interrupted stays true after a crash/pause
+
+	// Poll until all adapters have drivers bound. ath9k_htc firmware upload can
+	// take 40+ seconds — a fixed sleep is not enough.
+	if (expected_with_driver > 0) {
+		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
+		while (chrono::steady_clock::now() < deadline) {
+			const auto current = collect_all_usb_wifi_ifaces();
+			size_t ready = 0;
+			for (const auto &i : current)
+				if (i.driver_name != "unknown") ++ready;
+			if (ready >= expected_with_driver) break;
+			log(LogLevel::DEBUG, "reset_usb_ifaces: {}/{} adapters ready, waiting...", ready, expected_with_driver);
+			this_thread::sleep_for(chrono::seconds(3));
+		}
+	} else {
+		this_thread::sleep_for(chrono::seconds(8)); // ponytail: fallback when no adapters were in sysfs before reset
+	}
 	hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=10"}, nullopt, false);
 }
 

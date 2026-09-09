@@ -1,4 +1,6 @@
 .idea/*
+!.idea/vcs.xml
+!.idea/workspace.xml
 !.idea/dictionaries/
 !.idea/runConfigurations/
 !.idea/inspectionProfiles/

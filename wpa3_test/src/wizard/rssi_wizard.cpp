@@ -40,12 +40,12 @@ using namespace Tins;
 
 // ---- globals ----
 static FILE* g_gnuplot_pipe = nullptr;
-static atomic<bool> g_running{true};
-static atomic<bool> g_paused{false};
+static atomic g_running{true};
+static atomic g_paused{false};
 
 void signal_handler(const int signum) {
     if (!g_running) {
-        log(LogLevel::ERROR, "\n[!] Force exiting...");
+        log(LogLevel::CRITICAL, "Force exiting...");
         exit(128 + signum);
     }
     g_running = false;

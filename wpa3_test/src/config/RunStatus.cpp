@@ -260,7 +260,7 @@ unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct
 				}
 				t_map[name] = path.string();
 			}
-		} catch(const YAML::Exception &e){ throw config_err("Invalid yaml " + string(e.what())); }
+		} catch(const YAML::Exception &e){ throw config_err("Invalid yaml {}:{}:{}: {}", path.string(), e.mark.line + 1, e.mark.column + 1, e.msg); }
 	}
 	return t_map;
 }

@@ -32,6 +32,8 @@
       <w>arphrd</w>
       <w>arrowstyle</w>
       <w>attackhead</w>
+      <w>autobinds</w>
+      <w>autoprobe</w>
       <w>bidir</w>
       <w>bigtk</w>
       <w>blackboc</w>
@@ -83,6 +85,7 @@
       <w>dtoverlay</w>
       <w>eapol</w>
       <w>earlyprintk</w>
+      <w>ecsa</w>
       <w>edcca</w>
       <w>efchatz</w>
       <w>emitterutils</w>
@@ -164,6 +167,8 @@
       <w>mfpr</w>
       <w>mipsel</w>
       <w>mitm</w>
+      <w>modalias</w>
+      <w>modaliases</w>
       <w>modeswitch</w>
       <w>modinfo</w>
       <w>mscha</w>
@@ -187,6 +192,7 @@
       <w>nomatch</w>
       <w>nomirror</w>
       <w>nooutput</w>
+      <w>nopass</w>
       <w>nopasswd</w>
       <w>noptions</w>
       <w>noscan</w>
@@ -234,6 +240,7 @@
       <w>regidx</w>
       <w>regval</w>
       <w>reproc</w>
+      <w>resetable</w>
       <w>retrans</w>
       <w>reuseaddr</w>
       <w>rfkill</w>

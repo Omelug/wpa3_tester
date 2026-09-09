@@ -20,7 +20,7 @@ void Observer_config::start(RunStatus &rs) const{
 		? observer_config.at("program_config") : nlohmann::json::object();
 	if(program == "dmesg"){
 		const string level = program_config.value("level", "");
-		dmesg::start_dmesg(rs, level);
+		dmesg::start_dmesg(rs,observer_name, level);
 		return;
 	}
 

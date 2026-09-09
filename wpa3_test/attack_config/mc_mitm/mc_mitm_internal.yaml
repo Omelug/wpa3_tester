@@ -62,7 +62,7 @@ actors:
   rogue_client:
     source: internal
     selection:
-      permanent_mac: "90:de:80:de:ff:a1"
+      permanent_mac: "90:de:80:4e:32:c2"
       driver: mt76x2u #mt7921e
       condition: [ monitor, 2_4GHz, netns_change ] #active_monitor
       channel: 11
@@ -87,10 +87,15 @@ observers: #(allow start_observers if used )
   #  program_config:
   #    filter: ""
 
-  client_dmesg:
+  tester_dmesg:
     program: dmesg
     #program_config:
     #  level: "err,warn"
+  tracer:
+    program: trace_cmd
+    actor: ap
+    program_config:
+      events: [ "mac80211", "mt76", "ath" ]
 
   channel1_tshark:
     actor: rogue_ap

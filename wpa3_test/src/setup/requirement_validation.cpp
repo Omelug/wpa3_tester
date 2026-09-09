@@ -158,12 +158,6 @@ bool RunStatus::config_requirement(){
 		}
 	}
 
-	//hw_capabilities::run_cmd({"modprobe", "-r", "ath9k_htc"}, nullopt, false); //FIXME make generic
-
-	//FIXME collect while phys are still registered — namespace phys are destroyed
-	// by cleanup_all_namespaces() and disappear from /sys/class/ieee80211/ afterwards.
-	//const auto usb_ifaces = collect_all_usb_wifi_ifaces();
-
 	cleanup_all_namespaces();
 	reset_usb_ifaces();
 

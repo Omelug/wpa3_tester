@@ -19,27 +19,27 @@ void McMitm::send_to_real(const vector<uint8_t> &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
 }
 
-bool McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
+PProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.find_pdu<Dot11ProbeRequest>()){
 		probe_resp->addr1(addr2);
 		RadioTap rt;
 		rt.inner_pdu(probe_resp->clone());
 		send_to_real(rt);
 		display_traffic(dot11, "Real channel", " -- Replied");
-		return true;
+		return STOP;
 	}
 	if(dot11.find_pdu<Dot11ProbeResponse>()){
 		if(addr2 == ap.get(SK::mac)) display_traffic(dot11, "Real channel");
-		return true;
+		return STOP;
 	}
-	return false;
+	return CONTINUE;
 }
 
 //FIXME change bool to PProcess::continue; PProcess::stop (with change to bool for
 
 // not
-bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
-	if(addr1 != ap.get(SK::mac)) return false;
+PProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
+	if(addr1 != ap.get(SK::mac)) return CONTINUE;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();
 		display_traffic(dot11, "Real channel");
@@ -52,31 +52,31 @@ bool McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 
 			send_csa_beacon();
 
 			client_state.update_state(ClientState::Sent_to_rogue);
-			return true;
+			return STOP;
 		}
 	}
-	return false;
+	return CONTINUE;
 }
 
-bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
+PProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
 								const Dot11 &dot11
 ) const{
-	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return false;
+	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
 	if(dot11.wep()){
 		if(addr2 == ap.get(SK::mac)){
 			display_traffic(dot11, "Real channel", " -- MitM");
 			send_to_rogue(raw);
-			return true;
+			return STOP;
 		}
 	}
 
 	const auto serialization = const_cast<Dot11&>(dot11).serialize();
-	if(serialization.size() < 25) return false;
+	if(serialization.size() < 25) return CONTINUE;
 	const uint8_t category = serialization[24];
 
 	if(category == 0){
 		log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
-		return true;
+		return STOP;
 	}
 
 	const HWAddress<6> src(serialization.data() + 10);
@@ -85,12 +85,12 @@ bool McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vecto
 	if(src == ap.get(SK::mac) && client_state.get_mac() == dst){
 		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
 		send_to_rogue(pdu);
-		return true;
+		return STOP;
 	}
-	return false;
+	return CONTINUE;
 }
 
-bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
+PProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
 	// EAPOL AP -> STA on real channel
 	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){
 		int eapol_msg = get_eapol_msg_num(pdu);
@@ -98,9 +98,9 @@ bool McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr
 			log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
 			send_to_rogue(pdu);
 		}
-		return true;
+		return STOP;
 	}
-	return false;
+	return CONTINUE;
 }
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
@@ -172,10 +172,13 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 	power_mgmt_response(addr2, *dot11);
 
-	if(handle_probe_real(addr2, *dot11)) return;
+	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
+
+	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	//TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
-	if(handle_eapol_real(addr1, addr2, *dot11)) return;
-	if(handle_auth_from_client_real(addr1, *dot11)) return;
+	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
+	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
+	#undef SOLVE_OR_CONTINUE
 
 	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");

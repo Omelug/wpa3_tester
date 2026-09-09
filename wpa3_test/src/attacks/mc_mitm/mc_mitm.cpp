@@ -66,21 +66,6 @@ void McMitm::send_disas(const HWAddress<6> &macaddr) const{
 	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr);
 }
 
-/*void McMitm::queue_disas(const HWAddress<6> &macaddr){
-	const bool already_queued = ranges::any_of(disas_queue,
-		[&](const auto &entry){ return entry.second == macaddr; });
-	if(already_queued) return;
-
-	const auto sched_time = steady_clock::now() + milliseconds(500);
-	disas_queue.emplace_back(sched_time, macaddr);
-	ranges::sort(disas_queue); // sort by time
-}
-
-void McMitm::try_channel_switch(const HWAddress<6> &macaddr){
-	send_csa_beacon();
-	queue_disas(macaddr);
-}*/
-
 void McMitm::send_deauth_as_ap() const{
 	Dot11Deauthentication deauth;
 	deauth.addr1(client_state.get_mac());
@@ -238,10 +223,6 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 			while(auto recv_res = sock_rogue->recv())
 				handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
-		/*while (!disas_queue.empty() && disas_queue.front().first <= steady_clock::now()) {
-			send_disas(disas_queue.front().second);
-			disas_queue.erase(disas_queue.begin());
-		}*/
 
 		if(next_beacon <= steady_clock::now()){
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
@@ -254,12 +235,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec){
 		}
 
 		if(last_real_beacon + seconds(2) < steady_clock::now()){
-			log(LogLevel::WARNING, "WARNING: Didn't receive beacon from real AP for two seconds");
+			log(LogLevel::WARNING, "Didn't receive beacon from real AP for two seconds");
 			last_real_beacon = steady_clock::now();
 		}
 
 		if(check_rogue_beacons && last_rogue_beacon + seconds(2) < steady_clock::now()){
-			log(LogLevel::WARNING, "WARNING: Didn't receive beacon from rogue AP for two seconds");
+			log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
 			last_rogue_beacon = steady_clock::now();
 		}
 	}

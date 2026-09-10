@@ -64,7 +64,7 @@ TEST_CASE("load_result_default - string default is '-'"){
 	const auto dir = make_result_dir({{"count", 1}});
 
 	const auto e = load_result_default<TestEntry>(dir);
-	CHECK_EQ(e.name, "-");
+	CHECK_EQ(e.name, "");
 }
 
 TEST_CASE("load_result_default - optional<string> default is 'N/A'"){

@@ -102,7 +102,7 @@ void stats_attack(const RunStatus &rs) {
 	const auto window = visual::helper::get_run_window(rs);
 	const int disconnects = static_cast<int>(
 		get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window).size());
-	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg_log.log", "appears to change mode");
+	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg.log", "appears to change mode");
 
 	rs.save_result({{"disconnect_count", disconnects}, {"dmesg_change_mode_disconnect", !oc.empty()}});
 

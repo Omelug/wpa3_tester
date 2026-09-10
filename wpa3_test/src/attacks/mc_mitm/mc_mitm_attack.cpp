@@ -115,7 +115,7 @@ void stats(const RunStatus &rs){
 								});
 	observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
 
-	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg_log.log", "over-current");
+	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg.log", "over-current");
 	if (!oc.empty()) {
 		log(LogLevel::ERROR, "USB over-current detected ({} events) — timestamps are kernel uptime, not wall-clock:", oc.size());
 		for (const auto &line : oc) log(LogLevel::ERROR, "  {}", line);

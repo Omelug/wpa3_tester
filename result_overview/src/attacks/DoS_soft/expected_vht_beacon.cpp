@@ -3,10 +3,12 @@
 #include <string>
 #include "overview/html_utils.h"
 #include "system/utils.h"
+#include "visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
 using namespace filesystem;
+using visual::expected_vht_beacon_suite::ExpVhtTestEntry;
 
 void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "expected_vht_beacon";
@@ -26,20 +28,24 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
 </head>
 <body>
     <a href="../../../index.html" class="back-link"><- Overview</a>
-    <h1>Fake Legacy Beacon DoS (expected VHT, found legacy)</h1>
+    <h1> fake legacy beacon DoS </h1>
 
     <div class="card">
-        <p><b>prerequisites:</b> client connected to a HT/VHT access point</p>
+        <p><b>prerequisites:</b> client connected to a VHT (802.11ac) access point</p>
         <p>
-            The attacker captures the real AP beacon
-			Filter out  VHT_CAP, VHT_OP, HT_* etc.
-            Re-injects the modified beacon using the AP's BSSID
-			The mac80211 kernel driver detects that the AP appears to have switched from HT to legacy/VHT to legacy mode and forcibly disconnects the client.
+			The attacker captures the real AP beacon, strips
+            <code>VHT_CAP</code> and <code>VHT_OP</code> IEs, and re-injects
+            it on the AP's BSSID. The mac80211 kernel driver detects that the AP
+            appears to have switched from VHT to legacy mode and forcibly disconnects
+            the client (AP appears to change mode (expected HT/VHT, found legacy))
+			- code in mac80211 https://github.com/torvalds/linux/blob/master/net/mac80211/mlme.c
         </p>
         <p>
-            On mt76x2u its <b>side-effect</b> of the Bl0ck/BARS attack on mt76x2u
+            On mt76x2u this is also a side-effect of the Bl0ck/BARS attack.
         </p>
-        <p><b>success:</b> client receives fake legacy beacon and disconnects from the AP</p>
+        <p><b>success:</b>
+			client receives fake legacy beacon and disconnects from the AP
+		</p>
     </div>
 
     <div class="card">
@@ -47,19 +53,20 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
         <ul>
             <li><b>Beacon Protection (BIGTK, 802.11ax)</b> — fake beacons without a valid
                 BIP-CMAC-256 tag are silently dropped. Not yet widely deployed.</li>
-            <li> #TODO source, soplnit
         </ul>
     </div>
 
 )html";
 
-    // TODO: add result table once runs are collected
-    // Example pattern when a visual helper exists:
-    // auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
-    //     ExpectedVhtTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
-    // };
-    // const path base = data_dir / DATA_SUITE / "DoS_soft" / "expected_vht_beacon";
-    // emit_table("5 GHz basic", base / "basic" / "basic_5GHz_filler", "basic_5GHz_filler");
+    auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name) {
+        ExpVhtTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
+    };
+
+    const path base = data_dir / DATA_SUITE / "DoS_soft" / "expected_vht_beacon";
+
+    emit_table("2.4 GHz", base / "basic" / "expected_vht_beacon_2_4GHz_filler", "expected_vht_beacon_2_4GHz_filler");
+    emit_table("5 GHz",   base / "basic" / "expected_vht_beacon_5GHz_filler",   "expected_vht_beacon_5GHz_filler");
+    emit_table("RogueAP (2.4 GHz)", base / "rogueAP" / "expected_vht_beacon_rogueAP_filler", "expected_vht_beacon_rogueAP_filler");
 
     f << "</body>\n</html>\n";
 }

@@ -1,0 +1,15 @@
+$extends: ../basic/basic_5GHz.yaml
+name: expected_vht_beacon_beacon_prot_5GHz
+actors:
+  ap:
+    setup:
+      program_config:
+        beacon_prot: 1
+    selection:
+      condition: [ AP, 5GHz, beacon_prot ]
+  client:
+    setup:
+      program_config:
+        beacon_prot: 1
+    selection:
+      condition: [ managed, 5GHz, netns_change, beacon_prot ]

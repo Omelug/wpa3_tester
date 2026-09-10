@@ -6,6 +6,7 @@
 #include "DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "DoS_soft/channel_switch/channel_switch_versions.h"
+#include "DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "attacks/enterprise/eap_helper.h"
 #include "config/RunSuiteStatus.h"
@@ -45,6 +46,9 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_re
 	{"ap_info_wpa3_filler", ap_info_wpa3_filler::generate_report},
 	{"CSA_rogueAP_internal_filler", channel_switch_rogueAP::CsaTestEntry::generate_report},
 	{"CSA_ex_filler", channel_switch_rogueAP::CsaTestEntry::generate_report},
+	{"expected_vht_beacon_2_4GHz_filler",  expected_vht_beacon_suite::ExpVhtTestEntry::generate_report},
+	{"expected_vht_beacon_5GHz_filler",    expected_vht_beacon_suite::ExpVhtTestEntry::generate_report},
+	{"expected_vht_beacon_rogueAP_filler", expected_vht_beacon_suite::ExpVhtTestEntry::generate_report},
 	//{"malformed_eapol1_basic_suite", malformed_eapol1_basic_visual::generate_report},
 };
 

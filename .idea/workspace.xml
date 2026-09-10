@@ -135,7 +135,14 @@
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: beacon without vht attack working base (disconnect)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -181,7 +188,10 @@
     "CMake Application.rssi_wizard.executor": "Debug",
     "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
     "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_test.executor": "Debug",
     "CMake Application.wpa3_tester external_info.executor": "Debug",
     "CMake Application.wpa3_tester iface_info_filler.executor": "Debug",
@@ -250,7 +260,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "debugger.dataViews"
+    "settings.editor.selected.configurable": "advanced.settings"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -269,7 +279,7 @@
       <recent name="$PROJECT_DIR$/build" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester expected_vht_beacon_5GHz">
+  <component name="RunManager" selected="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz">
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -282,19 +292,19 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_eapol_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_eapol_real" TEST_MODE="SUITE_TEST">
+    <configuration name="handle_eapol_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_eapol_real" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_eapol_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_eapol_rogue" TEST_MODE="SUITE_TEST">
+    <configuration name="handle_eapol_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_eapol_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_from_ap_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_from_ap_real" TEST_MODE="SUITE_TEST">
+    <configuration name="handle_from_ap_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_from_ap_real" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -777,7 +787,27 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="wpa3_tester expected_vht_beacon_2_4GHz_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_2_4GHz_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="wpa3_tester expected_vht_beacon_5GHz" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_5GHz" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester expected_vht_beacon_beacon_prot" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_beacon_prot" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester expected_vht_beacon_beacon_prot_5GHz" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_beacon_prot_5GHz" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester expected_vht_beacon_rogueAP_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_rogueAP_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -814,6 +844,10 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz" />
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot" />
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler" />
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler" />
       <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_5GHz" />
       <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_test" />
       <item itemvalue="CMake Application.rssi_wizard" />
@@ -1093,11 +1127,6 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp</url>
           <line>84</line>
           <option name="timeStamp" value="119" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
-          <line>440</line>
-          <option name="timeStamp" value="134" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

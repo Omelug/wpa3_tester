@@ -1,0 +1,15 @@
+$extends: ../expected_vht_beacon.yaml
+name: expected_vht_beacon_beacon_prot
+actors:
+  ap:
+    setup:
+      program_config:
+        beacon_prot: 1
+    selection:
+      condition: [ AP, 2_4GHz, beacon_prot ]
+  client:
+    setup:
+      program_config:
+        beacon_prot: 1
+    selection:
+      condition: [ managed, 2_4GHz, netns_change, beacon_prot ]

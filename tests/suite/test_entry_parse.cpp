@@ -138,7 +138,7 @@ TEST_CASE("Bl0ckTestEntry::parse - no config uses result.json only") {
 	const auto e = visual::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK_EQ(e.disconnect_count, 3);
-	CHECK_EQ(e.ap_mac, "-");
+	CHECK_EQ(e.ap_mac, "");
 }
 
 TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {

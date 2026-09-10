@@ -45,7 +45,7 @@ template<typename T> inline constexpr bool is_pair_field = false;
 template<typename A, typename B> inline constexpr bool is_pair_field<std::pair<A, B>> = true;
 
 template<typename T> T entry_default(){ return T{}; }
-template<> inline std::string                   entry_default<std::string>()                   { return "-";   }
+template<> inline std::string                   entry_default<std::string>()                   { return "";   }
 template<> inline std::optional<std::string>    entry_default<std::optional<std::string>>()    { return "N/A"; }
 
 // load field values by matching field name to JSON key

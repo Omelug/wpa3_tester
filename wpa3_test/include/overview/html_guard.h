@@ -107,8 +107,8 @@ private:
 	std::filesystem::path page_dir_;
 };
 
-inline std::string device(const Tins::HWAddress<6> mac, const std::filesystem::path &page_dir){
-	auto mac_str = mac.to_string();
+inline std::string device(const std::string &mac_str, const std::filesystem::path &page_dir){
+	if(mac_str.empty()) return "";
 	auto root = page_dir;
 	while(!root.empty() && root != root.parent_path()){
 		const auto dev_page = root / "devices" / mac_str / "index.html";

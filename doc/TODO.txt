@@ -5,10 +5,7 @@ v: visualization
 
 Version v 0.0.0.0:
 bl0ck - zkontrolovat opravdu správnost framů (přímo v pcap)
-bl0ck -logy z OpenWrt (co nejvíce)
-
-o: usb reset
-r: usb reset hardcoded timeouts
+bl0ck - logy z OpenWrt (co nejvíce)
 
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3

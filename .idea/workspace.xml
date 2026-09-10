@@ -132,10 +132,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: beacon without vht attack working base (disconnect)">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -181,6 +181,8 @@
     "CMake Application.rssi_wizard.executor": "Debug",
     "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
     "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_test.executor": "Debug",
     "CMake Application.wpa3_tester external_info.executor": "Debug",
     "CMake Application.wpa3_tester iface_info_filler.executor": "Debug",
     "CMake Application.wpa3_tester injection_test_example_req.executor": "Debug",
@@ -230,6 +232,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
     "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
     "WebServerToolWindowPanel.toolwindow.show.date": "false",
@@ -242,7 +245,7 @@
     "ctest.advertisement.all.test.configuration.is.created": "true",
     "git-widget-placeholder": "dev",
     "git.auto.fetch.suggestion.counter": "3",
-    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/tests/observer",
+    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/expected_vht_beacon",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -252,11 +255,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon" />
       <recent name="$PROJECT_DIR$/tests/observer" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/config" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external" />
-      <recent name="$PROJECT_DIR$/result_overview/static/images" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck" />
@@ -266,7 +269,7 @@
       <recent name="$PROJECT_DIR$/build" />
     </key>
   </component>
-  <component name="RunManager" selected="Doctest.handle_from_ap_real">
+  <component name="RunManager" selected="CMake Application.wpa3_tester expected_vht_beacon_5GHz">
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -774,6 +777,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="wpa3_tester expected_vht_beacon_5GHz" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_5GHz" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="wpa3_tester external_info" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test external_info" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -806,6 +814,8 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_5GHz" />
+      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_test" />
       <item itemvalue="CMake Application.rssi_wizard" />
       <item itemvalue="CMake Application.wpa3_tester BARS_filler" />
       <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_Dlink" />
@@ -1039,8 +1049,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="vf: escape_tex" />
-    <MESSAGE value="ch: pbac_from_pcap_ap/pbac_from_pcap_client use described_bool &#10;&#10;t:  pbac_from_pcap_ap" />
     <MESSAGE value="rf: block report simplify, prefer client pcap" />
     <MESSAGE value="f: delete empty blocks in yaml" />
     <MESSAGE value="+: direnv allow,addba_seen base (not tested, not tried )" />
@@ -1064,7 +1072,9 @@
     <MESSAGE value="f:  usbcore.autosuspend=-1" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak" />
+    <MESSAGE value="+: vsc/workspace Clion" />
+    <MESSAGE value="+: beacon without vht attack working base (disconnect)" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: beacon without vht attack working base (disconnect)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1088,11 +1098,6 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
           <line>440</line>
           <option name="timeStamp" value="134" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion_hooks.cpp</url>
-          <line>79</line>
-          <option name="timeStamp" value="192" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

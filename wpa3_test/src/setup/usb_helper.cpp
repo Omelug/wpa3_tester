@@ -93,7 +93,10 @@ void reset_usb_ifaces() {
 		locs.push_back(loc);
 	}
 	if (locs.empty()) {
-		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found");
+		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found — reloading drivers without power cycle");
+		for (const auto &drv : drivers)
+			hw_capabilities::run_cmd({"modprobe", drv}, nullopt, false);
+		hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=10"}, nullopt, false);
 		return;
 	}
 

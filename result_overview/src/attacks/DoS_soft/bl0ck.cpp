@@ -31,7 +31,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 	<a href="../../../index.html" class="back-link"><- Overview</a>
 	<h1>Bl0ck - Block ACK (BA) DoS</h1>
 
-	<div class="card"> <!-- TODO DELBA/ADDAS protected wth MFP? -->
+	<div class="card"> <!-- TODO DELBA/ADDAS protected wth MFP -->
 		<p><b>prerequisites:</b> client connected to access point, QoS data used 802.11ac or 802.11ax, attacker needs to be physically between AP and client</p>
 		<p>Bl0ck exploits the Block ACK mechanism by injecting spoofed frames
 		   that corrupt the receiver's sequence-number state, causing network issues (typycal disconnect)

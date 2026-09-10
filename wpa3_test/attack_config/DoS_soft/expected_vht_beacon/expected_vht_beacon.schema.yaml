@@ -1,0 +1,34 @@
+title: Expected VHT Beacon Attack Config
+type: object
+required:
+  - actors
+properties:
+  actors:
+    required:
+      - ap
+      - client
+      - attacker
+  attack_config:
+    required:
+      - attack_time_sec
+      - ms_interval
+      - sleep_before_sec
+      - sleep_after_sec
+    additionalProperties: false
+    properties:
+      $validator:
+        type: string
+      attack_time_sec:
+        type: integer
+        minimum: 1
+        description: duration of beacon injection in seconds
+      ms_interval:
+        type: integer
+        minimum: 1
+        description: interval between fake beacons in milliseconds (AP sends every 100 ms)
+      sleep_before_sec:
+        type: integer
+        description: wait before attack (let iperf stabilise)
+      sleep_after_sec:
+        type: integer
+        description: wait after attack to observe reconnect

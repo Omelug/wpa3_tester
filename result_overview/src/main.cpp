@@ -9,6 +9,7 @@
 #include "attacks/two_iface/injection_overview.h"
 #include "attacks/DoS_soft/channel_switch.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"
+#include "attacks/DoS_soft/expected_vht_beacon.h"
 #include "attacks/downgrade/owe_trans.h"
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
 #include "attacks/enterprise/invalid_curve.h"
@@ -141,6 +142,7 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
 	wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
 	wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
+	wpa3_tester::overview::generate_expected_vht_beacon(output_dir, data_dir);
 	wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);
 	wpa3_tester::overview::generate_wpa3_trans_downgrade(output_dir, data_dir);
 	wpa3_tester::overview::generate_targets(output_dir, data_dir);

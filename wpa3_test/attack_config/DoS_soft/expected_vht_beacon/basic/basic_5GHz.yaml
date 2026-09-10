@@ -1,0 +1,32 @@
+$extends: [
+../expected_vht_beacon.yaml,
+../observers.comp.yaml
+]
+name: expected_vht_beacon_5GHz
+$validator: ../expected_vht_beacon.schema.yaml
+actors:
+  ap:
+    setup:
+      program: hostapd
+      program_config:
+        country_code: CZ
+        version: 2_10
+        hw_mode: a   # 5 GHz — VHT requires 5 GHz
+        channel: 36
+  client:
+    setup:
+      program: wpa_supplicant
+      program_config:
+        version: 2_10
+    selection:
+      channel: 36
+  attacker:
+    selection:
+      channel: 36
+      condition: [ monitor, 5GHz ]
+
+attack_config:
+  attack_time_sec: 30
+  ms_interval: 100         # same cadence as real beacons (100 ms TIM interval)
+  sleep_before_sec: 10
+  sleep_after_sec: 15

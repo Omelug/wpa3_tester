@@ -59,6 +59,7 @@ void ExpVhtTestEntry::render_table(overview::HtmlGuard &f, const string &title,
                 COL("Rogue WPA2 AP?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
             }
             col("Disconnects",          &ExpVhtTestEntry::disconnect_count);
+            col("AP disconnected",      &ExpVhtTestEntry::ap_disconnected);
             col("dmesg change mode",    &ExpVhtTestEntry::dmesg_change_mode_disconnect);
         })->render({"Test"});
         #undef COL

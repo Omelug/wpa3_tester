@@ -118,6 +118,7 @@ void stats_attack(const RunStatus &rs) {
     nlohmann::json result;
     result["disconnect_count"] = disconnects;
     result["dmesg_change_mode_disconnect"] = !oc.empty();
+    result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
     if (rogue_ap_connected)
         result["rogue_ap_connected"] = *rogue_ap_connected;
     if (crack_result)

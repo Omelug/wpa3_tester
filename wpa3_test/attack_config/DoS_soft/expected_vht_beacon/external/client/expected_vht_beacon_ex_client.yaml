@@ -1,0 +1,28 @@
+name: expected_vht_beacon_ex_client
+attacker_module: expected_vht_beacon
+$validator: ../../expected_vht_beacon.schema.yaml
+$extends: [
+  ../../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
+  ../ex_observers.comp.yaml,
+]
+
+actors:
+  client:
+    source: external
+    scan_ignore: yes
+    selection:
+      condition: [ STA, 2_4GHz ]
+      channel: 6
+  attacker:
+    source: internal
+    selection:
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+
+attack_config:
+  attack_time_sec: 30
+  ms_interval: 100
+  sleep_before_sec: 10
+  sleep_after_sec: 15
+
+rewrite: errors

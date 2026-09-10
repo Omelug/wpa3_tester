@@ -54,8 +54,10 @@ void ExpVhtTestEntry::render_table(overview::HtmlGuard &f, const string &title,
             COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
             COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
             COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-            if (has_rogue)
+            if (has_rogue) {
                 COL("Rogue AP (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
+                COL("Rogue WPA2 AP?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
+            }
             col("Disconnects",          &ExpVhtTestEntry::disconnect_count);
             col("dmesg change mode",    &ExpVhtTestEntry::dmesg_change_mode_disconnect);
         })->render({"Test"});

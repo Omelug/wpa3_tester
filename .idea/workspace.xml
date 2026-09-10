@@ -132,17 +132,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: beacon without vht attack working base (disconnect)">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="fv: invaliad mac in empty mac &#10;+: ExpVhtTestEntry filers - rogueAP, 5GHz, 2_4GHz&#10;f: dmesg  log in vht beacon attack">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,6 +185,7 @@
     "CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor": "Debug",
+    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor": "Debug",
     "CMake Application.wpa3_tester expected_vht_beacon_test.executor": "Debug",
     "CMake Application.wpa3_tester external_info.executor": "Debug",
@@ -279,7 +274,7 @@
       <recent name="$PROJECT_DIR$/build" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz">
+  <component name="RunManager" selected="CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler">
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1083,7 +1078,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="rf: block report simplify, prefer client pcap" />
     <MESSAGE value="f: delete empty blocks in yaml" />
     <MESSAGE value="+: direnv allow,addba_seen base (not tested, not tried )" />
     <MESSAGE value="f: forwarding DLink internet with raspberry" />
@@ -1108,7 +1102,8 @@
     <MESSAGE value="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak" />
     <MESSAGE value="+: vsc/workspace Clion" />
     <MESSAGE value="+: beacon without vht attack working base (disconnect)" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: beacon without vht attack working base (disconnect)" />
+    <MESSAGE value="fv: invaliad mac in empty mac &#10;+: ExpVhtTestEntry filers - rogueAP, 5GHz, 2_4GHz&#10;f: dmesg  log in vht beacon attack" />
+    <option name="LAST_COMMIT_MESSAGE" value="fv: invaliad mac in empty mac &#10;+: ExpVhtTestEntry filers - rogueAP, 5GHz, 2_4GHz&#10;f: dmesg  log in vht beacon attack" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 #include <string>
 #include "config/RunSuiteStatus.h"
 #include "overview/html_guard.h"
@@ -21,6 +22,8 @@ struct ExpVhtTestEntry {
     // result fields — names must match result.json keys (auto-loaded by load_result_default)
     int disconnect_count = 0;
     bool dmesg_change_mode_disconnect = false;
+    std::optional<bool> rogue_ap_connected;
+    std::optional<bool> cracked;
 
     static ExpVhtTestEntry parse(const std::filesystem::path &test_folder);
     static void render_table(overview::HtmlGuard &f, const std::string &title,

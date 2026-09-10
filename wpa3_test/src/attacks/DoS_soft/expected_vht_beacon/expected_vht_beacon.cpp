@@ -75,6 +75,7 @@ static void inject_legacy_beacons(const HWAddress<6> &ap_mac, const string &ifac
 
 void setup_attack(RunStatus &rs) {
     components::client_ap_setup(rs, false);
+	components::setup_rogue_ap(rs);
 }
 
 void run_attack(RunStatus &rs) {
@@ -99,21 +100,29 @@ void run_attack(RunStatus &rs) {
 }
 
 void stats_attack(const RunStatus &rs) {
+    vector<unique_ptr<GraphElements>> elements;
+    rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+
+    auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
+
+    observer::tshark::pcap_events(rs, elements, {
+        {"client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange"},
+    });
+    observer::tshark::tshark_graph(rs, "client", elements);
+
 	const auto window = visual::helper::get_run_window(rs);
 	const int disconnects = static_cast<int>(
 		get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window).size());
 	const auto oc = observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg.log", "appears to change mode");
 
-	rs.save_result({{"disconnect_count", disconnects}, {"dmesg_change_mode_disconnect", !oc.empty()}});
-
-    vector<unique_ptr<GraphElements>> elements;
-    rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-
-    observer::tshark::pcap_events(rs, elements, {
-        {"client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange"},
-    });
-
-    observer::tshark::tshark_graph(rs, "client", elements);
+    nlohmann::json result;
+    result["disconnect_count"] = disconnects;
+    result["dmesg_change_mode_disconnect"] = !oc.empty();
+    if (rogue_ap_connected)
+        result["rogue_ap_connected"] = *rogue_ap_connected;
+    if (crack_result)
+        result["cracked"] = crack_result->cracked != 0;
+    rs.save_result(result);
 }
 
 }

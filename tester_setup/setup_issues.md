@@ -1,6 +1,7 @@
 
-### Disable Network manager
-in  /etc/NetworkManager/conf.d/99-unmanaged-wifi.conf
+### Disable conflict applications:
+Network manager in  /etc/NetworkManager/conf.d/99-unmanaged-wifi.conf
+VPNS (At least Mullvad had some conflicts with it )
 
 ### Regulatory domains
 - ignore_interfaces are name specific - so you need same names after restart 
@@ -18,3 +19,5 @@ Name=wlan0
 
 sudo udevadm control --reload
 sudo update-initramfs -u
+
+

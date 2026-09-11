@@ -11,7 +11,22 @@ actors:
   transceiver:
     source: internal
     selection:
-      condition: [ injection_selftest, 2_4GHz ]
+      condition: [ 2_4GHz, monitor ]
+      driver: mt76x2u
       #driver: rtl8xxxu
       #driver: ath9k_htc
       channel: 1
+attack_config:
+  frame_in_batch: 50
+  ms_interval: 100
+  sleep_before_sec: 5
+  sleep_after_sec: 30
+  attack_time_sec: 60
+observers:
+  dmesg:
+    program: dmesg
+  tracer:
+    program: trace_cmd
+    actor: transceiver #TODO needed actor, udsed ?
+    program_config:
+      events: [ "mac80211", "mt76", "ath9k" ]

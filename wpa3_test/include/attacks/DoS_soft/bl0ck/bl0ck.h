@@ -1,4 +1,5 @@
 #pragma once
+#include <linux/if_packet.h>
 #include <string>
 #include "config/RunStatus.h"
 
@@ -35,4 +36,7 @@ Tins::RadioTap get_BA_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddr
 Tins::RadioTap get_BARS_frame(const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw,
 							const std::string &iface, int timeout_sec = 30
 );
+
+struct RawSocket { int fd; sockaddr_ll addr; };
+RawSocket get_unblocking_socket(const std::string &iface);
 }

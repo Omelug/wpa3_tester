@@ -194,12 +194,51 @@ void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &
 					});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
+	rs.process_manager.after_stop(actor_name, [obs]() {
+		set_public_perms(obs);
+	});
 }
 
 static constexpr int ZERO_STREAK_THRESHOLD = 5; // stable/down iperf
 
-described_str iperf_log_has_zero_plain(const path &log_path, const TimeWindow &window){
-	if(!exists(log_path)) return {};
+described_str iperf_was_down(RunStatus &rs, const path &test_folder) {
+	const path dir = test_folder / "observer" / "iperf3";
+	const path ap = dir / "ap_iperf3_server.log";
+	const path cl = dir / "client_iperf3_gen.log";
+	if (!exists(ap) && !exists(cl))
+		return {};
+
+	const auto sev = [](const described_str &r) -> int {
+		return r.value() == "down" ? 2 : r.value() == "unstable" ? 1 : 0;
+	};
+	// FIXME bad time parsing?
+	const auto ap_r = described_str{};
+	// const auto ap_r = iperf_log_has_zero_plain(ap,
+	// visual::helper::get_run_window(rs, rs.get_actor("ap")));
+	const auto cl_r = iperf_log_has_zero_plain(
+		cl, visual::helper::get_run_window(rs, rs.get_actor("client")));
+	// Add less severe first so value() (last pair) == worst
+	described_str result;
+	if (sev(ap_r) <= sev(cl_r)) {
+		if (!ap_r.empty())
+			result += ap_r.last();
+		if (!cl_r.empty())
+			result += cl_r.last();
+	} else {
+		if (!cl_r.empty())
+			result += cl_r.last();
+		if (!ap_r.empty())
+			result += ap_r.last();
+	}
+	if (result.empty())
+		result += {"ok", "iperf3 ok"};
+	return result;
+}
+
+described_str iperf_log_has_zero_plain(const path &log_path,
+									   const TimeWindow &window) {
+	if (!exists(log_path))
+		return {};
 	ifstream f(log_path);
 	string line;
 	int streak = 0, max_streak = 0;
@@ -208,57 +247,48 @@ described_str iperf_log_has_zero_plain(const path &log_path, const TimeWindow &w
 	bool cur_iv_zero = false;
 
 	// Commit the accumulated zero-status of the previous interval and reset.
-	// OR across all TX/RX lines of the same interval (bidir mode has two lines per second).
-	auto commit = [&]{
-		if(last_iv < -900.0f) return;
-		if(cur_iv_zero){ ++streak; max_streak = max(max_streak, streak); any_zero = true; }
-		else            { streak = 0; }
+	// OR across all TX/RX lines of the same interval (bidir mode has two lines
+	// per second).
+	auto commit = [&] {
+		if (last_iv < -900.0f)
+			return;
+		if (cur_iv_zero) {
+			++streak;
+			max_streak = max(max_streak, streak);
+			any_zero = true;
+		} else {
+			streak = 0;
+		}
 		cur_iv_zero = false;
 	};
 
-	while(get_line_in_window(f, line, window)){
-		if(line.find("- - - -") != string::npos) break;
-		// Use rfind(']') to skip timestamp/process-name prefix and find the stream role bracket
+	while (get_line_in_window(f, line, window)) {
+		if (line.find("- - - -") != string::npos)
+			break;
+		// Use rfind(']') to skip timestamp/process-name prefix and find the
+		// stream role bracket
 		const auto bracket = line.rfind(']');
-		if(bracket == string::npos) continue;
+		if (bracket == string::npos)
+			continue;
 		float iv = -1.0f;
-		if(sscanf(line.c_str() + bracket + 1, " %f-", &iv) != 1 || iv < 0) continue;
-		if(iv != last_iv){ commit(); last_iv = iv; }
-		if(line.find("0.00 Bytes") != string::npos) cur_iv_zero = true;
+		if (sscanf(line.c_str() + bracket + 1, " %f-", &iv) != 1 || iv < 0)
+			continue;
+		if (iv != last_iv) {
+			commit();
+			last_iv = iv;
+		}
+		if (line.find("0.00 Bytes") != string::npos)
+			cur_iv_zero = true;
 	}
 	commit();
 
 	described_str r;
-	if(max_streak >= ZERO_STREAK_THRESHOLD)
-		r += {"down",     "iperf3 down (>="  + to_string(ZERO_STREAK_THRESHOLD) + "s)"};
-	else if(any_zero)
-		r += {"unstable", "iperf3 unstable (<" + to_string(ZERO_STREAK_THRESHOLD) + "s outage)"};
+	if (max_streak >= ZERO_STREAK_THRESHOLD)
+		r += {"down",
+			  "iperf3 down (>=" + to_string(ZERO_STREAK_THRESHOLD) + "s)"};
+	else if (any_zero)
+		r += {"unstable", "iperf3 unstable (<" +
+							  to_string(ZERO_STREAK_THRESHOLD) + "s outage)"};
 	return r;
-}
-
-described_str iperf_was_down(RunStatus &rs, const path &test_folder){
-	const path dir = test_folder / "observer" / "iperf3";
-	const path ap  = dir / "ap_iperf3_server.log";
-	const path cl  = dir / "client_iperf3_gen.log";
-	if(!exists(ap) && !exists(cl)) return {};
-
-	const auto sev = [](const described_str &r) -> int {
-		return r.value() == "down" ? 2 : r.value() == "unstable" ? 1 : 0;
-	};
-	//FIXME bad time parsing?
-	const auto ap_r = described_str{};
-	//const auto ap_r = iperf_log_has_zero_plain(ap, visual::helper::get_run_window(rs, rs.get_actor("ap")));
-	const auto cl_r = iperf_log_has_zero_plain(cl, visual::helper::get_run_window(rs, rs.get_actor("client")));
-	// Add less severe first so value() (last pair) == worst
-	described_str result;
-	if(sev(ap_r) <= sev(cl_r)){
-		if(!ap_r.empty()) result += ap_r.last();
-		if(!cl_r.empty()) result += cl_r.last();
-	} else {
-		if(!cl_r.empty()) result += cl_r.last();
-		if(!ap_r.empty()) result += ap_r.last();
-	}
-	if(result.empty()) result += {"ok", "iperf3 ok"};
-	return result;
 }
 }

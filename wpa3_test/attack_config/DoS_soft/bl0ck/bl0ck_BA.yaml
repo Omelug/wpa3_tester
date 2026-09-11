@@ -5,7 +5,7 @@ attacker_module: bl0ck
 #actors:
   #ap:
   #  selection:
-  #    permanent_mac: "90:de:80:de:ff:a1"
+  #    permanent_mac: "90:de:80:de:ff:7b"
   #    driver: [ rtw_8821au, rtw88_8821au ]
   #client:
   #  selection:

@@ -72,6 +72,7 @@ json yaml_to_json_with_marks(const YNode &node, const string &current_path,
 
 void deep_merge(json &base, const json &patch){
 	for (const auto& [key, val] : patch.items()) {
+		// TODO  add $ADD and change $DELETE like object to delete only parts of arrays
 		if(key == "$DELETE"){
 			if(val.is_string()) base.erase(val.get<string>());
 			else if(val.is_array())

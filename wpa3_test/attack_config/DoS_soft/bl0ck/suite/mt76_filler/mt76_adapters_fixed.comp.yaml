@@ -1,7 +1,7 @@
 actors:
   ap:
     selection:
-      permanent_mac: "90:de:80:de:ff:a1"
+      permanent_mac: "90:de:80:de:ff:7b"
       driver: mt76x2u
   client:
     selection:

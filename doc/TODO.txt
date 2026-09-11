@@ -4,14 +4,12 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-bl0ck - zkontrolovat opravdu správnost framů (přímo v pcap)
 bl0ck - logy z OpenWrt (co nejvíce)
 
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: add normal deauth attack on WPA2 on WPA3
 +?: add empty attack for tests
 +: rogue AP into Bl0ck
-+: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí muzeuth
 +: nezablokují bl0ck jen L3 vrstvu (respektive odhalí mauzeth, že připojení nejde? - znova přečíst odůbodnění v pyhton PoC/v pdf)
 CSA - upravit report pro external BB
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
@@ -55,6 +53,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: PŘIDAT DO BL0CK informaci o tichém přerušení odpojení - pomocí iperf3
 f: reset usb (I hope)
 +: requirement, žw u bl0ck musí být attacker mezi AP a client
 +: ClientState observer use in mitm

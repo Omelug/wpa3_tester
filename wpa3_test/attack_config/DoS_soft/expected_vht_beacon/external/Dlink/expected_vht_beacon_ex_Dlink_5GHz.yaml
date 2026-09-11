@@ -1,0 +1,29 @@
+name: expected_vht_beacon_ex_Dlink_5GHz
+attacker_module: expected_vht_beacon
+$validator: ../../expected_vht_beacon.schema.yaml
+$extends: [
+  ./expected_vht_beacon_ex_Dlink.yaml,
+  ../../../../comp/client/client_2_11_WPA3_mixed_MFPo_36.comp.yaml,
+]
+
+actors:
+  ap:
+    $extends: ../../../../comp/Dlink/Dlink_wb_5Ghz.comp.yaml
+  client:
+    setup:
+      program_config:
+        ssid: test_wpa3_tester_5GHz
+        scan_freq: 5180
+  attacker:
+    source: internal
+    selection:
+      condition: [ monitor, 5GHz ]
+      channel: 36
+observers:
+  tester_dmesg:
+    program: dmesg
+  attacker_tshark:
+    actor: client
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"

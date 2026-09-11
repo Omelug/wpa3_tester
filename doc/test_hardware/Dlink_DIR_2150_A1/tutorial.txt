@@ -3,8 +3,10 @@ Dlink_DIR_2150_A1
 openwrt
 web: root:dlinkroot
 
+- for direct connection
     sudo ip addr add 192.168.1.10/24 dev eth0
     sudo ip link set dev eth0 up
+
     sudo ip route add default via 192.168.1.1 dev eth0 metric 150
 
 

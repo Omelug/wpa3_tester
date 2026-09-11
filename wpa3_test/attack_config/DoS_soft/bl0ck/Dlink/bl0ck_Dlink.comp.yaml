@@ -3,7 +3,8 @@ scan_iface: wlan1
 actors:
   ap:
     $extends: ../../../comp/Dlink/Dlink_wb_5Ghz.comp.yaml
-    ex_WB_programs: [ iperf3 ]
+    setup:
+      ex_WB_programs: [ tcpdump, iperf3 ]
   client:
     source: internal
     setup:
@@ -69,4 +70,4 @@ attack_config:
   attack_time_sec: 30
   random: false
   frame_in_batch: 50
-  ms_interval: 10<<<<<<<<
+  ms_interval: 10

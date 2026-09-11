@@ -1,0 +1,12 @@
+name: expected_vht_beacon_ex_Dlink_filler
+suite_functions: expected_vht_beacon_ex_Dlink_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./expected_vht_beacon_ex_Dlink.yaml
+  all_actors_5GHz:
+    type: actor_filler
+    config: ./expected_vht_beacon_ex_Dlink_5GHz.yaml
+delete_old: true
+rewrite: "errors"

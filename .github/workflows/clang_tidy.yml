@@ -19,7 +19,7 @@ jobs:
         env:
           CC: clang-18
           CXX: clang++-18
-        run: cmake -S . -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
       - name: Run clang-tidy
         run: |
@@ -31,4 +31,4 @@ jobs:
                   print(','.join(ct['Checks']))
                   sys.exit(0)
           ")
-          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter='wpa3_test/.*'
+          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter='wpa3_test/.*' '.*wpa3_test/.*'

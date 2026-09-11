@@ -8,7 +8,7 @@ actors:
         other_options: "-dd"
   attacker:
     selection:
-      permanent_mac: "90:de:80:de:ff:a1"
+      permanent_mac: "90:de:80:de:ff:7b"
 attack_config:
   attack_time_sec: 15
   attack_variant: "BA"

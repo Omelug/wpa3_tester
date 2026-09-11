@@ -61,7 +61,7 @@ public:
 		throw not_implemented_err("get_hw_capabilities");
 	}
 
-	virtual void get_info(RunStatus &, const std::string &){}
+	virtual void get_router_info(RunStatus &, const std::string &){}
 	void on_disconnect(DisconnectCallback cb);
 	void disconnect();
 

@@ -1,5 +1,4 @@
  **WARNING**:  DO NOT 30-30-30 Qualcomm IPQ ARM routers, you risk bricking them.
- 
 https://firmware-selector.openwrt.org/?version=SNAPSHOT&target=qualcommax%2Fipq807x&id=asus_rt-ax89x
 
 tftp 192.168.50.1
@@ -9,7 +8,6 @@ put <firmware file name>-factory.trx
 quit
 -> openwrt one time
 
-pak:
 sudo ip addr flush dev eth0
 sudo ip addr add 192.168.1.2/24 dev eth0
 ping 192.168.1.1

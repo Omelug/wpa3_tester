@@ -20,12 +20,6 @@ source /tmp/wpa3-packages.sh
 sudo apt-get update -qq
 sudo apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
-#echo "==> Installing hcxtools from source (latest git)..."
-#sudo rm -rf /tmp/hcxtools
-#git clone --depth=1 https://github.com/ZerBea/hcxtools.git /tmp/hcxtools
-#(cd /tmp/hcxtools && make && sudo make install)
-#sudo rm -rf /tmp/hcxtools
-
 #TODO musí tam být defaultně (spíč jo)
 if ! command -v hostapd-mana &>/dev/null; then
     echo "==> Building hostapd-mana from source..."
@@ -142,5 +136,5 @@ else
 fi
 
 sudo chsh -s "$(which fish)" "$USER"
-echo "==> Bootstrap complete, can use make deploy"
+echo "==> Bootstrap complete"
 

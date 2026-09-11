@@ -62,6 +62,6 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	}
 	conn->exec("ip link set " + get(SK::iface) + " up");
 
-	if(rs) conn->get_info(*rs, get(SK::actor_name));
+	if(rs) conn->get_router_info(*rs, get(SK::actor_name));
 }
 }

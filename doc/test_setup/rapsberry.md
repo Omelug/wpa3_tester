@@ -1,10 +1,16 @@
 ## Raspberry
-- raspbian iso -  linux 6.6 
-- some drivers #TODO mave to in-kernel drivers
+- raspbian iso - Linux 6.18.44-v8+ aarch64
+- customize image with [customize.sh](../../tester_setup/raspberry_pi4/image/customize.sh)
+- firstboot (run once after first boot [firstboot.sh](../../tester_setup/raspberry_pi4/image/firstboot.sh))
+- bootsrap for other changes during run [bootstrap.sh](../../tester_setup/raspberry_pi4/bootstrap.sh)
+- some  [drivers.sh](../../tester_setup/raspberry_pi4/image/drivers.sh)
 
 make image download raspbian and add dome flags for debugging in [debug.config](../../tester_setup/raspberry_pi4/kernel/debug.config)
 
 TODO - physical setup (add photo/schema)
+
+requires on host (one-time):
+`sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
 ### run
 use test suite at the start of [deploy.mk](../../tester_setup/raspberry_pi4/mk/deploy.mk)

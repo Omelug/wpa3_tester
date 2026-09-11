@@ -139,14 +139,14 @@ echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"
 
-# Ensure /usr/sbin (iptables, etc.) is in PATH for all sessions
+# ensure /usr/sbin (iptables, etc.) is in PATH for all sessions
 echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > "$ROOT/etc/environment"
 
 # Passwordless sudo (dev/test machine only)
 echo "${PI_USER} ALL=(ALL) NOPASSWD: ALL" > "$ROOT/etc/sudoers.d/90-wpa3-dev"
 chmod 440 "$ROOT/etc/sudoers.d/90-wpa3-dev"
 
-# avahi-daemon - enables hostname.local reachability
+# avahi-daemon - enables hostname.local reachability #TODO try, broken ?
 mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
 ln -sf /lib/systemd/system/avahi-daemon.service \
        "$ROOT/etc/systemd/system/multi-user.target.wants/avahi-daemon.service"

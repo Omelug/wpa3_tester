@@ -3,21 +3,20 @@ Dlink_DIR_2150_A1
 openwrt
 web: root:dlinkroot
 
-sudo ip addr add 192.168.1.10/24 dev eth0
-sudo ip link set dev eth0 up
+    sudo ip addr add 192.168.1.10/24 dev eth0
+    sudo ip link set dev eth0 up
+    sudo ip route add default via 192.168.1.1 dev eth0 metric 150
 
-pak restart routeru (a bude vše připojeno)
 
-sudo ip route add default via 192.168.1.1 dev eth0 metric 150
+### Manual actions (should be done automatically with tester before every test)
 
-Po instalaci:
-
-	Fix pro čas:
+After installation:
+    Manual time fix:
 	/etc/init.d/sysntpd stop
 	ntpd -q -n -p 0.openwrt.pool.ntp.org 
 	/etc/init.d/sysntpd start
 
-Instalace:
+Installation: (can be add with config in ex_WB_programs)
 	opkg update
 	opkg install tcpdump-mini
 
@@ -36,6 +35,6 @@ openwrt:
 
 firstboot -y && reboot
 
-pro podporu EAP:
-opkg remove wpad-basic-mbedtls
-opkg install wpad-wolfssl
+For EAP need to change wpad version:
+    opkg remove wpad-basic-mbedtls
+    opkg install wpad-wolfssl

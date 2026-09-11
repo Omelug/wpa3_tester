@@ -389,7 +389,7 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	});
 }
 
-void OpenWrtConn::get_info(RunStatus &rs, const std::string &actor_name){
+void OpenWrtConn::get_router_info(RunStatus &rs, const std::string &actor_name){
 	const auto dir = rs.run_folder();
 	if(dir.empty()) return;
 

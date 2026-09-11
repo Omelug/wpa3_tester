@@ -21,14 +21,10 @@ sysroot:
 	@echo "==> Sysroot ready: $(SYSROOT)"
 
 # -- cross-compile + deploy binary
-# requires on host (one-time):
-# sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
 deploy-cross:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
 	@test -d "$(SYSROOT)" || { echo "Error: sysroot missing - run 'make sysroot' first"; exit 1; }
-	# allow if needed
-	# rm -f $(CROSS_BUILD)/CMakeCache.txt
 	cmake -S $(SRC_ROOT) --preset cross-rpi4 -DWPA3_PROJECT_ROOT=$(REMOTE_ABS)/wpa3_test
 	cmake --build $(CROSS_BUILD) --target wpa3_tester -j$(shell nproc)
 	$(SSH) "mkdir -p $(REMOTE)/build/bin $(REMOTE)/wpa3_test"

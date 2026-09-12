@@ -1,6 +1,6 @@
 #include "attacks/DoS_soft/deauth.h"
-#include "visual/DoS_soft/deauth/deauth_suite.h"
 #include "system/utils.h"
+#include "visual/DoS_soft/deauth/deauth_suite.h"
 #include <filesystem>
 
 namespace wpa3_tester::overview {

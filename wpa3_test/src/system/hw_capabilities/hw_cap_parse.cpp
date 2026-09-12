@@ -1,7 +1,7 @@
-#include <random>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
+#include <random>
 
 namespace wpa3_tester{
 using namespace std;

@@ -1,13 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "config/Actor_Config/ActorPtr.h"
+#include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/global_config.h"
+#include "logger/error_log.h"
+#include "system/hw_capabilities.h"
 #include <algorithm>
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
-#include "config/global_config.h"
-#include "config/Actor_Config/ActorPtr.h"
-#include "config/Actor_Config/Actor_Config_internal.h"
-#include "logger/error_log.h"
-#include "system/hw_capabilities.h"
 
 #include "config/Actor_Config/Actor_Config_sim.h"
 

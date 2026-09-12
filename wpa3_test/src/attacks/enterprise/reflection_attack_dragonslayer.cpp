@@ -1,6 +1,6 @@
 #include "attacks/components/setup_connections.h"
-#include "config/global_config.h"
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"

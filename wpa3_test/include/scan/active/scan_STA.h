@@ -1,8 +1,8 @@
 #pragma once
-#include <filesystem>
-#include <tins/pdu.h>
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "scan/active/scan_AP.h"
+#include <filesystem>
+#include <tins/pdu.h>
 
 namespace wpa3_tester::scan{
 void station_scan(ScanAP &scan_ap, const std::string &interface, int timeout_sec,

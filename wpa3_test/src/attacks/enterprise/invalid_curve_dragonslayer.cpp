@@ -1,5 +1,5 @@
-#include "config/global_config.h"
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "observer/observers.h"
 #include "setup/program.h"
 #include "system/hw_capabilities.h"

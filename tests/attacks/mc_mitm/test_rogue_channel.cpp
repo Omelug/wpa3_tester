@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <tins/tins.h>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "mitm_helpers.h"
 #include "pcap_helper.h"
+#include <doctest.h>
+#include <tins/tins.h>
 
 using namespace std;
 using namespace Tins;

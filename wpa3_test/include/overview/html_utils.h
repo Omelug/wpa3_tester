@@ -1,10 +1,10 @@
 #pragma once
+#include "html_guard.h"
 #include <algorithm>
 #include <functional>
 #include <string>
 #include <type_traits>
 #include <vector>
-#include "html_guard.h"
 
 constexpr int MINIMAL_PREFIX = 5;
 

@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-#include "pcap_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "pcap_helper.h"
+#include <doctest/doctest.h>
 
 using namespace std;
 using namespace filesystem;

@@ -1,11 +1,11 @@
+#include "config/RunStatus.h"
 #include <future>
 #include <sstream>
 #include <sys/poll.h>
-#include "config/RunStatus.h"
 
-#include "attacks/components/sniffer_helper.h"
-#include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
+#include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
+#include "attacks/components/sniffer_helper.h"
 #include "scan/active/scan_AP.h"
 #include "scan/active/scan_EAP.h"
 #include "scan/active/scan_STA.h"

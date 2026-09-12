@@ -1,8 +1,8 @@
 #pragma once
-#include <nlohmann/json.hpp>
-#include <yaml-cpp/yaml.h>
 #include "vector"
+#include <nlohmann/json.hpp>
 #include <unordered_map>
+#include <yaml-cpp/yaml.h>
 
 namespace wpa3_tester{
 nlohmann::json yaml_to_json(const YAML::Node &node);

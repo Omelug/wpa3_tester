@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "scan/active/scan_AP.h"
 #include <doctest.h>
 #include <tins/tins.h>
-#include "scan/active/scan_AP.h"
 
 using namespace std;
 using namespace wpa3_tester::scan;

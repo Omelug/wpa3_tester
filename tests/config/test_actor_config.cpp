@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <nlohmann/json.hpp>
-#include "config/Actor_Config/Actor_config.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "logger/error_log.h"
+#include <doctest.h>
+#include <nlohmann/json.hpp>
 
 using namespace std;
 using namespace wpa3_tester;

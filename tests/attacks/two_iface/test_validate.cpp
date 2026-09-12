@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
 #include "stub_two_iface.h"
+#include <doctest/doctest.h>
 
 using namespace wpa3_tester;
 using json = nlohmann::json;

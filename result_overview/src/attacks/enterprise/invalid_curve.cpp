@@ -1,6 +1,6 @@
+#include "system/utils.h"
 #include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "visual/suite_helper.h"
-#include "system/utils.h"
 #include <filesystem>
 #include <string>
 

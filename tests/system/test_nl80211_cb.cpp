@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "system/hw_capabilities.h"
 #include <doctest/doctest.h>
 #include <linux/nl80211.h>
 #include <netlink/genl/genl.h>
 #include <netlink/msg.h>
-#include "system/hw_capabilities.h"
 
 using namespace wpa3_tester;
 

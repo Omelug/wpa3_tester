@@ -1,14 +1,14 @@
 #pragma once
-#include <array>
-#include <nl80211.h>
-#include <optional>
-#include <string>
-#include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
-#include <tins/tins.h>
 #include "actor_keys.h"
 #include "system/hw_info.h"
 #include "system/wifi_channel.h"
+#include <array>
+#include <nl80211.h>
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+#include <optional>
+#include <string>
+#include <tins/tins.h>
 
 namespace wpa3_tester{
 enum class Source{ SIMULATION, INTERNAL, EXTERNAL };

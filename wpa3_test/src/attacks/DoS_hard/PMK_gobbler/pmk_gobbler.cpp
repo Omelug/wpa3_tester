@@ -5,15 +5,15 @@
 #include <utility>
 #include <tins/tins.h>
 
-#include "interrupt.h"
-#include "attacks/components/sniffer_helper.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "attacks/components/sniffer_helper.h"
 #include "ex_program/external_actors/ExternalConn.h"
+#include "interrupt.h"
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
-#include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;

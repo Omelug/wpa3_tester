@@ -1,16 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <filesystem>
-#include <map>
-#include <yaml-cpp/node/parse.h>
-#include "config/global_config.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "config/ObserverPtr.h"
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
-#include "config/Actor_Config/ActorPtr.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include <doctest.h>
+#include <filesystem>
+#include <map>
+#include <yaml-cpp/node/parse.h>
 
 using namespace wpa3_tester;
 using namespace std;

@@ -8,16 +8,16 @@
 #include "root_dir_helper.h"
 
 #include "visual/DoS_hard/sae_dos/sae_dos_entry.h"
+#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "visual/downgrade/owe_trans_filler.h"
+#include "visual/downgrade/wpa3_downgrade_filler.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
 #include "visual/scan/ap_info_wpa3_filler.h"
 #include "visual/scan/iface_info_filler.h"
-#include "visual/two_iface/injection_test_filler.h"
-#include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
-#include "visual/downgrade/owe_trans_filler.h"
-#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "visual/two_iface/active_test_filler.h"
-#include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "visual/downgrade/wpa3_downgrade_filler.h"
-#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
+#include "visual/two_iface/injection_test_filler.h"
 
 using namespace std;
 using namespace filesystem;

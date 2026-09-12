@@ -1,11 +1,11 @@
 #include "config/global_config.h"
-#include <filesystem>
-#include <yaml-cpp/yaml.h>
 #include "config/Run_Config.h"
 #include "logger/error_log.h"
-#include "setup/config_parser.h"
 #include "setup/YAMLValidator.h"
+#include "setup/config_parser.h"
 #include "system/utils.h"
+#include <filesystem>
+#include <yaml-cpp/yaml.h>
 
 namespace wpa3_tester{
 using namespace std;

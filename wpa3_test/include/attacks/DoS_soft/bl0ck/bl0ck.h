@@ -1,7 +1,7 @@
 #pragma once
+#include "config/RunStatus.h"
 #include <linux/if_packet.h>
 #include <string>
-#include "config/RunStatus.h"
 
 namespace wpa3_tester::bl0ck_attack{
 struct Bl0ckResult{

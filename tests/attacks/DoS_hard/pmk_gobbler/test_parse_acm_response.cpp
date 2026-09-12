@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
+#include "pcap_helper.h"
 #include <doctest.h>
 #include <vector>
-#include "pcap_helper.h"
-#include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 
 using namespace std;
 using namespace Tins;

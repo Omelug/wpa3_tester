@@ -1,7 +1,7 @@
 #include "ex_program/external_actors/openwrt/openwrt_helper.h"
+#include "logger/log.h"
 #include <fstream>
 #include <optional>
-#include "logger/log.h"
 
 namespace wpa3_tester::openwrt{
 using namespace std;

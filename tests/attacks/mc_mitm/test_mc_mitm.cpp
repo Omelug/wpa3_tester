@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "attacks/mc_mitm/mc_mitm.h"
+#include "pcap_helper.h"
 #include <doctest.h>
 #include <vector>
-#include "pcap_helper.h"
-#include "attacks/mc_mitm/mc_mitm.h"
 
 using namespace std;
 using namespace Tins;

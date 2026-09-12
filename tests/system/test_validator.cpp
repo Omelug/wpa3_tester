@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "setup/YAMLValidator.h"
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
-#include "setup/YAMLValidator.h"
 
 using namespace std;
 using namespace filesystem;

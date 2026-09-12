@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "overview/html_guard.h"
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <optional>
 #include <string>
 #include <tins/hw_address.h>
-#include "overview/html_guard.h"
 
 using namespace std;
 using namespace filesystem;

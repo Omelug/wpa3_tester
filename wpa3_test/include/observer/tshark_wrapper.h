@@ -1,9 +1,9 @@
 #pragma once
-#include <optional>
 #include "config/RunStatus.h"
-#include "overview/described.h"
 #include "graph/graph_elements.h"
 #include "logger/log.h"
+#include "overview/described.h"
+#include <optional>
 
 namespace wpa3_tester::observer::tshark{
 std::string or_filter(const std::vector<std::string> &mac_filters);

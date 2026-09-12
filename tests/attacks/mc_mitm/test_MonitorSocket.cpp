@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include "pcap_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
+#include "pcap_helper.h"
 #include "system/hw_capabilities.h"
+#include <doctest.h>
 
 using namespace std;
 using namespace Tins;

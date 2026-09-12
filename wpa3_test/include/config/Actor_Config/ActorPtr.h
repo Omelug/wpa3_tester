@@ -1,7 +1,7 @@
 #pragma once
+#include "Actor_config.h"
 #include <memory>
 #include <string>
-#include "Actor_config.h"
 
 namespace wpa3_tester{
 class Actor_config;

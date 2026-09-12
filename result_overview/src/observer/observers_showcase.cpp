@@ -1,7 +1,4 @@
 #include "observer/observers_showcase.h"
-#include <algorithm>
-#include <filesystem>
-#include <format>
 #include "logger/log.h"
 #include "observer/graph/graph_elements.h"
 #include "observer/iperf_wrapper.h"
@@ -10,6 +7,9 @@
 #include "observer/tshark_wrapper.h"
 #include "overview/html_guard.h"
 #include "system/utils.h"
+#include <algorithm>
+#include <filesystem>
+#include <format>
 
 namespace wpa3_tester::overview {
 using namespace std;

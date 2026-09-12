@@ -1,6 +1,6 @@
+#include "system/utils.h"
 #include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
 #include "visual/suite_helper.h"
-#include "system/utils.h"
 #include <filesystem>
 #include <string>
 

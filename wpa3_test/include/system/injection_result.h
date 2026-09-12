@@ -1,8 +1,8 @@
 #pragma once
+#include "system/wifi_channel.h"
 #include <string>
 #include <utility>
 #include <vector>
-#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 enum it_test_result{

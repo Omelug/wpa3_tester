@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include "config/RunStatus.h"
+#include <string>
 
 namespace wpa3_tester::wpa3_trans_downgrade{
 bool check_vulnerable(const std::string &monitor_iface, const std::string &ssid, int wait_sec);

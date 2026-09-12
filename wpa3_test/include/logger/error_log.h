@@ -1,10 +1,10 @@
 #pragma once
+#include "log.h"
 #include <format>
 #include <source_location>
 #include <stacktrace>
 #include <stdexcept>
 #include <string>
-#include "log.h"
 
 namespace wpa3_tester{
 class tester_error: public std::runtime_error, public std::nested_exception{

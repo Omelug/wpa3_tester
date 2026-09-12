@@ -8,11 +8,11 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
+#include "manuf_parser.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
-#include "visual/result_helper.h"
 #include "system/utils.h"
-#include "manuf_parser.h"
+#include "visual/result_helper.h"
 
 namespace wpa3_tester::overview {
 using namespace std;

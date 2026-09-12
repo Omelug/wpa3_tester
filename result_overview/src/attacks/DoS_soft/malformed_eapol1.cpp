@@ -1,6 +1,6 @@
 #include "attacks/DoS_soft/malformed_eapol1.h"
-#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "system/utils.h"
+#include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include <filesystem>
 
 namespace wpa3_tester::overview {

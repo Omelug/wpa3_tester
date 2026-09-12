@@ -1,8 +1,8 @@
 #include "setup/YAMLValidator.h"
-#include <nlohmann/json-schema.hpp>
-#include <sstream>
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include <nlohmann/json-schema.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace filesystem;

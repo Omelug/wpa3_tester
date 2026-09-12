@@ -1,7 +1,7 @@
 #pragma once
 #include "config/RunStatus.h"
-#include <optional>
 #include <filesystem>
+#include <optional>
 
 namespace wpa3_tester::scan{
 class ScanAP{

@@ -1,8 +1,8 @@
 #pragma once
-#include <optional>
-#include "log.h"
-#include "config/RunStatus.h"
 #include "config/Actor_Config/actor_keys.h"
+#include "config/RunStatus.h"
+#include "log.h"
+#include <optional>
 
 namespace wpa3_tester{
 void log_actor_map(const std::string &name, const ActorCMap &m);

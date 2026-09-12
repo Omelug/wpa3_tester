@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include "config/RunStatus.h"
+#include <string>
 
 namespace wpa3_tester::observer::station_counter{
 inline const std::string SUFFIX_sta = "_sta";

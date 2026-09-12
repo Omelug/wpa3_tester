@@ -1,12 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "config/Actor_Config/ActorPtr.h"
+#include "logger/log.h"
+#include "logger/log_util.h"
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <tins/tins.h>
-#include "config/Actor_Config/ActorPtr.h"
-#include "logger/log.h"
-#include "logger/log_util.h"
 
 using namespace std;
 using wpa3_tester::LogTimePoint;

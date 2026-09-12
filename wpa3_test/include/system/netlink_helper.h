@@ -1,11 +1,11 @@
 #pragma once
+#include "system/wifi_channel.h"
 #include <chrono>
+#include <linux/nl80211.h>
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <vector>
-#include <linux/nl80211.h>
-#include "system/wifi_channel.h"
 
 namespace wpa3_tester::netlink_helper{
 using Result = std::error_code; // empty = success

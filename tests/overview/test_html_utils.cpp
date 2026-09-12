@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "overview/html_guard.h"
+#include "overview/html_utils.h"
+#include <doctest/doctest.h>
 #include <filesystem>
 #include <sstream>
 #include <vector>
-#include <doctest/doctest.h>
-#include "overview/html_guard.h"
-#include "overview/html_utils.h"
 
 using namespace wpa3_tester;
 using namespace std;

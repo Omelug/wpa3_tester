@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <algorithm>
-#include <set>
 #include "config/RunStatus.h"
 #include "root_dir_helper.h"
 #include "system/hw_capabilities.h"
+#include <algorithm>
+#include <doctest.h>
+#include <set>
 
 using namespace std;
 using namespace wpa3_tester;

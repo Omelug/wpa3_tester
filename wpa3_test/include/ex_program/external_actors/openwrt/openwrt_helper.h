@@ -1,7 +1,7 @@
 #pragma once
+#include "logger/log.h"
 #include <filesystem>
 #include <string>
-#include "logger/log.h"
 
 namespace wpa3_tester::openwrt{
 

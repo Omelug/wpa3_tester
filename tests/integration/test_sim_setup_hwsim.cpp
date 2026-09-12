@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "config/Actor_Config/Actor_Config_sim.h"
+#include "system/hw_capabilities.h"
 #include <cstdio>
 #include <doctest.h>
 #include <filesystem>
 #include <unistd.h>
-#include "config/Actor_Config/Actor_Config_sim.h"
-#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace wpa3_tester;

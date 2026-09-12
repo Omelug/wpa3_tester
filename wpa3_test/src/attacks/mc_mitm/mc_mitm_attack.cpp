@@ -2,9 +2,9 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/RunStatus.h"
 #include "observer/dmesg_wrapper.h"
+#include "observer/state_log_graph.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "observer/state_log_graph.h"
 
 using namespace std;
 using namespace filesystem;

@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
-#include <vector>
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "system/wifi_channel.h"
+#include <string>
+#include <vector>
 
 namespace wpa3_tester::manual_tests{
 void cli_section(const std::string &section_title);

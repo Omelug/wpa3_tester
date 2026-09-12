@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <vector>
-#include "pcap_helper.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "pcap_helper.h"
+#include <doctest.h>
+#include <vector>
 
 using namespace std;
 using namespace Tins;

@@ -1,14 +1,14 @@
-#include <pcap/pcap.h>
-#include <set>
 #include "attacks/components/sniffer_helper.h"
-#include "config/global_config.h"
-#include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "scan/active/scan_STA.h"
 #include "system/hw_capabilities.h"
+#include <pcap/pcap.h>
+#include <set>
 
 namespace wpa3_tester{
 using namespace std;

@@ -1,12 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <filesystem>
-#include <fstream>
-#include <doctest/doctest.h>
-#include <nlohmann/json.hpp>
-#include "config/Actor_Config/Actor_config.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
+#include "config/Actor_Config/Actor_config.h"
 #include "system/hw_info.h"
+#include <doctest/doctest.h>
+#include <filesystem>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace std;
 using namespace filesystem;

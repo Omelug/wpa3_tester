@@ -1,9 +1,9 @@
 #include "attacks/downgrade/owe_trans.h"
+#include "system/utils.h"
+#include "visual/downgrade/owe_trans_filler.h"
+#include "visual/suite_helper.h"
 #include <filesystem>
 #include <string>
-#include "visual/suite_helper.h"
-#include "visual/downgrade/owe_trans_filler.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::overview {
 using namespace std;

@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "system/firmware/ath9k_htc.h"
 #include <doctest.h>
 #include <regex>
 #include <string>
-#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace wpa3_tester;

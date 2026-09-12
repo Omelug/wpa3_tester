@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
 #include "logger/error_log.h"
 #include "system/ip.h"
+#include <doctest/doctest.h>
 
 using namespace wpa3_tester;
 

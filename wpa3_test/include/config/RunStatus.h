@@ -1,21 +1,21 @@
 #pragma once
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <nlohmann/json.hpp>
-#include <tins/pdu.h>
+#include "Actor_Config/ActorPtr.h"
+#include "Actor_Config/Actor_config.h"
 #include "ObserverPtr.h"
 #include "RunSuiteStatus.h"
 #include "Run_Config.h"
-#include "Actor_Config/ActorPtr.h"
-#include "Actor_Config/Actor_config.h"
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 #include "system/utils.h"
+#include <cstdint>
+#include <memory>
+#include <nlohmann/json.hpp>
+#include <string>
+#include <tins/pdu.h>
+#include <unordered_map>
+#include <vector>
 
-//hash for ActorMACMap
+// hash for ActorMACMap
 template<>
 struct std::hash<Tins::HWAddress<6>>{
 	size_t operator()(const Tins::HWAddress<6> &addr) const noexcept{

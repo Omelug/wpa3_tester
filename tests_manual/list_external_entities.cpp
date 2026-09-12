@@ -1,7 +1,7 @@
-#include <iostream>
-#include <string>
 #include "config/RunStatus.h"
 #include "manual_test_core/manual_test_wizards.h"
+#include <iostream>
+#include <string>
 
 using namespace std;
 using namespace wpa3_tester;

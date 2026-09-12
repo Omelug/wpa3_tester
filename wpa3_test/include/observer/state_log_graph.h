@@ -1,7 +1,7 @@
 #pragma once
+#include "config/RunStatus.h"
 #include <filesystem>
 #include <string>
-#include "config/RunStatus.h"
 
 namespace wpa3_tester::observer::state_log_graph {
 

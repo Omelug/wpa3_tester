@@ -2,12 +2,12 @@
 
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
+#include "observer/dmesg_wrapper.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/mausezahn_wrapper.h"
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
 #include "observer/tcpdump_wrapper.h"
-#include "observer/dmesg_wrapper.h"
 #include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
 

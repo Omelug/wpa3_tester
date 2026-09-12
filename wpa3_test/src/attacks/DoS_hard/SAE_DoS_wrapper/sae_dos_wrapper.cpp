@@ -8,16 +8,16 @@
 #include <thread>
 #include <vector>
 
-#include "attacks/components/setup_connections.h"
-#include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
-#include "config/global_config.h"
+#include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/components/setup_connections.h"
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
-#include "observer/resource_checker.h"
 #include "observer/graph/graph_elements.h"
+#include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 

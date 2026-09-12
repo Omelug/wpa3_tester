@@ -4,13 +4,13 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
-#include "default.h"
-#include "interrupt.h"
 #include "attacks/attacks.h"
-#include "config/global_config.h"
 #include "config/Observer_config.h"
+#include "config/global_config.h"
+#include "default.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
 #include "setup/config_parser.h"

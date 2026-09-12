@@ -1,9 +1,9 @@
 #pragma once
+#include "config/RunStatus.h"
+#include "system/wifi_channel.h"
 #include <cstdint>
 #include <string>
 #include <tins/tins.h>
-#include "config/RunStatus.h"
-#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 int get_channel(const std::string &iface);

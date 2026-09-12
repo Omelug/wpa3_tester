@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-#include <chrono>
-#include <thread>
 #include "interrupt.h"
+#include <chrono>
+#include <doctest/doctest.h>
+#include <thread>
 
 using namespace std::chrono;
 

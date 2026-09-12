@@ -1,4 +1,8 @@
 #include "system/ProcessManager.h"
+#include "config/RunStatus.h"
+#include "interrupt.h"
+#include "logger/error_log.h"
+#include "system/utils.h"
 #include <chrono>
 #include <csignal>
 #include <map>
@@ -9,10 +13,6 @@
 #include <system_error>
 #include <thread>
 #include <unistd.h>
-#include "interrupt.h"
-#include "config/RunStatus.h"
-#include "logger/error_log.h"
-#include "system/utils.h"
 
 namespace wpa3_tester{
 using namespace std;

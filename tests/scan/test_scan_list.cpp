@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
 #include "scan_test_helpers.h"
+#include <doctest.h>
 
 using namespace std;
 using namespace wpa3_tester;

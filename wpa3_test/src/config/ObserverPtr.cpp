@@ -1,7 +1,7 @@
 #include "config/ObserverPtr.h"
-#include <memory>
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
+#include <memory>
 
 using namespace std;
 

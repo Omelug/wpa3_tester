@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "system/netlink_guards.h"
 #include <array>
+#include <doctest/doctest.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <doctest/doctest.h>
-#include "system/netlink_guards.h"
 
 using namespace wpa3_tester::netlink_helper;
 

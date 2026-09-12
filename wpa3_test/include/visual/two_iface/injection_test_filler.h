@@ -1,10 +1,10 @@
 #pragma once
+#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
-#include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::visual::injection_test_filler{
 struct InjectionTestEntry{

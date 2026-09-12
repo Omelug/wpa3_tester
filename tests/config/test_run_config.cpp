@@ -1,6 +1,6 @@
+#include "config/Run_Config.h"
 #include <doctest.h>
 #include <nlohmann/json.hpp>
-#include "config/Run_Config.h"
 
 using namespace wpa3_tester;
 using namespace nlohmann;

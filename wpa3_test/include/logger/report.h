@@ -1,9 +1,9 @@
 #pragma once
 #include <iosfwd>
 
-#include <optional>
 #include "config/RunStatus.h"
 #include "overview/described.h"
+#include <optional>
 
 // functions here don't check if stream is open, have to be checked before
 namespace wpa3_tester::report{

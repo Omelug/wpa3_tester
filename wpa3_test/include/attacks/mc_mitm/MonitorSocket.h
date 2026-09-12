@@ -1,4 +1,5 @@
 #pragma once
+#include "system/wifi_channel.h"
 #include <chrono>
 #include <functional>
 #include <libssh/libssh.h>
@@ -6,7 +7,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "system/wifi_channel.h"
 
 namespace wpa3_tester{
 class MonitorSocket{

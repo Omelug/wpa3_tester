@@ -1,7 +1,7 @@
 #pragma once
-#include <nlohmann/json.hpp>
 #include "config/Run_Config.h"
 #include "system/utils.h"
+#include <nlohmann/json.hpp>
 
 namespace wpa3_tester{
 std::filesystem::path global_config_path(const std::filesystem::path &project_root_dir = root_dir());

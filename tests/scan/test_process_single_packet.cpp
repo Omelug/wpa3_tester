@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
-#include <set>
 #include "../test_helpers/pcap_helper.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "scan_test_helpers.h"
+#include <doctest.h>
+#include <set>
 
 using namespace std;
 using namespace Tins;

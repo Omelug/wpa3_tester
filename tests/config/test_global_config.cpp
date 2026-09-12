@@ -1,9 +1,9 @@
+#include "config/global_config.h"
+#include "logger/error_log.h"
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "config/global_config.h"
-#include "logger/error_log.h"
 
 using namespace std;
 using namespace wpa3_tester;

@@ -1,13 +1,13 @@
-#include <chrono>
-#include <variant>
-#include <sys/poll.h>
-#include <tins/sniffer.h>
 #include "attacks/components/sniffer_helper.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "logger/log.h"
-#include "scan/active/scan_active.h"
 #include "scan/active/scan_AP.h"
+#include "scan/active/scan_active.h"
 #include "system/hw_capabilities.h"
+#include <chrono>
+#include <sys/poll.h>
+#include <tins/sniffer.h>
+#include <variant>
 
 using namespace std;
 using namespace chrono;

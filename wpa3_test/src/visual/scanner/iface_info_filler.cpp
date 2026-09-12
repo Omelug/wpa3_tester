@@ -3,14 +3,14 @@
 #include <filesystem>
 #include <fstream>
 
-#include "default.h"
 #include "attacks/scanner/iface_info.h"
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
+#include "default.h"
 #include "logger/devices.h"
 #include "logger/report.h"
-#include "visual/suite_helper.h"
 #include "system/driver_diagnostics.h"
+#include "visual/suite_helper.h"
 
 namespace wpa3_tester::visual::iface_info_filler{
 using namespace std;

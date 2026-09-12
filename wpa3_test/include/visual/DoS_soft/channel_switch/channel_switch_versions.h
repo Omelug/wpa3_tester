@@ -1,7 +1,7 @@
 #pragma once
+#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <string>
-#include "config/RunSuiteStatus.h"
 
 namespace wpa3_tester::visual::channel_switch_filler{
 struct CsaVersionTestEntry{

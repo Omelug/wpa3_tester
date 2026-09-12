@@ -6,8 +6,8 @@
 #include "config/RunStatus.h"
 #include "logger/devices.h"
 #include "logger/report.h"
-#include "scan/active/scan_active.h"
 #include "scan/active/scan_STA.h"
+#include "scan/active/scan_active.h"
 #include "visual/suite_helper.h"
 
 using namespace std;

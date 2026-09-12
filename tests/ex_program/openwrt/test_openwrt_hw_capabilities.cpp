@@ -1,12 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "config/Actor_Config/Actor_Config_sim.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "logger/error_log.h"
 #include <doctest.h>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "config/Actor_Config/Actor_config.h"
-#include "config/Actor_Config/Actor_Config_sim.h"
-#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
-#include "logger/error_log.h"
 
 using namespace std;
 using namespace wpa3_tester;

@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <chrono>
-#include <doctest.h>
-#include <thread>
 #include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/ProcessManager.h"
+#include <chrono>
+#include <doctest.h>
+#include <thread>
 
 using namespace std;
 using namespace filesystem;

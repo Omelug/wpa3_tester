@@ -1,7 +1,7 @@
 #pragma once
+#include "config/Actor_Config/Actor_Config_external.h"
 #include <cstdint>
 #include <tins/pdu.h>
-#include "config/Actor_Config/Actor_Config_external.h"
 
 namespace wpa3_tester::scan{
 void apply_radiotap(Tins::PDU & pdu, Actor_Config_external & cfg);

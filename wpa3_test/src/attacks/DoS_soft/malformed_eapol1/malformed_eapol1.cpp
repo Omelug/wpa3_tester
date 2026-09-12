@@ -11,8 +11,8 @@
 #include "logger/log_util.h"
 #include "logger/report.h"
 #include "observer/tshark_wrapper.h"
-#include "visual/result_helper.h"
 #include "system/hw_capabilities.h"
+#include "visual/result_helper.h"
 
 namespace wpa3_tester::eapol_logoff{
 using namespace std;

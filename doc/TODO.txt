@@ -14,9 +14,6 @@ CSA - upravit report pro external BB
 +: scanner for external WB actors
 +: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 t: external info/iface_info parsing tests
-+: external Dlink for malformed eapol
-
-CSA:
 +: suite for one client - 2_4GHz, 6Ghz, 5Ghz, OCV hostapd
 f: špatně se resetuje scan_iface (ap_info)
 f: tshark nefachá u enterprise (nezobrazuje EAP rámce)
@@ -36,8 +33,6 @@ PDF:
     d: zmínit práci v README
     +: RunConfig description
 
-?: move driver after check if is needed
-
 ?: works cache correctly with external WB?
 r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
@@ -49,6 +44,7 @@ t: Stress tests
 r?: scan parsing is still messy (maybe do everything with libpcap)
 
 //DONE
++: external Dlink for malformed eapol
 t? test validation - testovat i vygenerované testy?
 +: HT/VHT IE channel switch (similiar to CSA attack)
 +: add normal deauth attack on WPA2 on WPA3

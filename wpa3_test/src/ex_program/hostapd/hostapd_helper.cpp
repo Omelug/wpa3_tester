@@ -237,7 +237,7 @@ OpenSSLPaths get_openssl_paths(const string &tag){
 		error_code ec;
 		create_public_dirs(build_folder, ec);
 		if(ec){ throw run_err("Failed to create directory: {}", build_folder); }
-		hw_capabilities::run_in("git clone " + OPENSSL_GIT_URL + " " + OPENSSL_REPO_NAME, build_folder);
+		hw_capabilities::run_in("GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git clone " + OPENSSL_GIT_URL + " " + OPENSSL_REPO_NAME, build_folder);
 		log(LogLevel::INFO, "OpenSSL repository cloned successfully");
 	}
 

@@ -56,6 +56,13 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
         </ul>
     </div>
 
+	<div class="card">
+        <h2>Sources</h2>
+        <ul>
+            <li>https://github.com/domienschepers/wifi-framework/blob/master/test-dos.py</li>
+        </ul>
+    </div>
+
 )html";
 
     auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name) {

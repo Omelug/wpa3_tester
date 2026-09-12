@@ -137,7 +137,7 @@ TEST_CASE("tx power control"){
     log(LogLevel::INFO, "Initial TX power: {} dBm", initial_power);
 
     // Set new TX power (try 10 dBm)
-    const int new_power = 10;
+	constexpr int new_power = 10;
     REQUIRE_NOTHROW(hw_capabilities::set_tx_power(iface, new_power, netns));
 
     // Verify the change (this may not work due to permissions, but we test the function call)

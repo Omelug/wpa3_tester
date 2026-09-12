@@ -249,7 +249,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 		COL("ac",          d.caps.n80211ac);
 		COL("ax",          d.caps.n80211ax);
 		COL("netns change",d.caps.netns_change);
-		COL("Bcn",         d.caps.beacon_prot);
+		COL("Beacon prot", d.caps.beacon_prot);
 		COL("CSA",         d.caps.CSA);
 		COL("OCV",         d.caps.OCV);
 		COL("MFP",         d.caps.MFP);

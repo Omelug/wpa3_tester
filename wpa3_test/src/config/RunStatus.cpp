@@ -10,6 +10,7 @@
 #include "config/global_config.h"
 #include "config/Observer_config.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
 #include "setup/config_parser.h"
@@ -98,6 +99,16 @@ void RunStatus::execute(){
 		load_actor_interface_mapping();
 		stats_test();
 		return;
+	}
+
+	// Pre-build external tools before config_requirement() moves interfaces to netns
+	if(gcfg.value("compile_external", false)){
+		for(const auto &[_, actor_cfg] : _config.at("actors").items()){
+			if(!actor_cfg.contains("setup")) continue;
+			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
+			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
+				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
+		}
 	}
 
 	rssi_checked = false;

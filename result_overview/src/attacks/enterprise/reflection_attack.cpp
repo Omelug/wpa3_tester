@@ -37,6 +37,13 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 		<p><b>Success:</b> attacker connected </p>
 	</div>
 
+	<div class="card">
+        <h2>Sources</h2>
+        <ul>
+            <li>https://github.com/vanhoefm/dragonslayer</li>
+        </ul>
+    </div>
+
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "reflection_attack" / "reflection_attack_filler";
 

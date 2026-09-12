@@ -6,6 +6,7 @@
 #include "DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include "DoS_soft/channel_switch/channel_switch_versions.h"
+#include "DoS_soft/deauth/deauth_suite.h"
 #include "DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include "attacks/enterprise/eap_helper.h"
@@ -35,6 +36,7 @@ inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_se
 inline std::map<std::string,std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
 	{"bl0ck_filler", bl0ck_test_suites::Bl0ckTestEntry::generate_report},
 	{"channel_switch_versions", channel_switch_filler::CsaVersionTestEntry::generate_report},
+	{"deauth_filler", deauth_suite::DeauthTestEntry::generate_report},
 	{"malformed_eapol1_filler", malformed_eapol1_filler::MalformedEapol1TestEntry::generate_report},
 	{"reflection_attack_filler", reflection_attack_filler::generate_report},
 	{"invalid_curve_filler", invalid_curve_filler::generate_report},

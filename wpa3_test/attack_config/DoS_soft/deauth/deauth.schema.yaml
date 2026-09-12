@@ -1,0 +1,32 @@
+title: Deauth Attack Config
+type: object
+required:
+  - actors
+properties:
+  actors:
+    required:
+      - ap
+      - client
+      - attacker
+  attack_config:
+    required:
+      - attack_time
+      - ms_interval
+    additionalProperties: false
+    properties:
+      $validator:
+        type: string
+      attack_time:
+        type: integer
+        description: duration of sending deauth frames in seconds
+        minimum: 1
+      ms_interval:
+        type: integer
+        description: interval between deauth frames in milliseconds
+        minimum: 1
+      sleep_before_sec:
+        type: integer
+        minimum: 0
+      sleep_after_sec:
+        type: integer
+        minimum: 0

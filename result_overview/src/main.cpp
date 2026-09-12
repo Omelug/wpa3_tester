@@ -8,6 +8,7 @@
 #include "attacks/DoS_soft/bl0ck.h"
 #include "attacks/two_iface/injection_overview.h"
 #include "attacks/DoS_soft/channel_switch.h"
+#include "attacks/DoS_soft/deauth.h"
 #include "attacks/DoS_soft/malformed_eapol1.h"
 #include "attacks/DoS_soft/expected_vht_beacon.h"
 #include "attacks/downgrade/owe_trans.h"
@@ -84,6 +85,7 @@ static string html_page() {
 			<li><a href="attacks/DoS_soft/bl0ck/index.html">DoS Soft - Block ACK (Bl0ck)</a></li>
 			<li><a href="attacks/DoS_soft/malformed_eapol1/index.html">DoS Soft - Malformed EAPOL-1</a></li>
 			<li><a href="attacks/DoS_soft/expected_vht_beacon/index.html">DoS Soft - fake legacy beacon DoS </a></li>
+			<li><a href="attacks/DoS_soft/deauth/index.html">Under attack WPA2 - Deauthentication DoS</a></li>
 			<li><a href="attacks/downgrade/owe_trans/index.html">downgrade - OWE Transition Probe Leak</a></li>
 			<li><a href="attacks/downgrade/wpa3_trans_downgrade/index.html">downgrade - WPA3 Transition to WPA2-PSK</a></li>
 			<li><a href="attacks/enterprise/invalid_curve/index.html">enterprise - invalid curve</a></li>
@@ -142,6 +144,7 @@ int main(int argc, char* argv[]) {
 	wpa3_tester::overview::generate_devices(output_dir, data_dir);
 	wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
 	wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
+	wpa3_tester::overview::generate_deauth(output_dir, data_dir);
 	wpa3_tester::overview::generate_malformed_eapol1(output_dir, data_dir);
 	wpa3_tester::overview::generate_expected_vht_beacon(output_dir, data_dir);
 	wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);

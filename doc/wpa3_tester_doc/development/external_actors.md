@@ -7,7 +7,7 @@ Connection to external actor can be part  of [Actor_config.cpp](../../../wpa3_te
 - defined in [example_whitebox_table.csv](../../../wpa3_test/attack_config/example_whitebox_table.csv)
 
     [ExternalConn.cpp](../../../wpa3_test/src/ex_program/external_actors/ExternalConn.cpp) \
-    |-  [OpenWr****tConn.cpp](../../../wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp)
+    |-  [OpenWrtConn.cpp](../../../wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp)
 
 ### Blackbox external actors
 - scan implicitly with external list from `channel:`, can be overwritten with root `scan_channels:`

@@ -1,0 +1,27 @@
+name: deauth_wpa3_2_9
+attacker_module: deauth
+$validator: ./deauth.schema.yaml
+$extends: [
+  ../../comp/ap/ap_2_10_WPA3_only_MFPr_6.comp.yaml,
+  ../../comp/client/client_2_9_WPA3_only_MFPr_6.comp.yaml,
+  ./observers.comp.yaml
+]
+actors:
+  ap:
+    setup:
+      program_config:
+        other_options: "-d"
+        version: 2_9
+  attacker:
+    source: internal
+    selection:
+      driver: mt76x2u
+      permanent_mac: "90:de:80:6c:90:92"
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+attack_config:
+  attack_time: 30
+  ms_interval: 100
+  sleep_before_sec: 10
+  sleep_after_sec: 10
+rewrite: errors

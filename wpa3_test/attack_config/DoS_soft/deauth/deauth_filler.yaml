@@ -1,0 +1,24 @@
+name: deauth_filler
+suite_functions: deauth_filler
+config_type: test_suite
+tests:
+  wpa2_2_9_MFPd:
+    type: actor_filler
+    config: ./deauth.yaml
+  wpa2_2_10_MFPd:
+    type: actor_filler
+    config: ./deauth_wpa2_2_10.yaml
+  wpa2_2_9_MFPr:
+    type: actor_filler
+    config: ./deauth_wpa2_2_9_MFPr.yaml
+  wpa2_2_10_MFPr:
+    type: actor_filler
+    config: ./deauth_wpa2_2_10_MFPr.yaml
+  wpa3_2_9:
+    type: actor_filler
+    config: ./deauth_wpa3_2_9.yaml
+  wpa3_2_10:
+    type: actor_filler
+    config: ./deauth_wpa3_2_10.yaml
+delete_old: true
+rewrite: "errors"

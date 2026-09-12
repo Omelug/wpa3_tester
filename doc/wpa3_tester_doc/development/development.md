@@ -9,9 +9,9 @@ You can change some default paths/names before compilation in  [default.h](../..
 
 ### Structure decisions 
 
-- I use JetBrain IDE Clion, so if you want easy setup, use it as well, run configs and dictionaries are part of [.idea](../../../.idea) 
+- I use JetBrains IDE Clion, so if you want easy setup, use it as well, run configs and dictionaries are part of [.idea](../../../.idea) 
 - I created plugin for link test paths. #TODOlink to forgejo / add mirror ton github
-- I try write all in english, but some //TODO are in czech, sorry
+- I try to write all in english, but some //TODO are in czech, sorry
 
 ### Development FAQ
 
@@ -24,8 +24,9 @@ You can change some default paths/names before compilation in  [default.h](../..
 
 - strictly recommended add wrapper first when PoC is available
 - add code to [src](../../../wpa3_test/src), header to  [include](../../../wpa3_test/include)
-- add [attack_config](../../../wpa3_test/attack_config) (add schema.yaml if you want) //TODO link to config description
+- add [attack_config](../../../wpa3_test/attack_config) (add schema.yaml if you want) , written in custom yaml format [yaml_validation.md](../yaml_validation.md)
 - add  attack functions to [attacks.h](../../../wpa3_test/include/attacks/attacks.h)
+- *optionaly*: add entry to visualization into [headers](../../../wpa3_test/include/visual) and [sources](../../../wpa3_test/src/visual)
 
 DISCLAIMER: if you want parse packets, in project are libpcap nad libtins, libtins have some horrible behaviour.
 Add parsing with libpcap first, libtins only for simplification what can be tested (libtins library can be helpful, but sometimes it is Trojan horse)

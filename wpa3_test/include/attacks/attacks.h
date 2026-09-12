@@ -9,6 +9,7 @@
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/deauth/deauth.h"
 #include "attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h"
 #include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 #include "attacks/enterprise/invalid_curve.h"
@@ -34,6 +35,7 @@ namespace wpa3_tester::attack_module_maps{
 /* map of attacker_module->attack setup function*/
 inline std::map<std::string,std::function<void(RunStatus &)>> setup_map = {
 	{"channel_switch", CSA_attack::setup_chs_attack}, {"bl0ck", bl0ck_attack::setup_attack},
+	{"deauth", deauth_attack::setup_attack},
 	{"malformed_eapol1", eapol_logoff::setup_attack},
 	{"expected_vht_beacon", expected_vht_beacon_attack::setup_attack},
 	{"cookie_guzzler", components::client_ap_setup_t},
@@ -56,7 +58,8 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 	// --------------- actually attacks
 	{"channel_switch", CSA_attack::run_chs_attack}, {"bl0ck", bl0ck_attack::run_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::run_attack},
-	{"sae_commit_monitor_test", test_sae_commit_monitor::run_attack}, {"malformed_eapol1", eapol_logoff::run_attack},
+	{"sae_commit_monitor_test", test_sae_commit_monitor::run_attack}, {"deauth", deauth_attack::run_attack},
+	{"malformed_eapol1", eapol_logoff::run_attack},
 	{"expected_vht_beacon", expected_vht_beacon_attack::run_attack},
 	{"cookie_guzzler", cookie_guzzler::run_attack}, {"pmk_gobbler", pmk_gobbler::run_attack},
 	{"memory_omnivore", memory_omnivore::run_attack}, {"reflection_attack", reflection::run_attack},
@@ -70,7 +73,8 @@ inline std::map<std::string,std::function<void(RunStatus &)>> run_map = {
 
 /* map of attacker_module->stats run function*/
 inline std::map<std::string,std::function<void(const RunStatus &)>> stats_map = {
-	{"channel_switch", CSA_attack::stats_chs_attack}, {"bl0ck", bl0ck_attack::stats_bl0ck_attack},
+	{"channel_switch", CSA_attack::stats_chs_attack}, {"deauth", deauth_attack::stats_attack},
+	{"bl0ck", bl0ck_attack::stats_bl0ck_attack},
 	{"bl0ck_monitor_test", test_monitor_bl0ck::stats_attack},
 	{"sae_commit_monitor_test", test_sae_commit_monitor::stats_attack}, {"malformed_eapol1", eapol_logoff::stats},
 	{"expected_vht_beacon", expected_vht_beacon_attack::stats_attack},

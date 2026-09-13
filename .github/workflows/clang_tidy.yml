@@ -1,11 +1,14 @@
 name: Clang-Tidy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Tests"]
+    types: [completed]
     branches: [main]
 
 jobs:
   clang-tidy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -45,4 +48,4 @@ jobs:
           ")
 
           REPO_ROOT=$(git rev-parse --show-toplevel)
-          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter="$REPO_ROOT" "$FILTER"
+          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter="$REPO_ROOT/(wpa3_test|result_overview|tests|tests_manual)/" "$FILTER"

@@ -26,7 +26,7 @@ using namespace wpa3_tester::eap;
 //   [5]   EAP identifier
 //   [6-7] EAP length    (big-endian, includes code/id/length itself)
 //   [8]   EAP type      (1=Identity  52=PWD)
-//   [9]   PWD-Exch byte (L|M|opcode) – only when type=52
+//   [9]   PWD-Exch byte (L|M|opcode) - only when type=52
 //   [10+] PWD data (if L bit set: [10-11]=total_length first)
 
 static constexpr size_t EAPOL_HDR = 4;						// version+type+len(2)
@@ -118,12 +118,12 @@ static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame &request, const uint8
 }
 
 vector<uint8_t> reflect_commit(const EapPwdFrame &request) {
-	// group 19 (P-256): scalar(32) + element(64) = 96 bytes – just reflect verbatim
+	// group 19 (P-256): scalar(32) + element(64) = 96 bytes - just reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_COMMIT);
 }
 
 vector<uint8_t> reflect_confirm(const EapPwdFrame &request) {
-	// group 19: confirm(32) – reflect verbatim
+	// group 19: confirm(32) - reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_CONFIRM);
 }
 
@@ -168,7 +168,7 @@ bool eap_pwd_wait_for_success(EAP_Att &eap_att) {
 		return false;
 	}
 	if(eapol->empty()) {
-		log(LogLevel::INFO, "[!] EAP-Success received – server is vulnerable to reflection attack!");
+		log(LogLevel::INFO, "[!] EAP-Success received - server is vulnerable to reflection attack!");
 		return true;
 	}
 	log(LogLevel::WARNING, "EAP ended without EAP-Success");
@@ -289,7 +289,7 @@ bool do_assoc(EAP_Att &eap_att) {
 }
 
 void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
-	// SNAP OUI(3) + EtherType(2) – same pattern as malformed_eapol1
+	// SNAP OUI(3) + EtherType(2) - same pattern as malformed_eapol1
 	vector<uint8_t> snap_eapol = { 0x00, 0x00, 0x00, 0x88, 0x8e };
 	snap_eapol.insert(snap_eapol.end(), eapol.begin(), eapol.end());
 

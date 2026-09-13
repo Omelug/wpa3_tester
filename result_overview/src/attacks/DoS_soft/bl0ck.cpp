@@ -17,7 +17,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 
 	HtmlGuard f(page_dir);
 	if(!f) return;
-//FIXME musí být opravdu fyzicky mezi nebo na vurnerable staří aby byl rychlejší jeden packet? 
+//FIXME have be attacker physically between or for vulnerable results need be faster just one packet?
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>

@@ -36,7 +36,7 @@ TEST_CASE("log - set_log_file writes messages to file") {
 	wpa3_tester::set_log_file(""); // close old log file
 
 	ifstream f(tmp);
-	const string content(istreambuf_iterator(f), istreambuf_iterator<char>());
+	const string content{ istreambuf_iterator(f), istreambuf_iterator<char>()};
 	filesystem::remove(tmp);
 
 	CHECK(content.contains("file_log_test"));

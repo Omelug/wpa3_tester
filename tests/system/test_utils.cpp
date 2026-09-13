@@ -33,9 +33,12 @@ TEST_CASE("current_timestamp - reasonable values") {
 	int year = stoi(ts.substr(0, 4));
 	int month = stoi(ts.substr(5, 2));
 	int day = stoi(ts.substr(8, 2));
-	CHECK(year >= 2020 && year <= 2035);
-	CHECK(month >= 1 && month <= 12);
-	CHECK(day >= 1 && day <= 31);
+	CHECK_GE(year, 2020);
+	CHECK_LE(year, 2035);
+	CHECK_GE(month, 1);
+	CHECK_LE(month, 12);
+	CHECK_GE(day, 1);
+	CHECK_LE(day, 31);
 }
 
 TEST_CASE("current_timestamp - consistency") {
@@ -43,7 +46,7 @@ TEST_CASE("current_timestamp - consistency") {
 	this_thread::sleep_for(chrono::milliseconds(100));
 	string ts2 = current_timestamp();
 	CHECK_EQ(ts1.length(), ts2.length());
-	CHECK(ts2 >= ts1);
+	CHECK_GE(ts2, ts1);
 }
 
 TEST_CASE("relative_from - basic functionality") {

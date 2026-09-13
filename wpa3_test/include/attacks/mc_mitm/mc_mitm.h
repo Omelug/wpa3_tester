@@ -34,7 +34,6 @@ public:
 	void send_disas(const Tins::HWAddress<6> &macaddr) const;
 	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;
-	static void configure_interfaces();
 
 	void setup_real_AP_RSN_frames();
 	void run(RunStatus &rs, int timeout_sec);

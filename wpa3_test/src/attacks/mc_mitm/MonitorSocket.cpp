@@ -73,11 +73,11 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
-		rt.tx_flags(0x28); // NOSEQ|ORDER //FIXME NOSEQ a NO ACk se někdy asi mění,
+		rt.tx_flags(0x28); // NOSEQ|ORDER //FIXME NOSEQ a NO ACk are maybe change with some drivers
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else {
-		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO proč NOACK flag??????
+		pdu.find_pdu<RadioTap>(); //->tx_flags(0x28); //TODO why there was set NOACK flag??????
 		bytes = pdu.serialize();
 	}
 	if(tx_ch_) {

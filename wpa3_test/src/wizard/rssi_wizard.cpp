@@ -308,7 +308,7 @@ static void add_adapter(NetworkSetup &setup, const string &iface_name) {
 		this_thread::sleep_for(chrono::milliseconds(1000));
 
 		// netns move resets interface state - re-apply inside the new ns
-		//TODO tady se nesmí dát active, ale proč když hlásí podporu?
+		//TODO there needs not adding flags (like active), but why when it say supported?
 		cfg->set_monitor_mode(false);
 		cfg->set_iface_up();
 		cfg->set_channel(setup.channel);

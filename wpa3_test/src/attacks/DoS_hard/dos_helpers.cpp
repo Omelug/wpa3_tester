@@ -30,9 +30,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs) {
 		string token;
 		string mac_str;
 		ls >> token >> mac_str; // "Station" "<mac>"
-								//try{
 		result.emplace_back(mac_str);
-		//} catch(...){} //FIXME WTF, proč je tu catch
 	}
 	log(LogLevel::INFO, " Found {} connected STAs", result.size());
 	return result;

@@ -42,7 +42,7 @@ bool run_reflection_exchange(EAP_Att &eap_att) {
 			log(LogLevel::WARNING, "EAP commit ended without success");
 			return false;
 		}
-		log(LogLevel::INFO, "EAP-PWD-Commit Request – reflecting scalar+element");
+		log(LogLevel::INFO, "EAP-PWD-Commit Request - reflecting scalar+element");
 		send_eapol(eap_att, reflect_commit(*frame));
 	}
 
@@ -61,7 +61,7 @@ bool run_reflection_exchange(EAP_Att &eap_att) {
 			log(LogLevel::WARNING, "EAP confirm exchange ended without success");
 			return false;
 		}
-		log(LogLevel::INFO, "EAP-PWD-Confirm Request – reflecting confirm value");
+		log(LogLevel::INFO, "EAP-PWD-Confirm Request - reflecting confirm value");
 		send_eapol(eap_att, reflect_confirm(*frame));
 	}
 

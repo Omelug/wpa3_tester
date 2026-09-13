@@ -189,7 +189,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 			{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
 		throw setup_err("Interface " + ap_iface + " did not appear");
-	this_thread::sleep_for(2000ms); //FIXME tohele je hnusn=e, _fakeale asi to funguje aspo+n nějak stabilně
+	this_thread::sleep_for(2000ms); //FIXME not nice , but stable
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
 	hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
@@ -220,12 +220,12 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	this_thread::sleep_for(chrono::milliseconds(200)); // firmware need some time to up ?
 	rs.process_manager.run(ap_iface + "_start", cmd);
 
-	// With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO přepsáno z pythonu, zykoušet
+	// With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO rewritten from python, try
 	// acknowledge received frames and send ACKs
 	//this_thread::sleep_for(chrono::milliseconds(100));
 	base_actor->set_iface_up();
 	hw_capabilities::set_iface_up(ap_iface, netns);
-	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns);
+	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //disable for test ?
 }
 
 void stop_ap(const string &iface, const optional<string> &netns) {

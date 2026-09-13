@@ -136,7 +136,7 @@ void run_attack(RunStatus &rs) {
 	const size_t packets_per_sec = att_cfg.at("packets_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
-	//TODO zkotrolovat, že tu je ssid ([předtím bylohardcoded)
+	//TODO chcek if ap has ssid (was hardcoded before)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	att->set_monitor_mode();

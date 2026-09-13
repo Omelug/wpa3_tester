@@ -238,7 +238,7 @@ TEST_CASE("ProcessManager - write_log_all") {
 	SUBCASE("writes to combined log") {
 		pm.write_log_all("marker_combined");
 		ifstream f(pm.log_base_dir / "combined.log");
-		const string content(istreambuf_iterator(f), {});
+		const string content{ istreambuf_iterator(f), {}};
 		CHECK(content.contains("marker_combined"));
 	}
 
@@ -247,12 +247,12 @@ TEST_CASE("ProcessManager - write_log_all") {
 		pm.write_log_all("marker_proc");
 		{
 			ifstream f(pm.log_base_dir / "combined.log");
-			const string content(istreambuf_iterator(f), {});
+			const string content{ istreambuf_iterator(f), {}};
 			CHECK(content.contains("marker_proc"));
 		}
 		{
 			ifstream f(pm.log_base_dir / "proc_a.log");
-			const string content(istreambuf_iterator(f), {});
+			const string content{ istreambuf_iterator(f), {} };
 			CHECK(content.contains("marker_proc"));
 		}
 	}
@@ -362,7 +362,7 @@ TEST_CASE("ProcessManager - drain thread natural exit path") {
 		this_thread::sleep_for(400ms);
 
 		ifstream f(pm.log_base_dir / "outputter.log");
-		const string content(istreambuf_iterator(f), istreambuf_iterator<char>{});
+		const string content(istreambuf_iterator<char>(f), istreambuf_iterator<char>{});
 		CHECK(content.contains("stdout_marker"));
 		CHECK(content.contains("stderr_marker"));
 

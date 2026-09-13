@@ -134,20 +134,28 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: small fixes">
-      <change beforePath="$PROJECT_DIR$/.clang-format" beforeDir="false" afterPath="$PROJECT_DIR$/.clang-format" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/clang_tidy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/clang_tidy.yml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: redundant clangd-format broke code with html macros">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/owe_trans_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/owe_trans_filler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/mc_mitm_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/mc_mitm_filler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/logger/test_devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/logger/test_devices.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/logger/test_log.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/logger/test_log.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/system/test_process_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/system/test_process_manager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/system/test_utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/system/test_utils.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/external_info/external_info.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/external_info/external_info.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/iperf_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/iperf_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_active.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_active.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dos_helpers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dos_helpers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1151,7 +1159,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: set permanent mac internal" />
     <MESSAGE value="f: usb helper typo uhubctl" />
     <MESSAGE value="PProcess" />
     <MESSAGE value="+: PProcess" />
@@ -1176,7 +1183,8 @@
     <MESSAGE value="ft: scan_ascii_issues" />
     <MESSAGE value="f: include/link" />
     <MESSAGE value="f: small fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: small fixes" />
+    <MESSAGE value="f: redundant clangd-format broke code with html macros" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: redundant clangd-format broke code with html macros" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

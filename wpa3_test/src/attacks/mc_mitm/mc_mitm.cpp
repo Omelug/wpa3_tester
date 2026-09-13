@@ -86,19 +86,7 @@ bool McMitm::should_check_rogue_beacons() const {
 	} catch(const config_err &) { return false; }
 }
 
-void McMitm::configure_interfaces() {
-	//log(LogLevel::INFO, "Note: disable Wi-Fi in your network manager so it doesn't interfere with this script");
-	log(LogLevel::INFO,
-			"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
-
-	//FIXME useless?
-	//rogue_sta->run({"iw", "dev", nic_real_ap, "del"});
-	//rogue_ap->run({"iw", "dev", rogue_ap->get_ap_iface(), "del"});
-}
-
 void McMitm::setup_real_AP_RSN_frames() {
-	// FIXME nechtj9 nějaké interface up pro změnu kanálu? není ttu už dwn?
-
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);
 
@@ -129,8 +117,8 @@ void McMitm::setup_real_AP_RSN_frames() {
 
 void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	const bool check_rogue_beacons = should_check_rogue_beacons();
-
-	configure_interfaces();
+	log(LogLevel::INFO,
+		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 	setup_real_AP_RSN_frames();
 
 	log(LogLevel::INFO,

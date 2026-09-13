@@ -43,7 +43,7 @@ void OweTransTestEntry::render_table(
 					 col("BC probes", &OweTransTestEntry::broadcast_probe_count);
 					 col("SSID probes", &OweTransTestEntry::ssid_probe_count);
 					 col("Disconnected", &OweTransTestEntry::disconnected);
-					 COL("Vulnerable", e.ssid_probe_count > 0);
+					 COL("Vulnerable", (e.ssid_probe_count > 0));
 				 })->render({ "Test" });
 #undef COL
 			});

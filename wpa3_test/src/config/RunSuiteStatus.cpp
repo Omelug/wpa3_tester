@@ -118,7 +118,7 @@ void RunSuiteStatus::defined_by_generator(
 
 		ifstream ifs(tmp_path);
 		if(!ifs.is_open()) { throw run_err("Could not open temp file for reading"); }
-		string config_str(istreambuf_iterator<char>(ifs), istreambuf_iterator<char>());
+		string config_str{istreambuf_iterator(ifs), istreambuf_iterator<char>()};
 		ifs.close();
 
 		for(auto &[key, value]: vars.items()) {
@@ -247,7 +247,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 	ifstream ifs(tmp_template);
 	if(!ifs.is_open()) { throw run_err("Could not open template file for reading"); }
-	string raw_yaml_template(istreambuf_iterator<char>(ifs), istreambuf_iterator<char>());
+	string raw_yaml_template{istreambuf_iterator<char>(ifs), istreambuf_iterator<char>()};
 	ifs.close();
 
 	vector<size_t> indices(groups.size(), 0);

@@ -67,7 +67,6 @@ SpacesInParentheses: false
 FixNamespaceComments: false
 Cpp11BracedListStyle: false
 AlignAfterOpenBracket: false
-RemoveParentheses: ReturnStatement
 RemoveSemicolon: true
 TabWidth: 4
 UseTab: Always

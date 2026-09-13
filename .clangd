@@ -11,7 +11,6 @@ CompileFlags:
     "-Xclang", "-fno-pch-timestamp",
     "-Xclang", "-fpch-instantiate-templates"
   ]
-
 Diagnostics:
   UnusedIncludes: Strict
   ClangTidy:
@@ -40,6 +39,8 @@ Diagnostics:
       "-readability-implicit-bool-conversion",
       "-readability-math-missing-parentheses",
       "-*-throwing-static-initialization",
+      "-llvm-namespace-comment",
+      "-google-readability-namespace-comments",
       "modernize-loop-convert"
     ]
     WarningsAsErrors: ""

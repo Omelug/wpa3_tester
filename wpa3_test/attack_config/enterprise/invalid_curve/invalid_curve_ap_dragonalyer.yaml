@@ -1,5 +1,9 @@
 name: invalid_curve_attack_dragonslayer
 attacker_module: invalid_curve
+requirements:
+  two_iface:
+    injection_fields_spoofed: [ attacker, ap ]
+    injection_fields_valid: [ attacker, ap ]
 actors:
   ap:
     source: internal

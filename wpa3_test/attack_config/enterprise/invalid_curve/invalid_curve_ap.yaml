@@ -1,5 +1,10 @@
 name: invalid_curve_attack
 attacker_module: invalid_curve
+requirements:
+  two_iface:
+    injection_fields_spoofed: [ attacker, ap ]
+    injection_fields_valid: [ attacker, ap ]
+
 actors:
   ap:
     source: internal
@@ -18,7 +23,7 @@ actors:
     source: internal
     selection:
       #driver: ath9k_htc
-      condition: [ monitor, 2_4GHz ] # active_monitor
+      condition: [ monitor, 2_4GHz ]
       channel: 6
 observers:
   attacker_tshark:

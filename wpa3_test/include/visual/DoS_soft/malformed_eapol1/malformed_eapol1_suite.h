@@ -41,7 +41,7 @@ struct MalformedEapol1TestEntry {
 	static std::vector<MalformedEapol1TestEntry> collect_results(const std::filesystem::path &test_data_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
 			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
-			const std::string &string);
+			const std::string &t_name);
 	static void generate_report(RunSuiteStatus &rss);
 };
 }

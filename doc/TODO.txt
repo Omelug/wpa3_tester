@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: PCAB into ap_scan internal nand external()
 +: Share Debug pofile from NIxOS
 +: limit CSA for internal client
 f: in devices is PHY not shown in internal

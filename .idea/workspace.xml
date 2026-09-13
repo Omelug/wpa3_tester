@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="32" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="33" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -133,9 +133,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: clang-format">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: clang-format for test">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/ascii_check.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ascii_check.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/test_setup/rapsberry.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/test_setup/rapsberry.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,6 +144,13 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -1120,7 +1128,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: grep_log in dme g (used in mc_mitm attack )" />
     <MESSAGE value="f: another rewrite of reset_usb_ifaces logic, now with uhubctl on/off (cycle didnt work, stuck), shown drivers are reset (ath_htc kernel crash)" />
     <MESSAGE value="f: dmesg start_observers" />
     <MESSAGE value="f: dmesg start_observers&#10;r: small changes" />
@@ -1145,7 +1152,8 @@
     <MESSAGE value="r: small changes&#10;+: asciii check workflow" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="r: clang-format" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: clang-format" />
+    <MESSAGE value="r: clang-format for test" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: clang-format for test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

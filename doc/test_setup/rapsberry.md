@@ -24,7 +24,7 @@ use test suite at the start of [deploy.mk](../../tester_setup/raspberry_pi4/mk/d
 ## USB issues:
 
 With multiple adapters, raspberry can be unstable and end
-in [usb_helper.cpp](../../../wpa3_test/src/setup/usb_helper.cpp)
+in [usb_helper.cpp](../../wpa3_test/src/setup/usb_helper.cpp)
 (Ok, I ma not sure now, it maybe only because I used bad adapter for usb hub) #FIXME try
 
 ```

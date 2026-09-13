@@ -37,6 +37,7 @@
       <config projectName="wpa3_tester" targetName="run_validator_tests" />
       <config projectName="wpa3_tester" targetName="run_hw_info_load_cache_tests" />
       <config projectName="wpa3_tester" targetName="run_hw_cap_tests" />
+      <config projectName="wpa3_tester" targetName="run_report_tests" />
       <config projectName="wpa3_tester" targetName="run_two_iface_validate_tests" />
       <config projectName="wpa3_tester" targetName="run_rogue_channel_tests" />
       <config projectName="wpa3_tester" targetName="wpa3_components" />
@@ -133,9 +134,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="ft: scan_ascii_issues">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: include/link">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/wpa3_tester_doc/attacks/iface_info.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/wpa3_tester_doc/attacks/iface_info.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/setup/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/setup/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1139,7 +1140,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: dmesg start_observers" />
     <MESSAGE value="f: dmesg start_observers&#10;r: small changes" />
     <MESSAGE value="f: set permanent mac internal" />
     <MESSAGE value="f: usb helper typo uhubctl" />
@@ -1164,7 +1164,8 @@
     <MESSAGE value="r: clang-format" />
     <MESSAGE value="r: clang-format for test" />
     <MESSAGE value="ft: scan_ascii_issues" />
-    <option name="LAST_COMMIT_MESSAGE" value="ft: scan_ascii_issues" />
+    <MESSAGE value="f: include/link" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: include/link" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

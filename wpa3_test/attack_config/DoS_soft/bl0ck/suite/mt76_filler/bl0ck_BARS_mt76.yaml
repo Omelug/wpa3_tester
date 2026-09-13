@@ -1,5 +1,5 @@
 name: bl0ck_BARS_mt76
-$extends: [../../bl0ck.yaml, ./mt76_adapters_fixed.comp.yaml]
+$extends: [ ../../bl0ck.yaml, ./mt76_adapters_fixed.comp.yaml ]
 $validator: ../../bl0ck.schema.yaml
 attack_config:
   attack_time_sec: 25

@@ -1,13 +1,15 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::overview { struct HtmlGuard; }
+namespace wpa3_tester::overview {
+struct HtmlGuard;
+}
 
-namespace wpa3_tester::visual::ap_info_wpa3_filler{
-struct ApInfoWpa3TestEntry{
+namespace wpa3_tester::visual::ap_info_wpa3_filler {
+struct ApInfoWpa3TestEntry {
 	std::string test_name;
 
 	// result params
@@ -21,10 +23,9 @@ struct ApInfoWpa3TestEntry{
 
 	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
-							 const std::filesystem::path &suite_data_dir,
-							 const std::filesystem::path &page_dir,
-							 const std::string &t_name);
+			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
+			const std::string &t_name);
 };
 
-void generate_report(RunSuiteStatus & rss);
+void generate_report(RunSuiteStatus &rss);
 }

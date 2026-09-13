@@ -24,7 +24,7 @@ actors:
     selection:
       condition: [ AP, 5GHz ]
       channel: 40
-$extends: [./CSA_external_client.yaml]
+$extends: [ ./CSA_external_client.yaml ]
 
 attack_config:
   attack_time: 60

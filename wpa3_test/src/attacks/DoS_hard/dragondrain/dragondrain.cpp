@@ -8,15 +8,14 @@
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester::dragondrain{
+namespace wpa3_tester::dragondrain {
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
 void start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
-						const string &channel, const nlohmann::json &att_cfg
-){
+		const string &channel, const nlohmann::json &att_cfg) {
 	const int bitrate = att_cfg.at("bitrate").get<int>();
 	const int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
 	const int r = att_cfg.at("r").get<int>();
@@ -24,20 +23,32 @@ void start_dragondrain(RunStatus &rs, const string &actor_name, const string &if
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
-	command.insert(command.end(), {
-						dragondrain_folder + "/src/dragondrain", "-d", iface, "-a", target_mac, "-c", channel, "-b",
-						to_string(bitrate), "-n", to_string(num_random_mac), "-M", "100", "-r", to_string(r)
-					});
+	command.insert(command.end(),
+			{ dragondrain_folder + "/src/dragondrain",
+					"-d",
+					iface,
+					"-a",
+					target_mac,
+					"-c",
+					channel,
+					"-b",
+					to_string(bitrate),
+					"-n",
+					to_string(num_random_mac),
+					"-M",
+					"100",
+					"-r",
+					to_string(r) });
 	rs.process_manager.run(actor_name, command, dragondrain_folder);
 }
 
-void setup_attack(RunStatus &rs){
+void setup_attack(RunStatus &rs) {
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
 	if(!exists(dragondrain_folder)) throw setup_err("dragondrain not found at: " + dragondrain_folder);
 	components::client_ap_setup_t(rs);
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto attacker = rs.get_actor("attacker");
@@ -53,9 +64,9 @@ void run_attack(RunStatus &rs){
 	ap->conn->disconnect();
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

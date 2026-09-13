@@ -1,14 +1,16 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
-#include "overview/described.h"
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "config/RunSuiteStatus.h"
+#include "overview/described.h"
 
-namespace wpa3_tester::overview { struct HtmlGuard; }
+namespace wpa3_tester::overview {
+struct HtmlGuard;
+}
 
-namespace wpa3_tester::visual::wpa3_downgrade_filler{
-struct Wpa3TransDowngradeTestEntry{
+namespace wpa3_tester::visual::wpa3_downgrade_filler {
+struct Wpa3TransDowngradeTestEntry {
 	std::string test_name;
 	std::string ap_mac;
 	std::string client_mac;
@@ -23,13 +25,12 @@ struct Wpa3TransDowngradeTestEntry{
 	static Wpa3TransDowngradeTestEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<Wpa3TransDowngradeTestEntry> collect_results(const std::filesystem::path &test_data_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
-							 const std::filesystem::path &suite_data_dir,
-							 const std::filesystem::path &page_dir,
-							 const std::string &t_name);
+			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
+			const std::string &t_name);
 };
 
 std::vector<Wpa3TransDowngradeTestEntry> collect_results(const std::filesystem::path &run_dir);
 
 void setup_suite(const RunSuiteStatus &rss);
-void generate_report(RunSuiteStatus & rss);
+void generate_report(RunSuiteStatus &rss);
 }

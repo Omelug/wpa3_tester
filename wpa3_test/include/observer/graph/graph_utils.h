@@ -1,6 +1,6 @@
 #pragma once
 #include "../tshark_wrapper.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 void add_graph_elements(G_elms elements);
 }

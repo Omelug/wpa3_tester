@@ -1,7 +1,7 @@
 #pragma once
-#include "config/RunStatus.h"
 #include <filesystem>
 #include <string>
+#include "config/RunStatus.h"
 
 namespace wpa3_tester::observer::state_log_graph {
 
@@ -12,7 +12,6 @@ inline constexpr std::string SUFFIX_state = "_state";
 void create_state_log_graph(const RunStatus &rs, const std::string &mac_str);
 
 // read state_log_path and write .png to output_png.
-void create_state_log_graph(const std::filesystem::path &state_log_path,
-                             const std::filesystem::path &output_png);
+void create_state_log_graph(const std::filesystem::path &state_log_path, const std::filesystem::path &output_png);
 
 }

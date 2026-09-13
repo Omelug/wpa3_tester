@@ -12,12 +12,12 @@
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::wpa3_downgrade_filler{
+namespace wpa3_tester::visual::wpa3_downgrade_filler {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_folder){
+Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<Wpa3TransDowngradeTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
@@ -41,42 +41,56 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 vector<Wpa3TransDowngradeTestEntry> Wpa3TransDowngradeTestEntry::collect_results(const path &test_data_dir) {
 	auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(test_data_dir);
 
-	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry& a, const Wpa3TransDowngradeTestEntry& b) {
-	return tie(a.ap_driver, a.ap_mac, a.client_driver, a.client_mac, a.test_name, a.disconnected, a.downgrade_seen, a.ap_wpa3_trans_disable) <
-		   tie(b.ap_driver, b.ap_mac, b.client_driver, b.client_mac, b.test_name,  b.disconnected, b.downgrade_seen, b.ap_wpa3_trans_disable);
+	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry &a, const Wpa3TransDowngradeTestEntry &b) {
+		return tie(a.ap_driver,
+					   a.ap_mac,
+					   a.client_driver,
+					   a.client_mac,
+					   a.test_name,
+					   a.disconnected,
+					   a.downgrade_seen,
+					   a.ap_wpa3_trans_disable) < tie(b.ap_driver,
+														  b.ap_mac,
+														  b.client_driver,
+														  b.client_mac,
+														  b.test_name,
+														  b.disconnected,
+														  b.downgrade_seen,
+														  b.ap_wpa3_trans_disable);
 	});
 
 	return entries;
 }
 
-void Wpa3TransDowngradeTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &, const string &t_name){
+void Wpa3TransDowngradeTestEntry::render_table(
+		overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
 
-	helper::div_card<Wpa3TransDowngradeTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
-		const std::vector<Wpa3TransDowngradeTestEntry>& entries) {
+	helper::div_card<Wpa3TransDowngradeTestEntry>(f,
+			title,
+			suite_data_dir,
+			[&](overview::HtmlGuard &hg, const std::vector<Wpa3TransDowngradeTestEntry> &entries) {
+				HtmlPathTable t(hg, entries, t_name);
+#define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
-		HtmlPathTable t(hg, entries, t_name);
-		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
-
-		t.build([&](auto col) {
-			COL("Test",             e.test_name);
-			COL("AP ",				e.ap_mac << "(" << e.ap_driver << ")");
-			COL("Client",			e.client_mac << "(" << e.client_driver << ")");
-			col("Disconnected",     &Wpa3TransDowngradeTestEntry::disconnected);
-			col("Downgrade Seen",   &Wpa3TransDowngradeTestEntry::downgrade_seen);
-			col("WPA3 disable",     &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
-		})->render({"Test"});
-		#undef COL
-	});
+				t.build([&](auto col) {
+					 COL("Test", e.test_name);
+					 COL("AP ", e.ap_mac << "(" << e.ap_driver << ")");
+					 COL("Client", e.client_mac << "(" << e.client_driver << ")");
+					 col("Disconnected", &Wpa3TransDowngradeTestEntry::disconnected);
+					 col("Downgrade Seen", &Wpa3TransDowngradeTestEntry::downgrade_seen);
+					 col("WPA3 disable", &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
+				 })->render({ "Test" });
+#undef COL
+			});
 }
 
-void setup_suite(const RunSuiteStatus &rss){
+void setup_suite(const RunSuiteStatus &rss) {
 	const auto config_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
 	create_public_dirs(config_dir);
 	copy_f(rss.config_path().parent_path() / "config/hostapd-mana.conf", config_dir / "hostapd-mana.conf");
 }
 
-void generate_report(RunSuiteStatus &rss){
+void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<Wpa3TransDowngradeTestEntry>(run_dir);
 
@@ -86,25 +100,26 @@ void generate_report(RunSuiteStatus &rss){
 	report << "# WPA3 Transition Downgrade Test Suite Report\n\n";
 	report << "Tests whether a WPA3-Transition client can be downgraded to WPA2-PSK via a rogue AP.\n\n";
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
+	if(entries.empty()) {
+		report << "No test results found.\n";
+		return;
+	}
 
 	report << "## Test Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Downgrade Seen |\n";
 	report << "|------|-----------|---------------|:--------------:|\n";
 
-	for(const auto &e: entries){
-		report << "| " <<  report::link(e.test_name , path(e.test_name) / REPORT_NAME) << " | "
-			<< e.ap_driver << " | "
-			<< e.client_driver
-			<< " | " << e.downgrade_seen << " |\n";
+	for(const auto &e: entries) {
+		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | " << e.ap_driver << " | "
+			   << e.client_driver << " | " << e.downgrade_seen << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t vuln_count = ranges::count_if(entries, [](const auto &e){ return e.downgrade_seen; });
+	const size_t vuln_count = ranges::count_if(entries, [](const auto &e) { return e.downgrade_seen; });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Vulnerable: " << vuln_count << "\n";
 	report << "- Not vulnerable: " << (entries.size() - vuln_count) << "\n";
-	report << "- Vulnerability Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(vuln_count) /
-			static_cast<double>(entries.size())) << "%\n";
+	report << "- Vulnerability Rate: " << fixed << setprecision(1)
+		   << (100.0 * static_cast<double>(vuln_count) / static_cast<double>(entries.size())) << "%\n";
 }
 }

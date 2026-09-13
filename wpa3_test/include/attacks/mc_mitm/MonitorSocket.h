@@ -1,5 +1,4 @@
 #pragma once
-#include "system/wifi_channel.h"
 #include <chrono>
 #include <functional>
 #include <libssh/libssh.h>
@@ -7,16 +6,17 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "system/wifi_channel.h"
 
-namespace wpa3_tester{
-class MonitorSocket{
+namespace wpa3_tester {
+class MonitorSocket {
 public:
 	MonitorSocket(const std::string &iface, const std::optional<std::string> &netns, bool detect_injected = false);
 	// Remote capture: persistent SSH channel from open_capture_channel()
 	explicit MonitorSocket(ssh_channel rx_ch, bool detect_injected = false);
 
 	// Remote TX injection: persistent SSH channel running remote_injector
-	struct tag_tx_t{};
+	struct tag_tx_t {};
 	explicit MonitorSocket(ssh_channel tx_ch, tag_tx_t);
 	~MonitorSocket();
 	MonitorSocket(MonitorSocket &&) noexcept;
@@ -24,22 +24,21 @@ public:
 	MonitorSocket &operator=(const MonitorSocket &) = delete;
 	MonitorSocket &operator=(MonitorSocket &&) = delete;
 
-	struct RecvResult{
+	struct RecvResult {
 		std::unique_ptr<Tins::PDU> pdu;
 		std::vector<uint8_t> raw;
-		explicit operator bool() const{ return pdu != nullptr || !raw.empty(); }
+		explicit operator bool() const { return pdu != nullptr || !raw.empty(); }
 	};
 
 	void send(Tins::PDU &pdu, const Channel &ch) const;
-	static std::vector<uint8_t> build_inject_frame(const std::vector<uint8_t> &raw, const Channel &ch,
-													bool detect_injected = false
-	);
+	static std::vector<uint8_t> build_inject_frame(
+			const std::vector<uint8_t> &raw, const Channel &ch, bool detect_injected = false);
 	void send(const std::vector<unsigned char> &raw, const Channel &ch) const;
 	static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
 	RecvResult recv();
 	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_packet);
-	pcap_t *get_pcap_handle(){ return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
-	Tins::Sniffer &sniffer(){ return *sniffer_; }
+	pcap_t *get_pcap_handle() { return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
+	Tins::Sniffer &sniffer() { return *sniffer_; }
 
 	void set_filter(const std::string &bpf) const;
 private:

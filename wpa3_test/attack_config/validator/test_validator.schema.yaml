@@ -1,6 +1,6 @@
 $schema:
   type: string
-  default:  https://json-schema.org/draft/2020-12/schema
+  default: https://json-schema.org/draft/2020-12/schema
 title: Test Configuration Schema
 type: object
 required:

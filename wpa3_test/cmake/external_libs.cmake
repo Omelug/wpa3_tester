@@ -31,9 +31,9 @@ find_package(PkgConfig REQUIRED)
 # NixOS: dbus-1.pc has libsystemd as a transitive dep; add system profile pkgconfig so the probe doesn't warn.
 # Skip during cross-compilation: host pkgconfig paths pollute the sysroot pkg-config search and return
 # nix store paths that the sysroot directory doesn't contain.
-if(NOT CMAKE_CROSSCOMPILING AND EXISTS "/run/current-system/sw/lib/pkgconfig")
+if (NOT CMAKE_CROSSCOMPILING AND EXISTS "/run/current-system/sw/lib/pkgconfig")
     set(ENV{PKG_CONFIG_PATH} "/run/current-system/sw/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-endif()
+endif ()
 
 set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -61,7 +61,7 @@ set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         boost_pfr
         GIT_REPOSITORY https://github.com/boostorg/pfr.git
-        GIT_TAG        2.2.0
+        GIT_TAG 2.2.0
 )
 
 FetchContent_Declare(argparse
@@ -163,16 +163,16 @@ FetchContent_Declare(yaml-cpp
 # usr/include/<arch>/.  The NixOS cross-gcc doesn't add this automatically unlike Debian's
 # aarch64-linux-gnu-g++.  Set it here, before FetchContent_MakeAvailable, so FetchContent
 # subprojects (libtins, etc.) that compile against OpenSSL also get the path.
-if(CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
+if (CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
     include_directories(SYSTEM "${CMAKE_SYSROOT}/usr/include/${CMAKE_LIBRARY_ARCHITECTURE}")
-endif()
+endif ()
 
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
         json_schema_validator linux_headers_wifi radiotap boost_pfr)
 
-if(CMAKE_CROSSCOMPILING AND TARGET radiotap_check)
+if (CMAKE_CROSSCOMPILING AND TARGET radiotap_check)
     set_target_properties(radiotap_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
-endif()
+endif ()
 
 # Suppress packed member warning from radiotap library
 target_compile_options(radiotap PRIVATE -Wno-address-of-packed-member)

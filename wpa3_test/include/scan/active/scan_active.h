@@ -1,16 +1,16 @@
 #pragma once
-#include "config/Actor_Config/Actor_Config_external.h"
 #include <cstdint>
 #include <tins/pdu.h>
+#include "config/Actor_Config/Actor_Config_external.h"
 
-namespace wpa3_tester::scan{
-void apply_radiotap(Tins::PDU & pdu, Actor_Config_external & cfg);
+namespace wpa3_tester::scan {
+void apply_radiotap(Tins::PDU &pdu, Actor_Config_external &cfg);
 void apply_ht_vht_he(const Tins::Dot11ManagementFrame &mgmt, Actor_Config_external &cfg);
 // Sets MFP/OCV/beacon_prot and WPA2-PSK/WPA3-SAE from the RSN IE of any management frame (beacon, assoc-req, …)
 void apply_rsn(const Tins::Dot11ManagementFrame &mgmt, Actor_Config_external &cfg);
 
 // RSN capabilities field (802.11 $9.4.2.24.4), decoded once and shared by apply_rsn() and ScanAP::to_str()
-struct RSNCapFlags{
+struct RSNCapFlags {
 	bool mfp_capable;
 	bool mfp_required;
 	bool ocvc;

@@ -4,13 +4,14 @@
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 
-namespace wpa3_tester{
-class OpenWrtConn: public ExternalConn{
+namespace wpa3_tester {
+class OpenWrtConn: public ExternalConn {
 	std::thread logger_thread;
 	// --- device functions
 	void check_req(const nlohmann::json &config, const std::string &actor_name) override;
 	std::string wait_for_ifname(const std::string &section) const;
-	void setup_monitor_iface(const std::string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const;
+	void setup_monitor_iface(
+			const std::string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const;
 public:
 	void forward_internet(const std::string &remote_ip) const;
 	void time_fix() const;

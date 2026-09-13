@@ -4,7 +4,7 @@ $validator: ../expected_vht_beacon.schema.yaml
 $extends: [ ./ex_observers.comp.yaml ]
 
 requirements:
-  ex_BB_connection: [[ap, client]]
+  ex_BB_connection: [ [ ap, client ] ]
 
 actors:
   ap:

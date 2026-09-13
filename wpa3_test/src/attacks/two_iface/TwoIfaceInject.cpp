@@ -3,35 +3,42 @@
 #include <filesystem>
 #include <fstream>
 
-#include "default.h"
 #include "config/RunStatus.h"
+#include "default.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
 #include "system/injection_result.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using namespace filesystem;
 using nlohmann::json;
 
-TwoIfaceInject::TwoIfaceInject()
-: TwoIface({{SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac}, {BK::monitor}},
-			"two_iface_inject"){}
+TwoIfaceInject::TwoIfaceInject():
+	TwoIface({ { SK::driver_name, SK::driver_hash, SK::module_hash, SK::permanent_mac }, { BK::monitor } },
+			"two_iface_inject") {}
 
-json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
+json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 	auto sel_rx = r->to_json(&cache_id)["selection"];
 	sel_rx["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
-	sel_rx["condition"] = {"2_4GHz", "monitor"};
+	sel_rx["condition"] = { "2_4GHz", "monitor" };
 
 	const json config = {
-		{"name", "injection_test"}, {"attacker_module", "injection_test"}, {"delete_old", true}, {"rewrite", "all"},
-		{
-			"actors",
-			{
-				{"transceiver", {{"source", "internal"}, {"selection", make_selection(t)}, {"netns", "tx"}}},
-				{"receiver", {{"source", "internal"}, {"selection", sel_rx}, {"sniff_iface", "true"},}},
-			}
-		},
+		{ "name", "injection_test" },
+		{ "attacker_module", "injection_test" },
+		{ "delete_old", true },
+		{ "rewrite", "all" },
+		{ "actors",
+				{
+						{ "transceiver",
+								{ { "source", "internal" }, { "selection", make_selection(t) }, { "netns", "tx" } } },
+						{ "receiver",
+								{
+										{ "source", "internal" },
+										{ "selection", sel_rx },
+										{ "sniff_iface", "true" },
+								} },
+				} },
 	};
 
 	const path config_dir = cache_folder() / "config";
@@ -40,40 +47,34 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r){
 	save_yaml(config, config_path);
 
 	RunStatus rs(config_path, "injection_test", "two_iface/injection_test");
-	rs.run_folder(cache_folder()/ "run" );
+	rs.run_folder(cache_folder() / "run");
 	rs.execute();
 
 	const path result_path = rs.run_folder() / RESULT_NAME;
-	if(!exists(result_path)) return json{{"err_msg", "result_path dont exists"}};
+	if(!exists(result_path)) return json{ { "err_msg", "result_path dont exists" } };
 
 	ifstream ifs(result_path);
 	const auto result = json::parse(ifs, nullptr, false);
-	return result.is_discarded() ? json{{"err_msg", "result is discarded"}} : result;
+	return result.is_discarded() ? json{ { "err_msg", "result is discarded" } } : result;
 }
 
-bool TwoIfaceInject::run_check(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave,
-								const string &injection_key
-){
+bool TwoIfaceInject::run_check(
+		const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave, const string &injection_key) {
 	TwoIfaceInject t;
 
-	const auto fail = [&](const string &key){
-		throw req_err(
-			"inject_test " + key + ": " + a1->get_or(SK::actor_name, "?") + "/" + a2->get_or(SK::actor_name, "?") +
-			" failed injection check");
+	const auto fail = [&](const string &key) {
+		throw req_err("inject_test " + key + ": " + a1->get_or(SK::actor_name, "?") + "/" +
+				a2->get_or(SK::actor_name, "?") + " failed injection check");
 	};
 
 	const auto [result, from_cache] = t.validate(a1, a2, behave);
 
-	if(injection_key == "injection"){
+	if(injection_key == "injection") {
 		for(const auto &[key, val]: result.at("tests").items()) {
-			if(val.at("result").get<it_test_result>() != PASSED) {
-				fail(key);
-			}
+			if(val.at("result").get<it_test_result>() != PASSED) { fail(key); }
 		}
-	} else{
-		if(result.at("tests").at(injection_key).at("result").get<it_test_result>() != PASSED) {
-			fail(injection_key);
-		}
+	} else {
+		if(result.at("tests").at(injection_key).at("result").get<it_test_result>() != PASSED) { fail(injection_key); }
 	}
 	return !from_cache;
 }

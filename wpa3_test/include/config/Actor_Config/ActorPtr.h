@@ -1,12 +1,12 @@
 #pragma once
-#include "Actor_config.h"
 #include <memory>
 #include <string>
+#include "Actor_config.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 class Actor_config;
 
-class ActorPtr{
+class ActorPtr {
 protected:
 	std::shared_ptr<Actor_config> ptr;
 public:
@@ -30,7 +30,7 @@ public:
 	std::optional<bool> &operator[](BK key);
 	const std::optional<bool> &operator[](BK key) const;
 
-	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr == rhs.ptr; }
-	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs){ return lhs.ptr < rhs.ptr; }
+	friend bool operator==(const ActorPtr &lhs, const ActorPtr &rhs) { return lhs.ptr == rhs.ptr; }
+	friend bool operator<(const ActorPtr &lhs, const ActorPtr &rhs) { return lhs.ptr < rhs.ptr; }
 };
 }

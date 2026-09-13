@@ -1,10 +1,10 @@
 #pragma once
 
-#include "config/RunStatus.h"
 #include <nlohmann/json.hpp>
 #include <string>
+#include "config/RunStatus.h"
 
-namespace wpa3_tester::hostapd{
+namespace wpa3_tester::hostapd {
 std::string hostapd_config(const std::string &run_folder, const nlohmann::json &ap_setup);
 std::string wpa_supplicant_config(const std::string &run_folder, const nlohmann::json &client_setup);
 

@@ -8,4 +8,4 @@ attack_config:
   sleep_before_sec: 10
   sleep_after_sec: 10
 
-$extends: [./CSA_external_client.yaml]
+$extends: [ ./CSA_external_client.yaml ]

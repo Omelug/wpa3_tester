@@ -1,18 +1,18 @@
 #pragma once
-#include "config/RunStatus.h"
-#include "system/wifi_channel.h"
 #include <cstdint>
 #include <string>
 #include <tins/tins.h>
+#include "config/RunStatus.h"
+#include "system/wifi_channel.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 int get_channel(const std::string &iface);
 
 int chan2freq(Channel ch);
 
 std::string get_ssid(const Tins::Dot11Beacon &beacon);
 
-struct Dot11Addrs{
+struct Dot11Addrs {
 	Tins::HWAddress<6> addr1;
 	Tins::HWAddress<6> addr2;
 };
@@ -28,13 +28,13 @@ Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, const Channel &new
 uint64_t get_eapol_replay_num(const Tins::Dot11Data &pkt);
 
 void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
-			const Tins::Dot11Beacon &beacon, std::optional<Tins::HWAddress<6>> mac = std::nullopt, int interval = 100,
-			int dtim_period = 1
-);
+		const Tins::Dot11Beacon &beacon, std::optional<Tins::HWAddress<6>> mac = std::nullopt, int interval = 100,
+		int dtim_period = 1);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
 Tins::Dot11Beacon make_confused_beacon(const Tins::Dot11Beacon &real, const std::string &confused_ssid, bool strip_rsn);
-Tins::Dot11ProbeResponse make_confused_probe_resp(const Tins::Dot11ProbeResponse &real, const std::string &confused_ssid, bool strip_rsn);
-Tins::Dot11AssocRequest  make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
+Tins::Dot11ProbeResponse make_confused_probe_resp(
+		const Tins::Dot11ProbeResponse &real, const std::string &confused_ssid, bool strip_rsn);
+Tins::Dot11AssocRequest make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
 
 }

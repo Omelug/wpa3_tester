@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
       - uses: ./.github/actions/setup-deps
 
       - name: Install clang-tidy
@@ -31,4 +30,22 @@ jobs:
                   print(','.join(ct['Checks']))
                   sys.exit(0)
           ")
-          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter='wpa3_test/.*' '.*wpa3_test/.*'
+
+          # every file git actually tracks in the whole repo
+          # (this automatically excludes anything matched by .gitignore)
+          mapfile -t FILES < <(git ls-files)
+
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No tracked files found, nothing to check."
+            exit 0
+          fi
+
+          # Turn the tracked file list into a regex alternation that
+          # run-clang-tidy-18 matches (via re.search) against absolute paths
+          # from the compilation database.
+          FILTER=$(printf '%s\n' "${FILES[@]}" | python3 -c "
+          import re, sys
+          print('|'.join(re.escape(line.strip()) for line in sys.stdin if line.strip()))
+          ")
+
+          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter='.*' "$FILTER"

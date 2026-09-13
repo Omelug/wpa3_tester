@@ -6,16 +6,16 @@
 #include "observer/tshark_wrapper.h"
 using namespace std;
 
-namespace wpa3_tester{
-void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements){
+namespace wpa3_tester {
+void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements) {
 	size_t label_index = 0;
 	size_t block_index = 0;
 
-	map<string,size_t> label_slots;
-	for(const auto &element : elements){
-		if(element->type == GraphElement_t::EVENT_LINES){
+	map<string, size_t> label_slots;
+	for(const auto &element: elements) {
+		if(element->type == GraphElement_t::EVENT_LINES) {
 			const string &lbl = element->label;
-			if(!label_slots.contains(lbl)){
+			if(!label_slots.contains(lbl)) {
 				const size_t slot = label_slots.size();
 				label_slots[lbl] = slot;
 			}
@@ -23,17 +23,15 @@ void Graph::add_graph_elements(const vector<unique_ptr<GraphElements>> &elements
 	}
 	const size_t num_slots = label_slots.empty() ? 1 : label_slots.size();
 
-	for(auto &element: elements){
-		if(element->type == GraphElement_t::EVENT_LINES){
+	for(auto &element: elements) {
+		if(element->type == GraphElement_t::EVENT_LINES) {
 			auto *ev = dynamic_cast<EventLines *>(element.get());
 			add_event_lines(*ev, block_index, label_slots.at(ev->label), num_slots, label_index);
 		}
-		if(element->type == GraphElement_t::GRAPH_XY_POINTS){
+		if(element->type == GraphElement_t::GRAPH_XY_POINTS) {
 			add_XY_points(*dynamic_cast<GraphXYPoints *>(element.get()));
 		}
-		if(element->type == GraphElement_t::UNKNOWN){
-			throw run_err("Graph element type is unknown");
-		}
+		if(element->type == GraphElement_t::UNKNOWN) { throw run_err("Graph element type is unknown"); }
 	}
 }
 }

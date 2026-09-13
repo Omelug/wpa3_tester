@@ -3,18 +3,18 @@
 
 #include "visual/two_iface/injection_test_filler.h"
 
-#include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "default.h"
 #include "logger/report.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::injection_test_filler{
+namespace wpa3_tester::visual::injection_test_filler {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-InjectionTestEntry InjectionTestEntry::parse(const path &test_folder){
+InjectionTestEntry InjectionTestEntry::parse(const path &test_folder) {
 	InjectionTestEntry e{};
 	e.test_name = test_folder.filename().string();
 	e.tests_passed = 0;
@@ -27,12 +27,12 @@ InjectionTestEntry InjectionTestEntry::parse(const path &test_folder){
 	e.tx_driver = rs->get_actor("transceiver").get(SK::driver_name);
 	e.rx_driver = rs->get_actor("receiver").get(SK::driver_name);
 
-	if(result->contains("tests") && result->at("tests").is_object()){
-		for(const auto &[name, val]: result->at("tests").items()){
+	if(result->contains("tests") && result->at("tests").is_object()) {
+		for(const auto &[name, val]: result->at("tests").items()) {
 			++e.tests_total;
-			if(val.value("result", "") == "PASSED"){
+			if(val.value("result", "") == "PASSED") {
 				++e.tests_passed;
-			} else{
+			} else {
 				e.failures.emplace_back(name, val.value("detail", ""));
 			}
 		}
@@ -42,7 +42,7 @@ InjectionTestEntry InjectionTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void generate_report(RunSuiteStatus &rss){
+void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<InjectionTestEntry>(run_dir);
 
@@ -52,31 +52,33 @@ void generate_report(RunSuiteStatus &rss){
 	r << "# Injection Test Suite Report\n\n";
 	r << "Tests frame injection capability across different driver combinations.\n\n";
 
-	if(entries.empty()){ r << "No test results found.\n"; return; }
+	if(entries.empty()) {
+		r << "No test results found.\n";
+		return;
+	}
 
 	r << "## Test Results\n\n";
 	r << "| Test | TX Driver | RX Driver | Passed | Total | All Passed |\n";
 	r << "|------|-----------|-----------|:------:|:-----:|:----------:|\n";
 
-	for(const auto &e: entries){
+	for(const auto &e: entries) {
 		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
-								? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
-								: e.test_name;
+				? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
+				: e.test_name;
 		const string pass_link = "(" + e.test_name + "/" + RESULT_NAME + ")";
 
-		r << "| "
-			<< name_cell << " | "
-			<< e.tx_driver << " | "
-			<< e.rx_driver << " | "
-			<< e.tests_passed << " | "
-			<< e.tests_total << " | "
-			<< "[" << e.passed << "]" << pass_link << " |\n";
+		r << "| " << name_cell << " | " << e.tx_driver << " | " << e.rx_driver << " | " << e.tests_passed << " | "
+		  << e.tests_total << " | "
+		  << "[" << e.passed << "]" << pass_link << " |\n";
 	}
 
 	bool any_failures = false;
-	for(const auto &e: entries){
+	for(const auto &e: entries) {
 		if(e.failures.empty()) continue;
-		if(!any_failures){ r << "\n## Failures\n\n"; any_failures = true; }
+		if(!any_failures) {
+			r << "\n## Failures\n\n";
+			any_failures = true;
+		}
 		r << "### " << e.test_name << "\n\n";
 		r << "| Sub-test | Detail |\n|----------|--------|\n";
 		for(const auto &[name, detail]: e.failures)

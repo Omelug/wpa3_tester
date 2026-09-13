@@ -1,14 +1,9 @@
 #pragma once
 
-namespace wpa3_tester{
-enum class WifiBand{
-	BAND_2_4_or_5,
-	BAND_2_4,
-	BAND_5,
-	BAND_6
-};
+namespace wpa3_tester {
+enum class WifiBand { BAND_2_4_or_5, BAND_2_4, BAND_5, BAND_6 };
 
-struct Channel{
+struct Channel {
 	uint8_t ch_num = 0;
 	WifiBand band = WifiBand::BAND_2_4_or_5;
 	std::optional<std::string> ht_mode;

@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="3" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="32" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
   </component>
   <component name="CMakePresetLoader">{
   &quot;useNewFormat&quot;: true
@@ -133,7 +134,260 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes&#10;+: asciii check workflow">
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.clang-format" beforeDir="false" afterPath="$PROJECT_DIR$/.clang-format" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/clang_tidy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/clang_tidy.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/cookie_guzzler/cookie_guzzler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/cookie_guzzler/cookie_guzzler.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_BARS_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_BARS_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BAR.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BAR.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/BA_filler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/BA_filler.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BARS_mt76.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BARS_mt76.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BAR_mt76.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BAR_mt76.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BA_mt76.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BA_mt76.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_Dlink_external.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_Dlink_external.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_5G.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_5G.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_client_MFP_disabled.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_client_MFP_disabled.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_client_MFP_req.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_client_MFP_req.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_invalid_ch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_invalid_ch.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_beacon_prot.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_beacon_prot.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_protection.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_protection.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFPr.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFPr.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/basic/basic_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/basic/basic_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/expected_vht_beacon_ex.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/expected_vht_beacon_ex.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/client/m_eapol1_external_client_invalid_ch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/client/m_eapol1_external_client_invalid_ch.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP_mixed.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP_mixed.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP_mixed_MFPo.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_rogueAP_mixed_MFPo.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA2_MFPr_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA2_MFPr_6.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_only.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_only.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_trans.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_trans.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_sim.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_sim.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion_internal.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/two_iface/injection/injection_test_requirements.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/two_iface/injection/injection_test_requirements.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_suite_validator.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_suite_validator.schema.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_validator.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_validator.schema.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/asan.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/asan.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/release.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/release.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/ath_masker/ath_masker_test.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/ath_masker/ath_masker_test.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/capture_commit_values.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/capture_commit_values.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dos_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dos_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dragondrain/dragondrain.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dragondrain/dragondrain.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/memory_omnivore/memory_omnivore.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/memory_omnivore/memory_omnivore.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/bl0ck/bl0ck.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/bl0ck/bl0ck.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/components/setup_connections.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/components/setup_connections.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/downgrade/owe_trans.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/downgrade/owe_trans.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/downgrade/wpa3_downgrade_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/downgrade/wpa3_downgrade_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/eap_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/eap_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/invalid_curve.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/invalid_curve.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/invalid_curve_dragonslayer.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/invalid_curve_dragonslayer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/reflection_attack.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/enterprise/reflection_attack.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/MonitorSocket.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/MonitorSocket.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/client_state.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/client_state.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm_attack.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm_attack.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm_hooks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm_hooks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion_attack.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion_attack.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion_hooks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion_hooks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/sae_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/sae_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/ap_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/ap_info.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/external_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/external_info.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/iface_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/iface_info.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/sta_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/sta_info.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIface.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIfaceActive.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIfaceActive.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIfaceInject.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIfaceInject.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/active_test.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/active_test.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/injection_test.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/injection_test.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/ActorPtr.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/ActorPtr.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_external.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_external.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_sim.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_Config_sim.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_config.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/Actor_config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/ObserverPtr.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/ObserverPtr.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Observer_config.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Observer_config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunSuiteStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunSuiteStatus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Run_Config.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Run_Config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/global_config.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/global_config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/ExternalConn.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/ExternalConn.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/OpenWrtConn.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/OpenWrtConn.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/openwrt_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/openwrt_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/hostapd/hostapd.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/hostapd/hostapd.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/hostapd/hostapd_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/hostapd/hostapd_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/devices.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/devices.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/log.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/log.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/log_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/log_util.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/report.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/report.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/dmesg_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/dmesg_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_elements.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_elements.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/iperf_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/iperf_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/mausezahn_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/mausezahn_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/observers.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/observers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/resource_checker.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/resource_checker.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/state_log_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/state_log_graph.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/station_counter.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/station_counter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/tcpdump_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/tcpdump_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/trace_cmd_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/trace_cmd_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/described.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/described.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_EAP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_EAP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_STA.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_STA.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_active.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_active.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/scan.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/scan.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/YAMLValidator.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/YAMLValidator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/config_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/config_parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/program.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/program.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/requirement_validation.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/requirement_validation.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/usb_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/usb_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/ProcessManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/ProcessManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/driver_diagnostics.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/driver_diagnostics.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/firmware/ath9k_htc.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/firmware/ath9k_htc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_info.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/injection_result.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/injection_result.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/ip.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/ip.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/netlink_guards.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/netlink_guards.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/netlink_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/netlink_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/runtime_checks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/runtime_checks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/wifi_channel.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/wifi_channel.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_hard/sae_dos/sae_dos_entry.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_hard/sae_dos/sae_dos_entry.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/bl0ck/bl0ck_test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/bl0ck/bl0ck_test_suites.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_versions.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_versions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/deauth/deauth_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/deauth/deauth_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/downgrade/owe_trans_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/downgrade/owe_trans_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/downgrade/wpa3_downgrade_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/downgrade/wpa3_downgrade_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/enterprise_filler_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/enterprise_filler_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/invalid_curve/invalid_curve_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/invalid_curve/invalid_curve_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/reflection_attack/reflection_attack_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/reflection_attack/reflection_attack_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/mc_mitm/mc_mitm_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/mc_mitm/mc_mitm_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/mc_mitm/ssid_confusion_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/mc_mitm/ssid_confusion_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_wpa3_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_wpa3_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/two_iface/active_test_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/two_iface/active_test_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/two_iface/injection_test_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/two_iface/injection_test_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/wizard/rssi_condition.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/wizard/rssi_condition.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/remote_injector/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/remote_injector/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/remote_injector/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/remote_injector/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dos_helpers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dos_helpers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/memory_omnivore/memory_omnivore.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/memory_omnivore/memory_omnivore.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck_report.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck_report.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/invalid_curve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/invalid_curve.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/invalid_curve_dragonslayer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/invalid_curve_dragonslayer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack_dragonslayer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack_dragonslayer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_print.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_print.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion_hooks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion_hooks.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/sae_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/sae_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/external_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/external_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/sta_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/sta_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceActive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceActive.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceInject.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceInject.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/ActorPtr.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/ActorPtr.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Observer_config.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Observer_config.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/logger/report.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/logger/report.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/graph/graph_elements.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/graph/graph_elements.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/graph/graph_utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/graph/graph_utils.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/iperf_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/iperf_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/observers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/observers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tcpdump_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tcpdump_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_AP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_AP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_EAP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_EAP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_active.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/active/scan_active.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/internal.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/internal.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/program.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/driver_diagnostics.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/driver_diagnostics.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/netlink_guards.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/netlink_guards.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/runtime_checks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/runtime_checks.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_versions.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_versions.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Dos_hard/sae_dos_entry.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Dos_hard/sae_dos_entry.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/invalid_curve/invalid_curve_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/invalid_curve/invalid_curve_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/reflection_attack/reflection_attack_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/reflection_attack/reflection_attack_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/owe_trans_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/owe_trans_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/mc_mitm_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/mc_mitm_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/ap_info_wpa3_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/ap_info_wpa3_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/suite_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/suite_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/two_iface/active_test_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/two_iface/active_test_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/two_iface/injection_test_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/two_iface/injection_test_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_condition.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_condition.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,99 +427,99 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "CMake Application.result_overview raspberry.executor": "Debug",
-    "CMake Application.result_overview.executor": "Debug",
-    "CMake Application.rssi_wizard.executor": "Debug",
-    "CMake Application.test_config_validation.executor": "Debug",
-    "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
-    "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_BA_Dlink.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_Dlink_suite.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_basic_ts.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_monitor_test.executor": "Debug",
-    "CMake Application.wpa3_tester channel_switch_rogueAP_Dlink.executor": "Debug",
-    "CMake Application.wpa3_tester deauth_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_test.executor": "Debug",
-    "CMake Application.wpa3_tester external_info.executor": "Debug",
-    "CMake Application.wpa3_tester iface_info_filler.executor": "Debug",
-    "CMake Application.wpa3_tester injection_test_example_req.executor": "Debug",
-    "CMake Application.wpa3_tester injection_test_filler.executor": "Debug",
-    "CMake Application.wpa3_tester invalid_curve_filler.executor": "Debug",
-    "CMake Application.wpa3_tester wpa3_downgrade_filler.executor": "Debug",
-    "CMake Debug.Project.executor": "Debug",
-    "Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor": "Debug",
-    "Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor": "Debug",
-    "Doctest.HtmlPathTable prefix grouping functionality.executor": "Debug",
-    "Doctest.HtmlPathTable t_name footer on non-empty entries.executor": "Debug",
-    "Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor": "Debug",
-    "Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor": "Debug",
-    "Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor": "Debug",
-    "Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor": "Debug",
-    "Doctest.handle_action_rogue.executor": "Debug",
-    "Doctest.handle_assoc_request.executor": "Debug",
-    "Doctest.handle_auth_from_client_real.executor": "Debug",
-    "Doctest.handle_eapol_real.executor": "Debug",
-    "Doctest.handle_eapol_rogue.executor": "Debug",
-    "Doctest.handle_from_ap_real.executor": "Debug",
-    "Doctest.handle_open_auth.executor": "Debug",
-    "Doctest.handle_probe.executor": "Debug",
-    "Doctest.hwsim setup_actor - create sniff iface.executor": "Debug",
-    "Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor": "Debug",
-    "Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor": "Debug",
-    "Doctest.satisfied conn_cond (STA->AP from data frame) returns true.executor": "Debug",
-    "Doctest.setup_actor sim - create sniff iface.executor": "Debug",
-    "Doctest.times_packet_sizes_from_csv - two valid rows.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "NIXITCH_NIXPKGS_CONFIG": "/etc/nix/nixpkgs-config.nix",
-    "NIXITCH_NIX_CONF_DIR": "",
-    "NIXITCH_NIX_OTHER_STORES": "",
-    "NIXITCH_NIX_PATH": "nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels",
-    "NIXITCH_NIX_PROFILES": "/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/nixos /home/nixos/.local/state/nix/profile /nix/profile /home/nixos/.nix-profile /var/lib/flatpak/exports /home/nixos/.local/share/flatpak/exports",
-    "NIXITCH_NIX_REMOTE": "",
-    "NIXITCH_NIX_USER_PROFILE_DIR": "/nix/var/nix/profiles/per-user/nixos",
-    "Remote Debug.raspberry.executor": "Debug",
-    "Remote GDB Server.nlohmann_json_schema_validator.executor": "Debug",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
-    "WebServerToolWindowPanel.toolwindow.show.date": "false",
-    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
-    "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "cf.advertisement.text.overridden": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "ctest.advertisement.all.test.configuration.is.created": "true",
-    "git-widget-placeholder": "dev",
-    "git.auto.fetch.suggestion.counter": "3",
-    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/deauth",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;CMake Application.result_overview raspberry.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.result_overview.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.rssi_wizard.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.test_config_validation.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester BARS_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_client_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_BA_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_Dlink_suite.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_basic_ts.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_monitor_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester deauth_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester external_info.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester iface_info_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_example_req.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester invalid_curve_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester wpa3_downgrade_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Debug.Project.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable prefix grouping functionality.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable t_name footer on non-empty entries.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_action_rogue.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_assoc_request.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_auth_from_client_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_eapol_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_eapol_rogue.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_from_ap_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_open_auth.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_probe.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.hwsim setup_actor - create sniff iface.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.satisfied conn_cond (STA-&gt;AP from data frame) returns true.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.setup_actor sim - create sniff iface.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.times_packet_sizes_from_csv - two valid rows.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;NIXITCH_NIXPKGS_CONFIG&quot;: &quot;/etc/nix/nixpkgs-config.nix&quot;,
+    &quot;NIXITCH_NIX_CONF_DIR&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_OTHER_STORES&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_PATH&quot;: &quot;nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels&quot;,
+    &quot;NIXITCH_NIX_PROFILES&quot;: &quot;/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/nixos /home/nixos/.local/state/nix/profile /nix/profile /home/nixos/.nix-profile /var/lib/flatpak/exports /home/nixos/.local/share/flatpak/exports&quot;,
+    &quot;NIXITCH_NIX_REMOTE&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_USER_PROFILE_DIR&quot;: &quot;/nix/var/nix/profiles/per-user/nixos&quot;,
+    &quot;Remote Debug.raspberry.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.nlohmann_json_schema_validator.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;cf.advertisement.text.overridden&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;ctest.advertisement.all.test.configuration.is.created&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;3&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/deauth&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/deauth" />
@@ -1139,11 +1393,11 @@
     <MESSAGE value="+: expected_vht_beacon_ex_Dlink" />
     <MESSAGE value="+: dmesg wrapper on external actors" />
     <MESSAGE value="+: simple wpa2 deauth" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="r: sort of includes" />
     <MESSAGE value="r: small canges" />
     <MESSAGE value="r: small changes&#10;+: asciii check workflow" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: small changes&#10;+: asciii check workflow" />
+    <MESSAGE value="r: small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: small changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1160,27 +1414,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp</url>
-          <line>84</line>
+          <line>86</line>
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp</url>
-          <line>82</line>
+          <line>79</line>
           <option name="timeStamp" value="122" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp</url>
-          <line>81</line>
+          <line>78</line>
           <option name="timeStamp" value="123" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
-          <line>352</line>
+          <line>336</line>
           <option name="timeStamp" value="124" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
-          <line>353</line>
+          <line>337</line>
           <option name="timeStamp" value="125" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

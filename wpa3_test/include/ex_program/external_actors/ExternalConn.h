@@ -1,15 +1,15 @@
 #pragma once
+#include <libssh/libssh.h>
+#include <optional>
 #include "config/Actor_Config/ActorPtr.h"
 #include "logger/error_log.h"
 #include "system/wifi_channel.h"
-#include <libssh/libssh.h>
-#include <optional>
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 class RunStatus;
 class Actor_config;
 
-class ExternalConn{
+class ExternalConn {
 public:
 	using DisconnectCallback = std::function<void()>;
 protected:
@@ -41,27 +41,19 @@ public:
 	void upload_script_raw(const std::filesystem::path &local_path, const std::filesystem::path &remote_path) const;
 	void download_file(const std::filesystem::path &remote_path, const std::filesystem::path &local_path) const;
 
-	virtual void setup_ap(const RunStatus &, ActorPtr &){
-		throw not_implemented_err("setup_ap");
-	}
+	virtual void setup_ap(const RunStatus &, ActorPtr &) { throw not_implemented_err("setup_ap"); }
 
-	virtual void setup_iface(const std::string &, ActorPtr &, const nlohmann::json &){
+	virtual void setup_iface(const std::string &, ActorPtr &, const nlohmann::json &) {
 		throw not_implemented_err("setup_iface");
 	}
 
-	virtual void check_req(const nlohmann::json &, const std::string &){
-		throw not_implemented_err("check_req");
-	}
+	virtual void check_req(const nlohmann::json &, const std::string &) { throw not_implemented_err("check_req"); }
 
-	virtual void logger(RunStatus &, const std::string &){
-		throw not_implemented_err("logger");
-	}
+	virtual void logger(RunStatus &, const std::string &) { throw not_implemented_err("logger"); }
 
-	virtual void get_hw_capabilities(const ActorPtr &){
-		throw not_implemented_err("get_hw_capabilities");
-	}
+	virtual void get_hw_capabilities(const ActorPtr &) { throw not_implemented_err("get_hw_capabilities"); }
 
-	virtual void get_router_info(RunStatus &, const std::string &){}
+	virtual void get_router_info(RunStatus &, const std::string &) {}
 	void on_disconnect(DisconnectCallback cb);
 	void disconnect();
 

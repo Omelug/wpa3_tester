@@ -6,13 +6,13 @@
 using namespace std;
 using namespace Tins;
 
-namespace wpa3_tester::sae_helper{
-string bytes_to_hex(const vector<uint8_t> &bytes){
+namespace wpa3_tester::sae_helper {
+string bytes_to_hex(const vector<uint8_t> &bytes) {
 	if(bytes.empty()) return "(empty)";
 	string result;
 	result.reserve(bytes.size() * 3);
 	bool first = true;
-	for(const uint8_t b: bytes){
+	for(const uint8_t b: bytes) {
 		if(!first) result += ':';
 		char buf[3];
 		snprintf(buf, sizeof(buf), "%02x", b);
@@ -22,10 +22,10 @@ string bytes_to_hex(const vector<uint8_t> &bytes){
 	return result;
 }
 
-string bytes_to_hex_plain(const vector<uint8_t> &bytes){
+string bytes_to_hex_plain(const vector<uint8_t> &bytes) {
 	string result;
 	result.reserve(bytes.size() * 2);
-	for(const uint8_t b: bytes){
+	for(const uint8_t b: bytes) {
 		char buf[3];
 		snprintf(buf, sizeof(buf), "%02x", b);
 		result += buf;
@@ -33,7 +33,7 @@ string bytes_to_hex_plain(const vector<uint8_t> &bytes){
 	return result;
 }
 
-optional<AuthFrame> parse_auth_frame(const uint8_t *p, const uint32_t caplen){
+optional<AuthFrame> parse_auth_frame(const uint8_t *p, const uint32_t caplen) {
 	if(caplen < 4) return nullopt;
 	const uint16_t rt_len = p[2] | (static_cast<uint16_t>(p[3]) << 8);
 	constexpr size_t dot11_hdr = 24;
@@ -42,14 +42,14 @@ optional<AuthFrame> parse_auth_frame(const uint8_t *p, const uint32_t caplen){
 	if(p[rt_len] != 0xb0) return nullopt; // FC byte 0: mgmt + auth subtype
 	const size_t auth_off = rt_len + dot11_hdr;
 	return AuthFrame{
-		.addr1     = HWAddress < 6 > (p + rt_len + 4),
+		.addr1 = HWAddress<6>(p + rt_len + 4),
 		.algorithm = static_cast<uint16_t>(p[auth_off] | (p[auth_off + 1] << 8)),
-		.seq       = static_cast<uint16_t>(p[auth_off + 2] | (p[auth_off + 3] << 8)),
-		.status    = static_cast<uint16_t>(p[auth_off + 4] | (p[auth_off + 5] << 8)),
+		.seq = static_cast<uint16_t>(p[auth_off + 2] | (p[auth_off + 3] << 8)),
+		.status = static_cast<uint16_t>(p[auth_off + 4] | (p[auth_off + 5] << 8)),
 	};
 }
 
-optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
+optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt) {
 	if(frame_rt.size() < 4) return nullopt;
 
 	const uint16_t radiotap_len = frame_rt[2] | (frame_rt[3] << 8);
@@ -81,14 +81,17 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 
 	size_t scalar_len = 0;
 	size_t element_len = 0;
-	switch(frame.group_id){
-	case 19: scalar_len = 32;
+	switch(frame.group_id) {
+	case 19:
+		scalar_len = 32;
 		element_len = 64;
 		break; // NIST P-256
-	case 20: scalar_len = 48;
+	case 20:
+		scalar_len = 48;
 		element_len = 96;
 		break; // NIST P-384
-	case 21: scalar_len = 66;
+	case 21:
+		scalar_len = 66;
 		element_len = 132;
 		break; // NIST P-521
 	default: return nullopt;
@@ -98,15 +101,15 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 	auto ptr = sae_data.subspan(2); // skip Group ID
 	remaining -= 2;
 	// --- Token + Scalar + Element depends on status code (wireshark packet-ieee80211.c) ---
-	if(status == 76){
+	if(status == 76) {
 		// only anti-clogging token, no scalar/element
 		if(remaining > 0) frame.token.assign(ptr.data(), ptr.data() + remaining);
 		return frame;
 	}
 
-	if(status == 0 || status == 126){
+	if(status == 0 || status == 126) {
 		// token if more data than scalar+element
-		if(remaining > crypto_total){
+		if(remaining > crypto_total) {
 			const size_t token_len = remaining - crypto_total;
 			frame.token.assign(ptr.data(), ptr.data() + token_len);
 			ptr = ptr.subspan(token_len);
@@ -122,7 +125,7 @@ optional<SAEPair> parse_sae_commit(const vector<uint8_t> &frame_rt){
 	return frame;
 }
 
-RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params){
+RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const SAEPair &sae_params) {
 	if(!sae_params.is_valid()) throw run_err("invalid combinations of sae params");
 
 	Dot11Authentication auth(ap_mac, sta_mac);

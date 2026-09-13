@@ -17,24 +17,23 @@
 #include "system/netlink_helper.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::iface_info{
+namespace wpa3_tester::iface_info {
 using namespace std;
 using namespace filesystem;
 
-
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	rs.start_observers();
 	observer::dmesg::start_dmesg(rs, "scanner");
 
 	auto scanner = rs.get_actor("scanner");
 	const string iface = scanner.get(SK::iface);
-	const optional<string>& netns = scanner[SK::netns];
+	const optional<string> &netns = scanner[SK::netns];
 
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
 	const optional<path> hw_cache = use_cache
-		? optional{root_dir().parent_path() / DATA_DIR / "cache" / "scan" / "internal_iface.json"}
-		: nullopt;
+			? optional{ root_dir().parent_path() / DATA_DIR / "cache" / "scan" / "internal_iface.json" }
+			: nullopt;
 
 	scanner->set(SK::iface, iface);
 	scanner->load_hw_info(hw_cache);
@@ -43,32 +42,44 @@ void run_attack(RunStatus &rs){
 
 	// ----- live system snapshot -----
 	nlohmann::json result;
-	try{ result["current_mac"] = hw_capabilities::get_mac_address(iface, netns).to_string(); } catch(...){ result["current_mac"] = "n/a"; }
-	try{ result["is_up"]       = netlink_helper::iface_is_up(iface, netns); }                  catch(...){ result["is_up"] = false; }
-	try{ result["phy"]         = hw_capabilities::get_phy(iface, netns); }                     catch(...){ result["phy"] = "n/a"; }
-	try{ result["ip_addr"]     = ip::get_ip(iface); }                                          catch(...){ result["ip_addr"] = "n/a"; }
-	try{ result["iw_info"]     = hw_capabilities::run_cmd_output({"iw", "dev", iface, "info"}, netns); } catch(...){ result["iw_info"] = ""; }
+	try {
+		result["current_mac"] = hw_capabilities::get_mac_address(iface, netns).to_string();
+	} catch(...) { result["current_mac"] = "n/a"; }
+	try {
+		result["is_up"] = netlink_helper::iface_is_up(iface, netns);
+	} catch(...) { result["is_up"] = false; }
+	try {
+		result["phy"] = hw_capabilities::get_phy(iface, netns);
+	} catch(...) { result["phy"] = "n/a"; }
+	try {
+		result["ip_addr"] = ip::get_ip(iface);
+	} catch(...) { result["ip_addr"] = "n/a"; }
+	try {
+		result["iw_info"] = hw_capabilities::run_cmd_output({ "iw", "dev", iface, "info" }, netns);
+	} catch(...) { result["iw_info"] = ""; }
 
 	const string phy = result.value("phy", "");
 	result["driver_specific"] = driver_diag::collect_driver_specific(scanner->get(SK::driver_name), phy);
-	result["regulatory"]      = driver_diag::collect_regulatory(phy, netns);
-	result["usb_info"]        = driver_diag::collect_usb_info(iface);
+	result["regulatory"] = driver_diag::collect_regulatory(phy, netns);
+	result["usb_info"] = driver_diag::collect_usb_info(iface);
 
 	// ----- channel switch timing -----
 	{
 		using namespace chrono;
-		Channel from_ch{11, WifiBand::BAND_2_4, nullopt};
-		Channel test_ch{6,  WifiBand::BAND_2_4, nullopt};
+		Channel from_ch{ 11, WifiBand::BAND_2_4, nullopt };
+		Channel test_ch{ 6, WifiBand::BAND_2_4, nullopt };
 		// pre-switch so we're guaranteed to measure a real transition
-		if (!netlink_helper::set_channel_nl(iface, netns, from_ch)) {
-			log(LogLevel::ERROR, "set_channel_nl failed");
+		if(!netlink_helper::set_channel_nl(iface, netns, from_ch)) { log(LogLevel::ERROR, "set_channel_nl failed"); }
+		if(auto ec = netlink_helper::wait_for_channel(iface, netns, from_ch)) {
+			result["channel_switch"]["ok"] = !ec;
+			result["channel_switch"]["error"] = "wait_for_channel error: " + ec.message();
+			return;
 		}
-		netlink_helper::wait_for_channel(iface, netns, from_ch);
 
 		const auto t0 = steady_clock::now();
 		const auto ec = netlink_helper::set_channel_nl(iface, netns, test_ch);
 		if(!ec) {
-			if (!netlink_helper::wait_for_channel(iface, netns, test_ch)) {
+			if(!netlink_helper::wait_for_channel(iface, netns, test_ch)) {
 				log(LogLevel::ERROR, "wait_for_channel failed");
 			}
 		}
@@ -79,7 +90,7 @@ void run_attack(RunStatus &rs){
 	}
 
 	// ----- netns round-trip timing (move + wait via nl, then delete + wait for return) -----
-	try{
+	try {
 		using namespace chrono;
 		const string test_ns = "iface_info_bench";
 		hw_capabilities::create_ns(test_ns);
@@ -87,18 +98,15 @@ void run_attack(RunStatus &rs){
 		const auto t0 = steady_clock::now();
 		const bool moved = hw_capabilities::move_to_netns(iface, test_ns);
 		// wait_for_iface_appear listens via RTMGRP_LINK in target ns - no iw polling needed
-		const auto ec_appear = moved
-			? netlink_helper::wait_for_iface_appear(iface, test_ns)
-			: error_code{EINVAL, system_category()};
+		const auto ec_appear =
+				moved ? netlink_helper::wait_for_iface_appear(iface, test_ns) : error_code{ EINVAL, system_category() };
 		result["netns_move"]["ok"] = !ec_appear;
 		result["netns_move"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 
 		const auto t2 = steady_clock::now();
-		netlink_helper::delete_ns_and_wait(test_ns, vector<string>{iface});
+		netlink_helper::delete_ns_and_wait(test_ns, vector<string>{ iface });
 		result["netns_return"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t2).count();
-	} catch(...){
-		result["netns_move"]["ok"] = false;
-	}
+	} catch(...) { result["netns_move"]["ok"] = false; }
 
 	rs.save_result(result);
 
@@ -108,7 +116,7 @@ void run_attack(RunStatus &rs){
 	set_public_perms(rs.run_folder() / "result.txt");
 }
 
-void generate_report(const RunStatus &rs){
+void generate_report(const RunStatus &rs) {
 	const auto it = rs.actors.find("scanner");
 	if(it == rs.actors.end()) return;
 	const auto &scanner = it->second;
@@ -117,15 +125,17 @@ void generate_report(const RunStatus &rs){
 	if(iface.empty()) return;
 
 	nlohmann::json result;
-	try{ result = rs.load_result(); } catch(...){}
+	try {
+		result = rs.load_result();
+	} catch(...) {}
 
 	const string current_mac = result.value("current_mac", "n/a");
-	const bool   is_up       = result.value("is_up",       false);
-	const string phy         = result.value("phy",         "n/a");
-	const string ip_addr     = result.value("ip_addr",     "n/a");
-	const string iw_info     = result.value("iw_info",     "");
-	const auto   usb_info    = result.value("usb_info",    nlohmann::json{});
-	const auto   regulatory  = result.value("regulatory",  nlohmann::json{});
+	const bool is_up = result.value("is_up", false);
+	const string phy = result.value("phy", "n/a");
+	const string ip_addr = result.value("ip_addr", "n/a");
+	const string iw_info = result.value("iw_info", "");
+	const auto usb_info = result.value("usb_info", nlohmann::json{});
+	const auto regulatory = result.value("regulatory", nlohmann::json{});
 
 	const string perm_mac = scanner->get_or(SK::permanent_mac, "");
 	string mac_slug = perm_mac.empty() ? current_mac : perm_mac;
@@ -191,25 +201,26 @@ void generate_report(const RunStatus &rs){
 		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
 
-		if (result.contains("usb_info") && !result["usb_info"].is_null()) {
-			if (result["usb_info"].value("is_usb", false)) {
+		if(result.contains("usb_info") && !result["usb_info"].is_null()) {
+			if(result["usb_info"].value("is_usb", false)) {
 				md << "## USB Device\n\n";
 				md << "| Field | Value |\n";
 				md << "|-------|-------|\n";
-				md << "| Vendor | " << usb_info.value("manufacturer", "n/a") << " (" << usb_info.value("id_vendor", "?") << ") |\n";
-				md << "| Product | " << usb_info.value("product", "n/a") << " (" << usb_info.value("id_product", "?") << ") |\n";
+				md << "| Vendor | " << usb_info.value("manufacturer", "n/a") << " (" << usb_info.value("id_vendor", "?")
+				   << ") |\n";
+				md << "| Product | " << usb_info.value("product", "n/a") << " (" << usb_info.value("id_product", "?")
+				   << ") |\n";
 				md << "| Serial | " << usb_info.value("serial", "n/a") << " |\n";
 				md << "| Authorized | " << (usb_info.value("authorized", false) ? "yes" : "no") << " |\n\n";
 			}
 		}
 
-		if(!regulatory.empty()){
+		if(!regulatory.empty()) {
 			md << "## Regulatory\n\n";
-			if(regulatory.contains("iw_reg_get"))
-				md << "```\n" << regulatory["iw_reg_get"].get<string>() << "```\n\n";
+			if(regulatory.contains("iw_reg_get")) md << "```\n" << regulatory["iw_reg_get"].get<string>() << "```\n\n";
 		}
 
-		if(result.contains("driver_specific")){
+		if(result.contains("driver_specific")) {
 			md << "## Driver-Specific Diagnostics (debugfs)\n\n";
 			md << "```json\n" << result["driver_specific"].dump(2) << "\n```\n\n";
 		}
@@ -222,7 +233,7 @@ void generate_report(const RunStatus &rs){
 	cout << "\nReport written to: " << out_path << "\n";
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	const auto scanner = rs.get_actor("scanner");
 	report::add_device(scanner);
 

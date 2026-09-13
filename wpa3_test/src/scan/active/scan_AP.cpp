@@ -1,47 +1,51 @@
 #include "scan/active/scan_AP.h"
 
+#include <future>
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/RunStatus.h"
 #include "scan/active/scan_active.h"
 #include "system/netlink_guards.h"
-#include <future>
 
-namespace wpa3_tester::scan{
+namespace wpa3_tester::scan {
 
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms){
+void ScanAP::print_AKMs(stringstream &ss, const RSNInformation::akm_type &akms) {
 	ss << "AKM Suites: ";
-	for(auto &akm: akms){
+	for(auto &akm: akms) {
 		print_AKM(ss, akm);
 		ss << " ";
 	}
 }
 
-void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm){
-	static const map<RSNInformation::AKMSuites,string> akm_map = {
-		{RSNInformation::EAP, "EAP"}, {RSNInformation::PSK, "PSK"}, {RSNInformation::EAP_FT, "EAP-FT"},
-		{RSNInformation::PSK_FT, "PSK-FT"}, {RSNInformation::EAP_SHA256, "EAP-SHA256"},
-		{RSNInformation::PSK_SHA256, "PSK-SHA256"}, {RSNInformation::TDLS, "TDLS"},
-		{RSNInformation::SAE_SHA256, "SAE_SHA256"}, {RSNInformation::SAE_FT, "SAE-FT"},
-		{RSNInformation::EAP_SHA256_FIPSB, "EAP-FIPS-B-256"}, {RSNInformation::EAP_SHA384_FIPSB, "EAP-FIPS-B-384"},
-		{RSNInformation::EAP_SHA384, "EAP-SHA384"}
-	};
+void ScanAP::print_AKM(stringstream &ss, const RSNInformation::AKMSuites akm) {
+	static const map<RSNInformation::AKMSuites, string> akm_map = { { RSNInformation::EAP, "EAP" },
+		{ RSNInformation::PSK, "PSK" },
+		{ RSNInformation::EAP_FT, "EAP-FT" },
+		{ RSNInformation::PSK_FT, "PSK-FT" },
+		{ RSNInformation::EAP_SHA256, "EAP-SHA256" },
+		{ RSNInformation::PSK_SHA256, "PSK-SHA256" },
+		{ RSNInformation::TDLS, "TDLS" },
+		{ RSNInformation::SAE_SHA256, "SAE_SHA256" },
+		{ RSNInformation::SAE_FT, "SAE-FT" },
+		{ RSNInformation::EAP_SHA256_FIPSB, "EAP-FIPS-B-256" },
+		{ RSNInformation::EAP_SHA384_FIPSB, "EAP-FIPS-B-384" },
+		{ RSNInformation::EAP_SHA384, "EAP-SHA384" } };
 
 	const auto it = akm_map.find(akm);
-	if(it != akm_map.end()){
+	if(it != akm_map.end()) {
 		ss << it->second;
-	} else{
+	} else {
 		ss << format("UNKNOWN(0x{:08x})", static_cast<uint32_t>(akm));
 	}
 }
 
-void print_capabilities(stringstream &ss, const uint16_t caps){
+void print_capabilities(stringstream &ss, const uint16_t caps) {
 	const auto flags = parse_rsn_caps(caps);
 
 	ss << "--- RSN Capabilities ---\n";
@@ -49,72 +53,72 @@ void print_capabilities(stringstream &ss, const uint16_t caps){
 	ss << "OCV: " << flags.ocvc << "\n";
 }
 
-string ScanAP::to_str() const{
+string ScanAP::to_str() const {
 	stringstream ss;
 	ss << "SSID: " << ssid << "\n";
 
-	if(rsn.has_value()){
+	if(rsn.has_value()) {
 		print_capabilities(ss, rsn->capabilities());
 		print_AKMs(ss, rsn->akm_cyphers());
 		ss << "\n";
 	}
 
 	ss << "Stations: " << stations.size() << "\n";
-	for(const auto &station: stations){
-		ss << "  [STATION] " << station.to_string() << "\n";
-	}
+	for(const auto &station: stations) { ss << "  [STATION] " << station.to_string() << "\n"; }
 	return ss.str();
 }
 
-void ScanAP::load(const unique_ptr<Dot11Beacon> &beacon_to_load){
+void ScanAP::load(const unique_ptr<Dot11Beacon> &beacon_to_load) {
 	ssid = beacon_to_load->ssid();
 	bssid = beacon_to_load->addr2();
 	this->beacon = *beacon_to_load->clone();
 	rsn = beacon_to_load->rsn_information();
 }
 
-optional<unique_ptr<Dot11Beacon>> handle_beacon(PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap){
+optional<unique_ptr<Dot11Beacon>> handle_beacon(
+		PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap) {
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
 	if(!beacon) return nullopt;
 
-	try{
+	try {
 		if(ap_mac != beacon->addr2()) return nullopt;
-	}catch(...){
-		return nullopt;
-	}
+	} catch(...) { return nullopt; }
 	if(beacon_pcap) PacketWriter(beacon_pcap->string(), DataLinkType<RadioTap>()).write(pdu);
 
 	return unique_ptr<Dot11Beacon>(beacon->clone());
 }
 
 unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, const HWAddress<6> &ap_mac,
-								const optional<path> &beacon_pcap, const optional<string> &netns
-){
-	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.
-			to_string();
+		const optional<path> &beacon_pcap, const optional<string> &netns) {
+	const string filter =
+			"(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.to_string();
 
 	netlink_helper::NetNSContext ns_guard(netns);
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
-		[&](PDU &pdu){ return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
+			[&](PDU &pdu) { return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
 	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;
 }
 
-void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
+void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg) {
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
 	if(!beacon) return;
 
 	cfg.set(SK::mac, beacon->addr2());
-	try{ cfg.set(SK::ssid, beacon->ssid()); } catch(const exception &e){
+	try {
+		cfg.set(SK::ssid, beacon->ssid());
+	} catch(const exception &e) {
 		log(LogLevel::WARNING, "fill_actor_caps_from_beacon: ssid option not found: {}", e.what());
 	}
 
 	apply_radiotap(pdu, cfg);
 
 	// Channel fallback from DS Parameter Set if RadioTap had no frequency
-	if(!cfg[SK::channel].has_value()){
-		try{ cfg.set(SK::channel, to_string(beacon->ds_parameter_set())); } catch(const exception &e){
+	if(!cfg[SK::channel].has_value()) {
+		try {
+			cfg.set(SK::channel, to_string(beacon->ds_parameter_set()));
+		} catch(const exception &e) {
 			log(LogLevel::WARNING, "fill_actor_caps_from_beacon: DS Parameter Set option not found: {}", e.what());
 		}
 	}
@@ -125,15 +129,19 @@ void fill_actor_caps_from_beacon(PDU &pdu, Actor_Config_external &cfg){
 	set_role_flags(cfg, true);
 }
 
-Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, const int timeout_sec){
+Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, const int timeout_sec) {
 	Actor_Config_external cfg;
 	cfg.set(SK::mac, bssid);
 
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + bssid;
-	components::poll_sniffer_pdu<monostate>([&](PDU &pdu) ->optional<monostate>{
-		fill_actor_caps_from_beacon(pdu, cfg);
-		return monostate{};
-	}, iface, filter, seconds(timeout_sec));
+	components::poll_sniffer_pdu<monostate>(
+			[&](PDU &pdu) -> optional<monostate> {
+				fill_actor_caps_from_beacon(pdu, cfg);
+				return monostate{};
+			},
+			iface,
+			filter,
+			seconds(timeout_sec));
 
 	log(LogLevel::INFO, "scan_ap_actor {}: {}", bssid, cfg.to_str());
 	return cfg;

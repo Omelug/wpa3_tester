@@ -1,17 +1,16 @@
 #include "system/netlink_guards.h"
 
 #include <fcntl.h>
-#include <memory>
-#include <unordered_map>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#include <memory>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <unordered_map>
 
-
-namespace wpa3_tester::netlink_helper{
+namespace wpa3_tester::netlink_helper {
 using namespace std;
-NetNSContext::NetNSContext(const optional<string> &netns){
+NetNSContext::NetNSContext(const optional<string> &netns) {
 	if(!netns) return;
 
 	const int target_fd = open(("/var/run/netns/" + *netns).c_str(), O_RDONLY);
@@ -22,7 +21,7 @@ NetNSContext::NetNSContext(const optional<string> &netns){
 	fstat(current_fd, &s2);
 	close(current_fd);
 
-	if(s1.st_ino == s2.st_ino){
+	if(s1.st_ino == s2.st_ino) {
 		close(target_fd);
 		return;
 	}
@@ -33,20 +32,16 @@ NetNSContext::NetNSContext(const optional<string> &netns){
 	switched = true;
 }
 
-NetNSContext::~NetNSContext(){
-	if(switched &&old_ns_fd>=0){
-		setns(old_ns_fd, CLONE_NEWNET);
-	}
+NetNSContext::~NetNSContext() {
+	if(switched && old_ns_fd >= 0) { setns(old_ns_fd, CLONE_NEWNET); }
 	if(old_ns_fd >= 0) close(old_ns_fd);
 }
 
-int NetlinkRegistry::get_fd(const optional<string> &netns){
+int NetlinkRegistry::get_fd(const optional<string> &netns) {
 	scoped_lock lock(get_mutex());
 	auto &cache = get_cache();
 	const string key = netns.value_or("");
-	if(const auto it = cache.find(key); it != cache.end()){
-		return it->second->fd;
-	}
+	if(const auto it = cache.find(key); it != cache.end()) { return it->second->fd; }
 
 	NetNSContext ns_guard(netns);
 	int new_fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
@@ -55,7 +50,7 @@ int NetlinkRegistry::get_fd(const optional<string> &netns){
 	sockaddr_nl sa{};
 	sa.nl_family = AF_NETLINK;
 	sa.nl_groups = RTMGRP_LINK;
-	if(bind(new_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) < 0){
+	if(bind(new_fd, reinterpret_cast<sockaddr *>(&sa), sizeof(sa)) < 0) {
 		close(new_fd);
 		return -1;
 	}
@@ -64,13 +59,13 @@ int NetlinkRegistry::get_fd(const optional<string> &netns){
 	return new_fd;
 }
 
-mutex &NetlinkRegistry::get_mutex(){
+mutex &NetlinkRegistry::get_mutex() {
 	static mutex mtx;
 	return mtx;
 }
 
-unordered_map<string,unique_ptr<SockGuard>> &NetlinkRegistry::get_cache(){
-	static unordered_map<string,unique_ptr<SockGuard>> cache;
+unordered_map<string, unique_ptr<SockGuard>> &NetlinkRegistry::get_cache() {
+	static unordered_map<string, unique_ptr<SockGuard>> cache;
 	return cache;
 }
 }

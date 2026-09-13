@@ -1,10 +1,10 @@
 #pragma once
-#include "config/RunStatus.h"
 #include <filesystem>
 #include <optional>
+#include "config/RunStatus.h"
 
-namespace wpa3_tester::scan{
-class ScanAP{
+namespace wpa3_tester::scan {
+class ScanAP {
 public:
 	std::string ssid;
 	Tins::HWAddress<6> bssid;
@@ -15,17 +15,15 @@ public:
 	static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
 	static void print_AKM(std::stringstream &ss, Tins::RSNInformation::AKMSuites akm);
 	[[nodiscard]] std::string to_str() const;
-	void load(const std::unique_ptr<Tins::Dot11Beacon> & beacon);
+	void load(const std::unique_ptr<Tins::Dot11Beacon> &beacon);
 };
 
-std::optional<std::unique_ptr<Tins::Dot11Beacon>> handle_beacon(Tins::PDU &pdu, const Tins::HWAddress<6> &ap_mac,
-																const std::optional<std::filesystem::path> &beacon_pcap
-);
+std::optional<std::unique_ptr<Tins::Dot11Beacon>> handle_beacon(
+		Tins::PDU &pdu, const Tins::HWAddress<6> &ap_mac, const std::optional<std::filesystem::path> &beacon_pcap);
 
-std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int timeout_sec, const Tins::HWAddress<6> &ap_mac,
-											const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt,
-											const std::optional<std::string> &netns = std::nullopt
-);
+std::unique_ptr<Tins::Dot11Beacon> RSN_scan(const std::string &interface, int timeout_sec,
+		const Tins::HWAddress<6> &ap_mac, const std::optional<std::filesystem::path> &beacon_pcap = std::nullopt,
+		const std::optional<std::string> &netns = std::nullopt);
 
 //TODO scan
 // check ACm threshold

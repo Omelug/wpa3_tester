@@ -17,28 +17,26 @@
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using namespace filesystem;
 
-RunStatus::RunStatus(const path &config_path, string testName, const string &sub_folder){
+RunStatus::RunStatus(const path &config_path, string testName, const string &sub_folder) {
 	_config_path = config_path;
-	if(!exists(config_path)){ throw config_err("Config not found: {}", config_path); }
+	if(!exists(config_path)) { throw config_err("Config not found: {}", config_path); }
 
-	if(testName.empty()){
+	if(testName.empty()) {
 		// load name from YAML if not name set
 		const YAML::Node node = YAML::LoadFile(config_path);
-		if(!node["name"] || !node["name"].IsScalar()){
+		if(!node["name"] || !node["name"].IsScalar()) {
 			throw config_err("Config missing required string field 'name': {}", config_path);
 		}
 		testName = node["name"].as<string>();
 	}
 	// add subfolder from test default
 	string actual_sub_folder = ".";
-	if(sub_folder.empty()){
-		actual_sub_folder = relative_from("attack_config", config_path);
-	}
-	_run_folder = BASE_FOLDER() / actual_sub_folder / testName ;
+	if(sub_folder.empty()) { actual_sub_folder = relative_from("attack_config", config_path); }
+	_run_folder = BASE_FOLDER() / actual_sub_folder / testName;
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path);
@@ -47,34 +45,35 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	_run_config.merge_from(get_global_run_config());
 }
 
-void RunStatus::clean(){
+void RunStatus::clean() {
 	process_manager.stop_all();
 	actors.clear();
 	observers.clear();
 }
 
-void RunStatus::execute(){
+void RunStatus::execute() {
 	globalRunStatus = this;
 
-	if(exists(_run_folder)){
-		if(access(_run_folder.string().c_str(), W_OK) != 0){
-			log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}",
-				absolute(_run_folder));
+	if(exists(_run_folder)) {
+		if(access(_run_folder.string().c_str(), W_OK) != 0) {
+			log(LogLevel::WARNING,
+					"Run folder not writable (created by different user?), removing: {}",
+					absolute(_run_folder));
 			error_code ec;
 			remove_all(_run_folder, ec);
 			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
-		} else{
-			if(_run_config.get_rewrite() == RewriteMode::none && (exists(_run_folder / ERROR_FILE) || exists(
-				_run_folder / DONE_FILE))){
+		} else {
+			if(_run_config.get_rewrite() == RewriteMode::none &&
+					(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
 				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_rewrite() == RewriteMode::errors && (!(exists(_run_folder / ERROR_FILE) || !exists(
-				_run_folder / DONE_FILE)))){
+			if(_run_config.get_rewrite() == RewriteMode::errors &&
+					(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
 				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 				return;
 			}
-			if(_run_config.get_delete_old()){
+			if(_run_config.get_delete_old()) {
 				log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder));
 				remove_all(_run_folder);
 			}
@@ -87,14 +86,14 @@ void RunStatus::execute(){
 	const path log_file = _run_folder / "logger" / "tester.log";
 	set_log_file(log_file);
 
-	struct LogGuard{
-		~LogGuard(){ close_log_file(); }
+	struct LogGuard {
+		~LogGuard() { close_log_file(); }
 	} log_guard;
 
 	//try {
 	auto &gcfg = get_global_config();
-	if(run_config().get_only_stats()){
-		config_path(absolute(run_folder()/TEST_CONFIG_NAME));
+	if(run_config().get_only_stats()) {
+		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
 		config(config_validation(config_path()));
 		load_actor_interface_mapping();
 		stats_test();
@@ -102,8 +101,8 @@ void RunStatus::execute(){
 	}
 
 	// Pre-build external tools before config_requirement() moves interfaces to netns
-	if(gcfg.value("compile_external", false)){
-		for(const auto &[_, actor_cfg] : _config.at("actors").items()){
+	if(gcfg.value("compile_external", false)) {
+		for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
 			if(!actor_cfg.contains("setup")) continue;
 			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
 			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
@@ -112,23 +111,23 @@ void RunStatus::execute(){
 	}
 
 	rssi_checked = false;
-	while(config_requirement()){
+	while(config_requirement()) {
 		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 	} //include req validation
 
-	if(gcfg.value("nm_exclude_actors", false)){
-		for(const auto &[name, actor]: actors){
+	if(gcfg.value("nm_exclude_actors", false)) {
+		for(const auto &[name, actor]: actors) {
 			if(!actor->get_or(SK::external_OS, "").empty()) continue;
 			const string iface = actor->get_or(SK::iface, "");
 			if(iface.empty()) continue;
 			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-			if(hw_capabilities::run_cmd({"nmcli", "device", "set", iface, "managed", "no"}, nullopt, false) != 0)
+			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
 				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 		}
 	}
 
 	setup_test();
-	if(g_interrupted.load()){
+	if(g_interrupted.load()) {
 		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 		clean();
 		return;
@@ -136,14 +135,14 @@ void RunStatus::execute(){
 	const path out_path = _run_folder / TEST_CONFIG_NAME;
 	save_yaml(_config, out_path);
 	run_test();
-	if(g_interrupted.load()){
+	if(g_interrupted.load()) {
 		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
 		return;
 	}
 	stats_test();
 	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
-	if(done_log.is_open()){
+	if(done_log.is_open()) {
 		done_log << "commit: " << git_commit_hash() << endl;
 		done_log << "date:   " << current_timestamp() << endl;
 		done_log << "kernel: " << kernel_version() << endl;
@@ -179,28 +178,26 @@ void RunStatus::execute(){
 	}*/
 }
 
-void RunStatus::get_or_create_connection(const ActorPtr &actor){
-	if(actor->conn && actor->conn->is_connected()){ return; }
+void RunStatus::get_or_create_connection(const ActorPtr &actor) {
+	if(actor->conn && actor->conn->is_connected()) { return; }
 	shared_ptr<ExternalConn> conn;
-	if(actor.get(SK::external_OS) == "openwrt"){
+	if(actor.get(SK::external_OS) == "openwrt") {
 		conn = make_shared<OpenWrtConn>();
-	} else{
+	} else {
 		throw not_implemented_err("Not known external_OS: " + actor.get(SK::external_OS));
 	}
 
-	if(!conn->connect(actor)){
-		throw config_err("Failed to connect to external actor");
-	}
+	if(!conn->connect(actor)) { throw config_err("Failed to connect to external actor"); }
 	actor->conn = conn;
 }
 
-void RunStatus::run_test(){
+void RunStatus::run_test() {
 	process_manager.write_log_all(START_tag);
 	const auto module_name = config().at("attacker_module");
 
-	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()){
+	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()) {
 		run_it->second(*this);
-	} else{
+	} else {
 		log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>());
 	}
 
@@ -208,24 +205,26 @@ void RunStatus::run_test(){
 	process_manager.stop_all();
 }
 
-void RunStatus::stats_test() const{
+void RunStatus::stats_test() const {
 	const auto module_name = config().at("attacker_module");
-	if(const auto run_it = attack_module_maps::stats_map.find(module_name); run_it != attack_module_maps::stats_map.
-		end()){
+	if(const auto run_it = attack_module_maps::stats_map.find(module_name);
+			run_it != attack_module_maps::stats_map.end()) {
 		run_it->second(*this);
-	} else{ log(LogLevel::DEBUG, "stats function not set for {}", module_name.get<string>()); }
+	} else {
+		log(LogLevel::DEBUG, "stats function not set for {}", module_name.get<string>());
+	}
 }
 
-void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
+void write_actors_csv(const ActorCMap &actors, ofstream &ofs) {
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
-	for(const auto &[name, actor]: actors){
-		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << "," <<
-				actor->get_or(SK::mac, "<none>") << "," << actor->get_or(SK::driver_name, "<none>") << "," << actor->
-				get_or(SK::channel, "<none>") << ",";
+	for(const auto &[name, actor]: actors) {
+		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << ","
+			<< actor->get_or(SK::mac, "<none>") << "," << actor->get_or(SK::driver_name, "<none>") << ","
+			<< actor->get_or(SK::channel, "<none>") << ",";
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';
-		for(const char c: raw_json){
+		for(const char c: raw_json) {
 			if(c == '"') ofs << '"';
 			ofs << c;
 		}
@@ -233,7 +232,7 @@ void write_actors_csv(const ActorCMap &actors, ofstream &ofs){
 	}
 }
 
-bool RunStatus::should_skip(const path &p){
+bool RunStatus::should_skip(const path &p) {
 	if(p.string().ends_with(".schema.yaml")) return true;
 	// components
 	if(p.string().ends_with(".comp.yaml")) return true; //TODO add to documentation
@@ -247,140 +246,143 @@ bool RunStatus::should_skip(const path &p){
 	return false;
 }
 
-unordered_map<string,string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct){
-	unordered_map<string,string> t_map;
+unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {
+	unordered_map<string, string> t_map;
 	const path attack_config_dir = root_dir() / "attack_config";
 
-	if(!exists(attack_config_dir) || !is_directory(attack_config_dir)){ return t_map; }
+	if(!exists(attack_config_dir) || !is_directory(attack_config_dir)) { return t_map; }
 
-	for(const auto &entry: recursive_directory_iterator(attack_config_dir)){
+	for(const auto &entry: recursive_directory_iterator(attack_config_dir)) {
 		const auto &path = entry.path();
 		string filename = path.filename().string();
 		if(should_skip(entry.path())) continue;
-		try{
+		try {
 			YAML::Node config = YAML::LoadFile(path.string());
 			nlohmann::json config_json = yaml_to_json(config);
-			if(!config_json.contains("name")){ throw config_err("Path {} has no valid name", path); }
+			if(!config_json.contains("name")) { throw config_err("Path {} has no valid name", path); }
 			auto name = config["name"].as<string>();
-			if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite" && ct ==
-				TEST_SUITE){
+			if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite" &&
+					ct == TEST_SUITE) {
 				t_map[name] = path.string();
-			} else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")){
-				if(t_map.contains(name)){
+			} else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")) {
+				if(t_map.contains(name)) {
 					throw config_err("Configs {} and {} have same name! ({})", t_map[name], path, name);
 				}
 				t_map[name] = path.string();
 			}
-		} catch(const YAML::Exception &e){ throw config_err("Invalid yaml {}:{}:{}: {}", path.string(), e.mark.line + 1, e.mark.column + 1, e.msg); }
+		} catch(const YAML::Exception &e) {
+			throw config_err("Invalid yaml {}:{}:{}: {}", path.string(), e.mark.line + 1, e.mark.column + 1, e.msg);
+		}
 	}
 	return t_map;
 }
 
-optional<ActorPtr> RunStatus::actor(const string &actor_name) const{
-	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+optional<ActorPtr> RunStatus::actor(const string &actor_name) const {
+	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	return nullopt;
 }
 
-ActorPtr &RunStatus::get_actor(const string &actor_name){
-	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+ActorPtr &RunStatus::get_actor(const string &actor_name) {
+	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	throw config_err("Actor {} not found in actors map", actor_name);
 }
 
-const ActorPtr &RunStatus::get_actor(const string &actor_name) const{
-	if(const auto it = actors.find(actor_name); it != actors.end()){ return it->second; }
+const ActorPtr &RunStatus::get_actor(const string &actor_name) const {
+	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	throw config_err("Actor {} not found in actors map", actor_name);
 }
 
-optional<observer::ObserverPtr> RunStatus::observer(const string &observer_name) const{
-	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+optional<observer::ObserverPtr> RunStatus::observer(const string &observer_name) const {
+	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	return nullopt;
 }
 
-observer::ObserverPtr &RunStatus::get_observer(const string &observer_name){
-	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) {
+	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	throw config_err("Observer {} not found in observers map", observer_name);
 }
 
-const observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) const{
-	if(const auto it = observers.find(observer_name); it != observers.end()){ return it->second; }
+const observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) const {
+	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	throw config_err("Observer {} not found in observers map", observer_name);
 }
 
-void RunStatus::print_test_list(){
+void RunStatus::print_test_list() {
 	auto tests = scan_attack_configs(TEST);
-	if(tests.empty()){
+	if(tests.empty()) {
 		cout << "In program are not any tests" << endl;
 		return;
 	}
-	for(const auto &[name, path]: tests){
-		cout << "Test: " << name << " -> " << path << endl;
-	}
+	for(const auto &[name, path]: tests) { cout << "Test: " << name << " -> " << path << endl; }
 }
 
-void RunStatus::start_observers(const ObserverRunPolicy policy){
-	for(const auto &observer: observers | views::values){
-		try{
+void RunStatus::start_observers(const ObserverRunPolicy policy) {
+	for(const auto &observer: observers | views::values) {
+		try {
 			observer->start(*this);
-		} catch(const run_err &){
+		} catch(const run_err &) {
 			if(policy == ObserverRunPolicy::THROW) throw;
 		}
 	}
 }
 
-string RunStatus::findConfigByTestName(const string &name){
-	if(auto tests = scan_attack_configs(); tests.contains(name)){ return tests[name]; }
+string RunStatus::findConfigByTestName(const string &name) {
+	if(auto tests = scan_attack_configs(); tests.contains(name)) { return tests[name]; }
 	throw config_err("Unknown test name: " + name + ", Isn't it test suite?");
 }
 
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
-							initializer_list<tuple<actor_name_t,pattern_t, label_t, color_t>> event_d) const{
-	for(auto &[actor, pattern, label, color]: event_d){
+		initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d) const {
+	for(auto &[actor, pattern, label, color]: event_d) {
 		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern), label, color));
 	}
 }
 
 //FIXME stricly connected to actors names from config -> move actor names to some constatnts?
-void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const{
-	if(event_sets.contains(DISCONNECT)){
+void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const {
+	if(event_sets.contains(DISCONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
 		get_actor("client");
-		log_events(elements, {
-			{"ap", "did not acknowledge", "ACK_fail", "red"},
-			{"client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red"},
-		});
+		log_events(elements,
+				{
+						{ "ap", "did not acknowledge", "ACK_fail", "red" },
+						{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
+				});
 	}
-	if(event_sets.contains(CONNECT)){
+	if(event_sets.contains(CONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
 		get_actor("client");
-		log_events(elements, {
-			{"client", "CTRL-EVENT-CONNECTED", "CONN", "green"},
-			{"ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green"},
-		});
+		log_events(elements,
+				{
+						{ "client", "CTRL-EVENT-CONNECTED", "CONN", "green" },
+						{ "ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green" },
+				});
 	}
-	if(event_sets.contains(TESTER_TAGS)){
+	if(event_sets.contains(TESTER_TAGS)) {
 		//throw error of actor not found
 		get_actor("client");
 
-		log_events(elements, {
-			{"client", START_tag, "START", "black"}, {"client", END_tag, "END", "black"},
-			{"client", ATTACK_START_tag, escape_tex("attack_start"), "black"},
-			{"client", ATTACK_STOP_tag, escape_tex("attack_stop"), "black"},
-		});
+		log_events(elements,
+				{
+						{ "client", START_tag, "START", "black" },
+						{ "client", END_tag, "END", "black" },
+						{ "client", ATTACK_START_tag, escape_tex("attack_start"), "black" },
+						{ "client", ATTACK_STOP_tag, escape_tex("attack_stop"), "black" },
+				});
 	}
 }
 
-
-void RunStatus::save_actor_interface_mapping() const{
-	if(_run_folder.empty()){
+void RunStatus::save_actor_interface_mapping() const {
+	if(_run_folder.empty()) {
 		log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
 		return;
 	}
 
 	const string path = _run_folder / MAPPING_CSV;
 	ofstream ofs(path, ios::out | ios::trunc);
-	if(!ofs){
+	if(!ofs) {
 		log(LogLevel::ERROR, "Failed to open {} for writing CSV mapping", path);
 		return;
 	}
@@ -392,10 +394,10 @@ void RunStatus::save_actor_interface_mapping() const{
 	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
 }
 
-void RunStatus::load_actor_interface_mapping(){
+void RunStatus::load_actor_interface_mapping() {
 	const string csv_path = _run_folder / MAPPING_CSV;
 	ifstream ifs(csv_path);
-	if(!ifs){
+	if(!ifs) {
 		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
 		return;
 	}
@@ -403,18 +405,18 @@ void RunStatus::load_actor_interface_mapping(){
 	string line;
 	getline(ifs, line); // skip header: source,actor_name,iface,mac,driver,channel,json_obj
 
-	while(getline(ifs, line)){
+	while(getline(ifs, line)) {
 		if(line.empty()) continue;
 
 		// json_obj (field 7) may contain commas - locate only the first 6
 		auto npos = string::npos;
-		auto next = [&](const size_t from){ return line.find(',', from); };
+		auto next = [&](const size_t from) { return line.find(',', from); };
 		size_t c1 = next(0);
 		size_t c2 = c1 != npos ? next(c1 + 1) : npos;
 		size_t c6 = c2;
 		for(int i = 0; i < 4 && c6 != npos; ++i) c6 = next(c6 + 1);
 
-		if(c2 == npos || c6 == npos){
+		if(c2 == npos || c6 == npos) {
 			log(LogLevel::WARNING, "load_actor_interface_mapping: malformed row, skipping");
 			continue;
 		}
@@ -423,14 +425,14 @@ void RunStatus::load_actor_interface_mapping(){
 		string json_str = line.substr(c6 + 1);
 
 		// Strip CSV quoting and unescape "" -> "
-		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"'){
+		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"') {
 			json_str = json_str.substr(1, json_str.size() - 2);
-			for(size_t i = 0; i + 1 < json_str.size(); ++i) if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.
-					erase(i + 1, 1);
+			for(size_t i = 0; i + 1 < json_str.size(); ++i)
+				if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.erase(i + 1, 1);
 		}
 
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
-		if(j.is_discarded()){
+		if(j.is_discarded()) {
 			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);
 			continue;
 		}
@@ -441,23 +443,19 @@ void RunStatus::load_actor_interface_mapping(){
 	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
 }
 
-void RunStatus::save_result(const nlohmann::json &j) const{
+void RunStatus::save_result(const nlohmann::json &j) const {
 	const path p = run_folder() / RESULT_NAME;
 	ofstream f(p);
-	if(!f.is_open()){
-		throw stats_err( "Cannot write {}", RESULT_NAME);
-	}
+	if(!f.is_open()) { throw stats_err("Cannot write {}", RESULT_NAME); }
 	f << j.dump(2) << "\n";
 	f.close();
 	set_public_perms(p);
 }
 
-nlohmann::json RunStatus::load_result() const{
+nlohmann::json RunStatus::load_result() const {
 	const path p = run_folder() / RESULT_NAME;
 	ifstream f(p);
-	if(!f.is_open()){
-		throw stats_err(RESULT_NAME + " not found");
-	}
+	if(!f.is_open()) { throw stats_err(RESULT_NAME + " not found"); }
 	return nlohmann::json::parse(f);
 }
 }

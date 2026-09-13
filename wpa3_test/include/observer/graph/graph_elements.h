@@ -3,56 +3,56 @@
 
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
-namespace wpa3_tester{
-enum class TimeAxis{ RELATIVE, UNIX };
+namespace wpa3_tester {
+enum class TimeAxis { RELATIVE, UNIX };
 
-enum class GraphElement_t{ UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS };
+enum class GraphElement_t { UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS };
 
 class GraphElements;
 typedef std::vector<std::unique_ptr<GraphElements>> G_elms;
 
-class GraphElements{
+class GraphElements {
 public:
 	GraphElement_t type = GraphElement_t::UNKNOWN;
 	std::string label;
 	std::string color = "green";
 
-	explicit GraphElements(std::string label, std::string color = "green")
-	: label(std::move(label)), color(std::move(color)){}
+	explicit GraphElements(std::string label, std::string color = "green"):
+		label(std::move(label)),
+		color(std::move(color)) {}
 
 	virtual ~GraphElements() = default;
 
-	[[nodiscard]] virtual std::unique_ptr<GraphElements> clone() const{
+	[[nodiscard]] virtual std::unique_ptr<GraphElements> clone() const {
 		return std::make_unique<GraphElements>(*this);
 	}
 };
 
 // Graph elements //TODO
 
-inline G_elms clone_elements(const G_elms &src){
+inline G_elms clone_elements(const G_elms &src) {
 	G_elms result;
 	result.reserve(src.size());
 	for(const auto &e: src) result.push_back(e->clone());
 	return result;
 }
 
-class EventLines: public GraphElements{
+class EventLines: public GraphElements {
 public:
 	std::vector<LogTimePoint> event_times;
 
-	EventLines(std::vector<LogTimePoint> event_times, std::string label, std::string color = "green")
-	: GraphElements(std::move(label), std::move(color)), event_times(std::move(event_times)){
+	EventLines(std::vector<LogTimePoint> event_times, std::string label, std::string color = "green"):
+		GraphElements(std::move(label), std::move(color)),
+		event_times(std::move(event_times)) {
 		type = GraphElement_t::EVENT_LINES;
 	}
 
-	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override{
-		return std::make_unique<EventLines>(*this);
-	}
+	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override { return std::make_unique<EventLines>(*this); }
 };
 
-enum class YAxis{ Y1, Y2 };
+enum class YAxis { Y1, Y2 };
 
-class GraphXYPoints: public GraphElements{
+class GraphXYPoints: public GraphElements {
 public:
 	YAxis axis = YAxis::Y1;
 	double y2_min = 0.0;
@@ -61,52 +61,56 @@ public:
 	std::vector<double> y_values;
 
 	GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
-				const std::string &label, const std::string &color = "green",
-				const YAxis axis = YAxis::Y1,
-				const double y2_min = 0.0, const double y2_max = 100.0
-	)
-	: GraphElements(label, color), axis(axis), y2_min(y2_min), y2_max(y2_max),
-	  x_times(x_times), y_values(y_values){
+			const std::string &label, const std::string &color = "green", const YAxis axis = YAxis::Y1,
+			const double y2_min = 0.0, const double y2_max = 100.0):
+		GraphElements(label, color),
+		axis(axis),
+		y2_min(y2_min),
+		y2_max(y2_max),
+		x_times(x_times),
+		y_values(y_values) {
 		type = GraphElement_t::GRAPH_XY_POINTS;
 	}
 
-	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override{
+	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override {
 		return std::make_unique<GraphXYPoints>(*this);
 	}
 };
 
 template<typename Enum>
-class GraphStairs: public GraphElements{
+class GraphStairs: public GraphElements {
 public:
 	YAxis axis = YAxis::Y1;
 	double margin = 0.1; // top/bottom margin
 
-	std::vector<std::pair<Enum,std::string>> enum_labels;
-	std::map<LogTimePoint,Enum> steps;
+	std::vector<std::pair<Enum, std::string>> enum_labels;
+	std::map<LogTimePoint, Enum> steps;
 
-	GraphStairs(const std::map<LogTimePoint,Enum> &steps, const std::vector<std::pair<Enum,std::string>> &enum_labels,
-				const std::string &label, const std::string &color = "blue", const YAxis axis = YAxis::Y1,
-				const double margin = 0.1
-	)
-	: GraphElements(label, color), axis(axis), margin(margin), enum_labels(enum_labels), steps(steps){
+	GraphStairs(const std::map<LogTimePoint, Enum> &steps, const std::vector<std::pair<Enum, std::string>> &enum_labels,
+			const std::string &label, const std::string &color = "blue", const YAxis axis = YAxis::Y1,
+			const double margin = 0.1):
+		GraphElements(label, color),
+		axis(axis),
+		margin(margin),
+		enum_labels(enum_labels),
+		steps(steps) {
 		type = GraphElement_t::GRAPH_STAIRS;
 	}
 
 	// index in enum_labels -> y pos
-	double y_pos(const Enum val) const{
-		for(size_t i = 0; i < enum_labels.size(); ++i) if(enum_labels[i].first == val) return static_cast<double>(i);
+	double y_pos(const Enum val) const {
+		for(size_t i = 0; i < enum_labels.size(); ++i)
+			if(enum_labels[i].first == val) return static_cast<double>(i);
 		return 0.0;
 	}
 
-	[[nodiscard]] double y_min() const{ return 0.0 - margin; }
-	[[nodiscard]] double y_max() const{ return static_cast<double>(enum_labels.size() - 1) + margin; }
+	[[nodiscard]] double y_min() const { return 0.0 - margin; }
+	[[nodiscard]] double y_max() const { return static_cast<double>(enum_labels.size() - 1) + margin; }
 
-	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override{
-		return std::make_unique<GraphStairs>(*this);
-	}
+	[[nodiscard]] std::unique_ptr<GraphElements> clone() const override { return std::make_unique<GraphStairs>(*this); }
 };
 
-class Graph{
+class Graph {
 public:
 	FILE *file;
 	double ymin = 0;
@@ -120,8 +124,7 @@ public:
 protected:
 	void add_XY_points(const GraphXYPoints &xy_points);
 	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots,
-						size_t &label_index
-	);
+			size_t &label_index);
 public:
 	template<class Enum>
 	void add_stairs(const GraphStairs<Enum> &stairs);

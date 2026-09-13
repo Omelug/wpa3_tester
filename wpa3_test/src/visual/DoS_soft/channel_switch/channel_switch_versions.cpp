@@ -3,17 +3,17 @@
 
 #include "visual/DoS_soft/channel_switch/channel_switch_versions.h"
 
-#include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "default.h"
 #include "logger/report.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::channel_switch_filler{
+namespace wpa3_tester::visual::channel_switch_filler {
 using namespace std;
 using namespace filesystem;
 
-CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder){
+CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<CsaVersionTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
 
@@ -24,24 +24,25 @@ CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder){
 	e.rogue_ap_driver = rs->get_actor("rogue_ap").get(SK::driver_name);
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
-	if(exists(cfg_path)){
-		try{
+	if(exists(cfg_path)) {
+		try {
 			const auto cfg = YAML::LoadFile(cfg_path.string());
 			if(cfg["name"]) e.name = cfg["name"].as<string>();
-			if(cfg["actors"] && cfg["actors"]["ap"] && cfg["actors"]["ap"]["setup"] && cfg["actors"]
-				["ap"]["setup"]["program_config"] && cfg["actors"]["ap"]["setup"]["program_config"][
-					"version"]) e.hostapd_version = cfg["actors"]["ap"]["setup"]["program_config"]["version"].
-					as<string>();
-			if(cfg["actors"] && cfg["actors"]["client"] && cfg["actors"]["client"]["setup"] && cfg["actors"]["client"][
-				"setup"]["program_config"] && cfg["actors"]["client"]["setup"]["program_config"]["version"]) e.
-					supplicant_version = cfg["actors"]["client"]["setup"]["program_config"]["version"].as<string>();
-			if(cfg["attack_config"]){
-				if(cfg["attack_config"]["new_channel"]) e.new_channel = to_string(
-					cfg["attack_config"]["new_channel"].as<int>());
-				if(cfg["attack_config"]["attack_time"]) e.attack_time = to_string(
-					cfg["attack_config"]["attack_time"].as<int>());
+			if(cfg["actors"] && cfg["actors"]["ap"] && cfg["actors"]["ap"]["setup"] &&
+					cfg["actors"]["ap"]["setup"]["program_config"] &&
+					cfg["actors"]["ap"]["setup"]["program_config"]["version"])
+				e.hostapd_version = cfg["actors"]["ap"]["setup"]["program_config"]["version"].as<string>();
+			if(cfg["actors"] && cfg["actors"]["client"] && cfg["actors"]["client"]["setup"] &&
+					cfg["actors"]["client"]["setup"]["program_config"] &&
+					cfg["actors"]["client"]["setup"]["program_config"]["version"])
+				e.supplicant_version = cfg["actors"]["client"]["setup"]["program_config"]["version"].as<string>();
+			if(cfg["attack_config"]) {
+				if(cfg["attack_config"]["new_channel"])
+					e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
+				if(cfg["attack_config"]["attack_time"])
+					e.attack_time = to_string(cfg["attack_config"]["attack_time"].as<int>());
 			}
-		} catch(...){} //FIXME
+		} catch(...) {} //FIXME
 	}
 
 	const path tshark = test_folder / "observer" / "tshark";
@@ -50,7 +51,7 @@ CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss){
+void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<CsaVersionTestEntry>(run_dir);
 
@@ -60,22 +61,23 @@ void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss){
 	report << "# Channel Switch Versions Test Suite Report\n\n";
 	report << "Summary of Channel Switch attack tests across different hostapd versions.\n\n";
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
+	if(entries.empty()) {
+		report << "No test results found.\n";
+		return;
+	}
 
 	report << "## Test Results\n\n";
 	report << "| Test | AP Driver | Client Driver | Attacker Driver | Hostapd Version | Result |\n";
 	report << "|------|-----------|---------------|-----------------|-----------------|--------|\n";
 
-	for(const auto &e: entries){
+	for(const auto &e: entries) {
 
 		//const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 		//		RESULT_NAME + ")";
-		report << "| " <<  report::link(e.name ,  path(e.name)/REPORT_NAME) << " | "
-			<< e.ap_driver << " | "
-			<< e.client_driver << " | "
-			<< e.attacker_driver << " | "
-			<< e.hostapd_version << /*" | "
-			<< result_link*/ "" << " |\n";
+		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_driver << " | "
+			   << e.client_driver << " | " << e.attacker_driver << " | " << e.hostapd_version << /*" | "
+			<< result_link*/
+				"" << " |\n";
 	}
 }
 }

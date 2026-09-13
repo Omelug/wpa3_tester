@@ -1,6 +1,6 @@
 $extends: [
-../expected_vht_beacon.yaml,
-../observers.comp.yaml
+  ../expected_vht_beacon.yaml,
+  ../observers.comp.yaml
 ]
 name: expected_vht_beacon_5GHz
 $validator: ../expected_vht_beacon.schema.yaml

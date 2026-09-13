@@ -1,113 +1,120 @@
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/YAMLValidator.h"
 #include "system/firmware/ath9k_htc.h"
 #include "system/utils.h"
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <yaml-cpp/yaml.h>
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using json = nlohmann::json;
 using YNode = YAML::Node;
 using namespace filesystem;
 
-json yaml_to_json(const YNode &node){
-	
+json yaml_to_json(const YNode &node) {
 
-	if(node.IsScalar()){
-		if(node.Tag() == "!"){
-			return node.as<string>();
-		}
-		try{ return node.as<bool>(); } catch(...){}
-		try{ return node.as<int64_t>(); } catch(...){}
-		try{ return node.as<double>(); } catch(...){}
+	if(node.IsScalar()) {
+		if(node.Tag() == "!") { return node.as<string>(); }
+		try {
+			return node.as<bool>();
+		} catch(...) {}
+		try {
+			return node.as<int64_t>();
+		} catch(...) {}
+		try {
+			return node.as<double>();
+		} catch(...) {}
 		return node.as<string>();
 	}
-	if(node.IsSequence()){
+	if(node.IsSequence()) {
 		auto j = json::array();
 		for(auto const &item: node) j.push_back(yaml_to_json(item));
 		return j;
 	}
-	if(node.IsMap()){
+	if(node.IsMap()) {
 		auto j = json::object();
-		for(auto it = node.begin(); it != node.end(); ++it){
-			j[it->first.as<string>()] = yaml_to_json(it->second);
-		}
+		for(auto it = node.begin(); it != node.end(); ++it) { j[it->first.as<string>()] = yaml_to_json(it->second); }
 		return j;
 	}
 	return {};
 }
 
-json yaml_to_json_with_marks(const YNode &node, const string &current_path,
-							  unordered_map<string, YAML::Mark> &line_map){
+json yaml_to_json_with_marks(
+		const YNode &node, const string &current_path, unordered_map<string, YAML::Mark> &line_map) {
 	line_map[current_path.empty() ? "/" : current_path] = node.Mark();
 
-	if(node.IsScalar()){
+	if(node.IsScalar()) {
 		if(node.Tag() == "!") return node.as<string>();
-		try{ return node.as<bool>(); } catch(...){}
-		try{ return node.as<int64_t>(); } catch(...){}
-		try{ return node.as<double>(); } catch(...){}
+		try {
+			return node.as<bool>();
+		} catch(...) {}
+		try {
+			return node.as<int64_t>();
+		} catch(...) {}
+		try {
+			return node.as<double>();
+		} catch(...) {}
 		return node.as<string>();
 	}
-	if(node.IsSequence()){
+	if(node.IsSequence()) {
 		auto j = json::array();
 		size_t index = 0;
 		for(auto const &item: node)
 			j.push_back(yaml_to_json_with_marks(item, current_path + "/" + to_string(index++), line_map));
 		return j;
 	}
-	if(node.IsMap()){
+	if(node.IsMap()) {
 		auto j = json::object();
-		for(auto it = node.begin(); it != node.end(); ++it){
-			auto key = it->first.as<string>();
-			j[key] = yaml_to_json_with_marks(it->second, "/" + current_path + key, line_map);
+		for(auto it = node.begin(); it != node.end(); ++it) {
+			const auto key = it->first.as<string>();
+			string path = "/" + current_path;
+			path += key;
+			j[key] = yaml_to_json_with_marks(it->second, path, line_map);
 		}
 		return j;
 	}
 	return {};
 }
 
-void deep_merge(json &base, const json &patch){
-	for (const auto& [key, val] : patch.items()) {
+void deep_merge(json &base, const json &patch) {
+	for(const auto &[key, val]: patch.items()) {
 		// TODO  add $ADD and change $DELETE like object to delete only parts of arrays
-		if(key == "$DELETE"){
-			if(val.is_string()) base.erase(val.get<string>());
+		if(key == "$DELETE") {
+			if(val.is_string())
+				base.erase(val.get<string>());
 			else if(val.is_array())
-				for(const auto &k: val) if(k.is_string()) base.erase(k.get<string>());
-		} else if(val.is_object() && base.contains(key) && base[key].is_object()){
+				for(const auto &k: val)
+					if(k.is_string()) base.erase(k.get<string>());
+		} else if(val.is_object() && base.contains(key) && base[key].is_object()) {
 			deep_merge(base[key], val);
-		} else if(val.is_null() && base.contains(key) && !base[key].is_null()){
+		} else if(val.is_null() && base.contains(key) && !base[key].is_null()) {
 			// YAML empty block (key:\n  # all commented) parses as null - keep inherited
 			// value; explicit removal uses $DELETE
-		} else{
+		} else {
 			base[key] = val;
 		}
 	}
 }
 
-json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy, const bool is_child = false){
-	if(!current_node.is_object()){
-		return current_node;
-	}
+json resolve_extends(json current_node, const path &base_dir, vector<string> &hierarchy, const bool is_child = false) {
+	if(!current_node.is_object()) { return current_node; }
 
 	// resolve $validator paths to be absolute (string or list)
-	if(current_node.contains("$validator")){
-		if(current_node["$validator"].is_string()){
+	if(current_node.contains("$validator")) {
+		if(current_node["$validator"].is_string()) {
 			current_node["$validator"] = absolute(base_dir / current_node["$validator"].get<string>()).string();
-		} else if(current_node["$validator"].is_array()){
-			for(auto &v: current_node["$validator"]){
+		} else if(current_node["$validator"].is_array()) {
+			for(auto &v: current_node["$validator"]) {
 				if(v.is_string()) v = absolute(base_dir / v.get<string>()).string();
 			}
 		}
 	}
 
-	if(!current_node.contains("$extends")){
-		for(auto &[key, value]: current_node.items()){
-			value = resolve_extends(value, base_dir, hierarchy, true);
-		}
+	if(!current_node.contains("$extends")) {
+		for(auto &[key, value]: current_node.items()) { value = resolve_extends(value, base_dir, hierarchy, true); }
 		// Only strip $DELETE at file-root level (is_child=false).
 		// Nested $DELETE must survive so deep_merge can act on it when
 		// the enclosing file's $extends is processed.
@@ -117,27 +124,25 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 
 	// normalize $extends to a list
 	json extends_list;
-	if(current_node["$extends"].is_string()){
-		extends_list = json::array({current_node["$extends"]});
-	} else if(current_node["$extends"].is_array()){
+	if(current_node["$extends"].is_string()) {
+		extends_list = json::array({ current_node["$extends"] });
+	} else if(current_node["$extends"].is_array()) {
 		extends_list = current_node["$extends"];
-	} else{
+	} else {
 		throw config_err("'$extends' must be a string or list of strings");
 	}
 	current_node.erase("$extends");
 
 	// resolve current node's own children relative to its base_dir first
-	for(auto &[key, value]: current_node.items()){
-		value = resolve_extends(value, base_dir, hierarchy, true);
-	}
+	for(auto &[key, value]: current_node.items()) { value = resolve_extends(value, base_dir, hierarchy, true); }
 
 	// merge all parents in order (later entries override earlier)
 	json merged = json::object();
-	for(const auto &ext_item: extends_list){
+	for(const auto &ext_item: extends_list) {
 		const path parent_path = absolute(base_dir / ext_item.get<string>());
 		const string parent_path_str = parent_path.string();
 
-		if(ranges::find(hierarchy, parent_path_str) != hierarchy.end()){
+		if(ranges::find(hierarchy, parent_path_str) != hierarchy.end()) {
 			throw config_err("Circular inheritance detected! File already in hierarchy: " + parent_path_str);
 		}
 
@@ -149,12 +154,14 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 	}
 
 	// apply root-level $DELETE: remove keys from merged before current overrides
-	if(current_node.contains("$DELETE")){
+	if(current_node.contains("$DELETE")) {
 		const json del = current_node["$DELETE"];
 		current_node.erase("$DELETE");
-		if(del.is_string()) merged.erase(del.get<string>());
+		if(del.is_string())
+			merged.erase(del.get<string>());
 		else if(del.is_array())
-			for(const auto &k: del) if(k.is_string()) merged.erase(k.get<string>());
+			for(const auto &k: del)
+				if(k.is_string()) merged.erase(k.get<string>());
 	}
 
 	// current node overrides all parents (nested $DELETE in sub-objects handled by deep_merge)
@@ -162,7 +169,7 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 	return merged;
 }
 
-json RunStatus::extends_recursive(const nlohmann::json &config_json, const path &config_path){
+json RunStatus::extends_recursive(const nlohmann::json &config_json, const path &config_path) {
 	const path config_dir = config_path.parent_path();
 	vector<string> hierarchy;
 	// prevent self-extension: include the current config file in the hierarchy
@@ -170,37 +177,33 @@ json RunStatus::extends_recursive(const nlohmann::json &config_json, const path 
 	return resolve_extends(config_json, config_dir, hierarchy);
 }
 
-void RunStatus::validate_recursive(nlohmann::json &current_node, const path &base_dir){
-	if(current_node.is_object()){
-		if(current_node.contains("$validator")){
-			auto apply_validator = [&](const string &schema_file){
+void RunStatus::validate_recursive(nlohmann::json &current_node, const path &base_dir) {
+	if(current_node.is_object()) {
+		if(current_node.contains("$validator")) {
+			auto apply_validator = [&](const string &schema_file) {
 				const YAMLValidator validator(base_dir / schema_file);
 				validator.validate(current_node);
 			};
-			if(current_node.at("$validator").is_string()){
+			if(current_node.at("$validator").is_string()) {
 				apply_validator(current_node.at("$validator").get<string>());
-			} else if(current_node.at("$validator").is_array()){
+			} else if(current_node.at("$validator").is_array()) {
 				// copy before the loop: validate() reassigns current_node, which invalidates iterators into it
 				const json validator_list = current_node.at("$validator");
-				for(const auto &v: validator_list){
+				for(const auto &v: validator_list) {
 					if(v.is_string()) apply_validator(v.get<string>());
 				}
 			}
 			current_node.erase("$validator");
 		}
 
-		for(auto &[key, value]: current_node.items()){
-			validate_recursive(value, base_dir);
-		}
-	} else if(current_node.is_array()){
-		for(auto &element: current_node){
-			validate_recursive(element, base_dir);
-		}
+		for(auto &[key, value]: current_node.items()) { validate_recursive(value, base_dir); }
+	} else if(current_node.is_array()) {
+		for(auto &element: current_node) { validate_recursive(element, base_dir); }
 	}
 }
 
-json RunStatus::config_validation(const path &config_path){
-	try{
+json RunStatus::config_validation(const path &config_path) {
+	try {
 		unordered_map<string, YAML::Mark> line_map;
 		json config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
 
@@ -209,64 +212,60 @@ json RunStatus::config_validation(const path &config_path){
 		validate_recursive(config_json, config_path.parent_path());
 
 		//global validation
-		const path global_schema_path = root_dir() / "attack_config" / "validator" /
-				"test_validator.schema.yaml";
+		const path global_schema_path = root_dir() / "attack_config" / "validator" / "test_validator.schema.yaml";
 		const YAMLValidator validator(global_schema_path);
 		validator.validate(config_json, line_map, config_path.string());
 		return config_json;
-	} catch(const tester_error &){
-		throw;
-	} catch(const domain_error &e){
+	} catch(const tester_error &) { throw; } catch(const domain_error &e) {
 		throw config_err(string("Schema error: ") + e.what());
-	} catch(const invalid_argument &e){
+	} catch(const invalid_argument &e) {
 		throw config_err(string("Error in config: ") + e.what());
-	} catch(const exception &e){
-		throw config_err(string("Config validation error: ") + e.what());
-	}
+	} catch(const exception &e) { throw config_err(string("Config validation error: ") + e.what()); }
 }
 
-void RunStatus::ensure_requirement(const string &req) const{
+void RunStatus::ensure_requirement(const string &req) const {
 	assert(req == "ath_masker" or req == "ath9k_noorder_change");
 	if(req == "ath_masker") firmware::load_ath_masker(_run_config.get_install_req());
 	if(req == "ath9k_noorder_change") firmware::load_ath9k_noorder_change();
 }
 
-void RunStatus::check_local_requirements(){
+void RunStatus::check_local_requirements() {
 	set<string> all_requirements;
 
-	if(_config.contains("requirements")){
+	if(_config.contains("requirements")) {
 		const auto &reqs = _config.at("requirements");
-		if(reqs.is_object() && reqs.contains("simple")){
-			for(const auto &req: reqs.at("simple")){
+		if(reqs.is_object() && reqs.contains("simple")) {
+			for(const auto &req: reqs.at("simple")) {
 				if(req.is_string()) all_requirements.insert(req.get<string>());
 			}
 		}
 	}
 
 	// per-actor requirements
-	for(auto &[actor_name, actor_data]: _config.at("actors").items()){
+	for(auto &[actor_name, actor_data]: _config.at("actors").items()) {
 		if(!actor_data.contains("setup") || !actor_data.at("setup").contains("requirements")) continue;
 		const auto &reqs = actor_data.at("setup").at("requirements");
-		if(reqs.is_object() && reqs.contains("simple")){
-			for(const auto &req: reqs.at("simple")) if(req.is_string()) all_requirements.insert(req.get<string>());
+		if(reqs.is_object() && reqs.contains("simple")) {
+			for(const auto &req: reqs.at("simple"))
+				if(req.is_string()) all_requirements.insert(req.get<string>());
 		}
 	}
 
-	for(const auto &req: all_requirements){
+	for(const auto &req: all_requirements) {
 		log(LogLevel::INFO, "Found requirement: {}", req);
 		ensure_requirement(req);
 	}
 }
 
-void save_yaml(const json &json_obj, const path &out_path){
+void save_yaml(const json &json_obj, const path &out_path) {
 	const YAML::Node node = YAML::Load(json_obj.dump());
-	auto force_block_style = [](auto &self, YAML::Node yaml_node) ->void{
-		if(yaml_node.IsMap() || yaml_node.IsSequence()){
+	auto force_block_style = [](auto &self, YAML::Node yaml_node) -> void {
+		if(yaml_node.IsMap() || yaml_node.IsSequence()) {
 			yaml_node.SetStyle(YAML::EmitterStyle::Block);
-			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
-				if(yaml_node.IsMap()){
+			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it) {
+				if(yaml_node.IsMap()) {
 					self(self, it->second);
-				} else{
+				} else {
 					self(self, *it);
 				}
 			}

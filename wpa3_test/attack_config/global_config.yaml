@@ -8,7 +8,7 @@ timeout_external_bb_scan_sec: 5
 
 actors:
   conn_table: ./example_whitebox_table.csv
-  ignore_interfaces: [wlan0, eth0]
+  ignore_interfaces: [ wlan0, eth0 ]
 
 paths:
   # These config keys are not included in result config,

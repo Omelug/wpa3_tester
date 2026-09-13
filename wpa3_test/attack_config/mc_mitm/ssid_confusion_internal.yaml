@@ -1,6 +1,6 @@
 name: ssid_confusion_test
 attacker_module: ssid_confusion
-$extends: [./mc_mitm_internal.yaml]
+$extends: [ ./mc_mitm_internal.yaml ]
 actors:
   ap:
     setup:
@@ -42,7 +42,7 @@ attack_config:
   # SSID the rogue AP will advertise - should match a network the client auto-connects to
   confused_ssid: "WrongNet"
   attack_time_sec: 100
-#observers:
+  #observers:
   # TODO -> not possible in AP mode or add sniff iface?
   #rogue_tshark:
   #  actor: rogue_ap

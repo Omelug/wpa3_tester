@@ -3,12 +3,14 @@
 #include <string>
 #include <unordered_map>
 
-namespace wpa3_tester{ class RunStatus; }
+namespace wpa3_tester {
+class RunStatus;
+}
 
-namespace wpa3_tester::observer{
+namespace wpa3_tester::observer {
 class Observer_config;
 
-class ObserverPtr{
+class ObserverPtr {
 public:
 	std::shared_ptr<Observer_config> ptr;
 	explicit ObserverPtr(std::shared_ptr<Observer_config> p);
@@ -20,18 +22,14 @@ public:
 	void start(RunStatus &rs) const;
 
 	friend bool operator<(const ObserverPtr &lhs, const ObserverPtr &rhs);
-	friend bool operator==(const ObserverPtr &lhs, const ObserverPtr &rhs){ return lhs.ptr == rhs.ptr; }
+	friend bool operator==(const ObserverPtr &lhs, const ObserverPtr &rhs) { return lhs.ptr == rhs.ptr; }
 };
 
-using ObserverCMap = std::unordered_map<std::string,ObserverPtr>;
+using ObserverCMap = std::unordered_map<std::string, ObserverPtr>;
 
-struct hash_ObserverPtr{
-	size_t operator()(const ObserverPtr &ap) const{
-		return std::hash<std::shared_ptr<Observer_config>>{}(ap.ptr);
-	}
+struct hash_ObserverPtr {
+	size_t operator()(const ObserverPtr &ap) const { return std::hash<std::shared_ptr<Observer_config>>{}(ap.ptr); }
 };
 
-inline bool operator<(const ObserverPtr &lhs, const ObserverPtr &rhs){
-	return lhs.ptr < rhs.ptr;
-}
+inline bool operator<(const ObserverPtr &lhs, const ObserverPtr &rhs) { return lhs.ptr < rhs.ptr; }
 }

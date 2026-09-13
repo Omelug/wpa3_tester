@@ -5,15 +5,15 @@ requirements:
   #TODO injectiont cache fail (not hash in name -> cant works)
   # FIXME nechápu, proč to není potřeba (NOCAPTURE)
   #two_iface:
-    #injection_fields_spoofed: [attacker, ap]
-    #injection_fields_valid: [attacker, ap]
+  #injection_fields_spoofed: [attacker, ap]
+  #injection_fields_valid: [attacker, ap]
   rssi_setup:
     band: "5GHz"
     conditions: [
       "(ap <-> attacker) > -90",
       "(ap <-> client) > -90",
       "(attacker <-> ap) > (ap <-> client)"
-  ]
+    ]
 
 actors:
   ap:

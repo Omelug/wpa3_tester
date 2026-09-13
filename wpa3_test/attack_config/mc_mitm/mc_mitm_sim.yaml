@@ -19,7 +19,7 @@ actors:
         version: 2_10
         wpa_supplicant_path: "./config/wpa_supplicant.conf"
     selection:
-      condition: [ 2_4GHz, netns_change]
+      condition: [ 2_4GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
   rogue_client:

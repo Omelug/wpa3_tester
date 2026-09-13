@@ -1,13 +1,13 @@
 #pragma once
 #include <string>
 
-#include "tshark_wrapper.h"
 #include "config/RunStatus.h"
+#include "tshark_wrapper.h"
 
-namespace wpa3_tester::observer::resource_checker{
+namespace wpa3_tester::observer::resource_checker {
 const std::string SUFFIX_res = "_res";
 
-struct ResourceRecord{
+struct ResourceRecord {
 	long long timestamp{};
 	std::vector<int> core_percents{};
 	long long mem_free_kb{};
@@ -15,13 +15,11 @@ struct ResourceRecord{
 	int rx_drops{};
 };
 
-void start_resource_monitoring_remote(RunStatus &rs, const std::string &actor_name, const std::string &iface,
-									int interval_sec
-);
+void start_resource_monitoring_remote(
+		RunStatus &rs, const std::string &actor_name, const std::string &iface, int interval_sec);
 void start_resource_monitoring(RunStatus &rs, const std::string &actor_name, int interval_sec);
 void generate_resource_graph(const std::filesystem::path &data_filepath, const std::filesystem::path &output_imagepath,
-							const G_elms &elements = {}
-);
+		const G_elms &elements = {});
 void create_resource_monitor_graph(const std::filesystem::path &data_filepath, const G_elms &elements);
 void create_resource_pid_graph(const std::string &data_filepath, const G_elms &elements);
 void create_graph(const RunStatus &rs, const std::string &source, const G_elms &elements = {});

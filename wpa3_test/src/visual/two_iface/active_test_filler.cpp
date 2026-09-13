@@ -4,18 +4,18 @@
 
 #include "visual/two_iface/active_test_filler.h"
 
-#include "default.h"
 #include "config/RunSuiteStatus.h"
+#include "default.h"
 #include "logger/report.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::active_test_filler{
+namespace wpa3_tester::visual::active_test_filler {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-ActiveTestEntry ActiveTestEntry::parse(const path &test_folder){
+ActiveTestEntry ActiveTestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<ActiveTestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
@@ -25,7 +25,7 @@ ActiveTestEntry ActiveTestEntry::parse(const path &test_folder){
 	return e;
 }
 
-void generate_report(RunSuiteStatus &rss){
+void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<ActiveTestEntry>(run_dir);
 
@@ -33,32 +33,31 @@ void generate_report(RunSuiteStatus &rss){
 	if(!report) return;
 
 	report << "# Active Test Suite Report\n\n";
-	report << "Tests whether a monitor-mode interface can both inject and receive ACKs (two-interface active TX test).\n\n";
+	report << "Tests whether a monitor-mode interface can both inject and receive ACKs (two-interface active TX "
+			  "test).\n\n";
 
-	if(entries.empty()){ report << "No test results found.\n"; return; }
+	if(entries.empty()) {
+		report << "No test results found.\n";
+		return;
+	}
 
 	report << "## Test Results\n\n";
 	report << "| Test | TX Driver | RX Driver | Acked | Not Acked | Result |\n";
 	report << "|------|-----------|-----------|:-----:|:---------:|:------:|\n";
 
-	for(const auto &e: entries){
-		const string result_link = "[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" +
-				RESULT_NAME + ")";
-		report
-				<< "| " << path(e.test_name) / REPORT_NAME << " | "
-				<< e.tx_driver << " | "
-				<< e.rx_driver << " | "
-				<< e.acked << " | "
-				<< e.not_acked << " | "
-				<< result_link << " |\n";
+	for(const auto &e: entries) {
+		const string result_link =
+				"[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
+		report << "| " << path(e.test_name) / REPORT_NAME << " | " << e.tx_driver << " | " << e.rx_driver << " | "
+			   << e.acked << " | " << e.not_acked << " | " << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
-	const size_t passed_count = ranges::count_if(entries, [](const auto &e){ return e.success; });
+	const size_t passed_count = ranges::count_if(entries, [](const auto &e) { return e.success; });
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) /
-			static_cast<double>(entries.size())) << "%\n";
+	report << "- Success Rate: " << fixed << setprecision(1)
+		   << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 }
 }

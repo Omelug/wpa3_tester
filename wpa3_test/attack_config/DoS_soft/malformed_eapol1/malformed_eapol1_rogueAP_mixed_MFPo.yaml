@@ -1,6 +1,6 @@
 name: malformed_eapol1_rogueAP_mixed_MFPo
 attacker_module: malformed_eapol1
-$extends: [./malformed_eapol1.yaml, ./../../comp/rogue_ap/rogue_ap_6.comp.yaml]
+$extends: [ ./malformed_eapol1.yaml, ./../../comp/rogue_ap/rogue_ap_6.comp.yaml ]
 actors:
   $DELETE: client
   client:

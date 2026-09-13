@@ -4,16 +4,16 @@
 
 #include "config/Actor_Config/actor_keys.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 class Actor_config;
 
-struct HwInfo{
+struct HwInfo {
 	friend class Actor_config;
 
 	// returns true if the key represents persistent hardware capability
 	// (suitable for caching and hw-capability filtering)
-	static constexpr bool is_hw_info(const BK k){
-		switch(k){
+	static constexpr bool is_hw_info(const BK k) {
+		switch(k) {
 		case BK::AP:
 		case BK::STA:
 		case BK::monitor:
@@ -34,7 +34,7 @@ struct HwInfo{
 		}
 	}
 
-	static constexpr bool is_hw_info(const SK k){
+	static constexpr bool is_hw_info(const SK k) {
 		return k == SK::permanent_mac || k == SK::driver_name || k == SK::driver_hash || k == SK::module_hash;
 	}
 private:

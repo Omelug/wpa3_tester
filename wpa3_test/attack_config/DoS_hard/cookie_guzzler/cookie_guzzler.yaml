@@ -19,7 +19,7 @@ actors:
       condition: [ monitor, 2_4GHz ] #injection_selftest #TODO add condition for injection?
       channel: 6
     sniff_iface: true
-#observers: #FIXME mausezahn nefunguje, nic nezachytává
+  #observers: #FIXME mausezahn nefunguje, nic nezachytává
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn

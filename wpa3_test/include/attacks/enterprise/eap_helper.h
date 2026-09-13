@@ -1,21 +1,21 @@
 #pragma once
-#include "attacks/components/sniffer_helper.h"
-#include "attacks/mc_mitm/MonitorSocket.h"
-#include "system/wifi_channel.h"
 #include <chrono>
 #include <optional>
 #include <string_view>
 #include <tins/hw_address.h>
 #include <vector>
+#include "attacks/components/sniffer_helper.h"
+#include "attacks/mc_mitm/MonitorSocket.h"
+#include "system/wifi_channel.h"
 
-namespace wpa3_tester::reflection{
-struct EapPwdFrame{
+namespace wpa3_tester::reflection {
+struct EapPwdFrame {
 	uint8_t eap_id{};
 	uint8_t opcode{};
 	std::vector<uint8_t> pwd_data;
 };
 
-struct EAP_Att{
+struct EAP_Att {
 	MonitorSocket &sock;
 	const Channel &channel;
 	const Tins::HWAddress<6> &att_mac;
@@ -24,10 +24,10 @@ struct EAP_Att{
 	std::string_view identity;
 	std::chrono::milliseconds timeout;
 
-	void decrease_timeout(const std::chrono::time_point<std::chrono::steady_clock> start_time){
-		const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-			std::chrono::steady_clock::now() - start_time);
-		timeout = elapsed >= timeout ? std::chrono::milliseconds{0} : timeout - elapsed;
+	void decrease_timeout(const std::chrono::time_point<std::chrono::steady_clock> start_time) {
+		const auto elapsed =
+				std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time);
+		timeout = elapsed >= timeout ? std::chrono::milliseconds{ 0 } : timeout - elapsed;
 	}
 };
 
@@ -59,21 +59,22 @@ std::vector<uint8_t> extract_eapol(const uint8_t *p, uint32_t caplen, const Tins
 
 // Definition must be in the header: abbreviated function template, each lambda
 // instantiation needs the definition visible in the calling TU.
-std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred){
+std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 	const auto start_time = std::chrono::steady_clock::now();
 	std::optional<std::vector<uint8_t>> result = std::nullopt;
-	(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(), eap_att.timeout,
-										[&](const uint8_t *p, const uint32_t caplen) ->std::optional<bool>{
-											auto eapol = extract_eapol(p, caplen, eap_att.att_mac);
-											if(eapol.empty()) return std::nullopt;
-											if(is_eap_success(eapol)){
-												result = std::vector<uint8_t>{}; //hae to be empty vector
-												return true;
-											}
-											if(!pred(eapol)) return std::nullopt;
-											result = std::move(eapol);
-											return true;
-										});
+	(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
+			eap_att.timeout,
+			[&](const uint8_t *p, const uint32_t caplen) -> std::optional<bool> {
+				auto eapol = extract_eapol(p, caplen, eap_att.att_mac);
+				if(eapol.empty()) return std::nullopt;
+				if(is_eap_success(eapol)) {
+					result = std::vector<uint8_t>{}; //hae to be empty vector
+					return true;
+				}
+				if(!pred(eapol)) return std::nullopt;
+				result = std::move(eapol);
+				return true;
+			});
 	eap_att.decrease_timeout(start_time);
 	return result;
 }

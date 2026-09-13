@@ -18,16 +18,16 @@
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::bl0ck_test_suites{
+namespace wpa3_tester::visual::bl0ck_test_suites {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
-Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
+Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<Bl0ckTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
-	if (const auto result = helper::load_result_json(test_folder))
-		if (result->contains("reconnect_times_ms"))
+	if(const auto result = helper::load_result_json(test_folder))
+		if(result->contains("reconnect_times_ms"))
 			e.reconnection = result->at("reconnect_times_ms").get<std::vector<double>>();
 
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
@@ -36,7 +36,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
 
-	try{
+	try {
 		const auto ap = rs.get_actor("ap");
 		e.ap_mac = ap->get(SK::mac);
 		e.ap_source = ap->get(SK::source);
@@ -56,42 +56,43 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder){
 
 		// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
 		const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
-		e.ADDBA_seen  += {observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap"};
-		e.ADDBA_seen  += observer::trace_cmd::addba_seen(rs);
+		e.ADDBA_seen += { observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap" };
+		e.ADDBA_seen += observer::trace_cmd::addba_seen(rs);
 
-		e.ap_PBAC     += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
+		e.ap_PBAC += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
 		e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
-	} catch(const tester_error &){}
+	} catch(const tester_error &) {}
 	return e;
 }
 
-void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title,
-	const path &suite_data_dir, const path &page_dir, const string &t_name){
+void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
+		const path &page_dir, const string &t_name) {
 
-	helper::div_card<Bl0ckTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
-		const std::vector<Bl0ckTestEntry>& entries) {
+	helper::div_card<Bl0ckTestEntry>(
+			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<Bl0ckTestEntry> &entries) {
+				HtmlPathTable t(hg, entries, t_name);
 
-		HtmlPathTable t(hg, entries, t_name);
+#define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
-		#define COL(name, body) col(name, [&]( [[maybe_unused]] const auto& e) { hg << body; })
-
-		t.build([&](auto col) {
-			COL("Test",                 e.name);
-			COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-			COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-			COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-			col("Variant",              &Bl0ckTestEntry::attack_variant);
-			col("Disconnected?",        &Bl0ckTestEntry::disconnect_count);
-			col("Iperf blocked?",       &Bl0ckTestEntry::bl0ck_iperf);
-			col("ADDBA seen?",          &Bl0ckTestEntry::ADDBA_seen);
-			COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
-			COL("Reconnected?",        !e.reconnection.empty());
-		})->render({"Test"});
-		#undef COL
-	});
+				t.build([&](auto col) {
+					 COL("Test", e.name);
+					 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+					 COL("Client MAC (source)",
+							 overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+					 COL("Attacker (driver)",
+							 overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+					 col("Variant", &Bl0ckTestEntry::attack_variant);
+					 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
+					 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
+					 col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);
+					 COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
+					 COL("Reconnected?", !e.reconnection.empty());
+				 })->render({ "Test" });
+#undef COL
+			});
 }
 
-void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){
+void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
 	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
 	auto run_dir = rss.run_folder();
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
@@ -101,7 +102,7 @@ void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
 	report << "Summary of Bl0ck attack tests across different driver combinations.\n\n";
 
-	if(entries.empty()){
+	if(entries.empty()) {
 		report << "No test results found.\n";
 		return;
 	}
@@ -111,22 +112,19 @@ void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss){
 	report << "|------|--------|------------|-------------------|---------|--------|\n";
 
 	ulong passed_count = 0;
-	for(const auto &e: entries){
-		const string result_link = "[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" +
-				RESULT_NAME + ")";
-		report << "| " << report::link(e.name , path(e.name) / REPORT_NAME) << " | "
-			<< e.ap_mac << " | "
-			<< e.client_mac << " | "
-			<< e.attacker_mac << " (" << e.attacker_driver << ") | "
-			<< e.attack_variant << " | "
-			<< result_link << " |\n";
+	for(const auto &e: entries) {
+		const string result_link =
+				"[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME + ")";
+		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_mac << " | " << e.client_mac
+			   << " | " << e.attacker_mac << " (" << e.attacker_driver << ") | " << e.attack_variant << " | "
+			   << result_link << " |\n";
 	}
 
 	report << "\n## Summary\n\n";
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";
 	report << "- Failed: " << (entries.size() - passed_count) << "\n";
-	report << "- Success Rate: " << fixed << setprecision(1) << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
-
+	report << "- Success Rate: " << fixed << setprecision(1)
+		   << (100.0 * static_cast<double>(passed_count) / static_cast<double>(entries.size())) << "%\n";
 }
 }

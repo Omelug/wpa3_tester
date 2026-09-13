@@ -8,22 +8,22 @@
 #include "observer/iperf_wrapper.h"
 #include "system/hw_capabilities.h"
 
-namespace wpa3_tester::bl0ck_attack{
+namespace wpa3_tester::bl0ck_attack {
 using namespace std;
 using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
 void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const path &attacker_graph,*/
-					const path &client_graph/*, const path &ap_graph*/
-){
+		const path &client_graph									 /*, const path &ap_graph*/
+) {
 	report::ReportGuard report(rs.run_folder());
 	if(!report) return;
 
 	const string variant = rs.config().at("attack_config").value("attack_variant", "?");
 	report << "# Bl0ck DoS Attack (" << variant << ")\n\n";
 	report << "Bl0ck sends malformed Block-Acknowledgement frames to force the AP/STA to drop the BA session, "
-			"causing the client to disconnect.\n\n";
+			  "causing the client to disconnect.\n\n";
 	report << "Rewrite of python PoC: https://github.com/efchatz/Bl0ck/tree/main?tab=readme-ov-file\n";
 
 	report::attack_config_table(report, rs);
@@ -35,11 +35,12 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const pat
 	//report << "| **Result** | **" << (result.passed ? "PASSED" : "FAILED") << "** |\n";
 	report << "| Disconnections | " << result.disconnect_count << " |\n";
 
-	if(result.reconnect_times_ms.empty()){
+	if(result.reconnect_times_ms.empty()) {
 		report << "| Reconnect time | n/a |\n";
-	} else{
-		for(size_t i = 0; i < result.reconnect_times_ms.size(); ++i) report << "| Reconnect time [" << i << "] | " <<
-				static_cast<int>(result.reconnect_times_ms[i]) << " ms |\n";
+	} else {
+		for(size_t i = 0; i < result.reconnect_times_ms.size(); ++i)
+			report << "| Reconnect time [" << i << "] | " << static_cast<int>(result.reconnect_times_ms[i])
+				   << " ms |\n";
 		double avg = 0;
 		for(const double t: result.reconnect_times_ms) avg += t;
 		avg /= static_cast<double>(result.reconnect_times_ms.size());
@@ -55,9 +56,7 @@ void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const pat
 																at("program_config").value("version", "default") <<
 				")\n";
 	}*/
-	if(exists(client_graph)){
-		report << "![Client graph](" << client_graph << ")\n\n";
-	}
+	if(exists(client_graph)) { report << "![Client graph](" << client_graph << ")\n\n"; }
 	/*if(exists(ap_graph)){
 		report << "### AP capture\n";
 		report << "![AP graph](" << ap_graph << ")\n\n";

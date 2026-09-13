@@ -1,13 +1,15 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::overview { struct HtmlGuard; }
+namespace wpa3_tester::overview {
+struct HtmlGuard;
+}
 
-namespace wpa3_tester::visual::owe_trans_filler{
-struct OweTransTestEntry{
+namespace wpa3_tester::visual::owe_trans_filler {
+struct OweTransTestEntry {
 	std::string test_folder;
 	std::string test_name;
 	std::string ap_driver;
@@ -21,12 +23,11 @@ struct OweTransTestEntry{
 
 	static OweTransTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
-							 const std::filesystem::path &suite_data_dir,
-							 const std::filesystem::path &page_dir,
-							 const std::string &t_name);
+			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
+			const std::string &t_name);
 };
 
 std::vector<OweTransTestEntry> collect_results(const std::filesystem::path &run_dir);
 
-void generate_report(RunSuiteStatus & rss);
+void generate_report(RunSuiteStatus &rss);
 }

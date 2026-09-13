@@ -1,10 +1,10 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <string>
+#include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::visual::channel_switch_filler{
-struct CsaVersionTestEntry{
+namespace wpa3_tester::visual::channel_switch_filler {
+struct CsaVersionTestEntry {
 	std::string name;
 	std::string hostapd_version;
 	std::string supplicant_version;
@@ -21,6 +21,6 @@ struct CsaVersionTestEntry{
 	std::filesystem::path ap_graph;
 
 	static CsaVersionTestEntry parse(const std::filesystem::path &test_folder);
-	static void generate_report(RunSuiteStatus & rss);
+	static void generate_report(RunSuiteStatus &rss);
 };
 }

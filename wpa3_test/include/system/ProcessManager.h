@@ -7,40 +7,40 @@
 #include <memory>
 #include <mutex>
 #include <regex>
+#include <reproc++/reproc.hpp>
 #include <string>
 #include <vector>
-#include <reproc++/reproc.hpp>
 
-namespace wpa3_tester{
-class ProcessManager{
-	struct WaitListener{
+namespace wpa3_tester {
+class ProcessManager {
+	struct WaitListener {
 		std::optional<std::regex> pattern; // nullopt == not active wait_for
-		std::atomic<bool> matched{false};
+		std::atomic<bool> matched{ false };
 		std::string matched_line;
 	};
 
-	struct ProcessLogs{
+	struct ProcessLogs {
 		std::ofstream log;
 		std::string history;
 		bool history_enabled = false;
 		WaitListener wait;
-		std::map<std::string,std::string> buffers;
+		std::map<std::string, std::string> buffers;
 	};
 
-	struct ManagedProcess{
+	struct ManagedProcess {
 		std::shared_ptr<reproc::process> proc;
-		pid_t pgid{-1};
-		pid_t start_pid{-1};
+		pid_t pgid{ -1 };
+		pid_t start_pid{ -1 };
 		std::thread drain_thread;
-		std::atomic<bool> shutting_down{false};
-		std::atomic<bool> naturally_exited{false};
+		std::atomic<bool> shutting_down{ false };
+		std::atomic<bool> naturally_exited{ false };
 		ProcessLogs logs;
 		//std::mutex proc_mutex;
 		std::function<void()> before_stop_callback;
 		std::function<void()> after_stop_callback;
 	};
 
-	std::map<std::string,std::shared_ptr<ManagedProcess>> processes;
+	std::map<std::string, std::shared_ptr<ManagedProcess>> processes;
 	std::ofstream combined_log;
 	// for processes and process_logs security
 	mutable std::mutex logger_mtx;
@@ -72,8 +72,7 @@ public:
 	void run_dummy(const std::string &process_name);
 	// what can actors
 	void run(const std::string &process_name, const std::vector<std::string> &cmd,
-			const std::filesystem::path &working_dir = {}, const std::filesystem::path &logging_dir = {}
-	);
+			const std::filesystem::path &working_dir = {}, const std::filesystem::path &logging_dir = {});
 
 	void allow_history(const std::string &actor_name);
 	void ignore_history(const std::string &actor_name);
@@ -81,9 +80,8 @@ public:
 
 	//return  true if found
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
-				std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
-				std::string *matched_line = nullptr
-	); // 60 minutes (practically infinity)
+			std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
+			std::string *matched_line = nullptr); // 60 minutes (practically infinity)
 	void stop(const std::string &process_name) noexcept;
 	void before_stop(const std::string &process_name, const std::function<void()> &callback);
 	void after_stop(const std::string &process_name, const std::function<void()> &callback);

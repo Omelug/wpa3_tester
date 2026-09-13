@@ -2,15 +2,15 @@
 
 #include <memory>
 
-#include "default.h"
 #include "config/RunStatus.h"
+#include "default.h"
 #include "logger/error_log.h"
 
-namespace wpa3_tester::visual::helper{
+namespace wpa3_tester::visual::helper {
 using namespace std;
 using namespace filesystem;
 
-unique_ptr<RunStatus> load_test_rs(const path &test_folder){
+unique_ptr<RunStatus> load_test_rs(const path &test_folder) {
 	const auto config_path = test_folder / TEST_CONFIG_NAME;
 	if(!exists(config_path)) throw run_err("test config {} file does not exist", config_path);
 	auto rs = make_unique<RunStatus>();

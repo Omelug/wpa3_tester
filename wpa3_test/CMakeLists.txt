@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(wpa3_tester)
 
-if(POLICY CMP0135)
+if (POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
-endif()
+endif ()
 
 # Registers a doctest executable: add_doctest_exe(<target> SOURCES <src...> [TEST_NAME <name>] [LIBS <lib...>])
 function(add_doctest_exe target)

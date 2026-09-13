@@ -13,12 +13,13 @@
 
 using namespace std;
 
-namespace wpa3_tester::observer{
-void Observer_config::start(RunStatus &rs) const{
+namespace wpa3_tester::observer {
+void Observer_config::start(RunStatus &rs) const {
 	const auto program = observer_config.at("program").get<string>();
 	const nlohmann::json program_config = observer_config.contains("program_config")
-		? observer_config.at("program_config") : nlohmann::json::object();
-	if(program == "dmesg"){
+			? observer_config.at("program_config")
+			: nlohmann::json::object();
+	if(program == "dmesg") {
 		const string level = program_config.value("level", "");
 		const string actor_name = observer_config.value("actor", "");
 		dmesg::start_dmesg(rs, observer_name, level, actor_name);
@@ -27,39 +28,39 @@ void Observer_config::start(RunStatus &rs) const{
 
 	// ---- observers needs actor_name
 	const auto actor_name = observer_config.at("actor").get<string>();
-	if(program == "tshark"){
+	if(program == "tshark") {
 		const string filter = program_config.value("filter", "");
 		tshark::start_tshark(rs, actor_name, filter);
 		return;
 	}
-	if(program == "tcpdump"){
+	if(program == "tcpdump") {
 		const string filter = program_config.value("filter", "");
 		start_tcpdump(rs, actor_name, filter);
 		return;
 	}
-	if(program == "mausezahn"){
+	if(program == "mausezahn") {
 		const auto target_actor = program_config.at("target_actor").get<string>();
 		start_mausezahn(rs, actor_name + "_mz_gen", actor_name, target_actor);
 		return;
 	}
 	if(program == "iperf3") {
 		const auto target_actor = program_config.at("target_actor").get<string>();
-		start_iperf3_server(rs, target_actor+"_iperf3_server", target_actor);
+		start_iperf3_server(rs, target_actor + "_iperf3_server", target_actor);
 		start_iperf3(rs, actor_name + "_iperf3_gen", actor_name, target_actor);
 		return;
 	}
-	if(program == "resource_checker"){
+	if(program == "resource_checker") {
 		const auto interval = program_config.at("interval").get<int>();
 		resource_checker::start_resource_monitoring(rs, actor_name, interval);
 		return;
 	}
-	if(program == "station_counter"){
+	if(program == "station_counter") {
 		const auto interval = program_config.at("interval").get<int>();
 		station_counter::start_station_monitoring(rs, actor_name, interval);
 		return;
 	}
-	if(program == "trace_cmd"){
-		const auto events  = program_config.at("events").get<std::vector<std::string>>();
+	if(program == "trace_cmd") {
+		const auto events = program_config.at("events").get<std::vector<std::string>>();
 		const auto kprobes = program_config.value("kprobes", std::vector<std::string>{});
 		trace_cmd::start_trace_cmd(rs, actor_name, events, kprobes);
 		return;
@@ -67,7 +68,5 @@ void Observer_config::start(RunStatus &rs) const{
 	throw run_err("Invalid observer program: " + program);
 }
 
-string Observer_config::to_str() const{
-	return "Observer: " + observer_name;
-}
+string Observer_config::to_str() const { return "Observer: " + observer_name; }
 }

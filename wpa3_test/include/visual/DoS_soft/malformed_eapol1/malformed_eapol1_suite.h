@@ -1,12 +1,12 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
-#include "overview/html_guard.h"
 #include <filesystem>
 #include <optional>
 #include <string>
+#include "config/RunSuiteStatus.h"
+#include "overview/html_guard.h"
 
-namespace wpa3_tester::visual::malformed_eapol1_filler{
-struct MalformedEapol1TestEntry{
+namespace wpa3_tester::visual::malformed_eapol1_filler {
+struct MalformedEapol1TestEntry {
 	std::string test_name;
 	std::string ap_mac;
 	std::string ap_source;
@@ -39,8 +39,9 @@ struct MalformedEapol1TestEntry{
 
 	static MalformedEapol1TestEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<MalformedEapol1TestEntry> collect_results(const std::filesystem::path &test_data_dir);
-	static void render_table(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &suite_data_dir, const std::filesystem::
-							path &page_dir, const std::string & string);
-	static void generate_report(RunSuiteStatus & rss);
+	static void render_table(overview::HtmlGuard &f, const std::string &title,
+			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
+			const std::string &string);
+	static void generate_report(RunSuiteStatus &rss);
 };
 }

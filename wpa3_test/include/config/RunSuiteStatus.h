@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include <nlohmann/json.hpp>
+#include <string>
 
 #include "Actor_Config/ActorPtr.h"
 #include "Actor_Config/Actor_config.h"
@@ -9,15 +9,15 @@
 #include "system/ProcessManager.h"
 #include "system/utils.h"
 
-namespace wpa3_tester{
-using config_paths = std::vector<std::tuple<std::string,std::string,std::filesystem::path>>;
+namespace wpa3_tester {
+using config_paths = std::vector<std::tuple<std::string, std::string, std::filesystem::path>>;
 
-struct HwOptionCache{
+struct HwOptionCache {
 	std::optional<std::vector<ActorPtr>> internal_opts;
 	std::optional<std::vector<ActorPtr>> external_wb_opts;
 };
 
-class RunSuiteStatus{
+class RunSuiteStatus {
 	static size_t check_vars_len_same(nlohmann::basic_json<> source_info);
 	HwOptionCache _hw_option_cache{};
 protected:
@@ -25,40 +25,34 @@ protected:
 	std::filesystem::path _config_path;
 	std::filesystem::path _run_folder;
 public: // getters and setters
-	[[nodiscard]] std::filesystem::path run_folder() const{ return _run_folder; }
-	void run_folder(const std::filesystem::path &new_run_folder){ _run_folder = new_run_folder; }
-	[[nodiscard]] std::filesystem::path config_path() const{ return _config_path; }
+	[[nodiscard]] std::filesystem::path run_folder() const { return _run_folder; }
+	void run_folder(const std::filesystem::path &new_run_folder) { _run_folder = new_run_folder; }
+	[[nodiscard]] std::filesystem::path config_path() const { return _config_path; }
 
 	bool only_stats = false;
 	int wait_between_tests = 0;
 	Run_Config run_config{};
-	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / DATA_DIR / DATA_SUITE; }
+	static std::filesystem::path BASE_FOLDER() { return root_dir().parent_path() / DATA_DIR / DATA_SUITE; }
 
 	static void print_test_suite_list();
 	static void print_tests_in_suite(const std::string &ts_name);
 
-	explicit RunSuiteStatus(const std::filesystem::path &config_path, std::string suite_name = "",
-							const std::string &sub_folder = ""
-	);
+	explicit RunSuiteStatus(
+			const std::filesystem::path &config_path, std::string suite_name = "", const std::string &sub_folder = "");
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
-	static void defined_by_name(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map
-	);
+	static void defined_by_name(
+			nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map);
 	static void defined_by_sub_suite(nlohmann::basic_json<> source_info, config_paths &test_map);
 	static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
-									const std::filesystem::path &test_config_folder, config_paths &test_map
-	);
+			const std::filesystem::path &test_config_folder, config_paths &test_map);
 	static void generate_test_files(nlohmann::basic_json<> source_info,
-									const std::vector<std::pair<std::string,std::vector<std::vector<std::string>>>> &
-									groups, const std::filesystem::path &gen_folder, const std::string &source_name,
-									config_paths &test_map
-	);
+			const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> &groups,
+			const std::filesystem::path &gen_folder, const std::string &source_name, config_paths &test_map);
 	static void defined_by_permutation(nlohmann::basic_json<> source_info, const std::string &source_name,
-										const std::filesystem::path &test_config_folder, config_paths &test_map
-	);
+			const std::filesystem::path &test_config_folder, config_paths &test_map);
 	void defined_by_actor_filler(nlohmann::basic_json<> source_info, const std::string &source_name,
-								const std::filesystem::path &test_config_folder, config_paths &test_map
-	);
+			const std::filesystem::path &test_config_folder, config_paths &test_map);
 	config_paths get_test_paths();
 	void execute();
 	void execute(const std::string &test_name);

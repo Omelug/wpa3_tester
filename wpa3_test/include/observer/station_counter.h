@@ -1,15 +1,14 @@
 #pragma once
-#include "config/RunStatus.h"
 #include <string>
+#include "config/RunStatus.h"
 
-namespace wpa3_tester::observer::station_counter{
+namespace wpa3_tester::observer::station_counter {
 inline const std::string SUFFIX_sta = "_sta";
 
 void start_remote(RunStatus &rs, const std::string &actor_name, int interval_sec, const std::string &local_log);
 void start_local(RunStatus &rs, const std::string &actor_name, const std::string &iface, int interval_sec);
 void start_station_monitoring(RunStatus &rs, const std::string &actor_name, int interval_sec);
-void generate_station_graph(const std::string &data_filepath, const std::string &output_imagepath,
-							const G_elms &elements
-);
+void generate_station_graph(
+		const std::string &data_filepath, const std::string &output_imagepath, const G_elms &elements);
 void create_station_graph(const RunStatus &rs, const std::string &actor_name, const G_elms &elements = {});
 }

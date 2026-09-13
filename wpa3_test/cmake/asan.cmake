@@ -1,11 +1,11 @@
-if(NOT ENABLE_ASAN)
+if (NOT ENABLE_ASAN)
     return()
-endif()
+endif ()
 
-if(CMAKE_CROSSCOMPILING)
+if (CMAKE_CROSSCOMPILING)
     message(WARNING "ASan is not supported for cross-compilation - skipping")
     return()
-endif()
+endif ()
 
 message(STATUS "ASan/LSan enabled")
 
@@ -14,7 +14,7 @@ add_link_options(-fsanitize=address,leak)
 
 set(_LSAN_SUPP "${CMAKE_BINARY_DIR}/lsan.supp")
 file(WRITE "${_LSAN_SUPP}"
-"# OpenSSL one-time global init
+        "# OpenSSL one-time global init
 leak:CRYPTO_
 leak:EVP_
 # libnl socket/cache internals
@@ -25,24 +25,24 @@ leak:YAML::
 ")
 
 add_custom_target(asan
-    COMMAND sudo -E env
+        COMMAND sudo -E env
         ASAN_OPTIONS=detect_leaks=0:halt_on_error=1:print_stats=1
         ${CMAKE_CTEST_COMMAND}
-            --test-dir ${CMAKE_BINARY_DIR}
-            --output-on-failure
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    USES_TERMINAL
-    COMMENT "Running tests under AddressSanitizer"
+        --test-dir ${CMAKE_BINARY_DIR}
+        --output-on-failure
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        USES_TERMINAL
+        COMMENT "Running tests under AddressSanitizer"
 )
 
 add_custom_target(leak-check
-    COMMAND sudo -E env
+        COMMAND sudo -E env
         LSAN_OPTIONS=suppressions=${_LSAN_SUPP}:print_suppressions=0
         ASAN_OPTIONS=detect_leaks=1:halt_on_error=0:print_stats=1
         ${CMAKE_CTEST_COMMAND}
-            --test-dir ${CMAKE_BINARY_DIR}
-            --output-on-failure
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    USES_TERMINAL
-    COMMENT "Running tests under AddressSanitizer + LeakSanitizer"
+        --test-dir ${CMAKE_BINARY_DIR}
+        --output-on-failure
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        USES_TERMINAL
+        COMMENT "Running tests under AddressSanitizer + LeakSanitizer"
 )

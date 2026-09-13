@@ -1,11 +1,11 @@
 #pragma once
-#include "config/RunSuiteStatus.h"
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "config/RunSuiteStatus.h"
 
-namespace wpa3_tester::visual::active_test_filler{
-struct ActiveTestEntry{
+namespace wpa3_tester::visual::active_test_filler {
+struct ActiveTestEntry {
 	std::string test_name;
 	std::string tx_driver;
 	std::string rx_driver;
@@ -19,5 +19,5 @@ struct ActiveTestEntry{
 
 std::vector<ActiveTestEntry> collect_results(const std::filesystem::path &run_dir);
 
-void generate_report(RunSuiteStatus & rss);
+void generate_report(RunSuiteStatus &rss);
 }

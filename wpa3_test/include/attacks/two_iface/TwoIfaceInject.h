@@ -1,8 +1,8 @@
 #pragma once
 #include "attacks/two_iface/TwoIface.h"
 
-namespace wpa3_tester{
-class TwoIfaceInject: public TwoIface{
+namespace wpa3_tester {
+class TwoIfaceInject: public TwoIface {
 public:
 	TwoIfaceInject();
 	nlohmann::json run(const ActorPtr &t, const ActorPtr &r) override;

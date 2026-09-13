@@ -6,16 +6,16 @@
 #include "system/hw_info.h"
 #include "system/utils.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using nlohmann::json;
 using namespace Tins;
 using namespace filesystem;
 
-vector<ActorPtr> RunStatus::internal_options(){
+vector<ActorPtr> RunStatus::internal_options() {
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
 	optional<path> hw_cache;
-	if(use_cache){
+	if(use_cache) {
 		const path hw_cache_dir = root_dir().parent_path() / DATA_DIR / "cache" / "scan";
 		create_public_dirs(hw_cache_dir);
 		hw_cache = hw_cache_dir / "internal_iface.json";
@@ -23,7 +23,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 	const auto ifaces = hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt);
 	log(LogLevel::DEBUG, "internal_options: {} wifi interface(s) visible", ifaces.size());
 	vector<ActorPtr> options;
-	for(const auto &[iface_name, radio_name, iface_type]: ifaces){
+	for(const auto &[iface_name, radio_name, iface_type]: ifaces) {
 		log(LogLevel::DEBUG, "internal_options: interface {}", iface_name);
 		auto cfg = ActorPtr(make_shared<Actor_Config_internal>());
 		cfg->set(SK::iface, iface_name);

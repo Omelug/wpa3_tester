@@ -31,12 +31,12 @@ actors:
   attacker:
     source: internal
     selection:
-      $DELETE: [permanent_mac, driver]
+      $DELETE: [ permanent_mac, driver ]
       condition: [ monitor, 5GHz ]
       channel: 36
   rogue_ap:
     source: internal
     selection:
-      $DELETE: [permanent_mac, driver]
+      $DELETE: [ permanent_mac, driver ]
       condition: [ monitor, 5GHz ]
       channel: 36

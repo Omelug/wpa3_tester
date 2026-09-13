@@ -1,7 +1,4 @@
 #pragma once
-#include "actor_keys.h"
-#include "system/hw_info.h"
-#include "system/wifi_channel.h"
 #include <array>
 #include <nl80211.h>
 #include <nlohmann/json.hpp>
@@ -9,9 +6,12 @@
 #include <optional>
 #include <string>
 #include <tins/tins.h>
+#include "actor_keys.h"
+#include "system/hw_info.h"
+#include "system/wifi_channel.h"
 
-namespace wpa3_tester{
-enum class Source{ SIMULATION, INTERNAL, EXTERNAL };
+namespace wpa3_tester {
+enum class Source { SIMULATION, INTERNAL, EXTERNAL };
 
 inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
 inline auto AP_IFACE_PREFIX = std::string("ap_");
@@ -20,7 +20,7 @@ inline auto HWSIM_IFACE_PREFIX = std::string("hwsim_");
 class RunStatus;
 class ExternalConn;
 
-class Actor_config: public std::enable_shared_from_this<Actor_config>{
+class Actor_config: public std::enable_shared_from_this<Actor_config> {
 	Driver _driver{};
 public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
@@ -39,19 +39,18 @@ public:
 	void set(const ActorPtr &source, BK key);
 
 	//to allow HWAddress -> simplify code
-	struct MacSK{
+	struct MacSK {
 		SK key;
 		// ReSharper disable once CppNonExplicitConvertingConstructor
-		consteval MacSK(const SK k): key(k){
-			if(k != SK::mac && k != SK::permanent_mac){
+		consteval MacSK(const SK k):
+			key(k) {
+			if(k != SK::mac && k != SK::permanent_mac) {
 				throw "Only SK::mac or SK::permanent_mac!"; // NOLINT(*-exception-baseclass)
 			}
 		}
 	};
 
-	void set(const MacSK key, const Tins::HWAddress<6> &addr){
-		set(key.key, addr.to_string());
-	}
+	void set(const MacSK key, const Tins::HWAddress<6> &addr) { set(key.key, addr.to_string()); }
 
 	std::shared_ptr<ExternalConn> conn;
 
@@ -99,15 +98,15 @@ public:
 	virtual void set_managed_mode() const;
 	virtual void set_mac_address(const Tins::HWAddress<6> &mac) const;
 	virtual void set_monitor_mode(bool add_flags) const;
-	void set_monitor_mode() const { set_monitor_mode(true);}
+	void set_monitor_mode() const { set_monitor_mode(true); }
 	void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
 
-	void setup_actor(const nlohmann::json &j, const ActorPtr &a){ setup_actor(j, a, nullptr); }
+	void setup_actor(const nlohmann::json &j, const ActorPtr &a) { setup_actor(j, a, nullptr); }
 	virtual void setup_actor(const nlohmann::json &, const ActorPtr &, RunStatus *);
 
 	static std::shared_ptr<Actor_config> create(const nlohmann::json &j);
 private:
-	std::array<std::optional<std::string>,static_cast<std::size_t>(SK::COUNT_)> str_vals{};
-	std::array<std::optional<bool>,static_cast<std::size_t>(BK::COUNT_)> bool_vals{};
+	std::array<std::optional<std::string>, static_cast<std::size_t>(SK::COUNT_)> str_vals{};
+	std::array<std::optional<bool>, static_cast<std::size_t>(BK::COUNT_)> bool_vals{};
 };
 }

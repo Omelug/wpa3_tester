@@ -1,9 +1,9 @@
 #pragma once
 #include <tins/tins.h>
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 class McMitm;
-class McMitmHooks{
+class McMitmHooks {
 public:
 	virtual ~McMitmHooks() = default;
 

@@ -5,12 +5,12 @@ target_link_libraries(wpa3_deps INTERFACE radiotap_lib)
 
 # NixOS cross-gcc only knows its own nix-store lib dirs; the Debian Pi sysroot uses FHS paths
 # (usr/lib/aarch64-linux-gnu).  Tell the linker where to search for bare -l<name> flags.
-if(CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
+if (CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
     target_link_directories(wpa3_deps INTERFACE
-        ${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
-        ${CMAKE_SYSROOT}/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+            ${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+            ${CMAKE_SYSROOT}/lib/${CMAKE_LIBRARY_ARCHITECTURE}
     )
-endif()
+endif ()
 
 
 target_include_directories(wpa3_deps INTERFACE
@@ -18,11 +18,11 @@ target_include_directories(wpa3_deps INTERFACE
 )
 
 find_path(SYSTEM_BOOST_PFR_INCLUDE boost/pfr.hpp)
-if(SYSTEM_BOOST_PFR_INCLUDE)
+if (SYSTEM_BOOST_PFR_INCLUDE)
     message(STATUS "Using system Boost.PFR: ${SYSTEM_BOOST_PFR_INCLUDE}")
-else()
+else ()
     message(STATUS "Using FetchContent Boost.PFR: ${boost_pfr_SOURCE_DIR}/include")
-endif()
+endif ()
 
 target_include_directories(wpa3_deps INTERFACE
         ${CMAKE_CURRENT_BINARY_DIR}/awk_scripts
@@ -55,18 +55,18 @@ target_link_libraries(wpa3_deps INTERFACE
         OpenSSL::SSL OpenSSL::Crypto
 )
 
-if(NOT DEFINED WPA3_PROJECT_ROOT)
+if (NOT DEFINED WPA3_PROJECT_ROOT)
     set(WPA3_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
+endif ()
 execute_process(
         COMMAND git -C "${WPA3_PROJECT_ROOT}" rev-parse --short HEAD
         OUTPUT_VARIABLE _GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
 )
-if(NOT _GIT_HASH)
+if (NOT _GIT_HASH)
     set(_GIT_HASH "unknown")
-endif()
+endif ()
 
 # Get the standard git commit hash
 execute_process(
@@ -84,9 +84,9 @@ execute_process(
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if(NOT "${_GIT_STATUS}" STREQUAL "")
+if (NOT "${_GIT_STATUS}" STREQUAL "")
     set(_GIT_HASH "${_GIT_HASH}-dirty")
-endif()
+endif ()
 
 target_compile_definitions(wpa3_deps INTERFACE
         PROJECT_ROOT_DIR="${WPA3_PROJECT_ROOT}"

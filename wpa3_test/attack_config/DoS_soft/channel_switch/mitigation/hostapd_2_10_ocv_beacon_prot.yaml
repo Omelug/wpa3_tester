@@ -9,7 +9,7 @@ actors:
         ocv: 1
         beacon_prot: 1
     selection:
-      condition: [ AP , OCV, MFP, 2_4GHz]
+      condition: [ AP , OCV, MFP, 2_4GHz ]
   client:
     setup:
       program: wpa_supplicant

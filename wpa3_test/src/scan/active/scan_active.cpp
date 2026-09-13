@@ -9,37 +9,34 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-namespace wpa3_tester::scan{
+namespace wpa3_tester::scan {
 // ----------- Fill Actor_Config ------------------
-void apply_radiotap(PDU &pdu, Actor_Config_external &cfg){
+void apply_radiotap(PDU &pdu, Actor_Config_external &cfg) {
 	const auto *rt = pdu.find_pdu<RadioTap>();
 	if(!rt) return;
-	try{ cfg.set(SK::signal, to_string(rt->dbm_signal())); } catch(const exception &e){
-		log(LogLevel::WARNING, "apply_radiotap: signal option not found: {}", e.what());
-	}
-	try{
+	try {
+		cfg.set(SK::signal, to_string(rt->dbm_signal()));
+	} catch(const exception &e) { log(LogLevel::WARNING, "apply_radiotap: signal option not found: {}", e.what()); }
+	try {
 		const int freq = rt->channel_freq();
-		if(freq > 0){
+		if(freq > 0) {
 			cfg.set(SK::channel, to_string(hw_capabilities::freq_to_channel(freq)));
 			if(freq >= 2412 && freq <= 2484) cfg.set(BK::GHz2_4, true);
 			if(freq >= 5170 && freq <= 5885) cfg.set(BK::GHz5, true);
 			if(freq >= 5945 && freq <= 7125) cfg.set(BK::GHz6, true);
 		}
-	} catch(const exception &e){
-		log(LogLevel::WARNING, "apply_radiotap: channel option not found: {}", e.what());
-	}
+	} catch(const exception &e) { log(LogLevel::WARNING, "apply_radiotap: channel option not found: {}", e.what()); }
 }
 
-RSNCapFlags parse_rsn_caps(const uint16_t caps){
-	return {
-		// 80211-2024 / 9.4.2.23.4 RSN Capabilities
+RSNCapFlags parse_rsn_caps(const uint16_t caps) {
+	return { // 80211-2024 / 9.4.2.23.4 RSN Capabilities
 		.mfp_capable = static_cast<bool>(caps & 1u << 7),
 		.mfp_required = static_cast<bool>(caps & 1u << 6),
 		.ocvc = static_cast<bool>(caps & 1u << 14)
 	};
 }
 
-void set_role_flags(Actor_Config_external &cfg, const bool is_ap){
+void set_role_flags(Actor_Config_external &cfg, const bool is_ap) {
 	cfg.set(BK::AP, is_ap);
 	cfg.set(BK::STA, !is_ap);
 	cfg.set(BK::managed, false);
@@ -47,8 +44,8 @@ void set_role_flags(Actor_Config_external &cfg, const bool is_ap){
 }
 
 bool parse_beacon_protection(const Dot11ManagementFrame &mgmt) {
-	const auto* opt = mgmt.search_option(Dot11::OptionTypes::EXT_CAP);
-	if (!opt) return false;
+	const auto *opt = mgmt.search_option(Dot11::OptionTypes::EXT_CAP);
+	if(!opt) return false;
 
 	const auto data = opt->data_ptr();
 	const size_t data_size = opt->data_size();
@@ -56,36 +53,31 @@ bool parse_beacon_protection(const Dot11ManagementFrame &mgmt) {
 	// 80211-2024 / 9.4.2.25 Extended RSN Capabilities
 
 	// get id 84
-	constexpr size_t byte_idx = 84 / 8; // 10
+	constexpr size_t byte_idx = 84 / 8;			 // 10
 	constexpr uint8_t bit_mask = 1u << (84 % 8); // 1 << 4 = 0x10
 
-	if (data_size > byte_idx) {
-		return (data[byte_idx] & bit_mask) != 0;
-	}
+	if(data_size > byte_idx) { return (data[byte_idx] & bit_mask) != 0; }
 	return false;
 }
 
-void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
+void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg) {
 	using OT = Dot11ManagementFrame::OptionTypes;
 
 	// HT Capabilities (IE 45) -> 802.11n
 	const bool has_ht = mgmt.search_option(OT::HT_CAPABILITY) != nullptr;
 	cfg.set(BK::w80211n, has_ht);
 
-	if(has_ht){
+	if(has_ht) {
 		// HT Operation (IE 61): byte 1 bits 0-1 = secondary channel offset
 		// 0=none(HT20), 1=above(HT40+), 3=below(HT40-)
 		const auto *ht_op = mgmt.search_option(OT::HT_OPERATION);
-		if(ht_op && ht_op->data_size() >= 2){
-			switch(ht_op->data_ptr()[1] & 0x03){
-			case 1: cfg.set(SK::ht_mode, "HT40+");
-				break;
-			case 3: cfg.set(SK::ht_mode, "HT40-");
-				break;
-			default: cfg.set(SK::ht_mode, "HT20");
-				break;
+		if(ht_op && ht_op->data_size() >= 2) {
+			switch(ht_op->data_ptr()[1] & 0x03) {
+			case 1: cfg.set(SK::ht_mode, "HT40+"); break;
+			case 3: cfg.set(SK::ht_mode, "HT40-"); break;
+			default: cfg.set(SK::ht_mode, "HT20"); break;
 			}
-		} else{
+		} else {
 			cfg.set(SK::ht_mode, "HT20");
 		}
 	}
@@ -96,8 +88,8 @@ void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cf
 	// HE Capabilities: extension element (IE 255, ext ID 35) -> 802.11ax
 	// Iterate all options to find the multi-occurrence extension element.
 	bool has_he = false;
-	for(const auto &opt: mgmt.options()){
-		if(opt.option() == static_cast<OT>(255) && opt.data_size() > 0 && opt.data_ptr()[0] == 35){
+	for(const auto &opt: mgmt.options()) {
+		if(opt.option() == static_cast<OT>(255) && opt.data_size() > 0 && opt.data_ptr()[0] == 35) {
 			has_he = true;
 			break;
 		}
@@ -105,21 +97,19 @@ void apply_ht_vht_he(const Dot11ManagementFrame &mgmt, Actor_Config_external &cf
 	cfg.set(BK::w80211ax, has_he);
 }
 
-void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg){
-	try{
+void apply_rsn(const Dot11ManagementFrame &mgmt, Actor_Config_external &cfg) {
+	try {
 		const auto rsn = mgmt.rsn_information();
 		const auto flags = parse_rsn_caps(rsn.capabilities());
 		cfg.set(BK::MFP, flags.mfp_capable);
 		cfg.set(BK::OCV, flags.ocvc);
-		cfg.set(BK::beacon_prot,  parse_beacon_protection(mgmt));
+		cfg.set(BK::beacon_prot, parse_beacon_protection(mgmt));
 
-		for(const auto &akm: rsn.akm_cyphers()){
-			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm ==
-				RSNInformation::PSK_SHA256) cfg.set(BK::WPA_PSK, true);
+		for(const auto &akm: rsn.akm_cyphers()) {
+			if(akm == RSNInformation::PSK || akm == RSNInformation::PSK_FT || akm == RSNInformation::PSK_SHA256)
+				cfg.set(BK::WPA_PSK, true);
 			if(akm == RSNInformation::SAE_SHA256 || akm == RSNInformation::SAE_FT) cfg.set(BK::WPA3_SAE, true);
 		}
-	} catch(const exception &e){
-		log(LogLevel::WARNING, "apply_rsn: RSN information not found: {}", e.what());
-	}
+	} catch(const exception &e) { log(LogLevel::WARNING, "apply_rsn: RSN information not found: {}", e.what()); }
 }
 }

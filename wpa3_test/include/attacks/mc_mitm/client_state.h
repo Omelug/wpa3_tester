@@ -1,22 +1,22 @@
 #pragma once
+#include <string>
+#include <tins/tins.h>
 #include "logger/log.h"
 #include "system/utils.h"
 #include "system/wifi_channel.h"
-#include <string>
-#include <tins/tins.h>
 
-namespace wpa3_tester{
-struct NetworkConfig{
+namespace wpa3_tester {
+struct NetworkConfig {
 	std::string ssid;
 	Channel real_channel = {};
 	Channel rogue_channel = {};
 };
 
-class ClientState{
+class ClientState {
 public:
-	enum State{
+	enum State {
 		Unknown = -1,
-		Target  = 0,
+		Target = 0,
 		// target send frame to disconnected
 		// tester don't know channel because forwarding can catch fake frames
 		Target_disconnected,
@@ -41,22 +41,25 @@ protected:
 public:
 	virtual ~ClientState() = default;
 
-	[[nodiscard]] Tins::HWAddress<6> get_mac() const{ return macaddr; }
-	[[nodiscard]] State get_state() const{ return state; }
+	[[nodiscard]] Tins::HWAddress<6> get_mac() const { return macaddr; }
+	[[nodiscard]] State get_state() const { return state; }
 
-	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt
-	): macaddr(mac), log_folder(std::move(log_folder)){}
+	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt):
+		macaddr(mac),
+		log_folder(std::move(log_folder)) {}
 
 	explicit ClientState(const Tins::HWAddress<6> mac, const State state,
-						const std::optional<std::filesystem::path> &log_folder = std::nullopt
-	): state(state), macaddr(mac), log_folder(log_folder){}
+			const std::optional<std::filesystem::path> &log_folder = std::nullopt):
+		state(state),
+		macaddr(mac),
+		log_folder(log_folder) {}
 
-	void update_state(const State s){
+	void update_state(const State s) {
 		log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr, state2str(s));
-		if(log_folder){
+		if(log_folder) {
 			const auto path = *log_folder / (macaddr.to_string() + "_state.log");
 			const bool is_new = !std::filesystem::exists(path);
-			if(std::ofstream f(path, std::ios::app); f){
+			if(std::ofstream f(path, std::ios::app); f) {
 				if(is_new) set_public_perms(path);
 				std::stringstream ss;
 				ss << current_timestamp();
@@ -69,12 +72,17 @@ public:
 		state = s;
 	}
 
-	[[nodiscard]] bool is_state(const State s) const{ return this->state == s; }
+	[[nodiscard]] bool is_state(const State s) const { return this->state == s; }
 
-	static std::string state2str(const State state){
-		static const std::string names[] = {
-			"Unknown", "Target",  "Target_disconnected", "Sent_to_rogue", "Finding", "Authenticated", "Associated", "GotMitm"
-		};
+	static std::string state2str(const State state) {
+		static const std::string names[] = { "Unknown",
+			"Target",
+			"Target_disconnected",
+			"Sent_to_rogue",
+			"Finding",
+			"Authenticated",
+			"Associated",
+			"GotMitm" };
 		const int idx = static_cast<int>(state) + 1; // Unknown=-1 maps to index 0
 		if(idx < 0 || idx >= static_cast<int>(std::size(names))) return "Invalid";
 		return names[idx];

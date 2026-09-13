@@ -1,23 +1,22 @@
 #pragma once
-#include "interrupt.h"
-#include "system/hw_capabilities.h"
 #include <cerrno>
 #include <pcap/pcap.h>
 #include <sys/poll.h>
 #include <tins/pdu.h>
+#include "interrupt.h"
+#include "system/hw_capabilities.h"
 
 #include "logger/error_log.h"
 #include "logger/log.h"
 
-enum class StopReason{ Timeout, HandlerDone, Interrupted };
+enum class StopReason { Timeout, HandlerDone, Interrupted };
 
-namespace wpa3_tester::components{
+namespace wpa3_tester::components {
 template<typename T, typename Handler>
-std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
-										Handler &&on_packet, const std::string &iface = ""
-){
+std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
+		Handler &&on_packet, const std::string &iface = "") {
 	char errbuf[PCAP_ERRBUF_SIZE];
-	if(handle == nullptr){
+	if(handle == nullptr) {
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
 		if(!handle) throw run_err("pcap_open_live failed: " + std::string(errbuf));
 	}
@@ -26,23 +25,24 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 	if(pcap_fd == -1) throw run_err("pcap fd not selectable");
 
 	pollfd pfds[2] = {
-		{.fd = pcap_fd, .events = POLLIN, .revents = 0},
-		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
+		{ .fd = pcap_fd, .events = POLLIN, .revents = 0 },
+		{ .fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0 },
 	};
 
-	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()} : std::nullopt;
+	const auto deadline = timeout ? std::optional{ std::chrono::steady_clock::now() + timeout.value() } : std::nullopt;
 
-	while(!g_interrupted.load()){
+	while(!g_interrupted.load()) {
 		int remaining_ms = -1;
-		if(deadline){
-			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
-				*deadline - std::chrono::steady_clock::now()).count());
+		if(deadline) {
+			remaining_ms = static_cast<int>(
+					std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
+							.count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 
 		const int ret = poll(pfds, 2, remaining_ms);
 
-		if(ret < 0){
+		if(ret < 0) {
 			if(errno == EINTR) continue;
 			throw run_err("poll error: " + std::to_string(errno));
 		}
@@ -52,7 +52,7 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 
 		pcap_pkthdr *hdr;
 		const uint8_t *pkt;
-		while(pcap_next_ex(handle, &hdr, &pkt) == 1){
+		while(pcap_next_ex(handle, &hdr, &pkt) == 1) {
 			if(auto result = on_packet(pkt, hdr->caplen)) return std::move(*result);
 		}
 	}
@@ -60,10 +60,8 @@ std::variant<T,StopReason> poll_sniffer(pcap_t *handle, const std::optional<std:
 }
 
 template<typename T, typename Handler>
-std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::string &interface,
-											const std::string &filter = "",
-											const std::optional<std::chrono::milliseconds> timeout = std::nullopt
-){
+std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::string &interface,
+		const std::string &filter = "", const std::optional<std::chrono::milliseconds> timeout = std::nullopt) {
 	Tins::SnifferConfiguration sniff_config;
 	sniff_config.set_timeout(100);
 	sniff_config.set_immediate_mode(true);
@@ -77,23 +75,24 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 	if(pcap_fd == -1) throw run_err("pcap fd not selectable");
 
 	pollfd pfds[2] = {
-		{.fd = pcap_fd, .events = POLLIN, .revents = 0},
-		{.fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0},
+		{ .fd = pcap_fd, .events = POLLIN, .revents = 0 },
+		{ .fd = g_interrupt_pipe.read_fd, .events = POLLIN, .revents = 0 },
 	};
 
-	const auto deadline = timeout ? std::optional{std::chrono::steady_clock::now() + timeout.value()} : std::nullopt;
+	const auto deadline = timeout ? std::optional{ std::chrono::steady_clock::now() + timeout.value() } : std::nullopt;
 
-	while(true){
+	while(true) {
 		int remaining_ms = -1;
-		if(deadline){
-			remaining_ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
-				*deadline - std::chrono::steady_clock::now()).count());
+		if(deadline) {
+			remaining_ms = static_cast<int>(
+					std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
+							.count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 
 		const int ret = poll(pfds, 2, remaining_ms);
 
-		if(ret < 0){
+		if(ret < 0) {
 			if(errno == EINTR) continue;
 			throw run_err("poll error: " + std::to_string(errno));
 		}
@@ -101,7 +100,7 @@ std::variant<T,StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::stri
 		if(pfds[1].revents & POLLIN) return StopReason::Interrupted;
 		if(ret == 0 || !(pfds[0].revents & POLLIN)) continue;
 
-		if(const std::unique_ptr<Tins::PDU> pdu{sniffer.next_packet()}){
+		if(const std::unique_ptr<Tins::PDU> pdu{ sniffer.next_packet() }) {
 			if(auto result = on_packet(*pdu)) return std::move(*result);
 		}
 	}

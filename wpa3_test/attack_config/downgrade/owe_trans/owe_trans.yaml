@@ -5,7 +5,7 @@ actors:
     source: internal
     selection:
       condition: [ AP ] #FIXME TODO add 
-      driver: [rtw88_8821au, rtw_8821au]
+      driver: [ rtw88_8821au, rtw_8821au ]
     setup:
       program: hostapd
       program_config:

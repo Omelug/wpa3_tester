@@ -25,36 +25,34 @@ using namespace std;
 using namespace filesystem;
 using namespace chrono;
 
-namespace wpa3_tester::sae_dos_wrapper{
-static string get_suite_path(){
+namespace wpa3_tester::sae_dos_wrapper {
+static string get_suite_path() {
 	return get_global_config().at("paths").at("WPA3_SAE_DoS_Research_Suite").get<string>();
 }
 
-void setup_attack(RunStatus &rs){
+void setup_attack(RunStatus &rs) {
 	components::client_ap_setup_t(rs);
 
 	const string suite = get_suite_path();
 	hw_capabilities::git_clone_or_pull("https://github.com/Omelug/WPA3-SAE-DoS-Research-Suite", suite);
 
-	if(system("python--version > /dev/null 2>&1") != 0){
+	if(system("python--version > /dev/null 2>&1") != 0) {
 		log(LogLevel::INFO, "python3.10 not found, installing...");
 		//FIXME  3.10 worked, but dont wokns on rapsberry
-		hw_capabilities::run_cmd({"apt-get", "install", "-y", "python3"});
+		hw_capabilities::run_cmd({ "apt-get", "install", "-y", "python3" });
 	}
 
 	const string req = suite + "/requirements.txt"; //TODO move requirement and python3.10  to fork
-	if(exists(req)){
+	if(exists(req)) {
 		log(LogLevel::INFO, "Installing python dependencies from {}...", req);
-		hw_capabilities::run_cmd({"python3", "-m", "pip", "install", "--break-system-packages", "-r", req});
+		hw_capabilities::run_cmd({ "python3", "-m", "pip", "install", "--break-system-packages", "-r", req });
 	}
 
 	log(LogLevel::INFO, "SAE DoS Research Suite ready at {}", suite);
 }
 
 static void write_run_config(const string &config_path, const sae_helper::SAEPair &sae, const string &ap_mac,
-							const string &client_mac, const string &channel, const string &att_iface,
-							const nlohmann::json &att_cfg
-){
+		const string &client_mac, const string &channel, const string &att_iface, const nlohmann::json &att_cfg) {
 	const string scalar_hex = sae_helper::bytes_to_hex_plain(sae.scalar);
 	const string finite_hex = sae_helper::bytes_to_hex_plain(sae.element);
 	const string band = att_cfg.at("adapter_band").get<string>();
@@ -91,16 +89,15 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 	set_public_perms(config_path);
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr client = rs.get_actor("client");
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	//TODO zkotrolovat, že tu je ssid ([předtím bylo hardcoded)
-	const auto sae = cookie_guzzler::get_commit_values(rs,
-		attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30
-	);
+	const auto sae = cookie_guzzler::get_commit_values(
+			rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();
@@ -108,25 +105,30 @@ void run_attack(RunStatus &rs){
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const string config_path = rs.run_folder() / "config.yaml";
-	write_run_config(config_path, sae.value(), ap.get(SK::mac), client.get(SK::mac), ap["channel"], attacker.get(SK::iface),
-					att_cfg);
+	write_run_config(config_path,
+			sae.value(),
+			ap.get(SK::mac),
+			client.get(SK::mac),
+			ap["channel"],
+			attacker.get(SK::iface),
+			att_cfg);
 
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
 	rs.start_observers();
 	log(LogLevel::INFO, "Starting WPA3-SAE-DoS-Research-Suite orchestrator...");
 
-	rs.process_manager.run("attacker", {/*"setsid", */"python3", get_suite_path() + "/orchestator_master_en.py"},
-							rs.run_folder());
+	rs.process_manager.run(
+			"attacker", { /*"setsid", */ "python3", get_suite_path() + "/orchestator_master_en.py" }, rs.run_folder());
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	this_thread::sleep_for(seconds(attack_time));
 	ap->conn->disconnect();
 }
 
-void stats_attack(const RunStatus &rs){
+void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	observer::resource_checker::create_graph(rs, rs.get_actor("ap").get(SK::source), elements);
 }
 }

@@ -1,12 +1,12 @@
 #pragma once
 #include <iosfwd>
 
+#include <optional>
 #include "config/RunStatus.h"
 #include "overview/described.h"
-#include <optional>
 
 // functions here don't check if stream is open, have to be checked before
-namespace wpa3_tester::report{
+namespace wpa3_tester::report {
 
 struct Link {
 	std::string text;
@@ -21,23 +21,25 @@ void finalize_report(std::ofstream &report, const std::filesystem::path &run_dir
 
 // RAII report guard: opens report.md, exposes operator<<, finalizes on destruction
 struct ReportGuard {
-	explicit ReportGuard(const std::filesystem::path &run_dir)
-		: stream_(open_report(run_dir)), run_dir_(run_dir) {}
-	~ReportGuard(){ if(stream_.is_open()) finalize_report(stream_, run_dir_); }
+	explicit ReportGuard(const std::filesystem::path &run_dir):
+		stream_(open_report(run_dir)),
+		run_dir_(run_dir) {}
+	~ReportGuard() {
+		if(stream_.is_open()) finalize_report(stream_, run_dir_);
+	}
 	ReportGuard(const ReportGuard &) = delete;
 	ReportGuard &operator=(const ReportGuard &) = delete;
 
 	explicit operator bool() const { return stream_.is_open(); }
-	ReportGuard &operator<<(const std::filesystem::path &p){
+	ReportGuard &operator<<(const std::filesystem::path &p) {
 		const auto rel = p.is_absolute() ? p.lexically_relative(run_dir_) : p;
-		stream_ << rel.string(); return *this;
+		stream_ << rel.string();
+		return *this;
 	}
-	ReportGuard &operator<<(const Link &l){
+	ReportGuard &operator<<(const Link &l) {
 		const auto resolved = l.link_path.is_absolute() ? l.link_path : run_dir_ / l.link_path;
-		if(std::filesystem::exists(resolved)){
-			const auto rel = l.link_path.is_absolute()
-				? l.link_path.lexically_relative(run_dir_)
-				: l.link_path;
+		if(std::filesystem::exists(resolved)) {
+			const auto rel = l.link_path.is_absolute() ? l.link_path.lexically_relative(run_dir_) : l.link_path;
 			stream_ << '[' << l.text << "](" << rel.string() << ')';
 		} else {
 			stream_ << l.text;
@@ -45,60 +47,96 @@ struct ReportGuard {
 		return *this;
 	}
 
-	ReportGuard &operator<<(const bool val){ stream_ << (val ? "yes" : "no"); return *this; }
-	ReportGuard &operator<<(const std::pair<bool, std::string> &val){
+	ReportGuard &operator<<(const bool val) {
+		stream_ << (val ? "yes" : "no");
+		return *this;
+	}
+	ReportGuard &operator<<(const std::pair<bool, std::string> &val) {
 		stream_ << (val.first ? "yes" : "no");
 		if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		return *this;
 	}
-	ReportGuard &operator<<(const std::pair<std::optional<bool>, std::string> &val){
-		if(!val.first.has_value()) stream_ << '?';
-		else stream_ << (*val.first ? "yes" : "no");
+	ReportGuard &operator<<(const std::pair<std::optional<bool>, std::string> &val) {
+		if(!val.first.has_value())
+			stream_ << '?';
+		else
+			stream_ << (*val.first ? "yes" : "no");
 		if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		return *this;
 	}
-	ReportGuard &operator<<(const std::optional<bool> val){ stream_ << (val ? (*val ? "yes" : "no") : "N/A"); return *this; }
+	ReportGuard &operator<<(const std::optional<bool> val) {
+		stream_ << (val ? (*val ? "yes" : "no") : "N/A");
+		return *this;
+	}
 
-	ReportGuard &operator<<(const std::string &val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
-	ReportGuard &operator<<(const std::pair<std::string, std::string> &val){
-		if(val.first.empty()) stream_ << '?';
-		else{
+	ReportGuard &operator<<(const std::string &val) {
+		if(val.empty())
+			stream_ << '?';
+		else
+			stream_ << val;
+		return *this;
+	}
+	ReportGuard &operator<<(const std::pair<std::string, std::string> &val) {
+		if(val.first.empty())
+			stream_ << '?';
+		else {
 			stream_ << val.first;
 			if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		}
 		return *this;
 	}
-	ReportGuard &operator<<(std::string &&val){ if(val.empty()) stream_ << '?'; else stream_ << val; return *this; }
-	ReportGuard &operator<<(const std::optional<std::string> &val){
-		stream_ << (val.has_value() ? val.value() : "N/A"); return *this;
+	ReportGuard &operator<<(std::string &&val) {
+		if(val.empty())
+			stream_ << '?';
+		else
+			stream_ << val;
+		return *this;
 	}
-	ReportGuard &operator<<(const described_bool &val){
-		if(val.empty()){ stream_ << '?'; return *this; }
+	ReportGuard &operator<<(const std::optional<std::string> &val) {
+		stream_ << (val.has_value() ? val.value() : "N/A");
+		return *this;
+	}
+	ReportGuard &operator<<(const described_bool &val) {
+		if(val.empty()) {
+			stream_ << '?';
+			return *this;
+		}
 		const auto &[v, d] = val.last();
-		if(!v.has_value()) stream_ << '?'; else stream_ << (*v ? "yes" : "no");
+		if(!v.has_value())
+			stream_ << '?';
+		else
+			stream_ << (*v ? "yes" : "no");
 		if(!d.empty()) stream_ << " (" << d << ')';
 		return *this;
 	}
-	ReportGuard &operator<<(const described_str &val){
-		if(val.empty()){ stream_ << '?'; return *this; }
+	ReportGuard &operator<<(const described_str &val) {
+		if(val.empty()) {
+			stream_ << '?';
+			return *this;
+		}
 		const auto &[v, d] = val.last();
-		if(v.empty()) stream_ << '?';
-		else { stream_ << v; if(!d.empty()) stream_ << " (" << d << ')'; }
+		if(v.empty())
+			stream_ << '?';
+		else {
+			stream_ << v;
+			if(!d.empty()) stream_ << " (" << d << ')';
+		}
 		return *this;
 	}
 
 	template<typename T>
-	requires (!std::same_as<std::remove_cvref_t<T>, bool> &&
-			  !std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
-			  !std::same_as<std::remove_cvref_t<T>, std::string> &&
-			  !std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
-			  !std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
-			  !std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-			  !std::same_as<std::remove_cvref_t<T>, Link> &&
-			  !std::same_as<std::remove_cvref_t<T>, described_bool> &&
-			  !std::same_as<std::remove_cvref_t<T>, described_str>)
-	ReportGuard &operator<<(T &&val){ stream_ << std::forward<T>(val); return *this; }
-
+		requires(!std::same_as<std::remove_cvref_t<T>, bool> &&
+				!std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+				!std::same_as<std::remove_cvref_t<T>, std::string> &&
+				!std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
+				!std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
+				!std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+				!std::same_as<std::remove_cvref_t<T>, Link> && !std::same_as<std::remove_cvref_t<T>, described_bool> &&
+				!std::same_as<std::remove_cvref_t<T>, described_str>)
+	ReportGuard &operator<<(T &&val) {
+		stream_ << std::forward<T>(val);
+		return *this;
+	}
 private:
 	std::ofstream stream_;
 	std::filesystem::path run_dir_;

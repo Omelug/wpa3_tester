@@ -11,4 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 .github/tools/scan_ascii_issues.py . --ext .c .h .cc .cpp .cxx .hpp .hxx .hh .inl .cmake
+      - run: |
+          ! git ls-files -z -- '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake' \
+            | xargs -0 --no-run-if-empty grep -InP --color=always '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$'

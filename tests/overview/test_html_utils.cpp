@@ -1,144 +1,135 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "overview/html_guard.h"
-#include "overview/html_utils.h"
 #include <doctest/doctest.h>
 #include <filesystem>
 #include <sstream>
 #include <vector>
+#include "overview/html_guard.h"
+#include "overview/html_utils.h"
 
 using namespace wpa3_tester;
 using namespace std;
 using namespace filesystem;
 
 TEST_CASE("HtmlPathTable basic functionality") {
-    path test_dir = temp_directory_path() / "html_utils_test";
-    create_directories(test_dir);
-
-	{
-    	overview::HtmlGuard hg(test_dir);
-
-    	struct TestEntry {
-    		int id;
-    		string name;
-    		double value;
-    	};
-		vector<TestEntry> entries = {
-			{1, "Alice", 95.5},
-			{2, "Bob", 87.2},
-			{3, "Charlie", 92.0}
-		};
-		HtmlPathTable table(hg, entries);
-
-    	table.add_column("ID", [](const TestEntry& e) { return e.id; });
-    	table.add_column("Name", [](const TestEntry& e) { return e.name; });
-    	table.add_column("Score", [](const TestEntry& e) { return e.value; });
-    	table.render();
-	}
-
-    path index_file = test_dir / "index.html";
-    CHECK(exists(index_file));
-
-    ifstream file(index_file);
-    ostringstream oss;
-    oss << file.rdbuf();
-    string result = oss.str();
-
-    CHECK(result.contains("<table"));
-    CHECK(result.contains("<th>ID</th>"));
-    CHECK(result.contains("<th>Name</th>"));
-    CHECK(result.contains("<th>Score</th>"));
-    CHECK(result.contains("<td>1</td>"));
-    CHECK(result.contains("<td>Alice</td>"));
-    CHECK(result.contains("<td>95.5</td>"));
-	remove_all(test_dir);
-}
-
-TEST_CASE("HtmlPathTable with member access") {
-    path test_dir = temp_directory_path() / "html_utils_test2";
-    create_directories(test_dir);
+	path test_dir = temp_directory_path() / "html_utils_test";
+	create_directories(test_dir);
 
 	{
 		overview::HtmlGuard hg(test_dir);
 
-    	struct TestEntry {
-    		int id;
-    		string name;
-    		double value;
-    	};
+		struct TestEntry {
+			int id;
+			string name;
+			double value;
+		};
+		vector<TestEntry> entries = { { 1, "Alice", 95.5 }, { 2, "Bob", 87.2 }, { 3, "Charlie", 92.0 } };
+		HtmlPathTable table(hg, entries);
 
-    	vector<TestEntry> entries = {
-    		{1, "Alice", 95.5},
-			{2, "Bob", 87.2}
-    	};
-
-    	HtmlPathTable table(hg, entries);
-
-    	table.add_column("ID", &TestEntry::id);
-    	table.add_column("Name", &TestEntry::name);
-    	table.add_column("Score", &TestEntry::value);
-    	table.render();
+		table.add_column("ID", [](const TestEntry &e) { return e.id; });
+		table.add_column("Name", [](const TestEntry &e) { return e.name; });
+		table.add_column("Score", [](const TestEntry &e) { return e.value; });
+		table.render();
 	}
 
-    path index_file = test_dir / "index.html";
-    CHECK(exists(index_file));
+	path index_file = test_dir / "index.html";
+	CHECK(exists(index_file));
 
-    ifstream file(index_file);
-    ostringstream oss;
-    oss << file.rdbuf();
-    string result = oss.str();
+	ifstream file(index_file);
+	ostringstream oss;
+	oss << file.rdbuf();
+	string result = oss.str();
 
-    CHECK(result.contains("<table"));
-    CHECK(result.contains("<th>ID</th>"));
-    CHECK(result.contains("<th>Name</th>"));
-    CHECK(result.contains("<th>Score</th>"));
-    CHECK(result.contains("<td>1</td>"));
-    CHECK(result.contains("<td>Alice</td>"));
-    CHECK(result.contains("<td>95.5</td>"));
+	CHECK(result.contains("<table"));
+	CHECK(result.contains("<th>ID</th>"));
+	CHECK(result.contains("<th>Name</th>"));
+	CHECK(result.contains("<th>Score</th>"));
+	CHECK(result.contains("<td>1</td>"));
+	CHECK(result.contains("<td>Alice</td>"));
+	CHECK(result.contains("<td>95.5</td>"));
+	remove_all(test_dir);
+}
+
+TEST_CASE("HtmlPathTable with member access") {
+	path test_dir = temp_directory_path() / "html_utils_test2";
+	create_directories(test_dir);
+
+	{
+		overview::HtmlGuard hg(test_dir);
+
+		struct TestEntry {
+			int id;
+			string name;
+			double value;
+		};
+
+		vector<TestEntry> entries = { { 1, "Alice", 95.5 }, { 2, "Bob", 87.2 } };
+
+		HtmlPathTable table(hg, entries);
+
+		table.add_column("ID", &TestEntry::id);
+		table.add_column("Name", &TestEntry::name);
+		table.add_column("Score", &TestEntry::value);
+		table.render();
+	}
+
+	path index_file = test_dir / "index.html";
+	CHECK(exists(index_file));
+
+	ifstream file(index_file);
+	ostringstream oss;
+	oss << file.rdbuf();
+	string result = oss.str();
+
+	CHECK(result.contains("<table"));
+	CHECK(result.contains("<th>ID</th>"));
+	CHECK(result.contains("<th>Name</th>"));
+	CHECK(result.contains("<th>Score</th>"));
+	CHECK(result.contains("<td>1</td>"));
+	CHECK(result.contains("<td>Alice</td>"));
+	CHECK(result.contains("<td>95.5</td>"));
 
 	remove_all(test_dir);
 }
 
 TEST_CASE("HtmlPathTable with builder pattern") {
-    path test_dir = temp_directory_path() / "html_utils_test3";
-    create_directories(test_dir);
+	path test_dir = temp_directory_path() / "html_utils_test3";
+	create_directories(test_dir);
 	{
 		overview::HtmlGuard hg(test_dir);
 
-    	struct TestEntry {
-    		int id;
-    		string name;
-    		double value;
-    	};
+		struct TestEntry {
+			int id;
+			string name;
+			double value;
+		};
 
-    	vector<TestEntry> entries = {
-    		{1, "Alice", 95.5}
-    	};
+		vector<TestEntry> entries = { { 1, "Alice", 95.5 } };
 
-    	HtmlPathTable table(hg, entries);
+		HtmlPathTable table(hg, entries);
 
-    	table.build([&](auto col) {
+		table.build([&](auto col) {
 			col("ID", &TestEntry::id);
 			col("Name", &TestEntry::name);
 			col("Score", &TestEntry::value);
 		});
-    	table.render();
+		table.render();
 	}
 
-    path index_file = test_dir / "index.html";
-    CHECK(exists(index_file));
+	path index_file = test_dir / "index.html";
+	CHECK(exists(index_file));
 
-    ifstream file(index_file);
-    ostringstream oss;
-    oss << file.rdbuf();
-    string result = oss.str();
+	ifstream file(index_file);
+	ostringstream oss;
+	oss << file.rdbuf();
+	string result = oss.str();
 
-    CHECK(result.contains("<table"));
-    CHECK(result.contains("<th>ID</th>"));
-    CHECK(result.contains("<th>Name</th>"));
-    CHECK(result.contains("<th>Score</th>"));
-    CHECK(result.contains("<td>1</td>"));
-    CHECK(result.contains("<td>Alice</td>"));
-    CHECK(result.contains("<td>95.5</td>"));
+	CHECK(result.contains("<table"));
+	CHECK(result.contains("<th>ID</th>"));
+	CHECK(result.contains("<th>Name</th>"));
+	CHECK(result.contains("<th>Score</th>"));
+	CHECK(result.contains("<td>1</td>"));
+	CHECK(result.contains("<td>Alice</td>"));
+	CHECK(result.contains("<td>95.5</td>"));
 	remove_all(test_dir);
 }
 
@@ -147,15 +138,19 @@ TEST_CASE("HtmlPathTable add_rotated_column renders th.rotated") {
 	create_directories(test_dir);
 	{
 		overview::HtmlGuard hg(test_dir);
-		struct E { string name; string val; };
-		vector<E> entries = {{"A", "x"}, {"B", "y"}};
+		struct E {
+			string name;
+			string val;
+		};
+		vector<E> entries = { { "A", "x" }, { "B", "y" } };
 		HtmlPathTable table(hg, entries);
 		table.add_column("Name", &E::name);
 		table.add_rotated_column("Val", &E::val);
 		table.render();
 	}
 	ifstream file(test_dir / "index.html");
-	ostringstream oss; oss << file.rdbuf();
+	ostringstream oss;
+	oss << file.rdbuf();
 	const string result = oss.str();
 	CHECK(result.contains("<th>Name</th>"));
 	CHECK(result.contains("<th class=\"rotated\">Val</th>"));
@@ -169,14 +164,17 @@ TEST_CASE("HtmlPathTable t_name footer on non-empty entries") {
 	create_directories(test_dir);
 	{
 		overview::HtmlGuard hg(test_dir);
-		struct E { string name; };
-		vector<E> entries = {{"Alice"}};
+		struct E {
+			string name;
+		};
+		vector<E> entries = { { "Alice" } };
 		HtmlPathTable table(hg, entries, "my_suite");
 		table.add_column("Name", &E::name);
 		table.render();
 	}
 	ifstream file(test_dir / "index.html");
-	ostringstream oss; oss << file.rdbuf();
+	ostringstream oss;
+	oss << file.rdbuf();
 	const string result = oss.str();
 	CHECK(result.contains("<table"));
 	CHECK(result.contains("data from my_suite"));
@@ -189,7 +187,9 @@ TEST_CASE("HtmlPathTable not_data_msg on empty entries") {
 	create_directories(test_dir);
 	{
 		overview::HtmlGuard hg(test_dir);
-		struct E { string name; };
+		struct E {
+			string name;
+		};
 		vector<E> entries;
 		HtmlPathTable table(hg, entries);
 		table.not_data_msg("No data available");
@@ -197,7 +197,8 @@ TEST_CASE("HtmlPathTable not_data_msg on empty entries") {
 		table.render();
 	}
 	ifstream file(test_dir / "index.html");
-	ostringstream oss; oss << file.rdbuf();
+	ostringstream oss;
+	oss << file.rdbuf();
 	const string result = oss.str();
 	CHECK(result.contains("No data available"));
 	CHECK_FALSE(result.contains("<table"));
@@ -217,18 +218,16 @@ TEST_CASE("HtmlPathTable prefix grouping functionality") {
 			double score;
 		};
 
-		vector<TestEntry> entries = {
-			{"channel_switch_rogueAP_internal_34e1cfeb", "pass", 95.5},
-			{"channel_switch_rogueAP_internal_MFP_req_34e1cfeb", "pass", 87.2},
-			{"channel_switch_rogueAP_WPA2_internal_MFP_bccf2bff", "fail", 92.0}
-		};
+		vector<TestEntry> entries = { { "channel_switch_rogueAP_internal_34e1cfeb", "pass", 95.5 },
+			{ "channel_switch_rogueAP_internal_MFP_req_34e1cfeb", "pass", 87.2 },
+			{ "channel_switch_rogueAP_WPA2_internal_MFP_bccf2bff", "fail", 92.0 } };
 
 		HtmlPathTable table(hg, entries);
 
-		table.add_column("Test Name", [](const TestEntry& e) { return e.test_name; });
-		table.add_column("Status", [](const TestEntry& e) { return e.status; });
-		table.add_column("Score", [](const TestEntry& e) { return e.score; });
-		table.render({"Test Name"}, "aggregate");
+		table.add_column("Test Name", [](const TestEntry &e) { return e.test_name; });
+		table.add_column("Status", [](const TestEntry &e) { return e.status; });
+		table.add_column("Score", [](const TestEntry &e) { return e.score; });
+		table.render({ "Test Name" }, "aggregate");
 	}
 
 	path index_file = test_dir / "index.html";
@@ -253,15 +252,19 @@ TEST_CASE("HtmlPathTable prefix grouping skipped for single entry") {
 	create_directories(test_dir);
 	{
 		overview::HtmlGuard hg(test_dir);
-		struct E { string name; string status; };
-		vector<E> entries = {{"channel_switch_rogueAP_internal_34e1cfeb", "pass"}};
+		struct E {
+			string name;
+			string status;
+		};
+		vector<E> entries = { { "channel_switch_rogueAP_internal_34e1cfeb", "pass" } };
 		HtmlPathTable table(hg, entries);
 		table.add_column("Test Name", &E::name);
 		table.add_column("Status", &E::status);
-		table.render({"Test Name"}, "aggregate");
+		table.render({ "Test Name" }, "aggregate");
 	}
 	ifstream file(test_dir / "index.html");
-	ostringstream oss; oss << file.rdbuf();
+	ostringstream oss;
+	oss << file.rdbuf();
 	const string result = oss.str();
 	CHECK(result.contains("<th>Test Name</th>"));
 	CHECK(result.contains("<td>channel_switch_rogueAP_internal_34e1cfeb</td>"));

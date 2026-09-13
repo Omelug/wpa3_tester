@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "system/firmware/ath9k_htc.h"
 #include <doctest.h>
 #include <regex>
 #include <string>
+#include "system/firmware/ath9k_htc.h"
 
 using namespace std;
 using namespace wpa3_tester;
@@ -18,16 +18,15 @@ TEST_CASE("firmware::get_random_ath_masker_mac - preserves first 5 octets") {
 		vector<string> parts;
 		stringstream ss(s);
 		string seg;
-		while (getline(ss, seg, ':')) parts.push_back(seg);
+		while(getline(ss, seg, ':')) parts.push_back(seg);
 		return parts;
 	};
 
-	auto in_parts  = split(attacker_mac);
+	auto in_parts = split(attacker_mac);
 	auto out_parts = split(result);
 
 	REQUIRE_EQ(out_parts.size(), 6);
-	for (int i = 0; i < 5; ++i)
-		CHECK_EQ(out_parts[i], in_parts[i]);
+	for(int i = 0; i < 5; ++i) CHECK_EQ(out_parts[i], in_parts[i]);
 }
 
 TEST_CASE("firmware::get_random_ath_masker_mac - last octet is valid hex in [01,ff]") {
@@ -36,7 +35,7 @@ TEST_CASE("firmware::get_random_ath_masker_mac - last octet is valid hex in [01,
 	vector<string> parts;
 	stringstream ss(result);
 	string seg;
-	while (getline(ss, seg, ':')) parts.push_back(seg);
+	while(getline(ss, seg, ':')) parts.push_back(seg);
 
 	REQUIRE_EQ(parts.size(), 6);
 

@@ -9,7 +9,7 @@
 
 - in [tests](../../tests) folder are doctest unit tests
 - they should pass any time, without connected hardware (only few use hwsim)
--  can be run with `make test`
+- can be run with `make test`
 
 #### Manual tests
 
@@ -18,6 +18,7 @@
 - manual_config_validation is auto test, but it only check , can be run with `make config_validation`
 
 #### Git workflow test
+
 - `make test` is run [test.yml](../../.github/workflows/test.yml)
 - manual_config_validatio is run by [validate_configs.yml](../../.github/workflows/validate_configs.yml)
 - [clang_tidy.yml](../../.github/workflows/clang_tidy.yml) check basic code culture

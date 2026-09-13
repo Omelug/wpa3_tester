@@ -1,4 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
+#include <filesystem>
+#include <map>
+#include <yaml-cpp/node/parse.h>
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/ObserverPtr.h"
 #include "config/Observer_config.h"
@@ -7,31 +11,27 @@
 #include "config/global_config.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
-#include <doctest.h>
-#include <filesystem>
-#include <map>
-#include <yaml-cpp/node/parse.h>
 
 using namespace wpa3_tester;
 using namespace std;
 using namespace filesystem;
 
-struct ConfigTestCase{
+struct ConfigTestCase {
 	string description;
 	string input_yaml;
 	string expected_yaml;
 	bool should_pass = true;
 };
 
-void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
+void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests) {
 	static map<path, nlohmann::json> yaml_cache;
-	for(const auto &[description, input_yaml, expected_yaml, should_pass]: tests){
-		SUBCASE(description.c_str()){
+	for(const auto &[description, input_yaml, expected_yaml, should_pass]: tests) {
+		SUBCASE(description.c_str()) {
 			path input_path = test_base / input_yaml;
 			RunStatus rs;
 			rs.config_path(input_path);
 
-			if(should_pass){
+			if(should_pass) {
 				REQUIRE_NOTHROW(rs.config(RunStatus::config_validation(rs.config_path())));
 
 				path expected_path = test_base / expected_yaml;
@@ -42,7 +42,7 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
 				INFO("Diff (expected vs actual): " << diff.dump(4));
 				INFO("Actual JSON from RunStatus: " << rs.config().dump(4));
 				CHECK_EQ(rs.config(), yaml_cache[expected_path]);
-			} else{
+			} else {
 				CHECK_THROWS_AS(rs.config(RunStatus::config_validation(rs.config_path())), wpa3_tester::config_err);
 			}
 		}
@@ -50,75 +50,96 @@ void test_case_loop(const path &test_base, const vector<ConfigTestCase> &tests){
 }
 
 const path test_data_dir = TEST_DATA_DIR;
-TEST_CASE("RunStatus Config Validation - Test configuration"){
-	const path test_base = test_data_dir/"test";
+TEST_CASE("RunStatus Config Validation - Test configuration") {
+	const path test_base = test_data_dir / "test";
 
 	const vector<ConfigTestCase> tests = {
-		{"1. Minimal not extends", "01_test_happy_path_minimal.yaml",   "01_test_happy_path_minimal.yaml", true},
-		{"2. Full not extends",    "02_test_happy_path_full.yaml",      "02_test_happy_path_full.yaml",    true},
-		{"3. Extends line",        "03_test_extends_line.yaml",         "01_test_happy_path_minimal.yaml", true},
-		{"4. Extends V",           "04_test_extends_V.yaml",            "01_test_happy_path_minimal.yaml", true},
-		{"5. Circular extends", "05_error_circular_extends.yaml",     "", false},
-		{"6. Self extends", "06_error_self_extends.yaml",     "", false},
-		{"7. Normal missing error", "07_error_missing_key.yaml",     "", false},
-		{"8. netns with internal (valid)", "08_test_netns_internal_valid.yaml", "08_test_netns_internal_valid.yaml", true},
-		{"9. netns with external (invalid)", "09_error_netns_external.yaml", "", false},
-		{"10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false},
-		{"14. extends as list (two bases merged)", "14_test_extends_list.yaml", "01_test_happy_path_minimal.yaml", true},
-		{"15. extends as list (current overrides base)", "15_test_extends_list_override.yaml", "01_test_happy_path_minimal.yaml", true},
-		{"16. $DELETE removes key from parent", "16_test_delete.yaml", "01_test_happy_path_minimal.yaml", true},
+		{ "1. Minimal not extends", "01_test_happy_path_minimal.yaml", "01_test_happy_path_minimal.yaml", true },
+		{ "2. Full not extends", "02_test_happy_path_full.yaml", "02_test_happy_path_full.yaml", true },
+		{ "3. Extends line", "03_test_extends_line.yaml", "01_test_happy_path_minimal.yaml", true },
+		{ "4. Extends V", "04_test_extends_V.yaml", "01_test_happy_path_minimal.yaml", true },
+		{ "5. Circular extends", "05_error_circular_extends.yaml", "", false },
+		{ "6. Self extends", "06_error_self_extends.yaml", "", false },
+		{ "7. Normal missing error", "07_error_missing_key.yaml", "", false },
+		{ "8. netns with internal (valid)",
+				"08_test_netns_internal_valid.yaml",
+				"08_test_netns_internal_valid.yaml",
+				true },
+		{ "9. netns with external (invalid)", "09_error_netns_external.yaml", "", false },
+		{ "10. netns with simulation (invalid)", "10_error_netns_simulation.yaml", "", false },
+		{ "14. extends as list (two bases merged)",
+				"14_test_extends_list.yaml",
+				"01_test_happy_path_minimal.yaml",
+				true },
+		{ "15. extends as list (current overrides base)",
+				"15_test_extends_list_override.yaml",
+				"01_test_happy_path_minimal.yaml",
+				true },
+		{ "16. $DELETE removes key from parent", "16_test_delete.yaml", "01_test_happy_path_minimal.yaml", true },
 	};
 	test_case_loop(test_base, tests);
 }
 
-TEST_CASE ("RunStatus Config Validation - Validator configuration"){
-	const path test_base = test_data_dir/"validator";
+TEST_CASE("RunStatus Config Validation - Validator configuration") {
+	const path test_base = test_data_dir / "validator";
 	const vector<ConfigTestCase> tests = {
-		{"1. validator", "01_test_validator_minimal.yaml",    "01_result_validator_minimal.yaml", true},
-		{"2. validator extends", "02_test_validator_extends.yaml",    "01_result_validator_minimal.yaml", true},
-		{"3. validator extends", "03_error_validator_extends.yaml",    "", false},
-		{"4. validator as list (single)", "04_test_validator_list_single.yaml", "01_result_validator_minimal.yaml", true},
-		{"5. validator as list (multi, all pass)", "05_test_validator_list_multi.yaml", "01_result_validator_minimal.yaml", true},
-		{"6. validator as list (one fails)", "06_error_validator_list_fail.yaml", "", false},
+		{ "1. validator", "01_test_validator_minimal.yaml", "01_result_validator_minimal.yaml", true },
+		{ "2. validator extends", "02_test_validator_extends.yaml", "01_result_validator_minimal.yaml", true },
+		{ "3. validator extends", "03_error_validator_extends.yaml", "", false },
+		{ "4. validator as list (single)",
+				"04_test_validator_list_single.yaml",
+				"01_result_validator_minimal.yaml",
+				true },
+		{ "5. validator as list (multi, all pass)",
+				"05_test_validator_list_multi.yaml",
+				"01_result_validator_minimal.yaml",
+				true },
+		{ "6. validator as list (one fails)", "06_error_validator_list_fail.yaml", "", false },
 	};
 	test_case_loop(test_base, tests);
 }
 
-TEST_CASE ("RunStatus Config Validation - Observer configuration"){
-	const path test_base = test_data_dir/"observer";
+TEST_CASE("RunStatus Config Validation - Observer configuration") {
+	const path test_base = test_data_dir / "observer";
 	const vector<ConfigTestCase> tests = {
-		{"1. observer tcpdump valid", "01_test_observer_tcpdump_valid.yaml",    "01_result_observer_tcpdump_valid.yaml", true},
-		{"2. observer tshark valid", "02_test_observer_tshark_valid.yaml",    "02_result_observer_tshark_valid.yaml", true},
-		{"4. observer missing program", "04_error_observer_missing_program.yaml",    "", false},
-		{"5. observer invalid program", "05_error_observer_invalid_program.yaml",    "", false},
-		{"6. observer mausezahn missing target", "06_error_observer_mausezahn_missing_target.yaml",    "", false},
-		{"7. observer recursive schema", "07_recursive_t.yaml", "", false},
+		{ "1. observer tcpdump valid",
+				"01_test_observer_tcpdump_valid.yaml",
+				"01_result_observer_tcpdump_valid.yaml",
+				true },
+		{ "2. observer tshark valid",
+				"02_test_observer_tshark_valid.yaml",
+				"02_result_observer_tshark_valid.yaml",
+				true },
+		{ "4. observer missing program", "04_error_observer_missing_program.yaml", "", false },
+		{ "5. observer invalid program", "05_error_observer_invalid_program.yaml", "", false },
+		{ "6. observer mausezahn missing target", "06_error_observer_mausezahn_missing_target.yaml", "", false },
+		{ "7. observer recursive schema", "07_recursive_t.yaml", "", false },
 	};
 	test_case_loop(test_base, tests);
 }
 
-TEST_CASE("RunStatus Config Validation - Test suite configuration"){
-	const path test_base = test_data_dir/"test_suite";
+TEST_CASE("RunStatus Config Validation - Test suite configuration") {
+	const path test_base = test_data_dir / "test_suite";
 	const vector<ConfigTestCase> tests = {
-		{"1. test suite minimal", "01_ts_path_minimal.yaml",    "01_result_path_minimal.yaml", true},
+		{ "1. test suite minimal", "01_ts_path_minimal.yaml", "01_result_path_minimal.yaml", true },
 		//{"2. generator", "02_ts_generator_vars.yaml",    "02_result_generator_vars.yaml", true},
 		//{"3. validator extends", "03_error_validator_extends.yaml",    "", false},
 	};
 	// TODO change to suite validation test_case_loop(test_base, tests);
 }
 
-struct ConfigSuiteCase{
+struct ConfigSuiteCase {
 	string description;
 	string input_ts_yaml;
 	string folder_name;
 };
 
-void check_recursive_yaml(const path &expected_dir, const path &actual_dir){
+void check_recursive_yaml(const path &expected_dir, const path &actual_dir) {
 	REQUIRE(exists(expected_dir));
 	REQUIRE(exists(actual_dir));
 
-	for(const auto &entry: recursive_directory_iterator(expected_dir)){
-		if(entry.is_regular_file() && entry.path().extension() == ".yaml"){
+	for(const auto &entry: recursive_directory_iterator(expected_dir)) {
+		if(entry.is_regular_file() && entry.path().extension() == ".yaml") {
 			path rel = relative(entry.path(), expected_dir);
 			path actual_file = actual_dir / rel;
 
@@ -139,11 +160,11 @@ void check_recursive_yaml(const path &expected_dir, const path &actual_dir){
 	}
 }
 
-void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
-	auto get_tree_structure = [](const path &base_path){
+void check_dir_tree_structure(const path &expected_dir, const path &actual_dir) {
+	auto get_tree_structure = [](const path &base_path) {
 		set<string> structure;
-		for(const auto &entry: recursive_directory_iterator(base_path)){
-			if(entry.path().filename() == ".gitkeep") { continue;}
+		for(const auto &entry: recursive_directory_iterator(base_path)) {
+			if(entry.path().filename() == ".gitkeep") { continue; }
 			structure.insert(relative(entry.path(), base_path).string());
 		}
 		return structure;
@@ -152,23 +173,19 @@ void check_dir_tree_structure(const path &expected_dir, const path &actual_dir){
 	set<string> expected_tree = get_tree_structure(expected_dir);
 	set<string> actual_tree = get_tree_structure(actual_dir);
 
-	if(expected_tree != actual_tree){
-		for(const auto &path: expected_tree){
-			if(!actual_tree.contains(path)){
-				INFO("Missing in actual: " << path);
-			}
+	if(expected_tree != actual_tree) {
+		for(const auto &path: expected_tree) {
+			if(!actual_tree.contains(path)) { INFO("Missing in actual: " << path); }
 		}
-		for(const auto &path: actual_tree){
-			if(!expected_tree.contains(path)){
-				INFO("Extra in actual: " << path);
-			}
+		for(const auto &path: actual_tree) {
+			if(!expected_tree.contains(path)) { INFO("Extra in actual: " << path); }
 		}
 	}
 
 	CHECK_EQ(expected_tree, actual_tree);
 }
 
-TEST_CASE("Global Config - get_global_config / get_global_run_config"){
+TEST_CASE("Global Config - get_global_config / get_global_run_config") {
 	const path test_base = test_data_dir / "global_config";
 
 	SUBCASE("1. valid config with run_config fields") {
@@ -201,25 +218,19 @@ TEST_CASE("Global Config - get_global_config / get_global_run_config"){
 	}
 }
 
-TEST_CASE("RunStatus - parse_requirements()"){
-	const path test_base = test_data_dir/"test";
-	
+TEST_CASE("RunStatus - parse_requirements()") {
+	const path test_base = test_data_dir / "test";
+
 	SUBCASE("Parse actors and observers from config") {
 		RunStatus rs(test_base / "01_test_happy_path_minimal.yaml", "", ".");
 
 		rs.config()["observers"] = nlohmann::json{
-			{"tcpdump_observer", {
-				{"program", "tcpdump"},
-				{"filter", "wlan.fc.type_subtype == 0x08"}
-			}},
-			{"tshark_observer", {
-				{"program", "tshark"},
-				{"filter", "eapol"}
-			}}
+			{ "tcpdump_observer", { { "program", "tcpdump" }, { "filter", "wlan.fc.type_subtype == 0x08" } } },
+			{ "tshark_observer", { { "program", "tshark" }, { "filter", "eapol" } } }
 		};
-		
+
 		REQUIRE_NOTHROW(rs.parse_requirements());
-		
+
 		REQUIRE_EQ(rs.actors.size(), 1);
 		REQUIRE(rs.actors.contains("only_actor"));
 		CHECK_EQ(rs.get_actor("only_actor").get(SK::actor_name), "only_actor");
@@ -229,44 +240,40 @@ TEST_CASE("RunStatus - parse_requirements()"){
 		CHECK_EQ(rs.observers.at("tcpdump_observer")->observer_name, "tcpdump_observer");
 		CHECK_EQ(rs.observers.at("tshark_observer")->observer_name, "tshark_observer");
 	}
-	
+
 	SUBCASE("Empty observers") {
 		RunStatus rs(test_base / "01_test_happy_path_minimal.yaml", "", ".");
 		rs.config()["observers"] = nlohmann::json::object();
-		
+
 		REQUIRE_NOTHROW(rs.parse_requirements());
 		REQUIRE(rs.observers.empty());
 	}
-	
+
 	SUBCASE("Multiple actors parsing - actor_names") {
-		RunStatus rs(test_base/"02_test_happy_path_full.yaml", "", ".");
+		RunStatus rs(test_base / "02_test_happy_path_full.yaml", "", ".");
 		REQUIRE_NOTHROW(rs.parse_requirements());
 		REQUIRE_GT(rs.actors.size(), 1);
 
-		for (const auto& [actor_name, actor] : rs.actors) {
-			CHECK_EQ(actor[SK::actor_name], actor_name);
-		}
+		for(const auto &[actor_name, actor]: rs.actors) { CHECK_EQ(actor[SK::actor_name], actor_name); }
 	}
 }
 
-TEST_CASE("RunStatus - Test suite test generation"){
+TEST_CASE("RunStatus - Test suite test generation") {
 	const path test_base = absolute(test_data_dir / "test_suite");
 
-	const vector<ConfigSuiteCase> tests = {
-		{"1. test suite minimal", "01_ts_path_minimal.yaml", "01_min"},
-		{"2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars"},
-		{"3. driver permutations", "03_ts_driver_3_vars.yaml", "03_result_driver_3_vars"},
-		{"4. driver permutations", "04_ts_driver_permutation.yaml", "04_result_driver_permutation"}
-	};
+	const vector<ConfigSuiteCase> tests = { { "1. test suite minimal", "01_ts_path_minimal.yaml", "01_min" },
+		{ "2. generator", "02_ts_generator_vars.yaml", "02_result_generator_vars" },
+		{ "3. driver permutations", "03_ts_driver_3_vars.yaml", "03_result_driver_3_vars" },
+		{ "4. driver permutations", "04_ts_driver_permutation.yaml", "04_result_driver_permutation" } };
 
-	for (const auto& t : tests) {
+	for(const auto &t: tests) {
 		SUBCASE(t.description.c_str()) {
 			path ts_config_path = test_base / t.input_ts_yaml;
 
 			RunSuiteStatus rss(ts_config_path);
 			rss.run_folder(test_base / "run_out" / t.folder_name);
 
-			if (exists(rss.run_folder())) {remove_all(rss.run_folder());}
+			if(exists(rss.run_folder())) { remove_all(rss.run_folder()); }
 			create_directories(rss.run_folder());
 
 			auto tests_paths = rss.get_test_paths();

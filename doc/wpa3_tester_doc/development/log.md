@@ -1,6 +1,6 @@
-#TODO 
-log, get descriptions from pdf 
+#TODO
+log, get descriptions from pdf
 
-### 
+###  
 
 

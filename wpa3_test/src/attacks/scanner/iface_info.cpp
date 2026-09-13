@@ -104,7 +104,7 @@ void run_attack(RunStatus &rs) {
 		result["netns_move"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 
 		const auto t2 = steady_clock::now();
-		netlink_helper::delete_ns_and_wait(test_ns, vector<string>{ iface });
+		netlink_helper::delete_ns_and_wait(test_ns, vector{ iface });
 		result["netns_return"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t2).count();
 	} catch(...) { result["netns_move"]["ok"] = false; }
 
@@ -127,7 +127,7 @@ void generate_report(const RunStatus &rs) {
 	nlohmann::json result;
 	try {
 		result = rs.load_result();
-	} catch(...) {}
+	} catch(...) {} //FIXME  why ignore log? --- log and return?
 
 	const string current_mac = result.value("current_mac", "n/a");
 	const bool is_up = result.value("is_up", false);

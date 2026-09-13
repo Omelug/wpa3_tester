@@ -20,7 +20,7 @@ static const path TEST_DIR = TEST_DATA_DIR;
 	CHECK_EQ(result, "hostapd");
 }*/
 
-TEST_CASE("get_hostapd - returns existing binary if found"){
+TEST_CASE("get_hostapd - returns existing binary if found") {
 	path test_folder = temp_directory_path() / "hostapd_test_existing";
 	remove_all(test_folder);
 	create_directories(test_folder);
@@ -36,21 +36,21 @@ TEST_CASE("get_hostapd - returns existing binary if found"){
 	remove_all(test_folder);
 }
 
-TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available"*doctest::skip (true)){
+TEST_CASE("get_hostapd - throws when binary doesn't exist and repo not available" * doctest::skip(true)) {
 	path test_folder = temp_directory_path() / "hostapd_test_nonexistent";
 	remove_all(test_folder);
 
 	get_global_config()["paths"]["hostapd"]["hostapd_build_folder"] = test_folder.string();
 
 	string result2_10 = hostapd::get_hostapd("2.10");
-	CHECK_EQ((test_folder/ "hostapd_2_10").string(), result2_10);
+	CHECK_EQ((test_folder / "hostapd_2_10").string(), result2_10);
 	CHECK(exists(result2_10));
 
 	string result2_9 = hostapd::get_hostapd("2.9");
-	CHECK_EQ((test_folder/ "hostapd_2_9").string(), result2_9);
+	CHECK_EQ((test_folder / "hostapd_2_9").string(), result2_9);
 	CHECK(exists(result2_9));
 
-	MESSAGE(hw_capabilities::run_cmd_output({"ls", test_folder.string()}, nullopt));
+	MESSAGE(hw_capabilities::run_cmd_output({ "ls", test_folder.string() }, nullopt));
 
 	remove_all(test_folder);
 }
@@ -148,35 +148,41 @@ TEST_CASE("crack_pmk_hashes - cracks all hashes"
 // ------- akm_from_ap_log
 
 // real snippet from ap.log (STA 28:87:ba:a3:cf:16, WPA3-SAE 4-way handshake)
-static void write_sae_handshake_log(const path &p){
+static void write_sae_handshake_log(const path &p) {
 	ofstream f(p);
-	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way "
+		 "Handshake\n"
 	  << "2026-07-28T15:25:13.046448925+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
-	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
+	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 "
+		 "0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
 }
 
 // two distinct, real-shaped STA handshakes in one log - STA1 (28:87:ba:a3:cf:16)
 // is WPA3-SAE with MFP OPTIONAL
 // STA2 (9c:b6:d0:12:34:56) is WPA2-PSK with MFP REQUIRED
 // Used to prove MAC filtering actually picks the right STA's data rather than just failing to find a MAC that isn't in the log at all
-static void write_two_client_handshake_log(const path &p){
+static void write_two_client_handshake_log(const path &p) {
 	ofstream f(p);
-	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	f << "2026-07-28T15:25:13.042440452+0200 [ap] [stdout] wlan1: STA 28:87:ba:a3:cf:16 WPA: sending 1/4 msg of 4-Way "
+		 "Handshake\n"
 	  << "2026-07-28T15:25:13.046448925+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n"
-	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n"
-	  << "2026-07-28T15:25:40.198423543+0200 [ap] [stdout] wlan1: STA 9c:b6:d0:12:34:56 WPA: sending 1/4 msg of 4-Way Handshake\n"
+	  << "2026-07-28T15:25:13.046458317+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 "
+		 "0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n"
+	  << "2026-07-28T15:25:40.198423543+0200 [ap] [stdout] wlan1: STA 9c:b6:d0:12:34:56 WPA: sending 1/4 msg of 4-Way "
+		 "Handshake\n"
 	  << "2026-07-28T15:25:40.200196067+0200 [ap] [stdout] WPA: EAPOL-Key MIC using HMAC-SHA1-AES\n"
-	  << "2026-07-28T15:25:40.200205408+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 02 cc 00 00 00 00 0f ac 06\n";
+	  << "2026-07-28T15:25:40.200205408+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 "
+		 "0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 02 cc 00 00 00 00 0f ac 06\n";
 }
 
-TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback"){
+TEST_CASE("akm_from_ap_log - returns SAE from AKM-defined fallback") {
 	const path log = TEST_DIR / "ap_sae_akm.log";
 	REQUIRE(exists(log));
 	const string akm = hostapd::akm_from_ap_log(log, {});
 	CHECK_EQ(akm, "00-0f-ac:8\n(SAE)");
 }
 
-TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){
+TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern") {
 	const path tmp = temp_directory_path() / "wpa3_test_akm_text_fallback.log";
 	{
 		ofstream f(tmp);
@@ -188,7 +194,7 @@ TEST_CASE("akm_from_ap_log - fallback to text AKM-defined pattern"){
 	CHECK_EQ(akm, "00-0f-ac:8\n(SAE)");
 }
 
-TEST_CASE("akm_from_ap_log - MAC filter picks the right STA's handshake"){
+TEST_CASE("akm_from_ap_log - MAC filter picks the right STA's handshake") {
 	const path tmp = temp_directory_path() / "wpa3_test_akm_mac_filter.log";
 	write_two_client_handshake_log(tmp);
 
@@ -201,7 +207,7 @@ TEST_CASE("akm_from_ap_log - MAC filter picks the right STA's handshake"){
 
 // ------- mfp_from_ap_log
 
-TEST_CASE("mfp_from_ap_log - returns OPTIONAL from RSN IE capabilities"){
+TEST_CASE("mfp_from_ap_log - returns OPTIONAL from RSN IE capabilities") {
 	const path tmp = temp_directory_path() / "wpa3_test_mfp.log";
 	write_sae_handshake_log(tmp);
 
@@ -211,7 +217,7 @@ TEST_CASE("mfp_from_ap_log - returns OPTIONAL from RSN IE capabilities"){
 	CHECK_EQ(mfp, "OPTIONAL");
 }
 
-TEST_CASE("mfp_from_ap_log - MAC filter picks the right STA's capabilities"){
+TEST_CASE("mfp_from_ap_log - MAC filter picks the right STA's capabilities") {
 	const path tmp = temp_directory_path() / "wpa3_test_mfp_mac_filter.log";
 	write_two_client_handshake_log(tmp);
 
@@ -222,7 +228,7 @@ TEST_CASE("mfp_from_ap_log - MAC filter picks the right STA's capabilities"){
 	remove(tmp);
 }
 
-TEST_CASE("mfp_from_ap_log - falls back to MFPC/MFPR text pattern"){
+TEST_CASE("mfp_from_ap_log - falls back to MFPC/MFPR text pattern") {
 	const path tmp = temp_directory_path() / "wpa3_test_mfp_text_fallback.log";
 	{
 		ofstream f(tmp);
@@ -236,49 +242,64 @@ TEST_CASE("mfp_from_ap_log - falls back to MFPC/MFPR text pattern"){
 
 // ------- get_conf_value
 
-TEST_CASE("get_conf_value - returns value for matching key"){
+TEST_CASE("get_conf_value - returns value for matching key") {
 	const path tmp = temp_directory_path() / "wpa3_test_conf.conf";
-	{ ofstream f(tmp); f << "ssid=MyNetwork\nwpa_key_mgmt=SAE\n"; }
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"ssid"}), "MyNetwork");
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"wpa_key_mgmt"}), "SAE");
+	{
+		ofstream f(tmp);
+		f << "ssid=MyNetwork\nwpa_key_mgmt=SAE\n";
+	}
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "ssid" }), "MyNetwork");
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "wpa_key_mgmt" }), "SAE");
 	remove(tmp);
 }
 
-TEST_CASE("get_conf_value - strips surrounding double quotes"){
+TEST_CASE("get_conf_value - strips surrounding double quotes") {
 	const path tmp = temp_directory_path() / "wpa3_test_conf_quoted.conf";
-	{ ofstream f(tmp); f << "sae_password=\"secret123\"\n"; }
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"sae_password"}), "secret123");
+	{
+		ofstream f(tmp);
+		f << "sae_password=\"secret123\"\n";
+	}
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "sae_password" }), "secret123");
 	remove(tmp);
 }
 
-TEST_CASE("get_conf_value - falls back to second key when first is absent"){
+TEST_CASE("get_conf_value - falls back to second key when first is absent") {
 	const path tmp = temp_directory_path() / "wpa3_test_conf_fallback.conf";
-	{ ofstream f(tmp); f << "psk=passphrase\n"; }
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"sae_password", "psk"}), "passphrase");
+	{
+		ofstream f(tmp);
+		f << "psk=passphrase\n";
+	}
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "sae_password", "psk" }), "passphrase");
 	remove(tmp);
 }
 
-TEST_CASE("get_conf_value - ignores leading whitespace on lines"){
+TEST_CASE("get_conf_value - ignores leading whitespace on lines") {
 	const path tmp = temp_directory_path() / "wpa3_test_conf_indent.conf";
-	{ ofstream f(tmp); f << "  channel=6\n"; }
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"channel"}), "6");
+	{
+		ofstream f(tmp);
+		f << "  channel=6\n";
+	}
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "channel" }), "6");
 	remove(tmp);
 }
 
-TEST_CASE("get_conf_value - returns empty when key not found"){
+TEST_CASE("get_conf_value - returns empty when key not found") {
 	const path tmp = temp_directory_path() / "wpa3_test_conf_missing.conf";
-	{ ofstream f(tmp); f << "ssid=test\n"; }
-	CHECK_EQ(hostapd::get_conf_value(tmp, {"nonexistent_key"}), "");
+	{
+		ofstream f(tmp);
+		f << "ssid=test\n";
+	}
+	CHECK_EQ(hostapd::get_conf_value(tmp, { "nonexistent_key" }), "");
 	remove(tmp);
 }
 
-TEST_CASE("get_conf_value - returns empty for missing file"){
-	CHECK_EQ(hostapd::get_conf_value("/tmp/wpa3_nonexistent.conf", {"ssid"}), "");
+TEST_CASE("get_conf_value - returns empty for missing file") {
+	CHECK_EQ(hostapd::get_conf_value("/tmp/wpa3_nonexistent.conf", { "ssid" }), "");
 }
 
 // ------- client_akm_from_ap_log
 
-TEST_CASE("client_akm_from_ap_log - MAC filter picks the right STA's suite"){
+TEST_CASE("client_akm_from_ap_log - MAC filter picks the right STA's suite") {
 	const path tmp = temp_directory_path() / "wpa3_test_client_akm.log";
 	write_two_client_handshake_log(tmp);
 
@@ -289,30 +310,41 @@ TEST_CASE("client_akm_from_ap_log - MAC filter picks the right STA's suite"){
 	remove(tmp);
 }
 
-TEST_CASE("client_akm_from_ap_log - returns empty for missing file"){
+TEST_CASE("client_akm_from_ap_log - returns empty for missing file") {
 	const string akm = hostapd::client_akm_from_ap_log("/tmp/wpa3_nonexistent_client_akm.log", {});
 	CHECK_EQ(akm, "");
 }
 
 // ------- client_scanning_from_ap_log
 
-TEST_CASE("client_scanning_from_ap_log - extracts scanned channels for matching MAC, empty for a different MAC"){
+TEST_CASE("client_scanning_from_ap_log - extracts scanned channels for matching MAC, empty for a different MAC") {
 	const path tmp = temp_directory_path() / "wpa3_test_scanning.log";
 	{
 		ofstream f(tmp);
 		// probe 1: next line is send_mlme (no DS mismatch) -> falls back to freq=2437 -> ch 6
 		// probe 2: next line is DS mismatch ds.chan=7 -> ch 7
 		f << "@START\n"
-		  << "2026-07-29T01:24:46.213618042+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=5\n"
-		  << "2026-07-29T01:24:46.281390097+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan3\n"
-		  << "2026-07-29T01:24:46.281541486+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-81 fc=0x40 seq_ctrl=0x50 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212\n"
-		  << "2026-07-29T01:24:46.281651079+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3\n"
+		  << "2026-07-29T01:24:46.213618042+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 "
+			 "!= ds.chan=5\n"
+		  << "2026-07-29T01:24:46.281390097+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for "
+			 "wlan3\n"
+		  << "2026-07-29T01:24:46.281541486+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff "
+			 "sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-81 fc=0x40 seq_ctrl=0x50 stype=4 "
+			 "(WLAN_FC_STYPE_PROBE_REQ) len=212\n"
+		  << "2026-07-29T01:24:46.281651079+0200 [ap] [stdout] nl80211: send_mlme - da=00:c0:ca:b5:e1:58 "
+			 "sa=24:ec:99:bf:c7:cf bssid=24:ec:99:bf:c7:cf noack=1 freq=0 no_cck=0 offchanok=0 wait_time=0 "
+			 "no_encrypt=0 fc=0x50 (WLAN_FC_STYPE_PROBE_RESP) nlmode=3\n"
 		  << "2026-07-29T01:24:46.281721671+0200 [ap] [stdout] nl80211: send_mlme - Use bss->freq=2437\n"
 		  << "2026-07-29T01:24:46.281788227+0200 [ap] [stdout] nl80211: send_mlme -> send_frame_cmd\n"
-		  << "2026-07-29T01:24:46.310374356+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - ignore this frame silently\n"
-		  << "2026-07-29T01:24:46.349436616+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for wlan3\n"
-		  << "2026-07-29T01:24:46.349580930+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-83 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=212\n"
-		  << "2026-07-29T01:24:46.349650504+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7\n"
+		  << "2026-07-29T01:24:46.310374356+0200 [ap] [stdout] MGMT: Invalid SA=24:ec:99:bf:c7:cf in received frame - "
+			 "ignore this frame silently\n"
+		  << "2026-07-29T01:24:46.349436616+0200 [ap] [stdout] nl80211: BSS Event 59 (NL80211_CMD_FRAME) received for "
+			 "wlan3\n"
+		  << "2026-07-29T01:24:46.349580930+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff "
+			 "sa=00:c0:ca:b5:e1:58 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-83 fc=0x40 seq_ctrl=0x60 stype=4 "
+			 "(WLAN_FC_STYPE_PROBE_REQ) len=212\n"
+		  << "2026-07-29T01:24:46.349650504+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 "
+			 "!= ds.chan=7\n"
 		  << "@END\n";
 	}
 
@@ -322,7 +354,7 @@ TEST_CASE("client_scanning_from_ap_log - extracts scanned channels for matching 
 	remove(tmp);
 }
 
-TEST_CASE("client_scanning_from_ap_log - returns empty for missing file"){
+TEST_CASE("client_scanning_from_ap_log - returns empty for missing file") {
 	CHECK_EQ(hostapd::client_scanning_from_ap_log("/tmp/wpa3_nonexistent_scan.log", "00:c0:ca:b5:e1:58"), "");
 }
 

@@ -30,7 +30,9 @@
       "name": "cross-rpi4-tester",
       "configurePreset": "cross-rpi4",
       "displayName": "RPi4: wpa3_tester binary only",
-      "targets": ["wpa3_tester"]
+      "targets": [
+        "wpa3_tester"
+      ]
     }
   ]
 }

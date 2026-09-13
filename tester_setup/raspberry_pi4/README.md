@@ -1,4 +1,4 @@
-# Raspberry Pi 4B 
+# Raspberry Pi 4B
 
 Target OS: RPI_IMAGE_URL in [Makefile](Makefile)
 (Default 6.18.39+rpt-rpi-v8)
@@ -9,10 +9,12 @@ Target OS: RPI_IMAGE_URL in [Makefile](Makefile)
 ---
 
 ## Build image:
- ```make image```[<-](mk/image.mk)
 
-It download and customizes image: 
-- add to [kernel](mk/kernel.mk) wifi debug before compilation, allows in kernel drivers 
+```make image```[<-](mk/image.mk)
+
+It download and customizes image:
+
+- add to [kernel](mk/kernel.mk) wifi debug before compilation, allows in kernel drivers
 - creates user `pi` with password `wpa3tester`
 - enables SSH
 - injects `~/.ssh/id_rsa.pub` for key-based login (can be run `make ssh_first` later if not working )
@@ -27,6 +29,7 @@ Override defaults if needed: (check start of [Makefile](Makefile) for more optio
 ```
 
 #### Static IP (recommended)
+
 Without `PI_IP` the Pi uses DHCP and the address may change between boots.
 Set a static IP to always reach the Pi on the same address:
 
@@ -54,15 +57,15 @@ sudo nmcli connection add \
 sudo nmcli connection up pi-direct
 ```
 
-### Flash to SD card 
+### Flash to SD card
+
 !!! This will overwrite your disk, check carefully correct names before
+
 ```bash
 make flash DISK=/dev/sdX
 ```
 
 Lists available block devices and asks for confirmation before writing.
-
-
 
 #### Internet sharing (required for firstboot apt install)
 
@@ -96,7 +99,6 @@ When it prints `[firstboot] Complete` the Pi is ready.
 
 -----
 
-
 ## Cross-compilation (fast iteration, build on host)
 
 Instead of building on the Pi, compile for `aarch64` on the host and push only
@@ -104,14 +106,13 @@ the binary
 
 - One-time host dependencies `sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 - Sync sysroot from Pi:
-   Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
-   <br> `make sysroot PI=10.0.0.2`
+  Pull Pi's libraries to `run/cross-sysroot/` (repeat after `apt install` on Pi):
+  <br> `make sysroot PI=10.0.0.2`
 
 - Build and deploy `make deploy-cross PI=10.0.0.2`
 
 - Run `make run PI=10.0.0.2`
 - Cleanup `make clean_cross`   # remove build-cross/ directory
-
 
 ### Deploy & run
 
@@ -127,9 +128,10 @@ make run PI=10.0.0.2 CONFIG=wpa3_test/attack_config/DoS_soft/channel_switch/chan
 ```
 
 ### Remote debugging (CLion)
+
 - start gdbserver on Pi:  ```make run_debug TEST_SUITE=CSA_Dlink_external_filler``` (run on tester laptop)
 - if you use CLion, select **raspberry** and click Debug - connects to `10.0.0.2:1234`.
-- manually: 
+- manually:
     ```
     gdb-multiarch tester_setup/raspberry_pi4/run/build-cross/bin/wpa3_tester
     (gdb) set sysroot tester_setup/raspberry_pi4/run/cross-sysroot

@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "system/injection_result.h"
 #include <doctest/doctest.h>
+#include "system/injection_result.h"
 
 using namespace wpa3_tester;
 using namespace nlohmann;
-TEST_CASE("it_test_result - json round-trip"){
+TEST_CASE("it_test_result - json round-trip") {
 	CHECK_EQ(json(PASSED), "PASSED");
 	CHECK_EQ(json(FAIL), "FAIL");
 	CHECK_EQ(json(NOCAPTURE), "NOCAPTURE");
@@ -16,7 +16,7 @@ TEST_CASE("it_test_result - json round-trip"){
 	CHECK_EQ(json("bogus").get<it_test_result>(), UNKNOWN);
 }
 
-TEST_CASE("InjectionTestResult - to_json"){
+TEST_CASE("InjectionTestResult - to_json") {
 	const InjectionTestResult t("csa", FAIL, "no CSA frame captured");
 	const auto j = t.to_json();
 
@@ -24,7 +24,7 @@ TEST_CASE("InjectionTestResult - to_json"){
 	CHECK_EQ(j.at("csa").at("detail").get<std::string>(), "no CSA frame captured");
 }
 
-TEST_CASE("InjectionSuiteResult - inject_all and to_json"){
+TEST_CASE("InjectionSuiteResult - inject_all and to_json") {
 	InjectionSuiteResult suite;
 	suite.tests.emplace_back("ping", PASSED);
 	suite.tests.emplace_back("csa", FAIL, "timeout");
@@ -37,7 +37,7 @@ TEST_CASE("InjectionSuiteResult - inject_all and to_json"){
 	CHECK_EQ(j.at("tests").at("csa").at("detail").get<std::string>(), "timeout");
 }
 
-TEST_CASE("InjectionSuiteResult - inject_all passes when all tests pass"){
+TEST_CASE("InjectionSuiteResult - inject_all passes when all tests pass") {
 	InjectionSuiteResult suite;
 	suite.tests.emplace_back("ping", PASSED);
 	suite.tests.emplace_back("csa", PASSED);

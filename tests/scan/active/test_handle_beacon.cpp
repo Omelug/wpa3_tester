@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "scan/active/scan_AP.h"
 #include <doctest.h>
 #include <tins/tins.h>
+#include "scan/active/scan_AP.h"
 
 using namespace std;
 using namespace wpa3_tester::scan;
@@ -16,7 +16,7 @@ TEST_SUITE("handle_beacon") {
 		beacon.addr2(HWAddress<6>("00:11:22:33:44:55"));
 
 		RSNInformation rsn_info;
-		rsn_info.capabilities(0x0001);  // MFP capable
+		rsn_info.capabilities(0x0001); // MFP capable
 		rsn_info.add_akm_cypher(RSNInformation::PSK);
 		rsn_info.add_akm_cypher(RSNInformation::EAP);
 		beacon.rsn_information(rsn_info);

@@ -11,9 +11,9 @@ set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 
 get_property(dirs DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
 
-foreach(dir ${dirs})
+foreach (dir ${dirs})
     list(APPEND CMAKE_INSTALL_RPATH ${dir})
-endforeach()
+endforeach ()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
@@ -46,7 +46,7 @@ option(ENABLE_ASAN "Enable AddressSanitizer" ON)
 if (UNIX)
     set(ENV{NINJA_STATUS} "[%f/%t %e] ")
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "nice -n 19")
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "nice -n 19")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "nice -n 19")
 endif ()
 
 if (ENABLE_COVERAGE)

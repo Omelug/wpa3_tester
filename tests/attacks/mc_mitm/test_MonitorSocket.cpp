@@ -1,16 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "pcap_helper.h"
 #include "system/hw_capabilities.h"
-#include <doctest.h>
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-static constexpr auto PCAP_NO_FCS   = "test_data/monitor_socket/radiotap_no_fcs.pcapng";
+static constexpr auto PCAP_NO_FCS = "test_data/monitor_socket/radiotap_no_fcs.pcapng";
 static constexpr auto PCAP_WITH_FCS = "test_data/monitor_socket/radiotap_with_fcs.pcapng";
-static constexpr auto PCAP_MULTI    = "test_data/monitor_socket/radiotap_multi.pcapng";
+static constexpr auto PCAP_MULTI = "test_data/monitor_socket/radiotap_multi.pcapng";
 
 // ------- unit tests ---------
 
@@ -49,15 +49,14 @@ TEST_SUITE("MonitorSocket::parse_frame") {
 	}
 
 	TEST_CASE("garbage bytes return empty result") {
-		const vector<uint8_t> garbage = {0x00, 0xFF, 0xAA, 0x42};
-		auto result = MonitorSocket::parse_frame(garbage.data(),
-												 static_cast<uint32_t>(garbage.size()));
+		const vector<uint8_t> garbage = { 0x00, 0xFF, 0xAA, 0x42 };
+		auto result = MonitorSocket::parse_frame(garbage.data(), static_cast<uint32_t>(garbage.size()));
 		CHECK_UNARY_FALSE(static_cast<bool>(result));
 		CHECK_EQ(result.pdu, nullptr);
 	}
 
 	TEST_CASE("zero caplen returns empty result") {
-		const vector<uint8_t> raw = {0x00};
+		const vector<uint8_t> raw = { 0x00 };
 		auto result = MonitorSocket::parse_frame(raw.data(), 0);
 		CHECK_UNARY_FALSE(static_cast<bool>(result));
 	}
@@ -66,16 +65,16 @@ TEST_SUITE("MonitorSocket::parse_frame") {
 TEST_SUITE("MonitorSocket::build_inject_frame") {
 
 	TEST_CASE("too short input returns empty") {
-		const vector<uint8_t> short_buf = {0x00, 0x00};
-		Channel ch{6, WifiBand::BAND_2_4, nullopt};
+		const vector<uint8_t> short_buf = { 0x00, 0x00 };
+		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto out = MonitorSocket::build_inject_frame(short_buf, ch);
 		CHECK_UNARY(out.empty());
 	}
 
 	TEST_CASE("rt_len larger than buffer returns empty") {
 		// bytes 2-3 claim rt_len = 0xFFFF
-		const vector<uint8_t> bad = {0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB};
-		Channel ch{6, WifiBand::BAND_2_4, nullopt};
+		const vector<uint8_t> bad = { 0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB };
+		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto out = MonitorSocket::build_inject_frame(bad, ch);
 		CHECK_UNARY(out.empty());
 	}
@@ -96,7 +95,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
 		const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
 
-		Channel ch{6, WifiBand::BAND_2_4, nullopt};
+		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto out = MonitorSocket::build_inject_frame(raw, ch);
 		REQUIRE_UNARY_FALSE(out.empty());
 
@@ -110,9 +109,8 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
 	TEST_CASE("detect_injected sets More Data bit in FC field") {
 		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-		constexpr Channel ch6{6, WifiBand::BAND_2_4, nullopt};
-		const auto out = MonitorSocket::build_inject_frame(
-			{raw.begin(), raw.end()}, ch6, /*detect_injected=*/true);
+		constexpr Channel ch6{ 6, WifiBand::BAND_2_4, nullopt };
+		const auto out = MonitorSocket::build_inject_frame({ raw.begin(), raw.end() }, ch6, /*detect_injected=*/true);
 
 		REQUIRE_UNARY_FALSE(out.empty());
 
@@ -133,7 +131,7 @@ TEST_SUITE("MonitorSocket::parse_frame sequence") {
 		const auto frames = test_helpers::read_all_frames(PCAP_MULTI);
 		REQUIRE_UNARY_FALSE(frames.empty());
 
-		for (const auto &raw : frames) {
+		for(const auto &raw: frames) {
 			auto result = MonitorSocket::parse_frame(raw.data(), static_cast<uint32_t>(raw.size()));
 			CHECK_NE(result.pdu, nullptr);
 		}

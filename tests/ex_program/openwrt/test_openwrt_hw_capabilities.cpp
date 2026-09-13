@@ -1,28 +1,28 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "config/Actor_Config/Actor_Config_sim.h"
-#include "config/Actor_Config/Actor_config.h"
-#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
-#include "logger/error_log.h"
 #include <doctest.h>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "config/Actor_Config/Actor_Config_sim.h"
+#include "config/Actor_Config/Actor_config.h"
+#include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "logger/error_log.h"
 
 using namespace std;
 using namespace wpa3_tester;
 
-class MockOpenWrtConn: public OpenWrtConn{
+class MockOpenWrtConn: public OpenWrtConn {
 public:
 	mutable int mock_ret = 0;
 	mutable string mock_output;
 
-	string exec(const string &, bool, int *ret_err) const override{
+	string exec(const string &, bool, int *ret_err) const override {
 		if(ret_err) *ret_err = mock_ret;
 		return mock_output;
 	}
 };
 
-TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
+TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info") {
 	ActorPtr actor(make_shared<Actor_Config_sim>());
 
 	ifstream file("iw_phy_output.txt");
@@ -47,7 +47,7 @@ TEST_CASE("parse_hw_capabilities - OpenWrt phy0 info"){
 	CHECK_EQ(actor[BK::w80211ax], false);
 }
 
-TEST_CASE("parse_hw_capabilities - empty output"){
+TEST_CASE("parse_hw_capabilities - empty output") {
 	ActorPtr actor(make_shared<Actor_Config_sim>());
 	const string output;
 	OpenWrtConn::parse_hw_capabilities(actor, output);
@@ -57,7 +57,7 @@ TEST_CASE("parse_hw_capabilities - empty output"){
 	CHECK_EQ(actor[BK::w80211n], false);
 }
 
-TEST_CASE("get_hw_capabilities - exec failure"){
+TEST_CASE("get_hw_capabilities - exec failure") {
 	ActorPtr actor(make_shared<Actor_Config_sim>());
 	MockOpenWrtConn conn;
 	conn.mock_ret = 1;
@@ -66,7 +66,7 @@ TEST_CASE("get_hw_capabilities - exec failure"){
 	CHECK_THROWS_AS(conn.get_hw_capabilities(actor), ex_conn_err);
 }
 
-TEST_CASE("get_radio_list - mock wifi status"){
+TEST_CASE("get_radio_list - mock wifi status") {
 	MockOpenWrtConn conn;
 
 	// Mock output for Wi-Fi status

@@ -1,25 +1,25 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "config/Actor_Config/Actor_Config_sim.h"
-#include "logger/devices.h"
-#include "logger/error_log.h"
-#include "root_dir_helper.h"
-#include "system/utils.h"
 #include <chrono>
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include "config/Actor_Config/Actor_Config_sim.h"
+#include "logger/devices.h"
+#include "logger/error_log.h"
+#include "root_dir_helper.h"
+#include "system/utils.h"
 
 using namespace std;
 using namespace wpa3_tester;
 
-namespace{
+namespace {
 
 // mirrors device_path() in devices.cpp; not exposed via devices.h
 // must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const
-filesystem::path device_root(){ return root_dir().parent_path() / DATA_DIR  /DEVICES_DIR; }
+filesystem::path device_root() { return root_dir().parent_path() / DATA_DIR / DEVICES_DIR; }
 
-ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){
+ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true) {
 	ActorPtr actor(make_shared<Actor_Config_sim>(nlohmann::json::object()));
 	actor[SK::permanent_mac] = permanent_mac;
 	actor[SK::source] = "unit_test";
@@ -28,9 +28,9 @@ ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){
 }
 
 // only regular *.json snapshot files, skips the last.json symlink
-vector<filesystem::path> snapshot_files(const filesystem::path &dev_dir){
+vector<filesystem::path> snapshot_files(const filesystem::path &dev_dir) {
 	vector<filesystem::path> out;
-	for(const auto &entry: filesystem::directory_iterator(dev_dir)){
+	for(const auto &entry: filesystem::directory_iterator(dev_dir)) {
 		if(entry.is_symlink()) continue;
 		if(!entry.is_regular_file()) continue;
 		if(entry.path().extension() != ".json") continue;
@@ -40,12 +40,12 @@ vector<filesystem::path> snapshot_files(const filesystem::path &dev_dir){
 }
 }
 
-TEST_CASE("add_device - throws without permanent_mac"){
+TEST_CASE("add_device - throws without permanent_mac") {
 	const ActorPtr actor(make_shared<Actor_Config_sim>(nlohmann::json::object()));
 	CHECK_THROWS_AS(report::add_device(actor), config_err);
 }
 
-TEST_CASE("add_device - first call creates a new device, second identical call does not"){
+TEST_CASE("add_device - first call creates a new device, second identical call does not") {
 	const test_helpers::IsolatedRootDir isolated("devices_test_1");
 	const string mac = "aa:bb:cc:dd:ee:01";
 
@@ -54,7 +54,7 @@ TEST_CASE("add_device - first call creates a new device, second identical call d
 	CHECK_FALSE(report::add_device(actor));
 }
 
-TEST_CASE("add_device - written snapshot and symlink have the expected format"){
+TEST_CASE("add_device - written snapshot and symlink have the expected format") {
 	const test_helpers::IsolatedRootDir isolated("devices_test_2");
 	const string mac = "aa:bb:cc:dd:ee:02";
 	const filesystem::path dev_dir = device_root() / mac;
@@ -77,7 +77,7 @@ TEST_CASE("add_device - written snapshot and symlink have the expected format"){
 	CHECK_EQ(filesystem::read_symlink(symlink_path), files[0].filename());
 }
 
-TEST_CASE("add_device - two different records for the same device are both kept"){
+TEST_CASE("add_device - two different records for the same device are both kept") {
 	const test_helpers::IsolatedRootDir isolated("devices_test_3");
 	const string mac = "aa:bb:cc:dd:ee:03";
 	const filesystem::path dev_dir = device_root() / mac;

@@ -7,9 +7,12 @@
         </symbol>
         <symbol id="s-wifi" viewBox="0 0 100 75">
             <circle cx="50" cy="70" r="6" fill="currentColor"/>
-            <path d="M35 55 A22 22 0 0 1 65 55" fill="none" stroke="currentColor" stroke-width="4"   stroke-linecap="round"/>
-            <path d="M22 42 A38 38 0 0 1 78 42" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-            <path d="M9 29 A55 55 0 0 1 91 29"  fill="none" stroke="currentColor" stroke-width="5"   stroke-linecap="round"/>
+            <path d="M35 55 A22 22 0 0 1 65 55" fill="none" stroke="currentColor" stroke-width="4"
+                  stroke-linecap="round"/>
+            <path d="M22 42 A38 38 0 0 1 78 42" fill="none" stroke="currentColor" stroke-width="4.5"
+                  stroke-linecap="round"/>
+            <path d="M9 29 A55 55 0 0 1 91 29" fill="none" stroke="currentColor" stroke-width="5"
+                  stroke-linecap="round"/>
         </symbol>
         <!-- auto-start-reverse: at marker-start the arrow flips, enabling bidirectional lines -->
         <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
@@ -19,7 +22,9 @@
 
     <!-- mc_MitM -->
     <rect x="265" y="25" width="170" height="52" rx="6" fill="white" stroke="#2D3748" stroke-width="2.5"/>
-    <text x="350" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="#2D3748">mc_MitM</text>
+    <text x="350" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="bold"
+          fill="#2D3748">mc_MitM
+    </text>
 
     <!-- L-arrows: exit sides of mc_MitM, one right-angle turn down to panel tops -->
     <path d="M265 51 L183 51 L183 158" fill="none" stroke="#2D3748" stroke-width="2" marker-end="url(#arr)"/>
@@ -30,28 +35,38 @@
 
     <!-- rogue client (red laptop) -->
     <use href="#s-laptop" x="128" y="178" width="110" height="75" color="#E53E3E"/>
-    <text x="183" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue client</text>
+    <text x="183" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue
+        client
+    </text>
 
     <!-- rogue client<-> ap -->
-    <line x1="183" y1="278" x2="183" y2="340" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+    <line x1="183" y1="278" x2="183" y2="340" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
+          marker-end="url(#arr)"/>
 
     <!-- ap (dark wifi) -->
     <use href="#s-wifi" x="133" y="350" width="100" height="75" color="#2D3748"/>
     <text x="183" y="438" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">ap</text>
-    <text x="183" y="456" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid = wrongAP</text>
+    <text x="183" y="456" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid =
+        wrongAP
+    </text>
 
     <!-- right panel -->
     <rect x="380" y="158" width="275" height="360" rx="8" fill="white" stroke="#2D3748" stroke-width="2.5"/>
 
     <!-- rogue ap (red wifi) -->
     <use href="#s-wifi" x="467" y="178" width="100" height="75" color="#E53E3E"/>
-    <text x="517" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue ap</text>
-    <text x="517" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid = TrustAP</text>
+    <text x="517" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue ap
+    </text>
+    <text x="517" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid =
+        TrustAP
+    </text>
 
     <!-- rogue ap<-> client -->
-    <line x1="517" y1="296" x2="517" y2="342" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+    <line x1="517" y1="296" x2="517" y2="342" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
+          marker-end="url(#arr)"/>
 
     <!-- client (dark laptop) -->
     <use href="#s-laptop" x="462" y="352" width="110" height="75" color="#2D3748"/>
-    <text x="517" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">client</text>
+    <text x="517" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">client
+    </text>
 </svg>

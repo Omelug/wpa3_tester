@@ -1,35 +1,37 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
+#include <filesystem>
+#include <fstream>
 #include "config/RunStatus.h"
 #include "default.h"
 #include "root_dir_helper.h"
 #include "system/hw_capabilities.h"
-#include <doctest.h>
-#include <filesystem>
-#include <fstream>
 
 using namespace std;
 using namespace wpa3_tester;
 namespace fs = filesystem;
 
-namespace{
+namespace {
 const string test_name = "integration_no_module_test";
 
-bool hwsim_available(){
-	if(hw_capabilities::run_cmd({"modprobe", "mac80211_hwsim", "radios=1"}, nullopt, false) != 0) return false;
-	hw_capabilities::run_cmd({"udevadm", "settle"}, nullopt, false);
+bool hwsim_available() {
+	if(hw_capabilities::run_cmd({ "modprobe", "mac80211_hwsim", "radios=1" }, nullopt, false) != 0) return false;
+	hw_capabilities::run_cmd({ "udevadm", "settle" }, nullopt, false);
 	const bool ok = !hw_capabilities::list_interfaces(InterfaceType::WifiVirtualHwsim, nullopt).empty();
-	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+	hw_capabilities::run_cmd({ "modprobe", "-r", "mac80211_hwsim" }, nullopt, false);
 	return ok;
 }
 
 // IsolatedRootDir already creates <root_dir()>/attack_config/ for its own global_config.yaml;
 // reusing that same directory means the config file, run folder and global config all land
 // under one isolated tree, cleaned up in one shot when isolated goes out of scope.
-fs::path write_config(const fs::path &root){
+fs::path write_config(const fs::path &root) {
 	const fs::path config_path = root / "attack_config" / "no_module_test.yaml";
 	ofstream f(config_path);
 	f << "$schema: https://json-schema.org/draft/2020-12/schema\n"
-		 "name: " << test_name << "\n"
+		 "name: "
+	  << test_name
+	  << "\n"
 		 "attacker_module: this_module_does_not_exist_xyz\n"
 		 "actors:\n"
 		 "  sta:\n"
@@ -41,8 +43,8 @@ fs::path write_config(const fs::path &root){
 }
 }
 
-TEST_CASE("RunStatus::execute - attacker_module not present in any map still completes"){
-	if(!hwsim_available()){
+TEST_CASE("RunStatus::execute - attacker_module not present in any map still completes") {
+	if(!hwsim_available()) {
 		MESSAGE("Skipping: mac80211_hwsim not available on this kernel");
 		return;
 	}
@@ -59,5 +61,5 @@ TEST_CASE("RunStatus::execute - attacker_module not present in any map still com
 	CHECK(fs::exists(run_folder / DONE_FILE));
 	CHECK_FALSE(fs::exists(run_folder / ERROR_FILE));
 
-	hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false);
+	hw_capabilities::run_cmd({ "modprobe", "-r", "mac80211_hwsim" }, nullopt, false);
 }

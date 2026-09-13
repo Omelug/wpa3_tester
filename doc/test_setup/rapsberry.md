@@ -1,11 +1,13 @@
 ## Raspberry
+
 - raspbian iso - Linux 6.18.44-v8+ aarch64
 - customize image with [customize.sh](../../tester_setup/raspberry_pi4/image/customize.sh)
 - firstboot (run once after first boot [firstboot.sh](../../tester_setup/raspberry_pi4/image/firstboot.sh))
 - bootsrap for other changes during run [bootstrap.sh](../../tester_setup/raspberry_pi4/bootstrap.sh)
 - some  [drivers.sh](../../tester_setup/raspberry_pi4/image/drivers.sh)
 
-make image download raspbian and add dome flags for debugging in [debug.config](../../tester_setup/raspberry_pi4/kernel/debug.config)
+make image download raspbian and add dome flags for debugging
+in [debug.config](../../tester_setup/raspberry_pi4/kernel/debug.config)
 
 TODO - physical setup (add photo/schema)
 
@@ -13,6 +15,7 @@ requires on host (one-time):
 `sudo apt install clang lld gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
 ### run
+
 use test suite at the start of [deploy.mk](../../tester_setup/raspberry_pi4/mk/deploy.mk)
 
 `make run`
@@ -20,7 +23,8 @@ use test suite at the start of [deploy.mk](../../tester_setup/raspberry_pi4/mk/d
 
 ## USB issues:
 
-With multiple adapters, raspberry can be unstable and end in [usb_helper.cpp](../../../wpa3_test/src/setup/usb_helper.cpp)
+With multiple adapters, raspberry can be unstable and end
+in [usb_helper.cpp](../../../wpa3_test/src/setup/usb_helper.cpp)
 (Ok, I ma not sure now, it maybe only because I used bad adapter for usb hub) #FIXME try
 
 ```

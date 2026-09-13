@@ -1,22 +1,22 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "interrupt.h"
 #include <chrono>
 #include <doctest/doctest.h>
 #include <thread>
+#include "interrupt.h"
 
 using namespace std::chrono;
 
-namespace{
+namespace {
 // drains any pending byte left in the pipe and resets the interrupted flag,
 // so tests don't leak state into each other via the shared globals.
-void reset_interrupt_state(){
+void reset_interrupt_state() {
 	g_interrupted.store(false);
 	char buf;
-	while(read(g_interrupt_pipe.read_fd, &buf, 1) > 0){}
+	while(read(g_interrupt_pipe.read_fd, &buf, 1) > 0) {}
 }
 }
 
-TEST_CASE("interruptible_sleep - returns immediately if already interrupted"){
+TEST_CASE("interruptible_sleep - returns immediately if already interrupted") {
 	reset_interrupt_state();
 	g_interrupted.store(true);
 
@@ -28,7 +28,7 @@ TEST_CASE("interruptible_sleep - returns immediately if already interrupted"){
 	reset_interrupt_state();
 }
 
-TEST_CASE("interruptible_sleep - waits roughly the full duration when undisturbed"){
+TEST_CASE("interruptible_sleep - waits roughly the full duration when undisturbed") {
 	reset_interrupt_state();
 
 	const auto start = steady_clock::now();
@@ -39,10 +39,10 @@ TEST_CASE("interruptible_sleep - waits roughly the full duration when undisturbe
 	reset_interrupt_state();
 }
 
-TEST_CASE("interruptible_sleep - returns early when pipe is triggered mid-sleep"){
+TEST_CASE("interruptible_sleep - returns early when pipe is triggered mid-sleep") {
 	reset_interrupt_state();
 
-	std::thread trigger_thread([]{
+	std::thread trigger_thread([] {
 		std::this_thread::sleep_for(milliseconds(20));
 		g_interrupt_pipe.trigger();
 	});

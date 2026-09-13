@@ -1,25 +1,20 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
+#include <nlohmann/json.hpp>
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "logger/error_log.h"
-#include <doctest.h>
-#include <nlohmann/json.hpp>
 
 using namespace std;
 using namespace wpa3_tester;
 using json = nlohmann::json;
 
-TEST_CASE("Actor_config - json constructor with selection"){
+TEST_CASE("Actor_config - json constructor with selection") {
 	json j = {
-		{
-			"selection", {
-				{"iface", "wlan0"},
-				{"driver", "ath9k"},
-				{"condition", {"monitor", "injection_selftest"}}
-			}
-		},
-		{"netns", "sta"},
+		{ "selection",
+				{ { "iface", "wlan0" }, { "driver", "ath9k" }, { "condition", { "monitor", "injection_selftest" } } } },
+		{ "netns", "sta" },
 	};
 
 	Actor_Config_sim actor(j);
@@ -32,11 +27,11 @@ TEST_CASE("Actor_config - json constructor with selection"){
 
 	CHECK(actor[BK::monitor].value_or(false));
 	CHECK(actor[BK::injection_selftest].value_or(false));
-	CHECK_FALSE((actor[BK::AP].has_value()));
+	CHECK_FALSE(actor[BK::AP].has_value());
 }
 
-TEST_CASE("Actor_config - json constructor without selection"){
-	json j = {{"type", "STA"}};
+TEST_CASE("Actor_config - json constructor without selection") {
+	json j = { { "type", "STA" } };
 
 	Actor_Config_sim actor(j);
 
@@ -45,19 +40,15 @@ TEST_CASE("Actor_config - json constructor without selection"){
 	CHECK_FALSE(actor[BK::monitor]);
 }
 
-TEST_CASE("Actor_config - json constructor with driver list"){
-	json j = {
-		{"selection", {
-			{"driver", json::array({"ath9k_htc", "mt76x2u", "rt2800usb"})}
-		}}
-	};
+TEST_CASE("Actor_config - json constructor with driver list") {
+	json j = { { "selection", { { "driver", json::array({ "ath9k_htc", "mt76x2u", "rt2800usb" }) } } } };
 	Actor_Config_sim actor(j);
 
 	REQUIRE(actor[SK::driver_name].has_value());
 	CHECK_EQ(actor[SK::driver_name].value(), "ath9k_htc|mt76x2u|rt2800usb");
 }
 
-TEST_CASE("Actor_config - matches method"){
+TEST_CASE("Actor_config - matches method") {
 	SUBCASE("Exact match") {
 		Actor_config required;
 		required.set(SK::iface, "wlan0");
@@ -153,10 +144,9 @@ TEST_CASE("Actor_config - matches method"){
 
 		CHECK(required.matches(offer));
 	}
-
 }
 
-TEST_CASE("Actor_config - operator+= merge"){
+TEST_CASE("Actor_config - operator+= merge") {
 	SUBCASE("Merge non-conflicting configs") {
 		Actor_config base;
 		base.set(SK::iface, "wlan0");
@@ -196,7 +186,7 @@ TEST_CASE("Actor_config - operator+= merge"){
 	}
 }
 
-TEST_CASE("Actor_config - operator[] accessor"){
+TEST_CASE("Actor_config - operator[] accessor") {
 	Actor_config actor;
 	actor.set(SK::iface, "wlan0");
 
@@ -206,13 +196,13 @@ TEST_CASE("Actor_config - operator[] accessor"){
 	CHECK_THROWS_AS(auto a = actor.get(SK::driver_name), config_err);
 
 	// dey exists but has no value should throw
-	 CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
+	CHECK_THROWS_AS(auto a = actor.get(SK::mac), config_err);
 
 	// permanent_mac missing should throw
-	 CHECK_THROWS_AS(auto a = actor.get(SK::permanent_mac), config_err);
+	CHECK_THROWS_AS(auto a = actor.get(SK::permanent_mac), config_err);
 }
 
-TEST_CASE("Actor_config::is - source valid values"){
+TEST_CASE("Actor_config::is - source valid values") {
 	Actor_config actor;
 	actor.set(SK::source, "internal");
 	CHECK(actor.is(SK::source, "internal"));
@@ -220,35 +210,28 @@ TEST_CASE("Actor_config::is - source valid values"){
 	CHECK_FALSE(actor.is(SK::source, "simulation"));
 }
 
-TEST_CASE("Actor_config::is - invalid source aborts" * doctest::skip(true)){
+TEST_CASE("Actor_config::is - invalid source aborts" * doctest::skip(true)) {
 	// assert(false) fires on bogus source - process aborts, not catchable here
 	Actor_config actor;
 	actor.set(SK::source, "internal");
 	(void)actor.is(SK::source, "bogus");
 }
 
-TEST_CASE("Actor_config - permanent_mac normalization"){
+TEST_CASE("Actor_config - permanent_mac normalization") {
 	Actor_config actor;
 	actor.set(SK::permanent_mac, "AA:BB:CC:DD:EE:FF");
 	CHECK_EQ(actor.get(SK::permanent_mac), "aa:bb:cc:dd:ee:ff");
 }
 
-TEST_CASE("Actor_config - permanent_mac from JSON selection"){
-	json j = {
-		{
-			"selection", {
-				{"iface", "wlan0"},
-				{"permanent_mac", "11:22:33:44:55:66"}
-			}
-		}
-	};
+TEST_CASE("Actor_config - permanent_mac from JSON selection") {
+	json j = { { "selection", { { "iface", "wlan0" }, { "permanent_mac", "11:22:33:44:55:66" } } } };
 
 	Actor_Config_sim actor(j);
 	CHECK(actor[SK::permanent_mac].has_value());
 	CHECK_EQ(actor.get(SK::permanent_mac), "11:22:33:44:55:66");
 }
 
-TEST_CASE("Actor_config - get_channel"){
+TEST_CASE("Actor_config - get_channel") {
 	SUBCASE("Missing channel throws") {
 		Actor_config actor;
 		CHECK_THROWS_AS(actor.get_channel(), config_err);
@@ -317,15 +300,8 @@ TEST_CASE("Actor_config - get_channel"){
 	}
 }
 
-TEST_CASE("Actor_config - operator+=complex"){
-	json j = {
-		{
-			"selection", {
-				{"driver", "mt76x2u"},
-				{"condition", {"STA", "monitor"}}
-			}
-		}
-	};
+TEST_CASE("Actor_config - operator+=complex") {
+	json j = { { "selection", { { "driver", "mt76x2u" }, { "condition", { "STA", "monitor" } } } } };
 	Actor_Config_sim actor(j);
 	Actor_Config_sim actor2(j);
 	actor.set(BK::GHz2_4, false);
@@ -340,12 +316,12 @@ TEST_CASE("Actor_config - operator+=complex"){
 
 // --- Actor_config::to_str
 
-TEST_CASE("Actor_config::to_str - empty config"){
+TEST_CASE("Actor_config::to_str - empty config") {
 	Actor_config actor;
 	CHECK(actor.to_str().empty());
 }
 
-TEST_CASE("Actor_config::to_str - string keys only"){
+TEST_CASE("Actor_config::to_str - string keys only") {
 	Actor_config actor;
 	actor.set(SK::iface, "wlan0");
 	actor.set(SK::driver_name, "ath9k");
@@ -357,7 +333,7 @@ TEST_CASE("Actor_config::to_str - string keys only"){
 	CHECK_EQ(s.find('['), string::npos);
 }
 
-TEST_CASE("Actor_config::to_str - bool keys true and false"){
+TEST_CASE("Actor_config::to_str - bool keys true and false") {
 	Actor_config actor;
 	actor.set(BK::AP, true);
 	actor.set(BK::injection_selftest, false);
@@ -368,7 +344,7 @@ TEST_CASE("Actor_config::to_str - bool keys true and false"){
 	CHECK(s.contains("!injection_selftest"));
 }
 
-TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
+TEST_CASE("Actor_config::to_str - mixed string and bool keys") {
 	Actor_config actor;
 	actor.set(SK::iface, "wlan1");
 	actor.set(BK::monitor, true);
@@ -379,7 +355,7 @@ TEST_CASE("Actor_config::to_str - mixed string and bool keys"){
 }
 
 // to_json
-TEST_CASE("Actor_config::to_json - empty config"){
+TEST_CASE("Actor_config::to_json - empty config") {
 	Actor_config actor;
 	const auto j = actor.to_json();
 
@@ -389,7 +365,7 @@ TEST_CASE("Actor_config::to_json - empty config"){
 	CHECK_FALSE(j.contains("source"));
 }
 
-TEST_CASE("Actor_config::to_json - string keys in selection"){
+TEST_CASE("Actor_config::to_json - string keys in selection") {
 	Actor_config actor;
 	actor.set(SK::iface, "wlan0");
 	actor.set(SK::driver_name, "ath9k");
@@ -400,7 +376,7 @@ TEST_CASE("Actor_config::to_json - string keys in selection"){
 	CHECK_EQ(j["selection"]["driver"].get<std::string>(), "ath9k");
 }
 
-TEST_CASE("Actor_config::to_json - bool conditions"){
+TEST_CASE("Actor_config::to_json - bool conditions") {
 	Actor_config actor;
 	actor.set(BK::monitor, true);
 	actor.set(BK::injection_selftest, false);
@@ -413,19 +389,19 @@ TEST_CASE("Actor_config::to_json - bool conditions"){
 	MESSAGE(cond.dump());
 }
 
-TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection"){
+TEST_CASE("Actor_config::to_json - netns and source are top-level, not in selection") {
 	Actor_config actor;
 	actor.set(SK::netns, "sta_ns");
 	actor.set(SK::source, "internal");
 
 	const auto j = actor.to_json();
-	CHECK_EQ(j["netns"],  "sta_ns");
+	CHECK_EQ(j["netns"], "sta_ns");
 	CHECK_EQ(j["source"], "internal");
 	CHECK_FALSE(j["selection"].contains("netns"));
 	CHECK_FALSE(j["selection"].contains("source"));
 }
 
-TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
+TEST_CASE("Actor_config::to_json - round-trip via json constructor") {
 	Actor_Config_sim orig;
 	orig.set(SK::iface, "wlan0");
 	orig.set(SK::driver_name, "ath9k");
@@ -435,49 +411,39 @@ TEST_CASE("Actor_config::to_json - round-trip via json constructor"){
 
 	Actor_Config_sim restored(orig.to_json());
 
-	CHECK_EQ(restored[SK::iface].value(),  "wlan0");
+	CHECK_EQ(restored[SK::iface].value(), "wlan0");
 	CHECK_EQ(restored[SK::driver_name].value(), "ath9k");
-	CHECK_EQ(restored[SK::netns].value(),  "sta");
+	CHECK_EQ(restored[SK::netns].value(), "sta");
 	CHECK(restored[BK::monitor].value());
 	CHECK_FALSE(restored[BK::AP].value());
 }
 
 // ------------- ActorPtr
 
-TEST_CASE("ActorPtr - basic accessors"){
+TEST_CASE("ActorPtr - basic accessors") {
 	auto cfg = ActorPtr(make_shared<Actor_Config_sim>());
 	cfg->set(SK::iface, "wlan2");
 	cfg->set(BK::monitor, true);
 
 	ActorPtr ap(cfg);
 
-	SUBCASE("operator->"){
-		CHECK_EQ(ap->get(SK::iface), "wlan2");
-	}
+	SUBCASE("operator->") { CHECK_EQ(ap->get(SK::iface), "wlan2"); }
 
-	SUBCASE("operator*"){
-		CHECK_EQ(ap->get(SK::iface), "wlan2");
-	}
+	SUBCASE("operator*") { CHECK_EQ(ap->get(SK::iface), "wlan2"); }
 
-	SUBCASE("get()"){
-		CHECK_EQ(ap.get(), cfg.get());
-	}
+	SUBCASE("get()") { CHECK_EQ(ap.get(), cfg.get()); }
 
-	SUBCASE("shared()"){
-		CHECK_EQ(ap.shared(), cfg.shared());
-	}
+	SUBCASE("shared()") { CHECK_EQ(ap.shared(), cfg.shared()); }
 
-	SUBCASE("operator[](string)"){
-		CHECK_EQ(ap.get(SK::iface), "wlan2");
-	}
+	SUBCASE("operator[](string)") { CHECK_EQ(ap.get(SK::iface), "wlan2"); }
 
-	SUBCASE("operator[](BK) mutable"){
+	SUBCASE("operator[](BK) mutable") {
 		ap->set(BK::injection_selftest, true);
 		CHECK(ap[BK::injection_selftest].value());
 	}
 }
 
-TEST_CASE("ActorPtr - equality and ordering"){
+TEST_CASE("ActorPtr - equality and ordering") {
 	auto cfg1 = make_shared<Actor_Config_sim>();
 	auto cfg2 = make_shared<Actor_Config_sim>();
 
@@ -491,66 +457,66 @@ TEST_CASE("ActorPtr - equality and ordering"){
 
 // to_str / to_json with ParamFilter via ActorPtr
 
-TEST_CASE("ActorPtr::to_str - filter restricts SK output"){
+TEST_CASE("ActorPtr::to_str - filter restricts SK output") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(SK::iface,       "wlan0");
+	ap->set(SK::iface, "wlan0");
 	ap->set(SK::driver_name, "ath9k");
-	ap->set(SK::ssid,        "MyNet");
+	ap->set(SK::ssid, "MyNet");
 
-	ParamFilter filter{{SK::iface}, {}};
+	ParamFilter filter{ { SK::iface }, {} };
 	const auto s = ap->to_str(&filter);
 
-	CHECK_NE(s.find("iface=wlan0"),  string::npos);
+	CHECK_NE(s.find("iface=wlan0"), string::npos);
 	CHECK_EQ(s.find("driver=ath9k"), string::npos);
-	CHECK_EQ(s.find("ssid=MyNet"),   string::npos);
+	CHECK_EQ(s.find("ssid=MyNet"), string::npos);
 }
 
-TEST_CASE("ActorPtr::to_str - filter restricts BK output"){
+TEST_CASE("ActorPtr::to_str - filter restricts BK output") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(BK::monitor,   true);
-	ap->set(BK::AP,        false);
+	ap->set(BK::monitor, true);
+	ap->set(BK::AP, false);
 	ap->set(BK::injection_selftest, true);
 
-	ParamFilter filter{{}, {BK::monitor}};
+	ParamFilter filter{ {}, { BK::monitor } };
 	const auto s = ap->to_str(&filter);
 
-	CHECK_NE(s.find("monitor"),   string::npos);
-	CHECK_EQ(s.find("AP"),        string::npos);
+	CHECK_NE(s.find("monitor"), string::npos);
+	CHECK_EQ(s.find("AP"), string::npos);
 	CHECK_EQ(s.find("injection_selftest"), string::npos);
 }
 
-TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK"){
+TEST_CASE("ActorPtr::to_str - filter with mixed SK and BK") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(SK::iface,       "wlan1");
+	ap->set(SK::iface, "wlan1");
 	ap->set(SK::driver_name, "mt76");
-	ap->set(BK::AP,          true);
-	ap->set(BK::monitor,     false);
+	ap->set(BK::AP, true);
+	ap->set(BK::monitor, false);
 
-	ParamFilter filter{{SK::iface}, {BK::AP}};
+	ParamFilter filter{ { SK::iface }, { BK::AP } };
 	const auto s = ap->to_str(&filter);
 
 	CHECK(s.contains("iface=wlan1"));
 	CHECK_EQ(s.find("driver=mt76"), string::npos);
-	CHECK_NE(s.find("AP"),          string::npos);
-	CHECK_EQ(s.find("monitor"),     string::npos);
+	CHECK_NE(s.find("AP"), string::npos);
+	CHECK_EQ(s.find("monitor"), string::npos);
 }
 
-TEST_CASE("ActorPtr::to_str - empty filter produces empty string"){
+TEST_CASE("ActorPtr::to_str - empty filter produces empty string") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
 	ap->set(SK::iface, "wlan0");
 	ap->set(BK::monitor, true);
 
-	ParamFilter filter{{}, {}};
+	ParamFilter filter{ {}, {} };
 	CHECK(ap->to_str(&filter).empty());
 }
 
-TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
+TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(SK::iface,       "wlan0");
+	ap->set(SK::iface, "wlan0");
 	ap->set(SK::driver_name, "ath9k");
-	ap->set(SK::ssid,        "MyNet");
+	ap->set(SK::ssid, "MyNet");
 
-	ParamFilter filter{{SK::iface}, {}};
+	ParamFilter filter{ { SK::iface }, {} };
 	const auto j = ap->to_json(&filter);
 
 	REQUIRE(j.contains("selection"));
@@ -560,13 +526,13 @@ TEST_CASE("ActorPtr::to_json - filter restricts SK fields in selection"){
 	CHECK_FALSE(j["selection"].contains("condition"));
 }
 
-TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
+TEST_CASE("ActorPtr::to_json - filter restricts BK conditions") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(BK::monitor,   true);
+	ap->set(BK::monitor, true);
 	ap->set(BK::injection_selftest, false);
-	ap->set(BK::AP,        true);
+	ap->set(BK::AP, true);
 
-	ParamFilter filter{{}, {BK::monitor}};
+	ParamFilter filter{ {}, { BK::monitor } };
 	const auto j = ap->to_json(&filter);
 
 	REQUIRE(j["selection"].contains("condition"));
@@ -576,14 +542,14 @@ TEST_CASE("ActorPtr::to_json - filter restricts BK conditions"){
 	CHECK_EQ(cond.end(), ranges::find(cond, "AP"));
 }
 
-TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK"){
+TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
-	ap->set(SK::iface,       "wlan1");
+	ap->set(SK::iface, "wlan1");
 	ap->set(SK::driver_name, "mt76");
-	ap->set(BK::AP,          true);
-	ap->set(BK::monitor,     false);
+	ap->set(BK::AP, true);
+	ap->set(BK::monitor, false);
 
-	ParamFilter filter{{SK::iface}, {BK::AP}};
+	ParamFilter filter{ { SK::iface }, { BK::AP } };
 	const auto j = ap->to_json(&filter);
 
 	REQUIRE(j.contains("selection"));
@@ -595,24 +561,24 @@ TEST_CASE("ActorPtr::to_json - filter with mixed SK and BK"){
 	CHECK_EQ(cond.end(), ranges::find(cond, "!monitor"));
 }
 
-TEST_CASE("ActorPtr::to_json - filter suppresses netns/source top-level keys"){
+TEST_CASE("ActorPtr::to_json - filter suppresses netns/source top-level keys") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
 	ap->set(SK::iface, "wlan0");
 	ap->set(SK::netns, "sta_ns");
 
-	ParamFilter filter{{SK::iface}, {}};
+	ParamFilter filter{ { SK::iface }, {} };
 	const auto j = ap->to_json(&filter);
 
 	CHECK_FALSE(j.contains("netns"));
 	CHECK_FALSE(j.contains("source"));
 }
 
-TEST_CASE("ActorPtr::to_json - empty filter produces empty selection"){
+TEST_CASE("ActorPtr::to_json - empty filter produces empty selection") {
 	ActorPtr ap(make_shared<Actor_Config_sim>());
 	ap->set(SK::iface, "wlan0");
 	ap->set(BK::monitor, true);
 
-	ParamFilter filter{{}, {}};
+	ParamFilter filter{ {}, {} };
 	const auto j = ap->to_json(&filter);
 
 	REQUIRE(j.contains("selection"));

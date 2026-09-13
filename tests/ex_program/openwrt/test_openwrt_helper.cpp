@@ -12,18 +12,21 @@ using namespace wpa3_tester;
 
 // ------- akm_from_openwrt_log
 
-static void write_sae_associated_log(const path &p){
+static void write_sae_associated_log(const path &p) {
 	ofstream f(p);
-	f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 auth_alg=3 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
+	f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 "
+		 "auth_alg=3 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
 }
 
-static void write_two_client_associated_log(const path &p){
+static void write_two_client_associated_log(const path &p) {
 	ofstream f(p);
-	f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 auth_alg=3 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n"
-	  << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
+	f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 "
+		 "auth_alg=3 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n"
+	  << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 "
+		 "auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
 }
 
-TEST_CASE("akm_from_openwrt_log - returns SAE classified as WPA3"){
+TEST_CASE("akm_from_openwrt_log - returns SAE classified as WPA3") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_sae.log";
 	write_sae_associated_log(tmp);
 
@@ -33,11 +36,12 @@ TEST_CASE("akm_from_openwrt_log - returns SAE classified as WPA3"){
 	CHECK_EQ(akm, "SAE\n(WPA3)");
 }
 
-TEST_CASE("akm_from_openwrt_log - returns raw algorithm name for non-SAE auth_alg"){
+TEST_CASE("akm_from_openwrt_log - returns raw algorithm name for non-SAE auth_alg") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_open.log";
 	{
 		ofstream f(tmp);
-		f << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
+		f << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 "
+			 "auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
 	}
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -48,7 +52,7 @@ TEST_CASE("akm_from_openwrt_log - returns raw algorithm name for non-SAE auth_al
 	CHECK_EQ(akm, "Open System");
 }
 
-TEST_CASE("akm_from_openwrt_log - MAC filter picks the right STA's auth_alg"){
+TEST_CASE("akm_from_openwrt_log - MAC filter picks the right STA's auth_alg") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_mac_filter.log";
 	write_two_client_associated_log(tmp);
 
@@ -59,12 +63,14 @@ TEST_CASE("akm_from_openwrt_log - MAC filter picks the right STA's auth_alg"){
 	remove(tmp);
 }
 
-TEST_CASE("akm_from_openwrt_log - ignores a malformed auth_alg value"){
+TEST_CASE("akm_from_openwrt_log - ignores a malformed auth_alg value") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_malformed.log";
 	{
 		ofstream f(tmp);
-		f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_assoc=1 auth_alg=not_a_number ft_over_ds=0)\n"
-		  << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 auth_alg=0 ft_over_ds=0)\n";
+		f << "2026-07-26T23:10:00.369083810+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_assoc=1 "
+			 "auth_alg=not_a_number ft_over_ds=0)\n"
+		  << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 "
+			 "auth_alg=0 ft_over_ds=0)\n";
 	}
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -74,11 +80,12 @@ TEST_CASE("akm_from_openwrt_log - ignores a malformed auth_alg value"){
 	CHECK_EQ(akm, "Open System");
 }
 
-TEST_CASE("akm_from_openwrt_log - returns empty when no Add associated STA line is present"){
+TEST_CASE("akm_from_openwrt_log - returns empty when no Add associated STA line is present") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_missing.log";
 	{
 		ofstream f(tmp);
-		f << "2026-07-26T23:10:00.334468049+0200 [ap] [stdout] authentication: STA=f0:a6:54:d0:ff:ed auth_alg=3 auth_transaction=1 status_code=0 wep=0 seq_ctrl=0x410\n"
+		f << "2026-07-26T23:10:00.334468049+0200 [ap] [stdout] authentication: STA=f0:a6:54:d0:ff:ed auth_alg=3 "
+			 "auth_transaction=1 status_code=0 wep=0 seq_ctrl=0x410\n"
 		  << "2026-07-26T23:10:00.425366187+0200 [ap] [stdout] wlan2: AP-STA-CONNECTED f0:a6:54:d0:ff:ed\n";
 	}
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {});
@@ -87,18 +94,19 @@ TEST_CASE("akm_from_openwrt_log - returns empty when no Add associated STA line 
 	CHECK_EQ(akm, "");
 }
 
-TEST_CASE("akm_from_openwrt_log - returns empty for missing file"){
+TEST_CASE("akm_from_openwrt_log - returns empty for missing file") {
 	CHECK_EQ(openwrt::akm_from_openwrt_log("/tmp/openwrt_nonexistent_akm.log", {}), "");
 }
 
-TEST_CASE("akm_from_openwrt_log - only reads lines before window.start_tp"){
+TEST_CASE("akm_from_openwrt_log - only reads lines before window.start_tp") {
 	const path tmp = temp_directory_path() / "openwrt_test_akm_window.log";
 	{
 		ofstream f(tmp);
 		f << "2026-07-26T23:10:00.000000000+0200 [ap] [stdout] some earlier line, no associated STA here\n"
-		  << "2026-07-26T23:10:05.000000000+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 auth_alg=3)\n";
+		  << "2026-07-26T23:10:05.000000000+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 "
+			 "auth_alg=3)\n";
 	}
-	const TimeWindow window{log_time_to_epoch_ns("2026-07-26T23:10:02.000000000+0200"), {}};
+	const TimeWindow window{ log_time_to_epoch_ns("2026-07-26T23:10:02.000000000+0200"), {} };
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {}, window);
 	remove(tmp);
 
@@ -109,7 +117,7 @@ TEST_CASE("akm_from_openwrt_log - only reads lines before window.start_tp"){
 
 // ------- mfp_from_openwrt_log
 
-TEST_CASE("mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA"){
+TEST_CASE("mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_sae.log";
 	write_sae_associated_log(tmp);
 
@@ -119,11 +127,12 @@ TEST_CASE("mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA"){
 	CHECK_EQ(mfp, "REQUIRED");
 }
 
-TEST_CASE("mfp_from_openwrt_log - returns empty for a non-SAE-associated STA"){
+TEST_CASE("mfp_from_openwrt_log - returns empty for a non-SAE-associated STA") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_open.log";
 	{
 		ofstream f(tmp);
-		f << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
+		f << "2026-07-26T23:10:05.112233445+0200 [ap] [stdout] Add associated STA 9c:b6:d0:12:34:56 (added_unassoc=1 "
+			 "auth_alg=0 ft_over_ds=0 reassoc=0 authorized=0 ft_tk=0 fils_tk=0)\n";
 	}
 	const string mfp = openwrt::mfp_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -131,7 +140,7 @@ TEST_CASE("mfp_from_openwrt_log - returns empty for a non-SAE-associated STA"){
 	CHECK_EQ(mfp, "");
 }
 
-TEST_CASE("mfp_from_openwrt_log - MAC filter picks the right STA's result"){
+TEST_CASE("mfp_from_openwrt_log - MAC filter picks the right STA's result") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_mac_filter.log";
 	write_two_client_associated_log(tmp);
 
@@ -142,7 +151,7 @@ TEST_CASE("mfp_from_openwrt_log - MAC filter picks the right STA's result"){
 	remove(tmp);
 }
 
-TEST_CASE("mfp_from_openwrt_log - returns empty when no Add associated STA line is present"){
+TEST_CASE("mfp_from_openwrt_log - returns empty when no Add associated STA line is present") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_missing.log";
 	{
 		ofstream f(tmp);
@@ -154,18 +163,19 @@ TEST_CASE("mfp_from_openwrt_log - returns empty when no Add associated STA line 
 	CHECK_EQ(mfp, "");
 }
 
-TEST_CASE("mfp_from_openwrt_log - returns empty for missing file"){
+TEST_CASE("mfp_from_openwrt_log - returns empty for missing file") {
 	CHECK_EQ(openwrt::mfp_from_openwrt_log("/tmp/openwrt_nonexistent_mfp.log", {}), "");
 }
 
-TEST_CASE("mfp_from_openwrt_log - only reads lines before window.start_tp"){
+TEST_CASE("mfp_from_openwrt_log - only reads lines before window.start_tp") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_window.log";
 	{
 		ofstream f(tmp);
 		f << "2026-07-26T23:10:00.000000000+0200 [ap] [stdout] some earlier line, no associated STA here\n"
-		  << "2026-07-26T23:10:05.000000000+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 auth_alg=3)\n";
+		  << "2026-07-26T23:10:05.000000000+0200 [ap] [stdout] Add associated STA f0:a6:54:d0:ff:ed (added_unassoc=1 "
+			 "auth_alg=3)\n";
 	}
-	const TimeWindow window{log_time_to_epoch_ns("2026-07-26T23:10:02.000000000+0200"), {}};
+	const TimeWindow window{ log_time_to_epoch_ns("2026-07-26T23:10:02.000000000+0200"), {} };
 	const string mfp = openwrt::mfp_from_openwrt_log(tmp, {}, window);
 	remove(tmp);
 

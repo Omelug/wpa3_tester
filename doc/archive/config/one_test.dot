@@ -1,112 +1,112 @@
 digraph { // https://edotor.net/
-    //rankdir=LR;
-    node [fontname="DejaVu Sans"];
+ //rankdir=LR;
+    node [fontname = "DejaVu Sans"];
 
-    { // processes
+{ // processes
         node [
-            shape=rectangle,
-            style=filled,
-            fillcolor="#EEEEFF",
-            color="#333366",
-            label="⚙ settings",
-        ];
-        config_validation[label="⚙ config validation"];
-        req_validation[label="⚙ requirement validation"];
-        start_processes[label="⚙ setup process manager"];
-        wait_for_setup[label="⚙ wait for setup (check process outputs)"];
-        run_tests[label="⚙ run tests"];
-        wait_for_all_process_end[label="⚙ wait for all process end"];
-    }
-    { // errors
+shape = rectangle,
+style = filled,
+fillcolor = "#EEEEFF",
+color = "#333366",
+label = "⚙ settings",
+];
+config_validation [label = "⚙ config validation"];
+req_validation [label = "⚙ requirement validation"];
+start_processes [label = "⚙ setup process manager"];
+wait_for_setup [label = "⚙ wait for setup (check process outputs)"];
+run_tests [label = "⚙ run tests"];
+wait_for_all_process_end [label = "⚙ wait for all process end"];
+}
+{ // errors
         node [
-            shape=rectangle,
-            style=filled,
-            fillcolor="#c96666",
-            label="error",
-        ];
-        parser_error[label="config parser errors"];
-        req_gather_error[label="req gathering errors"];
-        req_val_error[label="req validation errors"];
-        start_process_error[label="start process errors"];
-        wait_process_error[label="wait timeout errors"];
-    }
-    { // files
+shape = rectangle,
+style = filled,
+fillcolor = "#c96666",
+label = "error",
+];
+parser_error [label = "config parser errors"];
+req_gather_error [label = "req gathering errors"];
+req_val_error [label = "req validation errors"];
+start_process_error [label = "start process errors"];
+wait_process_error [label = "wait timeout errors"];
+}
+{ // files
         node [
-            shape=rectangle,
-            style=filled,
-            fillcolor="#9b9898",
-            label="file",
-        ];
-        creds[label="creds file"];
-        configfile[label="config file"];
+shape = rectangle,
+style = filled,
+fillcolor = "#9b9898",
+label = "file",
+];
+creds [label = "creds file"];
+configfile [label = "config file"];
 
-    }
+}
 
-    // start
-    wpa3_tester[
-        shape=rectangle,
-        color="#33aa33",
-        style=filled,
-        fillcolor="#eeffee",
-        label="wpa3_tester"
-    ];
+// start
+    wpa3_tester [
+shape = rectangle,
+color = "#33aa33",
+style = filled,
+fillcolor = "#eeffee",
+label = "wpa3_tester"
+];
 
-    wpa3_tester -> configfile [label="--config"];
-    wpa3_tester -> test_map[label="--test"];
-    test_map -> configfile [label="load test config"];
+wpa3_tester -> configfile [label = "--config"];
+wpa3_tester -> test_map [label = "--test"];
+test_map -> configfile [label = "load test config"];
 
-    configfile -> config_validation [label="json schema"];
-    config_validation -> parser_error;
+configfile -> config_validation [label = "json schema"];
+config_validation -> parser_error;
 
 
-    config_validation ->config_requirement;
-    creds ->config_requirement;
+config_validation -> config_requirement;
+creds -> config_requirement;
 
-    external_scan ->config_requirement;
-    interfaces_scan ->config_requirement;
-    internal_scan ->config_requirement;
-    config_requirement -> req_gather_error;
+external_scan -> config_requirement;
+interfaces_scan -> config_requirement;
+internal_scan -> config_requirement;
+config_requirement -> req_gather_error;
 
-    config_requirement -> req_validation;
-    req_validation -> req_val_error;
+config_requirement -> req_validation;
+req_validation -> req_val_error;
 
-    req_validation->start_processes;
-    start_processes -> start_process_error;
+req_validation -> start_processes;
+start_processes -> start_process_error;
 
-     { // example processes
+{ // example processes
         node [
-            style=filled,
-            fillcolor="#3ae0cd",
-            label="file",
-        ];
-        actors[label="actors"];
-    }
-    start_processes -> actors[label="setup function"];
-    actors -> log[label="log and register wait_for "];
+style = filled,
+fillcolor = "#3ae0cd",
+label = "file",
+];
+actors [label = "actors"];
+}
+start_processes -> actors [label = "setup function"];
+actors -> log [label = "log and register wait_for "];
 
-    { //log
+{ //log
         node [
-            style=filled,
-            fillcolor="#6ea4d3",
-            label="log",
-        ];
-        log[label="logger"];
-    }
-    log -> wait_process_error;
-    log -> wait_for_setup;
+style = filled,
+fillcolor = "#6ea4d3",
+label = "log",
+];
+log [label = "logger"];
+}
+log -> wait_process_error;
+log -> wait_for_setup;
 
 
-    wait_for_setup -> run_attack;
-    run_attack ->wait_for_all_process_end[label="end of attack (timeout of no succeded)"];
-    run_attack -> log [label="write END f test /short results"];
-    wait_for_all_process_end -> end_of_test[label="wait for all proceses end (from internal return or log)"];
-    end_of_test[
-        shape=rectangle,
-        color="#33aa33",
-        style=filled,
-        fillcolor="#eeffee",
-        label="end of test"
-    ];
-    end_of_test -> statistics[label="generate complex stats"];
-    log -> statistics;
+wait_for_setup -> run_attack;
+run_attack -> wait_for_all_process_end [label = "end of attack (timeout of no succeded)"];
+run_attack -> log [label = "write END f test /short results"];
+wait_for_all_process_end -> end_of_test [label = "wait for all proceses end (from internal return or log)"];
+end_of_test [
+shape = rectangle,
+color = "#33aa33",
+style = filled,
+fillcolor = "#eeffee",
+label = "end of test"
+];
+end_of_test -> statistics [label = "generate complex stats"];
+log -> statistics;
 }

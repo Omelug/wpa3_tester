@@ -4,7 +4,7 @@ actors:
   ap:
     source: internal
     selection:
-      condition: [AP, 2_4GHz, netns_change ]
+      condition: [ AP, 2_4GHz, netns_change ]
     netns: ap_namespace
     setup:
       program: hostapd
@@ -13,7 +13,7 @@ actors:
   client:
     source: internal
     selection:
-      condition: [  managed, 2_4GHz, netns_change ]
+      condition: [ managed, 2_4GHz, netns_change ]
     netns: client_namespace
     setup:
       program: wpa_supplicant

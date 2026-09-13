@@ -1,15 +1,15 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
+#include <vector>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "pcap_helper.h"
-#include <doctest.h>
-#include <vector>
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-TEST_CASE("beacon_to_probe_resp"){
+TEST_CASE("beacon_to_probe_resp") {
 	Dot11Beacon beacon;
 	beacon.addr2("aa:bb:cc:dd:ee:ff");
 	beacon.addr3("aa:bb:cc:dd:ee:ff");
@@ -17,7 +17,7 @@ TEST_CASE("beacon_to_probe_resp"){
 	beacon.ds_parameter_set(6);
 	beacon.ssid("TestNet");
 
-	Channel ch{11, WifiBand::BAND_2_4_or_5, nullopt};
+	Channel ch{ 11, WifiBand::BAND_2_4_or_5, nullopt };
 	Dot11ProbeResponse probe(beacon_to_probe_resp(beacon, ch));
 
 	CHECK_EQ(probe.addr2(), beacon.addr2());
@@ -28,7 +28,7 @@ TEST_CASE("beacon_to_probe_resp"){
 	CHECK_EQ(probe.search_option(Dot11::TIM), nullptr);
 }
 
-TEST_CASE("patch_channel_raw - beacon frame"){
+TEST_CASE("patch_channel_raw - beacon frame") {
 	vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
 	vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
 
@@ -45,17 +45,17 @@ TEST_CASE("patch_channel_raw - beacon frame"){
 }
 
 // ------ get_addrs
-static constexpr auto PCAP_BEACON    = "test_data/wifi_util/beacon.pcapng";
-static HWAddress<6> BEACON_ADDR1   = "ff:ff:ff:ff:ff:ff"; // always broadcast
-static HWAddress<6> BEACON_ADDR2   = "24:ec:99:bf:b0:a1"; // AP BSSID from your capture
+static constexpr auto PCAP_BEACON = "test_data/wifi_util/beacon.pcapng";
+static HWAddress<6> BEACON_ADDR1 = "ff:ff:ff:ff:ff:ff"; // always broadcast
+static HWAddress<6> BEACON_ADDR2 = "24:ec:99:bf:b0:a1"; // AP BSSID from your capture
 
-static constexpr auto PCAP_DATA_QOS  = "test_data/wifi_util/data_qos.pcapng";
-static HWAddress<6> DATA_ADDR1     = "78:98:e8:55:3e:8d"; // receiver MAC
-static HWAddress<6> DATA_ADDR2     = "24:ec:99:bf:e0:cd"; // transmitter MAC
+static constexpr auto PCAP_DATA_QOS = "test_data/wifi_util/data_qos.pcapng";
+static HWAddress<6> DATA_ADDR1 = "78:98:e8:55:3e:8d"; // receiver MAC
+static HWAddress<6> DATA_ADDR2 = "24:ec:99:bf:e0:cd"; // transmitter MAC
 
-static constexpr auto PCAP_CTRL_ACTION_PROTECTED  = "test_data/wifi_util/action_protected.pcapng";
-static HWAddress<6> ACTION_ADDR1   = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
-static HWAddress<6> ACTION_ADDR2   = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
+static constexpr auto PCAP_CTRL_ACTION_PROTECTED = "test_data/wifi_util/action_protected.pcapng";
+static HWAddress<6> ACTION_ADDR1 = "78:98:e8:55:3e:8d"; // receiver MAC (in raw bytes)
+static HWAddress<6> ACTION_ADDR2 = "24:ec:99:bf:e0:cd"; // transmitter MAC (in raw bytes)
 
 TEST_SUITE("get_addrs") {
 	TEST_CASE("management frame: addr2 resolved via Dot11ManagementFrame") {
@@ -96,10 +96,10 @@ TEST_SUITE("get_addrs") {
 }
 
 // --- get_eapol_msg_num
-static constexpr auto PCAP_EAPOL_M1  = "test_data/wifi_util/eapol_m1.pcapng";
-static constexpr auto PCAP_EAPOL_M2  = "test_data/wifi_util/eapol_m2.pcapng";
-static constexpr auto PCAP_EAPOL_M3  = "test_data/wifi_util/eapol_m3.pcapng";
-static constexpr auto PCAP_EAPOL_M4  = "test_data/wifi_util/eapol_m4.pcapng";
+static constexpr auto PCAP_EAPOL_M1 = "test_data/wifi_util/eapol_m1.pcapng";
+static constexpr auto PCAP_EAPOL_M2 = "test_data/wifi_util/eapol_m2.pcapng";
+static constexpr auto PCAP_EAPOL_M3 = "test_data/wifi_util/eapol_m3.pcapng";
+static constexpr auto PCAP_EAPOL_M4 = "test_data/wifi_util/eapol_m4.pcapng";
 
 TEST_SUITE("get_eapol_msg_num") {
 

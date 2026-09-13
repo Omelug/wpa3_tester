@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "system/hw_info.h"
 #include <doctest/doctest.h>
+#include "system/hw_info.h"
 
 using namespace wpa3_tester;
 

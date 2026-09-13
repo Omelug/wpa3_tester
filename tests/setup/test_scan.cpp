@@ -1,27 +1,27 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "config/RunStatus.h"
-#include "logger/error_log.h"
-#include "scan/scan.h"
 #include <doctest.h>
 #include <filesystem>
 #include <fstream>
+#include "config/RunStatus.h"
+#include "logger/error_log.h"
+#include "scan/scan.h"
 
 using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
 
-TEST_CASE("RunStatus::setup_test - directory management"){
+TEST_CASE("RunStatus::setup_test - directory management") {
 	const path test_run_folder = temp_directory_path() / "test_setup_run";
-	
+
 	SUBCASE("Creates and cleans run folder") {
 		create_directories(test_run_folder);
 		ofstream test_file(test_run_folder / "existing_file.txt");
 		test_file << "test content";
 		test_file.close();
-		
+
 		REQUIRE(exists(test_run_folder));
 		REQUIRE(exists(test_run_folder / "existing_file.txt"));
-		
+
 		RunStatus rs;
 		rs.run_folder(test_run_folder.string());
 		rs.config()["attacker_module"] = "nonexistent_module";
@@ -39,14 +39,14 @@ TEST_CASE("RunStatus::setup_test - directory management"){
 		RunStatus rs;
 		rs.run_folder(test_run_folder.string());
 		rs.config()["attacker_module"] = "nonexistent_module";
-		
+
 		REQUIRE_NOTHROW(rs.setup_test());
 		REQUIRE(exists(test_run_folder));
 		remove_all(test_run_folder);
 	}
 }
 
-TEST_CASE("get_actors_conn_table - basic parsing"){
+TEST_CASE("get_actors_conn_table - basic parsing") {
 	const path test_file = temp_directory_path() / "test_conn_table.csv";
 
 	SUBCASE("Valid file with required columns") {
@@ -86,7 +86,7 @@ TEST_CASE("get_actors_conn_table - basic parsing"){
 	}
 }
 
-TEST_CASE("get_actors_conn_table - error cases"){
+TEST_CASE("get_actors_conn_table - error cases") {
 	const path test_file = temp_directory_path() / "test_conn_table_err.csv";
 
 	SUBCASE("Non-existent file returns empty vector") {
@@ -121,7 +121,7 @@ TEST_CASE("get_actors_conn_table - error cases"){
 	}
 }
 
-TEST_CASE("get_actors_conn_table - edge cases"){
+TEST_CASE("get_actors_conn_table - edge cases") {
 	const path test_file = temp_directory_path() / "test_conn_table_edge.csv";
 
 	SUBCASE("Different column order") {

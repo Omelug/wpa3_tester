@@ -37,7 +37,9 @@ function initTooltips() {
             tip.style.left = rect.left + 'px';
             tip.style.display = 'block';
         });
-        el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+        el.addEventListener('mouseleave', () => {
+            tip.style.display = 'none';
+        });
     });
 }
 

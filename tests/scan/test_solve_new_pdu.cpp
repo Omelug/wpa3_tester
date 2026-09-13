@@ -1,17 +1,17 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
 #include "../test_helpers/pcap_helper.h"
 #include "config/RunStatus.h"
-#include <doctest.h>
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-static constexpr auto PCAP_BEACON    = "../test_data/beacon_test.pcapng";
+static constexpr auto PCAP_BEACON = "../test_data/beacon_test.pcapng";
 static constexpr auto PCAP_PROBE_RES = "../test_data/probe_res.pcapng";
 static constexpr auto PCAP_ASSOC_REQ = "../test_data/assoc_req.pcapng";
-static constexpr auto PCAP_DATA_QOS  = "../test_data/wifi_util/data_qos.pcapng";
-static constexpr auto PCAP_MULTI     = "../test_data/monitor_socket/radiotap_multi.pcapng";
+static constexpr auto PCAP_DATA_QOS = "../test_data/wifi_util/data_qos.pcapng";
+static constexpr auto PCAP_MULTI = "../test_data/monitor_socket/radiotap_multi.pcapng";
 
 // beacon_test.pcapng: AP 24:ec:99:bf:b0:a1, SSID "mc_mitm_test", ch6/2437MHz, -28dBm, 2.4GHz
 // probe_res.pcapng:   AP 24:ec:99:bf:e0:cd (probe response)
@@ -191,7 +191,7 @@ TEST_SUITE("solve_new_pdu edge cases") {
 	TEST_CASE("garbage bytes do not crash") {
 		ActorMACMap seen;
 		AssocMap assoc;
-		const vector<uint8_t> garbage = {0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0xFF, 0xAA};
+		const vector<uint8_t> garbage = { 0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0xFF, 0xAA };
 
 		CHECK_NOTHROW(RunStatus::solve_new_pdu(garbage, seen, assoc));
 		CHECK_EQ(seen.size(), 0u);
@@ -203,8 +203,7 @@ TEST_SUITE("solve_new_pdu edge cases") {
 		ActorMACMap seen;
 		AssocMap assoc;
 
-		for(const auto &frame: frames)
-			RunStatus::solve_new_pdu(frame, seen, assoc);
+		for(const auto &frame: frames) RunStatus::solve_new_pdu(frame, seen, assoc);
 
 		CHECK_GT(seen.size(), 0u);
 	}

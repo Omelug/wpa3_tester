@@ -14,12 +14,13 @@ using namespace wpa3_tester::report;
 
 struct ReportFixture {
 	path dir;
-	explicit ReportFixture(const string &name) : dir(temp_directory_path() / name) {
+	explicit ReportFixture(const string &name):
+		dir(temp_directory_path() / name) {
 		create_directories(dir);
 	}
 	[[nodiscard]] string read_report() const {
 		ifstream f(dir / REPORT_NAME);
-		return {istreambuf_iterator(f), istreambuf_iterator<char>()};
+		return { istreambuf_iterator(f), istreambuf_iterator<char>() };
 	}
 	~ReportFixture() { remove_all(dir); }
 };
@@ -38,55 +39,82 @@ TEST_CASE("ReportGuard - operator bool") {
 
 TEST_CASE("ReportGuard - string: non-empty written as-is") {
 	ReportFixture fx("rg_str");
-	{ ReportGuard rg(fx.dir); rg << string("hello"); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << string("hello");
+	}
 	CHECK_EQ(fx.read_report(), "hello");
 }
 
 TEST_CASE("ReportGuard - string: empty written as '?'") {
 	ReportFixture fx("rg_str_empty");
-	{ ReportGuard rg(fx.dir); rg << string(""); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << string("");
+	}
 	CHECK_EQ(fx.read_report(), "?");
 }
 
 TEST_CASE("ReportGuard - bool true -> 'yes'") {
 	ReportFixture fx("rg_bool_true");
-	{ ReportGuard rg(fx.dir); rg << true; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << true;
+	}
 	CHECK_EQ(fx.read_report(), "yes");
 }
 
 TEST_CASE("ReportGuard - bool false -> 'no'") {
 	ReportFixture fx("rg_bool_false");
-	{ ReportGuard rg(fx.dir); rg << false; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << false;
+	}
 	CHECK_EQ(fx.read_report(), "no");
 }
 
 TEST_CASE("ReportGuard - optional<bool> true -> 'yes'") {
 	ReportFixture fx("rg_opt_true");
-	{ ReportGuard rg(fx.dir); rg << optional{true}; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << optional{ true };
+	}
 	CHECK_EQ(fx.read_report(), "yes");
 }
 
 TEST_CASE("ReportGuard - optional<bool> false -> 'no'") {
 	ReportFixture fx("rg_opt_false");
-	{ ReportGuard rg(fx.dir); rg << optional{false}; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << optional{ false };
+	}
 	CHECK_EQ(fx.read_report(), "no");
 }
 
 TEST_CASE("ReportGuard - optional<bool> nullopt -> 'N/A'") {
 	ReportFixture fx("rg_opt_null");
-	{ ReportGuard rg(fx.dir); rg << optional<bool>{}; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << optional<bool>{};
+	}
 	CHECK_EQ(fx.read_report(), "N/A");
 }
 
 TEST_CASE("ReportGuard - path relativized to run_dir") {
 	ReportFixture fx("rg_path");
-	{ ReportGuard rg(fx.dir); rg << (fx.dir / "subdir" / "file.txt"); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << (fx.dir / "subdir" / "file.txt");
+	}
 	CHECK_EQ(fx.read_report(), string("subdir/file.txt"));
 }
 
 TEST_CASE("ReportGuard - path already relative unchanged") {
 	ReportFixture fx("rg_path_rel");
-	{ ReportGuard rg(fx.dir); rg << path("subdir/file.txt"); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << path("subdir/file.txt");
+	}
 	CHECK_EQ(fx.read_report(), string("subdir/file.txt"));
 }
 
@@ -101,7 +129,10 @@ TEST_CASE("ReportGuard - chaining preserves overloads") {
 
 TEST_CASE("ReportGuard - integer passthrough") {
 	ReportFixture fx("rg_int");
-	{ ReportGuard rg(fx.dir); rg << 42; }
+	{
+		ReportGuard rg(fx.dir);
+		rg << 42;
+	}
 	CHECK_EQ(fx.read_report(), "42");
 }
 
@@ -110,7 +141,10 @@ TEST_CASE("ReportGuard - Link: existing path rendered as relative markdown link"
 	const path file = fx.dir / "sub" / REPORT_NAME;
 	create_directories(file.parent_path());
 	ofstream(file).close();
-	{ ReportGuard rg(fx.dir); rg << link("label", file); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << link("label", file);
+	}
 	CHECK_EQ(fx.read_report(), "[label](sub/report.md)");
 }
 
@@ -119,12 +153,18 @@ TEST_CASE("ReportGuard - Link: relative path left as-is") {
 	const path file = fx.dir / "sub" / REPORT_NAME;
 	create_directories(file.parent_path());
 	ofstream(file).close();
-	{ ReportGuard rg(fx.dir); rg << link("label", path("sub/report.md")); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << link("label", path("sub/report.md"));
+	}
 	CHECK_EQ(fx.read_report(), "[label](sub/report.md)");
 }
 
 TEST_CASE("ReportGuard - Link: missing path renders plain text") {
 	ReportFixture fx("link_missing");
-	{ ReportGuard rg(fx.dir); rg << link("label", fx.dir / "nonexistent.md"); }
+	{
+		ReportGuard rg(fx.dir);
+		rg << link("label", fx.dir / "nonexistent.md");
+	}
 	CHECK_EQ(fx.read_report(), "label");
 }

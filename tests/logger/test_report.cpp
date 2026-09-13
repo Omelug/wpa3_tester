@@ -12,8 +12,8 @@ using namespace filesystem;
 using namespace wpa3_tester;
 using namespace wpa3_tester::report;
 
-namespace{
-path device_root(){ return root_dir().parent_path() / DATA_DIR /DEVICES_DIR; }
+namespace {
+path device_root() { return root_dir().parent_path() / DATA_DIR / DEVICES_DIR; }
 }
 
 TEST_CASE("device - no device dir returns plain MAC") {

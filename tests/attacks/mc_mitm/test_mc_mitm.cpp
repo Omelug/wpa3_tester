@@ -1,14 +1,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "attacks/mc_mitm/mc_mitm.h"
-#include "pcap_helper.h"
 #include <doctest.h>
 #include <vector>
+#include "attacks/mc_mitm/mc_mitm.h"
+#include "pcap_helper.h"
 
 using namespace std;
 using namespace Tins;
 using namespace wpa3_tester;
 
-TEST_CASE("MonitorSocket receives all auth frames from pcap"){
+TEST_CASE("MonitorSocket receives all auth frames from pcap") {
 	const string pcap_path = "./test_data/rogue_client_capture.pcapng";
 
 	const HWAddress<6> ap_mac = "78:98:e8:55:3e:8d";
@@ -18,13 +18,15 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
 	int expected_client_to_ap = 0;
 
 	FileSniffer file_sniffer(pcap_path);
-	file_sniffer.sniff_loop([&](PDU &pdu) ->bool{
+	file_sniffer.sniff_loop([&](PDU &pdu) -> bool {
 		const auto *mgmt = pdu.find_pdu<Dot11ManagementFrame>();
 		if(!mgmt) return true;
 		if(!pdu.find_pdu<Dot11Authentication>()) return true;
 
-		if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac) expected_ap_to_client++;
-		else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac) expected_client_to_ap++;
+		if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac)
+			expected_ap_to_client++;
+		else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac)
+			expected_client_to_ap++;
 		return true;
 	});
 
@@ -40,16 +42,18 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
 
 	pcap_pkthdr *header;
 	const u_char *frame;
-	while(pcap_next_ex(handle, &header, &frame) == 1){
-		try{
+	while(pcap_next_ex(handle, &header, &frame) == 1) {
+		try {
 			RadioTap rt(frame, header->caplen);
 			const auto *mgmt = rt.find_pdu<Dot11ManagementFrame>();
 			if(!mgmt) continue;
 			if(!rt.find_pdu<Dot11Authentication>()) continue;
 
-			if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac) got_ap_to_client++;
-			else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac) got_client_to_ap++;
-		} catch(...){}
+			if(mgmt->addr2() == ap_mac && mgmt->addr1() == client_mac)
+				got_ap_to_client++;
+			else if(mgmt->addr2() == client_mac && mgmt->addr1() == ap_mac)
+				got_client_to_ap++;
+		} catch(...) {}
 	}
 
 	pcap_close(handle);
@@ -57,7 +61,7 @@ TEST_CASE("MonitorSocket receives all auth frames from pcap"){
 	CHECK_EQ(got_client_to_ap, expected_client_to_ap);
 }
 
-TEST_CASE("patch_channel_raw - beacon frame"){
+TEST_CASE("patch_channel_raw - beacon frame") {
 	vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
 	vector<uint8_t> original_data = beacon_data; // keep copy for comparison
 
@@ -73,7 +77,7 @@ TEST_CASE("patch_channel_raw - beacon frame"){
 	INFO("Beacon frame size after: " << beacon_data.size());
 }
 
-TEST_CASE("patch_channel_raw - probe response frame"){
+TEST_CASE("patch_channel_raw - probe response frame") {
 	vector<uint8_t> probe_data = test_helpers::read_pcap_file("./test_data/probe_res.pcapng");
 	vector<uint8_t> original_data = probe_data;
 	McMitm::patch_channel_raw(probe_data, 11);
@@ -107,14 +111,14 @@ TEST_CASE("patch_channel_raw - probe response frame"){
 	INFO("Probe response frame size after: " << probe_data.size());
 }
 
-TEST_CASE("patch_channel_raw - edge cases"){
+TEST_CASE("patch_channel_raw - edge cases") {
 	// empty data
 	vector<uint8_t> empty_data;
 	McMitm::patch_channel_raw(empty_data, 6);
 	REQUIRE(empty_data.empty());
 
 	// too small data
-	vector<uint8_t> small_data = {0x00, 0x01, 0x02};
+	vector<uint8_t> small_data = { 0x00, 0x01, 0x02 };
 	vector<uint8_t> original_small = small_data;
 	McMitm::patch_channel_raw(small_data, 6);
 	CHECK_EQ(small_data, original_small);

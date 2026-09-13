@@ -1,15 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "system/hw_capabilities.h"
 #include <doctest/doctest.h>
 #include <linux/nl80211.h>
 #include <netlink/genl/genl.h>
 #include <netlink/msg.h>
+#include "system/hw_capabilities.h"
 
 using namespace wpa3_tester;
 
 struct Msg {
 	nl_msg *m;
-	Msg() : m(nlmsg_alloc()) {
+	Msg():
+		m(nlmsg_alloc()) {
 		genlmsg_put(m, NL_AUTO_PORT, NL_AUTO_SEQ, 0, 0, 0, NL80211_CMD_NEW_WIPHY, 1);
 	}
 	~Msg() { nlmsg_free(m); }
@@ -136,7 +137,7 @@ TEST_CASE("nl80211_cb - wpa2_psk via CCMP cipher 0x000FAC04") {
 
 TEST_CASE("nl80211_cb - both mfp and wpa2_psk from multiple ciphers") {
 	Msg msg;
-	constexpr uint32_t ciphers[] = {0x000FAC04, 0x000FAC06};
+	constexpr uint32_t ciphers[] = { 0x000FAC04, 0x000FAC06 };
 	nla_put(msg.m, NL80211_ATTR_CIPHER_SUITES, sizeof(ciphers), ciphers);
 	const auto caps = call_cb(msg.m);
 	CHECK(caps.wpa2_psk);
@@ -166,7 +167,7 @@ TEST_CASE("nl80211_cb - ocv via EXT_FEATURES bit") {
 TEST_CASE("nl80211_cb - EXT_FEATURES too short does not set beacon_prot") {
 	Msg msg;
 	constexpr int feat = NL80211_EXT_FEATURE_BEACON_PROTECTION;
-	uint8_t ext[feat / 8] = {};  // exactly feat/8 bytes - index feat/8 out of range
+	uint8_t ext[feat / 8] = {}; // exactly feat/8 bytes - index feat/8 out of range
 	nla_put(msg.m, NL80211_ATTR_EXT_FEATURES, sizeof(ext), ext);
 	CHECK_FALSE(call_cb(msg.m).beacon_prot);
 }
@@ -185,13 +186,13 @@ TEST_CASE("nl80211_cb - wpa3_sae via SAE_OFFLOAD ext feature") {
 TEST_CASE("nl80211_cb - band24 and 80211n via WIPHY_BANDS") {
 	Msg msg;
 	nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
-	nlattr *band  = nla_nest_start(msg.m, 0);
-		nla_put_u16(msg.m, NL80211_BAND_ATTR_HT_CAPA, 0);
-		nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
-			nlattr *freq = nla_nest_start(msg.m, 0);
-				nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 2412);
-			nla_nest_end(msg.m, freq);
-		nla_nest_end(msg.m, freqs);
+	nlattr *band = nla_nest_start(msg.m, 0);
+	nla_put_u16(msg.m, NL80211_BAND_ATTR_HT_CAPA, 0);
+	nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
+	nlattr *freq = nla_nest_start(msg.m, 0);
+	nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 2412);
+	nla_nest_end(msg.m, freq);
+	nla_nest_end(msg.m, freqs);
 	nla_nest_end(msg.m, band);
 	nla_nest_end(msg.m, bands);
 	const auto caps = call_cb(msg.m);
@@ -204,13 +205,13 @@ TEST_CASE("nl80211_cb - band24 and 80211n via WIPHY_BANDS") {
 TEST_CASE("nl80211_cb - band5 and 80211ac via WIPHY_BANDS") {
 	Msg msg;
 	nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
-	nlattr *band  = nla_nest_start(msg.m, 0);
-		nla_put_u32(msg.m, NL80211_BAND_ATTR_VHT_CAPA, 0);
-		nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
-			nlattr *freq = nla_nest_start(msg.m, 0);
-				nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
-			nla_nest_end(msg.m, freq);
-		nla_nest_end(msg.m, freqs);
+	nlattr *band = nla_nest_start(msg.m, 0);
+	nla_put_u32(msg.m, NL80211_BAND_ATTR_VHT_CAPA, 0);
+	nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
+	nlattr *freq = nla_nest_start(msg.m, 0);
+	nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
+	nla_nest_end(msg.m, freq);
+	nla_nest_end(msg.m, freqs);
 	nla_nest_end(msg.m, band);
 	nla_nest_end(msg.m, bands);
 	const auto caps = call_cb(msg.m);
@@ -221,11 +222,11 @@ TEST_CASE("nl80211_cb - band5 and 80211ac via WIPHY_BANDS") {
 
 TEST_CASE("nl80211_cb - 80211ax via BAND_IFTYPE_DATA HE_CAP_PHY") {
 	Msg msg;
-	nlattr *bands    = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
-	nlattr *band     = nla_nest_start(msg.m, 0);
+	nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
+	nlattr *band = nla_nest_start(msg.m, 0);
 	nlattr *iftype_d = nla_nest_start(msg.m, NL80211_BAND_ATTR_IFTYPE_DATA);
-	nlattr *entry    = nla_nest_start(msg.m, 0);
-		nla_put_u8(msg.m, NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY, 0);
+	nlattr *entry = nla_nest_start(msg.m, 0);
+	nla_put_u8(msg.m, NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY, 0);
 	nla_nest_end(msg.m, entry);
 	nla_nest_end(msg.m, iftype_d);
 	nla_nest_end(msg.m, band);
@@ -236,12 +237,12 @@ TEST_CASE("nl80211_cb - 80211ax via BAND_IFTYPE_DATA HE_CAP_PHY") {
 TEST_CASE("nl80211_cb - NO_IR freq increments counter but band is still usable") {
 	Msg msg;
 	nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
-	nlattr *band  = nla_nest_start(msg.m, 0);
+	nlattr *band = nla_nest_start(msg.m, 0);
 	nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
-		nlattr *freq = nla_nest_start(msg.m, 0);
-			nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
-			nla_put_flag(msg.m, NL80211_FREQUENCY_ATTR_NO_IR);
-		nla_nest_end(msg.m, freq);
+	nlattr *freq = nla_nest_start(msg.m, 0);
+	nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
+	nla_put_flag(msg.m, NL80211_FREQUENCY_ATTR_NO_IR);
+	nla_nest_end(msg.m, freq);
 	nla_nest_end(msg.m, freqs);
 	nla_nest_end(msg.m, band);
 	nla_nest_end(msg.m, bands);
@@ -253,12 +254,12 @@ TEST_CASE("nl80211_cb - NO_IR freq increments counter but band is still usable")
 TEST_CASE("nl80211_cb - disabled freq is skipped entirely") {
 	Msg msg;
 	nlattr *bands = nla_nest_start(msg.m, NL80211_ATTR_WIPHY_BANDS);
-	nlattr *band  = nla_nest_start(msg.m, 0);
+	nlattr *band = nla_nest_start(msg.m, 0);
 	nlattr *freqs = nla_nest_start(msg.m, NL80211_BAND_ATTR_FREQS);
-		nlattr *freq = nla_nest_start(msg.m, 0);
-			nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
-			nla_put_flag(msg.m, NL80211_FREQUENCY_ATTR_DISABLED);
-		nla_nest_end(msg.m, freq);
+	nlattr *freq = nla_nest_start(msg.m, 0);
+	nla_put_u32(msg.m, NL80211_FREQUENCY_ATTR_FREQ, 5180);
+	nla_put_flag(msg.m, NL80211_FREQUENCY_ATTR_DISABLED);
+	nla_nest_end(msg.m, freq);
 	nla_nest_end(msg.m, freqs);
 	nla_nest_end(msg.m, band);
 	nla_nest_end(msg.m, bands);

@@ -2,7 +2,8 @@
 
 - object with one process, one interface
 - ActorPtr is wrapper (use this, except of tests)
-- some hardware capabilities links for change Actor_Config status are in [ActorCofig_iface_func.cpp](../../../wpa3_test/src/system/ActorCofig_iface_func.cpp)
+- some hardware capabilities links for change Actor_Config status are
+  in [ActorCofig_iface_func.cpp](../../../wpa3_test/src/system/ActorCofig_iface_func.cpp)
 - have subclasses Actor_Config for [_external](../../../wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp)
 
 #### add new param to Actor_Config?
@@ -11,11 +12,11 @@
 - add param to SK/BK enums in [actor_keys.h](../../../wpa3_test/include/config/Actor_Config/actor_keys.h)
 - edit SK_NAMES, BK_NAMES strings!
 - if it should not be saved in str_vals/bool_vals:
-  - add `private` param
-  - edit operator\[\](SK/BK key) (set param)
-  - edit operator\[\](SK/BK key) const (get optional<param>)
-  - add set(SK::/BK::) - same as [] = 
-  - add get (SK::/BK::) - similar to [], but throw error if not found2
+    - add `private` param
+    - edit operator\[\](SK/BK key) (set param)
+    - edit operator\[\](SK/BK key) const (get optional<param>)
+    - add set(SK::/BK::) - same as [] =
+    - add get (SK::/BK::) - similar to [], but throw error if not found2
 
 ### Observer
 

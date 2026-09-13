@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest.h>
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "pcap_helper.h"
 #include "scan/active/scan_STA.h"
 #include "scan/active/scan_active.h"
-#include <doctest.h>
 
 using namespace std;
 using namespace Tins;
@@ -26,7 +26,7 @@ static constexpr auto PCAP_ASSOC_REQ = "test_data/assoc_req.pcapng";
 
 // -------- apply_radiotap
 
-TEST_CASE("apply_radiotap - sets signal, channel and band from a real beacon frame"){
+TEST_CASE("apply_radiotap - sets signal, channel and band from a real beacon frame") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_BEACON);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	Actor_Config_external cfg;
@@ -42,7 +42,7 @@ TEST_CASE("apply_radiotap - sets signal, channel and band from a real beacon fra
 
 // apply_rsn
 
-TEST_CASE("apply_rsn - extracts MFP/OCV/beacon_prot and WPA3-SAE from a real beacon frame"){
+TEST_CASE("apply_rsn - extracts MFP/OCV/beacon_prot and WPA3-SAE from a real beacon frame") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_BEACON);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	const auto *beacon = rt.find_pdu<Dot11Beacon>();
@@ -58,7 +58,7 @@ TEST_CASE("apply_rsn - extracts MFP/OCV/beacon_prot and WPA3-SAE from a real bea
 	CHECK_FALSE(cfg[BK::WPA_PSK].has_value()); // only SAE AKM present, PSK never matched
 }
 
-TEST_CASE("apply_rsn - frame without an RSN IE logs a warning instead of throwing"){
+TEST_CASE("apply_rsn - frame without an RSN IE logs a warning instead of throwing") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_ASSOC_RESP);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	const auto *assoc = rt.find_pdu<Dot11AssocResponse>();
@@ -74,7 +74,7 @@ TEST_CASE("apply_rsn - frame without an RSN IE logs a warning instead of throwin
 
 // apply_ht_vht_he
 
-TEST_CASE("apply_ht_vht_he - detects HT20 with no VHT/HE from a real beacon frame"){
+TEST_CASE("apply_ht_vht_he - detects HT20 with no VHT/HE from a real beacon frame") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_BEACON);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	const auto *beacon = rt.find_pdu<Dot11Beacon>();
@@ -90,7 +90,7 @@ TEST_CASE("apply_ht_vht_he - detects HT20 with no VHT/HE from a real beacon fram
 	CHECK_FALSE(cfg[BK::w80211ax].value_or(true));
 }
 
-TEST_CASE("apply_ht_vht_he - detects HT capability from a real assoc-response frame"){
+TEST_CASE("apply_ht_vht_he - detects HT capability from a real assoc-response frame") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_ASSOC_RESP);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	const auto *assoc = rt.find_pdu<Dot11AssocResponse>();
@@ -106,7 +106,7 @@ TEST_CASE("apply_ht_vht_he - detects HT capability from a real assoc-response fr
 
 // fill_actor_caps_from_beacon
 
-TEST_CASE("fill_actor_caps_from_beacon - fills mac/ssid/band/RSN/HT/role from a real beacon"){
+TEST_CASE("fill_actor_caps_from_beacon - fills mac/ssid/band/RSN/HT/role from a real beacon") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_BEACON);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	Actor_Config_external cfg;
@@ -135,7 +135,7 @@ TEST_CASE("fill_actor_caps_from_beacon - fills mac/ssid/band/RSN/HT/role from a 
 	CHECK_FALSE(cfg[BK::monitor].value_or(true));
 }
 
-TEST_CASE("fill_actor_caps_from_beacon - non-beacon frame leaves cfg untouched"){
+TEST_CASE("fill_actor_caps_from_beacon - non-beacon frame leaves cfg untouched") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_ASSOC_RESP);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	Actor_Config_external cfg;
@@ -148,7 +148,7 @@ TEST_CASE("fill_actor_caps_from_beacon - non-beacon frame leaves cfg untouched")
 
 // fill_actor_caps_from_assoc_req
 
-TEST_CASE("fill_actor_caps_from_assoc_req - fills mac/band/RSN/HT/role from a real assoc-request"){
+TEST_CASE("fill_actor_caps_from_assoc_req - fills mac/band/RSN/HT/role from a real assoc-request") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_ASSOC_REQ);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	Actor_Config_external cfg;
@@ -180,7 +180,7 @@ TEST_CASE("fill_actor_caps_from_assoc_req - fills mac/band/RSN/HT/role from a re
 	CHECK_FALSE(cfg[BK::monitor].value_or(true));
 }
 
-TEST_CASE("fill_actor_caps_from_assoc_req - subtype guard rejects a real association-response frame"){
+TEST_CASE("fill_actor_caps_from_assoc_req - subtype guard rejects a real association-response frame") {
 	auto [hdr, raw] = test_helpers::read_one_frame(PCAP_ASSOC_RESP);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	Actor_Config_external cfg;

@@ -14,7 +14,7 @@
 using namespace std;
 using wpa3_tester::LogTimePoint;
 
-TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
+TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp") {
 	// 2026-02-20T14:38:08.000000000+0100  ->  UTC 13:38:08
 	const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T14:38:08.000000000+0100");
 	REQUIRE_NE(tp, LogTimePoint{});
@@ -25,16 +25,16 @@ TEST_CASE("log_time_to_epoch_ns - basic UTC+1 timestamp"){
 	CHECK_EQ(utc.tm_year + 1900, 2026);
 	CHECK_EQ(utc.tm_mon + 1, 2);
 	CHECK_EQ(utc.tm_mday, 20);
-	CHECK_EQ(utc.tm_hour, 13);   // 14:38 CET -> 13:38 UTC
+	CHECK_EQ(utc.tm_hour, 13); // 14:38 CET -> 13:38 UTC
 	CHECK_EQ(utc.tm_min, 38);
 	CHECK_EQ(utc.tm_sec, 8);
 
 	// no fractional part
-	const auto frac = tp.time_since_epoch() % chrono::seconds{1};
-	CHECK_EQ(frac, chrono::nanoseconds{0});
+	const auto frac = tp.time_since_epoch() % chrono::seconds{ 1 };
+	CHECK_EQ(frac, chrono::nanoseconds{ 0 });
 }
 
-TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5"){
+TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5") {
 	// 2026-02-20T08:38:08-0500  ->  UTC 13:38:08
 	const LogTimePoint tp = wpa3_tester::log_time_to_epoch_ns("2026-02-20T08:38:08.000000000-0500");
 	const time_t t = chrono::system_clock::to_time_t(tp);
@@ -43,19 +43,19 @@ TEST_CASE("log_time_to_epoch_ns - negative offset UTC-5"){
 	CHECK_EQ(utc.tm_hour, 13);
 }
 
-TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch"){
+TEST_CASE("log_time_to_epoch_ns - invalid string returns epoch") {
 	CHECK_EQ(wpa3_tester::log_time_to_epoch_ns("not-a-timestamp"), LogTimePoint{});
 	CHECK_EQ(wpa3_tester::log_time_to_epoch_ns(""), LogTimePoint{});
 }
 
-namespace{
-struct TempLog{
+namespace {
+struct TempLog {
 	filesystem::path run_folder;
 	string actor_name{};
 
-	TempLog(const string &name, const string &content)
-		: run_folder(filesystem::temp_directory_path() / "wpa3_test_log"),
-		  actor_name(name){
+	TempLog(const string &name, const string &content):
+		run_folder(filesystem::temp_directory_path() / "wpa3_test_log"),
+		actor_name(name) {
 		// mkdtemp needs a writable char buffer
 		string tmpl = run_folder.string();
 		char buf[PATH_MAX];
@@ -70,15 +70,14 @@ struct TempLog{
 		f << content;
 	}
 
-	~TempLog(){ filesystem::remove_all(run_folder); }
+	~TempLog() { filesystem::remove_all(run_folder); }
 };
 }
 
-TEST_CASE("get_time_logs - finds matching lines"){
-	const string log_content =
-		"2026-02-20T14:38:08.310201504+0100 [ap] [stdout] wlan2: AP-ENABLED\n"
-		"2026-02-20T14:38:09.000000000+0100 [ap] [stdout] some other line\n"
-		"2026-02-20T14:38:10.500000000+0100 [ap] [stdout] wlan2: AP-ENABLED\n";
+TEST_CASE("get_time_logs - finds matching lines") {
+	const string log_content = "2026-02-20T14:38:08.310201504+0100 [ap] [stdout] wlan2: AP-ENABLED\n"
+							   "2026-02-20T14:38:09.000000000+0100 [ap] [stdout] some other line\n"
+							   "2026-02-20T14:38:10.500000000+0100 [ap] [stdout] wlan2: AP-ENABLED\n";
 
 	TempLog tmp("ap", log_content);
 	wpa3_tester::RunStatus rs;
@@ -87,13 +86,12 @@ TEST_CASE("get_time_logs - finds matching lines"){
 	const auto times = wpa3_tester::get_time_logs(rs, "ap", "AP-ENABLED");
 	REQUIRE_EQ(times.size(), 2);
 
-	INFO("%d",times[1] - times[0]);
-	CHECK_EQ(times[1] - times[0], chrono::nanoseconds{2189798496ns});
+	INFO("%d", times[1] - times[0]);
+	CHECK_EQ(times[1] - times[0], chrono::nanoseconds{ 2189798496ns });
 }
 
-TEST_CASE("get_time_logs - no match returns empty"){
-	const string log_content =
-		"2026-02-20T14:38:08.000000000+0100 [ap] [stdout] some line\n";
+TEST_CASE("get_time_logs - no match returns empty") {
+	const string log_content = "2026-02-20T14:38:08.000000000+0100 [ap] [stdout] some line\n";
 
 	TempLog tmp("ap", log_content);
 	wpa3_tester::RunStatus rs;
@@ -103,7 +101,7 @@ TEST_CASE("get_time_logs - no match returns empty"){
 	CHECK(times.empty());
 }
 
-TEST_CASE("get_time_logs - missing log file returns empty"){
+TEST_CASE("get_time_logs - missing log file returns empty") {
 	wpa3_tester::RunStatus rs;
 	rs.run_folder("/tmp/wpa3_nonexistent_run_folder");
 
@@ -111,11 +109,10 @@ TEST_CASE("get_time_logs - missing log file returns empty"){
 	CHECK(times.empty());
 }
 
-TEST_CASE("get_time_logs - window filters to matching range"){
-	const string log_content =
-		"2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
-		"2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
-		"2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
+TEST_CASE("get_time_logs - window filters to matching range") {
+	const string log_content = "2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
+							   "2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
+							   "2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
 
 	TempLog tmp("client", log_content);
 	wpa3_tester::RunStatus rs;
@@ -132,16 +129,15 @@ TEST_CASE("get_time_logs - window filters to matching range"){
 	const time_t t = chrono::system_clock::to_time_t(times[0]);
 	tm utc{};
 	gmtime_r(&t, &utc);
-	CHECK_EQ(utc.tm_sec, 9);  // UTC: 14:38:09+0100 -> 13:38:09 UTC
+	CHECK_EQ(utc.tm_sec, 9); // UTC: 14:38:09+0100 -> 13:38:09 UTC
 }
 
-TEST_CASE("get_time_logs - returns all events including those around markers"){
-	const string log_content =
-		"2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
-		"2026-02-20T14:38:08.000000000+0100 [client] [write_log_all] @START\n"
-		"2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
-		"2026-02-20T14:38:10.000000000+0100 [client] [write_log_all] @END\n"
-		"2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
+TEST_CASE("get_time_logs - returns all events including those around markers") {
+	const string log_content = "2026-02-20T14:38:07.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED before\n"
+							   "2026-02-20T14:38:08.000000000+0100 [client] [write_log_all] @START\n"
+							   "2026-02-20T14:38:09.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED inside\n"
+							   "2026-02-20T14:38:10.000000000+0100 [client] [write_log_all] @END\n"
+							   "2026-02-20T14:38:11.000000000+0100 [client] [stdout] CTRL-EVENT-DISCONNECTED after\n";
 
 	TempLog tmp("client", log_content);
 	wpa3_tester::RunStatus rs;

@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <chrono>
+#include <doctest/doctest.h>
 #include <filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
 #include <thread>
-#include <doctest/doctest.h>
 
 #include "default.h"
 #include "logger/error_log.h"
@@ -15,7 +15,7 @@ using namespace std;
 using namespace wpa3_tester;
 using namespace filesystem;
 
-TEST_CASE("current_timestamp - format validation"){
+TEST_CASE("current_timestamp - format validation") {
 	string ts = current_timestamp();
 	// YYYY-MM-DDTHH:MM:SS.nnnnnnnnn+HHMM
 	regex pattern(R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}[+-]\d{4}$)");
@@ -28,25 +28,25 @@ TEST_CASE("current_timestamp - format validation"){
 	CHECK_EQ(ts[19], '.');
 }
 
-TEST_CASE("current_timestamp - reasonable values"){
+TEST_CASE("current_timestamp - reasonable values") {
 	string ts = current_timestamp();
-	int year  = stoi(ts.substr(0, 4));
+	int year = stoi(ts.substr(0, 4));
 	int month = stoi(ts.substr(5, 2));
-	int day   = stoi(ts.substr(8, 2));
-	CHECK((year >= 2020 && year <= 2035));
-	CHECK((month >= 1 && month <= 12));
-	CHECK((day >= 1 && day <= 31));
+	int day = stoi(ts.substr(8, 2));
+	CHECK(year >= 2020 && year <= 2035);
+	CHECK(month >= 1 && month <= 12);
+	CHECK(day >= 1 && day <= 31);
 }
 
-TEST_CASE("current_timestamp - consistency"){
+TEST_CASE("current_timestamp - consistency") {
 	string ts1 = current_timestamp();
 	this_thread::sleep_for(chrono::milliseconds(100));
 	string ts2 = current_timestamp();
 	CHECK_EQ(ts1.length(), ts2.length());
-	CHECK((ts2 >= ts1));
+	CHECK(ts2 >= ts1);
 }
 
-TEST_CASE("relative_from - basic functionality"){
+TEST_CASE("relative_from - basic functionality") {
 	path test_base = current_path() / "test_relative_base";
 	path attack_config = test_base / "attack_config" / "subdir" / "nested" / TEST_CONFIG_NAME;
 	create_directories(attack_config.parent_path());
@@ -57,7 +57,7 @@ TEST_CASE("relative_from - basic functionality"){
 	remove_all(test_base);
 }
 
-TEST_CASE("relative_from - direct child"){
+TEST_CASE("relative_from - direct child") {
 	path test_base = current_path() / "test_relative_direct";
 	path attack_config = test_base / "attack_config" / "direct_config.yaml";
 	create_directories(attack_config.parent_path());
@@ -67,7 +67,7 @@ TEST_CASE("relative_from - direct child"){
 	remove_all(test_base);
 }
 
-TEST_CASE("relative_from - base not found"){
+TEST_CASE("relative_from - base not found") {
 	path test_base = current_path() / "test_relative_notfound";
 	path other_dir = test_base / "other_directory" / "config.yaml";
 	create_directories(other_dir.parent_path());
@@ -77,7 +77,7 @@ TEST_CASE("relative_from - base not found"){
 	remove_all(test_base);
 }
 
-TEST_CASE("relative_from - complex nested structure"){
+TEST_CASE("relative_from - complex nested structure") {
 	path test_base = current_path() / "test_relative_complex";
 	path attack_config = test_base / "project" / "attack_config" / "enterprise" / "reflection_attack" / "test.yaml";
 	create_directories(attack_config.parent_path());
@@ -87,7 +87,7 @@ TEST_CASE("relative_from - complex nested structure"){
 	remove_all(test_base);
 }
 
-TEST_CASE("relative_from - absolute path handling"){
+TEST_CASE("relative_from - absolute path handling") {
 	path test_base = current_path() / "test_relative_absolute";
 	path attack_config = test_base / "attack_config" / "absolute_test.yaml";
 	create_directories(attack_config.parent_path());
@@ -98,7 +98,7 @@ TEST_CASE("relative_from - absolute path handling"){
 	remove_all(test_base);
 }
 
-TEST_CASE("relative_from - single level nesting"){
+TEST_CASE("relative_from - single level nesting") {
 	path test_base = current_path() / "test_relative_single";
 	path attack_config = test_base / "attack_config" / "single" / "config.yaml";
 	create_directories(attack_config.parent_path());
@@ -108,7 +108,7 @@ TEST_CASE("relative_from - single level nesting"){
 	remove_all(test_base);
 }
 
-TEST_CASE("trim"){
+TEST_CASE("trim") {
 	CHECK_EQ(trim("hello"), "hello");
 	CHECK_EQ(trim("  hello  "), "hello");
 	CHECK_EQ(trim("\thello\t"), "hello");
@@ -117,7 +117,7 @@ TEST_CASE("trim"){
 	CHECK_EQ(trim("  a b  c  "), "a b  c");
 }
 
-TEST_CASE("create_public_dirs - new directories and file are world-accessible"){
+TEST_CASE("create_public_dirs - new directories and file are world-accessible") {
 	const path test1 = path("/tmp/test_create_public_dirs") / "test1";
 	const path test2 = test1 / "test2";
 	remove_all(test1);
@@ -126,7 +126,10 @@ TEST_CASE("create_public_dirs - new directories and file are world-accessible"){
 
 	// Write a file and set its permissions
 	const path test3 = test2 / "test3.txt";
-	{ ofstream f(test3); f << "x"; }
+	{
+		ofstream f(test3);
+		f << "x";
+	}
 	set_public_perms(test3);
 
 	// All directories must have rwxrwxrwx (0777)
@@ -135,9 +138,8 @@ TEST_CASE("create_public_dirs - new directories and file are world-accessible"){
 	CHECK_EQ(status(test2).permissions() & dir_expected, dir_expected);
 
 	// File must have rw-rw-rw- (0666)
-	constexpr perms file_expected = perms::owner_read | perms::owner_write |
-								perms::group_read | perms::group_write |
-								perms::others_read | perms::others_write;
+	constexpr perms file_expected = perms::owner_read | perms::owner_write | perms::group_read | perms::group_write |
+			perms::others_read | perms::others_write;
 	CHECK_EQ(status(test3).permissions() & file_expected, file_expected);
 
 	remove_all(test1);

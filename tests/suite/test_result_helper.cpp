@@ -18,13 +18,13 @@ using namespace wpa3_tester::visual::helper;
 using json = nlohmann::json;
 using wpa3_tester::described_bool;
 using wpa3_tester::described_str;
-using wpa3_tester::SK;
-using wpa3_tester::RunStatus;
-using wpa3_tester::TimeWindow;
 using wpa3_tester::LogTimePoint;
+using wpa3_tester::RunStatus;
+using wpa3_tester::SK;
+using wpa3_tester::TimeWindow;
 
 // minimal aggregate struct
-struct TestEntry{
+struct TestEntry {
 	string name{};
 	[[maybe_unused]] int count{};
 	[[maybe_unused]] bool flag{};
@@ -33,20 +33,20 @@ struct TestEntry{
 };
 
 // writes result.json into a temp dir, returns the dir path
-static path make_result_dir(const json &j){
+static path make_result_dir(const json &j) {
 	const path dir = temp_directory_path() / "wpa3_result_helper_test";
 	create_directories(dir);
 	ofstream(dir / RESULT_NAME) << j.dump();
 	return dir;
 }
 
-TEST_CASE("load_result_default - all fields present"){
+TEST_CASE("load_result_default - all fields present") {
 	const auto dir = make_result_dir({
-		{"name", "foo"},
-		{"count", 42},
-		{"flag", true},
-		{"opt_flag", false},
-		{"opt_name", "bar"},
+			{ "name", "foo" },
+			{ "count", 42 },
+			{ "flag", true },
+			{ "opt_flag", false },
+			{ "opt_name", "bar" },
 	});
 
 	const auto [name, count, flag, opt_flag, opt_name] = load_result_default<TestEntry>(dir);
@@ -59,29 +59,29 @@ TEST_CASE("load_result_default - all fields present"){
 	CHECK_EQ(opt_name.value(), "bar");
 }
 
-TEST_CASE("load_result_default - string default is '-'"){
-	const auto dir = make_result_dir({{"count", 1}});
+TEST_CASE("load_result_default - string default is '-'") {
+	const auto dir = make_result_dir({ { "count", 1 } });
 
 	const auto e = load_result_default<TestEntry>(dir);
 	CHECK_EQ(e.name, "");
 }
 
-TEST_CASE("load_result_default - optional<string> default is 'N/A'"){
-	const auto dir = make_result_dir({{"count", 1}});
+TEST_CASE("load_result_default - optional<string> default is 'N/A'") {
+	const auto dir = make_result_dir({ { "count", 1 } });
 
 	const auto e = load_result_default<TestEntry>(dir);
 	REQUIRE(e.opt_name.has_value());
 	CHECK_EQ(e.opt_name.value(), "N/A");
 }
 
-TEST_CASE("load_result_default - optional<bool> default is nullopt"){
-	const auto dir = make_result_dir({{"flag", true}});
+TEST_CASE("load_result_default - optional<bool> default is nullopt") {
+	const auto dir = make_result_dir({ { "flag", true } });
 
 	const auto e = load_result_default<TestEntry>(dir);
 	CHECK_FALSE(e.opt_flag.has_value());
 }
 
-TEST_CASE("load_result_default - no result.json returns entry_defaults"){
+TEST_CASE("load_result_default - no result.json returns entry_defaults") {
 	const path dir = temp_directory_path() / "wpa3_no_result";
 	create_directories(dir);
 	remove(dir / RESULT_NAME);
@@ -96,10 +96,10 @@ TEST_CASE("load_result_default - no result.json returns entry_defaults"){
 
 // ---- described_bool JSON roundtrip ----
 
-TEST_CASE("described_bool - to_json"){
+TEST_CASE("described_bool - to_json") {
 	described_bool d;
-	d += {true, "source_a"};
-	d += {false, "source_b"};
+	d += { true, "source_a" };
+	d += { false, "source_b" };
 	const json j = d;
 	REQUIRE(j.is_array());
 	REQUIRE_EQ(j.size(), 2u);
@@ -109,10 +109,10 @@ TEST_CASE("described_bool - to_json"){
 	CHECK_EQ(j[1]["description"], "source_b");
 }
 
-TEST_CASE("described_bool - from_json roundtrip"){
+TEST_CASE("described_bool - from_json roundtrip") {
 	const json j = json::array({
-		{{"value", false}, {"description", "conf"}},
-		{{"value", nullptr}, {"description", "pcap"}},
+			{ { "value", false }, { "description", "conf" } },
+			{ { "value", nullptr }, { "description", "pcap" } },
 	});
 	const auto d = j.get<described_bool>();
 	REQUIRE_EQ(d.pairs.size(), 2u);
@@ -125,9 +125,9 @@ TEST_CASE("described_bool - from_json roundtrip"){
 
 // ---- described_str JSON roundtrip ----
 
-TEST_CASE("described_str - to_json"){
+TEST_CASE("described_str - to_json") {
 	described_str d;
-	d += {"SAE", "hostapd_log"};
+	d += { "SAE", "hostapd_log" };
 	const json j = d;
 	REQUIRE(j.is_array());
 	REQUIRE_EQ(j.size(), 1u);
@@ -135,9 +135,9 @@ TEST_CASE("described_str - to_json"){
 	CHECK_EQ(j[0]["description"], "hostapd_log");
 }
 
-TEST_CASE("described_str - from_json roundtrip"){
+TEST_CASE("described_str - from_json roundtrip") {
 	const json j = json::array({
-		{{"value", "SAE WPA-PSK"}, {"description", "wpa_supplicant_conf"}},
+			{ { "value", "SAE WPA-PSK" }, { "description", "wpa_supplicant_conf" } },
 	});
 	const auto d = j.get<described_str>();
 	REQUIRE_EQ(d.pairs.size(), 1u);
@@ -147,14 +147,14 @@ TEST_CASE("described_str - from_json roundtrip"){
 
 // ---- helpers for RunStatus-based tests ----
 
-static void setup_test_rs(RunStatus &rs, const path &dir, const string &program = "hostapd"){
+static void setup_test_rs(RunStatus &rs, const path &dir, const string &program = "hostapd") {
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"ap", {{"setup", {{"program", program}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "setup", { { "program", program } } } } } } } });
 }
 
 // ---- get_run_window ----
 
-TEST_CASE("get_run_window - parses @START and @END from combined.log"){
+TEST_CASE("get_run_window - parses @START and @END from combined.log") {
 	const path dir = temp_directory_path() / "wpa3_run_window_test";
 	create_directories(dir / "logger");
 	{
@@ -173,34 +173,36 @@ TEST_CASE("get_run_window - parses @START and @END from combined.log"){
 	CHECK_LE(diff_sec, 56);
 }
 
-TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log"){
+TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log") {
 	const path dir = temp_directory_path() / "wpa3_conn_wpa_test";
 
 	create_directories(dir / "logger");
 	{
 		ofstream f(dir / "logger" / "ap.log");
-		f << "2026-07-27T18:36:55.386354254+0200 [ap] [stdout] wlan1: STA 24:ec:99:bf:b0:a1 WPA: sending 1/4 msg of 4-Way Handshake\n";
+		f << "2026-07-27T18:36:55.386354254+0200 [ap] [stdout] wlan1: STA 24:ec:99:bf:b0:a1 WPA: sending 1/4 msg of "
+			 "4-Way Handshake\n";
 		f << "2026-07-27T18:36:55.386364254+0200 [ap] [stdout] WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)\n";
 		f << wpa3_tester::START_tag << "\n";
 	}
 	RunStatus rs;
-	rs.config({{"actors", {
-		{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}},
-		{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}},
-		{"attacker", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}
-	}}});
+	rs.config({ { "actors",
+			{ { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
+					{ "client",
+							{ { "source", "internal" },
+									{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+									{ "setup", { { "program", "hostapd" } } } } },
+					{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	setup_test_rs(rs, dir);
-	const TimeWindow window_START{
-		LogTimePoint{}, wpa3_tester::get_tag_time(dir / "logger" / "ap.log", wpa3_tester::START_tag)
-	};
+	const TimeWindow window_START{ LogTimePoint{},
+		wpa3_tester::get_tag_time(dir / "logger" / "ap.log", wpa3_tester::START_tag) };
 	const auto result = get_conn_WPA_version(rs, window_START);
 	REQUIRE_FALSE(result.empty());
 	CHECK_EQ(result.value(), "00-0f-ac:8\n(SAE)");
 	CHECK_EQ(result.last().description, "hostapd");
 }
 
-TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.log"){
+TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.log") {
 	const path dir = temp_directory_path() / "wpa3_client_mfp_test";
 	create_directories(dir / "logger");
 	{
@@ -212,13 +214,18 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
 		//  RSN caps=0x008c -> MFPC=1, MFPR=0 -> OPTIONAL
 		f << "2026-07-27T18:36:55.100000000+0200 [ap] [stdout] wlan0: STA 24:ec:99:bf:b0:a1 IEEE 802.11: associated\n";
 		// 2. RSN IE log
-		f << "2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
+		f << "2026-07-27T18:36:55.386381748+0200 [ap] [stdout] WPA: RSN IE in EAPOL-Key - hexdump(len=28): 30 1a 01 00 "
+			 "00 0f ac 04 01 00 00 0f ac 04 01 00 00 0f ac 08 8c 00 00 00 00 0f ac 06\n";
 	}
 	RunStatus rs;
-	rs.config({{"actors", {
-		{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}},
-		{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}},
-	}}});
+	rs.config({ { "actors",
+			{
+					{ "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
+					{ "client",
+							{ { "source", "internal" },
+									{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+									{ "setup", { { "program", "hostapd" } } } } },
+			} } });
 	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 
@@ -230,7 +237,7 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
 	CHECK_EQ(result.pairs[1].description, "hostapd");
 }
 
-TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf"){
+TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf") {
 	const path dir = temp_directory_path() / "wpa3_ap_wpa_test";
 	create_directories(dir);
 	{
@@ -239,7 +246,7 @@ TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf"){
 		f << "wpa_key_mgmt=SAE\n";
 	}
 	RunStatus rs;
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 	const auto result = get_ap_WPA_support(rs);
@@ -250,13 +257,13 @@ TEST_CASE("get_ap_WPA_support - reads wpa_key_mgmt from ap_hostapd.conf"){
 
 // ---- hostapd_mana_crack tests ----
 
-TEST_CASE("hostapd_mana_crack - rogue_ap does not exist"){
+TEST_CASE("hostapd_mana_crack - rogue_ap does not exist") {
 	const path dir = temp_directory_path() / "wpa3_mana_crack_test_no_rogue";
 	create_directories(dir);
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	std::vector<std::unique_ptr<wpa3_tester::GraphElements>> elements;
 
@@ -268,8 +275,8 @@ TEST_CASE("hostapd_mana_crack - rogue_ap does not exist"){
 
 // ---- get_ap_ocv tests ----
 
-TEST_CASE("get_ap_ocv - from hostapd_conf"){
-	const path dir = temp_directory_path() / "wpa3_ap_ocv_test"/ "observer";
+TEST_CASE("get_ap_ocv - from hostapd_conf") {
+	const path dir = temp_directory_path() / "wpa3_ap_ocv_test" / "observer";
 	create_directories(dir);
 
 	// ap_hostapd.conf with okc value
@@ -279,7 +286,7 @@ TEST_CASE("get_ap_ocv - from hostapd_conf"){
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_ap_ocv(rs);
@@ -288,7 +295,7 @@ TEST_CASE("get_ap_ocv - from hostapd_conf"){
 	CHECK_EQ(result.last().description, "hostapd_conf");
 }
 
-TEST_CASE("get_ap_ocv - from pcap"){
+TEST_CASE("get_ap_ocv - from pcap") {
 	const path dir = temp_directory_path() / "wpa3_ap_ocv_pcap_test";
 	wpa3_tester::create_public_dirs(dir / "observer" / "tshark");
 
@@ -298,7 +305,11 @@ TEST_CASE("get_ap_ocv - from pcap"){
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"attacker", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors",
+			{ { "attacker",
+					{ { "source", "internal" },
+							{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+							{ "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	const auto result = get_ap_ocv(rs);
 
@@ -309,29 +320,35 @@ TEST_CASE("get_ap_ocv - from pcap"){
 
 // ---- get_client_scanning tests ----
 
-TEST_CASE("get_client_scanning - from attacker pcap"){
+TEST_CASE("get_client_scanning - from attacker pcap") {
 	const path dir = temp_directory_path() / "wpa3_client_scanning_test";
 	wpa3_tester::create_public_dirs(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/probe_req.pcapng";
-	const path dst_pcap = dir /"observer" / "tshark" / "attacker_capture.pcap";
+	const path dst_pcap = dir / "observer" / "tshark" / "attacker_capture.pcap";
 	wpa3_tester::copy_f(absolute(src_pcap), dst_pcap);
 
 	// Create ap.log with client scanning info
 	create_directories(dir / "logger");
 	ofstream log_f(dir / "logger" / "ap.log");
-	log_f << wpa3_tester::START_tag  << "\n";
-	log_f << "2026-07-28T15:25:12.676316420+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff sa=24:ec:99:bf:b0:a1 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-42 fc=0x40 seq_ctrl=0x60 stype=4 (WLAN_FC_STYPE_PROBE_REQ) len=86\n";
-	log_f << "2026-07-28T15:25:12.676329016+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 != ds.chan=7\n";
-	log_f << wpa3_tester::END_tag << "\n";;
+	log_f << wpa3_tester::START_tag << "\n";
+	log_f << "2026-07-28T15:25:12.676316420+0200 [ap] [stdout] nl80211: RX frame da=ff:ff:ff:ff:ff:ff "
+			 "sa=24:ec:99:bf:b0:a1 bssid=ff:ff:ff:ff:ff:ff freq=2437 ssi_signal=-42 fc=0x40 seq_ctrl=0x60 stype=4 "
+			 "(WLAN_FC_STYPE_PROBE_REQ) len=86\n";
+	log_f << "2026-07-28T15:25:12.676329016+0200 [ap] [stdout] Ignore Probe Request due to DS Params mismatch: chan=6 "
+			 "!= ds.chan=7\n";
+	log_f << wpa3_tester::END_tag << "\n";
+	;
 	log_f.close();
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {
-		{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:b0:a1"}}},{"setup", {{"program", "hostapd"}}}}},
-		{"attacker", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}
-	}}});
+	rs.config({ { "actors",
+			{ { "client",
+					  { { "source", "internal" },
+							  { "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+							  { "setup", { { "program", "hostapd" } } } } },
+					{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_scanning(rs, {});
@@ -345,8 +362,8 @@ TEST_CASE("get_client_scanning - from attacker pcap"){
 
 // ---- get_client_WPA_support tests ----
 
-TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf"){
-	const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test"/ "observer";
+TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf") {
+	const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test" / "observer";
 	create_directories(dir);
 
 	ofstream f(dir / "client_wpa_supplicant.conf");
@@ -355,7 +372,7 @@ TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf"){
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_WPA_support(rs, {});
@@ -386,17 +403,22 @@ REQUIRE_FALSE(result.empty());
 
 // ---- get_client_disconnected tests ----
 
-TEST_CASE("get_client_disconnected - WB client with log"){
+TEST_CASE("get_client_disconnected - WB client with log") {
 	const path dir = temp_directory_path() / "wpa3_client_disconnect_wb_test";
 	wpa3_tester::create_public_dirs(dir / "logger");
 
 	ofstream f(dir / "logger" / "client.log");
-	f << "2026-07-28T15:25:23.705566498+0200 [client] [stdout] wlan4: CTRL-EVENT-DISCONNECTED bssid=24:ec:99:bf:c7:cf reason=3 locally_generated=1\n";
+	f << "2026-07-28T15:25:23.705566498+0200 [client] [stdout] wlan4: CTRL-EVENT-DISCONNECTED bssid=24:ec:99:bf:c7:cf "
+		 "reason=3 locally_generated=1\n";
 	f.close();
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"client", {{"source","internal"},{"selection", {{"mac", "24:ec:99:bf:c7:cf "}}}, {"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors",
+			{ { "client",
+					{ { "source", "internal" },
+							{ "selection", { { "mac", "24:ec:99:bf:c7:cf " } } },
+							{ "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
@@ -405,21 +427,23 @@ TEST_CASE("get_client_disconnected - WB client with log"){
 	CHECK_EQ(result.last().description, "client log");
 }
 
-TEST_CASE("get_client_disconnected - non-WB client with pcap"){
+TEST_CASE("get_client_disconnected - non-WB client with pcap") {
 	const path dir = temp_directory_path() / "wpa3_client_disconnect_pcap_test";
-	wpa3_tester::create_public_dirs(dir /  "observer" / "tshark");
+	wpa3_tester::create_public_dirs(dir / "observer" / "tshark");
 
 	const path src_pcap = "../test_data/deauth.pcapng";
-	const path dst_pcap = dir / "observer"/ "tshark" / "attacker_capture.pcap";
+	const path dst_pcap = dir / "observer" / "tshark" / "attacker_capture.pcap";
 	wpa3_tester::copy_f(absolute(src_pcap), dst_pcap);
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {
-		//78:98:e8:55:3e:8d is AP, ubt I need only id source is client
-		{"client", {{"source","external"},{"selection", {{"mac", "78:98:e8:55:3e:8d"}}},{"setup", {{"program", "hostapd"}}}}},
-		{"attacker", {{"source","internal"}, {"setup",{"program", "hostapd"}}}}
-	}}});
+	rs.config({ { "actors",
+			{ //78:98:e8:55:3e:8d is AP, ubt I need only id source is client
+					{ "client",
+							{ { "source", "external" },
+									{ "selection", { { "mac", "78:98:e8:55:3e:8d" } } },
+									{ "setup", { { "program", "hostapd" } } } } },
+					{ "attacker", { { "source", "internal" }, { "setup", { "program", "hostapd" } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
@@ -430,7 +454,7 @@ TEST_CASE("get_client_disconnected - non-WB client with pcap"){
 
 // ---- get_ap_wpa3_trans_disable ----
 
-TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero"){
+TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero") {
 	const path dir = temp_directory_path() / "wpa3_trans_disable_conf_test";
 	create_directories(dir);
 	{
@@ -440,7 +464,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero"){
 	}
 	RunStatus rs;
 	setup_test_rs(rs, dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_ap_wpa3_trans_disable(rs);
@@ -449,7 +473,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero"){
 	CHECK_EQ(result.last().description, "hostapd_conf");
 }
 
-TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
+TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present") {
 	const path dir = temp_directory_path() / "wpa3_trans_disable_both_test";
 	create_directories(dir / "logger");
 	{
@@ -458,7 +482,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	}
 	RunStatus rs;
 	setup_test_rs(rs, dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_ap_wpa3_trans_disable(rs, {});
@@ -467,7 +491,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present"){
 	CHECK_EQ(result.pairs[0].description, "hostapd_conf");
 }
 
-TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)"){
+TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)") {
 	const path dir = temp_directory_path() / "wpa3_trans_disable_uci_test";
 	create_directories(dir);
 	{
@@ -485,11 +509,11 @@ TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)"){
 	}
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({{"actors", {{"ap", {
-		{"source", "external"},
-		{"selection", {{"whitebox_host", "openwrt_host"}, {"channel", 36}}},
-		{"setup", {{"program", "openwrt"}}}
-	}}}}});
+	rs.config({ { "actors",
+			{ { "ap",
+					{ { "source", "external" },
+							{ "selection", { { "whitebox_host", "openwrt_host" }, { "channel", 36 } } },
+							{ "setup", { { "program", "openwrt" } } } } } } } });
 	rs.parse_requirements();
 	rs.get_actor("ap")->set(SK::radio, "radio0");
 
@@ -499,12 +523,12 @@ TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)"){
 	CHECK_EQ(result.last().description, "uci_conf");
 }
 
-TEST_CASE("get_ap_wpa3_trans_disable - no config no log returns empty"){
+TEST_CASE("get_ap_wpa3_trans_disable - no config no log returns empty") {
 	const path dir = temp_directory_path() / "wpa3_trans_disable_empty_test";
 	create_directories(dir);
 	RunStatus rs;
 	setup_test_rs(rs, dir);
-	rs.config({{"actors", {{"ap", {{"source","internal"},{"setup", {{"program", "hostapd"}}}}}}}});
+	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_ap_wpa3_trans_disable(rs, {});

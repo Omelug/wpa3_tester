@@ -111,7 +111,7 @@ inline std::string device(const std::string &mac_str, const std::filesystem::pat
 	if(mac_str.empty()) return "";
 	auto root = page_dir;
 	while(!root.empty() && root != root.parent_path()){
-		const auto dev_page = root / "devices" / mac_str / "index.html";
+		const auto dev_page = root /DEVICES_DIR / mac_str / "index.html";
 		if(std::filesystem::exists(dev_page))
 			return "<a href=\"" + dev_page.lexically_relative(page_dir).string() + "\">" + mac_str + "</a>";
 		root = root.parent_path();

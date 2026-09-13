@@ -114,7 +114,7 @@ TEST_CASE("device() - device page at root -> returns relative link") {
 	HtmlFixture fx("dev_root");
 	const string mac_str = "aa:bb:cc:dd:ee:ff";
 	const auto mac = Tins::HWAddress<6>(mac_str);
-	const path dev_dir = fx.dir / "devices" / mac_str;
+	const path dev_dir = fx.dir /DEVICES_DIR / mac_str;
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	CHECK_EQ(device(mac.to_string(), fx.dir),
@@ -125,7 +125,7 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	HtmlFixture fx("dev_nested");
 	const string mac_str = "bb:cc:dd:ee:ff:00";
 	const auto mac = Tins::HWAddress<6>(mac_str);
-	const path dev_dir = fx.dir / "devices" / mac_str;
+	const path dev_dir = fx.dir /DEVICES_DIR / mac_str;
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	const path nested = fx.dir / "attacks" / "DoS_soft" / "channel_switch";

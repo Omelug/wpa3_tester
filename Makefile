@@ -81,7 +81,6 @@ graphviz:
 	mkdir -p doc/callgraph
 	sudo chown $(USER):$(USER) doc/callgraph/callgraph.out
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0 -w -s > ./doc/callgraph/unfiltered.dot
- 	#pozor na -n (limit zobrazení)
  	# --node-label=self-time
 	gprof2dot -f callgrind doc/callgraph/callgraph.out -n0.01 -s | \
 		grep -E 'digraph|nl80211|graph \[|node \[|(wpa3_tester::|main ->).*(wpa3_tester::|-> main)|nl80211|}$$' | \

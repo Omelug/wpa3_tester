@@ -155,7 +155,7 @@ TEST_SUITE("handle_assoc_request") {
         auto req = Dot11AssocRequest(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
         req.ssid("test_mc_mitm");
 
-        // ponytail: returns CONTINUE intentionally (see FIXME in source)
+        // returns CONTINUE intentionally (see FIXME in source)
         CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), req), CONTINUE);
         CHECK_EQ(m->rogue_send_count, 1);
         CHECK(m->client_state.is_state(ClientState::Associated));

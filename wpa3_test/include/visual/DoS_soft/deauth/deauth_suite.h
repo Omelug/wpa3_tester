@@ -22,7 +22,7 @@ struct DeauthTestEntry {
     std::string attacker_mac;
     std::string attacker_driver;
 
-    // result fields — names match result.json keys
+    // result fields - names match result.json keys
     described_bool client_disconnected;
     std::optional<bool> ap_disconnected;
     described_str client_mfp;

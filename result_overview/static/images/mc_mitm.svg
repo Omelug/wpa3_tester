@@ -32,7 +32,7 @@
     <use href="#s-laptop" x="128" y="178" width="110" height="75" color="#E53E3E"/>
     <text x="183" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue client</text>
 
-    <!-- rogue client ↔ ap -->
+    <!-- rogue client<-> ap -->
     <line x1="183" y1="278" x2="183" y2="340" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
 
     <!-- ap (dark wifi) -->
@@ -48,7 +48,7 @@
     <text x="517" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue ap</text>
     <text x="517" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid = TrustAP</text>
 
-    <!-- rogue ap ↔ client -->
+    <!-- rogue ap<-> client -->
     <line x1="517" y1="296" x2="517" y2="342" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
 
     <!-- client (dark laptop) -->

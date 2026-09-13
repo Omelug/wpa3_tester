@@ -56,7 +56,7 @@ static void inject_legacy_beacons(const HWAddress<6> &ap_mac, const string &ifac
     log(LogLevel::INFO, "Scanning for AP beacon on {}", iface);
     const auto real_beacon = scan::RSN_scan(iface, 20, ap_mac);
     if (!real_beacon)
-        throw run_err("expected_vht_beacon: AP beacon not found — check channel and AP MAC");
+        throw run_err("expected_vht_beacon: AP beacon not found - check channel and AP MAC");
 
     log(LogLevel::INFO, "Beacon captured, stripping VHT IEs and injecting");
     const Dot11Beacon legacy = build_legacy_beacon(*real_beacon);

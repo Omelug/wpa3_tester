@@ -152,7 +152,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string &/*ssid*/, cons
 	b.channel_switch(cs);
 
 	// ECSA IE (60): switch_mode, operating_class, new_channel, switch_count
-	// Required for 5 GHz — basic CSA IE has no operating class
+	// Required for 5 GHz - basic CSA IE has no operating class
 	const array<uint8_t, 4> ecsa{1, get_operating_class(new_channel),
 	                              new_channel.ch_num, static_cast<uint8_t>(switch_count)};
 	b.add_option(Dot11::option(60, ecsa.size(), ecsa.data()));

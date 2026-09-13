@@ -260,8 +260,8 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 }
 
 void generate_devices(const path &output_dir, const path &data_dir){
-	const path dev_data   = data_dir / "devices";
-	const path devices_dir = output_dir / "devices";
+	const path dev_data   = data_dir /DEVICES_DIR;
+	const path devices_dir = output_dir /DEVICES_DIR;
 	create_public_dirs(devices_dir);
 
 	vector<DeviceInfo> devices;

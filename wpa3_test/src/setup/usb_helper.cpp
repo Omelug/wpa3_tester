@@ -59,7 +59,7 @@ void reset_usb_ifaces() {
 		f << "1";
 	}
 
-	// Unload wifi drivers before power cycle — prevents ath9k_htc ANI workqueue
+	// Unload wifi drivers before power cycle - prevents ath9k_htc ANI workqueue
 	// from firing after USB disconnect but before driver cleanup.
 	const auto wifi_ifaces = collect_all_usb_wifi_ifaces();
 	size_t expected_with_driver = 0;
@@ -75,7 +75,7 @@ void reset_usb_ifaces() {
 		log(LogLevel::DEBUG, "reset_usb_ifaces: unloaded driver {}", drv);
 	}
 
-	// Use uhubctl list to find hubs — independent of sysfs device state.
+	// Use uhubctl list to find hubs - independent of sysfs device state.
 	// Devices may be absent from sysfs if stuck in kernel USB error-recovery.
 	const string hub_list =
 		hw_capabilities::run_cmd_output({"uhubctl"}, nullopt);
@@ -89,19 +89,19 @@ void reset_usb_ifaces() {
 		string loc;
 		istringstream(line.substr(prefix.size())) >> loc;
 		if (loc.find('-') == string::npos)
-			continue; // skip root hubs — no PPPS (Per-Port Power Switching)
+			continue; // skip root hubs - no PPPS (Per-Port Power Switching)
 		locs.push_back(loc);
 	}
 	if (locs.empty()) {
-		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found — reloading drivers without power cycle");
+		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found - reloading drivers without power cycle");
 		for (const auto &drv : drivers)
 			hw_capabilities::run_cmd({"modprobe", drv}, nullopt, false);
 		hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=10"}, nullopt, false);
 		return;
 	}
 
-	// ponytail: split off/on into two invocations — uhubctl -a cycle hangs on
-	// power-on because the libusb handle opened before the delay goes stale.
+	// split off/on into two invocations - uhubctl -a cycle hangs on power-on
+	// because the libusb handle opened before the delay goes stale.
 	for (const auto &loc : locs) {
 		hw_capabilities::run_cmd({"uhubctl", "-l", loc, "-a", "off"}, nullopt, false);
 		log(LogLevel::INFO, "reset_usb_ifaces: powered off hub {}", loc);
@@ -113,7 +113,7 @@ void reset_usb_ifaces() {
 	}
 
 	// Poll until all adapters have drivers bound. ath9k_htc firmware upload can
-	// take 40+ seconds — a fixed sleep is not enough.
+	// take 40+ seconds - a fixed sleep is not enough.
 	if (expected_with_driver > 0) {
 		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
 		while (chrono::steady_clock::now() < deadline) {
@@ -126,7 +126,8 @@ void reset_usb_ifaces() {
 			this_thread::sleep_for(chrono::seconds(3));
 		}
 	} else {
-		this_thread::sleep_for(chrono::seconds(8)); // ponytail: fallback when no adapters were in sysfs before reset
+		// fallback when no adapters were in sysfs before reset
+		this_thread::sleep_for(chrono::seconds(8));
 	}
 	hw_capabilities::run_cmd({"udevadm", "settle", "--timeout=10"}, nullopt, false);
 }

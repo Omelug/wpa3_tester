@@ -4,11 +4,11 @@ $validator: ../channel_switch.schema.yaml
 scan_iface: wlan1
 scan_channels: [6]
 scan_until_match: true
-#RTL8188EUS e blbost - > přidat scanner podmínky (nebo přes actor?)
+#RTL8188EUS broken -> scanner conditions?
 #TODO requirement connected AP-STA external
 requirements:
   ex_BB_connection : [[ap, client]]
-#FIXM funguje jen u ath_htc, není to ítm, že musí už předtím v monitor módu?
+#FIXM only in ath_htc, není to tím, že musí už předtím v monitor módu?
 #označit n2jak wizard , nebo wizard -> error v run config
 actors:
   ap:

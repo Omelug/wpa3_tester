@@ -243,7 +243,7 @@ void stats_bl0ck_attack(const RunStatus &rs){
 		elements.push_back(make_unique<EventLines>(get_time_logs(rs, "rogue_ap", "Captured a WPA"), "MANA", "black"));
 	}
 
-	// BA/BAR are injected by attacker — mt76x2u does not loopback injected frames,
+	// BA/BAR are injected by attacker - mt76x2u does not loopback injected frames,
 	// so they don't appear in attacker_capture.pcap. Use client sniff_iface instead.
 	const string ba_src = rs.actor("client") && rs.get_actor("client")->is_WB() ? "client" : "attacker";
 	observer::tshark::pcap_events(rs, elements, {

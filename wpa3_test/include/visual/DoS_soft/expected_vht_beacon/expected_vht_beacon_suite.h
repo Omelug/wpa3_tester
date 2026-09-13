@@ -8,7 +8,7 @@
 namespace wpa3_tester::visual::expected_vht_beacon_suite {
 
 struct ExpVhtTestEntry {
-    // display fields — populated in parse(), not from result.json
+    // display fields - populated in parse(), not from result.json
     std::string name;
     std::string ap_mac;
     std::string ap_source;
@@ -19,7 +19,7 @@ struct ExpVhtTestEntry {
     std::string rogue_ap_mac;
     std::string rogue_ap_driver;
 
-    // result fields — names must match result.json keys (auto-loaded by load_result_default)
+    // result fields - names must match result.json keys (auto-loaded by load_result_default)
     int disconnect_count = 0;
     bool dmesg_change_mode_disconnect = false;
     bool ap_disconnected = false;

@@ -86,7 +86,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     const auto tshark_graphs  = graphs_from_csv_dir(TEST_DATA / "tshark",  "tshark",  page_dir);
     const auto tcpdump_graphs = graphs_from_csv_dir(TEST_DATA / "tcpdump", "tcpdump", page_dir);
 
-    // iperf3 graph — two streams (AP-server RX + client TX) on Y2 (Mbits/sec)
+    // iperf3 graph - two streams (AP-server RX + client TX) on Y2 (Mbits/sec)
     const path iperf_png = page_dir / "iperf.png";
     const bool iperf_ok = [&]{
         const path iperf_dir = TEST_DATA / "iperf3";
@@ -117,7 +117,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
         g.gpcmd("set grid");
         g.gpcmd("set tmargin 5");
         g.gpcmd("set key outside");
-        g.gpcmd("set title 'iperf3 throughput — bl0ck BAR attack (bidir 10M)'");
+        g.gpcmd("set title 'iperf3 throughput - bl0ck BAR attack (bidir 10M)'");
         g.add_graph_elements(elms);
         g.render();
         if(exists(iperf_png)) set_public_perms(iperf_png);

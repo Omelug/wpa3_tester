@@ -15,7 +15,7 @@ namespace wpa3_tester{
 
 namespace {
 
-// real channel EAPOL: addr1=STA(dst), addr2=AP(src) — fixture sta=addr1, ap=addr2
+// real channel EAPOL: addr1=STA(dst), addr2=AP(src) - fixture sta=addr1, ap=addr2
 unique_ptr<McMitmTestable> make_real_eapol_fixture(const char *pcap_path,
                                                     HWAddress<6> &out_a1, HWAddress<6> &out_a2) {
     auto [rt, raw] = test_helpers::load_frame(pcap_path);

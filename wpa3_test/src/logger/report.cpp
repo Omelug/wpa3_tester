@@ -63,7 +63,7 @@ void attack_mapping_table(ReportGuard &report, const RunStatus &rs){
 }
 
 string device(const Tins::HWAddress<6> mac){
-	const auto device_path = root_dir().parent_path() / DATA_DIR / "devices" / mac.to_string();
+	const auto device_path = root_dir().parent_path() / DATA_DIR / DEVICES_DIR / mac.to_string();
 	if(exists(device_path))
 		return "[" + mac.to_string() + "](" + device_path.string() + ")";
 	return mac.to_string();

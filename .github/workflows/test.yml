@@ -2,7 +2,8 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+  pull_request:
+    branches: [ "main" ]
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -20,7 +21,7 @@ jobs:
       - name: Build all tests
         run: cmake --build build -j$(nproc)
 
-      # Tests excluded from CI: require real WiFi hardware.
+      # Tests excluded from CI,  require real Wi-Fi hardware
       # Run locally with: sudo -E ctest --test-dir build --output-on-failure
       - name: Run tests
         run: sudo -E ctest --test-dir build --output-on-failure

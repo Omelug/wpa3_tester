@@ -2,7 +2,7 @@
 #include <cstdint>
 
 namespace wpa3_tester::eap{
-// EAP codes (RFC 3748 §4)
+// EAP codes (RFC 3748 $4)
 constexpr uint8_t CODE_REQUEST = 1;
 constexpr uint8_t CODE_RESPONSE = 2;
 constexpr uint8_t CODE_SUCCESS = 3;
@@ -27,7 +27,7 @@ constexpr uint8_t TYPE_AKA_PRIME = 50;
 constexpr uint8_t TYPE_PWD = 52;
 constexpr uint8_t TYPE_EXPANDED = 254;
 
-// EAP-PWD opcodes (RFC 5931 §3.1, low 6 bits of Exch byte)
+// EAP-PWD opcodes (RFC 5931 $3.1, low 6 bits of Exch byte)
 constexpr uint8_t PWD_OPCODE_ID = 1;
 constexpr uint8_t PWD_OPCODE_COMMIT = 2;
 constexpr uint8_t PWD_OPCODE_CONFIRM = 3;

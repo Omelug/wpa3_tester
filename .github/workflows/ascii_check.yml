@@ -1,0 +1,14 @@
+name: ASCII & blank-line check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/scan_ascii_issues.py . .c .h .cc .cpp .cxx .hpp .hxx .hh .inl .cmake

@@ -51,7 +51,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     <div class="card">
         <h2>Mitigations</h2>
         <ul>
-            <li><b>Beacon Protection (BIGTK, 802.11ax)</b> — fake beacons without a valid
+            <li><b>Beacon Protection (BIGTK, 802.11ax)</b> - fake beacons without a valid
                 BIP-CMAC-256 tag are silently dropped. Not yet widely deployed.</li>
         </ul>
     </div>

@@ -2,7 +2,7 @@
 dd-wrt:
 
 https://dd-wrt.com/support/other-downloads/?path=betas%2Flatest%2Fasus-rt-ac5300%2F
-web: ddwrt/ddwrt (v ssh je to samé heslo, jen root@192.168.1.1 )
+web: ddwrt/ddwrt (ssh have same password, but root@192.168.1.1 )
 
 enable ssh: Services > Services > Secure Shell (SSH) > Enable Daemon
 country: Wireless > Basic settings > Country Settings

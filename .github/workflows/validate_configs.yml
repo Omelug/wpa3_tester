@@ -2,6 +2,11 @@ name: Validate attack configs
 
 on:
   push:
+  pull_request:
+    paths:
+      - 'wpa3_test/attack_config/**'
+      - 'wpa3_test/src/setup/**'
+      - 'tests/setup/**'
   workflow_run:
     workflows: [ Tests ]
     types: [ completed ]
@@ -12,7 +17,7 @@ on:
       - 'tests/setup/**'
 jobs:
   validate:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

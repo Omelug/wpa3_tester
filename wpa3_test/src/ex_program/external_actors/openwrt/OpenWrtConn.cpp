@@ -267,7 +267,7 @@ void OpenWrtConn::set_managed_mode(const string &iface) const{
 auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void{
 	// Find which bridge owns this wireless interface (usually br-lan on OpenWrt).
 	// We add the IP there directly rather than wrestling with UCI bridge creation +
-	// wifi reload — wifi reload only restarts wireless, not netifd network config,
+	// wifi reload - wifi reload only restarts wireless, not netifd network config,
 	// so a new UCI interface (br-phy1_ap0) would never actually get created.
 	int rc;
 	string master = exec("ip link show dev " + iface + " 2>/dev/null", false, &rc);
@@ -322,7 +322,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	};
 	const string wifi_iface = actor.get(SK::iface);
 
-	// Find the UCI section that actually controls this ifname — don't create a new one,
+	// Find the UCI section that actually controls this ifname - don't create a new one,
 	// or wifi reload would assign it a different slot (e.g., phy1-ap4 instead of phy1-ap0).
 	string section;
 	try{
@@ -330,7 +330,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	} catch(const ex_conn_err &e){
 		section = wifi_iface;
 		ranges::replace(section, '-', '_');
-		log(LogLevel::WARNING, "setup_ap: section not found for {}: {} — falling back to {}", wifi_iface, e.what(), section);
+		log(LogLevel::WARNING, "setup_ap: section not found for {}: {} - falling back to {}", wifi_iface, e.what(), section);
 	}
 	log(LogLevel::DEBUG, "setup_ap: configuring UCI section '{}' for iface '{}'", section, wifi_iface);
 

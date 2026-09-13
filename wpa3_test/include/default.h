@@ -4,6 +4,7 @@ inline char CSV_SEP = '|';
 
 inline std::string TESTER_NAME = "wpa3_tester";
 inline std::string DATA_DIR = "data";
+inline std::string DEVICES_DIR = "devices";
 inline std::string DATA_TEST = "test_data";
 inline std::string DATA_SUITE = "suite_data";
 

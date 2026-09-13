@@ -11,7 +11,7 @@ actors:
       program_config:
         country_code: CZ
         version: 2_10
-        hw_mode: a   # 5 GHz — VHT requires 5 GHz
+        hw_mode: a   # 5 GHz - VHT requires 5 GHz
         channel: 36
   client:
     setup:

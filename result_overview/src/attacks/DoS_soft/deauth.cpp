@@ -29,15 +29,19 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
     <h1>Deauthentication DoS Attack (WPA2) - with MFP</h1>
 
     <div class="card">
-        <p><b>vulnerability:</b> hostapd security advisory 2019-7
-           (<a href="https://w1.fi/security/2019-7/">w1.fi/security/2019-7</a>) - CVE-2019-16275</p>
+        <p><b>Info:</b> hostapd security advisory 2019-7
+           (<a href="https://w1.fi/security/2019-7/">w1.fi/security/2019-7</a>) - CVE-2019-16275
+		</p>
         <p>The attacker sends a deauthentication frame to the AP where
            <b>SA (source address) == AP's own MAC address</b>.
            Unpatched hostapd processes this frame and its response causes connected clients
-           to drop association — <b>bypassing PMF</b> because the frame targets the AP-side
+           to drop association - <b>bypassing PMF</b> because the frame targets the AP-side
            state machine, not the client directly.</p>
         <p><b>affected:</b> hostapd 2.10 (without the patch) </p>
-        <p><b>fixed by:</b> patch added silent ignore of management frames where SA == own_addr</p>
+        <p><b>fixed by:</b>
+			patch added silent ignore of management frames where SA == own_addr <br>
+			patch: https://w1.fi/security/2019-7/0001-AP-Silently-ignore-management-frame-from-unexpected-.patch
+		</p>
         <p><b>success:</b> client disconnected from AP</p>
     </div>
 

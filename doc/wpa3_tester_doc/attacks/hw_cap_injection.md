@@ -8,7 +8,7 @@
 
 - for testing are to fragments added RAWPDU
 #### More Fragments
-TODO přepast
+TODO rewrite 
 - some network cards (Intel AC-3160 and those based on the RT5572 chipset) have issue with injecting fragments with the More Fragments (MF) flag set.
 - solved by workaround - after injecting the frame with the MF flag set, 
 immediately injecting a dummy frame without the MF flag.

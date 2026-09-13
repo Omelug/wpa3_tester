@@ -66,7 +66,7 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 	});
 }
 
-// "action:N" field — skips "drv_ampdu_action: " (space after colon, not digit)
+// "action:N" field - skips "drv_ampdu_action: " (space after colon, not digit)
 static AmpduAction parse_action(const string &line){
 	for(size_t p = 0; (p = line.find("action:", p)) != string::npos; p += 7){
 		if(p + 7 < line.size() && isdigit(static_cast<unsigned char>(line[p + 7]))){
@@ -81,7 +81,7 @@ static AmpduAction parse_action(const string &line){
 }
 
 // first digit-leading token ending with ':' is the monotonic timestamp; -1 on failure
-// "SSSSSS.UUUUUU" — fractional part zero-padded to 9 digits for nanosecond precision
+// "SSSSSS.UUUUUU" - fractional part zero-padded to 9 digits for nanosecond precision
 static int64_t line_ts_ns(const string &line){
 	istringstream ss(line);
 	for(string tok; ss >> tok; ){

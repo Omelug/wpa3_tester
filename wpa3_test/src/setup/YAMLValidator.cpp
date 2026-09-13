@@ -123,7 +123,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 	// re-validate prop_value to recover the specific failing field path
 	// embed $defs so internal $refs resolve
-	// external $refs may throw — caught below
+	// external $refs may throw - caught below
 	struct collecting_err : error_handler {
 		struct entry { json::json_pointer ptr; string message; };
 		vector<entry> errors;
@@ -140,7 +140,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 	} catch(...) {}
 
 	for(const auto &e : ceh.errors){
-		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) — handled below
+		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) - handled below
 		results.push_back("In '" + prop_name + "' at " + e.ptr.to_string() + ": " + e.message);
 	}
 	if(!results.empty()) return results;

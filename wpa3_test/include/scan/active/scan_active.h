@@ -9,7 +9,7 @@ void apply_ht_vht_he(const Tins::Dot11ManagementFrame &mgmt, Actor_Config_extern
 // Sets MFP/OCV/beacon_prot and WPA2-PSK/WPA3-SAE from the RSN IE of any management frame (beacon, assoc-req, …)
 void apply_rsn(const Tins::Dot11ManagementFrame &mgmt, Actor_Config_external &cfg);
 
-// RSN capabilities field (802.11 §9.4.2.24.4), decoded once and shared by apply_rsn() and ScanAP::to_str()
+// RSN capabilities field (802.11 $9.4.2.24.4), decoded once and shared by apply_rsn() and ScanAP::to_str()
 struct RSNCapFlags{
 	bool mfp_capable;
 	bool mfp_required;

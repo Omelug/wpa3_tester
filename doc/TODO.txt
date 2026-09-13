@@ -4,10 +4,15 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: Share Debug pofile from NIxOS
++: limit CSA for internal client
+f: in devices is PHY not shown in internal
+f?: check injection test, test_injection_txack is no capture every time and injection_fields_retrans is false
 bl0ck - logy z OpenWrt (co nejvíce)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +?: add empty attack for tests
 +: rogue AP into Bl0ck
+
 
 CSA - upravit report pro external BB
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)

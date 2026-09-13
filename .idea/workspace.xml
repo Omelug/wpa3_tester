@@ -133,10 +133,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: clang-format for test">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/ascii_check.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ascii_check.yml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="ft: scan_ascii_issues">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/test_setup/rapsberry.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/test_setup/rapsberry.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/wpa3_tester_doc/attacks/iface_info.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/wpa3_tester_doc/attacks/iface_info.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -293,6 +292,11 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.test_config_validation">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -480,6 +484,12 @@
       </method>
     </configuration>
     <configuration name="run_report_guard_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_report_guard_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_report_guard_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_report_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_report_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_report_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1035,6 +1045,7 @@
       <item itemvalue="Doctest.run_parse_acm_response_tests" />
       <item itemvalue="Doctest.run_real_channel_tests" />
       <item itemvalue="Doctest.run_report_guard_tests" />
+      <item itemvalue="Doctest.run_report_tests" />
       <item itemvalue="Doctest.run_iperf_tests" />
       <item itemvalue="Doctest.run_result_helper_tests" />
       <item itemvalue="Doctest.run_run_status_no_module_tests" />
@@ -1128,7 +1139,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: another rewrite of reset_usb_ifaces logic, now with uhubctl on/off (cycle didnt work, stuck), shown drivers are reset (ath_htc kernel crash)" />
     <MESSAGE value="f: dmesg start_observers" />
     <MESSAGE value="f: dmesg start_observers&#10;r: small changes" />
     <MESSAGE value="f: set permanent mac internal" />
@@ -1153,7 +1163,8 @@
     <MESSAGE value="r: small changes" />
     <MESSAGE value="r: clang-format" />
     <MESSAGE value="r: clang-format for test" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: clang-format for test" />
+    <MESSAGE value="ft: scan_ascii_issues" />
+    <option name="LAST_COMMIT_MESSAGE" value="ft: scan_ascii_issues" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

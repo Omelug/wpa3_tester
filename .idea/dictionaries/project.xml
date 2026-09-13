@@ -8,8 +8,6 @@
       <w>Guttman</w>
       <w>Kbit</w>
       <w>Kbits</w>
-      <w>Manuf</w>
-      <w>Mbits</w>
       <w>Mitm</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
@@ -17,7 +15,6 @@
       <w>Reasso</w>
       <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
-      <w>Xclang</w>
       <w>aabbccddee</w>
       <w>acces</w>
       <w>acks</w>
@@ -32,14 +29,10 @@
       <w>arphrd</w>
       <w>arrowstyle</w>
       <w>attackhead</w>
-      <w>autobinds</w>
-      <w>autoprobe</w>
-      <w>bidir</w>
       <w>bigtk</w>
       <w>blackboc</w>
       <w>bmargin</w>
       <w>bprot</w>
-      <w>busnum</w>
       <w>capabilies</w>
       <w>caplen</w>
       <w>cassert</w>
@@ -50,7 +43,6 @@
       <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>
-      <w>conn</w>
       <w>cout</w>
       <w>cpuinfo</w>
       <w>credout</w>
@@ -59,11 +51,8 @@
       <w>cstdint</w>
       <w>cstdlib</w>
       <w>cstring</w>
-      <w>csvs</w>
       <w>cwmax</w>
       <w>cwmin</w>
-      <w>czech</w>
-      <w>ddthh</w>
       <w>ddwrt</w>
       <w>debugfs</w>
       <w>debugfsdir</w>
@@ -73,20 +62,16 @@
       <w>delba</w>
       <w>dellink</w>
       <w>destmac</w>
-      <w>devfs</w>
-      <w>devnum</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
       <w>dkms</w>
       <w>dlinkroot</w>
       <w>dmesg</w>
-      <w>dontwait</w>
       <w>dragondrain</w>
       <w>dtoverlay</w>
       <w>eapol</w>
       <w>earlyprintk</w>
-      <w>ecsa</w>
       <w>edcca</w>
       <w>efchatz</w>
       <w>emitterutils</w>
@@ -105,7 +90,6 @@
       <w>firmaware</w>
       <w>firstboot</w>
       <w>fmtloc</w>
-      <w>fpch</w>
       <w>fprintf</w>
       <w>frametype</w>
       <w>freqs</w>
@@ -151,15 +135,12 @@
       <w>libelf</w>
       <w>libgcc</w>
       <w>libssh</w>
-      <w>libstdc</w>
       <w>libtins</w>
       <w>libwifi</w>
       <w>logread</w>
       <w>lsblk</w>
       <w>m'ing</w>
       <w>macaddr</w>
-      <w>manuf</w>
-      <w>mapfile</w>
       <w>mausezahn</w>
       <w>meapol</w>
       <w>meminfo</w>
@@ -168,9 +149,6 @@
       <w>mfpc</w>
       <w>mfpr</w>
       <w>mipsel</w>
-      <w>mitm</w>
-      <w>modalias</w>
-      <w>modaliases</w>
       <w>modeswitch</w>
       <w>modinfo</w>
       <w>mscha</w>
@@ -182,11 +160,9 @@
       <w>nbytes</w>
       <w>netconsole</w>
       <w>netns</w>
-      <w>netsniff</w>
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>ninline</w>
-      <w>nlmsg</w>
       <w>nmconnection</w>
       <w>nmethod</w>
       <w>noborder</w>
@@ -194,9 +170,7 @@
       <w>nohead</w>
       <w>nomatch</w>
       <w>nomirror</w>
-      <w>nonassoc</w>
       <w>nooutput</w>
-      <w>nopass</w>
       <w>nopasswd</w>
       <w>noptions</w>
       <w>noscan</w>
@@ -216,7 +190,6 @@
       <w>outputpath</w>
       <w>ownmac</w>
       <w>pbac</w>
-      <w>pcapng</w>
       <w>peap</w>
       <w>peermac</w>
       <w>permaddr</w>
@@ -244,7 +217,6 @@
       <w>regidx</w>
       <w>regval</w>
       <w>reproc</w>
-      <w>resetable</w>
       <w>retrans</w>
       <w>reuseaddr</w>
       <w>rfkill</w>
@@ -254,7 +226,6 @@
       <w>rsneapol</w>
       <w>rsnxcaps</w>
       <w>rsnxe</w>
-      <w>rsta</w>
       <w>rsvd</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>
@@ -269,9 +240,7 @@
       <w>srcversion</w>
       <w>srcversions</w>
       <w>ssid</w>
-      <w>ssssss</w>
       <w>sstream</w>
-      <w>stdbuf</w>
       <w>stoi</w>
       <w>strtype</w>
       <w>suiteb</w>
@@ -292,9 +261,7 @@
       <w>txpower</w>
       <w>txpwr</w>
       <w>udevadm</w>
-      <w>uhubctl</w>
       <w>unassoc</w>
-      <w>unprot</w>
       <w>usbcore</w>
       <w>vline</w>
       <w>vprintf</w>

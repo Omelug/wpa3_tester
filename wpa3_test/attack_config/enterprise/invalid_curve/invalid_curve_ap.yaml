@@ -34,6 +34,8 @@ observers:
 
 attack_config:
   identity: "bob"
+  attack_time_one_try_sec: 30
+  replay: 5
 
 rewrite: errors
 save_log: true

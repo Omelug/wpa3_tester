@@ -16,7 +16,7 @@ vector<ActorPtr> RunStatus::internal_options(){
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
 	optional<path> hw_cache;
 	if(use_cache){
-		const path hw_cache_dir = root_dir().parent_path() / "data" / "cache" / "scan";
+		const path hw_cache_dir = root_dir().parent_path() / DATA_DIR / "cache" / "scan";
 		create_public_dirs(hw_cache_dir);
 		hw_cache = hw_cache_dir / "internal_iface.json";
 	}

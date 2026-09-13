@@ -118,7 +118,6 @@ TEST_CASE("should_skip - ordinary attack config yaml is not skipped"){
 	CHECK_FALSE(RunStatus::should_skip(ATTACK_CONFIG() / "mc_mitm" / "mc_mitm_sim.yaml"));
 }
 
-// -----------------
 // RunStatus::load_actor_interface_mapping
 
 TEST_CASE("load_actor_interface_mapping - round-trips actors written by save_actor_interface_mapping"){
@@ -180,7 +179,6 @@ TEST_CASE("load_actor_interface_mapping - missing mapping.csv leaves actors unto
 	remove_all(test_dir);
 }
 
-// -----------------
 // RunStatus::save_result / load_result
 
 TEST_CASE("save_result - load_result round-trips a json object"){

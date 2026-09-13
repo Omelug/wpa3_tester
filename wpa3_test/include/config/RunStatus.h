@@ -73,7 +73,7 @@ enum class ObserverRunPolicy{
 class RunStatus{
 	// in actors are all actors in test
 	// internal have key string iface, external MAC
-	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / "data" / DATA_TEST; }
+	static std::filesystem::path BASE_FOLDER(){ return root_dir().parent_path() / DATA_DIR / DATA_TEST; }
 protected:
 	nlohmann::json _config{};
 	std::filesystem::path _run_folder{};

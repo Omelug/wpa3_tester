@@ -33,7 +33,7 @@ void run_attack(RunStatus &rs){
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
 	const optional<path> hw_cache = use_cache
-		? optional{root_dir().parent_path() / "data" / "cache" / "scan" / "internal_iface.json"}
+		? optional{root_dir().parent_path() / DATA_DIR / "cache" / "scan" / "internal_iface.json"}
 		: nullopt;
 
 	scanner->set(SK::iface, iface);

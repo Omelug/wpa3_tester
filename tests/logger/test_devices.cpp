@@ -17,7 +17,7 @@ namespace{
 
 // mirrors device_path() in devices.cpp; not exposed via devices.h
 // must be recomputed after root_dir() is overridden by IsolatedRootDir, not cached as a static const
-filesystem::path device_root(){ return root_dir().parent_path() / "data" / "devices"; }
+filesystem::path device_root(){ return root_dir().parent_path() / DATA_DIR  / "devices"; }
 
 ActorPtr make_actor(const string &permanent_mac, const bool ghz5 = true){
 	ActorPtr actor(make_shared<Actor_Config_sim>(nlohmann::json::object()));

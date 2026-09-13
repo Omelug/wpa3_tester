@@ -1,2 +1,4 @@
 ### Nix
-- nix like tester not building OS is not supported yet, but planned in (probably year 3000 or later)
+- nix like tester is not stable
+- not sure all paths work correctly
+- [nix](../../tester_setup/nix)

@@ -107,7 +107,7 @@ TEST_CASE("HtmlGuard - integer passthrough") {
 TEST_CASE("device() - no device page -> returns MAC string") {
 	HtmlFixture fx("dev_none");
 	const auto mac = Tins::HWAddress<6>("aa:bb:cc:dd:ee:ff");
-	CHECK_EQ(device(mac, fx.dir), string("aa:bb:cc:dd:ee:ff"));
+	CHECK_EQ(device(mac.to_string(), fx.dir), string("aa:bb:cc:dd:ee:ff"));
 }
 
 TEST_CASE("device() - device page at root -> returns relative link") {
@@ -117,7 +117,7 @@ TEST_CASE("device() - device page at root -> returns relative link") {
 	const path dev_dir = fx.dir / "devices" / mac_str;
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
-	CHECK_EQ(device(mac, fx.dir),
+	CHECK_EQ(device(mac.to_string(), fx.dir),
 			 "<a href=\"devices/aa:bb:cc:dd:ee:ff/index.html\">aa:bb:cc:dd:ee:ff</a>");
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	create_directories(dev_dir);
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	const path nested = fx.dir / "attacks" / "DoS_soft" / "channel_switch";
-	CHECK_EQ(device(mac, nested),
+	CHECK_EQ(device(mac.to_string(), nested),
 			 "<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
 }
 

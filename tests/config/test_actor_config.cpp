@@ -489,7 +489,6 @@ TEST_CASE("ActorPtr - equality and ordering"){
 	CHECK_NE(a < c, c < a);
 }
 
-// -----------------
 // to_str / to_json with ParamFilter via ActorPtr
 
 TEST_CASE("ActorPtr::to_str - filter restricts SK output"){

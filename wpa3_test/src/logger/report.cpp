@@ -23,7 +23,6 @@ void finalize_report(ofstream &report, const path &run_dir){
 
 void attack_config_table(ReportGuard &report, const RunStatus &rs){
 	auto attack_cfg = rs.config().at("attack_config");
-	//report << "###### Attack Configuration\n\n";
 	for(auto &[key, value]: attack_cfg.items()){
 		report << "- **" << key << "**: " << value << "\n";
 	}
@@ -64,7 +63,9 @@ void attack_mapping_table(ReportGuard &report, const RunStatus &rs){
 }
 
 string device(const Tins::HWAddress<6> mac){
-	//TODO get mac[link to device] --markdown
+	const auto device_path = root_dir().parent_path() / DATA_DIR / "devices" / mac.to_string();
+	if(exists(device_path))
+		return "[" + mac.to_string() + "](" + device_path.string() + ")";
 	return mac.to_string();
 }
 Link link(string text, path link_path){

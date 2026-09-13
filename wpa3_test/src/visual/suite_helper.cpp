@@ -21,20 +21,4 @@ unique_ptr<RunStatus> load_test_rs(const path &test_folder){
 	rs->load_actor_interface_mapping();
 	return rs;
 }
-
-vector<path> get_suite_test_folders(const path &suite_dir){
-	vector<path> folders;
-	if(!exists(suite_dir) || !is_directory(suite_dir)) return folders;
-	error_code ec;
-	for(const auto &entry: directory_iterator(suite_dir, ec)){
-		if(!entry.is_directory()) continue;
-		if(entry.path().filename() == TEST_SUITE_CONFIG_DIR) continue;
-		if(!exists(entry.path() / DONE_FILE)) {
-			log(LogLevel::ERROR, "Test {} not done ", entry.path());
-			continue;
-		}
-		folders.push_back(entry.path());
-	}
-	return folders;
-}
 }

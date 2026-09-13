@@ -14,7 +14,7 @@ will generate basic descriptions in HTML pages, path to index will be printed.
   - [channel_switch](../../../wpa3_test/attack_config/DoS_soft/channel_switch)
   - [bl0ck](../../../wpa3_test/attack_config/DoS_soft/bl0ck)
   - [malformed_eapol1](../../../wpa3_test/attack_config/DoS_soft/malformed_eapol1)
-  - [deauth](../../../wpa3_test/attack_config/DoS_soft/deauth) — WPA2 deauthentication DoS
+  - [deauth](../../../wpa3_test/attack_config/DoS_soft/deauth)
   
 ### Active and injection tests (Two Iface)
 - these test are needed to be run before with real (because some drivers lies about compatibility)

@@ -14,9 +14,6 @@ namespace wpa3_tester::visual::helper{
 
 std::unique_ptr<RunStatus> load_test_rs(const std::filesystem::path &test_folder);
 
-// returns test subdirectories inside suite_dir
-std::vector<std::filesystem::path> get_suite_test_folders(const std::filesystem::path &suite_dir);
-
 // Read attacker_module: value from test_config.yaml without a YAML library
 inline std::string read_attacker_module_field(const std::filesystem::path &test_dir){
 	std::ifstream f(test_dir / TEST_CONFIG_NAME);

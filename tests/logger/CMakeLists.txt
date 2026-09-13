@@ -9,3 +9,4 @@ target_include_directories(run_html_guard_tests PRIVATE
 )
 
 add_doctest_exe(run_devices_tests SOURCES test_devices.cpp TEST_NAME DevicesTests LIBS test_helpers)
+add_doctest_exe(run_report_tests SOURCES test_report.cpp TEST_NAME ReportTests LIBS test_helpers)

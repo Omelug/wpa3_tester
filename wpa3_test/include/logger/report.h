@@ -104,6 +104,7 @@ private:
 	std::filesystem::path run_dir_;
 };
 
+/// ---- heleper functions (not any new unique visual logic)
 void attack_config_table(ReportGuard &report, const RunStatus &rs);
 void attack_mapping_table(ReportGuard &report, const RunStatus &rs);
 

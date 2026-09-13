@@ -36,7 +36,6 @@ unique_ptr<McMitmTestable> make_rogue_eapol_fixture(const char *pcap_path,
 }
 } // namespace
 
-// -----------------
 TEST_SUITE("handle_probe") {
 
     TEST_CASE("ProbeRequest broadcast (wildcard) -> STOP, 1 rogue send, state=Finding") {
@@ -102,7 +101,6 @@ TEST_SUITE("handle_probe") {
     }
 }
 
-// -----------------
 TEST_SUITE("handle_open_auth") {
 
     TEST_CASE("Auth seq=1 algo=0 -> STOP, rogue+real send, state=Authenticated") {

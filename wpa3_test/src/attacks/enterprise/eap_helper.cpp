@@ -18,7 +18,6 @@ using namespace wpa3_tester::eap;
 
 // EAP-pwd https://datatracker.ietf.org/doc/html/rfc5931
 
-// -----------------
 // EAPOL byte layout (after SNAP has been stripped):
 //   [0]   EAPOL version
 //   [1]   EAPOL type (0x00 = EAP packet)

@@ -40,7 +40,6 @@ static path make_result_dir(const json &j){
 	return dir;
 }
 
-// -----------------
 TEST_CASE("load_result_default - all fields present"){
 	const auto dir = make_result_dir({
 		{"name", "foo"},

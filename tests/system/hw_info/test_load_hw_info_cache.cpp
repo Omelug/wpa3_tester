@@ -26,14 +26,12 @@ static path write_cache(const path &dir, const string &mac, const json &entry){
 	return p;
 }
 
-// -----------------
 struct Fixture {
 	path tmp = temp_directory_path() / "test_hw_info_cache";
 	Fixture()  { remove_all(tmp); }
 	~Fixture() { remove_all(tmp); }
 };
 
-// -----------------
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - cache hit restores driver_name and permanent_mac") {
 	const path cache_file = write_cache(tmp, string(LO_MAC), {
 		{"driver",   "stub_driver"},
@@ -105,7 +103,6 @@ TEST_CASE_FIXTURE(Fixture, "load_hw_info - empty module_hash in cache is not set
 	CHECK_FALSE((*actor)[SK::module_hash].has_value());
 }
 
-// -----------------
 TEST_CASE_FIXTURE(Fixture, "load_hw_info - wrong perm_mac in cache does not pollute actor") {
 	// Cache contains an unrelated MAC; lo's 00:00:00:00:00:00 won't match -> cache miss
 	const path cache_file = write_cache(tmp, "ff:ff:ff:ff:ff:ff", {

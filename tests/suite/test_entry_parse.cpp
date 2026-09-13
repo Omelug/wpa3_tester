@@ -60,7 +60,6 @@ void write_config(const path &d, initializer_list<string_view> actors) {
 
 }
 
-// -----------------
 TEST_CASE("SaeDosFolderEntry::parse - sets name, no png") {
 	const auto d = setup_dir("sae_no_png");
 	const auto e = visual::sae_dos::SaeDosFolderEntry::parse(d);
@@ -77,7 +76,6 @@ TEST_CASE("SaeDosFolderEntry::parse - detects existing png") {
 	CHECK_EQ(e.ap_res_png, png);
 }
 
-// -----------------
 TEST_CASE("ApInfoWpa3TestEntry::parse - no result.json returns empty strings") {
 	const auto d = setup_dir("ap_info_no_result");
 	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
@@ -109,7 +107,6 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
 	CHECK_EQ(e.stations[0], "11:22:33:44:55:66");
 }
 
-// -----------------
 TEST_CASE("IfaceInfoTestEntry::parse - no config sets hw_summary to ?") {
 	const auto d = setup_dir("iface_no_cfg");
 	// no test_config.yaml -> early branch sets hw_summary = "?"
@@ -118,7 +115,6 @@ TEST_CASE("IfaceInfoTestEntry::parse - no config sets hw_summary to ?") {
 	CHECK_EQ(e.hw_summary, "?");
 }
 
-// -----------------
 TEST_CASE("InjectionTestEntry::parse - no result.json returns zero counts") {
 	const auto d = setup_dir("inject_no_result");
 	// no result.json -> early return before load_test_rs
@@ -130,7 +126,6 @@ TEST_CASE("InjectionTestEntry::parse - no result.json returns zero counts") {
 	CHECK_FALSE(e.passed.has_value());
 }
 
-// -----------------
 // Bl0ckTestEntry uses RunStatus default ctor (no config_validation), so no IsolatedRootDir needed.
 TEST_CASE("Bl0ckTestEntry::parse - no config uses result.json only") {
 	const auto d = setup_dir("bl0ck_no_cfg");

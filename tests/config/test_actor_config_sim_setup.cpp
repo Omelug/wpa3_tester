@@ -8,7 +8,6 @@
 using namespace std;
 using namespace wpa3_tester;
 
-// -----------------
 
 class SimTestable : public Actor_Config_sim {
 public:
@@ -50,7 +49,6 @@ static nlohmann::json make_cfg(const string &name, nlohmann::json actor_json = {
 	return {{"actors", {{name, actor_json}}}};
 }
 
-// -----------------
 
 TEST_CASE("setup_actor sim - change mac address"){
 	SimTestable actor;

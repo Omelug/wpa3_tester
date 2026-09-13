@@ -8,12 +8,14 @@
 #### add new param to Actor_Config?
 
 - needs to be only convertable to string/bool (it needed for easy backtracking functions)
-- add param to SK/BK list
+- add param to SK/BK enums in [actor_keys.h](../../../wpa3_test/include/config/Actor_Config/actor_keys.h)
 - edit SK_NAMES, BK_NAMES strings!
 - if it should not be saved in str_vals/bool_vals:
   - add `private` param
   - edit operator\[\](SK/BK key) (set param)
-  - edit operator\[\](SK/BK key) const (get param)
+  - edit operator\[\](SK/BK key) const (get optional<param>)
+  - add set(SK::/BK::) - same as [] = 
+  - add get (SK::/BK::) - similar to [], but throw error if not found2
 
 ### Observer
 

@@ -45,7 +45,6 @@ static void load_hwsim(){
 		atexit([]{ hw_capabilities::run_cmd({"modprobe", "-r", "mac80211_hwsim"}, nullopt, false); });
 }
 
-// -----------------
 
 struct HwsimFixture {
 	bool ok = false;

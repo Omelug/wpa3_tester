@@ -55,9 +55,7 @@ constexpr string_view FIVE_ZERO_LOG =
 	"[  6][RX-S]   5.00-6.00   sec  0.00 Bytes  0.00 bits/sec\n";
 }
 
-// -----------------
 // iperf_log_has_zero_plain
-// -----------------
 
 TEST_CASE("iperf_log_has_zero_plain - 3 consecutive zeros -> unstable"){
 	TempLog tmp{string(EXT_WB_AP_LOG)};

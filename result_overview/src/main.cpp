@@ -45,9 +45,9 @@ struct Args {
 	path output_dir;
 };
 
-static Args parse_args(int argc, char* argv[]) {
+static Args parse_args(const int argc, char* argv[]) {
 	const path root = project_root();
-	Args a{ root / "data", root / "build" / "result_overview" };
+	Args a{ root / DATA_DIR, root / "build" / "result_overview" };
 	for (int i = 1; i < argc; ++i) {
 		const string_view arg = argv[i];
 		if ((arg == "--data_dir" || arg == "--output_dir") && i + 1 < argc) {
@@ -80,19 +80,36 @@ static string html_page() {
 
 	<div class="card">
 		<h2>Attack Categories</h2>
+		<h3>DoS_soft<h3>
 		<ul>
-			<li><a href="attacks/DoS_soft/channel_switch/index.html">DoS Soft - Channel Switch (CSA)</a></li>
-			<li><a href="attacks/DoS_soft/bl0ck/index.html">DoS Soft - Block ACK (Bl0ck)</a></li>
-			<li><a href="attacks/DoS_soft/malformed_eapol1/index.html">DoS Soft - Malformed EAPOL-1</a></li>
-			<li><a href="attacks/DoS_soft/expected_vht_beacon/index.html">DoS Soft - fake legacy beacon DoS </a></li>
-			<li><a href="attacks/DoS_soft/deauth/index.html">Under attack WPA2 - Deauthentication DoS</a></li>
-			<li><a href="attacks/downgrade/owe_trans/index.html">downgrade - OWE Transition Probe Leak</a></li>
-			<li><a href="attacks/downgrade/wpa3_trans_downgrade/index.html">downgrade - WPA3 Transition to WPA2-PSK</a></li>
-			<li><a href="attacks/enterprise/invalid_curve/index.html">enterprise - invalid curve</a></li>
-			<li><a href="attacks/enterprise/reflection_attack/index.html">enterprise - reflection attack</a></li>
+			<li><a href="attacks/DoS_soft/channel_switch/index.html">channel Switch (CSA)</a></li>
+			<li><a href="attacks/DoS_soft/bl0ck/index.html">bl0ck attacks</a></li>
+			<li><a href="attacks/DoS_soft/malformed_eapol1/index.html">malformed EAPOL-1</a></li>
+			<li><a href="attacks/DoS_soft/expected_vht_beacon/index.html">fake legacy(no HT/VHT) beacon DoS </a></li>
+			<li><a href="attacks/DoS_soft/deauth/index.html">deauthentication DoS</a></li>
+		</ul>
+
+		<h3>downgrade<h3>
+		<ul>
+			<li><a href="attacks/downgrade/owe_trans/index.html">OWE Transition Probe Leak</a></li>
+			<li><a href="attacks/downgrade/wpa3_trans_downgrade/index.html">WPA3 Transition to WPA2-PSK</a></li>
+		</ul>
+
+		<h3>enterprise<h3>
+		<ul>
+			<li><a href="attacks/enterprise/invalid_curve/index.html">invalid curve</a></li>
+			<li><a href="attacks/enterprise/reflection_attack/index.html">reflection attack</a></li>
+		</ul>
+
+		<h3>two_iface<h3>
+		<ul>
 			<li><a href="attacks/two_iface/injection/index.html">two_iface - injection test cache</a></li>
-			<li><a href="attacks/mc_mitm/mc_mitm/index.html">mc_mitm - multi-channel MitM</a></li>
-			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">mc_mitm - SSID confusion</a></li>
+		</ul>
+
+		<h3>mc_mitm<h3>
+		<ul>
+			<li><a href="attacks/mc_mitm/mc_mitm/index.html">multi-channel MitM</a></li>
+			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">SSID confusion</a></li>
 		</ul>
 	</div>
 

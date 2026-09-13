@@ -40,7 +40,6 @@ TEST_CASE("apply_radiotap - sets signal, channel and band from a real beacon fra
 	CHECK(cfg[BK::GHz2_4].value_or(false));
 }
 
-// -----------------
 // apply_rsn
 
 TEST_CASE("apply_rsn - extracts MFP/OCV/beacon_prot and WPA3-SAE from a real beacon frame"){
@@ -73,7 +72,6 @@ TEST_CASE("apply_rsn - frame without an RSN IE logs a warning instead of throwin
 	CHECK_FALSE(cfg[BK::WPA_PSK].has_value());
 }
 
-// -----------------
 // apply_ht_vht_he
 
 TEST_CASE("apply_ht_vht_he - detects HT20 with no VHT/HE from a real beacon frame"){
@@ -106,7 +104,6 @@ TEST_CASE("apply_ht_vht_he - detects HT capability from a real assoc-response fr
 	CHECK_FALSE(cfg[BK::w80211ax].value_or(true));
 }
 
-// -----------------
 // fill_actor_caps_from_beacon
 
 TEST_CASE("fill_actor_caps_from_beacon - fills mac/ssid/band/RSN/HT/role from a real beacon"){
@@ -149,7 +146,6 @@ TEST_CASE("fill_actor_caps_from_beacon - non-beacon frame leaves cfg untouched")
 	CHECK_FALSE(cfg[BK::AP].has_value());
 }
 
-// -----------------
 // fill_actor_caps_from_assoc_req
 
 TEST_CASE("fill_actor_caps_from_assoc_req - fills mac/band/RSN/HT/role from a real assoc-request"){

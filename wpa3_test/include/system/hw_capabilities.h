@@ -78,10 +78,11 @@ struct NlCaps {
 	bool _80211ax = false; // 802.11ax
 
 	bool netns_change = false;
-	bool beacon_prot = false; // NL80211_EXT_FEATURE_BEACON_PROTECTION
-	bool csa = false;		  // NL80211_CMD_CHANNEL_SWITCH supported
-	bool ocv = false;		  // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
-	bool mfp = false;		  // BIP cipher suite (hardware IGTK/BIGTK support)
+	bool beacon_prot = false;    // NL80211_EXT_FEATURE_BEACON_PROTECTION
+	bool pcap  = false;			 // NL80211_EXT_FEATURE_PROTECTED_TWT
+	bool csa = false;			 // NL80211_CMD_CHANNEL_SWITCH supported
+	bool ocv = false;			 // NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION
+	bool mfp = false;		     // BIP cipher suite (hardware IGTK/BIGTK support)
 
 	int no_ir_24ghz = 0; // channels skipped due to NO_IR
 	int no_ir_5ghz = 0;

@@ -190,13 +190,13 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 	if(ap_map.empty()) {
 		report << "No access points found.\n\n";
 	} else {
-		report << "| MAC | SSID | Channel | Signal | MFP | OCVC | WPA3 | Beacon prot | STAs |\n";
+		report << "| MAC | SSID | Channel | Signal | MFP | PBAC | OCVC | WPA3 | Beacon prot | STAs |\n";
 		report << "|-----|------|---------|--------|-----|------|------|-------------|------|\n";
 		for(const auto &[bssid, entry]: ap_map) {
 			const auto &cfg = entry.cfg;
 			auto yn = [&](const BK k) { return cfg.get_or(k, false) ? "yes" : "no"; };
 			report << "| " << bssid << " | " << cfg.get_or(SK::ssid, "?") << " | " << cfg.get_or(SK::channel, "?")
-				   << " | " << cfg.get_or(SK::signal, "?") << " | " << yn(BK::MFP) << " | " << yn(BK::OCV) << " | "
+				   << " | " << cfg.get_or(SK::signal, "?") << " | " << yn(BK::MFP) << " | " << yn(BK::PBAC) << " | " << yn(BK::OCV) << " | "
 				   << yn(BK::WPA3_SAE) << " | " << yn(BK::beacon_prot) << " | " << entry.stations.size() << " |\n";
 		}
 		report << "\n";

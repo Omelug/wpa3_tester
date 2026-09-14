@@ -25,7 +25,7 @@ struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
 	optional<bool> ghz2_4, ghz5, ghz6;
 	optional<bool> n80211n, n80211ac, n80211ax;
-	optional<bool> netns_change, beacon_prot, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
+	optional<bool> netns_change, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
 };
 
 struct IfaceData {
@@ -175,6 +175,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
 	     << "</td></tr>\n";
 	tr("Beacon protection", d.caps.beacon_prot);
+	tr("PBAC (protected block ack agreement capable)", d.caps.PBAC);
 	tr("CSA",              d.caps.CSA);
 	tr("OCV",              d.caps.OCV);
 	tr("MFP",              d.caps.MFP);
@@ -188,7 +189,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		if(!iface.phy.empty())                              tr("PHY", iface.phy);
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
 		if(iface.channel_switch_ok.has_value()){
-			const string val = (iface.channel_switch_ok.value() ? "&#10003; " : "&#10007; ")
+			const string val = (iface.channel_switch_ok.value() ? "PASS " :  "FAIL")
 				+ to_string(iface.channel_switch_us.value_or(-1)) + " &micro;s";
 			tr("Channel switch", val);
 		}
@@ -205,7 +206,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		}
 		if(!iface.driver_specific.is_null() && !iface.driver_specific.empty()){
 			auto ds = iface.driver_specific.dump(2);
-			auto unescape = [&](string_view seq, string_view rep){
+			auto unescape = [&](const string_view seq, const string_view rep){
 				for(auto p = ds.find(seq); p != string::npos; p = ds.find(seq, p))
 					ds.replace(p, seq.size(), rep);
 			};
@@ -250,6 +251,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 		COL("ax",          d.caps.n80211ax);
 		COL("netns change",d.caps.netns_change);
 		COL("Beacon prot", d.caps.beacon_prot);
+		COL("PBAC prot",   d.caps.PBAC);
 		COL("CSA",         d.caps.CSA);
 		COL("OCV",         d.caps.OCV);
 		COL("MFP",         d.caps.MFP);

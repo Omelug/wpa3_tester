@@ -198,6 +198,7 @@ void generate_report(const RunStatus &rs) {
 		md << "| MFP (BIP-CMAC-128) | " << scanner[BK::MFP] << " |\n";
 		md << "| OCV | " << scanner[BK::OCV] << " |\n";
 		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n\n";
+		md << "| Beacon Protection | " << scanner[BK::PBAC] << " |\n\n";
 		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
 		md << "\n";
 
@@ -236,7 +237,6 @@ void generate_report(const RunStatus &rs) {
 void stats_attack(const RunStatus &rs) {
 	const auto scanner = rs.get_actor("scanner");
 	report::add_device(scanner);
-
 	generate_report(rs);
 }
 }

@@ -27,9 +27,9 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 		rs.run_folder(test_folder);
 		rs.load_actor_interface_mapping();
 		iface_info::stats_attack(rs);
-		try {
+		//try {
 			report::add_device(rs.get_actor("scanner"));
-		} catch(...) {}
+		//} catch(...) {} //FIXME test
 
 		ifstream f(test_folder / "result.txt");
 		if(f.is_open())

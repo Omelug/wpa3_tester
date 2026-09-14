@@ -15,7 +15,7 @@ namespace wpa3_tester{
 using namespace std;
 
 void check_monitor(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]){ return; }
+	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
 
 	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
 	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
@@ -30,7 +30,7 @@ void check_active_monitor(nlattr **attrs, NlCaps *caps){
 }
 
 void check_type(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]){ return; }
+	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
 	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
 
 	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
@@ -40,7 +40,7 @@ void check_type(nlattr **attrs, NlCaps *caps){
 	if(iftypes[NL80211_IFTYPE_AP]){ caps->ap = true; }
 }
 
-// probably useless because can be falsely possitive/negative
+// probably useless because can be falsely positive/negative
 void check_CSA(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_COMMANDS]) return;
 	nlattr *cmd;
@@ -60,9 +60,16 @@ void check_beacon_prot(nlattr * attrs[], NlCaps * caps){
 	const uint8_t *ext_features = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
 	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 
-	// NL80211_EXT_FEATURE_BEACON_PROTECTION = 49
 	constexpr int feature = NL80211_EXT_FEATURE_BEACON_PROTECTION;
 	if(feature / 8 < len) caps->beacon_prot = (ext_features[feature / 8] >> (feature % 8)) & 1;
+}
+
+void check_PBAC(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
+	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
+	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
+	constexpr int feature = NL80211_EXT_FEATURE_PROTECTED_TWT;
+	if(feature / 8 < len) caps->pcap = (ext[feature / 8] >> (feature % 8)) & 1;
 }
 
 void check_OCV(nlattr **attrs, NlCaps *caps){
@@ -70,7 +77,6 @@ void check_OCV(nlattr **attrs, NlCaps *caps){
 	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
 	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 	constexpr int feature = NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION;
-	//log(LogLevel::DEBUG, "nl80211 OCV: ext_features len={}, need byte={}", len, feature / 8);
 	if(feature / 8 < len) caps->ocv = (ext[feature / 8] >> (feature % 8)) & 1;
 }
 
@@ -196,9 +202,9 @@ void hw_capabilities::check_band_caps(nlattr * attrs[], NlCaps * caps){
 
 uint32_t parse_phy_index(const std::string& phy_name) {
 	if (phy_name.rfind("phy", 0) == 0) {
-		return std::stoul(phy_name.substr(3));
+		return stoul(phy_name.substr(3));
 	}
-	return std::stoul(phy_name);
+	return stoul(phy_name);
 }
 
 void check_netns_support(nlattr **attrs, NlCaps *caps) {
@@ -212,6 +218,31 @@ void check_netns_support(nlattr **attrs, NlCaps *caps) {
 			return;
 		}
 	}
+}
+
+void apply_nl_caps(const ActorPtr &cfg, const NlCaps &caps){
+	cfg->set(BK::AP, caps.ap);
+	cfg->set(BK::STA, caps.sta);
+	cfg->set(BK::monitor, caps.monitor);
+	cfg->set(BK::active_monitor, caps.active_monitor);
+
+	cfg->set(BK::GHz2_4, caps.band24);
+	cfg->set(BK::GHz5, caps.band5);
+	cfg->set(BK::GHz6, caps.band6);
+
+	cfg->set(BK::w80211n, caps._80211n);
+	cfg->set(BK::w80211ac, caps._80211ac);
+	cfg->set(BK::w80211ax, caps._80211ax);
+
+	cfg->set(BK::netns_change, caps.netns_change);
+	cfg->set(BK::beacon_prot, caps.beacon_prot);
+	cfg->set(BK::PBAC, caps.pcap);
+	cfg->set(BK::CSA, caps.csa);
+	cfg->set(BK::OCV, caps.ocv);
+	cfg->set(BK::MFP, caps.mfp);
+
+	cfg->set(BK::WPA_PSK, caps.wpa2_psk);
+	cfg->set(BK::WPA3_SAE, caps.wpa3_sae);
 }
 
 int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
@@ -230,6 +261,7 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 
 	check_netns_support(attrs, caps);
 	check_beacon_prot(attrs, caps);
+	check_PBAC(attrs, caps);
 	check_CSA(attrs, caps);
 	check_OCV(attrs, caps);
 	check_MFP(attrs, caps);
@@ -284,28 +316,7 @@ void hw_capabilities::get_nl80211_caps(ActorPtr &cfg){
 
 	nl_send_auto(sock, msg);   // send message to kernel
 	nl_recvmsgs_default(sock); // get answer
-
-	cfg->set(BK::AP, caps.ap);
-	cfg->set(BK::STA, caps.sta);
-	cfg->set(BK::monitor, caps.monitor);
-	cfg->set(BK::active_monitor, caps.active_monitor);
-
-	cfg->set(BK::GHz2_4, caps.band24);
-	cfg->set(BK::GHz5, caps.band5);
-	cfg->set(BK::GHz6, caps.band6);
-
-	cfg->set(BK::w80211n, caps._80211n);
-	cfg->set(BK::w80211ac, caps._80211ac);
-	cfg->set(BK::w80211ax, caps._80211ax);
-
-	cfg->set(BK::netns_change, caps.netns_change);
-	cfg->set(BK::beacon_prot, caps._80211ax);
-	cfg->set(BK::CSA, caps.csa);
-	cfg->set(BK::OCV, caps.ocv);
-	cfg->set(BK::MFP, caps.mfp);
-
-	cfg->set(BK::WPA_PSK, caps.wpa2_psk);
-	cfg->set(BK::WPA3_SAE, caps.wpa3_sae);
+	apply_nl_caps(cfg, caps);
 
 	nlmsg_free(msg);
 	nl_socket_free(sock);

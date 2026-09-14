@@ -44,6 +44,7 @@ TEST_CASE("nl80211_cb - empty message leaves all caps false") {
 	CHECK_FALSE(caps.wpa2_psk);
 	CHECK_FALSE(caps.wpa3_sae);
 	CHECK_FALSE(caps.beacon_prot);
+	CHECK_FALSE(caps.);
 	CHECK_FALSE(caps.ocv);
 	CHECK_EQ(caps.no_ir_24ghz, 0);
 	CHECK_EQ(caps.no_ir_5ghz, 0);
@@ -154,6 +155,7 @@ TEST_CASE("nl80211_cb - beacon_prot via EXT_FEATURES bit") {
 	nla_put(msg.m, NL80211_ATTR_EXT_FEATURES, sizeof(ext), ext);
 	CHECK(call_cb(msg.m).beacon_prot);
 }
+//TODO add PCAp test
 
 TEST_CASE("nl80211_cb - ocv via EXT_FEATURES bit") {
 	Msg msg;

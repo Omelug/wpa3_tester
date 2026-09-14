@@ -12,7 +12,7 @@ using namespace filesystem;
 using namespace nlohmann;
 
 // devices/<perm_mac>/last.json symlink to last
-path device_path(){ return root_dir().parent_path() / DATA_DIR /DEVICES_DIR; }
+path device_path(){ return root_dir().parent_path() / DATA_DIR / DEVICES_DIR; }
 
 //TODO ? zjednosušit poocí HWInfo, nebo se to bude plést, pokud sem přidám víc info?
 

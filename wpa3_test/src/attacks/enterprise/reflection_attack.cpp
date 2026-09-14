@@ -15,6 +15,8 @@ using namespace std;
 using namespace chrono;
 using namespace filesystem;
 using namespace Tins;
+using namespace wpa3_tester::eap;
+using namespace wpa3_tester::eap_helper;
 
 namespace wpa3_tester::reflection {
 bool run_reflection_exchange(EAP_Att &eap_att) {
@@ -30,15 +32,7 @@ bool run_reflection_exchange(EAP_Att &eap_att) {
 	// COMMIT
 	{
 		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e) {
-			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == eap::PWD_OPCODE_COMMIT) {
-				frame = f;
-				return true;
-			}
-			return false;
-		});
-		if(!eapol) {
+		if(!wait_eapol(eap_att, get_frame(frame, PWD_OPCODE_COMMIT))) {
 			log(LogLevel::WARNING, "EAP commit ended without success");
 			return false;
 		}
@@ -49,15 +43,7 @@ bool run_reflection_exchange(EAP_Att &eap_att) {
 	// CONFIRM
 	{
 		optional<EapPwdFrame> frame;
-		const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e) {
-			const auto f = parse_eap_pwd(e);
-			if(f && f->opcode == eap::PWD_OPCODE_CONFIRM) {
-				frame = f;
-				return true;
-			}
-			return false;
-		});
-		if(!eapol) {
+		if(!wait_eapol(eap_att, get_frame(frame, PWD_OPCODE_CONFIRM))) {
 			log(LogLevel::WARNING, "EAP confirm exchange ended without success");
 			return false;
 		}
@@ -69,10 +55,12 @@ bool run_reflection_exchange(EAP_Att &eap_att) {
 }
 
 void setup_attack(RunStatus &rs) {
-	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
+	copy_f(rs.config_path().parent_path() / "config" / "hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
 
 	program::start(rs, "ap");
-	if(rs.get_actor("ap").get(SK::source) == "internal") rs.process_manager.wait_for("ap", "AP-ENABLED", seconds(40));
+	if(rs.get_actor("ap").get(SK::source) == "internal") {
+		rs.process_manager.wait_for("ap", "AP-ENABLED", seconds(40));
+	}
 	log(LogLevel::INFO, "ap running");
 	ip::set_ip(rs, "ap");
 }
@@ -87,7 +75,7 @@ void run_attack(RunStatus &rs) {
 	const string ssid = ap_actor->get(SK::ssid);
 
 	MonitorSocket sock(attacker.get(SK::iface), attacker.get(SK::netns)); // attacker need to be in netns
-	EAP_Att eap_att{ sock, ap_actor->get_channel(), attacker.get(SK::mac), ap_actor.get(SK::mac), ssid, identity, 30s };
+	EAP_Att eap_att{ sock, ap_actor->get_channel(), attacker.get(SK::mac), ap_actor.get(SK::mac), ssid, identity, 30s }; //FIXME
 	this_thread::sleep_for(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 

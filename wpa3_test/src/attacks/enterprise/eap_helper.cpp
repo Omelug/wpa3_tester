@@ -10,7 +10,7 @@
 #include "attacks/sae_helper.h"
 #include "logger/log.h"
 
-namespace wpa3_tester::reflection {
+namespace wpa3_tester::eap_helper {
 using namespace std;
 using namespace chrono;
 using namespace Tins;
@@ -22,12 +22,39 @@ using namespace wpa3_tester::eap;
 //   [0]   EAPOL version
 //   [1]   EAPOL type (0x00 = EAP packet)
 //   [2-3] body length   (big-endian)
-//   [4]   EAP code      (1=Request 2=Response 3=Success 4=Failure)
-//   [5]   EAP identifier
+//  EAP-pwd header (3.1)
+//   [4]   EAP code
+//   (1=Request 2=Response 3=Success 4=Failure - defined by 4.1, 4.2. https://datatracker.ietf.org/doc/html/rfc3748)
+//   [5]   EAP identifier - must change on each Request packet
 //   [6-7] EAP length    (big-endian, includes code/id/length itself)
 //   [8]   EAP type      (1=Identity  52=PWD)
-//   [9]   PWD-Exch byte (L|M|opcode) - only when type=52
+//   [9]   PWD-Exch byte (L(Length included)|M|(more fragments)|opcode) - only when type=52
 //   [10+] PWD data (if L bit set: [10-11]=total_length first)
+
+//  Standard EAP-pwd
+// +--------+                                     +--------+
+// |        |                  EAP-pwd-ID/Request |        |
+// |  EAP   |<------------------------------------|  EAP   |
+// |  peer  |                                     | server |
+// |        | EAP-pwd-ID/Response                 |        |
+// |        |------------------------------------>|        |
+// |        |                                     |        |
+// |        |              EAP-pwd-Commit/Request |        |
+// |        |<------------------------------------|        |
+// |        |                                     |        |
+// |        | EAP-pwd-Commit/Response             |        |
+// |        |------------------------------------>|        |
+// |        |                                     |        |
+// |        |             EAP-pwd-Confirm/Request |        |
+// |        |<------------------------------------|        |
+// |        |                                     |        |
+// |        | EAP-pwd-Confirm/Response            |        |
+// |        |------------------------------------>|        |
+// |        |                                     |        |
+// |        |          EAP-Success                |        |
+// |        |<------------------------------------|        |
+// +--------+                                     +--------+
+//	   Figure 2: A Successful EAP-pwd Exchange
 
 static constexpr size_t EAPOL_HDR = 4;						// version+type+len(2)
 static constexpr size_t EAP_HDR = 4;						// code+id+len(2)
@@ -44,8 +71,8 @@ optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t> &eapol) {
 	EapPwdFrame f;
 	f.eap_id = eapol[EAPOL_HDR + 1];
 	const uint8_t exch = eapol[PWD_EXCH_OFF];
-	f.opcode = exch & 0x3f;
-	const bool L_bit = (exch >> 7) & 1;
+	f.opcode = static_cast<eap::PwdOpcode>(exch & 0x3f);
+	const bool L_bit = exch >> 7 & 1;
 
 	const size_t data_start = L_bit ? PWD_DATA_OFF + 2 : PWD_DATA_OFF;
 	if(eapol.size() < data_start) return nullopt;
@@ -68,7 +95,7 @@ bool is_eap_success(const vector<uint8_t> &eapol) {
 	return eapol[EAPOL_HDR] == CODE_SUCCESS;
 }
 
-static vector<uint8_t> build_eapol_eap(const uint8_t code, const uint8_t eap_id, const vector<uint8_t> &eap_body) {
+static vector<uint8_t> build_eapol_eap(const uint8_t eap_id, const vector<uint8_t> &eap_body) {
 	// eap_body = everything after code/id/length (type byte onwards)
 	const auto eap_len = static_cast<uint16_t>(EAP_HDR + eap_body.size());
 	const uint16_t eapol_len = eap_len;
@@ -79,7 +106,7 @@ static vector<uint8_t> build_eapol_eap(const uint8_t code, const uint8_t eap_id,
 	out.push_back(0x00); // EAPOL type: EAP
 	out.push_back(static_cast<uint8_t>(eapol_len >> 8));
 	out.push_back(static_cast<uint8_t>(eapol_len & 0xff));
-	out.push_back(code);   // EAP code
+	out.push_back(CODE_RESPONSE);   // EAP response
 	out.push_back(eap_id); // EAP id
 	out.push_back(static_cast<uint8_t>(eap_len >> 8));
 	out.push_back(static_cast<uint8_t>(eap_len & 0xff));
@@ -91,7 +118,7 @@ vector<uint8_t> build_identity_response(const uint8_t eap_id, const string_view 
 	vector<uint8_t> body;
 	body.push_back(TYPE_IDENTITY);
 	body.insert(body.end(), identity.begin(), identity.end());
-	return build_eapol_eap(CODE_RESPONSE, eap_id, body);
+	return build_eapol_eap(eap_id, body);
 }
 
 vector<uint8_t> build_pwd_id_response(const EapPwdFrame &request, const string_view peer_identity) {
@@ -105,7 +132,7 @@ vector<uint8_t> build_pwd_id_response(const EapPwdFrame &request, const string_v
 	body.insert(body.end(), request.pwd_data.begin(), request.pwd_data.begin() + static_cast<ptrdiff_t>(copy_len));
 	// peer identity instead of server identity
 	body.insert(body.end(), peer_identity.begin(), peer_identity.end());
-	return build_eapol_eap(CODE_RESPONSE, request.eap_id, body);
+	return build_eapol_eap(request.eap_id, body);
 }
 
 // shared helper for commit and confirm: both just flip code to Response, keep data.
@@ -114,7 +141,7 @@ static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame &request, const uint8
 	body.push_back(TYPE_PWD);
 	body.push_back(opcode); // same opcode, no L/M bits
 	body.insert(body.end(), request.pwd_data.begin(), request.pwd_data.end());
-	return build_eapol_eap(CODE_RESPONSE, request.eap_id, body);
+	return build_eapol_eap(request.eap_id, body);
 }
 
 vector<uint8_t> reflect_commit(const EapPwdFrame &request) {
@@ -143,15 +170,7 @@ bool send_eap_normal_EAP(EAP_Att &eap_att) {
 bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att) {
 	// PWD-ID
 	optional<EapPwdFrame> frame;
-	const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e) {
-		const auto f = parse_eap_pwd(e);
-		if(f && f->opcode == PWD_OPCODE_ID) {
-			frame = f;
-			return true;
-		}
-		return false;
-	});
-	if(!eapol) {
+	if(!wait_eapol(eap_att, get_frame(frame, PWD_OPCODE_ID))) {
 		log(LogLevel::WARNING, "EAP-pwd exchange ended without EAP-Success");
 		return true;
 	}
@@ -162,7 +181,7 @@ bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att) {
 
 bool eap_pwd_wait_for_success(EAP_Att &eap_att) {
 	// wait for EAP-Success after confirm
-	const auto eapol = wait_eapol(eap_att, [](const vector<uint8_t> &) { return false; });
+	const auto eapol = wait_eapol(eap_att, false );
 	if(!eapol) {
 		log(LogLevel::WARNING, "EAP exchange ended without EAP-Success");
 		return false;
@@ -219,29 +238,6 @@ bool do_auth(EAP_Att &eap_att) {
 }
 
 bool do_assoc(EAP_Att &eap_att) {
-	// RSN IE for WPA2 / 802.1X (AKM=1, pairwise=CCMP, group=CCMP)
-	static const vector<uint8_t> rsn_ie = {
-		0x01,
-		0x00, // version 1
-		0x00,
-		0x0f,
-		0xac,
-		0x04, // group cipher: CCMP
-		0x01,
-		0x00, // pairwise count: 1
-		0x00,
-		0x0f,
-		0xac,
-		0x04, // pairwise: CCMP
-		0x01,
-		0x00, // AKM count: 1
-		0x00,
-		0x0f,
-		0xac,
-		0x01, // AKM: 802.1X
-		0x00,
-		0x00 // RSN capabilities
-	};
 
 	Dot11AssocRequest assoc(eap_att.ap_mac, eap_att.att_mac);
 	assoc.addr3(eap_att.ap_mac);
@@ -254,7 +250,16 @@ bool do_assoc(EAP_Att &eap_att) {
 			reinterpret_cast<const uint8_t *>(eap_att.ssid.data()) });
 	static const uint8_t rates[] = { 0x82, 0x84, 0x8b, 0x96, 0x24, 0x30, 0x48, 0x6c };
 	assoc.add_option({ Dot11::SUPPORTED_RATES, sizeof(rates), rates });
-	assoc.add_option({ Dot11::RSN, static_cast<uint32_t>(rsn_ie.size()), rsn_ie.data() });
+
+	// RSN IE for WPA2 / 802.1X (AKM=1, pairwise=CCMP, group=CCMP)
+	static const auto rsn_bytes = [] {
+		RSNInformation rsn;
+		rsn.group_suite(RSNInformation::CCMP);
+		rsn.add_pairwise_cypher(RSNInformation::CCMP);
+		rsn.add_akm_cypher(RSNInformation::EAP);
+		return rsn.serialize();
+	}();
+	assoc.add_option({ Dot11::RSN, static_cast<uint32_t>(rsn_bytes.size()), rsn_bytes.data() });
 
 	pcap_t *handle = eap_att.sock.get_pcap_handle();
 	const auto deadline = steady_clock::now() + eap_att.timeout;
@@ -289,7 +294,7 @@ bool do_assoc(EAP_Att &eap_att) {
 }
 
 void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
-	// SNAP OUI(3) + EtherType(2) - same pattern as malformed_eapol1
+	// SNAP OUI(3) + EtherType(2)
 	vector<uint8_t> snap_eapol = { 0x00, 0x00, 0x00, 0x88, 0x8e };
 	snap_eapol.insert(snap_eapol.end(), eapol.begin(), eapol.end());
 
@@ -309,12 +314,12 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
 
 vector<uint8_t> extract_eapol(const uint8_t *p, const uint32_t caplen, const HWAddress<6> &our_mac) {
 	if(caplen < 4) return {};
-	const uint16_t rt_len = p[2] | (static_cast<uint16_t>(p[3]) << 8);
+	const uint16_t rt_len = p[2] | static_cast<uint16_t>(p[3]) << 8;
 
 	// FC byte 0: bits 3-2 = type, must be 0b10 (data); bit 7 = QoS subtype flag
 	if(caplen <= rt_len + 1u) return {};
 	const uint8_t fc0 = p[rt_len];
-	if((fc0 & 0x0c) != 0x08) return {}; // not a data frame
+	if((fc0 & 0x0c) != 0x08) return {}; // filter out data frames
 
 	// addr1 = FC(2) + Duration(2) = offset 4 inside dot11 header
 	if(caplen < rt_len + 10u) return {};
@@ -322,7 +327,7 @@ vector<uint8_t> extract_eapol(const uint8_t *p, const uint32_t caplen, const HWA
 	if(addr1 != our_mac && addr1 != HWAddress<6>::broadcast) return {};
 
 	// QoS Data (subtype bit 7 set) adds 2-byte QoS Control field
-	const size_t dot11_hdr = (fc0 & 0x80) ? 26u : 24u;
+	const size_t dot11_hdr = fc0 & 0x80 ? 26u : 24u;
 
 	// LLC+SNAP: AA AA 03 | OUI(3) | EtherType(2) = 8 bytes total
 	const size_t llc_off = rt_len + dot11_hdr;

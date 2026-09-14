@@ -1,34 +1,42 @@
 #pragma once
 #include <cstdint>
 
-namespace wpa3_tester::eap{
-// EAP codes (RFC 3748 $4)
-constexpr uint8_t CODE_REQUEST = 1;
-constexpr uint8_t CODE_RESPONSE = 2;
-constexpr uint8_t CODE_SUCCESS = 3;
-constexpr uint8_t CODE_FAILURE = 4;
+namespace wpa3_tester::eap {
+
+// EAP codes (RFC 3748 §4)
+enum EapCode : uint8_t {
+    CODE_REQUEST = 1,
+    CODE_RESPONSE = 2,
+    CODE_SUCCESS = 3,
+    CODE_FAILURE = 4,
+};
 
 // EAP type numbers (IANA)
-constexpr uint8_t TYPE_IDENTITY = 1;
-constexpr uint8_t TYPE_MD5 = 4;
-constexpr uint8_t TYPE_GTC = 6;
-constexpr uint8_t TYPE_TLS = 13;
-constexpr uint8_t TYPE_LEAP = 17;
-constexpr uint8_t TYPE_SIM = 18;
-constexpr uint8_t TYPE_TTLS = 21;
-constexpr uint8_t TYPE_AKA = 23;
-constexpr uint8_t TYPE_PEAP = 25;
-constexpr uint8_t TYPE_MSCHAPV2 = 26;
-constexpr uint8_t TYPE_POTP = 29;
-constexpr uint8_t TYPE_FAST = 33;
-constexpr uint8_t TYPE_EKE = 40;
-constexpr uint8_t TYPE_TEAP = 43;
-constexpr uint8_t TYPE_AKA_PRIME = 50;
-constexpr uint8_t TYPE_PWD = 52;
-constexpr uint8_t TYPE_EXPANDED = 254;
+enum EapType : uint8_t {
+    TYPE_IDENTITY  = 1,
+    TYPE_MD5       = 4,
+    TYPE_GTC       = 6,
+    TYPE_TLS       = 13,
+    TYPE_LEAP      = 17,
+    TYPE_SIM       = 18,
+    TYPE_TTLS      = 21,
+    TYPE_AKA       = 23,
+    TYPE_PEAP      = 25,
+    TYPE_MSCHAPV2  = 26,
+    TYPE_POTP      = 29,
+    TYPE_FAST      = 33,
+    TYPE_EKE       = 40,
+    TYPE_TEAP      = 43,
+    TYPE_AKA_PRIME = 50,
+    TYPE_PWD       = 52,
+    TYPE_EXPANDED  = 254,
+};
 
-// EAP-PWD opcodes (RFC 5931 $3.1, low 6 bits of Exch byte)
-constexpr uint8_t PWD_OPCODE_ID = 1;
-constexpr uint8_t PWD_OPCODE_COMMIT = 2;
-constexpr uint8_t PWD_OPCODE_CONFIRM = 3;
-} 
+// EAP-PWD opcodes (RFC 5931 §3.1, PWD-Exch)
+enum PwdOpcode : uint8_t {
+    PWD_OPCODE_ID      = 1,
+    PWD_OPCODE_COMMIT  = 2,
+    PWD_OPCODE_CONFIRM = 3,
+};
+
+}

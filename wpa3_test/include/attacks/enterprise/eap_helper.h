@@ -5,13 +5,14 @@
 #include <tins/hw_address.h>
 #include <vector>
 #include "attacks/components/sniffer_helper.h"
+#include "attacks/enterprise/eap_defs.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "system/wifi_channel.h"
 
-namespace wpa3_tester::reflection {
+namespace wpa3_tester::eap_helper {
 struct EapPwdFrame {
 	uint8_t eap_id{};
-	uint8_t opcode{};
+	eap::PwdOpcode opcode{};
 	std::vector<uint8_t> pwd_data;
 };
 
@@ -57,8 +58,16 @@ void send_eapol(const EAP_Att &eap_att, const std::vector<uint8_t> &eapol);
 
 std::vector<uint8_t> extract_eapol(const uint8_t *p, uint32_t caplen, const Tins::HWAddress<6> &our_mac);
 
-// Definition must be in the header: abbreviated function template, each lambda
-// instantiation needs the definition visible in the calling TU.
+inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) {
+	return [&frame, opcode](const std::vector<uint8_t> &v) -> bool {
+		const auto f = parse_eap_pwd(v);
+		if(f && f->opcode == opcode) { frame = f; return true; }
+		return false;
+	};
+}
+
+// definition must be in the header
+// auto pred is not know -> function is template
 std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 	const auto start_time = std::chrono::steady_clock::now();
 	std::optional<std::vector<uint8_t>> result = std::nullopt;
@@ -68,7 +77,7 @@ std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 				auto eapol = extract_eapol(p, caplen, eap_att.att_mac);
 				if(eapol.empty()) return std::nullopt;
 				if(is_eap_success(eapol)) {
-					result = std::vector<uint8_t>{}; //hae to be empty vector
+					result = std::vector<uint8_t>{}; //have to be empty vector
 					return true;
 				}
 				if(!pred(eapol)) return std::nullopt;
@@ -77,5 +86,9 @@ std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 			});
 	eap_att.decrease_timeout(start_time);
 	return result;
+}
+
+inline std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, bool) {
+	return wait_eapol(eap_att, [](const std::vector<uint8_t> &) { return true; });
 }
 }

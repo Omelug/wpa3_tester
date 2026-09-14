@@ -134,7 +134,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: workflow format start only if test workflow pass" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: wait_eapol bool">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -290,11 +294,6 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.test_config_validation">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1137,8 +1136,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="t: mc_mitm handle basic tests" />
-    <MESSAGE value="f:  usbcore.autosuspend=-1" />
     <MESSAGE value="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak" />
     <MESSAGE value="+: vsc/workspace Clion" />
     <MESSAGE value="+: beacon without vht attack working base (disconnect)" />
@@ -1162,7 +1159,9 @@
     <MESSAGE value="r: small changes&#10;ft: other fixes in redundant broken format" />
     <MESSAGE value="ch: change python script for check non ASCII to to grep   ls-files" />
     <MESSAGE value="+: workflow format start only if test workflow pass" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: workflow format start only if test workflow pass" />
+    <MESSAGE value="f: only main push on test /config validation workflow" />
+    <MESSAGE value="+: wait_eapol bool" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: wait_eapol bool" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

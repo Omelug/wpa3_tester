@@ -233,7 +233,8 @@ static Bl0ckResult compute_result(const RunStatus &rs) {
 				}
 			}
 		}
-	} else if(rs.get_actor("ap")->is_WB()) {
+	}
+	if(rs.get_actor("ap")->is_WB()) {
 		const auto window = visual::helper::get_run_window(rs, rs.get_actor("ap"));
 		r.ap_disconnected = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 	}

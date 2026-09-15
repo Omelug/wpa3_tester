@@ -56,7 +56,7 @@ static vector<string> collect_test_names(const vector<InjectionCacheEntry> &entr
     set<string> seen;
     vector<string> names;
     for(const auto &e : entries)
-        for(const auto &[name, _] : e.tests)
+        for(const auto &name: e.tests | views::keys)
             if(seen.insert(name).second) names.push_back(name);
     return names;
 }

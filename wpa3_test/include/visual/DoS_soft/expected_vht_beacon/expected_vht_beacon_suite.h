@@ -21,8 +21,8 @@ struct ExpVhtTestEntry {
 
 	// result fields - names must match result.json keys (auto-loaded by load_result_default)
 	int disconnect_count = 0;
-	bool dmesg_change_mode_disconnect = false;
-	bool ap_disconnected = false;
+	std::optional<bool> dmesg_change_mode_disconnect ;
+	std::optional<bool> ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> cracked;
 

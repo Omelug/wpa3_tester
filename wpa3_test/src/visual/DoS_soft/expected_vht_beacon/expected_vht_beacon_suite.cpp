@@ -8,6 +8,8 @@
 #include "visual/suite_helper.h"
 #include <filesystem>
 
+#include "logger/log_util.h"
+
 namespace wpa3_tester::visual::expected_vht_beacon_suite {
 using namespace std;
 using namespace filesystem;
@@ -35,6 +37,12 @@ ExpVhtTestEntry ExpVhtTestEntry::parse(const path &test_folder) {
         e.rogue_ap_mac    = rogue->get(SK::mac);
         e.rogue_ap_driver = rogue->get(SK::driver_name);
     }
+
+	if(ap->is_WB()) {
+		const auto window = helper::get_run_window(*rs, ap);
+		e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	}
+
     return e;
 }
 

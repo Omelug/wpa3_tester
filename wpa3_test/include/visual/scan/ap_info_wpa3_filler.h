@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
+#include "overview/described.h"
 
 namespace wpa3_tester::overview {
 struct HtmlGuard;
@@ -17,8 +18,8 @@ struct ApInfoWpa3TestEntry {
 	std::string ssid;
 	std::string mfp;
 	std::vector<std::string> akm;
-	bool beacon_found;
-	bool acm_triggered = false;
+	std::optional<bool> beacon_found;
+	std::optional<bool> acm_triggered;
 	std::vector<std::string> stations;
 
 	static ApInfoWpa3TestEntry parse(const std::filesystem::path &test_folder);

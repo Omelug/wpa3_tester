@@ -30,6 +30,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     <h1> fake legacy beacon DoS </h1>
 
     <div class="card">
+		<p><b>Info:</b> https://github.com/domienschepers/wifi-framework/blob/master/test-dos.py</p>
         <p><b>prerequisites:</b> client connected to a VHT (802.11ac) access point</p>
         <p>
 			The attacker captures the real AP beacon, strips
@@ -52,13 +53,6 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
         <ul>
             <li><b>Beacon Protection (BIGTK, 802.11ax)</b> - fake beacons without a valid
                 BIP-CMAC-256 tag are silently dropped. Not yet widely deployed.</li>
-        </ul>
-    </div>
-
-	<div class="card">
-        <h2>Sources</h2>
-        <ul>
-            <li>https://github.com/domienschepers/wifi-framework/blob/master/test-dos.py</li>
         </ul>
     </div>
 

@@ -7,6 +7,7 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include <set>
+#include <algorithm>
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -18,14 +19,14 @@ struct InjectionCacheEntry {
     string rx_mac;
     string driver;
     string rx_driver;
-    map<string, string> tests; // test_name -> reuslt ("PASSED"/"FAIL"/"NOCAPTURE")
+    map<string, string> tests; // test_name -> result ("PASSED"/"FAIL"/"NOCAPTURE")
 };
 
 static string result_cell(const string &r) {
     if(r == "PASSED")    return "<span class=\"it-pass\">P</span>";
     if(r == "FAIL")      return "<span class=\"it-fail\">F</span>";
     if(r == "NOCAPTURE") return "<span class=\"it-nc\">NC</span>";
-    return "-";
+    return "N/A";
 }
 
 static vector<InjectionCacheEntry> read_cache(const path &cache_path) {
@@ -44,9 +45,11 @@ static vector<InjectionCacheEntry> read_cache(const path &cache_path) {
         e.rx_mac    = j.value("rx_mac", "?");
         e.driver    = j.value("driver", "?");
         e.rx_driver = j.value("rx_driver", "");
-        if(j.contains("tests") && j.at("tests").is_object())
-            for(const auto &[name, val] : j.at("tests").items())
-                e.tests[name] = val.value("result", "?");
+        if(j.contains("tests") && j.at("tests").is_object()) {
+	        for(const auto &[name, val] : j.at("tests").items()) {
+		        e.tests[name] = val.value("result", "?");
+	        }
+        }
         entries.push_back(std::move(e));
     }
     return entries;
@@ -55,9 +58,11 @@ static vector<InjectionCacheEntry> read_cache(const path &cache_path) {
 static vector<string> collect_test_names(const vector<InjectionCacheEntry> &entries) {
     set<string> seen;
     vector<string> names;
-    for(const auto &e : entries)
-        for(const auto &name: e.tests | views::keys)
-            if(seen.insert(name).second) names.push_back(name);
+    for(const auto &e : entries) {
+	    for(const auto &name: e.tests | views::keys) {
+	    	if(seen.insert(name).second) names.push_back(name);
+	    }
+    }
     return names;
 }
 
@@ -86,7 +91,11 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     <div class="card">
 )html";
 
-    const auto entries    = read_cache(cache_path);
+    auto entries    = read_cache(cache_path);
+
+	ranges::sort(entries, [](const InjectionCacheEntry &a, const InjectionCacheEntry &b) {
+	return tie(a.tx_mac, a.rx_mac, a.driver, a.rx_driver) < tie(b.tx_mac, b.rx_mac, b.driver, b.rx_driver); });
+
     const auto test_names = collect_test_names(entries);
 
     if(entries.empty()) {

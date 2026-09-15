@@ -31,8 +31,7 @@ using namespace wpa3_tester::eap_helper;
 namespace wpa3_tester::invalid_curve {
 // === subgroup parameters for P-256 (group 19) ===
 // generator of small-order subgroup on the quadratic twist of P-256.
-// source: dragonslayer https://github.com/vanhoefm/dragonslayer/blob/master/src/crypto/crypto_openssl.c
-// y^2 = x^3 + ax + b
+// source: dragonslayer src/crypto/crypto_openssl.c (size=269 path)
 
 // clang-format off
 static constexpr array<uint8_t, 32> SUB_GX = {
@@ -259,6 +258,8 @@ void run_attack(RunStatus &rs) {
 
 	const string iface = attacker.get(SK::iface);
 	const string identity = att_cfg.at("identity").get<string>();
+	const int attack_time = att_cfg.at("attack_time_one_try_sec").get<int>();
+	const size_t replay = att_cfg.at("replay").get<size_t>();
 	const string ssid = ap_actor->get(SK::ssid);
 	const auto channel = ap_actor->get_channel();
 
@@ -266,10 +267,16 @@ void run_attack(RunStatus &rs) {
 	const HWAddress<6> ap_mac(ap_actor.get(SK::mac));
 
 	MonitorSocket sock(iface, attacker[SK::netns]);
-	EAP_Att eap_att{
-		sock, channel, our_mac, ap_mac, ssid, identity, milliseconds{ 30000 } // 30s //FIXME
-	};
-	const bool vulnerable = run_invalid_curve_exchange(eap_att);
+
+	//TODO run multiple times (33% of fail)
+	bool vulnerable = false;
+	for(size_t i = 0; i < replay; i++) {
+		EAP_Att eap_att{
+			sock, channel, our_mac, ap_mac, ssid, identity, seconds(attack_time)
+		};
+		vulnerable = run_invalid_curve_exchange(eap_att);
+		if(vulnerable) break;
+	}
 
 	rs.save_result({ { "connected", vulnerable } });
 	log(LogLevel::INFO, "Invalid curve attack result: {}", vulnerable ? "VULNERABLE" : "not vulnerable");

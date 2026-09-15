@@ -31,17 +31,10 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 	<div class="card">
 
 #TODO info about both directions
-
-		<p> Some APs accept same PWE what is send by them - but still dont crack the password</p>
-		<p><b>Success:</b> attacker connected </p>
+		<p><b>Info:</b> https://github.com/vanhoefm/dragonslayer </p>
+		<p> Some APs accept same PWE what is send by them </p>
+		<p><b>Success:</b> attacker connected without password (Attacker dont gain password )</p>
 	</div>
-
-	<div class="card">
-        <h2>Sources</h2>
-        <ul>
-            <li>https://github.com/vanhoefm/dragonslayer</li>
-        </ul>
-    </div>
 
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "reflection_attack" / "reflection_attack_filler";

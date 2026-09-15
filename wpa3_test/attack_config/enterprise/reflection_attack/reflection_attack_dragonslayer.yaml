@@ -1,5 +1,9 @@
 name: reflection_attack_gragonslayer
 attacker_module: reflection_attack
+requirements:
+  two_iface:
+    injection_fields_spoofed: [ attacker, ap ]
+    injection_fields_valid: [ attacker, ap ]
 actors:
   ap:
     source: internal

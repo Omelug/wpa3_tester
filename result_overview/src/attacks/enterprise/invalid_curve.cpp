@@ -29,16 +29,13 @@ void generate_invalid_curve_attack(const path &output_dir, const path &data_dir)
 	<h1>Invalid curve</h1>
 
 	<div class="card">
-		<p> #TODO invalid curve from pdf </p>
-		<p><b>Success:</b> attacker connected </p>
+		<p><b>Info:</b>  https://github.com/vanhoefm/dragonslayer</p>
+		<p>Issue in  EAP-pwd.
+		   Some implementation dont properly validate that point is on valid curve (defined by group).
+		   Attacker send point with correct format but on curve with small count of possible results.
+		   Attacker try to connect multiple times and check if connection is accepted</p>
+		<p><b>Success:</b> Attacker can connected (after few attempts) without password.</p>
 	</div>
-
-	<div class="card">
-        <h2>Sources</h2>
-        <ul>
-            <li>https://github.com/vanhoefm/dragonslayer</li>
-        </ul>
-    </div>
 
 )html";
 	const path suite_dir = data_dir / DATA_SUITE / "enterprise" / "invalid_curve" / "invalid_curve_filler";

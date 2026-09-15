@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="35" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="4" type="long" />
+    <option name="/Default/Environment/UserInterface/HierarchyView/ViewStyle/@EntryValue" value="SuperTypes" type="string" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
-    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
+    <option name="/Default/Housekeeping/RefactoringsMru/CppRenameRefactoring/DoRenameRelatedFiles/@EntryValue" value="false" type="bool" />
   </component>
   <component name="CMakePresetLoader">{
   &quot;useNewFormat&quot;: true
@@ -22,7 +24,6 @@
     <generated>
       <config projectName="wpa3_tester" targetName="test_html_utils" />
       <config projectName="wpa3_tester" targetName="run_sae_helpers" />
-      <config projectName="wpa3_tester" targetName="pugixml-static" />
       <config projectName="wpa3_tester" targetName="run_iperf_tests" />
       <config projectName="wpa3_tester" targetName="release" />
       <config projectName="wpa3_tester" targetName="leak-check" />
@@ -128,19 +129,25 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_POLICY_DEFAULT_CMP0000=OLD -DCMAKE_POLICY_VERSION_MINIMUM=3.5 --profiling-format=google-trace --profiling-output=CMakeFiles/clion-event-trace.json" BUILD_OPTIONS="-j 6" />
+      <configuration PROFILE_NAME="Release" ENABLED="false" GENERATION_DIR="$PROJECT_DIR$/build" CONFIG_NAME="Release" />
       <configuration PROFILE_NAME="cross-rpi4" PROFILE_DISPLAY_NAME="RPi4 aarch64 cross-compile" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/build-cross" />
       <configuration PROFILE_NAME="cross-rpi4 - cross-rpi4" PROFILE_DISPLAY_NAME="RPi4: build all" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/build-cross" />
       <configuration PROFILE_NAME="cross-rpi4 - cross-rpi4-tester" PROFILE_DISPLAY_NAME="RPi4: wpa3_tester binary only" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/build-cross" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)">
+    <list default="true" id="c95bbde1-677d-44e2-824d-673b73f033f5" name="Changes" comment="r: enterprise">
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_wpa3_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_wpa3_filler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap_dragonalyer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/invalid_curve/invalid_curve_ap_dragonalyer.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack_dragonslayer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack_dragonslayer.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -156,12 +163,33 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <excluded-from-favorite>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$/doc/test_hardware/RT_AX89X_B1/TFTPRouterFlasher" source="main" />
+                <branch-info repo="$PROJECT_DIR$/doc/test_hardware/RT_AX89X_B1/facinstall" source="main" />
+                <branch-info repo="$PROJECT_DIR$" source="main" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </excluded-from-favorite>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_COMMON_BRANCH" value="main" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/doc/test_hardware/RT_AX89X_B1/TFTPRouterFlasher" />
+    <option name="RESET_MODE" value="HARD" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="d8eb5df2-d86c-4dc1-a66b-4ae0228f7a56" />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/Dlink/bl0ck_BA_Dlink/observer/iperf3/ap_iperf3_server.log" root0="FORCE_HIGHLIGHTING" />
@@ -189,68 +217,277 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;CMake Application.result_overview raspberry.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.Unnamed.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.channel_switch_drivers_ts.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.hostapd_versions_ts.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.result_overview.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.rssi_wizard.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.test_config_validation.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.test_manual_channel_switch.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.test_manual_mc_mitm.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.test_manual_start_ap.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester  invalid_curve_attack_openssl-1_0_2f.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester BARS_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester BAR_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester BA_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA 2_10_5G.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_ex.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_ex_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_client.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_client_5GHz.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester CSA_external_client_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester bl0ck_BA_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_client_invalid_ch.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_wifi.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_rogueAP_Dlink_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_rogueAP_internal_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_same_channel.executor&quot;: &quot;/dataDebug&quot;,
+    &quot;CMake Application.wpa3_tester Dlink_all.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester ap_info.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester ath_masker_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BA (1).executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BA.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BAR only stats.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BAR stats.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BAR.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck BARS.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck mc_mitm_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_BA_external.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_BA_rogue_AP.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester bl0ck_Dlink_suite.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester bl0ck_basic_ts.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester bl0ck_monitor_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_monitor_test_5GHz.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_2_10_ocv_beacon_prot.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_2_10_simulation.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_Dlink_external_client.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester channel_switch_rogueAP_Dlink.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester deauth_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester expected_vht_beacon_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_WPA2_internal_MFP.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_internal.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_internal_MFPr.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_same_channel.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester cookie_guzzler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester dragondrain_Dlink only stats.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester dragondrain_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester dragondrain_internal.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester external_info.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester generic_dos_attacks_suite.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester iface_info.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester iface_info_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_Dlink.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester injection_test_example_req.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester injection_test_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester invalid_curve_ap_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester invalid_curve_attack.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester invalid_curve_attack_openssl-1.0.2f.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.wpa3_tester invalid_curve_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.wpa3_tester wpa3_downgrade_filler.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Debug.Project.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester m_eapol1__rogueAP_Dlink_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester m_eapol1_external_client.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester malformed_eapol1.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester malformed_eapol1_2_12_patched.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester malformed_eapol1_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester malformed_eapol1_basic_suite.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.wpa3_tester malformed_eapol1_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester mc_mitm.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester mc_mitm_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester mc_mitm_test_internal.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester mc_mitm_test_sim.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester memory_omnivore.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester only stats.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester owe_trans_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester pmk_gobbler_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester reflection_attack.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester reflection_attack_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester reflection_attack_sae.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester sae_commit_monitor_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester sae_dos_wrapper.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester scan_AP.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester ssid_confusion_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester sta_info.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester stats dragondrain_internal .executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester stats dragondrain_internal.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester wpa3_trans_downgrade_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.wpa3_tester_ts.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Debug.wpa3_tester.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.All CTest.executor&quot;: &quot;Run&quot;,
+    &quot;CTest Application.CallbackTests.executor&quot;: &quot;Run&quot;,
+    &quot;CTest Application.ConfigTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.CookieGuzzlerFrameTests.executor&quot;: &quot;Run&quot;,
+    &quot;CTest Application.InjectionCheckTest.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.LoggerTimeTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.PMCallbackTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.ParseACMResponseTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.ScanTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.SolveNewPduTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.SystemTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.ValidationTests.executor&quot;: &quot;Debug&quot;,
+    &quot;CTest Application.YAMLValidatorTests.executor&quot;: &quot;Run&quot;,
+    &quot;CidrDebugProfileConversion&quot;: &quot;true&quot;,
+    &quot;Doctest.Actor_config - get_channel.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Actor_config - matches method.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Actor_config - operator+=complex.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Actor_config::to_json - bool conditions.executor&quot;: &quot;Debug&quot;,
     &quot;Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Cross-namespace interface lifecycle.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - bool false -&gt; 'no'.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - bool true -&gt; 'yes'.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - optional&lt;bool&gt; false -&gt; 'no'.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - path already relative unchanged.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - path relativized to page_dir.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlGuard - string: empty written as '?'.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable basic functionality.executor&quot;: &quot;Debug&quot;,
     &quot;Doctest.HtmlPathTable prefix grouping functionality.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.HtmlPathTable t_name footer on non-empty entries.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable with builder pattern.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable with member access.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Info OpenWrt.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Logger OpenWrt.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.M2: key_mic=1 key_ack=0 install=0 secure=0.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.M3: key_mic=1 key_ack=1 install=1 secure=1.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.M4: key_mic=1 key_ack=0 install=0 secure=1.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.MonitorSocket receives all auth frames from pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.MonitorSocket::build_inject_frame.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.MonitorSocket::parse_frame.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ParsesCommitFromPcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - on_stop callback.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.ProcessManager - process logging.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - stop individual process.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - stop nonexistent process.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - stop_all handles empty process list.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - stop_all handles multiple processes.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager - wait_for with timeout.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProcessManager run and stop simple process.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ReportGuard - creates report.md.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ReportGuard - operator bool.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ReportGuard - string: empty written as '?'.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ReportGuard - string: non-empty written as-is.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus - Test suite test generation.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus - parse_requirements().executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus Config Validation - Test configuration.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.RunStatus Config Validation - Test suite configuration.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus Config Validation - Validator configuration.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus constructor - config file not found.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.RunStatus constructor - config validation.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus constructor - missing name field.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.RunStatus constructor - with explicit test name.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus::solve_new_pdu - No RadioTap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus::solve_new_pdu - Probe Request.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.RunStatus::solve_new_pdu - Probe Response.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.RunStatus::solve_new_pdu - Update existing entity.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Runtime injection check - manual test with interface.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.Runtime injection check - test with loopback interface.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.Runtime injection check - test with non-existent interface.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.SA Query (category=8) from unknown src returns false.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.SAECallback ParsesCommitFromPcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.STA connected to AP in different namespaces.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.SaeDosFolderEntry::parse - sets name, no png.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Tcpdump OpenWrt.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Testing RunStatus Config Validation - Full Suite.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.Testing RunStatus Config Validation - YAML comparison without error.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.Testing RunStatus Config Validation - YAML comparison without errore.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Testing RunStatus Config Validation.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.YAMLValidator - apply_defaults does not overwrite existing values.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.akm_from_ap_log - fallback to RSN IE hexdump ignoring reserved suite 0.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.akm_from_ap_log - fallback to text AKM-defined pattern.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.akm_from_ap_log - returns WPA2 from RSN IE bytes when no text AKM pattern present.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.assoc_resp_channel_patch.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.beacon_to_probe_resp.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.cleanup_all_namespaces - idempotent: second call is a no-op.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.cleanup_all_namespaces - kills processes and removes namespace.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.cleanup_all_namespaces - no namespaces present.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.cleanup_all_namespaces - removes a single empty namespace.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.cleanup_all_namespaces - removes multiple empty namespaces.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.control frame: addr2 resolved from raw bytes fallback.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.crack_pmk_hashes - correct PSK cracks all hashes.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.current_time_string - format validation.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.detect_injected sets More Data bit in FC field.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.detect_injected=false leaves More Data bit untouched.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.encrypted Action from AP returns true.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.entry parse - config_validation tests.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.extract_pcap_to_csv - parses -t ad timestamps from pcapng.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.freq_to_channel and channel_to_freq roundtrip.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_actors_conn_table - edge cases.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_ap_ocv - from pcap.executor&quot;: &quot;Debug&quot;,
     &quot;Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_action_rogue.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_assoc_request.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_auth_from_client_real.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_eapol_real.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_eapol_rogue.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_from_ap_real.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_open_auth.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.handle_probe.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.hwsim setup_actor - create sniff iface.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.satisfied conn_cond (STA-&gt;AP from data frame) returns true.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.setup_actor sim - create sniff iface.executor&quot;: &quot;Debug&quot;,
-    &quot;Doctest.times_packet_sizes_from_csv - two valid rows.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_disconnected - WB client with log.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_disconnected - non-WB client with pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.log.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_scanning - from attacker pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_conn_WPA_version - SAE from AKM-defined fallback in ap.log.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_cookie_guzzler_frame - creates valid 802.11 Authentication frame.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_cookie_guzzler_frame - handles empty SAE parameters.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_eapol_msg_num.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_global_config - empty file.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_global_config - file not found.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_global_config - invalid YAML.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_global_config - normal loading.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_global_config - static cache.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_hostapd - empty version returns system default.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_hostapd - returns existing binary if found.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_hostapd - throws when binary doesn't exist and repo not available.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_time_logs - finds matching lines.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_time_logs - missing log file returns empty.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.get_time_logs - no match returns empty.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.handle_action_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_beacon processes valid beacon.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_beacon rejects different MAC.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.hw_capabilities::freq_to_channel.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.iface mac address change.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.iface up down.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.log - debug message with actor name.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.log_time_to_epoch - basic UTC+1 timestamp.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.log_time_to_epoch - fractional seconds preserved.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.log_time_to_epoch_ns - basic UTC+1 timestamp.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.log_time_to_epoch_ns - invalid string returns epoch.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.log_time_to_epoch_ns - negative offset UTC-5.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.make_sae_commit - base.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.non-Action management frame returns false.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_acm_response - invalid SAE commit.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_acm_response - invalid packet (too short).executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_acm_response - packet with radiotap length mismatch.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_acm_response - valid ACM commit packet from pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_eapol_from_pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.parse_hw_capabilities - OpenWrt phy0 info.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.patch_channel_raw - beacon frame.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.patch_channel_raw - probe response frame.executor&quot;: &quot;Profiler&quot;,
+    &quot;Doctest.payload after old RadioTap is preserved byte-for-byte.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.relative_from - base not found.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.run_validation_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.send_bl0ck_frame - BAR frame matches reference packet.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.send_bl0ck_frame - creates and saves BAR frames to pcap.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.set wifi .executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.set wifi type.executor&quot;: &quot;Run&quot;,
+    &quot;Doctest.start ap test.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.test_manual_iface.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.tx power control.executor&quot;: &quot;Debug&quot;,
+    &quot;Makefile Target.callgraph.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.coverage_build.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.results.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.results_gen_only.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.test_manual_build.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.tester_setup.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;NIXITCH_NIXPKGS_CONFIG&quot;: &quot;/etc/nix/nixpkgs-config.nix&quot;,
+    &quot;NIXITCH_NIXPKGS_CONFIG&quot;: &quot;&quot;,
     &quot;NIXITCH_NIX_CONF_DIR&quot;: &quot;&quot;,
     &quot;NIXITCH_NIX_OTHER_STORES&quot;: &quot;&quot;,
-    &quot;NIXITCH_NIX_PATH&quot;: &quot;nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels&quot;,
-    &quot;NIXITCH_NIX_PROFILES&quot;: &quot;/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/nixos /home/nixos/.local/state/nix/profile /nix/profile /home/nixos/.nix-profile /var/lib/flatpak/exports /home/nixos/.local/share/flatpak/exports&quot;,
+    &quot;NIXITCH_NIX_PATH&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_PROFILES&quot;: &quot;/nix/var/nix/profiles/default /home/kali/.nix-profile&quot;,
     &quot;NIXITCH_NIX_REMOTE&quot;: &quot;&quot;,
-    &quot;NIXITCH_NIX_USER_PROFILE_DIR&quot;: &quot;/nix/var/nix/profiles/per-user/nixos&quot;,
+    &quot;NIXITCH_NIX_USER_PROFILE_DIR&quot;: &quot;&quot;,
+    &quot;Native Application.external list.executor&quot;: &quot;Debug&quot;,
+    &quot;Native Application.get_commit_values.executor&quot;: &quot;Debug&quot;,
+    &quot;Native Application.openwrt.executor&quot;: &quot;Debug&quot;,
+    &quot;Native Application.result_overview.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
     &quot;Remote Debug.raspberry.executor&quot;: &quot;Debug&quot;,
     &quot;Remote GDB Server.nlohmann_json_schema_validator.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.wpa3_tester rapsberry debug.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.wpa3_tester_pi_deploy.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
@@ -260,24 +497,32 @@
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/home/kali/.local/share/JetBrains/CLion2026.1/Shell Script/shellcheck&quot;,
+    &quot;ToolWindow.GitHub Copilot Chat.ShowToolbar&quot;: &quot;false&quot;,
     &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
     &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
     &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;cf.advertisement.text.has.clang-format&quot;: &quot;true&quot;,
     &quot;cf.advertisement.text.overridden&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
     &quot;ctest.advertisement.all.test.configuration.is.created&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;mitm&quot;,
     &quot;git.auto.fetch.suggestion.counter&quot;: &quot;3&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/deauth&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/kali/ClionProjects/wpa3_tester/build&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;/home/kali/ClionProjects/wpa3_tester/data/wpa3_suites/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler/all_actors/channel_switch_rogueAP_internal_5d6e234b/rogue_ap_hostapd_mana.conf&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -296,56 +541,99 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.result_overview">
-    <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
+  <component name="RunManager" selected="CMake Debug.wpa3_tester">
+    <configuration default="true" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <texify-bibtex>
+        <compiler />
+        <compiler-path />
+        <compiler-arguments />
+        <envs />
+        <main-file />
+        <aux-dir />
+        <latex-distribution>PROJECT_SDK</latex-distribution>
+      </texify-bibtex>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="LATEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <texify>
+        <compiler>PDFLATEX</compiler>
+        <compiler-path />
+        <pdf-viewer>okular</pdf-viewer>
+        <require-focus>true</require-focus>
+        <viewer-command />
+        <compiler-arguments />
+        <envs />
+        <expand-macros-in-environment-variables>false</expand-macros-in-environment-variables>
+        <before-run-command />
+        <main-file />
+        <output-path>{projectDir}/out</output-path>
+        <auxil-path>{projectDir}/auxil</auxil-path>
+        <compile-twice>false</compile-twice>
+        <output-format>PDF</output-format>
+        <latex-distribution>TEXLIVE</latex-distribution>
+        <has-been-run>false</has-been-run>
+        <bib-run-config>[]</bib-run-config>
+        <makeindex-run-config>[]</makeindex-run-config>
+      </texify>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="MAKEINDEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <texify-makeindex>
+        <program>MAKEINDEX</program>
+        <main-file />
+        <command-line-args />
+        <work-dir />
+      </texify-makeindex>
+      <method v="2" />
+    </configuration>
+    <configuration name="wpa3_pi_deploy" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester_pi_deploy" CONFIG_NAME="wpa3_tester_pi_deploy" RUN_PATH="$PROJECT_DIR$/tester_setup/raspberry_pi4/run/build-cross/bin/wpa3_tester">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="beacon_to_probe_resp" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_mc_mitm_tests" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_mc_mitm_tests" TEST_METHOD="beacon_to_probe_resp" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_auth_from_client_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_auth_from_client_real" TEST_MODE="SUITE_TEST">
+    <configuration name="entry parse - config_validation tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests" TEST_METHOD="entry parse - config_validation tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_eapol_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_eapol_real" TEST_MODE="SUITE_TEST">
+    <configuration name="get_client_disconnected - non-WB client with pcap" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_result_helper_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_result_helper_tests" TEST_METHOD="get_client_disconnected - non-WB client with pcap" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_eapol_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_eapol_rogue" TEST_MODE="SUITE_TEST">
+    <configuration name="get_client_scanning - from attacker pcap" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_result_helper_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_result_helper_tests" TEST_METHOD="get_client_scanning - from attacker pcap" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="handle_from_ap_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_from_ap_real" TEST_MODE="SUITE_TEST">
+    <configuration name="parse_eapol_from_pcap" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_mc_mitm_tests" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_mc_mitm_tests" TEST_METHOD="parse_eapol_from_pcap" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="patch_channel_raw - beacon frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" TEST_METHOD="patch_channel_raw - beacon frame" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="patch_channel_raw - probe response frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_mc_mitm_tests" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_mc_mitm_tests" TEST_METHOD="patch_channel_raw - probe response frame" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="run_ath9k_htc_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_ath9k_htc_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_ath9k_htc_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_create_simulation_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_create_simulation_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_create_simulation_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_devices_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_devices_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_devices_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_entry_parse_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -358,12 +646,6 @@
       </method>
     </configuration>
     <configuration name="run_hostapd_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hostapd_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hostapd_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_html_guard_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_html_guard_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_html_guard_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -387,37 +669,19 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="run_hw_info_load_cache_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hw_info_load_cache_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hw_info_load_cache_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="run_hwsim_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hwsim_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hwsim_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_injection_result_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_injection_result_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_injection_result_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_internal_options_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_internal_options_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_internal_options_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_interrupt_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_interrupt_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_interrupt_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="run_ip_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_ip_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_ip_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_iperf_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_iperf_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_iperf_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -430,6 +694,12 @@
       </method>
     </configuration>
     <configuration name="run_logger_time_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_logger_time_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_logger_time_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_monitor_socket_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -459,7 +729,7 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_openwrt_helper" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_openwrt_helper" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_openwrt_helper" TEST_MODE="SUITE_TEST">
+    <configuration name="run_openwrt_hw_capabilities" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_openwrt_hw_capabilities" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_openwrt_hw_capabilities" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -477,25 +747,7 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_real_channel_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_report_guard_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_report_guard_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_report_guard_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_report_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_report_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_report_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_result_helper_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_result_helper_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_result_helper_tests" TEST_MODE="SUITE_TEST">
+    <configuration name="run_parse_acm_response_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_parse_acm_response_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_parse_acm_response_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -513,13 +765,13 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_sae_helpers" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_sae_helpers" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_sae_helpers" TEST_MODE="SUITE_TEST">
+    <configuration name="run_runstatus_utils_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_runstatus_utils_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_runstatus_utils_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_scan_active_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_active_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_active_tests" TEST_MODE="SUITE_TEST">
+    <configuration name="run_sae_helpers" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_sae_helpers" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_sae_helpers" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -543,12 +795,6 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_scan_solve_new_pdu_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_solve_new_pdu_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_solve_new_pdu_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="run_scan_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -556,12 +802,6 @@
       </method>
     </configuration>
     <configuration name="run_sim_setup_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_sim_setup_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_sim_setup_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run_system_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_system_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_system_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -585,37 +825,21 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_validation_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_validation_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_validation_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="run_validator_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_validator_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_validator_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_wpa_overrides_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_wpa_overrides_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_wpa_overrides_tests" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="test_html_utils" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_html_utils" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_html_utils" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="test_info_openwrt" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_info_openwrt" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_info_openwrt" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
+    <configuration name="wpa3_tester" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
+      <method v="2" />
     </configuration>
     <configuration name="asan" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="asan" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="docs" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="docs" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -635,16 +859,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="parse" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="parse" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="parse">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="pugixml-static" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="pugixml-static" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="radiotap" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="radiotap" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -655,7 +869,7 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="radiotap_lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="radiotap_lib" CONFIG_NAME="Debug">
+    <configuration name="release" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="release" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -666,6 +880,16 @@
       </method>
     </configuration>
     <configuration name="remote_injector_aarch64" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_aarch64" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="remote_injector_aarch64" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_aarch64" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="remote_injector_all_arch" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_all_arch" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -690,6 +914,16 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="remote_injector_mipsel" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_mipsel" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="remote_injector_x86_64" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_x86_64" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="remote_injector_x86_64">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="remote_injector_x86_64" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="remote_injector_x86_64" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="remote_injector_x86_64">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -700,22 +934,97 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="reproc++" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="reproc++" CONFIG_NAME="Debug">
+    <configuration name="result_overview" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="result_overview" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="result_overview">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="result_overview raspberry" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--data_dir ./run/data --output_dir ./run/html" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/tester_setup/raspberry_pi4" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="result_overview" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="result_overview">
+    <configuration name="rssi_wizard" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="rssi_wizard" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="rssi_wizard">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="rssi_wizard" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="rssi_wizard" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="rssi_wizard">
+    <configuration name="run_create_simulation_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_create_simulation_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_create_simulation_tests">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="run_rogue_channel_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests">
+    <configuration name="run_devices_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_devices_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_devices_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_entry_parse_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_html_guard_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_html_guard_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_html_guard_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_injection_result_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_injection_result_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_injection_result_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_internal_options_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_internal_options_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_internal_options_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_interrupt_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_interrupt_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_interrupt_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_netlink_guards_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_netlink_guards_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_netlink_guards_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_openwrt_helper" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_openwrt_helper" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_openwrt_helper">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_report_guard_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_report_guard_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_report_guard_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_run_status_no_module_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_run_status_no_module_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_run_status_no_module_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_scan_active_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_active_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_active_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_scan_channel_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_channel_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_scan_list_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_list_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_list_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_scan_process_packet_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_process_packet_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_process_packet_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_scan_solve_new_pdu_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_solve_new_pdu_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_solve_new_pdu_tests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_wpa_overrides_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_wpa_overrides_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_wpa_overrides_tests">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -730,12 +1039,12 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="test_list_external_entities" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_list_external_entities" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_list_external_entities">
+    <configuration name="test_html_utils" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_html_utils" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_html_utils">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="test_manual_channel_switch" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_channel_switch" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_channel_switch">
+    <configuration name="test_list_external_entities" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_list_external_entities" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_list_external_entities">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -745,117 +1054,162 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="test_manual_mc_mitm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_mc_mitm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_mc_mitm">
+    <configuration name="test_manual_mc_mitm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_mc_mitm" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_mc_mitm">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="tins" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="tins" CONFIG_NAME="Debug">
+    <configuration name="wpa3_attack_scanner" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_attack_scanner" CONFIG_NAME="Debug-event-trace">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="uninstall" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="uninstall" CONFIG_NAME="Debug">
+    <configuration name="wpa3_downgrade" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_downgrade" CONFIG_NAME="Debug-event-trace">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_components" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_components" CONFIG_NAME="Debug">
+    <configuration name="wpa3_scan" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_scan" CONFIG_NAME="Debug-event-trace">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_config" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_config" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester CSA_rogueAP_Dlink_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite CSA_rogueAP_Dlink_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_dos_soft" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_dos_soft" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester bl0ck_Dlink_suite" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite bl0ck_Dlink_suite" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_enterprise" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_enterprise" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester bl0ck_basic_ts" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite bl0ck_basic_ts" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_ex_program" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_ex_program" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_2_10_ocv_beacon_prot" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_2_10_ocv_beacon_prot" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_logger" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_logger" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_2_10_simulation" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_2_10_simulation" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_mc_mitm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_mc_mitm" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_Dlink_external_client" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_Dlink_external_client" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_observer" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_observer" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_rogueAP_WPA2_internal_MFP" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_rogueAP_WPA2_internal_MFP" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_setup" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_setup" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_rogueAP_internal" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_rogueAP_internal" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_suite" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_suite" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester channel_switch_rogueAP_internal_MFP_req" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test channel_switch_rogueAP_internal_MFP_req" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_system" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_system" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester downgrade_Dlink_wb_wpa3_disable" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test downgrade_Dlink_wb_wpa3_disable" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_2_4GHz_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_2_4GHz_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester external_info" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test external_info" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_5GHz" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_5GHz" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester injection_test_Dlink" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test injection_test_Dlink" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_beacon_prot" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_beacon_prot" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester injection_test_example" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test injection_test_example" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_beacon_prot_5GHz" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test expected_vht_beacon_beacon_prot_5GHz" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester injection_test_example_req" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test injection_test_example_req" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_ex_Dlink_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_ex_Dlink_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester injection_test_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite injection_test_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_ex_client_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_ex_client_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester invalid_curve_ap_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite invalid_curve_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester expected_vht_beacon_rogueAP_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite expected_vht_beacon_rogueAP_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester invalid_curve_attack_openssl-1_0_2f" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test invalid_curve_attack_openssl_1_0_2f" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester injection_test_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite injection_test_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+    <configuration name="wpa3_tester invalid_curve_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite invalid_curve_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_two_iface" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_two_iface" CONFIG_NAME="Debug">
+    <configuration name="wpa3_tester m_eapol1__rogueAP_Dlink_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite m_eapol1__rogueAP_Dlink_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester m_eapol1_external_client" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test m_eapol1_external_client" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester malformed_eapol1_Dlink" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test malformed_eapol1_Dlink" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester malformed_eapol1_basic_suite" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite malformed_eapol1_basic_suite" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester malformed_eapol1_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite malformed_eapol1_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester malformed_eapol1_patched_Dlink_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test malformed_eapol1_patched_Dlink_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester mc_mitm_test_internal" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test mc_mitm_test_internal" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester owe_trans_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite owe_trans_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug-event-trace" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester reflection_attack_Dlink" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite reflection_attack_Dlink" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="wpa3_tester reflection_attack_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite reflection_attack_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -865,111 +1219,28 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="yaml-cpp" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="yaml-cpp" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="PATTERN">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="tester_setup" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/Makefile" target="tester_setup" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="CMake Application.wpa3_tester invalid_curve_filler" />
       <item itemvalue="CMake Application.wpa3_tester deauth_filler" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_Dlink_suite" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_basic_ts" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_rogueAP_Dlink_filler" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_beacon_prot" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler" />
-      <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_5GHz" />
       <item itemvalue="CMake Application.wpa3_tester expected_vht_beacon_test" />
-      <item itemvalue="CMake Application.rssi_wizard" />
-      <item itemvalue="CMake Application.wpa3_tester BARS_filler" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_Dlink" />
-      <item itemvalue="CMake Application.wpa3_tester mc_mitm_test" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_internal_MFPr" />
-      <item itemvalue="CMake Application.wpa3_downgrade" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck BA" />
-      <item itemvalue="CMake Application.wpa3_tester ssid_confusion_test" />
-      <item itemvalue="CMake Application.wpa3_tester active_test_example" />
-      <item itemvalue="CMake Application.wpa3_tester cookie_guzzler" />
-      <item itemvalue="CMake Application.wpa3_tester invalid_curve_attack" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck BARS" />
-      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_filler" />
-      <item itemvalue="CMake Application.wpa3_tester active_test_filler" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_Dlink" />
-      <item itemvalue="CMake Application.wpa3_tester mc_mitm_test_sim" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_same_channel" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_2_10_simulation" />
-      <item itemvalue="CMake Application.wpa3_attack_shared" />
-      <item itemvalue="CMake Application.wpa3_tester injection_test_example" />
-      <item itemvalue="CMake Application.wpa3_tester BAR_filler" />
-      <item itemvalue="CMake Application.wpa3_tester iface_info" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_ex_filler" />
-      <item itemvalue="CMake Application.wpa3_tester sta_info" />
-      <item itemvalue="CMake Application.wpa3_tester sae_commit_monitor_test" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_5GHz" />
-      <item itemvalue="CMake Application.wpa3_tester BAR_mac_gen_ts" />
-      <item itemvalue="CMake Application.wpa3_tester BARS_mac_gen_ts" />
-      <item itemvalue="CMake Application.wpa3_tester wpa3_trans_downgrade_filler_wpa3_disable" />
-      <item itemvalue="CMake Application.wpa3_tester stats dragondrain_internal" />
-      <item itemvalue="CMake Application.wpa3_tester ap_info" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_rogueAP_internal_filler" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck BAR" />
-      <item itemvalue="CMake Application.wpa3_tester dragondrain_Dlink only stats" />
-      <item itemvalue="CMake Application.wpa3_tester active_test_example_req" />
-      <item itemvalue="CMake Application.wpa3_tester dragondrain_Dlink" />
-      <item itemvalue="CMake Application.wpa3_tester injection_test_Dlink" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_internal" />
-      <item itemvalue="CMake Application.wpa3_tester BA_filler" />
-      <item itemvalue="CMake Application.wpa3_tester reflection_attack" />
-      <item itemvalue="CMake Application.hostapd_versions_ts" />
-      <item itemvalue="CMake Application.wpa3_tester wpa3_trans_downgrade_filler" />
-      <item itemvalue="CMake Application.wpa3_tester reflection_attack_sae" />
-      <item itemvalue="CMake Application.wpa3_attack_scanner" />
-      <item itemvalue="CMake Application.wpa3_tester pmk_gobbler_Dlink" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_BA_Dlink" />
-      <item itemvalue="CMake Application.wpa3_scan" />
-      <item itemvalue="CMake Application.wpa3_tester memory_omnivore" />
-      <item itemvalue="CMake Application.wpa3_tester CSA 2_10_5G" />
-      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_2_12_patched" />
-      <item itemvalue="CMake Application.wpa3_tester ath_masker_test" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_filler" />
-      <item itemvalue="CMake Application.wpa3_tester BA_mac_gen_ts" />
-      <item itemvalue="CMake Application.result_overview" />
-      <item itemvalue="CMake Application.wpa3_tester iface_info_filler" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_same_channel" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_test" />
-      <item itemvalue="CMake Application.wpa3_tester Dlink_all" />
-      <item itemvalue="CMake Application.test_openwrt_hw_capabilities" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_invalid_ch" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_ex" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_monitor_test_5GHz" />
-      <item itemvalue="CMake Application.wpa3_tester_ts" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_BA_rogue_AP" />
-      <item itemvalue="CMake Application.wpa3_tester wpa3_downgrade_filler" />
-      <item itemvalue="CMake Application.wpa3_tester channel_switch_2_10_ocv_beacon_prot" />
-      <item itemvalue="CMake Application.wpa3_tester generic_dos_attacks_suite" />
-      <item itemvalue="CMake Application.channel_mitigation_ts" />
-      <item itemvalue="CMake Application.wpa3_tester owe_trans_filler" />
-      <item itemvalue="CMake Application.wpa3_tester bl0ck_monitor_test" />
-      <item itemvalue="CMake Application.wpa3_tester CSA_external_client" />
-      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1" />
       <item itemvalue="CMake Application.asan" />
       <item itemvalue="CMake Application.leak-check" />
       <item itemvalue="CMake Application.manual_test_core" />
       <item itemvalue="CMake Application.nlohmann_json_schema_validator" />
-      <item itemvalue="CMake Application.parse" />
+      <item itemvalue="CMake Application.docs" />
       <item itemvalue="CMake Application.radiotap" />
       <item itemvalue="CMake Application.radiotap_check" />
-      <item itemvalue="CMake Application.radiotap_lib" />
       <item itemvalue="CMake Application.release" />
       <item itemvalue="CMake Application.remote_injector_aarch64" />
       <item itemvalue="CMake Application.remote_injector_all_arch" />
@@ -978,128 +1249,257 @@
       <item itemvalue="CMake Application.remote_injector_mipsel" />
       <item itemvalue="CMake Application.remote_injector_x86_64" />
       <item itemvalue="CMake Application.reproc" />
-      <item itemvalue="CMake Application.reproc++" />
-      <item itemvalue="CMake Application.result_overview raspberry" />
-      <item itemvalue="CMake Application.run_rogue_channel_tests" />
+      <item itemvalue="CMake Application.result_overview" />
+      <item itemvalue="CMake Application.rssi_wizard" />
+      <item itemvalue="CMake Application.run_create_simulation_tests" />
+      <item itemvalue="CMake Application.run_devices_tests" />
+      <item itemvalue="CMake Application.run_entry_parse_tests" />
+      <item itemvalue="CMake Application.run_html_guard_tests" />
+      <item itemvalue="CMake Application.run_injection_result_tests" />
+      <item itemvalue="CMake Application.run_internal_options_tests" />
+      <item itemvalue="CMake Application.run_interrupt_tests" />
+      <item itemvalue="CMake Application.run_netlink_guards_tests" />
+      <item itemvalue="CMake Application.run_openwrt_helper" />
+      <item itemvalue="CMake Application.run_report_guard_tests" />
+      <item itemvalue="CMake Application.run_run_status_no_module_tests" />
+      <item itemvalue="CMake Application.run_scan_active_tests" />
+      <item itemvalue="CMake Application.run_scan_channel_tests" />
+      <item itemvalue="CMake Application.run_scan_list_tests" />
+      <item itemvalue="CMake Application.run_scan_process_packet_tests" />
+      <item itemvalue="CMake Application.run_scan_solve_new_pdu_tests" />
+      <item itemvalue="CMake Application.run_wpa_overrides_tests" />
       <item itemvalue="CMake Application.test_config_validation" />
       <item itemvalue="CMake Application.test_helpers" />
+      <item itemvalue="CMake Application.test_html_utils" />
       <item itemvalue="CMake Application.test_list_external_entities" />
-      <item itemvalue="CMake Application.test_manual_channel_switch" />
       <item itemvalue="CMake Application.test_manual_get_commit_values" />
       <item itemvalue="CMake Application.test_manual_mc_mitm" />
-      <item itemvalue="CMake Application.tins" />
-      <item itemvalue="CMake Application.pugixml-static" />
-      <item itemvalue="CMake Application.uninstall" />
-      <item itemvalue="CMake Application.wpa3_components" />
-      <item itemvalue="CMake Application.wpa3_config" />
-      <item itemvalue="CMake Application.wpa3_dos_soft" />
-      <item itemvalue="CMake Application.wpa3_enterprise" />
-      <item itemvalue="CMake Application.wpa3_ex_program" />
-      <item itemvalue="CMake Application.wpa3_logger" />
-      <item itemvalue="CMake Application.wpa3_mc_mitm" />
-      <item itemvalue="CMake Application.wpa3_observer" />
-      <item itemvalue="CMake Application.wpa3_setup" />
-      <item itemvalue="CMake Application.wpa3_suite" />
-      <item itemvalue="CMake Application.wpa3_system" />
+      <item itemvalue="CMake Application.wpa3_attack_scanner" />
+      <item itemvalue="CMake Application.wpa3_downgrade" />
+      <item itemvalue="CMake Application.wpa3_scan" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_rogueAP_Dlink_filler" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_Dlink_suite" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_basic_ts" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_2_10_ocv_beacon_prot" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_2_10_simulation" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_Dlink_external_client" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_WPA2_internal_MFP" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_internal_MFP_req" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_internal" />
+      <item itemvalue="CMake Application.wpa3_tester downgrade_Dlink_wb_wpa3_disable" />
       <item itemvalue="CMake Application.wpa3_tester external_info" />
+      <item itemvalue="CMake Application.wpa3_tester injection_test_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester injection_test_example" />
+      <item itemvalue="CMake Application.wpa3_tester injection_test_example_req" />
       <item itemvalue="CMake Application.wpa3_tester injection_test_filler" />
-      <item itemvalue="CMake Application.wpa3_two_iface" />
+      <item itemvalue="CMake Application.wpa3_tester invalid_curve_ap_filler" />
+      <item itemvalue="CMake Application.wpa3_tester invalid_curve_attack_openssl-1_0_2f" />
+      <item itemvalue="CMake Application.wpa3_tester invalid_curve_filler" />
+      <item itemvalue="CMake Application.wpa3_tester m_eapol1__rogueAP_Dlink_filler" />
+      <item itemvalue="CMake Application.wpa3_tester m_eapol1_external_client" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_basic_suite" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_filler" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_patched_Dlink_filler" />
+      <item itemvalue="CMake Application.wpa3_tester mc_mitm_test_internal" />
+      <item itemvalue="CMake Application.wpa3_tester owe_trans_filler" />
+      <item itemvalue="CMake Application.wpa3_tester reflection_attack_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester reflection_attack_filler" />
       <item itemvalue="CMake Application.wpa3_wizard" />
-      <item itemvalue="CMake Application.yaml-cpp" />
+      <item itemvalue="CMake Application.wpa3_tester pmk_gobbler_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_rogueAP_internal_filler" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_monitor_test_5GHz" />
+      <item itemvalue="CMake Application.wpa3_tester iface_info" />
+      <item itemvalue="CMake Application.wpa3_tester dragondrain_Dlink only stats" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester Dlink_all" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_filler" />
+      <item itemvalue="CMake Application.wpa3_tester wpa3_trans_downgrade_filler" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_test" />
+      <item itemvalue="CMake Application.wpa3_tester ath_masker_test" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_BA_rogue_AP" />
+      <item itemvalue="CMake Application.wpa3_tester reflection_attack" />
+      <item itemvalue="CMake Application.wpa3_tester reflection_attack_sae" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_invalid_ch" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_ex" />
+      <item itemvalue="CMake Application.wpa3_tester CSA 2_10_5G" />
+      <item itemvalue="CMake Application.test_openwrt_hw_capabilities" />
+      <item itemvalue="CMake Application.wpa3_tester BA_mac_gen_ts" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_same_channel" />
+      <item itemvalue="CMake Application.wpa3_tester sae_commit_monitor_test" />
+      <item itemvalue="CMake Application.wpa3_tester ssid_confusion_test" />
+      <item itemvalue="CMake Application.channel_mitigation_ts" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck BAR" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_BA_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester ap_info" />
+      <item itemvalue="CMake Application.wpa3_attack_shared" />
+      <item itemvalue="CMake Application.wpa3_tester BAR_mac_gen_ts" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_external_client" />
+      <item itemvalue="CMake Application.wpa3_tester invalid_curve_attack" />
+      <item itemvalue="CMake Application.wpa3_tester BA_filler" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_monitor_test" />
+      <item itemvalue="CMake Application.wpa3_tester memory_omnivore" />
+      <item itemvalue="CMake Application.wpa3_tester stats dragondrain_internal" />
+      <item itemvalue="CMake Application.wpa3_tester malformed_eapol1_2_12_patched" />
+      <item itemvalue="CMake Application.wpa3_tester active_test_example_req" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck BA" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_same_channel" />
+      <item itemvalue="CMake Application.wpa3_tester generic_dos_attacks_suite" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_ex_filler" />
+      <item itemvalue="CMake Application.wpa3_tester channel_switch_rogueAP_internal_MFPr" />
+      <item itemvalue="CMake Application.wpa3_tester CSA_external_client_5GHz" />
+      <item itemvalue="CMake Application.wpa3_tester bl0ck BARS" />
+      <item itemvalue="CMake Application.wpa3_tester wpa3_trans_downgrade_filler_wpa3_disable" />
+      <item itemvalue="CMake Application.wpa3_tester_ts" />
+      <item itemvalue="CMake Application.hostapd_versions_ts" />
+      <item itemvalue="CMake Application.wpa3_tester dragondrain_Dlink" />
+      <item itemvalue="CMake Application.wpa3_tester sta_info" />
+      <item itemvalue="CMake Application.wpa3_tester mc_mitm_test" />
+      <item itemvalue="CMake Application.wpa3_tester cookie_guzzler" />
+      <item itemvalue="CMake Application.wpa3_tester iface_info_filler" />
+      <item itemvalue="CMake Application.wpa3_tester BARS_filler" />
+      <item itemvalue="CMake Application.wpa3_tester active_test_example" />
+      <item itemvalue="CMake Application.wpa3_tester BARS_mac_gen_ts" />
+      <item itemvalue="CMake Application.wpa3_tester BAR_filler" />
+      <item itemvalue="CMake Application.wpa3_tester mc_mitm_test_sim" />
+      <item itemvalue="CMake Application.wpa3_tester active_test_filler" />
+      <item itemvalue="CMake Application.wpa3_tester wpa3_downgrade_filler" />
+      <item itemvalue="CMake Debug.wpa3_tester" />
       <item itemvalue="CTest Application.All CTest" />
-      <item itemvalue="Doctest.patch_channel_raw - beacon frame" />
-      <item itemvalue="Doctest.run_callback_tests" />
-      <item itemvalue="Doctest.parse_eapol_from_pcap" />
-      <item itemvalue="Doctest.run_pdu_solve_tests" />
+      <item itemvalue="Custom Build Application.wpa3_pi_deploy" />
+      <item itemvalue="Doctest.run_netlink_guards_tests" />
+      <item itemvalue="Doctest.run_run_status_no_module_tests" />
+      <item itemvalue="Doctest.run_scan_channel_tests" />
+      <item itemvalue="Doctest.run_scan_list_tests" />
+      <item itemvalue="Doctest.run_scan_process_packet_tests" />
       <item itemvalue="Doctest.beacon_to_probe_resp" />
-      <item itemvalue="Doctest.hw_cap_tests" />
-      <item itemvalue="Doctest.iface up down" />
-      <item itemvalue="Doctest.Cross-namespace interface lifecycle" />
+      <item itemvalue="Doctest.parse_eapol_from_pcap" />
+      <item itemvalue="Doctest.patch_channel_raw - beacon frame" />
       <item itemvalue="Doctest.patch_channel_raw - probe response frame" />
-      <item itemvalue="Doctest.run_config_tests" />
-      <item itemvalue="Doctest.run_cleanup_tests" />
-      <item itemvalue="Doctest.run_bl0ck_tests" />
-      <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
       <item itemvalue="Doctest.run_ath9k_htc_tests" />
-      <item itemvalue="Doctest.run_create_simulation_tests" />
-      <item itemvalue="Doctest.run_devices_tests" />
-      <item itemvalue="Doctest.run_entry_parse_tests" />
       <item itemvalue="Doctest.run_error_message_tests" />
       <item itemvalue="Doctest.run_hostapd_tests" />
-      <item itemvalue="Doctest.run_html_guard_tests" />
       <item itemvalue="Doctest.run_hw_cap_tests" />
       <item itemvalue="Doctest.run_hw_info_is_hw_info_tests" />
       <item itemvalue="Doctest.run_hw_info_load_cache_tests" />
       <item itemvalue="Doctest.run_hwsim_tests" />
-      <item itemvalue="Doctest.run_injection_result_tests" />
-      <item itemvalue="Doctest.run_internal_options_tests" />
-      <item itemvalue="Doctest.run_interrupt_tests" />
       <item itemvalue="Doctest.run_ip_tests" />
       <item itemvalue="Doctest.run_logger_tests" />
       <item itemvalue="Doctest.run_logger_time_tests" />
       <item itemvalue="Doctest.run_monitor_socket_tests" />
-      <item itemvalue="Doctest.run_netlink_guards_tests" />
       <item itemvalue="Doctest.run_nl80211_cb_tests" />
       <item itemvalue="Doctest.run_observer_tests" />
-      <item itemvalue="Doctest.run_openwrt_helper" />
       <item itemvalue="Doctest.run_openwrt_hw_capabilities" />
       <item itemvalue="Doctest.run_parse_acm_response_tests" />
-      <item itemvalue="Doctest.run_real_channel_tests" />
-      <item itemvalue="Doctest.run_report_guard_tests" />
-      <item itemvalue="Doctest.run_report_tests" />
-      <item itemvalue="Doctest.run_iperf_tests" />
-      <item itemvalue="Doctest.run_result_helper_tests" />
-      <item itemvalue="Doctest.run_run_status_no_module_tests" />
       <item itemvalue="Doctest.run_runstatus_utils_tests" />
       <item itemvalue="Doctest.run_sae_helpers" />
-      <item itemvalue="Doctest.run_scan_active_tests" />
-      <item itemvalue="Doctest.run_scan_channel_tests" />
-      <item itemvalue="Doctest.run_scan_list_tests" />
-      <item itemvalue="Doctest.run_scan_process_packet_tests" />
-      <item itemvalue="Doctest.run_scan_solve_new_pdu_tests" />
       <item itemvalue="Doctest.run_scan_tests" />
       <item itemvalue="Doctest.run_sim_setup_tests" />
-      <item itemvalue="Doctest.run_system_tests" />
       <item itemvalue="Doctest.run_two_iface_cache_rw_tests" />
       <item itemvalue="Doctest.run_two_iface_validate_tests" />
       <item itemvalue="Doctest.run_utils_tests" />
-      <item itemvalue="Doctest.run_validation_tests" />
       <item itemvalue="Doctest.run_validator_tests" />
-      <item itemvalue="Doctest.run_wpa_overrides_tests" />
-      <item itemvalue="Doctest.test_html_utils" />
-      <item itemvalue="Doctest.test_info_openwrt" />
-      <item itemvalue="Doctest.handle_auth_from_client_real" />
-      <item itemvalue="Doctest.handle_eapol_real" />
-      <item itemvalue="Doctest.handle_from_ap_real" />
-      <item itemvalue="Doctest.handle_action_rogue" />
-      <item itemvalue="Doctest.handle_eapol_rogue" />
+      <item itemvalue="Doctest.hw_cap_tests" />
+      <item itemvalue="Doctest.Cross-namespace interface lifecycle" />
+      <item itemvalue="Doctest.run_bl0ck_tests" />
+      <item itemvalue="Doctest.run_callback_tests" />
+      <item itemvalue="Doctest.iface up down" />
+      <item itemvalue="Doctest.run_config_tests" />
+      <item itemvalue="Doctest.run_cleanup_tests" />
+      <item itemvalue="Doctest.run_pdu_solve_tests" />
+      <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
+      <item itemvalue="Doctest.entry parse - config_validation tests" />
+      <item itemvalue="Doctest.get_client_disconnected - non-WB client with pcap" />
+      <item itemvalue="Doctest.get_client_scanning - from attacker pcap" />
+      <item itemvalue="Makefile Target.tester_setup" />
+      <item itemvalue="Native Application.external list" />
       <item itemvalue="Native Application.get_commit_values" />
       <item itemvalue="Native Application.openwrt" />
-      <item itemvalue="Native Application.external list" />
       <item itemvalue="Remote Debug.raspberry" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Doctest.handle_from_ap_real" />
-        <item itemvalue="Doctest.handle_eapol_real" />
-        <item itemvalue="Doctest.handle_auth_from_client_real" />
-        <item itemvalue="Doctest.handle_action_rogue" />
-        <item itemvalue="Doctest.handle_eapol_rogue" />
+        <item itemvalue="CMake Debug.wpa3_tester" />
+        <item itemvalue="Makefile Target.tester_setup" />
+        <item itemvalue="Doctest.get_client_scanning - from attacker pcap" />
+        <item itemvalue="Doctest.get_client_disconnected - non-WB client with pcap" />
+        <item itemvalue="Doctest.entry parse - config_validation tests" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SelectedDebugProfileService">{
+  &quot;profileIdByStamp&quot;: [
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester injection_test_filler&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug-event-trace&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Debug.wpa3_tester&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug-event-trace&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;Remote Debug.raspberry&quot;
+      },
+      &quot;second&quot;: &quot;63f0d8d2-714c-4b70-ad93-4066291d0f14&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester channel_switch_test&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug-event-trace&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester CSA_external_client_filler&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug-event-trace&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;Custom Build Application.wpa3_pi_deploy&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    },
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester channel_switch_rogueAP_internal&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug-event-trace&quot;
+      },
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
+    }
+  ],
+  &quot;modificationCount&quot;: 130
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="" />
-      <created>1786433528159</created>
+      <changelist id="c95bbde1-677d-44e2-824d-673b73f033f5" name="Changes" comment="" />
+      <created>1765880609218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1786433528159</updated>
+      <updated>1765880609218</updated>
+      <workItem from="1781960206450" duration="62000" />
+      <workItem from="1781962834743" duration="261000" />
+      <workItem from="1781966407352" duration="147000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="dependencySupport" implementationName="file-handler:ansi-highlighter" />
+    <option featureType="com.intellij.fileTypeFactory" implementationName=".envrc" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="RECENT_FILTERS">
@@ -1107,6 +1507,11 @@
         <entry key="Branch">
           <value>
             <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="main" />
+                </option>
+              </RecentGroup>
               <RecentGroup>
                 <option name="FILTER_VALUES">
                   <option value="origin/main" />
@@ -1122,15 +1527,11 @@
         <entry key="MAIN">
           <value>
             <State>
-              <option name="FILTERS">
+              <option name="COLUMN_ID_WIDTH">
                 <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="dev" />
-                      </list>
-                    </value>
-                  </entry>
+                  <entry key="Table.Default.Author.ColumnIdWidth" value="139" />
+                  <entry key="Table.Default.Date.ColumnIdWidth" value="-1" />
+                  <entry key="Table.GitHub.CommitStatus.ColumnIdWidth" value="52" />
                 </map>
               </option>
             </State>
@@ -1140,52 +1541,219 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: beacon without vht attack working base (disconnect)" />
-    <MESSAGE value="fv: invaliad mac in empty mac &#10;+: ExpVhtTestEntry filers - rogueAP, 5GHz, 2_4GHz&#10;f: dmesg  log in vht beacon attack" />
-    <MESSAGE value="f; rogueAP in expected_vht_beacon" />
-    <MESSAGE value="+: expected_vht_beacon_ex_filler" />
-    <MESSAGE value="+: bl0ck_monitor_test improvements to test queue" />
-    <MESSAGE value="+: expected_vht_beacon_ex_Dlink" />
-    <MESSAGE value="+: dmesg wrapper on external actors" />
-    <MESSAGE value="+: simple wpa2 deauth" />
-    <MESSAGE value="r: sort of includes" />
-    <MESSAGE value="r: small canges" />
-    <MESSAGE value="r: small changes&#10;+: asciii check workflow" />
+    <option name="MARK_IGNORED_AS_EXCLUDED" value="true" />
+    <MESSAGE value="f: fix injection cache, part 1" />
+    <MESSAGE value="f: netns_change" />
+    <MESSAGE value="f: TYPO , same test name" />
+    <MESSAGE value="f: bl0ck timout micro to millli TYPO &#10;d+: stup issues" />
+    <MESSAGE value="ch: bl0ck iperf3" />
+    <MESSAGE value="+: ReflectionAttackTestEntry::collect_results" />
+    <MESSAGE value="r+: passed-&gt;connected, collect_results" />
+    <MESSAGE value="+: MalformedEapol1TestEntry::collect_result" />
+    <MESSAGE value="f: malformed sort" />
+    <MESSAGE value="f: up in sta_ap setup (before iperf)" />
+    <MESSAGE value="f: defined_by_actor_filler&#10;+: config CSA 5GHz" />
+    <MESSAGE value="+: gdbserver-start" />
+    <MESSAGE value="f: image &#10;+: ssh_first" />
+    <MESSAGE value="f: boostrap" />
+    <MESSAGE value="tch: small changes in tests" />
+    <MESSAGE value="tf: revert of optimization (debug test is ****, so ti will be slow and stable)" />
+    <MESSAGE value="+: ssid atack base&#10;f: channel changes in mc_mitm (not sure if correctly, maybe driver specific)" />
+    <MESSAGE value="+: ssid atatack / mc_mitm fillers" />
+    <MESSAGE value="c: change in run configs" />
+    <MESSAGE value="f: sniff small changes&#10;+: suppress warning in libtins" />
+    <MESSAGE value="+: CSA improvement in patch_ies" />
     <MESSAGE value="r: small changes" />
-    <MESSAGE value="r: clang-format" />
-    <MESSAGE value="r: clang-format for test" />
-    <MESSAGE value="ft: scan_ascii_issues" />
-    <MESSAGE value="f: include/link" />
-    <MESSAGE value="f: small fixes" />
-    <MESSAGE value="f: redundant clangd-format broke code with html macros" />
-    <MESSAGE value="r: small changes&#10;ft: other fixes in redundant broken format" />
-    <MESSAGE value="ch: change python script for check non ASCII to to grep   ls-files" />
-    <MESSAGE value="+: workflow format start only if test workflow pass" />
-    <MESSAGE value="f: only main push on test /config validation workflow" />
-    <MESSAGE value="+: wait_eapol bool" />
-    <MESSAGE value="+: PCAP oin internal iface_info" />
-    <MESSAGE value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
+    <MESSAGE value="r: small changes&#10;+: github add dirty to commit check" />
+    <MESSAGE value="r: remove useless &#9;cleanup_all_namespac in config_requirement" />
+    <MESSAGE value="r: enterprise" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: enterprise" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp</url>
-          <line>250</line>
-          <option name="timeStamp" value="38" />
+          <url>file://$PROJECT_DIR$/tests/system/test_process_manager.cpp</url>
+          <line>101</line>
+          <option name="timeStamp" value="251" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp</url>
-          <line>86</line>
-          <option name="timeStamp" value="119" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp</url>
+          <line>68</line>
+          <option name="timeStamp" value="511" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/observer/test_tshark.cpp</url>
+          <line>160</line>
+          <option name="timeStamp" value="534" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/ex_program/openwrt/test_openwrt_hw_capabilities.cpp</url>
+          <line>12</line>
+          <option name="timeStamp" value="536" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/ExternalConn.h</url>
+          <line>10</line>
+          <option name="timeStamp" value="751" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file:///usr/include/tins/dot11/dot11_probe.h</url>
+          <line>166</line>
+          <option name="timeStamp" value="885" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/attacks/DoS_hard/pmk_gobbler/test_parse_acm_response.cpp</url>
+          <line>14</line>
+          <option name="timeStamp" value="1002" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
+          <line>2</line>
+          <option name="timeStamp" value="1055" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/suite/test_entry_parse.cpp</url>
+          <line>135</line>
+          <option name="timeStamp" value="1072" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/scan/active/test_handle_beacon.cpp</url>
+          <line>24</line>
+          <option name="timeStamp" value="1134" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/suite/DoS_hard/sae_dos/sae_dos_entry.h</url>
+          <line>12</line>
+          <option name="timeStamp" value="1144" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>
+          <line>331</line>
+          <option name="timeStamp" value="1218" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>
+          <line>356</line>
+          <option name="timeStamp" value="1234" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>
+          <line>355</line>
+          <option name="timeStamp" value="1235" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>
+          <line>354</line>
+          <option name="timeStamp" value="1236" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp</url>
+          <line>2</line>
+          <option name="timeStamp" value="1237" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/wizard/rssi_condition.h</url>
+          <line>37</line>
+          <option name="timeStamp" value="1262" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
+          <line>276</line>
+          <option name="timeStamp" value="1263" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceActive.cpp</url>
+          <line>49</line>
+          <option name="timeStamp" value="1265" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
+          <line>277</line>
+          <option name="timeStamp" value="1271" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/wizard/rssi_condition.cpp</url>
+          <line>256</line>
+          <option name="timeStamp" value="1273" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/suite/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h</url>
+          <line>11</line>
+          <option name="timeStamp" value="1276" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/attacks/two_iface/TwoIface.h</url>
+          <line>24</line>
+          <option name="timeStamp" value="1280" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>79</line>
+          <option name="timeStamp" value="1283" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>157</line>
+          <option name="timeStamp" value="1291" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>159</line>
+          <option name="timeStamp" value="1292" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>145</line>
+          <option name="timeStamp" value="1293" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>156</line>
+          <option name="timeStamp" value="1297" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>120</line>
+          <option name="timeStamp" value="1298" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>121</line>
+          <option name="timeStamp" value="1299" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
+          <line>118</line>
+          <option name="timeStamp" value="1303" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
+          <line>252</line>
+          <option name="timeStamp" value="1314" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
+          <line>72</line>
+          <option name="timeStamp" value="1320" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/invalid_curve_dragonslayer.cpp</url>
+          <line>80</line>
+          <option name="timeStamp" value="1321" />
         </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="CidrExceptionBreakpoint">
+          <properties runConfigFilterEnabled="false">
+            <option name="whenThrown" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
     <watches-manager>
-      <configuration name="CLion_Remote">
-        <watch expression="cleanup_all_namespaces();&#10;&#9;reset_usb_ifaces();" language="C++" />
-        <watch expression="this-&gt;ap.ptr.get()-&gt;str_vals" />
+      <configuration name="CMakeDoctestTestRunConfigurationType">
+        <watch expression="buffer" />
       </configuration>
     </watches-manager>
   </component>

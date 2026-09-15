@@ -19,7 +19,9 @@ struct HtmlFixture {
 	}
 	string read_index() const {
 		ifstream f(dir / "index.html");
-		return { istreambuf_iterator(f), istreambuf_iterator<char>() };
+		string s{ istreambuf_iterator(f), istreambuf_iterator<char>() };
+		erase_if(s, [](char c){ return c == '\t' || c == '\n'; });
+		return s;
 	}
 	~HtmlFixture() { remove_all(dir); }
 };

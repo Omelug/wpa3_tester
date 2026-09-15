@@ -22,6 +22,7 @@
     <generated>
       <config projectName="wpa3_tester" targetName="test_html_utils" />
       <config projectName="wpa3_tester" targetName="run_sae_helpers" />
+      <config projectName="wpa3_tester" targetName="pugixml-static" />
       <config projectName="wpa3_tester" targetName="run_iperf_tests" />
       <config projectName="wpa3_tester" targetName="release" />
       <config projectName="wpa3_tester" targetName="leak-check" />
@@ -134,21 +135,32 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: wait_eapol bool">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: PCAP oin internal iface_info">
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/wpa3_tester_external_info.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/malformed_eapol1.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/owe_trans.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/owe_trans.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/enterprise/invalid_curve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/enterprise/invalid_curve.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/enterprise/reflection_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/enterprise/reflection_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/mc_mitm/ssid_confusion.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/mc_mitm/ssid_confusion.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/result_overview/src/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/devices.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/system/test_nl80211_cb.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/system/test_nl80211_cb.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_info.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/ip.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/ip.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/external_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/external_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/logger/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/logger/devices.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ip.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ip.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/nl80211_compat.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/nl80211_compat.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/target.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests_manual/attacks/manual_channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests_manual/attacks/manual_channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Dos_hard/sae_dos_entry.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Dos_hard/sae_dos_entry.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -304,7 +316,7 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="Remote Debug.raspberry">
+  <component name="RunManager" selected="CMake Application.result_overview">
     <configuration name="handle_action_rogue" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_rogue_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_rogue_channel_tests" TEST_CLASS="handle_action_rogue" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -648,6 +660,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="pugixml-static" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="pugixml-static" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="radiotap" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="radiotap" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -853,11 +870,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="wpa3_tester external_info" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test external_info" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="wpa3_tester injection_test_filler" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--test_suite injection_test_filler" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="wpa3_tester" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="wpa3_tester">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -996,6 +1008,7 @@
       <item itemvalue="CMake Application.test_manual_get_commit_values" />
       <item itemvalue="CMake Application.test_manual_mc_mitm" />
       <item itemvalue="CMake Application.tins" />
+      <item itemvalue="CMake Application.pugixml-static" />
       <item itemvalue="CMake Application.uninstall" />
       <item itemvalue="CMake Application.wpa3_components" />
       <item itemvalue="CMake Application.wpa3_config" />
@@ -1147,7 +1160,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: rogue NUllData frame to wakeup &#10;f: ProbeRequest pointer leak" />
     <MESSAGE value="+: vsc/workspace Clion" />
     <MESSAGE value="+: beacon without vht attack working base (disconnect)" />
     <MESSAGE value="fv: invaliad mac in empty mac &#10;+: ExpVhtTestEntry filers - rogueAP, 5GHz, 2_4GHz&#10;f: dmesg  log in vht beacon attack" />
@@ -1172,7 +1184,8 @@
     <MESSAGE value="+: workflow format start only if test workflow pass" />
     <MESSAGE value="f: only main push on test /config validation workflow" />
     <MESSAGE value="+: wait_eapol bool" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: wait_eapol bool" />
+    <MESSAGE value="+: PCAP oin internal iface_info" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: PCAP oin internal iface_info" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1193,14 +1206,9 @@
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp</url>
-          <line>79</line>
-          <option name="timeStamp" value="122" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp</url>
-          <line>78</line>
-          <option name="timeStamp" value="123" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
+          <line>442</line>
+          <option name="timeStamp" value="120" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

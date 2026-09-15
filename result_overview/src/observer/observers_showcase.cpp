@@ -129,7 +129,6 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     const path state_png      = page_dir / "state_log.png";
 
     HtmlGuard f(page_dir);
-    if (!f) return;
 
     f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -158,14 +157,14 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 
     auto render_graphs = [&](const vector<ShowcaseGraph> &graphs) {
         for (const auto &g : graphs) {
-            f << "        <h3>" << g.title << "</h3>\n";
+            f << "<h3>" << g.title << "</h3>";
             if (g.ok)
-                f << "        <img src=\"" << g.png << "\" alt=\"" << g.title << "\" style=\"max-width:100%\">\n";
+                f << "<img src=\"" << g.png << "\" alt=\"" << g.title << "\" style=\"max-width:100%\">";
             else
-                f << "        <p><em>Graph not available.</em></p>\n";
+                f << "<p><em>Graph not available.</em></p>";
         }
         if (graphs.empty())
-            f << "        <p><em>No CSV files found in test data.</em></p>\n";
+            f << "<p><em>No CSV files found in test data.</em></p>";
     };
 
     render_graphs(tshark_graphs);
@@ -185,9 +184,9 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 
 
     if (state_ok)
-        f << "        <img src=\"state_log.png\" alt=\"state log staircase\" style=\"max-width:100%\">\n";
+        f << "<img src=\"state_log.png\" alt=\"state log staircase\" style=\"max-width:100%\">";
     else
-        f << "        <p><em>Graph not available (gnuplot missing or state log not found).</em></p>\n";
+        f << "<p><em>Graph not available (gnuplot missing or state log not found).</em></p>";
 
     f << R"html(    </div>
 
@@ -210,9 +209,9 @@ void generate_observers_showcase(const path &output_dir, const path &) {
            The drop to zero marks when the BAR attack disrupted the Block ACK session.</p>
 )html";
     if(iperf_ok)
-        f << "        <img src=\"iperf.png\" alt=\"iperf throughput\" style=\"max-width:100%\">\n";
+        f << "<img src=\"iperf.png\" alt=\"iperf throughput\" style=\"max-width:100%\">";
     else
-        f << "        <p><em>Graph not available (gnuplot missing or iperf log not found).</em></p>\n";
+        f << "<p><em>Graph not available (gnuplot missing or iperf log not found).</em></p>";
     f << R"html(    </div>
 
 </body>

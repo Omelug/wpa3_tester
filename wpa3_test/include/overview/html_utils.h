@@ -118,7 +118,7 @@ private:
 		return prefixes;
 	}
 	void render_header(const std::vector<std::string> &prefixes) const {
-		hg_ << "            <thead><tr>";
+		hg_ << "<thead><tr>";
 		for(size_t i = 0; i < columns_.size(); ++i) {
 			const char *th_open = columns_[i].rotated ? "<th class=\"rotated\">" : "<th>";
 			if(!prefixes[i].empty()) {
@@ -127,14 +127,14 @@ private:
 				hg_ << th_open << columns_[i].header << "</th>";
 			}
 		}
-		hg_ << "</tr></thead>\n";
+		hg_ << "</tr></thead>";
 	}
 	void render_body(const std::vector<std::string> &prefixes) const {
-		hg_ << "            <tbody>\n";
+		hg_ << "<tbody>";
 		for(const auto &entry: entries_) {
-			hg_ << "                <tr>\n";
+			hg_ << "<tr>";
 			for(size_t i = 0; i < columns_.size(); ++i) {
-				hg_ << "                    <td>";
+				hg_ << "<td>";
 				std::string value = capture_evaluator_output(columns_[i], entry);
 				const std::string &prefix = prefixes[i];
 
@@ -143,11 +143,11 @@ private:
 				} else {
 					hg_ << value;
 				}
-				hg_ << "</td>\n";
+				hg_ << "</td>";
 			}
-			hg_ << "                </tr>\n";
+			hg_ << "</tr>";
 		}
-		hg_ << "            </tbody>\n";
+		hg_ << "</tbody>";
 	}
 public:
 	void not_data_msg(std::string msg) { not_data_msg_ = std::move(msg); }
@@ -155,14 +155,14 @@ public:
 	void render(
 			const std::vector<std::string> &prefix_columns = {}, const std::string &table_class = "aggregate") const {
 		if(entries_.empty()) {
-			if(!not_data_msg_.empty()) hg_ << "<p>" << not_data_msg_ << "</p>\n";
+			if(!not_data_msg_.empty()) hg_ << "<p>" << not_data_msg_ << "</p>";
 			return;
 		}
 		const std::vector<std::string> prefixes = prepare_prefixes(prefix_columns);
-		hg_ << "        <table class=\"" << table_class << "\">\n";
+		hg_ << "<table class=\"" << table_class << "\">";
 		render_header(prefixes);
 		render_body(prefixes);
-		hg_ << "        </table>\n";
+		hg_ << "</table>";
 		if(t_name_) hg_ << "<small>data from " << *t_name_ << "</small>";
 	}
 

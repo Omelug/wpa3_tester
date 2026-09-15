@@ -13,7 +13,7 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
     create_public_dirs(page_dir);
 
     HtmlGuard f(page_dir);
-    if (!f) return;
+
 
     f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -55,7 +55,7 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
     emit_table("WPA2 deauth filler (2.9, 2.10)",
         base / "deauth_filler", "deauth_filler");
 
-    f << "</body>\n</html>\n";
+    f << "</body></html>";
 }
 
 }

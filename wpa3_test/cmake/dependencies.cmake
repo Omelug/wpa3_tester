@@ -39,6 +39,7 @@ target_include_directories(wpa3_deps INTERFACE
         ${radiotap_SOURCE_DIR}
         ${WIFI_HEADERS_DIR}
         $<IF:$<BOOL:${SYSTEM_BOOST_PFR_INCLUDE}>,${SYSTEM_BOOST_PFR_INCLUDE},${boost_pfr_SOURCE_DIR}/include>
+        ${pugixml_SOURCE_DIR}/src
 )
 
 target_link_libraries(wpa3_deps INTERFACE
@@ -53,6 +54,7 @@ target_link_libraries(wpa3_deps INTERFACE
         ${LIBNL_LIBRARIES}
         ${LIBSSH_LIBRARIES}
         OpenSSL::SSL OpenSSL::Crypto
+        pugixml::pugixml
 )
 
 if (NOT DEFINED WPA3_PROJECT_ROOT)

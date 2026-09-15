@@ -14,7 +14,6 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
     create_public_dirs(page_dir);
 
     HtmlGuard f(page_dir);
-    if (!f) return;
 
     f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -63,7 +62,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 										 "ssid_confusion_filler",
 									 page_dir,  "ssid_confusion_filler");
 
-    f << "</body>\n</html>\n";
+    f << "</body></html>";
 }
 
 }

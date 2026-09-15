@@ -12,7 +12,7 @@ using namespace wpa3_tester;
 int main(const int argc, char *argv[]) {
 	if(argc != 9) {
 		cout << "Usage: " << argv[0]
-			 << " <ap_mac> <sta_mac> <iface_name> <ssid> <ap_channel> <new_channel> <ms_interval> <attack_time>"
+			 << "<ap_mac> <sta_mac> <iface_name> <ssid> <ap_channel> <new_channel> <ms_interval> <attack_time>"
 			 << endl;
 		cout << "Example: " << argv[0] << " 00:11:22:33:44:55 aa:bb:cc:dd:ee:ff wlan0 test ssid 6 11 100 10" << endl;
 		return 1;

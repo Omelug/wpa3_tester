@@ -13,7 +13,6 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if (!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -52,7 +51,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_filler", "malformed_eapol1_filler");
 
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

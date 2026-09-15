@@ -16,7 +16,6 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if (!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -54,7 +53,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 
 	emit_table("Test Results",  suite_dir, "owe_trans_filler");
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

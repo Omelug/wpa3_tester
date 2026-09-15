@@ -4,8 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+:overview only genereta what was changed
-+: vytvořit fork liibtins a naházet tam pull requesty pro EAP (aspoň pro )
++: overview only genereta what was changed
++: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
 bl0ck - logy z OpenWrt (co nejvíce)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +?: add empty attack for tests

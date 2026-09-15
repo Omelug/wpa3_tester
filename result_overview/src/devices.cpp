@@ -139,41 +139,41 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	const path page_dir = devices_dir / mac_slug(d.mac);
 	create_public_dirs(page_dir);
 	HtmlGuard f(page_dir);
-	if(!f) return;
 
 	const string title  = d.name.empty() ? d.mac : d.name;
 	const string vendor = lookup_vendor(manuf_file, d.mac);
 	auto tr = [&](string_view key, const auto &val){
-		f << "            <tr><th>" << key << "</th><td>" << val << "</td></tr>\n";
+		f << "<tr><th>" << key << "</th><td>" << val << "</td></tr>";
 	};
 
-	f << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n"
-	  << "    <meta charset=\"UTF-8\">\n"
-	  << "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-	  << "    <title>Device: " << title << "</title>\n"
-	  << "    <link rel=\"stylesheet\" href=\"../../style.css\">\n"
-	  << "    <script src=\"../../table_aggregate.js\"></script>\n"
-	  << "</head>\n<body>\n"
-	  << "    <a href=\"../index.html\" class=\"back-link\">\xe2\x86\x90 Devices</a>\n"
-	  << "    <h1>" << title << "</h1>\n"
-	  << "    <div class=\"card\">\n        <h2>Identity</h2>\n        <table>\n";
+	f << "<!DOCTYPE html><html lang=\"en\"><head>\n"
+	  << "<meta charset=\"UTF-8\">"
+	  << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+	  << "<title>Device: " << title << "</title>\n"
+	  << "<link rel=\"stylesheet\" href=\"../../style.css\">"
+	  << "<script src=\"../../table_aggregate.js\"></script>\n"
+	  << "</head><body>\n"
+	  << "<a href=\"../index.html\" class=\"back-link\">\xe2\x86\x90 Devices</a>\n"
+	  << "<h1>" << title << "</h1>\n"
+	  << "<div class=\"card\">\n        <h2>Identity</h2>\n        <table>";
 	tr("Permanent MAC", d.mac);
 	tr("Source",        d.source);
 	tr("Driver",        d.driver);
 	if(!vendor.empty())         tr("Vendor (from wireshark manuf database)",      vendor);
 	if(!d.driver_hash.empty()) tr("Driver hash", d.driver_hash);
 	if(!d.module_hash.empty()) tr("Module hash", d.module_hash);
-	f << "        </table>\n    </div>\n"
-	  << "    <div class=\"card\">\n        <h2>Capabilities</h2>\n        <table>\n"
-	  << "            <tr><th>Mode</th><td>"
-	     << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
+	f << "</table></div>";
+
+	f  << "<div class=\"card\"><h2>Capabilities</h2><table>"
+		<< "<tr><th>Mode</th><td>"
+	    << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
 	     << "</td></tr>\n"
-	  << "            <tr><th>Bands</th><td>"
+	  << "<tr><th>Bands</th><td>"
 	     << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
 	     << "</td></tr>\n"
-	  << "            <tr><th>Standards</th><td>"
+	  << "<tr><th>Standards</th><td>"
 	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
-	     << "</td></tr>\n";
+	     << "</td></tr>";
 	tr("Beacon protection", d.caps.beacon_prot);
 	tr("PBAC (protected block ack agreement capable)", d.caps.PBAC);
 	tr("CSA",              d.caps.CSA);
@@ -181,11 +181,11 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	tr("MFP",              d.caps.MFP);
 	tr("WPA-PSK",          d.caps.WPA_PSK);
 	tr("WPA3-SAE",         d.caps.WPA3_SAE);
-	f << "        </table>\n    </div>\n";
+	f << "</table>\n    </div>";
 
 	if(d.iface){
 		const auto &iface = *d.iface;
-		f << "    <div class=\"card\">\n        <h2>System Snapshot</h2>\n        <table>\n";
+		f << "<div class=\"card\">\n        <h2>System Snapshot</h2>\n        <table>";
 		if(!iface.phy.empty())                              tr("PHY", iface.phy);
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
 		if(iface.channel_switch_ok.has_value()){
@@ -199,10 +199,10 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 				val += " &nbsp; return: " + to_string(iface.netns_return_ms.value()) + " ms";
 			tr("NetNS move", val);
 		}
-		f << "        </table>\n";
+		f << "</table>";
 		if(!iface.iw_info.empty()){
-			f << "        <h3><code>iw dev info</code></h3>\n"
-			  << "        <pre>" << iface.iw_info << "</pre>\n";
+			f << "<h3><code>iw dev info</code></h3>\n"
+			  << "<pre>" << iface.iw_info << "</pre>";
 		}
 		if(!iface.driver_specific.is_null() && !iface.driver_specific.empty()){
 			auto ds = iface.driver_specific.dump(2);
@@ -213,13 +213,13 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 			unescape("\\n", "\n");
 			unescape("\\t", "\t");
 			unescape("\\r", "");
-			f << "        <h3>Driver Diagnostics</h3>\n"
-			  << "        <pre>" << ds << "</pre>\n";
+			f << "<h3>Driver Diagnostics</h3>\n"
+			  << "<pre>" << ds << "</pre>";
 		}
-		f << "    </div>\n";
+		f << "</div>";
 	}
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source, const string &t_name){
@@ -227,7 +227,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 	ranges::copy_if(devices, back_inserter(rows), [&](const auto &d){ return d.source == source; });
 
 	if(rows.empty()){
-		f << "        <p>No " << source << " devices recorded. Run " << t_name << "</p>\n";
+		f << "<p>No " << source << " devices recorded. Run " << t_name << "</p>";
 		return;
 	}
 
@@ -287,7 +287,6 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
 
 	HtmlGuard f(devices_dir);
-	if(!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -309,12 +308,12 @@ void generate_devices(const path &output_dir, const path &data_dir){
 		{"Simulation", "simulation", "TODO-simulation test"},
 	}};
 	for(const auto &[label, src, t_name] : sections){
-		f << "    <div class=\"card\">\n        <h2>" << label << "</h2>\n";
+		f << "<div class=\"card\"> <h2>" << label << "</h2>";
 		emit_section(f, devices, string(src), string(t_name));
-		f << "    </div>\n";
+		f << "</div>";
 	}
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

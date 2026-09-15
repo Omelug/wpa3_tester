@@ -14,7 +14,6 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if (!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -53,7 +52,7 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 
 	emit_table("Test Results",  suite_dir,  "reflection_attack_filler");
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

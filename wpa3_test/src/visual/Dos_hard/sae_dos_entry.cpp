@@ -54,8 +54,7 @@ void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &modul
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { body; })
 				t.build([&](auto col) {
 					 COL("Test", hg << overview::test_name_cell(e.test_folder, e.name, page_dir));
-					 COL(
-							 "AP Resources",
+					 COL("AP Resources",
 							 if(!e.ap_res_png.empty()) {
 								 hg << R"(<img src=")" << filesystem::relative(e.ap_res_png, page_dir).string()
 									<< R"(" style="max-height:160px;">)";

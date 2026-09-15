@@ -15,7 +15,6 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if(!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -61,7 +60,7 @@ Not very supported, mobile devices have better support (//TODO add source)</p>
 	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler", "CSA_rogueAP_Dlink_filler");
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 
 }
 }

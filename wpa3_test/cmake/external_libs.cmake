@@ -159,6 +159,12 @@ FetchContent_Declare(yaml-cpp
         PATCH_COMMAND sed -i "/#include <algorithm>/a #include <cstdint>" src/emitterutils.cpp
 )
 
+FetchContent_Declare(pugixml
+        GIT_REPOSITORY https://github.com/zeux/pugixml.git
+        GIT_TAG v1.14
+        GIT_SHALLOW TRUE
+)
+
 # Debian multiarch: arch-specific generated headers (e.g. openssl/opensslconf.h) live in
 # usr/include/<arch>/.  The NixOS cross-gcc doesn't add this automatically unlike Debian's
 # aarch64-linux-gnu-g++.  Set it here, before FetchContent_MakeAvailable, so FetchContent
@@ -168,7 +174,7 @@ if (CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
 endif ()
 
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
-        json_schema_validator linux_headers_wifi radiotap boost_pfr)
+        json_schema_validator linux_headers_wifi radiotap boost_pfr pugixml)
 
 if (CMAKE_CROSSCOMPILING AND TARGET radiotap_check)
     set_target_properties(radiotap_check PROPERTIES EXCLUDE_FROM_ALL TRUE)

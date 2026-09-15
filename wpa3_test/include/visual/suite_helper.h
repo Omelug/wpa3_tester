@@ -66,8 +66,8 @@ concept HasCollectResults = requires(const std::filesystem::path &p) {
 template<typename Entry>
 void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &t_data_dir,
 		const std::function<void(overview::HtmlGuard &, const std::vector<Entry> &)> &render_func) {
-	f << "    <div class=\"card\" style=\"overflow-x: auto;\">\n"
-	  << "        <h2>" << title << "</h2>\n";
+	f << "<div class=\"card\" style=\"overflow-x: auto;\">"
+	  << "<h2>" << title << "</h2>";
 
 	if(!std::filesystem::exists(t_data_dir)) {
 		render_func(f, {});

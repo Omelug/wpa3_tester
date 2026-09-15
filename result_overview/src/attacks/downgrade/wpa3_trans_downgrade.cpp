@@ -16,7 +16,6 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if (!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -56,7 +55,7 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	emit_table("Internal filler", downgrade_dir / "wpa3_down" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 	emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

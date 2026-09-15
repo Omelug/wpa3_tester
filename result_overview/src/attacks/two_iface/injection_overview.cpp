@@ -67,7 +67,6 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     create_public_dirs(page_dir);
 
     HtmlGuard f(page_dir);
-    if(!f) return;
 
     f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -107,7 +106,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
         table.render();
     }
 
-    f << string("    </div>\n</body>\n</html>\n");
+    f << "</div></body></html>";
 }
 
 }

@@ -78,7 +78,7 @@ static void render_attack_section(HtmlGuard &f, const std::string &module, const
 	if(const auto it = registry.find(module); it != registry.end()) {
 		it->second(f, attack_name, suite_data_dir / attack_name, page_dir, module);
 	} else {
-		f << "        <p>No parser for <code>" << module << "</code>.</p>\n";
+		f << "<p>No parser for <code>" << module << "</code>.</p>";
 	}
 }
 
@@ -87,7 +87,6 @@ static void generate_target_page(const path &output_dir, const string &target_na
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if(!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -107,8 +106,8 @@ static void generate_target_page(const path &output_dir, const string &target_na
 
 	const path suites_dir = target_data_dir / "suite";
 	if(!is_directory(suites_dir)) {
-		f << "    <div class=\"card\"><p>No suites found.</p></div>\n"
-		  << "</body>\n</html>\n";
+		f << "<div class=\"card\"><p>No suites found.</p></div>\n"
+		  << "</body></html>";
 		return;
 	}
 
@@ -120,9 +119,9 @@ static void generate_target_page(const path &output_dir, const string &target_na
 		if(test_suites_folders.empty()) continue;
 		any = true;
 
-		f << "    <div class=\"card\">\n"
-		  << "        <h2>Suite: " << suite_name << "</h2>\n"
-		  << "    </div>\n";
+		f << "<div class=\"card\">"
+		  << "<h2>Suite: " << suite_name << "</h2>\n"
+		  << "</div>";
 
 		for(const auto &tf: test_suites_folders) {
 			const auto mod = read_attacker_module(tf);
@@ -132,8 +131,8 @@ static void generate_target_page(const path &output_dir, const string &target_na
 		}
 	}
 
-	if(!any) f << "    <div class=\"card\"><p>No test results found.</p></div>\n";
-	f << "</body>\n</html>\n";
+	if(!any) f << "<div class=\"card\"><p>No test results found.</p></div>";
+	f << "</body></html>";
 }
 
 static void generate_target_index(const path &output_dir, const vector<string> &targets) {
@@ -141,7 +140,6 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 	create_public_dirs(idx_dir);
 
 	HtmlGuard f(idx_dir);
-	if(!f) return;
 
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -157,8 +155,8 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 	<div class="card">
 		<ul>
 )html";
-	for(const auto &t: targets) f << "            <li><a href=\"" << t << "/index.html\">" << t << "</a></li>\n";
-	f << "        </ul>\n    </div>\n</body>\n</html>\n";
+	for(const auto &t: targets) f << "<li><a href=\"" << t << "/index.html\">" << t << "</a></li>";
+	f << "</ul>\n    </div></body></html>";
 }
 
 void generate_targets(const path &output_dir, const path &data_dir) {

@@ -7,6 +7,8 @@
 #include "default.h"
 #include "overview/described.h"
 #include "system/utils.h"
+#include <pugixml.hpp>
+#include <utility>
 
 inline std::ostream &operator<<(std::ostream &os, const std::optional<bool> val) {
 	return os << (val ? (*val ? "yes" : "no") : "N/A");
@@ -14,19 +16,30 @@ inline std::ostream &operator<<(std::ostream &os, const std::optional<bool> val)
 
 namespace wpa3_tester::overview {
 
-// RAII guard: opens index.html in page_dir, exposes operator<<, closes on destruction.
+inline std::string format_html(const std::string &html) {
+	pugi::xml_document doc;
+	if(!doc.load_string(html.c_str())) return html;
+	struct str_writer : pugi::xml_writer {
+		std::string out;
+		void write(const void *data, size_t size) override {
+			out.append(static_cast<const char *>(data), size);
+		}
+	} w;
+	doc.save(w, "\t", pugi::format_indent | pugi::format_no_declaration);
+	return w.out;
+}
+
+// RAII guard: buffers index.html writes, formats on destruction
 struct HtmlGuard {
-	explicit HtmlGuard(const std::filesystem::path &page_dir):
-		stream_(page_dir / "index.html"),
-		page_dir_(page_dir) {}
+	explicit HtmlGuard(std::filesystem::path page_dir): page_dir_(std::move(page_dir)) {}
 	~HtmlGuard() {
-		stream_.close();
+		std::ofstream file(page_dir_ / "index.html");
+		file << format_html(stream_.str());
+		file.close();
 		set_public_perms(page_dir_ / "index.html");
 	}
 	HtmlGuard(const HtmlGuard &) = delete;
 	HtmlGuard &operator=(const HtmlGuard &) = delete;
-
-	explicit operator bool() const { return stream_.is_open(); }
 
 	HtmlGuard &operator<<(const std::filesystem::path &p) {
 		const auto rel = p.is_absolute() ? p.lexically_relative(page_dir_) : p;
@@ -43,10 +56,11 @@ struct HtmlGuard {
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::pair<std::optional<bool>, std::string> &val) {
-		if(!val.first.has_value())
+		if(!val.first.has_value()) {
 			stream_ << '?';
-		else
+		} else {
 			stream_ << (*val.first ? "yes" : "no");
+		}
 		if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		return *this;
 	}
@@ -55,16 +69,13 @@ struct HtmlGuard {
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::string &val) {
-		if(val.empty())
-			stream_ << '?';
-		else
-			stream_ << val;
+		stream_ << (val.empty() ? "?" : val);
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::pair<std::string, std::string> &val) {
-		if(val.first.empty())
+		if(val.first.empty()) {
 			stream_ << '?';
-		else {
+		} else {
 			stream_ << val.first;
 			if(!val.second.empty()) stream_ << " (" << val.second << ')';
 		}
@@ -129,7 +140,7 @@ struct HtmlGuard {
 		return *this;
 	}
 
-	std::ofstream stream_;
+	std::ostringstream stream_;
 private:
 	std::filesystem::path page_dir_;
 };

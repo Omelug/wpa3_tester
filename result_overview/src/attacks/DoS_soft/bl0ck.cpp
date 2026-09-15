@@ -16,7 +16,6 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
-	if(!f) return;
 //FIXME have be attacker physically between or for vulnerable results need be faster just one packet?
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -65,8 +64,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 		emit_table(filler, bl0ck_base / "suite" / filler, filler);
 	}
 	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite", "bl0ck_Dlink_suite");
-
-	f << "</body>\n</html>\n";
+	f << "</body></html>";
 }
 
 }

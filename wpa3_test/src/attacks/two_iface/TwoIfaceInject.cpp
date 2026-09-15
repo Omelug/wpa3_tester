@@ -29,16 +29,14 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 		{ "delete_old", true },
 		{ "rewrite", "all" },
 		{ "actors",
-				{
-						{ "transceiver",
-								{ { "source", "internal" }, { "selection", make_selection(t) }, { "netns", "tx" } } },
-						{ "receiver",
-								{
-										{ "source", "internal" },
-										{ "selection", sel_rx },
-										{ "sniff_iface", "true" },
-								} },
-				} },
+			{
+				{ "transceiver",
+					{ { "source", "internal" }, { "selection", make_selection(t) }, { "netns", "tx" } } },
+				{ "receiver",
+					{ { "source", "internal" }, { "selection", sel_rx }/*, { "<sniff_iface", "true" },*/ }
+				},
+			}
+		}
 	};
 
 	const path config_dir = cache_folder() / "config";

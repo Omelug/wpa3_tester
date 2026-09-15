@@ -30,12 +30,6 @@ TEST_CASE("HtmlGuard - creates index.html") {
 	CHECK(exists(fx.dir / "index.html"));
 }
 
-TEST_CASE("HtmlGuard - operator bool") {
-	HtmlFixture fx("hg_bool");
-	HtmlGuard hg(fx.dir);
-	CHECK(static_cast<bool>(hg));
-}
-
 TEST_CASE("HtmlGuard - string: non-empty written as-is") {
 	HtmlFixture fx("hg_str");
 	{

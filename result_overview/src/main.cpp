@@ -76,7 +76,7 @@ static string html_page() {
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<h1>WPA3 Tester - Results Overview</h1>
+	<h1>WPA3 Tester - Results Overview </h1>
 
 	<div class="card">
 		<h2>Attack Categories</h2>

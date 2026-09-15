@@ -4,6 +4,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
+#include "system/netlink_helper.h"
 
 namespace wpa3_tester {
 using string = std::string;
@@ -61,6 +62,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 							BK::w80211ax,
 							BK::netns_change,
 							BK::beacon_prot,
+						    BK::PBAC,
 							BK::CSA,
 							BK::OCV,
 							BK::MFP,
@@ -105,10 +107,10 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	// Set sniff_iface key early so monitor check below knows a VIF will handle capturing
 	if(actor_json.contains("sniff_iface")) set(BK::sniff_iface, actor_json.at("sniff_iface").get<bool>());
 
-	if(monitor_needed() &&
-			(!(*this)[BK::sniff_iface].has_value() ||
-					((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value())))
-		set_monitor_mode();
+	const bool no_sniff_iface = (!(*this)[BK::sniff_iface].has_value() ||
+			((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value()));
+	const auto base_mon_iface = monitor_needed() && no_sniff_iface;
+	if(base_mon_iface) set_monitor_mode();
 	if(get_or(BK::injection_selftest, false)) {
 		const ActorPtr self(shared_from_this());
 		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
@@ -120,14 +122,15 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	set_iface_up();
 
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)
-	if(channel_num != 0 && monitor_needed()) {
-		//set_iface_down();
+	if(channel_num != 0 && base_mon_iface) { //TODO  channel switch work only on up moniotr ?
 		set_channel(Channel{ channel_num, get_channel().band, (*this)[SK::ht_mode] });
 	}
 
 	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();
 		up_sniff_iface();
+		if(channel_num != 0)
+			hw_capabilities::set_channel(get_mon_iface(), get_channel(), (*this)[SK::netns]);
 	}
 	set_iface_up();
 }

@@ -44,7 +44,7 @@ TEST_CASE("nl80211_cb - empty message leaves all caps false") {
 	CHECK_FALSE(caps.wpa2_psk);
 	CHECK_FALSE(caps.wpa3_sae);
 	CHECK_FALSE(caps.beacon_prot);
-	CHECK_FALSE(caps.);
+	CHECK_FALSE(caps.pbac);
 	CHECK_FALSE(caps.ocv);
 	CHECK_EQ(caps.no_ir_24ghz, 0);
 	CHECK_EQ(caps.no_ir_5ghz, 0);

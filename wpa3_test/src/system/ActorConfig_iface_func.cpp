@@ -66,6 +66,7 @@ void Actor_config::create_sniff_iface() const{
 	const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"), filesystem::directory_iterator{});
 	log(LogLevel::DEBUG, "Current open FDs: {} {} {}", fd_count, iface, sniff_iface.c_str());
 
+	// add VIF
 	run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
 
 	vector<string> flags_cmd = {"iw", "dev", sniff_iface, "set", "monitor", "fcsfail", "otherbss"};

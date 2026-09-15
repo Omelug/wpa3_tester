@@ -69,7 +69,7 @@ void check_PBAC(nlattr **attrs, NlCaps *caps){
 	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
 	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
 	constexpr int feature = NL80211_EXT_FEATURE_PROTECTED_TWT;
-	if(feature / 8 < len) caps->pcap = (ext[feature / 8] >> (feature % 8)) & 1;
+	if(feature / 8 < len) caps->pbac = (ext[feature / 8] >> (feature % 8)) & 1;
 }
 
 void check_OCV(nlattr **attrs, NlCaps *caps){
@@ -236,7 +236,7 @@ void apply_nl_caps(const ActorPtr &cfg, const NlCaps &caps){
 
 	cfg->set(BK::netns_change, caps.netns_change);
 	cfg->set(BK::beacon_prot, caps.beacon_prot);
-	cfg->set(BK::PBAC, caps.pcap);
+	cfg->set(BK::PBAC, caps.pbac);
 	cfg->set(BK::CSA, caps.csa);
 	cfg->set(BK::OCV, caps.ocv);
 	cfg->set(BK::MFP, caps.mfp);

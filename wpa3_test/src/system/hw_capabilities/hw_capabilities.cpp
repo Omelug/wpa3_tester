@@ -35,7 +35,7 @@ string hw_capabilities::read_sysfs(const string &iface, const string &file){
 }
 
 string hw_capabilities::get_driver_name(const string &iface, const optional<string> &netns){
-	//need new proces for netns change (read_sys dont reflect it)
+	//need new process for netns change (read_sys dont reflect it)
 	string target = run_cmd_output({"readlink", "/sys/class/net/" + iface + "/device/driver"}, netns);
 	while(!target.empty() && (target.back() == '\n' || target.back() == '\r')) target.pop_back();
 	if(target.empty()) throw config_err("get_driver_name: no driver symlink for " + iface);
@@ -250,7 +250,7 @@ void hw_capabilities::set_channel(const string &iface, const Channel &ch, const 
 	// monitor-mode channel changes require the vif to already be up (cfg80211 needs a running
 	// monitor iface to apply the channel immediately) - callers bring the iface up beforehand.
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
-		throw run_err("Failed to set '" + iface + "' to channel " + to_string(ch.ch_num) + ": " + res.message());
+		throw run_err("Failed to set '{}' to channel {}:{}", iface, to_string(ch.ch_num), res.message());
 }
 
 string get_iface_type(const string &iface, const optional<string> &netns){
@@ -262,23 +262,6 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 		throw run_err("Could not determine interface type for: " + iface);
 
 	return match[1].str();
-}
-
-bool hw_capabilities::set_monitor_active(const string &iface, const optional<string> &netns, const Channel &ch){
-	set_iface_down(iface, netns);
-
-	if(run_cmd({"iw", "dev", iface, "set", "monitor", "active"}) != 0){
-		log(LogLevel::WARNING, "Interface {} failed to enter monitor mode", iface);
-		return false;
-	}
-	set_iface_up(iface, netns);
-	if(ch.ch_num > 0){
-		if(run_cmd({"iw", "dev", iface, "set", "channel", to_string(ch.ch_num)}) != 0){
-			log(LogLevel::WARNING, "Failed to set channel {} on {}", ch.ch_num, iface);
-			return false;
-		}
-	}
-	return true;
 }
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){

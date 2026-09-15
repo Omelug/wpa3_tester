@@ -4,6 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+r?: reset usb only if not founf first internal?
+t: add to iface_info create_sniff_iface and start_ap
+f: rapsberry debugging vypisuje - cyklís  Cleanup namespace (ale přitom vypadá, že namespace nezabíjí? )
 +: overview only genereta what was changed
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
 +: Share Debug profile

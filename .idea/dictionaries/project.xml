@@ -164,6 +164,7 @@
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>ninline</w>
+      <w>nmcli</w>
       <w>nmconnection</w>
       <w>nmethod</w>
       <w>noborder</w>
@@ -205,6 +206,7 @@
       <w>ppid</w>
       <w>pred</w>
       <w>prevtime</w>
+      <w>proces</w>
       <w>promisc</w>
       <w>psk</w>
       <w>radiotap</w>

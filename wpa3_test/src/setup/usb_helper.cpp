@@ -74,7 +74,8 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 		auto read_line = [](const path &p) { ifstream f(p); string s; if(f) getline(f, s); return s; };
 		result.push_back({ dev_path, name, driver_name,
 			read_line(dev_path / "idVendor"),
-			read_line(dev_path / "idProduct") });
+			read_line(dev_path / "idProduct")
+		});
 	}
 	return result;
 }
@@ -89,7 +90,7 @@ void reset_usb_ifaces() {
 	// from firing after USB disconnect but before driver cleanup.
 	auto wifi_ifaces = collect_all_usb_devices();
 
-	const auto &cfg = get_global_config();
+	auto &cfg = get_global_config();
 	if(cfg.contains("only_list_reset")) {
 		const auto raw = cfg.at("only_list_reset").get<vector<string>>();
 		if(!raw.empty()) {
@@ -127,48 +128,57 @@ void reset_usb_ifaces() {
 		log(LogLevel::WARNING, "reset_usb_ifaces: no switchable hubs found - reset drivers without power cycle");
 		usb_bus_reset(wifi_ifaces);
 		hw_capabilities::run_cmd({ "udevadm", "settle", "--timeout=10" }, nullopt, false);
-		for(const auto &drv: drivers) hw_capabilities::run_cmd({ "modprobe", drv }, nullopt, false);
-		hw_capabilities::run_cmd({ "udevadm", "settle", "--timeout=10" }, nullopt, false);
-		return;
-	}
+	} else {
 
-	// USB bus reset for devices not on any switchable hub (won't get power cycled)
-	vector<UsbResetInfo> non_hub;
-	for(const auto &dev: wifi_ifaces) {
-		bool covered = ranges::any_of(hubs, [&](const string &loc) {
-			return dev.iface_id.rfind(loc + ".", 0) == 0;
-		});
-		if(!covered) non_hub.push_back(dev);
-	}
-	if(!non_hub.empty()) usb_bus_reset(non_hub);
+		// USB bus reset for devices not on any switchable hub (won't get power cycled)
+		vector<UsbResetInfo> non_hub;
+		for(const auto &dev: wifi_ifaces) {
+			bool covered = ranges::any_of(hubs, [&](const string &loc) {
+				return dev.iface_id.rfind(loc + ".", 0) == 0;
+			});
+			if(!covered) non_hub.push_back(dev);
+		}
+		if(!non_hub.empty()) usb_bus_reset(non_hub);
 
-	// split off/on into two invocations - uhubctl -a cycle hangs on power-on
-	// because the libusb handle opened before the delay goes stale.
-	for(const auto &loc: hubs) {
-		hw_capabilities::run_cmd({ "uhubctl", "-l", loc, "-a", "off" }, nullopt, false);
-		log(LogLevel::INFO, "reset_usb_ifaces: powered off hub {}", loc);
-	}
-	this_thread::sleep_for(chrono::seconds(3));
-	for(const auto &loc: hubs) {
-		hw_capabilities::run_cmd({ "uhubctl", "-l", loc, "-a", "on" }, nullopt, false);
-		log(LogLevel::INFO, "reset_usb_ifaces: powered on hub {}", loc);
+		// split off/on into two invocations - uhubctl -a cycle hangs on power-on
+		// because the libusb handle opened before the delay goes stale.
+		for(const auto &loc: hubs) {
+			hw_capabilities::run_cmd({ "uhubctl", "-l", loc, "-a", "off" }, nullopt, false);
+			log(LogLevel::INFO, "reset_usb_ifaces: powered off hub {}", loc);
+		}
+		this_thread::sleep_for(chrono::seconds(3));
+		for(const auto &loc: hubs) {
+			hw_capabilities::run_cmd({ "uhubctl", "-l", loc, "-a", "on" }, nullopt, false);
+			log(LogLevel::INFO, "reset_usb_ifaces: powered on hub {}", loc);
+		}
 	}
 
 	// modprobe is a no-op if already loaded; ensures non-hub adapters get driver bound
 	for(const auto &drv: drivers) hw_capabilities::run_cmd({ "modprobe", drv }, nullopt, false);
 
-	// Poll until all adapters have drivers bound. ath9k_htc firmware upload can
-	// take 40+ seconds //TODO add manula test speciffically for this?
+	// wait until all adapters have drivers bound AND net interface exists in sysfs
+	// Driver bind happens before firmware upload (ath9k_htc)
+	// - checking net/ subdir is driver-agnostic and catches the firmware-upload gap
+	auto has_netdev = [](const UsbResetInfo &d) {
+		for(const auto &sub: directory_iterator(d.dev_path)) {
+			if(sub.path().filename().string().find(':') == string::npos) continue;
+			if(exists(sub.path() / "net")) return true;
+		}
+		return false;
+	};
 	if(expected_with_driver > 0) {
 		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
 		while(chrono::steady_clock::now() < deadline) {
 			const auto current = collect_all_usb_devices();
-			const size_t ready = ranges::count_if(current, [](const auto &i) { return i.driver_name != "unknown"; });
-			if(ready >= expected_with_driver) break;
-			log(LogLevel::DEBUG, "reset_usb_ifaces: {}/{} adapters ready, waiting...", ready, expected_with_driver);
+			const size_t net_ready = ranges::count_if(current, [&](const auto &i) {
+				return i.driver_name != "unknown" && has_netdev(i);
+			});
+			if(net_ready >= expected_with_driver) break;
+			log(LogLevel::DEBUG, "reset_usb_ifaces: {}/{} adapters net-ready, waiting...", net_ready, expected_with_driver);
 			this_thread::sleep_for(chrono::seconds(3));
 		}
 	} else {
+		log(LogLevel::WARNING, "Reset USB fallback");
 		this_thread::sleep_for(chrono::seconds(8)); // fallback when no adapters were in sysfs before reset
 	}
 	hw_capabilities::run_cmd({ "udevadm", "settle", "--timeout=10" }, nullopt, false);

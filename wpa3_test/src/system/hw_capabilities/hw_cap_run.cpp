@@ -86,17 +86,18 @@ string hw_capabilities::run_cmd_output(const vector<string> &argv, const optiona
 	options.redirect.out.type = reproc::redirect::pipe;
 	options.redirect.err.type = reproc::redirect::pipe;
 
+	//FIXME ignored errors - allow in debug
 	error_code ec = proc.start(full_argv, options);
-	if(ec){ return {}; }
+	if(ec) return {};
 
 	string output_str;
 	reproc::sink::string sink_obj(output_str);
 
 	ec = reproc::drain(proc, sink_obj, reproc::sink::null);
-	if(ec){ return {}; }
+	if(ec) return {};
 
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
-	if(wait_ec){ return {}; }
+	if(wait_ec) return {};
 	return output_str;
 }
 

@@ -29,6 +29,7 @@
       <w>arphrd</w>
       <w>arrowstyle</w>
       <w>attackhead</w>
+      <w>autoprobe</w>
       <w>bigtk</w>
       <w>blackboc</w>
       <w>bmargin</w>
@@ -136,11 +137,13 @@
       <w>libgcc</w>
       <w>libssh</w>
       <w>libtins</w>
+      <w>libusb</w>
       <w>libwifi</w>
       <w>logread</w>
       <w>lsblk</w>
       <w>m'ing</w>
       <w>macaddr</w>
+      <w>manuf</w>
       <w>mausezahn</w>
       <w>meapol</w>
       <w>meminfo</w>
@@ -204,6 +207,7 @@
       <w>postrouting</w>
       <w>potp</w>
       <w>ppid</w>
+      <w>ppps</w>
       <w>pred</w>
       <w>prevtime</w>
       <w>proces</w>
@@ -264,6 +268,7 @@
       <w>txpower</w>
       <w>txpwr</w>
       <w>udevadm</w>
+      <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
       <w>vline</w>
@@ -273,6 +278,7 @@
       <w>wiphy</w>
       <w>wlan</w>
       <w>wnic</w>
+      <w>workqueue</w>
       <w>wpad</w>
       <w>wpaout</w>
       <w>writerd</w>

@@ -25,7 +25,7 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
     <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../../../index.html" class="back-link"><- Overview</a>
+    <a href="../../../index.html" class="back-link"><= Overview</a>
     <h1>Deauthentication DoS Attack (WPA2) - with MFP</h1>
 
     <div class="card">

@@ -4,7 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-- není problḿ, že se po restartu isb adaptéry přejmenují (wlan0 je něco jiného -> je ignorováno něco ji-eho)
+- není problḿ, že se po restartu usb adaptéry přejmenují (wlan0 je něco jiného -> je ignorováno něco ji-eho)
 +: check nd descript to cooments / Injection Test injection results+ sources
 r?: reset usb only if not founf first internal?
 t: add to iface_info create_sniff_iface and start_ap

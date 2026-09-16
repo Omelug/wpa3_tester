@@ -82,7 +82,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     <link rel="stylesheet" href="../../../style.css">
 </head>
 <body>
-    <a href="../../../index.html" class="back-link">&lt;- Overview</a>
+    <a href="../../../index.html" class="back-link"><= Overview</a>
     <h1>Injection Test - Cached Results</h1>
     <div class="card">
         <p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>

@@ -28,6 +28,11 @@ struct DeviceCaps {
 	optional<bool> netns_change, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
 };
 
+struct UsbInfo {
+	string id_vendor, id_product, bcd_device;
+	string manufacturer, product, serial;
+};
+
 struct IfaceData {
 	string phy;
 	string iw_info;
@@ -38,6 +43,7 @@ struct IfaceData {
 	optional<bool> netns_move_ok;
 	optional<int>  netns_move_ms;
 	optional<int>  netns_return_ms;
+	optional<UsbInfo> usb;
 };
 
 struct DeviceInfo {
@@ -113,6 +119,17 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		}
 		if(j.contains("netns_return"))
 			d.netns_return_ms = j["netns_return"].value("ms", -1);
+		if(j.contains("usb_info") && j["usb_info"].value("is_usb", false)){
+			const auto &u = j["usb_info"];
+			d.usb = UsbInfo{
+				u.value("id_vendor", string{}),
+				u.value("id_product", string{}),
+				u.value("bcd_device", string{}),
+				u.value("manufacturer", string{}),
+				u.value("product", string{}),
+				u.value("serial", string{}),
+			};
+		}
 		return d;
 	}
 	return nullopt;
@@ -146,20 +163,20 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		f << "<tr><th>" << key << "</th><td>" << val << "</td></tr>";
 	};
 
-	f << "<!DOCTYPE html><html lang=\"en\"><head>\n"
-	  << "<meta charset=\"UTF-8\">"
-	  << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-	  << "<title>Device: " << title << "</title>\n"
-	  << "<link rel=\"stylesheet\" href=\"../../style.css\">"
-	  << "<script src=\"../../table_aggregate.js\"></script>\n"
-	  << "</head><body>\n"
-	  << "<a href=\"../index.html\" class=\"back-link\">\xe2\x86\x90 Devices</a>\n"
-	  << "<h1>" << title << "</h1>\n"
-	  << "<div class=\"card\">\n        <h2>Identity</h2>\n        <table>";
+	f << R"html(<!DOCTYPE html><html lang=en><head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">)html"
+	  << "<title>Device: " << title << "</title>"
+	  << R"html(<link rel="stylesheet" href="../../style.css">
+		<script src="../../table_aggregate.js">
+		</script></head><body>
+		<a href="../index.html" class="back-link"><= Devices</a>)html"
+	  << "<h1>" << title << "</h1>"
+	  << "<div class=\"card\"><h2>Identity</h2><table>";
 	tr("Permanent MAC", d.mac);
 	tr("Source",        d.source);
 	tr("Driver",        d.driver);
-	if(!vendor.empty())         tr("Vendor (from wireshark manuf database)",      vendor);
+	if(!vendor.empty())        tr("Vendor (from wireshark manuf database)", vendor);
 	if(!d.driver_hash.empty()) tr("Driver hash", d.driver_hash);
 	if(!d.module_hash.empty()) tr("Module hash", d.module_hash);
 	f << "</table></div>";
@@ -167,10 +184,10 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	f  << "<div class=\"card\"><h2>Capabilities</h2><table>"
 		<< "<tr><th>Mode</th><td>"
 	    << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
-	     << "</td></tr>\n"
+	     << "</td></tr>"
 	  << "<tr><th>Bands</th><td>"
 	     << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
-	     << "</td></tr>\n"
+	     << "</td></tr>"
 	  << "<tr><th>Standards</th><td>"
 	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
 	     << "</td></tr>";
@@ -181,11 +198,11 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	tr("MFP",              d.caps.MFP);
 	tr("WPA-PSK",          d.caps.WPA_PSK);
 	tr("WPA3-SAE",         d.caps.WPA3_SAE);
-	f << "</table>\n    </div>";
+	f << "</table></div>";
 
 	if(d.iface){
 		const auto &iface = *d.iface;
-		f << "<div class=\"card\">\n        <h2>System Snapshot</h2>\n        <table>";
+		f << "<div class=\"card\"><h2>System Snapshot</h2><table>";
 		if(!iface.phy.empty())                              tr("PHY", iface.phy);
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
 		if(iface.channel_switch_ok.has_value()){
@@ -201,8 +218,18 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		}
 		f << "</table>";
 		if(!iface.iw_info.empty()){
-			f << "<h3><code>iw dev info</code></h3>\n"
+			f << "<h3><code>iw dev info</code></h3>"
 			  << "<pre>" << iface.iw_info << "</pre>";
+		}
+		if(iface.usb){
+			const auto &u = *iface.usb;
+			f << "<h3>USB Device</h3><table>";
+			tr("Vendor ID : Product ID", u.id_vendor + ":" + u.id_product);
+			if(!u.bcd_device.empty()) tr("bcdDevice (version)", u.bcd_device);
+			if(!u.manufacturer.empty()) tr("Manufacturer", u.manufacturer);
+			if(!u.product.empty()) tr("Product", u.product);
+			if(!u.serial.empty()) tr("Serial", u.serial);
+			f << "</table>";
 		}
 		if(!iface.driver_specific.is_null() && !iface.driver_specific.empty()){
 			auto ds = iface.driver_specific.dump(2);
@@ -213,7 +240,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 			unescape("\\n", "\n");
 			unescape("\\t", "\t");
 			unescape("\\r", "");
-			f << "<h3>Driver Diagnostics</h3>\n"
+			f << "<h3>Driver Diagnostics</h3>"
 			  << "<pre>" << ds << "</pre>";
 		}
 		f << "</div>";
@@ -298,7 +325,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	<script src="../table_aggregate.js"></script>
 </head>
 <body>
-	<a href="../index.html" class="back-link">&#8592; Overview</a>
+	<a href="../index.html" class="back-link"><= Overview</a>
 	<h1>Devices</h1>
 )html";
 

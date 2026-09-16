@@ -26,7 +26,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../../../index.html" class="back-link"><- Overview</a>
+    <a href="../../../index.html" class="back-link"><= Overview</a>
     <h1> fake legacy beacon DoS </h1>
 
     <div class="card">

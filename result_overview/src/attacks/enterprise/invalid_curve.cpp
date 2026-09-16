@@ -25,7 +25,7 @@ void generate_invalid_curve_attack(const path &output_dir, const path &data_dir)
 	<script src="../../../table_aggregate.js"></script>
 </head>
 <body>
-	<a href="../../../index.html" class="back-link"><- Overview</a>
+	<a href="../../../index.html" class="back-link"><= Overview</a>
 	<h1>Invalid curve</h1>
 
 	<div class="card">

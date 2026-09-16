@@ -306,6 +306,8 @@ json collect_usb_info(const string &iface) {
 		if(auto v = read_file(p / "product")) j["product"] = trim_ws(*v);
 		if(auto v = read_file(p / "serial")) j["serial"] = trim_ws(*v);
 		if(auto v = read_file(p / "authorized")) j["authorized"] = trim_ws(*v) == "1";
+		if(auto v = read_file(p / "bcdDevice")) j["bcd_device"] = trim_ws(*v);
+		if(auto v = read_file(p / "speed")) j["speed_mbs"] = trim_ws(*v);
 		return j;
 	}
 	j["is_usb"] = false;

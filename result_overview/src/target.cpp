@@ -99,14 +99,14 @@ static void generate_target_page(const path &output_dir, const string &target_na
 	<script src="../../table_aggregate.js"></script>
 </head>
 <body>
-	<a href="../../index.html" class="back-link"><- Overview</a>
+	<a href="../../index.html" class="back-link"><= Overview</a>
 	<h1>)html"
 	  << target_name << R"html(</h1>
 )html";
 
 	const path suites_dir = target_data_dir / "suite";
 	if(!is_directory(suites_dir)) {
-		f << "<div class=\"card\"><p>No suites found.</p></div>\n"
+		f << "<div class=\"card\"><p>No suites found.</p></div>"
 		  << "</body></html>";
 		return;
 	}
@@ -120,7 +120,7 @@ static void generate_target_page(const path &output_dir, const string &target_na
 		any = true;
 
 		f << "<div class=\"card\">"
-		  << "<h2>Suite: " << suite_name << "</h2>\n"
+		  << "<h2>Suite: " << suite_name << "</h2>"
 		  << "</div>";
 
 		for(const auto &tf: test_suites_folders) {
@@ -150,7 +150,7 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 	<link rel="stylesheet" href="../style.css">
 </head>
 <body>
-	<a href="../index.html" class="back-link"><- Overview</a>
+	<a href="../index.html" class="back-link"><= Overview</a>
 	<h1>Targets</h1>
 	<div class="card">
 		<ul>

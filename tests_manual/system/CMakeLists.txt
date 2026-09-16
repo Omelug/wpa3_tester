@@ -4,3 +4,10 @@ target_link_libraries(test_manual_iface PRIVATE manual_test_core test_helpers)
 set_target_properties(test_manual_iface PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests/system"
 )
+
+# Manual test_manual_usb
+add_executable(test_manual_usb "manual_usb_tests.cpp")
+target_link_libraries(test_manual_usb PRIVATE manual_test_core)
+set_target_properties(test_manual_usb PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/manual_tests/system"
+)

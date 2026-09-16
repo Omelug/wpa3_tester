@@ -26,7 +26,7 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
     <script src="../../../table_aggregate.js"></script>
 </head>
 <body>
-    <a href="../../../index.html" class="back-link"><- Overview</a>
+    <a href="../../../index.html" class="back-link"><= Overview</a>
     <h1>Multi-Channel MitM (mc-mitm)</h1>
 
     <div class="card">

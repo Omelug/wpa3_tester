@@ -139,7 +139,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
-    <a href="../../index.html" class="back-link">&lt;- Overview</a>
+    <a href="../../index.html" class="back-link"><= Overview</a>
     <h1>observer graphs - showcase</h1>
 
     <div class="card">

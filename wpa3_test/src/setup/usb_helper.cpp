@@ -9,6 +9,7 @@
 #include <vector>
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "interrupt.h"
 #include "system/hw_capabilities.h"
@@ -70,13 +71,15 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 		}
 		if(!is_device) continue;
 
-		result.push_back({ dev_path, name, driver_name });
+		auto read_line = [](const path &p) { ifstream f(p); string s; if(f) getline(f, s); return s; };
+		result.push_back({ dev_path, name, driver_name,
+			read_line(dev_path / "idVendor"),
+			read_line(dev_path / "idProduct") });
 	}
 	return result;
 }
 
 void reset_usb_ifaces() {
-	//TODO reset by list of VendorId/productID
 	{
 		ofstream f("/sys/bus/usb/drivers_autoprobe");
 		f << "1";
@@ -84,7 +87,26 @@ void reset_usb_ifaces() {
 
 	// Unload Wi-Fi drivers before power cycle - prevents ath9k_htc ANI workqueue
 	// from firing after USB disconnect but before driver cleanup.
-	const auto wifi_ifaces = collect_all_usb_devices();
+	auto wifi_ifaces = collect_all_usb_devices();
+
+	const auto &cfg = get_global_config();
+	if(cfg.contains("only_list_reset")) {
+		const auto raw = cfg.at("only_list_reset").get<vector<string>>();
+		if(!raw.empty()) {
+			set<string> allowed;
+			for(const auto &s: raw) {
+				string lc = s;
+				ranges::transform(lc, lc.begin(), ::tolower);
+				allowed.insert(lc);
+			}
+			const size_t total = wifi_ifaces.size();
+			erase_if(wifi_ifaces, [&](const UsbResetInfo &d) {
+				return !allowed.contains(d.vendor_id + ":" + d.product_id);
+			});
+			log(LogLevel::DEBUG, "reset_usb_ifaces: only_list_reset active, {}/{} devices match",
+				wifi_ifaces.size(), total);
+		}
+	}
 	size_t expected_with_driver = 0;
 	set<string> drivers;
 	for(const auto &iface: wifi_ifaces) {

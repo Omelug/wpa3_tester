@@ -11,10 +11,8 @@ struct UsbResetInfo {
 	std::string driver_name;		// e.g. "mt76x2u"
 };
 
-// Scans /sys/class/ieee80211/ for USB-backed WiFi phys.
-// Covers all cfg80211 drivers: mac80211 and out-of-tree
-// only misses pre-cfg80211 WEXT-only drivers (effectively extinct).
-std::vector<UsbResetInfo> collect_all_usb_wifi_ifaces();
+std::vector<UsbResetInfo> collect_all_usb_devices();
+void usb_bus_reset(const std::vector<UsbResetInfo> &devs);
 void reset_usb_ifaces();
 
 }

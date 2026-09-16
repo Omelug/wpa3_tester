@@ -30,6 +30,8 @@ uint64_t get_eapol_replay_num(const Tins::Dot11Data &pkt);
 void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
 		const Tins::Dot11Beacon &beacon, std::optional<Tins::HWAddress<6>> mac = std::nullopt, int interval = 100,
 		int dtim_period = 1);
+void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor,
+		const Channel &channel, std::optional<Tins::HWAddress<6>> mac = std::nullopt);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
 Tins::Dot11Beacon make_confused_beacon(const Tins::Dot11Beacon &real, const std::string &confused_ssid, bool strip_rsn);

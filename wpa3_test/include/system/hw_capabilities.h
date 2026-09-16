@@ -170,9 +170,10 @@ public:
 			const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, const Channel &ch, int retries = 1);
 
 	// ----- injection tests ------
+	// https://github.com/vanhoefm/libwifi/blob/4dab22e3e1c457fb241f4502ce9acd835b1ee27a/injectiontest.py
+
 	static InjectionTestResult test_injection_more_fragments(const MonitorSocket &sout, MonitorSocket &sin,
 			const Dot11Ref &ref, const std::string &strtype, const Channel &ch);
-
 	static InjectionTestResult test_packet_injection(const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 			const std::function<bool(const std::vector<uint8_t> &)> &test_func, const std::string &name,
 			const std::string &msgfail, const Channel &ch);
@@ -180,8 +181,11 @@ public:
 			const std::string &strtype, const Channel &ch);
 	static InjectionTestResult test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
 			const std::string &strtype, const Channel &ch, int retries = 1);
+
 	static InjectionTestResult test_injection_retrans(const MonitorSocket &sout, MonitorSocket &sin,
 			const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, const Channel &ch);
+
+	// test if transmitter generate ACK
 	static InjectionTestResult test_injection_txack(const MonitorSocket &sout, MonitorSocket &sin,
 			const Tins::HWAddress<6> &dest_mac, const Tins::HWAddress<6> &own_mac, const Channel &ch);
 
@@ -189,12 +193,12 @@ public:
 	// peermac: fallback peer used for retrans test when no nearby AP is found.
 	// testack: run retrans+txack tests (only meaningful with two distinct interfaces).
 	static InjectionSuiteResult run_injection_tests(ActorPtr actor_tx, ActorPtr actor_rx,
-			const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"), bool skip_mf = false,
-			bool testack = true);
+			const Tins::HWAddress<6> &peermac = Tins::HWAddress<6>("00:11:22:33:44:55"),
+			bool testack = true, RunStatus *rs = nullptr);
 
 	// TX power control
 	static int get_tx_power(const std::string &iface, const std::optional<std::string> &netns = std::nullopt);
 	static void set_tx_power(
-			const std::string &iface, int power_dbm, const std::optional<std::string> &netns = std::nullopt);
+		const std::string &iface, int power_dbm, const std::optional<std::string> &netns = std::nullopt);
 };
 }

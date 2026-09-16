@@ -1,5 +1,6 @@
 #include "attacks/mc_mitm/wifi_util.h"
 
+#include <fstream>
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -232,6 +233,37 @@ void stop_ap(const string &iface, const optional<string> &netns) {
 	const vector<string> cmd = { "iw", "dev", iface, "ap", "stop" };
 	log(LogLevel::INFO, "Stopping AP using: iw dev {} ap stop", iface);
 	hw_capabilities::run_cmd(cmd, netns);
+}
+
+void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
+                       const Channel &channel, optional<HWAddress<6>> mac) {
+	const optional<string> &netns = base_actor[SK::netns];
+
+	netlink_helper::NetlinkRegistry::get_fd(netns);
+	base_actor->set_iface_down();
+	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
+
+	hw_capabilities::run_cmd({"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"}, netns);
+	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
+		throw setup_err("Interface " + ap_iface + " did not appear");
+	this_thread::sleep_for(2000ms);
+	// Leave VIF in managed+down state - hostapd sets the mode and brings it up itself
+	hw_capabilities::set_iface_down(ap_iface, netns);
+	base_actor->set_iface_up();
+
+	const string hw_mode = channel.ch_num <= 14 ? "g" : "a";
+	const auto conf = rs.run_folder() / ("hostapd_" + ap_iface + ".conf");
+	{
+		ofstream f(conf);
+		f << "interface=" << ap_iface << "\nssid=injection_test\nchannel=" << static_cast<int>(channel.ch_num) << "\nhw_mode=" << hw_mode << "\n";
+		if(mac) f << "bssid=" << mac->to_string() << "\n";
+	}
+
+	vector<string> cmd;
+	if(netns) cmd = {"ip", "netns", "exec", *netns, "hostapd", conf.string()};
+	else cmd = {"hostapd", conf.string()};
+	rs.process_manager.run(ap_iface + "_hostapd", cmd, rs.run_folder());
+	rs.process_manager.wait_for(ap_iface + "_hostapd", "AP-ENABLED", chrono::seconds(20));
 }
 
 Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid) {

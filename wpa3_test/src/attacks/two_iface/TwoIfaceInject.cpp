@@ -33,7 +33,7 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 				{ "transceiver",
 					{ { "source", "internal" }, { "selection", make_selection(t) }, { "netns", "tx" } } },
 				{ "receiver",
-					{ { "source", "internal" }, { "selection", sel_rx }/*, { "<sniff_iface", "true" },*/ }
+					{ { "source", "internal" }, { "selection", sel_rx } }
 				},
 			}
 		}
@@ -61,8 +61,8 @@ bool TwoIfaceInject::run_check(
 	TwoIfaceInject t;
 
 	const auto fail = [&](const string &key) {
-		throw req_err("inject_test " + key + ": " + a1->get_or(SK::actor_name, "?") + "/" +
-				a2->get_or(SK::actor_name, "?") + " failed injection check");
+		throw req_err("inject_test {}:{}/{} failed injection check",
+			key, a1->get_or(SK::actor_name, "?"), a2->get_or(SK::actor_name, "?") );
 	};
 
 	const auto [result, from_cache] = t.validate(a1, a2, behave);
@@ -72,7 +72,9 @@ bool TwoIfaceInject::run_check(
 			if(val.at("result").get<it_test_result>() != PASSED) { fail(key); }
 		}
 	} else {
-		if(result.at("tests").at(injection_key).at("result").get<it_test_result>() != PASSED) { fail(injection_key); }
+		if(result.at("tests").at(injection_key).at("result").get<it_test_result>() != PASSED) {
+			fail(injection_key);
+		}
 	}
 	return !from_cache;
 }

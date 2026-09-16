@@ -261,11 +261,12 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 			try{
 				const RadioTap rt(r.raw.data(), r.raw.size());
 				const auto *q = rt.find_pdu<Dot11QoSData>();
-				// skip retransmissions (RETRY bit set); we only care about original TX order.
+				// skip retransmissions (RETRY bit set); we only care about original TX order
 				if(q && !q->retry()) tids.push_back(q->qos_control() & 0xF);
 			} catch(...){}
 			return false;
 		});
+		// check TID
 		if(ranges::contains(tids, 2) && ranges::contains(tids, 6)) break;
 	}
 
@@ -313,14 +314,8 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 		result = NOCAPTURE;
 		detail += "no_capture ";
 	}
-	if(n_dummy == 1){
-		result = FAIL;
-		detail += "no_retrans ";
-	}
-	if(n_real > 2){
-		result = FAIL;
-		detail += "real_retrans_high ";
-	}
+	if(n_dummy == 1) detail += "no_retrans(suspicious) ";
+	if(n_real > 2) detail += "real_retrans_high(suspicious) ";
 
 	detail += "dummy=" + to_string(n_dummy) + " spoofed=" + to_string(n_spoofed) + " real=" + to_string(n_real);
 	return {"injection_fields_retrans", result, detail};

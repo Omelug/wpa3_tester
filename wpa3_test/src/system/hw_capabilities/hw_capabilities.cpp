@@ -290,13 +290,20 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		}
 	}();
 
-	if(const int ret = run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns); ret != 0){
-		if(type != NL80211_IFTYPE_AP) throw run_err("iw set type {} on '{}' failed: {}", type_str, iface, ret);
-		// hwsim (and some drivers) reject in-place type change to AP - del + recreate on the same phy
+	if(type == NL80211_IFTYPE_AP) {
+		// del + recreate is required for ath9k_htc (in-place set type corrupts state first)
+		// fall back to set type if del fails (e.g. iface already gone)
 		const string phy = get_phy(string(iface), netns);
-		run_cmd({"iw", "dev", iface.data(), "del"}, netns);
-		if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0) throw run_err(
-			"iw phy {} interface add {} type __ap failed", phy, iface);
+		if(run_cmd({"iw", "dev", iface.data(), "del"}, netns, false) == 0) {
+			if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0)
+				throw run_err("iw phy {} interface add {} type __ap failed", phy, iface);
+		} else {
+			if(run_cmd({"iw", "dev", iface.data(), "set", "type", "__ap"}, netns) != 0)
+				throw run_err("iw set type __ap on '{}' failed", iface);
+		}
+	} else {
+		if(run_cmd({"iw", "dev", iface.data(), "set", "type", type_str}, netns) != 0)
+			throw run_err("iw set type {} on '{}' failed", type_str, iface);
 	}
 
 	if(const auto res = netlink_helper::wait_for_wifi_iftype(iface, netns, type); res) throw run_err(

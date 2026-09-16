@@ -83,8 +83,9 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
 </head>
 <body>
     <a href="../../../index.html" class="back-link"><= Overview</a>
-    <h1>Injection Test - Cached Results</h1>
+    <h1>Injection Test - results from cache </h1>
     <div class="card">
+		<p><b>Sources</b> https://github.com/vanhoefm/wifi-injection </p>
         <p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>
         <p><b>P</b> = PASSED &nbsp; <b>F</b> = FAIL &nbsp; <b>NC</b> = no capture &nbsp; <b>-</b> = not tested</p>
     </div>
@@ -99,7 +100,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     const auto test_names = collect_test_names(entries);
 
     if(entries.empty()) {
-        f << string("<p>No cached results found.</p>");
+        f << "<p>No cached results found.</p>";
     } else {
         HtmlPathTable table(f, entries);
         table.add_column("TX MAC",    &InjectionCacheEntry::tx_mac);

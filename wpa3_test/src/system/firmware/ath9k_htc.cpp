@@ -17,7 +17,7 @@ using namespace std;
 namespace wpa3_tester::firmware{
 string get_random_ath_masker_mac(const string &attacker_mac) {
 	mt19937 gen(random_device{}());
-	uniform_int_distribution<> dis(0, 255);
+	uniform_int_distribution dis(0, 255);
 
 	stringstream ss;
 	ss << attacker_mac.substr(0, 15)

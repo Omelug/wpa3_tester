@@ -1,19 +1,25 @@
 requirements:
-  simple: [ ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
+  simple: [ ath_masker, ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
 actors:
   receiver:
     selection:
       channel: 11
-      condition: [ monitor, 2_4GHz ]
+      condition: [ monitor, 2_4GHz, control_monitor ]
       #driver: mt76x2u
     source: internal
   transceiver:
     selection:
       channel: 11
-      condition: [ monitor, 2_4GHz, netns_change ]
+      condition: [ monitor, 2_4GHz, netns_change, control_monitor ]
       #driver: ath9k_htc
     netns: tx
     source: internal
+observers:
+  tshark_client:
+    actor: receiver
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
 
 attacker_module: injection_test
 name: injection_test_example

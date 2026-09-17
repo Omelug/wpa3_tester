@@ -258,6 +258,7 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 		f << "interface=" << ap_iface << "\nssid=injection_test\nchannel=" << static_cast<int>(channel.ch_num) << "\nhw_mode=" << hw_mode << "\n";
 		if(mac) f << "bssid=" << mac->to_string() << "\n";
 	}
+	set_public_perms(conf);
 
 	vector<string> cmd;
 	if(netns) cmd = {"ip", "netns", "exec", *netns, "hostapd", conf.string()};

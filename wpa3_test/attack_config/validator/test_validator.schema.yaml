@@ -158,7 +158,7 @@ properties:
           minItems: 2
           maxItems: 2
     additionalProperties: false
-
+  additionalProperties: false
 allOf:
   - $ref: './run_config.schema.yaml'
 

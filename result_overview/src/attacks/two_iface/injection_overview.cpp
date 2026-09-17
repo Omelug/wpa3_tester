@@ -87,7 +87,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     <div class="card">
 		<p><b>Sources</b> https://github.com/vanhoefm/wifi-injection </p>
         <p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>
-        <p><b>P</b> = PASSED &nbsp; <b>F</b> = FAIL &nbsp; <b>NC</b> = no capture &nbsp; <b>-</b> = not tested</p>
+        <p><b>P</b> = PASSED &nbsp; <b>F</b> = FAIL &nbsp; <b>NC</b> = no capture &nbsp; <b>N/A</b> = not tested</p>
     </div>
     <div class="card">
 )html";

@@ -328,6 +328,7 @@ InjectionTestResult hw_capabilities::test_injection_txack(
 ){
 	Dot11ProbeRequest probe(dest_mac,own_mac);
 	probe.addr3(dest_mac);
+	//TODO check if needed with tshark probe.add_option({Dot11ManagementFrame::SSID, 0, nullptr});
 	probe.seq_num(33);
 
 	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, ch, 1);

@@ -21,7 +21,7 @@ TwoIfaceInject::TwoIfaceInject():
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 	auto sel_rx = r->to_json(&cache_id)["selection"];
 	sel_rx["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
-	sel_rx["condition"] = { "2_4GHz", "monitor" };
+	sel_rx["condition"] = { "2_4GHz", "monitor", "control_monitor" };
 
 	const json config = {
 		{ "name", "injection_test" },
@@ -36,7 +36,18 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 					{ { "source", "internal" }, { "selection", sel_rx } }
 				},
 			}
-		}
+		}/*,
+		{ "observers",
+			{
+				{
+					"rx_tshark",{
+					   "actor", "receiver"
+					   "program", "tshark"
+					   "program_config", {"filter",{"special_filter:actors"}}
+					}
+				}
+			}
+		}*/
 	};
 
 	const path config_dir = cache_folder() / "config";

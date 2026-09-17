@@ -16,6 +16,10 @@ struct IfaceInfoTestEntry {
 	std::optional<bool> netns_move_ok;
 	std::optional<int> netns_move_ms;
 	std::optional<int> netns_return_ms;
+	std::optional<bool> sniff_iface_ok;
+	std::optional<int> sniff_iface_ms;
+	std::optional<bool> start_ap_ok;
+	std::optional<int> start_ap_ms;
 
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };

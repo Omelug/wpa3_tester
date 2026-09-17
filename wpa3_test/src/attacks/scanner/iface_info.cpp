@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <vector>
 
+#include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "config/global_config.h"
@@ -107,6 +108,29 @@ void run_attack(RunStatus &rs) {
 		netlink_helper::delete_ns_and_wait(test_ns, vector{ iface });
 		result["netns_return"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t2).count();
 	} catch(...) { result["netns_move"]["ok"] = false; }
+
+	// ----- sniff iface creation timing -----
+	try {
+		using namespace chrono;
+		const auto t0 = steady_clock::now();
+		scanner->create_sniff_iface();
+		result["sniff_iface_create"]["ok"] = true;
+		result["sniff_iface_create"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		hw_capabilities::run_cmd({"iw", "dev", scanner.get_mon_iface(), "del"}, netns);
+	} catch(...) { result["sniff_iface_create"]["ok"] = false; }
+
+	// ----- start_ap timing -----
+	try {
+		using namespace chrono;
+		const string ap_bench = iface + "_bench";
+		Channel bench_ch{ 6, WifiBand::BAND_2_4, nullopt };
+		const auto t0 = steady_clock::now();
+		start_ap_hostapd(rs, ap_bench, scanner, bench_ch, nullopt);
+		result["start_ap"]["ok"] = true;
+		result["start_ap"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		rs.process_manager.stop(ap_bench + "_hostapd");
+		hw_capabilities::run_cmd({"iw", "dev", ap_bench, "del"}, netns);
+	} catch(...) { result["start_ap"]["ok"] = false; }
 
 	rs.save_result(result);
 

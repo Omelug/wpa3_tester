@@ -52,6 +52,16 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 				e.netns_move_ms = nm.value("ms", -1);
 			}
 			if(result.contains("netns_return")) e.netns_return_ms = result["netns_return"].value("ms", -1);
+			if(result.contains("sniff_iface_create")) {
+				const auto &si = result["sniff_iface_create"];
+				e.sniff_iface_ok = si.value("ok", false);
+				e.sniff_iface_ms = si.value("ms", -1);
+			}
+			if(result.contains("start_ap")) {
+				const auto &ap = result["start_ap"];
+				e.start_ap_ok = ap.value("ok", false);
+				e.start_ap_ms = ap.value("ms", -1);
+			}
 		} catch(...) { e.driver_summary = "?"; }
 
 	} else {
@@ -83,8 +93,8 @@ void generate_report(RunSuiteStatus &rss) {
 		return;
 	}
 
-	r << "| Test | Info | Ch Switch | NetNS Move | Report |\n";
-	r << "|------|------|-----------|------------|--------|\n";
+	r << "| Test | Info | Ch Switch | NetNS Move | Sniff VIF | Start AP | Report |\n";
+	r << "|------|------|-----------|------------|-----------|----------|--------|\n";
 
 	for(const auto &e: entries) {
 		string ch = "n/a";
@@ -97,8 +107,16 @@ void generate_report(RunSuiteStatus &rss) {
 			if(e.netns_return_ms.has_value()) ns += " / " + to_string(e.netns_return_ms.value()) + "ms";
 		}
 
+		string si = "n/a";
+		if(e.sniff_iface_ok.has_value())
+			si = (e.sniff_iface_ok.value() ? "ok " : "fail ") + to_string(e.sniff_iface_ms.value_or(-1)) + "ms";
+
+		string ap = "n/a";
+		if(e.start_ap_ok.has_value())
+			ap = (e.start_ap_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_ms.value_or(-1)) + "ms";
+
 		r << "| " << e.test_name << " | " << e.hw_summary << " | " << ch << " | " << ns << " | "
-		  << report::link("report", e.report_md) << " |\n";
+		  << si << " | " << ap << " | " << report::link("report", e.report_md) << " |\n";
 	}
 }
 }

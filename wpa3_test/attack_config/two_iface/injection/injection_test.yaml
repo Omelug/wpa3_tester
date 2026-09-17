@@ -1,5 +1,6 @@
 requirements:
-  simple: [ ath_masker, ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
+  simple: [ #ath_masker,
+    ath9k_noorder_change ] #FIXME, only if ath_htc (slow af)
 actors:
   receiver:
     selection:

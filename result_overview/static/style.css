@@ -144,13 +144,38 @@ th.rotated {
 .it-pass {
     color: #276749;
     font-weight: bold;
+    display: block;
 }
 
 .it-fail {
     color: #c53030;
     font-weight: bold;
+    display: block;
 }
 
 .it-nc {
     color: #c05621;
+    display: block;
+}
+
+[data-detail] {
+    position: relative;
+    cursor: help;
+}
+
+[data-detail]:hover::after {
+    content: attr(data-detail);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, .82);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.78em;
+    font-weight: normal;
+    pointer-events: none;
+    z-index: 100;
 }

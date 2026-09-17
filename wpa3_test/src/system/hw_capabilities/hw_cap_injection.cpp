@@ -95,13 +95,13 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 	const Channel &ch, const int retries
 ){
 	const auto [addr1, addr2] = get_addrs(probe_req, {});
-	if(addr2 == HWAddress<6>()) return {};
 	const auto src = addr2;
 	const auto dst = addr1;
 
 	ProbeCapture result;
 	int attempt = 0;
 	while(true){
+		ProbeCapture cur;
 		flush_socket(sin);
 		sout.send(probe_req, ch);
 		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) ->bool{
@@ -109,13 +109,14 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 				const RadioTap rt(r.raw.data(), r.raw.size());
 				const auto addrs = get_addrs(rt, r.raw);
 				if(rt.find_pdu<Dot11ProbeResponse>()){
-					if(addrs.addr1 == src && addrs.addr2 == dst) result.rx_probes.push_back(r.raw);
+					if(addrs.addr1 == src && addrs.addr2 == dst) cur.rx_probes.push_back(r.raw);
 				} else if(rt.find_pdu<Dot11Ack>()){
-					if(addrs.addr1 == dst) result.tx_acks.push_back(r.raw);
+					if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
 				}
 			} catch(...){}
 			return false;
 		});
+		result = std::move(cur);
 		if((!result.rx_probes.empty() && !result.tx_acks.empty()) || attempt >= retries) break;
 		attempt++;
 	}
@@ -291,8 +292,6 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 	const MonitorSocket &sout, MonitorSocket &sin,
 	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel &ch
 ){
-	it_test_result result = PASSED;
-	string detail;
 
 	auto make_frame = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) ->Dot11Data{
 		Dot11Data p(a1, a2);
@@ -310,12 +309,20 @@ InjectionTestResult hw_capabilities::test_injection_retrans(
 	const int n_spoofed = count(addr1, {"00:22:00:00:00:01"});
 	const int n_real = count(addr1, addr2);
 
+	it_test_result result = PASSED;
+	string detail;
 	if(n_dummy == 0 || n_spoofed == 0 || n_real == 0){
-		result = NOCAPTURE;
+		result = FAIL;
 		detail += "no_capture ";
 	}
-	if(n_dummy == 1) detail += "no_retrans(suspicious) ";
-	if(n_real > 2) detail += "real_retrans_high(suspicious) ";
+	if(n_dummy == 1){
+		result = SUSPICIOUS;
+		detail += "no_retrans(suspicious) ";
+	}
+	if(n_real > 2){
+		result = SUSPICIOUS;
+		detail += "real_retrans_high(suspicious) ";
+	}
 
 	detail += "dummy=" + to_string(n_dummy) + " spoofed=" + to_string(n_spoofed) + " real=" + to_string(n_real);
 	return {"injection_fields_retrans", result, detail};
@@ -326,15 +333,17 @@ InjectionTestResult hw_capabilities::test_injection_txack(
 	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac,
 	const Channel &ch
 ){
-	Dot11ProbeRequest probe(dest_mac,own_mac);
+	Dot11ProbeRequest probe(dest_mac, own_mac);
 	probe.addr3(dest_mac);
-	//TODO check if needed with tshark probe.add_option({Dot11ManagementFrame::SSID, 0, nullptr});
-	probe.seq_num(33);
+	probe.seq_num(42);
+	probe.add_option({Dot11ManagementFrame::SSID, 0, nullptr});
+	constexpr uint8_t rates[] = {0x03, 0x12, 0x96, 0x18}; //needed because if not hostapd ignore silently
+	probe.add_option({Dot11ManagementFrame::SUPPORTED_RATES, sizeof(rates), rates});
 
 	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, ch, 1);
 
-	if(rx_probes.empty()) return {"test_injection_txack", NOCAPTURE, "no probe response"};
 	if(tx_acks.empty()) return {"test_injection_txack", FAIL, "no ACK generated"};
+	if(rx_probes.empty()) return {"test_injection_txack", NOCAPTURE, "no probe response"};
 	return {"test_injection_txack", PASSED};
 }
 }

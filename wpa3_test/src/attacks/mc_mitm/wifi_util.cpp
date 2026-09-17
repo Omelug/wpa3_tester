@@ -261,8 +261,8 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	set_public_perms(conf);
 
 	vector<string> cmd;
-	if(netns) cmd = {"ip", "netns", "exec", *netns, "hostapd", conf.string()};
-	else cmd = {"hostapd", conf.string()};
+	if(netns) cmd = {"ip", "netns", "exec", *netns, "hostapd", conf.string(), "-d"};
+	else cmd = {"hostapd", conf.string(), "-d"};
 	rs.process_manager.run(ap_iface + "_hostapd", cmd, rs.run_folder());
 	rs.process_manager.wait_for(ap_iface + "_hostapd", "AP-ENABLED", chrono::seconds(20));
 }

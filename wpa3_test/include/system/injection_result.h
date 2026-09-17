@@ -5,13 +5,14 @@
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester {
-enum it_test_result { UNKNOWN, PASSED, FAIL, NOCAPTURE };
+enum it_test_result { UNKNOWN, PASSED, FAIL, SUSPICIOUS, NOCAPTURE };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(it_test_result,
 		{
 				{ UNKNOWN, "UNKNOWN" },
 				{ PASSED, "PASSED" },
 				{ FAIL, "FAIL" },
+				{ SUSPICIOUS, "SUSPICIOUS" },
 				{ NOCAPTURE, "NOCAPTURE" },
 		})
 

@@ -19,13 +19,15 @@ struct InjectionCacheEntry {
     string rx_mac;
     string driver;
     string rx_driver;
-    map<string, string> tests; // test_name -> result ("PASSED"/"FAIL"/"NOCAPTURE")
+    map<string, pair<string,string>> tests; // test_name -> {result, detail}
 };
 
-static string result_cell(const string &r) {
-    if(r == "PASSED")    return "<span class=\"it-pass\">P</span>";
-    if(r == "FAIL")      return "<span class=\"it-fail\">F</span>";
-    if(r == "NOCAPTURE") return "<span class=\"it-nc\">NC</span>";
+static string result_cell(const string &r, const string &detail = "") {
+    const string d = detail.empty() ? "" : " data-detail=\"" + detail + "\"";
+    if(r == "PASSED")    return "<span class=\"it-pass\"" + d + ">P</span>";
+    if(r == "FAIL")      return "<span class=\"it-fail\"" + d + ">F</span>";
+	if(r == "SUSPICIOUS")      return "<span class=\"it-fail\"" + d + ">S</span>";
+    if(r == "NOCAPTURE") return "<span class=\"it-nc\"" + d + ">NC</span>";
     return "N/A";
 }
 
@@ -47,7 +49,7 @@ static vector<InjectionCacheEntry> read_cache(const path &cache_path) {
         e.rx_driver = j.value("rx_driver", "");
         if(j.contains("tests") && j.at("tests").is_object()) {
 	        for(const auto &[name, val] : j.at("tests").items()) {
-		        e.tests[name] = val.value("result", "?");
+		        e.tests[name] = {val.value("result", "?"), val.value("detail", "")};
 	        }
         }
         entries.push_back(std::move(e));
@@ -85,11 +87,26 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     <a href="../../../index.html" class="back-link"><= Overview</a>
     <h1>Injection Test - results from cache </h1>
     <div class="card">
-		<p><b>Sources</b> https://github.com/vanhoefm/wifi-injection </p>
-        <p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>
-        <p><b>P</b> = PASSED &nbsp; <b>F</b> = FAIL &nbsp; <b>NC</b> = no capture &nbsp; <b>N/A</b> = not tested</p>
+		<p><b>Sources:</b>
+		<ul>
+			<li>https://github.com/vanhoefm/wifi-injection</li>
+			<li>https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf</li>
+		</ul>
+		</p>
+		<p><b>Tests:</b>
+		valid - correct mac, spoofed - changed mac
+		<ul>
+			<li>injection_fields_<spoofed/valid> - normal monitor injection </li>
+			<li>injection_more_fragments_<spoofed/valid> - check if client dont ignore frames with more fragments flag</li>
+			<li>injection_order_<spoofed/valid> - check if order of injected frames is correct (not changed from user space send)</li>
+			<li>injection_fields_retrans - check if frames are retransmitted</li>
+			<li>test_injection_txack - check if probe response and ack is captured with transceiver</li>
+		</ul>
+		</p>
     </div>
     <div class="card">
+	<p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>
+	<p><b>P</b> = PASSED <b>F</b> = FAIL <b>NC</b> = no capture <b>S</b> = suspicious <b>N/A</b> = not tested</p>
 )html";
 
     auto entries    = read_cache(cache_path);
@@ -110,7 +127,9 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
         for(const auto &name : test_names) {
             table.add_rotated_column(name, [name](const InjectionCacheEntry &e) -> string {
                 const auto it = e.tests.find(name);
-                return result_cell(it != e.tests.end() ? it->second : "-");
+                return it != e.tests.end()
+                    ? result_cell(it->second.first, it->second.second)
+                    : result_cell("-");
             });
         }
         table.render();

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="35" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="38" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -135,11 +135,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: injection">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: sniff_iface, start_ap">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/iface_info_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -301,7 +300,7 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.wpa3_tester injection_test_filler">
-    <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
+    <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -619,7 +618,7 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="usb_bus_reset - devices remain in sysfs after reset" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="usb_bus_reset - devices remain in sysfs after reset" TEST_MODE="SUITE_TEST">
+    <configuration name="usb_bus_reset - devices remain in sysfs after reset" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="usb_bus_reset - devices remain in sysfs after reset" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1151,7 +1150,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: dmesg wrapper on external actors" />
     <MESSAGE value="+: simple wpa2 deauth" />
     <MESSAGE value="r: sort of includes" />
     <MESSAGE value="r: small canges" />
@@ -1176,7 +1174,8 @@
     <MESSAGE value="f: usb hub rese0 can be filtered by vender_id:product_id" />
     <MESSAGE value="f: reset_usb_ifaces - wait until net loading" />
     <MESSAGE value="f: injection" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: injection" />
+    <MESSAGE value="+: sniff_iface, start_ap" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: sniff_iface, start_ap" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

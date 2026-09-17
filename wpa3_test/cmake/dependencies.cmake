@@ -51,8 +51,8 @@ target_link_libraries(wpa3_deps INTERFACE
         doctest
         tins
         reproc++
-        ${LIBNL_LIBRARIES}
-        ${LIBSSH_LIBRARIES}
+        ${LIBNL_LDFLAGS}
+        ${LIBSSH_LDFLAGS}
         OpenSSL::SSL OpenSSL::Crypto
         pugixml::pugixml
 )

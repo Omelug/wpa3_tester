@@ -4,19 +4,24 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+
++: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
++: ACM activation time (external, internal in hostapd)
+f: na nixOS vypadává interní wifi při testu
+f+: SSID cofusion
+
 - není problḿ, že se po restartu usb adaptéry přejmenují (wlan0 je něco jiného -> je ignorováno něco ji-eho) - spíš ne
 +: check nd descript to cooments / Injection Test injection results+ sources
-r?: reset usb only if not founf first internal?
+r?: reset usb only if not found first internal?
 t: add to iface_info create_sniff_iface and start_ap
 f: rapsberry debugging vypisuje - cyklís  Cleanup namespace (ale přitom vypadá, že namespace nezabíjí? )
 +: overview only genereta what was changed
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
 +: Share Debug profile
 +: limit CSA for internal client
-f?: check injection test, test_injection_txack is no capture every time and injection_fields_retrans is false
+f?: check injection test, test_injection_txack is no capture every time
 bl0ck - logy z OpenWrt (co nejvíce)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
-+?: add empty attack for tests
 +: rogue AP into Bl0ck
 
 CSA - upravit report pro external BB
@@ -52,8 +57,10 @@ t: Stress tests
     l: log/cache  results per chipset/driver
 
 r?: scan parsing is still messy (maybe do everything with libpcap)
+ch: change functions to work with HWAdress, not string
 
 //DONE
++: better req_error backtracking messages (or table if needed, add debug config)
 +: PCAB into ap_scan internal nand external()
 +: external Dlink for malformed eapol
 t? test validation - testovat i vygenerované testy?
@@ -122,9 +129,7 @@ r: sjednotit while loop s logy  Dos útoky
 
 ----------------------------- TBD -----------------------------------
 Scan:
-+: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 AP_MAX_INACTIVITY (stejné jako v 2022_)
-+: ACM activation time (external, internal in hostapd)
 f: scan EAP dont work?
 
 Documentation:
@@ -137,13 +142,11 @@ f: FetchContent_MakeAvailable  paralel downlading should be improved
 prerequisities tested versions
 ch: change Actor_config variablerto ariables (schovat logiku do toho objektu)
 +: přidat spoučtní testů do .run (Clion)
-+: better req_error backtracking messages (or table if needed, add debug config)
 +: check in setup_chs_attack actors are available
 +: simulation interfaces
     // https://github.com/bcopeland/wmediumd
 +: add possibility to add different ieee file to hostapd
 t?: test with hostapd debugging logs, if are same
-ch: change functions to work with HWAdress, not string
 r: change all C++ file to .hpp (and change Cmake to accept it)
 ch: + docuemnt what exactly are validator/ref ($ref dont works with extends)
 +: dát  [[nodiscard]] tam, kde je to potřeba
@@ -167,12 +170,11 @@ d: SA query
 +: add target to donwload all tools (for all tests)
 
 Fixes:
-f: BARS dont work (nejspíš špatně zavhytává správné SSN, ale stejě by v otm případě měloa fungovat jako BAR)
 f: openwrt.yaml vygenerovane, zkontrolovat v dokumentaci openwrt
 
 Test cases:
 +: test, který by prošel všechny configy testů a vypsal jaké jsou validní
-f: all process have to killed before test
+f: all process have to be killed before test
 t: Actor with internal and AP should accept essid with different essid, but change it
 t: některé čipy mohou prej přestat komunikovat po změně mac adresy, zkontrolovat hlavn RTL
 +: testy pro qemu s mým raspberry image

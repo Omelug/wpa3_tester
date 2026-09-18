@@ -165,7 +165,6 @@ public:
 	static std::vector<std::vector<uint8_t>> inject_and_capture(const MonitorSocket &sout, MonitorSocket &sin,
 			Tins::PDU &pdu, const Channel &ch, int count = 0, int retries = 1);
 	static void flush_socket(MonitorSocket &s);
-	static std::optional<std::pair<Tins::HWAddress<6>, std::string>> get_nearby_ap_addr(MonitorSocket &sin);
 	static ProbeCapture capture_probe_response_ack(
 			const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, const Channel &ch, int retries = 1);
 

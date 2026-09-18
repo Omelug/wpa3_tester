@@ -96,9 +96,9 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
 		<p><b>Tests:</b>
 		valid - correct mac, spoofed - changed mac
 		<ul>
-			<li>injection_fields_<spoofed/valid> - normal monitor injection </li>
-			<li>injection_more_fragments_<spoofed/valid> - check if client dont ignore frames with more fragments flag</li>
-			<li>injection_order_<spoofed/valid> - check if order of injected frames is correct (not changed from user space send)</li>
+			<li>injection_fields_(spoofed/valid) - normal monitor injection </li>
+			<li>injection_more_fragments_(spoofed/valid) - check if client dont ignore frames with more fragments flag</li>
+			<li>injection_order_(spoofed/valid) - check if order of injected frames is correct (not changed from user space send)</li>
 			<li>injection_fields_retrans - check if frames are retransmitted</li>
 			<li>test_injection_txack - check if probe response and ack is captured with transceiver</li>
 		</ul>
@@ -134,7 +134,6 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
         }
         table.render();
     }
-
     f << "</div></body></html>";
 }
 

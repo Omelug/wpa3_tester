@@ -68,28 +68,6 @@ void hw_capabilities::flush_socket(MonitorSocket &s){
 	while(s.recv());
 }
 
-optional<pair<HWAddress<6>,string>> hw_capabilities::get_nearby_ap_addr(MonitorSocket &sin){
-	struct Entry{
-		int8_t rssi;
-		HWAddress<6> mac;
-		string ssid;
-	};
-	vector<Entry> beacons;
-	sin.recv_loop(steady_clock::now() + milliseconds(500), [&](auto r) ->bool{
-		try{
-			const RadioTap rt(r.raw.data(), r.raw.size());
-			if(!(rt.present() & RadioTap::DBM_SIGNAL)) return false;
-			const auto *beacon = rt.find_pdu<Dot11Beacon>();
-			if(!beacon) return false;
-			beacons.push_back({rt.dbm_signal(), beacon->addr2(), get_ssid(*beacon)});
-		} catch(...){}
-		return false;
-	});
-	if(beacons.empty()) return nullopt;
-	const auto best = ranges::max_element(beacons, [](const auto &a, const auto &b){ return a.rssi < b.rssi; });
-	return pair{best->mac, best->ssid};
-}
-
 ProbeCapture hw_capabilities::capture_probe_response_ack(
 	const MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
 	const Channel &ch, const int retries
@@ -271,11 +249,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 		if(ranges::contains(tids, 2) && ranges::contains(tids, 6)) break;
 	}
 
-	string tid_str;
-	for(size_t k = 0; k < tids.size(); k++){
-		if(k) tid_str += ',';
-		tid_str += to_string(tids[k]);
-	}
+	string tid_str = join(tids, ",");
 	auto test_name = "injection_order_" + strtype;
 	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)){
 		return {test_name, NOCAPTURE, "tids=[" + tid_str + "]"};

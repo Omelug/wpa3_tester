@@ -1,4 +1,5 @@
 #pragma once
+#include <format>
 #include <tins/tins.h>
 #include <vector>
 
@@ -24,26 +25,16 @@ struct SAEPair {
 	}
 
 	std::string to_str() const {
-		return "SAEPair {\n"
-			   "  status:   " +
-				std::to_string(status) +
-				"\n"
-				"  group_id: " +
-				std::to_string(group_id) +
-				"\n"
-				"  valid:    " +
-				(is_valid() ? "true" : "false") +
-				"\n"
-				"  scalar  (" +
-				std::to_string(scalar.size()) + " bytes): " + bytes_to_hex(scalar) +
-				"\n"
-				"  element (" +
-				std::to_string(element.size()) + " bytes): " + bytes_to_hex(element) +
-				"\n"
-				"  token   (" +
-				std::to_string(token.size()) + " bytes): " + bytes_to_hex(token) +
-				"\n"
-				"}";
+		return std::format(
+			"SAEPair {{\n"
+			"  status:   {}\n  group_id: {}\n  valid:    {}\n"
+			"  scalar  ({} bytes): {}\n"
+			"  element ({} bytes): {}\n"
+			"  token   ({} bytes): {}\n}}",
+			status, group_id, is_valid(),
+			scalar.size(), bytes_to_hex(scalar),
+			element.size(), bytes_to_hex(element),
+			token.size(), bytes_to_hex(token));
 	}
 };
 

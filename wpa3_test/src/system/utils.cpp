@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <sys/utsname.h>
-#include <vector>
 
 namespace wpa3_tester{
 using namespace std;
@@ -17,6 +16,7 @@ const path &root_dir(const optional<path> &set_to){
 	if(set_to) dir = *set_to;
 	return dir;
 }
+
 
 string current_timestamp(){
 	using clock = chrono::system_clock;
@@ -70,15 +70,6 @@ string trim(string s){
 	if (const auto last = s.find_last_not_of(" \t\r\n"); last != string::npos) s.erase(last + 1);
 	else s.clear();
 	return s;
-}
-
-string join(const vector<string> &v, const string &sep){
-	string out;
-	for(size_t i = 0; i < v.size(); ++i){
-		if(i) out += sep;
-		out += v[i];
-	}
-	return out;
 }
 
 static constexpr auto PUBLIC_FILE_PERMS = perms::owner_read | perms::owner_write | perms::group_read |

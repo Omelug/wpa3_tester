@@ -137,6 +137,12 @@
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: injection retrans/txack result parsing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

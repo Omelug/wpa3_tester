@@ -74,7 +74,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 	// retrans + txack only make sense with two distinct interfaces
 	bool two_iface = cap_iface != actor_tx.get(SK::iface);
 
-	if(two_iface && testack && rs) {
+	if(two_iface && testack && actor_rx->get_or(BK::AP, false)) {
 		const string ap_vif = actor_rx.get_ap_iface();
 		start_ap_hostapd(*rs, ap_vif, actor_rx, ch, HWAddress<6>(actor_rx.get(SK::mac)));
 

@@ -28,8 +28,12 @@ paths:
   ath_masker: ../../tools/ath_masker
   WPA3_SAE_DoS_Research_Suite: ../../tools/WPA3-SAE-DoS-Research-Suite
 only_list_reset:
-  - "0e8d:7612"   # MediaTek MT7612U
-  - "0cf3:9271"   # ath9k_htc USB adapter
+  - "0e8d:7612" # MediaTek MT7612U
+  - "0cf3:9271" # ath9k_htc USB adapter
+  - "0586:341f" # rtl8192cu
+  - "0bda:8179" # rtl8xxxu
+  - "0bda:c811" # Realtek Semiconductor Corp. 802.11ac NIC
+  - "0bda:0811" # Realtek Semiconductor Corp. Realtek 8812AU/8821AU 802.11ac WLAN Adapter [USB Wireless Dual-Band Adapter 2.4/5Ghz
 
 nm_exclude_actors: false
 #delete_old: true

@@ -45,9 +45,8 @@ struct TwoIfaceCacheFixture {
 	StubTwoIface iface{ "test_two_iface_cache_unit" };
 	ActorPtr a1 = make_stub_actor("ath9k", "aa:bb:cc:dd:ee:01");
 	ActorPtr a2 = make_stub_actor("mt76x2u", "aa:bb:cc:dd:ee:02");
-
-	TwoIfaceCacheFixture() { std::filesystem::remove_all(iface.cache_path().parent_path()); }
-	~TwoIfaceCacheFixture() { std::filesystem::remove_all(iface.cache_path().parent_path()); }
+	TwoIfaceCacheFixture() { std::filesystem::remove_all(iface.cache_folder()); }
+	~TwoIfaceCacheFixture() { std::filesystem::remove_all(iface.cache_folder()); }
 };
 
 }

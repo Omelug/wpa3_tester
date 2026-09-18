@@ -1,6 +1,8 @@
 #include "attacks/mc_mitm/wifi_util.h"
 
 #include <fstream>
+
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -198,17 +200,13 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	base_actor->set_iface_up();
 
 	// start ap command
-	vector<string> cmd = { "iw",
-		"dev",
-		ap_iface,
-		"ap",
-		"start",
-		ap_ssid,
+	vector<string> cmd = {
+		"iw", "dev", ap_iface, "ap", "start", ap_ssid,
 		to_string(hw_capabilities::channel_to_freq(channel)),
 		to_string(interval),
 		to_string(dtim_period),
-		"head",
-		head_hex.str() };
+		"head", head_hex.str()
+	};
 
 	if(!tail_bytes.empty()) {
 		ostringstream tail_hex;
@@ -255,14 +253,17 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	const auto conf = rs.run_folder() / ("hostapd_" + ap_iface + ".conf");
 	{
 		ofstream f(conf);
-		f << "interface=" << ap_iface << "\nssid=injection_test\nchannel=" << static_cast<int>(channel.ch_num) << "\nhw_mode=" << hw_mode << "\n";
+		f << "interface=" << ap_iface << "\n"
+		  << "ssid=injection_test\n"
+		  << "channel=" << static_cast<int>(channel.ch_num) << "\n"
+		  << "hw_mode=" << hw_mode << "\n";
 		if(mac) f << "bssid=" << mac->to_string() << "\n";
 	}
 	set_public_perms(conf);
 
 	vector<string> cmd;
-	if(netns) cmd = {"ip", "netns", "exec", *netns, "hostapd", conf.string(), "-d"};
-	else cmd = {"hostapd", conf.string(), "-d"};
+	if(netns)  cmd.insert(cmd.end(), { "ip", "netns", "exec", netns.value() });
+	cmd.insert(cmd.end(), {hostapd::get_hostapd("2_9"), conf.string(), "-d"});
 	rs.process_manager.run(ap_iface + "_hostapd", cmd, rs.run_folder());
 	rs.process_manager.wait_for(ap_iface + "_hostapd", "AP-ENABLED", chrono::seconds(20));
 }

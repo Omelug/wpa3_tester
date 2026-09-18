@@ -108,14 +108,12 @@ void reset_usb_ifaces() {
 				wifi_ifaces.size(), total);
 		}
 	}
-	size_t expected_with_driver = 0;
 	set<string> drivers;
 	for(const auto &iface: wifi_ifaces) {
-		if(iface.driver_name != "unknown") {
+		if(iface.driver_name != "unknown")
 			drivers.insert(iface.driver_name);
-			++expected_with_driver;
-		}
 	}
+	const size_t expected_with_driver = wifi_ifaces.size();
 	for(const auto &drv: drivers) {
 		hw_capabilities::run_cmd({ "modprobe", "-r", drv }, nullopt, false);
 		log(LogLevel::DEBUG, "reset_usb_ifaces: unloaded driver {}", drv);

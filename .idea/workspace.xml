@@ -135,14 +135,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: injection retrans/txack result parsing">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/firstboot.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/firstboot.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/attacks/two_iface/stub_two_iface.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/attacks/two_iface/stub_two_iface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -249,6 +256,7 @@
     "Doctest.setup_actor sim - create sniff iface.executor": "Debug",
     "Doctest.times_packet_sizes_from_csv - two valid rows.executor": "Debug",
     "Doctest.usb_bus_reset - devices remain in sysfs after reset.executor": "Debug",
+    "Makefile Target.driver-modules.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "NIXITCH_NIXPKGS_CONFIG": "/etc/nix/nixpkgs-config.nix",
     "NIXITCH_NIX_CONF_DIR": "",
@@ -304,7 +312,7 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester injection_test_filler">
+  <component name="RunManager" selected="Remote Debug.raspberry">
     <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -312,12 +320,6 @@
       </method>
     </configuration>
     <configuration name="collect_all_usb_wifi_ifaces - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_wifi_ifaces - list detected adapters" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="handle_from_ap_real" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_real_channel_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_real_channel_tests" TEST_CLASS="handle_from_ap_real" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -890,6 +892,12 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="driver-modules" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" target="driver-modules" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="CMake Application.asan" />
       <item itemvalue="CMake Application.leak-check" />
@@ -1085,9 +1093,9 @@
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
       <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
       <item itemvalue="Doctest.collect_all_usb_wifi_ifaces - list detected adapters" />
-      <item itemvalue="Doctest.handle_from_ap_real" />
       <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
       <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
+      <item itemvalue="Makefile Target.driver-modules" />
       <item itemvalue="Native Application.get_commit_values" />
       <item itemvalue="Native Application.openwrt" />
       <item itemvalue="Native Application.external list" />
@@ -1095,11 +1103,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.driver-modules" />
         <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
         <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
         <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
         <item itemvalue="Doctest.collect_all_usb_wifi_ifaces - list detected adapters" />
-        <item itemvalue="Doctest.handle_from_ap_real" />
       </list>
     </recent_temporary>
   </component>
@@ -1159,7 +1167,6 @@
     <MESSAGE value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
     <MESSAGE value="f injection sniff_monitor channel switch" />
     <MESSAGE value="f: injection sniff_monitor channel switch" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="f: usb hub reset&#10;r: usb hub reset" />
     <MESSAGE value="f: usb hub rese0 can be filtered by vender_id:product_id" />
     <MESSAGE value="f: reset_usb_ifaces - wait until net loading" />
@@ -1168,7 +1175,8 @@
     <MESSAGE value="+: libnl, libssh cmake" />
     <MESSAGE value="+: control_monitor in injection tests" />
     <MESSAGE value="f: injection retrans/txack result parsing" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: injection retrans/txack result parsing" />
+    <MESSAGE value="r: small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: small changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1179,9 +1187,9 @@
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_run.cpp</url>
-          <line>70</line>
-          <option name="timeStamp" value="39" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceActive.cpp</url>
+          <line>49</line>
+          <option name="timeStamp" value="40" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

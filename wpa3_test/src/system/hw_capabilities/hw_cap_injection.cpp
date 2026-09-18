@@ -83,7 +83,7 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 		flush_socket(sin);
 		sout.send(probe_req, ch);
 		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) ->bool{
-			try{
+			//try{
 				const RadioTap rt(r.raw.data(), r.raw.size());
 				const auto addrs = get_addrs(rt, r.raw);
 				if(rt.find_pdu<Dot11ProbeResponse>()){
@@ -91,7 +91,7 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 				} else if(rt.find_pdu<Dot11Ack>()){
 					if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
 				}
-			} catch(...){}
+			//} catch(...){} //TODO corrupted frames are possible ?
 			return false;
 		});
 		result = std::move(cur);
@@ -212,9 +212,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
 														const string &strtype, const Channel &ch, const int retries
 ){
-	// New label per retry round - frames from a previous round that arrive late
-	// (ath9k_htc retransmits until ACK, can take >2.5 s) won't match the new label
-	// and won't pollute the ordering check.
+	// new label per retry round - ignore frames from a previous round
 	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) ->Dot11QoSData{
 		Dot11QoSData p(ref.addr1, ref.addr2);
 		if(ref.from_ds) p.from_ds(1);
@@ -237,12 +235,11 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 
 		sin.recv_loop(steady_clock::now() + milliseconds(2500), [&](auto r) ->bool{
 			if(ranges::search(r.raw, label).empty()) return false;
-			try{
-				const RadioTap rt(r.raw.data(), r.raw.size());
-				const auto *q = rt.find_pdu<Dot11QoSData>();
-				// skip retransmissions (RETRY bit set); we only care about original TX order
-				if(q && !q->retry()) tids.push_back(q->qos_control() & 0xF);
-			} catch(...){}
+
+			const RadioTap rt(r.raw.data(), r.raw.size());
+			const auto *q = rt.find_pdu<Dot11QoSData>();
+			// skip retransmissions (RETRY bit set); we only care about original TX order
+			if(q && !q->retry()) tids.push_back(q->qos_control() & 0xF);
 			return false;
 		});
 		// check TID

@@ -14,14 +14,21 @@ source /usr/local/bin/wpa3-packages.sh
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
-# symlink headers if kernel minor-bumped ahead of apt Why?
+# On-device DKMS build only works when headers matching the running
 KVER=$(uname -r)
-if [ ! -d "/lib/modules/$KVER/build" ]; then
-    AVAIL=$(find /usr/src -maxdepth 1 -name "linux-headers-*v8*" -type d | sort -V | tail -1)
-    [ -n "$AVAIL" ] && mkdir -p "/lib/modules/$KVER" && ln -sf "$AVAIL" "/lib/modules/$KVER/build"
+if [ ! -d "/lib/modules/$KVER/build" ] && apt-cache show "linux-headers-${KVER}" >/dev/null 2>&1; then
+    echo "[firstboot] Installing matching kernel headers: linux-headers-${KVER}"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y "linux-headers-${KVER}"
 fi
 
-source /usr/local/bin/wpa3-drivers.sh
+if [ -d "/lib/modules/$KVER/build" ]; then
+    source /usr/local/bin/wpa3-drivers.sh
+else
+    echo "[firstboot] No headers matching running kernel ${KVER}"
+    if ! find "/lib/modules/${KVER}/updates" -iname '*.ko*' 2>/dev/null | grep -q .; then
+        echo "[firstboot] WARNING: no pre-baked driver modules found under /lib/modules/${KVER}/updates/"
+    fi
+fi
 
 echo "[firstboot] Building hostapd-mana from source..."
 git clone --depth=1 https://gitlab.com/kalilinux/packages/hostapd-mana /tmp/hostapd-mana

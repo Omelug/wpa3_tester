@@ -25,6 +25,25 @@ _dkms_install() {
     fi
     sudo dkms add     -m "${PKG}" -v "${VER}" 2>/dev/null || true
     sudo dkms install -m "${PKG}" -v "${VER}" 2>/dev/null || true
+
+    # Verify the module(s) DKMS just built actually match the running kernel
+    # (DKMS reports "installed" even when it silently built against the wrong)
+    local KVER_RUNNING BUILD_DIR KO KVER_BUILT BAD=0
+    KVER_RUNNING=$(uname -r)
+    BUILD_DIR="/var/lib/dkms/${PKG}/${VER}/${KVER_RUNNING}/aarch64/module"
+    for KO in "${BUILD_DIR}"/*.ko*; do
+        [ -e "${KO}" ] || continue
+        KVER_BUILT=$(modinfo "${KO}" 2>/dev/null | sed -n 's/^vermagic:[[:space:]]*\([^ ]*\).*/\1/p')
+        if [ -n "${KVER_BUILT}" ] && [ "${KVER_BUILT}" != "${KVER_RUNNING}" ]; then
+            echo "!! ${label}: built module ($(basename "${KO}")) vermagic '${KVER_BUILT}' != running kernel '${KVER_RUNNING}'"
+            BAD=1
+        fi
+    done
+    if [ "${BAD}" -eq 1 ]; then
+        echo "!! ${label}: DKMS built against mismatched headers - removing the bad build."
+        sudo dkms remove -m "${PKG}" -v "${VER}" -k "${KVER_RUNNING}" 2>/dev/null || true
+        return 1
+    fi
 }
 
 echo "==> Configuring usb_modeswitch for RTL8188GU..."
@@ -47,8 +66,11 @@ sudo udevadm control --reload-rules
 sudo udevadm trigger
 
 _dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"            /tmp/rtw88-src \
-    "-DCONFIG_RTW88_DEBUGFS -DCONFIG_RTW88_DEBUG"
+    "-DCONFIG_RTW88_DEBUGFS -DCONFIG_RTW88_DEBUG" \
+    || echo "!! rtw88 driver install failed - see messages above"
 #_dkms_install "8188gu"    "https://github.com/morrownr/8188gu"           /tmp/8188gu-src
-_dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210916"  /tmp/8821cu-src
+_dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210916"  /tmp/8821cu-src \
+    || echo "!! 8821cu driver install failed - see messages above"
 _dkms_install "rtl8852au" "https://github.com/WimLee115/rtl8852au-build" /tmp/rtl8852au-src \
-    "-DCONFIG_RTW89_DEBUGFS -DCONFIG_RTW89_8852AU -DCONFIG_RTW89_DEBUG"
+    "-DCONFIG_RTW89_DEBUGFS -DCONFIG_RTW89_8852AU -DCONFIG_RTW89_DEBUG" \
+    || echo "!! rtl8852au driver install failed - see messages above"

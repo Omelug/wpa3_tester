@@ -11,6 +11,7 @@
       <w>Mitm</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
+      <w>Pstore</w>
       <w>Realtek</w>
       <w>Reasso</w>
       <w>SIOCGIFINDEX</w>
@@ -133,6 +134,7 @@
       <w>konfiguration</w>
       <w>kprobes</w>
       <w>krack</w>
+      <w>kver</w>
       <w>libelf</w>
       <w>libgcc</w>
       <w>libssh</w>
@@ -146,6 +148,7 @@
       <w>manuf</w>
       <w>mausezahn</w>
       <w>meapol</w>
+      <w>mediatek</w>
       <w>meminfo</w>
       <w>memorycheck</w>
       <w>mfacaddr</w>
@@ -163,6 +166,7 @@
       <w>musleabihf</w>
       <w>nbytes</w>
       <w>netconsole</w>
+      <w>netdev</w>
       <w>netns</w>
       <w>newlink</w>
       <w>nextbeacon</w>
@@ -201,6 +205,7 @@
       <w>pfds</w>
       <w>pidstat</w>
       <w>pipefd</w>
+      <w>pkgs</w>
       <w>plotcmd</w>
       <w>pmkid</w>
       <w>pngcairo</w>
@@ -213,6 +218,7 @@
       <w>proces</w>
       <w>promisc</w>
       <w>psk</w>
+      <w>pstore</w>
       <w>radiotap</w>
       <w>raspbian</w>
       <w>rawpdu</w>
@@ -271,6 +277,7 @@
       <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
+      <w>vermagic</w>
       <w>vline</w>
       <w>vprintf</w>
       <w>vuln</w>
@@ -286,6 +293,7 @@
       <w>xlabel</w>
       <w>xmit</w>
       <w>xtics</w>
+      <w>xxxu</w>
       <w>ylabel</w>
       <w>ymax</w>
       <w>ymin</w>

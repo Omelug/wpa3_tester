@@ -1,4 +1,4 @@
-#
+#TODO update 
 # Raspberry Pi 4B - image creation and deploy automation
 #
 # WORKFLOW - automated image:
@@ -51,6 +51,8 @@ HOST_IFACE  ?= $(shell ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<NF;i++
 PI_IFACE    ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i++) if($$i=="dev"){print $$(i+1); exit}}')
 HOST_IP     ?= $(PI_GW)
 NETCAT_PORT ?= 6666
+
+CROSS_COMPILE ?= aarch64-linux-gnu-
 
 KERNEL_REPO  := https://github.com/raspberrypi/linux
 KERNEL_SRC   := $(CURDIR)/run/kernel-src

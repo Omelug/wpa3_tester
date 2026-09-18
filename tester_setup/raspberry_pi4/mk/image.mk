@@ -11,6 +11,7 @@ image: $(CUSTOM_IMAGE)
 $(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image image/customize.sh image/firstboot.sh image/firstboot.service
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
 	    INSTALL_MOD_PATH=$(KERNEL_MODS) -j$(shell nproc) modules_install
+	$(MAKE) driver-modules
 	cp $(IMAGE_RAW) $(CUSTOM_IMAGE)
 	sudo bash image/customize.sh \
 		"$(CUSTOM_IMAGE)" \

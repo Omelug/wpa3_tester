@@ -534,6 +534,31 @@ described_bool pbac_from_pcap_client(const path &pcap_path, const string &client
 	return result;
 }
 
+// RSN Capabilities: bit 6 = MFPR (0x0040), bit 7 = MFPC (0x0080), 802.11-2020 Table 9-264
+string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
+	if(!exists(pcap_path)) return {};
+	string filter = "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000";
+	if(!client_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + client_mac;
+
+	const string caps_raw = hw_capabilities::run_cmd_output(
+		{"tshark", "-r", pcap_path.string(), "-Y", filter + " && wlan.rsn.capabilities",
+		 "-T", "fields", "-e", "wlan.rsn.capabilities"}, nullopt);
+
+	stringstream ss(caps_raw);
+	string line;
+	while(getline(ss, line)) {
+		line = trim(line);
+		if(line.empty()) continue;
+		try {
+			const uint32_t caps = stoul(line, nullptr, 0);
+			if(caps & 0x0040u) return "REQUIRED";
+			if(caps & 0x0080u) return "OPTIONAL";
+			return "";
+		} catch(...) {}
+	}
+	return {};
+}
+
 // ----- scanning -----
 
 string client_scanning_from_pcap(const path &pcap_path, const string &client_mac, TimeWindow window) {

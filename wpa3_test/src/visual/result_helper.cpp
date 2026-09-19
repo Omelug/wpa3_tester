@@ -56,8 +56,17 @@ described_bool get_ap_ocv(const RunStatus &rs){
 	assert(rs.actor("attacker") || rs.actor("ap"));
 
 	described_bool ap_ocv;
-	if(exists( rs.run_folder() / "ap_hostapd.conf"))
+	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
+	if(exists(rs.run_folder() / "ap_hostapd.conf") && program_str == "hostapd")
 		ap_ocv += {hostapd::get_okc(rs, "ap").value_or(false), "hostapd_conf"};
+
+	const auto uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
+	if(exists(uci_conf) && program_str == "openwrt"){
+		const string ocv = openwrt::uci_get_option(uci_conf, "wifi-iface", "device", rs.get_actor("ap").get(SK::radio), "ocv");
+		if(!ocv.empty())
+			ap_ocv += {ocv == "1", "uci_conf"};
+	}
+
 	if(const auto v = observer::tshark::ap_ocv_from_pcap(observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap"))
 		ap_ocv += {*v, "pcap (beacon)"};
 	return ap_ocv;
@@ -98,18 +107,15 @@ described_str get_client_mfp(const RunStatus &rs, const TimeWindow window){
 	if(exists(wpa_config))
 		client_mfp += {hostapd::get_mfp_from_supplicant(wpa_config), "wpa_supplicant_conf"};
 
-	if (!rs.get_actor("ap").is(SK::source, "internal")) return client_mfp;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
-	if(exists(ap_log)){
-		if(program_str == "hostapd"){
-			client_mfp += {hostapd::mfp_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
-		}
-		if(program_str == "openwrt"){
-			client_mfp += {openwrt::mfp_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt"};
-		}
-	}
+	if(exists(ap_log) && program_str == "hostapd")
+		client_mfp += {hostapd::mfp_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
+
+	const path attacker_pcap = observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";
+	client_mfp += {observer::tshark::client_mfp_from_pcap(attacker_pcap, rs.get_actor("client").get(SK::mac)), "probe_req_pcap"};
+
 	return client_mfp;
 };
 
@@ -120,7 +126,6 @@ described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow windo
 	if(exists(wpa_config)){
 		client_WPA_support += {hostapd::get_conf_value(wpa_config, {"key_mgmt"}), "wpa_supplicant_conf"};
 	}
-	if (!rs.get_actor("ap").is(SK::source, "internal")) return client_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
 
@@ -129,7 +134,10 @@ described_str get_client_WPA_support(const RunStatus &rs, const TimeWindow windo
 			if(client_WPA_support.value().empty())
 				client_WPA_support += {hostapd::client_akm_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
 		}
-		//TODO openwrt
+		if(program_str == "openwrt"){
+			if(client_WPA_support.value().empty())
+				client_WPA_support += {openwrt::akm_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt log "};
+		}
 	}
 	return client_WPA_support;
 };
@@ -157,7 +165,6 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 
 	described_str conn_WPA_version{};
 	const path ap_log = rs.run_folder() / "logger" / "ap.log";
-	if (!rs.get_actor("ap").is(SK::source, "internal")) return conn_WPA_version;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 
 	if(exists(ap_log)){
@@ -165,7 +172,7 @@ described_str get_conn_WPA_version(const RunStatus &rs, const TimeWindow window)
 			conn_WPA_version += {hostapd::akm_from_ap_log(ap_log, rs.get_actor("client").get(SK::mac), window), "hostapd"};
 		}
 		if(program_str == "openwrt"){
-			conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt"};
+			conn_WPA_version += {openwrt::akm_from_openwrt_log(ap_log, rs.get_actor("client").get(SK::mac), window), "openwrt log"};
 		}
 	}
 	const path attacker_pcap =  observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap";

@@ -55,4 +55,6 @@ std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path)
 described_bool pbac_from_pcap_ap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});
 // PBAC from client Probe Request or Association Request frames
 described_bool pbac_from_pcap_client(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
+// MFP from client Probe Request or Association Request (RSN caps MFPR=bit6, MFPC=bit7)
+std::string client_mfp_from_pcap(const std::filesystem::path &pcap_path, const std::string &client_mac = {});
 }

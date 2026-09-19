@@ -135,22 +135,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: change results (move to parse functions) &#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/devices.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1153,7 +1142,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="ft: scan_ascii_issues" />
     <MESSAGE value="f: include/link" />
     <MESSAGE value="f: small fixes" />
     <MESSAGE value="f: redundant clangd-format broke code with html macros" />
@@ -1178,7 +1166,8 @@
     <MESSAGE value="f: start_ap_hostapd get_hostapd" />
     <MESSAGE value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
     <MESSAGE value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
+    <MESSAGE value="r: change results (move to parse functions) &#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: change results (move to parse functions) &#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1194,19 +1183,14 @@
           <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
-          <line>374</line>
-          <option name="timeStamp" value="60" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp</url>
+          <line>165</line>
+          <option name="timeStamp" value="64" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
-          <line>373</line>
-          <option name="timeStamp" value="61" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
-          <line>375</line>
-          <option name="timeStamp" value="62" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp</url>
+          <line>156</line>
+          <option name="timeStamp" value="65" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

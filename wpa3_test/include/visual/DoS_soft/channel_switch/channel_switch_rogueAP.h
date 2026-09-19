@@ -38,9 +38,6 @@ struct CsaTestEntry {
 	described_str client_scanning;
 	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> cracked;
-
-	//std::filesystem::path client_graph;
-	//std::filesystem::path ap_graph;
 	std::filesystem::path rel_path;
 
 	static CsaTestEntry parse(const std::filesystem::path &test_folder);

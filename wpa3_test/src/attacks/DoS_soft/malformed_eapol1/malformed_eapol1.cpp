@@ -6,6 +6,7 @@
 #include <tins/rawpdu.h>
 
 #include "attacks/components/setup_connections.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "interrupt.h"
 #include "logger/log_util.h"
@@ -105,6 +106,8 @@ void run_attack(RunStatus &rs){
 		this_thread::sleep_for(chrono::milliseconds(att_cfg.at("ms_interval")));
 	}
 	this_thread::sleep_for(chrono::seconds(att_cfg.at("sleep_after_sec"))); //to check connection after attack
+	if(rs.get_actor("ap")->conn) rs.get_actor("ap")->conn->disconnect();
+	rs.process_manager.stop_all();
 }
 
 void generate_report(const RunStatus &rs, const path &STA_graph_path, const path &AP_graph_path,
@@ -139,27 +142,9 @@ void stats(const RunStatus &rs){
 	const path AP_graph_path = observer::tshark::tshark_graph(rs, "ap", elements);
 	const path rogue_graph_path = observer::tshark::tshark_graph(rs, "rogue_ap", elements);
 
-	const auto disc_times = get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED");
 	nlohmann::json result;
-	const auto window = visual::helper::get_run_window(rs);
-	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
-	result["client_disconnected"] =  visual::helper::get_client_disconnected(rs, window);
-
-	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
-	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
-
-	const TimeWindow window_START{LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag)};
-	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
-	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
-	result["client_scanning"] = visual::helper::get_client_scanning(rs, window);
-
-	if (rogue_ap_connected) {
-		result["rogue_ap_connected"] = rogue_ap_connected.value();
-	}
-	if(crack_result) {
-		result["cracked"] = crack_result.value().cracked != 0;
-	}
-
+	if(rogue_ap_connected) result["rogue_ap_connected"] = rogue_ap_connected.value();
+	if(crack_result) result["cracked"] = crack_result.value().cracked != 0;
 	rs.save_result(result);
 
 	generate_report(rs, STA_graph_path, AP_graph_path, rogue_graph_path);

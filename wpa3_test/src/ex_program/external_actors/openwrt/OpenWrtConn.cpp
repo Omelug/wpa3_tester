@@ -12,6 +12,7 @@
 
 namespace wpa3_tester{
 using namespace std;
+using namespace filesystem;
 
 void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
 	const auto &setup_node = config.at("actors").at(actor_name).at("setup");
@@ -31,7 +32,7 @@ void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_na
 
 		exec("opkg install " + pkg, false, &ret);
 		if(ret){
-			exec("opkg update", false, &ret); //FIXME hardcoced conflict packages
+			exec("opkg update", false, &ret); //FIXME hardcoded conflict packages
 			exec("opkg remove wpad wpad-wolfssl wpad-basic wpad-basic-wolfssl 2>/dev/null", false, &ret);
 			exec("opkg install " + pkg, false, &ret);
 			if(ret){ throw config_err("Cannot install " + pkg + " after opkg update"); }
@@ -102,7 +103,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	if(radio.value("disabled", false)) exec("uci set wireless." + radio_name + ".disabled=0");
 
 	// Remove stale sections left by old setup_ap runs (named phy\d+_ap\d+ or wpa3_tester_*).
-	// These pollute UCI ordering and cause subsequent wifi up to assign the wrong AP slot.
+	// These pollute UCI ordering and cause subsequent Wi-Fi up to assign the wrong AP slot.
 	exec("for s in $(uci show wireless | grep '=wifi-iface' | sed 's/wireless\\.//;s/=.*//' | grep -E '^(phy[0-9]+_ap|wpa3_tester_)'); do uci delete wireless.$s 2>/dev/null; done; uci commit wireless 2>/dev/null; true");
 
 	// find existing section or create new
@@ -207,16 +208,17 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	actor->set(SK::iface, ifname);
 	actor->set(SK::mac, get_mac_address(ifname));
 	actor->set(SK::radio, radio_name);
+	actor->set(SK::uci_section, section);
 }
 
 void OpenWrtConn::setup_monitor_iface(const string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const{
-	// Bypass UCI/wifi for monitor mode - wpa_supplicant fights with netifd and prevents interface creation.
+	// Bypass UCI/Wi-Fi for monitor mode - wpa_supplicant fights with netifd and prevents interface creation.
 	// Use iw directly to create the monitor interface on the phy.
 	const string phy = "phy" + radio_name.substr(5); // "radio0" -> "phy0"
 	const string ifname = phy + "-mon0";
 
 	exec("wifi down " + radio_name + " 2>/dev/null; true");
-	// delete ALL vifs on this phy - driver limits concurrent interfaces
+	// delete ALL VIFs on this phy - driver limits concurrent interfaces
 	exec("for dev in $(iw dev | awk '/phy#" + phy.substr(3) + "/{p=1} p && /Interface/{print $2; p=0}'); do iw dev $dev del 2>/dev/null; done; true");
 	exec("iw phy " + phy + " interface add " + ifname + " type monitor");
 
@@ -265,10 +267,6 @@ void OpenWrtConn::set_managed_mode(const string &iface) const{
 }
 
 auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void{
-	// Find which bridge owns this wireless interface (usually br-lan on OpenWrt).
-	// We add the IP there directly rather than wrestling with UCI bridge creation +
-	// wifi reload - wifi reload only restarts wireless, not netifd network config,
-	// so a new UCI interface (br-phy1_ap0) would never actually get created.
 	int rc;
 	string master = exec("ip link show dev " + iface + " 2>/dev/null", false, &rc);
 	string target = iface;
@@ -279,7 +277,7 @@ auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void
 			target = target.substr(0, target.find_first_of(" \t\n\r"));
 		}
 	}
-	// del+add: del is a no-op if absent; add sets the address immediately
+	//TODO hardcoded mask
 	exec("ip addr del " + ip_addr + "/24 dev " + target + " 2>/dev/null; ip addr add " + ip_addr + "/24 dev " + target);
 	log(LogLevel::INFO, "set_ip: added {}/24 to {} (master of {})", ip_addr, target, iface);
 }
@@ -307,8 +305,6 @@ string OpenWrtConn::get_wifi_iface_section(const string &iface) const{
 	throw ex_conn_err("No section found for iface: " + iface);
 }
 
-// -------------------------------------------
-
 void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	nlohmann::json program_config = rs.config().at("actors").at(actor.get(SK::actor_name)).at("setup").at(
 		"program_config");
@@ -322,16 +318,8 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	};
 	const string wifi_iface = actor.get(SK::iface);
 
-	// Find the UCI section that actually controls this ifname - don't create a new one,
-	// or wifi reload would assign it a different slot (e.g., phy1-ap4 instead of phy1-ap0).
-	string section;
-	try{
-		section = get_wifi_iface_section(wifi_iface);
-	} catch(const ex_conn_err &e){
-		section = wifi_iface;
-		ranges::replace(section, '-', '_');
-		log(LogLevel::WARNING, "setup_ap: section not found for {}: {} - falling back to {}", wifi_iface, e.what(), section);
-	}
+	const string section = actor[SK::uci_section].value_or(
+		[&]{ string s = wifi_iface; ranges::replace(s, '-', '_'); return s; }());
 	log(LogLevel::DEBUG, "setup_ap: configuring UCI section '{}' for iface '{}'", section, wifi_iface);
 
 	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
@@ -339,7 +327,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 
 		if(key == "eap_user_file"){
-			const filesystem::path local = rs.config_path().parent_path() / value;
+			const path local = rs.config_path().parent_path() / value;
 			constexpr string_view remote = "/etc/hostapd.eap_user";
 			upload_file(local, remote);
 			exec(format("uci set wireless.{}.eap_user_file={}", section, remote));
@@ -357,7 +345,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap - AP may not be configured correctly", ret);
 
 	const string actor_name = actor.get(SK::actor_name);
-	auto try_download = [&](const filesystem::path &remote, const filesystem::path &local){
+	auto try_download = [&](const path &remote, const path &local){
 		try{
 			download_file(remote, local);
 			set_public_perms(local);
@@ -372,20 +360,20 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	try_download("/etc/config/wireless",
 				 rs.run_folder() / (actor_name + "_wireless_uci.conf"));
 }
-
 void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
-	constexpr int port = 5140;
-	const ActorPtr &ap_actor = rs.get_actor(actor_name);
-	const string remote_ip = ap_actor[SK::whitebox_ip].value();
-	const string kali_ip = ip::get_ip(hw_capabilities::get_iface(remote_ip, nullopt));
-	//kill what use port
-	hw_capabilities::run_cmd({"fuser", "-k", to_string(port) + "/tcp"}, nullopt, false);
-	rs.process_manager.run(actor_name, {"socat", "TCP-LISTEN:" + to_string(port) + ",reuseaddr", "STDOUT"});
-	exec("logread -f -l 100 -r " + kali_ip + " " + to_string(port) + " & echo $! > /tmp/logread_" + actor_name + ".pid");
+	const ActorPtr &ap = rs.get_actor(actor_name);
+	const path log_dir = rs.run_folder() / "logger";
+	create_directories(log_dir);
 
-	const auto ap = rs.get_actor(actor_name);
-	ap->conn->on_disconnect([this, actor_name](){
-		exec("kill $(cat /tmp/logread_" + actor_name + ".pid); rm /tmp/logread_" + actor_name + ".pid");
+	const string remote_log = "/tmp/logread_" + actor_name + ".log";
+	const string remote_pid = "/tmp/logread_" + actor_name + ".pid";
+
+	exec("kill $(pidof logread) 2>/dev/null; logread -f -l 100 >" + remote_log + " 2>&1 & echo $! >" + remote_pid);
+
+	ap->conn->on_disconnect([this, remote_log, remote_pid, log_dir, actor_name](){
+		exec("kill $(cat " + remote_pid + ") 2>/dev/null; rm " + remote_pid);
+		download_file(remote_log, log_dir / (actor_name + ".log"));
+		exec("rm " + remote_log + " 2>/dev/null");
 	});
 }
 

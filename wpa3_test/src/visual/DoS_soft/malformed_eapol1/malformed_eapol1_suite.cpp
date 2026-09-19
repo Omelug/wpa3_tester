@@ -1,9 +1,10 @@
 #include <filesystem>
-#include <nlohmann/json.hpp>
 
+#include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "default.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "logger/log_util.h"
 #include "logger/report.h"
 #include "overview/html_utils.h"
 #include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
@@ -13,23 +14,24 @@
 namespace wpa3_tester::visual::malformed_eapol1_filler {
 using namespace std;
 using namespace filesystem;
-using namespace nlohmann;
 
 MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<MalformedEapol1TestEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 	const auto rs = helper::load_test_rs(test_folder);
+	if(!rs) return e;
 
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
 	e.ap_source = ap->get(SK::source);
-	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
+	e.ap_driver = ap->get(SK::driver_name);
 
 	const auto client = rs->get_actor("client");
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
 	e.client_mac = client->get(SK::mac);
 	e.client_source = client->get(SK::source);
 	e.client_driver = client[SK::driver_name];
+	e.client_version = hostapd::get_version(*rs, "client");
 
 	const auto att = rs->get_actor("attacker");
 	e.attacker_mac = att->get(SK::mac);
@@ -43,9 +45,17 @@ MalformedEapol1TestEntry MalformedEapol1TestEntry::parse(const path &test_folder
 	//FIXME static paths
 	e.sta_graph = test_folder / "observer" / "tshark" / "client_graph.png";
 	e.ap_graph = test_folder / "observer" / "tshark" / "ap_graph.png";
-	e.client_driver = rs->get_actor("client").get(SK::driver_name);
-	e.client_version = hostapd::get_version(*rs, "client");
-	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
+
+	const auto window = helper::get_run_window(*rs);
+	e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	e.client_disconnected = helper::get_client_disconnected(*rs, window);
+	e.client_mfp = helper::get_client_mfp(*rs, window);
+	e.ap_WPA_support = helper::get_ap_WPA_support(*rs);
+	e.client_WPA_support = helper::get_client_WPA_support(*rs, window);
+	e.client_scanning = helper::get_client_scanning(*rs, window);
+	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs->combined_log(), START_tag) };
+	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
+
 	return e;
 }
 

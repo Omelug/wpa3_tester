@@ -163,8 +163,6 @@ void generate_report(const RunStatus &rs) {
 
 	const string perm_mac = scanner->get_or(SK::permanent_mac, "");
 	string mac_slug = perm_mac.empty() ? current_mac : perm_mac;
-	ranges::replace(mac_slug, ':', '_');
-
 	create_public_dirs(rs.run_folder());
 	const path out_path = rs.run_folder() / ("iface_report_" + mac_slug + ".md");
 

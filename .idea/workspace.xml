@@ -135,43 +135,20 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: drivers not compilated for raspberry corretly (after change of raspberry headers)">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option">
       <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/ex_program/openwrt/test_openwrt_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/ex_program/openwrt/test_openwrt_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/system/test_nl80211_cb.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/system/test_nl80211_cb.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_filler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/malformed_eapol1_filler.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/ap/ap_2_11_WPA2_only_MFPd_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/ap/ap_2_11_WPA2_only_MFPd_6.comp.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/ap/ap_2_11_WPA2_only_MFPr_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/ap/ap_2_11_WPA2_only_MFPr_6.comp.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/default.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/default.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/openwrt_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/ex_program/external_actors/openwrt/openwrt_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/dmesg_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/dmesg_wrapper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/devices.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/Actor_Config/actor_keys.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/channel_switch/channel_switch_rogueAP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/downgrade/wpa3_trans_downgrade.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/downgrade/wpa3_trans_downgrade.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/logger/pm_logger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/logger/pm_logger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/dmesg_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/dmesg_wrapper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/nl80211_compat.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/nl80211_compat.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/iface_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" afterDir="false" />
@@ -337,7 +314,7 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester injection_test_filler">
+  <component name="RunManager" selected="Remote Debug.raspberry">
     <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1176,7 +1153,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r: clang-format for test" />
     <MESSAGE value="ft: scan_ascii_issues" />
     <MESSAGE value="f: include/link" />
     <MESSAGE value="f: small fixes" />
@@ -1201,7 +1177,8 @@
     <MESSAGE value="r: small changes" />
     <MESSAGE value="f: start_ap_hostapd get_hostapd" />
     <MESSAGE value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
+    <MESSAGE value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1217,14 +1194,19 @@
           <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp</url>
-          <line>79</line>
-          <option name="timeStamp" value="41" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
+          <line>374</line>
+          <option name="timeStamp" value="60" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp</url>
-          <line>91</line>
-          <option name="timeStamp" value="42" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
+          <line>373</line>
+          <option name="timeStamp" value="61" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp</url>
+          <line>375</line>
+          <option name="timeStamp" value="62" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

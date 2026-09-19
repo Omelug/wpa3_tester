@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "attacks/components/setup_connections.h"
+#include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "interrupt.h"
 #include "logger/error_log.h"
@@ -200,15 +201,15 @@ void setup_chs_attack(RunStatus &rs) {
 
 void run_chs_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
-	const auto &ap_actor = rs.get_actor("ap");
+	const auto &ap = rs.get_actor("ap");
 
 	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
 	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker").get(SK::iface);
-	const string essid = ap_actor.get(SK::ssid);
-	const Channel old_channel = ap_actor->get_channel();
+	const string essid = ap.get(SK::ssid);
+	const Channel old_channel = ap->get_channel();
 	const Channel new_channel{
-		att_cfg.at("new_channel").get<uint8_t>(), ap_actor->get_channel().band, ap_actor[SK::ht_mode]
+		att_cfg.at("new_channel").get<uint8_t>(), ap->get_channel().band, ap[SK::ht_mode]
 	};
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
@@ -222,6 +223,7 @@ void run_chs_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Attack END");
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 
+	if(ap->conn) ap->conn->disconnect();
 	rs.process_manager.stop_all();
 }
 
@@ -294,21 +296,6 @@ void stats_chs_attack(const RunStatus &rs) {
 
 	// ---------- result
 	nlohmann::json result{};
-	const auto window = visual::helper::get_run_window(rs);
-	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
-
-	result["client_disconnected"] = visual::helper::get_client_disconnected(rs, window);
-	result["ap_ocv"] = visual::helper::get_ap_ocv(rs);
-	result["client_ocv"] = visual::helper::get_client_ocv(rs);
-
-	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
-	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
-	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
-
-	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag) };
-	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
-
-	result["client_scanning"] = visual::helper::get_client_scanning(rs, window);
 	result["rogue_ap_connected"] = rogue_ap_connected;
 	if(crack_result) { result["cracked"] = crack_result.value().cracked != 0; }
 

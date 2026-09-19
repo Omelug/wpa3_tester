@@ -138,17 +138,16 @@ described_str get_ap_WPA_support(const RunStatus &rs){
 	assert(rs.actor("ap"));
 
 	described_str ap_WPA_support{};
-	if (!rs.get_actor("ap").is(SK::source, "internal")) return ap_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
+
 	const auto hostapd_config = rs.run_folder() / "ap_hostapd.conf";
+	if(exists(hostapd_config) && program_str == "hostapd"){
+		ap_WPA_support += {hostapd::get_conf_value(hostapd_config, {"wpa_key_mgmt"}), "hostapd_conf"};
+	}
+
 	const auto uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
-	if(exists(hostapd_config)){
-		if(program_str == "hostapd"){
-			ap_WPA_support += {hostapd::get_conf_value(hostapd_config, {"wpa_key_mgmt"}), "hostapd_conf"};
-		}
-		if(program_str == "openwrt") {
-			openwrt::uci_get_option(uci_conf, "wifi-iface", "device", rs.get_actor("ap").get(SK::radio), "encryption");
-		}
+	if(exists(uci_conf) && program_str == "openwrt") {
+		ap_WPA_support += { openwrt::uci_get_option(uci_conf, "wifi-iface", "device", rs.get_actor("ap").get(SK::radio), "encryption"), "uci_conf"};
 	}
 	return ap_WPA_support;
 };

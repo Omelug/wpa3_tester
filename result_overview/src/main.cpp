@@ -157,7 +157,8 @@ int main(int argc, char *argv[]) {
 	f.close();
 	wpa3_tester::set_public_perms(index);
 
-	wpa3_tester::overview::generate_devices(output_dir, data_dir);
+	wpa3_tester::overview::generate_devices(output_dir, data_dir); // before for device  links
+
 	wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
 	wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
 	wpa3_tester::overview::generate_deauth(output_dir, data_dir);

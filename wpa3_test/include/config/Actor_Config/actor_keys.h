@@ -36,6 +36,7 @@ enum class SK : uint8_t {
 	ssh_port,
 	ssh_password,
 	external_OS,
+	uci_section,
 	COUNT_
 };
 
@@ -89,7 +90,8 @@ inline constexpr std::array<std::string_view, static_cast<size_t>(SK::COUNT_)> S
 	"ssh_user",
 	"ssh_port",
 	"ssh_password",
-	"external_OS" };
+	"external_OS",
+	"uci_section" };
 
 inline constexpr std::array<std::string_view, static_cast<size_t>(BK::COUNT_)> BK_NAMES = {
 	"AP",

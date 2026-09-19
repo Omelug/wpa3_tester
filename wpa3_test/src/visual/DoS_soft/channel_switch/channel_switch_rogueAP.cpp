@@ -18,8 +18,9 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<CsaTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
 
-	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
-	const auto rs = helper::load_test_rs(test_folder); //FIXME error on corrupted test, stop (checkall load_test_rs)
+	const auto rs = helper::load_test_rs(test_folder);
+	if(!rs) return e;
+
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
 	e.ap_source = ap->get(SK::source);
@@ -39,9 +40,18 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 		e.rogue_ap_driver = rogue->get(SK::driver_name);
 	}
 
-	//const path tshark = test_folder / "observer" / "tshark";
-	//if(const auto p = tshark / "client_graph.png"; exists(p)) e.client_graph = p;
-	//if(const auto p = tshark / "ap_graph.png"; exists(p)) e.ap_graph = p;
+	const auto window = helper::get_run_window(*rs);
+	e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	e.client_disconnected = helper::get_client_disconnected(*rs, window);
+	e.ap_ocv = helper::get_ap_ocv(*rs);
+	e.client_ocv = helper::get_client_ocv(*rs);
+	e.client_mfp = helper::get_client_mfp(*rs, window);
+	e.ap_WPA_support = helper::get_ap_WPA_support(*rs);
+	e.client_WPA_support = helper::get_client_WPA_support(*rs, window);
+
+	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs->combined_log(), START_tag) };
+	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
+	e.client_scanning = helper::get_client_scanning(*rs, window);
 
 	return e;
 }

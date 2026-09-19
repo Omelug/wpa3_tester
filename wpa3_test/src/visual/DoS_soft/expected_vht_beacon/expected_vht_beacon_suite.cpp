@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "logger/log_util.h"
+#include "observer/dmesg_wrapper.h"
 
 namespace wpa3_tester::visual::expected_vht_beacon_suite {
 using namespace std;
@@ -38,9 +39,18 @@ ExpVhtTestEntry ExpVhtTestEntry::parse(const path &test_folder) {
         e.rogue_ap_driver = rogue->get(SK::driver_name);
     }
 
+	const auto window = helper::get_run_window(*rs);
+	e.disconnect_count = static_cast<int>(get_time_logs(*rs, "client", "CTRL-EVENT-DISCONNECTED", window).size());
+	e.dmesg_change_mode_disconnect = !observer::dmesg::grep_log(*rs, "appears to change mode").empty();
+	e.client_mfp = helper::get_client_mfp(*rs, window);
+	e.ap_WPA_support = helper::get_ap_WPA_support(*rs);
+	e.client_WPA_support = helper::get_client_WPA_support(*rs, window);
+	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs->combined_log(), START_tag) };
+	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
+
 	if(ap->is_WB()) {
-		const auto window = helper::get_run_window(*rs, ap);
-		e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+		const auto window_ap = helper::get_run_window(*rs, ap);
+		e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window_ap).empty();
 	}
 
     return e;

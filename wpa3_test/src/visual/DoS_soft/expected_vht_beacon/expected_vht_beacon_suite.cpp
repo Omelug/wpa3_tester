@@ -55,17 +55,37 @@ void ExpVhtTestEntry::render_table(overview::HtmlGuard &f, const string &title,
         HtmlPathTable t(hg, entries, t_name);
         #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
-        const bool has_rogue = !entries.empty() && !entries.front().rogue_ap_mac.empty();
+        t.build([&](auto col) {
+            COL("Test",                 e.name);
+            COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+            COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+            COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+            COL("Rogue AP (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
+        	COL("Rogue WPA2 AP?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
+            col("Disconnects",          &ExpVhtTestEntry::disconnect_count);
+            col("AP disconnected",      &ExpVhtTestEntry::ap_disconnected);
+            col("dmesg change mode",    &ExpVhtTestEntry::dmesg_change_mode_disconnect);
+        })->render({"Test"});
+        #undef COL
+    });
+}
+
+void ExpVhtTestEntry::render_table_dlink(overview::HtmlGuard &f, const string &title,
+    const path &suite_data_dir, const path &page_dir, const string &t_name) {
+
+    helper::div_card<ExpVhtTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard &hg,
+        const vector<ExpVhtTestEntry> &entries) {
+
+        HtmlPathTable t(hg, entries, t_name);
+        #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
         t.build([&](auto col) {
             COL("Test",                 e.name);
             COL("AP MAC (source)",      overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
             COL("Client MAC (source)",  overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
             COL("Attacker (driver)",    overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-            if (has_rogue) {
-                COL("Rogue AP (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
-                COL("Rogue WPA2 AP?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
-            }
+            COL("Rogue AP (driver)",    overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
+        	COL("Rogue WPA2 AP?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
             col("Disconnects",          &ExpVhtTestEntry::disconnect_count);
             col("AP disconnected",      &ExpVhtTestEntry::ap_disconnected);
             col("dmesg change mode",    &ExpVhtTestEntry::dmesg_change_mode_disconnect);

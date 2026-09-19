@@ -46,6 +46,9 @@ _dkms_install() {
     fi
 }
 
+echo "==> Blacklisting rtl8192cu (buggy EAPOL delivery) in favour of rtl8xxxu..."
+echo "blacklist rtl8192cu" | sudo tee /etc/modprobe.d/blacklist-rtl8192cu.conf > /dev/null
+
 echo "==> Configuring usb_modeswitch for RTL8188GU..."
 sudo mkdir -p /etc/usb_modeswitch.d
 

@@ -110,15 +110,24 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	const bool no_sniff_iface = (!(*this)[BK::sniff_iface].has_value() ||
 			((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value()));
 	const auto base_mon_iface = monitor_needed() && no_sniff_iface;
-	if(base_mon_iface) set_monitor_mode();
+	if(base_mon_iface) {
+		set(real_actor, BK::monitor);
+		set_monitor_mode();
+	}
 	if(get_or(BK::injection_selftest, false)) {
 		const ActorPtr self(shared_from_this());
 		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
 		if(!TwoIfaceInject::run_check(self, self, cb, "injection")) log(LogLevel::INFO, "Get from cache");
 	}
 
-	if(get_or(BK::AP, false)) set_ap_mode();
-	if(get_or(BK::managed, false)) set_managed_mode();
+	if(get_or(BK::AP, false)) {
+		set(real_actor, BK::AP);
+		set_ap_mode();
+	}
+	if(get_or(BK::managed, false)) {
+		set(real_actor, BK::managed);
+		set_managed_mode();
+	}
 	set_iface_up();
 
 	// only in monitor mode is possible set channel everytime (should be set in programs in AP/managed mode)

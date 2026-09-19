@@ -33,6 +33,7 @@
       <w>autoprobe</w>
       <w>bigtk</w>
       <w>blackboc</w>
+      <w>bmaptool</w>
       <w>bmargin</w>
       <w>bprot</w>
       <w>capabilies</w>
@@ -89,6 +90,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>findmnt</w>
       <w>firmaware</w>
       <w>firstboot</w>
       <w>fmtloc</w>
@@ -174,6 +176,7 @@
       <w>nmcli</w>
       <w>nmconnection</w>
       <w>nmethod</w>
+      <w>nobmap</w>
       <w>noborder</w>
       <w>nocapture</w>
       <w>nohead</w>
@@ -206,6 +209,7 @@
       <w>pidstat</w>
       <w>pipefd</w>
       <w>pkgs</w>
+      <w>pkname</w>
       <w>plotcmd</w>
       <w>pmkid</w>
       <w>pngcairo</w>
@@ -215,6 +219,7 @@
       <w>ppps</w>
       <w>pred</w>
       <w>prevtime</w>
+      <w>priv</w>
       <w>proces</w>
       <w>promisc</w>
       <w>psk</w>

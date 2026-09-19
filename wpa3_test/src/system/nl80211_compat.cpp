@@ -29,15 +29,20 @@ void check_active_monitor(nlattr **attrs, NlCaps *caps){
 	caps->active_monitor = (features & NL80211_FEATURE_ACTIVE_MONITOR) != 0;
 }
 
-void check_type(nlattr **attrs, NlCaps *caps){
+void check_ap(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
 	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
-
 	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
 			nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]), nullptr);
+	if(iftypes[NL80211_IFTYPE_AP]) caps->ap = true;
+}
 
-	if(iftypes[NL80211_IFTYPE_STATION]){ caps->sta = true; }
-	if(iftypes[NL80211_IFTYPE_AP]){ caps->ap = true; }
+void check_managed(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
+	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
+	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
+			nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]), nullptr);
+	if(iftypes[NL80211_IFTYPE_STATION]) caps->sta = true;
 }
 
 // probably useless because can be falsely positive/negative
@@ -254,7 +259,8 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 
 	check_WPA3_SAE(attrs, caps);
 	check_WPA2_PSK(attrs, caps);
-	check_type(attrs, caps);
+	check_ap(attrs, caps);
+	check_managed(attrs, caps);
 	check_monitor(attrs, caps);
 	check_active_monitor(attrs, caps);
 	check_band_caps(attrs, caps);

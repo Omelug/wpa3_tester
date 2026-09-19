@@ -87,7 +87,53 @@ string uci_get_option(const path &uci_file, string_view block_type, string_view 
 	return {};
 }
 
-string akm_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){
+string uci_get_option(const path &uci_file, string_view block_type,
+		string_view filter_key, string_view filter_val, string_view key) {
+	ifstream f(uci_file);
+	string line;
+	bool in_block = false;
+	bool filter_matched = false;
+	string pending;        // value of `key` seen before the filter matched
+
+	auto parse_val = [](const string_view rest) -> string {
+		if (rest.starts_with('\'')) {
+			const auto q2 = rest.find('\'', 1);
+			if (q2 != string_view::npos) return string(rest.substr(1, q2 - 1));
+		}
+		return string(rest.substr(0, rest.find_first_of(" \t\r\n")));
+	};
+
+	auto reset = [&](const bool enter) {
+		in_block = enter; filter_matched = false; pending.clear();
+	};
+
+	while (getline(f, line)) {
+		const auto start = line.find_first_not_of(" \t");
+		if (start == string::npos) continue;
+		string_view sv(line.data() + start, line.size() - start);
+		if (sv.starts_with("config ")) {
+			sv.remove_prefix(7);
+			const auto sp = sv.find(' ');
+			reset((sp == string_view::npos ? sv : sv.substr(0, sp)) == block_type);
+		} else if (in_block && sv.starts_with("option ")) {
+			sv.remove_prefix(7);
+			const auto sp = sv.find(' ');
+			if (sp == string_view::npos) continue;
+			const auto opt_key = sv.substr(0, sp);
+			const auto val     = parse_val(sv.substr(sp + 1));
+			if (opt_key == filter_key && val == filter_val) {
+				filter_matched = true;
+				if (!pending.empty()) return pending;
+			} else if (opt_key == key) {
+				if (filter_matched) return val;
+				pending = val;
+			}
+		}
+	}
+	return {};
+}
+
+string  akm_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
 	const bool has_filter = client_mac != Tins::HWAddress<6>();

@@ -24,7 +24,7 @@ void RunStatus::setup_test() {
 	IF_DEBUG(save_actor_interface_mapping();)
 
 	process_manager.init_logging(_run_folder);
-	set_log_file(_run_folder / "logger" / "tester.log");
+	set_log_file(tester_log());
 
 	const auto module_name = _config.at("attacker_module");
 

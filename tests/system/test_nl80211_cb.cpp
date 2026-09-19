@@ -86,6 +86,28 @@ TEST_CASE("nl80211_cb - monitor via SUPPORTED_IFTYPES") {
 	CHECK_FALSE(caps.sta);
 }
 
+TEST_CASE("nl80211_cb - ap via SUPPORTED_IFTYPES") {
+	Msg msg;
+	nlattr *nested = nla_nest_start(msg.m, NL80211_ATTR_SUPPORTED_IFTYPES);
+	nla_put_flag(msg.m, NL80211_IFTYPE_AP);
+	nla_nest_end(msg.m, nested);
+	const auto caps = call_cb(msg.m);
+	CHECK(caps.ap);
+	CHECK_FALSE(caps.monitor);
+	CHECK_FALSE(caps.sta);
+}
+
+TEST_CASE("nl80211_cb - managed via SUPPORTED_IFTYPES") {
+	Msg msg;
+	nlattr *nested = nla_nest_start(msg.m, NL80211_ATTR_SUPPORTED_IFTYPES);
+	nla_put_flag(msg.m, NL80211_IFTYPE_STATION);
+	nla_nest_end(msg.m, nested);
+	const auto caps = call_cb(msg.m);
+	CHECK(caps.sta);
+	CHECK_FALSE(caps.monitor);
+	CHECK_FALSE(caps.ap);
+}
+
 TEST_CASE("nl80211_cb - AP and STA via SUPPORTED_IFTYPES") {
 	Msg msg;
 	nlattr *nested = nla_nest_start(msg.m, NL80211_ATTR_SUPPORTED_IFTYPES);

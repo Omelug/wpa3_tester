@@ -44,7 +44,7 @@ void ProcessManager::init_logging(const path &run_folder){
 	combined_log.close();
 	combined_log.open(combined_path, ios::out | ios::trunc);
 	if(!combined_log.is_open()){
-		log(LogLevel::ERROR, "Failed to open combined log file: {}", combined_path.string());
+		log(LogLevel::ERROR, "Failed to open combined log file: {}", combined_path);
 		throw run_err("Unable to open combined log file");
 	}
 	set_public_perms(combined_path);

@@ -101,8 +101,7 @@ void stats_attack(const RunStatus &rs) {
     result["ap_WPA_support"]      = visual::helper::get_ap_WPA_support(rs);
     result["client_WPA_support"]  = visual::helper::get_client_WPA_support(rs, window);
 
-    const path combined = rs.run_folder() / "logger" / "combined.log";
-    const TimeWindow w_start{LogTimePoint{}, get_tag_time(combined, START_tag)};
+    const TimeWindow w_start{LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag)};
     result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, w_start);
 
     rs.save_result(result);

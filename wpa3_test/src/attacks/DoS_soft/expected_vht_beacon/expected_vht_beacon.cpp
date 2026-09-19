@@ -100,22 +100,22 @@ void stats_attack(const RunStatus &rs) {
 
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 
-	observer::tshark::pcap_events(rs,
-			elements,
-			{
-					{ "client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange" },
-			});
+	observer::tshark::pcap_events(rs, elements, {{ "client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange" }});
 	observer::tshark::tshark_graph(rs, "client", elements);
 
 	const auto window = visual::helper::get_run_window(rs);
 	const int disconnects = static_cast<int>(get_time_logs(rs, "client", "CTRL-EVENT-DISCONNECTED", window).size());
-	const auto oc =
-			observer::dmesg::grep_log(rs.run_folder() / "observer" / "dmesg" / "dmesg.log", "appears to change mode");
+	const auto oc = observer::dmesg::grep_log(rs, "appears to change mode");
 
 	nlohmann::json result;
 	result["disconnect_count"] = disconnects;
 	result["dmesg_change_mode_disconnect"] = !oc.empty();
 	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
+	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
+	const TimeWindow window_START{LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag)};
+	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, window_START);
 	if(rogue_ap_connected) result["rogue_ap_connected"] = *rogue_ap_connected;
 	if(crack_result) result["cracked"] = crack_result->cracked != 0;
 	rs.save_result(result);

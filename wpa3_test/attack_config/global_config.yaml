@@ -30,11 +30,11 @@ paths:
 only_list_reset:
   - "0e8d:7612" # MediaTek MT7612U
   - "0cf3:9271" # ath9k_htc USB adapter
-  - "0586:341f" # rtl8192cu
   - "0bda:8179" # rtl8xxxu
+  - "0bda:8832" # Realtek Semiconductor Corp. 802.11ac WLAN Adapter
   - "0bda:c811" # Realtek Semiconductor Corp. 802.11ac NIC
   - "0bda:0811" # Realtek Semiconductor Corp. Realtek 8812AU/8821AU 802.11ac WLAN Adapter [USB Wireless Dual-Band Adapter 2.4/5Ghz
-
+  - "0586:341f" # ZyXEL Communications Corp. NWD2205 802.11n Wireless N Adapter [Realtek RTL8192CU]
 nm_exclude_actors: false
 #delete_old: true
 install_req: true

@@ -65,8 +65,7 @@ void stats_attack(const RunStatus &rs){
 	result["disconnected"] = disconnected;
 	result["downgrade_seen"] = downgrade_seen;
 
-	const path combined_log = rs.run_folder() / "logger" / "combined.log";
-	const TimeWindow window_START{LogTimePoint{}, get_tag_time(combined_log, START_tag)};
+	const TimeWindow window_START{LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag)};
 	result["ap_wpa3_trans_disable"] =
 		visual::helper::get_ap_wpa3_trans_disable(rs, window_START, hostapd::get_password(rs, "ap"));
 	rs.save_result(result);

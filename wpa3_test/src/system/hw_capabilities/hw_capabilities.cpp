@@ -107,7 +107,11 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 }
 
 string hw_capabilities::get_phy(const string &iface, const optional<string> &netns){
-	netlink_helper::NetNSContext ns_guard(netns);
+	if(netns) {
+		const string out = run_cmd_output({"readlink", "/sys/class/net/" + iface + "/phy80211"}, netns);
+		if(out.empty()) return "";
+		return path(out.substr(0, out.find_first_of("\r\n"))).filename().string();
+	}
 	const path link = "/sys/class/net/" + iface + "/phy80211";
 	if(!exists(link)) return "";
 	return read_symlink(link).filename().string();
@@ -295,8 +299,8 @@ void hw_capabilities::set_wifi_type(const string_view iface, const nl80211_iftyp
 		// fall back to set type if del fails (e.g. iface already gone)
 		const string phy = get_phy(string(iface), netns);
 		if(run_cmd({"iw", "dev", iface.data(), "del"}, netns, false) == 0) {
-			if(run_cmd({"iw", "phy", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0)
-				throw run_err("iw phy {} interface add {} type __ap failed", phy, iface);
+			if(run_cmd({"iw", phy, "interface", "add", iface.data(), "type", "__ap"}, netns) != 0)
+				throw run_err("iw {} interface add {} type __ap failed", phy, iface);
 		} else {
 			if(run_cmd({"iw", "dev", iface.data(), "set", "type", "__ap"}, netns) != 0)
 				throw run_err("iw set type __ap on '{}' failed", iface);

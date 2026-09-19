@@ -15,10 +15,9 @@ using namespace filesystem;
 using json = nlohmann::json;
 
 TimeWindow get_run_window(const RunStatus &rs){
-	const path combined_log = rs.run_folder() / "logger" / "combined.log";
-	if(!exists(combined_log)) return {};
+	if(!exists(rs.combined_log())) return {};
 	//first @END preferred (included @END_STOP)
-	return {get_tag_time(combined_log, START_tag), get_tag_time(combined_log, END_tag)};
+	return {get_tag_time(rs.combined_log(), START_tag), get_tag_time(rs.combined_log(), END_tag)};
 }
 
 TimeWindow get_run_window(const RunStatus &rs, const ActorPtr &actor){
@@ -142,12 +141,13 @@ described_str get_ap_WPA_support(const RunStatus &rs){
 	if (!rs.get_actor("ap").is(SK::source, "internal")) return ap_WPA_support;
 	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 	const auto hostapd_config = rs.run_folder() / "ap_hostapd.conf";
+	const auto uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
 	if(exists(hostapd_config)){
 		if(program_str == "hostapd"){
 			ap_WPA_support += {hostapd::get_conf_value(hostapd_config, {"wpa_key_mgmt"}), "hostapd_conf"};
 		}
-		if(program_str == "openwrt"){ //TODO hostapd parsing ok ?
-			ap_WPA_support += {hostapd::get_conf_value(hostapd_config, {"wpa_key_mgmt"}), "openwrt"};
+		if(program_str == "openwrt") {
+			openwrt::uci_get_option(uci_conf, "wifi-iface", "device", rs.get_actor("ap").get(SK::radio), "encryption");
 		}
 	}
 	return ap_WPA_support;
@@ -216,8 +216,7 @@ described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 			const string radio = rs.get_actor("ap").get(SK::radio);
 			if (!radio.empty()) {
 				const string val = openwrt::uci_get_option(uci_conf, "wifi-device", radio, "transition_disable");
-				if (!val.empty())
-					result += {val, "uci_conf"};
+				if (!val.empty()) result += {val, "uci_conf"};
 			}
 		}
 	}

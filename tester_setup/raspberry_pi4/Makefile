@@ -10,10 +10,7 @@
 #   4. make deploy PI=wpa3-tester.local  push code + build on Pi
 #   5. make run    PI=wpa3-tester.local  deploy + launch tester
 #
-# WORKFLOW - stock image (manual alternative to steps 1-3):
-#   Flash "Raspberry Pi OS Lite (64-bit)" via rpi-imager, enable SSH,
-#   boot, then: make bootstrap PI=<ip>
-#
+
 
 PI_USER     ?= pi
 PI_HOSTNAME ?= wpa3-tester
@@ -69,6 +66,7 @@ include mk/results.mk
 include mk/debug.mk
 
 .PHONY: help
+#TODO nedát to jako file do doc abych to nemusel udržovat zvlášť (už jsou tu v2ci, co nejsou pravda)
 help:
 	@echo ""
 	@echo "  Image (first time):"

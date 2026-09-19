@@ -67,6 +67,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     emit_table("2.4 GHz", base / "basic" / "expected_vht_beacon_2_4GHz_filler", "expected_vht_beacon_2_4GHz_filler");
     emit_table("5 GHz",   base / "basic" / "expected_vht_beacon_5GHz_filler",   "expected_vht_beacon_5GHz_filler");
     emit_table("RogueAP (2.4 GHz)", base / "rogueAP" / "expected_vht_beacon_rogueAP_filler", "expected_vht_beacon_rogueAP_filler");
+    ExpVhtTestEntry::render_table_dlink(f, "D-Link", base / "external" / "Dlink" / "expected_vht_beacon_ex_Dlink_filler", page_dir, "expected_vht_beacon_ex_Dlink_filler");
 
     f << "</body></html>";
 }

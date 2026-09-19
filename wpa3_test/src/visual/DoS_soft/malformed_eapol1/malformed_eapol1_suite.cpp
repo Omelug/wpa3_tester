@@ -75,7 +75,7 @@ void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const string
 					 col("Client wpa_supplicant version", &MalformedEapol1TestEntry::client_version);
 					 COL("Disconnected? <br> (from AP view)",
 							 e.client_disconnected << " (" << e.ap_disconnected << ")");
-					 COL("Rogue WPA2 AP,same channel?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
+					 COL("Rogue WPA2?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
 					 col("Client MFP", &MalformedEapol1TestEntry::client_mfp);
 					 COL("AP/Client WPA support", e.ap_WPA_support << "<br>" << e.client_WPA_support);
 					 col("Connected WPA version", &MalformedEapol1TestEntry::conn_WPA_version);

@@ -83,8 +83,7 @@ void RunStatus::execute() {
 	create_public_dirs(_run_folder);
 
 	// Initialize log file
-	const path log_file = _run_folder / "logger" / "tester.log";
-	set_log_file(log_file);
+	set_log_file(tester_log());
 
 	struct LogGuard {
 		~LogGuard() { close_log_file(); }

@@ -36,7 +36,7 @@ void start_dmesg(RunStatus &rs, const string &observer_name, const string &level
 	rs.process_manager.run(observer_name, args, {}, obs_folder);
 }
 
-vector<string> grep_log(const filesystem::path &log_file, const string &pattern) {
+vector<string> grep_log(const path &log_file, const string &pattern) {
 	vector<string> matches;
 	ifstream f(log_file);
 	string line;

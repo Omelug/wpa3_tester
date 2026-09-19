@@ -37,6 +37,6 @@ observers:
       filter: "special_filter:actors"
 attack_config:
   attack_time: 30
-  ms_interval: 10
+  ms_interval: 100
   sleep_before_sec: 5
   sleep_after_sec: 7

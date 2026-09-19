@@ -35,7 +35,7 @@ inline std::string var_PREFIX = "var_";
 
 inline std::string START_tag = "@START";
 
-//some function se only check for "@END" (can be prefix )
+//some function se only check for "@END" (can be prefixed )
 inline std::string END_tag = "@END";
 inline std::string END_STOP_tag = "@END_STOP";
 inline std::string END_STOP_ALL_tag = "@END_STOP_ALL";
@@ -97,6 +97,10 @@ public:
 	[[nodiscard]] std::filesystem::path config_path() const { return _config_path; }
 	void config_path(const std::filesystem::path &new_config_path) { this->_config_path = new_config_path; }
 
+	//log helpers
+	[[nodiscard]] std::filesystem::path combined_log() const { return _run_folder / "logger" / COMBINED_LOG; }
+	[[nodiscard]] std::filesystem::path tester_log() const { return _run_folder / "logger" / TESTER_LOG; }
+
 	//bool only_stats = false;
 	//public only for testing
 	ActorCMap actors{};
@@ -124,7 +128,7 @@ public:
 	static void print_test_list();
 
 	// start all observers in config
-	// manual because some tests have needs preparation in the run functions)
+	// (manually because some tests have needs preparation in the run functions)
 	void start_observers(ObserverRunPolicy policy = ObserverRunPolicy::THROW);
 	static std::string findConfigByTestName(const std::string &name);
 

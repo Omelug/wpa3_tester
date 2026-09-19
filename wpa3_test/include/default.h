@@ -12,6 +12,8 @@ inline std::string DATA_SUITE = "suite_data";
 inline std::string REPORT_NAME = "report.md";
 inline std::string INDEX_HTML = "index.html";
 inline std::string RESULT_NAME = "result.json";
+inline std::string COMBINED_LOG = "combined.log";
+inline std::string TESTER_LOG = "tester.log";
 inline std::string TEST_CONFIG_NAME = "test_config.yaml";
 inline std::string TEST_SUITE_CONFIG_DIR = "test_config";
 

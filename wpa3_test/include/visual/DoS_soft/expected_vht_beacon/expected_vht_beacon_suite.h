@@ -23,7 +23,7 @@ struct ExpVhtTestEntry {
 	// result fields - names must match result.json keys (auto-loaded by load_result_default)
 	int disconnect_count = 0;
 	std::optional<bool> dmesg_change_mode_disconnect;
-	std::optional<bool> ap_disconnected;
+	described_bool ap_disconnected;
 	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> cracked;
 	described_str client_mfp;
@@ -33,9 +33,6 @@ struct ExpVhtTestEntry {
 
 	static ExpVhtTestEntry parse(const std::filesystem::path &test_folder);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
-			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
-			const std::string &t_name);
-	static void render_table_dlink(overview::HtmlGuard &f, const std::string &title,
 			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
 			const std::string &t_name);
 	static void generate_report(RunSuiteStatus &rss);

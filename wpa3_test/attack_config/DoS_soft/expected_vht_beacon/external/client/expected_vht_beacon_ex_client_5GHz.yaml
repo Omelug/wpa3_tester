@@ -4,6 +4,7 @@ $validator: ../../expected_vht_beacon.schema.yaml
 $extends: [
   ../../../../comp/ap/ap_2_11_WPA3_only_MFPr_36.comp.yaml,
   ../ex_observers.comp.yaml,
+  ../../../../comp/rogue_ap/rogue_ap_36.comp.yaml
 ]
 
 actors:

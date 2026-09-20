@@ -173,11 +173,11 @@ void reset_usb_ifaces() {
 			});
 			if(net_ready >= expected_with_driver) break;
 			log(LogLevel::DEBUG, "reset_usb_ifaces: {}/{} adapters net-ready, waiting...", net_ready, expected_with_driver);
-			this_thread::sleep_for(chrono::seconds(3));
+			interruptible_sleep(chrono::seconds(3));
 		}
 	} else {
 		log(LogLevel::WARNING, "Reset USB fallback");
-		this_thread::sleep_for(chrono::seconds(8)); // fallback when no adapters were in sysfs before reset
+		interruptible_sleep(chrono::seconds(8)); // fallback when no adapters were in sysfs before reset
 	}
 	hw_capabilities::run_cmd({ "udevadm", "settle", "--timeout=10" }, nullopt, false);
 }

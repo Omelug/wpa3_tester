@@ -4,8 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
++: cangel Dlink config to different ssid (or stut donw openwrt after test? to not colide with internal tests?)
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
-+: get info from openwrt about Connected WPA version
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 +: ACM activation time (external, internal in hostapd)
 f: na nixOS vypadává interní wifi při testu
@@ -13,7 +13,6 @@ f+: SSID cofusion
 
 - není problḿ, že se po restartu usb adaptéry přejmenují (wlan0 je něco jiného -> je ignorováno něco ji-eho) - spíš ne
 +: check nd descript to cooments / Injection Test injection results+ sources
-r?: reset usb only if not found first internal?
 t: add to iface_info create_sniff_iface and start_ap
 f: rapsberry debugging vypisuje - cyklís  Cleanup namespace (ale přitom vypadá, že namespace nezabíjí? )
 +: overview only genereta what was changed
@@ -61,6 +60,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: get info from openwrt about Connected WPA version
 +: better req_error backtracking messages (or table if needed, add debug config)
 +: PCAB into ap_scan internal nand external()
 +: external Dlink for malformed eapol

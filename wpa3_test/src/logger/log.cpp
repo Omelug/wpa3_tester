@@ -78,6 +78,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	tm t = {};
 	const char *p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
 	if(p == nullptr) p = strptime(time_str.c_str(), "%Y-%m-%d %H:%M:%S", &t);
+	if(p == nullptr) p = strptime(time_str.c_str(), "%a %b %d %H:%M:%S %Y", &t); // OpenWrt syslog
 	if(p == nullptr) return LogTimePoint{};
 
 	// parse fractional seconds ".310201504" -> nanoseconds

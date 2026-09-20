@@ -67,8 +67,6 @@ static void inject_legacy_beacons(
 	}
 }
 
-// ---- module entry points ----
-
 void setup_attack(RunStatus &rs) {
 	components::client_ap_setup(rs, false);
 	components::setup_rogue_ap(rs);

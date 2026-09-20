@@ -166,7 +166,7 @@ void reset_usb_ifaces() {
 	};
 	if(expected_with_driver > 0) {
 		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
-		while(chrono::steady_clock::now() < deadline) {
+		while(chrono::steady_clock::now() < deadline && !g_interrupted.load()) {
 			const auto current = collect_all_usb_devices();
 			const size_t net_ready = ranges::count_if(current, [&](const auto &i) {
 				return i.driver_name != "unknown" && has_netdev(i);

@@ -93,7 +93,7 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 
 	if(auto actor_json = config.at("actors").at(get(SK::actor_name)); actor_json.contains("netns")) {
 		set(SK::netns, actor_json.at("netns").get<string>());
-		hw_capabilities::create_ns(get(SK::netns));
+		hw_capabilities::create_netns(get(SK::netns));
 	}
 	cleanup();
 

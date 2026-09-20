@@ -40,7 +40,7 @@ TEST_CASE("Cross-namespace interface lifecycle") {
     const string iface = TestConfig::base_iface;
 
     hw_capabilities::run_cmd({"ip", "netns", "del", test_ns});
-    REQUIRE_NOTHROW(hw_capabilities::create_ns(test_ns));
+    REQUIRE_NOTHROW(hw_capabilities::create_netns(test_ns));
     REQUIRE_NOTHROW(hw_capabilities::move_to_netns(iface, test_ns));
 
     REQUIRE_NOTHROW(hw_capabilities::set_iface_up(iface, test_ns));
@@ -105,7 +105,7 @@ TEST_CASE("STA connected to AP in different namespaces") {
     const string ap_phys_iface = "wlan1";
     const string ap_vif = "ap_vif";
 
-    REQUIRE_NOTHROW(hw_capabilities::create_ns(ap_ns));
+    REQUIRE_NOTHROW(hw_capabilities::create_netns(ap_ns));
     REQUIRE_NOTHROW(hw_capabilities::move_to_netns(ap_phys_iface, ap_ns));
 
 	const filesystem::path pcap_path = root_dir().parent_path().string() + "/tests/test_data/beacon_test.pcapng";

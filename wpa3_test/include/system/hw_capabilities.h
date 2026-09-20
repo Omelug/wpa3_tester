@@ -143,7 +143,7 @@ public:
 	static int freq_to_channel(int freq);
 	static int channel_to_freq(const Channel &ch);
 
-	static void create_ns(const std::string &ns_name);
+	static void create_netns(const std::string &ns_name);
 	static bool move_to_netns(const std::string &iface, const std::string &netns);
 	static Tins::HWAddress<6> rand_mac();
 

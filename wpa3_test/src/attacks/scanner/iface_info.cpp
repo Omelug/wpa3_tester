@@ -94,7 +94,7 @@ void run_attack(RunStatus &rs) {
 	try {
 		using namespace chrono;
 		const string test_ns = "iface_info_bench";
-		hw_capabilities::create_ns(test_ns);
+		hw_capabilities::create_netns(test_ns);
 
 		const auto t0 = steady_clock::now();
 		const bool moved = hw_capabilities::move_to_netns(iface, test_ns);

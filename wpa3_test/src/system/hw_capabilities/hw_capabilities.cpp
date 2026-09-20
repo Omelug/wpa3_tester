@@ -175,8 +175,8 @@ vector<InterfaceInfo> hw_capabilities::list_interfaces(const optional<InterfaceT
 	return result;
 }
 
-void hw_capabilities::create_ns(const string &ns_name){
-	run_cmd({"ip", "netns", "add", ns_name});
+void hw_capabilities::create_netns(const string &ns_name){
+	run_cmd({"ip", "netns", "add", ns_name}, nullopt, false); // ok if exists
 	run_cmd({"ip", "netns", "exec", ns_name, "ip", "link", "set", "lo", "up"});
 }
 
@@ -275,7 +275,7 @@ void hw_capabilities::set_iface_down(const string &iface, const optional<string>
 }
 
 void hw_capabilities::set_iface_up(const string &iface, const optional<string> &netns){
-	run_cmd({"ip", "link", "set", iface, "up"}, netns);
+	run_cmd({"ip", "link", "set", iface, "up"}, netns, true);
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to go UP:" + res.message());
 }

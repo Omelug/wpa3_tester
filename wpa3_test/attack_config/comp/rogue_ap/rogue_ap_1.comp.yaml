@@ -17,8 +17,7 @@ actors:
         ieee80211n: 1
         ieee80211w: 1
         group_mgmt_cipher: AES-128-CMAC
-        wpa_key_mgmt: WPA-PSK
-        #WPA-PSK-SHA256
+        wpa_key_mgmt: WPA-PSK WPA-PSK-SHA256
         wpa: 2
         wpa_passphrase: wrong_password
         rsn_pairwise: CCMP

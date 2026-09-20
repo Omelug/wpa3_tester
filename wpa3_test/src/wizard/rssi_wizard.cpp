@@ -299,7 +299,7 @@ static void add_adapter(NetworkSetup &setup, const string &iface_name) {
 		if(cfg->get(BK::netns_change)) {
 			netns_name = "rssi_" + mac_clean;
 			cfg->set(SK::netns, netns_name);
-			hw_capabilities::create_ns(netns_name);
+			hw_capabilities::create_netns(netns_name);
 		} else {
 			if(setup.default_netns_used) { log(LogLevel::ERROR, "\n Default netns already used, "); }
 			setup.default_netns_used = true;

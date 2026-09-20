@@ -75,7 +75,7 @@ TEST_CASE("cleanup_all_namespaces - removes multiple empty namespaces") {
 	vector<NsGuard> guards;
 	for(const auto &n: names) {
 		guards.emplace_back(n);
-		REQUIRE_NOTHROW(wpa3_tester::hw_capabilities::create_ns(n));
+		REQUIRE_NOTHROW(wpa3_tester::hw_capabilities::create_netns(n));
 	}
 	CHECK(netns_exists("wpa3_test_ns1"));
 	CHECK(netns_exists("wpa3_test_ns2"));

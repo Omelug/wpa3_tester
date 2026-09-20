@@ -43,6 +43,7 @@ void generate_channel_switch(const path &output_dir, const path &data_dir) {
 		</div>
 	<div class="card">
 	   <h2>Mitigations</h2>
+<p> Not very nice but efficient way of is ignore CSA beacons (check devices page, CSA colum)</p>
 <p>    OCV is protection, what add channel info (OCI) info into some frames, beacon protection is needed.
 Not very supported, mobile devices have better support (//TODO add source)</p>
 	</div>

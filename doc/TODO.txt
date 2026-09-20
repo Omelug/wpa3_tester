@@ -12,13 +12,10 @@ f: na nixOS vypadává interní wifi při testu
 f+: SSID cofusion
 
 - není problḿ, že se po restartu usb adaptéry přejmenují (wlan0 je něco jiného -> je ignorováno něco ji-eho) - spíš ne
-+: check nd descript to cooments / Injection Test injection results+ sources
 t: add to iface_info create_sniff_iface and start_ap
 f: rapsberry debugging vypisuje - cyklís  Cleanup namespace (ale přitom vypadá, že namespace nezabíjí? )
 +: overview only genereta what was changed
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
-+: Share Debug profile
-+: limit CSA for internal client
 f?: check injection test, test_injection_txack is no capture every time
 bl0ck - logy z OpenWrt (co nejvíce)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
@@ -60,6 +57,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: check nd descript to cooments / Injection Test injection results+ sources
 +: get info from openwrt about Connected WPA version
 +: better req_error backtracking messages (or table if needed, add debug config)
 +: PCAB into ap_scan internal nand external()

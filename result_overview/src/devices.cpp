@@ -43,6 +43,10 @@ struct IfaceData {
 	optional<bool> netns_move_ok;
 	optional<int>  netns_move_ms;
 	optional<int>  netns_return_ms;
+	optional<bool> sniff_iface_ok;
+	optional<int>  sniff_iface_ms;
+	optional<bool> start_ap_ok;
+	optional<int>  start_ap_ms;
 	optional<UsbInfo> usb;
 };
 
@@ -119,6 +123,16 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		}
 		if(j.contains("netns_return"))
 			d.netns_return_ms = j["netns_return"].value("ms", -1);
+		if(j.contains("sniff_iface_create")){
+			const auto &s = j["sniff_iface_create"];
+			d.sniff_iface_ok = s.value("ok", false);
+			if(s.contains("ms")) d.sniff_iface_ms = s.value("ms", -1);
+		}
+		if(j.contains("start_ap")){
+			const auto &s = j["start_ap"];
+			d.start_ap_ok = s.value("ok", false);
+			if(s.contains("ms")) d.start_ap_ms = s.value("ms", -1);
+		}
 		if(j.contains("usb_info") && j["usb_info"].value("is_usb", false)){
 			const auto &u = j["usb_info"];
 			d.usb = UsbInfo{
@@ -213,6 +227,16 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 			if(iface.netns_return_ms.has_value())
 				val += " &nbsp; return: " + to_string(iface.netns_return_ms.value()) + " ms";
 			tr("NetNS move", val);
+		}
+		if(iface.sniff_iface_ok.has_value()){
+			const string val = (iface.sniff_iface_ok.value() ? "PASS " : "FAIL ")
+				+ to_string(iface.sniff_iface_ms.value_or(-1)) + " ms";
+			tr("Sniff iface create", val);
+		}
+		if(iface.start_ap_ok.has_value()){
+			const string val = (iface.start_ap_ok.value() ? "PASS " : "FAIL ")
+				+ to_string(iface.start_ap_ms.value_or(-1)) + " ms";
+			tr("Start AP (hostapd)", val);
 		}
 		f << "</table>";
 		if(!iface.iw_info.empty()){

@@ -24,4 +24,8 @@ std::string akm_from_openwrt_log(
 std::string mfp_from_openwrt_log(
 		const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
 
+// Returns true if "AP-STA-DISCONNECTED <client_mac>" appears in the log within the window
+bool sta_disconnected_from_openwrt_log(
+		const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
+
 }

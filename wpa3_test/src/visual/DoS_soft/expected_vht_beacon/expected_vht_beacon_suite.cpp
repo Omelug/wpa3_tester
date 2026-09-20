@@ -48,10 +48,7 @@ ExpVhtTestEntry ExpVhtTestEntry::parse(const path &test_folder) {
 	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs->combined_log(), START_tag) };
 	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
 
-	if(ap->is_WB()) {
-		const auto window_ap = helper::get_run_window(*rs, ap);
-		e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window_ap).empty();
-	}
+	e.ap_disconnected = helper::get_ap_disconnected(*rs, client->get(SK::mac), window);
 
     return e;
 }

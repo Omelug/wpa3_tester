@@ -32,6 +32,7 @@ described_str get_client_mfp(const RunStatus &rs, TimeWindow window = {});
 described_str get_client_WPA_support(const RunStatus &rs, TimeWindow window = {});
 described_str get_conn_WPA_version(const RunStatus &rs, TimeWindow window = {});
 described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window = {});
+described_bool get_ap_disconnected(const RunStatus &rs, const std::string &client_mac, TimeWindow window = {});
 described_str get_ap_WPA_support(const RunStatus &rs);
 described_str get_client_scanning(const RunStatus &rs, TimeWindow window = {});
 described_str get_ap_wpa3_trans_disable(const RunStatus &rs, TimeWindow time_window = {}, std::string password = {});

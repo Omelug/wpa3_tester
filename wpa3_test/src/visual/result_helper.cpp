@@ -204,6 +204,23 @@ described_bool get_client_disconnected(const RunStatus &rs, TimeWindow window){
 	return client_disconnected;
 }
 
+described_bool get_ap_disconnected(const RunStatus &rs, const string &client_mac, TimeWindow window){
+	assert(rs.actor("ap"));
+	described_bool ap_disconnected{};
+	const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
+	const path ap_log = rs.run_folder() / "logger" / "ap.log";
+	if(exists(ap_log)){
+		if(program_str == "hostapd"){
+			ap_disconnected += {!get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty(), "hostapd"};
+		}
+		if(program_str == "openwrt"){
+			const Tins::HWAddress<6> mac(client_mac);
+			ap_disconnected += {openwrt::sta_disconnected_from_openwrt_log(ap_log, mac, window), "openwrt log"};
+		}
+	}
+	return ap_disconnected;
+}
+
 described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 										TimeWindow /*time_window*/, string /*password*/) {
 	assert(rs.actor("ap"));

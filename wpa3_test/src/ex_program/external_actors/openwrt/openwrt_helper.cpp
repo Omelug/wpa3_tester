@@ -14,26 +14,24 @@ struct AssociatedSta{
 	string auth_alg;
 };
 
+optional<Tins::HWAddress<6>> mac_after_tag(const string &line, const string_view tag){
+	const auto pos = line.find(tag);
+	if(pos == string::npos) return nullopt;
+	const auto start = pos + tag.size();
+	const auto end = line.find_first_of(" \t\n\r", start);
+	try{ return Tins::HWAddress<6>(line.substr(start, end == string::npos ? string::npos : end - start)); }
+	catch(...){ return nullopt; }
+}
+
 optional<AssociatedSta> parse_associated_sta_line(const string &line){
 	// format: "... AP-STA-CONNECTED <mac> auth_alg=<alg>"
-	const auto sta_pos = line.find("AP-STA-CONNECTED ");
-	if(sta_pos == string::npos) return nullopt;
-
-	const auto mac_start = sta_pos + string("AP-STA-CONNECTED ").size();
-	const auto mac_end = line.find_first_of(" \t\n\r", mac_start);
-	const string mac_text = line.substr(mac_start, mac_end == string::npos ? string::npos : mac_end - mac_start);
-
-	const auto alg_pos = line.find("auth_alg=", mac_end);
+	const auto mac = mac_after_tag(line, "AP-STA-CONNECTED ");
+	if(!mac) return nullopt;
+	const auto alg_pos = line.find("auth_alg=");
 	if(alg_pos == string::npos) return nullopt;
-	const auto alg_start = alg_pos + string("auth_alg=").size();
+	const auto alg_start = alg_pos + string_view("auth_alg=").size();
 	const auto alg_end = line.find_first_of(" \t\n\r", alg_start);
-	const string alg_text = line.substr(alg_start, alg_end == string::npos ? string::npos : alg_end - alg_start);
-
-	try{
-		return AssociatedSta{Tins::HWAddress<6>(mac_text), alg_text};
-	} catch(...){
-		return nullopt;
-	}
+	return AssociatedSta{*mac, line.substr(alg_start, alg_end == string::npos ? string::npos : alg_end - alg_start)};
 }
 
 string auth_alg_name(const string &alg){
@@ -157,6 +155,18 @@ string mfp_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &clie
 		return sta->auth_alg == "sae" ? "REQUIRED" : "";
 	}
 	return {};
+}
+
+bool sta_disconnected_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){
+	ifstream f(log_path);
+	string line;
+	const bool has_filter = client_mac != Tins::HWAddress<6>();
+	while(get_line_in_window(f, line, window)){
+		const auto mac = mac_after_tag(line, "AP-STA-DISCONNECTED ");
+		if(!mac) continue;
+		if(!has_filter || *mac == client_mac) return true;
+	}
+	return false;
 }
 
 }

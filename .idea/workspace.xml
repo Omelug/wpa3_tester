@@ -137,12 +137,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: random in bl0ck result tables">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

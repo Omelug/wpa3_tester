@@ -82,6 +82,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Injection Test Cache</title>
     <link rel="stylesheet" href="../../../style.css">
+	<script src="../../../table_aggregate.js"></script>
 </head>
 <body>
     <a href="../../../index.html" class="back-link"><= Overview</a>
@@ -112,7 +113,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     auto entries    = read_cache(cache_path);
 
 	ranges::sort(entries, [](const InjectionCacheEntry &a, const InjectionCacheEntry &b) {
-	return tie(a.tx_mac, a.rx_mac, a.driver, a.rx_driver) < tie(b.tx_mac, b.rx_mac, b.driver, b.rx_driver); });
+	return tie(a.driver, a.rx_driver, a.tx_mac, a.rx_mac) < tie( b.driver, b.rx_driver, b.tx_mac, b.rx_mac); });
 
     const auto test_names = collect_test_names(entries);
 

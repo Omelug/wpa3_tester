@@ -15,7 +15,7 @@ Target OS: RPI_IMAGE_URL in [Makefile](Makefile)
 It download and customizes image:
 
 - add to [kernel](mk/kernel.mk) wifi debug before compilation, allows in kernel drivers
-- creates user `pi` with password `wpa3tester`
+- creates user `pi` with password `wpa3_tester`
 - enables SSH
 - injects `~/.ssh/id_rsa.pub` for key-based login (can be run `make ssh_first` later if not working )
 - sets hostname `wpa3-tester`

@@ -8,14 +8,22 @@
       <w>Guttman</w>
       <w>Kbit</w>
       <w>Kbits</w>
+      <w>LEDS</w>
       <w>Mitm</w>
+      <w>NFSD</w>
+      <w>ONESHOT</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
       <w>Pstore</w>
+      <w>QUANTENNA</w>
+      <w>REISERFS</w>
       <w>Realtek</w>
       <w>Reasso</w>
+      <w>SILABS</w>
       <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
+      <w>SSSSSS</w>
+      <w>UUUUUU</w>
       <w>aabbccddee</w>
       <w>acces</w>
       <w>acks</w>
@@ -31,6 +39,7 @@
       <w>arrowstyle</w>
       <w>attackhead</w>
       <w>autoprobe</w>
+      <w>autosuspend</w>
       <w>bigtk</w>
       <w>blackboc</w>
       <w>bmaptool</w>
@@ -279,6 +288,7 @@
       <w>tmargin</w>
       <w>tsharks</w>
       <w>txack</w>
+      <w>txdone</w>
       <w>txop</w>
       <w>txpower</w>
       <w>txpwr</w>
@@ -286,6 +296,7 @@
       <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
+      <w>userconf</w>
       <w>vermagic</w>
       <w>vline</w>
       <w>vprintf</w>

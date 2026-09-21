@@ -230,9 +230,9 @@ void run_bl0ck_attack(RunStatus &rs) {
 
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_before_sec")));
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
-
-	rs.process_manager.write_log_all("Block Attack END");
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
 	rs.process_manager.stop_all();
 
@@ -281,11 +281,9 @@ void stats_bl0ck_attack(const RunStatus &rs) {
 
 	//const path attacker_graph = observer::tshark::tshark_graph(rs, "attacker", elements);
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
-	/*const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements,
-		observer::get_observer_folder(rs, "tcpdump"));*/
 
 	const Bl0ckResult result = load_result(rs);
-	generate_report(rs, result, /*attacker_graph,*/ client_graph /*, ap_graph*/);
+	generate_report(rs, result, /*attacker_graph,*/ client_graph);
 
 	log(LogLevel::INFO, "Bl0ck attack stats done");
 }

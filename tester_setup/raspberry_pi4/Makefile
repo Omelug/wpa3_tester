@@ -13,8 +13,8 @@
 
 
 PI_USER     ?= pi
-PI_HOSTNAME ?= wpa3-tester
-PI_PASSWORD ?= wpa3tester
+PI_HOSTNAME ?= wpa3_tester
+PI_PASSWORD ?= wpa3_tester
 SSH_KEY     ?= $(HOME)/.ssh/id_rsa.pub
 DISK        ?=
 CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml

@@ -1,7 +1,7 @@
 actors:
   ap:
     selection:
-      permanent_mac: "90:de:80:de:ff:7b"
+      permanent_mac: "90:de:80:de:fd:b2"
       driver: mt76x2u
   client:
     selection:
@@ -9,6 +9,6 @@ actors:
       driver: mt76x2u
   attacker:
     selection:
-      permanent_mac: "90:de:80:de:fd:b2"
+      permanent_mac: "90:de:80:6c:90:92"
       driver: mt76x2u
 

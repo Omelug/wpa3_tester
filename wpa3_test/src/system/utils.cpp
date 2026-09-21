@@ -148,6 +148,16 @@ void set_public_perms(const path &p) {
 	permissions(p, mode, ec);
 }
 
+void set_public_perms_recursive(const path &root) {
+	error_code ec;
+	set_public_perms(root);
+	if(is_directory(root, ec)) {
+		for(const auto &entry : recursive_directory_iterator(root, ec)) {
+			set_public_perms(entry.path());
+		}
+	}
+}
+
 void copy_f(const path &src, const path &dst){
 	copy_file(src, dst, copy_options::overwrite_existing);
 	set_public_perms(dst);

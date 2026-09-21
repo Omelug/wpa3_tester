@@ -34,5 +34,6 @@ void create_public_dirs(const std::filesystem::path &p, std::error_code &ec);
 
 // set file to 0666 (rw-rw-rw-) or directory to 0777 (rwxrwxrwx) permissions
 void set_public_perms(const std::filesystem::path &p);
+void set_public_perms_recursive(const std::filesystem::path &root);
 void copy_f(const std::filesystem::path &src, const std::filesystem::path &dst);
 }

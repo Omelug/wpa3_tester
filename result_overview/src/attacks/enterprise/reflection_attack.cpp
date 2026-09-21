@@ -12,7 +12,7 @@ using namespace filesystem;
 void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "enterprise" / "reflection_attack";
-	if(data_unchanged(page_dir, data_dir)) return;
+	if(data_unchanged(page_dir, data_dir / DATA_SUITE / "enterprise" / "reflection_attack")) return;
 
 	HtmlGuard f(page_dir);
 
@@ -47,7 +47,6 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 	emit_table("Test Results",  suite_dir,  "reflection_attack_filler");
 
 	f << "</body></html>";
-	update_data_stamp(page_dir, data_dir);
 }
 
 }

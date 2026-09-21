@@ -13,7 +13,8 @@ using visual::channel_switch_rogueAP::CsaTestEntry;
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "channel_switch";
-	if(data_unchanged(page_dir, data_dir)) return;
+	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
+	if(data_unchanged(page_dir, base)) return;
 	HtmlGuard f(page_dir);
 
 	f << R"html(<!DOCTYPE html>
@@ -56,14 +57,11 @@ Not very supported, mobile devices have better support.
 	};
 
 	// emit tables for each variant
-	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
-
 	emit_table("RogueAP internal",  base / "rogueAP" / "CSA_rogueAP_internal_filler", "CSA_rogueAP_internal_filler");
 	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler", "CSA_rogueAP_Dlink_filler");
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 
 	f << "</body></html>";
-	update_data_stamp(page_dir, data_dir);
 
 }
 }

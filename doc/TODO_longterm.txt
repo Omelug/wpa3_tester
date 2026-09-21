@@ -1,6 +1,7 @@
 These points should be solved separately
 In new versions
 
++: trace-cmd on  OpenWrt self compilated with ONFIG_FUNCTION_TRACER=y) needed
 +: Create system for auto loading firmware
 (not sure if possible fully automated, truy find already woking solution )
 

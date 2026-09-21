@@ -17,6 +17,10 @@ results:
 		$(RESULTS_DATA)/
 	$(MAKE) results_gen_only
 
+results_gen_only_force:
+	rm -rf $(RESULTS_HTML)
+	$(MAKE) results
+
 results_gen_only:
 	$(MAKE) -C $(SRC_ROOT) build_overview
 	#rm -rf $(RESULTS_HTML)

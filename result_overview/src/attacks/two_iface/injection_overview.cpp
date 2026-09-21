@@ -72,7 +72,7 @@ static vector<string> collect_test_names(const vector<InjectionCacheEntry> &entr
 void generate_injection_overview(const path &output_dir, const path &data_dir) {
     const path cache_path = data_dir / "cache" / "two_iface" / "two_iface_inject" / "cache.txt";
     const path page_dir   = output_dir / "attacks" / "two_iface" / "injection";
-    if(data_unchanged(page_dir, data_dir)) return;
+    if(data_unchanged(page_dir, cache_path.parent_path())) return;
 
     HtmlGuard f(page_dir);
 
@@ -138,7 +138,6 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     }
 	f << "<small>data from injection_test_filler </small>";
     f << "</div></body></html>";
-    update_data_stamp(page_dir, data_dir);
 }
 
 }

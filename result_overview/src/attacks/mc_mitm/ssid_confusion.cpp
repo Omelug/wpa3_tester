@@ -12,7 +12,7 @@ using visual::ssid_confusion_filler::SsidConfusionEntry;
 
 void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "mc_mitm" / "ssid_confusion";
-    if(data_unchanged(page_dir, data_dir)) return;
+    if(data_unchanged(page_dir, data_dir / DATA_SUITE / "mc_mitm" / "ssid_confusion")) return;
 
     HtmlGuard f(page_dir);
 
@@ -64,7 +64,6 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 									 page_dir,  "ssid_confusion_filler");
 
     f << "</body></html>";
-    update_data_stamp(page_dir, data_dir);
 }
 
 }

@@ -40,41 +40,7 @@ if ! command -v hostapd-mana &>/dev/null; then
     sudo rm -rf /tmp/hostapd-mana
 fi
 
-install -m 755 "$SCRIPT_DIR/drivers.sh"        "$ROOT/usr/local/bin/wpa3-drivers.sh"
-source /tmp/wpa3-drivers.sh
-
-sudo chmod +x /usr/bin/dumpcap
-
-echo "==> Configuring ath9k: disable ANI, enable user regulatory domain override..."
-printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
-    | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
-
-echo "==> Configuring cmdline.txt (xhci_hcd quirks + disabling USB autosuspend)..."
-
-# delete old values
-sudo sed -i 's/ xhci_hcd\.quirks=[0-9]*//' /boot/firmware/cmdline.txt
-sudo sed -i 's/ usbcore\.autosuspend=-\?[0-9]*//' /boot/firmware/cmdline.txt
-
-# add quirks for disable autosuspend (ath deadlock issue)
-sudo sed -i 's/$/ xhci_hcd.quirks=270336 usbcore.autosuspend=-1/' /boot/firmware/cmdline.txt
-sudo update-initramfs -u
-
-# drivers
-echo "==> Configuring rtw88 (disable deep power save, enable debug logging)..."
-printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
-    | sudo tee /etc/modprobe.d/rtw88.conf > /dev/null
-echo "==> Configuring rtw89 (disable deep power save, enable debug logging)..."
-printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
-    | sudo tee /etc/modprobe.d/rtw89.conf > /dev/null
-echo "==> Disabling mt76 USB scatter-gather (https://github.com/morrownr/7612u)..."
-echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.conf > /dev/null
-
-echo "==> Disabling USB 3.0 (reduces 2.4 GHz interference)..."
-grep -qxF "dtoverlay=disable-usb3" /boot/firmware/config.txt \
-    || echo "dtoverlay=disable-usb3" | sudo tee -a /boot/firmware/config.txt > /dev/null
-
-echo "==> Setting WiFi region CZ..." # TODO hardcoded change
-sudo raspi-config nonint do_wifi_country CZ
+sudo bash /tmp/wpa3-setup.sh
 
 echo "==> Configuring passwordless sudo for $USER (dev/test machine)..."
 echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/90-wpa3-dev > /dev/null
@@ -84,6 +50,7 @@ echo "==> Enabling IP forwarding + NAT (wlan* -> eth0 for dnsmasq clients)..."
 echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/10-ip-forward.conf > /dev/null
 sudo sysctl -p /etc/sysctl.d/10-ip-forward.conf
 
+#TODO needed?
 sudo tee /usr/local/sbin/wpa3-nat.sh << 'EOF' > /dev/null
 #!/usr/bin/env bash
 add() { /usr/sbin/iptables "$@" 2>/dev/null || true; }
@@ -120,17 +87,7 @@ EOF
 sudo systemctl enable wpa3-nat.service
 sudo systemctl start wpa3-nat.service
 
-echo "==> Configuring static IPs on eth0 (10.0.0.2 + 192.168.0.2)..."
-# Ensure the connection exists, then always apply the settings #TODO delete google/Cloudflare DNS?
-sudo nmcli connection show eth0-static &>/dev/null || \
-    sudo nmcli connection add type ethernet ifname eth0 con-name eth0-static
-
-sudo nmcli connection modify eth0-static \
-    ipv4.method manual \
-    ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
-    ipv4.gateway "10.0.0.1" \
-    ipv4.dns "8.8.8.8,1.1.1.1"
-
+sudo chmod +x /usr/bin/dumpcap
 sudo chsh -s "$(which fish)" "$USER"
 echo "==> Bootstrap complete"
 

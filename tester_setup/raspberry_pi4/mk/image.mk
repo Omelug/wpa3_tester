@@ -1,13 +1,13 @@
-.PHONY: image flash clean_image ssh_first
+.PHONY: image image-deploy flash clean_image ssh_first
 
 # source files - exist in repo, no recipe needed; declared so CLion resolves them as prerequisites
-image/customize.sh image/firstboot.sh image/firstboot.service: ;
+image/customize.sh image/firstboot.sh image/firstboot.service image/drivers.conf image/setup.sh: ;
 
 image: $(CUSTOM_IMAGE)
 	@echo "==> Image ready: $(CUSTOM_IMAGE)"
 	@echo "    Flash:  make flash DISK=/dev/sdX"
 
-$(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image image/customize.sh image/firstboot.sh image/firstboot.service
+$(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image image/customize.sh image/firstboot.sh image/firstboot.service image/drivers.conf image/setup.sh
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	    INSTALL_MOD_PATH=$(KERNEL_MODS) -j$(shell nproc) modules_install
 	$(MAKE) driver-modules
@@ -30,6 +30,16 @@ $(IMAGE_RAW): $(IMAGE_XZ)
 $(IMAGE_XZ):
 	mkdir -p run/cache
 	wget --show-progress -O $(IMAGE_XZ) $(RPI_IMAGE_URL)
+
+image-deploy: $(CUSTOM_IMAGE)
+	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make image-deploy PI=<addr>"; exit 1; }
+	rsync -az --delete --info=progress2 $(KERNEL_MODS)/lib/modules/ $(PI_USER)@$(PI):/tmp/new-modules/
+	$(SSH) "sudo rsync -a /tmp/new-modules/. /lib/modules/ && sudo depmod -a"
+	scp $(KERNEL_OUT)/arch/arm64/boot/Image $(PI_USER)@$(PI):/tmp/kernel8.img
+	$(SSH) "sudo cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.bak \
+	    && sudo cp /tmp/kernel8.img /boot/firmware/kernel8.img && sudo reboot"
+	@echo "==> Kernel + drivers deployed from image. Pi rebooting."
+	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
 
 flash: $(CUSTOM_IMAGE)
 	@echo ""

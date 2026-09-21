@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="8" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="12" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -136,18 +136,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify kernel debug">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible">
       <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/cross.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/cross.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/debug.mk" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/results.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/results.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -199,107 +191,107 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "CMake Application.result_overview raspberry.executor": "Debug",
-    "CMake Application.result_overview.executor": "Debug",
-    "CMake Application.rssi_wizard.executor": "Debug",
-    "CMake Application.test_config_validation.executor": "Debug",
-    "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
-    "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_BA.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_BA_Dlink.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_Dlink_suite.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_basic_ts.executor": "Debug",
-    "CMake Application.wpa3_tester bl0ck_monitor_test.executor": "Debug",
-    "CMake Application.wpa3_tester channel_switch_rogueAP_Dlink.executor": "Debug",
-    "CMake Application.wpa3_tester deauth_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor": "Debug",
-    "CMake Application.wpa3_tester expected_vht_beacon_test.executor": "Debug",
-    "CMake Application.wpa3_tester external_info.executor": "Debug",
-    "CMake Application.wpa3_tester iface_info_filler.executor": "Debug",
-    "CMake Application.wpa3_tester injection_test_example.executor": "Debug",
-    "CMake Application.wpa3_tester injection_test_example_req.executor": "Debug",
-    "CMake Application.wpa3_tester injection_test_filler.executor": "Debug",
-    "CMake Application.wpa3_tester invalid_curve_filler.executor": "Debug",
-    "CMake Application.wpa3_tester wpa3_downgrade_filler.executor": "Debug",
-    "CMake Debug.Project.executor": "Debug",
-    "CidrDebugProfileConversion": "true",
-    "Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor": "Debug",
-    "Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor": "Debug",
-    "Doctest.HtmlPathTable prefix grouping functionality.executor": "Debug",
-    "Doctest.HtmlPathTable t_name footer on non-empty entries.executor": "Debug",
-    "Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor": "Debug",
-    "Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor": "Debug",
-    "Doctest.collect_all_usb_devices - list detected adapters.executor": "Debug",
-    "Doctest.collect_all_usb_wifi_ifaces - list detected adapters.executor": "Debug",
-    "Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor": "Debug",
-    "Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor": "Debug",
-    "Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor": "Debug",
-    "Doctest.handle_action_rogue.executor": "Debug",
-    "Doctest.handle_assoc_request.executor": "Debug",
-    "Doctest.handle_auth_from_client_real.executor": "Debug",
-    "Doctest.handle_eapol_real.executor": "Debug",
-    "Doctest.handle_eapol_rogue.executor": "Debug",
-    "Doctest.handle_from_ap_real.executor": "Debug",
-    "Doctest.handle_open_auth.executor": "Debug",
-    "Doctest.handle_probe.executor": "Debug",
-    "Doctest.hwsim setup_actor - create sniff iface.executor": "Debug",
-    "Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor": "Debug",
-    "Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor": "Debug",
-    "Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers.executor": "Debug",
-    "Doctest.satisfied conn_cond (STA->AP from data frame) returns true.executor": "Debug",
-    "Doctest.setup_actor sim - create sniff iface.executor": "Debug",
-    "Doctest.times_packet_sizes_from_csv - two valid rows.executor": "Debug",
-    "Doctest.usb_bus_reset - devices remain in sysfs after reset.executor": "Debug",
-    "Makefile Target.driver-modules.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "NIXITCH_NIXPKGS_CONFIG": "/etc/nix/nixpkgs-config.nix",
-    "NIXITCH_NIX_CONF_DIR": "",
-    "NIXITCH_NIX_OTHER_STORES": "",
-    "NIXITCH_NIX_PATH": "nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels",
-    "NIXITCH_NIX_PROFILES": "/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/nixos /home/nixos/.local/state/nix/profile /nix/profile /home/nixos/.nix-profile /var/lib/flatpak/exports /home/nixos/.local/share/flatpak/exports",
-    "NIXITCH_NIX_REMOTE": "",
-    "NIXITCH_NIX_USER_PROFILE_DIR": "/nix/var/nix/profiles/per-user/nixos",
-    "Remote Debug.raspberry.executor": "Debug",
-    "Remote GDB Server.nlohmann_json_schema_validator.executor": "Debug",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
-    "WebServerToolWindowPanel.toolwindow.show.date": "false",
-    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
-    "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "cf.advertisement.text.overridden": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "ctest.advertisement.all.test.configuration.is.created": "true",
-    "git-widget-placeholder": "dev",
-    "git.auto.fetch.suggestion.counter": "3",
-    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/deauth",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "CMakeSettings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;CMake Application.result_overview raspberry.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.result_overview.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.rssi_wizard.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.test_config_validation.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester BARS_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester CSA_external_client_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_BA.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_BA_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_Dlink_suite.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_basic_ts.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester bl0ck_monitor_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester channel_switch_rogueAP_Dlink.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester deauth_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_2_4GHz_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_5GHz.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_beacon_prot_5GHz.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_Dlink_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_ex_client_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_rogueAP_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester expected_vht_beacon_test.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester external_info.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester iface_info_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_example.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_example_req.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester injection_test_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester invalid_curve_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.wpa3_tester wpa3_downgrade_filler.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Debug.Project.executor&quot;: &quot;Debug&quot;,
+    &quot;CidrDebugProfileConversion&quot;: &quot;true&quot;,
+    &quot;Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable prefix grouping functionality.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.HtmlPathTable t_name footer on non-empty entries.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.collect_all_usb_devices - list detected adapters.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.collect_all_usb_wifi_ifaces - list detected adapters.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_action_rogue.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_assoc_request.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_auth_from_client_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_eapol_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_eapol_rogue.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_from_ap_real.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_open_auth.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.handle_probe.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.hwsim setup_actor - create sniff iface.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.satisfied conn_cond (STA-&gt;AP from data frame) returns true.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.setup_actor sim - create sniff iface.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.times_packet_sizes_from_csv - two valid rows.executor&quot;: &quot;Debug&quot;,
+    &quot;Doctest.usb_bus_reset - devices remain in sysfs after reset.executor&quot;: &quot;Debug&quot;,
+    &quot;Makefile Target.driver-modules.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;NIXITCH_NIXPKGS_CONFIG&quot;: &quot;/etc/nix/nixpkgs-config.nix&quot;,
+    &quot;NIXITCH_NIX_CONF_DIR&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_OTHER_STORES&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_PATH&quot;: &quot;nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels&quot;,
+    &quot;NIXITCH_NIX_PROFILES&quot;: &quot;/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/nixos /home/nixos/.local/state/nix/profile /nix/profile /home/nixos/.nix-profile /var/lib/flatpak/exports /home/nixos/.local/share/flatpak/exports&quot;,
+    &quot;NIXITCH_NIX_REMOTE&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_USER_PROFILE_DIR&quot;: &quot;/nix/var/nix/profiles/per-user/nixos&quot;,
+    &quot;Remote Debug.raspberry.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.nlohmann_json_schema_validator.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;cf.advertisement.text.overridden&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;ctest.advertisement.all.test.configuration.is.created&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;3&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/deauth&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/deauth" />
@@ -1122,31 +1114,31 @@
       </list>
     </recent_temporary>
   </component>
-  <component name="SelectedDebugProfileService"><![CDATA[{
-  "profileIdByStamp": [
+  <component name="SelectedDebugProfileService">{
+  &quot;profileIdByStamp&quot;: [
     {
-      "first": {
-        "##RUN_CONFIGURATION##": "Remote Debug.raspberry"
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;Remote Debug.raspberry&quot;
       },
-      "second": "63f0d8d2-714c-4b70-ad93-4066291d0f14"
+      &quot;second&quot;: &quot;63f0d8d2-714c-4b70-ad93-4066291d0f14&quot;
     },
     {
-      "first": {
-        "##RUN_CONFIGURATION##": "CMake Application.wpa3_tester bl0ck_basic_ts",
-        "cmake": "CMakeBuildProfile:Debug"
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester bl0ck_basic_ts&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug&quot;
       },
-      "second": "63f0d8d2-714c-4b70-ad93-4066291d0f14"
+      &quot;second&quot;: &quot;63f0d8d2-714c-4b70-ad93-4066291d0f14&quot;
     },
     {
-      "first": {
-        "##RUN_CONFIGURATION##": "CMake Application.wpa3_tester bl0ck_BA",
-        "cmake": "CMakeBuildProfile:Debug"
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CMake Application.wpa3_tester bl0ck_BA&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug&quot;
       },
-      "second": "00a686b5-f6bb-4857-b519-14800733495f"
+      &quot;second&quot;: &quot;00a686b5-f6bb-4857-b519-14800733495f&quot;
     }
   ],
-  "modificationCount": 8
-}]]></component>
+  &quot;modificationCount&quot;: 8
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="" />
@@ -1187,7 +1179,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: PCAP oin internal iface_info" />
     <MESSAGE value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
     <MESSAGE value="f injection sniff_monitor channel switch" />
     <MESSAGE value="f: injection sniff_monitor channel switch" />
@@ -1212,7 +1203,8 @@
     <MESSAGE value="+v: sniff_iface_create, start_ap on device page" />
     <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
     <MESSAGE value="r: simplify kernel debug" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: simplify kernel debug" />
+    <MESSAGE value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
+    <option name="LAST_COMMIT_MESSAGE" value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

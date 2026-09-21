@@ -139,7 +139,8 @@ FetchContent_Declare(reproc
         OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(linux_headers_wifi
-        URL https://raw.githubusercontent.com/torvalds/linux/v7.2/include/uapi/linux/nl80211.h
+        URL https://elixir.bootlin.com/linux/v7.2/source/include/uapi/linux/nl80211.h?raw
+        #github have strict rate limits https://raw.githubusercontent.com/torvalds/linux/v7.2/include/uapi/linux/nl80211.h
         DOWNLOAD_NO_EXTRACT TRUE
         DOWNLOAD_NAME nl80211.h
 )

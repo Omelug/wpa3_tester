@@ -88,6 +88,7 @@
       <w>dontwait</w>
       <w>dragondrain</w>
       <w>dtoverlay</w>
+      <w>dumpcap</w>
       <w>eapol</w>
       <w>earlyprintk</w>
       <w>edcca</w>

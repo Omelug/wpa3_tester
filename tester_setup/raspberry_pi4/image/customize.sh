@@ -68,9 +68,6 @@ echo "enable_uart=1" >> "$BOOT/config.txt"
 # reboot; after restart the log appears in /sys/fs/pstore/ (some drivers crashed kernel)
 echo "dtoverlay=pstore" >> "$BOOT/config.txt"
 
-# earlyprintk - emit pre-console kernel messages on the serial line
-sed -i 's/$/ earlyprintk/' "$BOOT/cmdline.txt"
-
 # --- Root partition
 
 echo "$PI_HOSTNAME" > "$ROOT/etc/hostname"
@@ -112,18 +109,8 @@ else
     echo "    static IP: DHCP"
 fi
 
-# ath9k_hw - disable ANI + let the kernel regulatory domain override EEPROM
-printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
-    > "$ROOT/etc/modprobe.d/ath9k.conf"
-# USB - disable autosuspend (prevents Wi-Fi adapter disconnects under load)
-# disable USB 3.0 (xhci) to eliminate 2.4 GHz interference from USB 3 devices
-echo "options usbcore autosuspend=-1" > "$ROOT/etc/modprobe.d/usbcore.conf"
+# USB 3.0 (xhci) - disable to eliminate 2.4 GHz interference
 echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
-# rtw88 / rtw89 - disable deep power save (stability) + enable debug logging
-printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
-    > "$ROOT/etc/modprobe.d/rtw88.conf"
-printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
-    > "$ROOT/etc/modprobe.d/rtw89.conf"
 
 # NetworkManager - leave all WiFi interfaces unmanaged
 # tester can control them directly via nl80211, ethernet stays managed for SSH
@@ -176,7 +163,7 @@ cat > "$ROOT/etc/systemd/journald.conf.d/10-persistent.conf" << 'EOF'
 Storage=persistent
 EOF
 
-install -m 755 "$SCRIPT_DIR/drivers.sh"        "$ROOT/usr/local/bin/wpa3-drivers.sh"
+install -m 755 "$SCRIPT_DIR/setup.sh"          "$ROOT/usr/local/bin/wpa3-setup.sh"
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"
 install -m 644 "$SCRIPT_DIR/firstboot.service" "$ROOT/etc/systemd/system/wpa3-firstboot.service"
 

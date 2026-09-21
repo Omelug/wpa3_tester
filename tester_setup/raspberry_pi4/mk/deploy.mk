@@ -7,8 +7,8 @@ GDB_PORT ?= 1234
 
 bootstrap:
 	@test -n "$(PI)" || { echo "Error: PI is not set. Usage: make bootstrap PI=<address>"; exit 1; }
-	scp image/drivers.sh $(PI_USER)@$(PI):/tmp/wpa3-drivers.sh
 	scp image/packages.sh $(PI_USER)@$(PI):/tmp/wpa3-packages.sh
+	scp image/setup.sh $(PI_USER)@$(PI):/tmp/wpa3-setup.sh
 	scp bootstrap.sh $(PI_USER)@$(PI):/tmp/bootstrap.sh
 	$(SSH) "chmod +x /tmp/bootstrap.sh && /tmp/bootstrap.sh"
 

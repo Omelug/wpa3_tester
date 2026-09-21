@@ -1,4 +1,4 @@
-.PHONY: kernel kernel-deploy driver-builtin driver-dkms driver-modules
+.PHONY: kernel kernel-deploy driver-builtin driver-modules
 
 # -- Kernel cross-compilation with debug config
 # Builds the official Pi kernel (bcm2711_defconfig) with kernel/debug.config merged in.
@@ -28,22 +28,19 @@ $(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG)
 
 # -- Out-of-tree WiFi drivers, cross-built against THIS kernel's own O=$(KERNEL_OUT) tree
 #  (not against apt headers)
-DRIVER_SRC := run/drivers-src
-
-define DRIVER_SPECS
-rtw88|https://github.com/lwfinger/rtw88|-DCONFIG_RTW88_DEBUGFS -DCONFIG_RTW88_DEBUG
-8821cu|https://github.com/morrownr/8821cu-20210916|
-rtl8852au|https://github.com/WimLee115/rtl8852au-build|-DCONFIG_RTW89_DEBUGFS -DCONFIG_RTW89_8852AU -DCONFIG_RTW89_DEBUG
-endef
-export DRIVER_SPECS
+DRIVER_SRC  := run/drivers-src
+DRIVERS_CONF := $(CURDIR)/image/drivers.conf
 
 driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Cross-building WiFi drivers against $(KERNEL_OUT) (matches this kernel exactly)..."
-	@echo "$$DRIVER_SPECS" | while IFS='|' read -r name url cflags; do \
-	    [ -z "$$name" ] && continue; \
+	@grep -v '^#' $(DRIVERS_CONF) | grep -v '^[[:space:]]*$$' | while IFS='|' read -r name url cflags tag; do \
 	    src=$(DRIVER_SRC)/$$name; \
 	    rm -rf "$$src"; mkdir -p $(DRIVER_SRC); \
-	    git clone --depth=1 "$$url" "$$src"; \
+	    if [ -n "$$tag" ]; then \
+	        git clone --depth=1 --branch "$$tag" "$$url" "$$src"; \
+	    else \
+	        git clone --depth=1 "$$url" "$$src"; \
+	    fi; \
 	    [ -n "$$cflags" ] && echo "EXTRA_CFLAGS += $$cflags" >> "$$src/Makefile"; \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	        M=$$(realpath $$src) modules -j$$(nproc); \
@@ -66,19 +63,9 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Kernel + drivers deployed. Pi rebooting - reconnect in ~30 s."
 	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
 
-# -- Driver switching: DKMS vs in-kernel
-# DKMS modules shadow in-kernel ones when installed; removing them restores in-kernel.
-# Source stays on disk so driver-dkms can reinstall without re-downloading.
-
 driver-builtin:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
 	$(SSH) "sudo dkms status 2>/dev/null \
 	    | grep -oP '^[\w-]+/[\d.]+' | sort -u \
 	    | xargs -rI{} sudo dkms remove {} --all 2>/dev/null; sudo depmod -a"
 	@echo "==> DKMS removed - in-kernel drivers active after adapter reinsertion"
-	@echo "    Restore: make driver-dkms PI=$(PI)"
-
-driver-dkms:
-	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }
-	$(SSH) "sudo bash /usr/local/bin/wpa3-drivers.sh"
-	@echo "==> DKMS drivers reinstalled"

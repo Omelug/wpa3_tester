@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Customizes a Raspberry Pi OS Lite (64-bit, Bookworm) image for wpa3-tester
-# Must be run as root
 # args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
+
+# Must be run as root
 
 set -euo pipefail
 
@@ -64,8 +65,7 @@ fi
 echo "enable_uart=1" >> "$BOOT/config.txt"
 
 # Pstore - saves the panic log into a reserved RAM region that survives a soft
-# reboot; after restart the log appears in /sys/fs/pstore/
-# (some drivers crashed kernel)
+# reboot; after restart the log appears in /sys/fs/pstore/ (some drivers crashed kernel)
 echo "dtoverlay=pstore" >> "$BOOT/config.txt"
 
 # earlyprintk - emit pre-console kernel messages on the serial line
@@ -176,7 +176,6 @@ cat > "$ROOT/etc/systemd/journald.conf.d/10-persistent.conf" << 'EOF'
 Storage=persistent
 EOF
 
-# firstboot script + systemd service
 install -m 755 "$SCRIPT_DIR/drivers.sh"        "$ROOT/usr/local/bin/wpa3-drivers.sh"
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"
 install -m 644 "$SCRIPT_DIR/firstboot.service" "$ROOT/etc/systemd/system/wpa3-firstboot.service"

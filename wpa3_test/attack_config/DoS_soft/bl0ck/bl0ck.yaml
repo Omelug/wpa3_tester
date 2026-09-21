@@ -96,12 +96,21 @@ observers:
     program: trace_cmd
     actor: ap
     program_config:
-      #events: [ "mac80211", "ath9k", "ath10k" ]pcap not good decode, bl0ck consume all sources
-      events: [ "mac80211", "mt76" ]
+      events:
+        - "mac80211"
+        - "mt76"
+        - "mac80211:api_start_tx_ba_session"
+        - "mac80211:api_start_tx_ba_cb"
+        - "mac80211:api_stop_tx_ba_session"
+        - "mac80211:api_stop_tx_ba_cb"
+        - "mt76:mac_txdone"
+        - "mt7601u:mt_tx_status"
   dmesg:
     program: dmesg
+    program_config:
+      level: "emerg,alert,crit,err,warn,notice,info,debug"
 attack_config:
-  ms_interval: 100
+  ms_interval: 10
   sleep_before_sec: 5
-  sleep_after_sec: 30
+  sleep_after_sec: 15
 rewrite: errors

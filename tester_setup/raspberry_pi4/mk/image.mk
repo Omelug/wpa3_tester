@@ -4,7 +4,6 @@
 image/customize.sh image/firstboot.sh image/firstboot.service: ;
 
 image: $(CUSTOM_IMAGE)
-	@echo ""
 	@echo "==> Image ready: $(CUSTOM_IMAGE)"
 	@echo "    Flash:  make flash DISK=/dev/sdX"
 
@@ -59,7 +58,6 @@ flash: $(CUSTOM_IMAGE)
 	        sudo dd if=$(CUSTOM_IMAGE) of=$$DISK bs=16M oflag=direct status=progress conv=fsync; \
 	    fi'
 	sudo sync
-	@echo ""
 	@echo "==> Done. Insert SD into Pi, connect ethernet, power on."
 	@echo "    Watch firstboot progress (after ~30 s):"
 	@echo "      ssh $(PI_USER)@$(PI_HOSTNAME).local 'journalctl -u wpa3-firstboot -f'"

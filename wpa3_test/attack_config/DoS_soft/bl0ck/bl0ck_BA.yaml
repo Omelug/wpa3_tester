@@ -1,5 +1,7 @@
 $validator: ./bl0ck.schema.yaml
-$extends: [ ./bl0ck.yaml, ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml ] #TODO
+$extends: [ ./bl0ck.yaml,
+            ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml
+]
 name: bl0ck_BA
 attacker_module: bl0ck
   #actors:
@@ -9,7 +11,7 @@ attacker_module: bl0ck
   #    driver: [ rtw_8821au, rtw88_8821au ]
   #client:
   #  selection:
-  #TODO same driver, same firmware - only works with ALFA mediatek?
+  #TODO same driver, same firmware only works with ALFA mediatek?
   #TODO Try again (old message, multiple bl0ck fixes)
 
   #permanent_mac: "00:c0:ca:b7:69:2a"
@@ -20,7 +22,7 @@ attacker_module: bl0ck
   #    permanent_mac: "90:de:80:de:fd:b2"
 #    driver: [ rtw_8821cu, rtw88_8821cu, rtl8821cu, mt76x2u ]
 attack_config:
-  attack_time_sec: 25
+  attack_time_sec: 15
   attack_variant: "BA"
   random: false
   frame_in_batch: 50

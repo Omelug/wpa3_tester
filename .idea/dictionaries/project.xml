@@ -2,20 +2,30 @@
   <dictionary name="project">
     <words>
       <w>Addrs</w>
+      <w>CALLGRAPH</w>
       <w>Disassoc</w>
       <w>Dlink</w>
       <w>Exch</w>
       <w>Guttman</w>
       <w>Kbit</w>
       <w>Kbits</w>
+      <w>LEDS</w>
       <w>Mitm</w>
+      <w>NFSD</w>
+      <w>ONESHOT</w>
       <w>Omelug</w>
       <w>PTKCALCNEGOTIATING</w>
       <w>Pstore</w>
+      <w>QUANTENNA</w>
+      <w>REISERFS</w>
       <w>Realtek</w>
       <w>Reasso</w>
+      <w>SILABS</w>
       <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
+      <w>SSSSSS</w>
+      <w>TESTMODE</w>
+      <w>UUUUUU</w>
       <w>aabbccddee</w>
       <w>acces</w>
       <w>acks</w>
@@ -30,7 +40,9 @@
       <w>arphrd</w>
       <w>arrowstyle</w>
       <w>attackhead</w>
+      <w>autoconnect</w>
       <w>autoprobe</w>
+      <w>autosuspend</w>
       <w>bigtk</w>
       <w>blackboc</w>
       <w>bmaptool</w>
@@ -48,6 +60,7 @@
       <w>conds</w>
       <w>cout</w>
       <w>cpuinfo</w>
+      <w>crda</w>
       <w>credout</w>
       <w>csignal</w>
       <w>csseof</w>
@@ -64,6 +77,7 @@
       <w>defualt</w>
       <w>delba</w>
       <w>dellink</w>
+      <w>depmod</w>
       <w>destmac</w>
       <w>dirent</w>
       <w>disas</w>
@@ -197,6 +211,7 @@
       <w>octl</w>
       <w>ocvc</w>
       <w>ofdm</w>
+      <w>oneshot</w>
       <w>openssldir</w>
       <w>openwrt</w>
       <w>operstate</w>
@@ -234,6 +249,7 @@
       <w>readlink</w>
       <w>reassoc</w>
       <w>recv</w>
+      <w>regd</w>
       <w>regdom</w>
       <w>regdomain</w>
       <w>regidx</w>
@@ -279,6 +295,7 @@
       <w>tmargin</w>
       <w>tsharks</w>
       <w>txack</w>
+      <w>txdone</w>
       <w>txop</w>
       <w>txpower</w>
       <w>txpwr</w>
@@ -286,6 +303,7 @@
       <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
+      <w>userconf</w>
       <w>vermagic</w>
       <w>vline</w>
       <w>vprintf</w>

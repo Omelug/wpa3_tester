@@ -18,7 +18,7 @@ using namespace std;
 using namespace filesystem;
 using namespace chrono;
 
-const string program_name = "trace_cmd";
+constexpr string program_name = "trace_cmd";
 
 const vector<pair<AmpduAction,string>>& ampdu_action_labels(){
 	static const vector<pair<AmpduAction,string>> labels = {
@@ -55,7 +55,7 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 	for(const auto &k: kprobes){ command.emplace_back("--kprobe"); command.push_back(k); }
 
 	rs.process_manager.run(actor_name + "_trace", command, obs_folder);
-	rs.process_manager.after_stop(actor_name + "_trace", [dat_path, txt_path, ref_path](){
+	rs.process_manager.after_stop(actor_name + "_trace", [dat_path, txt_path, ref_path, &rs](){
 		// convert binary trace to human-readable; shell needed for stdout redirect
 		hw_capabilities::run_cmd(
 			{"sh", "-c", "trace-cmd report -i " + dat_path.string() + " > " + txt_path.string()}
@@ -63,6 +63,7 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 		if(exists(dat_path)) set_public_perms(dat_path);
 		if(exists(txt_path)) set_public_perms(txt_path);
 		if(exists(ref_path)) set_public_perms(ref_path);
+		set_public_perms_recursive(get_observer_folder(rs, program_name));
 	});
 }
 
@@ -102,7 +103,7 @@ static int64_t line_ts_ns(const string &line){
 	return -1;
 }
 
-//TODO test
+//TODO test/ rname
 map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs,
 											  const string &actor_name) {
 	const path obs_folder = get_observer_folder(rs, program_name);
@@ -116,21 +117,17 @@ map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs,
 
 	int64_t ref_wall_ns = 0, ref_mono_ns = 0;
 	if (ifstream ref(ref_path); !(ref >> ref_wall_ns >> ref_mono_ns)) {
-		log(LogLevel::WARNING, "trace_cmd clock ref missing: {}",
-			ref_path.string());
+		log(LogLevel::WARNING, "trace_cmd clock ref missing: {}", ref_path.string());
 		return {};
 	}
 
 	map<LogTimePoint, AmpduAction> result;
 	ifstream file(txt_path);
 	for (string line; getline(file, line);) {
-		if (!line.contains("ampdu_action"))
-			continue;
+		if (!line.contains("ampdu_action")) continue;
 		const int64_t ts = line_ts_ns(line);
-		if (ts < 0)
-			continue;
-		result[LogTimePoint{nanoseconds{ref_wall_ns + (ts - ref_mono_ns)}}] =
-			parse_action(line);
+		if (ts < 0) continue;
+		result[LogTimePoint{nanoseconds{ref_wall_ns + (ts - ref_mono_ns)}}] = parse_action(line);
 	}
 	return result;
 }
@@ -140,19 +137,15 @@ described_bool addba_seen(const RunStatus &rs) {
 	described_bool result;
 	for (const string actor_name : {"ap", "client"}) {
 		const auto opt = rs.actor(actor_name);
-		if (!opt || !opt.value()->is_WB())
-			continue;
+		if (!opt || !opt.value()->is_WB()) continue;
 
-		const path txt =
-			get_observer_folder(rs, program_name) / (actor_name + "_trace.txt");
-		if (!exists(txt))
-			continue;
+		const path txt = get_observer_folder(rs, program_name) / (actor_name + "_trace.txt");
+		if (!exists(txt)) continue;
 
 		bool found = false;
 		ifstream f(txt);
 		for (string line; getline(f, line) && !found;) {
-			if (!line.contains("ampdu_action"))
-				continue;
+			if (!line.contains("ampdu_action")) continue;
 			const auto a = parse_action(line);
 			found = (a == AmpduAction::RX_START || a == AmpduAction::TX_START);
 		}

@@ -17,12 +17,25 @@ target_include_directories(wpa3_deps INTERFACE
         ${linux_headers_wifi_SOURCE_DIR}
 )
 
-find_path(SYSTEM_BOOST_PFR_INCLUDE boost/pfr.hpp)
-if (SYSTEM_BOOST_PFR_INCLUDE)
+#
+set(BOOST_PFR_MIN_VERSION "1.90")
+set(_use_system_pfr FALSE)
+if(SYSTEM_BOOST_PFR_INCLUDE)
+    file(READ "${SYSTEM_BOOST_PFR_INCLUDE}/boost/version.hpp" _boost_version_hpp)
+    string(REGEX MATCH "BOOST_LIB_VERSION \"([0-9_]+)\"" _ ${_boost_version_hpp})
+    string(REPLACE "_" "." _boost_version "${CMAKE_MATCH_1}")
+    if(_boost_version VERSION_GREATER_EQUAL ${BOOST_PFR_MIN_VERSION})
+        set(_use_system_pfr TRUE)
+    else()
+        message(STATUS "System Boost.PFR too old (${_boost_version} < ${BOOST_PFR_MIN_VERSION}), using FetchContent")
+    endif()
+endif()
+
+if(_use_system_pfr)
     message(STATUS "Using system Boost.PFR: ${SYSTEM_BOOST_PFR_INCLUDE}")
-else ()
+else()
     message(STATUS "Using FetchContent Boost.PFR: ${boost_pfr_SOURCE_DIR}/include")
-endif ()
+endif()
 
 target_include_directories(wpa3_deps INTERFACE
         ${CMAKE_CURRENT_BINARY_DIR}/awk_scripts

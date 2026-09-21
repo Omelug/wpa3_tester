@@ -1,4 +1,3 @@
-GDB_PORT        ?= 1234
 
 .PHONY: sysroot deploy-cross test-cross clean_cross
 

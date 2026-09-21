@@ -53,7 +53,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 	}
 	//log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, netconfig.rogue_channel);
 }
-
+//TODO simplify with Tins
 void McMitm::send_disas(const HWAddress<6> &macaddr) const {
 	Dot11Disassoc disas{};
 	disas.addr1(macaddr);

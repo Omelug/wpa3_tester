@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="3" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="8" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -114,6 +114,7 @@
       <config projectName="wpa3_tester" targetName="run_html_guard_tests" />
       <config projectName="wpa3_tester" targetName="tins" />
       <config projectName="wpa3_tester" targetName="wpa3_suite" />
+      <config projectName="wpa3_tester" targetName="docs" />
       <config projectName="wpa3_tester" targetName="test_config_validation" />
       <config projectName="wpa3_tester" targetName="test_info_openwrt" />
       <config projectName="wpa3_tester" targetName="run_internal_options_tests" />
@@ -135,10 +136,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="t: fix log format after change of openwrt logo">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify kernel debug">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/cross.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/cross.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/debug.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/image.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/results.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/results.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,10 +172,14 @@
     <option name="RESET_MODE" value="SOFT" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/Dlink/bl0ck_BA_Dlink/observer/iperf3/ap_iperf3_server.log" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/bl0ck_BA/observer/trace_cmd/ap_trace_clock_ref.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/include/system/utils.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/src/observer/trace_cmd_wrapper.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/src/system/utils.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -194,6 +207,7 @@
     "CMake Application.test_config_validation.executor": "Debug",
     "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
     "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
+    "CMake Application.wpa3_tester bl0ck_BA.executor": "Debug",
     "CMake Application.wpa3_tester bl0ck_BA_Dlink.executor": "Debug",
     "CMake Application.wpa3_tester bl0ck_Dlink_suite.executor": "Debug",
     "CMake Application.wpa3_tester bl0ck_basic_ts.executor": "Debug",
@@ -216,18 +230,17 @@
     "CMake Application.wpa3_tester invalid_curve_filler.executor": "Debug",
     "CMake Application.wpa3_tester wpa3_downgrade_filler.executor": "Debug",
     "CMake Debug.Project.executor": "Debug",
+    "CidrDebugProfileConversion": "true",
     "Doctest.ApInfoWpa3TestEntry::parse - populates from result.json.executor": "Debug",
     "Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor": "Debug",
     "Doctest.HtmlPathTable prefix grouping functionality.executor": "Debug",
     "Doctest.HtmlPathTable t_name footer on non-empty entries.executor": "Debug",
-    "Doctest.MalformedEapol1TestEntry::parse - reads drivers and disconnect_count.executor": "Debug",
     "Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor": "Debug",
     "Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor": "Debug",
     "Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor": "Debug",
     "Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor": "Debug",
     "Doctest.collect_all_usb_devices - list detected adapters.executor": "Debug",
     "Doctest.collect_all_usb_wifi_ifaces - list detected adapters.executor": "Debug",
-    "Doctest.get_ap_ocv - from pcap.executor": "Debug",
     "Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor": "Debug",
     "Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor": "Debug",
     "Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor": "Debug",
@@ -241,7 +254,6 @@
     "Doctest.handle_probe.executor": "Debug",
     "Doctest.hwsim setup_actor - create sniff iface.executor": "Debug",
     "Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor": "Debug",
-    "Doctest.mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA.executor": "Debug",
     "Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor": "Debug",
     "Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers.executor": "Debug",
     "Doctest.satisfied conn_cond (STA->AP from data frame) returns true.executor": "Debug",
@@ -304,20 +316,20 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="Doctest.MalformedEapol1TestEntry::parse - reads drivers and disconnect_count">
-    <configuration name="MalformedEapol1TestEntry::parse - reads drivers and disconnect_count" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests" TEST_METHOD="MalformedEapol1TestEntry::parse - reads drivers and disconnect_count" TEST_MODE="SUITE_TEST">
+  <component name="RunManager" selected="Remote Debug.raspberry">
+    <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="get_ap_ocv - from pcap" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_result_helper_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_result_helper_tests" TEST_METHOD="get_ap_ocv - from pcap" TEST_MODE="SUITE_TEST">
+    <configuration name="collect_all_usb_wifi_ifaces - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_wifi_ifaces - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_openwrt_helper" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_openwrt_helper" TEST_METHOD="mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA" TEST_MODE="SUITE_TEST">
+    <configuration name="reset_usb_ifaces - power-cycles adapters and rebinds drivers" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="reset_usb_ifaces - power-cycles adapters and rebinds drivers" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -628,6 +640,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="docs" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="docs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="leak-check" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="leak-check" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -891,10 +908,12 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="CMake Application.wpa3_tester bl0ck_BA" />
       <item itemvalue="CMake Application.asan" />
       <item itemvalue="CMake Application.leak-check" />
       <item itemvalue="CMake Application.manual_test_core" />
       <item itemvalue="CMake Application.nlohmann_json_schema_validator" />
+      <item itemvalue="CMake Application.docs" />
       <item itemvalue="CMake Application.parse" />
       <item itemvalue="CMake Application.pugixml-static" />
       <item itemvalue="CMake Application.radiotap" />
@@ -1083,9 +1102,9 @@
       <item itemvalue="Doctest.run_cleanup_tests" />
       <item itemvalue="Doctest.run_bl0ck_tests" />
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
-      <item itemvalue="Doctest.MalformedEapol1TestEntry::parse - reads drivers and disconnect_count" />
-      <item itemvalue="Doctest.get_ap_ocv - from pcap" />
-      <item itemvalue="Doctest.mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA" />
+      <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
+      <item itemvalue="Doctest.collect_all_usb_wifi_ifaces - list detected adapters" />
+      <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
       <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
       <item itemvalue="Makefile Target.driver-modules" />
       <item itemvalue="Native Application.get_commit_values" />
@@ -1095,14 +1114,39 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Doctest.MalformedEapol1TestEntry::parse - reads drivers and disconnect_count" />
-        <item itemvalue="Doctest.get_ap_ocv - from pcap" />
-        <item itemvalue="Doctest.mfp_from_openwrt_log - returns REQUIRED for an SAE-associated STA" />
         <item itemvalue="Makefile Target.driver-modules" />
         <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
+        <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
+        <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
+        <item itemvalue="Doctest.collect_all_usb_wifi_ifaces - list detected adapters" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SelectedDebugProfileService"><![CDATA[{
+  "profileIdByStamp": [
+    {
+      "first": {
+        "##RUN_CONFIGURATION##": "Remote Debug.raspberry"
+      },
+      "second": "63f0d8d2-714c-4b70-ad93-4066291d0f14"
+    },
+    {
+      "first": {
+        "##RUN_CONFIGURATION##": "CMake Application.wpa3_tester bl0ck_basic_ts",
+        "cmake": "CMakeBuildProfile:Debug"
+      },
+      "second": "63f0d8d2-714c-4b70-ad93-4066291d0f14"
+    },
+    {
+      "first": {
+        "##RUN_CONFIGURATION##": "CMake Application.wpa3_tester bl0ck_BA",
+        "cmake": "CMakeBuildProfile:Debug"
+      },
+      "second": "00a686b5-f6bb-4857-b519-14800733495f"
+    }
+  ],
+  "modificationCount": 8
+}]]></component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="" />
@@ -1136,19 +1180,7 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="origin/main" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
@@ -1178,9 +1210,9 @@
     <MESSAGE value="-: render_table_dlink (unification)" />
     <MESSAGE value="f: openwrt logread time parsing" />
     <MESSAGE value="+v: sniff_iface_create, start_ap on device page" />
-    <MESSAGE value="fv: small fixes" />
-    <MESSAGE value="t: fix log format after change of openwrt logo" />
-    <option name="LAST_COMMIT_MESSAGE" value="t: fix log format after change of openwrt logo" />
+    <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
+    <MESSAGE value="r: simplify kernel debug" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: simplify kernel debug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1206,74 +1238,9 @@
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
-          <line>194</line>
-          <option name="timeStamp" value="73" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/include/logger/log.h</url>
-          <line>77</line>
-          <option name="timeStamp" value="74" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/include/logger/log.h</url>
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp</url>
           <line>76</line>
-          <option name="timeStamp" value="75" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>149</line>
-          <option name="timeStamp" value="76" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/include/logger/log.h</url>
-          <line>75</line>
-          <option name="timeStamp" value="78" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>152</line>
-          <option name="timeStamp" value="79" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>151</line>
-          <option name="timeStamp" value="80" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>154</line>
-          <option name="timeStamp" value="81" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>31</line>
-          <option name="timeStamp" value="82" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp</url>
-          <line>29</line>
-          <option name="timeStamp" value="84" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp</url>
-          <line>53</line>
-          <option name="timeStamp" value="89" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp</url>
-          <line>52</line>
-          <option name="timeStamp" value="90" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.cpp</url>
-          <line>51</line>
-          <option name="timeStamp" value="91" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp</url>
-          <line>112</line>
-          <option name="timeStamp" value="92" />
+          <option name="timeStamp" value="74" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

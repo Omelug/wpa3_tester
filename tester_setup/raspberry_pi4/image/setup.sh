@@ -19,7 +19,8 @@ printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb
     > /etc/modprobe.d/rtw88.conf
 printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
     > /etc/modprobe.d/rtw89.conf
-echo "options mt76_usb disable_usb_sg=1" > /etc/modprobe.d/mt76.conf
+printf 'options mt76_usb disable_usb_sg=1\nblacklist mt76x2u\nblacklist mt76x2e\nblacklist mt76x02_usb\nblacklist mt76x02_lib\n' \
+    > /etc/modprobe.d/mt76.conf
 
 # static IPs on eth0
 nmcli connection show eth0-static &>/dev/null || \

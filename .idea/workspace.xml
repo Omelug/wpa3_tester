@@ -137,9 +137,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/external_libs.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,14 +166,11 @@
     <option name="RESET_MODE" value="SOFT" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/bl0ck_BA/observer/trace_cmd/ap_trace_clock_ref.txt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/Dlink/bl0ck_BA_Dlink/observer/iperf3/ap_iperf3_server.log" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/channel_switch/external/Dlink/CSA_rogueAP_Dlink_filler/all_actors/channel_switch_Dlink_663f3bdc/logger/ap.log" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/include/system/utils.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/src/observer/trace_cmd_wrapper.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/src/system/utils.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />

@@ -36,7 +36,9 @@ driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@grep -v '^#' $(DRIVERS_CONF) | grep -v '^[[:space:]]*$$' | while IFS='|' read -r name url cflags tag; do \
 	    src=$(DRIVER_SRC)/$$name; \
 	    rm -rf "$$src"; mkdir -p $(DRIVER_SRC); \
-	    if [ -n "$$tag" ]; then \
+	    if echo "$$tag" | grep -qE '^[0-9a-f]{40}$$'; then \
+	        git init "$$src" && git -C "$$src" fetch --depth=1 "$$url" "$$tag" && git -C "$$src" checkout FETCH_HEAD; \
+	    elif [ -n "$$tag" ]; then \
 	        git clone --depth=1 --branch "$$tag" "$$url" "$$src"; \
 	    else \
 	        git clone --depth=1 "$$url" "$$src"; \

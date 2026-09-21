@@ -15,12 +15,12 @@ for i in 1 2 3; do
     fi
 done
 
-echo "==> Installing build dependencies..."
+echo "==> Installing/updating build dependencies..."
 source /tmp/wpa3-packages.sh
-sudo apt-get update -qq
+#TODO update? sudo apt-get update -qq
 sudo apt-get install -y "${WPA3_APT_PACKAGES[@]}"
 
-#TODO musí tam být defaultně (spíč jo)
+#TODO musí tam být defaultně? (spíš jo)
 if ! command -v hostapd-mana &>/dev/null; then
     echo "==> Building hostapd-mana from source..."
     sudo rm -rf /tmp/hostapd-mana

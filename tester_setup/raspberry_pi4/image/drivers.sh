@@ -68,10 +68,11 @@ EOF
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
+#TODO fix versions
 _dkms_install "rtw88"     "https://github.com/lwfinger/rtw88"            /tmp/rtw88-src \
     "-DCONFIG_RTW88_DEBUGFS -DCONFIG_RTW88_DEBUG" \
     || echo "!! rtw88 driver install failed - see messages above"
-#_dkms_install "8188gu"    "https://github.com/morrownr/8188gu"           /tmp/8188gu-src
+_dkms_install "8188gu"    "https://github.com/morrownr/8188gu"           /tmp/8188gu-src
 _dkms_install "8821cu"    "https://github.com/morrownr/8821cu-20210916"  /tmp/8821cu-src \
     || echo "!! 8821cu driver install failed - see messages above"
 _dkms_install "rtl8852au" "https://github.com/WimLee115/rtl8852au-build" /tmp/rtl8852au-src \

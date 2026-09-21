@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="3" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="6" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -136,26 +136,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+v: sniff_iface_create, start_ap on device page">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/wpa3_tester_bl0ck_BA2.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify kernel debug">
       <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/bootstrap.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/drivers.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/packages.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/packages.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1195,8 +1180,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: only main push on test /config validation workflow" />
-    <MESSAGE value="+: wait_eapol bool" />
     <MESSAGE value="+: PCAP oin internal iface_info" />
     <MESSAGE value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
     <MESSAGE value="f injection sniff_monitor channel switch" />
@@ -1220,7 +1203,9 @@
     <MESSAGE value="-: render_table_dlink (unification)" />
     <MESSAGE value="f: openwrt logread time parsing" />
     <MESSAGE value="+v: sniff_iface_create, start_ap on device page" />
-    <option name="LAST_COMMIT_MESSAGE" value="+v: sniff_iface_create, start_ap on device page" />
+    <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
+    <MESSAGE value="r: simplify kernel debug" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: simplify kernel debug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

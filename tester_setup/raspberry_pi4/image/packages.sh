@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# TODO fix versions?
 WPA3_APT_PACKAGES=(
     build-essential cmake ninja-build ccache
     clang lld mold pkg-config flex bison git g++-14
@@ -6,6 +7,7 @@ WPA3_APT_PACKAGES=(
     libnl-3-dev libnl-genl-3-dev libnl-route-3-dev
     libpcap-dev
     libssh-dev
+    #raspberry have old boot version, fixed version need libboost-dev
     libyaml-cpp-dev
     libtins-dev
     iproute2 iw tcpdump iptables socat dnsmasq fish

@@ -55,7 +55,10 @@ void write_mapping(const path &d, initializer_list<tuple<string, string, string>
 void write_config(const path &d, initializer_list<string_view> actors) {
 	ofstream f(d / TEST_CONFIG_NAME);
 	f << "name: parse_test\nattacker_module: test_module\nactors:\n";
-	for (auto a : actors) f << "  " << a << ":\n    source: internal\n";
+	for (auto a : actors) {
+		if (a == "ap") f << "  ap:\n    source: internal\n    setup:\n      program: hostapd\n";
+		else           f << "  " << a << ":\n    source: internal\n";
+	}
 }
 
 }

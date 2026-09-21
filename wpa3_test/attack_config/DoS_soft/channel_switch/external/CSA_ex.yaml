@@ -8,7 +8,7 @@ scan_until_match: true
 #TODO requirement connected AP-STA external
 requirements:
   ex_BB_connection: [ [ ap, client ] ]
-#FIXM only in ath_htc, není to tím, že musí už předtím v monitor módu?
+#FIXME only in ath_htc, není to tím, že musí už předtím v monitor módu?
 #označit n2jak wizard , nebo wizard -> error v run config
 actors:
   ap:

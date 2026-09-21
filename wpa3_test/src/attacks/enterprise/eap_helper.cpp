@@ -203,14 +203,14 @@ bool do_auth(EAP_Att &eap_att) {
 
 	const auto deadline = steady_clock::now() + eap_att.timeout;
 
-	while(steady_clock::now() < deadline) {
+	while(steady_clock::now() < deadline && !g_interrupted.load()) {
 		RadioTap rt{};
 		rt.inner_pdu(auth);
 		eap_att.sock.send(rt, eap_att.channel);
 
 		optional<bool> result;
 		const auto start_time = steady_clock::now();
-		(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
+		const auto r = components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
 				eap_att.timeout,
 				[&](const u_char *p, const uint32_t caplen) -> optional<bool> {
 					const auto f = sae_helper::parse_auth_frame(p, caplen);
@@ -231,6 +231,7 @@ bool do_auth(EAP_Att &eap_att) {
 				});
 		eap_att.decrease_timeout(start_time);
 
+		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
 		if(result.has_value()) return *result;
 	}
 	log(LogLevel::WARNING, "Auth timeout");
@@ -264,12 +265,12 @@ bool do_assoc(EAP_Att &eap_att) {
 	pcap_t *handle = eap_att.sock.get_pcap_handle();
 	const auto deadline = steady_clock::now() + eap_att.timeout;
 
-	while(steady_clock::now() < deadline) {
+	while(steady_clock::now() < deadline && !g_interrupted.load()) {
 		eap_att.sock.send(assoc, eap_att.channel);
 
 		optional<bool> result;
 		const auto start_time = steady_clock::now();
-		(void)components::poll_sniffer<bool>(
+		const auto r = components::poll_sniffer<bool>(
 				handle, eap_att.timeout, [&](const u_char *p, const uint32_t caplen) -> optional<bool> {
 					auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
 					if(!pdu) return nullopt;
@@ -286,6 +287,7 @@ bool do_assoc(EAP_Att &eap_att) {
 				});
 		eap_att.decrease_timeout(start_time);
 
+		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
 		if(result.has_value()) return *result;
 		// poll_sniffer timed out -> retransmit
 	}
@@ -311,6 +313,7 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
 
 	eap_att.sock.send(dot11, eap_att.channel);
 }
+
 
 vector<uint8_t> extract_eapol(const uint8_t *p, const uint32_t caplen, const HWAddress<6> &our_mac) {
 	if(caplen < 4) return {};

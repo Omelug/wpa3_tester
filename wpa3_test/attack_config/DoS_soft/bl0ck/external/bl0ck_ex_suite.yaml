@@ -1,0 +1,8 @@
+name: bl0ck_ex_suite
+suite_functions: bl0ck_filler
+config_type: test_suite
+tests:
+  bl0ck_BAR_ex:
+    test_name: bl0ck_BAR_ex
+
+rewrite: errors

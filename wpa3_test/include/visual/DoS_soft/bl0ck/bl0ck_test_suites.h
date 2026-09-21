@@ -31,6 +31,7 @@ struct Bl0ckTestEntry {
 	described_bool client_PBAC;
 
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
+	static std::vector<Bl0ckTestEntry> collect_results(const std::filesystem::path &run_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
 			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
 			const std::string &t_name);

@@ -64,6 +64,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 		emit_table(filler, bl0ck_base / "suite" / filler, filler);
 	}
 	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite", "bl0ck_Dlink_suite");
+	emit_table("External", bl0ck_base / "external" / "bl0ck_ex_suite", "bl0ck_ex_suite");
 	f << "</body></html>";
 }
 

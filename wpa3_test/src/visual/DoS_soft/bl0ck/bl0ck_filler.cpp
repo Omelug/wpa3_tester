@@ -68,6 +68,14 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	return e;
 }
 
+vector<Bl0ckTestEntry> Bl0ckTestEntry::collect_results(const path &run_dir) {
+	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
+	ranges::sort(entries, [](const Bl0ckTestEntry &a, const Bl0ckTestEntry &b) {
+		return tie(a.attacker_driver, a.attack_variant, a.ap_mac) < tie(b.attacker_driver, b.attack_variant, b.ap_mac);
+	});
+	return entries;
+}
+
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
 		const path &page_dir, const string &t_name) {
 

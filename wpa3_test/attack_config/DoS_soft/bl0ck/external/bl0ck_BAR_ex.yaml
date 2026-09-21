@@ -1,0 +1,39 @@
+name: bl0ck_BAR_ex
+attacker_module: bl0ck
+$validator: ../bl0ck.schema.yaml
+scan_iface: wlan1
+scan_channels: [ 36 ]
+scan_until_match: true
+#TODO requirement connected AP-STA external
+requirements:
+  ex_BB_connection: [ [ ap, client ] ]
+actors:
+  ap:
+    source: external
+    selection:
+      ssid: test_wpa3_tester_5GHz
+      channel: 36
+      condition: [ AP, 80211ac, 5GHz ]
+  client:
+    source: external
+    selection:
+      permanent_mac: "00:03:7f:c2:00:43"
+      condition: [ STA, 80211ac, 5GHz ]
+      channel: 36
+  attacker:
+    source: internal
+    selection:
+      condition: [ monitor, 5GHz ]
+      channel: 36
+$extends: [ ./ex_observers.comp.yaml ]
+
+attack_config:
+  attack_time_sec: 25
+  attack_variant: "BAR"
+  random: true
+  ms_interval: 100
+  frame_in_batch: 50
+  sleep_before_sec: 10
+  sleep_after_sec: 10
+
+rewrite: errors

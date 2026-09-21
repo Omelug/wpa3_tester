@@ -136,8 +136,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: random in bl0ck result tables">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="v: injection table aggregation">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/bl0ck.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/bl0ck/bl0ck_test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/bl0ck/bl0ck_test_suites.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1174,7 +1182,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: injection sniff_monitor channel switch" />
     <MESSAGE value="f: usb hub reset&#10;r: usb hub reset" />
     <MESSAGE value="f: usb hub rese0 can be filtered by vender_id:product_id" />
     <MESSAGE value="f: reset_usb_ifaces - wait until net loading" />
@@ -1199,7 +1206,8 @@
     <MESSAGE value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
     <MESSAGE value="+: drivers fixed by hash (if tags not possible)" />
     <MESSAGE value="+: random in bl0ck result tables" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: random in bl0ck result tables" />
+    <MESSAGE value="v: injection table aggregation" />
+    <option name="LAST_COMMIT_MESSAGE" value="v: injection table aggregation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

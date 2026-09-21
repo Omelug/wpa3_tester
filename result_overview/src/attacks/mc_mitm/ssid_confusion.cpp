@@ -1,4 +1,5 @@
 #include "overview/html_utils.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/mc_mitm/ssid_confusion_filler.h"
 #include <filesystem>
@@ -11,7 +12,7 @@ using visual::ssid_confusion_filler::SsidConfusionEntry;
 
 void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "mc_mitm" / "ssid_confusion";
-    create_public_dirs(page_dir);
+    if(data_unchanged(page_dir, data_dir)) return;
 
     HtmlGuard f(page_dir);
 
@@ -63,6 +64,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 									 page_dir,  "ssid_confusion_filler");
 
     f << "</body></html>";
+    update_data_stamp(page_dir, data_dir);
 }
 
 }

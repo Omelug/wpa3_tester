@@ -63,7 +63,7 @@ actors:
     source: internal
     selection:
       permanent_mac: "90:de:80:6c:90:92"
-      driver: mt76x2u #mt7921e
+      driver: [ mt76x2u, mt76x2u_git ]
       condition: [ monitor, 2_4GHz, netns_change ] #active_monitor
       channel: 11
     netns: r_sta
@@ -72,7 +72,7 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       permanent_mac: "90:de:80:de:fd:b2"
-      driver: mt76x2u #FIXME mt7921e ?
+      driver: [ mt76x2u, mt76x2u_git ]
       channel: 1
 observers: #(allow start_observers if used )
   #client_mausezahn:

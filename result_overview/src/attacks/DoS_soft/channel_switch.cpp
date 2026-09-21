@@ -1,5 +1,6 @@
 #include "attacks/DoS_soft/channel_switch.h"
 #include "overview/html_utils.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
 #include <filesystem>
@@ -12,8 +13,7 @@ using visual::channel_switch_rogueAP::CsaTestEntry;
 
 void generate_channel_switch(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "channel_switch";
-	create_public_dirs(page_dir);
-
+	if(data_unchanged(page_dir, data_dir)) return;
 	HtmlGuard f(page_dir);
 
 	f << R"html(<!DOCTYPE html>
@@ -63,6 +63,7 @@ Not very supported, mobile devices have better support.
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 
 }
 }

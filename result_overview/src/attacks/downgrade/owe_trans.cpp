@@ -1,4 +1,5 @@
 #include "attacks/downgrade/owe_trans.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/downgrade/owe_trans_filler.h"
 #include "visual/suite_helper.h"
@@ -13,7 +14,7 @@ using visual::owe_trans_filler::OweTransTestEntry;
 void generate_owe_trans(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "downgrade" / "owe_trans";
-	create_public_dirs(page_dir);
+	if(data_unchanged(page_dir, data_dir)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -54,6 +55,7 @@ void generate_owe_trans(const path &output_dir, const path &data_dir) {
 	emit_table("Test Results",  suite_dir, "owe_trans_filler");
 
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 }
 
 }

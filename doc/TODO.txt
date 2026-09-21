@@ -6,16 +6,14 @@ v: visualization
 Version v 0.0.0.0:
 r: add data to  observer graphs - showcase
 f: doc/ath_htc_loop.log from rapberry
-+: cangel Dlink config to different ssid (or stut donw openwrt after test? to not colide with internal tests?)
++: channel Dlink config to different ssid (or stut donw openwrt after test? to not colide with internal tests?)
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 +: ACM activation time (external, internal in hostapd)
 f+: SSID cofusion
 
 f: nixOS rapsberry debugging vypisuje - cyklís  Cleanup namespace - check in kali linux
-+: overview only genereta what was changed
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
-f?: check injection test, test_injection_txack is no capture every time
 bl0ck - logy z OpenWrt (co nejvíce)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 +: rogue AP into Bl0ck
@@ -56,6 +54,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: overview only genereta what was changed
 t: add to iface_info create_sniff_iface and start_ap
 +: check nd descript to cooments / Injection Test injection results+ sources
 +: get info from openwrt about Connected WPA version

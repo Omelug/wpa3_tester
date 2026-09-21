@@ -12,14 +12,14 @@ results:
 	@test -n "$(PI)" || { echo "Error: PI not set. Usage: make results PI=<address>"; exit 1; }
 	$(MAKE) -C $(SRC_ROOT) build_overview
 	mkdir -p $(RESULTS_DATA)
-	rsync -az --delete --info=progress2 \
+	$(RSYNC) -az --delete --info=progress2 \
 		$(PI_USER)@$(PI):$(REMOTE_ABS)/data/ \
 		$(RESULTS_DATA)/
 	$(MAKE) results_gen_only
 
 results_gen_only:
 	$(MAKE) -C $(SRC_ROOT) build_overview
-	rm -rf $(RESULTS_HTML)
+	#rm -rf $(RESULTS_HTML)
 	$(RESULT_OVERVIEW) \
 		--data_dir   $(RESULTS_DATA) \
 		--output_dir $(RESULTS_HTML)

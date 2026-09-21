@@ -1,4 +1,5 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/downgrade/wpa3_downgrade_filler.h"
 #include "visual/suite_helper.h"
@@ -13,7 +14,7 @@ using visual::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
 void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "downgrade" / "wpa3_trans_downgrade";
-	create_public_dirs(page_dir);
+	if(data_unchanged(page_dir, data_dir)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -56,6 +57,7 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 }
 
 }

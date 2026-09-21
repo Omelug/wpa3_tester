@@ -9,7 +9,7 @@ actors:
   client:
     $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
     #selection:
-    #  driver: mt76x2u
+    #  driver: [ mt76x2u, mt76x2u_git ]
     sniff_iface: true
 
   attacker:

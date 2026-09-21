@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/deauth.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/deauth/deauth_suite.h"
 #include <filesystem>
@@ -10,7 +11,7 @@ using visual::deauth_suite::DeauthTestEntry;
 
 void generate_deauth(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "deauth";
-    create_public_dirs(page_dir);
+    if(data_unchanged(page_dir, data_dir)) return;
 
     HtmlGuard f(page_dir);
 
@@ -62,6 +63,7 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
         base / "deauth_filler", "deauth_filler");
 
     f << "</body></html>";
+    update_data_stamp(page_dir, data_dir);
 }
 
 }

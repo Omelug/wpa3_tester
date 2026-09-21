@@ -31,7 +31,10 @@ inline std::string format_html(const std::string &html) {
 
 // RAII guard: buffers index.html writes, formats on destruction
 struct HtmlGuard {
-	explicit HtmlGuard(std::filesystem::path page_dir): page_dir_(std::move(page_dir)) {}
+	explicit HtmlGuard(std::filesystem::path page_dir): page_dir_(std::move(page_dir)) {
+		std::filesystem::remove_all(page_dir_);
+		create_public_dirs(page_dir_);
+	}
 	~HtmlGuard() {
 		std::ofstream file(page_dir_ / "index.html");
 		file << format_html(stream_.str());

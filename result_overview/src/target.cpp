@@ -1,6 +1,7 @@
 #include "target.h"
 
 #include "logger/log.h"
+#include "page_cache.h"
 
 #include <filesystem>
 #include <map>
@@ -84,7 +85,6 @@ static void render_attack_section(HtmlGuard &f, const std::string &module, const
 
 static void generate_target_page(const path &output_dir, const string &target_name, const path &target_data_dir) {
 	const path page_dir = output_dir / "target" / target_name;
-	create_public_dirs(page_dir);
 
 	HtmlGuard f(page_dir);
 
@@ -135,12 +135,7 @@ static void generate_target_page(const path &output_dir, const string &target_na
 	f << "</body></html>";
 }
 
-static void generate_target_index(const path &output_dir, const vector<string> &targets) {
-	const path idx_dir = output_dir / "target";
-	create_public_dirs(idx_dir);
-
-	HtmlGuard f(idx_dir);
-
+static void generate_target_index(HtmlGuard &f, const vector<string> &targets) {
 	f << R"html(<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,18 +156,23 @@ static void generate_target_index(const path &output_dir, const vector<string> &
 
 void generate_targets(const path &output_dir, const path &data_dir) {
 	const path targets_data = data_dir / DATA_SUITE / "comp";
+	const path targets_dir = output_dir / "target";
+	create_public_dirs(targets_dir);
+	if(data_unchanged(targets_dir, targets_data)) return;
 
 	vector<string> names;
 	if(is_directory(targets_data)) {
 		for(const auto &entry: directory_iterator(targets_data)) {
 			if(!entry.is_directory()) continue;
-			const string name = entry.path().filename().string();
-			names.push_back(name);
-			generate_target_page(output_dir, name, entry.path());
+			names.push_back(entry.path().filename().string());
 		}
 	}
 
-	generate_target_index(output_dir, names);
+	HtmlGuard f(targets_dir);
+	generate_target_index(f, names);
+	for(const auto &name: names)
+		generate_target_page(output_dir, name, targets_data / name);
+	update_data_stamp(targets_dir, targets_data);
 }
 
 }

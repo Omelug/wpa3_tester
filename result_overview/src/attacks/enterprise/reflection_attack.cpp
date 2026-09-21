@@ -1,3 +1,4 @@
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
 #include "visual/suite_helper.h"
@@ -11,7 +12,7 @@ using namespace filesystem;
 void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "enterprise" / "reflection_attack";
-	create_public_dirs(page_dir);
+	if(data_unchanged(page_dir, data_dir)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -46,6 +47,7 @@ void generate_reflection_attack(const path &output_dir, const path &data_dir) {
 	emit_table("Test Results",  suite_dir,  "reflection_attack_filler");
 
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 }
 
 }

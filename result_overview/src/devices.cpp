@@ -1,4 +1,5 @@
 #include "devices.h"
+#include "page_cache.h"
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -166,7 +167,6 @@ static optional<DeviceInfo> read_device(const path &dev_dir){
 
 static void generate_device_page(const path &devices_dir, const DeviceInfo &d, const path &manuf_file){
 	const path page_dir = devices_dir / d.mac;
-	create_public_dirs(page_dir);
 	HtmlGuard f(page_dir);
 
 	const string title  = d.name.empty() ? d.mac : d.name;
@@ -314,6 +314,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	const path dev_data   = data_dir /DEVICES_DIR;
 	const path devices_dir = output_dir /DEVICES_DIR;
 	create_public_dirs(devices_dir);
+	if(data_unchanged(devices_dir, data_dir)) return;
 
 	vector<DeviceInfo> devices;
 	if(exists(dev_data) && is_directory(dev_data)){
@@ -331,9 +332,6 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	ranges::sort(devices, [](const DeviceInfo &a, const DeviceInfo &b){
 		return tie(a.name, a.source) < tie(b.name,  b.source);
 	});
-
-	const path manuf_file = MANUF_FILE_PATH;
-	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
 
 	HtmlGuard f(devices_dir);
 
@@ -363,6 +361,10 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	}
 
 	f << "</body></html>";
+
+	const path manuf_file = MANUF_FILE_PATH;
+	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
+	update_data_stamp(devices_dir, data_dir);
 }
 
 }

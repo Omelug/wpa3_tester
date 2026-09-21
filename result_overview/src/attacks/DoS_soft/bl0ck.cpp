@@ -1,3 +1,4 @@
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "visual/suite_helper.h"
@@ -13,7 +14,7 @@ using visual::bl0ck_test_suites::Bl0ckTestEntry;
 void generate_bl0ck(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "bl0ck";
-	create_public_dirs(page_dir);
+	if(data_unchanged(page_dir, data_dir)) return;
 
 	HtmlGuard f(page_dir);
 //FIXME have be attacker physically between or for vulnerable results need be faster just one packet?
@@ -66,6 +67,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 	emit_table("Dlink", bl0ck_base / "Dlink" / "bl0ck_Dlink_suite", "bl0ck_Dlink_suite");
 	emit_table("External", bl0ck_base / "external" / "bl0ck_ex_suite", "bl0ck_ex_suite");
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 }
 
 }

@@ -10,7 +10,7 @@ $extends: [
 actors:
   client:
     selection:
-      driver: mt76x2u
+      driver: [ mt76x2u, mt76x2u_git ]
   attacker:
     source: internal
     selection:

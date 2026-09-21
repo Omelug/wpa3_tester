@@ -1,5 +1,6 @@
 #include "attacks/DoS_soft/expected_vht_beacon.h"
 #include "overview/html_utils.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 #include <filesystem>
@@ -12,7 +13,7 @@ using visual::expected_vht_beacon_suite::ExpVhtTestEntry;
 
 void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "expected_vht_beacon";
-    create_public_dirs(page_dir);
+    if(data_unchanged(page_dir, data_dir)) return;
 
     HtmlGuard f(page_dir);
 
@@ -41,7 +42,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
 			- code in mac80211 https://github.com/torvalds/linux/blob/master/net/mac80211/mlme.c
         </p>
         <p>
-            On mt76x2u this is also a side-effect of the Bl0ck/BARS attack.
+            On mt76x2u this is also a side effect of the Bl0ck/BARS attack. (driver hash E8509E602D471F610761434)
         </p>
         <p><b>success:</b>
 			client receives fake legacy beacon and disconnects from the AP
@@ -70,6 +71,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     emit_table("D-Link", base / "external" / "Dlink" / "expected_vht_beacon_ex_Dlink_filler", "expected_vht_beacon_ex_Dlink_filler");
 
     f << "</body></html>";
+    update_data_stamp(page_dir, data_dir);
 }
 
 }

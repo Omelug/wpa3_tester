@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/malformed_eapol1.h"
+#include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
 #include <filesystem>
@@ -10,7 +11,7 @@ using visual::malformed_eapol1_filler::MalformedEapol1TestEntry;
 
 void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "malformed_eapol1";
-	create_public_dirs(page_dir);
+	if(data_unchanged(page_dir, data_dir)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -52,6 +53,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
 
 	f << "</body></html>";
+	update_data_stamp(page_dir, data_dir);
 }
 
 }

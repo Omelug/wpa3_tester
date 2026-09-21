@@ -22,7 +22,7 @@ actors:
     selection:
       channel: 36
       condition: [ monitor, 5GHz ]
-      driver: mt76x2u
+      driver: [ mt76x2u, mt76x2u_git ]
 
 attack_config:
   attack_time: 40

@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 #include "config/RunSuiteStatus.h"
@@ -19,6 +20,7 @@ struct Bl0ckTestEntry {
 	std::string attacker_mac;
 	std::string attacker_driver;
 	std::string attack_variant;
+	std::optional<bool> random;
 
 	//result params
 	int disconnect_count = 0;

@@ -134,6 +134,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
         }
         table.render();
     }
+	f << "<small>data from injection_test_filler </small>";
     f << "</div></body></html>";
 }
 

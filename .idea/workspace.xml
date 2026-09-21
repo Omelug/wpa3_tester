@@ -136,12 +136,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: random in bl0ck result tables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/kernel/debug.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/mt76_adapters_fixed.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BA.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck_BARS.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -307,7 +308,7 @@
       <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="Remote Debug.raspberry">
+  <component name="RunManager" selected="CMake Application.wpa3_tester injection_test_filler">
     <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1178,8 +1179,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r: simplify html formating (not need to be formated in sting now, it is done inHtmlGuard destructor automatically)" />
-    <MESSAGE value="f injection sniff_monitor channel switch" />
     <MESSAGE value="f: injection sniff_monitor channel switch" />
     <MESSAGE value="f: usb hub reset&#10;r: usb hub reset" />
     <MESSAGE value="f: usb hub rese0 can be filtered by vender_id:product_id" />
@@ -1203,7 +1202,9 @@
     <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
     <MESSAGE value="r: simplify kernel debug" />
     <MESSAGE value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
-    <option name="LAST_COMMIT_MESSAGE" value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
+    <MESSAGE value="+: drivers fixed by hash (if tags not possible)" />
+    <MESSAGE value="+: random in bl0ck result tables" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: random in bl0ck result tables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -40,6 +40,7 @@ if ! command -v hostapd-mana &>/dev/null; then
     sudo rm -rf /tmp/hostapd-mana
 fi
 
+install -m 755 "$SCRIPT_DIR/drivers.sh"        "$ROOT/usr/local/bin/wpa3-drivers.sh"
 source /tmp/wpa3-drivers.sh
 
 sudo chmod +x /usr/bin/dumpcap
@@ -120,20 +121,15 @@ sudo systemctl enable wpa3-nat.service
 sudo systemctl start wpa3-nat.service
 
 echo "==> Configuring static IPs on eth0 (10.0.0.2 + 192.168.0.2)..."
-# Modify or create the eth0 NM connection with both static addresses
-if sudo nmcli connection show eth0-static &>/dev/null; then
-    sudo nmcli connection modify eth0-static \
-        ipv4.method manual \
-        ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
-        ipv4.gateway "10.0.0.1" \
-        ipv4.dns "8.8.8.8,1.1.1.1"
-else
-    sudo nmcli connection add type ethernet ifname eth0 con-name eth0-static \
-        ipv4.method manual \
-        ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
-        ipv4.gateway "10.0.0.1" \
-        ipv4.dns "8.8.8.8,1.1.1.1"
-fi
+# Ensure the connection exists, then always apply the settings #TODO delete google/Cloudflare DNS?
+sudo nmcli connection show eth0-static &>/dev/null || \
+    sudo nmcli connection add type ethernet ifname eth0 con-name eth0-static
+
+sudo nmcli connection modify eth0-static \
+    ipv4.method manual \
+    ipv4.addresses "10.0.0.2/24,192.168.0.2/24,192.168.1.100/24" \
+    ipv4.gateway "10.0.0.1" \
+    ipv4.dns "8.8.8.8,1.1.1.1"
 
 sudo chsh -s "$(which fish)" "$USER"
 echo "==> Bootstrap complete"

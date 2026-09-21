@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>Addrs</w>
+      <w>CALLGRAPH</w>
       <w>Disassoc</w>
       <w>Dlink</w>
       <w>Exch</w>
@@ -23,6 +24,7 @@
       <w>SIOCGIFINDEX</w>
       <w>SMACOF</w>
       <w>SSSSSS</w>
+      <w>TESTMODE</w>
       <w>UUUUUU</w>
       <w>aabbccddee</w>
       <w>acces</w>
@@ -75,6 +77,7 @@
       <w>defualt</w>
       <w>delba</w>
       <w>dellink</w>
+      <w>depmod</w>
       <w>destmac</w>
       <w>dirent</w>
       <w>disas</w>

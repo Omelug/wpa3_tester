@@ -63,7 +63,6 @@ include mk/deploy.mk
 include mk/cross.mk
 include mk/kernel.mk
 include mk/results.mk
-include mk/debug.mk
 
 .PHONY: help
 #TODO nedát to jako file do doc abych to nemusel udržovat zvlášť (už jsou tu v2ci, co nejsou pravda)
@@ -92,8 +91,6 @@ help:
 	@echo "    make run_debug    PI=<addr>        start gdbserver on Pi"
 	@echo "      then: gdb-multiarch build-cross/bin/wpa3_tester"
 	@echo "            (gdb) target remote <addr>:1234"
-	@echo "    make debug_netcat PI=<addr>        netconsole crash log (Ctrl+C to stop)"
-	@echo "      pstore log after reboot:  ssh pi@PI 'cat /sys/fs/pstore/*'"
 	@echo ""
 	@echo "  Kernel (debug build with all *_DEBUGFS flags):"
 	@echo "    make kernel                        cross-compile Pi kernel with kernel/debug.config"

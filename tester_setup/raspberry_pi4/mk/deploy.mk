@@ -1,5 +1,6 @@
 TEST ?= unknown_test
 TEST_SUITE ?= ssid_confusion_filler
+GDB_PORT ?= 1234
 
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap run run_debug deploy-debug deploy-cross internet gdbserver-start

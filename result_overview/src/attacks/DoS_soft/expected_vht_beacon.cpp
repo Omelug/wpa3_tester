@@ -13,7 +13,8 @@ using visual::expected_vht_beacon_suite::ExpVhtTestEntry;
 
 void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "expected_vht_beacon";
-    if(data_unchanged(page_dir, data_dir)) return;
+    const path base = data_dir / DATA_SUITE / "DoS_soft" / "expected_vht_beacon";
+    if(data_unchanged(page_dir, base)) return;
 
     HtmlGuard f(page_dir);
 
@@ -63,15 +64,12 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
         ExpVhtTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
     };
 
-    const path base = data_dir / DATA_SUITE / "DoS_soft" / "expected_vht_beacon";
-
-    emit_table("2.4 GHz", base / "basic" / "expected_vht_beacon_2_4GHz_filler", "expected_vht_beacon_2_4GHz_filler");
+    //emit_table("2.4 GHz", base / "basic" / "expected_vht_beacon_2_4GHz_filler", "expected_vht_beacon_2_4GHz_filler");
     emit_table("RogueAP (5 GHz)",   base / "basic" / "expected_vht_beacon_5GHz_filler",   "expected_vht_beacon_5GHz_filler");
     emit_table("RogueAP (2.4 GHz)", base / "rogueAP" / "expected_vht_beacon_rogueAP_filler", "expected_vht_beacon_rogueAP_filler");
     emit_table("D-Link", base / "external" / "Dlink" / "expected_vht_beacon_ex_Dlink_filler", "expected_vht_beacon_ex_Dlink_filler");
 
     f << "</body></html>";
-    update_data_stamp(page_dir, data_dir);
 }
 
 }

@@ -11,7 +11,8 @@ using visual::deauth_suite::DeauthTestEntry;
 
 void generate_deauth(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "DoS_soft" / "deauth";
-    if(data_unchanged(page_dir, data_dir)) return;
+    const path base = data_dir / DATA_SUITE / "DoS_soft" / "deauth";
+    if(data_unchanged(page_dir, base)) return;
 
     HtmlGuard f(page_dir);
 
@@ -58,12 +59,10 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
         DeauthTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
     };
 
-    const path base = data_dir / DATA_SUITE / "DoS_soft" / "deauth";
     emit_table("WPA2 deauth filler (2.9, 2.10)",
         base / "deauth_filler", "deauth_filler");
 
     f << "</body></html>";
-    update_data_stamp(page_dir, data_dir);
 }
 
 }

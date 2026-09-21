@@ -11,7 +11,8 @@ using visual::malformed_eapol1_filler::MalformedEapol1TestEntry;
 
 void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	const path page_dir = output_dir / "attacks" / "DoS_soft" / "malformed_eapol1";
-	if(data_unchanged(page_dir, data_dir)) return;
+	const path base = data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1";
+	if(data_unchanged(page_dir, base)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -42,8 +43,6 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	};
 
 	// emit tables for each variant
-	const path base = data_dir / DATA_SUITE / "DoS_soft" / "channel_switch";
-
 	emit_table("Test Results",
 		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite", "malformed_eapol1_basic_suite");
 	emit_table("Dlink",
@@ -53,7 +52,6 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
 
 	f << "</body></html>";
-	update_data_stamp(page_dir, data_dir);
 }
 
 }

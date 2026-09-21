@@ -314,7 +314,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	const path dev_data   = data_dir /DEVICES_DIR;
 	const path devices_dir = output_dir /DEVICES_DIR;
 	create_public_dirs(devices_dir);
-	if(data_unchanged(devices_dir, data_dir)) return;
+	if(data_unchanged(devices_dir, dev_data)) return;
 
 	vector<DeviceInfo> devices;
 	if(exists(dev_data) && is_directory(dev_data)){
@@ -364,7 +364,6 @@ void generate_devices(const path &output_dir, const path &data_dir){
 
 	const path manuf_file = MANUF_FILE_PATH;
 	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
-	update_data_stamp(devices_dir, data_dir);
 }
 
 }

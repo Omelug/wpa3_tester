@@ -13,7 +13,7 @@ using visual::mc_mitm_filler::McMitmEntry;
 
 void generate_mc_mitm(const path &output_dir, const path &data_dir) {
     const path page_dir = output_dir / "attacks" / "mc_mitm" / "mc_mitm";
-    if(data_unchanged(page_dir, data_dir)) return;
+    if(data_unchanged(page_dir, data_dir / DATA_SUITE / "mc_mitm" / "mc_mitm")) return;
 
     HtmlGuard f(page_dir);
 
@@ -47,7 +47,6 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
 							  page_dir, "mc_mitm_filler");
 
     f << "</body></html>";
-    update_data_stamp(page_dir, data_dir);
 }
 
 }

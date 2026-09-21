@@ -14,7 +14,7 @@ using visual::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
 void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "downgrade" / "wpa3_trans_downgrade";
-	if(data_unchanged(page_dir, data_dir)) return;
+	if(data_unchanged(page_dir, data_dir / DATA_SUITE / "downgrade" / "wpa3_down")) return;
 
 	HtmlGuard f(page_dir);
 
@@ -35,7 +35,8 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 		<p><b>Prerequisites:</b> client connected to a WPA3-Transition AP (SAE+PSK).</p>
 		<p>A rogue WPA2-PSK-only AP with the same SSID is running</p>
 		<p>After the legitimate AP is stopped, a vulnerable client automatically associates using WPA2-PSK, completing a downgrade attack.</p>
-		<p><b>Success:</b> client send valid hash to rogue WPA2-PSK AP.</p>
+		<p>Its prerequisite for get password in other attacks</p>
+		<p><b>Success:</b> client send valid hash to rogue WPA2-PSK AP</p>
 	</div>
 
 	<div class="card">
@@ -57,7 +58,6 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 
 	f << "</body></html>";
-	update_data_stamp(page_dir, data_dir);
 }
 
 }

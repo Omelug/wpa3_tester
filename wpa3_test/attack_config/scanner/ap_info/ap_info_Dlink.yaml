@@ -13,7 +13,6 @@ actors:
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6
-    sniff_iface: true
 
 attack_config:
   beacon_scan: true

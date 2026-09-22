@@ -136,13 +136,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: Tins error tracebacks&#10;r: ap_info small changes">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/throw_trace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/throw_trace.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1214,11 +1216,6 @@
           <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp</url>
-          <line>107</line>
-          <option name="timeStamp" value="68" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp</url>
           <line>76</line>
           <option name="timeStamp" value="74" />
@@ -1234,18 +1231,12 @@
           <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h</url>
-          <line>71</line>
-          <option name="timeStamp" value="102" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp</url>
+          <line>60</line>
+          <option name="timeStamp" value="105" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="CLion_Remote">
-        <watch expression="cleanup_all_namespaces();&#10;&#9;reset_usb_ifaces();" language="C++" />
-        <watch expression="this-&gt;ap.ptr.get()-&gt;str_vals" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

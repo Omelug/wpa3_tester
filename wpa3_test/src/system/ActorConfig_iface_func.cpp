@@ -95,7 +95,6 @@ void Actor_config::set_ap_mode() const{
 }
 
 void Actor_config::up_sniff_iface() const{
-	if(!(*this)[BK::sniff_iface]) return;
 	const string &sniff_iface = get_mon_iface();
 
 	if(is_interface_up(sniff_iface)){

@@ -15,7 +15,7 @@ public:
 	static void print_AKMs(std::stringstream &ss, const Tins::RSNInformation::akm_type &akms);
 	static void print_AKM(std::stringstream &ss, Tins::RSNInformation::AKMSuites akm);
 	[[nodiscard]] std::string to_str() const;
-	void load(const std::unique_ptr<Tins::Dot11Beacon> &beacon);
+	void load(const std::unique_ptr<Tins::Dot11Beacon> &beacon_to_load);
 };
 
 std::optional<std::unique_ptr<Tins::Dot11Beacon>> handle_beacon(

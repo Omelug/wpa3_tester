@@ -37,15 +37,20 @@ void run_attack(RunStatus &rs){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder() / (target_ap.get(SK::actor_name) + ".pcap");
-		scan_ap.load(scan::RSN_scan(scanner.get_mon_iface(), timeout, target_ap.get(SK::permanent_mac), beacon_pcap));
-		set_public_perms(beacon_pcap);
-		{
-			const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
-			ofstream ofs(beacon_txt);
-			ofs << "Scan results for " << target_ap.get(SK::mac)<< "\n";
-			ofs << scan_ap.to_str() << endl;
-			ofs.close();
-			set_public_perms(beacon_txt);
+		auto beacon = scan::RSN_scan(scanner.get(SK::iface), timeout, target_ap.get(SK::permanent_mac), beacon_pcap);
+		if (beacon != nullptr) {
+			scan_ap.load(beacon);
+			set_public_perms(beacon_pcap);
+			{
+				const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
+				ofstream ofs(beacon_txt);
+				ofs << "Scan results for " << target_ap.get(SK::mac)<< "\n";
+				ofs << scan_ap.to_str() << endl;
+				ofs.close();
+				set_public_perms(beacon_txt);
+			}
+		}else {
+			log(LogLevel::ERROR, "beacon not found in timeout");
 		}
 	}
 
@@ -78,6 +83,10 @@ void run_attack(RunStatus &rs){
 
 	bool acm_triggered = false;
 	if(att_cfg.value("ACM_trigger", false)){
+		//setup monitor sniff iface manually
+		scanner->create_sniff_iface();
+		scanner->up_sniff_iface();
+
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, scanner.get(SK::iface), scanner.get_mon_iface(), scan_ap.ssid, target_ap.get(SK::mac), 30);
 		const auto [cookie, count] =

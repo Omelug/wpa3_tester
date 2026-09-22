@@ -19,14 +19,14 @@ PDF:
     +: testování testeru? (asi jen zímínit u výběru jazyka)
     +: RunConfig description
 
-
+t: reguratory change to iface_info
+f: regulatory dont works on rapsberry (ath_htc reset to US)
 r: use global_variables
 d: zmínit bakalářskou práci v README
 f: doc/ath_htc_loop.log from rapberry
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 f+: SSID cofusion
-f: nixOS rapsberry debugging vypisuje - cyklís  Cleanup namespace - check in kali linux
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 

@@ -57,7 +57,9 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 		channel_num = stoi(c.value());
 	}
 
-	if(monitor_needed() && (*this)[BK::sniff_iface]) set_monitor_mode();
+	if(monitor_needed() && (*this)[BK::sniff_iface]) {
+		set_monitor_mode();
+	}
 
 	if(channel_num != -1) {
 		//set_iface_up();

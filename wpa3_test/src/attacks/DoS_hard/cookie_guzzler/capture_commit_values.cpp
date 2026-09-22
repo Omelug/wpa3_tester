@@ -19,7 +19,7 @@ optional<sae_helper::SAEPair> capture_sae_commit(
 		const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle, const string &iface) {
 	char errbuf[PCAP_ERRBUF_SIZE];
 
-	const bool owns = (handle == nullptr);
+	const bool owns = handle == nullptr;
 	if(owns) {
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
 		if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
@@ -42,10 +42,9 @@ optional<sae_helper::SAEPair> capture_sae_commit(
 					log(LogLevel::DEBUG, "Packet too short: {}", caplen);
 					return nullopt;
 				}
-
+				//tODO descripbe
 				log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", packet[0], packet[1], packet[2], packet[3]);
 
-				//if (dumper) pcap_dump(reinterpret_cast<u_char*>(dumper), header, packet);
 				if(auto frame = sae_helper::parse_sae_commit({ packet, packet + caplen })) {
 					log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", frame->scalar.size());
 					return frame;

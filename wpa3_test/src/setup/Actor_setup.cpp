@@ -138,8 +138,8 @@ void Actor_config::setup_actor(const nlohmann::json &config, const ActorPtr &rea
 	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();
 		up_sniff_iface();
-		if(channel_num != 0)
-			hw_capabilities::set_channel(get_mon_iface(), get_channel(), (*this)[SK::netns]);
+		//if(channel_num != 0)
+		//	hw_capabilities::set_channel(get_mon_iface(), get_channel(), (*this)[SK::netns]);
 	}
 	set_iface_up();
 }

@@ -55,6 +55,8 @@ target_include_directories(wpa3_deps INTERFACE
         ${pugixml_SOURCE_DIR}/src
 )
 
+target_link_options(wpa3_deps INTERFACE -Wl,--wrap=__cxa_throw)
+
 target_link_libraries(wpa3_deps INTERFACE
         doctest_headers
         yaml-cpp

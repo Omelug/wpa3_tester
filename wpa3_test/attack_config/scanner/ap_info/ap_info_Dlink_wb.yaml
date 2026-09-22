@@ -1,7 +1,6 @@
 name: ap_info_Dlink_wb
 $extends: [
-  "./ap_info_Dlink.yaml",
-  ../../comp/Dlink/Dlink_wb.comp.yaml
+  "./ap_info_Dlink.yaml"
 ]
 attacker_module: ap_info
 actors:
@@ -12,6 +11,6 @@ attack_config:
   beacon_scan: true
   beacon_timeout_sec: 10
   EAP_scan: true
-  ACM_trigger: false
+  ACM_trigger: true
   acm_trigger_count: 2560
 rewrite: all

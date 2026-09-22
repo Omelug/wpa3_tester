@@ -181,7 +181,7 @@ json_schema::schema_loader YAMLValidator::make_loader(const path &schema_dir){
 		const string &p = uri.path();
 		const string clean_p = !p.empty() && p[0] == '/' ? p.substr(1) : p;
 		const path ref_path = weakly_canonical(schema_dir / clean_p);
-		if(!exists(ref_path)) throw wpa3_tester::run_err("Schema not found: " + ref_path.string());
+		if(!exists(ref_path)) throw wpa3_tester::run_err("Schema not found: {}", ref_path);
 		schema = wpa3_tester::yaml_to_json(YAML::LoadFile(ref_path.string()));
 	};
 }

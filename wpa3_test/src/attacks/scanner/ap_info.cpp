@@ -5,6 +5,7 @@
 
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
+#include "attacks/components/setup_connections.h"
 #include "attacks/components/sniffer_helper.h"
 #include "scan/active/scan_AP.h"
 #include "scan/active/scan_EAP.h"
@@ -17,6 +18,12 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::ap_info{
+
+void setup_attack(RunStatus &rs) {
+	// only setup if can
+	components::setup_AP(rs, "target");
+}
+
 void run_attack(RunStatus &rs){
 	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -30,8 +37,8 @@ void run_attack(RunStatus &rs){
 		const auto timeout = att_cfg.value("beacon_timeout_sec", 10);
 		log(LogLevel::DEBUG, "Scanning beacon for {} seconds", timeout);
 		auto beacon_pcap = rs.run_folder() / (target_ap.get(SK::actor_name) + ".pcap");
+		scan_ap.load(scan::RSN_scan(scanner.get_mon_iface(), timeout, target_ap.get(SK::permanent_mac), beacon_pcap));
 		set_public_perms(beacon_pcap);
-		scan_ap.load(scan::RSN_scan(scanner.get(SK::iface), timeout, target_ap.get(SK::permanent_mac), beacon_pcap));
 		{
 			const path beacon_txt = rs.run_folder() / "beacon_scan.txt";
 			ofstream ofs(beacon_txt);

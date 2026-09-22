@@ -50,7 +50,7 @@ static string station_counter_showcase(const path &page_dir) {
 }
 
 static string state_log_showcase(const path &page_dir) {
-    const path log_path = TEST_DATA / "state_log" / "24:ec:99:bf:c7:cf_state.log";
+    const path log_path = TEST_DATA / "observer" / "client_state" / "24:ec:99:bf:c7:cf_state.log";
     const path png_path = page_dir / "state_log.png";
     observer::state_log_graph::create_state_log_graph(log_path, png_path);
 	return exists(png_path) ? png_path.filename().string() : "";

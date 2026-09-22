@@ -91,7 +91,7 @@ void RunStatus::execute() {
 		~LogGuard() { close_log_file(); }
 	} log_guard;
 
-	try {
+	//try {
 		auto &gcfg = get_global_config();
 		if(run_config().get_only_stats()) {
 			config_path(absolute(run_folder() / TEST_CONFIG_NAME));
@@ -146,7 +146,7 @@ void RunStatus::execute() {
 			return;
 		}
 		write_done();
-	} catch (const exception& e) {
+	/*} catch (const exception& e) {
 		if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
 
 		const path error_file = run_folder() / ERROR_FILE;
@@ -166,9 +166,14 @@ void RunStatus::execute() {
 				const auto &loc = te->where();
 				err_log << "Location: " << loc.file_name() << ":" << loc.line()
 				        << " in " << loc.function_name() << endl;
+				err_log << "Stacktrace:\n" << std::to_string(te->trace()) << endl;
 				log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
+				log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(te->trace()));
 			} else {
+				const auto& trace = throw_trace_for(reinterpret_cast<const void*>(&e));
+				err_log << "Stacktrace:\n" << std::to_string(trace) << endl;
 				log(LogLevel::ERROR, "{}", e.what());
+				log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(trace));
 			}
 
 			err_log << endl;
@@ -180,7 +185,7 @@ void RunStatus::execute() {
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
-	}
+	}*/
 }
 
 void RunStatus::get_or_create_connection(const ActorPtr &actor) {

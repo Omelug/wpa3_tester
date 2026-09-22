@@ -7,15 +7,23 @@
 #include "log.h"
 
 namespace wpa3_tester {
+
+const std::stacktrace& throw_trace_for(const void* ex_ptr);
+
 class tester_error: public std::runtime_error, public std::nested_exception {
 public:
-	explicit tester_error(const std::string &msg, const std::source_location loc = std::source_location::current()):
+	explicit tester_error(const std::string &msg,
+	                      const std::source_location loc = std::source_location::current(),
+	                      std::stacktrace trace = std::stacktrace::current()):
 		std::runtime_error(msg),
-		location_(loc) {}
+		location_(loc),
+		trace_(std::move(trace)) {}
 
 	[[nodiscard]] const std::source_location &where() const noexcept { return location_; }
+	[[nodiscard]] const std::stacktrace &trace() const noexcept { return trace_; }
 private:
 	std::source_location location_{};
+	std::stacktrace trace_{};
 };
 
 // Wrapper for std::format-style ({}) error messages with source location capture.
@@ -23,10 +31,14 @@ private:
 struct fmtloc {
 	std::string_view fmt;
 	std::source_location loc;
+	std::stacktrace trace;
 
-	explicit fmtloc(const std::string_view fmt, const std::source_location loc = std::source_location::current()):
+	explicit fmtloc(const std::string_view fmt,
+	                const std::source_location loc = std::source_location::current(),
+	                std::stacktrace trace = std::stacktrace::current()):
 		fmt(fmt),
-		loc(loc) {}
+		loc(loc),
+		trace(std::move(trace)) {}
 };
 
 template<LogLevel Level>
@@ -37,8 +49,10 @@ class typed_error: public tester_error {
 		return std::apply([&fmt](auto &...a) { return std::vformat(fmt, std::make_format_args(a...)); }, cleaned);
 	}
 public:
-	explicit typed_error(const std::string &msg, const std::source_location loc = std::source_location::current()):
-		tester_error(msg, loc) {
+	explicit typed_error(const std::string &msg,
+	                     const std::source_location loc = std::source_location::current(),
+	                     std::stacktrace trace = std::stacktrace::current()):
+		tester_error(msg, loc, std::move(trace)) {
 		log(Level, "{}", runtime_error::what());
 	}
 
@@ -46,22 +60,26 @@ public:
 	struct fmtloc_implicit {
 		const char *fmt;
 		std::source_location loc;
+		std::stacktrace trace;
 
 		fmtloc_implicit( // non-explicit: enables implicit construction from string literal
-				const char *fmt, const std::source_location loc = std::source_location::current()):
+				const char *fmt,
+				const std::source_location loc = std::source_location::current(),
+				std::stacktrace trace = std::stacktrace::current()):
 			fmt(fmt),
-			loc(loc) {}
+			loc(loc),
+			trace(std::move(trace)) {}
 	};
 
 	template<typename... Args>
 	explicit typed_error(fmtloc_implicit f, Args &&...args):
-		tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc) {
+		tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc, std::move(f.trace)) {
 		log(Level, "{}", std::runtime_error::what());
 	}
 
 	template<typename... Args>
 	explicit typed_error(const fmtloc f, Args &&...args):
-		tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc) {
+		tester_error(fmt_msg(f.fmt, std::forward<Args>(args)...), f.loc, std::stacktrace(f.trace)) {
 		log(Level, "{}", std::runtime_error::what());
 	}
 };

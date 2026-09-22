@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="10" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="11" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
@@ -135,13 +135,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: OpenWrtConn::disable_actor to delete openwrt interface after test (disable interface not conflicts on ssid after test )">
-      <change afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink_wb.yaml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: Tins error tracebacks&#10;r: ap_info small changes">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/deploy.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/throw_trace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/throw_trace.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1172,8 +1173,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: injection retrans/txack result parsing" />
-    <MESSAGE value="f: start_ap_hostapd get_hostapd" />
     <MESSAGE value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
     <MESSAGE value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
     <MESSAGE value="r: change results (move to parse functions) &#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)" />
@@ -1197,7 +1196,9 @@
     <MESSAGE value="r: small changes" />
     <MESSAGE value="chr: observers showcase real data with events" />
     <MESSAGE value="+: OpenWrtConn::disable_actor to delete openwrt interface after test (disable interface not conflicts on ssid after test )" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: OpenWrtConn::disable_actor to delete openwrt interface after test (disable interface not conflicts on ssid after test )" />
+    <MESSAGE value="+: json_throw to trace back json errors" />
+    <MESSAGE value="+: Tins error tracebacks&#10;r: ap_info small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: Tins error tracebacks&#10;r: ap_info small changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1226,6 +1227,16 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp</url>
           <line>276</line>
           <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
+          <line>256</line>
+          <option name="timeStamp" value="96" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h</url>
+          <line>71</line>
+          <option name="timeStamp" value="102" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

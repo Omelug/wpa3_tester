@@ -34,6 +34,7 @@
 namespace wpa3_tester::attack_module_maps {
 /* map of attacker_module->attack setup function*/
 inline std::map<std::string, std::function<void(RunStatus &)>> setup_map = {
+	{ "ap_info", ap_info::setup_attack },
 	{ "channel_switch", CSA_attack::setup_chs_attack },
 	{ "bl0ck", bl0ck_attack::setup_attack },
 	{ "deauth", deauth_attack::setup_attack },

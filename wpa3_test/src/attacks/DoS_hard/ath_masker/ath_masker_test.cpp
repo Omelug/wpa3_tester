@@ -1,10 +1,11 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "config/RunStatus.h"
+#include "interrupt.h"
 #include "logger/log.h"
 #include "observer/tshark_wrapper.h"
 #include "setup/program.h"
-#include "system/hw_capabilities.h"
 #include "system/firmware/ath9k_htc.h"
+#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace Tins;

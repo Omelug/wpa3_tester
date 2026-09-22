@@ -1,6 +1,7 @@
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/program.h"
@@ -18,7 +19,7 @@ void setup_AP(RunStatus &rs, const string &ap_actor_name) {
 	//FIXME this dont work with external logread  (some issue with buffering?)
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
-	std::interruptible_sleep(seconds(2));
+	interruptible_sleep(seconds(2));
 
 	log(LogLevel::INFO, "{} is running", ap_actor_name);
 	if(rs.get_actor(ap_actor_name)[SK::ip_addr]) { ip::set_ip(rs, ap_actor_name); }
@@ -57,7 +58,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 
 			hw_capabilities::run_cmd({ "ip", "addr", "replace", ip + "/24", "dev", iface }, std::nullopt, false);
 			ap->set_iface_up();
-			std::interruptible_sleep(milliseconds(1500));
+			interruptible_sleep(milliseconds(1500));
 			//TODO  add dnsmasq to nix/ requirements
 			hw_capabilities::run_cmd({ "pkill", "dnsmasq" }, std::nullopt, false);
 			rs.process_manager.run("dnsmasq_ap",

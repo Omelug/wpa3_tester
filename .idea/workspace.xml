@@ -135,42 +135,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: global variable to default fallbacks/ default config values">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="ch: interruption throw error  by default &#10;r: small_cahnges">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests_manual/ex_program/openwrt/info_openwrt.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests_manual/ex_program/openwrt/info_openwrt.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dos_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_hard/dos_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/error_log.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/ath_masker/ath_masker_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/ath_masker/ath_masker_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/reflection_attack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/active_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/active_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ProcessManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/wizard/rssi_wizard.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1201,7 +1176,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: sniff_iface, start_ap" />
     <MESSAGE value="+: libnl, libssh cmake" />
     <MESSAGE value="+: control_monitor in injection tests" />
     <MESSAGE value="f: injection retrans/txack result parsing" />
@@ -1226,14 +1200,15 @@
     <MESSAGE value="f: cache only test suite subdirs" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="+: global variable to default fallbacks/ default config values" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: global variable to default fallbacks/ default config values" />
+    <MESSAGE value="ch: interruption throw error  by default &#10;r: small_cahnges" />
+    <option name="LAST_COMMIT_MESSAGE" value="ch: interruption throw error  by default &#10;r: small_cahnges" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp</url>
-          <line>250</line>
+          <line>251</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

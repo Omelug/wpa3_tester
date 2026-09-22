@@ -100,15 +100,10 @@ using namespace filesystem;
 using nlohmann::json;
 
 void run_attack(RunStatus &rs) {
-	auto &actor_tx = rs.get_actor("transceiver");
-	auto &actor_rx = rs.get_actor("receiver");
+	const auto &actor_tx = rs.get_actor("transceiver");
+	const auto &actor_rx = rs.get_actor("receiver");
 	rs.start_observers();
 	const InjectionSuiteResult suite = hw_capabilities::run_injection_tests(actor_tx, actor_rx, {}, true, &rs);
-
-	const path result_path = rs.run_folder() / RESULT_NAME;
-	ofstream ofs(result_path);
-	ofs << suite.to_json().dump(2);
-	ofs.close();
-	set_public_perms(result_path);
+	rs.save_result(suite.to_json());
 }
 }

@@ -1,5 +1,6 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/components/setup_connections.h"
+#include "interrupt.h"
 
 #include "config/global_config.h"
 #include "ex_program/external_actors/ExternalConn.h"

@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "ex_program/hostapd/hostapd_helper.h"
+#include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -191,7 +192,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	hw_capabilities::run_cmd(
 			{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
-		throw setup_err("Interface " + ap_iface + " did not appear");
+		throw setup_err("Interface {} did not appear", ap_iface);
 	interruptible_sleep(2000ms); //FIXME not nice , but stable
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);

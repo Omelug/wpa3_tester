@@ -249,7 +249,7 @@ json RunStatus::config_validation(const path &config_path) {
 		json config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
 
 		// substitute global_variables before extends/validation
-		const auto &gcfg = get_global_config();
+		auto &gcfg = get_global_config();
 		if(gcfg.contains("global_variables") && gcfg.at("global_variables").is_object())
 			apply_global_vars(config_json, gcfg.at("global_variables"));
 		check_no_gvar(config_json);

@@ -12,6 +12,7 @@
 #include <ranges>
 
 #include "default.h"
+#include "interrupt.h"
 
 namespace wpa3_tester{
 using namespace std;

@@ -6,9 +6,10 @@
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
 
-#include "default.h"
-#include "config/RunStatus.h"
 #include "config/Actor_Config/actor_keys.h"
+#include "config/RunStatus.h"
+#include "default.h"
+#include "interrupt.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 #include "system/utils.h"
@@ -52,9 +53,7 @@ void run_attack(RunStatus &rs){
 
 	// Build a null data frame: transceiver -> receiver
 	RadioTap rt;
-	Dot11Data frame;
-	frame.addr1(actor_rx.get(SK::mac)); // destination
-	frame.addr2(tx_mac); // source
+	Dot11Data frame(actor_rx.get(SK::mac), tx_mac);
 	frame.addr3(tx_mac); // BSSID
 	frame.subtype(4);    // null data
 	rt /= frame;
@@ -75,13 +74,9 @@ void run_attack(RunStatus &rs){
 	const int acked = ack_count.load();
 	const int not_acked = BURST - acked;
 
+	//FIXME hardcoded threashold
 	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= BURST * 95 / 100},};
 
-	const path result_path = rs.run_folder() / RESULT_NAME;
-	{
-		ofstream ofs(result_path);
-		ofs << result.dump(2);
-	}
-	set_public_perms(result_path);
+	rs.save_result(result);
 }
 }

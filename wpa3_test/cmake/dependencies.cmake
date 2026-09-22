@@ -109,6 +109,9 @@ target_compile_definitions(wpa3_deps INTERFACE
 )
 
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(wpa3_deps INTERFACE stdc++exp)
+endif ()
 target_precompile_headers(wpa3_deps INTERFACE
         <vector> <string> <map> <unordered_map> <set>
         <memory> <optional> <variant> <tuple> <functional>
@@ -118,6 +121,7 @@ target_precompile_headers(wpa3_deps INTERFACE
         <stdexcept> <cassert>
         <cstdint> <cstdlib> <cstring> <csignal>
         <sstream> <regex> <system_error>
+        <json_throw.h>
         <nlohmann/json.hpp>
         <nlohmann/json-schema.hpp>
         <yaml-cpp/yaml.h>

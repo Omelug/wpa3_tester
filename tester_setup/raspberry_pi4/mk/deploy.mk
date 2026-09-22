@@ -14,6 +14,8 @@ bootstrap:
 
 run: deploy-cross internet
 	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test_suite $(TEST_SUITE)"
+run_test: deploy-cross internet
+	$(SSH) -t "sudo $(REMOTE)/build/bin/wpa3_tester --test $(TEST)"
 
 FORCE:
 

@@ -1,5 +1,7 @@
 #include "config/RunStatus.h"
+#include <cxxabi.h>
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <string>
 #include <yaml-cpp/yaml.h>
@@ -150,12 +152,20 @@ void RunStatus::execute() {
 		const path error_file = run_folder() / ERROR_FILE;
 		ofstream err_log(error_file, ios::out | ios::app);
 		if (err_log.is_open()) {
+			int status = 0;
+			const unique_ptr<char, void(*)(void*)> demangled(
+				abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status),
+				free);
+			const string type_name = (status == 0 && demangled) ? demangled.get() : typeid(e).name();
+
 			err_log << "=== Error occurred at " << current_timestamp() << " ===" << endl;
-			err_log << "Exception type: " << typeid(e).name() << endl;
+			err_log << "Exception type: " << type_name << endl;
 			err_log << "Message: " << e.what() << endl;
 
 			if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
 				const auto &loc = te->where();
+				err_log << "Location: " << loc.file_name() << ":" << loc.line()
+				        << " in " << loc.function_name() << endl;
 				log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
 			} else {
 				log(LogLevel::ERROR, "{}", e.what());

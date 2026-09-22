@@ -16,7 +16,9 @@ using namespace std;
 using namespace filesystem;
 
 void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
-	const auto &setup_node = config.at("actors").at(actor_name).at("setup");
+	const auto &actor_cfg = config.at("actors").at(actor_name);
+	if(!actor_cfg.contains("setup")) return;
+	const auto &setup_node = actor_cfg.at("setup");
 	if(!setup_node.contains("ex_WB_programs")){ return; }
 	auto ex_WB_programs = setup_node.at("ex_WB_programs");
 	for(const auto &req_name: ex_WB_programs){
@@ -182,8 +184,8 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 		exec("uci commit wireless");
 		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
 		wait_for_ifname(section);
-
 		actor->set(SK::iface, owe_ifname);
+
 		Tins::HWAddress<6> m = get_mac_address(owe_ifname);
 		actor->set(SK::mac, m);
 		actor->set(SK::permanent_mac, m);

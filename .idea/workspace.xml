@@ -135,16 +135,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: Tins error tracebacks&#10;r: ap_info small changes">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/scan/active/scan_AP.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: ap_info ACM triggger sniff iface fix">
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1175,7 +1167,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
     <MESSAGE value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
     <MESSAGE value="r: change results (move to parse functions) &#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)" />
     <MESSAGE value="r: change results (move to parse functions)&#10;f: conn_WPA_version&#10;f: OpenWrtConn::logger (changed to logread downloaded after test)" />
@@ -1200,7 +1191,8 @@
     <MESSAGE value="+: OpenWrtConn::disable_actor to delete openwrt interface after test (disable interface not conflicts on ssid after test )" />
     <MESSAGE value="+: json_throw to trace back json errors" />
     <MESSAGE value="+: Tins error tracebacks&#10;r: ap_info small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: Tins error tracebacks&#10;r: ap_info small changes" />
+    <MESSAGE value="f: ap_info ACM triggger sniff iface fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: ap_info ACM triggger sniff iface fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

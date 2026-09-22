@@ -210,7 +210,7 @@ void RunStatus::run_test() {
 	} else {
 		log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>());
 	}
-
+	for(auto &val: actors | views::values) val->disconnect();
 	process_manager.write_log_all(END_tag);
 	process_manager.stop_all();
 }

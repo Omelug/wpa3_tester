@@ -127,6 +127,12 @@ Actor_config &Actor_config::operator+=(const Actor_config &other){
 	return *this;
 }
 
+void Actor_config::disconnect() {
+	if(!conn) return;
+	conn->disable_actor(ActorPtr(shared_from_this()));
+	conn->disconnect();
+}
+
 void Actor_config::set(const SK key, const optional<string> &new_value){
 	if((key == SK::mac || key == SK::permanent_mac) && new_value.has_value()){
 		string mac_lower = new_value.value();

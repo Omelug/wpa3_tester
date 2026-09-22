@@ -29,7 +29,7 @@ public:
 	std::optional<std::string> get_module_hash(const std::string &driver_name) const;
 
 	[[nodiscard]] bool is_connected() const { return session != nullptr; }
-	virtual std::string exec(const std::string &cmd, bool kill_on_exit, int *ret_err) const;
+	virtual std::string exec(const std::string &cmd, bool kill_on_exit, int *ret_err, bool merge_stderr = false) const;
 	std::string exec(const std::string &cmd) const { return exec(cmd, false, nullptr); }
 	std::string exec(const std::string &cmd, const bool kill_on_exit) const { return exec(cmd, kill_on_exit, nullptr); }
 	void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;
@@ -54,12 +54,13 @@ public:
 	virtual void get_hw_capabilities(const ActorPtr &) { throw not_implemented_err("get_hw_capabilities"); }
 
 	virtual void get_router_info(RunStatus &, const std::string &) {}
+	virtual void disable_actor(const ActorPtr &) {}
 	void on_disconnect(DisconnectCallback cb);
 	void disconnect();
 
 	// Persistent SSH channel running "tcpdump -i <iface> -U -w -"; caller owns and must close it.
 	ssh_channel open_capture_channel(const std::string &iface) const;
-	// Upload remote_injector binary to /tmp/wpa3_injector if outdated.
+	// upload remote_injector binary to /tmp/wpa3_injector if outdated.
 	void ensure_inject_binary() const;
 	// Open SSH channel for frame injection (calls ensure_inject_binary internally).
 	ssh_channel open_inject_channel(const std::string &iface) const;

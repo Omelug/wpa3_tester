@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <libssh/sftp.h>
 #include <map>
-#include <thread>
 
 #include <ranges>
 
@@ -30,7 +29,7 @@ ExternalConn::~ExternalConn(){
 }
 
 bool ExternalConn::connect(const ActorPtr &actor){
-	// Check if actor has needed SSH params
+	// check if actor needed SSH params
 	if(!actor[SK::whitebox_ip].has_value() || !actor[SK::ssh_user].has_value() || !actor[SK::ssh_password].has_value()){
 		throw ex_conn_err("ExternalConn: actor missing whitebox_ip");
 	}
@@ -98,7 +97,7 @@ optional<string> ExternalConn::get_driver_hash(const string &driver_name) const{
 
 optional<string> ExternalConn::get_module_hash(const string &driver_name) const{
 	if(driver_name.empty()) return nullopt;
-	// try srcversion for driver + depends; fallback per-module to sha256 of .ko
+	// try srcversion for driver depends on; fallback per-module to sha256 of .ko
 	const string cmd = "(for m in " + driver_name + " $(modinfo -F depends " + driver_name +
 			" 2>/dev/null | grep -v '^modinfo:' | tr ',' ' '); do" " sv=$(cat /sys/module/$m/srcversion 2>/dev/null);"
 			" if [ -z \"$sv\" ]; then" "   ko=$(modinfo -F filename $m 2>/dev/null);"
@@ -110,10 +109,10 @@ optional<string> ExternalConn::get_module_hash(const string &driver_name) const{
 	return s;
 }
 
-string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_err) const{
+string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_err, const bool merge_stderr) const{
 	scoped_lock lock(session_mtx);
-	const string final_cmd = kill_on_exit ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'" : cmd;
-	//log(LogLevel::DEBUG, "exec "+final_cmd);
+	const string stderr_redirect = merge_stderr ? " 2>&1" : "";
+	const string final_cmd = kill_on_exit ? string("setsid sh -c 'trap \"kill -- -$$\" EXIT; ") + cmd + "'" + stderr_redirect : cmd + stderr_redirect;
 	if(!session) throw ex_conn_err("Cannot exec: not connected");
 
 	const struct ChannelGuard{
@@ -132,8 +131,8 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	if(!guard.ch) throw ex_conn_err("Failed to create SSH channel: " + string(ssh_get_error(session)));
 	if(ssh_channel_open_session(guard.ch) != SSH_OK) throw ex_conn_err(
 		"Failed to open SSH channel: " + string(ssh_get_error(session)));
-	if(ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK) throw ex_conn_err(
-		"Failed to execute: " + final_cmd + " | SSH error: " + ssh_get_error(session));
+	if(ssh_channel_request_exec(guard.ch, final_cmd.c_str()) != SSH_OK)
+		throw ex_conn_err("Failed to execute: " + final_cmd + " | SSH error: " + ssh_get_error(session));
 
 	string result;
 	char buf[1024];
@@ -151,11 +150,11 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 
 void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
 	exec("iw dev " + sniff_iface + " del 2>/dev/null");
+	exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);
+
 	//FIXME quiet fallback, check before if possible
 	const string add_cmd = "iw dev " + iface + " interface add " + sniff_iface + " type monitor flags fcsfail otherbss"
 			+ " || iw dev " + iface + " interface add " + sniff_iface + " type monitor";
-	exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);
-
 	exec(add_cmd);
 	exec("ip link set " + sniff_iface + " up");
 }
@@ -183,7 +182,7 @@ void ExternalConn::set_managed_mode(const string &iface) const{
 
 void ExternalConn::set_ip(const string &iface, const string &ip_addr) const{
 	exec("ip addr flush dev " + iface);
-	exec("ip addr add " + ip_addr + "/24 dev " + iface);
+	exec("ip addr add " + ip_addr + "/24 dev " + iface); //TODO hardcoded mask
 	exec("ip link set " + iface + " up");
 }
 
@@ -195,7 +194,7 @@ void ExternalConn::upload_file(const path &local_path, const path &remote_path) 
 	ifstream local_f(local_path, ios::binary);
 	if(!local_f) throw ex_conn_err("Local file not found: {}", local_path);
 
-	const string contents{istreambuf_iterator<char>(local_f), istreambuf_iterator<char>()};
+	const string contents{istreambuf_iterator(local_f), istreambuf_iterator<char>()};
 
 	ssh_scp scp = ssh_scp_new(session, SSH_SCP_WRITE, remote_path.parent_path().c_str());
 	if(!scp) throw ex_conn_err("SCP init failed");
@@ -354,7 +353,7 @@ static path injector_local_path(const string &remote_arch){
 	const path arch_binary = bin_dir / ("remote_injector_" + remote_arch);
 	if(exists(arch_binary)) return arch_binary;
 
-	if(!get_global_run_config().get_install_req()) //FIXME global (but it makes ssence here)
+	if(!get_global_run_config().get_install_req())
 		throw ex_conn_err("No remote_injector binary for arch '{}' - place it at {} "
 						  "or set install_req: true to build automatically", remote_arch, arch_binary);
 
@@ -364,7 +363,7 @@ static path injector_local_path(const string &remote_arch){
 
 ssh_channel ExternalConn::open_capture_channel(const string &iface) const{
 	scoped_lock lock(session_mtx);
-	ssh_channel ch = ssh_channel_new(session);
+	const ssh_channel ch = ssh_channel_new(session);
 	if(!ch) throw ex_conn_err("open_capture_channel: ssh_channel_new failed");
 	if(ssh_channel_open_session(ch) != SSH_OK){
 		ssh_channel_free(ch);
@@ -421,8 +420,8 @@ ssh_channel ExternalConn::open_inject_channel(const string &iface) const{
 		ssh_channel_free(ch);
 		throw ex_conn_err("open_inject_channel: exec failed on {}",  iface);
 	}
-	// Give the process ~50 ms to start; if it exits immediately, read stderr for diagnosis.
-	interruptible_sleep(chrono::milliseconds(50));
+	// give the process ~50 ms to start; if it exits immediately, read stderr for diagnosis.
+	interruptible_sleep(chrono::milliseconds(50)); //TODO hardcoded timeout
 	if(ssh_channel_is_eof(ch)){
 		char errbuf[512] = {};
 		ssh_channel_read_nonblocking(ch, errbuf, sizeof(errbuf) - 1, 1 /* stderr */);

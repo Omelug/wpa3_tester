@@ -59,7 +59,7 @@ void run_attack(RunStatus &rs) {
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	interruptible_sleep(seconds(regeneration_time_sec));
-	ap->conn->disconnect();
+	ap->disconnect();
 }
 
 void stats_attack(const RunStatus &rs) {

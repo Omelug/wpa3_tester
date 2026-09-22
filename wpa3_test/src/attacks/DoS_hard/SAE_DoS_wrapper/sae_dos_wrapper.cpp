@@ -123,7 +123,7 @@ void run_attack(RunStatus &rs) {
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	interruptible_sleep(seconds(attack_time));
-	ap->conn->disconnect();
+	ap->disconnect();
 }
 
 void stats_attack(const RunStatus &rs) {

@@ -4,7 +4,6 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+: channel Dlink config to different ssid (or shut down openwrt after test? to not colide with internal tests?)
 +: ACM activation time (external, internal in hostapd)
 r: small TODO/ FIXME
 ?
@@ -19,6 +18,7 @@ PDF:
     +: SPP
     +: testování testeru? (asi jen zímínit u výběru jazyka)
     +: RunConfig description
+
 
 r: use global_variables
 d: zmínit bakalářskou práci v README
@@ -55,6 +55,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: openwrt disable after test - to not colide with other internal tests
 r: add data to  observer graphs - showcase
 +: add constant like defualt password/default test cahnnel/5GHz channel
 f: page cache dont work - only cache whole html output folder

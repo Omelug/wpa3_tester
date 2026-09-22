@@ -85,6 +85,7 @@ public:
 
 	// Interface control
 	int run(const std::vector<std::string> &argv, bool print = true) const;
+	void disconnect();
 	virtual void cleanup() const;
 	virtual void create_sniff_iface() const;
 

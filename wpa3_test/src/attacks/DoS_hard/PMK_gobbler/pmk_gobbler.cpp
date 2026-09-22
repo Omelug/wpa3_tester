@@ -177,7 +177,7 @@ void run_attack(RunStatus &rs) {
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 
 	if(capture_thread.joinable()) capture_thread.join();
-	ap->conn->disconnect();
+	ap->disconnect();
 }
 
 void stats_attack(const RunStatus &rs) {

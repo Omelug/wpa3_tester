@@ -393,6 +393,16 @@ void OpenWrtConn::get_router_info(RunStatus &rs, const std::string &actor_name){
 	save("uci show network",  actor_name + "_uci_network.txt");
 }
 
+void OpenWrtConn::disable_actor(const ActorPtr &a) {
+	const string radio = a.get(SK::radio);
+	if(radio.empty()) {
+		log(LogLevel::WARNING, "delete_actor: no radio for actor {}", a.get(SK::actor_name));
+		return;
+	}
+	exec("wifi down " + radio + " 2>/dev/null; true");
+	log(LogLevel::INFO, "delete_actor: wifi down {} (actor {})", radio, a.get(SK::actor_name));
+}
+
 void OpenWrtConn::get_hw_capabilities(const ActorPtr &actor){
 	const string phy = "phy" + actor.get(SK::radio).substr(5);
 	int ret = 0;

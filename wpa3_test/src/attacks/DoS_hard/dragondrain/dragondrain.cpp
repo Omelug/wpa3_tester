@@ -62,7 +62,7 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("timeout_sec").get<int>()));
 	rs.process_manager.stop("attacker");
 	interruptible_sleep(seconds(10));
-	ap->conn->disconnect();
+	ap->disconnect();
 }
 
 void stats_attack(const RunStatus &rs) {

@@ -149,9 +149,7 @@ void generate_report(const RunStatus &rs) {
 	if(iface.empty()) return;
 
 	nlohmann::json result;
-	try {
-		result = rs.load_result();
-	} catch(...) {} //FIXME  why ignore log? --- log and return?
+	result = rs.load_result();
 
 	const string current_mac = result.value("current_mac", "n/a");
 	const bool is_up = result.value("is_up", false);

@@ -1,13 +1,12 @@
+#include <algorithm>
+#include <chrono>
+#include <random>
+#include <tins/tins.h>
+#include <vector>
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "system/hw_capabilities.h"
 #include "system/injection_result.h"
-#include <algorithm>
-#include <chrono>
-#include <random>
-#include <thread>
-#include <tins/tins.h>
-#include <vector>
 
 #include "interrupt.h"
 
@@ -308,7 +307,7 @@ InjectionTestResult hw_capabilities::test_injection_txack(
 ){
 	Dot11ProbeRequest probe(dest_mac, own_mac);
 	probe.addr3(dest_mac);
-	probe.seq_num(42);
+	probe.seq_num(42); // only for manual debug
 	probe.add_option({Dot11ManagementFrame::SSID, 0, nullptr});
 	constexpr uint8_t rates[] = {0x03, 0x12, 0x96, 0x18}; //needed because if not hostapd ignore silently
 	probe.add_option({Dot11ManagementFrame::SUPPORTED_RATES, sizeof(rates), rates});

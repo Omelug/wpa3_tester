@@ -59,7 +59,7 @@ path phy_debugfs_dir(const string &phy, const string &subdir) {
 	return path("/sys/kernel/debug/ieee80211") / phy_name / subdir;
 }
 
-string to_lower(string s) { //FIXME needed?
+string to_lower(string s) {
 	ranges::transform(s, s.begin(), [](const unsigned char c) { return static_cast<char>(tolower(c)); });
 	return s;
 }

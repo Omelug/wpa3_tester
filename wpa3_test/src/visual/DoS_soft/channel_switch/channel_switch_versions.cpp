@@ -23,26 +23,16 @@ CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder) {
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	e.rogue_ap_driver = rs->get_actor("rogue_ap").get(SK::driver_name);
 
+	e.hostapd_version = hostapd::get_version(*rs, "ap");
+	e.supplicant_version = hostapd::get_version(*rs, "client");
+
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	if(exists(cfg_path)) {
-		try {
-			const auto cfg = YAML::LoadFile(cfg_path.string());
-			if(cfg["name"]) e.name = cfg["name"].as<string>();
-			if(cfg["actors"] && cfg["actors"]["ap"] && cfg["actors"]["ap"]["setup"] &&
-					cfg["actors"]["ap"]["setup"]["program_config"] &&
-					cfg["actors"]["ap"]["setup"]["program_config"]["version"])
-				e.hostapd_version = cfg["actors"]["ap"]["setup"]["program_config"]["version"].as<string>();
-			if(cfg["actors"] && cfg["actors"]["client"] && cfg["actors"]["client"]["setup"] &&
-					cfg["actors"]["client"]["setup"]["program_config"] &&
-					cfg["actors"]["client"]["setup"]["program_config"]["version"])
-				e.supplicant_version = cfg["actors"]["client"]["setup"]["program_config"]["version"].as<string>();
-			if(cfg["attack_config"]) {
-				if(cfg["attack_config"]["new_channel"])
-					e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
-				if(cfg["attack_config"]["attack_time"])
-					e.attack_time = to_string(cfg["attack_config"]["attack_time"].as<int>());
-			}
-		} catch(...) {} //FIXME
+		const auto cfg = YAML::LoadFile(cfg_path.string());
+		e.name = cfg["name"].as<string>();
+		e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
+		e.attack_time = to_string(cfg["attack_config"]["attack_time"].as<int>());
+
 	}
 
 	const path tshark = test_folder / "observer" / "tshark";

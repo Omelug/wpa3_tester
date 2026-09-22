@@ -53,7 +53,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 		   not bl0ck frames.
 		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation</p>
 	</div>
-)html"; //FIXME client-AP nesmí být na jedné straně spolu, bl0ck jinak asi nemá dost času -> nějaký WARRNING  ?
+)html";
 
 	auto emit_table = [&](const string &title, const path &suite_data_dir, const string &t_name){
 		Bl0ckTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);

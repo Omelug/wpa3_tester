@@ -1,9 +1,10 @@
 #include "attacks/two_iface/TwoIface.h"
+#include <fstream>
 #include "config/Actor_Config/ActorPtr.h"
+#include "config/global_config.h"
+#include "default.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
-#include <fstream>
-#include "default.h"
 #include "system/utils.h"
 
 namespace wpa3_tester{
@@ -100,7 +101,7 @@ path TwoIface::cache_path() const{
 
 json TwoIface::make_selection(const ActorPtr &a) const{
 	auto sel = a->to_json(&cache_id)["selection"];
-	sel["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
+	sel["channel"] = get_global_config().at("global_variables").at("default_channel_2_4").get<string>();;
 	sel["condition"] = {"2_4GHz", "monitor", "control_monitor", "netns_change"};
 	return sel;
 }

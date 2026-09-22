@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "default.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
@@ -20,7 +21,7 @@ TwoIfaceInject::TwoIfaceInject():
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 	auto sel_rx = r->to_json(&cache_id)["selection"];
-	sel_rx["channel"] = "11"; //FIXME hardcoded, add to two_iface validator cant be in config
+	sel_rx["channel"] = get_global_config().at("global_variables").at("default_channel_2_4").get<string>();
 	sel_rx["condition"] = { "2_4GHz", "monitor", "control_monitor" };
 
 	const json config = {

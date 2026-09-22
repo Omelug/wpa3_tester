@@ -81,6 +81,7 @@ static AmpduAction parse_action(const string &line){
 	return AmpduAction::UNKNOWN;
 }
 
+//TODO add simple test
 // first digit-leading token ending with ':' is the monotonic timestamp; -1 on failure
 // "SSSSSS.UUUUUU" - fractional part zero-padded to 9 digits for nanosecond precision
 static int64_t line_ts_ns(const string &line){
@@ -95,7 +96,7 @@ static int64_t line_ts_ns(const string &line){
 				frac.resize(9, '0');
 				return stoll(tok.substr(0, dot)) * 1'000'000'000LL + stoll(frac);
 			} catch(...){
-				//FIXME at least log ?
+				log(LogLevel::ERROR, "trace_cmd ts missing: {}", tok);
 				return -1;
 			}
 		}
@@ -132,7 +133,7 @@ map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs,
 	return result;
 }
 
-//TODO test
+//TODO real data test
 described_bool addba_seen(const RunStatus &rs) {
 	described_bool result;
 	for (const string actor_name : {"ap", "client"}) {

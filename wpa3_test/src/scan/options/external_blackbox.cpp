@@ -157,7 +157,7 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 
 		const Channel ch{channel, WifiBand::BAND_2_4_or_5, nullopt}; //FIXME only 2_4/5Ghz
 		scanner->set_channel(ch);
-		interruptible_sleep(chrono::milliseconds(200));
+		interruptible_sleep(chrono::milliseconds(200)); //TODO needed?
 
 		const auto result = components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
 											[&](const uint8_t *pkt, const size_t len) ->optional<monostate>{

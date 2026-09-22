@@ -110,9 +110,9 @@ void run_attack(RunStatus &rs){
 	vector<string> akm;
 	if(scan_ap.rsn.has_value()){
 		const uint16_t caps = scan_ap.rsn->capabilities();
-		const bool mfpr = caps & (1 << 6);
-		const bool mfpc = caps & (1 << 7);
-		mfp = mfpr ? "REQUIRED" : (mfpc ? "Capable" : "No");
+		const bool mfpr = caps & 1 << 6;
+		const bool mfpc = caps & 1 << 7;
+		mfp = mfpr ? "REQUIRED" : mfpc ? "Capable" : "No";
 
 		akm.reserve(scan_ap.rsn->akm_cyphers().size());
 		for(const auto &a: scan_ap.rsn->akm_cyphers()){

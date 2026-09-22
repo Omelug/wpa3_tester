@@ -72,9 +72,8 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 }
 
 void OpenWrtConn::forward_internet(const string &remote_ip) const{
-	//TODO hardcoded DNS server
-	// Pi-side ip_forward and iptables NAT/FORWARD rules are set up by wpa3-nat.service (bootstrap.sh).
-	// Here we only configure the router: give it a default route pointing to the Pi.
+	//FIXME hardcoded DNS servers
+	// here is only configuration - give it a default route pointing to the Pi
 	const string local_iface = hw_capabilities::get_iface(remote_ip, nullopt);
 	const string local_ip    = ip::get_ip(local_iface);
 
@@ -270,7 +269,7 @@ void OpenWrtConn::set_managed_mode(const string &iface) const{
 
 auto OpenWrtConn::set_ip(const string &iface, const string &ip_addr) const->void{
 	int rc;
-	string master = exec("ip link show dev " + iface + " 2>/dev/null", false, &rc);
+	const string master = exec("ip link show dev " + iface + " 2>/dev/null", false, &rc);
 	string target = iface;
 	if(rc == 0){
 		const auto pos = master.find("master ");
@@ -447,9 +446,8 @@ void OpenWrtConn::parse_hw_capabilities(const ActorPtr &actor, const string &out
 	actor->set(BK::CSA,         has("channel_switch"));
 	actor->set(BK::OCV,         has("operating channel validation"));
 	actor->set(BK::beacon_prot, has("beacon protection"));
-	actor->set(BK::MFP,         has("00-0f-ac:6")); // BIP-CMAC-128 //TODO has to be MFP ?
-
-	actor->set(BK::WPA_PSK,  has("00-0f-ac:4")); // CCMP cipher suite
+	actor->set(BK::MFP,      has("00-0f-ac:6") || has("CMAC"));
+	actor->set(BK::WPA_PSK,  has("00-0f-ac:4") || has("CCMP"));
 	actor->set(BK::WPA3_SAE, has("SAE"));
 }
 }

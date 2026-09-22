@@ -225,7 +225,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	//interruptible_sleep(chrono::milliseconds(100));
 	base_actor->set_iface_up();
 	hw_capabilities::set_iface_up(ap_iface, netns);
-	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //disable for test ?
+	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //TODO disable for test ?
 }
 
 void stop_ap(const string &iface, const optional<string> &netns) {

@@ -135,9 +135,9 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 		json combined = *resolved;
 		if(root_schema_.contains("$defs")) combined["$defs"] = root_schema_["$defs"];
 		json_schema::json_validator temp_v(combined, YAMLValidator::make_loader(schema_dir_));
-		const json copy = prop_value;
+		const json& copy = prop_value;
 		temp_v.validate(copy, ceh);
-	} catch(...) {}
+	} catch(...) {} //TODO add test and comment if needed
 
 	for(const auto &e : ceh.errors){
 		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) - handled below
@@ -164,7 +164,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 			if(!err_msg.empty())
 				results.push_back("Rule Violation: " + err_msg);
-		} catch(...) {}
+		} catch(...) {} //TODO needed if yes -> test
 	}
 
 	return results;

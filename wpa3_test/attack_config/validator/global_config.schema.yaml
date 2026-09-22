@@ -27,3 +27,19 @@ properties:
   use_two_iface_cache:
     type: boolean
     description: "Enable two_iface on-disk cache. Set to false to always rerun two-interface tests."
+  global_variables:
+    type: object
+    description: "Default values substituted via gvar_ prefix in test configs"
+    required: [default_channel_2_4, default_channel_5, default_password]
+    properties:
+      default_channel_2_4:
+        type: integer
+        description: "Default 2.4 GHz channel used when no channel is specified in test config"
+      default_channel_5:
+        type: integer
+        description: "Default 5 GHz channel used when no channel is specified in test config"
+      default_password:
+        type: string
+        description: "Default WPA passphrase used as fallback when no password is set in test config"
+
+required: [global_variables]

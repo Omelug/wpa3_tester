@@ -136,26 +136,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: cache only test suite subdirs">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/global_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/sta_info/config/hostapd_eap.conf" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/sta_info/config/hostapd_eap.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/malformed_eapol1/malformed_eapol1.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/enterprise/eap_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/global_config.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/global_config.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ProcessManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ProcessManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd-wpa3-personal.conf" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd-wpa3-personal.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,8 +171,6 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/data/test_data/DoS_soft/bl0ck/Dlink/bl0ck_BA_Dlink/observer/iperf3/ap_iperf3_server.log" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/channel_switch/external/Dlink/CSA_rogueAP_Dlink_filler/all_actors/channel_switch_Dlink_663f3bdc/logger/ap.log" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/tester_setup/raspberry_pi4/run/html/attacks/DoS_soft/channel_switch/.data_stamp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/tester_setup/raspberry_pi4/run/html/attacks/DoS_soft/malformed_eapol1/.data_stamp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" root0="FORCE_HIGHLIGHTING" />
@@ -1199,7 +1186,6 @@
     <MESSAGE value="+: libnl, libssh cmake" />
     <MESSAGE value="+: control_monitor in injection tests" />
     <MESSAGE value="f: injection retrans/txack result parsing" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="f: start_ap_hostapd get_hostapd" />
     <MESSAGE value="f: drivers not compilated for raspberry corretly (after change of raspberry headers)" />
     <MESSAGE value="f: AP/STA in setup_actor (and netlink support function separation)&#10;+: openwrt::uci_get_option" />
@@ -1219,7 +1205,8 @@
     <MESSAGE value="r: small changes&#10;f: interruptable loops" />
     <MESSAGE value="+: page cache for overview faster generation&#10;r+: mt76x2u_git" />
     <MESSAGE value="f: cache only test suite subdirs" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: cache only test suite subdirs" />
+    <MESSAGE value="r: small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: small changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

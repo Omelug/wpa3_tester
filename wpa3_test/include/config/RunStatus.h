@@ -32,6 +32,7 @@ enum CONFIG_TYPE { TEST, TEST_SUITE };
 
 inline std::filesystem::path ATTACK_CONFIG() { return root_dir() / "attack_config"; }
 inline std::string var_PREFIX = "var_";
+inline std::string gvar_PREFIX = "gvar_";
 
 inline std::string START_tag = "@START";
 

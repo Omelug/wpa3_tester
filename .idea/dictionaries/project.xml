@@ -48,12 +48,14 @@
       <w>bmaptool</w>
       <w>bmargin</w>
       <w>bprot</w>
+      <w>capab</w>
       <w>capabilies</w>
       <w>caplen</w>
       <w>cassert</w>
       <w>ccmp</w>
       <w>cerr</w>
       <w>cflags</w>
+      <w>chwidth</w>
       <w>ciphersuite</w>
       <w>cmac</w>
       <w>commentschars</w>

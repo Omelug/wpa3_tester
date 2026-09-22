@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "setup/YAMLValidator.h"
@@ -169,6 +170,46 @@ json resolve_extends(json current_node, const path &base_dir, vector<string> &hi
 	return merged;
 }
 
+static void apply_global_vars(json &node, const json &vars) {
+	if(node.is_string()) {
+		const string s = node.get<string>();
+		for(const auto &[key, val]: vars.items()) {
+			if(s == gvar_PREFIX + key) { node = val; return; }
+		}
+		string result = s;
+		bool changed = false;
+		for(const auto &[key, val]: vars.items()) {
+			const string ph = gvar_PREFIX + key;
+			const string rep = val.is_string() ? val.get<string>() : val.dump();
+			size_t pos = 0;
+			while((pos = result.find(ph, pos)) != string::npos) {
+				result.replace(pos, ph.size(), rep);
+				pos += rep.size();
+				changed = true;
+			}
+		}
+		if(changed) node = result;
+	} else if(node.is_object()) {
+		for(auto &[key, val]: node.items())
+			if(!key.starts_with('$')) apply_global_vars(val, vars);
+	} else if(node.is_array()) {
+		for(auto &el: node) apply_global_vars(el, vars);
+}
+}
+
+static void check_no_gvar(const json &node, const string &path = "") {
+	if(node.is_string()) {
+		if(node.get<string>().find(gvar_PREFIX) != string::npos)
+			throw config_err("Unresolved {} placeholder at {}: {}", gvar_PREFIX, path, node.get<string>());
+	} else if(node.is_object()) {
+		for(const auto &[key, val]: node.items())
+			check_no_gvar(val, path + "/" + key);
+	} else if(node.is_array()) {
+		for(size_t i = 0; i < node.size(); ++i)
+			check_no_gvar(node[i], path + "/" + to_string(i));
+	}
+}
+
 json RunStatus::extends_recursive(const nlohmann::json &config_json, const path &config_path) {
 	const path config_dir = config_path.parent_path();
 	vector<string> hierarchy;
@@ -206,6 +247,12 @@ json RunStatus::config_validation(const path &config_path) {
 	try {
 		unordered_map<string, YAML::Mark> line_map;
 		json config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
+
+		// substitute global_variables before extends/validation
+		const auto &gcfg = get_global_config();
+		if(gcfg.contains("global_variables") && gcfg.at("global_variables").is_object())
+			apply_global_vars(config_json, gcfg.at("global_variables"));
+		check_no_gvar(config_json);
 
 		// extends, validators
 		config_json = extends_recursive(config_json, config_path);

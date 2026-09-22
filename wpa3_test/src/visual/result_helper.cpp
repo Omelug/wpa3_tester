@@ -1,4 +1,5 @@
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "default.h"
 #include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -42,7 +43,7 @@ pair<optional<bool>,optional<hostapd::CrackResult>> hostapd_mana_crack(const Run
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		string psk = hostapd::get_password(rs, "client");
 		if(psk.empty()){
-			psk = "password123";
+			psk = get_global_config().at("global_variables").at("default_password").get<string>();
 			log(LogLevel::ERROR, "password for hostapd_mana not found, used default password {}", psk);
 		}
 		return {!mana_events.empty(),hostapd::crack_pmk_hashes(rs.run_folder()/"captured_hashes.txt", psk)};

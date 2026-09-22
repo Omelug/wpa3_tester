@@ -11,7 +11,7 @@ timeout_external_bb_scan_sec: 5
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0, eth0 ]
-nm_exclude_actors: false
+  nm_exclude_actors: false
 
 paths:
   # These config keys are not included in result config,
@@ -39,6 +39,14 @@ only_list_reset:
   - "0bda:0811" # Realtek Semiconductor Corp. Realtek 8812AU/8821AU 802.11ac WLAN Adapter [USB Wireless Dual-Band Adapter 2.4/5Ghz
   - "0586:341f" # ZyXEL Communications Corp. NWD2205 802.11n Wireless N Adapter [Realtek RTL8192CU]
 
+#default yaml variables
+#NOTE: these settings are not visible after -> are directly saved to test config
+#NOTE: some tools use this values (should be editable, only for fallback with WARNING log)
+# (ex.  channel: var_default_channel_5  # -> 36 (int))
+global_variables:
+  default_channel_2_4: 6
+  default_channel_5: 36
+  default_password: password123
 
 #caches
 use_hw_cache: false

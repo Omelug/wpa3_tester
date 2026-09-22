@@ -101,7 +101,7 @@ void run_attack(RunStatus &rs){
 	PacketSender sender{rs.get_actor("attacker").get(SK::iface)};
 
 	const auto end_time = chrono::steady_clock::now() + chrono::seconds(att_cfg.at("attack_time"));
-	while(chrono::steady_clock::now() < end_time && !g_interrupted.load()){
+	while(chrono::steady_clock::now() < end_time && !g_interrupted){
 		sender.send(radiotap);
 		this_thread::sleep_for(chrono::milliseconds(att_cfg.at("ms_interval")));
 	}

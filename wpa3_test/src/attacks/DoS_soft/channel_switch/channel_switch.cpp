@@ -186,7 +186,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 			ssid);
 
 	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
-	while(steady_clock::now() < end_time && !g_interrupted.load()) {
+	while(steady_clock::now() < end_time && !g_interrupted) {
 		sender.send(csa_rt);
 		this_thread::sleep_for(milliseconds(ms_interval));
 	}
@@ -217,7 +217,7 @@ void run_chs_attack(RunStatus &rs) {
 	rs.start_observers();
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
-	if(g_interrupted.load()) return;
+	if(g_interrupted) return;
 	log(LogLevel::INFO, "Attack START");
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	log(LogLevel::INFO, "Attack END");

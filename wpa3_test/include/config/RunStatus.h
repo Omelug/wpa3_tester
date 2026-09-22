@@ -171,6 +171,7 @@ public:
 	void stats_test() const;
 	void save_actor_interface_mapping() const;
 	void load_actor_interface_mapping();
+	void write_done() const;
 	void save_result(const nlohmann::json &j) const;
 	nlohmann::json load_result() const;
 };

@@ -437,7 +437,7 @@ void RunSuiteStatus::execute() {
 	}
 
 	for(size_t i = 0; i < tests_paths.size(); ++i) {
-		if(g_interrupted.load()) {
+		if(g_interrupted) {
 			log(LogLevel::WARNING, "Suite interrupted by Ctrl+C, stopped after {} of {} tests", i, tests_paths.size());
 			break;
 		}
@@ -452,7 +452,7 @@ void RunSuiteStatus::execute() {
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()) {
-			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted.load(); ++j)
+			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted; ++j)
 				this_thread::sleep_for(chrono::milliseconds(100));
 		}
 	}

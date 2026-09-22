@@ -31,7 +31,7 @@ std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std
 
 	const auto deadline = timeout ? std::optional{ std::chrono::steady_clock::now() + timeout.value() } : std::nullopt;
 
-	while(!g_interrupted.load()) {
+	while(!g_interrupted) {
 		int remaining_ms = -1;
 		if(deadline) {
 			remaining_ms = static_cast<int>(

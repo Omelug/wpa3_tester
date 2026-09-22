@@ -4,19 +4,31 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-f: page cache dont work - only cache whole html output folder
 r: add data to  observer graphs - showcase
++: channel Dlink config to different ssid (or shut down openwrt after test? to not colide with internal tests?)
++: ACM activation time (external, internal in hostapd)
++: add constant like defualt password/default test cahnnel/5GHz channel
+r: small TODO/ FIXME
+PDF:
+    +: info about injection tests/ problems
+    +: přidat informace o fillerech
+    +: cache description
+
+    +: reflection attack na EAP-pwd - pouze na EAP
+    +: vysvětlit co jsou var_ a indexy v permutacích
+    +: PMKSA
+    +: SPP
+    +: testování testeru? (asi jen zímínit u výběru jazyka)
+    +: RunConfig description
+
+d: zmínit bakalářskou práci v README
 f: doc/ath_htc_loop.log from rapberry
-+: channel Dlink config to different ssid (or stut donw openwrt after test? to not colide with internal tests?)
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
-+: ACM activation time (external, internal in hostapd)
 f+: SSID cofusion
-
 f: nixOS rapsberry debugging vypisuje - cyklís  Cleanup namespace - check in kali linux
 +: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
-+: rogue AP into Bl0ck
 
 CSA - upravit report pro external BB
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
@@ -30,20 +42,9 @@ f: tshark nefachá u enterprise (nezobrazuje EAP rámce)
     +: add to documentation
 d: clion plugin
 
-PDF:
-    +: reflection attack na EAP-pwd - útočník se nedkáže připojit na AP, pouze na EAP
-    +: vysvětlit co jsou var_ a indexy v permutacích
-    +: přidat filler
-    +: cache description
-    +: info about injection tests
-    +: PMKSA
-    +: SPP
-    +: testování testeru? (asi jen zímínit u výběru jazyka)
-    d: zmínit práci v README
-    +: RunConfig description
+
 
 ?: works cache correctly with external WB?
-r: small TODO
 +: observer, co se jednou za jako legitimní uživatel čas zkusí připojit
 t: Stress tests
     t: Management frame burst rate measurement (how many frames/sec actually arrive at the capture adapter when sending 100/500/1000 frames)
@@ -54,6 +55,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
+f: page cache dont work - only cache whole html output folder
 +: overview only genereta what was changed
 t: add to iface_info create_sniff_iface and start_ap
 +: check nd descript to cooments / Injection Test injection results+ sources
@@ -151,6 +153,7 @@ ch: + docuemnt what exactly are validator/ref ($ref dont works with extends)
 r:  better open/cloose once, multiple ClientStates?
 
 New features:
++: rogue AP into Bl0ck
 +: injection test for openwrt (tried, openwrt crash)
 +: git mirrors  for sure of available dependencies
 v?: cache visualisation for documentation?

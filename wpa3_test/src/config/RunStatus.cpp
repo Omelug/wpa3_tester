@@ -90,87 +90,83 @@ void RunStatus::execute() {
 	} log_guard;
 
 	try {
-	auto &gcfg = get_global_config();
-	if(run_config().get_only_stats()) {
-		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
-		config(config_validation(config_path()));
-		load_actor_interface_mapping();
+		auto &gcfg = get_global_config();
+		if(run_config().get_only_stats()) {
+			config_path(absolute(run_folder() / TEST_CONFIG_NAME));
+			config(config_validation(config_path()));
+			load_actor_interface_mapping();
+			stats_test();
+			return;
+		}
+
+		// Pre-build external tools before config_requirement() moves interfaces to netns
+		if(gcfg.value("compile_external", false)) {
+			for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
+				if(!actor_cfg.contains("setup")) continue;
+				const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
+				if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
+					hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
+			}
+		}
+
+		rssi_checked = false;
+		while(config_requirement()) {
+			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
+		} //include req validation
+
+		if(gcfg.at("actors").value("nm_exclude_actors", false)) {
+			for(const auto &[name, actor]: actors) {
+				if(!actor->get_or(SK::external_OS, "").empty()) continue;
+				const string iface = actor->get_or(SK::iface, "");
+				if(iface.empty()) continue;
+				log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+				if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
+					log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
+			}
+		}
+
+		setup_test();
+		if(g_interrupted) {
+			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
+			clean();
+			return;
+		}
+		const path out_path = _run_folder / TEST_CONFIG_NAME;
+		save_yaml(_config, out_path);
+		run_test();
+		if(g_interrupted) {
+			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
+			return;
+		}
 		stats_test();
-		return;
-	}
-
-	// Pre-build external tools before config_requirement() moves interfaces to netns
-	if(gcfg.value("compile_external", false)) {
-		for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
-			if(!actor_cfg.contains("setup")) continue;
-			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
-			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
-				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
+		if(g_interrupted) {
+			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
+			return;
 		}
-	}
-
-	rssi_checked = false;
-	while(config_requirement()) {
-		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
-	} //include req validation
-
-	if(gcfg.value("nm_exclude_actors", false)) {
-		for(const auto &[name, actor]: actors) {
-			if(!actor->get_or(SK::external_OS, "").empty()) continue;
-			const string iface = actor->get_or(SK::iface, "");
-			if(iface.empty()) continue;
-			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
-				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
-		}
-	}
-
-	setup_test();
-	if(g_interrupted.load()) {
-		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
-		clean();
-		return;
-	}
-	const path out_path = _run_folder / TEST_CONFIG_NAME;
-	save_yaml(_config, out_path);
-	run_test();
-	if(g_interrupted.load()) {
-		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
-		return;
-	}
-	stats_test();
-	const path done_file = run_folder() / DONE_FILE;
-	ofstream done_log(done_file, ios::out | ios::trunc);
-	if(done_log.is_open()) {
-		done_log << "commit: " << git_commit_hash() << endl;
-		done_log << "date:   " << current_timestamp() << endl;
-		done_log << "kernel: " << kernel_version() << endl;
-		done_log.close();
-		set_public_perms(done_file);
-	}
+		write_done();
 	} catch (const exception& e) {
-		if(g_interrupted.load()) log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+		if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
 
 		const path error_file = run_folder() / ERROR_FILE;
-		ofstream error_log(error_file, ios::out | ios::app);
-		if (error_log.is_open()) {
-			error_log << "=== Error occurred at " << current_timestamp() << " ===" << endl;
-			error_log << "Exception type: " << typeid(e).name() << endl;
-			error_log << "Message: " << e.what() << endl;
+		ofstream err_log(error_file, ios::out | ios::app);
+		if (err_log.is_open()) {
+			err_log << "=== Error occurred at " << current_timestamp() << " ===" << endl;
+			err_log << "Exception type: " << typeid(e).name() << endl;
+			err_log << "Message: " << e.what() << endl;
 
-			if (const auto *te = dynamic_cast<const tester_error*>(&e)) {
+			if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
 				const auto &loc = te->where();
-				error_log << "Location: " << loc.file_name()
-						  << ":" << loc.line()
-						  << " in " << loc.function_name() << endl;
+				log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
+			} else {
+				log(LogLevel::ERROR, "{}", e.what());
 			}
 
-			error_log << endl;
-			error_log.close();
+			err_log << endl;
+			err_log.close();
 			set_public_perms(error_file);
-			log(LogLevel::ERROR, "Error written to {}", error_file.string());
+			log(LogLevel::ERROR, "Error written to {}", error_file);
 		} else {
-			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file.string());
+			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file);
 		}
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
@@ -440,6 +436,18 @@ void RunStatus::load_actor_interface_mapping() {
 		actors.emplace(actor_name, ActorPtr(actor));
 	}
 	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
+}
+
+void RunStatus::write_done() const {
+	const path done_file = run_folder() / DONE_FILE;
+	ofstream done_log(done_file, ios::out | ios::trunc);
+	if(done_log.is_open()) {
+		done_log << "commit: " << git_commit_hash() << "\n";
+		done_log << "date:   " << current_timestamp() << "\n";
+		done_log << "kernel: " << kernel_version() << "\n";
+		done_log.close();
+		set_public_perms(done_file);
+	}
 }
 
 void RunStatus::save_result(const nlohmann::json &j) const {

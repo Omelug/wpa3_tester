@@ -152,7 +152,7 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 	const auto total_end = chrono::steady_clock::now() + chrono::seconds(timeout_sec);
 
 	for(const uint8_t channel: channels){
-		if(chrono::steady_clock::now() >= total_end || g_interrupted.load()) break;
+		if(chrono::steady_clock::now() >= total_end || g_interrupted) break;
 		log(LogLevel::INFO, "Scanning channel {} on {}", channel, iface);
 
 		const Channel ch{channel, WifiBand::BAND_2_4_or_5, nullopt}; //FIXME only 2_4/5Ghz
@@ -291,9 +291,9 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 		return nullopt;
 	};
 
-	while(!found && !g_interrupted.load()){
+	while(!found && !g_interrupted){
 		for(const uint8_t ch_num: channels){
-			if(found || g_interrupted.load()) break;
+			if(found || g_interrupted) break;
 			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
 			//FIXME needed , should be in set_channel?

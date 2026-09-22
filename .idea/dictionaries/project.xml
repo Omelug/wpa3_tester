@@ -178,6 +178,7 @@
       <w>mfacaddr</w>
       <w>mfpc</w>
       <w>mfpr</w>
+      <w>millisec</w>
       <w>mipsel</w>
       <w>modeswitch</w>
       <w>modinfo</w>

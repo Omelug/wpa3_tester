@@ -17,8 +17,10 @@ void start_dmesg(RunStatus &rs, const string &observer_name, const string &level
 		if(actor->conn != nullptr){
 			const string remote_log = "/tmp/dmesg_" + observer_name + ".log";
 			const string pid_file = remote_log + ".pid";
-			string cmd = "dmesg -W";
+			// BusyBox dmesg (OpenWrt) has no -W; fall back to polling with -c
+			string cmd = "( dmesg -W";
 			if(!level.empty()) cmd += " --level=" + level;
+			cmd += " 2>/dev/null || while true; do dmesg -c >> " + remote_log + " 2>&1; sleep 1; done )";
 			cmd += " >> " + remote_log + " 2>&1 & echo $! > " + pid_file;
 			actor->conn->exec(cmd, false);
 			const path local_log = path(obs_folder) / (observer_name + ".log");

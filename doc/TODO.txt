@@ -4,9 +4,8 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
-+: ACM activation time (external, internal in hostapd)
 r: small TODO/ FIXME
-?
+
 PDF:
     +: info about injection tests/ problems
     +: přidat informace o fillerech
@@ -55,6 +54,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: ACM activation time (external, internal in hostapd)
 +: openwrt disable after test - to not colide with other internal tests
 r: add data to  observer graphs - showcase
 +: add constant like defualt password/default test cahnnel/5GHz channel

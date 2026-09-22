@@ -24,4 +24,6 @@ properties:
         type: boolean
       acm_trigger_count:
         type: integer
+      acm_pause_millisec:
+        type: integer
 

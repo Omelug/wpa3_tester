@@ -92,6 +92,7 @@ void run_attack(RunStatus &rs){
 		const auto [cookie, count] =
 			pmk_gobbler::trigger_acm(scanner.get_mon_iface(),scanner.get(SK::mac),
 															target_ap.get(SK::mac),
+															att_cfg.at("acm_pause_millisec").get<int>(),
 															att_cfg.at("acm_trigger_count").get<int>(),
 															sae_params.value());
 		const path acm_txt = rs.run_folder() / "ACM_trigger.txt";

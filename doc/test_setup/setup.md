@@ -15,3 +15,13 @@ sudo nano /etc/default/grub
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash xhci_hcd.quirks=270336"
 sudo update-grub
 
+
+### Windows
+Clion said:
+
+```
+Some of the file names contain characters that are not allowed on Windows: '24:ec:99:bf:c7:cf_state.log'.
+If you commit, it might not be possible to check out the Git repository on Windows.
+```
+
+...so you should not use Windows.

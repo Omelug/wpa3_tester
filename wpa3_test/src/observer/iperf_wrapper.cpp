@@ -94,7 +94,6 @@ void iperf3_graph(const path &log_path, const string &actor_tag, const string &o
 
 constexpr string program_name = "iperf3";
 
-// TODO check on overview
 optional<GraphXYPoints> iperf_log_to_xy(const path &log_path, const string &label, const string &color) {
 	if(!exists(log_path)) return nullopt;
 

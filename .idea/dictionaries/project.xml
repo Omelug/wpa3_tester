@@ -44,6 +44,7 @@
       <w>autoconnect</w>
       <w>autoprobe</w>
       <w>autosuspend</w>
+      <w>bidir</w>
       <w>bigtk</w>
       <w>blackboc</w>
       <w>bmaptool</w>

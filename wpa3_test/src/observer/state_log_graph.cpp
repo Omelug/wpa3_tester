@@ -37,15 +37,12 @@ static vector<Transition> parse_state_log(const path &p) {
 }
 
 void create_state_log_graph(const RunStatus &rs, const string &mac_str) {
-	const path log_path =
-		rs.run_folder() / "observer" / "client_state" / (mac_str + SUFFIX_state + ".log");
+	const path log_path = rs.run_folder() / "observer" / "client_state" / (mac_str + SUFFIX_state + ".log");
 	if (!exists(log_path)) {
 		log(LogLevel::WARNING, "state_log_graph: not found: {}", log_path);
 		return;
 	}
-	create_state_log_graph(log_path,
-						   log_path.parent_path() /
-							   (mac_str + SUFFIX_state + ".png"));
+	create_state_log_graph(log_path, log_path.parent_path() / (mac_str + SUFFIX_state + ".png"));
 }
 
 void create_state_log_graph(const path &state_log_path,

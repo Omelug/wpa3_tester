@@ -43,12 +43,19 @@ set_target_properties(result_overview PROPERTIES
         CXX_STANDARD_REQUIRED ON
 )
 
-# Copy static assets to build/result_overview/ after build
+# Copy static assets and test data to build/result_overview/ after build
 add_custom_command(
         TARGET result_overview POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/result_overview"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/static"
         "${CMAKE_BINARY_DIR}/result_overview"
-        COMMENT "Copying static assets -> build/result_overview/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/observer/observers_test_data"
+        "${CMAKE_BINARY_DIR}/result_overview/observers_test_data"
+        COMMENT "Copying static assets and test data -> build/result_overview/"
+)
+
+target_compile_definitions(result_overview PRIVATE
+        OBSERVERS_TEST_DATA="${CMAKE_BINARY_DIR}/result_overview/observers_test_data"
 )

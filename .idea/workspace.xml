@@ -135,17 +135,39 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="ch: interruption throw error  by default &#10;r: small_cahnges">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="chr: observers showcase real data with events">
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/result_overview_raspberry.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/logger/ap.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/logger/client.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/logger/combined.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/logger/rogue_ap.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/mapping.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/iperf3/ap_iperf3_server.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/iperf3/client_iperf3_gen.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/resource_checker/ap_res.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/station_counter/ap_sta.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/tshark/attacker_capture.pcap" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/tshark/client_capture.pcap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/ath_masker/ath_masker_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/ath_masker/ath_masker_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/dragondrain/dragondrain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/active_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/active_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/injection_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/ExternalConn.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/OpenWrtConn.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/test_setup/setup.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/test_setup/setup.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_showcase.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/iperf3/ap_iperf3_server.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/iperf3/client_iperf3_gen.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/state_log/24:ec:99:bf:c7:cf_state.log" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state/24:ec:99:bf:c7:cf_state.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tcpdump/ap.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tcpdump/ap_capture.pcap" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tshark/attacker.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tshark/attacker_capture.pcap" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tshark/attacker_client PROBE.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tshark/client.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/tshark/client_capture.pcap" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/iperf_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/iperf_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/state_log_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/state_log_graph.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -304,14 +326,14 @@
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state" />
       <recent name="$PROJECT_DIR$/doc/wpa3_tester_doc" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler" />
       <recent name="$PROJECT_DIR$/result_overview/src/observer" />
-      <recent name="$PROJECT_DIR$/wpa3_test/include/system" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester injection_test_filler">
+  <component name="RunManager" selected="CMake Application.result_overview raspberry">
     <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -716,11 +738,6 @@
       </method>
     </configuration>
     <configuration name="reproc++" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="reproc++" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="result_overview raspberry" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--data_dir ./run/data --output_dir ./run/html" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/tester_setup/raspberry_pi4" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="result_overview" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="result_overview">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -1176,7 +1193,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: libnl, libssh cmake" />
     <MESSAGE value="+: control_monitor in injection tests" />
     <MESSAGE value="f: injection retrans/txack result parsing" />
     <MESSAGE value="f: start_ap_hostapd get_hostapd" />
@@ -1198,10 +1214,11 @@
     <MESSAGE value="r: small changes&#10;f: interruptable loops" />
     <MESSAGE value="+: page cache for overview faster generation&#10;r+: mt76x2u_git" />
     <MESSAGE value="f: cache only test suite subdirs" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="+: global variable to default fallbacks/ default config values" />
     <MESSAGE value="ch: interruption throw error  by default &#10;r: small_cahnges" />
-    <option name="LAST_COMMIT_MESSAGE" value="ch: interruption throw error  by default &#10;r: small_cahnges" />
+    <MESSAGE value="r: small changes" />
+    <MESSAGE value="chr: observers showcase real data with events" />
+    <option name="LAST_COMMIT_MESSAGE" value="chr: observers showcase real data with events" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1230,6 +1247,11 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp</url>
           <line>76</line>
           <option name="timeStamp" value="74" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp</url>
+          <line>276</line>
+          <option name="timeStamp" value="84" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

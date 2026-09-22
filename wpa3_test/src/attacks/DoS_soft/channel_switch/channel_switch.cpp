@@ -272,7 +272,6 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 void stats_attack(const RunStatus &rs) {
 	const string client_mac = rs.get_actor("client").get(SK::mac);
 
-	// --------------- report
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	rs.log_events(elements, { { "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue" } });
@@ -288,7 +287,6 @@ void stats_attack(const RunStatus &rs) {
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 	generate_report(rs, elements, crack_result);
 
-	// ---------- result
 	nlohmann::json result{};
 	result["rogue_ap_connected"] = rogue_ap_connected;
 	if(crack_result) { result["cracked"] = crack_result.value().cracked != 0; }

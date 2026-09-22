@@ -78,7 +78,7 @@ void stats(const RunStatus &rs) {
 	observer::state_log_graph::create_state_log_graph(state_log, out_log);
 
 	vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);
-	;
+
 	observer::tshark::pcap_events(rs,
 			elements_ap,
 			{

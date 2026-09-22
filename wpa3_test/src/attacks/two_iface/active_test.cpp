@@ -60,14 +60,14 @@ void run_attack(RunStatus &rs){
 	rt /= frame;
 
 	PacketSender sender(actor_tx.get(SK::iface));
-	this_thread::sleep_for(milliseconds(200)); // let sniffer thread start
+	interruptible_sleep(milliseconds(200)); // let sniffer thread start
 
 	for(int i = 0; i < BURST; ++i){
 		sender.send(rt);
-		this_thread::sleep_for(milliseconds(10));
+		interruptible_sleep(milliseconds(10));
 	}
 
-	this_thread::sleep_for(milliseconds(200));
+	interruptible_sleep(milliseconds(200));
 	stop = true;
 	sniffer.stop_sniff();
 	sniffer_thread.join();

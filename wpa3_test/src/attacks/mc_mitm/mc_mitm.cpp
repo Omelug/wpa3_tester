@@ -49,7 +49,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 		auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
 		send_to_real(csa1);*/
 
-		this_thread::sleep_for(milliseconds(100)); //TODO from config
+		interruptible_sleep(milliseconds(100)); //TODO from config
 	}
 	//log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, netconfig.rogue_channel);
 }
@@ -135,7 +135,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		rogue_sta->set_mac_address(client_state.get_mac());
 		rogue_sta->set_monitor_mode(true);
 		//hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
-		//this_thread::sleep_for(seconds(15));
+		//interruptible_sleep(seconds(15));
 		//rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 		rogue_sta->set_iface_up();
 	} else {
@@ -166,7 +166,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	sock_rogue->set_filter(bpf);
 
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
-	this_thread::sleep_for(seconds(1));
+	interruptible_sleep(seconds(1));
 
 	rs.start_observers(ObserverRunPolicy::SKIP); //after mc_mitm preparation, skip because dmesg
 

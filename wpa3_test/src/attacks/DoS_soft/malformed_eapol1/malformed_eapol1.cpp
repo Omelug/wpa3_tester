@@ -101,11 +101,11 @@ void run_attack(RunStatus &rs){
 	PacketSender sender{rs.get_actor("attacker").get(SK::iface)};
 
 	const auto end_time = chrono::steady_clock::now() + chrono::seconds(att_cfg.at("attack_time"));
-	while(chrono::steady_clock::now() < end_time && !g_interrupted){
+	while(chrono::steady_clock::now() < end_time){
 		sender.send(radiotap);
-		this_thread::sleep_for(chrono::milliseconds(att_cfg.at("ms_interval")));
+		interruptible_sleep(chrono::milliseconds(att_cfg.at("ms_interval")));
 	}
-	this_thread::sleep_for(chrono::seconds(att_cfg.at("sleep_after_sec"))); //to check connection after attack
+	interruptible_sleep(chrono::seconds(att_cfg.at("sleep_after_sec"))); //to check connection after attack
 	if(rs.get_actor("ap")->conn) rs.get_actor("ap")->conn->disconnect();
 	rs.process_manager.stop_all();
 }

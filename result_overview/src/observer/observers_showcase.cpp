@@ -1,15 +1,14 @@
 #include "observer/observers_showcase.h"
+#include <algorithm>
+#include <filesystem>
+#include <format>
 #include "logger/log.h"
 #include "observer/graph/graph_elements.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
-#include "observer/state_log_graph.h"
 #include "observer/tshark_wrapper.h"
 #include "overview/html_guard.h"
 #include "system/utils.h"
-#include <algorithm>
-#include <filesystem>
-#include <format>
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -99,7 +98,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 
         LogTimePoint start{};
         for(const auto &e : elms){
-            const auto &xy = static_cast<const GraphXYPoints &>(*e);
+            const auto &xy = dynamic_cast<const GraphXYPoints &>(*e);
             if(!xy.x_times.empty() && (start.time_since_epoch().count() == 0 || xy.x_times.front() < start))
                 start = xy.x_times.front();
         }
@@ -149,7 +148,7 @@ void generate_observers_showcase(const path &output_dir, const path &) {
     </div>
 
     <div class="card">
-        <h2>tshark &mdash; <code>tshark_graph</code></h2>
+        <h2>tshark - <code>tshark_graph</code></h2>
         <p>Packet size over time from real pcap captures (mc_mitm scenario).
            X axis: relative time (s), Y axis: frame length (bytes).
            Extracted with <code>tshark -T fields -e frame.number -e frame.time -e frame.len</code>.</p>
@@ -157,11 +156,12 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 
     auto render_graphs = [&](const vector<ShowcaseGraph> &graphs) {
         for (const auto &g : graphs) {
-            f << "<h3>" << g.title << "</h3>";
-            if (g.ok)
-                f << "<img src=\"" << g.png << "\" alt=\"" << g.title << "\" style=\"max-width:100%\">";
-            else
-                f << "<p><em>Graph not available.</em></p>";
+	        f << "<h3>" << g.title << "</h3>";
+        	if (g.ok){
+        		f << "<img src=\"" << g.png << "\" alt=\"" << g.title << "\" style=\"max-width:100%\">";
+			} else {
+	            f << "<p><em>Graph not available.</em></p>";
+            }
         }
         if (graphs.empty())
             f << "<p><em>No CSV files found in test data.</em></p>";
@@ -169,54 +169,46 @@ void generate_observers_showcase(const path &output_dir, const path &) {
 
     render_graphs(tshark_graphs);
 
-    f << R"html(    </div>
-
+    f << R"html(</div>
     <div class="card">
-        <h2>tcpdump &mdash; packet graph</h2>
+        <h2>tcpdump - packet graph</h2>
         <p>tcpdump-captured pcap converted to CSV with tshark, visualised via <code>times_packet_sizes_from_csv</code>.</p>
-)html";
+	)html";
 
     render_graphs(tcpdump_graphs);
 
-    f << R"html(    </div>
-
-    <div class="card">
-
-
+    f << R"html(</div><div class="card">)html";
     if (state_ok)
-        f << "<img src=\"state_log.png\" alt=\"state log staircase\" style=\"max-width:100%\">";
+        f << R"(<img src="state_log.png" alt="state log staircase" style="max-width:100%">)";
     else
         f << "<p><em>Graph not available (gnuplot missing or state log not found).</em></p>";
 
-    f << R"html(    </div>
+    f << R"(</div>)"
 
-    <div class="card">
-        <h2>resource_checker &mdash; <code>generate_resource_graph</code></h2>
+    f << R"(
+	<div class="card">
+        <h2>resource_checker - <code>generate_resource_graph</code></h2>
         <p>CPU core usage (%) and free RAM (KB) logged remotely via awk, plotted with gnuplot.</p>
         <p><em>TODO: get real data</em></p>
     </div>
 
     <div class="card">
-        <h2>station_counter &mdash; <code>generate_station_graph</code></h2>
+        <h2>station_counter - <code>generate_station_graph</code></h2>
         <p>Connected station count sampled via <code>iw dev station dump</code>.</p>
         <p><em>TODO: get real data</em></p>
     </div>
 
     <div class="card">
-        <h2>iperf_wrapper &mdash; <code>iperf_log_to_xy</code></h2>
+        <h2>iperf_wrapper - <code>iperf_log_to_xy</code></h2>
         <p>Bidirectional throughput (Mbits/sec) from a real bl0ck BAR attack run.
            AP-server RX (red) and client TX (blue) on Y2 axis (0&ndash;15 Mbits/sec).
            The drop to zero marks when the BAR attack disrupted the Block ACK session.</p>
-)html";
+	)";
     if(iperf_ok)
-        f << "<img src=\"iperf.png\" alt=\"iperf throughput\" style=\"max-width:100%\">";
+        f << R"(<img src="iperf.png" alt="iperf throughput" style="max-width:100%">)";
     else
         f << "<p><em>Graph not available (gnuplot missing or iperf log not found).</em></p>";
-    f << R"html(    </div>
-
-</body>
-</html>
-)html";
+    f << R"(</div></body></html>)";
 }
 
 }

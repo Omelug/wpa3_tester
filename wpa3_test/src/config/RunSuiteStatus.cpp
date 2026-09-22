@@ -247,7 +247,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 
 	ifstream ifs(tmp_template);
 	if(!ifs.is_open()) { throw run_err("Could not open template file for reading"); }
-	string raw_yaml_template{istreambuf_iterator<char>(ifs), istreambuf_iterator<char>()};
+	string raw_yaml_template{istreambuf_iterator(ifs), istreambuf_iterator<char>()};
 	ifs.close();
 
 	vector<size_t> indices(groups.size(), 0);
@@ -255,6 +255,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 	size_t test_counter = 0;
 
 	while(!done) {
+		if(g_interrupted) throw interrupted_err("generate_test_files loop");
 		string current_config_str = raw_yaml_template;
 		for(size_t g = 0; g < groups.size(); ++g) {
 			const string &var_name = groups[g].first;
@@ -453,7 +454,7 @@ void RunSuiteStatus::execute() {
 		hw_cache = rs.hw_option_cache();
 		if(wait_between_tests > 0 && i + 1 < tests_paths.size()) {
 			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted; ++j)
-				this_thread::sleep_for(chrono::milliseconds(100));
+				interruptible_sleep(chrono::milliseconds(100));
 		}
 	}
 

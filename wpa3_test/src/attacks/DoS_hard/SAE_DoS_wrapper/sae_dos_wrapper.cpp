@@ -122,7 +122,7 @@ void run_attack(RunStatus &rs) {
 			"attacker", { /*"setsid", */ "python3", get_suite_path() + "/orchestator_master_en.py" }, rs.run_folder());
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
-	this_thread::sleep_for(seconds(attack_time));
+	interruptible_sleep(seconds(attack_time));
 	ap->conn->disconnect();
 }
 

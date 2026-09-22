@@ -80,4 +80,5 @@ using not_implemented_err = typed_error<LogLevel::CRITICAL>;
 using timeout_err = typed_error<LogLevel::ERROR>;
 
 using ex_conn_err = typed_error<LogLevel::CRITICAL>;
+using interrupted_err = typed_error<LogLevel::CRITICAL>;
 }

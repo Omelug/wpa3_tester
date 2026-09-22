@@ -112,7 +112,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 				}
 
 				if(!entry) {
-					this_thread::sleep_for(milliseconds(cookie_wait_ms));
+					interruptible_sleep(milliseconds(cookie_wait_ms));
 					auto frame = make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(sta_mac), sae_params);
 					sender.send(frame);
 					return nullopt;

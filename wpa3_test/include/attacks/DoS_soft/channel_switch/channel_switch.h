@@ -12,8 +12,8 @@ void check_vulnerable(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6>
 void setup_chs_attack(RunStatus &rs);
 
 // registered functions in tester
-void run_chs_attack(RunStatus &rs);
-void stats_chs_attack(const RunStatus &rs);
+void run_attack(RunStatus &rs);
+void stats_attack(const RunStatus &rs);
 
 //help observer functions
 void speed_observation_start(RunStatus &rs);

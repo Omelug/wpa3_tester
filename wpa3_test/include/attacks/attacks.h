@@ -64,7 +64,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> run_map = {
 	{ "sta_info", sta_info::run_attack },
 	{ "external_info", external_info::run_attack },
 	// --------------- actually attacks
-	{ "channel_switch", CSA_attack::run_chs_attack },
+	{ "channel_switch", CSA_attack::run_attack },
 	{ "bl0ck", bl0ck_attack::run_bl0ck_attack },
 	{ "bl0ck_monitor_test", test_monitor_bl0ck::run_attack },
 	{ "sae_commit_monitor_test", test_sae_commit_monitor::run_attack },
@@ -90,7 +90,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> run_map = {
 
 /* map of attacker_module->stats run function*/
 inline std::map<std::string, std::function<void(const RunStatus &)>> stats_map = {
-	{ "channel_switch", CSA_attack::stats_chs_attack },
+	{ "channel_switch", CSA_attack::stats_attack },
 	{ "deauth", deauth_attack::stats_attack },
 	{ "bl0ck", bl0ck_attack::stats_bl0ck_attack },
 	{ "bl0ck_monitor_test", test_monitor_bl0ck::stats_attack },

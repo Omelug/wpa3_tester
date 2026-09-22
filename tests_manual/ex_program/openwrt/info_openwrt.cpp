@@ -4,9 +4,11 @@
 #include <iostream>
 #include <string>
 #include <thread>
+
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
+#include "interrupt.h"
 #include "observer/observers.h"
 #include "observer/tcpdump_wrapper.h"
 
@@ -94,7 +96,7 @@ TEST_CASE("Logger OpenWrt") {
 		rs.process_manager.init_logging(test_dir);
 
 		conn->logger(rs, actor.get(SK::actor_name));
-		this_thread::sleep_for(chrono::milliseconds(500));
+		interruptible_sleep(chrono::milliseconds(500));
 		conn->exec("logger 'Test log message from wpa3_tester'");
 		rs.process_manager.wait_for(actor.get(SK::actor_name), "Test log message", chrono::seconds(5));
 	}
@@ -122,7 +124,7 @@ TEST_CASE("Tcpdump OpenWrt") {
 		actor->set(SK::iface, chosen_iface);
 
 		observer::start_tcpdump_remote(rs, actor.get(SK::actor_name), "");
-		this_thread::sleep_for(chrono::seconds(1));
+		interruptible_sleep(chrono::seconds(1));
 
 		const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");
 		CHECK(!ps_output.empty());

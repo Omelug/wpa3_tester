@@ -63,7 +63,7 @@ string OpenWrtConn::wait_for_ifname(const string &section) const{
 		}
 
 		log(LogLevel::DEBUG, "Waiting for ifname of {} ({}/{})", section, i + 1, retries);
-		this_thread::sleep_for(chrono::seconds(1));
+		interruptible_sleep(chrono::seconds(1));
 	}
 	throw ex_conn_err("ifname not available for section: " + section);
 }

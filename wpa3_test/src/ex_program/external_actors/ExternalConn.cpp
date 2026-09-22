@@ -421,7 +421,7 @@ ssh_channel ExternalConn::open_inject_channel(const string &iface) const{
 		throw ex_conn_err("open_inject_channel: exec failed on {}",  iface);
 	}
 	// Give the process ~50 ms to start; if it exits immediately, read stderr for diagnosis.
-	this_thread::sleep_for(chrono::milliseconds(50));
+	interruptible_sleep(chrono::milliseconds(50));
 	if(ssh_channel_is_eof(ch)){
 		char errbuf[512] = {};
 		ssh_channel_read_nonblocking(ch, errbuf, sizeof(errbuf) - 1, 1 /* stderr */);

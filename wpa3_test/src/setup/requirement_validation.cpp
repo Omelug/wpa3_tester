@@ -76,7 +76,7 @@ void kill_process_in_ns_name(const string &ns_name) {
 		for(const pid_t p: pids) {
 			if(exists("/proc/" + to_string(static_cast<long>(p)))) all_dead = false;
 		}
-		if(!all_dead) this_thread::sleep_for(chrono::milliseconds(10));
+		if(!all_dead) interruptible_sleep(chrono::milliseconds(10));
 	}
 
 	// SIGKILL survivors
@@ -170,7 +170,7 @@ bool RunStatus::config_requirement() {
 		if(hw_capabilities::run_cmd({ "iw", "reg", "set", reg }, nullopt, false) != 0) {
 			log(LogLevel::ERROR, "Failed to set regulatory domain {}, NO_IR restrictions may apply", reg);
 		} else {
-			this_thread::sleep_for(chrono::milliseconds(100));
+			interruptible_sleep(chrono::milliseconds(100));
 		}
 	}
 

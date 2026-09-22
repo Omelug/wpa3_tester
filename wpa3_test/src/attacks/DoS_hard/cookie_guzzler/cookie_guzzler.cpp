@@ -58,7 +58,7 @@ void run_attack(RunStatus &rs) {
 	}
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
-	this_thread::sleep_for(seconds(regeneration_time_sec));
+	interruptible_sleep(seconds(regeneration_time_sec));
 	ap->conn->disconnect();
 }
 

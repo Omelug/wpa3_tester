@@ -7,8 +7,8 @@ Version v 0.0.0.0:
 r: add data to  observer graphs - showcase
 +: channel Dlink config to different ssid (or shut down openwrt after test? to not colide with internal tests?)
 +: ACM activation time (external, internal in hostapd)
-+: add constant like defualt password/default test cahnnel/5GHz channel
-r: small TODO/ FIXME
+r: small TODO/ FIXMEi
+?
 PDF:
     +: info about injection tests/ problems
     +: přidat informace o fillerech
@@ -21,6 +21,7 @@ PDF:
     +: testování testeru? (asi jen zímínit u výběru jazyka)
     +: RunConfig description
 
+r: use global_variables
 d: zmínit bakalářskou práci v README
 f: doc/ath_htc_loop.log from rapberry
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
@@ -55,6 +56,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: add constant like defualt password/default test cahnnel/5GHz channel
 f: page cache dont work - only cache whole html output folder
 +: overview only genereta what was changed
 t: add to iface_info create_sniff_iface and start_ap

@@ -337,7 +337,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 	if(!mp->naturally_exited){
 		if(mp->pgid > 0){
 			(void)killpg(mp->pgid, SIGTERM);
-			this_thread::sleep_for(milliseconds(500));
+			interruptible_sleep(milliseconds(500));
 			(void)killpg(mp->pgid, SIGKILL);
 		}
 		// mp->proc path: reproc::stop(operations) below handles SIGTERM->wait->SIGKILL

@@ -58,7 +58,7 @@ void run_attack(RunStatus &rs) {
     const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
     while (steady_clock::now() < end && !g_interrupted) {
         sender.send(pkt);
-        this_thread::sleep_for(milliseconds(att_cfg.at("ms_interval")));
+        interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
     }
     log(LogLevel::INFO, "Deauth attack END");
 

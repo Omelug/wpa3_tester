@@ -61,9 +61,9 @@ static void inject_legacy_beacons(
 
 	PacketSender sender{ iface };
 	const auto end = steady_clock::now() + seconds(attack_time_sec);
-	while(steady_clock::now() < end && !g_interrupted) {
+	while(steady_clock::now() < end) {
 		sender.send(rt);
-		this_thread::sleep_for(milliseconds(ms_interval));
+		interruptible_sleep(milliseconds(ms_interval));
 	}
 }
 
@@ -85,9 +85,9 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	if(g_interrupted) return;
 
-	log(LogLevel::INFO, "Attack START");
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	inject_legacy_beacons(ap_mac, iface, attack_time, ms_interval);
-	log(LogLevel::INFO, "Attack END");
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	if(rs.get_actor("ap")->conn) rs.get_actor("ap")->conn->disconnect();

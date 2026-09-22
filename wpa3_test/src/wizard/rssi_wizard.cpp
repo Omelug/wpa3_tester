@@ -24,6 +24,7 @@
 
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
+#include "interrupt.h"
 #include "logger/log.h"
 #include "setup/requirement_validation.h"
 #include "system/hw_capabilities.h"
@@ -235,7 +236,7 @@ class PcapSniffer {
 			const int res = pcap_next_ex(handle_, &hdr, &pkt);
 			if(res == -2) break;
 			if(res <= 0) {
-				this_thread::sleep_for(chrono::milliseconds(200));
+				interruptible_sleep(chrono::milliseconds(200));
 				continue;
 			}
 			const optional<int8_t> rssi = extract_rssi(pkt, hdr->caplen);
@@ -305,7 +306,7 @@ static void add_adapter(NetworkSetup &setup, const string &iface_name) {
 			setup.default_netns_used = true;
 		}
 		cfg->cleanup();
-		this_thread::sleep_for(chrono::milliseconds(1000));
+		interruptible_sleep(chrono::milliseconds(1000));
 
 		// netns move resets interface state - re-apply inside the new ns
 		//TODO there needs not adding flags (like active), but why when it say supported?
@@ -333,7 +334,7 @@ static unique_ptr<NetworkSetup> initialize_network(const Channel &ch) {
 	setup->channel = ch;
 	for(const auto &iface: hw_capabilities::list_interfaces(InterfaceType::Wifi, nullopt)) {
 		add_adapter(*setup, iface.name);
-		this_thread::sleep_for(chrono::milliseconds(1000));
+		interruptible_sleep(chrono::milliseconds(1000));
 	}
 	return setup;
 }
@@ -341,7 +342,7 @@ static unique_ptr<NetworkSetup> initialize_network(const Channel &ch) {
 // Background watcher execution function (prevents GCC 15 consteval escalation)
 static void watcher_loop(NetworkSetup &setup) {
 	while(g_running) {
-		this_thread::sleep_for(chrono::seconds(3));
+		interruptible_sleep(chrono::seconds(3), false);
 		lock_guard lock(setup.mtx);
 
 		for(auto it = setup.adapters.begin(); it != setup.adapters.end();) {
@@ -370,7 +371,7 @@ static void watcher_loop(NetworkSetup &setup) {
 			HWAddress<6> mac = hw_capabilities::get_mac_address(iface.name, nullopt);
 			if(!present_macs.contains(mac)) {
 				log(LogLevel::INFO, "[*] New adapter added: {} [{}]", iface.name, mac.to_string());
-				this_thread::sleep_for(chrono::milliseconds(500));
+				interruptible_sleep(chrono::milliseconds(500));
 				add_adapter(setup, iface.name);
 			}
 		}
@@ -387,10 +388,10 @@ static RssiMatrix collect_rssi(const NetworkSetup &setup) {
 	log(LogLevel::INFO, "[~] Scanning {} adapter(s) on ch {}...", setup.adapters.size(), setup.channel.ch_num);
 	for(const auto &a: setup.adapters) {
 		transmit_probe(a.sender, a.actor.get(SK::mac), setup.channel.band == WifiBand::BAND_2_4);
-		this_thread::sleep_for(chrono::milliseconds(30)); //to bypass transmit noise
+		interruptible_sleep(chrono::milliseconds(30)); //to bypass transmit noise
 	}
 
-	this_thread::sleep_for(chrono::milliseconds(50)); // Allow time for packet reception
+	interruptible_sleep(chrono::milliseconds(50)); // Allow time for packet reception
 
 	RssiMatrix m;
 	for(const auto &src: setup.adapters) {
@@ -597,7 +598,7 @@ bool run_rssi_wizard(const string &condition_str, const Channel &ch) {
 	signal(SIGUSR1, pause_handler);
 
 	cleanup_all_namespaces();
-	this_thread::sleep_for(chrono::milliseconds(500));
+	interruptible_sleep(chrono::milliseconds(500));
 
 	const ExprPtr cond = parse_condition(condition_str);
 
@@ -647,7 +648,7 @@ bool run_rssi_wizard(const string &condition_str, const Channel &ch) {
 				}
 			}
 		}
-		if(g_running) { this_thread::sleep_for(chrono::milliseconds(1000)); }
+		if(g_running) { interruptible_sleep(chrono::milliseconds(1000)); }
 	}
 
 	watcher.join();

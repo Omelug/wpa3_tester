@@ -10,6 +10,7 @@
       <w>Kbit</w>
       <w>Kbits</w>
       <w>LEDS</w>
+      <w>Mbits</w>
       <w>Mitm</w>
       <w>NFSD</w>
       <w>ONESHOT</w>
@@ -93,6 +94,7 @@
       <w>dumpcap</w>
       <w>eapol</w>
       <w>earlyprintk</w>
+      <w>ecsa</w>
       <w>edcca</w>
       <w>efchatz</w>
       <w>emitterutils</w>

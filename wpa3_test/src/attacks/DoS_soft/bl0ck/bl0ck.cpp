@@ -158,7 +158,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 					MSG_DONTWAIT,
 					reinterpret_cast<const sockaddr *>(&addr),
 					sizeof(addr));
-		this_thread::sleep_for(milliseconds(ms_interval));
+		interruptible_sleep(milliseconds(ms_interval));
 		iteration++;
 	}
 	close(fd);
@@ -229,11 +229,11 @@ void run_bl0ck_attack(RunStatus &rs) {
 	rs.start_observers();
 
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
-	this_thread::sleep_for(seconds(att_cfg.at("sleep_before_sec")));
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
-	this_thread::sleep_for(seconds(att_cfg.at("sleep_after_sec")));
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	rs.process_manager.stop_all();
 
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);

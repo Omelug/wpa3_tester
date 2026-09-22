@@ -9,6 +9,8 @@
 #include <tins/tins.h>
 #include <vector>
 
+#include "interrupt.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace Tins;
@@ -224,7 +226,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 	};
 
 	vector<int> tids;
-	this_thread::sleep_for(milliseconds(4000)); //FIXME dont pass without this, bas setup ?, driver issues?
+	interruptible_sleep(milliseconds(4000)); //FIXME dont pass without this, bas setup ?, driver issues?
 	for(int i = 0; i <= retries; i++){
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);

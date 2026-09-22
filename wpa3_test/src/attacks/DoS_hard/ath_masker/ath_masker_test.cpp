@@ -48,9 +48,9 @@ void run_attack(RunStatus &rs){
 			log(LogLevel::ERROR, "General Error: {}", e.what());
 		}
 
-		this_thread::sleep_for(chrono::milliseconds(10));
+		interruptible_sleep(chrono::milliseconds(10));
 	}
-	this_thread::sleep_for(chrono::seconds(10));
+	interruptible_sleep(chrono::seconds(10));
 }
 
 void stats(const RunStatus &rs){

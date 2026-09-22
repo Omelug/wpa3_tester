@@ -42,16 +42,19 @@ struct InterruptPipe {
 inline InterruptPipe g_interrupt_pipe;
 inline std::atomic g_interrupted{ false };
 
-inline void interruptible_sleep(const std::chrono::milliseconds duration) {
-	if(g_interrupted) return;
+inline void interruptible_sleep(const std::chrono::microseconds duration, bool error = true) {
+	if(g_interrupted) {
+		if(error) throw wpa3_tester::interrupted_err("interruptible_sleep");
+		return;
+	}
 	pollfd pfd{ g_interrupt_pipe.read_fd, POLLIN, 0 };
-	poll(&pfd, 1, static_cast<int>(duration.count()));
+	poll(&pfd, 1, static_cast<int>(duration.count() / 1000));
+	if(g_interrupted && error) throw wpa3_tester::interrupted_err("interruptible_sleep");
 }
 
 inline void setup_signals() {
 	struct sigaction sa{};
 	sa.sa_handler = [](int) {
-		wpa3_tester::set_log_file("");
 		g_interrupted.store(true, std::memory_order_relaxed);
 		g_interrupt_pipe.trigger();
 	};

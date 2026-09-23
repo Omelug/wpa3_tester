@@ -131,7 +131,7 @@ void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
 			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.
 					rogue_ap_driver + ")";
-		const string result_text = e.rogue_ap_connected ? (*e.rogue_ap_connected ? "PASSED" : "FAILED") : "N/A";
+		const string result_text = e.rogue_ap_connected ? (*e.rogue_ap_connected ? "PASSED" : "FAILED") : "-";
 
 		report << "| " << report::link(e.name, e.rel_path / REPORT_NAME) << " | "
 				<< e.ap_mac << " (" << e.ap_source << ") | "

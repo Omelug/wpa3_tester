@@ -22,7 +22,7 @@ actors:
         country_code: CZ
         # s ieee80211w: 1 OnePlus 3 funguje
         ieee80211w: 1
-        wpa_key_mgmt: SAE WPA-PSK
+        wpa_key_mgmt: SAE
   client:
     source: external
     scan_ignore: yes

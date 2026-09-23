@@ -136,9 +136,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: check_req_options &#10;rt: small changes">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: change_filler_hash">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/logger/report.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/logger/report.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/overview/html_guard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_rogueAP.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/deauth/deauth_suite.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1182,7 +1188,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
     <MESSAGE value="r: simplify kernel debug" />
     <MESSAGE value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
     <MESSAGE value="+: drivers fixed by hash (if tags not possible)" />
@@ -1207,7 +1212,8 @@
     <MESSAGE value="+: start_ap (no hostapd, hostapd start ap moved to start_ap_hostapd)&#10;tr: small fixes after changes" />
     <MESSAGE value="+: ap_info &#10;tf: hwsim test fix" />
     <MESSAGE value="+: check_req_options &#10;rt: small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: check_req_options &#10;rt: small changes" />
+    <MESSAGE value="f: change_filler_hash" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: change_filler_hash" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

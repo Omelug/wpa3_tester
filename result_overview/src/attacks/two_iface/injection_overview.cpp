@@ -29,7 +29,7 @@ static string result_cell(const string &r, const string &detail = "") {
     if(r == "FAIL")      return "<span class=\"it-fail\"" + d + ">F</span>";
 	if(r == "SUSPICIOUS")      return "<span class=\"it-fail\"" + d + ">S</span>";
     if(r == "NOCAPTURE") return "<span class=\"it-nc\"" + d + ">NC</span>";
-    return "N/A";
+    return "-";
 }
 
 static vector<InjectionCacheEntry> read_cache(const path &cache_path) {
@@ -108,7 +108,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     </div>
     <div class="card">
 	<p>Frame injection capability results cached per (transceiver, receiver) hardware pair.</p>
-	<p><b>P</b> = PASSED <b>F</b> = FAIL <b>NC</b> = no capture <b>S</b> = suspicious <b>N/A</b> = not tested</p>
+	<p><b>P</b> = PASSED <b>F</b> = FAIL <b>NC</b> = no capture <b>S</b> = suspicious <b>-</b> = not tested</p>
 )html";
 
     auto entries    = read_cache(cache_path);

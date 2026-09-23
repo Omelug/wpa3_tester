@@ -11,7 +11,7 @@
 #include <utility>
 
 inline std::ostream &operator<<(std::ostream &os, const std::optional<bool> val) {
-	return os << (val ? (*val ? "yes" : "no") : "N/A");
+	return os << (val ? (*val ? "yes" : "no") : "-");
 }
 
 namespace wpa3_tester::overview {
@@ -67,7 +67,7 @@ struct HtmlGuard {
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::optional<bool> val) {
-		stream_ << (val ? (*val ? "yes" : "no") : "N/A");
+		stream_ << (val ? (*val ? "yes" : "no") : "-");
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::string &val) {
@@ -84,7 +84,7 @@ struct HtmlGuard {
 		return *this;
 	}
 	HtmlGuard &operator<<(const std::optional<std::string> &val) {
-		stream_ << (val.has_value() ? val.value() : "N/A");
+		stream_ << (val.has_value() ? val.value() : "-");
 		return *this;
 	}
 	HtmlGuard &operator<<(const described_bool &val) {

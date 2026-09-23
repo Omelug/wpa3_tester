@@ -276,10 +276,6 @@ void hw_capabilities::set_iface_down(const string &iface, const optional<string>
 }
 
 void hw_capabilities::set_iface_up(const string &iface, const optional<string> &netns) {
-	if(read_sysfs(iface, "operstate") == "up") {
-		log(LogLevel::DEBUG, "{} is already UP, skipping.", iface);
-		return;
-	}
 	run_cmd({"ip", "link", "set", iface, "up"}, netns, true);
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to go UP:" + res.message());

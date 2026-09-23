@@ -65,7 +65,7 @@ struct ReportGuard {
 		return *this;
 	}
 	ReportGuard &operator<<(const std::optional<bool> val) {
-		stream_ << (val ? (*val ? "yes" : "no") : "N/A");
+		stream_ << (val ? (*val ? "yes" : "no") : "-");
 		return *this;
 	}
 
@@ -93,7 +93,7 @@ struct ReportGuard {
 		return *this;
 	}
 	ReportGuard &operator<<(const std::optional<std::string> &val) {
-		stream_ << (val.has_value() ? val.value() : "N/A");
+		stream_ << (val.has_value() ? val.value() : "-");
 		return *this;
 	}
 	ReportGuard &operator<<(const described_bool &val) {

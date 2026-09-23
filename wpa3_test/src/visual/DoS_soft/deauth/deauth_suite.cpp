@@ -88,7 +88,7 @@ void DeauthTestEntry::generate_report(const RunSuiteStatus &rss) {
 	report << "|------|-----------|---------------|----------------|--------------|\n";
 	for(const auto &e: entries) {
 		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | " << e.ap_driver << " | "
-			   << e.client_driver.value_or("N/A") << " | " << e.client_version << " | " << e.client_disconnected
+			   << e.client_driver.value_or("-") << " | " << e.client_version << " | " << e.client_disconnected
 			   << " |\n";
 	}
 }

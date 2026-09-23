@@ -24,7 +24,7 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	//if(get_or(BK::managed, false)) set_managed_mode();
 
 	set_iface_up();
-	if(base_mon_iface) set_channel(get_channel());
+	if((*this)[SK::channel].has_value() && base_mon_iface) set_channel(get_channel());
 
 	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <sys/poll.h>
 
+#include "logger/devices.h"
 #include "attacks/DoS_hard/PMK_gobbler/pmk_gobbler.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/components/setup_connections.h"
@@ -133,5 +134,11 @@ void run_attack(RunStatus &rs){
 		{"akm", akm}, {"acm_triggered", acm_triggered},
 		{"stations", stations_vec},
 	});
+}
+
+void stats_attack(const RunStatus &rs) {
+	const auto it = rs.actors.find("target");
+	if(it == rs.actors.end()) return;
+	report::add_device(it->second);
 }
 }

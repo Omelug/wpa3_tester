@@ -119,18 +119,39 @@ void run_attack(RunStatus &rs) {
 		hw_capabilities::run_cmd({"iw", "dev", scanner.get_mon_iface(), "del"}, netns);
 	} catch(...) { result["sniff_iface_create"]["ok"] = false; }
 
-	// ----- start_ap timing -----
+	// ----- start_ap (iw) timing -----
+	try {
+		using namespace chrono;
+		const string ap_bench = iface + "_bench";
+		Channel bench_ch{ 6, WifiBand::BAND_2_4, nullopt };
+		Tins::Dot11Beacon bench_beacon;
+		bench_beacon.interval(100);
+		const Tins::HWAddress<6> bench_mac("02:00:00:be:ac:01");
+		bench_beacon.addr2(bench_mac);
+		bench_beacon.addr3(bench_mac);
+		bench_beacon.ssid("wpa3_tester_bench");
+		uint8_t ds_ch = 6;
+		bench_beacon.add_option({Tins::Dot11::DS_SET, 1, &ds_ch});
+		const auto t0 = steady_clock::now();
+		start_ap(rs, ap_bench, scanner, bench_ch, bench_beacon, bench_mac, 100, 1);
+		result["start_ap_iw"]["ok"] = true;
+		result["start_ap_iw"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		stop_ap(ap_bench, netns);
+		hw_capabilities::run_cmd({"iw", "dev", ap_bench, "del"}, netns);
+	} catch(...) { result["start_ap_iw"]["ok"] = false; }
+
+	// ----- start_ap_hostapd timing -----
 	try {
 		using namespace chrono;
 		const string ap_bench = iface + "_bench";
 		Channel bench_ch{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto t0 = steady_clock::now();
 		start_ap_hostapd(rs, ap_bench, scanner, bench_ch, nullopt);
-		result["start_ap"]["ok"] = true;
-		result["start_ap"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
+		result["start_ap_hostapd"]["ok"] = true;
+		result["start_ap_hostapd"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 		rs.process_manager.stop(ap_bench + "_hostapd");
 		hw_capabilities::run_cmd({"iw", "dev", ap_bench, "del"}, netns);
-	} catch(...) { result["start_ap"]["ok"] = false; }
+	} catch(...) { result["start_ap_hostapd"]["ok"] = false; }
 
 	rs.save_result(result);
 

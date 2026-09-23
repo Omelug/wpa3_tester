@@ -158,8 +158,7 @@ build_overview:
 	cmake --build $(BUILD_DIR) --target result_overview -j $(NPROC)
 
 make_overview: build_overview
-	./$(BUILD_DIR)/bin/result_overview
-	@echo ""
+	sudo ./$(BUILD_DIR)/bin/result_overview
 	@echo "./$(BUILD_DIR)/result_overview/index.html"
 
 # clear

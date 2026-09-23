@@ -46,8 +46,10 @@ struct IfaceData {
 	optional<int>  netns_return_ms;
 	optional<bool> sniff_iface_ok;
 	optional<int>  sniff_iface_ms;
-	optional<bool> start_ap_ok;
-	optional<int>  start_ap_ms;
+	optional<bool> start_ap_iw_ok;
+	optional<int>  start_ap_iw_ms;
+	optional<bool> start_ap_hostapd_ok;
+	optional<int>  start_ap_hostapd_ms;
 	optional<UsbInfo> usb;
 };
 
@@ -129,10 +131,15 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 			d.sniff_iface_ok = s.value("ok", false);
 			if(s.contains("ms")) d.sniff_iface_ms = s.value("ms", -1);
 		}
-		if(j.contains("start_ap")){
-			const auto &s = j["start_ap"];
-			d.start_ap_ok = s.value("ok", false);
-			if(s.contains("ms")) d.start_ap_ms = s.value("ms", -1);
+		if(j.contains("start_ap_iw")){
+			const auto &s = j["start_ap_iw"];
+			d.start_ap_iw_ok = s.value("ok", false);
+			if(s.contains("ms")) d.start_ap_iw_ms = s.value("ms", -1);
+		}
+		if(j.contains("start_ap_hostapd")){
+			const auto &s = j["start_ap_hostapd"];
+			d.start_ap_hostapd_ok = s.value("ok", false);
+			if(s.contains("ms")) d.start_ap_hostapd_ms = s.value("ms", -1);
 		}
 		if(j.contains("usb_info") && j["usb_info"].value("is_usb", false)){
 			const auto &u = j["usb_info"];
@@ -195,13 +202,13 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 
 	f  << "<div class=\"card\"><h2>Capabilities</h2><table>"
 		<< "<tr><th>Mode</th><td>"
-	    << "AP: " << d.caps.AP << " &nbsp; STA: " << d.caps.STA << " &nbsp; Monitor: " << d.caps.monitor
+	    << "AP: " << d.caps.AP << "  STA: " << d.caps.STA << "  Monitor: " << d.caps.monitor
 	     << "</td></tr>"
 	  << "<tr><th>Bands</th><td>"
-	     << "2.4 GHz: " << d.caps.ghz2_4 << " &nbsp; 5 GHz: " << d.caps.ghz5 << " &nbsp; 6 GHz: " << d.caps.ghz6
+	     << "2.4 GHz: " << d.caps.ghz2_4 << "  5 GHz: " << d.caps.ghz5 << "  6 GHz: " << d.caps.ghz6
 	     << "</td></tr>"
 	  << "<tr><th>Standards</th><td>"
-	     << "802.11n: " << d.caps.n80211n << " &nbsp; 802.11ac: " << d.caps.n80211ac << " &nbsp; 802.11ax: " << d.caps.n80211ax
+	     << "802.11n: " << d.caps.n80211n << "  802.11ac: " << d.caps.n80211ac << "  802.11ax: " << d.caps.n80211ax
 	     << "</td></tr>";
 	tr("Beacon protection", d.caps.beacon_prot);
 	tr("PBAC (protected block ack agreement capable)", d.caps.PBAC);
@@ -225,7 +232,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		if(iface.netns_move_ok.has_value()){
 			string val = "to netns: " + to_string(iface.netns_move_ms.value_or(-1)) + " ms";
 			if(iface.netns_return_ms.has_value())
-				val += " &nbsp; return: " + to_string(iface.netns_return_ms.value()) + " ms";
+				val += " return: " + to_string(iface.netns_return_ms.value()) + " ms";
 			tr("NetNS move", val);
 		}
 		if(iface.sniff_iface_ok.has_value()){
@@ -233,9 +240,14 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 				+ to_string(iface.sniff_iface_ms.value_or(-1)) + " ms";
 			tr("Sniff iface create", val);
 		}
-		if(iface.start_ap_ok.has_value()){
-			const string val = (iface.start_ap_ok.value() ? "PASS " : "FAIL ")
-				+ to_string(iface.start_ap_ms.value_or(-1)) + " ms";
+		if(iface.start_ap_iw_ok.has_value()){
+			const string val = (iface.start_ap_iw_ok.value() ? "PASS " : "FAIL ")
+				+ to_string(iface.start_ap_iw_ms.value_or(-1)) + " ms";
+			tr("Start AP (iw)", val);
+		}
+		if(iface.start_ap_hostapd_ok.has_value()){
+			const string val = (iface.start_ap_hostapd_ok.value() ? "PASS " : "FAIL ")
+				+ to_string(iface.start_ap_hostapd_ms.value_or(-1)) + " ms";
 			tr("Start AP (hostapd)", val);
 		}
 		f << "</table>";
@@ -288,7 +300,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const 
 			f << "<a href=\"" << d.mac << "/index.html\">" << label << "</a>";
 		});
 		COL("Driver",      d.driver);
-		col("PHY", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->phy : ""); });
+		col("PHY/radio", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->phy : ""); });
 		COL("AP",          d.caps.AP);
 		COL("STA",         d.caps.STA);
 		COL("Mon",         d.caps.monitor);
@@ -352,7 +364,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	constexpr array<tuple<string_view, string_view, string_view>, 3> sections = {{
 		{"External",   "external", "external_info"},
 		{"Internal",   "internal", "iface_info_filler"},
-		{"Simulation", "simulation", "TODO-simulation test"},
+		//TODO {"Simulation", "simulation", "TODO-simulation test"},
 	}};
 	for(const auto &[label, src, t_name] : sections){
 		f << "<div class=\"card\"> <h2>" << label << "</h2>";

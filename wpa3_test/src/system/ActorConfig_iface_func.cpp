@@ -5,7 +5,6 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include "system/netlink_helper.h"
 
 namespace wpa3_tester{
 using namespace std;
@@ -18,6 +17,7 @@ void Actor_config::cleanup() const{
 		log(LogLevel::ERROR, "cleanup() called with empty interface name");
 		return;
 	}
+
 	//FIXME change in netns not allowed? -> error
 	if(netns.has_value()){
 		hw_capabilities::move_to_netns(iface, netns.value());
@@ -125,11 +125,12 @@ void Actor_config::set_monitor_mode(const bool add_flags) const{
 		return;
 	}
 
-	vector<string> monitor_flags = {"fcsfail", "otherbss"}; //TODO not indeal fcsfail (issues for parsing, but important for injection dbugging)
+	//TODO not in deal fcsfail (issues for parsing, but important for injection debugging)
+	vector<string> monitor_flags = {"fcsfail", "otherbss"};
 
 	if (add_flags) {
-		if((*this)[BK::active_monitor]) monitor_flags.emplace_back("active");
-		if((*this)[BK::control_monitor]) monitor_flags.emplace_back("control");
+		if(get_or(BK::active_monitor, false)) monitor_flags.emplace_back("active");
+		if(get_or(BK::control_monitor, false)) monitor_flags.emplace_back("control");
 	}
 	string flags_str = join(monitor_flags, " ");
 	log(LogLevel::INFO, "Setting interface {} to monitor mode with flags {}", iface, flags_str);

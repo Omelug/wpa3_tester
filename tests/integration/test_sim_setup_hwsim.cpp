@@ -236,8 +236,8 @@ TEST_CASE("hwsim setup_actor - create sniff iface") {
 
 	const string sniff = MONITOR_IFACE_PREFIX + f.iface;
 	auto actor = f.make_actor();
-
-	actor->setup_actor(HwsimFixture::cfg("test", { { "sniff_iface", true } }), f.base);
+	actor->set(BK::sniff_iface, true);
+	actor->setup_actor(HwsimFixture::cfg("test", {}), f.base);
 
 	CHECK(fs::exists("/sys/class/net/" + sniff));
 

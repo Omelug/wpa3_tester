@@ -106,8 +106,8 @@ TEST_CASE("setup_actor sim - create sniff iface") {
 	SimTestable actor;
 	actor.set(SK::actor_name, "sniffer");
 	actor.set(SK::permanent_mac, "aa:bb:cc:dd:ee:ff");
-
-	actor.setup_actor(make_cfg("sniffer", { { "sniff_iface", true } }), make_real());
+	actor.set(BK::sniff_iface, true);
+	actor.setup_actor(make_cfg("sniffer", {}), make_real());
 
 	CHECK(actor.called("create_sniff_iface"));
 	CHECK_EQ(actor.get(BK::sniff_iface), true);

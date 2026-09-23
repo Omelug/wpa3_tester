@@ -16,15 +16,11 @@ void reset_interrupt_state() {
 }
 }
 
-TEST_CASE("interruptible_sleep - returns immediately if already interrupted") {
+TEST_CASE("interruptible_sleep - throws if already interrupted") {
 	reset_interrupt_state();
 	g_interrupted.store(true);
 
-	const auto start = steady_clock::now();
-	interruptible_sleep(milliseconds(500));
-	const auto elapsed = steady_clock::now() - start;
-
-	CHECK_LT(elapsed, milliseconds(100));
+	CHECK_THROWS_AS(interruptible_sleep(milliseconds(500)), wpa3_tester::interrupted_err);
 	reset_interrupt_state();
 }
 

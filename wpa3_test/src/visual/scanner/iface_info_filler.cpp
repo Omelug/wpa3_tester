@@ -55,10 +55,15 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 				e.sniff_iface_ok = si.value("ok", false);
 				e.sniff_iface_ms = si.value("ms", -1);
 			}
-			if(result.contains("start_ap")) {
-				const auto &ap = result["start_ap"];
-				e.start_ap_ok = ap.value("ok", false);
-				e.start_ap_ms = ap.value("ms", -1);
+			if(result.contains("start_ap_iw")) {
+				const auto &ap = result["start_ap_iw"];
+				e.start_ap_iw_ok = ap.value("ok", false);
+				e.start_ap_iw_ms = ap.value("ms", -1);
+			}
+			if(result.contains("start_ap_hostapd")) {
+				const auto &ap = result["start_ap_hostapd"];
+				e.start_ap_hostapd_ok = ap.value("ok", false);
+				e.start_ap_hostapd_ms = ap.value("ms", -1);
 			}
 		} catch(...) { e.driver_summary = "?"; }
 
@@ -91,8 +96,8 @@ void generate_report(RunSuiteStatus &rss) {
 		return;
 	}
 
-	r << "| Test | Info | Ch Switch | NetNS Move | Sniff VIF | Start AP | Report |\n";
-	r << "|------|------|-----------|------------|-----------|----------|--------|\n";
+	r << "| Test | Info | Ch Switch | NetNS Move | Sniff VIF | Start AP iw | Start AP hostapd | Report |\n";
+	r << "|------|------|-----------|------------|-----------|-------------|------------------|--------|\n";
 
 	for(const auto &e: entries) {
 		string ch = "n/a";
@@ -109,12 +114,16 @@ void generate_report(RunSuiteStatus &rss) {
 		if(e.sniff_iface_ok.has_value())
 			si = (e.sniff_iface_ok.value() ? "ok " : "fail ") + to_string(e.sniff_iface_ms.value_or(-1)) + "ms";
 
-		string ap = "n/a";
-		if(e.start_ap_ok.has_value())
-			ap = (e.start_ap_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_ms.value_or(-1)) + "ms";
+		string ap_iw = "n/a";
+		if(e.start_ap_iw_ok.has_value())
+			ap_iw = (e.start_ap_iw_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_iw_ms.value_or(-1)) + "ms";
+
+		string ap_hd = "n/a";
+		if(e.start_ap_hostapd_ok.has_value())
+			ap_hd = (e.start_ap_hostapd_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_hostapd_ms.value_or(-1)) + "ms";
 
 		r << "| " << e.test_name << " | " << e.hw_summary << " | " << ch << " | " << ns << " | "
-		  << si << " | " << ap << " | " << report::link("report", e.report_md) << " |\n";
+		  << si << " | " << ap_iw << " | " << ap_hd << " | " << report::link("report", e.report_md) << " |\n";
 	}
 }
 }

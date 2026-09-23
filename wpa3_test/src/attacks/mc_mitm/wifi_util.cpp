@@ -149,7 +149,8 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	if(!ssid_ie || ssid_ie->data_size() <= 0) throw run_err("invalid beacon for start ap");
 	auto ap_ssid = string(reinterpret_cast<const char *>(ssid_ie->data_ptr()), ssid_ie->data_size());
 	const optional<string> &netns = base_actor[SK::netns];
-	// Split beacon into head (before TIM) and tail (after TIM)
+
+	// split beacon into head (before TIM) and tail (after TIM)
 
 	Dot11Beacon head;
 	const auto bssid = mac.has_value() ? HWAddress<6>(*mac) : beacon.addr2();

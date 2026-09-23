@@ -106,7 +106,7 @@ void Actor_config::setup_actor(const nlohmann::json &/*config*/, const ActorPtr 
 	if(get_or(BK::AP, false)) set_ap_mode(); //FIXME not implemented yet
 	if(get_or(BK::managed, false)) set_managed_mode();
 
-	/* FIXME this will broke -> cant be set iun requirements like other injection tests?
+	/* FIXME this will broke -> cant be set iun requirements like other injection tests? Or needed injection_selftest at all?
 	if(get_or(BK::injection_selftest, false)) {
 		const ActorPtr self(shared_from_this());
 		const auto cb = get_global_config().value("use_two_iface_cache", true) ? run_on_miss : force_run;
@@ -114,7 +114,7 @@ void Actor_config::setup_actor(const nlohmann::json &/*config*/, const ActorPtr 
 	}*/
 
 	set_iface_up();
-	if(base_mon_iface) set_channel(get_channel());
+	if((*this)[SK::channel].has_value() && base_mon_iface) set_channel(get_channel());
 
 	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();

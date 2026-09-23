@@ -6,7 +6,7 @@ v: visualization
 Version v 0.0.0.0:
 
 
-f: porovnat internal/externla Actor_Config_external::setup_actor
+t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 r: small TODO/ FIXME
 PDF:
     +: info about injection tests/ problems

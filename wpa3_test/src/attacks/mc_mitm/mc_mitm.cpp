@@ -36,8 +36,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 	if(target.has_value()) beacon_copy->addr1(*target);
 
 	for(int i = 0; i < numpairs; ++i) {
-		RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-				ap.get(SK::mac), ap.get(SK::ssid), netconfig.real_channel, netconfig.rogue_channel);
+		RadioTap csa_rt = CSA_attack::get_CSA_beacon(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel);
 		send_to_real(csa_rt);
 
 		// Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,

@@ -8,6 +8,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
+#include <iostream>
 #include <sstream>
 
 namespace wpa3_tester{
@@ -23,10 +24,10 @@ string Actor_config::operator[](const string &key) const{
 	throw config_err("Actor_config: unknown string key '" + key + "'");
 }
 
-Actor_config::Actor_config(const json &j, string source){
+Actor_config::Actor_config(const json &actor_j, string source){
 	if(!source.empty()) set(SK::source, source);
-	if(j.contains("selection") && j.at("selection").is_object()){
-		const auto &sel = j.at("selection");
+	if(actor_j.contains("selection") && actor_j.at("selection").is_object()){
+		const auto &sel = actor_j.at("selection");
 
 		for(const auto k: sk_keys()){
 			const auto name = string(sk_name(k));
@@ -53,20 +54,16 @@ Actor_config::Actor_config(const json &j, string source){
 				if(const auto k = bk_cast(name); k.has_value()) (*this)[*k] = !negated;
 			}
 		}
-		//const auto name = string(sk_name(SK::mac));
-		//if(!this->is_WB()) this->set(SK::mac, sel[name].get<string>());
 	}
 
-	if(j.contains("netns")) set(SK::netns, j.at("netns").get<string>());
-	if(j.contains("source")) set(SK::source, j.at("source").get<string>());
-	if(j.contains("ip_addr")) set(SK::ip_addr, j.at("ip_addr").get<string>());
+	if(actor_j.contains("netns")) set(SK::netns, actor_j.at("netns").get<string>());
+	if(actor_j.contains("source")) set(SK::source, actor_j.at("source").get<string>());
+	if(actor_j.contains("ip_addr")) set(SK::ip_addr, actor_j.at("ip_addr").get<string>());
+	if(actor_j.contains("sniff_iface")) set(BK::sniff_iface, actor_j.at("sniff_iface").get<bool>());
 }
 
 Actor_config::~Actor_config(){
-	if(conn &&conn
-	.
-	use_count() == 1
-	)
+	if(conn &&conn.use_count() == 1)
 	conn->disconnect();
 }
 
@@ -160,6 +157,9 @@ void Actor_config::set(const ActorPtr &source, const ParamFilter &filter){
 	for(const auto k : filter.second) set(k, (*source)[k]);
 }
 
+void Actor_config::set(const ActorPtr &source, const SK key){
+	if((*source)[key].has_value()) set(key, (*source)[key]);
+}
 void Actor_config::set(const ActorPtr &source, const BK key){
 	if((*source)[key].has_value()) set(key, (*source)[key]);
 }

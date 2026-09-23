@@ -10,12 +10,6 @@
 namespace wpa3_tester{
 using namespace std;
 
-bool is_interface_up(const string &iface){
-	ifstream status_file("/sys/class/net/" + iface + "/operstate");
-	string status;
-	if(status_file >> status){ return (status == "up"); }
-	return false;
-}
 
 void Actor_config::cleanup() const{
 	string iface = get(SK::iface);
@@ -53,12 +47,12 @@ void Actor_config::create_sniff_iface() const{
 	const string &iface = get(SK::iface);
 	const string &sniff_iface = get_mon_iface();
 	if(conn != nullptr){
+		conn->create_sniff_iface(iface, sniff_iface);
 		throw not_implemented_err("External cant have sniff_iface");
 	}
 
-	if(run({"ip", "link", "show", sniff_iface}) == 0){
-		log(LogLevel::INFO, "Sniff interface {} already exists. Setting UP.", sniff_iface);
-		set_iface_up();
+	if(run({"ip", "link", "show", sniff_iface}, false) == 0){
+		log(LogLevel::INFO, "Sniff interface {} already exists", sniff_iface);
 		return;
 	}
 
@@ -70,10 +64,9 @@ void Actor_config::create_sniff_iface() const{
 	run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
 
 	vector<string> flags_cmd = {"iw", "dev", sniff_iface, "set", "monitor", "fcsfail", "otherbss"};
-	if((*this)[BK::active_monitor]) flags_cmd.emplace_back("active");
-	if((*this)[BK::control_monitor]) flags_cmd.emplace_back("control");
+	if(get_or(BK::active_monitor, false)) flags_cmd.emplace_back("active");
+	if(get_or(BK::control_monitor, false)) flags_cmd.emplace_back("control");
 	run(flags_cmd);
-	set_iface_up();
 }
 
 void Actor_config::set_channel(const Channel &ch) const{
@@ -88,6 +81,9 @@ void Actor_config::set_channel(const Channel &ch) const{
 //------------------ get status info functions
 
 void Actor_config::set_ap_mode() const{
+	if(conn != nullptr){
+		throw not_implemented_err("configured with uci for now on openwrt");
+	}
 	const string &iface = get(SK::iface);
 	log(LogLevel::INFO, "Preparing interface {} for AP mode", iface);
 	set_iface_down();
@@ -95,17 +91,7 @@ void Actor_config::set_ap_mode() const{
 }
 
 void Actor_config::up_sniff_iface() const{
-	const string &sniff_iface = get_mon_iface();
-
-	if(is_interface_up(sniff_iface)){
-		log(LogLevel::DEBUG, "{} is already UP, skipping.", sniff_iface);
-		return;
-	}
-	log(LogLevel::INFO, "Bringing {} UP...", sniff_iface);
-	run({"ip", "link", "set", sniff_iface, "up"});
-	if(const auto res = netlink_helper::wait_for_link_flags(sniff_iface, (*this)[SK::netns], true); res) {
-		throw timeout_err("Timeout waiting for '" + sniff_iface + "' to go UP:" + res.message());
-	}
+	hw_capabilities::set_iface_up(get_mon_iface(), (*this)[SK::netns]);
 }
 
 void Actor_config::set_managed_mode() const{
@@ -167,6 +153,10 @@ void Actor_config::set_iface_down() const{
 }
 
 void Actor_config::set_iface_up() const{
+	if(conn != nullptr){
+		conn->set_iface_up(get(SK::iface));
+		return;
+	}
 	hw_capabilities::set_iface_up(get(SK::iface), (*this)[SK::netns]);
 }
 

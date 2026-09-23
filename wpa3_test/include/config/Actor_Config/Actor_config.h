@@ -26,7 +26,7 @@ public:
 	[[nodiscard]] std::string operator[](const std::string &key) const;
 	explicit Actor_config() = default;
 	Actor_config(const Actor_config &other) = default;
-	explicit Actor_config(const nlohmann::json &j, std::string source = "");
+	explicit Actor_config(const nlohmann::json &actor_j, std::string source = "");
 	virtual ~Actor_config();
 
 	bool matches(const Actor_config &offer) const;
@@ -36,6 +36,7 @@ public:
 	void set(const std::vector<SK> &keys, const std::optional<std::string> &new_value);
 	void set(const std::vector<BK> &keys, const std::optional<bool> &new_value);
 	void set(const ActorPtr &source, const ParamFilter &filter);
+	void set(const ActorPtr &source, SK key);
 	void set(const ActorPtr &source, BK key);
 
 	//to allow HWAddress -> simplify code
@@ -82,6 +83,7 @@ public:
 	[[nodiscard]] bool is_external_WB() const;
 	[[nodiscard]] bool monitor_needed() const;
 	Channel get_channel() const;
+	void real_actor_setup_base_keys(const ActorPtr &real_actor);
 
 	// Interface control
 	int run(const std::vector<std::string> &argv, bool print = true) const;

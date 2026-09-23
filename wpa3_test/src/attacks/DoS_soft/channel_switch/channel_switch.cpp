@@ -134,8 +134,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	return result;
 }
 
-//FIXME unused ssid, ap_channel
-RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const string & /*ssid*/, const Channel &ap_channel,
+RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel,
 		const Channel &new_channel, const int switch_count, const Dot11Beacon *src_beacon) {
 	Dot11Beacon b = src_beacon ? *src_beacon : Dot11Beacon{};
 
@@ -183,7 +182,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 			ap_channel.ch_num,
 			ssid);
 
-	RadioTap csa_rt = get_CSA_beacon(ap_mac, ssid, ap_channel, new_channel, 3, beacon.get());
+	RadioTap csa_rt = get_CSA_beacon(ap_mac, ap_channel, new_channel, 3, beacon.get());
 	while(steady_clock::now() < end_time) {
 		sender.send(csa_rt);
 		interruptible_sleep(milliseconds(ms_interval));

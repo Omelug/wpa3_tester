@@ -148,6 +148,10 @@ string ExternalConn::exec(const string &cmd, const bool kill_on_exit, int *ret_e
 	return result;
 }
 
+void ExternalConn::set_iface_up(const std::string &iface) const {
+	exec("ip link set " + iface + " up");
+}
+
 void ExternalConn::create_sniff_iface(const string &iface, const string &sniff_iface) const{
 	exec("iw dev " + sniff_iface + " del 2>/dev/null");
 	exec("ip link show " + sniff_iface + " >/dev/null 2>&1 && ip link delete " + sniff_iface);

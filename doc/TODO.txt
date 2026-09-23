@@ -4,6 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+
+
+f: porovnat internal/externla Actor_Config_external::setup_actor
 r: small TODO/ FIXME
 PDF:
     +: info about injection tests/ problems

@@ -6,73 +6,31 @@ namespace wpa3_tester {
 using namespace std;
 
 void Actor_Config_external::setup_actor(const nlohmann::json &config, const ActorPtr &real_actor, RunStatus *rs) {
-	if((*this)[SK::mac].has_value()) {
-		// setup force set mac address
-		set_mac_address(get(SK::mac));
-	} else {
-		//just get mac from iface
-		set(SK::mac, real_actor.get(SK::mac));
-	}
-
-	// ---------- other setup only for whitebox
-	if(!is_external_WB()) return;
-
 	conn = real_actor->conn;
-	set(real_actor,
-			{ { SK::ssid,
-					  SK::driver_name,
-					  SK::driver_hash,
-					  SK::module_hash,
-					  SK::whitebox_host,
-					  SK::whitebox_ip,
-					  SK::ssh_user,
-					  SK::ssh_port,
-					  SK::ssh_password,
-					  SK::external_OS },
-					{ BK::w80211n,
-							BK::w80211ac,
-							BK::w80211ax,
-							BK::beacon_prot,
-							BK::CSA,
-							BK::OCV,
-							BK::MFP,
-							BK::WPA_PSK,
-							BK::WPA3_SAE } });
 
-	if(get_or(BK::active_monitor, false)) set(real_actor, BK::active_monitor);
-	if(get_or(BK::control_monitor, false)) set(real_actor, BK::control_monitor);
-	if(get_or(BK::GHz2_4, false)) set(real_actor, BK::GHz2_4);
-	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
-	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);
+	real_actor_setup_base_keys(real_actor);
 
 	auto actor_ptr = ActorPtr(shared_from_this());
 	conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);
 	real_actor->conn->check_req(config, get(SK::actor_name));
 
-	const auto actor_json = config.at("actors").at(get(SK::actor_name));
-	int channel_num = -1;
-	if(const auto d = (*this)[SK::channel]) {
-		channel_num = stoi(d.value());
-	} else if(const auto &c = real_actor[SK::channel]) {
-		channel_num = stoi(c.value());
-	}
+	const bool no_sniff_iface = !(*this)[BK::sniff_iface].has_value() ||
+			((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value());
+	const auto base_mon_iface = monitor_needed() && no_sniff_iface;
 
-	if(monitor_needed() && (*this)[BK::sniff_iface]) {
-		set_monitor_mode();
-	}
+	//not used for openwrt setup (setup with setup/program_config in setup_iface)
+	//if(base_mon_iface) set_monitor_mode();
+	//if(get_or(BK::AP, false)) set_ap_mode(); //FIXME not implemented yet
+	//if(get_or(BK::managed, false)) set_managed_mode();
 
-	if(channel_num != -1) {
-		//set_iface_up();
-		set_channel(get_channel());
-		//set_iface_down();
-	}
+	set_iface_up();
+	if(base_mon_iface) set_channel(get_channel());
 
-	//FIXME external, before channel switch?
-	if(actor_json.contains("sniff_iface")) {
-		set(BK::sniff_iface, actor_json.at("sniff_iface").get<bool>());
+	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();
+		up_sniff_iface();
 	}
-	conn->exec("ip link set " + get(SK::iface) + " up");
+	set_iface_up();
 
 	if(rs) conn->get_router_info(*rs, get(SK::actor_name));
 }

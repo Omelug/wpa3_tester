@@ -283,6 +283,7 @@ bool RunStatus::config_requirement() {
 	}
 	return false;
 }
+
 //TODO test
 string RunStatus::get_filler_hash(const ActorMap &actor_map, json &test_cfg) {
 	// build stable hash from sorted actor_name=perm_mac pairs
@@ -314,7 +315,7 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	const string base_name = current_name.substr(0, sep);
 	const string old_hash = current_name.substr(sep + 1);
 	string new_hash = get_filler_hash(result, _config);
-	if(new_hash == old_hash) throw run_err("change_test_hash");
+	if(new_hash == old_hash) return;
 
 	const string new_name = format("{}_{}", base_name, new_hash);
 

@@ -1,6 +1,6 @@
-name: ap_info_wpa3_filler
+name: ap_info_filler
 attacker_module: ap_info
-suite_functions: ap_info_wpa3_filler
+suite_functions: ap_info_filler
 config_type: test_suite
 tests:
   all_APs:

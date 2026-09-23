@@ -1,14 +1,16 @@
-#include "visual/scan/ap_info_wpa3_filler.h"
-
+#include "visual/scan/ap_info_filler.h"
 #include <filesystem>
+#include "config/Actor_Config/Actor_Config_external.h"
+#include "config/Actor_Config/ActorPtr.h"
 #include "config/RunSuiteStatus.h"
+#include "logger/devices.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 
-namespace wpa3_tester::visual::ap_info_wpa3_filler {
+namespace wpa3_tester::visual::ap_info_filler {
 using namespace std;
 using namespace filesystem;
 
@@ -47,6 +49,14 @@ void ApInfoWpa3TestEntry::render_table(
 void generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::get_results_default<ApInfoWpa3TestEntry>(run_dir);
+
+	for(const auto &e : entries) {
+		if(e.mac.empty()) continue;
+		Actor_Config_external dev;
+		dev.set(SK::mac, e.mac);
+		dev.set(SK::permanent_mac, e.mac);
+		report::add_device(ActorPtr(make_shared<Actor_Config_external>(std::move(dev))));
+	}
 
 	report::ReportGuard r(run_dir);
 	if(!r) return;

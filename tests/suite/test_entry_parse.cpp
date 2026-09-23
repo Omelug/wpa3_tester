@@ -14,7 +14,7 @@
 #include "visual/downgrade/wpa3_downgrade_filler.h"
 #include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "visual/scan/ap_info_wpa3_filler.h"
+#include "visual/scan/ap_info_filler.h"
 #include "visual/scan/iface_info_filler.h"
 #include "visual/two_iface/active_test_filler.h"
 #include "visual/two_iface/injection_test_filler.h"

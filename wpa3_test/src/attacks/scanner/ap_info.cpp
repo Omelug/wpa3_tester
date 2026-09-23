@@ -22,7 +22,8 @@ namespace wpa3_tester::ap_info{
 
 void setup_attack(RunStatus &rs) {
 	// only setup if can
-	components::setup_AP(rs, "target");
+	if(rs.get_actor("target")->is_WB())
+		components::setup_AP(rs, "target");
 }
 
 void run_attack(RunStatus &rs){
@@ -32,6 +33,10 @@ void run_attack(RunStatus &rs){
 	const auto scanner = rs.get_actor("scanner");
 
 	log(LogLevel::DEBUG, "Scanning start");
+
+	//TODO add whitebox only section
+	//(has openwrt some info dump of hardware?)
+
 	scan::ScanAP scan_ap{};
 	scan_ap.bssid = target_ap.get(SK::mac);
 	if(att_cfg.value("beacon_scan", false)){
@@ -83,28 +88,32 @@ void run_attack(RunStatus &rs){
 	}
 
 	bool acm_triggered = false;
-	if(att_cfg.value("ACM_trigger", false)){
+	if(att_cfg.value("ACM_trigger", false) && target_ap->get_or(BK::WPA3_SAE, false)){
 		//setup monitor sniff iface manually
 		scanner->create_sniff_iface();
 		scanner->up_sniff_iface();
 
 		const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, scanner.get(SK::iface), scanner.get_mon_iface(), scan_ap.ssid, target_ap.get(SK::mac), 30);
-		const auto [cookie, count] =
-			pmk_gobbler::trigger_acm(scanner.get_mon_iface(),scanner.get(SK::mac),
-															target_ap.get(SK::mac),
-															att_cfg.at("acm_pause_millisec").get<int>(),
-															att_cfg.at("acm_trigger_count").get<int>(),
-															sae_params.value());
-		const path acm_txt = rs.run_folder() / "ACM_trigger.txt";
-		ofstream ofs(acm_txt);
-		ofs << "ACM trigger after " << count << " frames " << "\n";
-		ofs << scan_ap.to_str() << "\n";
-		ofs << sae_helper::bytes_to_hex(cookie.token) << "\n";
-		ofs << cookie.sta_mac << "\n";
-		ofs.close();
-		set_public_perms(acm_txt);
-		acm_triggered = true;
+		if(!sae_params.has_value()){
+			log(LogLevel::ERROR, "ACM trigger: failed to obtain SAE commit values, skipping");
+		} else {
+				const auto [cookie, count] =
+					pmk_gobbler::trigger_acm(scanner.get_mon_iface(), scanner.get(SK::mac),
+																	target_ap.get(SK::mac),
+																	att_cfg.at("acm_pause_millisec").get<int>(),
+																	att_cfg.at("acm_trigger_count").get<int>(),
+																	sae_params.value());
+				const path acm_txt = rs.run_folder() / "ACM_trigger.txt";
+				ofstream ofs(acm_txt);
+				ofs << "ACM trigger after " << count << " frames " << "\n";
+				ofs << scan_ap.to_str() << "\n";
+				ofs << sae_helper::bytes_to_hex(cookie.token) << "\n";
+				ofs << cookie.sta_mac << "\n";
+				ofs.close();
+				set_public_perms(acm_txt);
+				acm_triggered = true;
+		}
 	}
 
 	string mfp = "?";

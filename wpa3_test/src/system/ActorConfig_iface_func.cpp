@@ -109,13 +109,16 @@ void Actor_config::set_managed_mode() const{
 
 void Actor_config::set_mac_address(const Tins::HWAddress<6> &mac) const{
 	const string &iface = get(SK::iface);
-	if(conn != nullptr){ throw not_implemented_err("not valid for external "); }
+	if(conn != nullptr) {
+		throw not_implemented_err("not valid for external ");
+	}
 	hw_capabilities::set_mac_address(iface, mac, (*this)[SK::netns]);
 
 	if((*this)[BK::sniff_iface]){
-		hw_capabilities::set_mac_address(get_mon_iface(), mac, (*this)[SK::netns]);
+		const string mon = get_mon_iface();
+		if(run({"ip", "link", "show", mon}, false) == 0)
+			hw_capabilities::set_mac_address(mon, mac, (*this)[SK::netns]);
 	}
-	//TODO co ap_iface?
 }
 
 void Actor_config::set_monitor_mode(const bool add_flags) const{

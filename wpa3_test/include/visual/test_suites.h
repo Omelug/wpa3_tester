@@ -9,7 +9,6 @@
 #include "DoS_soft/deauth/deauth_suite.h"
 #include "DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 #include "DoS_soft/malformed_eapol1/malformed_eapol1_suite.h"
-#include "attacks/enterprise/eap_helper.h"
 #include "config/RunSuiteStatus.h"
 #include "downgrade/owe_trans_filler.h"
 #include "downgrade/wpa3_downgrade_filler.h"
@@ -17,7 +16,7 @@
 #include "enterprise/invalid_curve/invalid_curve_filler.h"
 #include "enterprise/reflection_attack/reflection_attack_filler.h"
 #include "mc_mitm/ssid_confusion_filler.h"
-#include "scan/ap_info_wpa3_filler.h"
+#include "scan/ap_info_filler.h"
 #include "scan/iface_info_filler.h"
 #include "two_iface/active_test_filler.h"
 #include "two_iface/injection_test_filler.h"
@@ -45,7 +44,7 @@ inline std::map<std::string, std::function<void(RunSuiteStatus &)>> test_suite_r
 	{ "active_test_filler", active_test_filler::generate_report },
 	{ "injection_test_filler", injection_test_filler::generate_report },
 	{ "iface_info_filler", iface_info_filler::generate_report },
-	{ "ap_info_wpa3_filler", ap_info_wpa3_filler::generate_report },
+	{ "ap_info_wpa3_filler", ap_info_filler::generate_report },
 	{ "CSA_rogueAP_internal_filler", channel_switch_rogueAP::CsaTestEntry::generate_report },
 	{ "CSA_ex_filler", channel_switch_rogueAP::CsaTestEntry::generate_report },
 	{ "expected_vht_beacon_2_4GHz_filler", expected_vht_beacon_suite::ExpVhtTestEntry::generate_report },

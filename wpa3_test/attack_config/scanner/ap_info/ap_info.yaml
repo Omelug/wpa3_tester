@@ -6,7 +6,7 @@ actors:
   target:
     source: external
     selection:
-      permanent_mac: "24:ec:99:bf:c7:cf"
+      #permanent_mac: "24:ec:99:bf:c7:cf"
       channel: 6
   scanner:
     source: internal

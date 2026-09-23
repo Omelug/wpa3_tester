@@ -9,7 +9,7 @@ namespace wpa3_tester::overview {
 struct HtmlGuard;
 }
 
-namespace wpa3_tester::visual::ap_info_wpa3_filler {
+namespace wpa3_tester::visual::ap_info_filler {
 struct ApInfoWpa3TestEntry {
 	std::string test_name;
 

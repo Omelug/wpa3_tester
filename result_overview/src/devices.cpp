@@ -34,6 +34,15 @@ struct UsbInfo {
 	string manufacturer, product, serial;
 };
 
+struct ApInfoData {
+	string ssid;
+	string mfp;
+	vector<string> akm;
+	optional<bool> beacon_found;
+	optional<bool> acm_triggered;
+	vector<string> stations;
+};
+
 struct IfaceData {
 	string phy;
 	string iw_info;
@@ -62,6 +71,7 @@ struct DeviceInfo {
 	string module_hash;
 	DeviceCaps caps;
 	optional<IfaceData> iface;
+	optional<ApInfoData> ap_info;
 };
 
 static optional<bool> json_bool(const json &j, const string &key){
@@ -157,6 +167,30 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 	return nullopt;
 }
 
+static optional<ApInfoData> find_ap_info_run(const path &all_actors, const string &mac){
+	if(!exists(all_actors)) return nullopt;
+	for(const auto &e : directory_iterator(all_actors)){
+		if(!e.is_directory()) continue;
+		const path rj = e.path() / "result.json";
+		if(!exists(rj)) continue;
+		ifstream f(rj);
+		json j;
+		try{ j = json::parse(f); } catch(...){ continue; }
+		if(j.value("mac", string{}) != mac) continue;
+		ApInfoData d;
+		d.ssid = j.value("ssid", string{});
+		d.mfp  = j.value("mfp",  string{});
+		if(j.contains("beacon_found")  && j["beacon_found"].is_boolean())  d.beacon_found  = j["beacon_found"].get<bool>();
+		if(j.contains("acm_triggered") && j["acm_triggered"].is_boolean()) d.acm_triggered = j["acm_triggered"].get<bool>();
+		if(j.contains("akm") && j["akm"].is_array())
+			for(const auto &a : j["akm"]) if(a.is_string()) d.akm.push_back(a.get<string>());
+		if(j.contains("stations") && j["stations"].is_array())
+			for(const auto &s : j["stations"]) if(s.is_string()) d.stations.push_back(s.get<string>());
+		return d;
+	}
+	return nullopt;
+}
+
 static optional<DeviceInfo> read_device(const path &dev_dir){
 	const string mac = dev_dir.filename().string();
 	const path last = dev_dir / "last.json";
@@ -218,6 +252,27 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	tr("WPA-PSK",          d.caps.WPA_PSK);
 	tr("WPA3-SAE",         d.caps.WPA3_SAE);
 	f << "</table></div>";
+
+	if(d.ap_info){
+		const auto &ai = *d.ap_info;
+		f << "<div class=\"card\"><h2>AP Info Scan</h2><table>";
+		tr("Beacon found", ai.beacon_found);
+		if(!ai.ssid.empty()) tr("SSID", ai.ssid);
+		if(!ai.mfp.empty())  tr("MFP",  ai.mfp);
+		if(!ai.akm.empty()){
+			string akm_str;
+			for(const auto &a : ai.akm) akm_str += (akm_str.empty() ? "" : ", ") + a;
+			tr("AKM", akm_str);
+		}
+		tr("ACM triggered", ai.acm_triggered);
+		f << "</table>";
+		if(!ai.stations.empty()){
+			f << "<h3>Stations seen</h3><ul>";
+			for(const auto &s : ai.stations) f << "<li>" << s << "</li>";
+			f << "</ul>";
+		}
+		f << "</div>";
+	}
 
 	if(d.iface){
 		const auto &iface = *d.iface;
@@ -283,12 +338,13 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	f << "</body></html>";
 }
 
-static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices, const string &source, const string &t_name){
+static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices,
+		bool(*filter)(const DeviceInfo&), const string &t_name){
 	vector<DeviceInfo> rows;
-	ranges::copy_if(devices, back_inserter(rows), [&](const auto &d){ return d.source == source; });
+	ranges::copy_if(devices, back_inserter(rows), filter);
 
 	if(rows.empty()){
-		f << "<p>No " << source << " devices recorded. Run " << t_name << "</p>";
+		f << "<p>No devices recorded. Run " << t_name << "</p>";
 		return;
 	}
 
@@ -326,7 +382,6 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	const path dev_data   = data_dir /DEVICES_DIR;
 	const path devices_dir = output_dir /DEVICES_DIR;
 	create_public_dirs(devices_dir);
-	if(data_unchanged(devices_dir, dev_data)) return;
 
 	vector<DeviceInfo> devices;
 	if(exists(dev_data) && is_directory(dev_data)){
@@ -338,8 +393,11 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	}
 
 	const path iface_all_actors = data_dir / "suite_data" / "scanner" / "iface_info" / "iface_info_filler" / "all_actors";
-	for(auto &d : devices)
-		d.iface = find_iface_run(iface_all_actors, d.mac);
+	const path ap_info_all_actors = data_dir / "suite_data" / "scanner" / "ap_info" / "ap_info_filler" / "all_APs";
+	for(auto &d : devices){
+		d.iface   = find_iface_run(iface_all_actors, d.mac);
+		d.ap_info = find_ap_info_run(ap_info_all_actors, d.mac);
+	}
 
 	ranges::sort(devices, [](const DeviceInfo &a, const DeviceInfo &b){
 		return tie(a.name, a.source) < tie(b.name,  b.source);
@@ -361,14 +419,16 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	<h1>Devices</h1>
 )html";
 
-	constexpr array<tuple<string_view, string_view, string_view>, 3> sections = {{
-		{"External",   "external", "external_info"},
-		{"Internal",   "internal", "iface_info_filler"},
-		//TODO {"Simulation", "simulation", "TODO-simulation test"},
-	}};
-	for(const auto &[label, src, t_name] : sections){
+	struct SectionDef { string_view label, t_name; bool(*filter)(const DeviceInfo&); };
+	constexpr array sections = {
+		SectionDef{"Internal",    "iface_info_filler", [](const DeviceInfo &d){ return d.source == "internal"; }},
+		SectionDef{"External AP", "ap_info_filler",    [](const DeviceInfo &d){ return d.source == "external" && d.ap_info.has_value(); }},
+		SectionDef{"External",    "external_info",     [](const DeviceInfo &d){ return d.source == "external" && !d.ap_info.has_value(); }},
+		//TODO SectionDef{"Simulation", "TODO", [](const DeviceInfo &d){ return d.source == "simulation"; }},
+	};
+	for(const auto &[label, t_name, filter] : sections){
 		f << "<div class=\"card\"> <h2>" << label << "</h2>";
-		emit_section(f, devices, string(src), string(t_name));
+		emit_section(f, devices, filter, string(t_name));
 		f << "</div>";
 	}
 

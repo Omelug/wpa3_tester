@@ -112,5 +112,6 @@ inline std::map<std::string, std::function<void(const RunStatus &)>> stats_map =
 	{ "wpa3_trans_downgrade", wpa3_trans_downgrade::stats_attack },
 	{ "iface_info", iface_info::stats_attack },
 	{ "external_info", external_info::stats },
+	{ "ap_info", ap_info::stats_attack },
 };
 }

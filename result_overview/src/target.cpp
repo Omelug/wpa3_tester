@@ -19,7 +19,7 @@
 #include "visual/downgrade/wpa3_downgrade_filler.h"
 #include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
 #include "visual/enterprise/reflection_attack/reflection_attack_filler.h"
-#include "visual/scan/ap_info_wpa3_filler.h"
+#include "visual/scan/ap_info_filler.h"
 
 namespace wpa3_tester::overview {
 using namespace std;
@@ -61,7 +61,7 @@ static void render_attack_section(HtmlGuard &f, const std::string &module, const
 	using namespace visual;
 
 	static const std::unordered_map<std::string, RenderFunc> registry = {
-		{ "ap_info", make_renderer<ap_info_wpa3_filler::ApInfoWpa3TestEntry>() },
+		{ "ap_info", make_renderer<ap_info_filler::ApInfoWpa3TestEntry>() },
 		{ "bl0ck", make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
 		{ "invalid_curve", make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
 		{ "reflection_attack", make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },

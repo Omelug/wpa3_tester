@@ -10,6 +10,8 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 
 	real_actor_setup_base_keys(real_actor);
 
+	if(!is_external_WB()) return;
+
 	auto actor_ptr = ActorPtr(shared_from_this());
 	conn->setup_iface(real_actor->get(SK::radio), actor_ptr, config);
 	real_actor->conn->check_req(config, get(SK::actor_name));

@@ -81,7 +81,7 @@ TEST_CASE("SaeDosFolderEntry::parse - detects existing png") {
 
 TEST_CASE("ApInfoWpa3TestEntry::parse - no result.json returns empty strings") {
 	const auto d = setup_dir("ap_info_no_result");
-	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
+	const auto e = visual::ap_info_filler::ApInfoWpa3TestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK(e.mac.empty());
 	CHECK(e.ssid.empty());
@@ -98,7 +98,7 @@ TEST_CASE("ApInfoWpa3TestEntry::parse - populates from result.json") {
 		{"acm_triggered", false},
 		{"stations",      json::array({"11:22:33:44:55:66"})},
 	});
-	const auto e = visual::ap_info_wpa3_filler::ApInfoWpa3TestEntry::parse(d);
+	const auto e = visual::ap_info_filler::ApInfoWpa3TestEntry::parse(d);
 	CHECK_EQ(e.test_name, d.filename().string());
 	CHECK_EQ(e.mac,  "aa:bb:cc:dd:ee:ff");
 	CHECK_EQ(e.ssid, "TestNet");
@@ -136,7 +136,7 @@ TEST_CASE("Bl0ckTestEntry::parse - no config uses result.json only") {
 	const auto e = visual::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK_EQ(e.disconnect_count, 3);
-	CHECK_EQ(e.ap_mac, "");
+	CHECK_EQ(e.ap_mac, "-");
 }
 
 TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {

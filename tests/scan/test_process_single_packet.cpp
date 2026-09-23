@@ -36,7 +36,8 @@ TEST_SUITE("process_single_packet state") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		CHECK_FALSE(TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		CHECK_FALSE(t.process_single_packet(
 				garbage.data(), garbage.size(), seen, assoc, reported, {}, {}));
 		CHECK_EQ(seen.size(), 0u);
 		CHECK_EQ(reported.size(), 0u);
@@ -48,7 +49,8 @@ TEST_SUITE("process_single_packet state") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		CHECK_FALSE(TestableRunStatus::process_single_packet(empty.data(), 0, seen, assoc, reported, {}, {}));
+		TestableRunStatus t{};
+		CHECK_FALSE(t.process_single_packet(empty.data(), 0, seen, assoc, reported, {}, {}));
 		CHECK_EQ(seen.size(), 0u);
 	}
 
@@ -59,7 +61,8 @@ TEST_SUITE("process_single_packet state") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		t.process_single_packet(
 				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("mc_mitm_test"), {});
 
 		REQUIRE(seen.contains(HWAddress<6>("24:ec:99:bf:b0:a1")));
@@ -73,7 +76,8 @@ TEST_SUITE("process_single_packet state") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		TestableRunStatus::process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		TestableRunStatus t{};
+		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
 
 		CHECK(reported.contains(HWAddress<6>("24:ec:99:bf:b0:a1")));
 	}
@@ -85,10 +89,11 @@ TEST_SUITE("process_single_packet state") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		TestableRunStatus::process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		TestableRunStatus t{};
+		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
 		const size_t after_first = reported.size();
 
-		TestableRunStatus::process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
 		CHECK_EQ(reported.size(), after_first);
 	}
 }
@@ -101,8 +106,8 @@ TEST_SUITE("process_single_packet requirements") {
 		ActorMACMap seen;
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
-
-		CHECK(TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		CHECK(t.process_single_packet(
 				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("mc_mitm_test"), {}));
 	}
 
@@ -113,7 +118,8 @@ TEST_SUITE("process_single_packet requirements") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		CHECK_FALSE(TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		CHECK_FALSE(t.process_single_packet(
 				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("nonexistent_ssid"), {}));
 	}
 
@@ -124,7 +130,8 @@ TEST_SUITE("process_single_packet requirements") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		CHECK_FALSE(TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		CHECK_FALSE(t.process_single_packet(
 				frames[0].data(), frames[0].size(), seen, assoc, reported, make_sta_req(), {}));
 	}
 }
@@ -149,7 +156,8 @@ TEST_SUITE("process_single_packet conn_conds") {
 		ap_cfg->set(BK::AP, true);
 		actors["ap"] = ActorPtr(ap_cfg);
 
-		CHECK(TestableRunStatus::process_single_packet(
+		TestableRunStatus t{};
+		CHECK(t.process_single_packet(
 				frames[0].data(), frames[0].size(), seen, assoc, reported, actors, { { "ap", "sta" } }));
 	}
 
@@ -161,7 +169,8 @@ TEST_SUITE("process_single_packet conn_conds") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		CHECK_FALSE(TestableRunStatus::process_single_packet(frames[0].data(),
+		TestableRunStatus t{};
+		CHECK_FALSE(t.process_single_packet(frames[0].data(),
 				frames[0].size(),
 				seen,
 				assoc,

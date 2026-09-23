@@ -55,7 +55,6 @@ using EntityInfo =
 		std::pair<ActorPtr, std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>>; // (actor, (own_mac, peer_mac))
 using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
-//TODO nejde to nějak dát do struktury, ale aby vstup pro přehlcování unkcí zůstal stejný?
 typedef std::string actor_name_t;
 typedef std::string pattern_t;
 typedef std::string label_t;
@@ -64,7 +63,7 @@ typedef std::string color_t;
 enum EVENT_SET { DISCONNECT, CONNECT, TESTER_TAGS };
 
 enum class ObserverRunPolicy {
-	THROW, // default: throw if observer already running
+	THROW, // throw if observer already running
 	SKIP   // silently skip already-running observers
 };
 
@@ -147,10 +146,10 @@ private:
 protected:
 	std::vector<uint8_t> get_external_bb_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorCMap &ex_bb_actors = {});
-	static bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
+	bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
 			std::set<Tins::HWAddress<6>> &reported, const ActorCMap &actors,
 			const std::vector<std::pair<std::string, std::string>> &conn_conds);
-	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
+	std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 			const ActorCMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
@@ -167,6 +166,10 @@ public:
 
 	//return true if should re-reload
 	bool config_requirement();
+	static std::string get_filler_hash(const ActorMap &actor_map, nlohmann::json &test_cfg);
+	void change_filler_hash(const ActorMap &result);
+	ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options, bool print = true);
+
 	void setup_test();
 	void run_test();
 	void stats_test() const;

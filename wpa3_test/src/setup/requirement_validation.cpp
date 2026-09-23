@@ -4,7 +4,6 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <thread>
 #include "attacks/two_iface/TwoIfaceActive.h"
 #include "attacks/two_iface/TwoIfaceInject.h"
 #include "config/Actor_Config/Actor_config.h"
@@ -15,10 +14,12 @@
 #include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
+#include "setup/config_parser.h"
 #include "setup/usb_helper.h"
 #include "system/firmware/ath9k_htc.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_helper.h"
+#include "visual/suite_helper.h"
 #include "wizard/rssi_condition.h"
 
 using namespace std;
@@ -190,22 +191,20 @@ bool RunStatus::config_requirement() {
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	// before internal, because need clean interface for scanning
 	if(!external_bb_actors.empty()) {
-		external_bb_mapping =
-				hw_capabilities::check_req_options(external_bb_actors, external_bb_options(external_bb_actors));
+		external_bb_mapping = check_req_options(external_bb_actors, external_bb_options(external_bb_actors));
 	}
 
 	// ------------------ INTERNAL ---------------------------
 	auto internal_actors = get_actors(actors, "internal");
 	if(!internal_actors.empty()) {
 		if(!_hw_option_cache.internal_opts.has_value()) _hw_option_cache.internal_opts = internal_options();
-		internal_mapping = hw_capabilities::check_req_options(internal_actors, *_hw_option_cache.internal_opts);
+		internal_mapping = check_req_options(internal_actors, *_hw_option_cache.internal_opts);
 	}
 
 	// ------------------ EXTERNAL WHITEBOX -----------------
 	if(!external_wb_actors.empty()) {
 		if(!_hw_option_cache.external_wb_opts.has_value()) _hw_option_cache.external_wb_opts = external_wb_options();
-		external_wb_mapping =
-				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
+		external_wb_mapping = check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 
 		bool cache_dead = false; // check if cache need reset
 		if(_hw_option_cache.external_wb_opts.has_value()) {
@@ -218,15 +217,14 @@ bool RunStatus::config_requirement() {
 		}
 		if(!_hw_option_cache.external_wb_opts.has_value() || cache_dead)
 			_hw_option_cache.external_wb_opts = external_wb_options();
-		external_wb_mapping =
-				hw_capabilities::check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
+		external_wb_mapping = check_req_options(external_wb_actors, *_hw_option_cache.external_wb_opts);
 	}
 
 	// ---------------- SIMULATIONS -------------------------
 	auto simulation_actors = get_actors(actors, "simulation");
 	if(!simulation_actors.empty()) {
 		const auto simulation_options = create_simulation(simulation_actors.size());
-		simulation_mapping = hw_capabilities::check_req_options(simulation_actors, simulation_options);
+		simulation_mapping = check_req_options(simulation_actors, simulation_options);
 	}
 
 	//RSSI wizard rssi
@@ -285,4 +283,76 @@ bool RunStatus::config_requirement() {
 	}
 	return false;
 }
+//TODO test
+string RunStatus::get_filler_hash(const ActorMap &actor_map, json &test_cfg) {
+	// build stable hash from sorted actor_name=perm_mac pairs
+	vector<string> mac_parts;
+	for(const auto &[actor_name, hw]: actor_map) {
+		const auto &perm_mac = (*hw)[SK::permanent_mac];
+		if(!perm_mac.has_value()) continue;
+		mac_parts.push_back(actor_name + "=" + *perm_mac);
+		test_cfg["actors"][actor_name]["selection"]["permanent_mac"] = *perm_mac;
+	}
+	ranges::sort(mac_parts);
+	string mac_concat;
+	for(const auto &p: mac_parts) mac_concat += p;
+	ostringstream oss;
+	oss << hex << hash<string>{}(join(mac_parts));
+	string hash_str = oss.str().substr(0, 8);
+	return hash_str;
+}
+
+//TODO test
+void RunStatus::change_filler_hash(const ActorMap &result) {
+	if(_config_path.filename().string().find(visual::helper::ACTOR_FILLER_SUFFIX) == string::npos)
+		return;
+
+	const string current_name = _config.at("name").get<string>();
+	const auto sep = current_name.rfind('_');
+	if(sep == string::npos) throw run_err("change_test_hash");
+
+	const string base_name = current_name.substr(0, sep);
+	const string old_hash = current_name.substr(sep + 1);
+	string new_hash = get_filler_hash(result, _config);
+	if(new_hash == old_hash) throw run_err("change_test_hash");
+
+	const string new_name = format("{}_{}", base_name, new_hash);
+
+	const path new_folder = _run_folder.parent_path() / new_name;
+	filesystem::rename(_run_folder, new_folder);
+	_run_folder = new_folder;
+
+	const path new_config_path = _config_path.parent_path() / (new_hash + visual::helper::ACTOR_FILLER_SUFFIX);
+	_config["name"] = new_name;
+	filesystem::remove(_config_path);
+	save_yaml(_config, new_config_path);
+	set_public_perms(new_config_path);
+	config_validation(new_config_path);
+	_config_path = new_config_path;
+}
+
+ActorMap RunStatus::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options, const bool print) {
+	vector<string> ruleKeys;
+	for(const auto &key: rules | views::keys) {
+		ruleKeys.push_back(key);
+	}
+
+	ActorMap result;
+	if(unordered_set<size_t> usedOptions; hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result)) {
+		change_filler_hash(result); // if actor filler test
+
+		if(print) {
+			log(LogLevel::DEBUG, "Solved!");
+			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
+		}
+		return result;
+	}
+	if(print) {
+		Actor_config::print_ActorCMap("Actor rules", rules);
+		Actor_config::print_ActorCMap("Actor options", options);
+	}
+	throw req_err("Not found valid requirements: {}", hw_capabilities::get_heuristic_err_msg(rules, options));
+}
+
+
 }

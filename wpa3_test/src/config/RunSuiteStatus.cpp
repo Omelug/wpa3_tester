@@ -20,6 +20,7 @@
 #include "setup/requirement_validation.h"
 #include "setup/usb_helper.h"
 #include "system/hw_capabilities.h"
+#include "visual/suite_helper.h"
 #include "visual/test_suites.h"
 
 namespace wpa3_tester {
@@ -351,25 +352,9 @@ void RunSuiteStatus::defined_by_actor_filler(
 	const string base_name = template_config.at("name").get<string>();
 	for(const auto &solution: solutions) {
 		json cfg = template_config;
-
-		// build stable hash from sorted actor_name=perm_mac pairs
-		vector<string> mac_parts;
-		for(const auto &[actor_name, hw]: solution) {
-			const auto &perm_mac = (*hw)[SK::permanent_mac];
-			if(!perm_mac.has_value()) continue;
-			mac_parts.push_back(actor_name + "=" + *perm_mac);
-			cfg["actors"][actor_name]["selection"]["permanent_mac"] = *perm_mac;
-		}
-		ranges::sort(mac_parts);
-		string mac_concat;
-		for(const auto &p: mac_parts) mac_concat += p;
-		ostringstream oss;
-		oss << hex << hash<string>{}(mac_concat);
-		const string hash_str = oss.str().substr(0, 8);
-
+		auto hash_str = RunStatus::get_filler_hash(solution, cfg);
 		cfg["name"] = format("{}_{}", base_name, hash_str);
-
-		const path test_path = gen_folder / (hash_str + "_actor_filler.yaml");
+		const path test_path = gen_folder / (hash_str + visual::helper::ACTOR_FILLER_SUFFIX);
 		save_yaml(cfg, test_path);
 		set_public_perms(test_path);
 		RunStatus::config_validation(test_path);

@@ -55,11 +55,11 @@ T entry_default() {
 }
 template<>
 inline std::string entry_default<std::string>() {
-	return "";
+	return "-";
 }
 template<>
 inline std::optional<std::string> entry_default<std::optional<std::string>>() {
-	return "N/A";
+	return "-";
 }
 
 // load field values by matching field name to JSON key

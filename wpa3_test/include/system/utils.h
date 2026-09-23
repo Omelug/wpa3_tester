@@ -10,14 +10,13 @@ namespace wpa3_tester {
 const std::filesystem::path &root_dir(const std::optional<std::filesystem::path> &set_to = std::nullopt);
 //TODO add format
 std::string current_timestamp();
-std::string git_commit_hash();
 std::string kernel_version();
 std::string relative_from(const std::string &base_dir_name, const std::filesystem::path &config_path);
 //void print_exception_tree(const std::exception &e, std::ostream &os, int level = 0);
 std::string trim(std::string s);
 
 template<typename Range>
-std::string join(const Range &v, const std::string &sep){
+std::string join(const Range &v, const std::string &sep = ""){
     std::string out;
     for(auto it = std::begin(v); it != std::end(v); ++it){
         if(it != std::begin(v)) out += sep;

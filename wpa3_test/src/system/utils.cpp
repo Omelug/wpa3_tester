@@ -32,8 +32,6 @@ string current_timestamp(){
 	return out;
 }
 
-string git_commit_hash(){ return GIT_COMMIT_HASH; }
-
 string kernel_version(){
 	utsname uts{};
 	if(uname(&uts) != 0){ return "unknown"; }

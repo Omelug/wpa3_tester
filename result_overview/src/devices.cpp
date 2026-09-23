@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -20,7 +22,6 @@ using namespace std;
 using namespace filesystem;
 using json = nlohmann::json;
 
-//TODO rewrite this ti Html Guard / default json
 
 struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
@@ -124,6 +125,7 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		d.iw_info = j.value("iw_info", string{});
 		d.ip_addr = j.value("ip_addr", string{});
 		if(j.contains("driver_specific")) d.driver_specific = j["driver_specific"];
+		//TODO simplify
 		if(j.contains("channel_switch")){
 			const auto &cs = j["channel_switch"];
 			d.channel_switch_ok = cs.value("ok", false);
@@ -167,16 +169,18 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 	return nullopt;
 }
 
-static optional<ApInfoData> find_ap_info_run(const path &all_actors, const string &mac){
-	if(!exists(all_actors)) return nullopt;
-	for(const auto &e : directory_iterator(all_actors)){
+static map<string, ApInfoData> load_all_ap_info_runs(const path &all_aps){
+	map<string, ApInfoData> result;
+	if(!exists(all_aps)) return result;
+	for(const auto &e : directory_iterator(all_aps)){
 		if(!e.is_directory()) continue;
 		const path rj = e.path() / "result.json";
 		if(!exists(rj)) continue;
 		ifstream f(rj);
 		json j;
 		try{ j = json::parse(f); } catch(...){ continue; }
-		if(j.value("mac", string{}) != mac) continue;
+		const string mac = j.value("mac", string{});
+		if(mac.empty() || result.contains(mac)) continue;
 		ApInfoData d;
 		d.ssid = j.value("ssid", string{});
 		d.mfp  = j.value("mfp",  string{});
@@ -186,9 +190,9 @@ static optional<ApInfoData> find_ap_info_run(const path &all_actors, const strin
 			for(const auto &a : j["akm"]) if(a.is_string()) d.akm.push_back(a.get<string>());
 		if(j.contains("stations") && j["stations"].is_array())
 			for(const auto &s : j["stations"]) if(s.is_string()) d.stations.push_back(s.get<string>());
-		return d;
+		result[mac] = std::move(d);
 	}
-	return nullopt;
+	return result;
 }
 
 static optional<DeviceInfo> read_device(const path &dev_dir){
@@ -379,9 +383,12 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices,
 }
 
 void generate_devices(const path &output_dir, const path &data_dir){
-	const path dev_data   = data_dir /DEVICES_DIR;
-	const path devices_dir = output_dir /DEVICES_DIR;
+	const path dev_data         = data_dir / DEVICES_DIR;
+	const path devices_dir      = output_dir / DEVICES_DIR;
+	const path iface_all_actors = data_dir / "suite_data" / "scanner" / "iface_info" / "iface_info_filler" / "all_actors";
+	const path ap_info_all_aps  = data_dir / "suite_data" / "scanner" / "ap_info" / "ap_info_filler" / "all_APs";
 	create_public_dirs(devices_dir);
+	if(data_unchanged(devices_dir, dev_data) && data_unchanged(devices_dir, ap_info_all_aps)) return;
 
 	vector<DeviceInfo> devices;
 	if(exists(dev_data) && is_directory(dev_data)){
@@ -392,11 +399,22 @@ void generate_devices(const path &output_dir, const path &data_dir){
 		}
 	}
 
-	const path iface_all_actors = data_dir / "suite_data" / "scanner" / "iface_info" / "iface_info_filler" / "all_actors";
-	const path ap_info_all_actors = data_dir / "suite_data" / "scanner" / "ap_info" / "ap_info_filler" / "all_APs";
+	auto ap_info_map = load_all_ap_info_runs(ap_info_all_aps);
+
+	set<string> known_macs;
 	for(auto &d : devices){
-		d.iface   = find_iface_run(iface_all_actors, d.mac);
-		d.ap_info = find_ap_info_run(ap_info_all_actors, d.mac);
+		d.iface = find_iface_run(iface_all_actors, d.mac);
+		if(auto it = ap_info_map.find(d.mac); it != ap_info_map.end())
+			d.ap_info = std::move(it->second);
+		known_macs.insert(d.mac);
+	}
+	for(auto &[mac, ai] : ap_info_map){
+		if(known_macs.contains(mac)) continue;
+		DeviceInfo d;
+		d.mac    = mac;
+		d.source = "external";
+		d.ap_info = std::move(ai);
+		devices.push_back(std::move(d));
 	}
 
 	ranges::sort(devices, [](const DeviceInfo &a, const DeviceInfo &b){

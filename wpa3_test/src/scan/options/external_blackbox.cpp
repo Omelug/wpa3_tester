@@ -49,6 +49,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 		if(!actor[BK::AP].has_value())  actor->set(BK::AP,  is_ap);
 		if(!actor[BK::STA].has_value()) actor->set(BK::STA, !is_ap);
 		if(freq != INVALID_VALUE){
+			//TODO frequency ranges ser multiple times
 			if(freq >= 2412 && freq <= 2484)        actor->set(BK::GHz2_4, true);
 			else if(freq >= 5170 && freq <= 5885)   actor->set(BK::GHz5,   true);
 			else if(freq >= 5945 && freq <= 7125)   actor->set(BK::GHz6,   true);
@@ -110,7 +111,7 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 
 void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMACMap &seen, AssocMap &assoc){
 	RadioTap rt;
-	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; }
+	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; } //FIXME ignore  or check it with fskfail
 	solve_new_pdu(rt, seen, assoc);
 }
 
@@ -245,9 +246,9 @@ bool RunStatus::process_single_packet(
 	if (seen.size() > before_seen || assoc.size() > before_assoc) {
 		const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 		try {
-			const ActorMap assignment = hw_capabilities::check_req_options(actors, opts, false);
+			const ActorMap assignment = check_req_options(actors, opts, false);
 			for (const auto &[ap_name, sta_name] : conn_conds) {
-				// both (STA and AP) have to nbe scanned
+				// both (STA and AP) have to be scanned
 				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) {
 					return false;
 				}

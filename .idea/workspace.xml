@@ -136,21 +136,27 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: start_ap (no hostapd, hostapd start ap moved to start_ap_hostapd) &#10;tr: small fixes after changes">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: ap_info &#10;tf: hwsim test fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/result_overview/src/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/devices.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/target.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scan/test_process_single_packet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/scan/test_process_single_packet.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_entry_parse.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_wpa3_filler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_wpa3_filler.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/attacks.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/ap_info.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/scanner/ap_info.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_wpa3_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/scan/ap_info_filler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/test_suites.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/scanner/ap_info.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/ap_info_wpa3_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/scanner/ap_info_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/system/test_hw_capabilities.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/system/test_hw_capabilities.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_wpa3_filler.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_filler.schema.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_wpa3_filler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_filler.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/hw_capabilities.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/system/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/result_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/utils.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,6 +186,8 @@
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///nix/store/sanx9fg8mry8mq92zhlm5qvb83qlxrlx-gcc-15.2.0/include/c++/15.2.0/bits/std_function.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///nix/store/sanx9fg8mry8mq92zhlm5qvb83qlxrlx-gcc-15.2.0/include/c++/15.2.0/optional" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -206,6 +214,7 @@
     "CMake Application.rssi_wizard.executor": "Debug",
     "CMake Application.test_config_validation.executor": "Debug",
     "CMake Application.wpa3_tester BARS_filler.executor": "Debug",
+    "CMake Application.wpa3_tester CSA_ex_filler.executor": "Debug",
     "CMake Application.wpa3_tester CSA_external_client_filler.executor": "Debug",
     "CMake Application.wpa3_tester ap_info_filler.executor": "Debug",
     "CMake Application.wpa3_tester bl0ck_BA.executor": "Debug",
@@ -243,6 +252,7 @@
     "Doctest.ProbeRequest broadcast (wildcard) → true, 1 rogue send, state=Finding.executor": "Debug",
     "Doctest.collect_all_usb_devices - list detected adapters.executor": "Debug",
     "Doctest.collect_all_usb_wifi_ifaces - list detected adapters.executor": "Debug",
+    "Doctest.conn_cond referencing absent actor returns false.executor": "Debug",
     "Doctest.get_ap_wpa3_trans_disable - conf + log both present.executor": "Debug",
     "Doctest.get_ap_wpa3_trans_disable - conf=0 ignored.executor": "Debug",
     "Doctest.get_client_WPA_support - from wpa_supplicant_conf.executor": "Debug",
@@ -254,6 +264,7 @@
     "Doctest.handle_from_ap_real.executor": "Debug",
     "Doctest.handle_open_auth.executor": "Debug",
     "Doctest.handle_probe.executor": "Debug",
+    "Doctest.hw_capabilities::check_req_options - empty rules returns empty map.executor": "Debug",
     "Doctest.hwsim setup_actor - create sniff iface.executor": "Debug",
     "Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor": "Debug",
     "Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor": "Debug",
@@ -318,19 +329,19 @@
       <recent name="$PROJECT_DIR$/result_overview/src/observer" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester ap_info_filler">
+  <component name="RunManager" selected="Doctest.conn_cond referencing absent actor returns false">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration name="collect_all_usb_devices - list detected adapters" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="collect_all_usb_devices - list detected adapters" TEST_MODE="SUITE_TEST">
+    <configuration name="conn_cond referencing absent actor returns false" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_process_packet_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_process_packet_tests" TEST_CLASS="process_single_packet conn_conds" TEST_METHOD="conn_cond referencing absent actor returns false" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="reset_usb_ifaces - power-cycles adapters and rebinds drivers" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="reset_usb_ifaces - power-cycles adapters and rebinds drivers" TEST_MODE="SUITE_TEST">
+    <configuration name="hw_capabilities::check_req_options - empty rules returns empty map" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hw_cap_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hw_cap_tests" TEST_METHOD="hw_capabilities::check_req_options - empty rules returns empty map" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1104,9 +1115,9 @@
       <item itemvalue="Doctest.run_cleanup_tests" />
       <item itemvalue="Doctest.run_bl0ck_tests" />
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
+      <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
+      <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
       <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
-      <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
-      <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
       <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
       <item itemvalue="Makefile Target.driver-modules" />
       <item itemvalue="Native Application.get_commit_values" />
@@ -1116,11 +1127,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
+        <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
         <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
         <item itemvalue="Makefile Target.driver-modules" />
         <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
-        <item itemvalue="Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers" />
-        <item itemvalue="Doctest.collect_all_usb_devices - list detected adapters" />
       </list>
     </recent_temporary>
   </component>
@@ -1189,8 +1200,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="-: render_table_dlink (unification)" />
-    <MESSAGE value="f: openwrt logread time parsing" />
     <MESSAGE value="+v: sniff_iface_create, start_ap on device page" />
     <MESSAGE value="r+: more inforform bl0ck attacks (race_cmd, graph events)&#10;+: set_public_perms_recursive" />
     <MESSAGE value="r: simplify kernel debug" />
@@ -1214,7 +1223,9 @@
     <MESSAGE value="rf: small fixes/simplification" />
     <MESSAGE value="rf: setup_actor unification (in testing)" />
     <MESSAGE value="+: start_ap (no hostapd, hostapd start ap moved to start_ap_hostapd) &#10;tr: small fixes after changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: start_ap (no hostapd, hostapd start ap moved to start_ap_hostapd) &#10;tr: small fixes after changes" />
+    <MESSAGE value="+: start_ap (no hostapd, hostapd start ap moved to start_ap_hostapd)&#10;tr: small fixes after changes" />
+    <MESSAGE value="+: ap_info &#10;tf: hwsim test fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: ap_info &#10;tf: hwsim test fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1236,7 +1247,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_capabilities.cpp</url>
-          <line>256</line>
+          <line>257</line>
           <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -1245,14 +1256,34 @@
           <option name="timeStamp" value="106" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
-          <line>371</line>
-          <option name="timeStamp" value="119" />
+          <url>file://$PROJECT_DIR$/tests/scan/test_process_single_packet.cpp</url>
+          <line>79</line>
+          <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
-          <line>360</line>
-          <option name="timeStamp" value="120" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp</url>
+          <line>311</line>
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp</url>
+          <line>316</line>
+          <option name="timeStamp" value="131" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
+          <line>252</line>
+          <option name="timeStamp" value="133" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
+          <line>259</line>
+          <option name="timeStamp" value="135" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
+          <line>265</line>
+          <option name="timeStamp" value="136" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

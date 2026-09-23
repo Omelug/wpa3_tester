@@ -63,25 +63,6 @@ void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const s
 	}
 }
 
-ActorMap hw_capabilities::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options, bool print) {
-	vector<string> ruleKeys;
-	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
-
-	ActorMap result;
-	if(unordered_set<size_t> usedOptions; find_solution(ruleKeys, 0, rules, options, usedOptions, result)) {
-		if(print) {
-			log(LogLevel::DEBUG, "Solved!");
-			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
-		}
-		return result;
-	}
-	if(print) {
-		Actor_config::print_ActorCMap("Actor rules", rules);
-		Actor_config::print_ActorCMap("Actor options", options);
-	}
-	throw req_err("Not found valid requirements: {}", get_heuristic_err_msg(rules, options));
-}
-
 vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options) {
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
@@ -92,6 +73,7 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, 
 	return results;
 }
 
+// TODO simplify
 string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vector<ActorPtr> &options) {
 	if(options.size() < rules.size())
 		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
@@ -99,11 +81,12 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 	for(const auto &[actor_name, req_ptr]: rules) {
 		const Actor_config &req = *req_ptr;
 		bool any_match = false;
-		for(const auto &opt: options)
+		for(const auto &opt: options) {
 			if(req.matches(*opt)) {
 				any_match = true;
 				break;
 			}
+		}
 		if(any_match) continue;
 		for(const auto k: sk_keys()) {
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
@@ -124,12 +107,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 			msg += ", possible ";
 			msg += kname;
 			msg += "s {";
-			bool first = true;
-			for(const auto &v: possible) {
-				if(!first) msg += ", ";
-				msg += v;
-				first = false;
-			}
+			msg += join(possible,",");
 			msg += "}; ";
 		}
 		for(const auto k: bk_keys()) {
@@ -151,12 +129,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 			msg += ", possible ";
 			msg += kname;
 			msg += "s {";
-			bool first = true;
-			for(const auto &v: possible) {
-				if(!first) msg += ", ";
-				msg += v;
-				first = false;
-			}
+			msg += join(possible,",");
 			msg += "}; ";
 		}
 	}
@@ -177,10 +150,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 				if(actors.size() <= supply) continue;
 				const string kname{ sk_name(k) };
 				msg += format("{} '{}' needed by {} actors (", kname, val, actors.size());
-				for(size_t i = 0; i < actors.size(); i++) {
-					if(i) msg += ", ";
-					msg += actors[i];
-				}
+				msg += join(actors, ", ");
 				msg += format(") but only {} option(s) provide it; ", supply);
 			}
 		}
@@ -198,7 +168,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vect
 				if(actors.size() <= supply) continue;
 				const string kname{ bk_name(k) };
 				msg += format("{} '{}' needed by {} actors (", kname, val ? "true" : "false", actors.size());
-				for(size_t i = 1; i < actors.size(); i++) { msg += actors[i]; }
+				msg += join(msg,", ");
 				msg += format(") but only {} option(s) provide it; ", supply);
 			}
 		}

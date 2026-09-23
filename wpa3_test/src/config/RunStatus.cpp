@@ -457,7 +457,7 @@ void RunStatus::write_done() const {
 	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
 	if(done_log.is_open()) {
-		done_log << "commit: " << git_commit_hash() << "\n";
+		done_log << "commit: " << GIT_COMMIT_HASH << "\n";
 		done_log << "date:   " << current_timestamp() << "\n";
 		done_log << "kernel: " << kernel_version() << "\n";
 		done_log.close();

@@ -251,8 +251,9 @@ void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress
 
 void hw_capabilities::set_channel(const string &iface, const Channel &ch, const optional<string> &netns){
 	log(LogLevel::INFO, "Setting interface {} to channel {}", iface, ch.ch_num);
-	// monitor-mode channel changes require the vif to already be up (cfg80211 needs a running
-	// monitor iface to apply the channel immediately) - callers bring the iface up beforehand.
+	// monitor-mode channel changes require the vif to already be up
+	// (cfg80211 needs a running monitor iface to apply the channel immediately)
+	// - callers bring the iface up beforehand.
 	if(const auto res = netlink_helper::set_channel_nl(iface, netns, ch); res)
 		throw run_err("Failed to set '{}' to channel {}:{}", iface, to_string(ch.ch_num), res.message());
 }

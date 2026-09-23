@@ -177,7 +177,8 @@ TEST_CASE("hw_capabilities::list_interfaces - no-match filter returns empty") {
 TEST_CASE("hw_capabilities::check_req_options - empty rules returns empty map") {
 	ActorCMap rules{};
 	vector options{ make_actor({ { BK::AP, true } }) };
-	const auto result = hw_capabilities::check_req_options(rules, options);
+	RunStatus status{};
+	const auto result = status.check_req_options(rules, options);
 	CHECK(result.empty());
 }
 
@@ -188,7 +189,8 @@ TEST_CASE("hw_capabilities::check_req_options - single rule single matching opti
 	ActorCMap rules{ { "attacker", rule } };
 	vector options{ option };
 
-	const auto result = hw_capabilities::check_req_options(rules, options);
+	RunStatus status{};
+	const auto result = status.check_req_options(rules, options);
 	REQUIRE(result.contains("attacker"));
 	CHECK_EQ(result.at("attacker").get(), option.get());
 }
@@ -199,7 +201,8 @@ TEST_CASE("hw_capabilities::check_req_options - no matching option throws") {
 
 	ActorCMap rules{ { "attacker", rule } };
 	vector options{ option };
-	CHECK_THROWS_AS(hw_capabilities::check_req_options(rules, options), req_err);
+	RunStatus status{};
+	CHECK_THROWS_AS(status.check_req_options(rules, options), req_err);
 }
 
 TEST_CASE("hw_capabilities::check_req_options - two rules two distinct options") {
@@ -212,7 +215,8 @@ TEST_CASE("hw_capabilities::check_req_options - two rules two distinct options")
 	ActorCMap rules{ { "ap_role", rule_ap }, { "sta_role", rule_sta } };
 	vector options{ opt_ap, opt_sta };
 
-	const auto result = hw_capabilities::check_req_options(rules, options);
+	RunStatus status{};
+	const auto result = status.check_req_options(rules, options);
 	CHECK_EQ(result.size(), 2u);
 	CHECK(result.contains("ap_role"));
 	CHECK(result.contains("sta_role"));
@@ -226,7 +230,8 @@ TEST_CASE("hw_capabilities::check_req_options - two rules one option throws") {
 	// Two rules but only one option - second rule can't be satisfied
 	ActorCMap rules{ { "r1", rule1 }, { "r2", rule2 } };
 	vector options{ opt };
-	CHECK_THROWS_AS(hw_capabilities::check_req_options(rules, options), req_err);
+	RunStatus status{};
+	CHECK_THROWS_AS(status.check_req_options(rules, options), req_err);
 }
 
 TEST_CASE("hw_capabilities::check_req_options - string key matching") {
@@ -235,7 +240,8 @@ TEST_CASE("hw_capabilities::check_req_options - string key matching") {
 	ActorPtr nomatch = make_actor({}, { { SK::driver_name, "iwlwifi" } });
 
 	ActorCMap rules{ { "dev", rule } };
-	const auto result = hw_capabilities::check_req_options(rules, { match, nomatch });
+	RunStatus status{};
+	const auto result = status.check_req_options(rules, { match, nomatch });
 	REQUIRE(result.contains("dev"));
 	CHECK_EQ(result.at("dev").get(), match.get());
 }

@@ -30,7 +30,7 @@ public: // getters and setters
 	[[nodiscard]] std::filesystem::path config_path() const { return _config_path; }
 
 	bool only_stats = false;
-	int wait_between_tests = 0;
+	int wait_between_tests_sec = 0;
 	Run_Config run_config{};
 	static std::filesystem::path BASE_FOLDER() { return root_dir().parent_path() / DATA_DIR / DATA_SUITE; }
 

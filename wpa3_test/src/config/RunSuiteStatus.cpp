@@ -48,7 +48,8 @@ RunSuiteStatus::RunSuiteStatus(const path &config_path, string suite_name, const
 
 	parse_run_config(config, run_config);
 	run_config.merge_from(get_global_run_config());
-	if(config.contains("wait_between_tests")) wait_between_tests = config.at("wait_between_tests").get<int>();
+	if(config.contains("wait_between_tests_sec"))
+		wait_between_tests_sec = config.at("wait_between_tests_sec").get<int>();
 }
 
 json RunSuiteStatus::config_validation(const path &config_path) {
@@ -420,10 +421,7 @@ void RunSuiteStatus::execute() {
 	}
 
 	for(size_t i = 0; i < tests_paths.size(); ++i) {
-		if(g_interrupted) {
-			log(LogLevel::WARNING, "Suite interrupted by Ctrl+C, stopped after {} of {} tests", i, tests_paths.size());
-			break;
-		}
+		if(g_interrupted) throw interrupted_err("suite loop");
 		const auto &[src_key, name, test_path] = tests_paths[i];
 		RunStatus rs(test_path, name, ".");
 		rs.hw_option_cache(hw_cache);
@@ -434,9 +432,8 @@ void RunSuiteStatus::execute() {
 		rs.run_folder(test_folder);
 		rs.execute();
 		hw_cache = rs.hw_option_cache();
-		if(wait_between_tests > 0 && i + 1 < tests_paths.size()) {
-			for(int j = 0; j < wait_between_tests * 10 && !g_interrupted; ++j)
-				interruptible_sleep(chrono::milliseconds(100));
+		if(wait_between_tests_sec > 0 && i + 1 < tests_paths.size()) {
+			interruptible_sleep(chrono::seconds(wait_between_tests_sec));
 		}
 	}
 
@@ -455,7 +452,7 @@ void RunSuiteStatus::execute(const string &test_name) {
 	const auto it = ranges::find_if(tests_paths, [&](const auto &p) { return get<1>(p) == test_name; });
 	if(it == tests_paths.end()) {
 		log(LogLevel::WARNING, "Test '{}' not found - run the full suite first to generate test configs", test_name);
-		for(const auto &[src, name, cfg_path]: tests_paths) log(LogLevel::WARNING, "  available: {}/{}", src, name);
+		for(const auto &[src, name, cfg_path]: tests_paths) log(LogLevel::WARNING, " available: {}/{}", src, name);
 		throw config_err("Test '" + test_name + "' not found in suite");
 	}
 

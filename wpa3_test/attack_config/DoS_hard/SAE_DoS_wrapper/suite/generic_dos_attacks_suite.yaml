@@ -12,6 +12,6 @@ tests:
       attack_config:
         attack_type: var_dos_attack
 
-wait_between_tests: 10
+wait_between_tests_sec: 10
 
 

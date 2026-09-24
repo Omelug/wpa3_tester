@@ -42,7 +42,7 @@ struct InterruptPipe {
 inline InterruptPipe g_interrupt_pipe;
 inline std::atomic g_interrupted{ false };
 
-inline void interruptible_sleep(const std::chrono::microseconds duration, bool error = true) {
+inline void interruptible_sleep(const std::chrono::microseconds duration, const bool error = true) {
 	if(g_interrupted) {
 		if(error) throw wpa3_tester::interrupted_err("interruptible_sleep");
 		return;

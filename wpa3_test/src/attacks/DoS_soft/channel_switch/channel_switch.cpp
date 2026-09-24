@@ -214,7 +214,6 @@ void run_attack(RunStatus &rs) {
 	rs.start_observers();
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
-	if(g_interrupted) return;
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);

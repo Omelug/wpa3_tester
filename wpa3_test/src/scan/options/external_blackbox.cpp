@@ -294,7 +294,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 
 	for(const uint8_t ch_num: channels){
 		// at the end of filler there will be one error test file
-		if(g_interrupted) throw interrupted_err("scan_until_match loop");
+		if(g_interrupted) throw interrupted_err("scan_until_match loop"); //TODO needed
 
 		log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 		scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});

@@ -60,6 +60,8 @@ typedef std::string pattern_t;
 typedef std::string label_t;
 typedef std::string color_t;
 
+typedef std::vector<uint8_t> pkt_raw_t;
+
 enum EVENT_SET { DISCONNECT, CONNECT, TESTER_TAGS };
 
 enum class ObserverRunPolicy {
@@ -143,13 +145,13 @@ public:
 private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
-protected:
+protected: // external BB
 	std::vector<uint8_t> get_external_bb_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {});
-	bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
+	static bool process_single_packet(const pkt_raw_t &pkt, ActorMACMap &seen, AssocMap &assoc,
 			std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
 			const std::vector<std::pair<std::string, std::string>> &conn_conds);
-	std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
+	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 			const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
@@ -170,6 +172,9 @@ public:
 	void change_filler_hash(const ActorMap &result);
 	static ActorMap check_req_options(const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true);
 
+	bool prepare_run_folder();
+	void do_run();
+	void write_error_log(const std::exception &e);
 	void setup_test();
 	void run_test();
 	void stats_test() const;

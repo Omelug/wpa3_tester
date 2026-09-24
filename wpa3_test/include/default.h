@@ -20,4 +20,6 @@ inline std::string TEST_SUITE_CONFIG_DIR = "test_config";
 // in taest folder
 inline std::string ERROR_FILE = "errors.txt";
 inline std::string DONE_FILE = "done.txt";
+
 inline std::string MAPPING_CSV = "mapping.csv";
+inline std::string MAP_CSV_SEP = ",";

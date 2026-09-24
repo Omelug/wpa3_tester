@@ -6,9 +6,6 @@
 #include <string>
 
 #include <chrono>
-#include <sstream>
-#include <thread>
-
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "config/Actor_Config/Actor_config.h"
 #include "config/RunStatus.h"
@@ -128,7 +125,7 @@ void RunSuiteStatus::defined_by_generator(
 			replace_all(config_str, json_placeholder, replacement);
 		}
 
-		// unresolved var_
+		// unresolved variable
 		if(config_str.find(var_PREFIX) != string::npos) {
 			remove(tmp_path);
 			throw run_err("Unresolved " + var_PREFIX + " placeholders at index " + to_string(i));

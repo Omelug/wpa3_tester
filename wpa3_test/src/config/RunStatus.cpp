@@ -53,139 +53,139 @@ void RunStatus::clean() {
 	observers.clear();
 }
 
-void RunStatus::execute() {
-	globalRunStatus = this;
+bool RunStatus::prepare_run_folder() {
+	if(!exists(_run_folder)) return false;
+	if(access(_run_folder.string().c_str(), W_OK) != 0) {
+		log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder));
+		error_code ec;
+		remove_all(_run_folder, ec);
+		if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
+		return false;
+	}
+	if(_run_config.get_rewrite() == RewriteMode::none &&
+			(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
+		log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
+		return true;
+	}
+	if(_run_config.get_rewrite() == RewriteMode::errors &&
+			(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
+		log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
+		return true;
+	}
+	if(_run_config.get_delete_old()) {
+		log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder));
+		remove_all(_run_folder);
+	}
+	return false;
+}
 
-	if(exists(_run_folder)) {
-		if(access(_run_folder.string().c_str(), W_OK) != 0) {
-			log(LogLevel::WARNING,
-					"Run folder not writable (created by different user?), removing: {}",
-					absolute(_run_folder));
-			error_code ec;
-			remove_all(_run_folder, ec);
-			if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
-		} else {
-			if(_run_config.get_rewrite() == RewriteMode::none &&
-					(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
-				log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
-				return;
-			}
-			if(_run_config.get_rewrite() == RewriteMode::errors &&
-					(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
-				log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
-				return;
-			}
-			if(_run_config.get_delete_old()) {
-				log(LogLevel::DEBUG, "Deleting old run folder: {}", absolute(_run_folder));
-				remove_all(_run_folder);
-			}
+void RunStatus::do_run() {
+	auto &gcfg = get_global_config();
+	if(run_config().get_only_stats()) {
+		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
+		config(config_validation(config_path()));
+		load_actor_interface_mapping();
+		stats_test();
+		return;
+	}
+
+	// Pre-build external tools before config_requirement() moves interfaces to netns
+	if(gcfg.value("compile_external", false)) {
+		for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
+			if(!actor_cfg.contains("setup")) continue;
+			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
+			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
+				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
 		}
 	}
 
-	create_public_dirs(_run_folder);
+	rssi_checked = false;
+	while(config_requirement()) {
+		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
+	} //include req validation
 
-	// Initialize log file
-	set_log_file(tester_log());
-
-	struct LogGuard {
-		~LogGuard() { close_log_file(); }
-	} log_guard;
-
-	try {
-		auto &gcfg = get_global_config();
-		if(run_config().get_only_stats()) {
-			config_path(absolute(run_folder() / TEST_CONFIG_NAME));
-			config(config_validation(config_path()));
-			load_actor_interface_mapping();
-			stats_test();
-			return;
+	if(gcfg.at("actors").value("nm_exclude_actors", false)) {
+		for(const auto &[name, actor]: actors) {
+			if(!actor->get_or(SK::external_OS, "").empty()) continue;
+			const string iface = actor->get_or(SK::iface, "");
+			if(iface.empty()) continue;
+			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
+				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 		}
+	}
 
-		// Pre-build external tools before config_requirement() moves interfaces to netns
-		if(gcfg.value("compile_external", false)) {
-			for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
-				if(!actor_cfg.contains("setup")) continue;
-				const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
-				if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
-					hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
-			}
-		}
+	auto interrupted = [&] {
+		if(!g_interrupted) return false;
+		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
+		clean();
+		return true;
+	};
 
-		rssi_checked = false;
-		while(config_requirement()) {
-			log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
-		} //include req validation
+	setup_test();
+	if(interrupted()) return;
+	save_yaml(_config, _run_folder / TEST_CONFIG_NAME);
+	run_test();
+	if(interrupted()) return;
+	stats_test();
+	if(interrupted()) return;
+	write_done();
+}
 
-		if(gcfg.at("actors").value("nm_exclude_actors", false)) {
-			for(const auto &[name, actor]: actors) {
-				if(!actor->get_or(SK::external_OS, "").empty()) continue;
-				const string iface = actor->get_or(SK::iface, "");
-				if(iface.empty()) continue;
-				log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-				if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
-					log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
-			}
-		}
+void RunStatus::write_error_log(const exception &e) {
+	if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
 
-		setup_test();
-		if(g_interrupted) {
-			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
-			clean();
-			return;
-		}
-		const path out_path = _run_folder / TEST_CONFIG_NAME;
-		save_yaml(_config, out_path);
-		run_test();
-		if(g_interrupted) {
-			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
-			return;
-		}
-		stats_test();
-		if(g_interrupted) {
-			log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
-			return;
-		}
-		write_done();
-	} catch (const exception& e) {
-		if(getenv("WPA3_DEBUG_THROW")) throw;
-		if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
-
-		const path error_file = run_folder() / ERROR_FILE;
-		ofstream err_log(error_file, ios::out | ios::app);
-		if (err_log.is_open()) {
-			int status = 0;
-			const unique_ptr<char, void(*)(void*)> demangled(
-				abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status),
-				free);
-			const string type_name = (status == 0 && demangled) ? demangled.get() : typeid(e).name();
-
-			err_log << "=== Error occurred at " << current_timestamp() << " ===" << endl;
-			err_log << "Exception type: " << type_name << endl;
-			err_log << "Message: " << e.what() << endl;
-
-			if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
-				const auto &loc = te->where();
-				err_log << "Location: " << loc.file_name() << ":" << loc.line()
-				        << " in " << loc.function_name() << endl;
-				err_log << "Stacktrace:\n" << std::to_string(te->trace()) << endl;
-				log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
-				log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(te->trace()));
-			} else {
-				const auto& trace = throw_trace_for(reinterpret_cast<const void*>(&e));
-				err_log << "Stacktrace:\n" << std::to_string(trace) << endl;
-				log(LogLevel::ERROR, "{}", e.what());
-				log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(trace));
-			}
-
-			err_log << endl;
-			err_log.close();
-			set_public_perms(error_file);
-			log(LogLevel::ERROR, "Error written to {}", error_file);
-		} else {
-			log(LogLevel::ERROR, "Failed to open error log file: {}", error_file);
-		}
+	const path error_file = run_folder() / ERROR_FILE;
+	ofstream err_log(error_file, ios::out | ios::app);
+	if(!err_log.is_open()) {
+		log(LogLevel::ERROR, "Failed to open error log file: {}", error_file);
 		log(LogLevel::INFO, "Cleaning up resources before exit...");
 		clean();
+		return;
+	}
+
+	int status = 0;
+	const unique_ptr<char, void(*)(void*)> demangled(
+		abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
+	err_log << "=== Error occurred at " << current_timestamp() << " ===" << "\n"
+	        << "Exception type: " << ((status == 0 && demangled) ? demangled.get() : typeid(e).name()) << "\n"
+	        << "Message: " << e.what() << "\n";
+
+	if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
+		const auto &loc = te->where();
+		err_log << "Location: " << loc.file_name() << ":" << loc.line() << " in " << loc.function_name() << "\n"
+		        << "Stacktrace:\n" << std::to_string(te->trace()) << "\n";
+		log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
+		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(te->trace()));
+	} else {
+		const auto &trace = throw_trace_for(reinterpret_cast<const void *>(&e));
+		err_log << "Stacktrace:\n" << std::to_string(trace) << "\n";
+		log(LogLevel::ERROR, "{}", e.what());
+		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(trace));
+	}
+
+	err_log << "\n";
+	err_log.close();
+	set_public_perms(error_file);
+	log(LogLevel::ERROR, "Error written to {}", error_file);
+	log(LogLevel::INFO, "Cleaning up resources before exit...");
+	clean();
+}
+
+void RunStatus::execute() {
+	globalRunStatus = this;
+	if(prepare_run_folder()) return;
+
+	create_public_dirs(_run_folder);
+	set_log_file(tester_log());
+	struct LogGuard { ~LogGuard() { close_log_file(); } } log_guard;
+
+	if(getenv("WPA3_DEBUG_THROW")) {
+		do_run();
+	} else {
+		try {
+			do_run();
+		}catch (const exception &e) { write_error_log(e); }
 	}
 }
 
@@ -211,7 +211,7 @@ void RunStatus::run_test() {
 	} else {
 		log(LogLevel::DEBUG, "run function not set for {}", module_name.get<string>());
 	}
-	for(auto &val: actors | views::values) val->disconnect();
+	for(const auto &val: actors | views::values) val->disconnect();
 	process_manager.write_log_all(END_tag);
 	process_manager.stop_all();
 }
@@ -228,10 +228,15 @@ void RunStatus::stats_test() const {
 
 void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
+	const string none = "<none>";
 	for(const auto &[name, actor]: actors) {
-		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << ","
-			<< actor->get_or(SK::mac, "<none>") << "," << actor->get_or(SK::driver_name, "<none>") << ","
-			<< actor->get_or(SK::channel, "<none>") << ",";
+		ofs << actor->get_or(SK::source, none) << MAP_CSV_SEP
+			<< name << MAP_CSV_SEP
+			<< actor->get_or(SK::iface, none) << MAP_CSV_SEP
+			<< actor->get_or(SK::mac, none) << MAP_CSV_SEP
+			<< actor->get_or(SK::driver_name, none) << MAP_CSV_SEP
+			<< actor->get_or(SK::channel, none) << MAP_CSV_SEP;
+
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';

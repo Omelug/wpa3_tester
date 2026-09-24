@@ -320,6 +320,7 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	const string new_name = format("{}_{}", base_name, new_hash);
 
 	const path new_folder = _run_folder.parent_path() / new_name;
+	if(exists(new_folder)) remove_all(new_folder);
 	filesystem::rename(_run_folder, new_folder);
 	_run_folder = new_folder;
 

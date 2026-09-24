@@ -22,8 +22,8 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 	int8_t signal = INVALID_VALUE;
 	uint16_t freq = INVALID_VALUE;
 	if(const auto *rt = pdu.find_pdu<RadioTap>()){
-		try{ signal = rt->dbm_signal(); } catch(...){}
-		try{ freq = rt->channel_freq(); } catch(...){}
+		try{ signal = rt->dbm_signal(); } catch(...){} // not avaible TODO check fsc forst? ?
+		try{ freq = rt->channel_freq(); } catch(...){} //TODO not
 	}
 
 	const auto add_conn = [&](const HWAddress<6> &sta, const HWAddress<6> &ap, const string &reason){
@@ -109,9 +109,11 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 	}
 }
 
-void RunStatus::solve_new_pdu(const vector<uint8_t> &pkt, ActorMACMap &seen, AssocMap &assoc){
+void RunStatus::solve_new_pdu(const pkt_raw_t &pkt, ActorMACMap &seen, AssocMap &assoc){
 	RadioTap rt;
-	try{ rt = RadioTap(pkt.data(), pkt.size()); } catch(...){ return; } //FIXME ignore  or check it with fskfail
+	try {
+		rt = RadioTap(pkt.data(), pkt.size());
+	} catch(...){ return; } //FIXME ignore  or check it with fskfail
 	solve_new_pdu(rt, seen, assoc);
 }
 
@@ -158,11 +160,13 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 
 		const Channel ch{channel, WifiBand::BAND_2_4_or_5, nullopt}; //FIXME only 2_4/5Ghz
 		scanner->set_channel(ch);
-		interruptible_sleep(chrono::milliseconds(200)); //TODO needed?
+		interruptible_sleep(chrono::milliseconds(200)); //TODO needed -test?
 
 		const auto result = components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
 											[&](const uint8_t *pkt, const size_t len) ->optional<monostate>{
-												try{ solve_new_pdu(vector(pkt, pkt + len), seen, assoc); } catch(...){}
+												try {
+													solve_new_pdu(vector(pkt, pkt + len), seen, assoc);
+												} catch(...){}//TODO needed?
 												return nullopt;
 											});
 		if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
@@ -192,7 +196,7 @@ vector<uint8_t> RunStatus::get_external_bb_channels(){
 				log(LogLevel::WARNING, "Actor {} missing channel configuration", actor_name);
 			}
 		}
-		all_channels = std::ranges::to<std::vector>(std::set(all_channels.begin(), all_channels.end()));
+		all_channels = ranges::to<std::vector>(set(all_channels.begin(), all_channels.end()));
 	}
 
 	if(all_channels.empty()){
@@ -226,18 +230,20 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
 }
 
 bool RunStatus::process_single_packet(
-	const uint8_t *pkt, const size_t len,
+	const pkt_raw_t &pkt,
 	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
 	const ActorMap &actors, const vector<pair<string,string>> &conn_conds
 ) {
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
-	try { solve_new_pdu(vector(pkt, pkt + len), seen, assoc); } catch(...) {}
+	try {
+		solve_new_pdu(pkt, seen, assoc);
+	} catch(...) {} //FIXME needed? - testwith fail FSC
 
 	if (seen.size() > before_seen) {
 		for (const auto &[mac, actor] : seen) {
 			if (!reported.insert(mac).second) continue;
-			const bool is_ap = (*actor)[BK::AP].value_or(false);
+			const bool is_ap = actor->get_or(BK::AP, false);
 			log(LogLevel::INFO, "  + {} {} ssid='{}' ch={} signal={}dBm", is_ap ? "AP " : "STA", mac,
 				actor->get_or(SK::ssid, ""), actor->get_or(SK::channel, "?"), actor->get_or(SK::signal, "?"));
 		}
@@ -282,28 +288,25 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 	ActorMACMap seen;
 	AssocMap assoc;
 	set<HWAddress<6>> reported;
-	bool found = false;
-
 	const auto on_packet = [&](const uint8_t *pkt, const size_t len) -> optional<bool> {
-		if (process_single_packet(pkt, len, seen, assoc, reported, actors, conn_conds)) {
-			found = true;
-			return true;
-		}
-		return nullopt;
+		return process_single_packet(pkt, len, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
 	};
 
-	while(!found && !g_interrupted){
-		for(const uint8_t ch_num: channels){
-			if(found || g_interrupted) break;
-			log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
-			scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
-			//FIXME needed , should be in set_channel?
-			interruptible_sleep(chrono::milliseconds(200));
-			//TODO hardcoded timers
-			auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
-			if(holds_alternative<StopReason>(result) && get<StopReason>(result) == StopReason::Interrupted) break;
+	[&] {
+		while(!g_interrupted){
+			for(const uint8_t ch_num: channels){
+				if(g_interrupted) return;
+				log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
+				scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
+				//FIXME needed , should be in set_channel?
+				interruptible_sleep(chrono::milliseconds(200));
+				//TODO hardcoded timers
+				const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
+				if(!holds_alternative<StopReason>(result)) return;  // found
+				if(get<StopReason>(result) == StopReason::Interrupted) return;
+			}
 		}
-	}
+	}();
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }
 }

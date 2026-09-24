@@ -64,9 +64,10 @@ void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss) {
 
 		//const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 		//		RESULT_NAME + ")";
-		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_driver << " | "
-			   << e.client_driver << " | " << e.attacker_driver << " | " << e.hostapd_version << /*" | "
-			<< result_link*/
+		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME)
+				<< " | " << e.ap_driver
+				<< " | " << e.client_driver
+				<< " | " << e.attacker_driver << " | " << e.hostapd_version << /*" | " << result_link*/
 				"" << " |\n";
 	}
 }

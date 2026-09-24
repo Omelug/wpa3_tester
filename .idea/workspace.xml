@@ -136,12 +136,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes (useless type separtaion)&#10;f: yaml validator - not">
-      <change beforePath="$PROJECT_DIR$/.idea/cmake.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/cmake.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/wpa3_tester_CSA_external_client_filler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/wpa3_tester_CSA_external_client_filler.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: env WPA3_DEBUG_THROW for throw for error (still dont have pretty kontext for Tins internal errors)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunStatus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/default.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/default.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_versions.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/channel_switch/channel_switch_versions.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1180,7 +1183,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="rf: simplify raspberry drivers setup&#10;+: image-deploy to deploy kernel with customize drivers, fixed custom drivers if possible" />
     <MESSAGE value="+: drivers fixed by hash (if tags not possible)" />
     <MESSAGE value="+: random in bl0ck result tables" />
     <MESSAGE value="v: injection table aggregation" />
@@ -1205,7 +1207,8 @@
     <MESSAGE value="f: change_filler_hash" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="r: small changes (useless type separtaion)&#10;f: yaml validator - not" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: small changes (useless type separtaion)&#10;f: yaml validator - not" />
+    <MESSAGE value="+: env WPA3_DEBUG_THROW for throw for error (still dont have pretty kontext for Tins internal errors)" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: env WPA3_DEBUG_THROW for throw for error (still dont have pretty kontext for Tins internal errors)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1231,19 +1234,14 @@
           <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
-          <line>252</line>
-          <option name="timeStamp" value="133" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
-          <line>259</line>
-          <option name="timeStamp" value="135" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp</url>
           <line>44</line>
           <option name="timeStamp" value="142" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
+          <line>164</line>
+          <option name="timeStamp" value="143" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -147,6 +147,7 @@ void RunStatus::execute() {
 		}
 		write_done();
 	} catch (const exception& e) {
+		if(getenv("WPA3_DEBUG_THROW")) throw;
 		if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
 
 		const path error_file = run_folder() / ERROR_FILE;

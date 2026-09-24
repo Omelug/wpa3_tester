@@ -321,7 +321,7 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
 	string line;
 	while(getline(f, line)){
 		const auto tab_pos = line.find('\t');
-		const string hash = (tab_pos != string::npos) ? line.substr(tab_pos + 1) : line;
+		const string hash = tab_pos != string::npos ? line.substr(tab_pos + 1) : line;
 		if(!hash.starts_with("WPA*")) continue;
 		total++;
 		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, true) == 0)

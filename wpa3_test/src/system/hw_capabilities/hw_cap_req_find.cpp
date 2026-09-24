@@ -16,7 +16,7 @@ using namespace filesystem;
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
-bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorCMap &rules,
+bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorMap &rules,
 		const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions, ActorMap &currentAssignment) {
 	if(ruleIdx == ruleKeys.size()) return true;
 
@@ -41,7 +41,7 @@ bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t
 	return false;
 }
 
-void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorCMap &rules,
+void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorMap &rules,
 		const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions, ActorMap &current,
 		vector<ActorMap> &results) {
 	if(ruleIdx == ruleKeys.size()) {
@@ -63,7 +63,7 @@ void hw_capabilities::find_all_solutions(const vector<string> &ruleKeys, const s
 	}
 }
 
-vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, const vector<ActorPtr> &options) {
+vector<ActorMap> hw_capabilities::check_all_req_options(const ActorMap &rules, const vector<ActorPtr> &options) {
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
 	vector<ActorMap> results;
@@ -74,7 +74,7 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorCMap &rules, 
 }
 
 // TODO simplify
-string hw_capabilities::get_heuristic_err_msg(const ActorCMap &rules, const vector<ActorPtr> &options) {
+string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vector<ActorPtr> &options) {
 	if(options.size() < rules.size())
 		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
 	string msg;

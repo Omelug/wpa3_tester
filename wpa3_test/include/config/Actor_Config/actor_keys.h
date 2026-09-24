@@ -149,5 +149,5 @@ constexpr auto bk_keys() {
 using ParamFilter = std::pair<std::vector<SK>, std::vector<BK>>;
 
 class ActorPtr;
-using ActorCMap = std::unordered_map<std::string, ActorPtr>;
+using ActorMap = std::unordered_map<std::string, ActorPtr>;
 }

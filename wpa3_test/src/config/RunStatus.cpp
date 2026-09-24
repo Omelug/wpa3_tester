@@ -225,7 +225,7 @@ void RunStatus::stats_test() const {
 	}
 }
 
-void write_actors_csv(const ActorCMap &actors, ofstream &ofs) {
+void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 	for(const auto &[name, actor]: actors) {
 		ofs << actor->get_or(SK::source, "<none>") << "," << name << "," << actor->get_or(SK::iface, "<none>") << ","

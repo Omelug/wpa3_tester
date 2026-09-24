@@ -114,12 +114,17 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 
 void setup_rogue_ap(RunStatus &rs) {
 	if(rs.actor("rogue_ap")) {
+		//TODO zkusit
+		rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::mac)); //FIXME hardcoded "ap"
 		const auto conf = rs.config_path().parent_path() / "config" / "hostapd-mana.conf";
 		if(exists(conf)) { copy_f(conf, rs.run_folder() / "rogue_ap_hostapd_mana.conf"); }
+
 		program::start(rs, "rogue_ap");
 		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
 		log(LogLevel::INFO, "Rogue AP up");
-		if(rs.get_actor("rogue_ap")[BK::sniff_iface]) { rs.get_actor("rogue_ap")->up_sniff_iface(); }
+		//if(rs.get_actor("rogue_ap")[BK::sniff_iface]) {
+		//	rs.get_actor("rogue_ap")->up_sniff_iface();
+		//}
 	}
 }
 

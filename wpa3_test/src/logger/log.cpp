@@ -66,7 +66,7 @@ void log(const LogLevel level, const string &msg){
 	write_log_message(level, msg);
 }
 
-void log_actor_map(const string &name, const ActorCMap &m){
+void log_actor_map(const string &name, const ActorMap &m){
 	auto keys_view = m | views::keys;
 	const vector keys(keys_view.begin(), keys_view.end());
 	const string keys_str = keys.empty() ? "<empty>" : join(keys, ", ");

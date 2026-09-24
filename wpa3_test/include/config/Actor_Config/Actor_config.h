@@ -76,8 +76,8 @@ public:
 	nlohmann::json hw_info_caps_to_flat_json() const;
 	void caps_from_flat_json(const nlohmann::json &j);
 
-	static void print_ActorCMap(const std::string &title, const std::vector<ActorPtr> &actors);
-	static void print_ActorCMap(const std::string &title, const ActorCMap &actors);
+	static void print_ActorMap(const std::string &title, const std::vector<ActorPtr> &actors);
+	static void print_ActorMap(const std::string &title, const ActorMap &actors);
 
 	[[nodiscard]] bool is_WB() const;
 	[[nodiscard]] bool is_external_WB() const;

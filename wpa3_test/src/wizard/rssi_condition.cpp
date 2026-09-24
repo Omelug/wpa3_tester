@@ -320,7 +320,7 @@ void render_condition_status(FILE *pipe, const ExprPtr &expr, const RssiMatrix &
 	}
 }
 
-string actor_names_to_mac(const string &actor_names_cond, const vector<wpa3_tester::ActorCMap> &actors_maps) {
+string actor_names_to_mac(const string &actor_names_cond, const vector<wpa3_tester::ActorMap> &actors_maps) {
 	string result = actor_names_cond;
 
 	for(const auto &actors: actors_maps) {

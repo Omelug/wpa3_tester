@@ -76,10 +76,10 @@ protected:
 	std::filesystem::path _run_folder{};
 	std::filesystem::path _config_path{};
 	Run_Config _run_config{};
-	ActorCMap internal_mapping{};
-	ActorCMap external_wb_mapping{};
-	ActorCMap external_bb_mapping{};
-	ActorCMap simulation_mapping{};
+	ActorMap internal_mapping{};
+	ActorMap external_wb_mapping{};
+	ActorMap external_bb_mapping{};
+	ActorMap simulation_mapping{};
 	HwOptionCache _hw_option_cache{};
 
 	// help flags
@@ -103,7 +103,7 @@ public:
 
 	//bool only_stats = false;
 	//public only for testing
-	ActorCMap actors{};
+	ActorMap actors{};
 	ObserverMap observers{};
 	ProcessManager process_manager{};
 
@@ -145,12 +145,12 @@ private:
 	static std::vector<ActorPtr> external_wb_options();
 protected:
 	std::vector<uint8_t> get_external_bb_channels();
-	std::vector<ActorPtr> external_bb_options(const ActorCMap &ex_bb_actors = {});
+	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {});
 	bool process_single_packet(const uint8_t *pkt, size_t len, ActorMACMap &seen, AssocMap &assoc,
-			std::set<Tins::HWAddress<6>> &reported, const ActorCMap &actors,
+			std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
 			const std::vector<std::pair<std::string, std::string>> &conn_conds);
 	std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
-			const ActorCMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {});
+			const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();
@@ -168,7 +168,7 @@ public:
 	bool config_requirement();
 	static std::string get_filler_hash(const ActorMap &actor_map, nlohmann::json &test_cfg);
 	void change_filler_hash(const ActorMap &result);
-	ActorMap check_req_options(const ActorCMap &rules, const std::vector<ActorPtr> &options, bool print = true);
+	static ActorMap check_req_options(const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true);
 
 	void setup_test();
 	void run_test();

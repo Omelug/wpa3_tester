@@ -123,7 +123,6 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 	// re-validate prop_value to recover the specific failing field path
 	// embed $defs so internal $refs resolve
-	// external $refs may throw - caught below
 	struct collecting_err : error_handler {
 		struct entry { json::json_pointer ptr; string message; };
 		vector<entry> errors;
@@ -131,24 +130,19 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 			errors.push_back({p, m});
 		}
 	} ceh;
-	try {
-		json combined = *resolved;
-		if(root_schema_.contains("$defs")) combined["$defs"] = root_schema_["$defs"];
-		json_schema::json_validator temp_v(combined, YAMLValidator::make_loader(schema_dir_));
-		const json& copy = prop_value;
-		temp_v.validate(copy, ceh);
-	} catch(...) {} //TODO add test and comment if needed
+
+	json combined = *resolved;
+	if(root_schema_.contains("$defs")) combined["$defs"] = root_schema_["$defs"];
+	json_schema::json_validator tmp_validator(combined, YAMLValidator::make_loader(schema_dir_));
+	tmp_validator.validate(prop_value, ceh);
 
 	for(const auto &e : ceh.errors){
-		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) - handled below
+		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) — covered by allOf scan below
 		results.push_back("In '" + prop_name + "' at " + e.ptr.to_string() + ": " + e.message);
 	}
-	if(!results.empty()) return results;
 
-	// fallback: allOf errorMessage rules (user-facing messages for semantic constraints)
-	if(!resolved->contains("allOf")) return results;
-	for(const auto &item : (*resolved)["allOf"]){
-		try{
+	if(resolved->contains("allOf")){
+		for(const auto &item : (*resolved)["allOf"]){
 			json_schema::json_validator temp_v(item);
 			const json& copy = prop_value;
 			basic_error_handler eh;
@@ -164,7 +158,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 			if(!err_msg.empty())
 				results.push_back("Rule Violation: " + err_msg);
-		} catch(...) {} //TODO needed if yes -> test
+		}
 	}
 
 	return results;

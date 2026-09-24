@@ -4,8 +4,11 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version v 0.0.0.0:
+f: hash rev
+t: hash function
++: /home/nixos/CLionProjects/wpa3_tester/data/suite_data/DoS_soft/channel_switch/external/client/CSA_external_client_filler/all_actors/CSA_external_client_8d537979
 
-
+maccahnger fials
 t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 r: small TODO/ FIXME
 PDF:

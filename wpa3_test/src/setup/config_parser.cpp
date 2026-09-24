@@ -263,7 +263,9 @@ json RunStatus::config_validation(const path &config_path) {
 		const YAMLValidator validator(global_schema_path);
 		validator.validate(config_json, line_map, config_path.string());
 		return config_json;
-	} catch(const tester_error &) { throw; } catch(const domain_error &e) {
+	} catch(const tester_error &) {
+		throw;
+	} catch(const domain_error &e) {
 		throw config_err(string("Schema error: ") + e.what());
 	} catch(const invalid_argument &e) {
 		throw config_err(string("Error in config: ") + e.what());

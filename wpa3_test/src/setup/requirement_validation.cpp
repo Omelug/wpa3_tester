@@ -132,7 +132,7 @@ void cleanup_all_namespaces() {
 	log(LogLevel::INFO, "Cleanup complete.");
 }
 
-ActorCMap get_actors(const ActorCMap &actors, const string &source) {
+ActorMap get_actors(const ActorMap &actors, const string &source) {
 	unordered_map<string, ActorPtr> result;
 	for(auto &[name, cfg]: actors) {
 		auto it = cfg[SK::source];
@@ -177,8 +177,8 @@ bool RunStatus::config_requirement() {
 
 	//  external wb/bb separation
 	auto external_actors = get_actors(actors, "external");
-	ActorCMap external_wb_actors;
-	ActorCMap external_bb_actors;
+	ActorMap external_wb_actors;
+	ActorMap external_bb_actors;
 
 	for(const auto &[name, actor]: external_actors) {
 		if(actor->is_external_WB()) {
@@ -250,7 +250,7 @@ bool RunStatus::config_requirement() {
 	// SETUP ACTORS
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
 
-	auto setup_by_map = [&](ActorCMap &actor_map, const ActorMap &mapping) {
+	auto setup_by_map = [&](ActorMap &actor_map, const ActorMap &mapping) {
 		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name), this);
 	};
 	log(LogLevel::DEBUG, "Setup internal");
@@ -332,7 +332,7 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	_config_path = new_config_path;
 }
 
-ActorMap RunStatus::check_req_options(const ActorCMap &rules, const vector<ActorPtr> &options, const bool print) {
+ActorMap RunStatus::check_req_options(const ActorMap &rules, const vector<ActorPtr> &options, const bool print) {
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) {
 		ruleKeys.push_back(key);
@@ -340,8 +340,6 @@ ActorMap RunStatus::check_req_options(const ActorCMap &rules, const vector<Actor
 
 	ActorMap result;
 	if(unordered_set<size_t> usedOptions; hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result)) {
-		change_filler_hash(result); // if actor filler test
-
 		if(print) {
 			log(LogLevel::DEBUG, "Solved!");
 			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
@@ -349,8 +347,8 @@ ActorMap RunStatus::check_req_options(const ActorCMap &rules, const vector<Actor
 		return result;
 	}
 	if(print) {
-		Actor_config::print_ActorCMap("Actor rules", rules);
-		Actor_config::print_ActorCMap("Actor options", options);
+		Actor_config::print_ActorMap("Actor rules", rules);
+		Actor_config::print_ActorMap("Actor options", options);
 	}
 	throw req_err("Not found valid requirements: {}", hw_capabilities::get_heuristic_err_msg(rules, options));
 }

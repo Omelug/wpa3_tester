@@ -35,6 +35,7 @@ void RunStatus::setup_test() {
 		log(LogLevel::DEBUG, "setup function not set");
 	}
 
+	change_filler_hash(actors);
 	save_actor_interface_mapping();
 }
 }

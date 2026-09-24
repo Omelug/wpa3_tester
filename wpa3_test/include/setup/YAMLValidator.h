@@ -18,7 +18,7 @@ public:
 	void error(const nlohmann::json::json_pointer &ptr, const nlohmann::json &instance,
 			const std::string &message) override;
 
-	std::string get_summary() const {
+	[[nodiscard]] std::string get_summary() const {
 		std::string summary;
 		for(const auto &err: formatted_errors_) { summary += err + "\n"; }
 		return summary;
@@ -29,8 +29,8 @@ private:
 	const std::unordered_map<std::string, YAML::Mark> &line_map_;
 	std::filesystem::path schema_dir_;
 	std::vector<std::string> formatted_errors_;
-	std::string extract_custom_error(const nlohmann::json::json_pointer &ptr) const;
-	std::vector<std::string> extract_deep_errors(
+	[[nodiscard]] std::string extract_custom_error(const nlohmann::json::json_pointer &ptr) const;
+	[[nodiscard]] std::vector<std::string> extract_deep_errors(
 			const nlohmann::json::json_pointer &ptr, const nlohmann::json &instance, const std::string &message) const;
 };
 

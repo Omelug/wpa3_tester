@@ -204,8 +204,8 @@ void print_external_entities(const vector<EntityInfo> &entities) {
 		}
 	}
 
-	Actor_config::print_ActorCMap("Access points", aps);
-	Actor_config::print_ActorCMap("Stations:", stas);
+	Actor_config::print_ActorMap("Access points", aps);
+	Actor_config::print_ActorMap("Stations:", stas);
 
 	cout << "\n--- Associations (STA -> AP) ---\n";
 	bool any_assoc = false;

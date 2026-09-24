@@ -316,13 +316,13 @@ void Actor_config::caps_from_flat_json(const json &j){
 	}
 }
 
-void Actor_config::print_ActorCMap(const string &title, const vector<ActorPtr> &actors){
+void Actor_config::print_ActorMap(const string &title, const vector<ActorPtr> &actors){
 	cout << title << ":\n";
 	for(size_t i = 0; i < actors.size(); ++i) cout << "[" << i << "] " << actors[i]->to_str() << "\n";
 	cout << flush;
 }
 
-void Actor_config::print_ActorCMap(const string &title, const ActorCMap &actors){
+void Actor_config::print_ActorMap(const string &title, const ActorMap &actors){
 	cout << title << ":\n";
 	for(const auto &[key, actor_ptr]: actors){
 		const ActorPtr actor = actor_ptr;

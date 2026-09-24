@@ -206,7 +206,7 @@ vector<uint8_t> RunStatus::get_external_bb_channels(){
 	return all_channels;
 }
 
-vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
+vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
 	const vector<uint8_t> channels = get_external_bb_channels();
 	if(channels.empty()) return {};
 	const string iface = _config.at("scan_iface");
@@ -228,7 +228,7 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorCMap &ex_bb_actors){
 bool RunStatus::process_single_packet(
 	const uint8_t *pkt, const size_t len,
 	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
-	const ActorCMap &actors, const vector<pair<string,string>> &conn_conds
+	const ActorMap &actors, const vector<pair<string,string>> &conn_conds
 ) {
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
@@ -267,7 +267,7 @@ bool RunStatus::process_single_packet(
 }
 
 vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels,
-											  const ActorCMap &actors,
+											  const ActorMap &actors,
 											  const vector<pair<string,string>> &conn_conds
 ){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());

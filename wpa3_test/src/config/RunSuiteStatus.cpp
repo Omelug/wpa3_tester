@@ -325,7 +325,7 @@ void RunSuiteStatus::defined_by_actor_filler(
 	const json template_config = RunStatus::config_validation(src);
 
 	// get only internal actors
-	ActorCMap rules;
+	ActorMap rules;
 	for(const auto &[actor_name, actor_j]: template_config.at("actors").items()) {
 		if(!actor_j.contains("source") || actor_j.at("source").get<string>() != "internal") continue;
 		rules.emplace(actor_name, ActorPtr(make_shared<Actor_Config_internal>(actor_j)));
@@ -336,8 +336,8 @@ void RunSuiteStatus::defined_by_actor_filler(
 
 	const auto solutions = hw_capabilities::check_all_req_options(rules, *_hw_option_cache.internal_opts);
 	if(solutions.empty()) {
-		Actor_config::print_ActorCMap("Actor rules", rules);
-		Actor_config::print_ActorCMap("Actor options", *_hw_option_cache.internal_opts);
+		Actor_config::print_ActorMap("Actor rules", rules);
+		Actor_config::print_ActorMap("Actor options", *_hw_option_cache.internal_opts);
 		log(LogLevel::ERROR,
 				"actor_filler: no valid hardware assignments found, {}",
 				hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));

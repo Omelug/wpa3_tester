@@ -26,9 +26,7 @@ void RunStatus::setup_test() {
 	process_manager.init_logging(_run_folder);
 	set_log_file(tester_log());
 
-	const auto module_name = _config.at("attacker_module");
-
-	if(const auto run_it = attack_module_maps::setup_map.find(module_name);
+	if(const auto run_it = attack_module_maps::setup_map.find(_config.at("attacker_module"));
 			run_it != attack_module_maps::setup_map.end()) {
 		run_it->second(*this);
 	} else {

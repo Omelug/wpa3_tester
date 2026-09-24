@@ -73,103 +73,57 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorMap &rules, c
 	return results;
 }
 
-// TODO simplify
 string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vector<ActorPtr> &options) {
 	if(options.size() < rules.size())
 		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
 	string msg;
 	for(const auto &[actor_name, req_ptr]: rules) {
 		const Actor_config &req = *req_ptr;
-		bool any_match = false;
-		for(const auto &opt: options) {
-			if(req.matches(*opt)) {
-				any_match = true;
-				break;
-			}
-		}
-		if(any_match) continue;
+		if(ranges::any_of(options, [&](const auto &opt) { return req.matches(*opt); })) continue;
 		for(const auto k: sk_keys()) {
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
 			const auto &r = req[k];
-			if(!r.has_value()) continue;
+			if(!r) continue;
 			set<string> possible;
-			for(const auto &opt: options) {
-				const auto &o = (*opt)[k];
-				if(o.has_value()) possible.insert(*o);
-			}
+			for(const auto &opt: options) { const auto &o = (*opt)[k]; if(o) possible.insert(*o); }
 			if(possible.contains(*r)) continue;
-			const string kname{ sk_name(k) };
-			msg += kname;
-			msg += " ";
-			msg += *r;
-			msg += " is required by ";
-			msg += actor_name;
-			msg += ", possible ";
-			msg += kname;
-			msg += "s {";
-			msg += join(possible,",");
-			msg += "}; ";
+			msg += format("{0} {1} is required by {2}, possible {0}s {{{3}}}; ", sk_name(k), *r, actor_name, join(possible, ","));
 		}
 		for(const auto k: bk_keys()) {
 			const auto &r = req[k];
-			if(!r.has_value()) continue;
+			if(!r) continue;
 			set<string> possible;
-			for(const auto &opt: options) {
-				const auto &o = (*opt)[k];
-				if(o.has_value()) possible.insert(*o ? "true" : "false");
-			}
+			for(const auto &opt: options) { const auto &o = (*opt)[k]; if(o) possible.insert(*o ? "true" : "false"); }
 			const string req_val = *r ? "true" : "false";
 			if(possible.contains(req_val)) continue;
-			const string kname{ bk_name(k) };
-			msg += kname;
-			msg += " ";
-			msg += req_val;
-			msg += " is required by ";
-			msg += actor_name;
-			msg += ", possible ";
-			msg += kname;
-			msg += "s {";
-			msg += join(possible,",");
-			msg += "}; ";
+			msg += format("{0} {1} is required by {2}, possible {0}s {{{3}}}; ", bk_name(k), req_val, actor_name, join(possible, ","));
 		}
 	}
 	if(msg.empty()) {
 		// Frequency conflict: N actors need the same value but fewer than N options provide it
 		for(const auto k: sk_keys()) {
 			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
-			map<string, vector<string>> demand; // value -> actors requiring it
-			for(const auto &[name2, req_ptr]: rules) {
-				const auto &r = (*req_ptr)[k];
-				if(r.has_value()) demand[*r].push_back(name2);
-			}
+			map<string, vector<string>> demand;
+			for(const auto &[name, req_ptr]: rules) { const auto &r = (*req_ptr)[k]; if(r) demand[*r].push_back(name); }
 			for(const auto &[val, actors]: demand) {
 				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt) {
-					const auto &o = (*opt)[k];
-					return o.has_value() && *o == val;
+					const auto &o = (*opt)[k]; return o && *o == val;
 				}));
 				if(actors.size() <= supply) continue;
-				const string kname{ sk_name(k) };
-				msg += format("{} '{}' needed by {} actors (", kname, val, actors.size());
-				msg += join(actors, ", ");
-				msg += format(") but only {} option(s) provide it; ", supply);
+				msg += format("{} '{}' needed by {} actors ({}) but only {} option(s) provide it; ",
+					sk_name(k), val, actors.size(), join(actors, ", "), supply);
 			}
 		}
 		for(const auto k: bk_keys()) {
 			map<bool, vector<string>> demand;
-			for(const auto &[name2, req_ptr]: rules) {
-				const auto &r = (*req_ptr)[k];
-				if(r.has_value()) demand[*r].push_back(name2);
-			}
+			for(const auto &[name, req_ptr]: rules) { const auto &r = (*req_ptr)[k]; if(r) demand[*r].push_back(name); }
 			for(const auto &[val, actors]: demand) {
 				auto supply = static_cast<size_t>(ranges::count_if(options, [&](const auto &opt) {
-					const auto &o = (*opt)[k];
-					return o.has_value() && *o == val;
+					const auto &o = (*opt)[k]; return o && *o == val;
 				}));
 				if(actors.size() <= supply) continue;
-				const string kname{ bk_name(k) };
-				msg += format("{} '{}' needed by {} actors (", kname, val ? "true" : "false", actors.size());
-				msg += join(msg,", ");
-				msg += format(") but only {} option(s) provide it; ", supply);
+				msg += format("{} '{}' needed by {} actors ({}) but only {} option(s) provide it; ",
+					bk_name(k), val ? "true" : "false", actors.size(), join(actors, ", "), supply);
 			}
 		}
 		if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";

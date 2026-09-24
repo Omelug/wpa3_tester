@@ -137,16 +137,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="t: fixes, pkt_raw_t in more functions &#10;rch: pkt_raw_t -&gt; frame_raw_t (and change pkt/packet variables to )">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/suite/generic_dos_attacks_suite.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/suite/generic_dos_attacks_suite.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/RunSuiteStatus.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/RunSuiteStatus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/interrupt.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/deauth/deauth.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: g_interrupted - simplify usage">
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_req_find.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1192,7 +1185,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: cache only test suite subdirs" />
     <MESSAGE value="+: global variable to default fallbacks/ default config values" />
     <MESSAGE value="ch: interruption throw error  by default &#10;r: small_cahnges" />
     <MESSAGE value="chr: observers showcase real data with events" />
@@ -1217,7 +1209,8 @@
     <MESSAGE value="r: pkt_raw_t, scan_until_match loop" />
     <MESSAGE value="t: test_filler_hash" />
     <MESSAGE value="t: fixes, pkt_raw_t in more functions &#10;rch: pkt_raw_t -&gt; frame_raw_t (and change pkt/packet variables to )" />
-    <option name="LAST_COMMIT_MESSAGE" value="t: fixes, pkt_raw_t in more functions &#10;rch: pkt_raw_t -&gt; frame_raw_t (and change pkt/packet variables to )" />
+    <MESSAGE value="r: g_interrupted - simplify usage" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: g_interrupted - simplify usage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1258,18 +1251,13 @@
           <option name="timeStamp" value="146" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
-          <line>247</line>
-          <option name="timeStamp" value="147" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp</url>
           <line>411</line>
           <option name="timeStamp" value="149" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/setup/setup.cpp</url>
-          <line>37</line>
+          <line>35</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
       </breakpoints>

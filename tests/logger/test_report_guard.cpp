@@ -97,7 +97,7 @@ TEST_CASE("ReportGuard - optional<bool> nullopt -> 'N/A'") {
 		ReportGuard rg(fx.dir);
 		rg << optional<bool>{};
 	}
-	CHECK_EQ(fx.read_report(), "N/A");
+	CHECK_EQ(fx.read_report(), "-");
 }
 
 TEST_CASE("ReportGuard - path relativized to run_dir") {
@@ -124,7 +124,7 @@ TEST_CASE("ReportGuard - chaining preserves overloads") {
 		ReportGuard rg(fx.dir);
 		rg << string("val=") << true << string(" opt=") << optional<bool>{} << string(" path=") << (fx.dir / "x.txt");
 	}
-	CHECK_EQ(fx.read_report(), "val=yes opt=N/A path=x.txt");
+	CHECK_EQ(fx.read_report(), "val=yes opt=- path=x.txt");
 }
 
 TEST_CASE("ReportGuard - integer passthrough") {

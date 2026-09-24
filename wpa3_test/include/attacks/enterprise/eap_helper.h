@@ -56,7 +56,7 @@ bool do_auth(EAP_Att &eap_att);
 bool do_assoc(EAP_Att &eap_att);
 void send_eapol(const EAP_Att &eap_att, const std::vector<uint8_t> &eapol);
 
-std::vector<uint8_t> extract_eapol(const uint8_t *p, uint32_t caplen, const Tins::HWAddress<6> &our_mac);
+std::vector<uint8_t> extract_eapol(const frame_raw_t &p, const Tins::HWAddress<6> &our_mac);
 
 inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) {
 	return [&frame, opcode](const std::vector<uint8_t> &v) -> bool {
@@ -73,8 +73,8 @@ std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 	std::optional<std::vector<uint8_t>> result = std::nullopt;
 	(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
 			eap_att.timeout,
-			[&](const uint8_t *p, const uint32_t caplen) -> std::optional<bool> {
-				auto eapol = extract_eapol(p, caplen, eap_att.att_mac);
+			[&](const frame_raw_t &p) -> std::optional<bool> {
+				auto eapol = extract_eapol(p, eap_att.att_mac);
 				if(eapol.empty()) return std::nullopt;
 				if(is_eap_success(eapol)) {
 					result = std::vector<uint8_t>{}; //have to be empty vector

@@ -36,7 +36,7 @@ You can change some default paths/names before compilation in  [default.h](../..
 - *optionaly*: add entry to visualization into [headers](../../../wpa3_test/include/visual)
   and [sources](../../../wpa3_test/src/visual)
 
-DISCLAIMER: if you want parse packets, in project are libpcap nad libtins, libtins have some horrible behaviour.
+DISCLAIMER: if you want parse frames, in project are libpcap nad libtins, libtins have some horrible behaviour.
 Add parsing with libpcap first, libtins only for simplification what can be tested (libtins library can be helpful, but
 sometimes it is Trojan horse)
 

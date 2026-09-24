@@ -36,12 +36,12 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs) {
 	return result;
 }
 
-bool check_fcs_present(const vector<uint8_t> &packet) {
+bool check_fcs_present(const vector<uint8_t> &frame) {
 	ieee80211_radiotap_iterator it{};
 
 	if(ieee80211_radiotap_iterator_init(&it,
-			   reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(packet.data())),
-			   static_cast<int>(packet.size()),
+			   reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(frame.data())),
+			   static_cast<int>(frame.size()),
 			   nullptr) != 0)
 		return false;
 

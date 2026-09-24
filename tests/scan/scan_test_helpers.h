@@ -8,7 +8,7 @@ public:
 	void set_config(const nlohmann::json &j) { _config = j; }
 	using RunStatus::external_bb_options;
 	using RunStatus::get_external_bb_channels;
-	using RunStatus::process_single_packet;
+	using RunStatus::process_single_pdu;
 	using RunStatus::scan_until_match;
 };
 }

@@ -22,7 +22,7 @@ struct CookieStore {
 	std::atomic<bool> stop{ false };
 };
 
-std::optional<ACMCookie> parse_acm_response(const std::vector<uint8_t> &packet);
+std::optional<ACMCookie> parse_acm_response(const std::vector<uint8_t> &frame);
 
 void capture_cookies(const std::string &sniff_iface, const Tins::HWAddress<6> &ap_mac, CookieStore &store);
 
@@ -30,7 +30,7 @@ std::pair<ACMCookie, int> trigger_acm(const std::string &iface, const std::strin
 		const Tins::HWAddress<6> &ap_mac, int acm_pause_millisec, int trigger_count, const sae_helper::SAEPair &sae_params);
 void burst_with_cookies(const std::string &iface, const std::string &sta_mac, const Tins::HWAddress<6> &ap_mac,
 		CookieStore &store, int attack_time_sec, const sae_helper::SAEPair &sae_params, size_t burst_size,
-		size_t packets_per_second_limit, int cookie_wait_ms);
+		size_t frames_per_second_limit, int cookie_wait_ms);
 void run_attack(RunStatus &rs);
 void stats_attack(const RunStatus &rs);
 }

@@ -122,9 +122,9 @@ InjectionTestResult hw_capabilities::test_packet_injection(
 	const function<bool(const vector<uint8_t> &)> &test_func,
 	const string &name, const string &msgfail, const Channel &ch
 ){
-	const auto packets = inject_and_capture(sout, sin, pdu, ch, 1);
-	if(packets.empty()) return {name, NOCAPTURE, "no capture"};
-	if(!ranges::all_of(packets, test_func)) return {name, FAIL, msgfail};
+	const auto frames = inject_and_capture(sout, sin, pdu, ch, 1);
+	if(frames.empty()) return {name, NOCAPTURE, "no capture"};
+	if(!ranges::all_of(frames, test_func)) return {name, FAIL, msgfail};
 	return {name, PASSED};
 }
 

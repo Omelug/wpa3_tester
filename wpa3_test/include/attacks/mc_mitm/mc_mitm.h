@@ -88,7 +88,7 @@ public:
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 
 	// print helpers
-	static std::string frame_to_str(const Tins::Dot11 &pkt);
+	static std::string frame_to_str(const Tins::Dot11 &frame);
 private:
 	static void print_rx(
 			LogLevel level, const std::string &prefix, const Tins::Dot11 &frame, const std::string &suffix = "");

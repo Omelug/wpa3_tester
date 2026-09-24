@@ -58,7 +58,7 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 	const string band = att_cfg.at("adapter_band").get<string>();
 	const string attack_type = att_cfg.at("attack_type").get<string>();
 	const int ch_5 = att_cfg.at("channel_5ghz").get<int>();
-	const int pps = att_cfg.at("packets_per_second_limit").get<int>();
+	const int pps = att_cfg.at("frames_per_second_limit").get<int>();
 	const int burst = att_cfg.at("burst_size_optimal").get<int>();
 	const double gap = att_cfg.at("inter_packet_gap").get<double>();
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
@@ -81,7 +81,7 @@ static void write_run_config(const string &config_path, const sae_helper::SAEPai
 	  << "  " << att_iface << ":\n"
 	  << "    band: \"" << band << "\"\n"
 	  << "    angriff: \"" << attack_type << "\"\n\n"
-	  << "packets_per_second_limit: " << pps << "\n"
+	  << "frames_per_second_limit: " << pps << "\n"
 	  << "burst_size_optimal: " << burst << "\n"
 	  << "inter_packet_gap: " << gap << "\n"
 	  << "experiment_duration: " << duration << "\n"

@@ -35,4 +35,4 @@ attack_config:
   attack_time_sec: 40
   regeneration_time_sec: 10
   burst_size: 512
-  packets_per_second_limit: 50
+  frames_per_second_limit: 50

@@ -22,9 +22,9 @@ namespace wpa3_tester::cookie_guzzler {
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
 		const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
-		const size_t packets_per_second_limit) {
+		const size_t frames_per_second_limit) {
 	PacketSender sender(iface_name);
-	dos_helpers::timed_burst(sender, attack_time, burst_size, packets_per_second_limit, [&]() -> optional<RadioTap> {
+	dos_helpers::timed_burst(sender, attack_time, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
 		// get cookie_guzzler frame
 		return sae_helper::make_sae_commit(ap_mac, firmware::get_random_ath_masker_mac(att_mac), sae_params);
 	});
@@ -52,7 +52,7 @@ void run_attack(RunStatus &rs) {
 				sae_params.value(),
 				attacker.get(SK::mac),
 				att_cfg.at("burst_size").get<size_t>(),
-				att_cfg.at("packets_per_second_limit").get<size_t>());
+				att_cfg.at("frames_per_second_limit").get<size_t>());
 	} else {
 		throw run_err("SAE Commit capture failed");
 	}

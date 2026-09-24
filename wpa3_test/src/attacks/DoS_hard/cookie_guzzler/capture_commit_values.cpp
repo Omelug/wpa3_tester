@@ -37,17 +37,17 @@ optional<sae_helper::SAEPair> capture_sae_commit(
 	auto result = components::poll_sniffer<sae_helper::SAEPair>(
 			handle,
 			milliseconds(timeout_sec * 1000),
-			[](const uint8_t *packet, uint32_t caplen) -> optional<sae_helper::SAEPair> {
-				if(caplen < 10) {
-					log(LogLevel::DEBUG, "Packet too short: {}", caplen);
+			[](const frame_raw_t &frame) -> optional<sae_helper::SAEPair> {
+				if(frame.size() < 10) {
+					log(LogLevel::DEBUG, "PDU too short: {}", frame.size());
 					return nullopt;
 				}
 				//tODO descripbe
-				log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", packet[0], packet[1], packet[2], packet[3]);
+				log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", frame[0], frame[1], frame[2], frame[3]);
 
-				if(auto frame = sae_helper::parse_sae_commit({ packet, packet + caplen })) {
-					log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", frame->scalar.size());
-					return frame;
+				if(auto f = sae_helper::parse_sae_commit(frame)) {
+					log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", f->scalar.size());
+					return f;
 				}
 				return nullopt;
 			},

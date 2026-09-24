@@ -71,7 +71,7 @@ optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t> &eapol) {
 	EapPwdFrame f;
 	f.eap_id = eapol[EAPOL_HDR + 1];
 	const uint8_t exch = eapol[PWD_EXCH_OFF];
-	f.opcode = static_cast<eap::PwdOpcode>(exch & 0x3f);
+	f.opcode = static_cast<PwdOpcode>(exch & 0x3f);
 	const bool L_bit = exch >> 7 & 1;
 
 	const size_t data_start = L_bit ? PWD_DATA_OFF + 2 : PWD_DATA_OFF;
@@ -214,8 +214,8 @@ bool do_auth(EAP_Att &eap_att) {
 		const auto start_time = steady_clock::now();
 		const auto r = components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
 				eap_att.timeout,
-				[&](const u_char *p, const uint32_t caplen) -> optional<bool> {
-					const auto f = sae_helper::parse_auth_frame(p, caplen);
+				[&](const frame_raw_t &p) -> optional<bool> {
+					const auto f = sae_helper::parse_auth_frame(p);
 					if(!f || f->addr1 != eap_att.att_mac || f->seq != 2) return nullopt;
 					log(LogLevel::DEBUG,
 							"Auth response: algo={} seq={} status={}",
@@ -274,8 +274,8 @@ bool do_assoc(EAP_Att &eap_att) {
 		optional<bool> result;
 		const auto start_time = steady_clock::now();
 		const auto r = components::poll_sniffer<bool>(
-				handle, eap_att.timeout, [&](const u_char *p, const uint32_t caplen) -> optional<bool> {
-					auto [pdu, raw] = MonitorSocket::parse_frame(p, caplen);
+				handle, eap_att.timeout, [&](const frame_raw_t &p) -> optional<bool> {
+					auto [pdu, raw] = MonitorSocket::parse_frame(p);
 					if(!pdu) return nullopt;
 					const auto *resp = pdu->find_pdu<Dot11AssocResponse>();
 					if(!resp || resp->addr1() != eap_att.att_mac) return nullopt;
@@ -318,18 +318,18 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
 }
 
 
-vector<uint8_t> extract_eapol(const uint8_t *p, const uint32_t caplen, const HWAddress<6> &our_mac) {
-	if(caplen < 4) return {};
+vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac) {
+	if(p.size() < 4) return {};
 	const uint16_t rt_len = p[2] | static_cast<uint16_t>(p[3]) << 8;
 
 	// FC byte 0: bits 3-2 = type, must be 0b10 (data); bit 7 = QoS subtype flag
-	if(caplen <= rt_len + 1u) return {};
+	if(p.size() <= rt_len + 1u) return {};
 	const uint8_t fc0 = p[rt_len];
 	if((fc0 & 0x0c) != 0x08) return {}; // filter out data frames
 
 	// addr1 = FC(2) + Duration(2) = offset 4 inside dot11 header
-	if(caplen < rt_len + 10u) return {};
-	const HWAddress<6> addr1(p + rt_len + 4);
+	if(p.size() < rt_len + 10u) return {};
+	const HWAddress<6> addr1(p.data() + rt_len + 4);
 	if(addr1 != our_mac && addr1 != HWAddress<6>::broadcast) return {};
 
 	// QoS Data (subtype bit 7 set) adds 2-byte QoS Control field
@@ -337,17 +337,17 @@ vector<uint8_t> extract_eapol(const uint8_t *p, const uint32_t caplen, const HWA
 
 	// LLC+SNAP: AA AA 03 | OUI(3) | EtherType(2) = 8 bytes total
 	const size_t llc_off = rt_len + dot11_hdr;
-	if(caplen < llc_off + 8u) return {};
+	if(p.size() < llc_off + 8u) return {};
 	if(p[llc_off] != 0xAA || p[llc_off + 1] != 0xAA || p[llc_off + 2] != 0x03) return {};
 	if(p[llc_off + 6] != 0x88 || p[llc_off + 7] != 0x8e) return {};
 
 	// EAPOL: version(1) + type(1) + length(2) + body; use length field to trim
 	const size_t eapol_off = llc_off + 8;
-	if(caplen < eapol_off + 4u) return {};
+	if(p.size() < eapol_off + 4u) return {};
 	const uint16_t body_len = (static_cast<uint16_t>(p[eapol_off + 2]) << 8) | p[eapol_off + 3];
 	const size_t eapol_end = eapol_off + 4 + body_len;
-	if(eapol_end > caplen) return {};
+	if(eapol_end > p.size()) return {};
 
-	return { p + eapol_off, p + eapol_end };
+	return { p.begin() + eapol_off, p.begin() + eapol_end };
 }
 }

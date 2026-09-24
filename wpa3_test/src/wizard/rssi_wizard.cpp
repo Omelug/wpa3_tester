@@ -172,10 +172,10 @@ static void transmit_probe(const WifiSender &sender, const string &mac_str, bool
 
 // ---- RSSI extraction ----
 
-static optional<int8_t> extract_rssi(const uint8_t *packet, const uint32_t caplen) {
+static optional<int8_t> extract_rssi(const frame_raw_t &frame) {
 	ieee80211_radiotap_iterator iter{};
-	auto *hdr = reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(packet));
-	if(ieee80211_radiotap_iterator_init(&iter, hdr, static_cast<int>(caplen), nullptr) != 0) return nullopt;
+	auto *hdr = reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(frame.data()));
+	if(ieee80211_radiotap_iterator_init(&iter, hdr, static_cast<int>(frame.size()), nullptr) != 0) return nullopt;
 	while(ieee80211_radiotap_iterator_next(&iter) == 0) {
 		if(iter.is_radiotap_ns && iter.this_arg_index == IEEE80211_RADIOTAP_DBM_ANTSIGNAL && iter.this_arg)
 			return *reinterpret_cast<const int8_t *>(iter.this_arg);
@@ -232,17 +232,17 @@ class PcapSniffer {
 
 		while(running_.load(memory_order_relaxed)) {
 			pcap_pkthdr *hdr;
-			const uint8_t *pkt;
-			const int res = pcap_next_ex(handle_, &hdr, &pkt);
+			const uint8_t *frame;
+			const int res = pcap_next_ex(handle_, &hdr, &frame);
 			if(res == -2) break;
 			if(res <= 0) {
-				interruptible_sleep(chrono::milliseconds(200));
+				interruptible_sleep(chrono::milliseconds(200)); //FIXME hardcoded
 				continue;
 			}
-			const optional<int8_t> rssi = extract_rssi(pkt, hdr->caplen);
-			const auto rlen = static_cast<uint16_t>(pkt[2] | (pkt[3] << 8));
+			const optional<int8_t> rssi = extract_rssi(frame_raw_t(frame, frame + hdr->caplen));
+			const auto rlen = static_cast<uint16_t>(frame[2] | (frame[3] << 8));
 			if(hdr->caplen >= static_cast<uint32_t>(rlen) + 16 && rssi.has_value()) {
-				cache_->update(format_mac(pkt + rlen + 10), rx_iface_, rssi.value());
+				cache_->update(format_mac(frame + rlen + 10), rx_iface_, rssi.value());
 			}
 		}
 		pcap_close(handle_);
@@ -391,7 +391,7 @@ static RssiMatrix collect_rssi(const NetworkSetup &setup) {
 		interruptible_sleep(chrono::milliseconds(30)); //to bypass transmit noise
 	}
 
-	interruptible_sleep(chrono::milliseconds(50)); // Allow time for packet reception
+	interruptible_sleep(chrono::milliseconds(50)); // Allow time for frame reception
 
 	RssiMatrix m;
 	for(const auto &src: setup.adapters) {

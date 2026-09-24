@@ -3,6 +3,8 @@
 #include <tins/tins.h>
 #include <vector>
 
+#include "config/RunStatus.h"
+
 namespace wpa3_tester::sae_helper {
 std::string bytes_to_hex(const std::vector<uint8_t> &bytes);
 std::string bytes_to_hex_plain(const std::vector<uint8_t> &bytes);
@@ -45,8 +47,8 @@ struct AuthFrame {
 	uint16_t status{};
 };
 
-std::optional<AuthFrame> parse_auth_frame(const uint8_t *p, uint32_t caplen);
-std::optional<SAEPair> parse_sae_commit(const std::vector<uint8_t> &frame_rt);
+std::optional<AuthFrame> parse_auth_frame(const frame_raw_t &p);
+std::optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt);
 Tins::RadioTap make_sae_commit(
 		const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, const SAEPair &sae_params);
 }

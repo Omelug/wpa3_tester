@@ -86,9 +86,9 @@ void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_se
 	log(LogLevel::INFO, "Starting station scan for AP {} (timeout: {}s)", scan_ap.bssid, timeout_sec);
 
 	components::poll_sniffer<monostate>(sniffer.get_pcap_handle(), seconds(timeout_sec),
-		[&](const uint8_t *pkt, const uint32_t caplen) ->optional<monostate>{
+		[&](const frame_raw_t &frame) ->optional<monostate>{
 			try{
-				RadioTap pdu(pkt, caplen);
+				RadioTap pdu(frame.data(), frame.size());
 				station_frame_parse(pdu, scan_ap);
 				writer.write(pdu);
 			} catch(const exception &e){

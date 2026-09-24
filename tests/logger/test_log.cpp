@@ -43,7 +43,7 @@ TEST_CASE("log - set_log_file writes messages to file") {
 }
 
 TEST_CASE("log - log_actor_map prints name and keys") {
-	wpa3_tester::ActorCMap m;
+	wpa3_tester::ActorMap m;
 	m["alpha"] = wpa3_tester::ActorPtr{};
 	m["beta"] = wpa3_tester::ActorPtr{};
 

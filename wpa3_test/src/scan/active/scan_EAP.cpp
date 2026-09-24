@@ -37,7 +37,7 @@ string extract_identity(const vector<uint8_t> &payload) {
 	return { payload.begin() + 5, payload.end() };
 }
 
-EAP_Info parse_eap_packet(const RawPDU &raw) {
+EAP_Info parse_eap_frame(const RawPDU &raw) {
 	const auto &payload = raw.payload();
 	EAP_Info info;
 
@@ -94,7 +94,7 @@ static optional<monostate> handle_eap_pdu(
 
 	const HWAddress<6> client_mac = (dot11_data->addr1() == target_ap_mac) ? dot11_data->addr2() : dot11_data->addr1();
 
-	const auto [code, identity, method, type_code] = parse_eap_packet(*raw);
+	const auto [code, identity, method, type_code] = parse_eap_frame(*raw);
 
 	auto &session = sessions[client_mac];
 	session.last_seen = steady_clock::now();

@@ -123,13 +123,13 @@ TEST_CASE("masked_mac_filter_5 - two actors joined with or") {
 	CHECK(f.contains(" or "));
 }
 
-// ---- times_packet_sizes_from_csv ----
+// ---- times_frame_sizes_from_csv ----
 
-TEST_CASE("times_packet_sizes_from_csv - two valid rows") {
+TEST_CASE("times_frame_sizes_from_csv - two valid rows") {
 	TempCsv tmp("104|1788004476.874694487|1602\n"
 				"105|1788004476.874822189|1650\n");
 
-	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_pdu_sizes_from_csv(tmp.p);
 
 	CHECK_EQ(times.size(), 2u);
 	CHECK_EQ(sizes.size(), 2u);
@@ -138,20 +138,20 @@ TEST_CASE("times_packet_sizes_from_csv - two valid rows") {
 	CHECK_LT(times[0], times[1]);
 }
 
-TEST_CASE("times_packet_sizes_from_csv - invalid timestamp rows are skipped") {
+TEST_CASE("times_frame_sizes_from_csv - invalid timestamp rows are skipped") {
 	TempCsv tmp("1|INVALID_TIME|100\n"
 				"2|2026-02-21T13:12:46.433775945+0100|200\n");
 
-	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_pdu_sizes_from_csv(tmp.p);
 
 	CHECK_EQ(sizes.size(), 1u);
 	CHECK_EQ(sizes[0], doctest::Approx(200.0));
 }
 
-TEST_CASE("times_packet_sizes_from_csv - empty file returns empty vectors") {
+TEST_CASE("times_frame_sizes_from_csv - empty file returns empty vectors") {
 	TempCsv tmp("");
 
-	auto [times, sizes] = times_packet_sizes_from_csv(tmp.p);
+	auto [times, sizes] = times_pdu_sizes_from_csv(tmp.p);
 
 	CHECK(times.empty());
 	CHECK(sizes.empty());

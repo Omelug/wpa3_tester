@@ -9,7 +9,7 @@ namespace wpa3_tester::observer::tshark {
 std::string or_filter(const std::vector<std::string> &mac_filters);
 std::string masked_mac_filter_5(const RunStatus &rs);
 std::string all_actors_mac_filter(const RunStatus &rs, bool broadcast = false);
-std::pair<std::vector<LogTimePoint>, std::vector<double>> times_packet_sizes_from_csv(
+std::pair<std::vector<LogTimePoint>, std::vector<double>> times_pdu_sizes_from_csv(
 		const std::filesystem::path &csv_path);
 LogTimePoint get_pcap_start_time(const std::string &pcap_path);
 

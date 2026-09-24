@@ -109,10 +109,10 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 	}
 }
 
-void RunStatus::solve_new_pdu(const pkt_raw_t &pkt, ActorMACMap &seen, AssocMap &assoc){
+void RunStatus::solve_new_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc){
 	RadioTap rt;
 	try {
-		rt = RadioTap(pkt.data(), pkt.size());
+		rt = RadioTap(frame.data(), frame.size());
 	} catch(...){ return; } //FIXME ignore  or check it with fskfail
 	solve_new_pdu(rt, seen, assoc);
 }
@@ -162,10 +162,10 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 		scanner->set_channel(ch);
 		interruptible_sleep(chrono::milliseconds(200)); //TODO needed -test?
 
-		const auto result = components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
-											[&](const pkt_raw_t &pkt) ->optional<monostate>{
+		const auto result = components::poll_sniffer<monostate>(handle, chrono::seconds(channel_sec),
+											[&](const frame_raw_t &frame) ->optional<monostate>{
 												try {
-													solve_new_pdu(pkt, seen, assoc);
+													solve_new_pdu(frame, seen, assoc);
 												} catch(...){}//TODO needed?
 												return nullopt;
 											});
@@ -229,15 +229,15 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
 	return entities | views::transform([](const EntityInfo &e){ return e.first; }) | ranges::to<vector<ActorPtr>>();
 }
 
-bool RunStatus::process_single_packet(
-	const pkt_raw_t &pkt,
+bool RunStatus::process_single_pdu(
+	const frame_raw_t &frame,
 	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
 	const ActorMap &actors, const vector<pair<string,string>> &conn_conds
 ) {
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
 	try {
-		solve_new_pdu(pkt, seen, assoc);
+		solve_new_pdu(frame, seen, assoc);
 	} catch(...) {} //FIXME needed? - testwith fail FSC
 
 	if (seen.size() > before_seen) {
@@ -288,8 +288,8 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 	ActorMACMap seen;
 	AssocMap assoc;
 	set<HWAddress<6>> reported;
-	const auto on_packet = [&](const pkt_raw_t &pkt) -> optional<bool> {
-		return process_single_packet(pkt, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
+	const auto on_frame = [&](const frame_raw_t &frame) -> optional<bool> {
+		return process_single_pdu(frame, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
 	};
 
 	for(const uint8_t ch_num: channels){
@@ -300,7 +300,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 		scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
 		//FIXME needed , should be in set_channel?
 		interruptible_sleep(chrono::milliseconds(200)); //TODO hardcoded timers
-		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
+		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_frame);
 		if(!holds_alternative<StopReason>(result)) break;  // found
 		if(get<StopReason>(result) == StopReason::Interrupted) break;
 	}

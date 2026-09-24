@@ -29,7 +29,7 @@ properties:
       cookie_wait_ms:
         type: integer
         minimum: 0
-      packets_per_second_limit:
+      frames_per_second_limit:
         type: integer
         minimum: 1
 

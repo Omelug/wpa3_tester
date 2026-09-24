@@ -60,7 +60,7 @@ typedef std::string pattern_t;
 typedef std::string label_t;
 typedef std::string color_t;
 
-typedef std::vector<uint8_t> pkt_raw_t;
+typedef std::vector<uint8_t> frame_raw_t;
 
 enum EVENT_SET { DISCONNECT, CONNECT, TESTER_TAGS };
 
@@ -115,7 +115,7 @@ public:
 	void clean();
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen, AssocMap &assoc);
-	static void solve_new_pdu(const std::vector<uint8_t> &pkt, ActorMACMap &seen, AssocMap &assoc);
+	static void solve_new_pdu(const std::vector<uint8_t> &frame, ActorMACMap &seen, AssocMap &assoc);
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string, std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
@@ -148,7 +148,7 @@ private:
 protected: // external BB
 	std::vector<uint8_t> get_external_bb_channels();
 	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {});
-	static bool process_single_packet(const pkt_raw_t &pkt, ActorMACMap &seen, AssocMap &assoc,
+	static bool process_single_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc,
 			std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
 			const std::vector<std::pair<std::string, std::string>> &conn_conds);
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,

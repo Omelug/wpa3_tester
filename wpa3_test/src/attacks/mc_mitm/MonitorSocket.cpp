@@ -141,13 +141,13 @@ void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch) co
 	pcap_inject(sniffer_->get_pcap_handle(), out.data(), out.size());
 }
 
-MonitorSocket::RecvResult MonitorSocket::parse_frame(const u_char *frame, const uint32_t caplen) {
+MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 	try {
-		const RadioTap rt(frame, caplen);
+		const RadioTap rt(frame.data(), frame.size());
 		uint32_t strip = 0;
 		if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS)) strip = 4;
-		auto pdu = make_unique<RadioTap>(frame, caplen - strip);
-		return { std::move(pdu), vector(frame, frame + caplen - strip) };
+		auto pdu = make_unique<RadioTap>(frame.data(), frame.size() - strip);
+		return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 	} catch(...) { return {}; }
 }
 
@@ -160,11 +160,11 @@ MonitorSocket::RecvResult MonitorSocket::recv() {
 	const u_char *frame;
 	const int ret = pcap_next_ex(sniffer_->get_pcap_handle(), &header, &frame);
 	if(ret <= 0) return {};
-	return parse_frame(frame, header->caplen);
+	return parse_frame(frame_raw_t(frame, frame + header->caplen));
 }
 
 void MonitorSocket::recv_loop(
-		const chrono::steady_clock::time_point deadline, const function<bool(RecvResult)> &on_packet) {
+		const chrono::steady_clock::time_point deadline, const function<bool(RecvResult)> &on_frame) {
 	if(rx_ch_) {
 		while(true) {
 			const int rem = static_cast<int>(
@@ -175,7 +175,7 @@ void MonitorSocket::recv_loop(
 			if(avail == SSH_ERROR) break;
 			fill_rx_buf();						// single fill per poll cycle
 			while(auto r = parse_remote_recv()) // drain without re-reading SSH channel
-				if(on_packet(std::move(r))) return;
+				if(on_frame(std::move(r))) return;
 		}
 		return;
 	}
@@ -185,7 +185,7 @@ void MonitorSocket::recv_loop(
 		const int rem = static_cast<int>(
 				chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
 		if(rem <= 0 || poll(&pfd, 1, rem) <= 0) break;
-		if(auto r = recv(); r && on_packet(std::move(r))) break;
+		if(auto r = recv(); r && on_frame(std::move(r))) break;
 	}
 }
 
@@ -224,9 +224,9 @@ MonitorSocket::RecvResult MonitorSocket::parse_remote_recv() {
 	uint32_t caplen;
 	memcpy(&caplen, buf + 8, 4); // both sides LE (OpenWrt + x86)
 	if(avail < 16 + caplen) return {};
-	auto r = parse_frame(buf + 16, caplen);
+	auto r = parse_frame(frame_raw_t(buf + 16, buf + 16 + caplen));
 	rx_head_ += 16 + caplen;
-	// Compact once head grows large - one memcpy beats per-packet erase
+	// compact once head grows large - one memcpy beats per-packet erase
 	if(rx_head_ > 65536) {
 		rx_buf_.erase(rx_buf_.begin(), rx_buf_.begin() + static_cast<ptrdiff_t>(rx_head_));
 		rx_head_ = 0;

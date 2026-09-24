@@ -20,7 +20,7 @@ struct HtmlFixture {
 	string read_index() const {
 		ifstream f(dir / "index.html");
 		string s{ istreambuf_iterator(f), istreambuf_iterator<char>() };
-		erase_if(s, [](char c){ return c == '\t' || c == '\n'; });
+		erase_if(s, [](const char c){ return c == '\t' || c == '\n'; });
 		return s;
 	}
 	~HtmlFixture() { remove_all(dir); }
@@ -86,13 +86,13 @@ TEST_CASE("HtmlGuard - optional<bool> false -> 'no'") {
 	CHECK_EQ(fx.read_index(), "no");
 }
 
-TEST_CASE("HtmlGuard - optional<bool> nullopt -> 'N/A'") {
+TEST_CASE("HtmlGuard - optional<bool> nullopt -> '-'") {
 	HtmlFixture fx("hg_opt_null");
 	{
 		HtmlGuard hg(fx.dir);
 		hg << optional<bool>{};
 	}
-	CHECK_EQ(fx.read_index(), "N/A");
+	CHECK_EQ(fx.read_index(), "-");
 }
 
 TEST_CASE("HtmlGuard - path relativized to page_dir") {
@@ -119,7 +119,7 @@ TEST_CASE("HtmlGuard - chaining preserves overloads") {
 		HtmlGuard hg(fx.dir);
 		hg << string("val=") << true << string(" opt=") << optional<bool>{} << string(" path=") << (fx.dir / "x.html");
 	}
-	CHECK_EQ(fx.read_index(), "val=yes opt=N/A path=x.html");
+	CHECK_EQ(fx.read_index(), "val=yes opt=- path=x.html");
 }
 
 TEST_CASE("HtmlGuard - integer passthrough") {

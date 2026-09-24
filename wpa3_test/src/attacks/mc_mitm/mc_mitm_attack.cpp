@@ -101,7 +101,7 @@ void stats(const RunStatus &rs) {
 			{
 					{ "rogue_client", "wlan.tag.number == 37", "CSA", "black" },
 					{ "rogue_client", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
-					{ "rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_packet", "pink" },
+					{ "rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_frame", "pink" },
 					{ "rogue_client",
 							"wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005",
 							"PROBE",

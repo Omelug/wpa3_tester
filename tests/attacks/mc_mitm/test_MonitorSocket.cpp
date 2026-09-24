@@ -17,8 +17,8 @@ static constexpr auto PCAP_MULTI = "test_data/monitor_socket/radiotap_multi.pcap
 TEST_SUITE("MonitorSocket::parse_frame") {
 
 	TEST_CASE("valid RadioTap frame (no FCS) returns non-null PDU") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-		auto result = MonitorSocket::parse_frame(raw.data(), hdr.caplen);
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
+		auto result = MonitorSocket::parse_frame(raw);
 
 		REQUIRE_UNARY(static_cast<bool>(result));
 		REQUIRE_NE(result.pdu, nullptr);
@@ -26,38 +26,38 @@ TEST_SUITE("MonitorSocket::parse_frame") {
 	}
 
 	TEST_CASE("raw bytes match input size when no FCS present") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-		auto result = MonitorSocket::parse_frame(raw.data(), hdr.caplen);
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
+		auto result = MonitorSocket::parse_frame(raw);
 
 		CHECK_EQ(result.raw.size(), raw.size());
 	}
 
 	TEST_CASE("FCS strip: raw output is 4 bytes shorter than input") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_WITH_FCS);
-		auto result = MonitorSocket::parse_frame(raw.data(), hdr.caplen);
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_WITH_FCS);
+		auto result = MonitorSocket::parse_frame(raw);
 
 		REQUIRE_NE(result.pdu, nullptr);
 		CHECK_EQ(result.raw.size(), raw.size() - 4);
 	}
 
 	TEST_CASE("parsed PDU contains a RadioTap layer") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-		auto result = MonitorSocket::parse_frame(raw.data(), hdr.caplen);
+		auto raw = test_helpers::read_one_frame(PCAP_NO_FCS);
+		auto result = MonitorSocket::parse_frame(raw);
 
 		REQUIRE_NE(result.pdu, nullptr);
 		CHECK_NE(result.pdu->find_pdu<RadioTap>(), nullptr);
 	}
 
 	TEST_CASE("garbage bytes return empty result") {
-		const vector<uint8_t> garbage = { 0x00, 0xFF, 0xAA, 0x42 };
-		auto result = MonitorSocket::parse_frame(garbage.data(), static_cast<uint32_t>(garbage.size()));
+		const frame_raw_t garbage = { 0x00, 0xFF, 0xAA, 0x42 };
+		auto result = MonitorSocket::parse_frame(garbage);
 		CHECK_UNARY_FALSE(static_cast<bool>(result));
 		CHECK_EQ(result.pdu, nullptr);
 	}
 
 	TEST_CASE("zero caplen returns empty result") {
-		const vector<uint8_t> raw = { 0x00 };
-		auto result = MonitorSocket::parse_frame(raw.data(), 0);
+		constexpr frame_raw_t raw = {};
+		auto result = MonitorSocket::parse_frame(raw);
 		CHECK_UNARY_FALSE(static_cast<bool>(result));
 	}
 }
@@ -92,7 +92,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 	}*/
 
 	TEST_CASE("payload after old RadioTap is preserved byte-for-byte") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
 		const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
 
 		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
@@ -108,7 +108,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 	}
 
 	TEST_CASE("detect_injected sets More Data bit in FC field") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
 		constexpr Channel ch6{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto out = MonitorSocket::build_inject_frame({ raw.begin(), raw.end() }, ch6, /*detect_injected=*/true);
 
@@ -132,7 +132,7 @@ TEST_SUITE("MonitorSocket::parse_frame sequence") {
 		REQUIRE_UNARY_FALSE(frames.empty());
 
 		for(const auto &raw: frames) {
-			auto result = MonitorSocket::parse_frame(raw.data(), static_cast<uint32_t>(raw.size()));
+			auto result = MonitorSocket::parse_frame(raw);
 			CHECK_NE(result.pdu, nullptr);
 		}
 	}

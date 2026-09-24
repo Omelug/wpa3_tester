@@ -26,6 +26,6 @@ properties:
         default: 0
       burst_size:
         type: integer
-      packets_per_second_limit:
+      frames_per_second_limit:
         type: integer
         default: 99999999999

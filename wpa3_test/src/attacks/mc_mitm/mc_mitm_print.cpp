@@ -12,15 +12,15 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-static uint16_t get_seq_num(const Dot11 &pkt) {
-	if(const auto *mgmt = pkt.find_pdu<Dot11ManagementFrame>()) return mgmt->seq_num();
-	if(const auto *data = pkt.find_pdu<Dot11Data>()) return data->seq_num();
+static uint16_t get_seq_num(const Dot11 &frame) {
+	if(const auto *mgmt = frame.find_pdu<Dot11ManagementFrame>()) return mgmt->seq_num();
+	if(const auto *data = frame.find_pdu<Dot11Data>()) return data->seq_num();
 	return 0;
 }
 
-string McMitm::frame_to_str(const Dot11 &pkt) {
-	const auto type = pkt.type();
-	const auto sub = pkt.subtype();
+string McMitm::frame_to_str(const Dot11 &frame) {
+	const auto type = frame.type();
+	const auto sub = frame.subtype();
 
 	static const unordered_map<int, string> mgmt_names = {
 		{ Dot11::BEACON, "Beacon" },
@@ -58,7 +58,7 @@ string McMitm::frame_to_str(const Dot11 &pkt) {
 	if(names) {
 		if(const auto it = names->find(sub); it != names->end()) {
 			auto s = it->second;
-			if(type != Dot11::CONTROL) s += "(seq=" + to_string(get_seq_num(pkt)) + ")";
+			if(type != Dot11::CONTROL) s += "(seq=" + to_string(get_seq_num(frame)) + ")";
 			return s;
 		}
 	}

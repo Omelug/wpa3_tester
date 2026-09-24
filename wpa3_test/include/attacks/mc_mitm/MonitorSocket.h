@@ -6,6 +6,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "config/RunStatus.h"
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester {
@@ -34,9 +36,9 @@ public:
 	static std::vector<uint8_t> build_inject_frame(
 			const std::vector<uint8_t> &raw, const Channel &ch, bool detect_injected = false);
 	void send(const std::vector<unsigned char> &raw, const Channel &ch) const;
-	static RecvResult parse_frame(const u_char *frame, uint32_t caplen);
+	static RecvResult parse_frame(const frame_raw_t &frame);
 	RecvResult recv();
-	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_packet);
+	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_frame);
 	pcap_t *get_pcap_handle() { return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
 	Tins::Sniffer &sniffer() { return *sniffer_; }
 

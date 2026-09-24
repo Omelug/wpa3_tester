@@ -173,6 +173,7 @@
       <w>mausezahn</w>
       <w>meapol</w>
       <w>mediatek</w>
+      <w>memcpy</w>
       <w>meminfo</w>
       <w>memorycheck</w>
       <w>mfacaddr</w>
@@ -311,6 +312,7 @@
       <w>uhubctl</w>
       <w>unassoc</w>
       <w>usbcore</w>
+      <w>usec</w>
       <w>userconf</w>
       <w>vermagic</w>
       <w>vline</w>

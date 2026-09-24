@@ -175,7 +175,7 @@ TEST_CASE("hw_capabilities::list_interfaces - no-match filter returns empty") {
 // ------------ check_req_options / findSolution
 
 TEST_CASE("hw_capabilities::check_req_options - empty rules returns empty map") {
-	ActorCMap rules{};
+	ActorMap rules{};
 	vector options{ make_actor({ { BK::AP, true } }) };
 	RunStatus status{};
 	const auto result = status.check_req_options(rules, options);
@@ -186,7 +186,7 @@ TEST_CASE("hw_capabilities::check_req_options - single rule single matching opti
 	ActorPtr rule = make_actor({ { BK::AP, true } });
 	ActorPtr option = make_actor({ { BK::AP, true } });
 
-	ActorCMap rules{ { "attacker", rule } };
+	ActorMap rules{ { "attacker", rule } };
 	vector options{ option };
 
 	RunStatus status{};
@@ -199,7 +199,7 @@ TEST_CASE("hw_capabilities::check_req_options - no matching option throws") {
 	ActorPtr rule = make_actor({ { BK::AP, true } });
 	ActorPtr option = make_actor({ { BK::AP, false } });
 
-	ActorCMap rules{ { "attacker", rule } };
+	ActorMap rules{ { "attacker", rule } };
 	vector options{ option };
 	RunStatus status{};
 	CHECK_THROWS_AS(status.check_req_options(rules, options), req_err);
@@ -212,7 +212,7 @@ TEST_CASE("hw_capabilities::check_req_options - two rules two distinct options")
 	ActorPtr opt_ap = make_actor({ { BK::AP, true }, { BK::STA, false } });
 	ActorPtr opt_sta = make_actor({ { BK::STA, true }, { BK::AP, false } });
 
-	ActorCMap rules{ { "ap_role", rule_ap }, { "sta_role", rule_sta } };
+	ActorMap rules{ { "ap_role", rule_ap }, { "sta_role", rule_sta } };
 	vector options{ opt_ap, opt_sta };
 
 	RunStatus status{};
@@ -228,7 +228,7 @@ TEST_CASE("hw_capabilities::check_req_options - two rules one option throws") {
 	ActorPtr opt = make_actor({ { BK::AP, true } });
 
 	// Two rules but only one option - second rule can't be satisfied
-	ActorCMap rules{ { "r1", rule1 }, { "r2", rule2 } };
+	ActorMap rules{ { "r1", rule1 }, { "r2", rule2 } };
 	vector options{ opt };
 	RunStatus status{};
 	CHECK_THROWS_AS(status.check_req_options(rules, options), req_err);
@@ -239,7 +239,7 @@ TEST_CASE("hw_capabilities::check_req_options - string key matching") {
 	ActorPtr match = make_actor({}, { { SK::driver_name, "ath9k" } });
 	ActorPtr nomatch = make_actor({}, { { SK::driver_name, "iwlwifi" } });
 
-	ActorCMap rules{ { "dev", rule } };
+	ActorMap rules{ { "dev", rule } };
 	RunStatus status{};
 	const auto result = status.check_req_options(rules, { match, nomatch });
 	REQUIRE(result.contains("dev"));
@@ -249,7 +249,7 @@ TEST_CASE("hw_capabilities::check_req_options - string key matching") {
 // ------------ check_all_req_options / find_all_solutions
 
 TEST_CASE("hw_capabilities::check_all_req_options - empty rules returns one empty solution") {
-	ActorCMap rules{};
+	ActorMap rules{};
 	vector options{ make_actor({ { BK::AP, true } }) };
 	const auto results = hw_capabilities::check_all_req_options(rules, options);
 	REQUIRE_EQ(results.size(), 1u);
@@ -260,7 +260,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - no matching option returns e
 	ActorPtr rule = make_actor({ { BK::AP, true } });
 	ActorPtr option = make_actor({ { BK::AP, false } });
 
-	ActorCMap rules{ { "dev", rule } };
+	ActorMap rules{ { "dev", rule } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { option });
 	CHECK(results.empty());
 }
@@ -269,7 +269,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - single rule single match ret
 	ActorPtr rule = make_actor({ { BK::AP, true } });
 	ActorPtr opt = make_actor({ { BK::AP, true } });
 
-	ActorCMap rules{ { "ap", rule } };
+	ActorMap rules{ { "ap", rule } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { opt });
 	REQUIRE_EQ(results.size(), 1u);
 	REQUIRE(results[0].contains("ap"));
@@ -281,7 +281,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - one rule two matching option
 	ActorPtr opt1 = make_actor({ { BK::AP, true } });
 	ActorPtr opt2 = make_actor({ { BK::AP, true } });
 
-	ActorCMap rules{ { "ap", rule } };
+	ActorMap rules{ { "ap", rule } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { opt1, opt2 });
 	CHECK_EQ(results.size(), 2u);
 }
@@ -292,7 +292,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - two rules distinct options o
 	ActorPtr opt_ap = make_actor({ { BK::AP, true }, { BK::STA, false } });
 	ActorPtr opt_sta = make_actor({ { BK::AP, false }, { BK::STA, true } });
 
-	ActorCMap rules{ { "ap_role", rule_ap }, { "sta_role", rule_sta } };
+	ActorMap rules{ { "ap_role", rule_ap }, { "sta_role", rule_sta } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { opt_ap, opt_sta });
 	REQUIRE_EQ(results.size(), 1u);
 	CHECK(results[0].contains("ap_role"));
@@ -307,7 +307,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - two rules two interchangeabl
 	ActorPtr opt1 = make_actor({ { BK::AP, true } });
 	ActorPtr opt2 = make_actor({ { BK::AP, true } });
 
-	ActorCMap rules{ { "r1", rule1 }, { "r2", rule2 } };
+	ActorMap rules{ { "r1", rule1 }, { "r2", rule2 } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { opt1, opt2 });
 	REQUIRE_EQ(results.size(), 2u);
 	// Each solution assigns a different option to each role
@@ -323,7 +323,7 @@ TEST_CASE("hw_capabilities::check_all_req_options - two rules one option returns
 	ActorPtr rule2 = make_actor({ { BK::AP, true } });
 	ActorPtr opt = make_actor({ { BK::AP, true } });
 
-	ActorCMap rules{ { "r1", rule1 }, { "r2", rule2 } };
+	ActorMap rules{ { "r1", rule1 }, { "r2", rule2 } };
 	const auto results = hw_capabilities::check_all_req_options(rules, { opt });
 	CHECK(results.empty());
 }

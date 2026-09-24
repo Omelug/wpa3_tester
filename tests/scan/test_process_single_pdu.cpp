@@ -15,20 +15,20 @@ using namespace wpa3_tester;
 static constexpr auto PCAP_BEACON = "../test_data/beacon_test.pcapng";
 static constexpr auto PCAP_DATA_QOS = "../test_data/wifi_util/data_qos.pcapng";
 
-static ActorCMap make_ap_req(const string &ssid) {
+static ActorMap make_ap_req(const string &ssid) {
 	const auto cfg = make_shared<Actor_Config_external>();
 	cfg->set(BK::AP, true);
 	cfg->set(SK::ssid, ssid);
 	return { { "ap", ActorPtr(cfg) } };
 }
 
-static ActorCMap make_sta_req() {
+static ActorMap make_sta_req() {
 	const auto cfg = make_shared<Actor_Config_external>();
 	cfg->set(BK::STA, true);
 	return { { "sta", ActorPtr(cfg) } };
 }
 
-TEST_SUITE("process_single_packet state") {
+TEST_SUITE("process_single_pdu state") {
 
 	TEST_CASE("garbage bytes return false and leave state empty") {
 		const vector<uint8_t> garbage = { 0xDE, 0xAD, 0xBE, 0xEF };
@@ -37,8 +37,7 @@ TEST_SUITE("process_single_packet state") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_packet(
-				garbage.data(), garbage.size(), seen, assoc, reported, {}, {}));
+		CHECK_FALSE(t.process_single_pdu(garbage, seen, assoc, reported, {}, {}));
 		CHECK_EQ(seen.size(), 0u);
 		CHECK_EQ(reported.size(), 0u);
 	}
@@ -50,7 +49,7 @@ TEST_SUITE("process_single_packet state") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_packet(empty.data(), 0, seen, assoc, reported, {}, {}));
+		CHECK_FALSE(t.process_single_pdu(empty, seen, assoc, reported, {}, {}));
 		CHECK_EQ(seen.size(), 0u);
 	}
 
@@ -62,8 +61,7 @@ TEST_SUITE("process_single_packet state") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		t.process_single_packet(
-				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("mc_mitm_test"), {});
+		t.process_single_pdu(frames[0], seen, assoc, reported, make_ap_req("mc_mitm_test"), {});
 
 		REQUIRE(seen.contains(HWAddress<6>("24:ec:99:bf:b0:a1")));
 		CHECK(seen.at(HWAddress<6>("24:ec:99:bf:b0:a1"))[BK::AP].value_or(false));
@@ -77,7 +75,7 @@ TEST_SUITE("process_single_packet state") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		t.process_single_pdu(frames[0], seen, assoc, reported, {}, {});
 
 		CHECK(reported.contains(HWAddress<6>("24:ec:99:bf:b0:a1")));
 	}
@@ -90,15 +88,15 @@ TEST_SUITE("process_single_packet state") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		t.process_single_pdu(frames[0], seen, assoc, reported, {}, {});
 		const size_t after_first = reported.size();
 
-		t.process_single_packet(frames[0].data(), frames[0].size(), seen, assoc, reported, {}, {});
+		t.process_single_pdu(frames[0], seen, assoc, reported, {}, {});
 		CHECK_EQ(reported.size(), after_first);
 	}
 }
 
-TEST_SUITE("process_single_packet requirements") {
+TEST_SUITE("process_single_pdu requirements") {
 
 	TEST_CASE("AP requirement matching beacon SSID returns true") {
 		auto frames = test_helpers::read_all_frames(PCAP_BEACON);
@@ -107,8 +105,7 @@ TEST_SUITE("process_single_packet requirements") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 		TestableRunStatus t{};
-		CHECK(t.process_single_packet(
-				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("mc_mitm_test"), {}));
+		CHECK(t.process_single_pdu(frames[0], seen, assoc, reported, make_ap_req("mc_mitm_test"), {}));
 	}
 
 	TEST_CASE("AP requirement with wrong SSID returns false") {
@@ -119,8 +116,7 @@ TEST_SUITE("process_single_packet requirements") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_packet(
-				frames[0].data(), frames[0].size(), seen, assoc, reported, make_ap_req("nonexistent_ssid"), {}));
+		CHECK_FALSE(t.process_single_pdu(frames[0], seen, assoc, reported, make_ap_req("nonexistent_ssid"), {}));
 	}
 
 	TEST_CASE("STA requirement not satisfied by beacon returns false") {
@@ -131,14 +127,13 @@ TEST_SUITE("process_single_packet requirements") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_packet(
-				frames[0].data(), frames[0].size(), seen, assoc, reported, make_sta_req(), {}));
+		CHECK_FALSE(t.process_single_pdu(frames[0], seen, assoc, reported, make_sta_req(), {}));
 	}
 }
 
 // --- connection conditions
 
-TEST_SUITE("process_single_packet conn_conds") {
+TEST_SUITE("process_single_pdu conn_conds") {
 
 	TEST_CASE("satisfied conn_cond (STA->AP from data frame) returns true") {
 		// data_qos: to_ds=1, STA 24:ec:99:bf:e0:cd -> AP 78:98:e8:55:3e:8d
@@ -148,7 +143,7 @@ TEST_SUITE("process_single_packet conn_conds") {
 		AssocMap assoc;
 		set<HWAddress<6>> reported;
 
-		ActorCMap actors;
+		ActorMap actors;
 		auto sta_cfg = make_shared<Actor_Config_external>();
 		sta_cfg->set(BK::STA, true);
 		actors["sta"] = ActorPtr(sta_cfg);
@@ -157,8 +152,7 @@ TEST_SUITE("process_single_packet conn_conds") {
 		actors["ap"] = ActorPtr(ap_cfg);
 
 		TestableRunStatus t{};
-		CHECK(t.process_single_packet(
-				frames[0].data(), frames[0].size(), seen, assoc, reported, actors, { { "ap", "sta" } }));
+		CHECK(t.process_single_pdu(frames[0], seen, assoc, reported, actors, { { "ap", "sta" } }));
 	}
 
 	TEST_CASE("conn_cond referencing absent actor returns false") {
@@ -170,8 +164,7 @@ TEST_SUITE("process_single_packet conn_conds") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_packet(frames[0].data(),
-				frames[0].size(),
+		CHECK_FALSE(t.process_single_pdu(frames[0],
 				seen,
 				assoc,
 				reported,

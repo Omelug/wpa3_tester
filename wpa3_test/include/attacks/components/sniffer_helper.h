@@ -14,7 +14,7 @@ enum class StopReason { Timeout, HandlerDone, Interrupted };
 namespace wpa3_tester::components {
 template<typename T, typename Handler>
 std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
-		Handler &&on_packet, const std::string &iface = "") {
+		Handler &&on_frame, const std::string &iface = "") {
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if(handle == nullptr) {
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
@@ -51,16 +51,16 @@ std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std
 		if(ret == 0) return StopReason::Timeout;
 
 		pcap_pkthdr *hdr;
-		const uint8_t *pkt;
-		while(pcap_next_ex(handle, &hdr, &pkt) == 1) {
-			if(auto result = on_packet(pkt_raw_t(pkt, pkt + hdr->caplen))) return std::move(*result);
+		const uint8_t *frame;
+		while(pcap_next_ex(handle, &hdr, &frame) == 1) {
+			if(auto result = on_frame(frame_raw_t(frame, frame + hdr->caplen))) return std::move(*result);
 		}
 	}
 	return StopReason::Interrupted;
 }
 
 template<typename T, typename Handler>
-std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::string &interface,
+std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_frame, const std::string &interface,
 		const std::string &filter = "", const std::optional<std::chrono::milliseconds> timeout = std::nullopt) {
 	Tins::SnifferConfiguration sniff_config;
 	sniff_config.set_timeout(100);
@@ -101,7 +101,7 @@ std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_packet, const std::str
 		if(ret == 0 || !(pfds[0].revents & POLLIN)) continue;
 
 		if(const std::unique_ptr<Tins::PDU> pdu{ sniffer.next_packet() }) {
-			if(auto result = on_packet(*pdu)) return std::move(*result);
+			if(auto result = on_frame(*pdu)) return std::move(*result);
 		}
 	}
 }

@@ -97,20 +97,20 @@ static vector<uint8_t> make_pwd_eapol(
 		const uint8_t eap_id, const uint8_t opcode, const uint8_t *payload, const size_t len) {
 	const auto eap_body = static_cast<uint16_t>(2 + len); // TYPE_PWD + opcode + payload
 	const auto eap_len = static_cast<uint16_t>(4 + eap_body);
-	vector<uint8_t> pkt;
-	pkt.reserve(4 + eap_len);
-	pkt.push_back(0x01);// EAPOL version
-	pkt.push_back(0x00); // EAPOL type: EAP
-	pkt.push_back(static_cast<uint8_t>(eap_len >> 8));
-	pkt.push_back(static_cast<uint8_t>(eap_len & 0xff));
-	pkt.push_back(CODE_RESPONSE);
-	pkt.push_back(eap_id);
-	pkt.push_back(static_cast<uint8_t>(eap_len >> 8));
-	pkt.push_back(static_cast<uint8_t>(eap_len & 0xff));
-	pkt.push_back(TYPE_PWD);
-	pkt.push_back(opcode);
-	pkt.insert(pkt.end(), payload, payload + len);
-	return pkt;
+	frame_raw_t eapol_f;
+	eapol_f.reserve(4 + eap_len);
+	eapol_f.push_back(0x01);// EAPOL version
+	eapol_f.push_back(0x00); // EAPOL type: EAP
+	eapol_f.push_back(static_cast<uint8_t>(eap_len >> 8));
+	eapol_f.push_back(static_cast<uint8_t>(eap_len & 0xff));
+	eapol_f.push_back(CODE_RESPONSE);
+	eapol_f.push_back(eap_id);
+	eapol_f.push_back(static_cast<uint8_t>(eap_len >> 8));
+	eapol_f.push_back(static_cast<uint8_t>(eap_len & 0xff));
+	eapol_f.push_back(TYPE_PWD);
+	eapol_f.push_back(opcode);
+	eapol_f.insert(eapol_f.end(), payload, payload + len);
+	return eapol_f;
 }
 
 // Brute-force the shared k_x by trying all subgroup multiples (<= 269 iterations).

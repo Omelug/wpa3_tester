@@ -180,7 +180,7 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 	return csv_path;
 }
 
-pair<vector<LogTimePoint>, vector<double>> times_packet_sizes_from_csv(const path &csv_path) {
+pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &csv_path) {
 	vector<LogTimePoint> times;
 	vector<double> sizes;
 
@@ -267,7 +267,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	path output_path = real_folder / (actor_name + "_graph.png");
 	const path csv_path = extract_pcap_to_csv(actor_name, real_folder, tshark_filter);
 
-	auto [times, sizes] = times_packet_sizes_from_csv(csv_path);
+	auto [times, sizes] = times_pdu_sizes_from_csv(csv_path);
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const auto start_time = get_pcap_start_time(pcap_path);
 	transform_to_relative(times, start_time);

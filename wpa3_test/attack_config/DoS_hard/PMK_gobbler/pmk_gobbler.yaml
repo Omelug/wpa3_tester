@@ -68,5 +68,5 @@ attack_config:
   attack_time_sec: 30
   acm_trigger_count: 2560
   burst_size: 32
-  packets_per_second_limit: 128
+  frames_per_second_limit: 128
   cookie_wait_ms: 50

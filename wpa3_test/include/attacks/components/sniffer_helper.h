@@ -53,7 +53,7 @@ std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std
 		pcap_pkthdr *hdr;
 		const uint8_t *pkt;
 		while(pcap_next_ex(handle, &hdr, &pkt) == 1) {
-			if(auto result = on_packet(pkt, hdr->caplen)) return std::move(*result);
+			if(auto result = on_packet(pkt_raw_t(pkt, pkt + hdr->caplen))) return std::move(*result);
 		}
 	}
 	return StopReason::Interrupted;

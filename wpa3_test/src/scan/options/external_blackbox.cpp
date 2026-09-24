@@ -163,9 +163,9 @@ vector<EntityInfo> RunStatus::list_external_entities(const string &iface, const 
 		interruptible_sleep(chrono::milliseconds(200)); //TODO needed -test?
 
 		const auto result = components::poll_sniffer<monostate>(handle, chrono::milliseconds(channel_sec * 1000),
-											[&](const uint8_t *pkt, const size_t len) ->optional<monostate>{
+											[&](const pkt_raw_t &pkt) ->optional<monostate>{
 												try {
-													solve_new_pdu(vector(pkt, pkt + len), seen, assoc);
+													solve_new_pdu(pkt, seen, assoc);
 												} catch(...){}//TODO needed?
 												return nullopt;
 											});
@@ -288,25 +288,22 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 	ActorMACMap seen;
 	AssocMap assoc;
 	set<HWAddress<6>> reported;
-	const auto on_packet = [&](const uint8_t *pkt, const size_t len) -> optional<bool> {
-		return process_single_packet(pkt, len, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
+	const auto on_packet = [&](const pkt_raw_t &pkt) -> optional<bool> {
+		return process_single_packet(pkt, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
 	};
 
-	[&] {
-		while(!g_interrupted){
-			for(const uint8_t ch_num: channels){
-				if(g_interrupted) return;
-				log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
-				scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
-				//FIXME needed , should be in set_channel?
-				interruptible_sleep(chrono::milliseconds(200));
-				//TODO hardcoded timers
-				const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
-				if(!holds_alternative<StopReason>(result)) return;  // found
-				if(get<StopReason>(result) == StopReason::Interrupted) return;
-			}
-		}
-	}();
+	for(const uint8_t ch_num: channels){
+		// at the end of filler there will be one error test file
+		if(g_interrupted) throw interrupted_err("scan_until_match loop");
+
+		log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
+		scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
+		//FIXME needed , should be in set_channel?
+		interruptible_sleep(chrono::milliseconds(200)); //TODO hardcoded timers
+		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_packet);
+		if(!holds_alternative<StopReason>(result)) break;  // found
+		if(get<StopReason>(result) == StopReason::Interrupted) break;
+	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }
 }

@@ -80,6 +80,7 @@
       <config projectName="wpa3_tester" targetName="run_bl0ck_tests" />
       <config projectName="wpa3_tester" targetName="test_helpers" />
       <config projectName="wpa3_tester" targetName="run_scan_active_tests" />
+      <config projectName="wpa3_tester" targetName="run_filler_hash_tests" />
       <config projectName="wpa3_tester" targetName="run_mc_mitm_tests" />
       <config projectName="wpa3_tester" targetName="run_cleanup_tests" />
       <config projectName="wpa3_tester" targetName="uninstall" />
@@ -136,10 +137,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify RunStatus::execute">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: pkt_raw_t, scan_until_match loop">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/components/sniffer_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/setup/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/setup/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_info.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_info.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -312,8 +314,14 @@
       <recent name="$PROJECT_DIR$/result_overview/src/observer" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.wpa3_tester CSA_external_client_filler">
+  <component name="RunManager" selected="Doctest.get_filler_hash - output format">
     <configuration name="conn_cond referencing absent actor returns false" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_process_packet_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_process_packet_tests" TEST_CLASS="process_single_packet conn_conds" TEST_METHOD="conn_cond referencing absent actor returns false" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="get_filler_hash - output format" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" TEST_METHOD="get_filler_hash - output format" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -350,6 +358,12 @@
       </method>
     </configuration>
     <configuration name="run_error_message_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_error_message_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_error_message_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_filler_hash_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_filler_hash_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_filler_hash_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -620,12 +634,6 @@
       </method>
     </configuration>
     <configuration name="test_manual_usb" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="usb_bus_reset - devices remain in sysfs after reset" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="test_manual_usb" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="test_manual_usb" TEST_METHOD="usb_bus_reset - devices remain in sysfs after reset" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1091,12 +1099,13 @@
       <item itemvalue="Doctest.patch_channel_raw - probe response frame" />
       <item itemvalue="Doctest.run_config_tests" />
       <item itemvalue="Doctest.run_cleanup_tests" />
+      <item itemvalue="Doctest.run_filler_hash_tests" />
       <item itemvalue="Doctest.run_bl0ck_tests" />
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
+      <item itemvalue="Doctest.get_filler_hash - output format" />
       <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
       <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
       <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
-      <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
       <item itemvalue="Makefile Target.driver-modules" />
       <item itemvalue="Native Application.get_commit_values" />
       <item itemvalue="Native Application.openwrt" />
@@ -1105,11 +1114,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Doctest.get_filler_hash - output format" />
         <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
         <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
         <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
         <item itemvalue="Makefile Target.driver-modules" />
-        <item itemvalue="Doctest.usb_bus_reset - devices remain in sysfs after reset" />
       </list>
     </recent_temporary>
   </component>
@@ -1178,7 +1187,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="v: injection table aggregation" />
     <MESSAGE value="r: small changes&#10;f: interruptable loops" />
     <MESSAGE value="+: page cache for overview faster generation&#10;r+: mt76x2u_git" />
     <MESSAGE value="f: cache only test suite subdirs" />
@@ -1203,7 +1211,8 @@
     <MESSAGE value="+: env WPA3_DEBUG_THROW for throw for error (still dont have pretty kontext for Tins internal errors)" />
     <MESSAGE value="+: env WPA3_DEBUG_THROW for throw for error (still dont have pretty kontext for Tins internal errors)&#10;r: simplify RunStatus::execute" />
     <MESSAGE value="r: simplify RunStatus::execute" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: simplify RunStatus::execute" />
+    <MESSAGE value="r: pkt_raw_t, scan_until_match loop" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: pkt_raw_t, scan_until_match loop" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

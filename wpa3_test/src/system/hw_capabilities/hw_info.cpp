@@ -29,8 +29,7 @@ void HwInfo::from_json(const nlohmann::json &j) const {
 	}
 	actor->caps_from_flat_json(j);
 }
-
-// -----------------  Actor_config::get_hw_info
+  Actor_config::get_hw_info
 void Actor_config::load_hw_info(const optional<path> &cache) {
 	const string iface = get(SK::iface);
 	const string perm_mac = hw_capabilities::get_permanent_mac(iface, (*this)[SK::netns]);

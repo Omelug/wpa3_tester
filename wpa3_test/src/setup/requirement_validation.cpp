@@ -284,13 +284,12 @@ bool RunStatus::config_requirement() {
 	return false;
 }
 
-//TODO test
 string RunStatus::get_filler_hash(const ActorMap &actor_map, json &test_cfg) {
 	// build stable hash from sorted actor_name=perm_mac pairs
 	vector<string> mac_parts;
 	for(const auto &[actor_name, hw]: actor_map) {
 		const auto &perm_mac = (*hw)[SK::permanent_mac];
-		if(!perm_mac.has_value()) continue;
+		if(!perm_mac.has_value()) throw run_err("actor {} has no permanent mac", actor_name);
 		mac_parts.push_back(actor_name + "=" + *perm_mac);
 		test_cfg["actors"][actor_name]["selection"]["permanent_mac"] = *perm_mac;
 	}
@@ -303,7 +302,6 @@ string RunStatus::get_filler_hash(const ActorMap &actor_map, json &test_cfg) {
 	return hash_str;
 }
 
-//TODO test
 void RunStatus::change_filler_hash(const ActorMap &result) {
 	if(_config_path.filename().string().find(visual::helper::ACTOR_FILLER_SUFFIX) == string::npos)
 		return;

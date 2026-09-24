@@ -91,25 +91,9 @@ void resolve_relative_paths(nlohmann::json &node, const path &base_dir){
 }
 
 void create_public_dirs(const path &p){
-	vector<path> to_chmod;
-	path current = p;
-	while(!current.empty()){
-		if(!exists(current)){
-			to_chmod.push_back(current);
-		} else{
-			break; // stop at first existing directory
-		}
-		path parent = current.parent_path();
-		if(parent == current) break; // reached root
-		current = parent;
-	}
-
-	create_directories(p);
-
-	// set permissions only on newly created directories
-	for(const auto &dir: to_chmod){
-		permissions(dir, perms::all);
-	}
+	error_code ec;
+	create_public_dirs(p, ec);
+	if(ec) throw filesystem_error("create_public_dirs", p, ec);
 }
 
 void create_public_dirs(const path &p, error_code &ec){

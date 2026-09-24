@@ -12,7 +12,10 @@
 
 namespace wpa3_tester::visual::helper {
 
+// if changed -> change yaml test validator as well
+// attack_config/validator/test_validator.schema.yaml (_actor_filler rule)
 inline std::string ACTOR_FILLER_SUFFIX = "_actor_filler.yaml";
+
 std::unique_ptr<RunStatus> load_test_rs(const std::filesystem::path &test_folder);
 
 // Read attacker_module: value from test_config.yaml without a YAML library
@@ -76,7 +79,7 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 		return;
 	}
 
-	auto entries = [t_data_dir]() {
+	auto entries = [t_data_dir] {
 		// is test folder
 		if(std::filesystem::exists(t_data_dir / DONE_FILE)) { return std::vector<Entry>{ Entry::parse(t_data_dir) }; }
 		if constexpr(HasCollectResults<Entry>) {

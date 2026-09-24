@@ -210,7 +210,9 @@ vector<uint8_t> RunStatus::get_external_bb_channels(){
 	return all_channels;
 }
 
-vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
+vector<ActorPtr> RunStatus::external_bb_options(
+	const ActorMap &ex_bb_actors, const std::vector<std::string> &disabled_tests_hash_filler
+	){
 	const vector<uint8_t> channels = get_external_bb_channels();
 	if(channels.empty()) return {};
 	const string iface = _config.at("scan_iface");
@@ -223,7 +225,7 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
 	}
 
 	if(_config.value("scan_until_match", false) && !ex_bb_actors.empty())
-		return scan_until_match(iface, channels, ex_bb_actors, conn_conds);
+		return scan_until_match(iface, channels, ex_bb_actors, conn_conds, disabled_tests_hash_filler);
 
 	const auto entities = list_external_entities(iface, timeout, channels);
 	return entities | views::transform([](const EntityInfo &e){ return e.first; }) | ranges::to<vector<ActorPtr>>();
@@ -232,7 +234,8 @@ vector<ActorPtr> RunStatus::external_bb_options(const ActorMap &ex_bb_actors){
 bool RunStatus::process_single_pdu(
 	const frame_raw_t &frame,
 	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
-	const ActorMap &actors, const vector<pair<string,string>> &conn_conds
+	const ActorMap &actors, const vector<pair<string,string>> &conn_conds,
+	std::vector<std::string> disabled_tests_hash_filler
 ) {
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
@@ -252,19 +255,16 @@ bool RunStatus::process_single_pdu(
 	if (seen.size() > before_seen || assoc.size() > before_assoc) {
 		const auto opts = seen | views::values | ranges::to<vector<ActorPtr>>();
 		try {
-			const ActorMap assignment = check_req_options(actors, opts, false);
+			const ActorMap assignment = check_req_options(actors, opts, false, disabled_tests_hash_filler);
 			for (const auto &[ap_name, sta_name] : conn_conds) {
 				// both (STA and AP) have to be scanned
-				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) {
-					return false;
-				}
+				if (!assignment.contains(sta_name) || !assignment.contains(ap_name)) return false;
+
 				const HWAddress<6> sta_mac(assignment.at(sta_name)->get(SK::mac));
 				const HWAddress<6> ap_mac(assignment.at(ap_name)->get(SK::mac));
 
 				// STA not connected or not connected to AP
-				if (!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac) {
-					return false;
-				}
+				if (!assoc.contains(sta_mac) || assoc.at(sta_mac) != ap_mac)  return false;
 			}
 			return true; // all condition passed
 		} catch (const req_err &) {} // ignore invalid requires
@@ -274,7 +274,9 @@ bool RunStatus::process_single_pdu(
 
 vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels,
 											  const ActorMap &actors,
-											  const vector<pair<string,string>> &conn_conds
+											  const vector<pair<string,string>> &conn_conds,
+											  std::vector<std::string> disabled_tests_hash_filler
+
 ){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());
 	scanner->set(SK::iface, iface);
@@ -289,20 +291,21 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 	AssocMap assoc;
 	set<HWAddress<6>> reported;
 	const auto on_frame = [&](const frame_raw_t &frame) -> optional<bool> {
-		return process_single_pdu(frame, seen, assoc, reported, actors, conn_conds) ? optional{true} : nullopt;
+		return process_single_pdu(frame, seen, assoc, reported, actors, conn_conds, disabled_tests_hash_filler) ? optional{true} : nullopt;
 	};
 
 	for(const uint8_t ch_num: channels){
 		// at the end of filler there will be one error test file
-		if(g_interrupted) throw interrupted_err("scan_until_match loop"); //TODO needed
+		if(g_interrupted) throw interrupted_err("scan_until_match loop"); //TODO needed?
 
 		log(LogLevel::INFO, "Scanning channel {} on {}", ch_num, iface);
 		scanner->set_channel(Channel{ch_num, WifiBand::BAND_2_4, nullopt});
+
 		//FIXME needed , should be in set_channel?
 		interruptible_sleep(chrono::milliseconds(200)); //TODO hardcoded timers
-		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_frame);
+		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_frame); //FIXME hardcoded time
 		if(!holds_alternative<StopReason>(result)) break;  // found
-		if(get<StopReason>(result) == StopReason::Interrupted) break;
+		if(get<StopReason>(result) == StopReason::Interrupted) break; //TODO INterruped je tu asi zbytečné, kdyžtak jen chytnout error?
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }

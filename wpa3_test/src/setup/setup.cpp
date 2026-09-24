@@ -18,8 +18,7 @@ void RunStatus::setup_test() {
 		if(ec) throw run_err("Failed to clean last_run directory: {}:{} ", _run_folder, ec.message());
 	}
 
-	create_public_dirs(_run_folder, ec);
-	if(ec) throw run_err("Failed to create last_run directory: {}:{}", _run_folder, ec.message());
+	create_public_dirs(_run_folder);
 
 	IF_DEBUG(save_actor_interface_mapping();)
 
@@ -33,7 +32,6 @@ void RunStatus::setup_test() {
 		log(LogLevel::DEBUG, "setup function not set");
 	}
 
-	change_filler_hash(actors); //only needed for actor_filler
 	save_actor_interface_mapping();
 }
 }

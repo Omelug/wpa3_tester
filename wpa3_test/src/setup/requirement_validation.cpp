@@ -70,7 +70,7 @@ void kill_process_in_ns_name(const string &ns_name) {
 
 	const auto deadline = chrono::steady_clock::now() + chrono::milliseconds(500);
 
-	// Wait for all pids together under one shared deadline
+	// wait for all pids together under one shared deadline
 	bool all_dead = false;
 	while(!all_dead && chrono::steady_clock::now() < deadline) {
 		all_dead = true;
@@ -141,7 +141,7 @@ ActorMap get_actors(const ActorMap &actors, const string &source) {
 	return result;
 }
 
-bool RunStatus::config_requirement() {
+bool RunStatus::config_requirement(const std::vector<std::string>& disabled_tests_hash_filler) {
 	hw_capabilities::run_cmd({ "rfkill", "unblock", "all" }, nullopt, false);
 	hw_capabilities::run_cmd({ "modprobe", "-r", "mac80211_hwsim" }, nullopt, false);
 	firmware::disable_custom_drivers();
@@ -191,7 +191,7 @@ bool RunStatus::config_requirement() {
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	// before internal, because need clean interface for scanning
 	if(!external_bb_actors.empty()) {
-		external_bb_mapping = check_req_options(external_bb_actors, external_bb_options(external_bb_actors));
+		external_bb_mapping = check_req_options(external_bb_actors, external_bb_options(external_bb_actors, disabled_tests_hash_filler));
 	}
 
 	// ------------------ INTERNAL ---------------------------
@@ -228,7 +228,7 @@ bool RunStatus::config_requirement() {
 	}
 
 	//RSSI wizard rssi
-	if(!rssi_checked && _config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
+	if(!_rssi_checked && _config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
 		//TODO add to validator bandwidth / conditions
 		auto conditions = _config["requirements"]["rssi_setup"]["conditions"].get<std::vector<std::string>>();
@@ -239,10 +239,11 @@ bool RunStatus::config_requirement() {
 
 		auto band = _config["requirements"]["rssi_setup"]["band"].get<std::string>();
 		Channel channel;
+		//6GHz
 		if(band == "5GHz") { channel = Channel{ 36, WifiBand::BAND_5, std::nullopt }; }
 		if(band == "2_4GHz") { channel = Channel{ 6, WifiBand::BAND_2_4, std::nullopt }; }
 		run_rssi_wizard(cond_str, channel);
-		rssi_checked = true;
+		_rssi_checked = true;
 
 		return true;
 	}
@@ -266,7 +267,7 @@ bool RunStatus::config_requirement() {
 	if(_config.contains("requirements") && _config.at("requirements").contains("two_iface")) {
 		for(const auto &[key, actor_names]: _config.at("requirements").at("two_iface").items()) {
 			if(!actor_names.is_array() || actor_names.size() < 2)
-				throw config_err("two_iface." + key + " must be an array of two actors");
+				throw config_err("two_iface. {} must be an array of two actors", key);
 
 			const ActorPtr &actor1 = get_actor(actor_names[0].get<string>());
 			const ActorPtr &actor2 = get_actor(actor_names[1].get<string>());
@@ -277,7 +278,7 @@ bool RunStatus::config_requirement() {
 			} else if(key.starts_with("injection")) {
 				if(TwoIfaceInject::run_check(actor1, actor2, cb, key)) return true;
 			} else {
-				throw not_implemented_err("two_iface test key not found: " + key);
+				throw not_implemented_err("two_iface test key not found: {}", key);
 			}
 		}
 	}
@@ -331,14 +332,15 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	_config_path = new_config_path;
 }
 
-ActorMap RunStatus::check_req_options(const ActorMap &rules, const vector<ActorPtr> &options, const bool print) {
+ActorMap RunStatus::check_req_options(
+	const ActorMap &rules, const vector<ActorPtr> &options, const bool print,
+		const std::vector<std::string> &disabled_tests_hash_filler
+	) {
 	vector<string> ruleKeys;
-	for(const auto &key: rules | views::keys) {
-		ruleKeys.push_back(key);
-	}
+	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
 	ActorMap result;
-	if(unordered_set<size_t> usedOptions; hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result)) {
+	if(unordered_set<size_t> usedOptions; hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result, disabled_tests_hash_filler)) {
 		if(print) {
 			log(LogLevel::DEBUG, "Solved!");
 			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());

@@ -79,14 +79,57 @@ bool RunStatus::prepare_run_folder() {
 	return false;
 }
 
+//TODO change to hash type?
+vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) const {
+	vector<string> result;
+	const path parent = run_folder.parent_path();
+	if(!is_directory(parent)) return result;
+
+	error_code ec;
+	for(const auto &entry: directory_iterator(parent, ec)) {
+		if(!entry.is_directory() || entry.path() == run_folder) continue;
+		const path &p = entry.path();
+		if(!exists(p / TEST_CONFIG_NAME)) continue;
+		if(access(p.string().c_str(), W_OK) != 0) continue;
+		bool skip = false;
+		if(_run_config.get_rewrite() == RewriteMode::none &&
+				(exists(p / ERROR_FILE) || exists(p / DONE_FILE))) {
+			skip = true;
+		} else if(_run_config.get_rewrite() == RewriteMode::errors &&
+				!(exists(p / ERROR_FILE) || !exists(p / DONE_FILE))) {
+			skip = true;
+		}
+		if(!skip) continue;
+		const string name = p.filename().string();
+		const auto sep = name.rfind('_');
+		if(sep != string::npos) result.push_back(name.substr(sep + 1));
+	}
+	return result;
+}
+
 void RunStatus::do_run() {
-	auto &gcfg = get_global_config();
+	nlohmann::json &gcfg = get_global_config();
+	disable_ifaces_NetworkManager(actors);
+
 	if(run_config().get_only_stats()) {
 		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
 		config(config_validation(config_path()));
 		load_actor_interface_mapping();
 		stats_test();
 		return;
+	}
+
+	_rssi_checked = false;
+
+	//actor_filler
+	const vector<string> disabled_tests_hash_filler = do_not_rewrite_actor_filler(_run_folder);
+
+	while(config_requirement(disabled_tests_hash_filler)) {
+		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
+	} //include req validation
+
+	if(!disabled_tests_hash_filler.empty()) {
+		change_filler_hash(actors); //only needed for actor_filler
 	}
 
 	// Pre-build external tools before config_requirement() moves interfaces to netns
@@ -96,22 +139,6 @@ void RunStatus::do_run() {
 			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
 			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
 				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
-		}
-	}
-
-	rssi_checked = false;
-	while(config_requirement()) {
-		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
-	} //include req validation
-
-	if(gcfg.at("actors").value("nm_exclude_actors", false)) {
-		for(const auto &[name, actor]: actors) {
-			if(!actor->get_or(SK::external_OS, "").empty()) continue;
-			const string iface = actor->get_or(SK::iface, "");
-			if(iface.empty()) continue;
-			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
-			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
-				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
 		}
 	}
 

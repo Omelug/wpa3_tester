@@ -85,7 +85,7 @@ protected:
 	HwOptionCache _hw_option_cache{};
 
 	// help flags
-	bool rssi_checked = false;
+	bool _rssi_checked = false;
 public:
 	[[nodiscard]] const HwOptionCache &hw_option_cache() const { return _hw_option_cache; }
 	void hw_option_cache(const HwOptionCache &c) { _hw_option_cache = c; }
@@ -147,12 +147,14 @@ private:
 	static std::vector<ActorPtr> external_wb_options();
 protected: // external BB
 	std::vector<uint8_t> get_external_bb_channels();
-	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {});
+	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {}, const std::vector<std::string> &disabled_tests_hash_filler = {});
 	static bool process_single_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc,
 			std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
-			const std::vector<std::pair<std::string, std::string>> &conn_conds);
+			const std::vector<std::pair<std::string, std::string>> &conn_conds,
+			std::vector<std::string> disabled_tests_hash_filler = {});
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
-			const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {});
+			const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {},
+			std::vector<std::string> disabled_tests_hash_filler = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();
@@ -167,12 +169,15 @@ public:
 	// use cache for options of actors
 
 	//return true if should re-reload
-	bool config_requirement();
+	bool config_requirement(const std::vector<std::string>& disabled_tests_hash_filler = {});
 	static std::string get_filler_hash(const ActorMap &actor_map, nlohmann::json &test_cfg);
 	void change_filler_hash(const ActorMap &result);
-	static ActorMap check_req_options(const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true);
+	static ActorMap check_req_options(
+		const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true,
+			const std::vector<std::string> &disabled_tests_hash_filler = {});
 
 	bool prepare_run_folder();
+	[[nodiscard]] std::vector<std::string> do_not_rewrite_actor_filler(const std::filesystem::path &run_folder) const;
 	void do_run();
 	void write_error_log(const std::exception &e);
 	void setup_test();

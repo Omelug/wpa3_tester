@@ -423,6 +423,7 @@ void RunSuiteStatus::execute() {
 	for(size_t i = 0; i < tests_paths.size(); ++i) {
 		if(g_interrupted) throw interrupted_err("suite loop");
 		const auto &[src_key, name, test_path] = tests_paths[i];
+
 		RunStatus rs(test_path, name, ".");
 		rs.hw_option_cache(hw_cache);
 		rs.run_config(run_config);

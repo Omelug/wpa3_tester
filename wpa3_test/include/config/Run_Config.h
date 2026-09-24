@@ -43,7 +43,7 @@ inline void parse_run_config(const nlohmann::json &cfg, Run_Config &rc) {
 	if(cfg.contains("test_report")) rc.test_report = cfg.at("test_report").get<bool>();
 	if(cfg.contains("compile_external")) rc.compile_external = cfg.at("compile_external").get<bool>();
 	if(cfg.contains("install_req")) rc.install_req = cfg.at("install_req").get<bool>();
-	;
+
 	if(cfg.contains("rewrite") && cfg.at("rewrite").is_string()) {
 		if(const auto &rw = cfg.at("rewrite").get_ref<const std::string &>(); rw == "errors") {
 			rc.rewrite = RewriteMode::errors;

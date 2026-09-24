@@ -1,9 +1,7 @@
-#include <cstdlib>
 #include <random>
 #include <set>
+#include <sstream>
 #include <string>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <vector>
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -16,13 +14,33 @@ using namespace filesystem;
 
 // ---------------------- BACKTRACKING ------------------------ Map of (RuleKey -> OptionKey)
 
+static string hash_from(const ActorMap &assignment) {
+	vector<string> mac_parts;
+	for(const auto &[actor_name, hw]: assignment) {
+		const auto &perm_mac = (*hw)[SK::permanent_mac];
+		if(!perm_mac.has_value()) return {};
+		mac_parts.push_back(actor_name + "=" + *perm_mac);
+	}
+	ranges::sort(mac_parts);
+	ostringstream oss;
+	oss << hex << hash<string>{}(join(mac_parts));
+	return oss.str().substr(0, 8);
+}
+
 bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t ruleIdx, const ActorMap &rules,
-		const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions, ActorMap &currentAssignment) {
-	if(ruleIdx == ruleKeys.size()) return true;
+		const vector<ActorPtr> &options, unordered_set<size_t> &usedOptions, ActorMap &currentAssignment,
+		const vector<string> &disabled_tests_hash_filler
+		) {
+	if(ruleIdx == ruleKeys.size()) {
+		//check if not disabled by list
+		if(!disabled_tests_hash_filler.empty() &&
+				ranges::contains(disabled_tests_hash_filler, hash_from(currentAssignment))) return false;
+		return true;
+	}
 
 	const string &actor_name = ruleKeys[ruleIdx];
 	const auto &ruleIt = rules.find(actor_name);
-	if(ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: " + actor_name);
+	if(ruleIt == rules.end()) throw config_err("Missing rule actor config for actor: {}", actor_name);
 
 	const Actor_config &currentRuleReq = *ruleIt->second;
 
@@ -33,7 +51,7 @@ bool hw_capabilities::find_solution(const vector<string> &ruleKeys, const size_t
 		usedOptions.insert(i);
 		currentAssignment.insert_or_assign(actor_name, options[i]);
 
-		if(find_solution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment)) return true;
+		if(find_solution(ruleKeys, ruleIdx + 1, rules, options, usedOptions, currentAssignment, disabled_tests_hash_filler)) return true;
 
 		usedOptions.erase(i);
 		currentAssignment.erase(actor_name);

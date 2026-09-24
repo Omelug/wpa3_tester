@@ -8,8 +8,6 @@ f: hash rev
 t: hash function
 +: /home/nixos/CLionProjects/wpa3_tester/data/suite_data/DoS_soft/channel_switch/external/client/CSA_external_client_filler/all_actors/CSA_external_client_8d537979
 
-maccahnger fials
-t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 r: small TODO/ FIXME
 PDF:
     +: info about injection tests/ problems
@@ -23,7 +21,7 @@ PDF:
     +: testování testeru? (asi jen zímínit u výběru jazyka)
     +: RunConfig description
 
-+: ap_info to device page
+t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 t: reguratory change to iface_info
 f: regulatory dont works on rapsberry (ath_htc reset to US)
 r: use global_variables
@@ -32,7 +30,7 @@ f: doc/ath_htc_loop.log from rapberry
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
 +: dot11RSNASAEAntiCloggingThreshold, dot11RSNASAERetransPeriod, dot11RSNASAESync
 f+: SSID cofusion
-+: vytvořit fork libtins a naházet tam pull requesty pro EAP (aspoň pro konstatny)
++: vytvořit fork libtins a naházet tam forky/pull requesty pro EAP (aspoň pro konstatny)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 
 CSA - upravit report pro external BB
@@ -60,6 +58,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
++: ap_info to device page
 +: ACM activation time (external, internal in hostapd)
 +: openwrt disable after test - to not colide with other internal tests
 r: add data to  observer graphs - showcase

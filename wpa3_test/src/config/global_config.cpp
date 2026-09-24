@@ -7,6 +7,9 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 
+#include "config/Actor_Config/actor_keys.h"
+#include "system/hw_capabilities.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
@@ -56,4 +59,19 @@ const Run_Config &get_global_run_config(const path &project_root_dir, const bool
 	}
 	return run_config_cache;
 }
+
+void disable_ifaces_NetworkManager(ActorMap actors){
+	auto &gcfg = get_global_config();
+	if(gcfg.at("actors").value("nm_exclude_actors", false)) {
+		for(const auto &[name, actor]: actors) {
+			if(!actor->get_or(SK::external_OS, "").empty()) continue;
+			const string iface = actor->get_or(SK::iface, "");
+			if(iface.empty()) continue;
+			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
+			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
+				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
+		}
+	}
+}
+
 }

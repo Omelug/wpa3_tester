@@ -105,7 +105,9 @@ constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;
 class hw_capabilities {
 public:
 	static bool find_solution(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorMap &rules,
-			const std::vector<ActorPtr> &options, std::unordered_set<size_t> &usedOptions, ActorMap &currentAssignment);
+			const std::vector<ActorPtr> &options, std::unordered_set<size_t> &usedOptions, ActorMap &currentAssignment,
+			const std::vector<std::string> &disabled_tests_hash_filler = {}
+			);
 private:
 	static void find_all_solutions(const std::vector<std::string> &ruleKeys, size_t ruleIdx, const ActorMap &rules,
 			const std::vector<ActorPtr> &options, std::unordered_set<size_t> &usedOptions, ActorMap &current,

@@ -287,6 +287,8 @@ Result set_channel_nl(const string_view iface, const optional<string> &netns, co
 	// NL80211_CMD_SET_CHANNEL updates the wdev's chandef (visible in `iw dev info`).
 	// NL80211_CMD_SET_WIPHY only updates the PHY-level default; on some kernels
 	// (e.g. RPi 6.x) that is not reflected per-wdev in `iw dev info`.
+	//TODO add regulation of tx power
+
 	(void)genlmsg_put(msg.get(), NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_CHANNEL, 0);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_IFINDEX, ifindex);
 	(void)nla_put_u32(msg.get(), NL80211_ATTR_WIPHY_FREQ, freq);

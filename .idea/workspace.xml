@@ -137,21 +137,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="h: hash check in findSolution backtracking">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: pkill_wait&#10;f: dnsmasq netns">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_validator.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/validator/test_validator.schema.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/config/global_config.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/config/global_config.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/default.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/default.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/global_config.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/global_config.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/logger/pm_logger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/logger/pm_logger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1197,8 +1185,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: OpenWrtConn::disable_actor to delete openwrt interface after test (disable interface not conflicts on ssid after test )" />
-    <MESSAGE value="+: json_throw to trace back json errors" />
     <MESSAGE value="+: Tins error tracebacks&#10;r: ap_info small changes" />
     <MESSAGE value="f: ap_info ACM triggger sniff iface fix" />
     <MESSAGE value="f: disconnect called on all whitebox external,  not only if called explicitly in test" />
@@ -1222,7 +1208,9 @@
     <MESSAGE value="r: get_heuristic_err_msg simplify" />
     <MESSAGE value="h: hash chcek in findSolution backtracking" />
     <MESSAGE value="h: hash check in findSolution backtracking" />
-    <option name="LAST_COMMIT_MESSAGE" value="h: hash check in findSolution backtracking" />
+    <MESSAGE value="f: cahnge hash orrder (after setup phase)&#10;r: small_canges" />
+    <MESSAGE value="+: pkill_wait&#10;f: dnsmasq netns" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: pkill_wait&#10;f: dnsmasq netns" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1261,21 +1249,6 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/scan/options/external_blackbox.cpp</url>
           <line>212</line>
           <option name="timeStamp" value="152" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
-          <line>133</line>
-          <option name="timeStamp" value="166" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp</url>
-          <line>193</line>
-          <option name="timeStamp" value="167" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/setup/requirement_validation.cpp</url>
-          <line>192</line>
-          <option name="timeStamp" value="168" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

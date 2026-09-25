@@ -250,7 +250,6 @@ bool RunStatus::config_requirement(const std::vector<std::string>& disabled_test
 
 	// SETUP ACTORS
 	log(LogLevel::DEBUG, "Setup actors, map size: {}", actors.size());
-
 	auto setup_by_map = [&](ActorMap &actor_map, const ActorMap &mapping) {
 		for(auto &[actor_name, actor]: actor_map) actor->setup_actor(_config, mapping.at(actor_name), this);
 	};

@@ -369,6 +369,12 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	const path log_path = run_folder_path / "logger" / (actor_name + ".log");
 	const path output_path = run_folder_path / "captured_hashes.txt";
 
+	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
+		istringstream ss(program_config["other_options"].get<string>());
+		string token;
+		while(ss >> token) command.push_back(token);
+	}
+
 	rs.process_manager.run(actor_name, command, rs.run_folder());
 	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
 		ofstream out(output_path);

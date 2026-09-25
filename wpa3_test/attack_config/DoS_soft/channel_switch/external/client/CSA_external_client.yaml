@@ -21,9 +21,10 @@ actors:
       program_config:
         other_options: "-d"
         country_code: CZ
-        # s ieee80211w: 1 OnePlus 3 funguje
         ieee80211w: 1
-        wpa_key_mgmt: SAE
+        wpa_key_mgmt: SAE WPA-PSK
+        wpa_passphrase: password123
+        sae_password: password123
     netns: ap
   client:
     source: external

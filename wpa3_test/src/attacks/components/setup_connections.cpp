@@ -61,21 +61,25 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 			interruptible_sleep(milliseconds(1500));
 			//TODO  add dnsmasq to nix/ requirements
 			hw_capabilities::run_cmd({ "pkill", "dnsmasq" }, std::nullopt, false);
-			rs.process_manager.run("dnsmasq_ap",
-					{ "dnsmasq",
-							"--no-daemon",
-							"-C",
-							"/dev/null",
-							"--interface=" + iface,
-							"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h" },
-					rs.run_folder());
+
+			vector<string> dmesg_cmd = {
+				"dnsmasq", "--no-daemon",
+				"-C", "/dev/null",
+				"--interface=" + iface,
+				"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h",
+				"--log-dhcp",
+				"--log-queries"
+			};
+			if (ap[SK::netns])
+				dmesg_cmd.insert(dmesg_cmd.begin(), { "ip", "netns", "exec", ap.get(SK::netns) });
+			rs.process_manager.run("dnsmasq_ap", dmesg_cmd, rs.run_folder());
 			log(LogLevel::INFO, "dnsmasq DHCP started on {} ({})", iface, ip);
 		}
 	}
 
 	if(rs.get_actor("client")->is_WB()) {
 		setup_STA(rs, "client");
-		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40)); //FIXME hardcoded timeout
 		if(rs.get_actor("client")[SK::ip_addr]) ip::set_ip(rs, "client");
 	} else if(rs.get_actor("client").is(SK::source, "external") && rs.get_actor("ap").is(SK::source, "internal")) {
 		log(LogLevel::INFO,
@@ -85,9 +89,9 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 
 		string matched_line;
 		if(check_way_eapol) {
-			rs.process_manager.wait_for("ap", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line);
+			rs.process_manager.wait_for("ap", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
 		} else {
-			rs.process_manager.wait_for("ap", "AP-STA-CONNECTED", seconds(120), true, &matched_line);
+			rs.process_manager.wait_for("ap", "AP-STA-CONNECTED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
 		}
 
 		smatch m;
@@ -120,11 +124,9 @@ void setup_rogue_ap(RunStatus &rs) {
 		if(exists(conf)) { copy_f(conf, rs.run_folder() / "rogue_ap_hostapd_mana.conf"); }
 
 		program::start(rs, "rogue_ap");
-		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30));
+		rs.process_manager.wait_for("rogue_ap", "AP-ENABLED", seconds(30)); //FIXME hardcoded timeout
 		log(LogLevel::INFO, "Rogue AP up");
-		//if(rs.get_actor("rogue_ap")[BK::sniff_iface]) {
-		//	rs.get_actor("rogue_ap")->up_sniff_iface();
-		//}
+		if(rs.get_actor("rogue_ap")[BK::sniff_iface]) { rs.get_actor("rogue_ap")->up_sniff_iface(); }
 	}
 }
 

@@ -1,11 +1,15 @@
 #include <cstdlib>
 #include <random>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <poll.h>
 #include <reproc++/drain.hpp>
 #include <reproc++/reproc.hpp>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "config/RunStatus.h"
 #include "logger/error_log.h"
@@ -94,11 +98,32 @@ string hw_capabilities::run_cmd_output(const vector<string> &argv, const optiona
 	reproc::sink::string sink_obj(output_str);
 
 	ec = reproc::drain(proc, sink_obj, reproc::sink::null);
-	if(ec) return {};
+	if(ec) {
+		log(LogLevel::ERROR, "Wait error {}", ec.message());
+		return {};
+	};
 
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
-	if(wait_ec) return {};
+	if(wait_ec) {
+		log(LogLevel::ERROR, "Wait error {}", wait_ec.message());
+		return {};
+	}
 	return output_str;
+}
+
+void hw_capabilities::pkill_wait(const string &pattern) {
+	const string out = run_cmd_output({"pgrep", "-f", pattern});
+	run_cmd({"pkill", "-f", pattern}, nullopt, false);
+	istringstream ss(out);
+	string line;
+	while (getline(ss, line)) {
+		if (line.empty()) continue;
+		int fd = (int)syscall(SYS_pidfd_open, (pid_t)stoi(line), 0);
+		if (fd < 0) continue;  // proces už skončil
+		pollfd pfd{fd, POLLIN, 0};
+		poll(&pfd, 1, -1);
+		close(fd);
+	}
 }
 
 // ---------------- git helpers

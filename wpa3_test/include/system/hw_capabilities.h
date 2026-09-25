@@ -124,6 +124,7 @@ public:
 			bool print = true);
 	static std::string run_cmd_output(
 			const std::vector<std::string> &argv, const std::optional<std::string> &netns = std::nullopt);
+	static void pkill_wait(const std::string &pattern);
 
 	// git helpers
 	static bool git_available();

@@ -25,20 +25,21 @@ void Actor_config::cleanup() const{
 		log(LogLevel::INFO, "Cleaning up interface {}", iface);
 	}
 
-	run({"pkill", "-f", "tshark.*" + iface}, false);
-	run({"pkill", "-f", "tcpdump.*" + iface}, false);
-	run({"pkill", "-f", "dnsmasq.*" + iface}, false);
+	//TODO needed?
+	hw_capabilities::pkill_wait("tshark.*" + iface);
+	hw_capabilities::pkill_wait("tcpdump.*" + iface);
+	hw_capabilities::pkill_wait("dnsmasq.*" + iface);
+	hw_capabilities::pkill_wait("wpa_supplicant.*-i" + iface);
+	hw_capabilities::pkill_wait("hostapd.*" + iface);
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
-	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){
+	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){ // proč to závisí na
 		run({"iw", "dev", get_mon_iface(), "del"});
-
-		run({"pkill", "-f", "wpa_supplicant.*-i" + iface}, false);
-		run({"pkill", "-f", "hostapd.*" + iface}, false);
-
+		hw_capabilities::pkill_wait("wpa_supplicant.*" + get_mon_iface());
+		hw_capabilities::pkill_wait("hostapd.*" + get_mon_iface());
 		set_iface_down();
-		run({"rfkill", "unblock", "wifi"});
 	}
+	run({"rfkill", "unblock", "wifi"});
 	run({"ip", "addr", "flush", "dev", iface});
 	set_iface_up();
 }

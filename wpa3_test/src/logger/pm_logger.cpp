@@ -4,6 +4,8 @@
 #include "system/utils.h"
 #include <ranges>
 
+#include "default.h"
+
 namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
@@ -40,7 +42,7 @@ void ProcessManager::init_logging(const path &run_folder){
 	recreate_log_folder(log_base_dir);
 
 	// create combated log
-	const path combined_path = log_base_dir / "combined.log";
+	const path combined_path = log_base_dir / COMBINED_LOG;
 	combined_log.close();
 	combined_log.open(combined_path, ios::out | ios::trunc);
 	if(!combined_log.is_open()){

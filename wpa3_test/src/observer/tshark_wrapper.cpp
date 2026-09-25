@@ -546,7 +546,7 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 
 	stringstream ss(caps_raw);
 	string line;
-	while(getline(ss, line)) {
+	while(getline(ss, line)) { //TODO this parsisng is duplicate
 		line = trim(line);
 		if(line.empty()) continue;
 		try {

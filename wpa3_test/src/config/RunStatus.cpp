@@ -15,6 +15,7 @@
 #include "interrupt.h"
 #include "logger/error_log.h"
 #include "logger/log_util.h"
+#include "observer/tshark_wrapper.h"
 #include "setup/config_parser.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
@@ -92,6 +93,7 @@ vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) co
 		if(!exists(p / TEST_CONFIG_NAME)) continue;
 		if(access(p.string().c_str(), W_OK) != 0) continue;
 		bool skip = false;
+		//TODO simplify with  RunStatus::prepare_run_folder()
 		if(_run_config.get_rewrite() == RewriteMode::none &&
 				(exists(p / ERROR_FILE) || exists(p / DONE_FILE))) {
 			skip = true;
@@ -108,7 +110,6 @@ vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) co
 }
 
 void RunStatus::do_run() {
-	nlohmann::json &gcfg = get_global_config();
 	disable_ifaces_NetworkManager(actors);
 
 	if(run_config().get_only_stats()) {
@@ -121,26 +122,15 @@ void RunStatus::do_run() {
 
 	_rssi_checked = false;
 
-	//actor_filler
-	const vector<string> disabled_tests_hash_filler = do_not_rewrite_actor_filler(_run_folder);
+	vector<string> disabled_tests_hash_filler = {};
+	if(_config_path.string().ends_with(ACTOR_FILLER_SUFFIX)) // actor_filler
+		disabled_tests_hash_filler = do_not_rewrite_actor_filler(_run_folder);
 
 	while(config_requirement(disabled_tests_hash_filler)) {
 		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 	} //include req validation
 
-	if(!disabled_tests_hash_filler.empty()) {
-		change_filler_hash(actors); //only needed for actor_filler
-	}
-
-	// Pre-build external tools before config_requirement() moves interfaces to netns
-	if(gcfg.value("compile_external", false)) {
-		for(const auto &[_, actor_cfg]: _config.at("actors").items()) {
-			if(!actor_cfg.contains("setup")) continue;
-			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
-			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
-				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
-		}
-	}
+	requirement_prebuild(_config);
 
 	auto interrupted = [&] {
 		if(!g_interrupted) return false;
@@ -151,6 +141,9 @@ void RunStatus::do_run() {
 
 	setup_test();
 	if(interrupted()) return;
+	if(_config_path.string().ends_with(ACTOR_FILLER_SUFFIX)) {
+		change_filler_hash(actors); //only needed for actor_filler
+	}
 	save_yaml(_config, _run_folder / TEST_CONFIG_NAME);
 	run_test();
 	if(interrupted()) return;
@@ -172,8 +165,8 @@ void RunStatus::write_error_log(const exception &e) {
 	}
 
 	int status = 0;
-	const unique_ptr<char, void(*)(void*)> demangled(
-		abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
+	const unique_ptr<char, void(*)(void*)>
+	demangled( abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
 	err_log << "=== Error occurred at " << current_timestamp() << " ===" << "\n"
 	        << "Exception type: " << ((status == 0 && demangled) ? demangled.get() : typeid(e).name()) << "\n"
 	        << "Message: " << e.what() << "\n";
@@ -185,7 +178,7 @@ void RunStatus::write_error_log(const exception &e) {
 		log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
 		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(te->trace()));
 	} else {
-		const auto &trace = throw_trace_for(reinterpret_cast<const void *>(&e));
+		const auto &trace = throw_trace_for(&e);
 		err_log << "Stacktrace:\n" << std::to_string(trace) << "\n";
 		log(LogLevel::ERROR, "{}", e.what());
 		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(trace));
@@ -381,17 +374,16 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 	}
 }
 
-//FIXME stricly connected to actors names from config -> move actor names to some constatnts?
+//FIXME strictly connected to actors names from config -> move actor names to some constants?
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const {
 	if(event_sets.contains(DISCONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
 		get_actor("client");
-		log_events(elements,
-				{
-						{ "ap", "did not acknowledge", "ACK_fail", "red" },
-						{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
-				});
+		log_events(elements,{
+			{ "ap", "did not acknowledge", "ACK_fail", "red" },
+			{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
+		});
 	}
 	if(event_sets.contains(CONNECT)) {
 		//throw error of actors not found
@@ -404,16 +396,13 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 				});
 	}
 	if(event_sets.contains(TESTER_TAGS)) {
-		//throw error of actor not found
-		get_actor("client");
 
-		log_events(elements,
-				{
-						{ "client", START_tag, "START", "black" },
-						{ "client", END_tag, "END", "black" },
-						{ "client", ATTACK_START_tag, escape_tex("attack_start"), "black" },
-						{ "client", ATTACK_STOP_tag, escape_tex("attack_stop"), "black" },
-				});
+		log_events(elements,{
+			{ COMBINED, START_tag, "START", "black" },
+			{ COMBINED, END_tag, "END", "black" },
+			{ COMBINED, ATTACK_START_tag, escape_tex("attack_start"), "black" },
+			{ COMBINED, ATTACK_STOP_tag, escape_tex("attack_stop"), "black" },
+		});
 	}
 }
 
@@ -467,7 +456,7 @@ void RunStatus::load_actor_interface_mapping() {
 		const string actor_name = line.substr(c1 + 1, c2 - c1 - 1);
 		string json_str = line.substr(c6 + 1);
 
-		// Strip CSV quoting and unescape "" -> "
+		// Strip CSV quoting and unescape "" -> " //TODO separate function, used in saving function ?
 		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"') {
 			json_str = json_str.substr(1, json_str.size() - 2);
 			for(size_t i = 0; i + 1 < json_str.size(); ++i)

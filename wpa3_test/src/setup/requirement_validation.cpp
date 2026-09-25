@@ -304,8 +304,7 @@ string RunStatus::get_filler_hash(const ActorMap &actor_map, json &test_cfg) {
 }
 
 void RunStatus::change_filler_hash(const ActorMap &result) {
-	if(_config_path.filename().string().find(visual::helper::ACTOR_FILLER_SUFFIX) == string::npos)
-		return;
+	if(_config_path.filename().string().find(ACTOR_FILLER_SUFFIX) == string::npos) return;
 
 	const string current_name = _config.at("name").get<string>();
 	const auto sep = current_name.rfind('_');
@@ -323,7 +322,7 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	filesystem::rename(_run_folder, new_folder);
 	_run_folder = new_folder;
 
-	const path new_config_path = _config_path.parent_path() / (new_hash + visual::helper::ACTOR_FILLER_SUFFIX);
+	const path new_config_path = _config_path.parent_path() / (new_hash + ACTOR_FILLER_SUFFIX);
 	_config["name"] = new_name;
 	filesystem::remove(_config_path);
 	save_yaml(_config, new_config_path);

@@ -12,10 +12,6 @@
 
 namespace wpa3_tester::visual::helper {
 
-// if changed -> change yaml test validator as well
-// attack_config/validator/test_validator.schema.yaml (_actor_filler rule)
-inline std::string ACTOR_FILLER_SUFFIX = "_actor_filler.yaml";
-
 std::unique_ptr<RunStatus> load_test_rs(const std::filesystem::path &test_folder);
 
 // Read attacker_module: value from test_config.yaml without a YAML library

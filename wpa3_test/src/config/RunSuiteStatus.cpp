@@ -352,7 +352,7 @@ void RunSuiteStatus::defined_by_actor_filler(
 		json cfg = template_config;
 		auto hash_str = RunStatus::get_filler_hash(solution, cfg);
 		cfg["name"] = format("{}_{}", base_name, hash_str);
-		const path test_path = gen_folder / (hash_str + visual::helper::ACTOR_FILLER_SUFFIX);
+		const path test_path = gen_folder / (hash_str + ACTOR_FILLER_SUFFIX);
 		save_yaml(cfg, test_path);
 		set_public_perms(test_path);
 		RunStatus::config_validation(test_path);

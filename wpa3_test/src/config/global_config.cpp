@@ -6,7 +6,7 @@
 #include "system/utils.h"
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
-
+#include "ex_program/hostapd/hostapd_helper.h"
 #include "config/Actor_Config/actor_keys.h"
 #include "system/hw_capabilities.h"
 
@@ -70,6 +70,18 @@ void disable_ifaces_NetworkManager(ActorMap actors){
 			log(LogLevel::INFO, "Excluding {} ({}) from NetworkManager", iface, name);
 			if(hw_capabilities::run_cmd({ "nmcli", "device", "set", iface, "managed", "no" }, nullopt, false) != 0)
 				log(LogLevel::WARNING, "nmcli failed for {}, NetworkManager may interfere", iface);
+		}
+	}
+}
+void requirement_prebuild(nlohmann::json config) {
+	const nlohmann::json &gcfg = get_global_config();
+	// Pre-build external tools before config_requirement() moves interfaces to netns
+	if(gcfg.value("compile_external", false)) {
+		for(const auto &[_, actor_cfg]: config.at("actors").items()) {
+			if(!actor_cfg.contains("setup")) continue;
+			const auto &prog_cfg = actor_cfg.at("setup").value("program_config", nlohmann::json::object());
+			if(prog_cfg.contains("openssl") && !prog_cfg.at("openssl").is_null())
+				hostapd::get_openssl_paths(prog_cfg.at("openssl").get<string>());
 		}
 	}
 }

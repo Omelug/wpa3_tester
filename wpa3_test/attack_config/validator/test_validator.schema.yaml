@@ -22,8 +22,9 @@ properties:
     not:
       anyOf:
         - const: test_config
+        - const: combined
         - pattern: '_actor_filler$'
-    errorMessage: "reserved name: 'test_config' and names ending with '_actor_filler' (ACTOR_FILLER_SUFFIX) are reserved"
+    errorMessage: "reserved name: 'test_config', 'combined' (COMBINED) and names ending with '_actor_filler' (ACTOR_FILLER_SUFFIX) are reserved"
 
   attacker_module:
     type: string

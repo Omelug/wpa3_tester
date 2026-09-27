@@ -1,0 +1,9 @@
+name: deauth_external_client_filler
+suite_functions: deauth_external_client_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./deauth_external_client.yaml
+delete_old: true
+rewrite: "errors"

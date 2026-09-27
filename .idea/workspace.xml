@@ -138,8 +138,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: pkill_wait&#10;f: dnsmasq netns">
+      <change afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_wpa3_only.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/deauth.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -288,7 +291,7 @@
     &quot;ctest.advertisement.all.test.configuration.is.created&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
     &quot;git.auto.fetch.suggestion.counter&quot;: &quot;3&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/build&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/channel_switch/external/client&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
@@ -298,11 +301,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client" />
       <recent name="$PROJECT_DIR$/data/suite_data/DoS_soft/channel_switch/external/client/CSA_external_client_filler/all_actors" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/deauth" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon" />
-      <recent name="$PROJECT_DIR$/tests/observer" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state" />

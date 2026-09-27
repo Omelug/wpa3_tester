@@ -1,0 +1,9 @@
+name: CSA_external_client_wpa3_only
+$extends: [ ./CSA_external_client.yaml ]
+
+actors:
+  ap:
+    setup:
+      program_config:
+        wpa_key_mgmt: SAE
+        sae_password: password123

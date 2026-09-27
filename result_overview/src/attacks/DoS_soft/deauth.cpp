@@ -61,6 +61,8 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
 
     emit_table("WPA2 deauth filler (2.9, 2.10)",
         base / "deauth_filler", "deauth_filler");
+    emit_table("External client (WPA3)",
+        base / "deauth_external_client_filler", "deauth_external_client_filler");
 
     f << "</body></html>";
 }

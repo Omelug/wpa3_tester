@@ -1,0 +1,43 @@
+name: deauth_external_client
+attacker_module: deauth
+$validator: ./deauth.schema.yaml
+scan_iface: wlan1
+
+$extends: [
+  ../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
+]
+
+actors:
+  ap:
+    setup:
+      program_config:
+        other_options: "-d"
+  client:
+    source: external
+    scan_ignore: yes
+    selection:
+      condition: [ STA, 2_4GHz ]
+      channel: 6
+  attacker:
+    source: internal
+    selection:
+      driver: [ mt76x2u, mt76x2u_git ]
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+observers:
+  ap_tcpdump:
+    actor: ap
+    program: tcpdump
+    program_config:
+      filter: "udp port 5201"
+  attacker_tshark:
+    actor: attacker
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+attack_config:
+  attack_time: 30
+  ms_interval: 100
+  sleep_before_sec: 10
+  sleep_after_sec: 10
+rewrite: errors

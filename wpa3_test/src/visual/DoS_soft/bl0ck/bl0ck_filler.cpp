@@ -52,7 +52,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 		if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {
 			const auto &ac = cfg["attack_config"];
 			if(ac["attack_variant"]) e.attack_variant = ac["attack_variant"].as<string>();
-			if(ac["random"])         e.random          = ac["random"].as<bool>();
+			if(ac["random_MAC"])     e.random_MAC     = ac["random_MAC"].as<bool>();
 		}
 
 		e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
@@ -93,7 +93,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, c
 					 COL("Attacker (driver)",
 							 overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
 					 col("Variant", &Bl0ckTestEntry::attack_variant);
-					 COL("Random", (e.random.has_value() ? (*e.random ? "yes" : "no") : "-"));
+					 COL("Random MAC ", &Bl0ckTestEntry::random_MAC);
 					 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
 					 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
 					 col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);

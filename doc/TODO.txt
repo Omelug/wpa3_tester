@@ -1,13 +1,18 @@
 //TODO
--: somthing is broken again, +: new feature, f: fix, r: refactoring,
+-: something is broken again, +: new feature, f: fix, r: refactoring,
 t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
-Version v 0.0.0.0:
-f: hash rev
-t: hash function
-+: /home/nixos/CLionProjects/wpa3_tester/data/suite_data/DoS_soft/channel_switch/external/client/CSA_external_client_filler/all_actors/CSA_external_client_8d537979
+Version  v 0.0.0.0:
 
+f: mt76-git není v drivers.conf
+bl0ck:
+    - filler for random
+    - enable PCAP in hostapd (chcek if netlink is not lying about PCAP support)
+    - filler - change only ap
+
+r: hash type
+t: hash function
 r: small TODO/ FIXME
 PDF:
     +: info about injection tests/ problems

@@ -1,0 +1,5 @@
+name: bl0ck_random_BA
+attacker_module: bl0ck
+$extends: ../../bl0ck_BA.yaml
+attack_config:
+  random: true

@@ -5,6 +5,9 @@ tests:
   all_actors:
     type: actor_filler
     config: ../bl0ck_BARS.yaml
+  random:
+    type: actor_filler
+    config: ./random/bl0ck_random_BARS.yaml
   #BARS_rogue:
   #  type: actor_filler
   #  config: ../rogueAP/BARS_rogue_AP.yaml

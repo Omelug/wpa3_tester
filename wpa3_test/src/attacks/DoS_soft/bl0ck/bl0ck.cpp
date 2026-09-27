@@ -223,7 +223,7 @@ void run_bl0ck_attack(RunStatus &rs) {
 	const string bl0ck_att_type = att_cfg.at("attack_variant").get<string>();
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
 	const int frame_in_batch = att_cfg.at("frame_in_batch").get<int>();
-	const bool is_random = att_cfg.at("random").get<bool>();
+	const bool random_mac = att_cfg.at("random_MAC").get<bool>();
 	const int ms_interval = att_cfg.at("ms_interval").get<int>();
 
 	rs.start_observers();
@@ -231,7 +231,7 @@ void run_bl0ck_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Block Attack START (Type: {}, Frames: {})", bl0ck_att_type, frame_in_batch);
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, is_random, ms_interval);
+	block(STA_mac, AP_mac, iface, frame_in_batch, bl0ck_att_type, duration, random_mac, ms_interval);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	rs.process_manager.stop_all();

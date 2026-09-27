@@ -1,0 +1,5 @@
+name: bl0ck_random_BAR
+attacker_module: bl0ck
+$extends: ../../bl0ck_BAR.yaml
+attack_config:
+  random: true

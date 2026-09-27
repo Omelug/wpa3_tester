@@ -20,7 +20,7 @@ struct Bl0ckTestEntry {
 	std::string attacker_mac;
 	std::string attacker_driver;
 	std::string attack_variant;
-	std::optional<bool> random;
+	std::optional<bool> random_MAC;
 
 	//result params
 	int disconnect_count = 0;

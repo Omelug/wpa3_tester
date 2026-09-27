@@ -1,7 +1,7 @@
 actors:
-  ap:
-    selection:
-      permanent_mac: "90:de:80:de:fd:b2"
+  #ap:
+  #  selection:
+  #    permanent_mac: "90:de:80:de:fd:b2"
       #driver: [ mt76x2u, mt76x2u_git ]
   client:
     selection:

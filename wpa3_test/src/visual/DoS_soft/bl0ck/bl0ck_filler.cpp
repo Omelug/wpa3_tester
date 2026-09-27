@@ -93,7 +93,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, c
 					 COL("Attacker (driver)",
 							 overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
 					 col("Variant", &Bl0ckTestEntry::attack_variant);
-					 COL("Random MAC ", &Bl0ckTestEntry::random_MAC);
+					 COL("Random", e.random_MAC);
 					 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
 					 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
 					 col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);

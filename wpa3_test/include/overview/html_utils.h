@@ -69,7 +69,7 @@ private:
 	std::optional<std::string> t_name_;
 
 	std::string capture_evaluator_output(const Column &col, const EntryType &entry) const {
-		std::ostringstream oss;
+		const std::ostringstream oss;
 		std::ostream &stream = hg_.stream_;
 		auto *old_buf = stream.rdbuf(oss.rdbuf());
 		col.evaluator(entry);

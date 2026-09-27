@@ -30,7 +30,7 @@ $extends: [ ./ex_observers.comp.yaml ]
 attack_config:
   attack_time_sec: 25
   attack_variant: "BAR"
-  random: true
+  random_MAC: true
   ms_interval: 100
   frame_in_batch: 50
   sleep_before_sec: 10

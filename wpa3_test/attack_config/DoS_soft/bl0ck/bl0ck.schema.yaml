@@ -52,10 +52,10 @@ properties:
         type: string
         enum: [ "BAR", "BA", "BARS" ]
         description: typeof bl0ck attack
-      random:
+      random_MAC:
         type: boolean
         default: false
-        description: is sender MAC address should be random
+        description: sender MAC address should be random
       frame_in_batch:
         type: integer
         description: Number of concurrent frames to send

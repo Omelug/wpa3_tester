@@ -4,5 +4,5 @@ $validator: ../../bl0ck.schema.yaml
 attack_config:
   attack_time_sec: 25
   attack_variant: "BA"
-  random: false
+  random_MAC: false
   frame_in_batch: 50

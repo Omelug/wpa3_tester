@@ -10,5 +10,5 @@ attacker_module: bl0ck
 attack_config:
   attack_time_sec: 15
   attack_variant: "BA"
-  random: false
+  random_MAC: false
   frame_in_batch: 50

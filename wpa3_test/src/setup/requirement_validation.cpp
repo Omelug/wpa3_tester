@@ -105,7 +105,7 @@ static vector<string> psy_if_in_ns(const string &ns_name) {
 			string iface;
 			if(ss >> iface) {
 				result.push_back(iface);
-				log(LogLevel::DEBUG, "iface in ns {}:{}", ns_name, iface);
+				log(LogLevel::DEBUG, "iface {} in ns {}", iface, ns_name);
 			}
 		}
 	}

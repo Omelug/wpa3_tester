@@ -26,5 +26,5 @@ tests:
       attack_config:
         attack_time_sec: 15
         attack_variant: "BAR"
-        random: true
+        random_MAC: true
         frame_in_batch: 50

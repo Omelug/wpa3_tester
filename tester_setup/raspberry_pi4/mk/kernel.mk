@@ -33,7 +33,7 @@ DRIVERS_CONF := $(CURDIR)/image/drivers.conf
 
 driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Cross-building WiFi drivers against $(KERNEL_OUT) (matches this kernel exactly)..."
-	@grep -v '^#' $(DRIVERS_CONF) | grep -v '^[[:space:]]*$$' | while IFS='|' read -r name url cflags tag; do \
+	@grep -v '^#' $(DRIVERS_CONF) | grep -v '^[[:space:]]*$$' | while IFS='|' read -r name url cflags tag make_vars; do \
 	    src=$(DRIVER_SRC)/$$name; \
 	    rm -rf "$$src"; mkdir -p $(DRIVER_SRC); \
 	    if echo "$$tag" | grep -qE '^[0-9a-f]{40}$$'; then \
@@ -44,10 +44,12 @@ driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	        git clone --depth=1 "$$url" "$$src"; \
 	    fi; \
 	    [ -n "$$cflags" ] && echo "EXTRA_CFLAGS += $$cflags" >> "$$src/Makefile"; \
+	    find "$$src" -name "*.c.xz" -exec xz -dk {} \; 2>/dev/null || true; \
+	    [ "$$name" = mt76 ] && sed -i '/NL80211_IFTYPE_NAN_DATA/d' "$$src/mt76_connac_mcu.c" || true; \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
-	        M=$$(realpath $$src) modules -j$$(nproc); \
+	        M=$$(realpath $$src) $$make_vars modules -j$$(nproc); \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
-	        M=$$(realpath $$src) INSTALL_MOD_PATH=$(KERNEL_MODS) INSTALL_MOD_DIR=updates \
+	        M=$$(realpath $$src) $$make_vars INSTALL_MOD_PATH=$(KERNEL_MODS) INSTALL_MOD_DIR=updates \
 	        modules_install; \
 	done
 	@echo "==> Drivers built -> $(KERNEL_MODS)/lib/modules/*/updates/"
@@ -59,6 +61,7 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	$(MAKE) driver-modules
 	rsync -az --delete --info=progress2 $(KERNEL_MODS)/lib/modules/ $(PI_USER)@$(PI):/tmp/new-modules/
 	$(SSH) "sudo rsync -a /tmp/new-modules/. /lib/modules/ && sudo depmod -a"
+	$(SSH) "printf 'options mt76_usb disable_usb_sg=1\nblacklist mt76x2u\nblacklist mt76x2e\ninstall mt76x2u /bin/false\ninstall mt76x2e /bin/false\n' | sudo tee /etc/modprobe.d/mt76.conf > /dev/null"
 	scp $(KERNEL_OUT)/arch/arm64/boot/Image $(PI_USER)@$(PI):/tmp/kernel8.img
 	$(SSH) "sudo cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.bak \
 	    && sudo cp /tmp/kernel8.img /boot/firmware/kernel8.img && sudo reboot"

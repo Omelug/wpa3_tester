@@ -68,6 +68,6 @@ observers:
     program: dmesg
 attack_config:
   attack_time_sec: 30
-  random: false
+  random_MAC: false
   frame_in_batch: 50
   ms_interval: 10

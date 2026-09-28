@@ -21,9 +21,6 @@ properties:
         description: time of sending cookie guzzler packets
         default: 5
         minimum: 1
-      regeneration_time_sec:
-        type: integer
-        default: 0
       burst_size:
         type: integer
       frames_per_second_limit:

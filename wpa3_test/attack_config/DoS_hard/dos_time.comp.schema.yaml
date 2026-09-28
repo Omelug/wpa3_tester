@@ -1,0 +1,32 @@
+title: Component for same DoS time configs
+type: object
+required:
+  - actors
+  - attack_config
+properties:
+  actors:
+    required:
+      - ap
+      - client
+      - attacker
+  attack_config:
+    type: object
+    required:
+      - attack_time_sec
+      - sleep_before_sec
+      - sleep_after_sec
+    properties:
+      sleep_before_sec:
+        type: integer
+        default: 10
+        description: time before test for get valid traffic before
+      attack_time_sec:
+        type: integer
+        minimum: 0
+        defualt: 10
+        description: Time of DoS attacks
+      sleep_after_sec:
+        type: integer
+        default: 10
+        description: time after to check if situation will be ok again
+    additionalProperties: false

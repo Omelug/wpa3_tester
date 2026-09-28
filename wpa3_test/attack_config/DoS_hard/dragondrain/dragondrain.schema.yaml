@@ -1,14 +1,6 @@
 title: Config for dragondrain wrapper
 type: object
-required:
-  - actors
-  - attack_config
 properties:
-  actors:
-    required:
-      - ap
-      - client
-      - attacker
   attack_config:
     type: object
     additionalProperties: false

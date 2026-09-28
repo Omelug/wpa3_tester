@@ -33,6 +33,5 @@ actors:
 $extends: [ ../observers_DoS.comp.yaml ]
 attack_config:
   attack_time_sec: 40
-  regeneration_time_sec: 10
   burst_size: 512
   frames_per_second_limit: 50

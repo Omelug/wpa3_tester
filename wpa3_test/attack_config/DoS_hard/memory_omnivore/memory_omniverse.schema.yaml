@@ -1,26 +1,12 @@
 title: Cookie guzzler Config
 type: object
-required:
-  - actors
-  - attack_config
+$extends: ../dos_time.comp.schema.yaml
 properties:
-  actors:
-    required:
-      - ap
-      - client
-      - attacker
   attack_config:
     type: object
     required:
-      - attack_time_sec
-      - burst_size
-      - acm_threshold
-      - random_dh_groups
-      - use_connected_stas
+      $UNION: [burst_size, acm_threshold, random_dh_groups, use_connected_stas]
     properties:
-      attack_time_sec:
-        type: integer
-        minimum: 1
       burst_size:
         type: integer
         minimum: 1

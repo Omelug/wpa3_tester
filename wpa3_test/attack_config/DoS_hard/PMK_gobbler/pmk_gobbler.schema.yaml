@@ -1,25 +1,15 @@
 title: Cookie guzzler Config
 type: object
-required:
-  - actors
-  - attack_config
+$extends: ../dos_time.comp.schema.yaml
 properties:
-  actors:
-    required:
-      - ap
-      - client
-      - attacker
   attack_config:
     type: object
     required:
-      - attack_time_sec
-      - acm_trigger_count
+      $UNION: [acm_trigger_count]
     additionalProperties: false
     properties:
       attack_time_sec:
-        type: integer
         description: time of sending cookie guzzler packets
-        minimum: 1
       acm_trigger_count:
         type: integer
         minimum: 0

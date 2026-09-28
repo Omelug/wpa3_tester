@@ -1,6 +1,7 @@
 #include "setup/YAMLValidator.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
+#include <filesystem>
 #include <nlohmann/json-schema.hpp>
 #include <sstream>
 
@@ -166,7 +167,9 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 YAMLValidator::YAMLValidator(const path &schema_path){
 	schema_dir_ = schema_path.parent_path();
-	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
+	json schema_json = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
+	std::vector<std::string> hierarchy = { absolute(schema_path).string() };
+	r_schema = wpa3_tester::resolve_extends(schema_json, schema_dir_, hierarchy);
 	validator = json_validator(r_schema, make_loader(schema_dir_));
 }
 

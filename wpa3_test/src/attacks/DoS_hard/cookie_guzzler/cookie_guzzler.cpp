@@ -42,6 +42,7 @@ void run_attack(RunStatus &rs) {
 
 	rs.start_observers();
 	log(LogLevel::INFO, "SAE Commit captured");
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
 	// change to monitor mode
 	attacker->set_monitor_mode();
@@ -56,8 +57,7 @@ void run_attack(RunStatus &rs) {
 			att_cfg.at("frames_per_second_limit").get<size_t>());
 
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
-	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
-	interruptible_sleep(seconds(regeneration_time_sec));
+	interruptible_sleep(seconds( att_cfg.at("sleep_after_sec")));
 	ap->disconnect();
 }
 

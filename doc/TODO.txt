@@ -7,12 +7,13 @@ Version  v 0.0.0.0:
 
 mc_mitm:
     +: přegeneorvat sta_ap_iperf3
-    +: problém s mt76-git? zkuit kali
+    +: problém s mt76-git? zkusit kali
 bl0ck:
     +: zkusti BA s dalším připoejným klientem (měl by se taky odpojit)
     +: enable PBAC in hostapd (chcek if netlink is not lying about PBAC support)
 
 DoS_hard:
+     +: observer for new_valid client (wpa_cli ? )
      +: add possibility DoS on 2_4/5Ghz (2 adapters )
 
 r: hash type

@@ -57,11 +57,13 @@ void run_attack(RunStatus &rs) {
 	const auto ap = rs.get_actor("ap");
 	const string target_mac = ap.get(SK::mac);
 
-	interruptible_sleep(seconds(10));
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	start_dragondrain(rs, "attacker", attacker.get(SK::iface), target_mac, ap.get(SK::channel), att_cfg);
 	interruptible_sleep(seconds(att_cfg.at("timeout_sec").get<int>()));
 	rs.process_manager.stop("attacker");
-	interruptible_sleep(seconds(10));
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	ap->disconnect();
 }
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
@@ -82,13 +83,32 @@ json yaml_to_json_with_marks(
 
 void deep_merge(json &base, const json &patch) {
 	for(const auto &[key, val]: patch.items()) {
-		// TODO  add $ADD and change $DELETE like object to delete only parts of arrays
 		if(key == "$DELETE") {
 			if(val.is_string())
 				base.erase(val.get<string>());
 			else if(val.is_array())
 				for(const auto &k: val)
 					if(k.is_string()) base.erase(k.get<string>());
+		} else if(val.is_object() && (val.contains("$UNION") || val.contains("$SUBTRACT") || val.contains("$INTERSECT"))) {
+			if(!base.contains(key)) base[key] = json::array();
+			json &arr = base[key];
+			if(!arr.is_array()) { arr = json::array(); }
+			if(val.contains("$UNION")) {
+				for(const auto &item: val["$UNION"])
+					if(ranges::find(arr, item) == arr.end()) arr.push_back(item);
+			}
+			if(val.contains("$SUBTRACT")) {
+				const auto &sub = val["$SUBTRACT"];
+				arr.erase(remove_if(arr.begin(), arr.end(),
+					[&](const json &item) { return ranges::find(sub, item) != sub.end(); }),
+					arr.end());
+			}
+			if(val.contains("$INTERSECT")) {
+				const auto &inter = val["$INTERSECT"];
+				arr.erase(remove_if(arr.begin(), arr.end(),
+					[&](const json &item) { return ranges::find(inter, item) == inter.end(); }),
+					arr.end());
+			}
 		} else if(val.is_object() && base.contains(key) && base[key].is_object()) {
 			deep_merge(base[key], val);
 		} else if(val.is_null() && base.contains(key) && !base[key].is_null()) {

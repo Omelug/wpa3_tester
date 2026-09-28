@@ -61,6 +61,8 @@ attack_config:
   attack_time: 20
   ssid: test_mc_mitm
   only_to_mitm: true #FIXME
+  beacon_interval_ms: 10
+  beacon_warning_sec: 2
 
 delete_old: true
 rewrite: all

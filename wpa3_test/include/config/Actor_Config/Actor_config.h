@@ -13,6 +13,7 @@
 namespace wpa3_tester {
 enum class Source { SIMULATION, INTERNAL, EXTERNAL };
 
+// -- if changed -> change in raspberry NetworkManger unmanaged
 inline auto MONITOR_IFACE_PREFIX = std::string("mon_");
 inline auto AP_IFACE_PREFIX = std::string("ap_");
 inline auto HWSIM_IFACE_PREFIX = std::string("hwsim_");

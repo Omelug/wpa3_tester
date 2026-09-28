@@ -22,7 +22,7 @@ public:
 	bool stop_mitm = false;
 
 	// AP <-> rogue_sta <-> rogue AP <-> client
-	McMitm(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
+	McMitm(ActorPtr rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
 			const std::optional<std::filesystem::path> &run_folder = std::nullopt, bool only_to_mitm = false);
 	virtual ~McMitm();
 
@@ -58,8 +58,6 @@ public:
 	time_point last_rogue_beacon;
 	time_point last_print_real_chan;
 	time_point last_print_rogue_chan;
-
-	static void patch_channel_raw(std::vector<uint8_t> &beacon_raw, uint8_t channel);
 
 	virtual void send_to_real(Tins::PDU &pdu) const;
 	virtual void send_to_real(const std::vector<uint8_t> &raw) const;

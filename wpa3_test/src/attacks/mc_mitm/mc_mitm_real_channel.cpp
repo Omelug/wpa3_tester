@@ -167,7 +167,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
-	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
+	//SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	//TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))

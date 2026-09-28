@@ -2,11 +2,9 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <random>
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <optional>
-#include <thread>
 #include "system/netlink_guards.h"
 
 #include "attacks/components/setup_connections.h"
@@ -18,7 +16,6 @@
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
-#include "overview/described.h"
 #include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 #include "visual/result_helper.h"
@@ -82,7 +79,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
 				data[1] = vht_center_ch(ap_channel.ch_num);
-			o = Dot11::option(192, data.size(), data.data());
+			o = Dot11::option(Dot11::OptionTypes::VHT_OP, data.size(), data.data());
 		}
 	}
 
@@ -218,7 +215,7 @@ void run_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
 	const auto &ap = rs.get_actor("ap");
 
-	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
+	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::permanent_mac));
 	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
 	const string iface_name = rs.get_actor("attacker").get(SK::iface);
 	const optional<string> netns = rs.get_actor("attacker")[SK::netns];

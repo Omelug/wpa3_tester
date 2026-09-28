@@ -191,13 +191,13 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	// add AP virtual interface
 	hw_capabilities::run_cmd(
-			{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns);
+			{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns, true);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
 		throw setup_err("Interface {} did not appear", ap_iface);
 	interruptible_sleep(2000ms); //FIXME not nice , but stable
 	hw_capabilities::set_iface_down(ap_iface, netns);
-	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
 	hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
+	if(mac.has_value()) hw_capabilities::set_mac_address(ap_iface, mac.value(), netns);
 	hw_capabilities::set_iface_up(ap_iface, netns);
 	base_actor->set_iface_up();
 
@@ -230,9 +230,8 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 }
 
 void stop_ap(const string &iface, const optional<string> &netns) {
-	const vector<string> cmd = { "iw", "dev", iface, "ap", "stop" };
-	log(LogLevel::INFO, "Stopping AP using: iw dev {} ap stop", iface);
-	hw_capabilities::run_cmd(cmd, netns, false);
+	log(LogLevel::INFO, "Stopping AP: iw dev {} del", iface);
+	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
 }
 
 void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,

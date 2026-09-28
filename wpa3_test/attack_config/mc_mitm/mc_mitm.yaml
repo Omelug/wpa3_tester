@@ -96,3 +96,5 @@ attack_config:
   #target_ap_mac: 78:98:e8:55:3e:8d
   #target_client_mac: a0:d7:68:10:25:6d
   ssid: test_mc_mitm
+  beacon_interval_ms: 10
+  beacon_warning_sec: 2

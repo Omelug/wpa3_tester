@@ -58,7 +58,7 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 			pop_back();
 	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
 
-	const string sha_out = run_cmd_output({"sha256sum", ko_path});
+	const string sha_out = run_cmd_output({"sha256sum", ko_path}); //TODO external program needed ?
 	const auto space = sha_out.find(' ');
 	if(space == string::npos) return nullopt;
 	return sha_out.substr(0, min(space, size_t{16}));
@@ -91,7 +91,7 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 	}
 	if(combined.empty()) return nullopt;
 
-	// Write to tmp file and hash - avoids shell injection
+	// write to tmp file and hash - avoids shell injection
 	const auto tmp = temp_directory_path() / ("wpa3_mod_hash_" + driver_name);
 	{
 		ofstream f(tmp);

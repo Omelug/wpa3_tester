@@ -117,7 +117,7 @@ echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
 mkdir -p "$ROOT/etc/NetworkManager/conf.d"
 cat > "$ROOT/etc/NetworkManager/conf.d/99-unmanaged-wifi.conf" << 'EOF'
 [keyfile]
-unmanaged-devices=interface-name:wlan*
+unmanaged-devices=interface-name:wlan*;interface-name:ap_*;interface-name:,mon_*;interface-name:hwsim_*
 EOF
 
 # Region CZ - WiFi regulatory domain + timezone

@@ -15,6 +15,13 @@ namespace wpa3_tester::mc_mitm {
 
 void setup_attack(RunStatus &rs) {
 	observer::dmesg::start_dmesg(rs, "err");
+
+	const auto &ap_actor = rs.get_actor("ap");
+	hw_capabilities::set_mac_address(
+		ap_actor.get(SK::iface),
+		HWAddress<6>(ap_actor.get(SK::permanent_mac)),
+		ap_actor[SK::netns]
+	);
 	components::client_ap_setup_t(rs);
 	//components::client_ap_attacker_setup(rs);
 
@@ -64,8 +71,9 @@ void run_attack(RunStatus &rs) {
 	attack.netconfig.real_channel = rogue_client->get_channel();
 	attack.netconfig.rogue_channel = rogue_ap->get_channel();
 	attack.netconfig.ssid = ap_ssid;
-
+	rs.process_manager.write_log_all(ATTACK_START_tag);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time").get<int>());
+	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 }
 
 void stats(const RunStatus &rs) {

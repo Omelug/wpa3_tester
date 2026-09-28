@@ -46,6 +46,10 @@ driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	    [ -n "$$cflags" ] && echo "EXTRA_CFLAGS += $$cflags" >> "$$src/Makefile"; \
 	    find "$$src" -name "*.c.xz" -exec xz -dk {} \; 2>/dev/null || true; \
 	    [ "$$name" = mt76 ] && sed -i '/NL80211_IFTYPE_NAN_DATA/d' "$$src/mt76_connac_mcu.c" || true; \
+	    [ "$$name" = rtl8852au ] && sed -i \
+	        -e 's/ret = register_netdevice(mon_ndev);/{ int _rtnl = rtnl_trylock(); ret = register_netdevice(mon_ndev); if (_rtnl) rtnl_unlock(); }/' \
+	        -e 's/unregister_netdevice(ndev);/{ int _rtnl = rtnl_trylock(); unregister_netdevice(ndev); if (_rtnl) rtnl_unlock(); }/' \
+	        "$$src/os_dep/linux/ioctl_cfg80211.c" || true; \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	        M=$$(realpath $$src) $$make_vars modules -j$$(nproc); \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
@@ -61,6 +65,7 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	$(MAKE) driver-modules
 	rsync -az --delete --info=progress2 $(KERNEL_MODS)/lib/modules/ $(PI_USER)@$(PI):/tmp/new-modules/
 	$(SSH) "sudo rsync -a /tmp/new-modules/. /lib/modules/ && sudo depmod -a"
+	#TODO needed, ()laready in setup?
 	$(SSH) "printf 'options mt76_usb disable_usb_sg=1\nblacklist mt76x2u\nblacklist mt76x2e\ninstall mt76x2u /bin/false\ninstall mt76x2e /bin/false\n' | sudo tee /etc/modprobe.d/mt76.conf > /dev/null"
 	scp $(KERNEL_OUT)/arch/arm64/boot/Image $(PI_USER)@$(PI):/tmp/kernel8.img
 	$(SSH) "sudo cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.bak \

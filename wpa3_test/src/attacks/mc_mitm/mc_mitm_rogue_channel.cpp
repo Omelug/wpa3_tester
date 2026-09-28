@@ -118,7 +118,7 @@ PProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6>
 			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP real channel", eapol_msg);
 			send_to_real(pdu);
 		}
-		if(eapol_msg == 4 && client_state.is_state(ClientState::Associated)) {
+		if(eapol_msg == 4 && client_state.get_state() >= ClientState::Sent_to_rogue) {
 			client_state.update_state(ClientState::GotMitm);
 			if(hooks) hooks->on_client_connected(*this);
 			if(only_to_mitm) stop_mitm = true;
@@ -185,6 +185,11 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 		if(client_state.get_mac() == addr2) {
 			send_to_real(*pdu);
 			display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
+			if(dot11->type() == Dot11::DATA && client_state.get_state() < ClientState::GotMitm) {
+				client_state.update_state(ClientState::GotMitm);
+				if(hooks) hooks->on_client_connected(*this);
+				if(only_to_mitm) stop_mitm = true;
+			}
 		}
 
 		/*else if(

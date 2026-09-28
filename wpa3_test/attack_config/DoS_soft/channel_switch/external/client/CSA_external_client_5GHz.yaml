@@ -6,7 +6,7 @@ actors:
   ap:
     source: internal
     selection:
-      condition: [ AP, 5GHz ]
+      condition: [ AP, 5GHz, netns_change ]
       channel: 36
     setup:
       program_config:
@@ -14,15 +14,15 @@ actors:
         channel: 36
   client:
     selection:
-      condition: [ STA, 5GHz ]
+      condition: [ STA, 5GHz, netns_change ]
       channel: 36
   attacker:
     selection:
-      condition: [ monitor, 5GHz ]
+      condition: [ monitor, 5GHz, netns_change ]
       channel: 36
   rogue_ap:
     selection:
-      condition: [ AP, 5GHz ]
+      condition: [ AP, 5GHz, netns_change ]
       channel: 40
 $extends: [ ./CSA_external_client.yaml ]
 

@@ -138,8 +138,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: dos_time.comp.schema.yaml">
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/config_parser.cpp" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="td: dos_time.comp.schema.yaml">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/dos_time.comp.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/dos_time.comp.schema.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client/CSA_external_client_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/setup/config_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/setup/config_parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/YAMLValidator.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1185,7 +1189,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: check_req_options &#10;rt: small changes" />
     <MESSAGE value="f: change_filler_hash" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="r: small changes (useless type separtaion)&#10;f: yaml validator - not" />
@@ -1210,7 +1213,8 @@
     <MESSAGE value="f: raspberry unmanaged ap/mon interfaces&#10;f: more generic of gotMiTm detection after mt76u2u driver change&#10;f: stop_ap (RSN_scan dont work in every second run)&#10;r: mc_mitm att_cfg&#10;.... but again not works" />
     <MESSAGE value="f: mc_mitm iperf3&#10;r: small changes" />
     <MESSAGE value="+: dos_time.comp.schema.yaml" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: dos_time.comp.schema.yaml" />
+    <MESSAGE value="td: dos_time.comp.schema.yaml" />
+    <option name="LAST_COMMIT_MESSAGE" value="td: dos_time.comp.schema.yaml" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

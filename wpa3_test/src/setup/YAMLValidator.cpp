@@ -167,9 +167,12 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 
 YAMLValidator::YAMLValidator(const path &schema_path){
 	schema_dir_ = schema_path.parent_path();
-	json schema_json = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
-	std::vector<std::string> hierarchy = { absolute(schema_path).string() };
-	r_schema = wpa3_tester::resolve_extends(schema_json, schema_dir_, hierarchy);
+	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
+	const auto &ext = r_schema.contains("$extends") ? r_schema["$extends"] : json{};
+	if(ext.is_string() || ext.is_array()) {
+		std::vector<std::string> hierarchy = { absolute(schema_path).string() };
+		r_schema = wpa3_tester::resolve_extends(r_schema, schema_dir_, hierarchy);
+	}
 	validator = json_validator(r_schema, make_loader(schema_dir_));
 }
 

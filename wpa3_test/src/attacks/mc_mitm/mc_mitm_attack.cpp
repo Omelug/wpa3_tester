@@ -5,6 +5,7 @@
 #include "observer/state_log_graph.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "interrupt.h"
 
 using namespace std;
 using namespace filesystem;
@@ -14,7 +15,9 @@ using namespace chrono;
 namespace wpa3_tester::mc_mitm {
 
 void setup_attack(RunStatus &rs) {
-	observer::dmesg::start_dmesg(rs, "err");
+	if(auto tester_dmesg = rs.observer("tester_dmesg")) {
+		tester_dmesg->start(rs);;
+	}
 
 	const auto &ap_actor = rs.get_actor("ap");
 	hw_capabilities::set_mac_address(
@@ -71,6 +74,10 @@ void run_attack(RunStatus &rs) {
 	attack.netconfig.real_channel = rogue_client->get_channel();
 	attack.netconfig.rogue_channel = rogue_ap->get_channel();
 	attack.netconfig.ssid = ap_ssid;
+
+	//needed for check GotMitm if not disconnected -> no EAPOL
+	rs.get_observer("sta_ap_iperf3").start(rs);
+	interruptible_sleep(seconds(10));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time").get<int>());
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);

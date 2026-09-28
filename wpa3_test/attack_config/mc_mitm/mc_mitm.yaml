@@ -90,6 +90,12 @@ observers: #(allow start_observers if used )
       filter: "special_filter:actors"
       #filter: "type mgt subtype beacon or type mgt subtype probe-req or type mgt subtype probe-resp or type mgt subtype auth or type mgt subtype assoc-req or type mgt subtype assoc-resp or type mgt subtype reassoc-req or type mgt subtype reassoc-resp"
 
+  sta_ap_iperf3:
+    actor: client
+    program: iperf3
+    program_config:
+      target_actor: ap
+
 attack_config:
   attack_time: 150
   only_to_mitm: true

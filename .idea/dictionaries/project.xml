@@ -92,6 +92,7 @@
       <w>dmesg</w>
       <w>dontwait</w>
       <w>dragondrain</w>
+      <w>dstport</w>
       <w>dtoverlay</w>
       <w>dumpcap</w>
       <w>eapol</w>
@@ -287,6 +288,7 @@
       <w>siocsifflags</w>
       <w>smacof</w>
       <w>sout</w>
+      <w>srcport</w>
       <w>srcversion</w>
       <w>srcversions</w>
       <w>ssid</w>

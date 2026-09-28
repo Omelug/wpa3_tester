@@ -76,6 +76,11 @@ actors:
       channel: 1
     netns: rogue
 observers: #(allow start_observers if used )
+  sta_ap_iperf3: #TODO add to schema, neede to generatetraffic
+    actor: client
+    program: iperf3
+    program_config:
+      target_actor: ap
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn
@@ -90,8 +95,8 @@ observers: #(allow start_observers if used )
 
   tester_dmesg:
     program: dmesg
-    #program_config:
-    #  level: "err,warn"
+    program_config:
+      level: "emerg,alert,crit,err,warn,notice,info,debug"
   tracer:
     program: trace_cmd
     actor: ap

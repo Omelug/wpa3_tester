@@ -86,7 +86,6 @@ static string html_page() {
 			<li><a href="attacks/DoS_soft/bl0ck/index.html">bl0ck attacks</a></li>
 			<li><a href="attacks/DoS_soft/malformed_eapol1/index.html">malformed EAPOL-1</a></li>
 			<li><a href="attacks/DoS_soft/expected_vht_beacon/index.html">fake legacy(no HT/VHT) beacon DoS </a></li>
-			<li><a href="attacks/DoS_soft/deauth/index.html">deauthentication DoS</a></li>
 		</ul>
 
 		<h3>downgrade<h3>
@@ -110,6 +109,10 @@ static string html_page() {
 		<ul>
 			<li><a href="attacks/mc_mitm/mc_mitm/index.html">multi-channel MitM</a></li>
 			<li><a href="attacks/mc_mitm/ssid_confusion/index.html">SSID confusion</a></li>
+		</ul>
+		<h3>WPA2<h3>
+		<ul>
+			<li><a href="attacks/DoS_soft/deauth/index.html">WPA2 deauth</a></li>
 		</ul>
 	</div>
 

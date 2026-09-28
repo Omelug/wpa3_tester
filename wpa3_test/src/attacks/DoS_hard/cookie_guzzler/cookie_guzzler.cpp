@@ -38,24 +38,23 @@ void run_attack(RunStatus &rs) {
 	const optional<sae_helper::SAEPair> sae_params = get_commit_values(
 			rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 
-	if(sae_params.has_value()) {
-		rs.start_observers();
-		log(LogLevel::INFO, "SAE Commit captured");
-		const int duration = att_cfg.at("attack_time_sec").get<int>();
-		// change to monitor mode
-		attacker->set_monitor_mode();
-		attacker->set_iface_up();
-		rs.process_manager.write_log_all(ATTACK_START_tag);
-		check_vuln(attacker.get(SK::iface),
-				ap.get(SK::mac),
-				duration,
-				sae_params.value(),
-				attacker.get(SK::mac),
-				att_cfg.at("burst_size").get<size_t>(),
-				att_cfg.at("frames_per_second_limit").get<size_t>());
-	} else {
-		throw run_err("SAE Commit capture failed");
-	}
+	if(!sae_params.has_value()) throw run_err("SAE Commit capture failed");
+
+	rs.start_observers();
+	log(LogLevel::INFO, "SAE Commit captured");
+	const int duration = att_cfg.at("attack_time_sec").get<int>();
+	// change to monitor mode
+	attacker->set_monitor_mode();
+	attacker->set_iface_up();
+	rs.process_manager.write_log_all(ATTACK_START_tag);
+	check_vuln(attacker.get(SK::iface),
+			ap.get(SK::mac),
+			duration,
+			sae_params.value(),
+			attacker.get(SK::mac),
+			att_cfg.at("burst_size").get<size_t>(),
+			att_cfg.at("frames_per_second_limit").get<size_t>());
+
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	const int regeneration_time_sec = att_cfg.at("regeneration_time_sec").get<int>();
 	interruptible_sleep(seconds(regeneration_time_sec));

@@ -17,7 +17,7 @@ results:
 		$(RESULTS_DATA)/
 	$(MAKE) results_gen_only
 
-results_gen_only_force:
+results_force:
 	rm -rf $(RESULTS_HTML)
 	$(MAKE) results
 
@@ -28,3 +28,7 @@ results_gen_only:
 		--data_dir   $(RESULTS_DATA) \
 		--output_dir $(RESULTS_HTML)
 	@echo "==> Results generated: $(RESULTS_HTML)/index.html"
+
+results_gen_only_force:
+	rm -rf $(RESULTS_HTML)
+	$(MAKE) results_gen_only

@@ -5,9 +5,15 @@ v: visualization
 
 Version  v 0.0.0.0:
 
-f: mt76-git není v drivers.conf
+mc_mitm:
+    +: přegeneorvat sta_ap_iperf3
+    +: problém s mt76-git? zkuit kali
 bl0ck:
-    - enable PBAC in hostapd (chcek if netlink is not lying about PBAC support)
+    +: zkusti BA s dalším připoejným klientem (měl by se taky odpojit)
+    +: enable PBAC in hostapd (chcek if netlink is not lying about PBAC support)
+
+DoS_hard:
+     +: add possibility DoS on 2_4/5Ghz (2 adapters )
 
 r: hash type
 t: hash function
@@ -24,8 +30,7 @@ PDF:
 
 t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 t: reguratory change to iface_info
-f: regulatory dont works on rapsberry (ath_htc reset to US)
-r: use global_variables
+f: regulatory dont works on rapsberry (ath_htc reset to US), add to global_variables
 d: zmínit bakalářskou práci v README
 f: doc/ath_htc_loop.log from rapberry
 +: add to CSA need CSA support ( 10:7b:ef:cc:08:df zatemňuje výsledky poze s WPA2, aale asdát do popoisu) + add devices link to
@@ -145,6 +150,7 @@ Documentation:
 +: get LateX from english (or link it from latex git )
 
 Better code:
+r?: use global_variables
 t: projít testy a vyházet ty nepodstatné
 ?: (maybe general NL80211_{} boolean conditions?>)
 f: FetchContent_MakeAvailable  paralel downlading should be improved

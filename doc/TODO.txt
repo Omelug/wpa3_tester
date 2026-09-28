@@ -7,18 +7,14 @@ Version  v 0.0.0.0:
 
 f: mt76-git není v drivers.conf
 bl0ck:
-    - filler for random
-    - enable PCAP in hostapd (chcek if netlink is not lying about PCAP support)
-    - filler - change only ap
+    - enable PBAC in hostapd (chcek if netlink is not lying about PBAC support)
 
 r: hash type
 t: hash function
 r: small TODO/ FIXME
 PDF:
     +: info about injection tests/ problems
-    +: přidat informace o fillerech
     +: cache description
-
     +: reflection attack na EAP-pwd - pouze na EAP
     +: vysvětlit co jsou var_ a indexy v permutacích
     +: PMKSA

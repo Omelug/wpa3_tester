@@ -62,6 +62,7 @@
       <w>cmac</w>
       <w>commentschars</w>
       <w>conds</w>
+      <w>connac</w>
       <w>cout</w>
       <w>cpuinfo</w>
       <w>crda</w>
@@ -190,6 +191,7 @@
       <w>multiarch</w>
       <w>musleabi</w>
       <w>musleabihf</w>
+      <w>nblacklist</w>
       <w>nbytes</w>
       <w>netconsole</w>
       <w>netdev</w>
@@ -198,6 +200,7 @@
       <w>newlink</w>
       <w>nextbeacon</w>
       <w>ninline</w>
+      <w>ninstall</w>
       <w>nmcli</w>
       <w>nmconnection</w>
       <w>nmethod</w>

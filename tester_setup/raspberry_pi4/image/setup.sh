@@ -13,7 +13,7 @@ sed -i 's/$/ earlyprintk xhci_hcd.quirks=270336 usbcore.autosuspend=-1/' "$CMDLI
 update-initramfs -u
 
 # modprobe.d
-printf 'options ath9k_hw ani_enable=0\noptions ath9k_htc user_regd=1\noptions ath9k user_regd=1\n' \
+printf 'options ath9k_hw ani_enable=0 debug=0xffffffff\noptions ath9k_htc user_regd=1 debug=0xffffffff\noptions ath9k user_regd=1 debug=0xffffffff\n' \
     > /etc/modprobe.d/ath9k.conf
 printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb disable_lps_deep=y\n' \
     > /etc/modprobe.d/rtw88.conf

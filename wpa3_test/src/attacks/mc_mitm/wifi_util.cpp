@@ -232,7 +232,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 void stop_ap(const string &iface, const optional<string> &netns) {
 	const vector<string> cmd = { "iw", "dev", iface, "ap", "stop" };
 	log(LogLevel::INFO, "Stopping AP using: iw dev {} ap stop", iface);
-	hw_capabilities::run_cmd(cmd, netns);
+	hw_capabilities::run_cmd(cmd, netns, false);
 }
 
 void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,

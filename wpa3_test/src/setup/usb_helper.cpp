@@ -62,17 +62,23 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 
 		bool is_device = false;
 		string driver_name = "unknown";
+		string module_name = "unknown";
 		for(const auto &sub_e: directory_iterator(dev_path)) {
 			if(sub_e.path().filename().string().find(':') == string::npos) continue;
 			path drv_link = sub_e.path() / "driver";
-			if(is_symlink(drv_link)) driver_name = canonical(drv_link).filename().string();
+			if(!is_symlink(drv_link)) continue;
+			auto drv_path = canonical(drv_link);
+			driver_name = drv_path.filename().string();
 			if(driver_name == "hub") continue;
 			is_device = true;
+			// driver/module symlink → /sys/module/<ko_name>; may differ from driver name
+			path mod_link = drv_path / "module";
+			module_name = is_symlink(mod_link) ? canonical(mod_link).filename().string() : driver_name;
 		}
 		if(!is_device) continue;
 
 		auto read_line = [](const path &p) { ifstream f(p); string s; if(f) getline(f, s); return s; };
-		result.push_back({ dev_path, name, driver_name,
+		result.push_back({ dev_path, name, driver_name, module_name,
 			read_line(dev_path / "idVendor"),
 			read_line(dev_path / "idProduct")
 		});
@@ -110,8 +116,8 @@ void reset_usb_ifaces() {
 	}
 	set<string> drivers;
 	for(const auto &iface: wifi_ifaces) {
-		if(iface.driver_name != "unknown")
-			drivers.insert(iface.driver_name);
+		if(iface.module_name != "unknown")
+			drivers.insert(iface.module_name);
 	}
 	const size_t expected_with_driver = wifi_ifaces.size();
 	for(const auto &drv: drivers) {

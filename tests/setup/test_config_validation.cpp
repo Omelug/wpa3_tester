@@ -76,6 +76,12 @@ TEST_CASE("RunStatus Config Validation - Test configuration") {
 				"01_test_happy_path_minimal.yaml",
 				true },
 		{ "16. $DELETE removes key from parent", "16_test_delete.yaml", "01_test_happy_path_minimal.yaml", true },
+		{ "17. $UNION merges list from parent", "17_test_union.yaml", "17_result_union.yaml", true },
+		{ "18. $SUBTRACT removes items from parent list", "18_test_subtract.yaml", "18_result_subtract.yaml", true },
+		{ "19. $INTERSECT keeps only common items", "19_test_intersect.yaml", "19_result_intersect.yaml", true },
+		{ "20. $UNION deduplicates existing items", "20_test_union_no_dup.yaml", "20_result_union_no_dup.yaml", true },
+		{ "21. $UNION creates list when key absent in parent", "21_test_union_missing_key.yaml", "21_result_union_missing_key.yaml", true },
+		{ "22. $UNION + $SUBTRACT combined", "22_test_combined_ops.yaml", "22_result_combined_ops.yaml", true },
 	};
 	test_case_loop(test_base, tests);
 }
@@ -95,6 +101,8 @@ TEST_CASE("RunStatus Config Validation - Validator configuration") {
 				"01_result_validator_minimal.yaml",
 				true },
 		{ "6. validator as list (one fails)", "06_error_validator_list_fail.yaml", "", false },
+		{ "7. schema $extends with $UNION for required (valid)", "07_test_schema_union.yaml", "07_result_schema_union.yaml", true },
+		{ "8. schema $extends with $UNION required - missing field", "08_error_schema_union_missing.yaml", "", false },
 	};
 	test_case_loop(test_base, tests);
 }

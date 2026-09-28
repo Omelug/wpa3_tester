@@ -5,7 +5,7 @@
 - default - default rom validator -> set if not set yes
 - $extends - path to previous "layer", rewritten with actual file
 - $validator - path to validator (json schema, but input is same in yaml format, default set default value)
-- $DELETE - for deleting previous data (leave default)
+- $DELETE/$UNION/$SUBTRACT/$INTERSECT - set operation (list in layer under, actual layer)
 
 - you have to replace all list, if you want
   #TODO is it true of internatal process solve it different?

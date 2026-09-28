@@ -1,0 +1,3 @@
+$extends: 01_test_happy_path_minimal.yaml
+tags:
+  $UNION: [x, y]

@@ -1,0 +1,8 @@
+name: "WPA3-Test"
+attacker_module: module1
+actors:
+  $validator: 07_schema_union.schema.yaml
+  only_actor:
+    source: internal
+  extra_actor:
+    source: internal

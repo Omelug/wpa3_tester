@@ -84,11 +84,13 @@ json yaml_to_json_with_marks(
 void deep_merge(json &base, const json &patch) {
 	for(const auto &[key, val]: patch.items()) {
 		if(key == "$DELETE") {
-			if(val.is_string())
+			if(val.is_string()) {
 				base.erase(val.get<string>());
-			else if(val.is_array())
-				for(const auto &k: val)
+			}else if(val.is_array()) {
+				for(const auto &k: val) {
 					if(k.is_string()) base.erase(k.get<string>());
+				}
+			}
 		} else if(val.is_object() && (val.contains("$UNION") || val.contains("$SUBTRACT") || val.contains("$INTERSECT"))) {
 			if(!base.contains(key)) base[key] = json::array();
 			json &arr = base[key];
@@ -99,14 +101,15 @@ void deep_merge(json &base, const json &patch) {
 			}
 			if(val.contains("$SUBTRACT")) {
 				const auto &sub = val["$SUBTRACT"];
-				arr.erase(remove_if(arr.begin(), arr.end(),
-					[&](const json &item) { return ranges::find(sub, item) != sub.end(); }),
+				arr.erase(ranges::remove_if(arr, [&](const json &item) { return ranges::find(sub, item) != sub.end(); })
+								  .begin(),
 					arr.end());
 			}
 			if(val.contains("$INTERSECT")) {
 				const auto &inter = val["$INTERSECT"];
-				arr.erase(remove_if(arr.begin(), arr.end(),
-					[&](const json &item) { return ranges::find(inter, item) == inter.end(); }),
+				arr.erase(ranges::remove_if(
+								  arr, [&](const json &item) { return ranges::find(inter, item) == inter.end(); })
+								  .begin(),
 					arr.end());
 			}
 		} else if(val.is_object() && base.contains(key) && base[key].is_object()) {

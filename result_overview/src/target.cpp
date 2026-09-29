@@ -4,7 +4,6 @@
 #include "page_cache.h"
 
 #include <filesystem>
-#include <map>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
@@ -26,12 +25,6 @@ using namespace std;
 using namespace filesystem;
 using namespace visual;
 
-static const map<string, string> k_attack_page = {
-	{ "bl0ck", "../../attacks/DoS_soft/bl0ck/index.html" },
-	{ "channel_switch", "../../attacks/DoS_soft/channel_switch/index.html" },
-	{ "malformed_eapol1", "../../attacks/DoS_soft/malformed_eapol1/index.html" },
-};
-
 static string read_attacker_module(const path &test_folder) {
 	const auto cfg = test_folder / "test_config.yaml";
 	if(!exists(cfg)) return "";
@@ -42,41 +35,45 @@ static string read_attacker_module(const path &test_folder) {
 	return "";
 }
 
-// last_run/{attack_dir}/{test_dir}/test_config.yaml
+static const std::vector<std::pair<std::string, RenderFunc>> registry = {
+	{ "ap_info", make_renderer<ap_info_filler::ApInfoWpa3TestEntry>() },
+	{ "bl0ck", make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
+	{ "invalid_curve", make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
+	{ "reflection_attack", make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
+	{ "wpa3_trans_downgrade", make_renderer<wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
+	{ "owe_trans", make_renderer<owe_trans_filler::OweTransTestEntry>() },
+	{ "channel_switch", make_renderer<channel_switch_rogueAP::CsaTestEntry>() },
+	{ "malformed_eapol1", make_renderer<malformed_eapol1_filler::MalformedEapol1TestEntry>() },
+	// DoS hard
+	{ "cookie_guzzler", make_renderer<sae_dos::SaeDosFolderEntry>() },
+	{ "memory_omnivore", make_renderer<sae_dos::SaeDosFolderEntry>() },
+	{ "pmk_gobbler", make_renderer<sae_dos::SaeDosFolderEntry>() },
+	//{ "sae_dos_wrapper", make_renderer<visual::sae_dos::SaeDosFolderEntry>() },
+};
+
+static size_t registry_index(const string &mod) {
+	for(size_t i = 0; i < registry.size(); ++i)
+		if(registry[i].first == mod) return i;
+	return registry.size();
+}
+
+// <suite>/{attack_dir}/{test_dir}/test_config.yaml — sorted by registry order
 static vector<path> collect_test_folders(const path &run_dir) {
+	if(!is_directory(run_dir)) return {};
+	vector<pair<path, size_t>> indexed;
+	for(const auto &e: recursive_directory_iterator(run_dir, directory_options::skip_permission_denied))
+		if(e.is_regular_file() && e.path().filename() == "test_config.yaml")
+			indexed.emplace_back(e.path().parent_path(), registry_index(read_attacker_module(e.path().parent_path())));
+	ranges::sort(indexed, {}, &pair<path, size_t>::second);
 	vector<path> result;
-	if(!is_directory(run_dir)) return result;
-	for(const auto &attack_dir: directory_iterator(run_dir)) {
-		if(!attack_dir.is_directory()) continue;
-		for(const auto &test_dir: directory_iterator(attack_dir.path())) {
-			if(!test_dir.is_directory()) continue;
-			if(exists(test_dir.path() / "test_config.yaml")) result.push_back(test_dir.path());
-		}
-	}
+	result.reserve(indexed.size());
+	for(auto &[p, _]: indexed) result.push_back(std::move(p));
 	return result;
 }
 
 static void render_attack_section(HtmlGuard &f, const std::string &module, const std::string &attack_name,
 		const path &suite_data_dir, const path &page_dir) {
-	using namespace visual;
-
-	static const std::unordered_map<std::string, RenderFunc> registry = {
-		{ "ap_info", make_renderer<ap_info_filler::ApInfoWpa3TestEntry>() },
-		{ "bl0ck", make_renderer<bl0ck_test_suites::Bl0ckTestEntry>() },
-		{ "invalid_curve", make_renderer<invalid_curve_filler::InvalidCurveTestEntry>() },
-		{ "reflection_attack", make_renderer<reflection_attack_filler::ReflectionAttackTestEntry>() },
-		{ "wpa3_trans_downgrade", make_renderer<wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry>() },
-		{ "owe_trans", make_renderer<owe_trans_filler::OweTransTestEntry>() },
-		{ "channel_switch", make_renderer<channel_switch_rogueAP::CsaTestEntry>() },
-		{ "malformed_eapol1", make_renderer<malformed_eapol1_filler::MalformedEapol1TestEntry>() },
-		// DoS hard
-		{ "cookie_guzzler", make_renderer<sae_dos::SaeDosFolderEntry>() },
-		{ "memory_omnivore", make_renderer<sae_dos::SaeDosFolderEntry>() },
-		{ "pmk_gobbler", make_renderer<sae_dos::SaeDosFolderEntry>() },
-		//{ "sae_dos_wrapper",	 make_renderer<sae_dos::SaeDosFolderEntry>() },
-	};
-
-	if(const auto it = registry.find(module); it != registry.end()) {
+	if(const auto it = std::ranges::find_if(registry, [&](const auto &p) { return p.first == module; }); it != registry.end()) {
 		it->second(f, attack_name, suite_data_dir / attack_name, page_dir, module);
 	} else {
 		f << "<p>No parser for <code>" << module << "</code>.</p>";

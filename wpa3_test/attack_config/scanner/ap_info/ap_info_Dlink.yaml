@@ -18,6 +18,6 @@ attack_config:
   beacon_scan: true
   beacon_timeout_sec: 10
   EAP_scan: true
-  ACM_trigger: false
+  ACM_trigger: true
   acm_pause_millisec: 5
   acm_trigger_count: 2560

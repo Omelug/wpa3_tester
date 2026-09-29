@@ -21,6 +21,8 @@ DoS_hard:
      +: observer for new_valid client (wpa_cli ? )
      +: add possibility DoS on 2_4/5Ghz (2 adapters )
 
+r: první reflexion attack v 2_8 se nepřipojí, nevalidní ukončení předchozího testu? , bčžící hostapd ?
+
 r: hash type
 t: hash function
 r: small TODO/ FIXME

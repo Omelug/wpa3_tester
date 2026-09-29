@@ -4,22 +4,7 @@ requirements:
   simple: [ ath_masker ]
 actors:
   ap:
-    source: external
-    selection:
-      whitebox_host: OpenWrt
-      condition: [ AP, 2_4GHz ]
-    setup:
-      program: openwrt
-      program_config:
-        ssid: test_wpa3_tester
-        channel: 6
-        key: password123
-        proto: RSN
-        encryption: sae-mixed
-        mode: ap
-        htmode: HT20
-      ex_WB_programs: [ tcpdump ]
-    ip_addr: "172.16.100.1"
+    $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     source: internal
     selection:

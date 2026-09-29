@@ -24,6 +24,7 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder) {
 	e.ap_openssl_version = hostapd::get_openssl_version(*rs, "ap");
 	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
+	e.attacker_mac = rs->get_actor("attacker").get(SK::mac);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }
@@ -45,16 +46,16 @@ void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &t
 	helper::div_card<InvalidCurveTestEntry>(
 			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<InvalidCurveTestEntry> &entries) {
 				HtmlPathTable t(hg, entries, t_name);
-
+#define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 				t.build([&](auto col) {
 					col("Test", &InvalidCurveTestEntry::test_name);
 					col("AP Driver", &InvalidCurveTestEntry::ap_driver);
 					col("Hostapd version", &InvalidCurveTestEntry::ap_hostapd_version);
-					col("Attacker Driver", &InvalidCurveTestEntry::attacker_driver);
+					COL("Attacker Driver", e.attacker_driver << "("<< e.attacker_mac <<")");
 					col("AP openssl version", &InvalidCurveTestEntry::ap_openssl_version);
 					col("Connected?", &InvalidCurveTestEntry::connected);
 				});
-
+#undef COL
 				t.render();
 			});
 }

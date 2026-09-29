@@ -21,7 +21,7 @@ TwoIfaceInject::TwoIfaceInject():
 
 json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 	auto sel_rx = r->to_json(&cache_id)["selection"];
-	sel_rx["channel"] = get_global_config().at("global_variables").at("default_channel_2_4").get<string>();
+	sel_rx["channel"] = to_string(get_global_config().at("global_variables").at("default_channel_2_4").get<int>());
 	sel_rx["condition"] = { "2_4GHz", "monitor", "control_monitor" };
 
 	const json config = {

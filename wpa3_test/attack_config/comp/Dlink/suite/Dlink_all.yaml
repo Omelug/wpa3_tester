@@ -11,6 +11,13 @@ tests:
   bl0ck_BARS_Dlink:
     test_name: bl0ck_BARS_Dlink
 
+  bl0ck_BA_Dlink_random:
+    test_name: bl0ck_BA_Dlink_random
+  bl0ck_BAR_Dlink_random:
+    test_name: bl0ck_BAR_Dlink_random
+  bl0ck_BARS_Dlink_random:
+    test_name: bl0ck_BARS_Dlink_random
+
   # --------- channel_switch -----------
   channel_switch_Dlink:
     test_name: channel_switch_Dlink
@@ -60,8 +67,8 @@ tests:
   pmk_gobbler_Dlink:
     test_name: pmk_gobbler_Dlink
 
-  generic_dos_attacks_suite:
-    test_suite_name: generic_dos_attacks_suite
+  #generic_dos_attacks_suite:
+  #  test_suite_name: generic_dos_attacks_suite
 
   # TODO add BAR/BARS
 rewrite: errors

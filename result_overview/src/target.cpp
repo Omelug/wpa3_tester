@@ -116,10 +116,6 @@ static void generate_target_page(const path &output_dir, const string &target_na
 		if(test_suites_folders.empty()) continue;
 		any = true;
 
-		f << "<div class=\"card\">"
-		  << "<h2>Suite: " << suite_name << "</h2>"
-		  << "</div>";
-
 		for(const auto &tf: test_suites_folders) {
 			const auto mod = read_attacker_module(tf);
 			if(mod.empty()) continue;

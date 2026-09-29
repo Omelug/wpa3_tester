@@ -139,7 +139,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes (fix attacker adapters etc.)">
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack_2_8.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack/reflection_attack_2_8.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/target.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/bl0ck_Dlink.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_ocv.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/Dlink/CSA_Dlink_ocv.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/malformed_eapol1_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/malformed_eapol1_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/malformed_eapol1_patched_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/malformed_eapol1/external/malformed_eapol1_patched_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_5Ghz.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_5Ghz.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_eap.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_eap.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_wpa3_disable.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/Dlink_wb_wpa3_disable.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/suite/Dlink_all.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/Dlink/suite/Dlink_all.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_Dlink_wb_wpa3_disable.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_Dlink_wb_wpa3_disable.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/scanner/ap_info/ap_info_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/invalid_curve/invalid_curve_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/invalid_curve/invalid_curve_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/reflection_attack/reflection_attack_filler.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/enterprise/reflection_attack/reflection_attack_filler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceInject.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/two_iface/TwoIfaceInject.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/invalid_curve/invalid_curve_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/invalid_curve/invalid_curve_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/reflection_attack/reflection_attack_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/Enterprise/reflection_attack/reflection_attack_filler.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

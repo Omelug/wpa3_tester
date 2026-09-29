@@ -24,6 +24,7 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
+	e.attacker_mac = rs->get_actor("attacker")->get(SK::mac);
 	return e;
 }
 
@@ -46,14 +47,15 @@ void ReflectionAttackTestEntry::render_table(
 			suite_data_dir,
 			[&](overview::HtmlGuard &hg, const std::vector<ReflectionAttackTestEntry> &entries) {
 				HtmlPathTable t(hg, entries, t_name);
-
+#define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 				t.build([&](auto col) {
 					 col("Test", &ReflectionAttackTestEntry::test_name);
 					 col("AP Driver", &ReflectionAttackTestEntry::ap_driver);
 					 col("Hostapd version", &ReflectionAttackTestEntry::ap_hostapd_version);
-					 col("Attacker Driver", &ReflectionAttackTestEntry::attacker_driver);
+					 COL("Attacker Driver", e.attacker_driver << "("<< e.attacker_mac <<")");
 					 col("Connected?", &ReflectionAttackTestEntry::connected);
 				 })->render({ "Test" });
+#undef COL
 			});
 }
 

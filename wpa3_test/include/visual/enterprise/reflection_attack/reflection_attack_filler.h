@@ -15,6 +15,7 @@ struct ReflectionAttackTestEntry {
 	std::string ap_driver;
 	std::string ap_hostapd_version;
 	std::string attacker_driver;
+	std::string attacker_mac;
 	//results params
 	std::optional<bool> connected;
 

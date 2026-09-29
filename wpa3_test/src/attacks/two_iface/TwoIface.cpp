@@ -101,7 +101,7 @@ path TwoIface::cache_path() const{
 
 json TwoIface::make_selection(const ActorPtr &a) const{
 	auto sel = a->to_json(&cache_id)["selection"];
-	sel["channel"] = get_global_config().at("global_variables").at("default_channel_2_4").get<string>();;
+	sel["channel"] = to_string(get_global_config().at("global_variables").at("default_channel_2_4").get<int>());
 	sel["condition"] = {"2_4GHz", "monitor", "control_monitor", "netns_change"};
 	return sel;
 }

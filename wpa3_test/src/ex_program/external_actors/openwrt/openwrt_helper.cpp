@@ -129,32 +129,34 @@ string  akm_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &cli
 	ifstream f(log_path);
 	string line;
 	const bool has_filter = client_mac != Tins::HWAddress<6>();
+	optional<AssociatedSta> last;
 
 	while(get_line_before_window(f, line, window)){
 		const auto sta = parse_associated_sta_line(line);
 		if(!sta) continue;
 		if(has_filter && sta->mac != client_mac) continue;
-
-		const string name = auth_alg_name(sta->auth_alg);
-		if(sta->auth_alg == "sae") return name + "\n(WPA3)";
-		return name;
+		last = sta;
 	}
-	return {};
+	if(!last) return {};
+	const string name = auth_alg_name(last->auth_alg);
+	if(last->auth_alg == "sae") return name + "\n(WPA3)";
+	return name;
 }
 
 string mfp_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){
 	ifstream f(log_path);
 	string line;
 	const bool has_filter = client_mac != Tins::HWAddress<6>();
+	optional<AssociatedSta> last;
 
 	while(get_line_before_window(f, line, window)){
 		const auto sta = parse_associated_sta_line(line);
 		if(!sta) continue;
 		if(has_filter && sta->mac != client_mac) continue;
-
-		return sta->auth_alg == "sae" ? "REQUIRED" : "";
+		last = sta;
 	}
-	return {};
+	if(!last) return {};
+	return last->auth_alg == "sae" ? "REQUIRED" : "";
 }
 
 bool sta_disconnected_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){

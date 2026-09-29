@@ -417,6 +417,10 @@ void OpenWrtConn::get_router_info(RunStatus &rs, const std::string &actor_name){
 }
 
 void OpenWrtConn::disable_actor(const ActorPtr &a) {
+	if(!is_connected()) {
+		log(LogLevel::WARNING, "disable_actor: not connected, skipping (actor {})", a.get(SK::actor_name));
+		return;
+	}
 	const string radio = a.get(SK::radio);
 	if(radio.empty()) {
 		log(LogLevel::WARNING, "delete_actor: no radio for actor {}", a.get(SK::actor_name));

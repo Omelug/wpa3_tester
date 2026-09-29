@@ -15,6 +15,12 @@ namespace wpa3_tester{
 using namespace std;
 using namespace filesystem;
 
+string OpenWrtConn::uci_batch(const vector<string> &cmds, bool log_errors, int *ret) const{
+	string body;
+	for(const auto &cmd: cmds) body += cmd + "\n";
+	return exec("uci batch <<'EOF'\n" + body + "EOF", log_errors, ret);
+}
+
 void OpenWrtConn::check_req(const nlohmann::json &config, const string &actor_name){
 	const auto &actor_cfg = config.at("actors").at(actor_name);
 	if(!actor_cfg.contains("setup")) return;
@@ -83,9 +89,11 @@ void OpenWrtConn::forward_internet(const string &remote_ip) const{
 	exec("echo 'nameserver 8.8.8.8' > /etc/resolv.conf");
 
 	// Persist via UCI so the route survives netifd reloads and router reboots
-	exec("uci set network.lan.gateway=" + local_ip);
-	exec("uci set network.lan.dns=8.8.8.8");
-	exec("uci commit network");
+	uci_batch({
+		"set network.lan.gateway=" + local_ip,
+		"set network.lan.dns=8.8.8.8",
+		"commit network",
+	});
 	log(LogLevel::INFO, "Internet forwarded to router: default via {} ({})", local_ip, local_iface);
 }
 
@@ -118,10 +126,12 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	if(section.empty()) section = TESTER_NAME+"_" + radio_name; // create new
 	log(LogLevel::DEBUG, "Setting up wifi-iface {} for {}", section, radio_name);
 
-	exec("uci delete wireless." + section + "_open 2>/dev/null; true");
-	exec("uci delete wireless." + section + " 2>/dev/null; true");
-	exec("uci set wireless." + section + "=wifi-iface");
-	exec("uci set wireless." + section + ".device=" + radio_name);
+	exec("uci delete wireless." + section + "_open 2>/dev/null");
+	exec("uci delete wireless." + section + " 2>/dev/null");
+	uci_batch({
+		"set wireless." + section + "=wifi-iface",
+		"set wireless." + section + ".device=" + radio_name,
+	});
 
 	const auto program_config = config.at("actors").at(actor[SK::actor_name].value()).at("setup").at("program_config");
 	const string mode = program_config.value("mode", "ap");
@@ -139,7 +149,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 		static const set<string> trans_skip  = {"owe_transition_mode", "open_ssid", "owe_ssid", "mode"};
 		static const set<string> owe_bss_only = {"ieee80211w"};
 
-		auto apply_keys = [&](const string &sec, bool skip_owe_only){
+		auto add_keys = [&](vector<string> &cmds, const string &sec, bool skip_owe_only){
 			for(const auto &[key, value]: program_config.items()){
 				if(trans_skip.contains(key)) continue;
 				if(skip_owe_only && owe_bss_only.contains(key)) continue;
@@ -147,30 +157,40 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 				if(value.is_string())      v = value.get<string>();
 				else if(value.is_number()) v = value.dump();
 				else continue;
-				exec(format("uci set wireless.{}.{}='{}'", sec, key, v));
+				cmds.push_back(format("set wireless.{}.{}='{}'", sec, key, v));
 			}
 		};
 
 		// OWE BSS (hidden)
-		exec("uci delete wireless." + section + " 2>/dev/null; true");
-		exec("uci set wireless." + section + "=wifi-iface");
-		exec("uci set wireless." + section + ".device=" + radio_name);
-		apply_keys(section, false);
-		exec("uci set wireless." + section + ".ssid='" + owe_ssid + "'");
-		exec("uci set wireless." + section + ".encryption=owe");
-		exec("uci set wireless." + section + ".mode=ap");
-		exec("uci set wireless." + section + ".hidden=1");
-		exec("uci set wireless." + section + ".network=lan");
+		exec("uci delete wireless." + section + " 2>/dev/null");
+		vector<string> owe_cmds = {
+			"set wireless." + section + "=wifi-iface",
+			"set wireless." + section + ".device=" + radio_name,
+		};
+		add_keys(owe_cmds, section, false);
+		owe_cmds.insert(owe_cmds.end(), {
+			"set wireless." + section + ".ssid='" + owe_ssid + "'",
+			"set wireless." + section + ".encryption=owe",
+			"set wireless." + section + ".mode=ap",
+			"set wireless." + section + ".hidden=1",
+			"set wireless." + section + ".network=lan",
+		});
+		uci_batch(owe_cmds);
 
 		// Open BSS
-		exec("uci delete wireless." + open_section + " 2>/dev/null; true");
-		exec("uci set wireless." + open_section + "=wifi-iface");
-		exec("uci set wireless." + open_section + ".device=" + radio_name);
-		apply_keys(open_section, true);
-		exec("uci set wireless." + open_section + ".ssid='" + open_ssid + "'");
-		exec("uci set wireless." + open_section + ".encryption=none");
-		exec("uci set wireless." + open_section + ".mode=ap");
-		exec("uci set wireless." + open_section + ".network=lan");
+		exec("uci delete wireless." + open_section + " 2>/dev/null");
+		vector<string> open_cmds = {
+			"set wireless." + open_section + "=wifi-iface",
+			"set wireless." + open_section + ".device=" + radio_name,
+		};
+		add_keys(open_cmds, open_section, true);
+		open_cmds.insert(open_cmds.end(), {
+			"set wireless." + open_section + ".ssid='" + open_ssid + "'",
+			"set wireless." + open_section + ".encryption=none",
+			"set wireless." + open_section + ".mode=ap",
+			"set wireless." + open_section + ".network=lan",
+		});
+		uci_batch(open_cmds);
 
 		exec("uci commit wireless");
 		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
@@ -178,9 +198,11 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 		// get real ifnames to link the two BSSes
 		const string owe_ifname  = wait_for_ifname(section);
 		const string open_ifname = wait_for_ifname(open_section);
-		exec("uci set wireless." + section + ".owe_transition_ifname=" + open_ifname);
-		exec("uci set wireless." + open_section + ".owe_transition_ifname=" + owe_ifname);
-		exec("uci commit wireless");
+		uci_batch({
+			"set wireless." + section + ".owe_transition_ifname=" + open_ifname,
+			"set wireless." + open_section + ".owe_transition_ifname=" + owe_ifname,
+			"commit wireless",
+		});
 		exec("wifi down " + radio_name + " 2>/dev/null; wifi up " + radio_name);
 		wait_for_ifname(section);
 		actor->set(SK::iface, owe_ifname);
@@ -323,24 +345,24 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		[&]{ string s = wifi_iface; ranges::replace(s, '-', '_'); return s; }());
 	log(LogLevel::DEBUG, "setup_ap: configuring UCI section '{}' for iface '{}'", section, wifi_iface);
 
-	exec("uci set wireless." + actor.get(SK::radio) + ".disabled=0");
+	vector<string> cmds = {format("set wireless.{}.disabled=0", actor.get(SK::radio))};
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
-
 		if(key == "eap_user_file"){
 			const path local = rs.config_path().parent_path() / value;
 			constexpr string_view remote = "/etc/hostapd.eap_user";
 			upload_file(local, remote);
-			exec(format("uci set wireless.{}.eap_user_file={}", section, remote));
+			cmds.push_back(format("set wireless.{}.eap_user_file={}", section, remote));
 		} else if(radio_keys.contains(key)){
-			exec(format("uci set wireless.{}.{}={}", actor.get(SK::radio), key, value));
+			cmds.push_back(format("set wireless.{}.{}={}", actor.get(SK::radio), key, value));
 		} else{
-			exec(format("uci set wireless.{}.{}={}", section, key, value));
+			cmds.push_back(format("set wireless.{}.{}={}", section, key, value));
 		}
 	}
+	cmds.push_back("commit wireless");
 	int ret = 0;
-	const string commit_out = exec("uci commit wireless 2>&1", false, &ret);
-	if(ret != 0) log(LogLevel::WARNING, "setup_ap uci commit wireless failed (rc={}): {}", ret, commit_out);
+	const string commit_out = uci_batch(cmds, false, &ret);
+	if(ret != 0) log(LogLevel::WARNING, "setup_ap uci batch failed (rc={}): {}", ret, commit_out);
 	ret = 0;
 	exec("wifi reload 2>&1", false, &ret);
 	if(ret != 0) log(LogLevel::WARNING, "wifi reload returned non-zero ({}) after setup_ap - AP may not be configured correctly", ret);

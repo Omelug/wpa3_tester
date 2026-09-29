@@ -368,14 +368,16 @@ string RunStatus::findConfigByTestName(const string &name) {
 }
 
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
-		initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d) const {
+		initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
+		optional<TimeWindow> window) const {
 	for(auto &[actor, pattern, label, color]: event_d) {
-		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern), label, color));
+		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern, window), label, color));
 	}
 }
 
 //FIXME strictly connected to actors names from config -> move actor names to some constants?
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const {
+	const TimeWindow window{get_tag_time(combined_log(), START_tag), get_tag_time(combined_log(), END_tag)};
 	if(event_sets.contains(DISCONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
@@ -383,7 +385,7 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 		log_events(elements,{
 			{ "ap", "did not acknowledge", "ACK_fail", "red" },
 			{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
-		});
+		}, window);
 	}
 	if(event_sets.contains(CONNECT)) {
 		//throw error of actors not found
@@ -393,7 +395,7 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 				{
 						{ "client", "CTRL-EVENT-CONNECTED", "CONN", "green" },
 						{ "ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green" },
-				});
+				}, window);
 	}
 	if(event_sets.contains(TESTER_TAGS)) {
 

@@ -11,6 +11,7 @@
 #include "ObserverPtr.h"
 #include "RunSuiteStatus.h"
 #include "Run_Config.h"
+#include "logger/log.h"
 #include "observer/graph/graph_elements.h"
 #include "system/ProcessManager.h"
 #include "system/utils.h"
@@ -140,7 +141,8 @@ public:
 			const std::string &iface, size_t timeout_sec, const std::vector<unsigned char> &channels);
 	// ----------- log_events
 	void log_events(G_elms &elements,
-			std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d) const;
+			std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
+			std::optional<TimeWindow> window = std::nullopt) const;
 	void log_events(G_elms &elements, const std::set<EVENT_SET> &event_sets) const;
 private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);

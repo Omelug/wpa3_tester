@@ -144,12 +144,11 @@ void run_attack(RunStatus &rs) {
 	att->set_iface_up();
 
 	//  force AP into ACM mode
+	rs.start_observers();
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	trigger_acm(att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), acm_pause_millisec, trigger_count, sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
-
-	rs.start_observers();
 
 	CookieStore store;
 	thread capture_thread([&] {

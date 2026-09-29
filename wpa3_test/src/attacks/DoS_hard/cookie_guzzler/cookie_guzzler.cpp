@@ -58,7 +58,7 @@ void run_attack(RunStatus &rs) {
 
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds( att_cfg.at("sleep_after_sec")));
-	ap->disconnect();
+	ap->disconnect(); //TODO needed ?
 }
 
 void stats_attack(const RunStatus &rs) {

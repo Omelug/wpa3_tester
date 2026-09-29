@@ -1,4 +1,5 @@
 title: Cookie guzzler Config
+$extends: ../dos_time.comp.schema.yaml
 type: object
 required:
   - actors
@@ -12,15 +13,9 @@ properties:
   attack_config:
     type: object
     required:
-      - attack_time_sec
-      - burst_size
+      $UNION: [burst_size]
     additionalProperties: false
     properties:
-      attack_time_sec:
-        type: integer
-        description: time of sending cookie guzzler packets
-        default: 5
-        minimum: 1
       burst_size:
         type: integer
       frames_per_second_limit:

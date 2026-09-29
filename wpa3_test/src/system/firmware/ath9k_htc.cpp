@@ -25,12 +25,27 @@ string get_random_ath_masker_mac(const string &attacker_mac) {
 	return ss.str();
 }
 
+bool is_ath_masker_loaded(){
+	ifstream modules("/proc/modules");
+	string line;
+	while(getline(modules, line)){
+		if(line.starts_with("ath_masker ")) return true;
+	}
+	return false;
+}
+
 void load_ath_masker(const bool git_install){
+	if(is_ath_masker_loaded()) return;
 	const string ath_folder = get_global_config().at("paths").at("ath_masker");
 	if(ath_folder.empty()) throw req_err("Setup paths/ath_masker in global_config:" + global_config_path().string());
+	if(filesystem::exists(filesystem::path(ath_folder) / "ath_masker.ko")){
+		hw_capabilities::run_cmd({"modprobe", "ath"});
+		hw_capabilities::run_in("insmod ./ath_masker.ko", ath_folder);
+		return;
+	}
 	if(git_install){
 		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/ath_masker", ath_folder);
-	} else if(!filesystem::exists(ath_folder)){
+	} else {
 		throw req_err("ath_masker folder not found: " + ath_folder + ". Enable git_install or clone it manually.");
 	}
 	hw_capabilities::run_in("bash ./load.sh", ath_folder);
@@ -48,15 +63,6 @@ void load_ath9k_noorder_change(){
 void unload_ath9k_noorder_change(){
 	const string fw_dir = root_dir().string() + "/src/system/firmware/ath9k-firmware";
 	hw_capabilities::run_in("bash ./unload.sh", fw_dir);
-}
-
-bool is_ath_masker_loaded(){
-	ifstream modules("/proc/modules");
-	string line;
-	while(getline(modules, line)){
-		if(line.starts_with("ath_masker ")) return true;
-	}
-	return false;
 }
 
 bool is_ath9k_noorder_loaded(){

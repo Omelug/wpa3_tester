@@ -1,4 +1,4 @@
-.PHONY: kernel kernel-deploy driver-builtin driver-modules
+.PHONY: kernel kernel-deploy driver-builtin driver-modules ath_masker
 
 # -- Kernel cross-compilation with debug config
 # Builds the official Pi kernel (bcm2711_defconfig) with kernel/debug.config merged in.
@@ -72,6 +72,16 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	    && sudo cp /tmp/kernel8.img /boot/firmware/kernel8.img && sudo reboot"
 	@echo "==> Kernel + drivers deployed. Pi rebooting - reconnect in ~30 s."
 	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
+
+ATH_MASKER_SRC := $(SRC_ROOT)/tools/ath_masker
+
+ath_masker: $(KERNEL_OUT)/arch/arm64/boot/Image
+	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
+	    M=$(ATH_MASKER_SRC) modules -j$(shell nproc)
+	@test -z "$(PI)" || { \
+	    $(SSH) "sudo mkdir -p $(REMOTE_ABS)/tools/ath_masker && sudo chown $(PI_USER): $(REMOTE_ABS)/tools/ath_masker"; \
+	    $(RSYNC) -az $(ATH_MASKER_SRC)/ath_masker.ko $(PI_USER)@$(PI):$(REMOTE_ABS)/tools/ath_masker/ath_masker.ko; \
+	    echo "==> ath_masker.ko -> $(REMOTE_ABS)/tools/ath_masker/"; }
 
 driver-builtin:
 	@test -n "$(PI)" || { echo "Error: PI not set"; exit 1; }

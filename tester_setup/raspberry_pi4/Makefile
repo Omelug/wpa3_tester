@@ -33,8 +33,9 @@ REMOTE      := ~/wpa3_tester
 REMOTE_ABS   = /home/$(PI_USER)/wpa3_tester
 _REAL_USER   := $(or $(SUDO_USER),$(USER))
 SSH_KEY_PRIV ?= /home/$(_REAL_USER)/.ssh/id_rsa
-SSH          = ssh -o StrictHostKeyChecking=no -i $(SSH_KEY_PRIV) $(PI_USER)@$(PI)
-RSYNC        = rsync -e "ssh -o StrictHostKeyChecking=no -i $(SSH_KEY_PRIV)"
+_SSH_OPTS    := -o StrictHostKeyChecking=no -o ControlMaster=auto -o ControlPath=$(HOME)/.ssh/wpa3-ctl-%r@%h:%p -o ControlPersist=120s -i $(SSH_KEY_PRIV)
+SSH          = ssh $(_SSH_OPTS) $(PI_USER)@$(PI)
+RSYNC        = rsync -e "ssh $(_SSH_OPTS)"
 SYSROOT     := $(CURDIR)/run/cross-sysroot
 CROSS_BUILD := $(CURDIR)/run/build-cross
 TOOLCHAIN   := $(CURDIR)/aarch64-toolchain.cmake

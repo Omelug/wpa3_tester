@@ -17,6 +17,7 @@ PI_GW=${7:-}
 PI_PREFIX=${8:-24}
 KERNEL_IMAGE=${9:-}
 KERNEL_MODULES=${10:-}
+ATH_MASKER_KO=${11:-}
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
@@ -180,6 +181,13 @@ fi
 if [ -n "$KERNEL_MODULES" ] && [ -d "$KERNEL_MODULES" ]; then
     echo "==> Installing debug kernel modules -> $ROOT/lib/modules/"
     cp -a "$KERNEL_MODULES"/. "$ROOT/lib/modules/"
+fi
+if [ -n "$ATH_MASKER_KO" ] && [ -f "$ATH_MASKER_KO" ]; then
+    ATH_DEST="$ROOT/home/$PI_USER/wpa3_tester/tools/ath_masker"
+    mkdir -p "$ATH_DEST"
+    cp "$ATH_MASKER_KO" "$ATH_DEST/ath_masker.ko"
+    chown -R 1000:1000 "$ROOT/home/$PI_USER"
+    echo "==> ath_masker.ko -> /home/$PI_USER/wpa3_tester/tools/ath_masker/"
 fi
 
 echo "==> Image customized:"

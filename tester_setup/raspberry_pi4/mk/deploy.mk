@@ -5,7 +5,7 @@ GDB_PORT ?= 1234
 # forward-declare targets from sibling mk files so CLion resolves them
 .PHONY: bootstrap run run_debug deploy-debug deploy-cross internet gdbserver-start
 
-bootstrap:
+bootstrap: ath_masker
 	@test -n "$(PI)" || { echo "Error: PI is not set. Usage: make bootstrap PI=<address>"; exit 1; }
 	scp image/packages.sh $(PI_USER)@$(PI):/tmp/wpa3-packages.sh
 	scp image/setup.sh $(PI_USER)@$(PI):/tmp/wpa3-setup.sh

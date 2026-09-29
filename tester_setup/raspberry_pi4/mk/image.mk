@@ -7,7 +7,7 @@ image: $(CUSTOM_IMAGE)
 	@echo "==> Image ready: $(CUSTOM_IMAGE)"
 	@echo "    Flash:  make flash DISK=/dev/sdX"
 
-$(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image image/customize.sh image/firstboot.sh image/firstboot.service image/drivers.conf image/setup.sh
+$(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image ath_masker image/customize.sh image/firstboot.sh image/firstboot.service image/drivers.conf image/setup.sh
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	    INSTALL_MOD_PATH=$(KERNEL_MODS) -j$(shell nproc) modules_install
 	$(MAKE) driver-modules
@@ -22,7 +22,8 @@ $(CUSTOM_IMAGE): $(IMAGE_RAW) $(KERNEL_OUT)/arch/arm64/boot/Image image/customiz
 		"$(PI_GW)" \
 		"$(PI_PREFIX)" \
 		"$(KERNEL_OUT)/arch/arm64/boot/Image" \
-		"$(KERNEL_MODS)/lib/modules"
+		"$(KERNEL_MODS)/lib/modules" \
+		"$(ATH_MASKER_SRC)/ath_masker.ko"
 
 $(IMAGE_RAW): $(IMAGE_XZ)
 	xz --decompress --keep --stdout $(IMAGE_XZ) > $(IMAGE_RAW)

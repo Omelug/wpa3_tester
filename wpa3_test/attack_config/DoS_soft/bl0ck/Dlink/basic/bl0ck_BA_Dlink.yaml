@@ -1,6 +1,6 @@
 name: bl0ck_BA_Dlink
-$extends: ./bl0ck_Dlink.comp.yaml
-$validator: ../bl0ck.schema.yaml
+$extends: ../bl0ck_Dlink.comp.yaml
+$validator: ../../bl0ck.schema.yaml
 actors:
   client:
     setup:

@@ -8,5 +8,12 @@ tests:
     test_name: bl0ck_BAR_Dlink
   bl0ck_BARS_Dlink:
     test_name: bl0ck_BARS_Dlink
+  #random
+  bl0ck_BA_Dlink_random:
+    test_name: bl0ck_BA_Dlink_random
+  bl0ck_BAR_Dlink_random:
+    test_name: bl0ck_BAR_Dlink_random
+  bl0ck_BARS_Dlink_random:
+    test_name: bl0ck_BARS_Dlink_random
 
 rewrite: errors

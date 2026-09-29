@@ -7,3 +7,4 @@ In new versions
 
 +: change config to something like KCL
 +: nix support
++: Faraday cell + DoS with detection (need to be legally OK)

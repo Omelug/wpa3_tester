@@ -1,0 +1,10 @@
+
+Search linux drivers:
+https://linux-wless.passys.nl/v
+
+Wifi devices database:
+
+https://wikidevi.wi-cat.ru/Main_Page (updating)
+blog: https://wive-ng.ru/wikidevi/
+
+https://deviwiki.com/ (only old wifidev backup)

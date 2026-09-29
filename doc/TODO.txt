@@ -5,6 +5,11 @@ v: visualization
 
 Version  v 0.0.0.0:
 
+invalid_curve_attack:
+    - TOFIXME předtím to fungovalo, možná jsem si toho nevšiml od změny k-odu přímo invalid_curve
+
+CSA:
+    +: option for openwrt OCV for external
 mc_mitm:
     +: přegeneorvat sta_ap_iperf3
     +: problém s mt76-git? zkusit kali

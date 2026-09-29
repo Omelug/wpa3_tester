@@ -1,0 +1,8 @@
+name: reflection_attack_2_8
+attacker_module: reflection_attack
+$extends: ./reflection_attack.yaml
+actors:
+  ap:
+    setup:
+      program_config:
+        version: 2_8

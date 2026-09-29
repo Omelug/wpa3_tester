@@ -18,8 +18,7 @@ inline std::filesystem::file_time_type newest_mtime(const std::filesystem::path 
 // Returns true if data_dir is unchanged since page_dir/index.html was last written
 inline bool data_unchanged(const std::filesystem::path &page_dir, const std::filesystem::path &data_dir) {
 	if(newest_mtime(data_dir) == std::filesystem::file_time_type::min()) {
-		std::filesystem::remove_all(page_dir);
-		return true;
+		return false; // no data -> always generate without entries
 	}
 	std::error_code ec;
 	const auto page_mtime = std::filesystem::last_write_time(page_dir / "index.html", ec);

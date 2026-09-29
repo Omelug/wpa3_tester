@@ -5,4 +5,7 @@ tests:
   all_actors:
     type: actor_filler
     config: ./reflection_attack.yaml
+  all_actors_2_8:
+    type: actor_filler
+    config: ./reflection_attack_2_8.yaml
 delete_old: true

@@ -138,27 +138,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="rf: change Dlink ssid to not collide during tests after Dlink test">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="rf: simplify attack config, Dlink ssids&#10;f: set_iface_down() before flash, move setup in pmk gobbler before cookie_guzzler">
       <change beforePath="$PROJECT_DIR$/result_overview/include/page_cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/include/page_cache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/malformed_eapol1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/malformed_eapol1.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/two_iface/injection_overview.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.schema.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/PMK_gobbler/pmk_gobbler.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/SAE_DoS_wrapper/sae_dos_wrapper.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/cookie_guzzler/cookie_guzzler.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/cookie_guzzler/cookie_guzzler.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/memory_omnivore/memory_omnivore.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/memory_omnivore/memory_omnivore.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/memory_omnivore/memory_omnivore_ACK.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_hard/memory_omnivore/memory_omnivore_ACK.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_only.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_only.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/suite_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/PMK_gobbler/pmk_gobbler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/external_actors/openwrt/openwrt_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/firmware/ath9k_htc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/firmware/ath9k_htc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/overview/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/overview/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1204,7 +1186,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r: get_heuristic_err_msg simplify" />
     <MESSAGE value="h: hash chcek in findSolution backtracking" />
     <MESSAGE value="h: hash check in findSolution backtracking" />
     <MESSAGE value="f: cahnge hash orrder (after setup phase)&#10;r: small_canges" />
@@ -1229,7 +1210,8 @@
     <MESSAGE value="f: disable_actor after manual disconnect&#10;fv: openwrt get last connection for AKM log" />
     <MESSAGE value="r: small changes (fix attacker adapters etc.)" />
     <MESSAGE value="rf: change Dlink ssid to not collide during tests after Dlink test" />
-    <option name="LAST_COMMIT_MESSAGE" value="rf: change Dlink ssid to not collide during tests after Dlink test" />
+    <MESSAGE value="rf: simplify attack config, Dlink ssids&#10;f: set_iface_down() before flash, move setup in pmk gobbler before cookie_guzzler" />
+    <option name="LAST_COMMIT_MESSAGE" value="rf: simplify attack config, Dlink ssids&#10;f: set_iface_down() before flash, move setup in pmk gobbler before cookie_guzzler" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

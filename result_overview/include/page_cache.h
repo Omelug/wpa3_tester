@@ -4,7 +4,6 @@
 
 namespace wpa3_tester::overview {
 
-// ctime (inode change time)
 inline time_t newest_ctime(const std::filesystem::path &dir) {
 	time_t t = 0;
 	if(!std::filesystem::exists(dir)) return t;
@@ -16,7 +15,6 @@ inline time_t newest_ctime(const std::filesystem::path &dir) {
 	return t;
 }
 
-// returns true if data_dir is unchanged since page_dir/index.html was last written
 inline bool data_unchanged(const std::filesystem::path &page_dir, const std::filesystem::path &data_dir) {
 	const time_t newest = newest_ctime(data_dir);
 	if(newest == 0) return false;

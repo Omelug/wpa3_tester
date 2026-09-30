@@ -40,3 +40,6 @@ actors:
       $DELETE: [ permanent_mac, driver ]
       condition: [ monitor, 5GHz ]
       channel: 36
+attack_config:
+  wait_after_stop: 60
+

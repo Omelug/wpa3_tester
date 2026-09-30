@@ -8,6 +8,9 @@ actors:
     $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
+    setup:
+      program_config:
+        ssid: test_wpa3_tester_Dlink
     #selection:
     #  driver: [ mt76x2u, mt76x2u_git ]
     sniff_iface: true

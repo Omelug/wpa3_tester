@@ -43,12 +43,14 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 	};
 
 	// emit tables for each variant
+
+	auto base_att_dir = data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1";
 	emit_table("Test Results",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_basic_suite", "malformed_eapol1_basic_suite");
+		base_att_dir / "malformed_eapol1_basic_suite", "malformed_eapol1_basic_suite");
 	emit_table("Dlink",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "external" / "m_eapol1_rogueAP_Dlink_filler", "m_eapol1_rogueAP_Dlink_filler");
+		base_att_dir / "external" / "m_eapol1_rogueAP_Dlink_filler", "m_eapol1_rogueAP_Dlink_filler");
 	emit_table("Malformed eapol1 filler",
-		data_dir / DATA_SUITE / "DoS_soft" / "malformed_eapol1" / "malformed_eapol1_filler", "malformed_eapol1_filler");
+		base_att_dir / "malformed_eapol1_filler", "malformed_eapol1_filler");
 
 
 	f << "</body></html>";

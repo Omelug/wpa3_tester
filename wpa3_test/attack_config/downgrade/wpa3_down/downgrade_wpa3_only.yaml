@@ -4,11 +4,11 @@ $extends: [ ./downgrade_vuln.yaml ]
 actors:
   client:
     source: internal
-    #selection:
-    #  driver: rtl8xxxu
     setup:
       program: wpa_supplicant
       program_config:
         ieee80211w: 2 #Needed for WPA3 disable
         key_mgmt: SAE
         psk: password123
+attack_config:
+  wait_after_stop: 60

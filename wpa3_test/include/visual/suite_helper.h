@@ -77,7 +77,9 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 
 	auto entries = [t_data_dir] {
 		// is test folder
-		if(std::filesystem::exists(t_data_dir / DONE_FILE)) { return std::vector<Entry>{ Entry::parse(t_data_dir) }; }
+		if(std::filesystem::exists(t_data_dir / DONE_FILE)) {
+			return std::vector<Entry>{ Entry::parse(t_data_dir) };
+		}
 		if constexpr(HasCollectResults<Entry>) {
 			return Entry::collect_results(t_data_dir);
 		} else {

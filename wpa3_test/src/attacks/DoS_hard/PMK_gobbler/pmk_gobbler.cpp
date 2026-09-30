@@ -137,11 +137,12 @@ void run_attack(RunStatus &rs) {
 	const size_t frames_per_sec = att_cfg.at("frames_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
+	att->set_monitor_mode();
+	att->set_iface_up();
+
 	//TODO chcek if ap has ssid (was hardcoded before)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 			rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
-	att->set_monitor_mode();
-	att->set_iface_up();
 
 	//  force AP into ACM mode
 	rs.start_observers();

@@ -40,6 +40,7 @@ void Actor_config::cleanup() const{
 		set_iface_down();
 	}
 	run({"rfkill", "unblock", "wifi"});
+	set_iface_down(); // cycle DOWN to flush nl80211 frame registrations
 	run({"ip", "addr", "flush", "dev", iface});
 	set_iface_up();
 }

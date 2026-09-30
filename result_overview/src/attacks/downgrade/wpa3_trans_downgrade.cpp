@@ -53,8 +53,8 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 												  page_dir, t_name);
 	};
 
-	const path downgrade_dir = data_dir / DATA_SUITE / "downgrade";
-	emit_table("Internal filler", downgrade_dir / "wpa3_down" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
+	const path wpa3_down_dir = data_dir / DATA_SUITE / "downgrade"/  "wpa3_down";
+	emit_table("Internal filler", wpa3_down_dir /  "wpa3_downgrade_filler" , "wpa3_downgrade_filler");
 	//TODO emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
 
 	f << "</body></html>";

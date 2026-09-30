@@ -61,6 +61,6 @@ observers:
       filter: "special_filter:actors"
 attack_config:
   # seconds to wait after legitimate AP is stopped for client to reconnect to rogue AP
-  wait_after_stop: 30
+  wait_after_stop: 60
 
 rewrite: errors

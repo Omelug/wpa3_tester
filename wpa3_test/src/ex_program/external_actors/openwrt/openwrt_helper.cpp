@@ -135,7 +135,8 @@ string  akm_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &cli
 		const auto sta = parse_associated_sta_line(line);
 		if(!sta) continue;
 		if(has_filter && sta->mac != client_mac) continue;
-		last = sta;
+		if (!last || sta->auth_alg == "sae")
+			last = sta; //not get info from PMKSA cache
 	}
 	if(!last) return {};
 	const string name = auth_alg_name(last->auth_alg);
@@ -153,7 +154,8 @@ string mfp_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &clie
 		const auto sta = parse_associated_sta_line(line);
 		if(!sta) continue;
 		if(has_filter && sta->mac != client_mac) continue;
-		last = sta;
+		if (!last || sta->auth_alg == "sae")
+			last = sta; //not get info from PMKSA cache
 	}
 	if(!last) return {};
 	return last->auth_alg == "sae" ? "REQUIRED" : "";

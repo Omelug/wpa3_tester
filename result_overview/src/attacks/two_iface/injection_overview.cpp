@@ -23,8 +23,20 @@ struct InjectionCacheEntry {
     map<string, pair<string,string>> tests; // test_name -> {result, detail}
 };
 
+static string attr_escape(const string &s) {
+    string o; o.reserve(s.size());
+    for (char c : s) {
+        if      (c == '&') o += "&amp;";
+        else if (c == '"') o += "&quot;";
+        else if (c == '<') o += "&lt;";
+        else if (c == '>') o += "&gt;";
+        else               o += c;
+    }
+    return o;
+}
+
 static string result_cell(const string &r, const string &detail = "") {
-    const string d = detail.empty() ? "" : " data-detail=\"" + detail + "\"";
+    const string d = detail.empty() ? "" : " data-detail=\"" + attr_escape(detail) + "\"";
     if(r == "PASSED")    return "<span class=\"it-pass\"" + d + ">P</span>";
     if(r == "FAIL")      return "<span class=\"it-fail\"" + d + ">F</span>";
 	if(r == "SUSPICIOUS")      return "<span class=\"it-fail\"" + d + ">S</span>";

@@ -70,8 +70,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 20) {
 				static mt19937 rng(random_device{}());
-				// ponytail: randomise MFPC/MFPR bits (debug only)
-				data[18] = (data[18] & ~0xC0u) | (uniform_int_distribution<uint8_t>(0, 3)(rng) << 6);
+				dfata[18] = (data[18] & ~0xC0u) | (uniform_int_distribution<uint8_t>(0, 3)(rng) << 6);
 			}
 			o = Dot11::option(static_cast<Dot11::OptionTypes>(48), data.size(), data.data());
 		*/

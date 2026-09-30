@@ -58,14 +58,6 @@ void check_beacon_prot(nlattr * attrs[], NlCaps * caps){
 	if(feature / 8 < len) caps->beacon_prot = (ext_features[feature / 8] >> (feature % 8)) & 1;
 }
 
-void check_PBAC(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
-	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
-	const int len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
-	constexpr int feature = NL80211_EXT_FEATURE_PROTECTED_TWT;
-	if(feature / 8 < len) caps->pbac = (ext[feature / 8] >> (feature % 8)) & 1;
-}
-
 void check_OCV(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_EXT_FEATURES]) return;
 	const uint8_t *ext = static_cast<uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
@@ -255,7 +247,6 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 
 	check_netns_support(attrs, caps);
 	check_beacon_prot(attrs, caps);
-	check_PBAC(attrs, caps);
 	check_CSA(attrs, caps);
 	check_OCV(attrs, caps);
 	check_MFP(attrs, caps);

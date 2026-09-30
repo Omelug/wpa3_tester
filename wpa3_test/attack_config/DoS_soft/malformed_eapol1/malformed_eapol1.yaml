@@ -10,6 +10,8 @@ $extends: [
 
 actors:
   ap:
+    selection:
+      permanent_mac: "24:ec:99:bf:b0:a1"
     setup:
       program_config:
         other_options: "-d"

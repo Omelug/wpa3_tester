@@ -120,7 +120,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vecto
 	if(msg.empty()) {
 		// Frequency conflict: N actors need the same value but fewer than N options provide it
 		for(const auto k: sk_keys()) {
-			if(k == SK::actor_name || k == SK::channel || k == SK::netns) continue;
+			if(k == SK::actor_name || k == SK::channel || k == SK::netns || k == SK::ip_addr) continue;
 			map<string, vector<string>> demand;
 			for(const auto &[name, req_ptr]: rules) { const auto &r = (*req_ptr)[k]; if(r) demand[*r].push_back(name); }
 			for(const auto &[val, actors]: demand) {

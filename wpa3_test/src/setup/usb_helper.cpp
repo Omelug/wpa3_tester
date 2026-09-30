@@ -63,7 +63,10 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 		bool is_device = false;
 		string driver_name = "unknown";
 		string module_name = "unknown";
-		for(const auto &sub_e: directory_iterator(dev_path)) {
+		std::error_code ec;
+		directory_iterator sub_it(dev_path, ec);
+		if(ec) continue; // sysfs entry vanished between outer and inner iteration
+		for(const auto &sub_e: sub_it) {
 			if(sub_e.path().filename().string().find(':') == string::npos) continue;
 			path drv_link = sub_e.path() / "driver";
 			if(!is_symlink(drv_link)) continue;

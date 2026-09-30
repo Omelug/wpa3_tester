@@ -86,7 +86,7 @@ TEST_CASE("change_filler_hash - no-op without filler suffix in config_path") {
 }
 
 TEST_CASE("change_filler_hash - no-op when hash unchanged") {
-	const string suffix = visual::helper::ACTOR_FILLER_SUFFIX;
+	const string suffix = ACTOR_FILLER_SUFFIX;
 	const path tmp = temp_directory_path() / "filler_hash_test";
 	create_directories(tmp);
 

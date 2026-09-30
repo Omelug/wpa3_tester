@@ -45,6 +45,7 @@ only_list_reset:
 # (ex.  channel: var_default_channel_5  # -> 36 (int))
 global_variables:
   default_channel_2_4: 6
+  # selected from no-DFS channels ()
   default_channel_5: 36
   default_password: password123
 

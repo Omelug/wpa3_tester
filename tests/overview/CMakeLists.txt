@@ -1,2 +1,3 @@
 add_doctest_exe(test_html_utils SOURCES test_html_utils.cpp TEST_NAME test_html_utils)
 add_doctest_exe(test_page_cache SOURCES test_page_cache.cpp TEST_NAME test_page_cache)
+target_include_directories(test_page_cache PRIVATE ${CMAKE_SOURCE_DIR}/result_overview/include)

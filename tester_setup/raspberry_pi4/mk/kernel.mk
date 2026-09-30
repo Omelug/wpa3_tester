@@ -35,21 +35,26 @@ driver-modules: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Cross-building WiFi drivers against $(KERNEL_OUT) (matches this kernel exactly)..."
 	@grep -v '^#' $(DRIVERS_CONF) | grep -v '^[[:space:]]*$$' | while IFS='|' read -r name url cflags tag make_vars; do \
 	    src=$(DRIVER_SRC)/$$name; \
-	    rm -rf "$$src"; mkdir -p $(DRIVER_SRC); \
-	    if echo "$$tag" | grep -qE '^[0-9a-f]{40}$$'; then \
-	        git init "$$src" && git -C "$$src" fetch --depth=1 "$$url" "$$tag" && git -C "$$src" checkout FETCH_HEAD; \
-	    elif [ -n "$$tag" ]; then \
-	        git clone --depth=1 --branch "$$tag" "$$url" "$$src"; \
+	    if [ ! -f "$$src/.driver_tag" ] || [ "$$(cat $$src/.driver_tag)" != "$$tag" ]; then \
+	        rm -rf "$$src"; mkdir -p $(DRIVER_SRC); \
+	        if echo "$$tag" | grep -qE '^[0-9a-f]{40}$$'; then \
+	            git init "$$src" && git -C "$$src" fetch --depth=1 "$$url" "$$tag" && git -C "$$src" checkout FETCH_HEAD; \
+	        elif [ -n "$$tag" ]; then \
+	            git clone --depth=1 --branch "$$tag" "$$url" "$$src"; \
+	        else \
+	            git clone --depth=1 "$$url" "$$src"; \
+	        fi; \
+	        [ -n "$$cflags" ] && echo "EXTRA_CFLAGS += $$cflags" >> "$$src/Makefile"; \
+	        find "$$src" -name "*.c.xz" -exec xz -dk {} \; 2>/dev/null || true; \
+	        [ "$$name" = mt76 ] && sed -i '/NL80211_IFTYPE_NAN_DATA/d' "$$src/mt76_connac_mcu.c" || true; \
+	        [ "$$name" = rtl8852au ] && sed -i \
+	            -e 's/ret = register_netdevice(mon_ndev);/{ int _rtnl = rtnl_trylock(); ret = register_netdevice(mon_ndev); if (_rtnl) rtnl_unlock(); }/' \
+	            -e 's/unregister_netdevice(ndev);/{ int _rtnl = rtnl_trylock(); unregister_netdevice(ndev); if (_rtnl) rtnl_unlock(); }/' \
+	            "$$src/os_dep/linux/ioctl_cfg80211.c" || true; \
+	        echo "$$tag" > "$$src/.driver_tag"; \
 	    else \
-	        git clone --depth=1 "$$url" "$$src"; \
+	        echo "==> $$name already at $$tag, skipping clone"; \
 	    fi; \
-	    [ -n "$$cflags" ] && echo "EXTRA_CFLAGS += $$cflags" >> "$$src/Makefile"; \
-	    find "$$src" -name "*.c.xz" -exec xz -dk {} \; 2>/dev/null || true; \
-	    [ "$$name" = mt76 ] && sed -i '/NL80211_IFTYPE_NAN_DATA/d' "$$src/mt76_connac_mcu.c" || true; \
-	    [ "$$name" = rtl8852au ] && sed -i \
-	        -e 's/ret = register_netdevice(mon_ndev);/{ int _rtnl = rtnl_trylock(); ret = register_netdevice(mon_ndev); if (_rtnl) rtnl_unlock(); }/' \
-	        -e 's/unregister_netdevice(ndev);/{ int _rtnl = rtnl_trylock(); unregister_netdevice(ndev); if (_rtnl) rtnl_unlock(); }/' \
-	        "$$src/os_dep/linux/ioctl_cfg80211.c" || true; \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	        M=$$(realpath $$src) $$make_vars modules -j$$(nproc); \
 	    $(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \

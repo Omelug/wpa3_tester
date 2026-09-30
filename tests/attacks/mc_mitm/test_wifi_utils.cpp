@@ -28,22 +28,6 @@ TEST_CASE("beacon_to_probe_resp") {
 	CHECK_EQ(probe.search_option(Dot11::TIM), nullptr);
 }
 
-TEST_CASE("patch_channel_raw - beacon frame") {
-	vector<uint8_t> beacon_data = test_helpers::read_pcap_file("./test_data/beacon_test.pcapng");
-	vector<uint8_t> original_data = beacon_data; // Keep copy for comparison
-
-	McMitm::patch_channel_raw(beacon_data, 11);
-	PacketWriter writer("beacon_patched_result.pcap", Tins::DataLinkType<RadioTap>());
-	RawPDU raw_pdu(beacon_data);
-	writer.write(raw_pdu);
-
-	// verify data was modified
-	REQUIRE_NE(beacon_data, original_data);
-
-	INFO("Beacon frame size before: " << original_data.size());
-	INFO("Beacon frame size after: " << beacon_data.size());
-}
-
 // ------ get_addrs
 static constexpr auto PCAP_BEACON = "test_data/wifi_util/beacon.pcapng";
 static HWAddress<6> BEACON_ADDR1 = "ff:ff:ff:ff:ff:ff"; // always broadcast

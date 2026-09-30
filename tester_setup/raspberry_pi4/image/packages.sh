@@ -21,4 +21,5 @@ WPA3_APT_PACKAGES=(
     dkms linux-headers-rpi-v8
     sshpass
     python3-pip
+    hw-probe
 )

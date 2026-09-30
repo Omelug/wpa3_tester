@@ -164,23 +164,6 @@ cat > "$ROOT/etc/systemd/journald.conf.d/10-persistent.conf" << 'EOF'
 Storage=persistent
 EOF
 
-# usb_modeswitch - RTL8188GU: switches from CDROM mode (0bda:1a2b) to WiFi mode (0bda:b711)
-mkdir -p "$ROOT/etc/usb_modeswitch.d"
-cat > "$ROOT/etc/usb_modeswitch.d/0bda:1a2b" << 'EOF'
-DefaultVendor=0x0bda
-DefaultProduct=0x1a2b
-TargetVendor=0x0bda
-TargetProduct=0xb711
-StandardEject=1
-CheckSuccess=20
-EOF
-cat > "$ROOT/etc/udev/rules.d/40-rtl8188gu.rules" << 'EOF'
-SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="1a2b", RUN+="/usr/sbin/usb_modeswitch '%k'"
-EOF
-
-# blacklist rtl8192cu (buggy EAPOL delivery) - rtl8xxxu handles RTL8192CU instead
-# debug.config disables it in the custom kernel; this covers the stock kernel during firstboot
-echo "blacklist rtl8192cu" > "$ROOT/etc/modprobe.d/blacklist-rtl8192cu.conf"
 
 install -m 755 "$SCRIPT_DIR/setup.sh"          "$ROOT/usr/local/bin/wpa3-setup.sh"
 install -m 755 "$SCRIPT_DIR/firstboot.sh"      "$ROOT/usr/local/bin/wpa3-firstboot.sh"

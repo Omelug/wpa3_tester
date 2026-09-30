@@ -22,4 +22,5 @@ WPA3_APT_PACKAGES=(
     sshpass
     python3-pip
     hw-probe
+    micro
 )

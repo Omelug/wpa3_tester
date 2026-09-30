@@ -104,7 +104,7 @@ string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vecto
 			if(!r) continue;
 			set<string> possible;
 			for(const auto &opt: options) { const auto &o = (*opt)[k]; if(o) possible.insert(*o); }
-			if(possible.contains(*r)) continue;
+			if(possible.empty() || possible.contains(*r)) continue;
 			msg += format("{0} {1} is required by {2}, possible {0}s {{{3}}}; ", sk_name(k), *r, actor_name, join(possible, ","));
 		}
 		for(const auto k: bk_keys()) {

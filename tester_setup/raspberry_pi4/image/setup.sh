@@ -21,6 +21,8 @@ printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb
     > /etc/modprobe.d/rtw89.conf
 printf 'options mt76_usb disable_usb_sg=1\n# blacklist + install: belt-and-suspenders to suppress in-kernel mt76x2u/mt76x2e\n# (shadowed by mt76x2u_git/mt76x2e_git from updates/; symbol CRC mismatch otherwise)\nblacklist mt76x2u\nblacklist mt76x2e\ninstall mt76x2u /bin/false\ninstall mt76x2e /bin/false\n' \
     > /etc/modprobe.d/mt76.conf
+# rtl8xxxu handles RTL8192CU; staging rtl8192cu has known EAPOL delivery bug
+echo "blacklist rtl8192cu" > /etc/modprobe.d/blacklist-rtl8192cu.conf
 
 # static IPs on eth0
 nmcli connection show eth0-static &>/dev/null || \
@@ -31,6 +33,21 @@ nmcli connection modify eth0-static \
     ipv4.gateway "10.0.0.1" \
     ipv4.dns "8.8.8.8,1.1.1.1"
 nmcli connection up eth0-static 2>/dev/null || true
+
+# usb_modeswitch - RTL8188GU: CDROM mode (0bda:1a2b) -> WiFi mode (0bda:b711)
+mkdir -p /etc/usb_modeswitch.d
+cat > /etc/usb_modeswitch.d/0bda:1a2b << 'EOF'
+DefaultVendor=0x0bda
+DefaultProduct=0x1a2b
+TargetVendor=0x0bda
+TargetProduct=0x8832
+StandardEject=1
+CheckSuccess=20
+EOF
+cat > /etc/udev/rules.d/40-rtl8188gu.rules << 'EOF'
+SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="1a2b", RUN+="/lib/udev/usb_modeswitch '/%k'"
+EOF
+udevadm control --reload-rules 2>/dev/null || true
 
 # WiFi region CZ
 raspi-config nonint do_wifi_country CZ

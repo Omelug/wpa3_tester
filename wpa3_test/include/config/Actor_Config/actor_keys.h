@@ -43,7 +43,7 @@ enum class SK : uint8_t {
 // Bool keys
 enum class BK : uint8_t {
 	AP,
-	STA,
+	STA, //TODO are STA and managed different?
 	injection_selftest,
 	monitor,
 	managed,

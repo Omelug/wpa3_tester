@@ -14,35 +14,24 @@
 namespace wpa3_tester{
 using namespace std;
 
-void check_monitor(nlattr **attrs, NlCaps *caps){
+void check_iftypes(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
-
-	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
-	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
-			nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]), nullptr);
-	if(iftypes[NL80211_IFTYPE_MONITOR]) caps->monitor = true;
+	nlattr *nl_mode;
+	int rem;
+	nla_for_each_nested(nl_mode, attrs[NL80211_ATTR_SUPPORTED_IFTYPES], rem){
+		switch(nla_type(nl_mode)){
+			case NL80211_IFTYPE_STATION: caps->sta     = true; break;
+			case NL80211_IFTYPE_AP:      caps->ap      = true; break;
+			case NL80211_IFTYPE_MONITOR: caps->monitor = true; break;
+			default: break;
+		}
+	}
 }
 
 void check_active_monitor(nlattr **attrs, NlCaps *caps){
 	if(!attrs[NL80211_ATTR_FEATURE_FLAGS]) return;
 	const uint32_t features = nla_get_u32(attrs[NL80211_ATTR_FEATURE_FLAGS]);
 	caps->active_monitor = (features & NL80211_FEATURE_ACTIVE_MONITOR) != 0;
-}
-
-void check_ap(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
-	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
-	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
-			nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]), nullptr);
-	if(iftypes[NL80211_IFTYPE_AP]) caps->ap = true;
-}
-
-void check_managed(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_SUPPORTED_IFTYPES]) return;
-	nlattr *iftypes[NL80211_IFTYPE_MAX + 1] = {};
-	nla_parse(iftypes, NL80211_IFTYPE_MAX, static_cast<nlattr *>(nla_data(attrs[NL80211_ATTR_SUPPORTED_IFTYPES])),
-			nla_len(attrs[NL80211_ATTR_SUPPORTED_IFTYPES]), nullptr);
-	if(iftypes[NL80211_IFTYPE_STATION]) caps->sta = true;
 }
 
 // probably useless because can be falsely positive/negative
@@ -228,6 +217,7 @@ void check_netns_support(nlattr **attrs, NlCaps *caps) {
 void apply_nl_caps(const ActorPtr &cfg, const NlCaps &caps){
 	cfg->set(BK::AP, caps.ap);
 	cfg->set(BK::STA, caps.sta);
+	cfg->set(BK::managed, caps.sta);
 	cfg->set(BK::monitor, caps.monitor);
 	cfg->set(BK::active_monitor, caps.active_monitor);
 
@@ -259,9 +249,7 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 
 	check_WPA3_SAE(attrs, caps);
 	check_WPA2_PSK(attrs, caps);
-	check_ap(attrs, caps);
-	check_managed(attrs, caps);
-	check_monitor(attrs, caps);
+	check_iftypes(attrs, caps);
 	check_active_monitor(attrs, caps);
 	check_band_caps(attrs, caps);
 

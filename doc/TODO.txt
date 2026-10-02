@@ -5,15 +5,14 @@ v: visualization
 
 Version  v 0.0.0.0:
 
-
+f: External AP -
 CSA:
     +: option for openwrt OCV for external
 mc_mitm:
-    +: přegeneorvat sta_ap_iperf3
+    f: client se po začátkutestu vrátí do default netns a skenuje.
     +: problém s mt76-git? zkusit kali
 bl0ck:
     +: zkusti BA s dalším připoejným klientem (měl by se taky odpojit)
-    +: enable PBAC in hostapd (chcek if netlink is not lying about PBAC support)
 
 DoS_hard:
      +: observer for new_valid client (wpa_cli ? )

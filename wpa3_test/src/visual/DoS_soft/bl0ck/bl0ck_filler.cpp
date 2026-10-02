@@ -11,6 +11,7 @@
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
 #include "observer/trace_cmd_wrapper.h"
+#include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "observer/tshark_wrapper.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
@@ -36,35 +37,35 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
 
-	try {
-		const auto ap = rs.get_actor("ap");
-		e.ap_mac = ap->get(SK::mac);
-		e.ap_source = ap->get(SK::source);
+	const auto ap = rs.get_actor("ap");
+	e.ap_mac = ap->get(SK::mac);
+	e.ap_source = ap->get(SK::source);
 
-		const auto client = rs.get_actor("client");
-		e.client_mac = client->get(SK::mac);
-		e.client_source = client->get(SK::source);
+	const auto client = rs.get_actor("client");
+	e.client_mac = client->get(SK::mac);
+	e.client_source = client->get(SK::source);
 
-		const auto att = rs.get_actor("attacker");
-		e.attacker_mac = att->get(SK::mac);
-		e.attacker_driver = att->get(SK::driver_name);
+	const auto att = rs.get_actor("attacker");
+	e.attacker_mac = att->get(SK::mac);
+	e.attacker_driver = att->get(SK::driver_name);
 
-		if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {
-			const auto &ac = cfg["attack_config"];
-			if(ac["attack_variant"]) e.attack_variant = ac["attack_variant"].as<string>();
-			if(ac["random_MAC"])     e.random_MAC     = ac["random_MAC"].as<bool>();
-		}
+	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {
+		const auto &ac = cfg["attack_config"];
+		if(ac["attack_variant"]) e.attack_variant = ac["attack_variant"].as<string>();
+		if(ac["random_MAC"])     e.random_MAC     = ac["random_MAC"].as<bool>();
+	}
 
-		e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
+	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
 
-		// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
-		const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
-		e.ADDBA_seen += { observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap" };
-		e.ADDBA_seen += observer::trace_cmd::addba_seen(rs);
+	// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
+	const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
+	e.ADDBA_seen += { observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap" };
+	e.ADDBA_seen += observer::trace_cmd::addba_seen(rs);
 
-		e.ap_PBAC += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
-		e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
-	} catch(const tester_error &) {}
+	// PBAC is  active if PMF is (not in config, defined by )
+	e.ap_PBAC += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
+	e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
+
 	return e;
 }
 

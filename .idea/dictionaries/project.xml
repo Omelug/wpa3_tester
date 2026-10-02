@@ -38,6 +38,7 @@
       <w>ampdu</w>
       <w>angriff</w>
       <w>anonce</w>
+      <w>anypassword</w>
       <w>arphrd</w>
       <w>arrowstyle</w>
       <w>attackhead</w>
@@ -189,6 +190,7 @@
       <w>mschapv</w>
       <w>msdu</w>
       <w>msgfail</w>
+      <w>msgpair</w>
       <w>multiarch</w>
       <w>musleabi</w>
       <w>musleabihf</w>
@@ -288,6 +290,7 @@
       <w>siocgifflags</w>
       <w>siocsifflags</w>
       <w>smacof</w>
+      <w>snonce</w>
       <w>sout</w>
       <w>srcport</w>
       <w>srcversion</w>
@@ -308,6 +311,7 @@
       <w>tids</w>
       <w>tkip</w>
       <w>tmargin</w>
+      <w>tooshort</w>
       <w>tsharks</w>
       <w>txack</w>
       <w>txdone</w>
@@ -332,6 +336,7 @@
       <w>wpad</w>
       <w>wpaout</w>
       <w>writerd</w>
+      <w>wrongpassword</w>
       <w>xhci</w>
       <w>xlabel</w>
       <w>xmit</w>

@@ -6,7 +6,6 @@
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
 #include <array>
-#include <byteswap.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <regex>
@@ -306,32 +305,6 @@ string get_hostapd_mana(const string &version){
 	return get_binary("hostapd-mana_", version, HOSTAPD_MANA_CONFIG);
 }
 
-CrackResult crack_pmk_hashes(const path &creds_file, const string &psk){
-	if(hw_capabilities::run_cmd({"which", "hcxpmktool"}, nullopt, false) != 0)
-		throw config_err("hcxpmktool not found in PATH - install hcxtools package");
-	log(LogLevel::INFO, "hcxpmktool: {}", hw_capabilities::run_cmd_output({"hcxpmktool", "--version"}, nullopt));
-
-	if(!exists(creds_file)){
-		log(LogLevel::WARNING, "wpa.creds not found: {}", creds_file);
-		return {0, 0};
-	}
-
-	ifstream f(creds_file);
-	int total = 0, cracked = 0;
-	string line;
-	while(getline(f, line)){
-		const auto tab_pos = line.find('\t');
-		const string hash = tab_pos != string::npos ? line.substr(tab_pos + 1) : line;
-		if(!hash.starts_with("WPA*")) continue;
-		total++;
-		if(hw_capabilities::run_cmd({"hcxpmktool", "-l", hash, "-p", psk}, nullopt, true) == 0)
-			cracked++;
-	}
-	log(LogLevel::INFO, "hcxpmktool: {}/{} hashes cracked", cracked, total);
-	return {total, cracked};
-}
-
-
 static path actor_conf_path(const RunStatus &rs, const string &actor_name){
 	const auto &actor = rs.config().at("actors").at(actor_name);
 	if(!actor.contains("setup")) return {};
@@ -380,7 +353,7 @@ string get_channel(const nlohmann::json &program_config, const string &config_pa
 	throw config_err("'channel' not found in program_config or file: {}", config_path);
 }
 
-
+//TODO test
 static optional<HWAddress<6>> extract_mac_from_line(const string &line) {
 	// "STA", "from", "WPA: <MAC>", "dest=", "A2=" (Supplicant in PTK)
 	static const regex client_mac_re(

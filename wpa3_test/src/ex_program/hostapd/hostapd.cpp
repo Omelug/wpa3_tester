@@ -378,8 +378,16 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		const path output_path = rs.run_folder() / "captured_hashes.txt";
 		ofstream out(output_path);
 		set<string> seen;
+		// dedup by AP+STA+SSID: same credentials produce multiple EAPOL replays with distinct MICs
+		auto identity = [](const string &h) -> string {
+			size_t p = 0;
+			for(int i = 0; i < 3; i++) { p = h.find('*', p); if(p == string::npos) return h; p++; }
+			const size_t start = p;
+			for(int i = 0; i < 3; i++) { p = h.find('*', p); if(p == string::npos) return h; p++; }
+			return h.substr(start, p - start - 1);
+		};
 		auto add = [&](const string &hash){
-			if(!hash.empty() && seen.insert(hash).second){
+			if(!hash.empty() && seen.insert(identity(hash)).second){
 				out << hash << "\n";
 				log(LogLevel::INFO, "Captured hash: {}...", hash.substr(0, 32));
 			}

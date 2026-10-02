@@ -365,10 +365,6 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 						"-i", rs.get_actor(actor_name).get(SK::iface), mana_config_path,
 					});
 
-	const path run_folder_path(rs.run_folder());
-	const path log_path = run_folder_path / "logger" / (actor_name + ".log");
-	const path output_path = run_folder_path / "captured_hashes.txt";
-
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
 		string token;
@@ -376,7 +372,10 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	}
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	rs.process_manager.after_stop(actor_name, [log_path, output_path](){
+	// ponytail: capture &rs not paths — change_filler_hash renames run_folder after this closure is registered
+	rs.process_manager.after_stop(actor_name, [&rs, actor_name](){
+		const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");
+		const path output_path = rs.run_folder() / "captured_hashes.txt";
 		ofstream out(output_path);
 		set<string> seen;
 		auto add = [&](const string &hash){

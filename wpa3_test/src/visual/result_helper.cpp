@@ -42,6 +42,7 @@ pair<optional<bool>,optional<hostapd::CrackResult>> hostapd_mana_crack(const Run
 		const auto mana_events = get_time_logs(rs, "rogue_ap", "Captured a WPA");
 		elements.push_back(make_unique<EventLines>(mana_events, "MANA", "black"));
 		string psk = hostapd::get_password(rs, "client");
+		if(psk.empty()) psk = hostapd::get_password(rs, "ap");
 		if(psk.empty()){
 			psk = get_global_config().at("global_variables").at("default_password").get<string>();
 			log(LogLevel::ERROR, "password for hostapd_mana not found, used default password {}", psk);

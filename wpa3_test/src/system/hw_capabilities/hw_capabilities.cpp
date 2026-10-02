@@ -183,14 +183,25 @@ void hw_capabilities::create_netns(const string &ns_name){
 bool hw_capabilities::move_to_netns(const string &iface, const string &netns){
 	log(LogLevel::INFO, "Moving interface {} to netns {}", iface, netns);
 
-	string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
+	const string phy_cmd = "iw dev " + iface + " info | grep wiphy | awk '{print \"phy\"$2}'";
+
+	// Already in target netns?
+	{
+		string phy = run_cmd_output({"/bin/sh", "-c", "ip netns exec " + netns + " " + phy_cmd});
+		erase(phy, '\n');
+		if(!phy.empty()) {
+			log(LogLevel::DEBUG, "{} already in netns {}, skipping move", iface, netns);
+			return true;
+		}
+	}
+
+	// Must be in default netns
 	string phy_name = run_cmd_output({"/bin/sh", "-c", phy_cmd});
 	erase(phy_name, '\n');
 
-	if(phy_name.empty()){
-		log(LogLevel::WARNING, "Could not find physical device for interface {}", iface);
-		return false;
-	}
+	if(phy_name.empty())
+		throw run_err("Interface {} not in default netns (and not already in target {}). "
+		              "Likely left in a wrong netns by a failed previous run.", iface, netns);
 	log(LogLevel::DEBUG, "Moving {} ({}) to netns {}", iface, phy_name, netns);
 	return run_cmd({"iw", "phy", phy_name, "set", "netns", "name", netns}, nullopt) == 0;
 }

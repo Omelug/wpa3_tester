@@ -50,6 +50,7 @@
       <config projectName="wpa3_tester" targetName="run_create_simulation_tests" />
       <config projectName="wpa3_tester" targetName="run_monitor_socket_tests" />
       <config projectName="wpa3_tester" targetName="run_nl80211_cb_tests" />
+      <config projectName="wpa3_tester" targetName="run_hostapd_crack_tests" />
       <config projectName="wpa3_tester" targetName="run_ip_tests" />
       <config projectName="wpa3_tester" targetName="run_validation_tests" />
       <config projectName="wpa3_tester" targetName="run_interrupt_tests" />
@@ -139,20 +140,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: log capture before rename (hash cracking )">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f:CSA in Mitm">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/ex_program/hostapd/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/ex_program/hostapd/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_6.comp.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/tshark_wrapper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/bl0ck/bl0ck_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -306,7 +296,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "CMakeSettings"
+    "settings.editor.selected.configurable": "settings.json.schema"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -325,8 +315,14 @@
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.result_overview raspberry">
+  <component name="RunManager" selected="Remote Debug.raspberry">
     <configuration name="conn_cond referencing absent actor returns false" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_scan_process_packet_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_scan_process_packet_tests" TEST_CLASS="process_single_packet conn_conds" TEST_METHOD="conn_cond referencing absent actor returns false" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="crack_pmk_hashes - missing file returns zero" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" TEST_METHOD="crack_pmk_hashes - missing file returns zero" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -375,6 +371,12 @@
       </method>
     </configuration>
     <configuration name="run_filler_hash_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_filler_hash_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_filler_hash_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_hostapd_crack_tests" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hostapd_crack_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hostapd_crack_tests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -917,12 +919,6 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="driver-modules" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/tester_setup/raspberry_pi4/mk/kernel.mk" target="driver-modules" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="CMake Application.asan" />
       <item itemvalue="CMake Application.leak-check" />
@@ -1096,6 +1092,7 @@
       <item itemvalue="Doctest.run_scan_solve_new_pdu_tests" />
       <item itemvalue="Doctest.run_scan_tests" />
       <item itemvalue="Doctest.run_sim_setup_tests" />
+      <item itemvalue="Doctest.run_hostapd_crack_tests" />
       <item itemvalue="Doctest.run_system_tests" />
       <item itemvalue="Doctest.run_two_iface_cache_rw_tests" />
       <item itemvalue="Doctest.run_two_iface_validate_tests" />
@@ -1120,11 +1117,11 @@
       <item itemvalue="Doctest.run_cleanup_tests" />
       <item itemvalue="Doctest.run_bl0ck_tests" />
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
+      <item itemvalue="Doctest.crack_pmk_hashes - missing file returns zero" />
       <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
       <item itemvalue="Doctest.get_filler_hash - output format" />
       <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
       <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
-      <item itemvalue="Makefile Target.driver-modules" />
       <item itemvalue="Native Application.get_commit_values" />
       <item itemvalue="Native Application.openwrt" />
       <item itemvalue="Native Application.external list" />
@@ -1132,11 +1129,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Doctest.crack_pmk_hashes - missing file returns zero" />
         <item itemvalue="Doctest.get_filler_hash - output format" />
         <item itemvalue="Doctest.conn_cond referencing absent actor returns false" />
         <item itemvalue="Doctest.hw_capabilities::check_req_options - empty rules returns empty map" />
         <item itemvalue="Doctest.setup_actor sim - create sniff iface" />
-        <item itemvalue="Makefile Target.driver-modules" />
       </list>
     </recent_temporary>
   </component>
@@ -1205,9 +1202,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+: random bl0ck fillers" />
-    <MESSAGE value="+: random_MAC" />
-    <MESSAGE value="d+: ath_htc debug" />
     <MESSAGE value="f: raspberry unmanaged ap/mon interfaces&#10;f: more generic of gotMiTm detection after mt76u2u driver change  &#10;f: stop_ap (RSN_scan dont work in every second run)&#10;r: mc_mitm att_cfg  &#10;.... but again not works" />
     <MESSAGE value="f: raspberry unmanaged ap/mon interfaces&#10;f: more generic of gotMiTm detection after mt76u2u driver change  &#10;: mc_mitm att_cfg  &#10;.... but again not works" />
     <MESSAGE value="f: raspberry unmanaged ap/mon interfaces&#10;f: more generic of gotMiTm detection after mt76u2u driver change&#10;f: stop_ap (RSN_scan dont work in every second run)&#10;r: mc_mitm att_cfg&#10;.... but again not works" />
@@ -1230,7 +1224,10 @@
     <MESSAGE value="f: usb_modeswitch rules (different than on nixOS laptop)" />
     <MESSAGE value="f: reset mac address in cleanup" />
     <MESSAGE value="f: log capture before rename (hash cracking )" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: log capture before rename (hash cracking )" />
+    <MESSAGE value="f: hash cracking WPA-PSK-SHA256 support" />
+    <MESSAGE value="f: reset permanent mac oon start" />
+    <MESSAGE value="f:CSA in Mitm" />
+    <option name="LAST_COMMIT_MESSAGE" value="f:CSA in Mitm" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1332,7 +1329,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp</url>
-          <line>229</line>
+          <line>240</line>
           <option name="timeStamp" value="172" />
         </line-breakpoint>
       </breakpoints>

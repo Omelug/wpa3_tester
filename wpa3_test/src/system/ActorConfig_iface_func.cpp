@@ -41,6 +41,8 @@ void Actor_config::cleanup() const{
 	}
 	run({"rfkill", "unblock", "wifi"});
 	set_iface_down(); // cycle DOWN to flush nl80211 frame registrations
+	if(const auto perm = (*this)[SK::permanent_mac]; perm.has_value())
+		hw_capabilities::set_mac_address(iface, Tins::HWAddress<6>(perm.value()), (*this)[SK::netns]);
 	run({"ip", "addr", "flush", "dev", iface});
 	set_iface_up();
 }

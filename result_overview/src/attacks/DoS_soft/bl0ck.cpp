@@ -51,7 +51,7 @@ void generate_bl0ck(const path &output_dir, const path &data_dir) {
 		<h2>Mitigations</h2>
 		<p>MFP (Management Frame Protection / 802.11w) protects management frames but
 		   not bl0ck frames.
-		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation</p>
+		   Protected Block ack Agreement Capable (PBAC) - no widely-deployed mitigation, cant be set by config #TODO ?</p>
 	</div>
 )html";
 

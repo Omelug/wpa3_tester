@@ -112,7 +112,7 @@ string uci_get_option(const path &uci_file, string_view block_type,
 			const auto sp = sv.find(' ');
 			if (sp == string_view::npos) continue;
 			const auto opt_key = sv.substr(0, sp);
-			const auto val     = parse_val(sv.substr(sp + 1));
+			const auto val = parse_val(sv.substr(sp + 1));
 			if (opt_key == filter_key && val == filter_val) {
 				filter_matched = true;
 				if (!pending.empty()) return pending;
@@ -159,6 +159,14 @@ string mfp_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &clie
 	}
 	if(!last) return {};
 	return last->auth_alg == "sae" ? "REQUIRED" : "";
+}
+
+described_bool pbac_from_uci(const path &uci_conf, const string_view radio) {
+	if (!exists(uci_conf)) return {};
+	const string val = uci_get_option(uci_conf, "wifi-iface", "device", radio, "pbac");
+	described_bool result;
+	if (!val.empty()) result += {val == "1", "uci_conf"};
+	return result;
 }
 
 bool sta_disconnected_from_openwrt_log(const path &log_path, const Tins::HWAddress<6> &client_mac, const TimeWindow window){

@@ -156,7 +156,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	//hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
-	sock_rogue->set_filter(bpf);
+	//sock_rogue->set_filter(bpf);
 
 	log(LogLevel::INFO, "Giving the rogue AP one second to initialize ...");
 	interruptible_sleep(seconds(1)); //TODO needed?

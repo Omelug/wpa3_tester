@@ -19,6 +19,9 @@ void setup_attack(RunStatus &rs) {
 		tester_dmesg->start(rs);;
 	}
 
+	const auto &ap_actor = rs.get_actor("ap");
+	rs.get_actor("rogue_ap")->set_mac_address(ap_actor.get(SK::permanent_mac));
+
 	components::client_ap_setup_t(rs);
 	//components::client_ap_attacker_setup(rs);
 

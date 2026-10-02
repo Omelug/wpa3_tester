@@ -15,16 +15,10 @@ using namespace chrono;
 namespace wpa3_tester::mc_mitm {
 
 void setup_attack(RunStatus &rs) {
-	if(auto tester_dmesg = rs.observer("tester_dmesg")) {
+	if(const auto tester_dmesg = rs.observer("tester_dmesg")) {
 		tester_dmesg->start(rs);;
 	}
 
-	const auto &ap_actor = rs.get_actor("ap");
-	hw_capabilities::set_mac_address(
-		ap_actor.get(SK::iface),
-		HWAddress<6>(ap_actor.get(SK::permanent_mac)),
-		ap_actor[SK::netns]
-	);
 	components::client_ap_setup_t(rs);
 	//components::client_ap_attacker_setup(rs);
 

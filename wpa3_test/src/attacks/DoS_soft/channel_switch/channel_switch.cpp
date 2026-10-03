@@ -111,7 +111,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 		// filter out useless VENDOR_SPECIFIC IE tags
 		// allow only  00:50:F2 (type 1 - Microsoft Qos, type 2- WMM/WME)
 		if(id == static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC)) {
-			// OUI (3B) + type (1B) - Microsoft/WiFi Alliance WPA/WMM
+			// OUI (3B) + type (1B) - Microsoft/Wi-Fi Alliance WPA/WMM
 			static constexpr array<uint8_t, 3> ms_oui = { 0x00, 0x50, 0xF2 };
 
 			const auto *data = o.data_ptr();
@@ -176,7 +176,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	PacketSender sender{ iface_name };
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded tscan_timeout
+	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
 	if(!beacon) throw run_err("Not found beacon for reproduce");
 	log(LogLevel::INFO,
 			"check_vulnerable called with:\n"
@@ -192,7 +192,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 			ssid);
 
 	vector<RadioTap> frames;
-	for(int c = 3; c >= 0; --c)
+	for(int c =  CHANNEL_SWITCH_MAX; c >= 0; --c)
 		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
 
 	size_t idx = 0;

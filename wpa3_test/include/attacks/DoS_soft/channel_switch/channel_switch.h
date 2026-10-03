@@ -5,6 +5,8 @@
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester::CSA_attack {
+
+constexpr int CHANNEL_SWITCH_MAX = 3;
 Tins::RadioTap get_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const Channel &ap_channel,
 		const Channel &new_channel, int switch_count = 3, const Tins::Dot11Beacon *src_beacon = nullptr);
 

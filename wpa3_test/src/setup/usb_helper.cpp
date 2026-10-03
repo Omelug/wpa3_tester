@@ -74,7 +74,7 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 			driver_name = drv_path.filename().string();
 			if(driver_name == "hub") continue;
 			is_device = true;
-			// driver/module symlink → /sys/module/<ko_name>; may differ from driver name
+			// driver/module symlink -> /sys/module/<ko_name>; may differ from driver name
 			path mod_link = drv_path / "module";
 			module_name = is_symlink(mod_link) ? canonical(mod_link).filename().string() : driver_name;
 		}

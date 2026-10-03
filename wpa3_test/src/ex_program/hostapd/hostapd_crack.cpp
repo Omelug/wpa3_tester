@@ -30,7 +30,7 @@ struct WpaHashEntry {
 	vector<uint8_t> ssid;
 	vector<uint8_t> anonce; // 32 bytes
 	vector<uint8_t> eapol;  // EAPOL frame, MIC position zeroed
-	bool is_sha256;
+	bool is_sha256{};
 	string raw;             // original WPA*02*... line
 };
 
@@ -60,8 +60,8 @@ optional<WpaHashEntry> parse_wpa_hash(const string &line){
 
 	// EAPOL[5:6] = key_info (big-endian); bits 0-2 = key descriptor version
 	// wpa_supplicant sets 3 (WPA_KEY_INFO_TYPE_AES_128_CMAC) for AKM 5/6 (HMAC-SHA256 MIC)
-	// version 2 → WPA2-PSK: HMAC-SHA1 MIC
-	const uint16_t key_info = (static_cast<uint16_t>(h.eapol[5]) << 8) | h.eapol[6];
+	// version 2 -> WPA2-PSK: HMAC-SHA1 MIC
+	const uint16_t key_info = static_cast<uint16_t>(h.eapol[5]) << 8 | h.eapol[6];
 	h.is_sha256 = (key_info & 0x07) == 3;
 	return h;
 }

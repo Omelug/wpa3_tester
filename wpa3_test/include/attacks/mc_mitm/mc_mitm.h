@@ -22,7 +22,7 @@ public:
 	bool stop_mitm = false;
 
 	// AP <-> rogue_sta <-> rogue AP <-> client
-	McMitm(ActorPtr rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
+	McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, ActorPtr ap,
 			const std::optional<std::filesystem::path> &run_folder = std::nullopt, bool only_to_mitm = false);
 	virtual ~McMitm();
 
@@ -30,7 +30,7 @@ public:
 	std::unique_ptr<McMitmHooks> hooks; // nullptr -> defualt behavior
 	void set_hooks(std::unique_ptr<McMitmHooks> h) { hooks = std::move(h); }
 
-	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt) const;
+	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt, int beacon_interval_ms = 100) const;
 	void send_disas(const Tins::HWAddress<6> &macaddr) const;
 	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;

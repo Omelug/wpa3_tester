@@ -85,6 +85,7 @@
       <w>dellink</w>
       <w>depmod</w>
       <w>destmac</w>
+      <w>dfata</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disconn</w>
@@ -213,6 +214,7 @@
       <w>nohead</w>
       <w>nomatch</w>
       <w>nomirror</w>
+      <w>nonassoc</w>
       <w>nooutput</w>
       <w>nopasswd</w>
       <w>noptions</w>
@@ -321,6 +323,7 @@
       <w>udevadm</w>
       <w>uhubctl</w>
       <w>unassoc</w>
+      <w>unprot</w>
       <w>usbcore</w>
       <w>usec</w>
       <w>userconf</w>

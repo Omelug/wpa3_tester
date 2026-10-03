@@ -110,14 +110,14 @@ void run_attack(RunStatus &rs) {
 	const string filter = "type mgt subtype beacon or type mgt subtype assoc-req or type mgt subtype reassoc-req "
 						  "or type mgt subtype probe-req or type mgt subtype auth or type data";
 	components::poll_sniffer_pdu<monostate>(
-			[&](PDU &pdu) -> optional<monostate> {
-				const bool new_ap = parse_frame(pdu, ap_map, sta_map);
-				if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >= actor_limit) return monostate{};
-				return nullopt;
-			},
-			scanner.get(SK::iface),
-			filter,
-			seconds(timeout_sec));
+		[&](PDU &pdu) -> optional<monostate> {
+			const bool new_ap = parse_frame(pdu, ap_map, sta_map);
+			if(new_ap && actor_limit > 0 && static_cast<int>(ap_map.size()) >= actor_limit) return monostate{};
+			return nullopt;
+		},
+		scanner.get(SK::iface),
+		filter,
+		seconds(timeout_sec));
 
 	auto passes_filter = [&](const Actor_Config_external &cfg) -> bool {
 		return !actor_filter || actor_filter->matches(cfg);
@@ -149,8 +149,8 @@ void run_attack(RunStatus &rs) {
 	for(const auto &cfg: sta_map | views::values) save_external(cfg);
 
 	rs.save_result({
-			{ "aps", aps },
-			{ "stations", stas },
+		{ "aps", aps },
+		{ "stations", stas },
 	});
 }
 
@@ -174,7 +174,7 @@ void stats(const RunStatus &rs) {
 	}
 	for(const auto &sta_json: result.at("stations"))
 		sta_map.emplace(
-				HWAddress<6>(sta_json.at("selection").at("mac").get<string>()), Actor_Config_external(sta_json));
+			HWAddress<6>(sta_json.at("selection").at("mac").get<string>()), Actor_Config_external(sta_json));
 	generate_report(rs, ap_map, sta_map);
 }
 
@@ -196,8 +196,9 @@ static void generate_report(const RunStatus &rs, const ApInfoMap &ap_map, const 
 			const auto &cfg = entry.cfg;
 			auto yn = [&](const BK k) { return cfg.get_or(k, false) ? "yes" : "no"; };
 			report << "| " << bssid << " | " << cfg.get_or(SK::ssid, "?") << " | " << cfg.get_or(SK::channel, "?")
-				   << " | " << cfg.get_or(SK::signal, "?") << " | " << yn(BK::MFP) << " | " << yn(BK::PBAC) << " | " << yn(BK::OCV) << " | "
-				   << yn(BK::WPA3_SAE) << " | " << yn(BK::beacon_prot) << " | " << entry.stations.size() << " |\n";
+				   << " | " << cfg.get_or(SK::signal, "?") << " | " << yn(BK::MFP) << " | " << yn(BK::PBAC) << " | "
+				   << yn(BK::OCV) << " | " << yn(BK::WPA3_SAE) << " | " << yn(BK::beacon_prot) << " | "
+				   << entry.stations.size() << " |\n";
 		}
 		report << "\n";
 	}

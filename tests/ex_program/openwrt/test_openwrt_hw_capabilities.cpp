@@ -16,7 +16,7 @@ public:
 	mutable int mock_ret = 0;
 	mutable string mock_output;
 
-	string exec(const string &, bool, int *ret_err, const bool ) const override {
+	string exec(const string &, bool, int *ret_err, const bool) const override {
 		if(ret_err) *ret_err = mock_ret;
 		return mock_output;
 	}

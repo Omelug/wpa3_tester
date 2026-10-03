@@ -1,3 +1,3 @@
 $extends: 17_base_list.yaml
 tags:
-  $UNION: [c, d]
+  $UNION: [ c, d ]

@@ -113,12 +113,12 @@ int get_eapol_msg_num(const PDU &pdu) {
 	const uint8_t key_type = rsneapol->key_t();
 
 	log(LogLevel::DEBUG,
-			"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
-			key_type,
-			key_mic,
-			key_ack,
-			install,
-			secure);
+		"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
+		key_type,
+		key_mic,
+		key_ack,
+		install,
+		secure);
 
 	// group Key handshake  FIXME ignore, is forwarded?
 	if(key_type == 0) {
@@ -137,13 +137,13 @@ int get_eapol_msg_num(const PDU &pdu) {
 Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, const uint8_t count) {
 	Dot11Beacon copy = beacon;
 	copy.channel_switch({ 1, //type
-			new_channel.ch_num,
-			count });
+		new_channel.ch_num,
+		count });
 	return copy;
 }
 
 void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
-		const Dot11Beacon &beacon, optional<HWAddress<6>> mac, int interval, int dtim_period) {
+	const Dot11Beacon &beacon, optional<HWAddress<6>> mac, int interval, int dtim_period) {
 	// in order of priority: provided ssid, ssid from beacon, or default
 	const auto *ssid_ie = beacon.search_option(Dot11ManagementFrame::SSID);
 	if(!ssid_ie || ssid_ie->data_size() <= 0) throw run_err("invalid beacon for start ap");
@@ -191,9 +191,8 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	// add AP virtual interface
 	hw_capabilities::run_cmd(
-			{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns, true);
-	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
-		throw setup_err("Interface {} did not appear", ap_iface);
+		{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns, true);
+	if(netlink_helper::wait_for_iface_appear(ap_iface, netns)) throw setup_err("Interface {} did not appear", ap_iface);
 	interruptible_sleep(2000ms); //FIXME not nice , but stable
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	hw_capabilities::set_wifi_type(ap_iface, NL80211_IFTYPE_AP, netns);
@@ -202,13 +201,17 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	base_actor->set_iface_up();
 
 	// start ap command
-	vector<string> cmd = {
-		"iw", "dev", ap_iface, "ap", "start", ap_ssid,
+	vector<string> cmd = { "iw",
+		"dev",
+		ap_iface,
+		"ap",
+		"start",
+		ap_ssid,
 		to_string(hw_capabilities::channel_to_freq(channel)),
 		to_string(interval),
 		to_string(dtim_period),
-		"head", head_hex.str()
-	};
+		"head",
+		head_hex.str() };
 
 	if(!tail_bytes.empty()) {
 		ostringstream tail_hex;
@@ -234,15 +237,16 @@ void stop_ap(const string &iface, const optional<string> &netns) {
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
 }
 
-void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
-                       const Channel &channel, optional<HWAddress<6>> mac) {
+void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
+	optional<HWAddress<6>> mac) {
 	const optional<string> &netns = base_actor[SK::netns];
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);
 	base_actor->set_iface_down();
 	base_actor->set_wifi_type(NL80211_IFTYPE_MONITOR, {});
 
-	hw_capabilities::run_cmd({"iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed"}, netns);
+	hw_capabilities::run_cmd(
+		{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
 		throw setup_err("Interface " + ap_iface + " did not appear");
 	interruptible_sleep(2000ms);
@@ -263,8 +267,8 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	set_public_perms(conf);
 
 	vector<string> cmd;
-	if(netns)  cmd.insert(cmd.end(), { "ip", "netns", "exec", netns.value() });
-	cmd.insert(cmd.end(), {hostapd::get_hostapd("2_9"), conf.string(), "-d"});
+	if(netns) cmd.insert(cmd.end(), { "ip", "netns", "exec", netns.value() });
+	cmd.insert(cmd.end(), { hostapd::get_hostapd("2_9"), conf.string(), "-d" });
 	rs.process_manager.run(ap_iface + "_hostapd", cmd, rs.run_folder());
 	rs.process_manager.wait_for(ap_iface + "_hostapd", "AP-ENABLED", chrono::seconds(20));
 }
@@ -279,8 +283,8 @@ Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const
 	for(const auto &opt: assoc.options()) {
 		if(opt.option() == Dot11::SSID) {
 			req.add_option({ Dot11::SSID,
-					static_cast<uint8_t>(real_ssid.size()),
-					reinterpret_cast<const uint8_t *>(real_ssid.data()) });
+				static_cast<uint8_t>(real_ssid.size()),
+				reinterpret_cast<const uint8_t *>(real_ssid.data()) });
 		} else {
 			req.add_option(opt);
 		}

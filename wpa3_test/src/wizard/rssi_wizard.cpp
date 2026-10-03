@@ -446,7 +446,7 @@ static void smacof_step(map<HWAddress<6>, Node2D> &nodes, const vector<HWAddress
 }
 
 static void update_positions(
-		map<HWAddress<6>, Node2D> &nodes, const vector<AdapterInfo> &adapters, const RssiMatrix &m) {
+	map<HWAddress<6>, Node2D> &nodes, const vector<AdapterInfo> &adapters, const RssiMatrix &m) {
 	if(adapters.size() < 2) return;
 	vector<HWAddress<6>> macs(adapters.size());
 	for(size_t i = 0; i < adapters.size(); ++i) macs[i] = adapters[i].actor.get(SK::mac);
@@ -456,13 +456,13 @@ static void update_positions(
 // ---- Rendering ----
 
 static bool render(FILE *pipe, const map<HWAddress<6>, Node2D> &nodes, const vector<AdapterInfo> &adapters,
-		const RssiMatrix &m, const string &status) {
+	const RssiMatrix &m, const string &status) {
 	fprintf(pipe, "set title 'Wi-Fi RSSI Wizard - %s'\n", status.c_str());
 	fprintf(pipe,
-			"plot '-' with vectors arrowstyle 1 title '', "
-			"'-' with labels center tc rgb '#0066cc' font ',8' title '', "
-			"'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
-			"'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
+		"plot '-' with vectors arrowstyle 1 title '', "
+		"'-' with labels center tc rgb '#0066cc' font ',8' title '', "
+		"'-' with points pt 7 ps 3 lc rgb '#cc0000' title 'Adapters', "
+		"'-' with labels offset 0,1.5 center font ',9 bold' title ''\n");
 
 	// each ordered pair (i,j) draws one directional arrow, offset perpendicularly
 	// because the perpendicular flips with direction, i->j and j->i land on opposite sides
@@ -493,24 +493,19 @@ static bool render(FILE *pipe, const map<HWAddress<6>, Node2D> &nodes, const vec
 
 	// arrows
 	for_pairs([&](const Node2D &ni,
-					  const Node2D &,
-					  const double dx,
-					  const double dy,
-					  const double px,
-					  const double py,
-					  double) { fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy); });
+				  const Node2D &,
+				  const double dx,
+				  const double dy,
+				  const double px,
+				  const double py,
+				  double) { fprintf(pipe, "%f %f %f %f\n", ni.x + px, ni.y + py, dx, dy); });
 	fprintf(pipe, "e\n");
 
 	// arrow labels
-	for_pairs([&](const Node2D &ni,
-					  const Node2D &nj,
-					  double,
-					  double,
-					  const double px,
-					  const double py,
-					  const double rssi) {
-		fprintf(pipe, "%f %f \"%.0f dBm\"\n", (ni.x + nj.x) / 2.0 + px, (ni.y + nj.y) / 2.0 + py, rssi);
-	});
+	for_pairs(
+		[&](const Node2D &ni, const Node2D &nj, double, double, const double px, const double py, const double rssi) {
+			fprintf(pipe, "%f %f \"%.0f dBm\"\n", (ni.x + nj.x) / 2.0 + px, (ni.y + nj.y) / 2.0 + py, rssi);
+		});
 	fprintf(pipe, "e\n");
 
 	// nodes
@@ -537,7 +532,7 @@ static bool render(FILE *pipe, const map<HWAddress<6>, Node2D> &nodes, const vec
 // ---- Text fallback rendering ----
 
 static void render_text(
-		const vector<AdapterInfo> &adapters, const RssiMatrix &m, const ExprPtr &cond, const string &status) {
+	const vector<AdapterInfo> &adapters, const RssiMatrix &m, const ExprPtr &cond, const string &status) {
 	printf("\033[2J\033[H");
 	fflush(stdout);
 
@@ -551,10 +546,8 @@ static void render_text(
 			const auto it = m.find({ sm, rm });
 			const double rssi = (it != m.end()) ? it->second : RSSI_NO_DATA;
 			if(rssi > RSSI_NO_DATA)
-				printf("  %s -> %s : %.0f dBm\n",
-						src.actor.get(SK::iface).c_str(),
-						rx.actor.get(SK::iface).c_str(),
-						rssi);
+				printf(
+					"  %s -> %s : %.0f dBm\n", src.actor.get(SK::iface).c_str(), rx.actor.get(SK::iface).c_str(), rssi);
 			else
 				printf("  %s -> %s : no data\n", src.actor.get(SK::iface).c_str(), rx.actor.get(SK::iface).c_str());
 		}
@@ -637,7 +630,7 @@ bool run_rssi_wizard(const string &condition_str, const Channel &ch) {
 
 				if(!g_paused) {
 					const string status =
-							"running (" + to_string(success_counter) + "/" + to_string(REQUIRED_SUCCESS_STEPS) + " ok)";
+						"running (" + to_string(success_counter) + "/" + to_string(REQUIRED_SUCCESS_STEPS) + " ok)";
 					if(g_gnuplot_pipe) {
 						fprintf(g_gnuplot_pipe, "unset label\n");
 						render_condition_status(g_gnuplot_pipe, cond, m);

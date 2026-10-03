@@ -13,7 +13,7 @@ using json = nlohmann::json;
 TEST_CASE("Actor_config - json constructor with selection") {
 	json j = {
 		{ "selection",
-				{ { "iface", "wlan0" }, { "driver", "ath9k" }, { "condition", { "monitor", "injection_selftest" } } } },
+			{ { "iface", "wlan0" }, { "driver", "ath9k" }, { "condition", { "monitor", "injection_selftest" } } } },
 		{ "netns", "sta" },
 	};
 

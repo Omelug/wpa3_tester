@@ -100,7 +100,7 @@ void replace_all(string &str, const string &from, const string &to) {
 }
 
 void RunSuiteStatus::defined_by_generator(
-		basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
+	basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
 	auto source_config = source_info.at("config");
 	auto gen_folder = test_config_folder / source_name;
 
@@ -117,7 +117,7 @@ void RunSuiteStatus::defined_by_generator(
 
 		ifstream ifs(tmp_path);
 		if(!ifs.is_open()) { throw run_err("Could not open temp file for reading"); }
-		string config_str{istreambuf_iterator(ifs), istreambuf_iterator<char>()};
+		string config_str{ istreambuf_iterator(ifs), istreambuf_iterator<char>() };
 		ifs.close();
 
 		for(auto &[key, value]: vars.items()) {
@@ -166,7 +166,7 @@ map<string, size_t> analyze_template_vars(const string &config_template) {
 		const size_t max_idx = *indices.rbegin();
 		if(indices.size() != max_idx + 1) {
 			throw setup_err(
-					"Variable '" + name + "' has gaps in indexing, expected sequence from 0 to " + to_string(max_idx));
+				"Variable '" + name + "' has gaps in indexing, expected sequence from 0 to " + to_string(max_idx));
 		}
 		required_counts[name] = indices.size();
 	}
@@ -175,7 +175,7 @@ map<string, size_t> analyze_template_vars(const string &config_template) {
 }
 
 vector<pair<string, vector<vector<string>>>> prepare_variable_groups(
-		const json &vars_node, const map<string, size_t> &required_counts) {
+	const json &vars_node, const map<string, size_t> &required_counts) {
 	vector<pair<string, vector<vector<string>>>> groups;
 
 	for(auto const &[name, count]: required_counts) {
@@ -239,14 +239,14 @@ void RunSuiteStatus::print_tests_in_suite(const string &ts_name) {
 }
 
 void RunSuiteStatus::generate_test_files(basic_json<> source_info,
-		const vector<pair<string, vector<vector<string>>>> &groups, const path &gen_folder, const string &source_name,
-		config_paths &test_map) {
+	const vector<pair<string, vector<vector<string>>>> &groups, const path &gen_folder, const string &source_name,
+	config_paths &test_map) {
 	path tmp_template = gen_folder / "template_base.tmp.yaml";
 	save_yaml(source_info.at("config"), tmp_template);
 
 	ifstream ifs(tmp_template);
 	if(!ifs.is_open()) { throw run_err("Could not open template file for reading"); }
-	string raw_yaml_template{istreambuf_iterator(ifs), istreambuf_iterator<char>()};
+	string raw_yaml_template{ istreambuf_iterator(ifs), istreambuf_iterator<char>() };
 	ifs.close();
 
 	vector<size_t> indices(groups.size(), 0);
@@ -300,7 +300,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 }
 
 void RunSuiteStatus::defined_by_permutation(
-		basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
+	basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
 	const auto gen_folder = test_config_folder / source_name;
 	create_public_dirs(gen_folder);
 
@@ -315,7 +315,7 @@ void RunSuiteStatus::defined_by_permutation(
 }
 
 void RunSuiteStatus::defined_by_actor_filler(
-		basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
+	basic_json<> source_info, const string &source_name, const path &test_config_folder, config_paths &test_map) {
 	const path rel = source_info.at("config").get<string>();
 	path src = absolute(_config_path.parent_path() / rel);
 	if(!exists(src)) throw config_err("actor_filler: config not found: {}", src);
@@ -337,8 +337,8 @@ void RunSuiteStatus::defined_by_actor_filler(
 		Actor_config::print_ActorMap("Actor rules", rules);
 		Actor_config::print_ActorMap("Actor options", *_hw_option_cache.internal_opts);
 		log(LogLevel::ERROR,
-				"actor_filler: no valid hardware assignments found, {}",
-				hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
+			"actor_filler: no valid hardware assignments found, {}",
+			hw_capabilities::get_heuristic_err_msg(rules, *_hw_option_cache.internal_opts));
 		return;
 	}
 

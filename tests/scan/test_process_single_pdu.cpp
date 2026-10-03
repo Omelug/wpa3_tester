@@ -164,7 +164,7 @@ TEST_SUITE("process_single_pdu conn_conds") {
 		set<HWAddress<6>> reported;
 
 		TestableRunStatus t{};
-		CHECK_FALSE(t.process_single_pdu(
-				frames[0], seen, assoc, reported, make_ap_req("mc_mitm_test"), { { "sta", "ap" } }));
+		CHECK_FALSE(
+			t.process_single_pdu(frames[0], seen, assoc, reported, make_ap_req("mc_mitm_test"), { { "sta", "ap" } }));
 	}
 }

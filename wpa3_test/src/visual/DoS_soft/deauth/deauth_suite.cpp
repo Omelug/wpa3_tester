@@ -46,25 +46,24 @@ vector<DeauthTestEntry> DeauthTestEntry::collect_results(const path &test_data_d
 }
 
 void DeauthTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
-		const path &page_dir, const string &t_name) {
+	const path &page_dir, const string &t_name) {
 
 	helper::div_card<DeauthTestEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<DeauthTestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<DeauthTestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					 col("Test", &DeauthTestEntry::test_name);
-					 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-					 COL("Client MAC (source)",
-							 overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-					 col("wpa_supplicant version", &DeauthTestEntry::client_version);
-					 COL("Disconnected? (client/AP)", e.client_disconnected << " (" << e.ap_disconnected << ")");
-					 col("Client MFP", &DeauthTestEntry::client_mfp);
-					 COL("AP/Client WPA support", e.ap_WPA_support << "<br>" << e.client_WPA_support);
-					 col("Connected WPA version", &DeauthTestEntry::conn_WPA_version);
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 col("Test", &DeauthTestEntry::test_name);
+				 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+				 COL("Client MAC (source)", overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+				 col("wpa_supplicant version", &DeauthTestEntry::client_version);
+				 COL("Disconnected? (client/AP)", e.client_disconnected << " (" << e.ap_disconnected << ")");
+				 col("Client MFP", &DeauthTestEntry::client_mfp);
+				 COL("AP/Client WPA support", e.ap_WPA_support << "<br>" << e.client_WPA_support);
+				 col("Connected WPA version", &DeauthTestEntry::conn_WPA_version);
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 void DeauthTestEntry::generate_report(const RunSuiteStatus &rss) {

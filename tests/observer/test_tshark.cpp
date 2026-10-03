@@ -34,7 +34,7 @@ struct TempCsv {
 	path p;
 	explicit TempCsv(const string &content) {
 		p = temp_directory_path() /
-				("wpa3_test_csv_" + to_string(chrono::system_clock::now().time_since_epoch().count()) + ".csv");
+			("wpa3_test_csv_" + to_string(chrono::system_clock::now().time_since_epoch().count()) + ".csv");
 		ofstream f(p);
 		f << content;
 	}
@@ -169,7 +169,7 @@ TEST_CASE("extract_pcap_to_csv - produces csv with frame,time,len columns") {
 	REQUIRE(exists(pcapng));
 
 	const path out_dir =
-			temp_directory_path() / ("wpa3_pcap_" + to_string(chrono::system_clock::now().time_since_epoch().count()));
+		temp_directory_path() / ("wpa3_pcap_" + to_string(chrono::system_clock::now().time_since_epoch().count()));
 	create_directories(out_dir);
 
 	const string actor = "test_actor";

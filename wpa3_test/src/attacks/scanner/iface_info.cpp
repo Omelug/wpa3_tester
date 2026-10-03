@@ -33,8 +33,8 @@ void run_attack(RunStatus &rs) {
 	// ----- hw_info (modes, bands) via cache -----
 	const bool use_cache = get_global_config().value("use_hw_cache", true);
 	const optional<path> hw_cache = use_cache
-			? optional{ root_dir().parent_path() / DATA_DIR / "cache" / "scan" / "internal_iface.json" }
-			: nullopt;
+		? optional{ root_dir().parent_path() / DATA_DIR / "cache" / "scan" / "internal_iface.json" }
+		: nullopt;
 
 	scanner->set(SK::iface, iface);
 	scanner->load_hw_info(hw_cache);
@@ -100,7 +100,7 @@ void run_attack(RunStatus &rs) {
 		const bool moved = hw_capabilities::move_to_netns(iface, test_ns);
 		// wait_for_iface_appear listens via RTMGRP_LINK in target ns - no iw polling needed
 		const auto ec_appear =
-				moved ? netlink_helper::wait_for_iface_appear(iface, test_ns) : error_code{ EINVAL, system_category() };
+			moved ? netlink_helper::wait_for_iface_appear(iface, test_ns) : error_code{ EINVAL, system_category() };
 		result["netns_move"]["ok"] = !ec_appear;
 		result["netns_move"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 
@@ -116,7 +116,7 @@ void run_attack(RunStatus &rs) {
 		scanner->create_sniff_iface();
 		result["sniff_iface_create"]["ok"] = true;
 		result["sniff_iface_create"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
-		hw_capabilities::run_cmd({"iw", "dev", scanner.get_mon_iface(), "del"}, netns);
+		hw_capabilities::run_cmd({ "iw", "dev", scanner.get_mon_iface(), "del" }, netns);
 	} catch(...) { result["sniff_iface_create"]["ok"] = false; }
 
 	// ----- start_ap (iw) timing -----
@@ -131,13 +131,13 @@ void run_attack(RunStatus &rs) {
 		bench_beacon.addr3(bench_mac);
 		bench_beacon.ssid("wpa3_tester_bench");
 		uint8_t ds_ch = 6;
-		bench_beacon.add_option({Tins::Dot11::DS_SET, 1, &ds_ch});
+		bench_beacon.add_option({ Tins::Dot11::DS_SET, 1, &ds_ch });
 		const auto t0 = steady_clock::now();
 		start_ap(rs, ap_bench, scanner, bench_ch, bench_beacon, bench_mac, 100, 1);
 		result["start_ap_iw"]["ok"] = true;
 		result["start_ap_iw"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 		stop_ap(ap_bench, netns);
-		hw_capabilities::run_cmd({"iw", "dev", ap_bench, "del"}, netns);
+		hw_capabilities::run_cmd({ "iw", "dev", ap_bench, "del" }, netns);
 	} catch(...) { result["start_ap_iw"]["ok"] = false; }
 
 	// ----- start_ap_hostapd timing -----
@@ -150,7 +150,7 @@ void run_attack(RunStatus &rs) {
 		result["start_ap_hostapd"]["ok"] = true;
 		result["start_ap_hostapd"]["ms"] = duration_cast<milliseconds>(steady_clock::now() - t0).count();
 		rs.process_manager.stop(ap_bench + "_hostapd");
-		hw_capabilities::run_cmd({"iw", "dev", ap_bench, "del"}, netns);
+		hw_capabilities::run_cmd({ "iw", "dev", ap_bench, "del" }, netns);
 	} catch(...) { result["start_ap_hostapd"]["ok"] = false; }
 
 	rs.save_result(result);

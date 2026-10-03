@@ -8,13 +8,12 @@
 
 namespace wpa3_tester {
 
-const std::stacktrace& throw_trace_for(const void* ex_ptr);
+const std::stacktrace &throw_trace_for(const void *ex_ptr);
 
 class tester_error: public std::runtime_error, public std::nested_exception {
 public:
-	explicit tester_error(const std::string &msg,
-	                      const std::source_location loc = std::source_location::current(),
-	                      std::stacktrace trace = std::stacktrace::current()):
+	explicit tester_error(const std::string &msg, const std::source_location loc = std::source_location::current(),
+		std::stacktrace trace = std::stacktrace::current()):
 		std::runtime_error(msg),
 		location_(loc),
 		trace_(std::move(trace)) {}
@@ -33,9 +32,8 @@ struct fmtloc {
 	std::source_location loc;
 	std::stacktrace trace;
 
-	explicit fmtloc(const std::string_view fmt,
-	                const std::source_location loc = std::source_location::current(),
-	                std::stacktrace trace = std::stacktrace::current()):
+	explicit fmtloc(const std::string_view fmt, const std::source_location loc = std::source_location::current(),
+		std::stacktrace trace = std::stacktrace::current()):
 		fmt(fmt),
 		loc(loc),
 		trace(std::move(trace)) {}
@@ -49,9 +47,8 @@ class typed_error: public tester_error {
 		return std::apply([&fmt](auto &...a) { return std::vformat(fmt, std::make_format_args(a...)); }, cleaned);
 	}
 public:
-	explicit typed_error(const std::string &msg,
-	                     const std::source_location loc = std::source_location::current(),
-	                     std::stacktrace trace = std::stacktrace::current()):
+	explicit typed_error(const std::string &msg, const std::source_location loc = std::source_location::current(),
+		std::stacktrace trace = std::stacktrace::current()):
 		tester_error(msg, loc, std::move(trace)) {
 		log(Level, "{}", runtime_error::what());
 	}
@@ -63,9 +60,8 @@ public:
 		std::stacktrace trace;
 
 		fmtloc_implicit( // non-explicit: enables implicit construction from string literal
-				const char *fmt,
-				const std::source_location loc = std::source_location::current(),
-				std::stacktrace trace = std::stacktrace::current()):
+			const char *fmt, const std::source_location loc = std::source_location::current(),
+			std::stacktrace trace = std::stacktrace::current()):
 			fmt(fmt),
 			loc(loc),
 			trace(std::move(trace)) {}

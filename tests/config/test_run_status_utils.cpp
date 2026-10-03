@@ -127,20 +127,17 @@ TEST_CASE("load_actor_interface_mapping - round-trips actors written by save_act
 	RunStatus rs;
 	rs.run_folder(test_dir);
 
-	const auto make = [](const string &name,
-							  const string &iface,
-							  const string &mac,
-							  const string &driver,
-							  const string &channel) {
-		const auto a = make_shared<Actor_Config_sim>();
-		a->set(SK::source, "simulation");
-		a->set(SK::actor_name, name);
-		a->set(SK::iface, iface);
-		a->set(SK::mac, mac);
-		a->set(SK::driver_name, driver);
-		a->set(SK::channel, channel);
-		return ActorPtr(a);
-	};
+	const auto make =
+		[](const string &name, const string &iface, const string &mac, const string &driver, const string &channel) {
+			const auto a = make_shared<Actor_Config_sim>();
+			a->set(SK::source, "simulation");
+			a->set(SK::actor_name, name);
+			a->set(SK::iface, iface);
+			a->set(SK::mac, mac);
+			a->set(SK::driver_name, driver);
+			a->set(SK::channel, channel);
+			return ActorPtr(a);
+		};
 	rs.actors.emplace("sta", make("sta", "wlan0", "02:00:00:00:00:01", "ath9k", "6"));
 	rs.actors.emplace("ap", make("ap", "wlan1", "02:00:00:00:00:02", "mac80211_hwsim", "1"));
 

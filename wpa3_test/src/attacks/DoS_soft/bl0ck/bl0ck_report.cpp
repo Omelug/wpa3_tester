@@ -15,7 +15,7 @@ using namespace Tins;
 using namespace chrono;
 
 void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const path &attacker_graph,*/
-		const path &client_graph									 /*, const path &ap_graph*/
+	const path &client_graph										 /*, const path &ap_graph*/
 ) {
 	report::ReportGuard report(rs.run_folder());
 	if(!report) return;

@@ -15,10 +15,9 @@ struct SaeDosFolderEntry {
 
 	static SaeDosFolderEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<SaeDosFolderEntry> collect_results(
-			const std::filesystem::path &suite_data_dir, const std::string &module_filter = "");
+		const std::filesystem::path &suite_data_dir, const std::string &module_filter = "");
 	static void render_table(overview::HtmlGuard &f, const std::string &module,
-			const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir,
-			const std::string &t_name);
+		const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir, const std::string &t_name);
 };
 
 }

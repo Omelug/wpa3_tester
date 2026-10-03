@@ -10,25 +10,24 @@
 
 #include "interrupt.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using namespace Tins;
 using namespace chrono;
 
 // label to identification  in result
-static vector<uint8_t> make_label(){
-	static mt19937 rng{random_device{}()};
+static vector<uint8_t> make_label() {
+	static mt19937 rng{ random_device{}() };
 	uniform_int_distribution<uint32_t> dist;
-	vector<uint8_t> label = {'A', 'A', 'A', 'A'};
+	vector<uint8_t> label = { 'A', 'A', 'A', 'A' };
 	// two random uint32 big-endian (matches Python struct.pack(">II", ...))
-	for(const uint32_t v: {dist(rng), dist(rng)}) for(int i = 3; i >= 0; i--) label.push_back((v >> (i * 8)) & 0xFF);
+	for(const uint32_t v: { dist(rng), dist(rng) })
+		for(int i = 3; i >= 0; i--) label.push_back((v >> (i * 8)) & 0xFF);
 	return label;
 }
 
 vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
-	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-	const Channel &ch, const int count, const int retries
-){
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu, const Channel &ch, const int count, const int retries) {
 	const auto label = make_label();
 
 	const auto frame = unique_ptr<PDU>(pdu.clone());
@@ -39,21 +38,21 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 
 	vector<vector<uint8_t>> captured;
 	int attempt = 0;
-	while(true){
+	while(true) {
 		sout.send(*frame, ch);
 
-		if(sout.mf_workaround && has_mf){
-			if(const auto *qos = pdu.find_pdu<Dot11QoSData>()){
+		if(sout.mf_workaround && has_mf) {
+			if(const auto *qos = pdu.find_pdu<Dot11QoSData>()) {
 				Dot11QoSData fix;
 				fix.qos_control(qos->qos_control() & 0x000F);
 				sout.send(fix, ch);
-			} else{
+			} else {
 				Dot11Data fix;
 				sout.send(fix, ch);
 			}
 		}
 
-		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) ->bool{
+		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) -> bool {
 			if(ranges::search(r.raw, label).empty()) return false;
 			captured.push_back(std::move(r.raw));
 			return count > 0 && static_cast<int>(captured.size()) >= count;
@@ -65,33 +64,29 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	return captured;
 }
 
-void hw_capabilities::flush_socket(MonitorSocket &s){
-	while(s.recv());
-}
+void hw_capabilities::flush_socket(MonitorSocket &s) { while(s.recv()); }
 
 ProbeCapture hw_capabilities::capture_probe_response_ack(
-	const MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req,
-	const Channel &ch, const int retries
-){
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req, const Channel &ch, const int retries) {
 	const auto [addr1, addr2] = get_addrs(probe_req, {});
 	const auto src = addr2;
 	const auto dst = addr1;
 
 	ProbeCapture result;
 	int attempt = 0;
-	while(true){
+	while(true) {
 		ProbeCapture cur;
 		flush_socket(sin);
 		sout.send(probe_req, ch);
-		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) ->bool{
+		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) -> bool {
 			//try{
-				const RadioTap rt(r.raw.data(), r.raw.size());
-				const auto addrs = get_addrs(rt, r.raw);
-				if(rt.find_pdu<Dot11ProbeResponse>()){
-					if(addrs.addr1 == src && addrs.addr2 == dst) cur.rx_probes.push_back(r.raw);
-				} else if(rt.find_pdu<Dot11Ack>()){
-					if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
-				}
+			const RadioTap rt(r.raw.data(), r.raw.size());
+			const auto addrs = get_addrs(rt, r.raw);
+			if(rt.find_pdu<Dot11ProbeResponse>()) {
+				if(addrs.addr1 == src && addrs.addr2 == dst) cur.rx_probes.push_back(r.raw);
+			} else if(rt.find_pdu<Dot11Ack>()) {
+				if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
+			}
 			//} catch(...){} //TODO corrupted frames are possible ?
 			return false;
 		});
@@ -103,9 +98,7 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 }
 
 InjectionTestResult hw_capabilities::test_injection_more_fragments(
-	const MonitorSocket &sout, MonitorSocket &sin,
-	const Dot11Ref &ref, const string &strtype, const Channel &ch
-){
+	const MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref, const string &strtype, const Channel &ch) {
 	Dot11QoSData p(ref.addr1, ref.addr2);
 	if(ref.from_ds) p.from_ds(1);
 	if(ref.to_ds) p.to_ds(1);
@@ -114,24 +107,21 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	p.more_frag(1);
 
 	const auto captured = inject_and_capture(sout, sin, p, ch, 1);
-	return {"injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED};
+	return { "injection_more_fragments_" + strtype, captured.empty() ? FAIL : PASSED };
 }
 
-InjectionTestResult hw_capabilities::test_packet_injection(
-	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-	const function<bool(const vector<uint8_t> &)> &test_func,
-	const string &name, const string &msgfail, const Channel &ch
-){
+InjectionTestResult hw_capabilities::test_packet_injection(const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
+	const function<bool(const vector<uint8_t> &)> &test_func, const string &name, const string &msgfail,
+	const Channel &ch) {
 	const auto frames = inject_and_capture(sout, sin, pdu, ch, 1);
-	if(frames.empty()) return {name, NOCAPTURE, "no capture"};
-	if(!ranges::all_of(frames, test_func)) return {name, FAIL, msgfail};
-	return {name, PASSED};
+	if(frames.empty()) return { name, NOCAPTURE, "no capture" };
+	if(!ranges::all_of(frames, test_func)) return { name, FAIL, msgfail };
+	return { name, PASSED };
 }
 
-InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
-															const string &strtype, const Channel &ch
-){
-	auto apply = [&](auto &frame){
+InjectionTestResult hw_capabilities::test_injection_fields(
+	MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref, const string &strtype, const Channel &ch) {
+	auto apply = [&](auto &frame) {
 		frame.addr1(ref.addr1);
 		frame.addr2(ref.addr2);
 		frame.addr3(ref.addr3);
@@ -142,79 +132,95 @@ InjectionTestResult hw_capabilities::test_injection_fields(MonitorSocket &sout, 
 	it_test_result result = PASSED;
 	string failed;
 
-	auto run = [&](auto &pdu, const function<bool(const vector<uint8_t> &)> &fn, const string &name, const string &msg){
-		const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch);
-		if(r.result() != PASSED){
-			if(result == PASSED) result = r.result();
-			failed += name + " ";
-		}
-	};
+	auto run =
+		[&](auto &pdu, const function<bool(const vector<uint8_t> &)> &fn, const string &name, const string &msg) {
+			const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch);
+			if(r.result() != PASSED) {
+				if(result == PASSED) result = r.result();
+				failed += name + " ";
+			}
+		};
 
 	// delivery
 	Dot11Data p1;
 	apply(p1);
 	p1.seq_num(30);
-	run(p1, [](const vector<uint8_t> &){ return true; }, "eapol", "not captured");
+	run(p1, [](const vector<uint8_t> &) { return true; }, "eapol", "not captured");
 
 	// seq num preserved
 	Dot11Data p2;
 	apply(p2);
 	p2.seq_num(31);
-	run(p2, [](const vector<uint8_t> &raw){
-		try{
-			const RadioTap rt(raw.data(), raw.size());
-			const auto *d = rt.find_pdu<Dot11Data>();
-			return d && d->seq_num() == 31;
-		} catch(...){ return false; }
-	}, "seq_num", "sequence number overwritten");
+	run(
+		p2,
+		[](const vector<uint8_t> &raw) {
+			try {
+				const RadioTap rt(raw.data(), raw.size());
+				const auto *d = rt.find_pdu<Dot11Data>();
+				return d && d->seq_num() == 31;
+			} catch(...) { return false; }
+		},
+		"seq_num",
+		"sequence number overwritten");
 
 	// frag num preserved
 	Dot11Data p3;
 	apply(p3);
 	p3.seq_num(32);
 	p3.frag_num(1);
-	run(p3, [](const vector<uint8_t> &raw){
-		try{
-			const RadioTap rt(raw.data(), raw.size());
-			const auto *d = rt.find_pdu<Dot11Data>();
-			return d && d->frag_num() == 1;
-		} catch(...){ return false; }
-	}, "frag_num", "fragment number overwritten");
+	run(
+		p3,
+		[](const vector<uint8_t> &raw) {
+			try {
+				const RadioTap rt(raw.data(), raw.size());
+				const auto *d = rt.find_pdu<Dot11Data>();
+				return d && d->frag_num() == 1;
+			} catch(...) { return false; }
+		},
+		"frag_num",
+		"fragment number overwritten");
 
 	// QoS TID preserved
 	Dot11QoSData p4;
 	apply(p4);
 	p4.seq_num(33);
 	p4.qos_control(2);
-	run(p4, [](const vector<uint8_t> &raw){
-		try{
-			const RadioTap rt(raw.data(), raw.size());
-			const auto *q = rt.find_pdu<Dot11QoSData>();
-			return q && (q->qos_control() & 0xF) == 2;
-		} catch(...){ return false; }
-	}, "qos_tid", "QoS TID overwritten");
+	run(
+		p4,
+		[](const vector<uint8_t> &raw) {
+			try {
+				const RadioTap rt(raw.data(), raw.size());
+				const auto *q = rt.find_pdu<Dot11QoSData>();
+				return q && (q->qos_control() & 0xF) == 2;
+			} catch(...) { return false; }
+		},
+		"qos_tid",
+		"QoS TID overwritten");
 
 	// A-MSDU bit + TID preserved
 	Dot11QoSData p5;
 	apply(p5);
 	p5.seq_num(33);
 	p5.qos_control(2 | 0x80);
-	run(p5, [](const vector<uint8_t> &raw){
-		try{
-			const RadioTap rt(raw.data(), raw.size());
-			const auto *q = rt.find_pdu<Dot11QoSData>();
-			return q && (q->qos_control() & 0xF) == 2 && (q->qos_control() & 0x80);
-		} catch(...){ return false; }
-	}, "a-msdu", "A-MSDU not properly injected");
+	run(
+		p5,
+		[](const vector<uint8_t> &raw) {
+			try {
+				const RadioTap rt(raw.data(), raw.size());
+				const auto *q = rt.find_pdu<Dot11QoSData>();
+				return q && (q->qos_control() & 0xF) == 2 && (q->qos_control() & 0x80);
+			} catch(...) { return false; }
+		},
+		"a-msdu",
+		"A-MSDU not properly injected");
 
-	return {"injection_fields_" + strtype, result, failed};
+	return { "injection_fields_" + strtype, result, failed };
 }
 
 InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,
-														const string &strtype, const Channel &ch, const int retries
-){
+	const string &strtype, const Channel &ch, const int retries) {
 	// new label per retry round - ignore frames from a previous round
-	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) ->Dot11QoSData{
+	auto make_qos = [&](const uint8_t tid, const vector<uint8_t> &lbl) -> Dot11QoSData {
 		Dot11QoSData p(ref.addr1, ref.addr2);
 		if(ref.from_ds) p.from_ds(1);
 		if(ref.to_ds) p.to_ds(1);
@@ -226,7 +232,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 
 	vector<int> tids;
 	interruptible_sleep(milliseconds(4000)); //FIXME dont pass without this, bas setup ?, driver issues?
-	for(int i = 0; i <= retries; i++){
+	for(int i = 0; i <= retries; i++) {
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);
 
@@ -234,7 +240,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 		sout.send(p6, ch);
 		tids.clear();
 
-		sin.recv_loop(steady_clock::now() + milliseconds(2500), [&](auto r) ->bool{
+		sin.recv_loop(steady_clock::now() + milliseconds(2500), [&](auto r) -> bool {
 			if(ranges::search(r.raw, label).empty()) return false;
 
 			const RadioTap rt(r.raw.data(), r.raw.size());
@@ -249,73 +255,68 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 
 	string tid_str = join(tids, ",");
 	auto test_name = "injection_order_" + strtype;
-	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)){
-		return {test_name, NOCAPTURE, "tids=[" + tid_str + "]"};
+	if(!ranges::contains(tids, 2) || !ranges::contains(tids, 6)) {
+		return { test_name, NOCAPTURE, "tids=[" + tid_str + "]" };
 	}
 
 	auto sorted_tids = tids;
 	ranges::sort(sorted_tids);
-	if(tids != sorted_tids) return {test_name, FAIL, "reordered tids=[" + tid_str + "]"};
+	if(tids != sorted_tids) return { test_name, FAIL, "reordered tids=[" + tid_str + "]" };
 
-	return {test_name, PASSED, "tids=[" + tid_str + "]"};
+	return { test_name, PASSED, "tids=[" + tid_str + "]" };
 }
 
-InjectionTestResult hw_capabilities::test_injection_retrans(
-	const MonitorSocket &sout, MonitorSocket &sin,
-	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel &ch
-){
+InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket &sout, MonitorSocket &sin,
+	const HWAddress<6> &addr1, const HWAddress<6> &addr2, const Channel &ch) {
 
-	auto make_frame = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) ->Dot11Data{
+	auto make_frame = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> Dot11Data {
 		Dot11Data p(a1, a2);
 		p.to_ds(1);
 		p.seq_num(33); //FIXME magic number
 		return p;
 	};
 
-	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) ->int{
+	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> int {
 		auto p = make_frame(a1, a2);
 		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1).size());
 	};
 
-	const int n_dummy = count({"00:11:00:00:02:01"}, {"00:11:00:00:02:01"});
-	const int n_spoofed = count(addr1, {"00:22:00:00:00:01"});
+	const int n_dummy = count({ "00:11:00:00:02:01" }, { "00:11:00:00:02:01" });
+	const int n_spoofed = count(addr1, { "00:22:00:00:00:01" });
 	const int n_real = count(addr1, addr2);
 
 	it_test_result result = PASSED;
 	string detail;
-	if(n_dummy == 0 || n_spoofed == 0 || n_real == 0){
+	if(n_dummy == 0 || n_spoofed == 0 || n_real == 0) {
 		result = FAIL;
 		detail += "no_capture ";
 	}
-	if(n_dummy == 1){
+	if(n_dummy == 1) {
 		result = SUSPICIOUS;
 		detail += "no_retrans(suspicious) ";
 	}
-	if(n_real > 2){
+	if(n_real > 2) {
 		result = SUSPICIOUS;
 		detail += "real_retrans_high(suspicious) ";
 	}
 
 	detail += "dummy=" + to_string(n_dummy) + " spoofed=" + to_string(n_spoofed) + " real=" + to_string(n_real);
-	return {"injection_fields_retrans", result, detail};
+	return { "injection_fields_retrans", result, detail };
 }
 
-InjectionTestResult hw_capabilities::test_injection_txack(
-	const MonitorSocket &sout, MonitorSocket &sin,
-	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac,
-	const Channel &ch
-){
+InjectionTestResult hw_capabilities::test_injection_txack(const MonitorSocket &sout, MonitorSocket &sin,
+	const HWAddress<6> &dest_mac, const HWAddress<6> &own_mac, const Channel &ch) {
 	Dot11ProbeRequest probe(dest_mac, own_mac);
 	probe.addr3(dest_mac);
 	probe.seq_num(42); // only for manual debug
-	probe.add_option({Dot11ManagementFrame::SSID, 0, nullptr});
-	constexpr uint8_t rates[] = {0x03, 0x12, 0x96, 0x18}; //needed because if not hostapd ignore silently
-	probe.add_option({Dot11ManagementFrame::SUPPORTED_RATES, sizeof(rates), rates});
+	probe.add_option({ Dot11ManagementFrame::SSID, 0, nullptr });
+	constexpr uint8_t rates[] = { 0x03, 0x12, 0x96, 0x18 }; //needed because if not hostapd ignore silently
+	probe.add_option({ Dot11ManagementFrame::SUPPORTED_RATES, sizeof(rates), rates });
 
 	const auto [rx_probes, tx_acks] = capture_probe_response_ack(sout, sin, probe, ch, 1);
 
-	if(tx_acks.empty()) return {"test_injection_txack", FAIL, "no ACK generated"};
-	if(rx_probes.empty()) return {"test_injection_txack", NOCAPTURE, "no probe response"};
-	return {"test_injection_txack", PASSED};
+	if(tx_acks.empty()) return { "test_injection_txack", FAIL, "no ACK generated" };
+	if(rx_probes.empty()) return { "test_injection_txack", NOCAPTURE, "no probe response" };
+	return { "test_injection_txack", PASSED };
 }
 }

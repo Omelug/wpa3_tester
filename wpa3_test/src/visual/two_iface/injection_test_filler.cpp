@@ -63,8 +63,8 @@ void generate_report(RunSuiteStatus &rss) {
 
 	for(const auto &e: entries) {
 		const string name_cell = exists(run_dir / e.test_name / REPORT_NAME)
-				? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
-				: e.test_name;
+			? "[" + e.test_name + "](" + e.test_name + "/" + REPORT_NAME + ")"
+			: e.test_name;
 		const string pass_link = "(" + e.test_name + "/" + RESULT_NAME + ")";
 
 		r << "| " << name_cell << " | " << e.tx_driver << " | " << e.rx_driver << " | " << e.tests_passed << " | "

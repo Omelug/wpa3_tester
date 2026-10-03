@@ -6,20 +6,19 @@
 #include "logger/error_log.h"
 #include "system/utils.h"
 
-namespace wpa3_tester::report{
+namespace wpa3_tester::report {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
 
 // devices/<perm_mac>/last.json symlink to last
-path device_path(){ return root_dir().parent_path() / DATA_DIR / DEVICES_DIR; }
+path device_path() { return root_dir().parent_path() / DATA_DIR / DEVICES_DIR; }
 
 //TODO ? zjednosušit poocí HWInfo, nebo se to bude plést, pokud sem přidám víc info?
 
-bool add_device(const ActorPtr &actor){
+bool add_device(const ActorPtr &actor) {
 	const auto &perm_mac_opt = (*actor)[SK::permanent_mac];
-	if(!perm_mac_opt.has_value())
-		throw config_err("add_device: actor has no permanent_mac");
+	if(!perm_mac_opt.has_value()) throw config_err("add_device: actor has no permanent_mac");
 	path dev_dir = device_path() / *perm_mac_opt;
 	create_public_dirs(dev_dir);
 
@@ -27,22 +26,22 @@ bool add_device(const ActorPtr &actor){
 	const string caps_dump = caps.dump();
 	const path symlink_path = dev_dir / "last.json";
 
-	for(const auto &entry: directory_iterator(dev_dir)){
-		if(entry.is_symlink()) continue;  // is_symlink() uses symlink_status - does not follow
+	for(const auto &entry: directory_iterator(dev_dir)) {
+		if(entry.is_symlink()) continue; // is_symlink() uses symlink_status - does not follow
 		if(!entry.is_regular_file()) continue;
 		if(entry.path().extension() != ".json") continue;
-		try{
+		try {
 			ifstream f(entry.path());
 			const json stored = json::parse(f);
 			const auto caps_key = stored.contains("caps") ? stored.at("caps").dump() : stored.dump();
-			if(caps_key == caps_dump){
+			if(caps_key == caps_dump) {
 				set_public_perms(entry.path());
 				if(is_symlink(symlink_path) || exists(symlink_path)) remove(symlink_path);
 				create_symlink(entry.path().filename(), symlink_path);
 				set_public_perms(symlink_path);
 				return false;
 			}
-		} catch(const exception &){}
+		} catch(const exception &) {}
 	}
 
 	const auto ts = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();

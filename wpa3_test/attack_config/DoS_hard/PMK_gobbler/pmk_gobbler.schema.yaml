@@ -5,7 +5,7 @@ properties:
   attack_config:
     type: object
     required:
-      $UNION: [acm_trigger_count]
+      $UNION: [ acm_trigger_count ]
     additionalProperties: false
     properties:
       attack_time_sec:

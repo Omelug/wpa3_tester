@@ -8,7 +8,7 @@ namespace wpa3_tester {
 void log_actor_map(const std::string &name, const ActorMap &m);
 
 std::vector<LogTimePoint> get_time_logs(const RunStatus &rs, const std::string &process_name,
-		const std::string &pattern, std::optional<TimeWindow> window = std::nullopt);
+	const std::string &pattern, std::optional<TimeWindow> window = std::nullopt);
 
 // Returns the timestamp of the first log line containing `tag`, or epoch-zero if not found (file or tag)
 LogTimePoint get_tag_time(const std::filesystem::path &log_path, const std::string &tag);

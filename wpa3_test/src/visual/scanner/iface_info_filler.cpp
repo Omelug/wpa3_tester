@@ -38,7 +38,7 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 		try {
 			const auto result = rs.load_result();
 			e.driver_summary =
-					driver_diag::summarize_driver_specific(result.value("driver_specific", nlohmann::json::object()));
+				driver_diag::summarize_driver_specific(result.value("driver_specific", nlohmann::json::object()));
 			if(result.contains("channel_switch")) {
 				const auto &cs = result["channel_switch"];
 				e.channel_switch_ok = cs.value("ok", false);
@@ -120,10 +120,11 @@ void generate_report(RunSuiteStatus &rss) {
 
 		string ap_hd = "n/a";
 		if(e.start_ap_hostapd_ok.has_value())
-			ap_hd = (e.start_ap_hostapd_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_hostapd_ms.value_or(-1)) + "ms";
+			ap_hd = (e.start_ap_hostapd_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_hostapd_ms.value_or(-1)) +
+				"ms";
 
-		r << "| " << e.test_name << " | " << e.hw_summary << " | " << ch << " | " << ns << " | "
-		  << si << " | " << ap_iw << " | " << ap_hd << " | " << report::link("report", e.report_md) << " |\n";
+		r << "| " << e.test_name << " | " << e.hw_summary << " | " << ch << " | " << ns << " | " << si << " | " << ap_iw
+		  << " | " << ap_hd << " | " << report::link("report", e.report_md) << " |\n";
 	}
 }
 }

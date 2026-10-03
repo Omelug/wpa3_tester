@@ -27,12 +27,12 @@ TEST_SUITE("get_external_BB_channels - actors fallback") {
 	TEST_CASE("channels extracted from actors are sorted and deduplicated") {
 		TestableRunStatus rs;
 		rs.set_config({ { "actors",
-				{
-						{ "ap", { { "selection", { { "channel", 11 } } } } },
-						{ "sta", { { "selection", { { "channel", 6 } } } } },
-						{ "ap2", { { "selection", { { "channel", 11 } } } } },	// duplicate
-						{ "sta2", { { "selection", { { "ssid", "test" } } } } } // no channel
-				} } });
+			{
+				{ "ap", { { "selection", { { "channel", 11 } } } } },
+				{ "sta", { { "selection", { { "channel", 6 } } } } },
+				{ "ap2", { { "selection", { { "channel", 11 } } } } },	// duplicate
+				{ "sta2", { { "selection", { { "ssid", "test" } } } } } // no channel
+			} } });
 		const auto ch = rs.get_external_bb_channels();
 		REQUIRE_EQ(ch.size(), 2u);
 		CHECK_EQ(ch[0], 6);

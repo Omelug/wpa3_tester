@@ -15,9 +15,7 @@ TEST_CASE("data_unchanged") {
 	create_directories(page_dir);
 	create_directories(data_dir);
 
-	SUBCASE("no data → false") {
-		CHECK_FALSE(data_unchanged(page_dir, data_dir));
-	}
+	SUBCASE("no data → false") { CHECK_FALSE(data_unchanged(page_dir, data_dir)); }
 
 	SUBCASE("data but no index.html → false") {
 		std::ofstream(data_dir / "result.json") << "{}";

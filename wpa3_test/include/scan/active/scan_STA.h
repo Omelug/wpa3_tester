@@ -6,7 +6,7 @@
 
 namespace wpa3_tester::scan {
 void station_scan(
-		ScanAP &scan_ap, const std::string &interface, int timeout_sec, const std::filesystem::path &stations_pcap);
+	ScanAP &scan_ap, const std::string &interface, int timeout_sec, const std::filesystem::path &stations_pcap);
 
 // get info from beacon/probe-response PDU
 // mac, ssid, channel, signal, band (GHz2_4/5/6), MFP/OCV/beacon_prot (RSN caps),

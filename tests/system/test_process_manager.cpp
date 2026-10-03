@@ -238,7 +238,7 @@ TEST_CASE("ProcessManager - write_log_all") {
 	SUBCASE("writes to combined log") {
 		pm.write_log_all("marker_combined");
 		ifstream f(pm.log_base_dir / "combined.log");
-		const string content{ istreambuf_iterator(f), {}};
+		const string content{ istreambuf_iterator(f), {} };
 		CHECK(content.contains("marker_combined"));
 	}
 
@@ -247,7 +247,7 @@ TEST_CASE("ProcessManager - write_log_all") {
 		pm.write_log_all("marker_proc");
 		{
 			ifstream f(pm.log_base_dir / "combined.log");
-			const string content{ istreambuf_iterator(f), {}};
+			const string content{ istreambuf_iterator(f), {} };
 			CHECK(content.contains("marker_proc"));
 		}
 		{

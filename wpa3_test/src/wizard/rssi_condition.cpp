@@ -78,7 +78,7 @@ static vector<Token> tokenize(const string &s) {
 			bool is_mac = true;
 			for(int k = 0; k < 6 && is_mac; ++k) {
 				is_mac = isxdigit(static_cast<unsigned char>(s[i + k * 3])) &&
-						isxdigit(static_cast<unsigned char>(s[i + k * 3 + 1])) && (k == 5 || s[i + k * 3 + 2] == ':');
+					isxdigit(static_cast<unsigned char>(s[i + k * 3 + 1])) && (k == 5 || s[i + k * 3 + 2] == ':');
 			}
 			if(is_mac) {
 				toks.push_back({ TokKind::Mac, s.substr(i, 17) });
@@ -300,21 +300,21 @@ void render_condition_status(FILE *pipe, const ExprPtr &expr, const RssiMatrix &
 			x = 0.01;
 			const char *op = (text == " && ") ? "&&" : "||";
 			fprintf(pipe,
-					"set label %d '%s' at screen %f,%f tc rgb '%s' font 'Monospace Bold,11' left\n",
-					id++,
-					op,
-					x,
-					y,
-					color.c_str());
+				"set label %d '%s' at screen %f,%f tc rgb '%s' font 'Monospace Bold,11' left\n",
+				id++,
+				op,
+				x,
+				y,
+				color.c_str());
 			x += 3 * 0.010;
 		} else {
 			fprintf(pipe,
-					"set label %d '%s' at screen %f,%f tc rgb '%s' font 'Monospace Bold,11' left\n",
-					id++,
-					text.c_str(),
-					x,
-					y,
-					color.c_str());
+				"set label %d '%s' at screen %f,%f tc rgb '%s' font 'Monospace Bold,11' left\n",
+				id++,
+				text.c_str(),
+				x,
+				y,
+				color.c_str());
 			x += static_cast<double>(text.size()) * 0.010;
 		}
 	}

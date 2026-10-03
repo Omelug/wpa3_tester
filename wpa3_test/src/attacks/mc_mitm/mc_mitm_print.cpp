@@ -51,8 +51,8 @@ string McMitm::frame_to_str(const Dot11 &frame) {
 	};
 
 	const auto *names = type == Dot11::MANAGEMENT ? &mgmt_names
-			: type == Dot11::CONTROL			  ? &ctrl_names
-			: type == Dot11::DATA				  ? &data_names
+		: type == Dot11::CONTROL				  ? &ctrl_names
+		: type == Dot11::DATA					  ? &data_names
 												  : nullptr;
 
 	if(names) {

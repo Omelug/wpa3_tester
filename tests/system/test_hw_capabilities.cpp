@@ -154,7 +154,7 @@ TEST_CASE("hw_capabilities::list_interfaces - loopback is always present") {
 	GlobalConfigFixture gc;
 	const auto ifaces = hw_capabilities::list_interfaces();
 	const bool found = ranges::any_of(
-			ifaces, [](const InterfaceInfo &i) { return i.name == "lo" && i.type == InterfaceType::Loopback; });
+		ifaces, [](const InterfaceInfo &i) { return i.name == "lo" && i.type == InterfaceType::Loopback; });
 	CHECK(found);
 }
 TEST_CASE("hw_capabilities::list_interfaces - filter Loopback contains only lo") {

@@ -21,8 +21,8 @@ using namespace chrono;
 namespace wpa3_tester::cookie_guzzler {
 
 void check_vuln(const string &iface_name, const HWAddress<6> &ap_mac, const int attack_time,
-		const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
-		const size_t frames_per_second_limit) {
+	const sae_helper::SAEPair &sae_params, const string &att_mac, const size_t burst_size,
+	const size_t frames_per_second_limit) {
 	PacketSender sender(iface_name);
 	dos_helpers::timed_burst(sender, attack_time, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
 		// get cookie_guzzler frame
@@ -35,8 +35,8 @@ void run_attack(RunStatus &rs) {
 	const ActorPtr attacker = rs.get_actor("attacker");
 
 	const auto &att_cfg = rs.config().at("attack_config");
-	const optional<sae_helper::SAEPair> sae_params = get_commit_values(
-			rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
+	const optional<sae_helper::SAEPair> sae_params =
+		get_commit_values(rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 
 	if(!sae_params.has_value()) throw run_err("SAE Commit capture failed");
 
@@ -49,15 +49,15 @@ void run_attack(RunStatus &rs) {
 	attacker->set_iface_up();
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	check_vuln(attacker.get(SK::iface),
-			ap.get(SK::mac),
-			duration,
-			sae_params.value(),
-			attacker.get(SK::mac),
-			att_cfg.at("burst_size").get<size_t>(),
-			att_cfg.at("frames_per_second_limit").get<size_t>());
+		ap.get(SK::mac),
+		duration,
+		sae_params.value(),
+		attacker.get(SK::mac),
+		att_cfg.at("burst_size").get<size_t>(),
+		att_cfg.at("frames_per_second_limit").get<size_t>());
 
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
-	interruptible_sleep(seconds( att_cfg.at("sleep_after_sec")));
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 	ap->disconnect(); //TODO needed ?
 }
 
@@ -66,7 +66,7 @@ void stats_attack(const RunStatus &rs) {
 	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 
 	const filesystem::path STA_graph_path =
-			observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
+		observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
 	//const path AP_graph_path =
 	//    observer::tshark_graph(rs, "ap", events, observer::get_observer_folder(rs, "tcpdump"));
 

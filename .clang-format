@@ -41,7 +41,6 @@ BreakConstructorInitializers: AfterColon
 ColumnLimit: 120
 CompactNamespaces: true
 PackConstructorInitializers: Never
-ContinuationIndentWidth: 8
 EmptyLineBeforeAccessModifier: Never
 IncludeCategories:
   - Regex: '^<.*'
@@ -52,7 +51,6 @@ IncludeCategories:
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentPPDirectives: BeforeHash
-IndentWidth: 4
 InsertNewlineAtEOF: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCtorInitializerColon: false
@@ -67,6 +65,9 @@ SpacesInParentheses: false
 FixNamespaceComments: false
 Cpp11BracedListStyle: false
 AlignAfterOpenBracket: false
+IndentWidth: 4
+ContinuationIndentWidth: 4
+
 RemoveSemicolon: true
 TabWidth: 4
 UseTab: Always

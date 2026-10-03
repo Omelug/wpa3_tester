@@ -34,30 +34,30 @@ vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path 
 
 	ranges::sort(entries, [](const InvalidCurveTestEntry &a, const InvalidCurveTestEntry &b) {
 		return tie(a.ap_openssl_version, a.connected, a.attacker_driver, a.ap_driver, a.ap_hostapd_version) <
-				tie(b.ap_openssl_version, b.connected, b.attacker_driver, b.ap_driver, b.ap_hostapd_version);
+			tie(b.ap_openssl_version, b.connected, b.attacker_driver, b.ap_driver, b.ap_hostapd_version);
 	});
 
 	return entries;
 }
 
-void InvalidCurveTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
-		const path &, const std::string &t_name) {
+void InvalidCurveTestEntry::render_table(
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const std::string &t_name) {
 
 	helper::div_card<InvalidCurveTestEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<InvalidCurveTestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<InvalidCurveTestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					col("Test", &InvalidCurveTestEntry::test_name);
-					col("AP Driver", &InvalidCurveTestEntry::ap_driver);
-					col("Hostapd version", &InvalidCurveTestEntry::ap_hostapd_version);
-					COL("Attacker Driver", e.attacker_driver << "("<< e.attacker_mac <<")");
-					col("AP openssl version", &InvalidCurveTestEntry::ap_openssl_version);
-					col("Connected?", &InvalidCurveTestEntry::connected);
-				});
-#undef COL
-				t.render();
+			t.build([&](auto col) {
+				col("Test", &InvalidCurveTestEntry::test_name);
+				col("AP Driver", &InvalidCurveTestEntry::ap_driver);
+				col("Hostapd version", &InvalidCurveTestEntry::ap_hostapd_version);
+				COL("Attacker Driver", e.attacker_driver << "(" << e.attacker_mac << ")");
+				col("AP openssl version", &InvalidCurveTestEntry::ap_openssl_version);
+				col("Connected?", &InvalidCurveTestEntry::connected);
 			});
+#undef COL
+			t.render();
+		});
 }
 
 void generate_report(const RunSuiteStatus &rss) {
@@ -81,7 +81,7 @@ void generate_report(const RunSuiteStatus &rss) {
 
 	for(const auto &e: entries) {
 		const string result_link =
-				"[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
+			"[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | " << e.ap_driver << " | "
 			   << e.attacker_driver << " | " << result_link << " |\n";
 	}

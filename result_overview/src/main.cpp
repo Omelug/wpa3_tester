@@ -34,10 +34,10 @@ static path project_root() {
 
 static void print_usage(const char *argv0) {
 	fprintf(stderr,
-			"Usage: %s [--data_dir <path>] [--output_dir <path>]\n"
-			"  --data_dir    path to data directory (default: <project_root>/data)\n"
-			"  --output_dir  path to output directory (default: <project_root>/build/result_overview)\n",
-			argv0);
+		"Usage: %s [--data_dir <path>] [--output_dir <path>]\n"
+		"  --data_dir    path to data directory (default: <project_root>/data)\n"
+		"  --output_dir  path to output directory (default: <project_root>/build/result_overview)\n",
+		argv0);
 }
 
 struct Args {

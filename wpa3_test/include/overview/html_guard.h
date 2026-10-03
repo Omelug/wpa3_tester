@@ -4,11 +4,11 @@
 #include <optional>
 #include <string>
 
+#include <pugixml.hpp>
+#include <utility>
 #include "default.h"
 #include "overview/described.h"
 #include "system/utils.h"
-#include <pugixml.hpp>
-#include <utility>
 
 inline std::ostream &operator<<(std::ostream &os, const std::optional<bool> val) {
 	return os << (val ? (*val ? "yes" : "no") : "-");
@@ -19,11 +19,9 @@ namespace wpa3_tester::overview {
 inline std::string format_html(const std::string &html) {
 	pugi::xml_document doc;
 	if(!doc.load_string(html.c_str())) return html;
-	struct str_writer : pugi::xml_writer {
+	struct str_writer: pugi::xml_writer {
 		std::string out;
-		void write(const void *data, size_t size) override {
-			out.append(static_cast<const char *>(data), size);
-		}
+		void write(const void *data, size_t size) override { out.append(static_cast<const char *>(data), size); }
 	} w;
 	doc.save(w, "\t", pugi::format_indent | pugi::format_no_declaration);
 	return w.out;
@@ -31,7 +29,8 @@ inline std::string format_html(const std::string &html) {
 
 // RAII guard: buffers index.html writes, formats on destruction
 struct HtmlGuard {
-	explicit HtmlGuard(std::filesystem::path page_dir): page_dir_(std::move(page_dir)) {
+	explicit HtmlGuard(std::filesystem::path page_dir):
+		page_dir_(std::move(page_dir)) {
 		create_public_dirs(page_dir_);
 	}
 	~HtmlGuard() {
@@ -94,7 +93,7 @@ struct HtmlGuard {
 		}
 		const auto &last = val.last();
 		const bool conflict =
-				std::ranges::any_of(val.pairs, [&](const auto &p) { return p.value != val.pairs.front().value; });
+			std::ranges::any_of(val.pairs, [&](const auto &p) { return p.value != val.pairs.front().value; });
 
 		stream_ << R"(<span class="has-tooltip">)";
 		if(conflict) stream_ << R"(<strong style="color:red">)";
@@ -113,7 +112,7 @@ struct HtmlGuard {
 		}
 		const auto &last = val.last();
 		const bool conflict =
-				std::ranges::any_of(val.pairs, [&](const auto &p) { return p.value != val.pairs.front().value; });
+			std::ranges::any_of(val.pairs, [&](const auto &p) { return p.value != val.pairs.front().value; });
 
 		stream_ << R"(<span class="has-tooltip">)";
 		if(conflict) stream_ << R"(<strong style="color:red">)";
@@ -129,14 +128,14 @@ struct HtmlGuard {
 	}
 	template<typename T>
 		requires(!std::same_as<std::remove_cvref_t<T>, bool> &&
-				!std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::string> &&
-				!std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::pair<std::optional<bool>, std::string>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-				!std::same_as<std::remove_cvref_t<T>, described_bool> &&
-				!std::same_as<std::remove_cvref_t<T>, described_str>)
+			!std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::string> &&
+			!std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::pair<std::optional<bool>, std::string>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+			!std::same_as<std::remove_cvref_t<T>, described_bool> &&
+			!std::same_as<std::remove_cvref_t<T>, described_str>)
 	HtmlGuard &operator<<(T &&val) {
 		stream_ << std::forward<T>(val);
 		return *this;
@@ -161,7 +160,7 @@ inline std::string device(const std::string &mac_str, const std::filesystem::pat
 
 // Returns test name as HTML, linked to report.md if it exists.
 inline std::string test_name_cell(
-		const std::filesystem::path &test_folder, const std::string &name, const std::filesystem::path &page_dir) {
+	const std::filesystem::path &test_folder, const std::string &name, const std::filesystem::path &page_dir) {
 	const auto report = test_folder / REPORT_NAME;
 	if(!std::filesystem::exists(report)) return name;
 	return "<a href=\"" + report.lexically_relative(page_dir).string() + "\">" + name + "</a>";

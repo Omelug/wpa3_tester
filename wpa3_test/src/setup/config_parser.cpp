@@ -45,7 +45,7 @@ json yaml_to_json(const YNode &node) {
 }
 
 json yaml_to_json_with_marks(
-		const YNode &node, const string &current_path, unordered_map<string, YAML::Mark> &line_map) {
+	const YNode &node, const string &current_path, unordered_map<string, YAML::Mark> &line_map) {
 	line_map[current_path.empty() ? "/" : current_path] = node.Mark();
 
 	if(node.IsScalar()) {
@@ -86,12 +86,13 @@ void deep_merge(json &base, const json &patch) {
 		if(key == "$DELETE") {
 			if(val.is_string()) {
 				base.erase(val.get<string>());
-			}else if(val.is_array()) {
+			} else if(val.is_array()) {
 				for(const auto &k: val) {
 					if(k.is_string()) base.erase(k.get<string>());
 				}
 			}
-		} else if(val.is_object() && (val.contains("$UNION") || val.contains("$SUBTRACT") || val.contains("$INTERSECT"))) {
+		} else if(val.is_object() &&
+			(val.contains("$UNION") || val.contains("$SUBTRACT") || val.contains("$INTERSECT"))) {
 			if(!base.contains(key)) base[key] = json::array();
 			json &arr = base[key];
 			if(!arr.is_array()) { arr = json::array(); }
@@ -102,14 +103,14 @@ void deep_merge(json &base, const json &patch) {
 			if(val.contains("$SUBTRACT")) {
 				const auto &sub = val["$SUBTRACT"];
 				arr.erase(ranges::remove_if(arr, [&](const json &item) { return ranges::find(sub, item) != sub.end(); })
-								  .begin(),
+							  .begin(),
 					arr.end());
 			}
 			if(val.contains("$INTERSECT")) {
 				const auto &inter = val["$INTERSECT"];
-				arr.erase(ranges::remove_if(
-								  arr, [&](const json &item) { return ranges::find(inter, item) == inter.end(); })
-								  .begin(),
+				arr.erase(
+					ranges::remove_if(arr, [&](const json &item) { return ranges::find(inter, item) == inter.end(); })
+						.begin(),
 					arr.end());
 			}
 		} else if(val.is_object() && base.contains(key) && base[key].is_object()) {
@@ -197,7 +198,10 @@ static void apply_global_vars(json &node, const json &vars) {
 	if(node.is_string()) {
 		const string s = node.get<string>();
 		for(const auto &[key, val]: vars.items()) {
-			if(s == gvar_PREFIX + key) { node = val; return; }
+			if(s == gvar_PREFIX + key) {
+				node = val;
+				return;
+			}
 		}
 		string result = s;
 		bool changed = false;
@@ -217,7 +221,7 @@ static void apply_global_vars(json &node, const json &vars) {
 			if(!key.starts_with('$')) apply_global_vars(val, vars);
 	} else if(node.is_array()) {
 		for(auto &el: node) apply_global_vars(el, vars);
-}
+	}
 }
 
 static void check_no_gvar(const json &node, const string &path = "") {
@@ -225,11 +229,9 @@ static void check_no_gvar(const json &node, const string &path = "") {
 		if(node.get<string>().find(gvar_PREFIX) != string::npos)
 			throw config_err("Unresolved {} placeholder at {}: {}", gvar_PREFIX, path, node.get<string>());
 	} else if(node.is_object()) {
-		for(const auto &[key, val]: node.items())
-			check_no_gvar(val, path + "/" + key);
+		for(const auto &[key, val]: node.items()) check_no_gvar(val, path + "/" + key);
 	} else if(node.is_array()) {
-		for(size_t i = 0; i < node.size(); ++i)
-			check_no_gvar(node[i], path + "/" + to_string(i));
+		for(size_t i = 0; i < node.size(); ++i) check_no_gvar(node[i], path + "/" + to_string(i));
 	}
 }
 
@@ -286,9 +288,7 @@ json RunStatus::config_validation(const path &config_path) {
 		const YAMLValidator validator(global_schema_path);
 		validator.validate(config_json, line_map, config_path.string());
 		return config_json;
-	} catch(const tester_error &) {
-		throw;
-	} catch(const domain_error &e) {
+	} catch(const tester_error &) { throw; } catch(const domain_error &e) {
 		throw config_err(string("Schema error: ") + e.what());
 	} catch(const invalid_argument &e) {
 		throw config_err(string("Error in config: ") + e.what());

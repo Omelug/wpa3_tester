@@ -17,8 +17,8 @@ Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused
 	for(const auto &opt: real.options()) {
 		if(opt.option() == Dot11::SSID) {
 			b.add_option({ Dot11::SSID,
-					static_cast<uint8_t>(confused_ssid.size()),
-					reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
+				static_cast<uint8_t>(confused_ssid.size()),
+				reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
 		} else if(strip_rsn && opt.option() == Dot11::RSN) {
 			continue; // drop RSN IE - rogue beacon appears as an open network
 		} else {
@@ -29,7 +29,7 @@ Dot11Beacon make_confused_beacon(const Dot11Beacon &real, const string &confused
 }
 
 Dot11ProbeResponse make_confused_probe_resp(
-		const Dot11ProbeResponse &real, const string &confused_ssid, const bool strip_rsn) {
+	const Dot11ProbeResponse &real, const string &confused_ssid, const bool strip_rsn) {
 	auto resp = Dot11ProbeResponse(real.addr1(), real.addr2());
 	resp.addr3(real.addr3());
 	resp.timestamp(real.timestamp());
@@ -39,8 +39,8 @@ Dot11ProbeResponse make_confused_probe_resp(
 	for(const auto &opt: real.options()) {
 		if(opt.option() == Dot11::SSID) {
 			resp.add_option({ Dot11::SSID,
-					static_cast<uint8_t>(confused_ssid.size()),
-					reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
+				static_cast<uint8_t>(confused_ssid.size()),
+				reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
 		} else if(strip_rsn && opt.option() == Dot11::RSN) {
 			continue;
 		} else {

@@ -159,22 +159,22 @@ void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_nam
 	vector<string> command = {};
 	add_nets_header(rs, command, src_name);
 	command.insert(command.end(),
-			{
-					"stdbuf",
-					"-oL",
-					"-eL", // disable buffering for immediate output
-					program_name,
-					"-B",
-					rs.config().at("actors").at(src_name).at("ip_addr"),
-					"-c",
-					rs.config().at("actors").at(dst_name).at("ip_addr"),
-					//"-u", //UDP, but TCP is needed for tests
-					"--bidir",
-					"-b",
-					"10M",
-					"-t",
-					"0" // infinity
-			});
+		{
+			"stdbuf",
+			"-oL",
+			"-eL", // disable buffering for immediate output
+			program_name,
+			"-B",
+			rs.config().at("actors").at(src_name).at("ip_addr"),
+			"-c",
+			rs.config().at("actors").at(dst_name).at("ip_addr"),
+			//"-u", //UDP, but TCP is needed for tests
+			"--bidir",
+			"-b",
+			"10M",
+			"-t",
+			"0" // infinity
+		});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
 }
@@ -203,15 +203,15 @@ void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &
 	vector<string> command = {};
 	add_nets_header(rs, command, server_name);
 	command.insert(command.end(),
-			{
-					"stdbuf",
-					"-oL",
-					"-eL",
-					program_name,
-					"-s",
-					"-p",
-					"5201",
-			});
+		{
+			"stdbuf",
+			"-oL",
+			"-eL",
+			program_name,
+			"-s",
+			"-p",
+			"5201",
+		});
 	const path obs = get_observer_folder(rs, program_name);
 	rs.process_manager.run(actor_name, command, obs, obs);
 	rs.process_manager.after_stop(actor_name, [obs] { set_public_perms(obs); });

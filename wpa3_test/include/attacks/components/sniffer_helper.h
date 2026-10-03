@@ -14,7 +14,7 @@ enum class StopReason { Timeout, HandlerDone, Interrupted };
 namespace wpa3_tester::components {
 template<typename T, typename Handler>
 std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
-		Handler &&on_frame, const std::string &iface = "") {
+	Handler &&on_frame, const std::string &iface = "") {
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if(handle == nullptr) {
 		handle = pcap_open_live(iface.c_str(), 2000, 1, 100, errbuf);
@@ -35,8 +35,8 @@ std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std
 		int remaining_ms = -1;
 		if(deadline) {
 			remaining_ms = static_cast<int>(
-					std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
-							.count());
+				std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
+					.count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 
@@ -61,7 +61,7 @@ std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std
 
 template<typename T, typename Handler>
 std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_frame, const std::string &interface,
-		const std::string &filter = "", const std::optional<std::chrono::milliseconds> timeout = std::nullopt) {
+	const std::string &filter = "", const std::optional<std::chrono::milliseconds> timeout = std::nullopt) {
 	Tins::SnifferConfiguration sniff_config;
 	sniff_config.set_timeout(100);
 	sniff_config.set_immediate_mode(true);
@@ -85,8 +85,8 @@ std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_frame, const std::stri
 		int remaining_ms = -1;
 		if(deadline) {
 			remaining_ms = static_cast<int>(
-					std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
-							.count());
+				std::chrono::duration_cast<std::chrono::milliseconds>(*deadline - std::chrono::steady_clock::now())
+					.count());
 			if(remaining_ms <= 0) return StopReason::Timeout;
 		}
 

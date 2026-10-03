@@ -76,7 +76,7 @@ void ScanAP::load(const unique_ptr<Dot11Beacon> &beacon_to_load) {
 }
 
 optional<unique_ptr<Dot11Beacon>> handle_beacon(
-		PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap) {
+	PDU &pdu, const HWAddress<6> &ap_mac, const optional<path> &beacon_pcap) {
 	const auto *beacon = pdu.find_pdu<Dot11Beacon>();
 	if(!beacon) return nullopt;
 
@@ -89,13 +89,13 @@ optional<unique_ptr<Dot11Beacon>> handle_beacon(
 }
 
 unique_ptr<Dot11Beacon> RSN_scan(const string &interface, const int timeout_sec, const HWAddress<6> &ap_mac,
-		const optional<path> &beacon_pcap, const optional<string> &netns) {
+	const optional<path> &beacon_pcap, const optional<string> &netns) {
 	const string filter =
-			"(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.to_string();
+		"(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + ap_mac.to_string();
 
 	netlink_helper::NetNSContext ns_guard(netns);
 	auto result = components::poll_sniffer_pdu<unique_ptr<Dot11Beacon>>(
-			[&](PDU &pdu) { return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
+		[&](PDU &pdu) { return handle_beacon(pdu, ap_mac, beacon_pcap); }, interface, filter, seconds(timeout_sec));
 
 	if(auto *val = get_if<unique_ptr<Dot11Beacon>>(&result)) return std::move(*val);
 	return nullptr;
@@ -135,13 +135,13 @@ Actor_Config_external scan_ap_actor(const string &iface, const string &bssid, co
 
 	const string filter = "(type mgt subtype beacon or type mgt subtype probe-resp) and ether addr2 " + bssid;
 	components::poll_sniffer_pdu<monostate>(
-			[&](PDU &pdu) -> optional<monostate> {
-				fill_actor_caps_from_beacon(pdu, cfg);
-				return monostate{};
-			},
-			iface,
-			filter,
-			seconds(timeout_sec));
+		[&](PDU &pdu) -> optional<monostate> {
+			fill_actor_caps_from_beacon(pdu, cfg);
+			return monostate{};
+		},
+		iface,
+		filter,
+		seconds(timeout_sec));
 
 	log(LogLevel::INFO, "scan_ap_actor {}: {}", bssid, cfg.to_str());
 	return cfg;

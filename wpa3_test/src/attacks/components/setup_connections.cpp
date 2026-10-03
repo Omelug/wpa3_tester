@@ -62,16 +62,15 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 			//TODO  add dnsmasq to nix/ requirements
 			hw_capabilities::run_cmd({ "pkill", "dnsmasq" }, std::nullopt, false);
 
-			vector<string> dmesg_cmd = {
-				"dnsmasq", "--no-daemon",
-				"-C", "/dev/null",
+			vector<string> dmesg_cmd = { "dnsmasq",
+				"--no-daemon",
+				"-C",
+				"/dev/null",
 				"--interface=" + iface,
 				"--dhcp-range=" + pfx + ".100," + pfx + ".200,12h",
 				"--log-dhcp",
-				"--log-queries"
-			};
-			if (ap[SK::netns])
-				dmesg_cmd.insert(dmesg_cmd.begin(), { "ip", "netns", "exec", ap.get(SK::netns) });
+				"--log-queries" };
+			if(ap[SK::netns]) dmesg_cmd.insert(dmesg_cmd.begin(), { "ip", "netns", "exec", ap.get(SK::netns) });
 			rs.process_manager.run("dnsmasq_ap", dmesg_cmd, rs.run_folder());
 			log(LogLevel::INFO, "dnsmasq DHCP started on {} ({})", iface, ip);
 		}
@@ -83,15 +82,17 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 		if(rs.get_actor("client")[SK::ip_addr]) ip::set_ip(rs, "client");
 	} else if(rs.get_actor("client").is(SK::source, "external") && rs.get_actor("ap").is(SK::source, "internal")) {
 		log(LogLevel::INFO,
-				"Connect external client to AP - ssid='{}' password='{}'",
-				hostapd::get_ssid(rs, "ap"),
-				hostapd::get_password(rs, "ap"));
+			"Connect external client to AP - ssid='{}' password='{}'",
+			hostapd::get_ssid(rs, "ap"),
+			hostapd::get_password(rs, "ap"));
 
 		string matched_line;
 		if(check_way_eapol) {
-			rs.process_manager.wait_for("ap", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
+			rs.process_manager.wait_for(
+				"ap", "EAPOL-4WAY-HS-COMPLETED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
 		} else {
-			rs.process_manager.wait_for("ap", "AP-STA-CONNECTED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
+			rs.process_manager.wait_for(
+				"ap", "AP-STA-CONNECTED", seconds(120), true, &matched_line); //FIXME hardcoded timeout
 		}
 
 		smatch m;
@@ -132,9 +133,9 @@ void setup_rogue_ap(RunStatus &rs) {
 
 void client_ap_attacker_setup_enterprise(RunStatus &rs) {
 	if((rs.get_actor("attacker").get(SK::source) != "simulation" ||
-			   rs.get_actor("client").get(SK::source) != "simulation") &&
-			(rs.get_actor("attacker").get(SK::source) != "internal" ||
-					rs.get_actor("client").get(SK::source) != "internal")) {
+		   rs.get_actor("client").get(SK::source) != "simulation") &&
+		(rs.get_actor("attacker").get(SK::source) != "internal" ||
+			rs.get_actor("client").get(SK::source) != "internal")) {
 		throw run_err("only internal actors are supported");
 	}
 

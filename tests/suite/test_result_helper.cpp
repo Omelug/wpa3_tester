@@ -42,11 +42,11 @@ static path make_result_dir(const json &j) {
 
 TEST_CASE("load_result_default - all fields present") {
 	const auto dir = make_result_dir({
-			{ "name", "foo" },
-			{ "count", 42 },
-			{ "flag", true },
-			{ "opt_flag", false },
-			{ "opt_name", "bar" },
+		{ "name", "foo" },
+		{ "count", 42 },
+		{ "flag", true },
+		{ "opt_flag", false },
+		{ "opt_name", "bar" },
 	});
 
 	const auto [name, count, flag, opt_flag, opt_name] = load_result_default<TestEntry>(dir);
@@ -111,8 +111,8 @@ TEST_CASE("described_bool - to_json") {
 
 TEST_CASE("described_bool - from_json roundtrip") {
 	const json j = json::array({
-			{ { "value", false }, { "description", "conf" } },
-			{ { "value", nullptr }, { "description", "pcap" } },
+		{ { "value", false }, { "description", "conf" } },
+		{ { "value", nullptr }, { "description", "pcap" } },
 	});
 	const auto d = j.get<described_bool>();
 	REQUIRE_EQ(d.pairs.size(), 2u);
@@ -137,7 +137,7 @@ TEST_CASE("described_str - to_json") {
 
 TEST_CASE("described_str - from_json roundtrip") {
 	const json j = json::array({
-			{ { "value", "SAE WPA-PSK" }, { "description", "wpa_supplicant_conf" } },
+		{ { "value", "SAE WPA-PSK" }, { "description", "wpa_supplicant_conf" } },
 	});
 	const auto d = j.get<described_str>();
 	REQUIRE_EQ(d.pairs.size(), 1u);
@@ -186,12 +186,12 @@ TEST_CASE("get_conn_WPA_version - SAE from AKM-defined fallback in ap.log") {
 	}
 	RunStatus rs;
 	rs.config({ { "actors",
-			{ { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
-					{ "client",
-							{ { "source", "internal" },
-									{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
-									{ "setup", { { "program", "hostapd" } } } } },
-					{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
+		{ { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
+			{ "client",
+				{ { "source", "internal" },
+					{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+					{ "setup", { { "program", "hostapd" } } } } },
+			{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 	const TimeWindow window_START{ LogTimePoint{},
@@ -219,13 +219,13 @@ TEST_CASE("get_client_mfp - OPTIONAL from wpa_supplicant.conf and RSN IE in ap.l
 	}
 	RunStatus rs;
 	rs.config({ { "actors",
-			{
-					{ "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
-					{ "client",
-							{ { "source", "internal" },
-									{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
-									{ "setup", { { "program", "hostapd" } } } } },
-			} } });
+		{
+			{ "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } },
+			{ "client",
+				{ { "source", "internal" },
+					{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+					{ "setup", { { "program", "hostapd" } } } } },
+		} } });
 	rs.parse_requirements();
 	setup_test_rs(rs, dir);
 
@@ -306,10 +306,10 @@ TEST_CASE("get_ap_ocv - from pcap") {
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({ { "actors",
-			{ { "attacker",
-					{ { "source", "internal" },
-							{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
-							{ "setup", { { "program", "hostapd" } } } } } } } });
+		{ { "attacker",
+			{ { "source", "internal" },
+				{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+				{ "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 	const auto result = get_ap_ocv(rs);
 
@@ -344,11 +344,11 @@ TEST_CASE("get_client_scanning - from attacker pcap") {
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({ { "actors",
-			{ { "client",
-					  { { "source", "internal" },
-							  { "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
-							  { "setup", { { "program", "hostapd" } } } } },
-					{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
+		{ { "client",
+			  { { "source", "internal" },
+				  { "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+				  { "setup", { { "program", "hostapd" } } } } },
+			{ "attacker", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_scanning(rs, {});
@@ -415,10 +415,10 @@ TEST_CASE("get_client_disconnected - WB client with log") {
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({ { "actors",
-			{ { "client",
-					{ { "source", "internal" },
-							{ "selection", { { "mac", "24:ec:99:bf:c7:cf " } } },
-							{ "setup", { { "program", "hostapd" } } } } } } } });
+		{ { "client",
+			{ { "source", "internal" },
+				{ "selection", { { "mac", "24:ec:99:bf:c7:cf " } } },
+				{ "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
@@ -438,12 +438,12 @@ TEST_CASE("get_client_disconnected - non-WB client with pcap") {
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({ { "actors",
-			{ //78:98:e8:55:3e:8d is AP, ubt I need only id source is client
-					{ "client",
-							{ { "source", "external" },
-									{ "selection", { { "mac", "78:98:e8:55:3e:8d" } } },
-									{ "setup", { { "program", "hostapd" } } } } },
-					{ "attacker", { { "source", "internal" }, { "setup", { "program", "hostapd" } } } } } } });
+		{ //78:98:e8:55:3e:8d is AP, ubt I need only id source is client
+			{ "client",
+				{ { "source", "external" },
+					{ "selection", { { "mac", "78:98:e8:55:3e:8d" } } },
+					{ "setup", { { "program", "hostapd" } } } } },
+			{ "attacker", { { "source", "internal" }, { "setup", { "program", "hostapd" } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_client_disconnected(rs, {});
@@ -510,10 +510,10 @@ TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)") {
 	RunStatus rs;
 	rs.run_folder(dir);
 	rs.config({ { "actors",
-			{ { "ap",
-					{ { "source", "external" },
-							{ "selection", { { "whitebox_host", "openwrt_host" }, { "channel", 36 } } },
-							{ "setup", { { "program", "openwrt" } } } } } } } });
+		{ { "ap",
+			{ { "source", "external" },
+				{ "selection", { { "whitebox_host", "openwrt_host" }, { "channel", 36 } } },
+				{ "setup", { { "program", "openwrt" } } } } } } } });
 	rs.parse_requirements();
 	rs.get_actor("ap")->set(SK::radio, "radio0");
 

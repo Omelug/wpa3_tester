@@ -37,7 +37,8 @@ TEST_CASE("akm_from_openwrt_log - returns raw algorithm name for non-SAE auth_al
 	const path tmp = temp_directory_path() / "openwrt_test_akm_open.log";
 	{
 		ofstream f(tmp);
-		f << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 auth_alg=open\n";
+		f << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 "
+			 "auth_alg=open\n";
 	}
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -61,7 +62,8 @@ TEST_CASE("akm_from_openwrt_log - skips AP-STA-CONNECTED line missing auth_alg")
 	{
 		ofstream f(tmp);
 		f << "Sat Sep 19 21:02:55 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED f0:a6:54:d0:ff:ed\n"
-		  << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 auth_alg=open\n";
+		  << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 "
+			 "auth_alg=open\n";
 	}
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -90,7 +92,8 @@ TEST_CASE("akm_from_openwrt_log - only reads lines before window.start_tp") {
 	{
 		ofstream f(tmp);
 		f << "Sat Sep 19 21:02:50 2026 daemon.notice hostapd: phy0-ap0: AP-ENABLED\n"
-		  << "Sat Sep 19 21:02:55 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED f0:a6:54:d0:ff:ed auth_alg=sae\n";
+		  << "Sat Sep 19 21:02:55 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED f0:a6:54:d0:ff:ed "
+			 "auth_alg=sae\n";
 	}
 	const TimeWindow window{ log_time_to_epoch_ns("Sat Sep 19 21:02:52 2026"), {} };
 	const string akm = openwrt::akm_from_openwrt_log(tmp, {}, window);
@@ -115,7 +118,8 @@ TEST_CASE("mfp_from_openwrt_log - returns empty for a non-SAE-associated STA") {
 	const path tmp = temp_directory_path() / "openwrt_test_mfp_open.log";
 	{
 		ofstream f(tmp);
-		f << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 auth_alg=open\n";
+		f << "Sat Sep 19 21:02:58 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED 9c:b6:d0:12:34:56 "
+			 "auth_alg=open\n";
 	}
 	const string mfp = openwrt::mfp_from_openwrt_log(tmp, {});
 	remove(tmp);
@@ -155,7 +159,8 @@ TEST_CASE("mfp_from_openwrt_log - only reads lines before window.start_tp") {
 	{
 		ofstream f(tmp);
 		f << "Sat Sep 19 21:02:50 2026 daemon.notice hostapd: phy0-ap0: AP-ENABLED\n"
-		  << "Sat Sep 19 21:02:55 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED f0:a6:54:d0:ff:ed auth_alg=sae\n";
+		  << "Sat Sep 19 21:02:55 2026 daemon.notice hostapd: phy0-ap0: AP-STA-CONNECTED f0:a6:54:d0:ff:ed "
+			 "auth_alg=sae\n";
 	}
 	const TimeWindow window{ log_time_to_epoch_ns("Sat Sep 19 21:02:52 2026"), {} };
 	const string mfp = openwrt::mfp_from_openwrt_log(tmp, {}, window);
@@ -198,8 +203,8 @@ TEST_CASE("uci_get_option (named block) - reads option from correct block") {
 	const path tmp = temp_directory_path() / "openwrt_test_uci.conf";
 	write_uci_conf(tmp);
 
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio0", "band"),    "2g");
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio1", "band"),    "5g");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio0", "band"), "2g");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio1", "band"), "5g");
 	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio1", "channel"), "36");
 	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "default_radio0", "ieee80211w"), "2");
 	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "default_radio1", "ieee80211w"), "1");
@@ -211,8 +216,8 @@ TEST_CASE("uci_get_option (named block) - returns empty for missing block or key
 	const path tmp = temp_directory_path() / "openwrt_test_uci_miss.conf";
 	write_uci_conf(tmp);
 
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio99", "band"),   "");
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio0",  "nosuch"), "");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio99", "band"), "");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-device", "radio0", "nosuch"), "");
 
 	remove(tmp);
 }
@@ -221,10 +226,10 @@ TEST_CASE("uci_get_option (filter) - picks block by option value") {
 	const path tmp = temp_directory_path() / "openwrt_test_uci_filter.conf";
 	write_uci_conf(tmp);
 
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio0", "encryption"),  "sae-mixed");
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio1", "encryption"),  "sae-mixed");
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio0", "ieee80211w"),  "2");
-	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio1", "ieee80211w"),  "1");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio0", "encryption"), "sae-mixed");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio1", "encryption"), "sae-mixed");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio0", "ieee80211w"), "2");
+	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio1", "ieee80211w"), "1");
 
 	remove(tmp);
 }
@@ -234,7 +239,7 @@ TEST_CASE("uci_get_option (filter) - works when key appears before filter option
 	{
 		ofstream f(tmp);
 		f << "config wifi-iface 'x'\n"
-		  << "\toption encryption 'psk2'\n"  // key before filter
+		  << "\toption encryption 'psk2'\n" // key before filter
 		  << "\toption device 'radio0'\n";
 	}
 	CHECK_EQ(openwrt::uci_get_option(tmp, "wifi-iface", "device", "radio0", "encryption"), "psk2");

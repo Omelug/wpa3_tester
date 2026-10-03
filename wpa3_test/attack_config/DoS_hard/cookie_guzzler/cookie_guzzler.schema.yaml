@@ -13,7 +13,7 @@ properties:
   attack_config:
     type: object
     required:
-      $UNION: [burst_size]
+      $UNION: [ burst_size ]
     additionalProperties: false
     properties:
       burst_size:

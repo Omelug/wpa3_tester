@@ -126,13 +126,13 @@ struct ReportGuard {
 
 	template<typename T>
 		requires(!std::same_as<std::remove_cvref_t<T>, bool> &&
-				!std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::string> &&
-				!std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
-				!std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
-				!std::same_as<std::remove_cvref_t<T>, Link> && !std::same_as<std::remove_cvref_t<T>, described_bool> &&
-				!std::same_as<std::remove_cvref_t<T>, described_str>)
+			!std::same_as<std::remove_cvref_t<T>, std::optional<bool>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::string> &&
+			!std::same_as<std::remove_cvref_t<T>, std::pair<bool, std::string>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::pair<std::string, std::string>> &&
+			!std::same_as<std::remove_cvref_t<T>, std::filesystem::path> &&
+			!std::same_as<std::remove_cvref_t<T>, Link> && !std::same_as<std::remove_cvref_t<T>, described_bool> &&
+			!std::same_as<std::remove_cvref_t<T>, described_str>)
 	ReportGuard &operator<<(T &&val) {
 		stream_ << std::forward<T>(val);
 		return *this;

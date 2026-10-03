@@ -32,7 +32,6 @@ CsaVersionTestEntry CsaVersionTestEntry::parse(const path &test_folder) {
 		e.name = cfg["name"].as<string>();
 		e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
 		e.attack_time = to_string(cfg["attack_config"]["attack_time"].as<int>());
-
 	}
 
 	const path tshark = test_folder / "observer" / "tshark";
@@ -64,11 +63,10 @@ void CsaVersionTestEntry::generate_report(RunSuiteStatus &rss) {
 
 		//const string result_link = "[" + string(e.passed.value() ? "PASSED" : "FAILED") + "](" + e.name + "/" +
 		//		RESULT_NAME + ")";
-		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME)
-				<< " | " << e.ap_driver
-				<< " | " << e.client_driver
-				<< " | " << e.attacker_driver << " | " << e.hostapd_version << /*" | " << result_link*/
-				"" << " |\n";
+		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_driver << " | "
+			   << e.client_driver << " | " << e.attacker_driver << " | " << e.hostapd_version
+			   << /*" | " << result_link*/
+			"" << " |\n";
 	}
 }
 }

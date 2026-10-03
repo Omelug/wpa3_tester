@@ -38,21 +38,21 @@ public: // getters and setters
 	static void print_tests_in_suite(const std::string &ts_name);
 
 	explicit RunSuiteStatus(
-			const std::filesystem::path &config_path, std::string suite_name = "", const std::string &sub_folder = "");
+		const std::filesystem::path &config_path, std::string suite_name = "", const std::string &sub_folder = "");
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void defined_by_path(nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map) const;
 	static void defined_by_name(
-			nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map);
+		nlohmann::basic_json<> source_j, const std::string &source_name, config_paths &test_map);
 	static void defined_by_sub_suite(nlohmann::basic_json<> source_info, config_paths &test_map);
 	static void defined_by_generator(nlohmann::basic_json<> source_info, const std::string &source_name,
-			const std::filesystem::path &test_config_folder, config_paths &test_map);
+		const std::filesystem::path &test_config_folder, config_paths &test_map);
 	static void generate_test_files(nlohmann::basic_json<> source_info,
-			const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> &groups,
-			const std::filesystem::path &gen_folder, const std::string &source_name, config_paths &test_map);
+		const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> &groups,
+		const std::filesystem::path &gen_folder, const std::string &source_name, config_paths &test_map);
 	static void defined_by_permutation(nlohmann::basic_json<> source_info, const std::string &source_name,
-			const std::filesystem::path &test_config_folder, config_paths &test_map);
+		const std::filesystem::path &test_config_folder, config_paths &test_map);
 	void defined_by_actor_filler(nlohmann::basic_json<> source_info, const std::string &source_name,
-			const std::filesystem::path &test_config_folder, config_paths &test_map);
+		const std::filesystem::path &test_config_folder, config_paths &test_map);
 	config_paths get_test_paths();
 	void execute();
 	void execute(const std::string &test_name);

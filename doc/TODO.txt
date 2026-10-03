@@ -10,7 +10,7 @@ CSA:
     +: option for openwrt OCV for external
 mc_mitm:
     r: tshark grafy mají START/start_Attack v záporu (začátek je asi první packet, změnit na START)
-    f: client se po začátkutestu vrátí do default netns a skenuje.
+    f: client se po začátku testu vrátí do default netns a skenuje.
     +: problém s mt76-git? zkusit kali
 bl0ck:
     +: zkusti BA s dalším připoejným klientem (měl by se taky odpojit)

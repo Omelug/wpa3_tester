@@ -147,7 +147,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8
 	//filter out different channels
 	if(const auto *rt = pdu->find_pdu<RadioTap>()) {
 		if(rt->present() & RadioTap::CHANNEL &&
-				rt->channel_freq() != hw_capabilities::channel_to_freq(netconfig.rogue_channel)) {
+			rt->channel_freq() != hw_capabilities::channel_to_freq(netconfig.rogue_channel)) {
 			return;
 		}
 	}

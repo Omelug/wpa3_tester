@@ -204,12 +204,12 @@ pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &
 
 LogTimePoint get_pcap_start_time(const string &pcap_path) {
 	const string s = trim(hw_capabilities::run_cmd_output(
-			{ "tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1" }));
+		{ "tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1" }));
 	return epoch_str_to_tp(s);
 }
 
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,
-		const string &event_name, optional<TimeWindow> window) {
+	const string &event_name, optional<TimeWindow> window) {
 	vector<LogTimePoint> timestamps;
 	const path pcap_path = get_observer_folder(rs, program_name) / (process_name + "_capture.pcap");
 	if(!exists(pcap_path)) {
@@ -250,7 +250,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)) {
 			const LogTimePoint tp = epoch_str_to_tp(trim(time_str));
 			if(tp.time_since_epoch().count() != 0 &&
-					(window == nullopt || window == TimeWindow{} || window->contains(tp)))
+				(window == nullopt || window == TimeWindow{} || window->contains(tp)))
 				timestamps.push_back(tp);
 		}
 	}
@@ -260,7 +260,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 }
 
 path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<unique_ptr<GraphElements>> &elements,
-		const path &folder, const string &tshark_filter) {
+	const path &folder, const string &tshark_filter) {
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
 
@@ -392,8 +392,8 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 }
 
 void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &elements,
-		// { actor, filter, label, color }
-		initializer_list<tuple<string, string, string, string>> event_def) {
+	// { actor, filter, label, color }
+	initializer_list<tuple<string, string, string, string>> event_def) {
 	for(auto &[actor, filter, label, color]: event_def) {
 		elements.push_back(make_unique<EventLines>(get_tshark_events(rs, actor, filter, label), label, color));
 	}
@@ -405,22 +405,22 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 	if(!exists(pcap_path)) return nullopt;
 	// First check if any matching frame exists at all
 	const string frame_check = trim(hw_capabilities::run_cmd_output(
-			{ "tshark", "-r", pcap_path.string(), "-Y", frame_filter, "-T", "fields", "-e", "frame.number", "-c", "1" },
-			nullopt));
+		{ "tshark", "-r", pcap_path.string(), "-Y", frame_filter, "-T", "fields", "-e", "frame.number", "-c", "1" },
+		nullopt));
 	if(frame_check.empty()) return nullopt;
 	// Extract RSNXE capabilities byte (present only when device advertises RSN extensions)
 	const string caps_raw = trim(hw_capabilities::run_cmd_output({ "tshark",
-																		 "-r",
-																		 pcap_path.string(),
-																		 "-Y",
-																		 "(" + frame_filter + ") && wlan.rsn.rsnxcaps",
-																		 "-T",
-																		 "fields",
-																		 "-e",
-																		 "wlan.rsn.rsnxcaps",
-																		 "-c",
-																		 "1" },
-			nullopt));
+																	 "-r",
+																	 pcap_path.string(),
+																	 "-Y",
+																	 "(" + frame_filter + ") && wlan.rsn.rsnxcaps",
+																	 "-T",
+																	 "fields",
+																	 "-e",
+																	 "wlan.rsn.rsnxcaps",
+																	 "-c",
+																	 "1" },
+		nullopt));
 	if(caps_raw.empty()) return false; // frame found, RSNXE absent -> no OCV
 	try {
 		return (stoul(caps_raw, nullptr, 16) & 0x40u) != 0;
@@ -436,19 +436,18 @@ string akm_from_pcap(const path &pcap_path) {
 
 	// Association Request (wlan.fc.type_subtype == 0x0000)
 	// tshark need to filtered for actors mac only
-	const string output =
-			hw_capabilities::run_cmd_output({ "tshark",
-													"-r",
-													pcap_path.string(),
-													"-Y",
-													"wlan.fc.type_subtype == 0x0000 && wlan.rsn.akms.type",
-													"-T",
-													"fields",
-													"-e",
-													"wlan.rsn.akms.type",
-													"-c",
-													"1" },
-					nullopt);
+	const string output = hw_capabilities::run_cmd_output({ "tshark",
+															  "-r",
+															  pcap_path.string(),
+															  "-Y",
+															  "wlan.fc.type_subtype == 0x0000 && wlan.rsn.akms.type",
+															  "-T",
+															  "fields",
+															  "-e",
+															  "wlan.rsn.akms.type",
+															  "-c",
+															  "1" },
+		nullopt);
 
 	const string type = trim(output);
 
@@ -475,18 +474,18 @@ optional<bool> ap_ocv_from_pcap(const path &pcap_path) {
 optional<bool> addba_seen_from_pcap(const path &pcap_path) {
 	if(!exists(pcap_path)) return nullopt;
 	const string out = trim(hw_capabilities::run_cmd_output(
-			{ "tshark",
-					"-r",
-					pcap_path.string(),
-					"-Y",
-					"wlan.fixed.category_code == 3 && (wlan.fixed.action_code == 0 || wlan.fixed.action_code == 1)",
-					"-T",
-					"fields",
-					"-e",
-					"frame.number",
-					"-c",
-					"1" },
-			nullopt));
+		{ "tshark",
+			"-r",
+			pcap_path.string(),
+			"-Y",
+			"wlan.fixed.category_code == 3 && (wlan.fixed.action_code == 0 || wlan.fixed.action_code == 1)",
+			"-T",
+			"fields",
+			"-e",
+			"frame.number",
+			"-c",
+			"1" },
+		nullopt));
 	return !out.empty();
 }
 //TODO tests for parsing with al packets
@@ -498,8 +497,8 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities";
 
 	const string caps_raw = hw_capabilities::run_cmd_output(
-			{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
-			nullopt);
+		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
+		nullopt);
 
 	// '-c', '1' show empty output, get first line manually
 	stringstream ss(caps_raw);
@@ -540,9 +539,16 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	string filter = "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000";
 	if(!client_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + client_mac;
 
-	const string caps_raw = hw_capabilities::run_cmd_output(
-		{"tshark", "-r", pcap_path.string(), "-Y", filter + " && wlan.rsn.capabilities",
-		 "-T", "fields", "-e", "wlan.rsn.capabilities"}, nullopt);
+	const string caps_raw = hw_capabilities::run_cmd_output({ "tshark",
+																"-r",
+																pcap_path.string(),
+																"-Y",
+																filter + " && wlan.rsn.capabilities",
+																"-T",
+																"fields",
+																"-e",
+																"wlan.rsn.capabilities" },
+		nullopt);
 
 	stringstream ss(caps_raw);
 	string line;
@@ -576,17 +582,17 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	if(window.end_tp.time_since_epoch().count() != 0) filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
 
 	const string output = hw_capabilities::run_cmd_output({ "tshark",
-																  "-r",
-																  pcap_path.string(),
-																  "-Y",
-																  filter,
-																  "-T",
-																  "fields",
-																  "-e",
-																  "wlan_radio.channel",
-																  "-e",
-																  "wlan.ds.current_channel" },
-			nullopt);
+															  "-r",
+															  pcap_path.string(),
+															  "-Y",
+															  filter,
+															  "-T",
+															  "fields",
+															  "-e",
+															  "wlan_radio.channel",
+															  "-e",
+															  "wlan.ds.current_channel" },
+		nullopt);
 
 	if(trim(output).empty()) return {};
 

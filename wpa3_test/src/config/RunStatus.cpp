@@ -57,19 +57,21 @@ void RunStatus::clean() {
 bool RunStatus::prepare_run_folder() {
 	if(!exists(_run_folder)) return false;
 	if(access(_run_folder.string().c_str(), W_OK) != 0) {
-		log(LogLevel::WARNING, "Run folder not writable (created by different user?), removing: {}", absolute(_run_folder));
+		log(LogLevel::WARNING,
+			"Run folder not writable (created by different user?), removing: {}",
+			absolute(_run_folder));
 		error_code ec;
 		remove_all(_run_folder, ec);
 		if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
 		return false;
 	}
 	if(_run_config.get_rewrite() == RewriteMode::none &&
-			(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
+		(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
 		log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
 		return true;
 	}
 	if(_run_config.get_rewrite() == RewriteMode::errors &&
-			(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
+		(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
 		log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
 		return true;
 	}
@@ -94,11 +96,10 @@ vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) co
 		if(access(p.string().c_str(), W_OK) != 0) continue;
 		bool skip = false;
 		//TODO simplify with  RunStatus::prepare_run_folder()
-		if(_run_config.get_rewrite() == RewriteMode::none &&
-				(exists(p / ERROR_FILE) || exists(p / DONE_FILE))) {
+		if(_run_config.get_rewrite() == RewriteMode::none && (exists(p / ERROR_FILE) || exists(p / DONE_FILE))) {
 			skip = true;
 		} else if(_run_config.get_rewrite() == RewriteMode::errors &&
-				!(exists(p / ERROR_FILE) || !exists(p / DONE_FILE))) {
+			!(exists(p / ERROR_FILE) || !exists(p / DONE_FILE))) {
 			skip = true;
 		}
 		if(!skip) continue;
@@ -165,16 +166,17 @@ void RunStatus::write_error_log(const exception &e) {
 	}
 
 	int status = 0;
-	const unique_ptr<char, void(*)(void*)>
-	demangled( abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
+	const unique_ptr<char, void (*)(void *)> demangled(
+		abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
 	err_log << "=== Error occurred at " << current_timestamp() << " ===" << "\n"
-	        << "Exception type: " << ((status == 0 && demangled) ? demangled.get() : typeid(e).name()) << "\n"
-	        << "Message: " << e.what() << "\n";
+			<< "Exception type: " << ((status == 0 && demangled) ? demangled.get() : typeid(e).name()) << "\n"
+			<< "Message: " << e.what() << "\n";
 
 	if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
 		const auto &loc = te->where();
 		err_log << "Location: " << loc.file_name() << ":" << loc.line() << " in " << loc.function_name() << "\n"
-		        << "Stacktrace:\n" << std::to_string(te->trace()) << "\n";
+				<< "Stacktrace:\n"
+				<< std::to_string(te->trace()) << "\n";
 		log(LogLevel::ERROR, "{}:{}: {}", loc.file_name(), loc.line(), e.what());
 		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(te->trace()));
 	} else {
@@ -198,14 +200,16 @@ void RunStatus::execute() {
 
 	create_public_dirs(_run_folder);
 	set_log_file(tester_log());
-	struct LogGuard { ~LogGuard() { close_log_file(); } } log_guard;
+	struct LogGuard {
+		~LogGuard() { close_log_file(); }
+	} log_guard;
 
 	if(getenv("WPA3_DEBUG_THROW")) {
 		do_run();
 	} else {
 		try {
 			do_run();
-		}catch (const exception &e) { write_error_log(e); }
+		} catch(const exception &e) { write_error_log(e); }
 	}
 }
 
@@ -239,7 +243,7 @@ void RunStatus::run_test() {
 void RunStatus::stats_test() const {
 	const auto module_name = config().at("attacker_module");
 	if(const auto run_it = attack_module_maps::stats_map.find(module_name);
-			run_it != attack_module_maps::stats_map.end()) {
+		run_it != attack_module_maps::stats_map.end()) {
 		run_it->second(*this);
 	} else {
 		log(LogLevel::DEBUG, "stats function not set for {}", module_name.get<string>());
@@ -250,12 +254,9 @@ void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 	const string none = "<none>";
 	for(const auto &[name, actor]: actors) {
-		ofs << actor->get_or(SK::source, none) << MAP_CSV_SEP
-			<< name << MAP_CSV_SEP
-			<< actor->get_or(SK::iface, none) << MAP_CSV_SEP
-			<< actor->get_or(SK::mac, none) << MAP_CSV_SEP
-			<< actor->get_or(SK::driver_name, none) << MAP_CSV_SEP
-			<< actor->get_or(SK::channel, none) << MAP_CSV_SEP;
+		ofs << actor->get_or(SK::source, none) << MAP_CSV_SEP << name << MAP_CSV_SEP << actor->get_or(SK::iface, none)
+			<< MAP_CSV_SEP << actor->get_or(SK::mac, none) << MAP_CSV_SEP << actor->get_or(SK::driver_name, none)
+			<< MAP_CSV_SEP << actor->get_or(SK::channel, none) << MAP_CSV_SEP;
 
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
@@ -298,7 +299,7 @@ unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE c
 			if(!config_json.contains("name")) { throw config_err("Path {} has no valid name", path); }
 			auto name = config["name"].as<string>();
 			if(config_json.contains("config_type") && config_json.at("config_type") == "test_suite" &&
-					ct == TEST_SUITE) {
+				ct == TEST_SUITE) {
 				t_map[name] = path.string();
 			} else if(ct == TEST && (!config_json.contains("config_type") || config_json.at("config_type") == "test")) {
 				if(t_map.contains(name)) {
@@ -368,8 +369,7 @@ string RunStatus::findConfigByTestName(const string &name) {
 }
 
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
-		initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
-		optional<TimeWindow> window) const {
+	initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d, optional<TimeWindow> window) const {
 	for(auto &[actor, pattern, label, color]: event_d) {
 		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern, window), label, color));
 	}
@@ -377,34 +377,38 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 
 //FIXME strictly connected to actors names from config -> move actor names to some constants?
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const {
-	const TimeWindow window{get_tag_time(combined_log(), START_tag), get_tag_time(combined_log(), END_tag)};
+	const TimeWindow window{ get_tag_time(combined_log(), START_tag), get_tag_time(combined_log(), END_tag) };
 	if(event_sets.contains(DISCONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
 		get_actor("client");
-		log_events(elements,{
-			{ "ap", "did not acknowledge", "ACK_fail", "red" },
-			{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
-		}, window);
+		log_events(elements,
+			{
+				{ "ap", "did not acknowledge", "ACK_fail", "red" },
+				{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
+			},
+			window);
 	}
 	if(event_sets.contains(CONNECT)) {
 		//throw error of actors not found
 		get_actor("ap");
 		get_actor("client");
 		log_events(elements,
-				{
-						{ "client", "CTRL-EVENT-CONNECTED", "CONN", "green" },
-						{ "ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green" },
-				}, window);
+			{
+				{ "client", "CTRL-EVENT-CONNECTED", "CONN", "green" },
+				{ "ap", "EAPOL-4WAY-HS-COMPLETED", "4Way", "green" },
+			},
+			window);
 	}
 	if(event_sets.contains(TESTER_TAGS)) {
 
-		log_events(elements,{
-			{ COMBINED, START_tag, "START", "black" },
-			{ COMBINED, END_tag, "END", "black" },
-			{ COMBINED, ATTACK_START_tag, escape_tex("attack_start"), "black" },
-			{ COMBINED, ATTACK_STOP_tag, escape_tex("attack_stop"), "black" },
-		});
+		log_events(elements,
+			{
+				{ COMBINED, START_tag, "START", "black" },
+				{ COMBINED, END_tag, "END", "black" },
+				{ COMBINED, ATTACK_START_tag, escape_tex("attack_start"), "black" },
+				{ COMBINED, ATTACK_STOP_tag, escape_tex("attack_stop"), "black" },
+			});
 	}
 }
 

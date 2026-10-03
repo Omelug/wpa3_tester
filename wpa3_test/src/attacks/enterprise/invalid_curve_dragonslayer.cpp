@@ -17,24 +17,24 @@ void start_dragonslayer(RunStatus &rs, const string &actor_name, const string &i
 	const string dragonslayer_folder = get_global_config().at("paths").at("dragonslayer").at("dragonslayer_folder");
 	if(target_type == "ap") {
 		command.insert(command.end(),
-				{ dragonslayer_folder + "/wpa_supplicant/wpa_supplicant",
-						"-D",
-						"nl80211",
-						"-c",
-						rs.run_folder() / "dragonslayer.conf",
-						"-i",
-						iface,
-						"-a",
-						"1" });
+			{ dragonslayer_folder + "/wpa_supplicant/wpa_supplicant",
+				"-D",
+				"nl80211",
+				"-c",
+				rs.run_folder() / "dragonslayer.conf",
+				"-i",
+				iface,
+				"-a",
+				"1" });
 	}
 	if(target_type == "sta") {
 		command.insert(command.end(),
-				{ dragonslayer_folder + "/hostapd/hostapd",
-						rs.run_folder() / "dragonslayer.conf",
-						"-i",
-						iface,
-						"-a",
-						"1" });
+			{ dragonslayer_folder + "/hostapd/hostapd",
+				rs.run_folder() / "dragonslayer.conf",
+				"-i",
+				iface,
+				"-a",
+				"1" });
 	}
 	rs.process_manager.run(actor_name, command, path(dragonslayer_folder));
 }
@@ -44,11 +44,11 @@ void setup_attack(RunStatus &rs) {
 	assert(target_type == "ap" || target_type == "sta");
 	if(target_type == "ap") {
 		copy_f(rs.config_path().parent_path() / "config/dragonslayer-wpa_supplicant.conf",
-				rs.run_folder() / "dragonslayer.conf");
+			rs.run_folder() / "dragonslayer.conf");
 	}
 	if(target_type == "sta") {
-		copy_f(rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf",
-				rs.run_folder() / "dragonslayer.conf");
+		copy_f(
+			rs.config_path().parent_path() / "config/dragonslayer-hostapd.conf", rs.run_folder() / "dragonslayer.conf");
 	}
 
 	copy_f(rs.config_path().parent_path() / "config/hostapd.eap_user", rs.run_folder() / "hostapd.eap_user");
@@ -81,7 +81,7 @@ void run_attack(RunStatus &rs) {
 		for(size_t i = 0; i < replay; i++) {
 			rs.process_manager.wait_for("client", "EVENT-CONNECTED", chrono::seconds(20));
 			if(rs.process_manager.wait_for(
-					   "attacker", "Client is vulnerable to invalid curve attack", chrono::seconds(4), false))
+				   "attacker", "Client is vulnerable to invalid curve attack", chrono::seconds(4), false))
 				break;
 			//rs.process_manager.stop("client");
 		}

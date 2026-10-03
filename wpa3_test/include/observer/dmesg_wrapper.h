@@ -7,8 +7,8 @@
 namespace wpa3_tester::observer::dmesg {
 // kernel-wide -> not netns-specific
 // firmware load errors, kernel warnings, BUG traces
-void start_dmesg(RunStatus &rs, const std::string &observer_name, const std::string &level = "",
-		const std::string &actor_name = "");
+void start_dmesg(
+	RunStatus &rs, const std::string &observer_name, const std::string &level = "", const std::string &actor_name = "");
 
 std::vector<std::string> grep_log(const std::filesystem::path &log_file, const std::string &pattern);
 inline std::vector<std::string> grep_log(const RunStatus &rs, const std::string &pattern) {

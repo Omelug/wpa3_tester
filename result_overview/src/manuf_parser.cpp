@@ -56,7 +56,7 @@ static vector<ManufEntry> load(const path &f) {
 		}
 		int parsed;
 		out.push_back(
-				{ parse_prefix48(mac_field, &parsed), explicit_bits ? explicit_bits : parsed, std::move(vendor) });
+			{ parse_prefix48(mac_field, &parsed), explicit_bits ? explicit_bits : parsed, std::move(vendor) });
 	}
 	// longest match first so the first hit is always the most specific
 	ranges::sort(out, [](const ManufEntry &a, const ManufEntry &b) { return a.bits > b.bits; });

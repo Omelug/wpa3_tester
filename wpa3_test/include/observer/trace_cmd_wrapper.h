@@ -31,7 +31,7 @@ const std::vector<std::pair<AmpduAction, std::string>> &ampdu_action_labels();
 //          defines and enables the kprobe in one step (no separate -e needed)
 // Records a wall/monotonic clock reference for timestamp conversion in get_bl0ck_logs.
 void start_trace_cmd(RunStatus &rs, const std::string &actor_name, const std::vector<std::string> &events,
-		const std::vector<std::string> &kprobes = {});
+	const std::vector<std::string> &kprobes = {});
 
 // parse mac80211:drv_ampdu_action events from the trace_cmd text log of actor_name
 // timestamps are converted to system_clock using the clock reference written by start_trace_cmd

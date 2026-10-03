@@ -67,25 +67,25 @@ template<typename Entry>
 Entry load_result_default(const nlohmann::json &result) {
 	Entry e;
 	boost::pfr::for_each_field(
-			e, [&]<typename param_type, std::size_t I>(param_type &field, std::integral_constant<std::size_t, I>) {
-				constexpr std::string_view param_name = boost::pfr::get_name<I, Entry>();
-				using F = std::decay_t<param_type>;
-				if constexpr(!is_pair_field<F>) {
-					if(result.contains(param_name)) {
-						if constexpr(is_optional_field<F>) {
-							if(!result.at(param_name).is_null()) {
-								field = result.at(param_name).get<typename F::value_type>();
-							} else {
-								field = std::nullopt;
-							}
+		e, [&]<typename param_type, std::size_t I>(param_type &field, std::integral_constant<std::size_t, I>) {
+			constexpr std::string_view param_name = boost::pfr::get_name<I, Entry>();
+			using F = std::decay_t<param_type>;
+			if constexpr(!is_pair_field<F>) {
+				if(result.contains(param_name)) {
+					if constexpr(is_optional_field<F>) {
+						if(!result.at(param_name).is_null()) {
+							field = result.at(param_name).get<typename F::value_type>();
 						} else {
-							result.at(param_name).get_to(field);
+							field = std::nullopt;
 						}
 					} else {
-						field = entry_default<F>();
+						result.at(param_name).get_to(field);
 					}
+				} else {
+					field = entry_default<F>();
 				}
-			});
+			}
+		});
 	return e;
 }
 

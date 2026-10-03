@@ -31,12 +31,12 @@ static Dot11Ref make_valid_frame(const HWAddress<6> &peermac, const HWAddress<6>
 }
 
 InjectionSuiteResult hw_capabilities::run_injection_tests(
-		ActorPtr actor_tx, ActorPtr actor_rx, const HWAddress<6> &peermac, const bool testack, RunStatus *rs) {
+	ActorPtr actor_tx, ActorPtr actor_rx, const HWAddress<6> &peermac, const bool testack, RunStatus *rs) {
 	const string cap_iface = actor_rx[BK::sniff_iface] ? actor_rx.get_mon_iface() : actor_rx.get(SK::iface);
 
 	MonitorSocket s_out = actor_tx->conn
-			? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)), MonitorSocket::tag_tx_t{})
-			: MonitorSocket(actor_tx.get(SK::iface), actor_tx[SK::netns]);
+		? MonitorSocket(actor_tx->conn->open_inject_channel(actor_tx.get(SK::iface)), MonitorSocket::tag_tx_t{})
+		: MonitorSocket(actor_tx.get(SK::iface), actor_tx[SK::netns]);
 	MonitorSocket s_in = actor_rx->conn ? MonitorSocket(actor_rx->conn->open_capture_channel(cap_iface))
 										: MonitorSocket(cap_iface, actor_rx[SK::netns]);
 
@@ -87,7 +87,7 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 		add(test_injection_txack(s_out, s_in, ap_mac, tx_mac, ch));
 
 		rs->process_manager.stop(ap_vif + "_hostapd");
-		run_cmd({"iw", "dev", ap_vif, "del"}, actor_rx[SK::netns], false);
+		run_cmd({ "iw", "dev", ap_vif, "del" }, actor_rx[SK::netns], false);
 	}
 
 	return suite;

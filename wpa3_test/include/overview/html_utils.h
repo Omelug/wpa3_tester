@@ -12,7 +12,7 @@ template<typename EntryType>
 class HtmlPathTable {
 public:
 	explicit HtmlPathTable(wpa3_tester::overview::HtmlGuard &hg, const std::vector<EntryType> &entries,
-			const std::optional<std::string> &t_name = std::nullopt):
+		const std::optional<std::string> &t_name = std::nullopt):
 		hg_(hg),
 		entries_(entries),
 		t_name_(t_name) {
@@ -29,7 +29,7 @@ public:
 		requires std::is_invocable_v<Func, const EntryType &>
 	{
 		columns_.push_back(
-				{ std::move(header), [f = std::forward<Func>(func), this](const EntryType &e) { hg_ << f(e); } });
+			{ std::move(header), [f = std::forward<Func>(func), this](const EntryType &e) { hg_ << f(e); } });
 	}
 
 	// add entry param directly
@@ -48,7 +48,7 @@ public:
 		requires std::is_invocable_v<Func, const EntryType &>
 	{
 		columns_.push_back(
-				{ std::move(header), [f = std::forward<Func>(func), this](const EntryType &e) { hg_ << f(e); }, true });
+			{ std::move(header), [f = std::forward<Func>(func), this](const EntryType &e) { hg_ << f(e); }, true });
 	}
 
 	template<typename T>
@@ -97,7 +97,7 @@ private:
 	}
 
 	[[nodiscard]] static bool is_prefix_requested(
-			const std::string &header, const std::vector<std::string> &prefix_columns) {
+		const std::string &header, const std::vector<std::string> &prefix_columns) {
 		return std::ranges::find(prefix_columns, header) != prefix_columns.end();
 	}
 
@@ -153,7 +153,7 @@ public:
 	void not_data_msg(std::string msg) { not_data_msg_ = std::move(msg); }
 
 	void render(
-			const std::vector<std::string> &prefix_columns = {}, const std::string &table_class = "aggregate") const {
+		const std::vector<std::string> &prefix_columns = {}, const std::string &table_class = "aggregate") const {
 		if(entries_.empty()) {
 			if(!not_data_msg_.empty()) hg_ << "<p>" << not_data_msg_ << "</p>";
 			return;

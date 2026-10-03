@@ -33,30 +33,28 @@ vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(con
 
 	ranges::sort(entries, [](const ReflectionAttackTestEntry &a, const ReflectionAttackTestEntry &b) {
 		return tie(a.connected, a.ap_driver, a.attacker_driver, a.ap_hostapd_version) <
-				tie(b.connected, b.ap_driver, b.attacker_driver, b.ap_hostapd_version);
+			tie(b.connected, b.ap_driver, b.attacker_driver, b.ap_hostapd_version);
 	});
 
 	return entries;
 }
 
 void ReflectionAttackTestEntry::render_table(
-		overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
 
-	helper::div_card<ReflectionAttackTestEntry>(f,
-			title,
-			suite_data_dir,
-			[&](overview::HtmlGuard &hg, const std::vector<ReflectionAttackTestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+	helper::div_card<ReflectionAttackTestEntry>(
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<ReflectionAttackTestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					 col("Test", &ReflectionAttackTestEntry::test_name);
-					 col("AP Driver", &ReflectionAttackTestEntry::ap_driver);
-					 col("Hostapd version", &ReflectionAttackTestEntry::ap_hostapd_version);
-					 COL("Attacker Driver", e.attacker_driver << "("<< e.attacker_mac <<")");
-					 col("Connected?", &ReflectionAttackTestEntry::connected);
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 col("Test", &ReflectionAttackTestEntry::test_name);
+				 col("AP Driver", &ReflectionAttackTestEntry::ap_driver);
+				 col("Hostapd version", &ReflectionAttackTestEntry::ap_hostapd_version);
+				 COL("Attacker Driver", e.attacker_driver << "(" << e.attacker_mac << ")");
+				 col("Connected?", &ReflectionAttackTestEntry::connected);
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 void generate_report(RunSuiteStatus &rss) {
@@ -79,7 +77,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	for(const auto &e: entries) {
 		const string result_link =
-				"[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
+			"[" + string(e.connected.value() ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | " << e.ap_driver << " | "
 			   << e.attacker_driver << " | " << result_link << " |\n";
 	}

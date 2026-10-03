@@ -1,4 +1,4 @@
 $schema: http://json-schema.org/draft-07/schema#
 $extends: 01_validator.schema.yaml
 required:
-  $UNION: [extra_actor]
+  $UNION: [ extra_actor ]

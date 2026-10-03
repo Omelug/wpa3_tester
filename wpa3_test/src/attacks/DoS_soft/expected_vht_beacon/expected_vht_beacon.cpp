@@ -49,7 +49,7 @@ static Dot11Beacon build_legacy_beacon(const Dot11Beacon &src) {
 }
 
 static void inject_legacy_beacons(
-		const HWAddress<6> &ap_mac, const string &iface, const int attack_time_sec, const int ms_interval) {
+	const HWAddress<6> &ap_mac, const string &iface, const int attack_time_sec, const int ms_interval) {
 	log(LogLevel::INFO, "Scanning for AP beacon on {}", iface);
 	const auto real_beacon = scan::RSN_scan(iface, 20, ap_mac);
 	if(!real_beacon) throw run_err("expected_vht_beacon: AP beacon not found - check channel and AP MAC");
@@ -100,7 +100,7 @@ void stats_attack(const RunStatus &rs) {
 
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 
-	observer::tshark::pcap_events(rs, elements, {{ "client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange" }});
+	observer::tshark::pcap_events(rs, elements, { { "client", "wlan.fc.type_subtype == 0x08", "Beacon", "orange" } });
 	observer::tshark::tshark_graph(rs, "client", elements);
 
 	nlohmann::json result;

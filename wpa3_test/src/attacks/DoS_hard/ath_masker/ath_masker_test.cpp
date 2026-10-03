@@ -10,13 +10,13 @@
 using namespace std;
 using namespace Tins;
 
-namespace wpa3_tester::ath_masker_test{
-void setup_attack(RunStatus &rs){
+namespace wpa3_tester::ath_masker_test {
+void setup_attack(RunStatus &rs) {
 	program::start(rs, "ap");
 	rs.process_manager.wait_for("ap", "AP-ENABLED", chrono::seconds(40));
 }
 
-void run_attack(RunStatus &rs){
+void run_attack(RunStatus &rs) {
 	rs.start_observers();
 	const int test_count = rs.config().at("attack_config").at("test_mac_count").get<int>();
 	const auto att = rs.get_actor("attacker");
@@ -25,13 +25,13 @@ void run_attack(RunStatus &rs){
 	const NetworkInterface iface(att.get(SK::iface));
 	PacketSender sender(iface);
 
-	for(int i = 0; i < test_count; ++i){
+	for(int i = 0; i < test_count; ++i) {
 		auto ath_mac = firmware::get_random_ath_masker_mac(att.get(SK::mac));
 
 		Dot11ProbeRequest probe(HWAddress<6>("ff:ff:ff:ff:ff:ff"), ath_mac);
 		probe.addr3(ap.get(SK::mac));
 		probe.ssid("");
-		probe.supported_rates({1.0f, 2.0f, 5.5f, 11.0f});
+		probe.supported_rates({ 1.0f, 2.0f, 5.5f, 11.0f });
 		RadioTap radiotap{};
 		//Channel ch;
 		//ch.ch_num = stoi(ap.get(SK::channel)); //FIXME band fromconfig
@@ -41,11 +41,9 @@ void run_attack(RunStatus &rs){
 		radiotap.inner_pdu(probe);
 		//radiotap.flags(RadioTap::FCS);
 
-		try{
+		try {
 			sender.send(radiotap, iface);
-		} catch(const pcap_error &e){
-			log(LogLevel::ERROR, "PCAP Error: ", e.what());
-		} catch(const exception &e){
+		} catch(const pcap_error &e) { log(LogLevel::ERROR, "PCAP Error: ", e.what()); } catch(const exception &e) {
 			log(LogLevel::ERROR, "General Error: {}", e.what());
 		}
 
@@ -54,7 +52,5 @@ void run_attack(RunStatus &rs){
 	interruptible_sleep(chrono::seconds(10));
 }
 
-void stats(const RunStatus &rs){
-	observer::tshark::generate_time_series_retry_graph(rs, "attacker");
-}
+void stats(const RunStatus &rs) { observer::tshark::generate_time_series_retry_graph(rs, "attacker"); }
 }

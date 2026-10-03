@@ -49,7 +49,7 @@ public:
 		log_folder(std::move(log_folder)) {}
 
 	explicit ClientState(const Tins::HWAddress<6> mac, const State state,
-			const std::optional<std::filesystem::path> &log_folder = std::nullopt):
+		const std::optional<std::filesystem::path> &log_folder = std::nullopt):
 		state(state),
 		macaddr(mac),
 		log_folder(log_folder) {}
@@ -64,7 +64,8 @@ public:
 				std::stringstream ss;
 				ss << current_timestamp();
 				ss << " [STATE] " << macaddr << " : ";
-				ss << state2str(state) << " -> " << state2str(s) << std::endl;;
+				ss << state2str(state) << " -> " << state2str(s) << std::endl;
+				;
 				f << ss.str();
 				log(LogLevel::INFO, ss.str());
 			}

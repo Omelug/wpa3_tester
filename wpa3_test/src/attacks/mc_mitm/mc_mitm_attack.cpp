@@ -1,11 +1,11 @@
 #include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/RunStatus.h"
+#include "interrupt.h"
 #include "observer/dmesg_wrapper.h"
 #include "observer/state_log_graph.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
-#include "interrupt.h"
 
 using namespace std;
 using namespace filesystem;
@@ -16,28 +16,12 @@ namespace wpa3_tester::mc_mitm {
 
 void setup_attack(RunStatus &rs) {
 	if(const auto tester_dmesg = rs.observer("tester_dmesg")) {
-		tester_dmesg->start(rs);;
+		tester_dmesg->start(rs);
+		;
 	}
 
-	const auto &ap_actor = rs.get_actor("ap");
-	rs.get_actor("rogue_ap")->set_mac_address(ap_actor.get(SK::permanent_mac));
-
+	rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));
 	components::client_ap_setup_t(rs);
-	//components::client_ap_attacker_setup(rs);
-
-	//TODO components::setup_STA(rs, "client");
-	//rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
-
-	//const auto ap        = rs.get_actor("ap");
-	//const auto rogue_client = rs.get_actor("rogue_client");
-	//const auto rogue_ap = rs.get_actor("rogue_ap");
-
-	/*
-	//TODO only for  2.4 GHz
-	rogue_client->set(SK::channel, ap["channel"]);
-	// rogue channel that doesn't overlap the real one - 1-11 are global valid channels //TODO check
-	rogue_ap->set(SK::channel, to_string((stoi(ap["channel"]) >= 6) ? 1 : 11));
-	*/
 }
 
 void start_strict_tsharks(RunStatus &rs, const string &ap_mac, const string &client_mac) {
@@ -53,9 +37,6 @@ void run_attack(RunStatus &rs) {
 	const auto ap = rs.get_actor("ap");
 
 	const auto ap_ssid = rs.config().at("attack_config").at("ssid").get<string>();
-
-	// get macs for faking
-	const auto client_mac = rs.get_actor("client").get(SK::mac);
 
 	bool only_to_mitm = false;
 	if(rs.config().at("attack_config").contains("only_to_mitm")) {
@@ -92,46 +73,37 @@ void stats(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements_ap = clone_elements(elements);
 
 	observer::tshark::pcap_events(rs,
-			elements_ap,
-			{
-					{ "rogue_ap", "wlan.tag.number == 37", "CSA", "black" },
-					{ "rogue_ap", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
-					{ "rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan" },
-					{ "rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
-					{ "rogue_ap",
-							"wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001",
-							"ASSOC",
-							"green" },
-					{ "rogue_ap", "eapol", "EAPOL", "dark-green" },
-			});
+		elements_ap,
+		{
+			{ "rogue_ap", "wlan.tag.number == 37", "CSA", "black" },
+			{ "rogue_ap", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
+			{ "rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan" },
+			{ "rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
+			{ "rogue_ap", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green" },
+			{ "rogue_ap", "eapol", "EAPOL", "dark-green" },
+		});
 	observer::tshark::tshark_graph(rs, "rogue_ap", elements_ap);
 
 	vector<unique_ptr<GraphElements>> elements_client = clone_elements(elements);
 	;
 	observer::tshark::pcap_events(rs,
-			elements_client,
-			{
-					{ "rogue_client", "wlan.tag.number == 37", "CSA", "black" },
-					{ "rogue_client", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
-					{ "rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_frame", "pink" },
-					{ "rogue_client",
-							"wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005",
-							"PROBE",
-							"cyan" },
-					{ "rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
-					{ "rogue_client",
-							"wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001",
-							"ASSOC",
-							"green" },
-					{ "rogue_client", "eapol", "EAPOL", "dark-green" },
-			});
+		elements_client,
+		{
+			{ "rogue_client", "wlan.tag.number == 37", "CSA", "black" },
+			{ "rogue_client", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
+			{ "rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_frame", "pink" },
+			{ "rogue_client", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan" },
+			{ "rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
+			{ "rogue_client", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green" },
+			{ "rogue_client", "eapol", "EAPOL", "dark-green" },
+		});
 	observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
 
 	const auto oc = observer::dmesg::grep_log(rs, "over-current");
 	if(!oc.empty()) {
 		log(LogLevel::ERROR,
-				"USB over-current detected ({} events) - timestamps are kernel uptime, not wall-clock:",
-				oc.size());
+			"USB over-current detected ({} events) - timestamps are kernel uptime, not wall-clock:",
+			oc.size());
 		for(const auto &line: oc) log(LogLevel::ERROR, "  {}", line);
 	}
 }

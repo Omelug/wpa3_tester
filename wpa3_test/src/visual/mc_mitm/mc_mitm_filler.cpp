@@ -60,22 +60,22 @@ vector<McMitmEntry> McMitmEntry::collect_results(const path &suite_data_dir) {
 }
 
 void McMitmEntry::render_table(
-		overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
 
 	helper::div_card<McMitmEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<McMitmEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<McMitmEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					 col("AP MAC", &McMitmEntry::ap_mac);
-					 col("Client MAC", &McMitmEntry::client_mac);
-					 col("rogue_client driver", &McMitmEntry::rogue_client_driver);
-					 col("rogue_ap driver", &McMitmEntry::rogue_ap_driver);
-					 col("SSID", &McMitmEntry::ssid);
-					 COL("MitM achieved", e.mitm_achieved);
-				 })->render();
+			t.build([&](auto col) {
+				 col("AP MAC", &McMitmEntry::ap_mac);
+				 col("Client MAC", &McMitmEntry::client_mac);
+				 col("rogue_client driver", &McMitmEntry::rogue_client_driver);
+				 col("rogue_ap driver", &McMitmEntry::rogue_ap_driver);
+				 col("SSID", &McMitmEntry::ssid);
+				 COL("MitM achieved", e.mitm_achieved);
+			 })->render();
 #undef COL
-			});
+		});
 }
 
 void McMitmEntry::generate_report(RunSuiteStatus &rss) {

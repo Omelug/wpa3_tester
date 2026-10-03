@@ -16,7 +16,7 @@ using namespace Tins;
 using namespace chrono;
 
 void start_dragondrain(RunStatus &rs, const string &actor_name, const string &iface, const string &target_mac,
-		const string &channel, const nlohmann::json &att_cfg) {
+	const string &channel, const nlohmann::json &att_cfg) {
 	const int bitrate = att_cfg.at("bitrate").get<int>();
 	const int num_random_mac = att_cfg.at("number_of_random_mac").get<int>();
 	const int r = att_cfg.at("r").get<int>();
@@ -25,21 +25,21 @@ void start_dragondrain(RunStatus &rs, const string &actor_name, const string &if
 	observer::add_nets_header(rs, command, actor_name);
 	const string dragondrain_folder = get_global_config().at("paths").at("dragondrain").at("dragondrain_folder");
 	command.insert(command.end(),
-			{ dragondrain_folder + "/src/dragondrain",
-					"-d",
-					iface,
-					"-a",
-					target_mac,
-					"-c",
-					channel,
-					"-b",
-					to_string(bitrate),
-					"-n",
-					to_string(num_random_mac),
-					"-M",
-					"100",
-					"-r",
-					to_string(r) });
+		{ dragondrain_folder + "/src/dragondrain",
+			"-d",
+			iface,
+			"-a",
+			target_mac,
+			"-c",
+			channel,
+			"-b",
+			to_string(bitrate),
+			"-n",
+			to_string(num_random_mac),
+			"-M",
+			"100",
+			"-r",
+			to_string(r) });
 	rs.process_manager.run(actor_name, command, dragondrain_folder);
 }
 

@@ -31,7 +31,7 @@ TEST_CASE("get_filler_hash - output format") {
 
 TEST_CASE("get_filler_hash - determinism") {
 	ActorMap m;
-	m["ap"]  = make_actor("11:22:33:44:55:66");
+	m["ap"] = make_actor("11:22:33:44:55:66");
 	m["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 	json::json cfg1, cfg2;
 	CHECK_EQ(RunStatus::get_filler_hash(m, cfg1), RunStatus::get_filler_hash(m, cfg2));
@@ -42,8 +42,8 @@ TEST_CASE("get_filler_hash - order independence") {
 
 	ActorMap m1, m2;
 	m1["alpha"] = make_actor("aa:aa:aa:aa:aa:aa");
-	m1["beta"]  = make_actor("bb:bb:bb:bb:bb:bb");
-	m2["beta"]  = make_actor("bb:bb:bb:bb:bb:bb");
+	m1["beta"] = make_actor("bb:bb:bb:bb:bb:bb");
+	m2["beta"] = make_actor("bb:bb:bb:bb:bb:bb");
 	m2["alpha"] = make_actor("aa:aa:aa:aa:aa:aa");
 
 	CHECK_EQ(RunStatus::get_filler_hash(m1, cfg1), RunStatus::get_filler_hash(m2, cfg2));

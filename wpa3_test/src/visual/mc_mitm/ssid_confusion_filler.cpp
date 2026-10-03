@@ -70,24 +70,24 @@ vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite
 }
 
 void SsidConfusionEntry::render_table(
-		overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
 
 	helper::div_card<SsidConfusionEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<SsidConfusionEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<SsidConfusionEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					 col("AP MAC", &SsidConfusionEntry::ap_mac);
-					 col("Client MAC", &SsidConfusionEntry::client_mac);
-					 col("rogue_client driver", &SsidConfusionEntry::rogue_client_driver);
-					 col("rogue_ap driver", &SsidConfusionEntry::rogue_ap_driver);
-					 col("Real SSID", &SsidConfusionEntry::real_ssid);
-					 col("Confused SSID", &SsidConfusionEntry::confused_ssid);
-					 COL("Strip RSN", e.strip_rsn);
-					 COL("MitM achieved", e.mitm_achieved);
-				 })->render();
+			t.build([&](auto col) {
+				 col("AP MAC", &SsidConfusionEntry::ap_mac);
+				 col("Client MAC", &SsidConfusionEntry::client_mac);
+				 col("rogue_client driver", &SsidConfusionEntry::rogue_client_driver);
+				 col("rogue_ap driver", &SsidConfusionEntry::rogue_ap_driver);
+				 col("Real SSID", &SsidConfusionEntry::real_ssid);
+				 col("Confused SSID", &SsidConfusionEntry::confused_ssid);
+				 COL("Strip RSN", e.strip_rsn);
+				 COL("MitM achieved", e.mitm_achieved);
+			 })->render();
 #undef COL
-			});
+		});
 }
 
 void SsidConfusionEntry::generate_report(RunSuiteStatus &rss) {

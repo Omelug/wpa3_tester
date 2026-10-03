@@ -72,7 +72,7 @@ public:
 	void run_dummy(const std::string &process_name);
 	// what can actors
 	void run(const std::string &process_name, const std::vector<std::string> &cmd,
-			const std::filesystem::path &working_dir = {}, const std::filesystem::path &logging_dir = {});
+		const std::filesystem::path &working_dir = {}, const std::filesystem::path &logging_dir = {});
 
 	void allow_history(const std::string &actor_name);
 	void ignore_history(const std::string &actor_name);
@@ -80,8 +80,8 @@ public:
 
 	//return  true if found
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
-			std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
-			std::string *matched_line = nullptr); // 60 minutes (practically infinity)
+		std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
+		std::string *matched_line = nullptr); // 60 minutes (practically infinity)
 	void stop(const std::string &process_name) noexcept;
 	void before_stop(const std::string &process_name, const std::function<void()> &callback);
 	void after_stop(const std::string &process_name, const std::function<void()> &callback);

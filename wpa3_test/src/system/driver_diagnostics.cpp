@@ -236,12 +236,12 @@ json collect_driver_specific(const string &driver_name, const string &phy) {
 			j["family"] = "ath9k_htc";
 			j["ath9k_htc"] = collect_ath9k_htc(phy);
 		} else if(d.find("rtw89") != string::npos || d.find("8852a") != string::npos ||
-				d.find("8852b") != string::npos || d.find("8852c") != string::npos) {
+			d.find("8852b") != string::npos || d.find("8852c") != string::npos) {
 			j["family"] = "rtw89";
 			j["rtw89"] = collect_rtw89(phy);
 		} else if(d.find("rtw88") != string::npos || d.find("rtw_") != string::npos ||
-				d.find("8821c") != string::npos || d.find("8822b") != string::npos || d.find("8822c") != string::npos ||
-				d.find("8723d") != string::npos) {
+			d.find("8821c") != string::npos || d.find("8822b") != string::npos || d.find("8822c") != string::npos ||
+			d.find("8723d") != string::npos) {
 			j["family"] = "rtw88";
 			j["rtw88"] = collect_rtw88(phy);
 		} else if(d.find("rtl8xxxu") != string::npos || d.find("8192cu") != string::npos) {
@@ -316,7 +316,7 @@ json collect_usb_info(const string &iface) {
 
 bool is_meta_key(const string &key) {
 	return key == "debugfs_dir" || key == "present" || key == "available_files" || key == "note" ||
-			key.ends_with("_available");
+		key.ends_with("_available");
 }
 
 string summarize_driver_specific(const json &ds) {

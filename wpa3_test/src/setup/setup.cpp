@@ -26,7 +26,7 @@ void RunStatus::setup_test() {
 	set_log_file(tester_log());
 
 	if(const auto run_it = attack_module_maps::setup_map.find(_config.at("attacker_module"));
-			run_it != attack_module_maps::setup_map.end()) {
+		run_it != attack_module_maps::setup_map.end()) {
 		run_it->second(*this);
 	} else {
 		log(LogLevel::DEBUG, "setup function not set");

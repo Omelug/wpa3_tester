@@ -16,9 +16,8 @@ using namespace std;
 namespace wpa3_tester::observer {
 void Observer_config::start(RunStatus &rs) const {
 	const auto program = observer_config.at("program").get<string>();
-	const nlohmann::json program_config = observer_config.contains("program_config")
-			? observer_config.at("program_config")
-			: nlohmann::json::object();
+	const nlohmann::json program_config =
+		observer_config.contains("program_config") ? observer_config.at("program_config") : nlohmann::json::object();
 	if(program == "dmesg") {
 		const string level = program_config.value("level", "");
 		const string actor_name = observer_config.value("actor", "");

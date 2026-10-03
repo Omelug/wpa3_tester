@@ -14,7 +14,7 @@ std::string get_hostapd_mana(const std::string &version = "");
 std::string get_password(const RunStatus &rs, const std::string &actor_name);
 std::string get_ssid(const RunStatus &rs, const std::string &actor_name);
 std::optional<bool> get_ocv(
-		const RunStatus &rs, const std::string &actor_name); // wpa_supplicant: ocv (network block key)
+	const RunStatus &rs, const std::string &actor_name); // wpa_supplicant: ocv (network block key)
 std::optional<bool> get_okc(const RunStatus &rs, const std::string &actor_name); // hostapd: okc (top-level key)
 std::string get_version(const RunStatus &rs, const std::string &actor_name);
 std::string get_openssl_version(const RunStatus &rs, const std::string &actor_name);
@@ -27,18 +27,18 @@ std::string get_mfp_from_supplicant(const std::filesystem::path &conf);
 
 // parse AKM suite from a hostapd -d log up to window.start_tp; returns e.g. "00-0F-AC:8\n(WPA3)"
 std::string akm_from_ap_log(
-		const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
+	const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
 // parse client MFP from MFPR/MFPC fields in a hostapd -d log up to window.start_tp
 std::string mfp_from_ap_log(
-		const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
+	const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
 // parse client AKM suites from RSN IE in EAPOL-Key in a hostapd -d log up to window.start_tp (e.g. "SAE WPA-PSK")
 std::string client_akm_from_ap_log(
-		const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
+	const std::filesystem::path &log_path, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
 
 // Find Probe Requests from client_mac in ap_log after start_tag until END_tag/END_STOP_tag.
 // Returns "ch: X Y Z" (scanned channels from DS Params or freq), empty if none found.
 std::string client_scanning_from_ap_log(
-		const std::filesystem::path &ap_log, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
+	const std::filesystem::path &ap_log, const Tins::HWAddress<6> &client_mac, TimeWindow window = {});
 
 // computes secondary BSSID for OWE transition mode (flips LSB of last octet)
 std::string owe_trans_bssid(const std::string &primary_mac);

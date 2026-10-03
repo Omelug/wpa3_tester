@@ -75,7 +75,9 @@ void run_attack(RunStatus &rs) {
 	const string ssid = ap_actor->get(SK::ssid);
 
 	MonitorSocket sock(attacker.get(SK::iface), attacker.get(SK::netns)); // attacker need to be in netns
-	EAP_Att eap_att{ sock, ap_actor->get_channel(), attacker.get(SK::mac), ap_actor.get(SK::mac), ssid, identity, 30s }; //FIXME
+	EAP_Att eap_att{
+		sock, ap_actor->get_channel(), attacker.get(SK::mac), ap_actor.get(SK::mac), ssid, identity, 30s
+	};								 //FIXME
 	interruptible_sleep(seconds(3)); //FIXME needed for tshark setup?
 	const bool vulnerable = run_reflection_exchange(eap_att);
 

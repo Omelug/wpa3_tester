@@ -10,23 +10,22 @@ std::string or_filter(const std::vector<std::string> &mac_filters);
 std::string masked_mac_filter_5(const RunStatus &rs);
 std::string all_actors_mac_filter(const RunStatus &rs, bool broadcast = false);
 std::pair<std::vector<LogTimePoint>, std::vector<double>> times_pdu_sizes_from_csv(
-		const std::filesystem::path &csv_path);
+	const std::filesystem::path &csv_path);
 LogTimePoint get_pcap_start_time(const std::string &pcap_path);
 
 void start_tshark_remote(RunStatus &rs, const std::string &actor_name, const std::string &filter);
 void start_tshark(RunStatus &rs, const std::string &node_name, const std::string &filter = "udp port 5201");
 std::filesystem::path extract_pcap_to_csv(
-		const std::string &actor_name, const std::filesystem::path &real_folder, const std::string &tshark_filter = "");
+	const std::string &actor_name, const std::filesystem::path &real_folder, const std::string &tshark_filter = "");
 std::vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const std::string &process_name,
-		const std::string &tshark_filter, const std::string &event_name,
-		std::optional<TimeWindow> window = std::nullopt);
+	const std::string &tshark_filter, const std::string &event_name, std::optional<TimeWindow> window = std::nullopt);
 std::filesystem::path tshark_graph(const RunStatus &rs, const std::string &actor_name, const G_elms &elements = {},
-		const std::filesystem::path &folder = "", const std::string &tshark_filter = "");
+	const std::filesystem::path &folder = "", const std::string &tshark_filter = "");
 void generate_time_series_retry_graph(
-		const RunStatus &rs, const std::string &actor_name, const std::filesystem::path &folder = "");
+	const RunStatus &rs, const std::string &actor_name, const std::filesystem::path &folder = "");
 void pcap_events(const RunStatus &rs, G_elms &elements,
-		// { actor, filter, label, color }
-		std::initializer_list<std::tuple<std::string, std::string, std::string, std::string>> event_def);
+	// { actor, filter, label, color }
+	std::initializer_list<std::tuple<std::string, std::string, std::string, std::string>> event_def);
 
 // --------- SPECIFIC HELPERS -----------
 // extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark)
@@ -44,7 +43,7 @@ std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
 // return "yes" if probe requests found but no channel info
 // return empty string if no scanning detected
 std::string client_scanning_from_pcap(
-		const std::filesystem::path &pcap_path, const std::string &client_mac, TimeWindow window = {});
+	const std::filesystem::path &pcap_path, const std::string &client_mac, TimeWindow window = {});
 
 // detect ADDBA Request/Response (Block Ack action cat=3, action=0/1) in pcap
 // returns true if seen, false if pcap exists but none found, nullopt if pcap missing

@@ -101,10 +101,10 @@ TEST_CASE("apply_wpa_overrides - skip keys are not written") {
 						 "\tssid=\"TestNet\"\n"
 						 "}\n");
 	apply_wpa_overrides(cfg,
-			json{ { "wpa_supplicant_path", "/some/path" },
-					{ "version", "2.10" },
-					{ "other_options", "-d" },
-					{ "key_mgmt", "SAE" } });
+		json{ { "wpa_supplicant_path", "/some/path" },
+			{ "version", "2.10" },
+			{ "other_options", "-d" },
+			{ "key_mgmt", "SAE" } });
 	string out = read_file(cfg);
 
 	CHECK_EQ(out.find("wpa_supplicant_path"), string::npos);

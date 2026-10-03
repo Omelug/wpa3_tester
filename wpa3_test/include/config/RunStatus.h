@@ -53,7 +53,7 @@ using ActorMap = std::unordered_map<std::string, ActorPtr>;
 using ActorMACMap = std::unordered_map<Tins::HWAddress<6>, ActorPtr>;
 using AssocMap = std::unordered_map<Tins::HWAddress<6>, Tins::HWAddress<6>>; // STA -> AP BSSID
 using EntityInfo =
-		std::pair<ActorPtr, std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>>; // (actor, (own_mac, peer_mac))
+	std::pair<ActorPtr, std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>>; // (actor, (own_mac, peer_mac))
 using ObserverMap = std::unordered_map<std::string, observer::ObserverPtr>;
 
 typedef std::string actor_name_t;
@@ -112,7 +112,7 @@ public:
 
 	RunStatus() = default;
 	explicit RunStatus(
-			const std::filesystem::path &config_path, std::string testName = "", const std::string &sub_folder = "");
+		const std::filesystem::path &config_path, std::string testName = "", const std::string &sub_folder = "");
 	void clean();
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen, AssocMap &assoc);
@@ -138,32 +138,33 @@ public:
 	// get external options
 	// For manual testing / wizards
 	static std::vector<EntityInfo> list_external_entities(
-			const std::string &iface, size_t timeout_sec, const std::vector<unsigned char> &channels);
+		const std::string &iface, size_t timeout_sec, const std::vector<unsigned char> &channels);
 	// ----------- log_events
 	void log_events(G_elms &elements,
-			std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
-			std::optional<TimeWindow> window = std::nullopt) const;
+		std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
+		std::optional<TimeWindow> window = std::nullopt) const;
 	void log_events(G_elms &elements, const std::set<EVENT_SET> &event_sets) const;
 private:
 	static void add_actors_by_radio(std::vector<ActorPtr> &options, const ActorPtr &cfg);
 	static std::vector<ActorPtr> external_wb_options();
 protected: // external BB
 	std::vector<uint8_t> get_external_bb_channels();
-	std::vector<ActorPtr> external_bb_options(const ActorMap &ex_bb_actors = {}, const std::vector<std::string> &disabled_tests_hash_filler = {});
+	std::vector<ActorPtr> external_bb_options(
+		const ActorMap &ex_bb_actors = {}, const std::vector<std::string> &disabled_tests_hash_filler = {});
 	static bool process_single_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc,
-			std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
-			const std::vector<std::pair<std::string, std::string>> &conn_conds,
-			std::vector<std::string> disabled_tests_hash_filler = {});
+		std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
+		const std::vector<std::pair<std::string, std::string>> &conn_conds,
+		std::vector<std::string> disabled_tests_hash_filler = {});
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
-			const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {},
-			std::vector<std::string> disabled_tests_hash_filler = {});
+		const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {},
+		std::vector<std::string> disabled_tests_hash_filler = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();
 	void parse_requirements();
 
 	static nlohmann::json extends_recursive(
-			const nlohmann::json &config_json, const std::filesystem::path &config_path);
+		const nlohmann::json &config_json, const std::filesystem::path &config_path);
 	static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
 	static nlohmann::json config_validation(const std::filesystem::path &config_path);
 	void ensure_requirement(const std::string &req) const;
@@ -171,12 +172,11 @@ public:
 	// use cache for options of actors
 
 	//return true if should re-reload
-	bool config_requirement(const std::vector<std::string>& disabled_tests_hash_filler = {});
+	bool config_requirement(const std::vector<std::string> &disabled_tests_hash_filler = {});
 	static std::string get_filler_hash(const ActorMap &actor_map, nlohmann::json &test_cfg);
 	void change_filler_hash(const ActorMap &result);
-	static ActorMap check_req_options(
-		const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true,
-			const std::vector<std::string> &disabled_tests_hash_filler = {});
+	static ActorMap check_req_options(const ActorMap &rules, const std::vector<ActorPtr> &options, bool print = true,
+		const std::vector<std::string> &disabled_tests_hash_filler = {});
 
 	bool prepare_run_folder();
 	[[nodiscard]] std::vector<std::string> do_not_rewrite_actor_filler(const std::filesystem::path &run_folder) const;

@@ -72,8 +72,9 @@ static vector<path> collect_test_folders(const path &run_dir) {
 }
 
 static void render_attack_section(HtmlGuard &f, const std::string &module, const std::string &attack_name,
-		const path &suite_data_dir, const path &page_dir) {
-	if(const auto it = std::ranges::find_if(registry, [&](const auto &p) { return p.first == module; }); it != registry.end()) {
+	const path &suite_data_dir, const path &page_dir) {
+	if(const auto it = std::ranges::find_if(registry, [&](const auto &p) { return p.first == module; });
+		it != registry.end()) {
 		it->second(f, attack_name, suite_data_dir / attack_name, page_dir, module);
 	} else {
 		f << "<p>No parser for <code>" << module << "</code>.</p>";
@@ -163,8 +164,7 @@ void generate_targets(const path &output_dir, const path &data_dir) {
 
 	HtmlGuard f(targets_dir);
 	generate_target_index(f, names);
-	for(const auto &name: names)
-		generate_target_page(output_dir, name, targets_data / name);
+	for(const auto &name: names) generate_target_page(output_dir, name, targets_data / name);
 }
 
 }

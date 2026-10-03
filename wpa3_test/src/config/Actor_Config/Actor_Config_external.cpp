@@ -17,7 +17,7 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	real_actor->conn->check_req(config, get(SK::actor_name));
 
 	const bool no_sniff_iface = !(*this)[BK::sniff_iface].has_value() ||
-			((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value());
+		((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value());
 	const auto base_mon_iface = monitor_needed() && no_sniff_iface;
 
 	//not used for openwrt setup (setup with setup/program_config in setup_iface)

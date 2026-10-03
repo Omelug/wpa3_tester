@@ -1,9 +1,9 @@
-#include "../../../../include/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.h"
+#include "attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.h"
 
 #include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
-#include "attacks/mc_mitm/ssid_confusion_hooks.h"
+#include "attacks/mc_mitm/ssid_confusion/ssid_confusion_hooks.h"
 #include "config/RunStatus.h"
 #include "observer/state_log_graph.h"
 

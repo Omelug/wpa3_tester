@@ -33,7 +33,7 @@ public:
 	std::string exec(const std::string &cmd) const { return exec(cmd, false, nullptr); }
 	std::string exec(const std::string &cmd, const bool kill_on_exit) const { return exec(cmd, kill_on_exit, nullptr); }
 
-	void set_iface_up(const std::string & iface) const;
+	void set_iface_up(const std::string &iface) const;
 	void create_sniff_iface(const std::string &iface, const std::string &sniff_iface) const;
 	bool set_channel(const std::string &iface, const Channel &ch) const;
 	virtual void set_monitor_mode(const std::string &iface) const;

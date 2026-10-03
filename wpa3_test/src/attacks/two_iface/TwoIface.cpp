@@ -7,23 +7,24 @@
 #include "logger/log.h"
 #include "system/utils.h"
 
-namespace wpa3_tester{
+namespace wpa3_tester {
 using namespace std;
 using namespace filesystem;
 using nlohmann::json;
 
 // ----- TwoIface base
-TwoIface::TwoIface(ParamFilter id, string name)
-: cache_id(std::move(id)), cache_name(std::move(name)){}
+TwoIface::TwoIface(ParamFilter id, string name):
+	cache_id(std::move(id)),
+	cache_name(std::move(name)) {}
 
-pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave){
+pair<json, bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave) {
 	const string key = make_cache_key(a1, a2);
 
-	if(behave != force_run){
+	if(behave != force_run) {
 		const auto cached = lookup_cache(key);
-		if(cached.has_value() && !cached->contains("err_msg")){
+		if(cached.has_value() && !cached->contains("err_msg")) {
 			log(LogLevel::WARNING, "Found in cache");
-			return {*cached, true};
+			return { *cached, true };
 		}
 		if(behave == throw_on_miss) throw req_err("ERROR not found in cache " + cache_name);
 	}
@@ -32,25 +33,25 @@ pair<json,bool> TwoIface::validate(const ActorPtr &a1, const ActorPtr &a2, const
 	if(result.contains("err_msg")) throw req_err("TwoIface '{}': {}", cache_name, result.at("err_msg").get<string>());
 
 	const auto existing = lookup_cache(key);
-	if(existing.has_value() && *existing != result){
+	if(existing.has_value() && *existing != result) {
 		log(LogLevel::WARNING, "TwoIface cache '{}': result changed for key '{}'", cache_name, key);
 	}
 
 	write_cache(key, result);
-	return {result, false};
+	return { result, false };
 }
 
-string TwoIface::make_cache_key(const ActorPtr &a1, const ActorPtr &a2) const{
+string TwoIface::make_cache_key(const ActorPtr &a1, const ActorPtr &a2) const {
 	return a1->to_str(&cache_id) + "|" + a2->to_str(&cache_id);
 }
 
-optional<json> TwoIface::lookup_cache(const string &key) const{
+optional<json> TwoIface::lookup_cache(const string &key) const {
 	const path cp = cache_path();
 	if(!exists(cp)) return nullopt;
 
 	ifstream ifs(cp);
 	string line;
-	while(getline(ifs, line)){
+	while(getline(ifs, line)) {
 		if(line.empty()) continue;
 		const auto sep = line.find('\t');
 		if(sep == string::npos) continue;
@@ -61,22 +62,22 @@ optional<json> TwoIface::lookup_cache(const string &key) const{
 	return nullopt;
 }
 
-void TwoIface::write_cache(const string &key, const json &result) const{
+void TwoIface::write_cache(const string &key, const json &result) const {
 	const path cp = cache_path();
 	create_public_dirs(cp.parent_path());
 
 	vector<string> lines;
 	bool found = false;
-	if(exists(cp)){
+	if(exists(cp)) {
 		ifstream ifs(cp);
 		string line;
-		while(getline(ifs, line)){
+		while(getline(ifs, line)) {
 			if(line.empty()) continue;
 			const auto sep = line.find('\t');
-			if(sep != string::npos && line.substr(0, sep) == key){
+			if(sep != string::npos && line.substr(0, sep) == key) {
 				lines.push_back(key + '\t' + result.dump());
 				found = true;
-			} else{
+			} else {
 				lines.push_back(line);
 			}
 		}
@@ -89,20 +90,18 @@ void TwoIface::write_cache(const string &key, const json &result) const{
 	set_public_perms(cp);
 }
 
-path TwoIface::cache_folder() const{
+path TwoIface::cache_folder() const {
 	auto cache_f = root_dir().parent_path() / DATA_DIR / "cache" / "two_iface" / cache_name;
 	set_public_perms(cache_f);
 	return cache_f;
 }
 
-path TwoIface::cache_path() const{
-	return cache_folder() / "cache.txt";
-}
+path TwoIface::cache_path() const { return cache_folder() / "cache.txt"; }
 
-json TwoIface::make_selection(const ActorPtr &a) const{
+json TwoIface::make_selection(const ActorPtr &a) const {
 	auto sel = a->to_json(&cache_id)["selection"];
 	sel["channel"] = to_string(get_global_config().at("global_variables").at("default_channel_2_4").get<int>());
-	sel["condition"] = {"2_4GHz", "monitor", "control_monitor", "netns_change"};
+	sel["condition"] = { "2_4GHz", "monitor", "control_monitor", "netns_change" };
 	return sel;
 }
 }

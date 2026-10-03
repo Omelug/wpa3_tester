@@ -106,8 +106,8 @@ static vector<uint8_t> build_eapol_eap(const uint8_t eap_id, const vector<uint8_
 	out.push_back(0x00); // EAPOL type: EAP
 	out.push_back(static_cast<uint8_t>(eapol_len >> 8));
 	out.push_back(static_cast<uint8_t>(eapol_len & 0xff));
-	out.push_back(CODE_RESPONSE);   // EAP response
-	out.push_back(eap_id); // EAP id
+	out.push_back(CODE_RESPONSE); // EAP response
+	out.push_back(eap_id);		  // EAP id
 	out.push_back(static_cast<uint8_t>(eap_len >> 8));
 	out.push_back(static_cast<uint8_t>(eap_len & 0xff));
 	out.insert(out.end(), eap_body.begin(), eap_body.end());
@@ -181,7 +181,7 @@ bool send_eap_normal_EAP_pwd_ID(EAP_Att &eap_att) {
 
 bool eap_pwd_wait_for_success(EAP_Att &eap_att) {
 	// wait for EAP-Success after confirm
-	const auto eapol = wait_eapol(eap_att, false );
+	const auto eapol = wait_eapol(eap_att, false);
 	if(!eapol) {
 		log(LogLevel::WARNING, "EAP exchange ended without EAP-Success");
 		return false;
@@ -212,25 +212,24 @@ bool do_auth(EAP_Att &eap_att) {
 
 		optional<bool> result;
 		const auto start_time = steady_clock::now();
-		const auto r = components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
-				eap_att.timeout,
-				[&](const frame_raw_t &p) -> optional<bool> {
-					const auto f = sae_helper::parse_auth_frame(p);
-					if(!f || f->addr1 != eap_att.att_mac || f->seq != 2) return nullopt;
-					log(LogLevel::DEBUG,
-							"Auth response: algo={} seq={} status={}",
-							static_cast<int>(f->algorithm),
-							static_cast<int>(f->seq),
-							static_cast<int>(f->status));
-					if(f->status != 0) {
-						log(LogLevel::WARNING, "Auth rejected, status={}", static_cast<int>(f->status));
-						result = false;
-						return true;
-					}
-					log(LogLevel::INFO, "802.11 Authentication OK");
-					result = true;
+		const auto r = components::poll_sniffer<bool>(
+			eap_att.sock.get_pcap_handle(), eap_att.timeout, [&](const frame_raw_t &p) -> optional<bool> {
+				const auto f = sae_helper::parse_auth_frame(p);
+				if(!f || f->addr1 != eap_att.att_mac || f->seq != 2) return nullopt;
+				log(LogLevel::DEBUG,
+					"Auth response: algo={} seq={} status={}",
+					static_cast<int>(f->algorithm),
+					static_cast<int>(f->seq),
+					static_cast<int>(f->status));
+				if(f->status != 0) {
+					log(LogLevel::WARNING, "Auth rejected, status={}", static_cast<int>(f->status));
+					result = false;
 					return true;
-				});
+				}
+				log(LogLevel::INFO, "802.11 Authentication OK");
+				result = true;
+				return true;
+			});
 		eap_att.decrease_timeout(start_time);
 
 		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
@@ -249,8 +248,8 @@ bool do_assoc(EAP_Att &eap_att) {
 	assoc.capabilities().sst(true);
 	assoc.listen_interval(10);
 	assoc.add_option({ Dot11::SSID,
-			static_cast<uint32_t>(eap_att.ssid.size()),
-			reinterpret_cast<const uint8_t *>(eap_att.ssid.data()) });
+		static_cast<uint32_t>(eap_att.ssid.size()),
+		reinterpret_cast<const uint8_t *>(eap_att.ssid.data()) });
 	static const uint8_t rates[] = { 0x82, 0x84, 0x8b, 0x96, 0x24, 0x30, 0x48, 0x6c };
 	assoc.add_option({ Dot11::SUPPORTED_RATES, sizeof(rates), rates });
 
@@ -273,21 +272,21 @@ bool do_assoc(EAP_Att &eap_att) {
 
 		optional<bool> result;
 		const auto start_time = steady_clock::now();
-		const auto r = components::poll_sniffer<bool>(
-				handle, eap_att.timeout, [&](const frame_raw_t &p) -> optional<bool> {
-					auto [pdu, raw] = MonitorSocket::parse_frame(p);
-					if(!pdu) return nullopt;
-					const auto *resp = pdu->find_pdu<Dot11AssocResponse>();
-					if(!resp || resp->addr1() != eap_att.att_mac) return nullopt;
-					if(resp->status_code() != 0) {
-						log(LogLevel::WARNING, "Assoc rejected, status={}", static_cast<int>(resp->status_code()));
-						result = false;
-						return true;
-					}
-					log(LogLevel::INFO, "802.11 Association OK");
-					result = true;
+		const auto r =
+			components::poll_sniffer<bool>(handle, eap_att.timeout, [&](const frame_raw_t &p) -> optional<bool> {
+				auto [pdu, raw] = MonitorSocket::parse_frame(p);
+				if(!pdu) return nullopt;
+				const auto *resp = pdu->find_pdu<Dot11AssocResponse>();
+				if(!resp || resp->addr1() != eap_att.att_mac) return nullopt;
+				if(resp->status_code() != 0) {
+					log(LogLevel::WARNING, "Assoc rejected, status={}", static_cast<int>(resp->status_code()));
+					result = false;
 					return true;
-				});
+				}
+				log(LogLevel::INFO, "802.11 Association OK");
+				result = true;
+				return true;
+			});
 		eap_att.decrease_timeout(start_time);
 
 		if(holds_alternative<StopReason>(r) && get<StopReason>(r) == StopReason::Interrupted) return false;
@@ -316,7 +315,6 @@ void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
 
 	eap_att.sock.send(dot11, eap_att.channel);
 }
-
 
 vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac) {
 	if(p.size() < 4) return {};

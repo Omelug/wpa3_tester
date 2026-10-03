@@ -52,7 +52,7 @@ void setup_attack(RunStatus &rs) {
 }
 
 static void write_run_config(const string &config_path, const sae_helper::SAEPair &sae, const string &ap_mac,
-		const string &client_mac, const string &channel, const string &att_iface, const nlohmann::json &att_cfg) {
+	const string &client_mac, const string &channel, const string &att_iface, const nlohmann::json &att_cfg) {
 	const string scalar_hex = sae_helper::bytes_to_hex_plain(sae.scalar);
 	const string finite_hex = sae_helper::bytes_to_hex_plain(sae.element);
 	const string band = att_cfg.at("adapter_band").get<string>();
@@ -97,7 +97,7 @@ void run_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Capturing SAE commit values...");
 	//TODO zkotrolovat, že tu je ssid ([předtím bylo hardcoded)
 	const auto sae = cookie_guzzler::get_commit_values(
-			rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
+		rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
 	attacker->set_monitor_mode();
@@ -106,12 +106,12 @@ void run_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
 	const string config_path = rs.run_folder() / "config.yaml";
 	write_run_config(config_path,
-			sae.value(),
-			ap.get(SK::mac),
-			client.get(SK::mac),
-			ap["channel"],
-			attacker.get(SK::iface),
-			att_cfg);
+		sae.value(),
+		ap.get(SK::mac),
+		client.get(SK::mac),
+		ap["channel"],
+		attacker.get(SK::iface),
+		att_cfg);
 
 	log(LogLevel::INFO, "Generated config.yaml at {}", config_path);
 
@@ -119,7 +119,7 @@ void run_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Starting WPA3-SAE-DoS-Research-Suite orchestrator...");
 
 	rs.process_manager.run(
-			"attacker", { /*"setsid", */ "python3", get_suite_path() + "/orchestator_master_en.py" }, rs.run_folder());
+		"attacker", { /*"setsid", */ "python3", get_suite_path() + "/orchestator_master_en.py" }, rs.run_folder());
 
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	interruptible_sleep(seconds(attack_time));

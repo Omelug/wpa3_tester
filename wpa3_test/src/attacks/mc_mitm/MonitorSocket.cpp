@@ -88,7 +88,7 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(
-		const vector<uint8_t> &raw, const Channel &ch, const bool detect_injected) {
+	const vector<uint8_t> &raw, const Channel &ch, const bool detect_injected) {
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
@@ -164,11 +164,11 @@ MonitorSocket::RecvResult MonitorSocket::recv() {
 }
 
 void MonitorSocket::recv_loop(
-		const chrono::steady_clock::time_point deadline, const function<bool(RecvResult)> &on_frame) {
+	const chrono::steady_clock::time_point deadline, const function<bool(RecvResult)> &on_frame) {
 	if(rx_ch_) {
 		while(true) {
 			const int rem = static_cast<int>(
-					chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+				chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
 			if(rem <= 0) break;
 			// Block until data arrives or timeout; 50 ms slices to recheck deadline
 			const int avail = ssh_channel_poll_timeout(rx_ch_, min(rem, 50), 0);
@@ -183,7 +183,7 @@ void MonitorSocket::recv_loop(
 	pollfd pfd{ fd, POLLIN, 0 };
 	while(true) {
 		const int rem = static_cast<int>(
-				chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+			chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
 		if(rem <= 0 || poll(&pfd, 1, rem) <= 0) break;
 		if(auto r = recv(); r && on_frame(std::move(r))) break;
 	}

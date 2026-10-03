@@ -10,7 +10,7 @@ class OpenWrtConn: public ExternalConn {
 	// --- device functions
 	std::string wait_for_ifname(const std::string &section) const;
 	void setup_monitor_iface(
-			const std::string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const;
+		const std::string &radio_name, const ActorPtr &actor, const nlohmann::json &program_config) const;
 	std::string uci_batch(const std::vector<std::string> &cmds, bool log_errors = true, int *ret = nullptr) const;
 public:
 	void check_req(const nlohmann::json &config, const std::string &actor_name) override;

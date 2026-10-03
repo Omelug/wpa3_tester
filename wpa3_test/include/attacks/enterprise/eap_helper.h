@@ -27,7 +27,7 @@ struct EAP_Att {
 
 	void decrease_timeout(const std::chrono::time_point<std::chrono::steady_clock> start_time) {
 		const auto elapsed =
-				std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time);
+			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time);
 		timeout = elapsed >= timeout ? std::chrono::milliseconds{ 0 } : timeout - elapsed;
 	}
 };
@@ -61,7 +61,10 @@ std::vector<uint8_t> extract_eapol(const frame_raw_t &p, const Tins::HWAddress<6
 inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) {
 	return [&frame, opcode](const std::vector<uint8_t> &v) -> bool {
 		const auto f = parse_eap_pwd(v);
-		if(f && f->opcode == opcode) { frame = f; return true; }
+		if(f && f->opcode == opcode) {
+			frame = f;
+			return true;
+		}
 		return false;
 	};
 }
@@ -71,19 +74,18 @@ inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) 
 std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 	const auto start_time = std::chrono::steady_clock::now();
 	std::optional<std::vector<uint8_t>> result = std::nullopt;
-	(void)components::poll_sniffer<bool>(eap_att.sock.get_pcap_handle(),
-			eap_att.timeout,
-			[&](const frame_raw_t &p) -> std::optional<bool> {
-				auto eapol = extract_eapol(p, eap_att.att_mac);
-				if(eapol.empty()) return std::nullopt;
-				if(is_eap_success(eapol)) {
-					result = std::vector<uint8_t>{}; //have to be empty vector
-					return true;
-				}
-				if(!pred(eapol)) return std::nullopt;
-				result = std::move(eapol);
+	(void)components::poll_sniffer<bool>(
+		eap_att.sock.get_pcap_handle(), eap_att.timeout, [&](const frame_raw_t &p) -> std::optional<bool> {
+			auto eapol = extract_eapol(p, eap_att.att_mac);
+			if(eapol.empty()) return std::nullopt;
+			if(is_eap_success(eapol)) {
+				result = std::vector<uint8_t>{}; //have to be empty vector
 				return true;
-			});
+			}
+			if(!pred(eapol)) return std::nullopt;
+			result = std::move(eapol);
+			return true;
+		});
 	eap_att.decrease_timeout(start_time);
 	return result;
 }

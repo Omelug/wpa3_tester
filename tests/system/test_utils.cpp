@@ -142,7 +142,7 @@ TEST_CASE("create_public_dirs - new directories and file are world-accessible") 
 
 	// File must have rw-rw-rw- (0666)
 	constexpr perms file_expected = perms::owner_read | perms::owner_write | perms::group_read | perms::group_write |
-			perms::others_read | perms::others_write;
+		perms::others_read | perms::others_write;
 	CHECK_EQ(status(test3).permissions() & file_expected, file_expected);
 
 	remove_all(test1);

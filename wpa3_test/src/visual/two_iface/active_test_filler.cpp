@@ -47,7 +47,7 @@ void generate_report(RunSuiteStatus &rss) {
 
 	for(const auto &e: entries) {
 		const string result_link =
-				"[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
+			"[" + string(e.success ? "PASSED" : "FAILED") + "](" + e.test_name + "/" + RESULT_NAME + ")";
 		report << "| " << path(e.test_name) / REPORT_NAME << " | " << e.tx_driver << " | " << e.rx_driver << " | "
 			   << e.acked << " | " << e.not_acked << " | " << result_link << " |\n";
 	}

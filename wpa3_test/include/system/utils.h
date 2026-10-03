@@ -16,13 +16,13 @@ std::string relative_from(const std::string &base_dir_name, const std::filesyste
 std::string trim(std::string s);
 
 template<typename Range>
-std::string join(const Range &v, const std::string &sep = ""){
-    std::string out;
-    for(auto it = std::begin(v); it != std::end(v); ++it){
-        if(it != std::begin(v)) out += sep;
-        out += *it;
-    }
-    return out;
+std::string join(const Range &v, const std::string &sep = "") {
+	std::string out;
+	for(auto it = std::begin(v); it != std::end(v); ++it) {
+		if(it != std::begin(v)) out += sep;
+		out += *it;
+	}
+	return out;
 }
 
 void resolve_relative_paths(nlohmann::json &node, const std::filesystem::path &base_dir);

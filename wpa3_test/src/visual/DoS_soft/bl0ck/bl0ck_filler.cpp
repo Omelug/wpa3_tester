@@ -5,13 +5,13 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "default.h"
+#include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "logger/report.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/observers.h"
 #include "observer/trace_cmd_wrapper.h"
-#include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "observer/tshark_wrapper.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
@@ -52,7 +52,7 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {
 		const auto &ac = cfg["attack_config"];
 		if(ac["attack_variant"]) e.attack_variant = ac["attack_variant"].as<string>();
-		if(ac["random_MAC"])     e.random_MAC     = ac["random_MAC"].as<bool>();
+		if(ac["random_MAC"]) e.random_MAC = ac["random_MAC"].as<bool>();
 	}
 
 	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
@@ -78,32 +78,31 @@ vector<Bl0ckTestEntry> Bl0ckTestEntry::collect_results(const path &run_dir) {
 }
 
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
-		const path &page_dir, const string &t_name) {
+	const path &page_dir, const string &t_name) {
 
 	helper::div_card<Bl0ckTestEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<Bl0ckTestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<Bl0ckTestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
-				t.build([&](auto col) {
-					 COL("Test", e.name);
-					 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-					 COL("Client MAC (source)",
-							 overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-					 COL("Attacker (driver)",
-							 overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
-					 col("Variant", &Bl0ckTestEntry::attack_variant);
-					 COL("Random", e.random_MAC);
-					 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
-					 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
-					 //TODO not cached now, need to be decrypted
-					 //col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);
-					 COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
-					 COL("Reconnected?", !e.reconnection.empty());
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 COL("Test", e.name);
+				 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+				 COL("Client MAC (source)", overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+				 COL("Attacker (driver)",
+					 overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")");
+				 col("Variant", &Bl0ckTestEntry::attack_variant);
+				 COL("Random", e.random_MAC);
+				 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
+				 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
+				 //TODO not cached now, need to be decrypted
+				 //col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);
+				 COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
+				 COL("Reconnected?", !e.reconnection.empty());
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
@@ -128,7 +127,7 @@ void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
 	ulong passed_count = 0;
 	for(const auto &e: entries) {
 		const string result_link =
-				"[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME + ")";
+			"[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_mac << " | " << e.client_mac
 			   << " | " << e.attacker_mac << " (" << e.attacker_driver << ") | " << e.attack_variant << " | "
 			   << result_link << " |\n";

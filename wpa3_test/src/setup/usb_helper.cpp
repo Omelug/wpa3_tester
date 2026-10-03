@@ -80,11 +80,18 @@ vector<UsbResetInfo> collect_all_usb_devices() {
 		}
 		if(!is_device) continue;
 
-		auto read_line = [](const path &p) { ifstream f(p); string s; if(f) getline(f, s); return s; };
-		result.push_back({ dev_path, name, driver_name, module_name,
+		auto read_line = [](const path &p) {
+			ifstream f(p);
+			string s;
+			if(f) getline(f, s);
+			return s;
+		};
+		result.push_back({ dev_path,
+			name,
+			driver_name,
+			module_name,
 			read_line(dev_path / "idVendor"),
-			read_line(dev_path / "idProduct")
-		});
+			read_line(dev_path / "idProduct") });
 	}
 	return result;
 }
@@ -110,17 +117,17 @@ void reset_usb_ifaces() {
 				allowed.insert(lc);
 			}
 			const size_t total = wifi_ifaces.size();
-			erase_if(wifi_ifaces, [&](const UsbResetInfo &d) {
-				return !allowed.contains(d.vendor_id + ":" + d.product_id);
-			});
-			log(LogLevel::DEBUG, "reset_usb_ifaces: only_list_reset active, {}/{} devices match",
-				wifi_ifaces.size(), total);
+			erase_if(wifi_ifaces,
+				[&](const UsbResetInfo &d) { return !allowed.contains(d.vendor_id + ":" + d.product_id); });
+			log(LogLevel::DEBUG,
+				"reset_usb_ifaces: only_list_reset active, {}/{} devices match",
+				wifi_ifaces.size(),
+				total);
 		}
 	}
 	set<string> drivers;
 	for(const auto &iface: wifi_ifaces) {
-		if(iface.module_name != "unknown")
-			drivers.insert(iface.module_name);
+		if(iface.module_name != "unknown") drivers.insert(iface.module_name);
 	}
 	const size_t expected_with_driver = wifi_ifaces.size();
 	for(const auto &drv: drivers) {
@@ -140,9 +147,8 @@ void reset_usb_ifaces() {
 		// USB bus reset for devices not on any switchable hub (won't get power cycled)
 		vector<UsbResetInfo> non_hub;
 		for(const auto &dev: wifi_ifaces) {
-			bool covered = ranges::any_of(hubs, [&](const string &loc) {
-				return dev.iface_id.rfind(loc + ".", 0) == 0;
-			});
+			bool covered =
+				ranges::any_of(hubs, [&](const string &loc) { return dev.iface_id.rfind(loc + ".", 0) == 0; });
 			if(!covered) non_hub.push_back(dev);
 		}
 		if(!non_hub.empty()) usb_bus_reset(non_hub);
@@ -177,11 +183,13 @@ void reset_usb_ifaces() {
 		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
 		while(chrono::steady_clock::now() < deadline) {
 			const auto current = collect_all_usb_devices();
-			const size_t net_ready = ranges::count_if(current, [&](const auto &i) {
-				return i.driver_name != "unknown" && has_netdev(i);
-			});
+			const size_t net_ready =
+				ranges::count_if(current, [&](const auto &i) { return i.driver_name != "unknown" && has_netdev(i); });
 			if(net_ready >= expected_with_driver) break;
-			log(LogLevel::DEBUG, "reset_usb_ifaces: {}/{} adapters net-ready, waiting...", net_ready, expected_with_driver);
+			log(LogLevel::DEBUG,
+				"reset_usb_ifaces: {}/{} adapters net-ready, waiting...",
+				net_ready,
+				expected_with_driver);
 			interruptible_sleep(chrono::seconds(3));
 		}
 	} else {

@@ -25,7 +25,7 @@ SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {
 }
 
 std::vector<SaeDosFolderEntry> SaeDosFolderEntry::collect_results(
-		const path &suite_data_dir, const string &module_filter) {
+	const path &suite_data_dir, const string &module_filter) {
 	vector<SaeDosFolderEntry> entries;
 	for(const auto &attack_dir: directory_iterator(suite_data_dir)) {
 		if(!attack_dir.is_directory()) continue;
@@ -46,22 +46,23 @@ std::vector<SaeDosFolderEntry> SaeDosFolderEntry::collect_results(
 }
 
 void SaeDosFolderEntry::render_table(overview::HtmlGuard &f, const string &module, const path &suite_data_dir,
-		const path &page_dir, const string &t_name) {
+	const path &page_dir, const string &t_name) {
 
 	helper::div_card<SaeDosFolderEntry>(
-			f, module, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<SaeDosFolderEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, module, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<SaeDosFolderEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { body; })
-				t.build([&](auto col) {
-					 COL("Test", hg << overview::test_name_cell(e.test_folder, e.name, page_dir));
-					 COL("AP Resources",
-							 if(!e.ap_res_png.empty()) {
-								 hg << R"(<img src=")" << filesystem::relative(e.ap_res_png, page_dir).string()
-									<< R"(" style="max-height:160px;">)";
-							 } else { hg << "-"; });
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 COL("Test", hg << overview::test_name_cell(e.test_folder, e.name, page_dir));
+				 COL(
+					 "AP Resources",
+					 if(!e.ap_res_png.empty()) {
+						 hg << R"(<img src=")" << filesystem::relative(e.ap_res_png, page_dir).string()
+							<< R"(" style="max-height:160px;">)";
+					 } else { hg << "-"; });
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 }

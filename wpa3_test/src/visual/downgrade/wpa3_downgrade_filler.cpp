@@ -43,45 +43,45 @@ vector<Wpa3TransDowngradeTestEntry> Wpa3TransDowngradeTestEntry::collect_results
 
 	ranges::sort(entries, [](const Wpa3TransDowngradeTestEntry &a, const Wpa3TransDowngradeTestEntry &b) {
 		return tie(a.ap_driver,
-					   a.ap_mac,
-					   a.client_driver,
-					   a.client_mac,
-					   a.test_name,
-					   a.disconnected,
-					   a.downgrade_seen,
-					   a.ap_wpa3_trans_disable) < tie(b.ap_driver,
-														  b.ap_mac,
-														  b.client_driver,
-														  b.client_mac,
-														  b.test_name,
-														  b.disconnected,
-														  b.downgrade_seen,
-														  b.ap_wpa3_trans_disable);
+				   a.ap_mac,
+				   a.client_driver,
+				   a.client_mac,
+				   a.test_name,
+				   a.disconnected,
+				   a.downgrade_seen,
+				   a.ap_wpa3_trans_disable) < tie(b.ap_driver,
+												  b.ap_mac,
+												  b.client_driver,
+												  b.client_mac,
+												  b.test_name,
+												  b.disconnected,
+												  b.downgrade_seen,
+												  b.ap_wpa3_trans_disable);
 	});
 
 	return entries;
 }
 
 void Wpa3TransDowngradeTestEntry::render_table(
-		overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
 
 	helper::div_card<Wpa3TransDowngradeTestEntry>(f,
-			title,
-			suite_data_dir,
-			[&](overview::HtmlGuard &hg, const std::vector<Wpa3TransDowngradeTestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		title,
+		suite_data_dir,
+		[&](overview::HtmlGuard &hg, const std::vector<Wpa3TransDowngradeTestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 
-				t.build([&](auto col) {
-					 COL("Test", e.test_name);
-					 COL("AP ", e.ap_mac << "(" << e.ap_driver << ")");
-					 COL("Client", e.client_mac << "(" << e.client_driver << ")");
-					 col("Disconnected", &Wpa3TransDowngradeTestEntry::disconnected);
-					 col("Downgrade Seen", &Wpa3TransDowngradeTestEntry::downgrade_seen);
-					 col("WPA3 disable", &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 COL("Test", e.test_name);
+				 COL("AP ", e.ap_mac << "(" << e.ap_driver << ")");
+				 COL("Client", e.client_mac << "(" << e.client_driver << ")");
+				 col("Disconnected", &Wpa3TransDowngradeTestEntry::disconnected);
+				 col("Downgrade Seen", &Wpa3TransDowngradeTestEntry::downgrade_seen);
+				 col("WPA3 disable", &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 void setup_suite(const RunSuiteStatus &rss) {

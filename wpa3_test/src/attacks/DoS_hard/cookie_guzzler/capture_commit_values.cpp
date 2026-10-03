@@ -16,7 +16,7 @@ using namespace chrono;
 
 namespace wpa3_tester::cookie_guzzler {
 optional<sae_helper::SAEPair> capture_sae_commit(
-		const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle, const string &iface) {
+	const HWAddress<6> &ap_mac, const int timeout_sec, pcap_t *handle, const string &iface) {
 	char errbuf[PCAP_ERRBUF_SIZE];
 
 	const bool owns = handle == nullptr;
@@ -35,23 +35,23 @@ optional<sae_helper::SAEPair> capture_sae_commit(
 	pcap_freecode(&fp);
 
 	auto result = components::poll_sniffer<sae_helper::SAEPair>(
-			handle,
-			milliseconds(timeout_sec * 1000),
-			[](const frame_raw_t &frame) -> optional<sae_helper::SAEPair> {
-				if(frame.size() < 10) {
-					log(LogLevel::DEBUG, "PDU too short: {}", frame.size());
-					return nullopt;
-				}
-				//tODO descripbe
-				log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", frame[0], frame[1], frame[2], frame[3]);
-
-				if(auto f = sae_helper::parse_sae_commit(frame)) {
-					log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", f->scalar.size());
-					return f;
-				}
+		handle,
+		milliseconds(timeout_sec * 1000),
+		[](const frame_raw_t &frame) -> optional<sae_helper::SAEPair> {
+			if(frame.size() < 10) {
+				log(LogLevel::DEBUG, "PDU too short: {}", frame.size());
 				return nullopt;
-			},
-			iface);
+			}
+			//tODO descripbe
+			log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", frame[0], frame[1], frame[2], frame[3]);
+
+			if(auto f = sae_helper::parse_sae_commit(frame)) {
+				log(LogLevel::DEBUG, "Captured SAE commit, scalar size: {}", f->scalar.size());
+				return f;
+			}
+			return nullopt;
+		},
+		iface);
 
 	if(holds_alternative<sae_helper::SAEPair>(result)) return get<sae_helper::SAEPair>(std::move(result));
 	return nullopt;
@@ -89,7 +89,7 @@ string create_wpa_supplicant_config(const string &ssid) {
 }
 
 optional<sae_helper::SAEPair> get_commit_values(RunStatus &rs, const string &iface, const string &sniff_iface,
-		const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
+	const string &ssid, const HWAddress<6> &ap_mac, const int timeout, pcap_t *handler) {
 	if(iface == sniff_iface) throw invalid_argument("Interface names do cant be same");
 	const string pid_file = "/tmp/wpa_supplicant_get_commit_values.pid";
 	const string conf_path = create_wpa_supplicant_config(ssid);

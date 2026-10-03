@@ -64,34 +64,32 @@ vector<MalformedEapol1TestEntry> MalformedEapol1TestEntry::collect_results(const
 
 	ranges::sort(entries, [](const MalformedEapol1TestEntry &a, const MalformedEapol1TestEntry &b) {
 		return tie(a.client_version, a.client_mfp, a.rogue_ap_connected, a.ap_mac, a.attacker_mac) <
-				tie(b.client_version, b.client_mfp, b.rogue_ap_connected, b.ap_mac, b.attacker_mac);
+			tie(b.client_version, b.client_mfp, b.rogue_ap_connected, b.ap_mac, b.attacker_mac);
 	});
 	return entries;
 }
 
 void MalformedEapol1TestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
-		const path &page_dir, const string &t_name) {
+	const path &page_dir, const string &t_name) {
 
 	helper::div_card<MalformedEapol1TestEntry>(
-			f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<MalformedEapol1TestEntry> &entries) {
-				HtmlPathTable t(hg, entries, t_name);
+		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<MalformedEapol1TestEntry> &entries) {
+			HtmlPathTable t(hg, entries, t_name);
 
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-				t.build([&](auto col) {
-					 col("Test", &MalformedEapol1TestEntry::test_name);
-					 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
-					 COL("Client MAC (source)",
-							 overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
-					 col("Client wpa_supplicant version", &MalformedEapol1TestEntry::client_version);
-					 COL("Disconnected? <br> (from AP view)",
-							 e.client_disconnected << " (" << e.ap_disconnected << ")");
-					 COL("Rogue WPA2?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
-					 col("Client MFP", &MalformedEapol1TestEntry::client_mfp);
-					 COL("AP/Client WPA support", e.ap_WPA_support << "<br>" << e.client_WPA_support);
-					 col("Connected WPA version", &MalformedEapol1TestEntry::conn_WPA_version);
-				 })->render({ "Test" });
+			t.build([&](auto col) {
+				 col("Test", &MalformedEapol1TestEntry::test_name);
+				 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
+				 COL("Client MAC (source)", overview::device(e.client_mac, page_dir) << " (" << e.client_source << ")");
+				 col("Client wpa_supplicant version", &MalformedEapol1TestEntry::client_version);
+				 COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
+				 COL("Rogue WPA2?\n(cracked)", e.rogue_ap_connected << " (" << e.cracked << ")");
+				 col("Client MFP", &MalformedEapol1TestEntry::client_mfp);
+				 COL("AP/Client WPA support", e.ap_WPA_support << "<br>" << e.client_WPA_support);
+				 col("Connected WPA version", &MalformedEapol1TestEntry::conn_WPA_version);
+			 })->render({ "Test" });
 #undef COL
-			});
+		});
 }
 
 void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss) {
@@ -126,9 +124,9 @@ void MalformedEapol1TestEntry::generate_report(RunSuiteStatus &rss) {
 		if(graphs.empty()) graphs = "-";
 
 		const string disc_link = "[" + string((e.client_disconnected.value()) ? "yes" : "no") +
-				"]"
-				"(" +
-				e.test_name + "/" + RESULT_NAME + ")";
+			"]"
+			"(" +
+			e.test_name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.test_name, path(e.test_name) / REPORT_NAME) << " | " << e.ap_driver << " | "
 			   << e.client_driver << " | " << e.client_version << " | " << e.attacker_driver << " | " << disc_link
 			   << " | " << e.rogue_ap_connected << " | " << graphs << " |\n";

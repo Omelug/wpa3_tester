@@ -20,7 +20,7 @@ struct HtmlFixture {
 	string read_index() const {
 		ifstream f(dir / "index.html");
 		string s{ istreambuf_iterator(f), istreambuf_iterator<char>() };
-		erase_if(s, [](const char c){ return c == '\t' || c == '\n'; });
+		erase_if(s, [](const char c) { return c == '\t' || c == '\n'; });
 		return s;
 	}
 	~HtmlFixture() { remove_all(dir); }
@@ -156,7 +156,7 @@ TEST_CASE("device() - device page found via ancestor -> link uses correct depth"
 	{ ofstream(dev_dir / "index.html") << "device"; }
 	const path nested = fx.dir / "attacks" / "DoS_soft" / "channel_switch";
 	CHECK_EQ(device(mac.to_string(), nested),
-			"<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
+		"<a href=\"../../../devices/bb:cc:dd:ee:ff:00/index.html\">bb:cc:dd:ee:ff:00</a>");
 }
 
 using wpa3_tester::described_bool;
@@ -183,7 +183,7 @@ TEST_CASE("described_bool - single true entry") {
 		hg << db;
 	}
 	CHECK_EQ(fx.read_index(),
-			R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR + "<tr><td>yes</td><td>src</td></tr>" + TOOLTIP_FTR);
+		R"(<span class="has-tooltip">yes)" + TOOLTIP_HDR + "<tr><td>yes</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_bool - single false entry") {
@@ -195,7 +195,7 @@ TEST_CASE("described_bool - single false entry") {
 		hg << db;
 	}
 	CHECK_EQ(fx.read_index(),
-			R"(<span class="has-tooltip">no)" + TOOLTIP_HDR + "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
+		R"(<span class="has-tooltip">no)" + TOOLTIP_HDR + "<tr><td>no</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_bool - multiple entries: last shown, all in table") {
@@ -208,10 +208,10 @@ TEST_CASE("described_bool - multiple entries: last shown, all in table") {
 		hg << db;
 	}
 	CHECK_EQ(fx.read_index(),
-			R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
-					"<tr><td>no</td><td>s1</td></tr>"
-					"<tr><td>no</td><td>s2</td></tr>" +
-					TOOLTIP_FTR);
+		R"(<span class="has-tooltip">no)" + TOOLTIP_HDR +
+			"<tr><td>no</td><td>s1</td></tr>"
+			"<tr><td>no</td><td>s2</td></tr>" +
+			TOOLTIP_FTR);
 }
 
 TEST_CASE("described_str - empty -> '?'") {
@@ -232,7 +232,7 @@ TEST_CASE("described_str - single non-empty string entry") {
 		hg << ds;
 	}
 	CHECK_EQ(fx.read_index(),
-			R"(<span class="has-tooltip">hello)" + TOOLTIP_HDR + "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
+		R"(<span class="has-tooltip">hello)" + TOOLTIP_HDR + "<tr><td>hello</td><td>src</td></tr>" + TOOLTIP_FTR);
 }
 
 TEST_CASE("described_str - multiple entries: last shown, all in table") {
@@ -245,8 +245,8 @@ TEST_CASE("described_str - multiple entries: last shown, all in table") {
 		hg << ds;
 	}
 	CHECK_EQ(fx.read_index(),
-			R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
-					"<tr><td>first</td><td>s1</td></tr>"
-					"<tr><td>second</td><td>s2</td></tr>" +
-					TOOLTIP_FTR);
+		R"(<span class="has-tooltip"><strong style="color:red">second</strong>)" + TOOLTIP_HDR +
+			"<tr><td>first</td><td>s1</td></tr>"
+			"<tr><td>second</td><td>s2</td></tr>" +
+			TOOLTIP_FTR);
 }

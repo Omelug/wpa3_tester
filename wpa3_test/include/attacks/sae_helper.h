@@ -27,16 +27,20 @@ struct SAEPair {
 	}
 
 	std::string to_str() const {
-		return std::format(
-			"SAEPair {{\n"
-			"  status:   {}\n  group_id: {}\n  valid:    {}\n"
-			"  scalar  ({} bytes): {}\n"
-			"  element ({} bytes): {}\n"
-			"  token   ({} bytes): {}\n}}",
-			status, group_id, is_valid(),
-			scalar.size(), bytes_to_hex(scalar),
-			element.size(), bytes_to_hex(element),
-			token.size(), bytes_to_hex(token));
+		return std::format("SAEPair {{\n"
+						   "  status:   {}\n  group_id: {}\n  valid:    {}\n"
+						   "  scalar  ({} bytes): {}\n"
+						   "  element ({} bytes): {}\n"
+						   "  token   ({} bytes): {}\n}}",
+			status,
+			group_id,
+			is_valid(),
+			scalar.size(),
+			bytes_to_hex(scalar),
+			element.size(),
+			bytes_to_hex(element),
+			token.size(),
+			bytes_to_hex(token));
 	}
 };
 
@@ -50,5 +54,5 @@ struct AuthFrame {
 std::optional<AuthFrame> parse_auth_frame(const frame_raw_t &p);
 std::optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt);
 Tins::RadioTap make_sae_commit(
-		const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, const SAEPair &sae_params);
+	const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, const SAEPair &sae_params);
 }

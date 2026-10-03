@@ -87,7 +87,7 @@ EAP_Info parse_eap_frame(const RawPDU &raw) {
 }
 
 static optional<monostate> handle_eap_pdu(
-		PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress<6>, EAP_Session> &sessions) {
+	PDU &pdu, const HWAddress<6> &target_ap_mac, map<HWAddress<6>, EAP_Session> &sessions) {
 	const auto *dot11_data = pdu.find_pdu<Dot11Data>();
 	const auto *raw = pdu.find_pdu<RawPDU>();
 	if(!dot11_data || !raw) return nullopt;
@@ -132,6 +132,6 @@ static optional<monostate> handle_eap_pdu(
 void active_eap_identity_scan(const string &iface, const string &target_ap_mac, const int timeout_sec) {
 	map<HWAddress<6>, EAP_Session> sessions;
 	components::poll_sniffer_pdu<monostate>(
-			[&](PDU &pdu) { return handle_eap_pdu(pdu, target_ap_mac, sessions); }, iface, "", seconds(timeout_sec));
+		[&](PDU &pdu) { return handle_eap_pdu(pdu, target_ap_mac, sessions); }, iface, "", seconds(timeout_sec));
 }
 }

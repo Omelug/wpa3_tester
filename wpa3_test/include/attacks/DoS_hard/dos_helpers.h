@@ -12,7 +12,7 @@
 namespace wpa3_tester::dos_helpers {
 template<typename FrameGen>
 void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const size_t burst_size,
-		const size_t frames_per_second_limit, FrameGen &&frame_gen) {
+	const size_t frames_per_second_limit, FrameGen &&frame_gen) {
 	long long counter = 0;
 	long long next_log = 0;
 	const auto end_time = std::chrono::steady_clock::now() + std::chrono::seconds(attack_time_sec);

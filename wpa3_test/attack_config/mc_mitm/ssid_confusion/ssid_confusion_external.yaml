@@ -1,0 +1,24 @@
+name: ssid_confusion_test_ext
+attacker_module: ssid_confusion
+$extends: [ ../mc_mitm.yaml ]
+
+actors:
+  ap:
+    setup:
+      program_config:
+        ssid: SafeNet
+  client:
+    setup:
+      $DELETE: program_config
+      program_config:
+        other_options: "-d"
+        # wrongNEt have high priority -> preferred, only for test in real scenario need to be somehow
+        #TODO try set it up with different priority
+        wpa_supplicant_path: "./config/SafeNet_WrongNet.conf"
+
+attack_config:
+  confused_ssid: "WrongNet"
+  strip_rsn: false
+  ssid: SafeNet
+  only_to_mitm: false
+  attack_time_sec: 150

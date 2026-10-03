@@ -1,6 +1,6 @@
 #pragma once
 #include <tins/tins.h>
-#include "mc_mitm_hooks.h"
+#include "../mc_mitm_hooks.h"
 
 namespace wpa3_tester {
 class McMitm;

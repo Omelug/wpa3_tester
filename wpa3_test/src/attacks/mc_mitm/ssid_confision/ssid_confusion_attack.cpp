@@ -1,4 +1,4 @@
-#include "attacks/mc_mitm/ssid_confusion_attack.h"
+#include "../../../../include/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.h"
 
 #include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm.h"
@@ -17,7 +17,7 @@ void setup_attack(RunStatus &rs) {
 	const auto conf = rs.config_path().parent_path() / "config" / "SafeNet_WrongNet.conf";
 	if(exists(conf)) { copy_f(conf, rs.run_folder() / "SafeNet_WrongNet.conf"); }
 	components::client_ap_setup_t(rs);
-	components::setup_AP(rs, "wrong_ap");
+	if(rs.actor("wrong_ap")) components::setup_AP(rs, "wrong_ap");
 }
 
 void run_attack(RunStatus &rs) {
@@ -35,13 +35,12 @@ void run_attack(RunStatus &rs) {
 
 	attack.set_hooks(make_unique<SsidConfusionHooks>(ap.get(SK::ssid), confused_ssid, strip_rsn));
 
-	rogue_client->up_sniff_iface();
-	rogue_ap->set_iface_up();
 	rogue_client->set_iface_up();
+	rogue_ap->set_iface_up();
 
 	attack.netconfig.real_channel = rogue_client->get_channel();
 	attack.netconfig.rogue_channel = rogue_ap->get_channel();
-	attack.netconfig.ssid = ap[SK::mac] ? ap.get(SK::mac) : "";
+	attack.netconfig.ssid = ap.get(SK::ssid);
 
 	// rs.start_observer in attack.ru
 	attack.run(rs, timeout);

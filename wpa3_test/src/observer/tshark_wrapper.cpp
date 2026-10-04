@@ -416,7 +416,7 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 	if(first_line.empty()) return nullopt;
 
 	try {
-		return (stoul(first_line, nullptr, 0) & 0x4000u) != 0;
+		return (stoul(first_line, nullptr, 0) & RSN_CAP_OCVC) != 0;
 	} catch(...) { return nullopt; }
 }
 
@@ -449,12 +449,12 @@ string akm_from_pcap(const path &pcap_path) {
 }
 
 optional<bool> client_ocv_from_pcap(const path &pcap_path) {
-	// Probe Request (0x0004) or Association Request (0x0000) carry client's RSNXE
+	// Probe Request (0x0004) or Association Request (0x0000) carry client's RSN Capabilities
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000");
 }
 
 optional<bool> ap_ocv_from_pcap(const path &pcap_path) {
-	// Beacon (0x0008) or Probe Response (0x0005) carry AP's RSNXE
+	// Beacon (0x0008) or Probe Response (0x0005) carry AP's RSN Capabilities
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
 }
 
@@ -502,8 +502,7 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 
 	try {
 		const uint32_t caps = stoul(first_line, nullptr, 0);
-		// 0x1000 = Protected Block Ack (PBAC)
-		return (caps & 0x1000u) != 0;
+		return (caps & RSN_CAP_PBAC) != 0;
 	} catch(...) { return nullopt; }
 }
 
@@ -523,7 +522,7 @@ described_bool pbac_from_pcap_client(const path &pcap_path, const string &client
 	return result;
 }
 
-// RSN Capabilities: bit 6 = MFPR (0x0040), bit 7 = MFPC (0x0080), 802.11-2020 Table 9-264
+// RSN Capabilities: RSN_CAP_MFPR (bit 6), RSN_CAP_MFPC (bit 7), 802.11-2020 Table 9-264
 string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	if(!exists(pcap_path)) return {};
 	string filter = "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000";
@@ -533,7 +532,7 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 																"-r",
 																pcap_path.string(),
 																"-Y",
-																filter + " && wlan.rsn.capabilities",
+						a										filter + " && wlan.rsn.capabilities",
 																"-T",
 																"fields",
 																"-e",
@@ -547,8 +546,8 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 		if(line.empty()) continue;
 		try {
 			const uint32_t caps = stoul(line, nullptr, 0);
-			if(caps & 0x0040u) return "REQUIRED";
-			if(caps & 0x0080u) return "OPTIONAL";
+			if(caps & RSN_CAP_MFPR) return "REQUIRED";
+			if(caps & RSN_CAP_MFPC) return "OPTIONAL";
 			return "";
 		} catch(...) {}
 	}

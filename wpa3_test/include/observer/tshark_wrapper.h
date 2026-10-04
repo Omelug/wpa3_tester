@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <optional>
 #include "config/RunStatus.h"
 #include "graph/graph_elements.h"
@@ -6,6 +7,13 @@
 #include "overview/described.h"
 
 namespace wpa3_tester::observer::tshark {
+
+// RSN Capabilities field bitmasks (802.11-2020 Table 9-258)
+constexpr uint16_t RSN_CAP_MFPR = 0x0040; // bit 6  – Management Frame Protection Required
+constexpr uint16_t RSN_CAP_MFPC = 0x0080; // bit 7  – Management Frame Protection Capable
+constexpr uint16_t RSN_CAP_PBAC = 0x1000; // bit 12 – Protected Block Ack Agreement Capable
+constexpr uint16_t RSN_CAP_OCVC = 0x4000; // bit 14 – Operating Channel Validation Capable
+
 std::string or_filter(const std::vector<std::string> &mac_filters);
 std::string masked_mac_filter_5(const RunStatus &rs);
 std::string all_actors_mac_filter(const RunStatus &rs, bool broadcast = false);
@@ -28,14 +36,14 @@ void pcap_events(const RunStatus &rs, G_elms &elements,
 	std::initializer_list<std::tuple<std::string, std::string, std::string, std::string>> event_def);
 
 // --------- SPECIFIC HELPERS -----------
+
 // extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark)
 // returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", empty string if not found
 std::string akm_from_pcap(const std::filesystem::path &pcap_path);
-// extract OCV (OCVC bit of RSNXE) from client frames (Probe Req / Assoc Req) in pcap
-
-// returns true if a frame is found, nullopt if no relevant frame exists
+// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities) from client frames (Probe Req / Assoc Req) in pcap
+// returns true if OCVC set, false if frame found but bit unset, nullopt if no relevant frame exists
 std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
-// extract OCV (OCVC bit of RSNXE) from AP frames (Beacon / Probe Resp)
+// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities) from AP frames (Beacon / Probe Resp)
 std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
 
 // detect client scanning via Probe Requests in pcap_path within [start_time, end_time]

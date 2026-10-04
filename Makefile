@@ -8,19 +8,7 @@ SOURCE_DIR := .
 NPROC := $(shell echo $$(( $(shell nproc) / 2 )))
 
 all: compile
-.PHONY: all rssi_wizard compile compile_debug compile_release run run_debug run_release clean_build asan_build asan tester_setup
-
-tester_setup:
-	@echo "Disabling ath9k_hw ANI for driver stability..."
-	echo "options ath9k_hw ani_enable=0" | sudo tee /etc/modprobe.d/ath9k.conf > /dev/null
-	@echo " Disabling USB autosuspend..."
-	echo "options usbcore autosuspend=-1" | sudo tee /etc/modprobe.d/usbcore.conf > /dev/null
-	#disable self regulation on driver
-	echo "options rtw88_core disable_lps_deep=y" | sudo tee /etc/modprobe.d/rtw88.conf
-	#disable  Scatter-Gather support (Known issue from https://github.com/morrownr/7612u)
-	echo "options mt76_usb disable_usb_sg=1" | sudo tee /etc/modprobe.d/mt76_usb.conf
-	sudo update-initramfs -u
-	@echo "Done. Reboot recommended."
+.PHONY: all rssi_wizard compile compile_debug compile_release run run_debug clean_build asan_build asan
 
 compile:
 	@mkdir -p $(BUILD_DIR)
@@ -42,12 +30,6 @@ run: compile
 	mkdir -p data
 	mkdir -p data/wpa3_test
 	sudo ./$(BUILD_DIR)/bin/$(TARGET) --test_suite CSA_rogueAP_internal_filler
-
-run_release: compile_release
-	mkdir -p data
-	mkdir -p data/wpa3_test
-	sudo ./$(BUILD_DIR_RELEASE)/bin/$(TARGET) --test_suite CSA_rogueAP_internal_filler
-	#--config wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml
 
 help: compile
 	@echo "binary of tester is ./$(BUILD_DIR_RELEASE)/bin/$(TARGET)"
@@ -71,8 +53,8 @@ MY_CODE_FILTER = wpa3_test|main|hw_capabilities|requirement
 callgraph:
 	@echo "--- Run valgrind ---"
 	mkdir -p doc/callgraph
-	#FIXME HARDCODED CONFIG
-	sudo valgrind --tool=callgrind --callgrind-out-file=$(RUN_CALLGRAPH)  --dump-line=yes ./$(BUILD_DIR)/bin/$(TARGET) --test CSA_ex
+	#FIXME HARDCODED TEST
+	sudo valgrind --tool=callgrind --callgrind-out-file=$(RUN_CALLGRAPH) --dump-line=yes ./$(BUILD_DIR)/bin/$(TARGET) --test CSA_ex
 	sudo chmod 666 $(RUN_CALLGRAPH)
 	sudo chown -R $(USER):$(USER) doc/
 
@@ -115,9 +97,7 @@ test_manual_build:
 		test_info_openwrt \
 		test_manual_channel_switch \
 		test_manual_get_commit_values \
-		test_manual_mc_mitm \
 		test_manual_iface \
-		test_manual_injection_two_iface \
 		test_config_validation \
 		-j $(NPROC)
 

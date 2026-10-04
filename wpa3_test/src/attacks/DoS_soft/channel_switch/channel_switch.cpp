@@ -162,13 +162,13 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 
 void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
 	const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
-	const int attack_time, const optional<string> &netns) {
+	const int attack_time, const int RSN_scan_timeout_sec , const optional<string> &netns) {
 	netlink_helper::NetNSContext ns_ctx(netns);
 	PacketSender sender{ iface_name };
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
 	const unique_ptr<Dot11Beacon> beacon =
-		scan::RSN_scan(iface_name, , ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
+		scan::RSN_scan(iface_name, RSN_scan_timeout_sec, ap_mac, nullopt, netns);
 	if(!beacon) throw run_err("Not found beacon for reproduce");
 	log(LogLevel::INFO,
 		"check_vulnerable called with:\n"
@@ -220,7 +220,7 @@ void run_attack(RunStatus &rs) {
 
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time, netns);
+	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time, att_cfg.at("RSN_scan_timeout_sec") ,netns);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
 

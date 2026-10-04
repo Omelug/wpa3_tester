@@ -16,7 +16,7 @@ In this file is only general info for whole project, for specific topic:
 
 ### Usage:
 - most of the program needs sudo, should be required, but for sure...
-- `make run_release` - compile & run (`make run` for debug version) 
+- `make run` for debug version
 - [attack_config](wpa3_test/attack_config) - folder for config attacks
 - `make help`
 - check Makefile for more info

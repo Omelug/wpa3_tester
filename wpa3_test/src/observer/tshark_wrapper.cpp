@@ -39,7 +39,6 @@ string masked_mac_filter_5(const RunStatus &rs) {
 		filter += "(link[4:4] == 0x" + pre.substr(0, 8) + " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
 		filter += " or "; //addr2 (transceiver)
 		filter += "(link[10:4] == 0x" + pre.substr(0, 8) + " and link[14:1] == 0x" + pre.substr(8, 2) + ")";
-		;
 		filter += ')';
 		mac_filters.push_back(std::move(filter));
 	}
@@ -49,7 +48,7 @@ string masked_mac_filter_5(const RunStatus &rs) {
 string all_actors_mac_filter(const RunStatus &rs, const bool broadcast) {
 	vector<string> mac_filters;
 
-	for(const auto &actor: rs.actors | views::values) { mac_filters.push_back("wlan host " + actor.get(SK::mac)); }
+	for(const auto &actor: rs.actors | views::values) {mac_filters.push_back("wlan host " + actor.get(SK::mac));}
 	if(broadcast) mac_filters.emplace_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
@@ -72,7 +71,7 @@ void start_tshark_remote(RunStatus &rs, const string &actor_name, const string &
 		tshark_cmd };
 	const string local_pcap = get_observer_folder(rs, program_name) / (actor_name + "_capture.pcap");
 	rs.process_manager.run(actor_name + "_cap", command, get_observer_folder(rs, program_name));
-	rs.process_manager.after_stop(actor_name + "_cap", [remote_pcap, local_pcap, actor]() {
+	rs.process_manager.after_stop(actor_name + "_cap", [remote_pcap, local_pcap, actor] {
 		const vector<string> scp_cmd = { "sshpass",
 			"-p",
 			actor.get(SK::ssh_password),
@@ -84,7 +83,7 @@ void start_tshark_remote(RunStatus &rs, const string &actor_name, const string &
 		if(exists(local_pcap)) set_public_perms(local_pcap);
 	});
 
-	actor->conn->on_disconnect([remote_pcap, actor]() { actor->conn->exec("rm " + remote_pcap); });
+	actor->conn->on_disconnect([remote_pcap, actor] { actor->conn->exec("rm " + remote_pcap); });
 }
 
 void start_tshark(RunStatus &rs, const string &node_name, const string &filter) {
@@ -120,7 +119,7 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter) 
 
 	const auto tshark_dir = get_observer_folder(rs, program_name);
 	rs.process_manager.run(node_name + "_cap", command, tshark_dir, tshark_dir);
-	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path]() {
+	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path] {
 		try {
 			if(exists(temp_pcap_path)) { rename(temp_pcap_path, pcap_path); }
 		} catch(const filesystem_error &) {
@@ -363,7 +362,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	//create graph
 	auto g = Graph();
 	g.file = popen("gnuplot", "w");
-	g.ymax = DEFAULT_YMAX + 10;
+	g.ymax = DEFAULT_YMAX + 10; // +10 to not have not have max on top
 	g.gpcmd("set terminal pngcairo size 1200,600");
 	string out_cmd2 = "set output '";
 	out_cmd2.append(output_path.string());
@@ -532,7 +531,7 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 																"-r",
 																pcap_path.string(),
 																"-Y",
-						a										filter + " && wlan.rsn.capabilities",
+																filter + " && wlan.rsn.capabilities",
 																"-T",
 																"fields",
 																"-e",
@@ -545,10 +544,10 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 		line = trim(line);
 		if(line.empty()) continue;
 		try {
-			const uint32_t caps = stoul(line, nullptr, 0);
+			const uint16_t caps = stoul(line, nullptr, 0); //FIXME only
 			if(caps & RSN_CAP_MFPR) return "REQUIRED";
 			if(caps & RSN_CAP_MFPC) return "OPTIONAL";
-			return "";
+			return "OFF";
 		} catch(...) {}
 	}
 	return {};
@@ -605,9 +604,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	}
 
 	if(channels.empty()) return "yes";
-	string result = "ch:";
-	for(const int ch: channels) result += " " + to_string(ch);
-	return result;
+	return "ch:" + join(channels, " ");
 }
 
 }

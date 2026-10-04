@@ -140,16 +140,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r:IndentWidth: 4, ContinuationIndentWidth: 4">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: RSN masks to header (no magic numbers)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO_longterm.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO_longterm.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/customize.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_elements.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/observer/graph/graph_elements.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/capture_commit_values.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_hard/cookie_guzzler/cookie_guzzler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BAR_mt76.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/mt76_filler/bl0ck_BAR_mt76.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.schema.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.schema.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/DoS_soft/channel_switch/channel_switch.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_helper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1210,8 +1211,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: mc_mitm iperf3&#10;r: small changes" />
-    <MESSAGE value="+: dos_time.comp.schema.yaml" />
     <MESSAGE value="td: dos_time.comp.schema.yaml" />
     <MESSAGE value="f: Dlink sort" />
     <MESSAGE value="f: random bl0ck" />
@@ -1235,7 +1234,9 @@
     <MESSAGE value="ch: ssid confusion change structure" />
     <MESSAGE value="r: sim[plify CSA counter and mc_mitm/deauth" />
     <MESSAGE value="r:IndentWidth: 4, ContinuationIndentWidth: 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="r:IndentWidth: 4, ContinuationIndentWidth: 4" />
+    <MESSAGE value="f: client_ocv_from_pcap (it was checking MFP )" />
+    <MESSAGE value="r: RSN masks to header (no magic numbers)" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: RSN masks to header (no magic numbers)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <set>
+#include "observer/tshark_wrapper.h"
 
 namespace wpa3_tester::hostapd{
 using namespace std;
@@ -118,6 +119,7 @@ static void build_hostapd_like(const string &version, const path &build_folder, 
 	string env_prefix;
 	if(openssl){
 		extra += " -I" + openssl->include_dir.string();
+		//<todo descripbe better
 		// Set LDFLAGS env var so our -L precedes the system path injected by
 		// `pkg-config --libs openssl` inside the hostapd Makefile. EXTRA_LDFLAGS
 		// is appended too late and loses the search-order race against the system lib.
@@ -131,7 +133,7 @@ static void build_hostapd_like(const string &version, const path &build_folder, 
 static string get_binary(const string &bin_prefix, const string &version, const RepoConfig &cfg,
 						const optional<OpenSSLPaths> &openssl = nullopt
 ){
-	const string folder_key = (cfg.repo_name == "hostapd_mana") ? "hostapd_mana_build_folder" : "hostapd_build_folder";
+	const string folder_key = cfg.repo_name == "hostapd_mana" ? "hostapd_mana_build_folder" : "hostapd_build_folder";
 	const string hostapd_folder_str = get_global_config().at("paths").at("hostapd").at(folder_key);
 	const path hostapd_folder(hostapd_folder_str);
 
@@ -560,8 +562,9 @@ string mfp_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, con
 			const auto ie = parse_rsn_ie_line(line);
 			if(!ie || ie->raw.size() < ie->caps_off + 2) continue;
 			const uint16_t caps = ie->raw[ie->caps_off] | (static_cast<uint16_t>(ie->raw[ie->caps_off + 1]) << 8);
-			if(!(caps & 0x0080)) return "OFF";                // MFPC
-			return (caps & 0x0040) ? "REQUIRED" : "OPTIONAL"; // MFPR
+			if(caps & observer::tshark::RSN_CAP_MFPR) return "REQUIRED";
+			if(caps & observer::tshark::RSN_CAP_MFPC) return "OPTIONAL";
+			return "OFF";
 		}
 
 		if(mfp_fallback.empty()){
@@ -570,7 +573,7 @@ string mfp_from_ap_log(const path &log_path, const HWAddress<6> &client_mac, con
 				const char mfpc = line.size() > mfpc_pos + 5 ? line[mfpc_pos + 5] : '0';
 				if(mfpc != '1'){ mfp_fallback = "OFF"; continue; }
 				const auto mfpr_pos = line.find("MFPR=");
-				mfp_fallback = (mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1')
+				mfp_fallback = mfpr_pos != string::npos && line.size() > mfpr_pos + 5 && line[mfpr_pos + 5] == '1'
 								? "REQUIRED" : "OPTIONAL";
 			}
 		}
@@ -594,7 +597,7 @@ string client_akm_from_ap_log(const path &log_path, const HWAddress<6> &client_m
 		const auto ie = parse_rsn_ie_line(line);
 		if (!ie || ie->akm_count == 0) continue;
 
-		// Report every suite, standard (00-0f-ac) or vendor-specific - see
+		// report every suite, standard (00-0f-ac) or vendor-specific - see
 		string result;
 		for (uint16_t j = 0; j < ie->akm_count; ++j) {
 			const auto suite = ie->akm_suite(j);

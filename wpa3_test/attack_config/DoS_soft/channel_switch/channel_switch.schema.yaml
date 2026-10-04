@@ -39,5 +39,9 @@ properties:
         description: time before test for get valid traffic before
       sleep_after_sec:
         type: integer
-        description: time after to check if situation will be ok again
+        description: time after to check if situation will be ok again\
+      RSN_scan_timeout_sec:
+        type: integer
+        default: 20
+        description: timeout for RSN_scan for test
 

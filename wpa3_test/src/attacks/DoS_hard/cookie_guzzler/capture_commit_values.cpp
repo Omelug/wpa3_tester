@@ -36,13 +36,15 @@ optional<sae_helper::SAEPair> capture_sae_commit(
 
 	auto result = components::poll_sniffer<sae_helper::SAEPair>(
 		handle,
-		milliseconds(timeout_sec * 1000),
+		seconds(timeout_sec),
 		[](const frame_raw_t &frame) -> optional<sae_helper::SAEPair> {
 			if(frame.size() < 10) {
 				log(LogLevel::DEBUG, "PDU too short: {}", frame.size());
 				return nullopt;
 			}
-			//tODO descripbe
+
+			// 0,1 - Auth Algorithm Number
+			// 2,3 Auth Transaction Seq
 			log(LogLevel::DEBUG, "Hex: {:02x} {:02x} {:02x} {:02x}", frame[0], frame[1], frame[2], frame[3]);
 
 			if(auto f = sae_helper::parse_sae_commit(frame)) {

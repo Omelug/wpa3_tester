@@ -294,9 +294,8 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	g.gpcmd("set ylabel 'Packet Size'");
 
 	if(sizes.empty()) {
-		//TODO default min/max hardcoded
-		g.ymin = 0;
-		g.ymax = 1500;
+		g.ymin = DEFAULT_YMIN;
+		g.ymax = DEFAULT_YMAX;
 	} else {
 		auto [min_it, max_it] = minmax_element(sizes.begin(), sizes.end());
 		g.ymin = *min_it;
@@ -304,7 +303,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	}
 
 	double pad = (g.ymax - g.ymin) * 0.5;
-	if(pad == 0) pad = 1.0;
+	if(pad == 0) pad = 1.0; //TODO hardcoded
 	g.ymin -= pad;
 	g.ymax += pad;
 
@@ -364,8 +363,7 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	//create graph
 	auto g = Graph();
 	g.file = popen("gnuplot", "w");
-	g.ymin = 0;
-	g.ymax = 110;
+	g.ymax = DEFAULT_YMAX + 10;
 	g.gpcmd("set terminal pngcairo size 1200,600");
 	string out_cmd2 = "set output '";
 	out_cmd2.append(output_path.string());
@@ -399,35 +397,27 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 	}
 }
 
-// RSNXE (tag 244) capabilities: bits 0-3 = length, bit 6 = OCVC.
-// Returns true/false if a relevant frame with RSNXE is found, nullopt if no such frame exists.
+// RSN Capabilities bit 14 = OCVC (Operating Channel Validation Capable), 802.11-2020 Table 9-258
 static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
-	// First check if any matching frame exists at all
-	const string frame_check = trim(hw_capabilities::run_cmd_output(
-		{ "tshark", "-r", pcap_path.string(), "-Y", frame_filter, "-T", "fields", "-e", "frame.number", "-c", "1" },
-		nullopt));
-	if(frame_check.empty()) return nullopt;
-	// Extract RSNXE capabilities byte (present only when device advertises RSN extensions)
-	const string caps_raw = trim(hw_capabilities::run_cmd_output({ "tshark",
-																	 "-r",
-																	 pcap_path.string(),
-																	 "-Y",
-																	 "(" + frame_filter + ") && wlan.rsn.rsnxcaps",
-																	 "-T",
-																	 "fields",
-																	 "-e",
-																	 "wlan.rsn.rsnxcaps",
-																	 "-c",
-																	 "1" },
-		nullopt));
-	if(caps_raw.empty()) return false; // frame found, RSNXE absent -> no OCV
-	try {
-		return (stoul(caps_raw, nullptr, 16) & 0x40u) != 0;
-	} // bit 6 = OCVC
-	catch(...) {
-		return nullopt;
+
+	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities";
+	const string caps_raw = hw_capabilities::run_cmd_output(
+		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
+		nullopt);
+
+	stringstream ss(caps_raw);
+	string first_line;
+	while(getline(ss, first_line)) {
+		first_line = trim(first_line);
+		if(!first_line.empty()) { break; }
 	}
+
+	if(first_line.empty()) return nullopt;
+
+	try {
+		return (stoul(first_line, nullptr, 0) & 0x4000u) != 0;
+	} catch(...) { return nullopt; }
 }
 
 //TODO tests for these functions  with real pcap/logs

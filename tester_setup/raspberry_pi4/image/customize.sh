@@ -60,7 +60,7 @@ fi
 
 # --- Debug / crash logging
 
-#TODO not tried yet, i dont have 3.3 UART<->USB cable
+#TODO not tried yet, i dont have 3.3 UART<->USB cable, needed ?
 # UART serial console on GPIO14 (TX) / GPIO15 (RX) - kernel messages go to
 # a USB-UART adapter even during a kernel panic
 echo "enable_uart=1" >> "$BOOT/config.txt"

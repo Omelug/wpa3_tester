@@ -1,6 +1,7 @@
 These points should be solved separately
 In new versions
 
+ch: mahcge to meson
 +?: nix compilace pro arm (pomalejší, ale stabilnější?)
 +: trace-cmd on  OpenWrt self compilated with ONFIG_FUNCTION_TRACER=y) needed
 +: Create system for auto loading firmware

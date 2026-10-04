@@ -4,8 +4,11 @@
 using LogTimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 namespace wpa3_tester {
-enum class TimeAxis { RELATIVE, UNIX };
 
+int constexpr  DEFAULT_YMIN = 0;
+int constexpr  DEFAULT_YMAX = 100;
+
+enum class TimeAxis { RELATIVE, UNIX };
 enum class GraphElement_t { UNKNOWN, EVENT_LINES, GRAPH_XY_POINTS, GRAPH_STAIRS };
 
 class GraphElements;
@@ -113,8 +116,8 @@ public:
 class Graph {
 public:
 	FILE *file;
-	double ymin = 0;
-	double ymax = 1;
+	double ymin = DEFAULT_YMIN;
+	double ymax = DEFAULT_YMAX;
 	LogTimePoint start_time;
 	TimeAxis axis = TimeAxis::RELATIVE;
 	std::vector<std::string> plot_parts;

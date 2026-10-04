@@ -144,7 +144,7 @@ void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch) co
 MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 	try {
 		const RadioTap rt(frame.data(), frame.size());
-		uint32_t strip = 0;
+		uint32_t strip = 0; // delete FCS
 		if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS)) strip = 4;
 		auto pdu = make_unique<RadioTap>(frame.data(), frame.size() - strip);
 		return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };

@@ -65,15 +65,6 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(!data.empty()) data[0] = static_cast<uint8_t>(ap_channel.ch_num);
 			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
-			/*} else if(id == static_cast<uint8_t>(Dot11::OptionTypes::RSN)) {
-			//FIXME EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
-			if(data.size() >= 20) {
-				static mt19937 rng(random_device{}());
-				dfata[18] = (data[18] & ~0xC0u) | (uniform_int_distribution<uint8_t>(0, 3)(rng) << 6);
-			}
-			o = Dot11::option(static_cast<Dot11::OptionTypes>(48), data.size(), data.data());
-		*/
 		} else if(id == Dot11::OptionTypes::VHT_OP) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
 			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
@@ -177,7 +168,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	const auto end_time = steady_clock::now() + seconds(attack_time);
 
 	const unique_ptr<Dot11Beacon> beacon =
-		scan::RSN_scan(iface_name, 20, ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
+		scan::RSN_scan(iface_name, , ap_mac, nullopt, netns); //TODO hardcoded scan_timeout
 	if(!beacon) throw run_err("Not found beacon for reproduce");
 	log(LogLevel::INFO,
 		"check_vulnerable called with:\n"

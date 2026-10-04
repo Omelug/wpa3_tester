@@ -65,8 +65,8 @@ void stats_attack(const RunStatus &rs) {
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, { DISCONNECT, CONNECT, TESTER_TAGS });
 
-	const filesystem::path STA_graph_path =
-		observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
+	observer::tshark::tshark_graph(rs, "client", elements, "", "udp.srcport == 1234 && udp.dstport == 5201  ");
+	//TODO add external support and enable
 	//const path AP_graph_path =
 	//    observer::tshark_graph(rs, "ap", events, observer::get_observer_folder(rs, "tcpdump"));
 

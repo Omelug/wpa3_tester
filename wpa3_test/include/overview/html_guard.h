@@ -116,10 +116,11 @@ struct HtmlGuard {
 
 		stream_ << R"(<span class="has-tooltip">)";
 		if(conflict) stream_ << R"(<strong style="color:red">)";
-		if(last.value.empty())
+		if(last.value.empty()) {
 			stream_ << '?';
-		else
+		}else {
 			stream_ << last.value;
+		}
 		if(conflict) stream_ << "</strong>";
 		stream_ << R"(<span class="tooltip-content"><table><tr><th>Value</th><th>Source</th></tr>)";
 		for(const auto &[v, d]: val.pairs) stream_ << "<tr><td>" << v << "</td><td>" << d << "</td></tr>";

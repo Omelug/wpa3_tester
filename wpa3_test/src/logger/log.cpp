@@ -12,7 +12,7 @@ using namespace std;
 using namespace chrono;
 using namespace filesystem;
 
-// Global state for log file
+// global state for log file
 static mutex log_mutex;
 static unique_ptr<ofstream> log_file_ptr;
 
@@ -101,7 +101,7 @@ LogTimePoint log_time_to_epoch_ns(const string &time_str){
 		++p;
 		int hhmm = 0;
 		for(int i = 0; i < 4 && isdigit(*p); ++i, ++p) hhmm = hhmm * 10 + (*p - '0');
-		tz_offset_sec = sign * (hhmm / 100 * 3600 + (hhmm % 100) * 60);
+		tz_offset_sec = sign * (hhmm / 100 * 3600 + hhmm % 100 * 60);
 	}
 
 	t.tm_isdst = 0;

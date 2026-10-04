@@ -641,9 +641,7 @@ string client_scanning_from_ap_log(const path &ap_log, const HWAddress<6> &clien
 	}
 
 	if(channels.empty()) return {};
-	string result = "ch:";
-	for(const int ch: channels) result += " " + to_string(ch);
-	return result;
+	return "ch: " + join(channels, " ", [](int ch) { return to_string(ch); });
 }
 
 string owe_trans_bssid(const string &primary_mac){

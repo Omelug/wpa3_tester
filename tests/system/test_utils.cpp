@@ -111,6 +111,18 @@ TEST_CASE("relative_from - single level nesting") {
 	remove_all(test_base);
 }
 
+TEST_CASE("join - strings") {
+	CHECK_EQ(join(vector<string>{"a", "b", "c"}, ", "), "a, b, c");
+	CHECK_EQ(join(vector<string>{"x"}, ", "), "x");
+	CHECK_EQ(join(vector<string>{}, ", "), "");
+	CHECK_EQ(join(vector<string>{"a", "b"}, ""), "ab");
+}
+
+TEST_CASE("join - proj") {
+	CHECK_EQ(join(vector<int>{1, 6, 11}, " ", [](int i) { return to_string(i); }), "1 6 11");
+	CHECK_EQ(join(vector<int>{}, " ", [](int i) { return to_string(i); }), "");
+}
+
 TEST_CASE("trim") {
 	CHECK_EQ(trim("hello"), "hello");
 	CHECK_EQ(trim("  hello  "), "hello");

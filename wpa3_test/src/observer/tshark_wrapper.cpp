@@ -604,7 +604,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	}
 
 	if(channels.empty()) return "yes";
-	return "ch:" + join(channels, " ");
+	return "ch: " + join(channels, " ", [](int ch) { return to_string(ch); });
 }
 
 }

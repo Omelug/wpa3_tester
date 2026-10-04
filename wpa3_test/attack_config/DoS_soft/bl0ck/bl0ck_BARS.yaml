@@ -1,7 +1,7 @@
 name: bl0ck_BARS
 attacker_module: bl0ck
 $validator: ./bl0ck.schema.yaml
-$extends: [ ./bl0ck.yaml, ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml ] #TODO
+$extends: [ ./bl0ck.yaml, ./suite/mt76_filler/mt76_adapters_fixed.comp.yaml ]
 attack_config:
   attack_time_sec: 25
   ms_interval: 100

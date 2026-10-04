@@ -130,13 +130,20 @@ TEST_CASE("InjectionTestEntry::parse - no result.json returns zero counts") {
 }
 
 // Bl0ckTestEntry uses RunStatus default ctor (no config_validation), so no IsolatedRootDir needed.
-TEST_CASE("Bl0ckTestEntry::parse - no config uses result.json only") {
+TEST_CASE("Bl0ckTestEntry::parse - no attack_config uses result.json only") {
 	const auto d = setup_dir("bl0ck_no_cfg");
 	write_result(d, {{"disconnect_count", 3}});
+	write_mapping(d, {
+		{"ap",       "ath9k",     "aa:bb:cc:00:00:01"},
+		{"client",   "rt2800",    "aa:bb:cc:00:00:02"},
+		{"attacker", "ath9k_htc", "aa:bb:cc:00:00:03"},
+	});
+	ofstream(d / TEST_CONFIG_NAME) << "name: bl0ck_no_cfg\n";
 	const auto e = visual::bl0ck_test_suites::Bl0ckTestEntry::parse(d);
 	CHECK_EQ(e.name, d.filename().string());
 	CHECK_EQ(e.disconnect_count, 3);
-	CHECK_EQ(e.ap_mac, "-");
+	CHECK_EQ(e.ap_mac, "aa:bb:cc:00:00:01");
+	CHECK_EQ(e.attack_variant, "-");
 }
 
 TEST_CASE("Bl0ckTestEntry::parse - reads actors and attack_variant") {

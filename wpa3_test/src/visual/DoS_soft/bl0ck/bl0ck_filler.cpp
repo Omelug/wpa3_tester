@@ -96,7 +96,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, c
 				 COL("Random", e.random_MAC);
 				 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
 				 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
-				 //TODO not cached now, need to be decrypted
+				 //not cached now, need to be decrypted
 				 //col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);
 				 COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);
 				 COL("Reconnected?", !e.reconnection.empty());

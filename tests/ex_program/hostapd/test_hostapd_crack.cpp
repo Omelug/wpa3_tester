@@ -28,7 +28,7 @@ static const string SHA1_HASH =
 // key_info 0x010b → version bits = 3 (WPA-PSK-SHA256, HMAC-SHA256 MIC)
 static const string SHA256_HASH =
 	"WPA*02"
-	"*97bb12cdbe787a5f62b0d2f3fa2905a5"
+	"*74b6914bde1ae5727031af130fde91eb"
 	"*24ec99bfc7cf"
 	"*302432f78348"
 	"*746573745f777061335f746573746572"

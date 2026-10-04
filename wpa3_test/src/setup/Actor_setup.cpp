@@ -81,11 +81,7 @@ void Actor_config::real_actor_setup_base_keys(const ActorPtr &real_actor) {
 	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
 	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);
 
-	if((*this)[SK::mac].has_value()) {
-		set_mac_address(get(SK::mac)); // setup mac address with macchanger
-	} else {
-		set(real_actor, SK::mac);
-	}
+	if(!(*this)[SK::mac].has_value()) set(real_actor, SK::mac);
 	set(real_actor, SK::permanent_mac);
 }
 // Only simulation/internal,external have specific
@@ -94,6 +90,7 @@ void Actor_config::setup_actor(const nlohmann::json & /*config*/, const ActorPtr
 	real_actor_setup_base_keys(real_actor);
 	if((*this)[SK::netns]) hw_capabilities::create_netns(get(SK::netns));
 	cleanup();
+	if((*this)[SK::mac].has_value()) set_mac_address(get(SK::mac));
 
 	const bool no_sniff_iface = !(*this)[BK::sniff_iface].has_value() ||
 		((*this)[BK::sniff_iface].has_value() && !(*this)[BK::sniff_iface].value());

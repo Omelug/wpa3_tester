@@ -26,7 +26,7 @@ int main(const int argc, char *argv[]) {
 	const int ms_interval = stoi(argv[7]);
 	const int attack_time = stoi(argv[8]);
 
-	CSA_attack::check_vulnerable(ap_mac, sta_mac, iface_name, ssid, ap_channel, new_channel, ms_interval, attack_time);
+	CSA_attack::check_vulnerable(ap_mac, sta_mac, iface_name, ssid, ap_channel, new_channel, ms_interval, 10, attack_time);
 
 	return 0;
 }

@@ -9,6 +9,7 @@
 namespace wpa3_tester::observer::tshark {
 
 // RSN Capabilities field bitmasks (802.11-2020 Table 9-258)
+//TODO uint 8 je moc malý? bude maska fungovat i na uint 32 ?
 constexpr uint16_t RSN_CAP_MFPR = 0x0040; // bit 6  – Management Frame Protection Required
 constexpr uint16_t RSN_CAP_MFPC = 0x0080; // bit 7  – Management Frame Protection Capable
 constexpr uint16_t RSN_CAP_PBAC = 0x1000; // bit 12 – Protected Block Ack Agreement Capable

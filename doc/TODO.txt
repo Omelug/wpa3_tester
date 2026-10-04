@@ -6,6 +6,7 @@ v: visualization
 Version  v 0.0.0.0:
 
 f: External AP -
+t: "crack_pmk_hashes - SHA256: correct PSK cracks the hash
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 mc_mitm:

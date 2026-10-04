@@ -25,6 +25,16 @@ std::string join(const Range &v, const std::string &sep = "") {
 	return out;
 }
 
+template<typename Range, typename Proj>
+std::string join(const Range &v, const std::string &sep, Proj proj) {
+	std::string out;
+	for(auto it = std::begin(v); it != std::end(v); ++it) {
+		if(it != std::begin(v)) out += sep;
+		out += proj(*it);
+	}
+	return out;
+}
+
 void resolve_relative_paths(nlohmann::json &node, const std::filesystem::path &base_dir);
 
 // Creates directories and sets world read+write+execute (0777) permissions

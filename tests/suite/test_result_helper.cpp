@@ -361,7 +361,6 @@ TEST_CASE("get_client_scanning - from attacker pcap") {
 }
 
 // ---- get_client_WPA_support tests ----
-
 TEST_CASE("get_client_WPA_support - from wpa_supplicant_conf") {
 	const path dir = temp_directory_path() / "wpa3_client_wpa_supp_test" / "observer";
 	create_directories(dir);

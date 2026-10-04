@@ -218,18 +218,21 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
 	return match[1].str();
 }
 
+//TODO get permanent mac of spoofed mac?
 Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
+
+	//TODO  return read_sysfs(iface, "address");
 
 	ifreq ifr{};
 	iface.copy(ifr.ifr_name, IFNAMSIZ - 1);
 
 	const int sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sock < 0) throw config_err("get_mac_address: socket failed for " + iface);
+	if(sock < 0) throw config_err("get_mac_address: socket failed for {}", iface);
 
 	if(ioctl(sock, SIOCGIFHWADDR, &ifr) < 0){
 		close(sock);
-		throw config_err("get_mac_address: ioctl failed for " + iface);
+		throw config_err("get_mac_address: ioctl failed for {}", iface);
 	}
 	close(sock);
 

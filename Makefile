@@ -49,7 +49,6 @@ compile_rssi_wizard:
 
 # debug visualization
 RUN_CALLGRAPH := doc/callgraph/callgraph.out
-MY_CODE_FILTER = wpa3_test|main|hw_capabilities|requirement
 callgraph:
 	@echo "--- Run valgrind ---"
 	mkdir -p doc/callgraph
@@ -119,7 +118,7 @@ coverage_build:
 coverage: coverage_build
 	cmake --build $(BUILD_DIR_COVERAGE) --target coverage
 
-asan_build:
+asan_build: #TODO needed?
 	mkdir -p $(BUILD_DIR_ASAN)
 	@if [ ! -f $(BUILD_DIR_ASAN)/build.ninja ] && [ ! -f $(BUILD_DIR_ASAN)/Makefile ]; then \
 		cmake -S $(SOURCE_DIR) -B $(BUILD_DIR_ASAN) -G Ninja \

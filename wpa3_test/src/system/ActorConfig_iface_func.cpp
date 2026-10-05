@@ -19,7 +19,7 @@ void Actor_config::cleanup() const{
 	}
 
 	if(netns.has_value()){
-		if((*this)[BK::netns_change]) throw run_err("netns_change not allowed");
+		//if((*this)[BK::netns_change]) throw run_err("netns_change not allowed");
 		hw_capabilities::move_to_netns(iface, netns.value());
 	} else{
 		log(LogLevel::INFO, "Cleaning up interface {}", iface);

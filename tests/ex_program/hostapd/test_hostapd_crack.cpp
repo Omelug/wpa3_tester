@@ -46,7 +46,7 @@ TEST_CASE("crack_pmk_hashes - missing file returns zero") {
 
 TEST_CASE("crack_pmk_hashes - empty file returns zero") {
 	const path tmp = temp_directory_path() / "wpa3_crack_empty.txt";
-	ofstream{ tmp };
+	ofstream empty_file{ tmp };
 	const auto r = hostapd::crack_pmk_hashes(tmp, "anypassword");
 	CHECK_EQ(r.total, 0);
 	CHECK_EQ(r.cracked, 0);
@@ -64,8 +64,6 @@ TEST_CASE("crack_pmk_hashes - invalid format lines are skipped") {
 	CHECK_EQ(r.cracked, 0);
 	remove(tmp);
 }
-
-// -----------------
 
 TEST_CASE("crack_pmk_hashes - SHA256: correct PSK cracks the hash") {
 	const path tmp = temp_directory_path() / "wpa3_crack_sha256_good.txt";

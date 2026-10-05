@@ -23,7 +23,7 @@ CONFIG      ?= wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.y
 PI_IP       ?= 10.0.0.2
 PI_GW       ?= 10.0.0.1
 PI_PREFIX   ?= 24
-PI          ?= $(or $(PI_IP),$(PI_HOSTNAME).local) #TODO hostname DOnt works, delete ?
+PI          ?= $(or $(PI_IP),$(PI_HOSTNAME).local)#TODO hostname DOnt works, delete ?
 
 SRC_ROOT    := $(realpath ../..)
 REMOTE      := ~/wpa3_tester

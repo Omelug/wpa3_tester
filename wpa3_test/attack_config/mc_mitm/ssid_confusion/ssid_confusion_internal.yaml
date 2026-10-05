@@ -1,57 +1,92 @@
 name: ssid_confusion_test
 attacker_module: ssid_confusion
-$extends: [ ../mc_mitm_internal.yaml ]
+
 actors:
+  # Legitimate WrongNet AP (EAP-PWD, internal hostapd); client has it at lower priority than SafeNet
   ap:
-    setup:
-      program_config:
-        version: 2_10
-        $DELETE: other_options
-        ssid: SafeNet
-  wrong_ap: # add riid condition
     source: internal
     selection:
-      permanent_mac: "24:ec:99:bf:c7:cf"
-      driver: ath9k_htc
       channel: 11
       condition: [ AP, 2_4GHz, netns_change ]
     setup:
       program: hostapd
       program_config:
-        #other_options: -d
-        version: 2_11
-        driver: nl80211
-        ssid: WrongNet
-        hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        rsn_pairwise: CCMP
-        wpa_passphrase: password123
-        sae_password: password123
-        channel: 11
-    netns: wrong_ap
+        version: 2_10
+        other_options: "-d"
+        hostapd_path: "./config/hostapd.conf"
+    ip_addr: "172.16.100.1"
+    netns: ap
+
   client:
+    source: internal
+    selection:
+      #permanent_mac: "90:de:80:de:fd:b2"
+      condition: [ managed, 2_4GHz, netns_change ]
+      channel: 11
     setup:
-      $DELETE: program_config
+      program: wpa_supplicant
       program_config:
+        version: 2_10
+        other_options: "-d"
+        # SafeNet has higher priority → client prefers SafeNet over WrongNet
         wpa_supplicant_path: "./config/SafeNet_WrongNet.conf"
+    netns: sta
+    ip_addr: "172.16.100.2"
+
+  # Monitor on ch 1 (rogue channel): injects confused SafeNet beacons + relays client↔rogue_client
+  rogue_ap:
+    source: internal
+    selection:
+      permanent_mac: "90:de:80:6c:90:92"
+      driver: [ mt76x2u, mt76x2u_git ]
+      condition: [ monitor, 2_4GHz ]
+      channel: 1
+
+  # Monitor on ch 11: CSA injection + relays to/from WrongNet AP
+  rogue_client:
+    source: internal
+    selection:
+      permanent_mac: "90:de:80:de:ff:7b"
+      driver: [ mt76x2u, mt76x2u_git ]
+      condition: [ monitor, 2_4GHz ]
+      channel: 11
+
+observers:
+  tester_dmesg:
+    program: dmesg
+    program_config:
+      level: "emerg,alert,crit,err,warn,notice,info,debug"
+  tracer:
+    program: trace_cmd
+    actor: ap
+    program_config:
+      events:
+        - "ath"
+        - "mac80211"
+        - "mt76"
+        - "mac80211:api_start_tx_ba_session"
+        - "mac80211:api_start_tx_ba_cb"
+        - "mac80211:api_stop_tx_ba_session"
+        - "mac80211:api_stop_tx_ba_cb"
+        - "mt76:mac_txdone"
+
+  rogue_ap_cap:
+    actor: rogue_ap
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+
+  rogue_client_cap:
+    actor: rogue_client
+    program: tshark
+    program_config:
+      filter: "special_filter:actors"
+
 attack_config:
-  # SSID the rogue AP will advertise - should match a network the client auto-connects to
-  confused_ssid: "WrongNet"
+  confused_ssid: SafeNet
   attack_time_sec: 150
-  #observers:
-  # TODO -> not possible in AP mode or add sniff iface?
-  #rogue_tshark:
-  #  actor: rogue_ap
-  #  program: tshark
-  #  program_config:
-  #    filter: "special_filter:actors"
-  #    #filter: "type mgt subtype beacon or type mgt subtype auth or type mgt subtype assoc-req"
-  #rogue_sta_tshark:
-  #  actor: rogue_client
-  #  program: tshark
-  #  program_config:
-  #    filter: "special_filter:actors"
+  beacon_interval_ms: 100
+  beacon_warning_sec: 2
+  only_to_mitm: false
+
+rewrite: errors

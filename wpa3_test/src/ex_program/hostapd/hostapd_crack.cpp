@@ -179,10 +179,8 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk) {
 
 	log(LogLevel::INFO,
 		"cracked: {}/{} hashes ({} SHA256, {} SHA1)",
-		cracked,
-		total,
-		sha256_hashes.size(),
-		sha1_hashes.size());
+		cracked, total,
+		sha256_hashes.size(), sha1_hashes.size());
 	return { total, cracked };
 }
 

@@ -41,7 +41,7 @@ protected:
 public:
 	virtual ~ClientState() = default;
 
-	[[nodiscard]] Tins::HWAddress<6> get_mac() const { return macaddr; }
+	[[nodiscard]] Tins::HWAddress<6> get_mac() const { return macaddr; } //TODO need if sta-> =get(SK::mac) ?
 	[[nodiscard]] State get_state() const { return state; }
 
 	explicit ClientState(const Tins::HWAddress<6> &mac, std::optional<std::filesystem::path> log_folder = std::nullopt):

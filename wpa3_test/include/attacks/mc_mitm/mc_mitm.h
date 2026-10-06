@@ -36,8 +36,8 @@ public:
 	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;
 
-	void setup_real_AP_RSN_frames();
-	void run(RunStatus &rs, int timeout_sec);
+	virtual void setup_real_AP_RSN_frames();
+	virtual void run(RunStatus &rs, int timeout_sec);
 	void stop();
 
 	// ---- state ----
@@ -68,9 +68,9 @@ public:
 	//TODO protected + fixture
 	// for handle function: STOP = frame consumed, CONTINUE = pass to next handler
 	// PProcess handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
-	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
-	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
-	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
+	virtual FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
+	virtual FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
+	virtual FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
 	FrameProcess handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
@@ -83,8 +83,8 @@ public:
 		const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11, const Tins::HWAddress<6> &addr1);
 	void power_mgmt_response_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	void power_mgmt_response_rogue(Tins::HWAddress<6> addr2, Tins::Dot11 &dot11) const;
-	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
-	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
+	virtual void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
+	virtual void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw);
 
 	// print helpers
 	static std::string frame_to_str(const Tins::Dot11 &frame);

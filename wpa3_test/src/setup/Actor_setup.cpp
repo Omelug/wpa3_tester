@@ -108,7 +108,9 @@ void Actor_config::setup_actor(const nlohmann::json & /*config*/, const ActorPtr
 	}*/
 
 	set_iface_up();
-	if((*this)[SK::channel].has_value() && base_mon_iface) set_channel(get_channel());
+	if((*this)[SK::channel].has_value() && base_mon_iface) {
+		set_channel(get_channel());
+	}
 
 	if((*this)[BK::sniff_iface]) {
 		create_sniff_iface();

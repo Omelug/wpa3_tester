@@ -26,7 +26,11 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 	only_to_mitm(only_to_mitm),
 	client_state(
 		sta.get(SK::mac), run_folder ? optional{ run_folder.value() / "observer" / "client_state" } : nullopt) {
-	if(run_folder) { create_public_dirs(run_folder.value() / "observer" / "client_state"); }
+	this->netconfig.real_channel = this->rogue_sta->get_channel(); //TODO need to be saved ?
+	this->netconfig.real_channel = this->rogue_ap->get_channel();
+	if(run_folder) {
+		create_public_dirs(run_folder.value() / "observer" / "client_state");
+	}
 }
 
 McMitm::~McMitm() { stop(); }
@@ -78,7 +82,6 @@ bool McMitm::should_check_rogue_beacons() const {
 
 void McMitm::setup_real_AP_RSN_frames() {
 	rogue_sta->set_iface_up();
-	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface),
@@ -193,15 +196,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		if(fd_real < 0 || fd_rogue < 0)
 			log(LogLevel::ERROR, "pcap_get_selectable_fd failed: fd_real={} fd_rogue={}", fd_real, fd_rogue);
 
-		const int max_fd = max(fd_real, fd_rogue) + 1;
-
 		fd_set read_fds;
 		FD_ZERO(&read_fds);
 		FD_SET(fd_real, &read_fds);
 		FD_SET(fd_rogue, &read_fds);
 
 		timeval tv{ 0, 100'000 }; // 100ms
-		select(max_fd, &read_fds, nullptr, nullptr, &tv);
+		select(max(fd_real, fd_rogue) + 1, &read_fds, nullptr, nullptr, &tv);
 
 		if(FD_ISSET(fd_real, &read_fds)) {
 			while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);

@@ -119,6 +119,7 @@
       <config projectName="wpa3_tester" targetName="run_html_guard_tests" />
       <config projectName="wpa3_tester" targetName="tins" />
       <config projectName="wpa3_tester" targetName="wpa3_suite" />
+      <config projectName="wpa3_tester" targetName="docs" />
       <config projectName="wpa3_tester" targetName="test_config_validation" />
       <config projectName="wpa3_tester" targetName="test_info_openwrt" />
       <config projectName="wpa3_tester" targetName="run_internal_options_tests" />
@@ -140,17 +141,23 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes">
-      <change afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_real.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f+: to EAP">
+      <change afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/client_state.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/client_state.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_real.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_helper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -300,7 +307,7 @@
     "ctest.advertisement.all.test.configuration.is.created": "true",
     "git-widget-placeholder": "dev",
     "git.auto.fetch.suggestion.counter": "3",
-    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/doc",
+    "last_opened_file_path": "/home/kali/ClionProjects/wpa3_tester/wpa3_test/src/attacks/mc_mitm/ssid_confusion",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -310,11 +317,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion" />
       <recent name="$PROJECT_DIR$/doc" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/random" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/random" />
-      <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/client" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion" />
@@ -325,7 +332,7 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.wpa3_tester ssid_confusion_test">
-    <configuration name="Bl0ckTestEntry::parse - no attack_config uses result.json only" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests" TEST_METHOD="Bl0ckTestEntry::parse - no attack_config uses result.json only" TEST_MODE="SUITE_TEST">
+    <configuration name="Bl0ckTestEntry::parse - no attack_config uses result.json only" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_entry_parse_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_entry_parse_tests" TEST_METHOD="Bl0ckTestEntry::parse - no attack_config uses result.json only" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -672,6 +679,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="docs" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="docs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="leak-check" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="leak-check" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1014,6 +1026,7 @@
       <item itemvalue="CMake Application.leak-check" />
       <item itemvalue="CMake Application.manual_test_core" />
       <item itemvalue="CMake Application.nlohmann_json_schema_validator" />
+      <item itemvalue="CMake Application.docs" />
       <item itemvalue="CMake Application.parse" />
       <item itemvalue="CMake Application.pugixml-static" />
       <item itemvalue="CMake Application.radiotap" />
@@ -1225,7 +1238,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: random bl0ck" />
     <MESSAGE value="r:UCI in one block, if possible" />
     <MESSAGE value="f: ath_masker on rapsberry (cross compile)" />
     <MESSAGE value="f: log_events optional window" />
@@ -1250,7 +1262,8 @@
     <MESSAGE value="r: RSN masks to header (no magic numbers)" />
     <MESSAGE value="r: Makefile simplify, delete historic doc, small changes" />
     <MESSAGE value="r: small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: small changes" />
+    <MESSAGE value="f+: to EAP" />
+    <option name="LAST_COMMIT_MESSAGE" value="f+: to EAP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1354,6 +1367,11 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
           <line>328</line>
           <option name="timeStamp" value="181" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_parse.cpp</url>
+          <line>53</line>
+          <option name="timeStamp" value="194" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

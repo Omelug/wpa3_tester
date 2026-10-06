@@ -18,9 +18,8 @@ void McMitm::send_to_rogue(const vector<uint8_t> &raw) const { sock_rogue->send(
 
 FrameProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>()) {
-		const auto req_addr1 = dot11.addr1();
-		const bool directed = req_addr1 == HWAddress<6>(ap.get(SK::mac));
-		const bool wildcard = req_addr1 == HWAddress<6>::broadcast;
+		const bool directed = dot11.addr1() == HWAddress<6>(ap.get(SK::mac));
+		const bool wildcard = dot11.addr1() == HWAddress<6>::broadcast;
 		if(!directed && !wildcard) return STOP;
 		client_state.update_state(ClientState::Finding);
 		probe_resp->addr1(addr2);

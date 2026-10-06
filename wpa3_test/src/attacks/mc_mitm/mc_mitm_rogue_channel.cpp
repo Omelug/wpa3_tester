@@ -78,7 +78,7 @@ FrameProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot1
 		resp.supported_rates(rates);
 		send_to_rogue(resp);
 	} else if(const auto *reassoc = dot11.find_pdu<Dot11ReAssocRequest>()) {
-		Dot11ReAssocResponse resp(addr2, ap.get(SK::mac)); // correct subtype
+		Dot11ReAssocResponse resp(addr2, ap.get(SK::mac));
 		resp.addr3(ap.get(SK::mac));
 		resp.status_code(0);
 		resp.capabilities() = reassoc->capabilities();

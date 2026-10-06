@@ -114,10 +114,10 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
             next_beacon += milliseconds(beacon_ms);
         }
 
-        if(last_real_beacon + seconds(beacon_warn_sec) < steady_clock::now()) {
+        /*if(last_real_beacon + seconds(beacon_warn_sec) < steady_clock::now()) {
             log(LogLevel::WARNING, "No beacon from WrongNet AP for {}s", beacon_warn_sec);
             last_real_beacon = steady_clock::now();
-        }
+        }*/
     }
     rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" }, netns, true);

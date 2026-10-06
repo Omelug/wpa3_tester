@@ -84,7 +84,7 @@ observers:
 
 attack_config:
   confused_ssid: SafeNet
-  attack_time_sec: 150
+  attack_time_sec: 40
   beacon_interval_ms: 100
   beacon_warning_sec: 2
   only_to_mitm: false

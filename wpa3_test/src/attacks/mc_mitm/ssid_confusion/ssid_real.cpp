@@ -16,7 +16,7 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
 	auto translated = raw;
 	translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
-	sock_rogue->send(raw, netconfig.rogue_channel);
+	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 
 FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const {

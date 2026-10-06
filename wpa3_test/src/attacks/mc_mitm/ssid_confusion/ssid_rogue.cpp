@@ -15,7 +15,7 @@ void SsidConfusion::send_to_real(PDU &pdu) const {
 void SsidConfusion::send_to_real(const vector<uint8_t> &raw) const{
 	auto translated = raw;
 	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac), false);
-	sock_real->send(raw, netconfig.real_channel);
+	sock_real->send(translated, netconfig.real_channel);
 }
 
 FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
@@ -135,9 +135,7 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 
 #undef SOLVE_OR_CONTINUE
 
-	auto translated = raw;
-	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac));
-	send_to_real(translated);
+	send_to_real(raw);
 	display_traffic(*pdu, "Rogue channel", " -- Replied");
 }
 

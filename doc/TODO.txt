@@ -5,8 +5,9 @@ v: visualization
 
 Version  v 0.0.0.0:
 
-f: External AP -
-t: "crack_pmk_hashes - SHA256: correct PSK cracks the hash
+ssid_confusion:
+    ?: try on ath without debug -> slow down ?
+
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 mc_mitm:
@@ -71,6 +72,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAdress, not string
 
 //DONE
+t: "crack_pmk_hashes - SHA256: correct PSK cracks the hash
 +: ap_info to device page
 +: ACM activation time (external, internal in hostapd)
 +: openwrt disable after test - to not colide with other internal tests

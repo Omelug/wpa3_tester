@@ -1,5 +1,3 @@
-#include <boost/mpl/not.hpp>
-
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"

@@ -26,8 +26,8 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 	only_to_mitm(only_to_mitm),
 	client_state(
 		sta.get(SK::mac), run_folder ? optional{ run_folder.value() / "observer" / "client_state" } : nullopt) {
-	this->netconfig.real_channel = this->rogue_sta->get_channel(); //TODO need to be saved ?
-	this->netconfig.real_channel = this->rogue_ap->get_channel();
+	this->netconfig.real_channel  = this->rogue_sta->get_channel();
+	this->netconfig.rogue_channel = this->rogue_ap->get_channel();
 	if(run_folder) {
 		create_public_dirs(run_folder.value() / "observer" / "client_state");
 	}

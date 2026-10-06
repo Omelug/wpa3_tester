@@ -34,6 +34,7 @@ public:
 	void run(RunStatus &rs, int timeout_sec) override;
 	void send_to_rogue(Tins::PDU &pdu) const override;
 	void send_to_rogue(const std::vector<unsigned char> &raw) const override;
+	FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw) override;
 	void send_to_real(Tins::PDU &pdu) const override;
 	void send_to_real(const std::vector<unsigned char> &raw) const override;

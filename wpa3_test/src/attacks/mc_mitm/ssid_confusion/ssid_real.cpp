@@ -19,6 +19,13 @@ void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
 	sock_rogue->send(raw, netconfig.rogue_channel);
 }
 
+FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const {
+	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
+		if(addr2 == sta.get(SK::mac)) display_traffic(dot11, "Real channel", " -- Ignore");
+		return STOP;
+	}
+	return CONTINUE;
+}
 
 void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const std::vector<uint8_t> &raw) {
 	auto *dot11 = pdu->find_pdu<Dot11>();
@@ -40,6 +47,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const s
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
+	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 

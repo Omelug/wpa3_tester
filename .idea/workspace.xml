@@ -141,10 +141,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f+: to EAP">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: rogu/real  channel set">
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -311,11 +310,11 @@
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/suite/random" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wpa3_test/src" />
       <recent name="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion" />
       <recent name="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confision" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/basic" />
       <recent name="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state" />
-      <recent name="$PROJECT_DIR$/doc/wpa3_tester_doc" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.wpa3_tester ssid_confusion_test">
@@ -1225,7 +1224,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r:UCI in one block, if possible" />
     <MESSAGE value="f: ath_masker on rapsberry (cross compile)" />
     <MESSAGE value="f: log_events optional window" />
     <MESSAGE value="f: dos schema" />
@@ -1250,7 +1248,8 @@
     <MESSAGE value="r: Makefile simplify, delete historic doc, small changes" />
     <MESSAGE value="r: small changes" />
     <MESSAGE value="f+: to EAP" />
-    <option name="LAST_COMMIT_MESSAGE" value="f+: to EAP" />
+    <MESSAGE value="f: rogu/real  channel set" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: rogu/real  channel set" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -17,7 +17,6 @@ namespace wpa3_tester::mc_mitm {
 void setup_attack(RunStatus &rs) {
 	if(const auto tester_dmesg = rs.observer("tester_dmesg")) {
 		tester_dmesg->start(rs);
-		;
 	}
 
 	rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));

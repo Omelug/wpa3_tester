@@ -32,7 +32,7 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 McMitm::~McMitm() { stop(); }
 
 //TODO cache frames like in the channel_switch.cpp
-void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target, int beacon_interval_ms) const {
+void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target, const int beacon_interval_ms) const {
 	// Intel firmware: must see count >= 2 before count  //TODO source? Python?
 	for(int i = 0; i < numpairs; ++i) {
 		for(int count = CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
